@@ -28,7 +28,7 @@
     [chan i]
     (ensure-open chan)
     (let [^ArrayBlockingQueue queue (:queue chan)]
-      (when-not (.offer queue i 60000 TimeUnit/MILLISECONDS)
+      (when-not (.offer queue i 600000 TimeUnit/MILLISECONDS)
         (throw (TimeoutException. "Timed out waiting to push item on queue.")))))
 
   (pull
