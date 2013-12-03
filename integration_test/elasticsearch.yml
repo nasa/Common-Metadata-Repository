@@ -1,0 +1,3 @@
+node.name: JASON_HA
+index.store.type: memory
+path.logs: integration_test

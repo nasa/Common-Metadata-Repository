@@ -4,6 +4,7 @@
   (:gen-class :extends org.elasticsearch.script.AbstractSearchScript
               :constructors {[String org.elasticsearch.common.logging.ESLogger] []}
               :init init
+              :exposes-methods {doc getDoc}
               :state data))
 
 
@@ -23,19 +24,19 @@
 (defn- field-name [this]
   (:field-name (.data this)))
 
-(defn- debug [this msg]
+(defn- info [this ^String msg]
   (let [logger (:logger (.data this))]
-    (.debug logger msg)))
+    (.info logger msg nil)))
 
 (defn -run [this]
-  (let [field (.get (.doc this) (field-name this))]
+  (let [field (.get (.getDoc this) (field-name this))]
     (if (and (not (nil? field))
              (not (.isEmpty field)))
       (let [value (.getValue field)
             result (or (= value "foo") (= value "bar"))]
-        (debug this (str "FooBar field is [" value "] result: " result))
+        (info this (str "FooBar field is [" value "] result: " result))
         result)
       (do
-        (debug this "FooBar field is not set")
+        (info this "FooBar field is not set")
         false))))
 
