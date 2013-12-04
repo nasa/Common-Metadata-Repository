@@ -10,9 +10,7 @@
                  ;; Versions set to match elastic search numbers. Look in elasticsearch pom.xml
                  [log4j/log4j "1.2.17"]]
 
-  :aot [cmr.es-spatial-plugin.FooBarSearchScript
-        cmr.es-spatial-plugin.FooBarSearchScriptFactory
-        cmr.es-spatial-plugin.StringMatchScript
+  :aot [cmr.es-spatial-plugin.StringMatchScript
         cmr.es-spatial-plugin.StringMatchScriptFactory
         cmr.es-spatial-plugin.SpatialSearchPlugin]
 
