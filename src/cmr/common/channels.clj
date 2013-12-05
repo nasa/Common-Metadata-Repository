@@ -71,7 +71,7 @@
 (defn consume-all
   "Consumes all the messages on the channel with the function f. Continues to wait until channel
   returns nil."
-  [chan f sleeper]
+  [chan f]
   (let [start (System/currentTimeMillis)]
     (loop [item (pull chan) num-items 1]
       (when item
@@ -129,7 +129,7 @@
 
   (process-tasks :tasks-fn #(range 4000)
                  :processor (fn [t]
-                              (info "processing " t)
+                              ; (info "processing " t)
                               (Thread/sleep 10))
                  :num-threads 4
                  :task-name "sleep-test")
