@@ -33,9 +33,13 @@
     (info "Starting " ~taskname)
     (try
       ~@body
-      (catch Exception e#
+
+      (info ~taskname " completed without exception")
+
+      (catch Throwable e#
         (error e# "Exception in " ~taskname)
         (throw e#))
       (finally
         (info ~taskname " complete.")))))
+
 
