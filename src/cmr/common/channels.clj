@@ -56,7 +56,7 @@
     (loop [items items num-items 1]
       (when (and items (not (closed? chan)))
 
-        (if-let [item (first items)]
+        (when-let [item (first items)]
           (push chan item)
 
           ;; Intermediate logging
@@ -70,12 +70,11 @@
 
 (defn consume-all
   "Consumes all the messages on the channel with the function f. Continues to wait until channel
-  returns nil or stop-fn returns true for an item."
-  [chan f]
+  returns nil."
+  [chan f sleeper]
   (let [start (System/currentTimeMillis)]
     (loop [item (pull chan) num-items 1]
       (when item
-
         ;; process the item
         (f item)
 
@@ -127,6 +126,13 @@
   (push c 1)
   (pull c)
   (count (:queue c))
+
+  (process-tasks :tasks-fn #(range 4000)
+                 :processor (fn [t]
+                              (info "processing " t)
+                              (Thread/sleep 10))
+                 :num-threads 4
+                 :task-name "sleep-test")
 
   (future
     (push-seq c (range 100))
