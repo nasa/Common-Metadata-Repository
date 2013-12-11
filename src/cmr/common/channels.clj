@@ -100,9 +100,11 @@
   * tasks-fn - a function that returns a sequence of tasks to process
   * processor - A function that can process a single task
   * num-threads - The number of threads to use to process the tasks
-  * task-name - The name of the task to use for logging"
-  [& {:keys [tasks-fn processor num-threads task-name]}]
-  (let [channel (channel 5)
+  * task-name - The name of the task to use for logging
+  * channel-size - Optionally indicate how many items can be buffered in the channel."
+  [& {:keys [tasks-fn processor num-threads task-name channel-size]
+      :or {channel-size 5}}]
+  (let [channel (channel channel-size)
         pusher (util/future-with-logging
                  (str task-name "Message Pusher")
                  (push-seq channel (tasks-fn))
