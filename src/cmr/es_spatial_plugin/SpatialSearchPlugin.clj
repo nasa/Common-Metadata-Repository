@@ -1,7 +1,6 @@
 (ns cmr.es-spatial-plugin.SpatialSearchPlugin
   (:import cmr.es_spatial_plugin.StringMatchScriptFactory
            org.elasticsearch.script.ScriptModule)
-  (:require [clojure.tools.logging :as log])
   (:gen-class :extends org.elasticsearch.plugins.AbstractPlugin))
 
 
@@ -13,6 +12,6 @@
 
 (defn -processModule [this module]
   (when (instance? ScriptModule module)
-    (log/info "processModule!")
-    (.registerScript module "string_match" StringMatchScriptFactory)))
+    (let [^ScriptModule module module]
+      (.registerScript module "string_match" StringMatchScriptFactory))))
 

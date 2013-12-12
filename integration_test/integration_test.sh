@@ -2,27 +2,27 @@
 
 # The echo commands add newlines
 
-curl -XPUT localhost:9200/test/fooers/1 -d '{"value" : "foo"}'
+curl -XPUT localhost:9210/string_match_test/fooers/1 -d '{"value" : "foo"}'
 echo
-curl -XPUT localhost:9200/test/fooers/2 -d '{"value" : "bar"}'
+curl -XPUT localhost:9210/string_match_test/fooers/2 -d '{"value" : "bar"}'
 echo
-curl -XPUT localhost:9200/test/fooers/3 -d '{"value" : "foo"}'
+curl -XPUT localhost:9210/string_match_test/fooers/3 -d '{"value" : "foo"}'
 echo
-curl -XPUT localhost:9200/test/fooers/4 -d '{"value" : "bar"}'
+curl -XPUT localhost:9210/string_match_test/fooers/4 -d '{"value" : "bar"}'
 echo
-curl -XPUT localhost:9200/test/fooers/5 -d '{"value" : "umm"}'
+curl -XPUT localhost:9210/string_match_test/fooers/5 -d '{"value" : "umm"}'
 echo
-curl -XPUT localhost:9200/test/fooers/6 -d '{"value" : "ohno"}'
+curl -XPUT localhost:9210/string_match_test/fooers/6 -d '{"value" : "ohno"}'
 echo
-curl -XPUT localhost:9200/test/fooers/7 -d '{"value" : ["never", "a", "dull", "foo"]}'
+curl -XPUT localhost:9210/string_match_test/fooers/7 -d '{"value" : ["never", "a", "dull", "foo"]}'
 echo
 
 # Make all indexed items available for searching
-curl -XPOST 'http://localhost:9200/_refresh'
+curl -XPOST 'http://localhost:9210/_refresh'
 echo
 
 
-curl -XGET 'http://localhost:9200/test/fooers/_search?pretty=true' -d '{
+curl -XGET 'http://localhost:9210/string_match_test/fooers/_search?pretty=true' -d '{
     "query": {
         "filtered" : {
             "query" : {

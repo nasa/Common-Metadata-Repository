@@ -1,4 +1,12 @@
-(defproject cmr-es-spatial-plugin "0.1.0-SNAPSHOT"
+(def version "0.1.0-SNAPSHOT")
+
+(def uberjar-name
+  (str "target/cmr-es-spatial-plugin-" version "-standalone.jar"))
+
+(def plugin-zip-name
+  (str "target/cmr-es-spatial-plugin-" version ".zip"))
+
+(defproject cmr-es-spatial-plugin version
   :description "FIXME: write description"
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"
@@ -7,12 +15,18 @@
                  [org.clojure/tools.logging "0.2.6"]
                  [org.elasticsearch/elasticsearch "0.90.7"]
 
-                 ;; Versions set to match elastic search numbers. Look in elasticsearch pom.xml
+                 ;; Version set to match elastic search numbers. Look in elasticsearch pom.xml
                  [log4j/log4j "1.2.17"]]
+
+  :plugins [[lein-shell "0.3.0"]]
 
   :aot [cmr.es-spatial-plugin.StringMatchScript
         cmr.es-spatial-plugin.StringMatchScriptFactory
         cmr.es-spatial-plugin.SpatialSearchPlugin]
+
+
+  :global-vars {*warn-on-reflection* true
+                *assert* false}
 
   :profiles
   {:integration
@@ -20,13 +34,32 @@
                "-Des.path.conf=integration_test"
 
                ;; uncomment to debug log4j
-               "-Dlog4j.debug=true"
+               ; "-Dlog4j.debug=true"
 
                ;; important to allow logging
-               "-Des.foreground=true"]}}
+               "-Des.foreground=true"]}
+
+   :dev {:dependencies [[nasa-cmr/cmr-common "0.1.0-SNAPSHOT"]
+                        [clojurewerkz/elastisch "1.3.0-rc2"]
+                        [org.clojure/tools.namespace "0.2.4"]
+                        [org.clojars.gjahad/debug-repl "0.3.3"]]
+         :jvm-opts [;; important to allow logging to standard out
+                    "-Des.foreground=true"]
+         :source-paths ["src" "dev"]}}
 
   :aliases {"es" ["with-profile" "integration"
                   "do" "clean,"
                   "compile,"
                   "run" "-m" "org.elasticsearch.bootstrap.ElasticSearch"
-                  ]})
+                  ]
+
+            ;; Packages the spatial search plugin
+            "package" ["do"
+                       "clean,"
+                       "uberjar,"
+                       "shell" "zip" "-j" ~plugin-zip-name ~uberjar-name]
+
+            ;; Packages and installs the plugin into the local elastic search vm
+            "install-local" ["do"
+                             "package,"
+                             "shell" "../cmr-vms/elastic_local/install_plugin.sh" ~plugin-zip-name "spatialsearch-plugin"]})

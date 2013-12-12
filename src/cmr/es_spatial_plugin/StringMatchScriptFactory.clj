@@ -18,7 +18,9 @@
   (let [logger (Loggers/getLogger StringMatchScriptFactory settings nil)]
     [[settings] {:logger logger}]))
 
-(def ^{:doc "The parameters to the String Match script"} parameters [:field :search-string])
+(def parameters
+  "The parameters to the String Match script"
+  [:field :search-string])
 
 (defn- extract-params
   "Extracts the parameters from the params map given in the script."
@@ -36,7 +38,7 @@
              (str "Missing one or more of required parameters: "
                   (clojure.string/join parameters ", "))))))
 
-(defn -newScript [this script-params]
+(defn -newScript [^StringMatchScriptFactory this script-params]
   (let [{:keys [field search-string] :as params} (extract-params script-params)
         logger (:logger (.data this))]
     (assert-required-parameters params)
