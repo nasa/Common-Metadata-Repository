@@ -62,4 +62,10 @@
             ;; Packages and installs the plugin into the local elastic search vm
             "install-local" ["do"
                              "package,"
-                             "shell" "../cmr-vms/elastic_local/install_plugin.sh" ~plugin-zip-name "spatialsearch-plugin"]})
+                             "shell" "../cmr-vms/elastic_local/install_plugin.sh" ~plugin-zip-name "spatialsearch-plugin"]
+
+            "install-aws" ["do"
+                           "package,"
+                           ;; IP address is hard coded for now
+                           "shell" "../cmr-vms/elastic_aws/install_plugin.sh" "54.193.23.62" ~plugin-zip-name "spatialsearch-plugin"]
+                           })
