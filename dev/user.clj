@@ -1,0 +1,36 @@
+(ns user
+  (:require [clojure.pprint :refer (pprint pp)]
+            [clojure.tools.namespace.repl :refer (refresh refresh-all)]
+            [vdd-core.core :as vdd]
+            [earth.driver :as earth-viz])
+  (:use [clojure.test :only [run-all-tests]]
+        [clojure.repl]))
+
+(def vdd-server nil)
+
+(defn start
+  "Starts the current development system."
+  []
+  (alter-var-root #'vdd-server
+                  (constantly
+                    (vdd/start-viz))))
+
+(defn stop
+  "Shuts down and destroys the current development system."
+  []
+  (alter-var-root #'vdd-server
+    (fn [s] (when s (vdd/stop-viz s)))))
+
+(defn reset []
+  ; Stops the running code
+  (stop)
+  ; Refreshes all of the code and then restarts the system
+  (refresh :after 'user/start))
+
+(defn reload-coffeescript []
+  (do
+    (println "Compiling coffeescript")
+    (println (earth-viz/compile-coffeescript (:config vdd-server)))
+    (vdd/data->viz {:cmd :reload})))
+
+(println "Custom user.clj loaded.")
