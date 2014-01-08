@@ -1,6 +1,8 @@
 # cmr-vdd-spatial-viz
 
-A Clojure library designed to ... well, that part is up to you.
+
+TODO Needs updating and documentation. The name of the viz is earth which isn't ideal.
+
 
 ## Usage
 
