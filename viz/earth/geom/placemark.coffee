@@ -1,7 +1,7 @@
 class window.Placemark extends Module
   @include GoogleEarthEventHandler
 
-  URL_BASE = '/viz/earth/images/map_markers/'
+  URL_BASE = '/plugins/earth/images/map_markers/'
 
   @getUniquePlacemarkId: ->
     @nextId ||= 0

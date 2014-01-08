@@ -8,12 +8,16 @@
 
 (def vdd-server nil)
 
+(def viz-config
+  (-> (vdd/config)
+      (assoc :plugins ["earth"])))
+
 (defn start
   "Starts the current development system."
   []
   (alter-var-root #'vdd-server
                   (constantly
-                    (vdd/start-viz))))
+                    (vdd/start-viz viz-config))))
 
 (defn stop
   "Shuts down and destroys the current development system."
