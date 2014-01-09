@@ -19,6 +19,8 @@ initCallback = (ge) ->
       Map.map.enableGrid($(event.target).is(":checked")))
   $("input[name='enable_auto_zoom']").change( (event) ->
       Map.map.enableAutoZoom($(event.target).is(":checked")))
+  $("#clear_button").click (event) ->
+    Map.map.clearGeometries()
 
   Map.initSubCallback(ge)
 
