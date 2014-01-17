@@ -19,6 +19,8 @@ initCallback = (ge) ->
       Map.map.enableGrid($(event.target).is(":checked")))
   $("input[name='enable_auto_zoom']").change( (event) ->
       Map.map.enableAutoZoom($(event.target).is(":checked")))
+  $("input[name='dbl_clk_add_points']").change( (event) ->
+      Map.map.enableAddPoints($(event.target).is(":checked")))
   $("#clear_button").click (event) ->
     Map.map.clearGeometries()
 
@@ -80,8 +82,8 @@ class window.Map extends Module
     @ge.getOptions().setGridVisibility(true)
     @ge.getWindow().setVisibility(true)
     @gex = new GEarthExtensions(@ge)
-    @features = []
     @autoZoomEnabled = true
+    @dblClickAddPointsEnabled = false
     @currentGeometries = []
 
   clearGeometries: ()->
@@ -119,6 +121,9 @@ class window.Map extends Module
   enableAutoZoom: (enabled=true)->
     @autoZoomEnabled = enabled
 
+  enableAddPoints: (enabled=true)->
+    @dblClickAddPointsEnabled = enabled
+
   zoomToPoints: (points)->
     return false unless @autoZoomEnabled
     bounds = new geo.Bounds()
@@ -129,6 +134,19 @@ class window.Map extends Module
     aspect = map_element.width() / map_element.height()
     @gex.view.setToBoundsView(bounds, {aspectRatio: aspect, scaleRange:2})
 
+  handleDoubleClick: (event, ge) ->
+    if @dblClickAddPointsEnabled
+      lon = event.getLongitude()
+      lat = event.getLatitude()
+      lon = Math.roundTo(lon, 3)
+      lat = Math.roundTo(lat, 3)
+      p = new Point(lon, lat, label:"#{lon},#{lat}")
+      this.addEventListener(p)
+      p.display(@ge)
+      @currentGeometries.push(p)
+      event.preventDefault()
+
+
   # Moves the camera to view the specified lon and lat
   moveCamera: (lon, lat) ->
     lookAt = @ge.getView().copyAsLookAt(@ge.ALTITUDE_RELATIVE_TO_GROUND)
@@ -136,10 +154,6 @@ class window.Map extends Module
     lookAt.setLatitude(lat)
     @ge.getView().setAbstractView(lookAt)
 
-  addFeature: (feature)->
-    @features.push(feature)
-    this.addEventListener(feature)
-    this.addGuiEventListener(feature)
 
 Map.initSubCallback = (ge) =>
   Map.map = new Map(ge)
