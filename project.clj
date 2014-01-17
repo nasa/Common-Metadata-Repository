@@ -51,13 +51,7 @@
                     "-Des.foreground=true"]
          :source-paths ["src" "dev"]}}
 
-  :aliases {"es" ["with-profile" "integration"
-                  "do" "clean,"
-                  "compile,"
-                  "run" "-m" "org.elasticsearch.bootstrap.ElasticSearch"
-                  ]
-
-            ;; Packages the spatial search plugin
+  :aliases {;; Packages the spatial search plugin
             "package" ["do"
                        "clean,"
                        "uberjar,"

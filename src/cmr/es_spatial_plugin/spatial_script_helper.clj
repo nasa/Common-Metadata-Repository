@@ -1,9 +1,11 @@
 (ns cmr.es-spatial-plugin.spatial-script-helper
-  (:require [cmr-spatial.ring :as ring])
+  (:require [cmr-spatial.ring :as ring]
+            [clojure.string :as s])
   (:import org.elasticsearch.index.fielddata.ScriptDocValues$Doubles
            org.elasticsearch.search.lookup.DocLookup
            org.elasticsearch.search.lookup.FieldsLookup
-           org.elasticsearch.search.lookup.FieldLookup))
+           org.elasticsearch.search.lookup.FieldLookup
+           org.elasticsearch.common.logging.ESLogger))
 
 (defn- get-ords-in-doc
   "Gets the ordinates from a DocLookup"
@@ -16,9 +18,8 @@
 (defn- get-ords-in-fields
   "Gets the ordinates from a fields lookup."
   [^FieldsLookup lookup]
-  (let [^FieldsLookup field-lookup (.get lookup "ords")]
+  (let [^FieldLookup field-lookup (.get lookup "ords")]
     (.getValues field-lookup)))
-
 
 ;; TODO using FieldsLookup is supposed to be much slower than indexed values.
 ;; The problem with DocLookup is that it doesn't return the values sorted. Another alternative
@@ -28,10 +29,9 @@
 ;; The values could also be merged into a long or byte.
 ;; TODO consider changing the storage type to long, integer, or short. It may decrease the size of the elastic inde
 
-
-(defn- doc-intersects?
+(defn doc-intersects?
   "Returns true if the doc contains a ring that intersects the ring passed in."
-  [this ^FieldsLookup lookup ring]
+  [^ESLogger logger ^FieldsLookup lookup ring]
   ; Must explicitly return true or false or elastic search will complain
 
   ;; TODO idea for performance improvement. We could make the ring lazy.
@@ -39,11 +39,15 @@
   ;; We would only have to create one arc in that case. We wouldn't have to calculate the great
   ;; circle for any of the other arcs
   (if-let [ords (get-ords-in-fields lookup)]
-    (if (ring/intersects? ring (apply ring/ords->ring ords))
-      (do
-        ; (alex-and-georges.debug-repl/debug-repl)
-        true)
-
-      false)
+    (let [ring2 (apply ring/ords->ring ords)]
+      (try
+        (if (ring/intersects? ring ring2)
+          true
+          false)
+        (catch Throwable t
+           (.error logger (s/join "\n" (map #(.toString %) (.getStackTrace t))) nil)
+           (.info logger (pr-str ords) nil)
+           (.info logger (pr-str ring) nil)
+           (.info logger (pr-str ring2) nil)
+           (throw t))))
     false))
-

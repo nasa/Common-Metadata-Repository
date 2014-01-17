@@ -49,6 +49,13 @@
   (let [items (ec/all-items ec/spatial-index ec/spatial-type)]
     (display-retrieved-items items)))
 
+(defn search-and-display
+  "Searches for results with the given ring then displays the ring and the areas found."
+  [ring]
+  (let [results (ec/search-spatial-script (ring/ring->ords ring))]
+    (viz-helper/add-geometries [ring])
+    (display-retrieved-items results)))
+
 (comment
   (delete-spatial-areas)
 
@@ -56,26 +63,21 @@
 
   (display-spatial-areas-from-elastic)
 
-  ;; Describing a bounding box with w: -52 n: 30 e: -43 s:27
-  (let [search-area (ring/ords->ring -52,30 -52,27, -43,27, -43,30, -52,30)
-        results (ec/search-spatial-script (ring/ring->ords search-area))]
-    (viz-helper/add-geometries [search-area])
-    (display-retrieved-items results))
+  ;; Describing a bounding box with w: -55.3 n: 30 e: -43 s:27
+  (search-and-display (ring/ords->ring -55.3,30 -55.3,27, -43,27, -43,30, -55.3,30))
+
+  ;; thin area that won't have points inside another ring.
+  (search-and-display (ring/ords->ring  -60.455,28.523 -60.467,28.46 -60.162,28.455, -60.17,28.525 -60.455,28.523))
+
+
 
   ;; Shortcut the elastic part and just generate areas and try them all
   (let [rings (map generate-ring (range 100))
-        search-area (ring/ords->ring -52,30 -52,27, -43,27, -43,30, -52,30)
+        search-area (ring/ords->ring -55.3,30 -55.3,27, -43,27, -43,30, -55.3,30)
         matches (filter (partial ring/intersects? search-area) rings)]
     (viz-helper/add-geometries matches)
     (viz-helper/add-geometries [search-area]))
 
-  (let [matches [[-84.90212481769589 -84.89349655061902 -84.71338015667583 -84.70523449350628 -41.58647495860211 -41.580041775896014 -41.44824312597533 -41.44182923460395]
-                 [-80.98679207151498 -80.97957690594815 -80.82750804914595 -80.82056076376811 -27.586489551125783 -27.580058971828837 -27.448260478756616 -27.44184355524225]
-                 [-77.0794842374494 -77.07295175771534 -76.9342420578907 -76.92785588023297 -13.586500779893958 -13.58007220484775 -13.44827385229961 -13.441854592751238]]
-        rings (map (partial apply ring/ords->ring) matches)
-        search-area (ring/ords->ring -52,30 -52,27, -43,27, -43,30, -52,30)]
-    (count (filter (partial ring/intersects? search-area) rings))
-    (viz-helper/add-geometries rings))
 
 
 
