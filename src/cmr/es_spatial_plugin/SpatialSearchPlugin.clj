@@ -1,5 +1,6 @@
 (ns cmr.es-spatial-plugin.SpatialSearchPlugin
   (:import cmr.es_spatial_plugin.StringMatchScriptFactory
+           cmr.es_spatial_plugin.SpatialScriptFactory
            org.elasticsearch.script.ScriptModule)
   (:gen-class :extends org.elasticsearch.plugins.AbstractPlugin))
 
@@ -13,5 +14,7 @@
 (defn -processModule [this module]
   (when (instance? ScriptModule module)
     (let [^ScriptModule module module]
-      (.registerScript module "string_match" StringMatchScriptFactory))))
+      (.registerScript module "string_match" StringMatchScriptFactory)
+      (println "Registering spatial module")
+      (.registerScript module "spatial" SpatialScriptFactory))))
 

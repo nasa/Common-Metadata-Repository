@@ -16,12 +16,15 @@
                  [org.elasticsearch/elasticsearch "0.90.7"]
 
                  ;; Version set to match elastic search numbers. Look in elasticsearch pom.xml
-                 [log4j/log4j "1.2.17"]]
+                 [log4j/log4j "1.2.17"]
+                 [nasa-cmr/cmr-spatial "0.1.0-SNAPSHOT"]]
 
   :plugins [[lein-shell "0.3.0"]]
 
   :aot [cmr.es-spatial-plugin.StringMatchScript
         cmr.es-spatial-plugin.StringMatchScriptFactory
+        cmr.es-spatial-plugin.SpatialScript
+        cmr.es-spatial-plugin.SpatialScriptFactory
         cmr.es-spatial-plugin.SpatialSearchPlugin]
 
 
@@ -42,7 +45,8 @@
    :dev {:dependencies [[nasa-cmr/cmr-common "0.1.0-SNAPSHOT"]
                         [clojurewerkz/elastisch "1.3.0-rc2"]
                         [org.clojure/tools.namespace "0.2.4"]
-                        [org.clojars.gjahad/debug-repl "0.3.3"]]
+                        [org.clojars.gjahad/debug-repl "0.3.3"]
+                        [reiddraper/simple-check "0.5.3"]]
          :jvm-opts [;; important to allow logging to standard out
                     "-Des.foreground=true"]
          :source-paths ["src" "dev"]}}

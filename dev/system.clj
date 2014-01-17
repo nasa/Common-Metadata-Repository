@@ -2,7 +2,8 @@
   (:require [cmr.common.lifecycle :as lifecycle]
             [clojure.tools.logging :refer [info error]]
             [embedded-elastic-server :as elastic-server]
-            [elastic-connection]))
+            [elastic-connection]
+            [cmr-spatial.viz-helper :as viz-helper]))
 
 
 (defrecord Config
@@ -23,14 +24,15 @@
 (def
   ^{:doc "Defines the order to start the components."
     :private true}
-  component-order [:elastic-server :elastic-connection])
+  component-order [:elastic-server :elastic-connection :viz-server])
 
 (defn create-system
   "Returns a new instance of the whole application."
   [config]
   {:config config
    :elastic-server (elastic-server/create-server)
-   :elastic-connection (elastic-connection/create-connection)})
+   :elastic-connection (elastic-connection/create-connection)
+   :viz-server (viz-helper/create-viz-server)})
 
 (defn- try-start-component
   "Attempts to start the component. If an error occurs it is logged and the unstarted component is
@@ -63,7 +65,7 @@
   (info "System shutting down")
   (let [stopped-system (reduce (fn [system component-name]
                                  (update-in system [component-name]
-                                            #(lifecycle/stop % system)))
+                                            #(when % (lifecycle/stop % system))))
                                this
                                (reverse component-order))]
     (info "System stopped")
