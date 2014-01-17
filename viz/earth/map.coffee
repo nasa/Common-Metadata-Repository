@@ -102,8 +102,7 @@ class window.Map extends Module
                 when "point"
                   new Point(g.lon, g.lat, label:g.label, balloonContents:g.balloon)
                 when "ring"
-                  # TODO how do we display a label? Use center of bbox?
-                  Ring.fromOrdinates(g.ords)
+                  Ring.fromOrdinates(g.ords, g.displayOptions)
                 when "bounding-rectangle"
                   new BoundingRectangle(g.west, g.north, g.east, g.south)
                 else throw "Unexpected geometry type: #{g.type}"

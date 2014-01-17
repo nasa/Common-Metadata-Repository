@@ -11,9 +11,9 @@
   ;; points with a label
   ;; bounding box
 
-  {:type :ring
-   :ords []
-   :label "30"}
+  (def ring {:type :ring
+             :ords [-55.3,30 -55.3,27, -43,27, -43,30, -55.3,30]
+             :displayOptions {:hidingPoints false}})
 
   {:type :point
    :ords []
@@ -36,6 +36,7 @@
 
   (set-viz-geometries [(point 1 1 "hi" "hello")])
 
+  (set-viz-geometries [ring])
 
 
 )
