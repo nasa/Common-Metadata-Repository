@@ -3,7 +3,8 @@
             [cmr-spatial.point :as point]
             [cmr-spatial.ring :as ring]
             [cmr-spatial.rotations :as rot]
-            [cmr-spatial.viz-helper :as viz-helper]))
+            [cmr-spatial.viz-helper :as viz-helper]
+            [cmr.es-spatial-plugin.spatial-script-helper :as spatial-script-helper]))
 
 (def base-points
   "The initial polygon that we will rotate to different areas of the world.  Based on sample granules from
@@ -37,12 +38,17 @@
   "Generates and stores num rings into elastic."
   [num]
   (doseq [n (range num)]
-    (ec/index-spatial n (ring/ring->ords (generate-ring n)))))
+    (let [ords (ring/ring->ords (generate-ring n))
+          ords (spatial-script-helper/ordinates->stored-ordinates ords)]
+      (ec/index-spatial n ords))))
 
 (defn display-retrieved-items
   "Displays retrieved spatial items from elastic in the spatial viz"
   [items]
-  (let [rings (map #(apply ring/ords->ring (:ords %)) items)]
+  (let [rings (map #(->> %
+                        :ords
+                        spatial-script-helper/stored-ordinates->ordinates
+                        (apply ring/ords->ring)) items)]
     (viz-helper/add-geometries rings)))
 
 (defn display-spatial-areas-from-elastic []
@@ -59,7 +65,7 @@
 (comment
   (delete-spatial-areas)
 
-  (index-spatial-areas 100)
+  (index-spatial-areas 5000)
 
   (display-spatial-areas-from-elastic)
 

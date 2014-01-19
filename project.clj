@@ -32,23 +32,21 @@
                 *assert* false}
 
   :profiles
-  {:integration
-   {:jvm-opts ["-Des.config=integration_test/elasticsearch.yml"
-               "-Des.path.conf=integration_test"
-
-               ;; uncomment to debug log4j
-               ; "-Dlog4j.debug=true"
-
-               ;; important to allow logging
-               "-Des.foreground=true"]}
-
-   :dev {:dependencies [[nasa-cmr/cmr-common "0.1.0-SNAPSHOT"]
+  {:dev {:dependencies [[nasa-cmr/cmr-common "0.1.0-SNAPSHOT"]
                         [clojurewerkz/elastisch "1.3.0-rc2"]
                         [org.clojure/tools.namespace "0.2.4"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]
                         [reiddraper/simple-check "0.5.3"]]
-         :jvm-opts [;; important to allow logging to standard out
-                    "-Des.foreground=true"]
+
+         ;; The ^replace is done to disable the tiered compilation for accurate benchmarks
+         ;; See https://github.com/technomancy/leiningen/wiki/Faster
+         :jvm-opts ^:replace [;; important to allow logging to standard out
+                              "-Des.foreground=true"
+                              ;; Use the following to enable JMX profiling with visualvm
+                              "-Dcom.sun.management.jmxremote"
+                              "-Dcom.sun.management.jmxremote.ssl=false"
+                              "-Dcom.sun.management.jmxremote.authenticate=false"
+                              "-Dcom.sun.management.jmxremote.port=1098"]
          :source-paths ["src" "dev"]}}
 
   :aliases {;; Packages the spatial search plugin
@@ -66,4 +64,4 @@
                            "package,"
                            ;; IP address is hard coded for now
                            "shell" "../cmr-vms/elastic_aws/install_plugin.sh" "54.193.23.62" ~plugin-zip-name "spatialsearch-plugin"]
-                           })
+            })
