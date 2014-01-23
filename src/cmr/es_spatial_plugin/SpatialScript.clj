@@ -8,12 +8,12 @@
 
 (import 'cmr.es_spatial_plugin.SpatialScript)
 
-(defn- -init [ring logger]
-  [[] {:ring ring
+(defn- -init [intersects-fn logger]
+  [[] {:intersects-fn intersects-fn
        :logger logger}])
 
-(defn- ring [^SpatialScript this]
-  (:ring (.data this)))
+(defn- intersects-fn [^SpatialScript this]
+  (:intersects-fn (.data this)))
 
 (defn- logger [^SpatialScript this]
   (:logger (.data this)))
@@ -29,4 +29,4 @@
   (let [intersects? cmr.es-spatial-plugin.spatial-script-helper/doc-intersects?
         ;intersects? (lookup 'cmr.es-spatial-plugin.spatial-script-helper/doc-intersects?)
         ]
-    (intersects? (logger this) (.getFields this) (ring this))))
+    (intersects? (logger this) (.getFields this) (intersects-fn this))))

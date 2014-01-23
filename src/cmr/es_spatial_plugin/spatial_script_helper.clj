@@ -48,18 +48,10 @@
          (rem ord 1000.0))
        (sort-by #(Math/abs ^double %) ords)))
 
-(comment
-  (ordinates->stored-ordinates [5 -5])
-
-  (stored-ordinates->ordinates (ordinates->stored-ordinates [5 -5]))
-)
-
-
-
 
 (defn doc-intersects?
   "Returns true if the doc contains a ring that intersects the ring passed in."
-  [^ESLogger logger ^FieldsLookup lookup ring]
+  [^ESLogger logger ^FieldsLookup lookup intersects-fn]
   ; Must explicitly return true or false or elastic search will complain
 
   ;; TODO idea for performance improvement. We could make the ring lazy.
@@ -70,13 +62,12 @@
     (let [ords (stored-ordinates->ordinates ords)
           ring2 (apply ring/ords->ring ords)]
       (try
-        (if (ring/intersects? ring ring2)
+        (if (intersects-fn ring2)
           true
           false)
         (catch Throwable t
-           (.error logger (s/join "\n" (map #(.toString %) (.getStackTrace t))) nil)
+           (.error logger (s/join "\n" (map #(.toString ^String %) (.getStackTrace t))) nil)
            (.info logger (pr-str ords) nil)
-           (.info logger (pr-str ring) nil)
            (.info logger (pr-str ring2) nil)
            (throw t))))
     false))

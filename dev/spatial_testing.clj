@@ -57,9 +57,9 @@
 
 (defn search-and-display
   "Searches for results with the given ring then displays the ring and the areas found."
-  [ring]
-  (let [results (ec/search-spatial-script (ring/ring->ords ring))]
-    (viz-helper/add-geometries [ring])
+  [constructor & ords]
+  (let [results (ec/search-spatial-script ords)]
+    (viz-helper/add-geometries [(apply constructor ords)])
     (display-retrieved-items results)))
 
 (comment
@@ -70,11 +70,12 @@
   (display-spatial-areas-from-elastic)
 
   ;; Describing a bounding box with w: -55.3 n: 30 e: -43 s:27
-  (search-and-display (ring/ords->ring -55.3,30 -55.3,27, -43,27, -43,30, -55.3,30))
+  (search-and-display ring/ords->ring -55.3,30 -55.3,27, -43,27, -43,30, -55.3,30)
 
   ;; thin area that won't have points inside another ring.
-  (search-and-display (ring/ords->ring  -60.455,28.523 -60.467,28.46 -60.162,28.455, -60.17,28.525 -60.455,28.523))
+  (search-and-display ring/ords->ring  -60.455,28.523 -60.467,28.46 -60.162,28.455, -60.17,28.525 -60.455,28.523)
 
+  (search-and-display point/point -50.301,28.498)
 
 
   ;; Shortcut the elastic part and just generate areas and try them all

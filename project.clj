@@ -64,4 +64,7 @@
                            "package,"
                            ;; IP address is hard coded for now
                            "shell" "../cmr-vms/elastic_aws/install_plugin.sh" "54.193.23.62" ~plugin-zip-name "spatialsearch-plugin"]
+            "install-workload" ["do"
+                           "package,"
+                           "shell" "install_plugin_into_workload.sh" ~plugin-zip-name "spatialsearch-plugin"]
             })
