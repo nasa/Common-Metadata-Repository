@@ -1,5 +1,5 @@
-(ns cmr.cmr-metadata-db-app.runner
-  (:require [cmr.cmr-metadata-db-app.system :as system]
+(ns cmr.metadata-db.runner
+  (:require [cmr.metadata-db.system :as system]
             [clojure.tools.cli :refer [cli]]
             [clojure.edn :as edn]
             [clojure.string :as string]
@@ -14,6 +14,7 @@
 
 (def arg-description
   [["-h" "--help" "Show help" :default false :flag true]
+   ["-d" "--db" "Specifies the database type - memory or oracle" :default "memory"]
    ["-p" "--port" "The HTTP Port to listen on for requests." :default 4242 :parse-fn #(Integer. %)]])
 
 

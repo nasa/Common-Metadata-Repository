@@ -1,4 +1,4 @@
-(ns cmr.cmr-metadata-db-app.api.routes
+(ns cmr.metadata-db.api.routes
   (:require [compojure.handler :as handler]
             [compojure.route :as route]
             [compojure.core :refer :all]

@@ -11,12 +11,12 @@
                  [org.clojure/tools.cli "0.2.4"]
                  [com.taoensso/timbre "2.6.3"]]
   :plugins []
-  :main cmr.cmr-metadata-db-app.runner
+  :main cmr.metadata-db.runner
   :repl-options {:init-ns user}
   :profiles
   {:dev {:dependencies [[ring-mock "0.1.5"]
                         [org.clojure/tools.namespace "0.2.4"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]]
-         :source-paths ["src" "dev" "test"]}})
+         :source-paths ["src" "dev" "test" "int_test"]}})
 
 

@@ -1,5 +1,5 @@
-(ns cmr.cmr-metadata-db-app.system
-  (:require [cmr.cmr-metadata-db-app.api.web-server :as web-server]
+(ns cmr.metadata-db.system
+  (:require [cmr.metadata-db.api.web-server :as web-server]
             [cmr.common.lifecycle :as lifecycle]
             [clojure.string :as string]
             [taoensso.timbre :as timbre
@@ -16,7 +16,7 @@
   ; The level to log out
   {:level :debug
    ;; The path to the file to log to
-   :file "log/cmr-metadata-db-app.log"
+   :file "log/metadata-db.log"
    :stdout-enabled true})
 
 
@@ -32,7 +32,7 @@
 (defn create-system
   "Returns a new instance of the whole application."
   [config]
-  (let [{:keys [port]} config]
+  (let [{:keys [db-config port]} config]
     {:web (web-server/map->WebServer {:port port})}))
 
 (defn- setup-logging [config]
