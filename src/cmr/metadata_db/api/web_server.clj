@@ -1,5 +1,5 @@
-(ns cmr.cmr-metadata-db-app.api.web-server
-  (:require [cmr.cmr-metadata-db-app.api.routes :as routes]
+(ns cmr.metadata-db.api.web-server
+  (:require [cmr.metadata-db.api.routes :as routes]
             [cmr.common.lifecycle :as lifecycle]
             [ring.adapter.jetty :as jetty]
             [taoensso.timbre :refer (debug info warn error)])
