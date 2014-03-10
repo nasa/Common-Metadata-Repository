@@ -19,6 +19,10 @@
                   {:status 200
                    :headers {"Content-Type" "text/plain"}
                    :body "foo"}))
+    (context "/concepts" []
+             (POST "/" {body :body}
+                   {:status 201
+                    :body body}))
     (route/not-found "Not Found")))
 
 (defn- exception-handler
