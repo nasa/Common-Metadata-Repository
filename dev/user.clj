@@ -3,6 +3,8 @@
             [clojure.tools.namespace.repl :refer (refresh refresh-all)]
             [cmr.metadata-db.system :as system]
             [taoensso.timbre :refer (debug info warn error)]
+            [cmr.metadata-db.data.memory :as memory]
+            [cmr.metadata-db.api.web-server :as web-server]
             [cmr.common.lifecycle :as lifecycle])
   (:use [clojure.test :only [run-all-tests]]
         [clojure.repl]
@@ -17,8 +19,9 @@
 (defn start
   "Starts the current development system."
   []
-  (let [config (system/map->Config {:port 3000})
-        s (system/create-system config)]
+  (let [db (memory/create-db)
+        web (web-server/map->WebServer {:port 3000})
+        s (system/create-system db web)]
     (alter-var-root #'system
                     (constantly
                       (system/start s)))))

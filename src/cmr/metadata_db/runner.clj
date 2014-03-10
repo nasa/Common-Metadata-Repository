@@ -3,7 +3,9 @@
             [clojure.tools.cli :refer [cli]]
             [clojure.edn :as edn]
             [clojure.string :as string]
-            [taoensso.timbre :refer (debug info warn error)])
+            [taoensso.timbre :refer (debug info warn error)]
+            [cmr.metadata-db.data.memory :as memory]
+            [cmr.metadata-db.api.web-server :as web-server])
   (:gen-class))
 
 (defn parse-endpoint
@@ -30,7 +32,8 @@
 (defn -main
   "Starts the App."
   [& args]
-  (let [{:keys [port]} (parse-args args)
-        sys-config (system/map->Config {:port port})
-        system (system/start (system/create-system sys-config))]
+  (let [{:keys [port db]} (parse-args args)
+        db (memory/create-db)
+        web (web-server/map->WebServer {:port port})
+        system (system/start (system/create-system db web))]
     (info "Running...")))

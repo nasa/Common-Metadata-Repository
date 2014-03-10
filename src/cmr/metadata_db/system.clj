@@ -1,6 +1,5 @@
 (ns cmr.metadata-db.system
-  (:require [cmr.metadata-db.api.web-server :as web-server]
-            [cmr.common.lifecycle :as lifecycle]
+  (:require [cmr.common.lifecycle :as lifecycle]
             [clojure.string :as string]
             [taoensso.timbre :as timbre
              :refer (trace debug info warn error fatal spy)]))
@@ -31,9 +30,8 @@
 
 (defn create-system
   "Returns a new instance of the whole application."
-  [config]
-  (let [{:keys [db-config port]} config]
-    {:web (web-server/map->WebServer {:port port})}))
+  [db web]
+  {:db db :web web})
 
 (defn- setup-logging [config]
   (let [log-config (get config :log default-log-config)]
