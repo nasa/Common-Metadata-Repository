@@ -5,7 +5,9 @@
             [taoensso.timbre :refer (debug info warn error)]
             [cmr.common.lifecycle :as lifecycle])
   (:use [clojure.test :only [run-all-tests]]
-        [clojure.repl]))
+        [clojure.repl]
+        ;; Needed to make debug-repl available
+        [alex-and-georges.debug-repl]))
 
 ; See http://thinkrelevance.com/blog/2013/06/04/clojure-workflow-reloaded
 ; for information on why this file is setup this way
