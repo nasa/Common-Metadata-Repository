@@ -28,12 +28,25 @@
       (exit-with-banner "Help:\n"))
     options))
 
+(defn- select-db
+  "return an initialization function for database based on user input parameter"
+  [{:keys [db]} ]
+  (case db
+    "memory" (memory/create-db)
+    "default" (memory/create-db)))
+  
 
 (defn -main
   "Starts the App."
   [& args]
   (let [{:keys [port db]} (parse-args args)
-        db (memory/create-db)
-        web (web-server/map->WebServer {:port port})
+        db-params {:db db}
+        db (select-db db-params)
+        web-params {:port port}
+        web (web-server/create-web-server web-params)
         system (system/start (system/create-system db web))]
     (info "Running...")))
+
+(comment 
+  
+((str ({:db "memory"} :db) "/" "create-db")))

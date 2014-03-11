@@ -29,4 +29,9 @@
       (.stop server))
     (assoc this :server nil)))
 
+(defn create-web-server
+    "Creates web server."
+    [{:keys [port]}]
+    (map->WebServer {:port port}))
+
 

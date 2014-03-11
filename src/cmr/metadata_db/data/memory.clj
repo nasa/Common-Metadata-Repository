@@ -6,7 +6,7 @@
 (defrecord InMemoryStore
   [
    ;; An atom containing a amp of echo-collection-ids to collections
-   collection-map]
+   collections]
   
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   lifecycle/Lifecycle
@@ -18,9 +18,8 @@
         this))
   
  	
- (defn create-db
-  "Creates the in memory store."
-  []
-  (map->InMemoryStore {:provider-map (atom {})
-                       :collection-map (atom {})
-                       :granule-map (atom {})}))
+  (defn create-db
+    "Creates the in memory store."
+    []
+    (map->InMemoryStore {:collections (atom {})}))
+                       

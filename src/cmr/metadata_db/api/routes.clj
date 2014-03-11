@@ -22,7 +22,8 @@
     (context "/concepts" []
              (POST "/" {body :body}
                    {:status 201
-                    :body body}))
+                    :body body
+                    :headers {"Content-Type" "json"}}))
     (route/not-found "Not Found")))
 
 (defn- exception-handler
@@ -43,7 +44,8 @@
   (-> (build-routes system)
       exception-handler
       handler/site
-      ring-json/wrap-json-body))
+      ring-json/wrap-json-body
+      ring-json/wrap-json-response))
 
 
 
