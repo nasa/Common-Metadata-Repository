@@ -10,7 +10,8 @@
             [cheshire.core :as json]
             [taoensso.timbre :as timbre
              :refer (debug info warn error)]
-            [cmr.common.services.errors :as errors]))
+            [cmr.common.services.errors :as errors]
+            [cmr.metadata-db.api.services :as services]))
 
 (defn- build-routes [system]
   (routes
@@ -20,10 +21,8 @@
                    :headers {"Content-Type" "text/plain"}
                    :body "foo"}))
     (context "/concepts" []
-             (POST "/" {body :body}
-                   {:status 201
-                    :body body
-                    :headers {"Content-Type" "json"}}))
+             (POST "/" params
+                   (services/create-concept system params)))
     (route/not-found "Not Found")))
 
 (defn- exception-handler
