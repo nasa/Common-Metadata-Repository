@@ -1,4 +1,5 @@
-(ns cmr-system-int-test.core-test
+(ns ^{:doc "Integration test for CMR collection search"}
+  cmr-system-int-test.collection-search-test
   (:require [clojure.test :refer :all]
             [cmr-system-int-test.ingest-util :as ingest]
             [cmr-system-int-test.search-util :as search]
@@ -71,9 +72,7 @@
     (let [references (search/find-collection-refs {:dataset_id "MinimalCollectionV1"})]
       (is (= 1 (count references)))
       (let [ref (first references)
-            dataset-id (:dataset-id ref)
-            echo-concept-id (:echo-concept-id ref)
-            location (:location ref)]
+            {:keys [dataset-id echo-concept-id location]} ref]
         (is (= "MinimalCollectionV1" dataset-id))
         (is (re-matches #"C[0-9]+-CMR_PROV1" echo-concept-id))
         (is (re-matches #"http.*/catalog-rest/echo_catalog/datasets/C[0-9]+-CMR_PROV1$" location)))))
@@ -96,9 +95,7 @@
     (let [references (search/find-collection-refs {:short_name "MINIMAL"})]
       (is (= 1 (count references)))
       (let [ref (first references)
-            dataset-id (:dataset-id ref)
-            echo-concept-id (:echo-concept-id ref)
-            location (:location ref)]
+            {:keys [dataset-id echo-concept-id location]} ref]
         (is (= "MinimalCollectionV1" dataset-id))
         (is (re-matches #"C[0-9]+-CMR_PROV1" echo-concept-id))
         (is (re-matches #"http.*/catalog-rest/echo_catalog/datasets/C[0-9]+-CMR_PROV1$" location))))))
@@ -111,9 +108,7 @@
     (let [references (search/find-collection-refs {:version 1})]
       (is (= 1 (count references)))
       (let [ref (first references)
-            dataset-id (:dataset-id ref)
-            echo-concept-id (:echo-concept-id ref)
-            location (:location ref)]
+            {:keys [dataset-id echo-concept-id location]} ref]
         (is (= "MinimalCollectionV1" dataset-id))
         (is (re-matches #"C[0-9]+-CMR_PROV1" echo-concept-id))
         (is (re-matches #"http.*/catalog-rest/echo_catalog/datasets/C[0-9]+-CMR_PROV1$" location))))))

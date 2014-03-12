@@ -1,17 +1,18 @@
-(ns cmr-system-int-test.url-helper
+(ns ^{:doc "helper to provide the urls to various service endpoints"}
+  cmr-system-int-test.url-helper
   (:require [ring.util.codec :as codec]))
 
 (def url_root "http://localhost:10000")
 (def elastic_root "http://localhost:9200")
 
-(defn collection-url
+(defn collection-ingest-url
   [{:keys [provider-id dataset-id]}]
   (format "%s/catalog-rest/providers/%s/datasets/%s"
           url_root
           provider-id
           dataset-id))
 
-(defn search-url
+(defn collection-search-url
   [params]
   (str url_root "/catalog-rest/echo_catalog/datasets?" (codec/form-encode params)))
 

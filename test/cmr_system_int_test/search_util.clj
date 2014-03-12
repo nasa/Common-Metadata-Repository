@@ -1,4 +1,5 @@
-(ns cmr-system-int-test.search-util
+(ns ^{:doc "provides search related utilities."}
+  cmr-system-int-test.search-util
   (:require [clojure.test :refer :all]
             [clj-http.client :as client]
             [clojure.string :as str]
@@ -6,10 +7,10 @@
             [cmr-system-int-test.url-helper :as url]))
 
 (defn find-collection-refs
-  "Returns the colletion references that are found
+  "Returns the collection references that are found
   by searching with the input params"
   [params]
-  (let [url (str (url/search-url params))
+  (let [url (str (url/collection-search-url params))
         response (client/get url)
         body (:body response)
         result (:content (xml/parse (java.io.StringReader. body)))]

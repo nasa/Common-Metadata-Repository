@@ -1,5 +1,5 @@
 (defproject cmr-system-int-test "0.1.0-SNAPSHOT"
-  :description "FIXME: write description"
+  :description "This project provides end to end integration testing for CMR components."
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
