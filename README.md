@@ -1,6 +1,6 @@
 # cmr-umm-lib
 
-A Clojure library designed to ... well, that part is up to you.
+The UMM (Unified Metadata Model) Library is responsible for defining the common domain model for Metadata Concepts in the CMR along with code to parse and generate the various dialects of each concept.
 
 ## Usage
 
