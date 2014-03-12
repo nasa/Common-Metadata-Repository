@@ -4,13 +4,21 @@
 (defn save-concept
   "Store a concept record and return the revision"
   [system concept]
-  (let [{:keys [db]} system
-        revision-id (data/save-concept db concept)]
-    {:status 201
-     :body {:revision-id revision-id}
-     :headers {"Content-Type" "json"}}))
+  (let [{:keys [db]} system]
+    (try
+      (let [revision-id (data/save-concept db concept)]
+        
+        {:status 201
+         :body {:revision-id revision-id}
+         :headers {"Content-Type" "json"}})
+      (catch Exception e (let [revision-id (Integer/parseInt (last (seq (re-find #": (\d+)" (.getMessage e)))))]
+                           {:status 409
+                            :body {:revision-id revision-id}
+                            :headers {"Content-Type" "json"}})))))
 
-
+(comment
+  (Integer/parseInt (last (seq (re-find #": (\d+)" "Error expected: 47")
+  ))))
 
 ;; Ingest update collection
  ;;- provider -id, concept type, native id, metadata

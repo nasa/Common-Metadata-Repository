@@ -4,33 +4,16 @@
             [clojure.string :as string]))
 
 ;;; Uitility methods
-(defn concept-id-for-concept
-  "Create a unique id for a concept form its values"
-  [{:keys [concept-type provider-id id]}]
-  (str concept-type ":" provider-id ":" id))
-
-(defn concept-type-from-concept-id
-  "Get a concept type for a given id"
-  [concept-id]
-  (first (string/split concept-id #":")))
 
 (defn- save 
   "Save a concept"
   [concept-atom concept concept-type concept-map concept-id revisions]
   (let [new-revisions (conj (or revisions []) concept)
         new-concept-map (assoc concept-map concept-id new-revisions)]
-        (swap! concept-atom assoc concept-type new-concept-map)
-        (println "ATOM: " concept-atom)
-        (- (count new-revisions) 1)))
+    (swap! concept-atom assoc concept-type new-concept-map)
+    (- (count new-revisions) 1)))
         
     
-
-(comment
-  (concept-type-from-concept-id "collections:PROV1:some-id")
-  (or "A" true)
-  (conj nil "A")
-  )
-
 
 ;;; An in-memory implementation of the provider store
 (defrecord InMemoryStore
@@ -51,16 +34,10 @@
   data/ConceptStore
   
   (get-concept-id
-    [this concept-type provider-id native-id]
-    (str concept-type ":" provider-id ":" native-id))
+    [this concept-type provider-id native-id])
   
   (get-concept
-    [this concept-id, revision-id]
-    (let [concepts (:concepts this)
-          concept-type (concept-type-from-concept-id concept-id)
-          concept-map (get concepts concept-type)
-          concept-revisions (get concept-map concept-id)]
-      (if-not concept-revisions [] concept-revisions)))
+    [this concept-id, revision-id])
   
   (get-concepts
     [this concept-id-revision-id-tuples])
@@ -74,26 +51,12 @@
       (cond
         (and revisions revision-id) (if-not (= (count revisions) 
                                                revision-id)
-                                      (throw (Exception. "Invalid revision-id"))
+                                      (throw (Exception. (str "Invalid revision-id. Expected: " (count revisions))))
                                       (save concepts concept concept-type concept-map concept-id revisions))
         (and revision-id) (if-not (= revision-id 0)
-                            (throw (Exception. "Invalid revision-id"))
+                            (throw (Exception. "Invalid revision-id. Expected: 0"))
                             (save concepts concept concept-type concept-map concept-id revisions))
         :else (save concepts concept concept-type concept-map concept-id revisions)))))
-  
-
-(comment
-       (def concepts 
-         {:collections {:some-id1 ["A1" "A2" "A3"]
-                        :some-id2 ["B1" "B2"]
-                        :some-other-id1 ["C1"]}})
-       
-       (let [concept-map (:collections concepts)
-             concept (get concept-map :some-id1)]
-         (println concept))
-    
-  
-       )     
 
 
 (defn create-db
