@@ -1,0 +1,226 @@
+<xs:schema elementFormDefault="qualified"
+	xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<xs:include schemaLocation="MetadataCommon.xsd" />
+	<xs:element name="BrowseMetaDataFile" type="BrowseMetaDataFile" />
+	<xs:element name="BrowseImage" type="BrowseImage" />
+	<xs:element name="BrowseImageDelete" type="BrowseImageDelete">
+	</xs:element>
+	<xs:element name="ProviderBrowseId" type="ProviderBrowseId">
+	</xs:element>
+	<xs:complexType name="BrowseMetaDataFile">
+		<xs:annotation>
+			<xs:documentation>This contains browse image to be inserted
+				or replaced and browse deletions.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="DataCenter" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Name of data center where this metadata
+						file was originated.</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:minLength value="1" />
+						<xs:maxLength value="80" />
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="BrowseImages" type="ListOfBrowseImages"
+				minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Browse images to be inserted or
+						replaced.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="BrowseImageDeletes" type="ListOfBrowseImageDeletes"
+				minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Browse images that should be
+						immediately deleted. This will cascade to browse links to
+						granules or collections.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="BrowseInventories" type="ListOfBrowseInventories">
+				<xs:annotation>
+					<xs:documentation>Inventories of browse to be checked for
+						existence in ECHO. Supplying zero inventories indicates
+						that existence checking should be
+						skipped.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ListOfBrowseImages">
+		<xs:annotation>
+			<xs:documentation>A list of browse images.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element minOccurs="0" maxOccurs="unbounded" name="BrowseImage"
+				type="BrowseImage" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="BrowseImage">
+		<xs:annotation>
+			<xs:documentation>A browse image is a reference to an image
+				file containing browse data for collections or
+				granules.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="ProviderBrowseId" type="ProviderBrowseId">
+				<xs:annotation>
+					<xs:documentation>The unique id for the browse image
+						given by the provider. This should be unique per
+						provider.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="InsertTime" type="xs:dateTime"
+				minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The date/time this browse image was
+						created in the data provider's
+						database.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="LastUpdate" type="xs:dateTime"
+				minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The last time the browse image was
+						modified in the data provider's
+						database.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="DeleteTime" type="xs:dateTime"
+				minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The date/time the browse image should
+						be deleted in ECHO.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:choice>
+				<xs:sequence>
+					<xs:element name="FileName">
+						<xs:annotation>
+							<xs:documentation>The name of the file for this
+								browse image. Include file name when a browse image
+								will be hosted by ECHO.</xs:documentation>
+						</xs:annotation>
+						<xs:simpleType>
+							<xs:restriction base="xs:string">
+								<xs:maxLength value="255"></xs:maxLength>
+								<xs:minLength value="1"></xs:minLength>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+					<xs:element name="FileSize" type="FileSize" />
+				</xs:sequence>
+				<xs:sequence>
+					<xs:element name="FileURL">
+						<xs:annotation>
+							<xs:documentation>The URL for this browse image.
+								Include file URL when a browse image is not hosted by
+								ECHO, e.g. a browse image is hosted by the
+								provider.</xs:documentation>
+						</xs:annotation>
+						<xs:simpleType>
+							<xs:restriction base="xs:string">
+								<xs:maxLength value="1024"></xs:maxLength>
+								<xs:minLength value="1"></xs:minLength>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+					<xs:element name="FileSize" type="FileSize" minOccurs="0" />
+				</xs:sequence>
+			</xs:choice>
+			<xs:element name="Description" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The description of this browse
+						image.</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="4000"></xs:maxLength>
+						<xs:minLength value="1"></xs:minLength>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="MimeType">
+				<xs:annotation>
+					<xs:documentation>
+						The mime type of the browse record.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="50" />
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ListOfBrowseImageDeletes">
+		<xs:annotation>
+			<xs:documentation>A list of browse image
+				deletes.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element minOccurs="0" maxOccurs="unbounded" name="BrowseImageDelete"
+				type="BrowseImageDelete" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="BrowseImageDelete">
+		<xs:annotation>
+			<xs:documentation>Indicates that the browse should be
+				immediately deleted.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="ProviderBrowseId" type="ProviderBrowseId">
+				<xs:annotation>
+					<xs:documentation>The id of the browse to
+						delete.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:simpleType name="FileSize">
+		<xs:annotation>
+			<xs:documentation>The size of the browse file in bytes. A
+				browse file delivered that is a different size than indicated
+				will be rejected.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:long"></xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="ListOfBrowseInventories">
+		<xs:annotation>
+			<xs:documentation>List of browse
+				inventories.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element maxOccurs="unbounded" name="BrowseInventory"
+				type="BrowseInventory" minOccurs="0" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="BrowseInventory">
+		<xs:annotation>
+			<xs:documentation>An inventory of browse for a given
+				collection. An empty ProviderBrowseIds element represents an
+				inventory with no browse.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="CollectionRef" type="CollectionRef">
+				<xs:annotation>
+					<xs:documentation>The collection, including any granules,
+						that should be linked to this browse
+						inventory.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ProviderBrowseIds" type="ListOfProviderBrowseIds">
+				<xs:annotation>
+					<xs:documentation>The references to browse that are
+						expected to be linked to the given parent collection, or
+						one or more granules in the parent collection, in
+						ECHO.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+</xs:schema>
