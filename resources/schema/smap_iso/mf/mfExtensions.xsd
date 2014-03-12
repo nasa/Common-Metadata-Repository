@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema targetNamespace="http://eden.ign.fr/xsd/metafor/20050620/mf" elementFormDefault="qualified" version="0.1" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:gmd="http://www.isotc211.org/2005/gmd" xmlns:gmx="http://www.isotc211.org/2005/gmx" xmlns:gco="http://www.isotc211.org/2005/gco" xmlns:mf="http://eden.ign.fr/xsd/metafor/20050620/mf">
+	<!-- ================================= Annotation ================================ -->
+	<xs:annotation>
+		<xs:documentation>This file was generated from ISO TC/211 UML class diagrams == 06-16-2005 10:38:07 ====== </xs:documentation>
+	</xs:annotation>
+	<!-- ================================== Imports ================================== -->
+	<xs:import namespace="http://www.isotc211.org/2005/gco" schemaLocation="../gco/gco.xsd"/>
+	<xs:import namespace="http://www.isotc211.org/2005/gmx" schemaLocation="../gmx/gmx.xsd"/>
+	<xs:import namespace="http://www.isotc211.org/2005/gmd" schemaLocation="../gmd/gmd.xsd"/>
+	<xs:include schemaLocation="../mf/metafor.xsd"/>
+	<!-- ########################################################################### -->
+	<!-- ########################################################################### -->
+	<!-- ================================== Classes ================================= -->
+	<xs:complexType name="DG_CoverageResult_Type">
+		<xs:complexContent>
+			<xs:extension base="gmd:AbstractDQ_Result_Type">
+				<xs:sequence>
+					<xs:element name="spatialRepresentationType" type="gmd:MD_SpatialRepresentationTypeCode_PropertyType"/>
+					<xs:element name="coverageResultDescription" type="gmd:MD_CoverageDescription_PropertyType"/>
+					<xs:element name="coverageResultSpatialRepresentation" type="gmd:MD_SpatialRepresentation_PropertyType"/>
+					<xs:element name="coverageResultFileFormat" type="gmd:MD_Format_PropertyType"/>
+					<xs:element name="coverageResultFile" type="gmx:MX_DataFile_PropertyType"/>
+				</xs:sequence>
+				<xs:attribute ref="gco:isoType" use="required"/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<!-- ........................................................................ -->
+	<xs:element name="DG_CoverageResult" type="mf:DG_CoverageResult_Type" substitutionGroup="gmd:AbstractDQ_Result"/>
+	<!-- ........................................................................ -->
+	<xs:complexType name="DG_CoverageResult_PropertyType">
+		<xs:sequence>
+			<xs:element ref="mf:DG_CoverageResult" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attributeGroup ref="gco:ObjectReference"/>
+		<xs:attribute ref="gco:nilReason"/>
+	</xs:complexType>
+	<!-- =========================================================================== -->
+	<xs:complexType name="DG_Usability_Type">
+		<xs:complexContent>
+			<xs:extension base="gmd:AbstractDQ_Element_Type">
+				<xs:attribute ref="gco:isoType" use="required"/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<!-- ........................................................................ -->
+	<xs:element name="DG_Usability" type="mf:DG_Usability_Type" substitutionGroup="gmd:AbstractDQ_Element"/>
+	<!-- ........................................................................ -->
+	<xs:complexType name="DG_Usability_PropertyType">
+		<xs:sequence>
+			<xs:element ref="mf:DG_Usability" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attributeGroup ref="gco:ObjectReference"/>
+		<xs:attribute ref="gco:nilReason"/>
+	</xs:complexType>
+	<!-- =========================================================================== -->
+	<xs:complexType name="DG_CoverageDescription_Type">
+		<xs:complexContent>
+			<xs:extension base="gmd:MD_CoverageDescription_Type">
+				<xs:sequence>
+					<xs:element name="rangeElementDescription" type="mf:DG_RangeElementDescription_PropertyType" maxOccurs="unbounded"/>
+				</xs:sequence>
+				<xs:attribute ref="gco:isoType" use="required"/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<!-- ........................................................................ -->
+	<xs:element name="DG_CoverageDescription" type="mf:DG_CoverageDescription_Type" substitutionGroup="gmd:MD_CoverageDescription"/>
+	<!-- ........................................................................ -->
+	<xs:complexType name="DG_CoverageDescription_PropertyType">
+		<xs:sequence>
+			<xs:element ref="mf:DG_CoverageDescription" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attributeGroup ref="gco:ObjectReference"/>
+		<xs:attribute ref="gco:nilReason"/>
+	</xs:complexType>
+	<!-- =========================================================================== -->
+	<xs:complexType name="DG_ImageDescription_Type">
+		<xs:complexContent>
+			<xs:extension base="gmd:MD_ImageDescription_Type">
+				<xs:sequence>
+					<xs:element name="rangeElementDescription" type="mf:DG_RangeElementDescription_PropertyType" maxOccurs="unbounded"/>
+				</xs:sequence>
+				<xs:attribute ref="gco:isoType" use="required"/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<!-- ........................................................................ -->
+	<xs:element name="DG_ImageDescription" type="mf:DG_ImageDescription_Type" substitutionGroup="gmd:MD_ImageDescription"/>
+	<!-- ........................................................................ -->
+	<xs:complexType name="DG_ImageDescription_PropertyType">
+		<xs:sequence>
+			<xs:element ref="mf:DG_ImageDescription" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attributeGroup ref="gco:ObjectReference"/>
+		<xs:attribute ref="gco:nilReason"/>
+	</xs:complexType>
+	<!-- =========================================================================== -->
+	<xs:complexType name="DG_RangeElementDescription_Type">
+		<xs:complexContent>
+			<xs:extension base="gco:AbstractObject_Type">
+				<xs:sequence>
+					<xs:element name="name" type="gco:CharacterString_PropertyType"/>
+					<xs:element name="definition" type="gco:CharacterString_PropertyType"/>
+					<xs:element name="rangeElement" type="gco:Record_PropertyType" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<!-- ........................................................................ -->
+	<xs:element name="DG_RangeElementDescription" type="mf:DG_RangeElementDescription_Type"/>
+	<!-- ........................................................................ -->
+	<xs:complexType name="DG_RangeElementDescription_PropertyType">
+		<xs:sequence>
+			<xs:element ref="mf:DG_RangeElementDescription" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attributeGroup ref="gco:ObjectReference"/>
+		<xs:attribute ref="gco:nilReason"/>
+	</xs:complexType>
+	<!-- =========================================================================== -->
+	<!-- ........................................................................ -->
+	<xs:element name="DG_BrowseGraphicType" type="gco:CodeListValue_Type" substitutionGroup="gco:CharacterString"/>
+	<!-- ........................................................................ -->
+	<xs:complexType name="DG_BrowseGraphicType_PropertyType">
+		<xs:sequence>
+			<xs:element ref="mf:DG_BrowseGraphicType" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attribute ref="gco:nilReason"/>
+	</xs:complexType>
+	<!-- =========================================================================== -->
+	<!-- ........................................................................ -->
+	<xs:element name="DG_ExtentType" type="gco:CodeListValue_Type" substitutionGroup="gco:CharacterString"/>
+	<!-- ........................................................................ -->
+	<xs:complexType name="DG_ExtentType_PropertyType">
+		<xs:sequence>
+			<xs:element ref="mf:DG_ExtentType" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attribute ref="gco:nilReason"/>
+	</xs:complexType>
+	<!-- =========================================================================== -->
+</xs:schema>

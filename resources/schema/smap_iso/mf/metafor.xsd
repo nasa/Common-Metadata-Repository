@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--Le 23/03/2006: Pour eliminer une erreur levee par xerces c, la declaration de mfType a ete deplacee de metafor.xsd vers cargene.xsd-->
+<xs:schema targetNamespace="http://eden.ign.fr/xsd/metafor/20050620/mf" elementFormDefault="qualified" version="0.1" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:gmi="http://eden.ign.fr/xsd/metafor/20050620/gmi" xmlns:mf="http://eden.ign.fr/xsd/metafor/20050620/mf">
+	<!-- ================================= Annotation ================================ -->
+	<xs:annotation>
+		<xs:documentation>This file was generated from ISO TC/211 UML class diagrams == 06-18-2005 15:21:56 ====== </xs:documentation>
+	</xs:annotation>
+	<!-- ================================== Imports ================================== -->
+	<xs:import namespace="http://eden.ign.fr/xsd/metafor/20050620/gmi" schemaLocation="../gmi/gmi.xsd"/>
+	<xs:include schemaLocation="../mf/cargene.xsd"/>
+	<xs:include schemaLocation="../mf/mfExtensions.xsd"/>
+	<xs:include schemaLocation="../mf/coverageType.xsd"/>
+	<xs:include schemaLocation="../mf/measureType.xsd"/>
+	<xs:include schemaLocation="../mf/coverageMeasures.xsd"/>
+	<!--========================================-->
+	<!-- ########################################################################### -->
+	<!-- ########################################################################### -->
+	<!-- =========================================================================== -->
+	<!-- =========================== The mfType attribute =============================== -->
+	<!--<xs:attribute name="mfType" type="xs:string"/>-->
+</xs:schema>
