@@ -4,7 +4,7 @@ System integration test for the CMR projects. It will ingest concepts using CMR 
 
 ## Usage
 
-FIXME
+lein test
 
 ## License
 

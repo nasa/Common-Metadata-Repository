@@ -1,6 +1,6 @@
 (defproject cmr-system-int-test "0.1.0-SNAPSHOT"
   :description "This project provides end to end integration testing for CMR components."
-  :url "http://example.com/FIXME"
+  :url "***REMOVED***projects/CMR/repos/cmr-system-int-test/browse"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.5.1"]

@@ -24,7 +24,7 @@
                      :long-name "One valid collection"
                      :dataset-id "OneCollectionV1"}
                     {:short-name "Other"
-                     :version "3"
+                     :version "4"
                      :long-name "Other valid collection"
                      :dataset-id "OtherCollectionV1"}
                     ])
@@ -62,7 +62,7 @@
   (testing "search by existing provider id."
     (let [references (search/find-collection-refs {:provider "CMR_PROV1"})]
       (is (= 3 (count references)))
-      (some #{"MinimalCollectionV1" "AnotherCollectionV1"} (map #(:dataset-id %) references)))))
+      (some #{"MinimalCollectionV1" "OneCollectionV1" "AnotherCollectionV1"} (map #(:dataset-id %) references)))))
 
 (deftest search-by-dataset-id
   (testing "search by non-existent dataset id."
@@ -98,7 +98,17 @@
             {:keys [dataset-id echo-concept-id location]} ref]
         (is (= "MinimalCollectionV1" dataset-id))
         (is (re-matches #"C[0-9]+-CMR_PROV1" echo-concept-id))
-        (is (re-matches #"http.*/catalog-rest/echo_catalog/datasets/C[0-9]+-CMR_PROV1$" location))))))
+        (is (re-matches #"http.*/catalog-rest/echo_catalog/datasets/C[0-9]+-CMR_PROV1$" location)))))
+  (testing "search by multiple short names."
+    (let [references (search/find-collection-refs {"short_name[]" ["MINIMAL", "Another"]})
+          dataset-ids (map #(:dataset-id %) references)]
+      (is (= 2 (count references)))
+      (is (= #{"MinimalCollectionV1" "AnotherCollectionV1"} (into #{} dataset-ids)))))
+  (testing "search by short name across different providers."
+    (let [references (search/find-collection-refs {:short_name "One"})
+          dataset-ids (map #(:dataset-id %) references)]
+      (is (= 2 (count references)))
+      (is (= #{"OneCollectionV1"} (into #{} dataset-ids))))))
 
 (deftest search-by-version-id
   (testing "search by non-existent version id."
@@ -111,4 +121,14 @@
             {:keys [dataset-id echo-concept-id location]} ref]
         (is (= "MinimalCollectionV1" dataset-id))
         (is (re-matches #"C[0-9]+-CMR_PROV1" echo-concept-id))
-        (is (re-matches #"http.*/catalog-rest/echo_catalog/datasets/C[0-9]+-CMR_PROV1$" location))))))
+        (is (re-matches #"http.*/catalog-rest/echo_catalog/datasets/C[0-9]+-CMR_PROV1$" location)))))
+  (testing "search by multiple versions."
+    (let [references (search/find-collection-refs {"version[]" ["1", "3"]})
+          dataset-ids (map #(:dataset-id %) references)]
+      (is (= 2 (count references)))
+      (is (= #{"MinimalCollectionV1" "AnotherCollectionV1"} (into #{} dataset-ids)))))
+  (testing "search by version across different providers."
+    (let [references (search/find-collection-refs {:version "2"})
+          dataset-ids (map #(:dataset-id %) references)]
+      (is (= 2 (count references)))
+      (is (= #{"OneCollectionV1"} (into #{} dataset-ids))))))
