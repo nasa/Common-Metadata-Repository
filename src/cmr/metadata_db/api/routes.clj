@@ -22,7 +22,7 @@
                    :body "foo"}))
     (context "/concepts" []
              (POST "/" params
-                   (services/create-concept system params)))
+                   (services/save-concept system (:body params))))
     (route/not-found "Not Found")))
 
 (defn- exception-handler

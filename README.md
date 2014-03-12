@@ -1,18 +1,28 @@
 # cmr-metadata-db-app
 
-FIXME
+## Web API
 
-## Prerequisites
+### get-concept-id
+params: [concept-type provider-id native-id]
+returns: new or existing concept-id
 
-You will need [Leiningen][1] 1.7.0 or above installed.
+### save-concept
+params: [concept] - revision-id optionally in concept
+returns: revision-id
+throws error if revision-id does not match what it will be when saved
 
-[1]: https://github.com/technomancy/leiningen
+### get-concept
+params: [concept-id <revision-id>]
+returns: concept
 
-## Running
+### get-concepts
+params: [[concept-id/revision-id tuple]]
+returns: list of concepts 
 
-To start a web server for the application, run:
-
-    lein ring server
+Different ways to retrieve concepts
+1 - by concept-id and revision-id
+2 - by concept-id (latest revision)
+3 - multiple by concept-ids and revision-ids
 
 ## License
 

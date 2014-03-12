@@ -14,8 +14,21 @@
   [concept-id]
   (first (string/split concept-id #":")))
 
+(defn- save 
+  "Save a concept"
+  [concept-atom concept concept-type concept-map concept-id revisions]
+  (let [new-revisions (conj (or revisions []) concept)
+        new-concept-map (assoc concept-map concept-id new-revisions)]
+        (swap! concept-atom assoc concept-type new-concept-map)
+        (println "ATOM: " concept-atom)
+        (- (count new-revisions) 1)))
+        
+    
+
 (comment
   (concept-type-from-concept-id "collections:PROV1:some-id")
+  (or "A" true)
+  (conj nil "A")
   )
 
 
@@ -37,32 +50,37 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   data/ConceptStore
   
+  (get-concept-id
+    [this concept-type provider-id native-id]
+    (str concept-type ":" provider-id ":" native-id))
+  
   (get-concept
-    [this concept-id]
+    [this concept-id, revision-id]
     (let [concepts (:concepts this)
           concept-type (concept-type-from-concept-id concept-id)
           concept-map (get concepts concept-type)
           concept-revisions (get concept-map concept-id)]
       (if-not concept-revisions [] concept-revisions)))
   
-  (insert-concept
-    [this concept]
-    (let [concepts (:concepts this)
-          concept-type (:concept-type concept)
-          concept-map (get concepts concept-type)
-          concept-id (concept-id-for-concept concept)
-          concept-revisions (data/get-concept this concept-id)
-          new-concept-revisions (conj concept-revisions 
-                                      (assoc concept :concept-id concept-id))
-          revision (- (count new-concept-revisions) 1)
-          new-concept-map (assoc concept-map concept-id new-concept-revisions)]
-      (swap! (:concepts this) assoc new-concept-map concept-type)
-      (println "THIS:")
-      (println this)
-      revision))
+  (get-concepts
+    [this concept-id-revision-id-tuples])
   
-  (delete-concept
-    [this concept-type provider-id id]))   
+  (save-concept
+    [this concept]
+    (let [{:strs [concept-type concept-id revision-id]} concept
+          concepts (:concepts this)
+          concept-map (get @concepts concept-type)
+          revisions (get concept-map concept-id)]
+      (cond
+        (and revisions revision-id) (if-not (= (count revisions) 
+                                               revision-id)
+                                      (throw (Exception. "Invalid revision-id"))
+                                      (save concepts concept concept-type concept-map concept-id revisions))
+        (and revision-id) (if-not (= revision-id 0)
+                            (throw (Exception. "Invalid revision-id"))
+                            (save concepts concept concept-type concept-map concept-id revisions))
+        :else (save concepts concept concept-type concept-map concept-id revisions)))))
+  
 
 (comment
        (def concepts 
