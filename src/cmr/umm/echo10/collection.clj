@@ -14,11 +14,12 @@
   [collection]
 
   (let [{{:keys [short-name long-name version-id]} :product
-         dataset-id :entry-id} collection]
+         dataset-id :entry-title} collection]
     (x/emit-str
       (x/element :Collection {}
                  (x/element :ShortName {} short-name)
                  (x/element :VersionId {} version-id)
+                 ;; required fields that are not implemented yet are stubbed out.
                  (x/element :InsertTime {} "1999-12-31T19:00:00Z")
                  (x/element :LastUpdate {} "1999-12-31T19:00:00Z")
                  (x/element :LongName {} long-name)
