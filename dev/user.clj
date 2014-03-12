@@ -1,7 +1,7 @@
 (ns user
   (:require [clojure.pprint :refer (pprint pp)]
             [clojure.tools.namespace.repl :refer (refresh refresh-all)]
-            [cmr.cmr-search-app.system :as system]
+            [cmr.search.system :as system]
             [taoensso.timbre :refer (debug info warn error)]
             [cmr.common.lifecycle :as lifecycle])
   (:use [clojure.test :only [run-all-tests]]

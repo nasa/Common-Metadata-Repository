@@ -1,4 +1,4 @@
-(ns cmr.cmr-search-app.api.routes
+(ns cmr.search.api.routes
   (:require [compojure.handler :as handler]
             [compojure.route :as route]
             [compojure.core :refer :all]

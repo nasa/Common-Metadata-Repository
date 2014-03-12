@@ -1,5 +1,5 @@
-(ns cmr.cmr-search-app.api.web-server
-  (:require [cmr.cmr-search-app.api.routes :as routes]
+(ns cmr.search.api.web-server
+  (:require [cmr.search.api.routes :as routes]
             [cmr.common.lifecycle :as lifecycle]
             [ring.adapter.jetty :as jetty]
             [taoensso.timbre :refer (debug info warn error)])

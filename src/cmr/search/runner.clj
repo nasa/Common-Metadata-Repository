@@ -1,5 +1,5 @@
-(ns cmr.cmr-search-app.runner
-  (:require [cmr.cmr-search-app.system :as system]
+(ns cmr.search.runner
+  (:require [cmr.search.system :as system]
             [clojure.tools.cli :refer [cli]]
             [clojure.edn :as edn]
             [clojure.string :as string]

@@ -1,5 +1,5 @@
-(ns cmr.cmr-search-app.system
-  (:require [cmr.cmr-search-app.api.web-server :as web-server]
+(ns cmr.search.system
+  (:require [cmr.search.api.web-server :as web-server]
             [cmr.common.lifecycle :as lifecycle]
             [clojure.string :as string]
             [taoensso.timbre :as timbre

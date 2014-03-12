@@ -2,7 +2,7 @@
   :description "FIXME: write description"
   :url "http://example.com/FIXME"
   :dependencies [[org.clojure/clojure "1.5.1"]
-                 [nasa-cmr/cmr-common-lib "0.1.0-SNAPSHOT"]
+                 [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [compojure "1.1.6"]
                  [ring/ring-core "1.2.1"]
                  [ring/ring-jetty-adapter "1.2.1"]
@@ -11,7 +11,7 @@
                  [org.clojure/tools.cli "0.3.1"]
                  [com.taoensso/timbre "3.1.3"]]
   :plugins []
-  :main cmr.cmr-search-app.runner
+  :main cmr.search.runner
   :repl-options {:init-ns user}
   :profiles
   {:dev {:dependencies [[ring-mock "0.1.5"]
