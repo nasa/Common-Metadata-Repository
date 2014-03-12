@@ -3,7 +3,10 @@
                model for Metadata Concepts in the CMR along with code to parse and generate the
                various dialects of each concept."
   :url "http://example.com/FIXME"
-  :dependencies [[org.clojure/clojure "1.5.1"]]
+  :dependencies [[org.clojure/clojure "1.5.1"]
+                 [org.clojure/test.check "0.5.7"]
+                 [org.clojure/data.xml "0.0.7"]
+                 [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]]
 
   :profiles
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.4"]
