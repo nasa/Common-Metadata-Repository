@@ -1,5 +1,6 @@
-(ns cmr.common.tests.simple-check-ext
-  (:require [simple-check.generators :as gen])
+(ns cmr.common.test.test-check-ext
+  (:require [clojure.test.check.generators :as gen]
+            [clojure.string :as s])
   (:import java.util.Random))
 
 (defn model-gen
@@ -57,4 +58,11 @@
         (gen/rose-filter
           #(and (>= % lower) (<= % upper))
           [value (map double-rose-tree (shrink-double value))])))))
+
+(defn string-ascii
+  "Like the clojure.test.check.generators/string-ascii but allows a min and max length to be set"
+  ([]
+   gen/string-ascii)
+  ([min-size max-size]
+   (gen/fmap s/join (gen/vector gen/char-ascii min-size max-size))))
 
