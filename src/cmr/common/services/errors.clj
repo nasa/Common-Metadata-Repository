@@ -16,13 +16,6 @@
   ([type errors]
    (throw (ex-info (first errors) {:type type :errors errors}))))
 
-
-(def type->http-status-code
-  {:not-found 404
-   :bad-request 400
-   :invalid-data 422})
-
-
 (defn not-found!
   "Indicates an item was not found. Takes a message or a message format with args like
   clojure.core/format."
