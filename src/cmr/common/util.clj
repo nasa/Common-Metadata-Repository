@@ -1,5 +1,5 @@
 (ns cmr.common.util
-  (:require [taoensso.timbre :refer (debug info warn error)]))
+  (:require [cmr.common.log :refer (debug info warn error)]))
 
 ;; Consider moving this and the utils from echo-metaviz into some kind of common cmr library.
 ;; Do this before copying and pasting code into here or copying code out of here into another project.

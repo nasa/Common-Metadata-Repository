@@ -1,5 +1,5 @@
 (ns cmr.common.channels
-  (:require [taoensso.timbre :refer (debug info warn error)]
+  (:require [cmr.common.log :refer (debug info warn error)]
             [cmr.common.util :as util])
   (:import [java.util.concurrent
             ArrayBlockingQueue
