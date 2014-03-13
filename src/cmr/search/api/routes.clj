@@ -9,7 +9,7 @@
             [clojure.stacktrace :refer [print-stack-trace]]
             [cheshire.core :as json]
             [cmr.common.log :refer (debug info warn error)]
-            [cmr.common.services.errors :as errors]
+            [cmr.common.api.errors :as errors]
             [cmr.search.services.query-service :as query-svc]))
 
 (defn- build-routes [system]
@@ -23,22 +23,9 @@
            :body results})))
     (route/not-found "Not Found")))
 
-(defn- exception-handler
-  [f]
-  (fn [request]
-    (try (f request)
-      (catch clojure.lang.ExceptionInfo e
-        (let [{:keys [type errors]} (ex-data e)]
-          {:status (errors/type->http-status-code type)
-           :headers {"Content-Type" "application/json"}
-           :body {:errors errors}}))
-      (catch Exception e
-        (error e)
-        {:status 500 :body "Bad Stuff!!!"}))))
-
 (defn make-api [system]
   (-> (build-routes system)
-      exception-handler
+      errors/exception-handler
       handler/site
       ring-json/wrap-json-body
       ring-json/wrap-json-response))
