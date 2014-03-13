@@ -4,7 +4,8 @@
 (def type->http-status-code
   {:not-found 404
    :bad-request 400
-   :invalid-data 422})
+   :invalid-data 422
+   :conflict 409})
 
 (defn exception-handler
   "A ring exception handler that will handle errors thrown by the cmr.common.services.errors
