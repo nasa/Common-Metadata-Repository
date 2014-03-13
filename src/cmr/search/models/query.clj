@@ -44,3 +44,13 @@
    (query type (->MatchAllCondition)))
   ([type condition]
    (->Query type condition)))
+
+(defn and-conds
+  "Combines conditions in an AND condition."
+  [conditions]
+  (->ConditionGroup :and conditions))
+
+(defn or-conds
+  "Combines conditions in an OR condition."
+  [conditions]
+  (->ConditionGroup :or conditions))

@@ -12,7 +12,8 @@
    - Send query to Elasticsearch
    - Convert query results into requested format"
   (:require [cmr.search.data.search-index :as idx]
-            [cmr.search.models.query :as qm]))
+            [cmr.search.models.query :as qm]
+            [cmr.search.services.parameters :as p]))
 
 (defn- validate-query
   "Validates a query model. Throws an exception to return to user with errors.
@@ -36,8 +37,7 @@
 (defn- execute-query
   "Executes a query returning results as concept id, native provider id, and revision id."
   [system query]
-  (idx/execute-query (:search-index system) query)
-  )
+  (idx/execute-query (:search-index system) query))
 
 (defn find-concepts-by-query
   "Executes a search for concepts using a query The concepts will be returned with
@@ -49,25 +49,12 @@
        (simplify-query system)
        (execute-query system)))
 
-(defn- validate-parameters
-  "Validates parameters. Throws exceptions to send to the user. Returns parameters if validation
-  was successful so it can be chained with other calls."
-  [system parameters]
-  ;;TODO validate parameters
-  parameters)
-
-(defn- parameters->query
-  "Converts parameters into a query model."
-  [system type parameters]
-  ;; TODO convert parameters into query
-  (qm/query type))
-
 (defn find-concepts-by-parameters
   "Executes a search for concepts using the given parameters. The concepts will be returned with
   concept id and native provider id."
-  [system concept-type parameters]
+  [system concept-type params]
 
-  (->> parameters
-       (validate-parameters system)
-       (parameters->query system concept-type)
+  (->> params
+       p/validate-parameters
+       (p/parameters->query concept-type)
        (find-concepts-by-query system)))

@@ -8,18 +8,16 @@
             [ring.middleware.json :as ring-json]
             [clojure.stacktrace :refer [print-stack-trace]]
             [cheshire.core :as json]
-            [taoensso.timbre :as timbre
-             :refer (debug info warn error)]
+            [cmr.common.log :refer (debug info warn error)]
             [cmr.common.services.errors :as errors]
             [cmr.search.services.query-service :as query-svc]))
 
 (defn- build-routes [system]
   (routes
     (context "/collections" []
-      (GET "/" []
-        (let [results (query-svc/find-concepts-by-parameters system :collection {})]
-          #_(alex-and-georges.debug-repl/debug-repl)
-          (println "ummm?")
+      (GET "/" {params :params headers :headers}
+        (debug "Searching for collection with params" (pr-str params))
+        (let [results (query-svc/find-concepts-by-parameters system :collection params)]
           {:status 200
            :headers {"Content-Type" "application/json"}
            :body results})))
@@ -30,11 +28,10 @@
   (fn [request]
     (try (f request)
       (catch clojure.lang.ExceptionInfo e
-        {:status (-> e
-                     ex-data
-                     :type
-                     errors/type->http-status-code)
-         :body (.getMessage e)})
+        (let [{:keys [type errors]} (ex-data e)]
+          {:status (errors/type->http-status-code type)
+           :headers {"Content-Type" "application/json"}
+           :body {:errors errors}}))
       (catch Exception e
         (error e)
         {:status 500 :body "Bad Stuff!!!"}))))
