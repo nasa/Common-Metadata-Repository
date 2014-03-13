@@ -36,6 +36,8 @@
     (err/invalid-data-errors! errors))
   params)
 
+;; FIXME write test for this stuff after initial prototyping
+
 ;; FIXME we need to handle case sensitive, patterns, and multiple
 
 (defmulti parameter->condition
@@ -45,11 +47,14 @@
 
 (defmethod parameter->condition :string
   [param value options]
-  (qm/map->StringCondition
-    {:field param
-     :value value
-     :case-sensitive? true
-     :pattern false}))
+  (if (sequential? value)
+    (qm/or-conds
+      (map #(parameter->condition param % options) value))
+    (qm/map->StringCondition
+      {:field param
+       :value value
+       :case-sensitive? true
+       :pattern false})))
 
 
 (defn parameters->query

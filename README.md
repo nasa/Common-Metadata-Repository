@@ -25,7 +25,12 @@ curl -H "Accept: application/json" -i "http://localhost:3000/collections?foo=5"
 
 ### Find all collections with a dataset id
 ```
-curl -H "Accept: application/json" -i "http://localhost:3000/collections.xml?dataset_id=DatasetId%204"
+curl -H "Accept: application/json" -i "http://localhost:3000/collections?dataset_id\[\]=DatasetId%204"
+```
+
+### Find all collections with multiple dataset ids
+```
+curl -H "Accept: application/json" -i "http://localhost:3000/collections?dataset_id\[\]=DatasetId%204&dataset_id\[\]=DatasetId%205"
 ```
 
 ## Prerequisites

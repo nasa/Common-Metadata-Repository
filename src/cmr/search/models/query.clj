@@ -45,12 +45,19 @@
   ([type condition]
    (->Query type condition)))
 
+;; FIXME write test for this stuff after initial prototyping
+
 (defn and-conds
   "Combines conditions in an AND condition."
   [conditions]
-  (->ConditionGroup :and conditions))
+  (if (> (count conditions) 1)
+    (->ConditionGroup :and conditions)
+    (first conditions)))
 
 (defn or-conds
   "Combines conditions in an OR condition."
   [conditions]
-  (->ConditionGroup :or conditions))
+  (if (> (count conditions) 1)
+    (->ConditionGroup :or conditions)
+    (first conditions)))
+
