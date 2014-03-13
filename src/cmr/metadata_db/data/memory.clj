@@ -3,7 +3,8 @@
   development using an in-memory data store."
   (:require [cmr.metadata-db.data :as data]
             [cmr.common.lifecycle :as lifecycle]
-            [clojure.string :as string]))
+            [clojure.string :as string]
+            [cmr.common.services.errors :as errors]))
 
 ;;; Uitility methods
 
@@ -50,16 +51,28 @@
     (let [{:strs [concept-type concept-id revision-id]} concept
           concepts (:concepts this)
           concept-map (get @concepts concept-type)
-          revisions (get concept-map concept-id)]
-      (cond
-        (and revisions revision-id) 
-        (if-not (= (count revisions) revision-id)
-          (throw (Exception. (str "Invalid revision-id. Expected: " (count revisions))))
-                                      (save concepts concept concept-type concept-map concept-id revisions))
-        (and revision-id) (if-not (= revision-id 0)
-                            (throw (Exception. "Invalid revision-id. Expected: 0"))
-                            (save concepts concept concept-type concept-map concept-id revisions))
-        :else (save concepts concept concept-type concept-map concept-id revisions)))))
+          revisions (get concept-map concept-id [])]
+      (when (and revision-id
+                 (not= (count revisions) revision-id))
+        (errors/throw-service-error :conflict 
+                                    "Expected revision-id of %s got %s"
+                                    (count revisions)
+                                    revision-id))
+      (save concepts concept concept-type concept-map concept-id revisions))))
+        
+      ; (cond
+      ;   (and revisions revision-id) 
+      ;   (if-not (= (count revisions) revision-id)
+      ;     (throw (Exception. (str "Invalid revision-id. Expected: " (count revisions))))
+      ;     (save concepts concept concept-type concept-map concept-id revisions))
+        
+      ;   (and revision-id) 
+      ;   (if-not (= revision-id 0)
+      ;     (throw (Exception. "Invalid revision-id. Expected: 0"))
+      ;     (save concepts concept concept-type concept-map concept-id revisions))
+        
+      ;   :else 
+      ;   (save concepts concept concept-type concept-map concept-id revisions)))))
 
 
 (defn create-db

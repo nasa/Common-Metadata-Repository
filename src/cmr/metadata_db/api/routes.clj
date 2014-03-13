@@ -10,36 +10,38 @@
             [clojure.stacktrace :refer [print-stack-trace]]
             [cheshire.core :as json]
             [cmr.common.log :refer (debug info warn error)]
-            [cmr.common.services.errors :as errors]
-            [cmr.metadata-db.api.services :as services]))
+            [cmr.common.api.errors :as errors]
+            [cmr.metadata-db.services.concept-services :as concept-services]))
+
+;;; service proxies
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn- save-concept
+  "Store a concept record and return the revision"
+  [system concept]
+  (let [revision-id (concept-services/save-concept system concept)]
+    {:status 201
+     :body {:revision-id revision-id}
+     :headers {"Content-Type" "json"}}))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn- build-routes [system]
   (routes
     (context "/concepts" []
              (POST "/" params
-                   (services/save-concept system (:body params))))
+                   (save-concept system (:body params))))
     (route/not-found "Not Found")))
 
-(defn- exception-handler
-  [f]
-  (fn [request]
-    (try (f request)
-      (catch clojure.lang.ExceptionInfo e
-        {:status (-> e
-                     ex-data
-                     :type
-                     errors/type->http-status-code)
-         :body (.getMessage e)})
-      (catch Exception e
-        (error e)
-        {:status 500 :body "Bad Stuff!!!"}))))
 
 (defn make-api [system]
   (-> (build-routes system)
-      exception-handler
+      errors/exception-handler
       handler/site
       ring-json/wrap-json-body
       ring-json/wrap-json-response))
+
+
 
 
 
