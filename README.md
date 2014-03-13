@@ -10,6 +10,24 @@ FIXME
     * Use curl requests to send searches.
 
 
+## Example CURL requests
+
+
+### Find all collections
+```
+curl -H "Accept: application/json" -i "http://localhost:3000/collections"
+```
+
+### Find all collections with a bad parameter
+```
+curl -H "Accept: application/json" -i "http://localhost:3000/collections?foo=5"
+```
+
+### Find all collections with a dataset id
+```
+curl -H "Accept: application/json" -i "http://localhost:3000/collections.xml?dataset_id=DatasetId%204"
+```
+
 ## Prerequisites
 
 You will need [Leiningen][1] 1.7.0 or above installed.

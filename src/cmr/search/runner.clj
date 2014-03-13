@@ -3,7 +3,10 @@
             [clojure.tools.cli :refer [cli]]
             [clojure.edn :as edn]
             [clojure.string :as string]
-            [taoensso.timbre :refer (debug info warn error)])
+            [cmr.common.log :as log :refer (debug info warn error)]
+            [cmr.common.api.web-server :as web]
+            [cmr.search.api.routes :as routes]
+            [cmr.search.data.elastic-search-index :as idx])
   (:gen-class))
 
 (defn parse-endpoint
@@ -14,7 +17,7 @@
 
 (def arg-description
   [["-h" "--help" "Show help" :default false :flag true]
-   ["-p" "--port" "The HTTP Port to listen on for requests." :default 4242 :parse-fn #(Integer. %)]])
+   ["-p" "--port" "The HTTP Port to listen on for requests." :default 3000 :parse-fn #(Integer. %)]])
 
 
 (defn parse-args [args]
@@ -25,11 +28,14 @@
       (exit-with-banner "Help:\n"))
     options))
 
-
 (defn -main
   "Starts the App."
   [& args]
   (let [{:keys [port]} (parse-args args)
-        sys-config (system/map->Config {:port port})
-        system (system/start (system/create-system sys-config))]
+        web-server (web/create-web-server port routes/make-api)
+        log (log/create-logger)
+        search-index (idx/create-elastic-search-index "localhost" 9200)
+        system (system/start
+                 (system/create-system
+                   log web-server search-index))]
     (info "Running...")))

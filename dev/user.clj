@@ -2,8 +2,11 @@
   (:require [clojure.pprint :refer (pprint pp)]
             [clojure.tools.namespace.repl :refer (refresh refresh-all)]
             [cmr.search.system :as system]
-            [taoensso.timbre :refer (debug info warn error)]
-            [cmr.common.lifecycle :as lifecycle])
+            [cmr.common.lifecycle :as lifecycle]
+            [cmr.common.log :as log :refer (debug info warn error)]
+            [cmr.common.api.web-server :as web]
+            [cmr.search.api.routes :as routes]
+            [cmr.search.data.elastic-search-index :as idx])
   (:use [clojure.test :only [run-all-tests]]
         [clojure.repl]
         [alex-and-georges.debug-repl]))
@@ -16,8 +19,10 @@
 (defn start
   "Starts the current development system."
   []
-  (let [config (system/map->Config {:port 3000})
-        s (system/create-system config)]
+  (let [web-server (web/create-web-server 3000 routes/make-api)
+        log (log/create-logger)
+        search-index (idx/create-elastic-search-index "localhost" 9200)
+        s (system/create-system log web-server search-index)]
     (alter-var-root #'system
                     (constantly
                       (system/start s)))))

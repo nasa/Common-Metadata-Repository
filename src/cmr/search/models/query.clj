@@ -4,32 +4,43 @@
 (defrecord Query
   [
    ;; The concept type that is being queried.
-   :concept-type
+   concept-type
 
    ;; The root level condition
-   :condition
+   condition
    ])
 
 (defrecord ConditionGroup
   [
    ;; The operation combining the conditions i.e. :and or :or
-   :operation
+   operation
 
    ;; A sequence of conditions in the group
-   :conditions
+   conditions
    ])
 
 (defrecord StringCondition
   [
    ;; The field being searched.
-   :field
+   field
 
    ;; The value to match
-   :value
+   value
 
    ;; indicates if the search is case sensitive. Defaults to true.
-   :case-sensitive?
+   case-sensitive?
 
    ;; Indicates if the search contains pattern matching expressions. Defaults to false.
-   :pattern?
+   pattern?
    ])
+
+(defrecord MatchAllCondition
+  [])
+
+(defn query
+  "Constructs a query with the given type and root condition.
+  If root condition is not provided it matches everything."
+  ([type]
+   (query type (->MatchAllCondition)))
+  ([type condition]
+   (->Query type condition)))

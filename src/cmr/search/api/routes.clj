@@ -10,15 +10,19 @@
             [cheshire.core :as json]
             [taoensso.timbre :as timbre
              :refer (debug info warn error)]
-            [cmr.common.services.errors :as errors]))
+            [cmr.common.services.errors :as errors]
+            [cmr.search.services.query-service :as query-svc]))
 
 (defn- build-routes [system]
   (routes
-    (context "/foo" []
-             (GET "/" []
-                  {:status 200
-                   :headers {"Content-Type" "text/plain"}
-                   :body "foo"}))
+    (context "/collections" []
+      (GET "/" []
+        (let [results (query-svc/find-concepts-by-parameters system :collection {})]
+          #_(alex-and-georges.debug-repl/debug-repl)
+          (println "ummm?")
+          {:status 200
+           :headers {"Content-Type" "application/json"}
+           :body results})))
     (route/not-found "Not Found")))
 
 (defn- exception-handler
@@ -39,7 +43,8 @@
   (-> (build-routes system)
       exception-handler
       handler/site
-      ring-json/wrap-json-body))
+      ring-json/wrap-json-body
+      ring-json/wrap-json-response))
 
 
 
