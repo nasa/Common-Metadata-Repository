@@ -1,4 +1,5 @@
-(ns cmr.metadata-db.data)
+(ns cmr.metadata-db.data
+  "Defines a protocol for CRUD operations on concepts.")
   
 (defprotocol ConceptStore
   "Functions for saving and retrieving concepts"

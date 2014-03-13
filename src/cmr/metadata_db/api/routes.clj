@@ -1,4 +1,5 @@
 (ns cmr.metadata-db.api.routes
+  "Defines the HTTP URL routes for the application."
   (:require [compojure.handler :as handler]
             [compojure.route :as route]
             [compojure.core :refer :all]
@@ -8,18 +9,12 @@
             [ring.middleware.json :as ring-json]
             [clojure.stacktrace :refer [print-stack-trace]]
             [cheshire.core :as json]
-            [taoensso.timbre :as timbre
-             :refer (debug info warn error)]
+            [cmr.common.log :refer (debug info warn error)]
             [cmr.common.services.errors :as errors]
             [cmr.metadata-db.api.services :as services]))
 
 (defn- build-routes [system]
   (routes
-    (context "/foo" []
-             (GET "/" []
-                  {:status 200
-                   :headers {"Content-Type" "text/plain"}
-                   :body "foo"}))
     (context "/concepts" []
              (POST "/" params
                    (services/save-concept system (:body params))))

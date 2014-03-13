@@ -1,14 +1,16 @@
 (ns user
+  "user is the default namespace of the REPL. This defines helper functions for starting and
+  stopping the application from the REPL."
   (:require [clojure.pprint :refer (pprint pp)]
             [clojure.tools.namespace.repl :refer (refresh refresh-all)]
             [cmr.metadata-db.system :as system]
-            [taoensso.timbre :refer (debug info warn error)]
-            [cmr.metadata-db.data.memory :as memory]
-            [cmr.metadata-db.api.web-server :as web-server]
-            [cmr.common.lifecycle :as lifecycle])
+            [cmr.common.lifecycle :as lifecycle]
+            [cmr.common.log :as log :refer (debug info warn error)]
+            [cmr.common.api.web-server :as web]
+            [cmr.metadata-db.api.routes :as routes]
+            [cmr.metadata-db.data.memory :as memory])
   (:use [clojure.test :only [run-all-tests]]
         [clojure.repl]
-        ;; Needed to make debug-repl available
         [alex-and-georges.debug-repl]))
 
 ; See http://thinkrelevance.com/blog/2013/06/04/clojure-workflow-reloaded
@@ -20,8 +22,9 @@
   "Starts the current development system."
   []
   (let [db (memory/create-db)
-        web (web-server/map->WebServer {:port 3000})
-        s (system/create-system db web)]
+        web-server (web/create-web-server 3000 routes/make-api)
+        log (log/create-logger)
+        s (system/create-system db log web-server)]
     (alter-var-root #'system
                     (constantly
                       (system/start s)))))

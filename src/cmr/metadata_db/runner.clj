@@ -1,11 +1,13 @@
 (ns cmr.metadata-db.runner
+  "Entry point for the application. Defines a main method that accepts arguments."
   (:require [cmr.metadata-db.system :as system]
             [clojure.tools.cli :refer [cli]]
             [clojure.edn :as edn]
             [clojure.string :as string]
-            [taoensso.timbre :refer (debug info warn error)]
+            [cmr.common.log :as log :refer (debug info warn error)]
+            [cmr.common.api.web-server :as web]
             [cmr.metadata-db.data.memory :as memory]
-            [cmr.metadata-db.api.web-server :as web-server])
+            [cmr.metadata-db.api.routes :as routes])
   (:gen-class))
 
 (defn parse-endpoint
@@ -42,11 +44,7 @@
   (let [{:keys [port db]} (parse-args args)
         db-params {:db db}
         db (select-db db-params)
-        web-params {:port port}
-        web (web-server/create-web-server web-params)
-        system (system/start (system/create-system db web))]
+        web-server (web/create-web-server port routes/make-api)
+        log (log/create-logger)
+        system (system/start (system/create-system db log web-server))]
     (info "Running...")))
-
-(comment 
-  
-((str ({:db "memory"} :db) "/" "create-db")))

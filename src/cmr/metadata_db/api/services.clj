@@ -1,5 +1,6 @@
 (ns cmr.metadata-db.api.services
-  (:require [cmr.metadata-db.data :as data]))
+  (:require [cmr.metadata-db.data :as data]
+            [cmr.common.log :refer (debug info warn error)]))
 
 (defn save-concept
   "Store a concept record and return the revision"

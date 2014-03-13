@@ -2,7 +2,7 @@
   (:require [cmr.metadata-db.api.routes :as routes]
             [cmr.common.lifecycle :as lifecycle]
             [ring.adapter.jetty :as jetty]
-            [taoensso.timbre :refer (debug info warn error)])
+            [cmr.common.log :refer (debug info warn error)])
   (:import org.eclipse.jetty.server.Server))
 
 (defrecord WebServer

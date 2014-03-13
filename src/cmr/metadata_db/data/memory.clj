@@ -1,4 +1,6 @@
 (ns cmr.metadata-db.data.memory
+  "Contains a record definition that implements the ConcpetStore and Lifecycle protocols to support
+  development using an in-memory data store."
   (:require [cmr.metadata-db.data :as data]
             [cmr.common.lifecycle :as lifecycle]
             [clojure.string :as string]))
@@ -25,7 +27,8 @@
   lifecycle/Lifecycle
   
   (start [this system]
-         (swap! (:concepts this) assoc :collections {}))
+         (swap! (:concepts this) assoc :collections {})
+         this)
   
   (stop [this system]
         this)
@@ -49,9 +52,9 @@
           concept-map (get @concepts concept-type)
           revisions (get concept-map concept-id)]
       (cond
-        (and revisions revision-id) (if-not (= (count revisions) 
-                                               revision-id)
-                                      (throw (Exception. (str "Invalid revision-id. Expected: " (count revisions))))
+        (and revisions revision-id) 
+        (if-not (= (count revisions) revision-id)
+          (throw (Exception. (str "Invalid revision-id. Expected: " (count revisions))))
                                       (save concepts concept concept-type concept-map concept-id revisions))
         (and revision-id) (if-not (= revision-id 0)
                             (throw (Exception. "Invalid revision-id. Expected: 0"))
