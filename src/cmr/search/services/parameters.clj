@@ -47,6 +47,9 @@
 
 (defmethod parameter->condition :string
   [param value options]
+  ;; TODO Shouldn't we just use a StringsCondition or maybe add multiple values to String with the ability to specify operator?
+  ;; This is needed for better performance of term conditions. We want the boolean execution when they're combined.
+  ;; The elastic mapping could handle this by gathering string conditions together.
   (if (sequential? value)
     (qm/or-conds
       (map #(parameter->condition param % options) value))
@@ -55,7 +58,6 @@
        :value value
        :case-sensitive? true
        :pattern false})))
-
 
 (defn parameters->query
   "Converts parameters into a query model."

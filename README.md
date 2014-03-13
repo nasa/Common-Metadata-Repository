@@ -33,6 +33,14 @@ curl -H "Accept: application/json" -i "http://localhost:3000/collections?dataset
 curl -H "Accept: application/json" -i "http://localhost:3000/collections?dataset_id\[\]=DatasetId%204&dataset_id\[\]=DatasetId%205"
 ```
 
+### Find as XML
+TODO implement support for retrieving in XML.
+Also make sure enough information is returned that Catalog-REST can work.
+```
+curl -H "Accept: application/xml" -i "http://localhost:3000/collections"
+```
+
+
 ## Prerequisites
 
 You will need [Leiningen][1] 1.7.0 or above installed.

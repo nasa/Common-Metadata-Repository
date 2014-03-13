@@ -31,3 +31,9 @@
                          "Parameter [bar] was not recognized."]}
                (ex-data e)))))))
 
+
+;; TODO test converting parameters to query model
+;; convert string condition
+;; convert multiple strings
+;; convert with and/or options
+;; convert empty parameters (match all) (currently broken)
