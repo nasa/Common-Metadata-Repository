@@ -14,7 +14,15 @@
   (let [new-revisions (conj (or revisions []) concept)
         new-concept-map (assoc concept-map concept-id new-revisions)]
     (swap! concept-atom assoc concept-type new-concept-map)
-    (- (count new-revisions) 1)))
+    (dec (count new-revisions))))
+
+(defn- validate-concept
+  "Validate that a concept has the fields we need to save it."
+  [concept]
+  (if-not (get concept "concept-type")
+    (errors/throw-service-error :invalid-data "Concept must include concept-type"))
+  (if-not (get concept "concept-id")
+    (errors/throw-service-error :invalid-data "Concept must include concept-id")))
         
     
 
@@ -48,6 +56,7 @@
   
   (save-concept
     [this concept]
+    (validate-concept concept)
     (let [{:strs [concept-type concept-id revision-id]} concept
           concepts (:concepts this)
           concept-map (get @concepts concept-type)
@@ -60,19 +69,6 @@
                                     revision-id))
       (save concepts concept concept-type concept-map concept-id revisions))))
         
-      ; (cond
-      ;   (and revisions revision-id) 
-      ;   (if-not (= (count revisions) revision-id)
-      ;     (throw (Exception. (str "Invalid revision-id. Expected: " (count revisions))))
-      ;     (save concepts concept concept-type concept-map concept-id revisions))
-        
-      ;   (and revision-id) 
-      ;   (if-not (= revision-id 0)
-      ;     (throw (Exception. "Invalid revision-id. Expected: 0"))
-      ;     (save concepts concept concept-type concept-map concept-id revisions))
-        
-      ;   :else 
-      ;   (save concepts concept concept-type concept-map concept-id revisions)))))
 
 
 (defn create-db

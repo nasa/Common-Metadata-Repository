@@ -1,4 +1,5 @@
 (ns cmr.metadata-db.services.concept-services
+  "Sevices to support the business logic of the metadata db."
   (:require [cmr.metadata-db.data :as data]
             [cmr.common.log :refer (debug info warn error)]))
 

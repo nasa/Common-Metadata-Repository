@@ -170,3 +170,194 @@
 2014-03-13 17:32:04 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System starting
 2014-03-13 17:32:04 mbp-jnorton 1 INFO [cmr.common.api.web-server] - Jetty started on port 3000
 2014-03-13 17:32:04 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System started
+2014-03-14 09:41:29 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System shutting down
+2014-03-14 09:41:29 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System stopped
+2014-03-14 09:41:29 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System starting
+2014-03-14 09:41:29 mbp-jnorton 1 INFO [cmr.common.api.web-server] - Jetty started on port 3000
+2014-03-14 09:41:29 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System started
+2014-03-14 09:41:30 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System shutting down
+2014-03-14 09:41:30 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System stopped
+2014-03-14 09:41:31 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System starting
+2014-03-14 09:41:31 mbp-jnorton 1 INFO [cmr.common.api.web-server] - Jetty started on port 3000
+2014-03-14 09:41:31 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System started
+2014-03-14 10:32:36 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System shutting down
+2014-03-14 10:32:36 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System stopped
+2014-03-14 10:33:17 mbp-jnorton 1 INFO [user] - Custom user.clj loaded.
+2014-03-14 10:33:17 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System starting
+2014-03-14 10:33:17 mbp-jnorton 1 INFO [cmr.common.api.web-server] - Jetty started on port 3000
+2014-03-14 10:33:17 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System started
+2014-03-14 10:38:34 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System shutting down
+2014-03-14 10:38:34 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System stopped
+2014-03-14 10:38:34 mbp-jnorton 1 INFO [user] - Custom user.clj loaded.
+2014-03-14 10:38:34 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System starting
+2014-03-14 10:38:34 mbp-jnorton 1 INFO [cmr.common.api.web-server] - Jetty started on port 3000
+2014-03-14 10:38:34 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System started
+2014-03-14 10:39:12 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System shutting down
+2014-03-14 10:39:12 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System stopped
+2014-03-14 10:39:12 mbp-jnorton 1 INFO [user] - Custom user.clj loaded.
+2014-03-14 10:39:12 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System starting
+2014-03-14 10:39:12 mbp-jnorton 1 INFO [cmr.common.api.web-server] - Jetty started on port 3000
+2014-03-14 10:39:12 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System started
+2014-03-14 10:40:52 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System shutting down
+2014-03-14 10:40:52 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System stopped
+2014-03-14 10:40:52 mbp-jnorton 1 INFO [user] - Custom user.clj loaded.
+2014-03-14 10:40:52 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System starting
+2014-03-14 10:40:52 mbp-jnorton 1 INFO [cmr.common.api.web-server] - Jetty started on port 3000
+2014-03-14 10:40:52 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System started
+2014-03-14 11:03:03 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System shutting down
+2014-03-14 11:03:03 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System stopped
+2014-03-14 11:03:03 mbp-jnorton 1 INFO [user] - Custom user.clj loaded.
+2014-03-14 11:04:36 mbp-jnorton 1 INFO [cmr.common.api.web-server] - Jetty started on port 3000
+2014-03-14 11:04:36 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System started
+2014-03-14 11:04:40 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System shutting down
+2014-03-14 11:04:40 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System stopped
+2014-03-14 11:04:40 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System starting
+2014-03-14 11:04:40 mbp-jnorton 1 INFO [cmr.common.api.web-server] - Jetty started on port 3000
+2014-03-14 11:04:40 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System started
+2014-03-14 11:07:51 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System shutting down
+2014-03-14 11:07:51 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System stopped
+2014-03-14 11:07:51 mbp-jnorton 1 INFO [user] - Custom user.clj loaded.
+2014-03-14 11:07:51 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System starting
+2014-03-14 11:07:51 mbp-jnorton 1 INFO [cmr.common.api.web-server] - Jetty started on port 3000
+2014-03-14 11:07:51 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System started
+2014-03-14 11:12:25 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System shutting down
+2014-03-14 11:12:25 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System stopped
+2014-03-14 11:12:25 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System starting
+2014-03-14 11:12:25 mbp-jnorton 1 INFO [cmr.common.api.web-server] - Jetty started on port 3000
+2014-03-14 11:12:25 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System started
+2014-03-14 11:13:07 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System shutting down
+2014-03-14 11:13:07 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System stopped
+2014-03-14 11:13:07 mbp-jnorton 1 INFO [user] - Custom user.clj loaded.
+2014-03-14 11:13:07 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System starting
+2014-03-14 11:13:07 mbp-jnorton 1 INFO [cmr.common.api.web-server] - Jetty started on port 3000
+2014-03-14 11:13:07 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System started
+2014-03-14 11:13:57 mbp-jnorton 1 INFO [cmr.common.api.web-server] - Jetty started on port 3000
+2014-03-14 11:13:57 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System started
+2014-03-14 11:14:01 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System shutting down
+2014-03-14 11:14:01 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System stopped
+2014-03-14 11:14:01 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System starting
+2014-03-14 11:14:01 mbp-jnorton 1 INFO [cmr.common.api.web-server] - Jetty started on port 3000
+2014-03-14 11:14:01 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System started
+2014-03-14 11:18:37 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System shutting down
+2014-03-14 11:18:37 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System stopped
+2014-03-14 11:18:37 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System starting
+2014-03-14 11:18:37 mbp-jnorton 1 INFO [cmr.common.api.web-server] - Jetty started on port 3000
+2014-03-14 11:18:37 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System started
+2014-03-14 11:19:06 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System shutting down
+2014-03-14 11:19:07 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System stopped
+2014-03-14 11:19:07 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System starting
+2014-03-14 11:19:07 mbp-jnorton 1 INFO [cmr.common.api.web-server] - Jetty started on port 3000
+2014-03-14 11:19:07 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System started
+2014-03-14 11:23:06 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System shutting down
+2014-03-14 11:23:06 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System stopped
+2014-03-14 11:23:06 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System starting
+2014-03-14 11:23:06 mbp-jnorton 1 INFO [cmr.common.api.web-server] - Jetty started on port 3000
+2014-03-14 11:23:06 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System started
+2014-03-14 11:35:18 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System shutting down
+2014-03-14 11:35:18 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System stopped
+2014-03-14 11:35:18 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System starting
+2014-03-14 11:35:18 mbp-jnorton 1 INFO [cmr.common.api.web-server] - Jetty started on port 3000
+2014-03-14 11:35:18 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System started
+2014-03-14 11:36:17 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System shutting down
+2014-03-14 11:36:17 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System stopped
+2014-03-14 11:36:17 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System starting
+2014-03-14 11:36:17 mbp-jnorton 1 INFO [cmr.common.api.web-server] - Jetty started on port 3000
+2014-03-14 11:36:17 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System started
+2014-03-14 11:36:26 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System shutting down
+2014-03-14 11:36:26 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System stopped
+2014-03-14 11:36:26 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System starting
+2014-03-14 11:36:26 mbp-jnorton 1 INFO [cmr.common.api.web-server] - Jetty started on port 3000
+2014-03-14 11:36:26 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System started
+2014-03-14 11:36:31 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System shutting down
+2014-03-14 11:36:31 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System stopped
+2014-03-14 11:36:31 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System starting
+2014-03-14 11:36:31 mbp-jnorton 1 INFO [cmr.common.api.web-server] - Jetty started on port 3000
+2014-03-14 11:36:31 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System started
+2014-03-14 11:41:54 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System shutting down
+2014-03-14 11:41:54 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System stopped
+2014-03-14 11:41:54 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System starting
+2014-03-14 11:41:54 mbp-jnorton 1 INFO [cmr.common.api.web-server] - Jetty started on port 3000
+2014-03-14 11:41:54 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System started
+2014-03-14 11:49:59 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System shutting down
+2014-03-14 11:49:59 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System stopped
+2014-03-14 11:49:59 mbp-jnorton 1 INFO [user] - Custom user.clj loaded.
+2014-03-14 11:49:59 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System starting
+2014-03-14 11:49:59 mbp-jnorton 1 INFO [cmr.common.api.web-server] - Jetty started on port 3000
+2014-03-14 11:49:59 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System started
+2014-03-14 11:50:51 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System shutting down
+2014-03-14 11:50:51 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System stopped
+2014-03-14 11:50:51 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System starting
+2014-03-14 11:50:51 mbp-jnorton 1 INFO [cmr.common.api.web-server] - Jetty started on port 3000
+2014-03-14 11:50:51 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System started
+2014-03-14 11:51:02 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System shutting down
+2014-03-14 11:51:02 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System stopped
+2014-03-14 11:51:02 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System starting
+2014-03-14 11:51:02 mbp-jnorton 1 INFO [cmr.common.api.web-server] - Jetty started on port 3000
+2014-03-14 11:51:02 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System started
+2014-03-14 11:53:00 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System shutting down
+2014-03-14 11:53:00 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System stopped
+2014-03-14 11:53:00 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System starting
+2014-03-14 11:53:00 mbp-jnorton 1 INFO [cmr.common.api.web-server] - Jetty started on port 3000
+2014-03-14 11:53:00 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System started
+2014-03-14 11:53:13 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System shutting down
+2014-03-14 11:53:13 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System stopped
+2014-03-14 11:53:13 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System starting
+2014-03-14 11:53:13 mbp-jnorton 1 INFO [cmr.common.api.web-server] - Jetty started on port 3000
+2014-03-14 11:53:13 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System started
+2014-03-14 11:53:47 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System shutting down
+2014-03-14 11:53:47 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System stopped
+2014-03-14 11:53:47 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System starting
+2014-03-14 11:53:47 mbp-jnorton 1 INFO [cmr.common.api.web-server] - Jetty started on port 3000
+2014-03-14 11:53:47 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System started
+2014-03-14 11:54:00 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System shutting down
+2014-03-14 11:54:00 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System stopped
+2014-03-14 11:54:00 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System starting
+2014-03-14 11:54:00 mbp-jnorton 1 INFO [cmr.common.api.web-server] - Jetty started on port 3000
+2014-03-14 11:54:00 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System started
+2014-03-14 12:58:03 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System shutting down
+2014-03-14 12:58:03 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System stopped
+2014-03-14 14:40:53 mbp-jnorton 1 INFO [user] - Custom user.clj loaded.
+2014-03-14 14:40:53 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System starting
+2014-03-14 14:40:53 mbp-jnorton 1 INFO [cmr.common.api.web-server] - Jetty started on port 3000
+2014-03-14 14:40:53 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System started
+2014-03-14 14:41:31 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System shutting down
+2014-03-14 14:41:31 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System stopped
+2014-03-14 14:41:31 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System starting
+2014-03-14 14:41:32 mbp-jnorton 1 INFO [cmr.common.api.web-server] - Jetty started on port 3000
+2014-03-14 14:41:32 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System started
+2014-03-14 14:41:42 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System shutting down
+2014-03-14 14:41:42 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System stopped
+2014-03-14 14:41:42 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System starting
+2014-03-14 14:41:42 mbp-jnorton 1 INFO [cmr.common.api.web-server] - Jetty started on port 3000
+2014-03-14 14:41:42 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System started
+2014-03-14 14:41:43 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System shutting down
+2014-03-14 14:41:43 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System stopped
+2014-03-14 14:41:43 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System starting
+2014-03-14 14:41:43 mbp-jnorton 1 INFO [cmr.common.api.web-server] - Jetty started on port 3000
+2014-03-14 14:41:43 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System started
+2014-03-14 14:41:56 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System shutting down
+2014-03-14 14:41:56 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System stopped
+2014-03-14 14:41:56 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System starting
+2014-03-14 14:41:56 mbp-jnorton 1 INFO [cmr.common.api.web-server] - Jetty started on port 3000
+2014-03-14 14:41:56 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System started
+2014-03-14 14:42:14 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System shutting down
+2014-03-14 14:42:14 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System stopped
+2014-03-14 14:42:14 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System starting
+2014-03-14 14:42:14 mbp-jnorton 1 INFO [cmr.common.api.web-server] - Jetty started on port 3000
+2014-03-14 14:42:14 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System started
+2014-03-14 14:42:16 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System shutting down
+2014-03-14 14:42:16 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System stopped
+2014-03-14 14:42:16 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System starting
+2014-03-14 14:42:16 mbp-jnorton 1 INFO [cmr.common.api.web-server] - Jetty started on port 3000
+2014-03-14 14:42:16 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System started
+2014-03-14 14:46:16 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System shutting down
+2014-03-14 14:46:16 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System stopped
+2014-03-14 14:46:16 mbp-jnorton 1 INFO [user] - Custom user.clj loaded.
+2014-03-14 14:46:16 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System starting
+2014-03-14 14:46:16 mbp-jnorton 1 INFO [cmr.common.api.web-server] - Jetty started on port 3000
+2014-03-14 14:46:16 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System started
+2014-03-14 14:46:17 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System shutting down
+2014-03-14 14:46:17 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System stopped
+2014-03-14 14:46:17 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System starting
+2014-03-14 14:46:17 mbp-jnorton 1 INFO [cmr.common.api.web-server] - Jetty started on port 3000
+2014-03-14 14:46:17 mbp-jnorton 1 INFO [cmr.metadata-db.system] - System started

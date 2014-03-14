@@ -17,12 +17,12 @@
    :metadata "xml here"
    :format "echo10"})
 
-(defn save-concept-without-json
+(defn save-concept
   "Make a post request to save a concept without JSON encoding the concept.  Returns a map with
   status, revision-id, and a list of error messages"
   [concept]
   (let [response (client/post "http://localhost:3000/concepts" 
-                              {:body concept
+                              {:body (cheshire/generate-string concept)
                                :body-encoding "UTF-8"
                                :content-type :json
                                :accept :json
@@ -33,27 +33,15 @@
         error-messages (get body "errors")]
     {:status status :revision-id revision-id :error-messages error-messages}))
 
-(defn save-concept 
-  "Make a post request to save a concept. Returns a map with status, revision-id, and a list of
-  error messages."
-  [concept]
-  (save-concept-without-json (cheshire/generate-string concept)))
 
-  
 ;;; tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (deftest mdb-save-concept-test
   "Save a valid concept with no revision-id."
-  (client/post "http://localhost:3000/concepts" 
-               {:body (cheshire/generate-string (concept "CP1") )
-                :body-encoding "UTF-8"
-                :content-type :json
-                :accept :json
-                :throw-exceptions false})
   (let [{:keys [status revision-id]} (save-concept (concept "CP1"))]
-    (is (and (= status 201) (= revision-id 1)))))
+    (is (and (= status 201) (= revision-id 0)))))
 
-(deftest mdb-save-concept-test-with-proper-revision-id
+(deftest mdb-save-concept-test-with-proper-revision-id-test
   "Save a valid concept with a valid revision-id"
   (let [concept (concept "CP2")]
     ;; save the concept once
@@ -61,23 +49,36 @@
     ;; save it again with a valid revision-id
     (let [{:keys [status revision-id]} (save-concept (assoc concept :revision-id 1))]
       (is (and (= status 201) (= revision-id 1))))))
-    
+
 (deftest mdb-save-concept-with-bad-revision-test
   "Fail to save a concept with an invalid revision-id"
-  (let [concept-with-bad-revision (assoc (concept "CP3") :revision-id 5)
+  ;; TODO Add a GET request to make sure the revision id of the existing record was not
+  ;; incremented
+  (let [concept-with-bad-revision (assoc (concept "CP3") :revision-id 1)
         {:keys [status]} (save-concept concept-with-bad-revision)]
     (is (= status 409))))
 
-#_(deftest mdb-save-concept-with-invalid-json
+(deftest mdb-save-concept-with-invalid-json-test
   "Fail to save a concept if the json is invalid"
-  (let [response (client/post "http://localhost:3001/concepts" 
+  (let [response (client/post "http://localhost:3000/concepts" 
                               {:body "some non-json"
                                :body-encoding "UTF-8"
+                               :content-type :json
                                :accept :json
                                :throw-exceptions false})
         status (:status response)
         body (cheshire/parse-string (:body response))
         error-messages (get body "errors")]
     (is (not= status 201))))
-  
-    
+
+(deftest mdb-save-concept-with-missing-required-parameter
+  "Fail to save a concept if a required parameter is missing"
+  (testing "missing concept-type"
+    (let [{:keys [status]} (save-concept (dissoc (concept "CP4") :concept-type))]
+      (is (= 422 status))))
+  (testing "missing concept-id"
+    (let [{:keys [status]} (save-concept (dissoc (concept "CP4") :concept-id))]
+      (is (= 422 status)))))
+
+
+
