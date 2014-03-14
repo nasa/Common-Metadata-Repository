@@ -10,8 +10,7 @@
 
 (defrecord UmmCollection
   [
-   ;; A combination of shortname and version id
-   ;; TODO how do we combine them? I've emailed Katie for clarification.
+   ;; A combination of shortname and version id with an underscore.
    entry-id
 
    ;; The dataset-id in ECHO10
