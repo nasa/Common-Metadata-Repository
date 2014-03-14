@@ -14,6 +14,10 @@ To start a web server for the application, run:
 
     lein ring server
 
+## Curl statements
+- ensure metadata db is available on port 3001
+curl -i -v -H "Content-type:application/json" "http://localhost:3002/providers/PROV009/collections/echocollid" -d '{"metadata":"xml here","format":"echo10”, “concept-id”:"CP009”}'
+
 ## License
 
 Copyright © 2014 NASA

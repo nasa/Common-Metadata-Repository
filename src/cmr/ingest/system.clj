@@ -1,4 +1,4 @@
-(ns cmr.cmr-ingest-app.system
+(ns cmr.ingest.system
   "Defines functions for creating, starting, and stopping the application. Applications are
   represented as a map of components. Design based on
   http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts."
@@ -8,12 +8,13 @@
 (def
   ^{:doc "Defines the order to start the components."
     :private true}
-  component-order [:log :web])
+  component-order [:log :db :web])
 
 (defn create-system
   "Returns a new instance of the whole application."
-  [log web]
+  [log db web]
   {:log log
+   :db db
    :web web})
 
 (defn start

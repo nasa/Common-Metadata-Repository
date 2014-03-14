@@ -7,9 +7,11 @@
                  [ring/ring-core "1.2.1"]
                  [ring/ring-json "0.2.0"]
                  [org.clojure/tools.reader "0.8.3"]
+                 [clj-http "0.9.0"]
+                 [cheshire "5.3.1"]
                  [org.clojure/tools.cli "0.3.1"]]
   :plugins []
-  :main cmr.cmr-ingest-app.runner
+  :main cmr.ingest.runner
   :repl-options {:init-ns user}
   :profiles
   {:dev {:dependencies [[ring-mock "0.1.5"]
