@@ -16,3 +16,8 @@
   error and errors. See http://stackoverflow.com/a/16159584."
   ([type errors]
    (throw (ex-info (first errors) {:type type :errors errors}))))
+
+(defn internal-error!
+  "Throws an Exception with the given message to indicate an internal error in the system."
+  [msg]
+  (throw (Exception. msg)))
