@@ -10,7 +10,7 @@
 (defn concept
   "Creates a concept to be used for testing with a given concept-id"
   [concept-id]
-  {:concept-type :collections
+  {:concept-type :collection
    :native-id "provider collection id"
    :concept-id concept-id
    :provider-id "PROV1"
@@ -21,7 +21,7 @@
   "Make a post request to save a concept without JSON encoding the concept.  Returns a map with
   status, revision-id, and a list of error messages"
   [concept]
-  (let [response (client/post "http://localhost:3000/concepts" 
+  (let [response (client/post "http://localhost:3001/concepts" 
                               {:body (cheshire/generate-string concept)
                                :body-encoding "UTF-8"
                                :content-type :json

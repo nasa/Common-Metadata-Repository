@@ -19,7 +19,7 @@
 (defn- save-concept
   "Store a concept record and return the revision"
   [system concept]
-  (let [revision-id (concept-services/save-concept system concept)]
+  (let [revision-id (concept-services/save-concept system (clojure.walk/keywordize-keys concept))]
     {:status 201
      :body {:revision-id revision-id}
      :headers {"Content-Type" "json"}}))
