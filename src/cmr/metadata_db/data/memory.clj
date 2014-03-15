@@ -19,9 +19,9 @@
 (defn- validate-concept
   "Validate that a concept has the fields we need to save it."
   [concept]
-  (if-not (get concept "concept-type")
+  (if-not (:concept-type concept)
     (errors/throw-service-error :invalid-data "Concept must include concept-type"))
-  (if-not (get concept "concept-id")
+  (if-not (:concept-id concept)
     (errors/throw-service-error :invalid-data "Concept must include concept-id")))
         
     
@@ -57,7 +57,7 @@
   (save-concept
     [this concept]
     (validate-concept concept)
-    (let [{:strs [concept-type concept-id revision-id]} concept
+    (let [{:keys [concept-type concept-id revision-id]} concept
           concepts (:concepts this)
           concept-map (get @concepts concept-type)
           revisions (get concept-map concept-id [])]
