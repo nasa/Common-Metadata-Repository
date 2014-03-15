@@ -33,9 +33,32 @@
         error-messages (get body "errors")]
     {:status status :revision-id revision-id :error-messages error-messages}))
 
+(defn reset-database
+  "Make a request to reset the database by clearing out all stored concepts."
+  []
+  (let [response (client/delete "http://localhost:3001/concepts" 
+                                {:throw-exceptions false})
+        status (:status response)]
+    status))
+
+;;; fixtures
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defn reset-database-fixture
+  "Reset the database after every test."
+  [f]
+  (try
+    (f)
+    (finally (reset-database))))
+
+(use-fixtures :each reset-database-fixture)
 
 ;;; tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(deftest reset-database-test
+  "Reset the database to an empty state"
+  (let [status (reset-database)]
+    (is (= status 204))))
+
 (deftest mdb-save-concept-test
   "Save a valid concept with no revision-id."
   (let [{:keys [status revision-id]} (save-concept (concept "CP1"))]
@@ -43,7 +66,7 @@
 
 (deftest mdb-save-concept-test-with-proper-revision-id-test
   "Save a valid concept with a valid revision-id"
-  (let [concept (concept "CP2")]
+  (let [concept (concept "CP1")]
     ;; save the concept once
     (save-concept concept)
     ;; save it again with a valid revision-id
@@ -54,7 +77,7 @@
   "Fail to save a concept with an invalid revision-id"
   ;; TODO Add a GET request to make sure the revision id of the existing record was not
   ;; incremented
-  (let [concept-with-bad-revision (assoc (concept "CP3") :revision-id 1)
+  (let [concept-with-bad-revision (assoc (concept "CP1") :revision-id 1)
         {:keys [status]} (save-concept concept-with-bad-revision)]
     (is (= status 409))))
 
@@ -77,10 +100,10 @@
 (deftest mdb-save-concept-with-missing-required-parameter
   "Fail to save a concept if a required parameter is missing"
   (testing "missing concept-type"
-    (let [{:keys [status]} (save-concept (dissoc (concept "CP4") :concept-type))]
+    (let [{:keys [status]} (save-concept (dissoc (concept "CP1") :concept-type))]
       (is (= 422 status))))
   (testing "missing concept-id"
-    (let [{:keys [status]} (save-concept (dissoc (concept "CP4") :concept-id))]
+    (let [{:keys [status]} (save-concept (dissoc (concept "CP1") :concept-id))]
       (is (= 422 status)))))
 
 

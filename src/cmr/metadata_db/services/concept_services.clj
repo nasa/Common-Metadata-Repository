@@ -8,3 +8,9 @@
   [system concept]
   (let [{:keys [db]} system]
     (data/save-concept db concept)))
+
+(defn force-delete
+  "Delete all concepts from the concept store"
+  [system]
+  (let [{:keys [db]} system]
+    (data/force-delete db)))

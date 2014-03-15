@@ -16,13 +16,24 @@
 ;;; service proxies
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(def json-header
+  {"Content-Type" "json"})
+
 (defn- save-concept
   "Store a concept record and return the revision"
   [system concept]
   (let [revision-id (concept-services/save-concept system (clojure.walk/keywordize-keys concept))]
     {:status 201
      :body {:revision-id revision-id}
-     :headers {"Content-Type" "json"}}))
+     :headers json-header}))
+
+(defn- force-delete
+  "Delete all concepts from the data store"
+  [system]
+  (concept-services/force-delete system)
+  {:status 204
+   :body nil
+   :headers json-header})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -30,7 +41,9 @@
   (routes
     (context "/concepts" []
              (POST "/" params
-                   (save-concept system (:body params))))
+                   (save-concept system (:body params)))
+             (DELETE "/" params
+                   (force-delete system)))
     (route/not-found "Not Found")))
 
 

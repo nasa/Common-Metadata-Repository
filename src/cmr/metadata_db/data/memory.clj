@@ -4,7 +4,8 @@
   (:require [cmr.metadata-db.data :as data]
             [cmr.common.lifecycle :as lifecycle]
             [clojure.string :as string]
-            [cmr.common.services.errors :as errors]))
+            [cmr.common.services.errors :as errors]
+            [clojure.pprint :refer (pprint pp)]))
 
 ;;; Uitility methods
 
@@ -23,20 +24,23 @@
     (errors/throw-service-error :invalid-data "Concept must include concept-type"))
   (if-not (:concept-id concept)
     (errors/throw-service-error :invalid-data "Concept must include concept-id")))
-        
-    
 
+(defn- reset-database
+  "Empty the database."
+  [db]
+  (swap! (:concepts db) empty))
+        
 ;;; An in-memory implementation of the provider store
 (defrecord InMemoryStore
   [
-   ;; An atom containing a map of echo-collection-ids to collections
+   ;; An atom containing maps of concept-ids to concepts
    concepts]
   
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   lifecycle/Lifecycle
   
   (start [this system]
-         (swap! (:concepts this) assoc :collections {})
+         (reset-database this)
          this)
   
   (stop [this system]
@@ -67,7 +71,11 @@
                                     "Expected revision-id of %s got %s"
                                     (count revisions)
                                     revision-id))
-      (save concepts concept concept-type concept-map concept-id revisions))))
+      (save concepts concept concept-type concept-map concept-id revisions)))
+  
+  (force-delete
+    [this]
+    (reset-database this)))
         
 
 
