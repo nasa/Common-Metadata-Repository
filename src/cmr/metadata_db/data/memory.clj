@@ -7,14 +7,24 @@
             [cmr.common.services.errors :as errors]
             [clojure.pprint :refer (pprint pp)]))
 
+;;; Constants
+
+(def concept-id-prefix-length 2)
+
 ;;; Uitility methods
+
+(defn- concept-type-prefix
+  "Truncate to four characters and upcase a concept-type to create a prefix for concept-ids"
+  [concept-type-keyword]
+  (let [concept-type (name concept-type-keyword)]
+    (string/upper-case (subs concept-type 0 (min (count concept-type) concept-id-prefix-length)))))
 
 (defn- save 
   "Save a concept"
   [concept-atom concept concept-type concept-map concept-id revisions]
   (let [new-revisions (conj (or revisions []) concept)
         new-concept-map (assoc concept-map concept-id new-revisions)]
-    (swap! concept-atom assoc concept-type new-concept-map)
+    (swap! concept-atom assoc (concept-type-prefix concept-type) new-concept-map)
     (dec (count new-revisions))))
 
 (defn- validate-concept
@@ -28,7 +38,14 @@
 (defn- reset-database
   "Empty the database."
   [db]
-  (swap! (:concepts db) empty))
+  (swap! (:concepts db) empty)
+  (reset! (:concept-id-seq db) 0))
+
+(defn- concept-id-seq 
+  "Returns a monotonically increasing number."
+  [db]
+  (swap! (:concept-id-seq db) inc))
+
         
 ;;; An in-memory implementation of the provider store
 (defrecord InMemoryStore
@@ -50,10 +67,17 @@
   data/ConceptStore
   
   (get-concept-id
-    [this concept-type provider-id native-id])
+    [this concept-type provider-id native-id]
+    ;; We don't use the native-id for the in-memory implementation.
+    ;; Other implementatations may want to use it.
+    (let [type-prefix (concept-type-prefix concept-type)
+          seq-num (concept-id-seq)]
+      (str type-prefix "-" provider-id "-" seq-num)))
   
   (get-concept
-    [this concept-id, revision-id])
+    [this concept-id, revision-id]
+    
+    )
   
   (get-concepts
     [this concept-id-revision-id-tuples])
@@ -63,7 +87,7 @@
     (validate-concept concept)
     (let [{:keys [concept-type concept-id revision-id]} concept
           concepts (:concepts this)
-          concept-map (get @concepts concept-type)
+          concept-map (get @concepts (concept-type-prefix concept-type))
           revisions (get concept-map concept-id [])]
       (when (and revision-id
                  (not= (count revisions) revision-id))
@@ -82,5 +106,5 @@
 (defn create-db
   "Creates the in memory store."
   []
-  (map->InMemoryStore {:concepts (atom {})}))                      
+  (map->InMemoryStore {:concept-id-seq (atom 0) :concepts (atom {})}))                      
   
