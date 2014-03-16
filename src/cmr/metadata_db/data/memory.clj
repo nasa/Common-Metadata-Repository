@@ -19,6 +19,16 @@
   (let [concept-type (name concept-type-keyword)]
     (string/upper-case (subs concept-type 0 (min (count concept-type) concept-id-prefix-length)))))
 
+(defn- retrieve-concept
+  "Get a concept by concept-id. Returns nil if concept is not found."
+    [db concept-id, revision-id]
+    (let [concepts (:concepts db)
+          concept-map (get @concepts (concept-type-prefix concept-id))
+          revisions (get concept-map concept-id)]
+      (if-let [concept (get revisions revision-id)]
+        concept
+        (last revisions))))
+
 (defn- save 
   "Save a concept"
   [concept-atom concept concept-type concept-map concept-id revisions]
@@ -45,7 +55,6 @@
   "Returns a monotonically increasing number."
   [db]
   (swap! (:concept-id-seq db) inc))
-
         
 ;;; An in-memory implementation of the provider store
 (defrecord InMemoryStore
@@ -75,9 +84,18 @@
       (str type-prefix "-" provider-id "-" seq-num)))
   
   (get-concept
-    [this concept-id, revision-id]
-    
-    )
+    [this concept-id revision-id]
+    (if-let [concept (retrieve-concept this concept-id revision-id)]
+      concept
+      (if revision-id
+        (errors/throw-service-error :not-found
+                                  "Could not find concept with concept-id of %s and revision %s."
+                                  concept-id
+                                  revision-id)
+        (errors/throw-service-error :not-found
+                                  "Could not find concept with concept-id of %s."
+                                  concept-id))))
+                                  
   
   (get-concepts
     [this concept-id-revision-id-tuples])

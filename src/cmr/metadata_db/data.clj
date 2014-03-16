@@ -8,7 +8,7 @@
     "Return a distinct identifier for the given arguments.")
 
   (get-concept
-    [db concept-id, revision-id]
+    [db concept-id revision-id]
     "Gets a version of a concept with a given id")
   
   (get-concepts

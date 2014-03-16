@@ -19,6 +19,14 @@
 (def json-header
   {"Content-Type" "json"})
 
+(defn- get-concept
+  "Get a concept by concept-id and optional revision"
+  [system concept-id revision]
+  (let [concept (concept-services/get-concept system concept-id revision)]
+    {:status 200
+     :body concept
+     :headers json-header}))
+
 (defn- save-concept
   "Store a concept record and return the revision"
   [system concept]
@@ -35,6 +43,15 @@
    :body nil
    :headers json-header})
 
+(defn- get-concept-id
+  "Get the concept id for a given concept."
+  [system concept]
+  (let [concept-id (concept-services/get-concept-id system (clojure.walk/keywordize-keys concept))]
+    {:status 200
+     :body {:concept-id concept-id}
+     :headers json-header}))
+  
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn- build-routes [system]
@@ -43,7 +60,11 @@
              (POST "/" params
                    (save-concept system (:body params)))
              (DELETE "/" params
-                   (force-delete system)))
+                   (force-delete system))
+             (GET "/:id/:revision" [id revision] (get-concept system id revision))
+             (GET "/:id" [id] (get-concept system id nil)))
+    (GET "/concept-id" params
+         (get-concept-id params))
     (route/not-found "Not Found")))
 
 

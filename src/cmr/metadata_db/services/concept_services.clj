@@ -3,6 +3,12 @@
   (:require [cmr.metadata-db.data :as data]
             [cmr.common.log :refer (debug info warn error)]))
 
+(defn get-concept
+  "Get a concept by concept-id."
+  [system concept-id revision-id]
+  (let [{:keys [db]} system]
+    (data/get-concept db concept-id revision-id)))
+    
 (defn save-concept
   "Store a concept record and return the revision"
   [system concept]
@@ -14,3 +20,10 @@
   [system]
   (let [{:keys [db]} system]
     (data/force-delete db)))
+
+(defn get-concept-id
+  "Get a concept id for a given concept"
+  [system concept]
+  (let [{:keys [db]} system
+        {:keys [concept-type provider-id native-id]} concept]
+    (data/get-concept-id db concept-type provider-id native-id)))
