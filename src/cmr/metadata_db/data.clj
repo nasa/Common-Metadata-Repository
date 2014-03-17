@@ -8,7 +8,7 @@
     "Return a distinct identifier for the given arguments.")
 
   (get-concept
-    [db concept-id, revision-id]
+    [db concept-id revision-id]
     "Gets a version of a concept with a given id")
   
   (get-concepts
@@ -21,4 +21,8 @@
     "Saves a concept and returns the revision id. If the concept already 
     exists then a new revision will be created. If a revision-id is 
     included and it is not valid, e.g. the revision already exists, 
-    then an exception is thrown."))
+    then an exception is thrown.")
+  
+  (force-delete
+    [db]
+    "Delete all concepts from the database.  USE WITH CAUTION."))

@@ -4,16 +4,37 @@
   (:require [cmr.metadata-db.data :as data]
             [cmr.common.lifecycle :as lifecycle]
             [clojure.string :as string]
-            [cmr.common.services.errors :as errors]))
+            [cmr.common.services.errors :as errors]
+            [clojure.pprint :refer (pprint pp)]))
 
-;;; Uitility methods
+;;; Constants
+
+(def concept-id-prefix-length 1)
+
+;;; Utility methods
+
+(defn- concept-type-prefix
+  "Truncate to four characters and upcase a concept-type to create a prefix for concept-ids"
+  [concept-type-keyword]
+  (let [concept-type (name concept-type-keyword)]
+    (string/upper-case (subs concept-type 0 (min (count concept-type) concept-id-prefix-length)))))
+
+(defn- retrieve-concept
+  "Get a concept by concept-id. Returns nil if concept is not found."
+    [db concept-id, revision-id]
+    (let [concepts (:concepts db)
+          concept-map (get @concepts (concept-type-prefix concept-id))
+          revisions (get concept-map concept-id)]
+      (if-let [concept (get revisions revision-id)]
+        concept
+        (last revisions))))
 
 (defn- save 
   "Save a concept"
   [concept-atom concept concept-type concept-map concept-id revisions]
   (let [new-revisions (conj (or revisions []) concept)
         new-concept-map (assoc concept-map concept-id new-revisions)]
-    (swap! concept-atom assoc concept-type new-concept-map)
+    (swap! concept-atom assoc (concept-type-prefix concept-type) new-concept-map)
     (dec (count new-revisions))))
 
 (defn- validate-concept
@@ -23,20 +44,29 @@
     (errors/throw-service-error :invalid-data "Concept must include concept-type"))
   (if-not (:concept-id concept)
     (errors/throw-service-error :invalid-data "Concept must include concept-id")))
-        
-    
 
+(defn- reset-database
+  "Empty the database."
+  [db]
+  (swap! (:concepts db) empty)
+  (reset! (:concept-id-seq db) 0))
+
+(defn- concept-id-seq 
+  "Returns a monotonically increasing number."
+  [db]
+  (swap! (:concept-id-seq db) inc))
+        
 ;;; An in-memory implementation of the provider store
 (defrecord InMemoryStore
   [
-   ;; An atom containing a map of echo-collection-ids to collections
+   ;; An atom containing maps of concept-ids to concepts
    concepts]
   
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   lifecycle/Lifecycle
   
   (start [this system]
-         (swap! (:concepts this) assoc :collections {})
+         (reset-database this)
          this)
   
   (stop [this system]
@@ -46,10 +76,34 @@
   data/ConceptStore
   
   (get-concept-id
-    [this concept-type provider-id native-id])
+    [this concept-type provider-id native-id]
+    ;; We don't use the native-id for the in-memory implementation.
+    ;; Other implementatations may want to use it.
+    (let [type-prefix (concept-type-prefix concept-type)
+          stored-ids (:concept-concept-id this)
+          concept-concept-id-key (str type-prefix provider-id native-id)
+          stored-id (get @stored-ids concept-concept-id-key)]
+      (if stored-id
+        stored-id
+        (let [seq-num (concept-id-seq)
+              generated-id (str type-prefix seq-num "-" provider-id)]
+          (swap! @stored-ids assoc concept-concept-id-key generated-id)
+          generated-id))))
+  
   
   (get-concept
-    [this concept-id, revision-id])
+    [this concept-id revision-id]
+    (if-let [concept (retrieve-concept this concept-id revision-id)]
+      concept
+      (if revision-id
+        (errors/throw-service-error :not-found
+                                  "Could not find concept with concept-id of %s and revision %s."
+                                  concept-id
+                                  revision-id)
+        (errors/throw-service-error :not-found
+                                  "Could not find concept with concept-id of %s."
+                                  concept-id))))
+                                  
   
   (get-concepts
     [this concept-id-revision-id-tuples])
@@ -59,7 +113,7 @@
     (validate-concept concept)
     (let [{:keys [concept-type concept-id revision-id]} concept
           concepts (:concepts this)
-          concept-map (get @concepts concept-type)
+          concept-map (get @concepts (concept-type-prefix concept-type))
           revisions (get concept-map concept-id [])]
       (when (and revision-id
                  (not= (count revisions) revision-id))
@@ -67,12 +121,18 @@
                                     "Expected revision-id of %s got %s"
                                     (count revisions)
                                     revision-id))
-      (save concepts concept concept-type concept-map concept-id revisions))))
+      (save concepts concept concept-type concept-map concept-id revisions)))
+  
+  (force-delete
+    [this]
+    (reset-database this)))
         
 
 
 (defn create-db
   "Creates the in memory store."
   []
-  (map->InMemoryStore {:concepts (atom {})}))                      
+  (map->InMemoryStore {:concept-id-seq (atom 0) ;; number seqeunce generator for id generation
+                       :concept-concept-id (atom {}) ;; generated ids
+                       :concepts (atom {})})) ;; actual stored concepts                   
   
