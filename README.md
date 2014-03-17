@@ -23,15 +23,32 @@ curl -H "Accept: application/json" -i "http://localhost:3000/collections"
 curl -H "Accept: application/json" -i "http://localhost:3000/collections?foo=5"
 ```
 
-### Find all collections with a dataset id
+### Find all collections with an entry title
+```
+curl -H "Accept: application/json" -i "http://localhost:3000/collections?entry_title\[\]=DatasetId%204"
+```
+
+### Find all collections with a dataset id (alias for entry title)
 ```
 curl -H "Accept: application/json" -i "http://localhost:3000/collections?dataset_id\[\]=DatasetId%204"
 ```
 
+### Find all collections with a entry title case insensitively
+```
+curl -H "Accept: application/json" -i "http://localhost:3000/collections?entry_title\[\]=datasetId%204&options\[entry_title\]\[ignore_case\]=true"
+```
+
+### Find all collections with a entry title pattern
+```
+curl -H "Accept: application/json" -i "http://localhost:3000/collections?entry_title\[\]=DatasetId*&options\[entry_title\]\[pattern\]=true"
+```
+
 ### Find all collections with multiple dataset ids
 ```
-curl -H "Accept: application/json" -i "http://localhost:3000/collections?dataset_id\[\]=DatasetId%204&dataset_id\[\]=DatasetId%205"
+curl -H "Accept: application/json" -i "http://localhost:3000/collections?entry_title\[\]=DatasetId%204&entry_title\[\]=DatasetId%205"
 ```
+;;
+
 
 ### Find as XML
 TODO implement support for retrieving in XML.
@@ -39,6 +56,7 @@ Also make sure enough information is returned that Catalog-REST can work.
 ```
 curl -H "Accept: application/xml" -i "http://localhost:3000/collections"
 ```
+
 
 
 ## Prerequisites

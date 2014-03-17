@@ -7,11 +7,16 @@
 
 (def param-name->type
   "A map of parameter names to types so that we can appropriately parse or validate them."
-  {:dataset_id :string})
+  {:entry_title :string
+   :provider :string})
+
+(def param-aliases
+  "A map of parameter name aliases to their parameter name."
+  {:dataset_id :entry_title})
 
 (def valid-param-names
   "A set of the valid parameter names."
-  (set (keys param-name->type)))
+  (set (concat (keys param-name->type) (keys param-aliases) [:options])))
 
 (defn unrecognized-params-validation
   "Validates that no invalid parameters were supplied"
@@ -36,10 +41,6 @@
     (err/throw-service-errors :invalid-data errors))
   params)
 
-;; FIXME write test for this stuff after initial prototyping
-
-;; FIXME we need to handle case sensitive, patterns, and multiple
-
 (defmulti parameter->condition
   "Converts a parameter into a condition"
   (fn [param value options]
@@ -47,25 +48,31 @@
 
 (defmethod parameter->condition :string
   [param value options]
-  ;; TODO Shouldn't we just use a StringsCondition or maybe add multiple values to String with the ability to specify operator?
-  ;; This is needed for better performance of term conditions. We want the boolean execution when they're combined.
-  ;; The elastic mapping could handle this by gathering string conditions together.
   (if (sequential? value)
     (qm/or-conds
       (map #(parameter->condition param % options) value))
     (qm/map->StringCondition
       {:field param
        :value value
-       :case-sensitive? true
-       :pattern false})))
+       :case-sensitive? (not= "true" (get-in options [param :ignore_case]))
+       :pattern? (= "true" (get-in options [param :pattern]))})))
 
 (defn parameters->query
   "Converts parameters into a query model."
   [concept-type params]
 
-  (let [options (or (dissoc params :options) {})
-        conditions (map (fn [[param value]]
-                          (parameter->condition param value options))
-                        params)]
-    (qm/query concept-type (qm/and-conds conditions))))
+  (if (empty? params)
+    (qm/query concept-type) ;; matches everything
+    (let [options (get params :options {})
+          params (dissoc params :options)
+
+          ;; Correct key names for aliases
+          options (clojure.set/rename-keys options param-aliases)
+          params (clojure.set/rename-keys params param-aliases)
+
+          ;; Convert params into conditions
+          conditions (map (fn [[param value]]
+                            (parameter->condition param value options))
+                          params)]
+      (qm/query concept-type (qm/and-conds conditions)))))
 

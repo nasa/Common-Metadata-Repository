@@ -45,6 +45,13 @@
   ([type condition]
    (->Query type condition)))
 
+(defn string-condition
+  "Creates a string condition."
+  ([field value]
+   (string-condition field value true false))
+  ([field value case-sensitive? pattern?]
+   (->StringCondition field value case-sensitive? pattern?)))
+
 ;; FIXME write test for this stuff after initial prototyping
 
 (defn and-conds

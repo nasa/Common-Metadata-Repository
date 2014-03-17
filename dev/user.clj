@@ -1,4 +1,4 @@
-(ns user
+ns user
   (:require [clojure.pprint :refer (pprint pp)]
             [clojure.tools.namespace.repl :refer (refresh refresh-all)]
             [cmr.search.system :as system]
