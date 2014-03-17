@@ -20,7 +20,7 @@
   (t/set-config! [:appenders :spit :enabled?] true)
   (t/set-config! [:shared-appender-config :spit-filename] file)
 
-  ;; Log current thread.
+  ;; Set the format for logging.
   (t/set-config! [:fmt-output-fn]
                  (fn [{:keys [level throwable message timestamp hostname ns]}
                       ;; Any extra appender-specific opts:
