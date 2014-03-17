@@ -1,4 +1,4 @@
-(ns cmr.metadata-db.utility
+(ns cmr.metadata-db.int-test.utility
   "Contains various utitiltiy methods to support integeration tests."
   (:require [clojure.test :refer :all]
             [clj-http.client :as client]

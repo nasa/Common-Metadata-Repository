@@ -1,10 +1,10 @@
-(ns cmr.metadata-db.concept-save-test
+(ns cmr.metadata-db.int-test.concept-save-test
   "Contains integration tests for saving concepts. Tests saves with various configurations including
   checking for proper error handling."
   (:require [clojure.test :refer :all]
             [clj-http.client :as client]
             [cheshire.core :as cheshire]
-            [cmr.metadata-db.utility :as util]))
+            [cmr.metadata-db.int-test.utility :as util]))
 
 ;;; fixtures
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

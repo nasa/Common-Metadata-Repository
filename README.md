@@ -8,7 +8,7 @@ returns: new or existing concept-id
 
 ### save-concept
 params: [concept] - revision-id optionally in concept
-returns: revision-id
+returns: revision-id.  revision-id begins at 0.
 throws error if revision-id does not match what it will be when saved
 
 ### get-concept

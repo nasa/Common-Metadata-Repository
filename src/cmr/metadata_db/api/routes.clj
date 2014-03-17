@@ -57,11 +57,15 @@
 (defn- build-routes [system]
   (routes
     (context "/concepts" []
+             ;; saves a concept
              (POST "/" params
                    (save-concept system (:body params)))
+             ;; delete the entire database
              (DELETE "/" params
                    (force-delete system))
+             ;; get a specific revision of a concept
              (GET "/:id/:revision" [id revision] (get-concept system id revision))
+             ;; returns the latest revision of a concept
              (GET "/:id" [id] (get-concept system id nil)))
     (GET "/concept-id" params
          (get-concept-id params))

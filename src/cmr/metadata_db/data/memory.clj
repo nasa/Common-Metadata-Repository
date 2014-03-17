@@ -9,7 +9,7 @@
 
 ;;; Constants
 
-(def concept-id-prefix-length 2)
+(def concept-id-prefix-length 1)
 
 ;;; Uitility methods
 
@@ -80,8 +80,16 @@
     ;; We don't use the native-id for the in-memory implementation.
     ;; Other implementatations may want to use it.
     (let [type-prefix (concept-type-prefix concept-type)
-          seq-num (concept-id-seq)]
-      (str type-prefix "-" provider-id "-" seq-num)))
+          stored-ids (:concept-concept-id this)
+          concept-concept-id-key (str type-prefix provider-id native-id)
+          stored-id (get @stored-ids concept-concept-id-key)]
+      (if stored-id
+        stored-id
+        (let [seq-num (concept-id-seq)
+              generated-id (str type-prefix seq-num "-" provider-id)]
+          (swap! @stored-ids assoc concept-concept-id-key generated-id)
+          generated-id))))
+  
   
   (get-concept
     [this concept-id revision-id]
@@ -124,5 +132,7 @@
 (defn create-db
   "Creates the in memory store."
   []
-  (map->InMemoryStore {:concept-id-seq (atom 0) :concepts (atom {})}))                      
+  (map->InMemoryStore {:concept-id-seq (atom 0) ;; number seqeunce generator for id generation
+                       :concept-concept-id (atom {}) ;; generated ids
+                       :concepts (atom {})})) ;; actual stored concepts                   
   
