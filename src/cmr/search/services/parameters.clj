@@ -33,7 +33,7 @@
                                    (concat errors (validation params)))
                                  []
                                  parameter-validations))]
-    (err/invalid-data-errors! errors))
+    (err/throw-service-errors :invalid-data errors))
   params)
 
 ;; FIXME write test for this stuff after initial prototyping
