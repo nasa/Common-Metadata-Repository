@@ -22,7 +22,6 @@
         a2 (Annotation. (* 1000 (time-coerce/to-long stop-time))
                         (str "end:" span-name) endpoint 0)
         span (t/thrift->base64 (Span. trace-id span-name span-id parent-span-id [a1 a2] [] 0))]
-    (clojure.pprint/pprint trace-info)
     (scribe/log scribe-logger [span])))
 
 (defn- new-span-trace-info
@@ -45,7 +44,7 @@
           new-context (c/update-context-trace-info context trace-info)
           result (apply f new-context args)
           stop-time (time/now)]
-      (record-span (c/context->zipkin-config) trace-info start-time stop-time)
+      (record-span (c/context->zipkin-config context) trace-info start-time stop-time)
       result)))
 
 (defmacro deftracefn
