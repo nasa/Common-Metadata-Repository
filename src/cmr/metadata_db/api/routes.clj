@@ -11,6 +11,7 @@
             [cheshire.core :as json]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.api.errors :as errors]
+            [cmr.common.services.errors :as serv-err]
             [cmr.metadata-db.services.concept-services :as concept-services]))
 
 ;;; service proxies
@@ -22,11 +23,12 @@
 (defn- get-concept
   "Get a concept by concept-id and optional revision"
   [system concept-id revision]
-  (let [revision-id (if revision (Integer. revision) nil)
-        concept (concept-services/get-concept system concept-id revision-id)]
-    {:status 200
-     :body concept
-     :headers json-header}))
+  (try (let [revision-id (if revision (Integer. revision) nil)
+             concept (concept-services/get-concept system concept-id revision-id)]
+         {:status 200
+          :body concept
+          :headers json-header})
+    (catch NumberFormatException e (serv-err/throw-service-error :invalid-data (.getMessage e)))))
 
 (defn- get-concepts
   "Get concepts using concept-id/revision-id tuples."
@@ -59,7 +61,7 @@
     {:status 200
      :body {:concept-id concept-id}
      :headers json-header}))
-  
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -71,7 +73,7 @@
                    (save-concept system (:body params)))
              ;; delete the entire database
              (DELETE "/" params
-                   (force-delete system))
+                     (force-delete system))
              ;; get a specific revision of a concept
              (GET "/:id/:revision" [id revision] (get-concept system id revision))
              ;; returns the latest revision of a concept

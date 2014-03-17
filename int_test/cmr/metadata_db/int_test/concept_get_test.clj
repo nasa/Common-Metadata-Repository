@@ -42,6 +42,22 @@
   "Get a concept by concept-id and version-id."
   (let [{:keys [status concept]} (util/get-concept-by-id-and-revision (:concept-id (util/concept)) 1)]
     (is (and (= status 200) (= (:revision-id concept) 1)))))
+
+(deftest mdb-get-concept-invalid-concept-id-or-revision-test
+  "Expect a 4XX if we try to get a concept that doesn't exist or use an improper concept-id."
+  (testing "invalid concept-id"
+    (let [{:keys [status]} (util/get-concept-by-id "bad id")]
+      (is (= 404 status))))
+  (testing "out of range revision-id"
+    (let [concept (util/concept)
+          {:keys [status]} (util/get-concept-by-id-and-revision (:concept-id concept) 10)]
+      (is (= 404 status))))
+  (testing "non-integer revision-id"
+    (let [concept (util/concept)
+          {:keys [status]}(util/get-concept-by-id-and-revision (:concept-id concept) "NON-INTEGER")]
+      (is (= 422 status)))))
+
+
     
     
     

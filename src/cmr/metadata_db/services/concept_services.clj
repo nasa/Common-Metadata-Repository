@@ -14,8 +14,7 @@
   [system concept-id-revision-id-tuples]
   (let [{:keys [db]} system]
     (data/get-concepts db concept-id-revision-id-tuples)))
-  
-    
+
 (defn save-concept
   "Store a concept record and return the revision."
   [system concept]

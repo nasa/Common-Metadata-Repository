@@ -42,7 +42,6 @@
       (let [found-concept (clojure.walk/keywordize-keys (cheshire/parse-string (:body response)))]
         {:status status :concept found-concept})
       {:status status :concept nil})))
-        
 
 (defn save-concept
   "Make a post request to save a concept without JSON encoding the concept.  Returns a map with
