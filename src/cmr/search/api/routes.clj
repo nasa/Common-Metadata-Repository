@@ -10,14 +10,16 @@
             [cheshire.core :as json]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.api.errors :as errors]
-            [cmr.search.services.query-service :as query-svc]))
+            [cmr.search.services.query-service :as query-svc]
+            [cmr.system-trace.context :as context]))
 
 (defn- build-routes [system]
   (routes
     (context "/collections" []
       (GET "/" {params :params headers :headers}
         (debug "Searching for collection with params" (pr-str params))
-        (let [results (query-svc/find-concepts-by-parameters system :collection params)]
+        (let [context (context/build-request-context system)
+              results (query-svc/find-concepts-by-parameters context :collection params)]
           {:status 200
            :headers {"Content-Type" "application/json"}
            :body results})))

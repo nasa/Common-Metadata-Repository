@@ -1,6 +1,6 @@
 # cmr-search-app
 
-FIXME
+Provides a public search API for concepts in the CMR.
 
 ## TODO
 

@@ -13,48 +13,49 @@
    - Convert query results into requested format"
   (:require [cmr.search.data.search-index :as idx]
             [cmr.search.models.query :as qm]
-            [cmr.search.services.parameters :as p]))
+            [cmr.search.services.parameters :as p]
+            [cmr.system-trace.core :refer [deftracefn]]))
 
-(defn- validate-query
+(deftracefn validate-query
   "Validates a query model. Throws an exception to return to user with errors.
   Returns the query model if validation is successful so it can be chained with other calls."
-  [system query]
+  [context query]
   ;; TODO validate query
   query)
 
-(defn- apply-acls
+(deftracefn apply-acls
   "Modifies the query to apply ACLs for the current user."
-  [system query]
+  [context query]
   ;; TODO adjust this operation to take a token or similar and apply ACLS to the query
   query)
 
-(defn- simplify-query
+(deftracefn simplify-query
   "Simplifies the query."
-  [system query]
+  [context query]
   ;; TODO query simplification
   query)
 
-(defn- execute-query
+(deftracefn execute-query
   "Executes a query returning results as concept id, native provider id, and revision id."
-  [system query]
-  (idx/execute-query (:search-index system) query))
+  [context query]
+  (idx/execute-query (-> context :system :search-index) query))
 
-(defn find-concepts-by-query
+(deftracefn find-concepts-by-query
   "Executes a search for concepts using a query The concepts will be returned with
   concept id and native provider id."
-  [system query]
+  [context query]
   (->> query
-       (validate-query system)
-       (apply-acls system)
-       (simplify-query system)
-       (execute-query system)))
+       (validate-query context)
+       (apply-acls context)
+       (simplify-query context)
+       (execute-query context)))
 
-(defn find-concepts-by-parameters
+(deftracefn find-concepts-by-parameters
   "Executes a search for concepts using the given parameters. The concepts will be returned with
   concept id and native provider id."
-  [system concept-type params]
+  [context concept-type params]
 
   (->> params
        p/validate-parameters
        (p/parameters->query concept-type)
-       (find-concepts-by-query system)))
+       (find-concepts-by-query context)))

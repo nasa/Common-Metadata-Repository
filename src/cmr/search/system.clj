@@ -1,6 +1,7 @@
 (ns cmr.search.system
   (:require [cmr.common.lifecycle :as lifecycle]
-            [cmr.common.log :refer (debug info warn error)]))
+            [cmr.common.log :refer (debug info warn error)]
+            [cmr.system-trace.context :as context]))
 
 ;; Design based on http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts
 
@@ -14,7 +15,10 @@
   [log web search-index]
   {:log log
    :search-index search-index
-   :web web})
+   :web web
+   ;; Zipkin doesn't get started or stopped.
+   ;; TODO We should handle other zipkin hosts and ports
+   :zipkin (context/zipkin-config "Search")})
 
 (defn start
   "Performs side effects to initialize the system, acquire resources,
