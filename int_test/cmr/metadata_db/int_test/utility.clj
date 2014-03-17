@@ -4,6 +4,9 @@
             [clj-http.client :as client]
             [cheshire.core :as cheshire]))
 
+;;; Port service is running - change this for tcp-mon
+(def service-endpoint "http://localhost:3001/concepts/")
+
 ;;; utility methods
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn concept
@@ -19,7 +22,7 @@
 (defn get-concept-by-id-and-revision
   "Make a get to retrieve a concept by concept-id and revision."
   [concept-id revision-id]
-  (let [response (client/get (str "http://localhost:3000/concepts/" concept-id "/" revision-id)
+  (let [response (client/get (str service-endpoint concept-id "/" revision-id)
                              {:accept :json
                               :throw-exceptions false})
         status (:status response)]
@@ -31,7 +34,7 @@
 (defn get-concept-by-id
   "Make a get to retrieve a concept by concept-id."
   [concept-id]
-  (let [response (client/get (str "http://localhost:3000/concepts/" concept-id)
+  (let [response (client/get (str service-endpoint concept-id)
                              {:accept :json
                               :throw-exceptions false})
         status (:status response)]
@@ -45,7 +48,7 @@
   "Make a post request to save a concept without JSON encoding the concept.  Returns a map with
   status, revision-id, and a list of error messages"
   [concept]
-  (let [response (client/post "http://localhost:3000/concepts" 
+  (let [response (client/post service-endpoint 
                               {:body (cheshire/generate-string concept)
                                :body-encoding "UTF-8"
                                :content-type :json
@@ -60,7 +63,7 @@
 (defn reset-database
   "Make a request to reset the database by clearing out all stored concepts."
   []
-  (let [response (client/delete "http://localhost:3000/concepts" 
+  (let [response (client/delete service-endpoint 
                                 {:throw-exceptions false})
         status (:status response)]
     status))

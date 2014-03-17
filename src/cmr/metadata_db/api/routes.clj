@@ -22,7 +22,8 @@
 (defn- get-concept
   "Get a concept by concept-id and optional revision"
   [system concept-id revision]
-  (let [concept (concept-services/get-concept system concept-id revision)]
+  (let [revision-id (if revision (Integer. revision) nil)
+        concept (concept-services/get-concept system concept-id revision-id)]
     {:status 200
      :body concept
      :headers json-header}))

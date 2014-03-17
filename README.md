@@ -2,6 +2,27 @@
 
 ## Web API
 
+### Sample Concept JSON
+	{
+		"concept-type": "collection"
+   	"native-id": "provider collection id"
+   	"concept-id": "C1-PROV1"
+   	"provider-id": "PROV1"
+   	"metadata": "xml here"
+   	"format": "echo10"
+   	"revision-id": 1 (optional field)
+	}
+
+### Sample Tombstone (deleted concept) JSON
+	{
+		"concept-type": "collection"
+		"native-id": "provider collection id"
+   	"concept-id": "C1-PROV1"
+   	"provider-id": "PROV1"
+   	"deleted": true
+   	"revision-id": 10
+   }
+
 ### GET /concept-id
 params: [concept-type provider-id native-id]
 returns: new or existing concept-id

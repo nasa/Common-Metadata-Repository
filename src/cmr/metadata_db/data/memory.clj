@@ -25,14 +25,17 @@
     (let [concepts (:concepts db)
           concept-map (get @concepts (concept-type-prefix concept-id))
           revisions (get concept-map concept-id)]
+      (let [con (get revisions revision-id)]
       (if-let [concept (get revisions revision-id)]
         concept
-        (last revisions))))
+        (last revisions)))))
 
 (defn- save 
   "Save a concept"
   [concept-atom concept concept-type concept-map concept-id revisions]
-  (let [new-revisions (conj (or revisions []) concept)
+  (let [revision-id (count revisions)
+        revised-concept (assoc concept :revision-id revision-id)
+        new-revisions (conj (or revisions []) revised-concept)
         new-concept-map (assoc concept-map concept-id new-revisions)]
     (swap! concept-atom assoc (concept-type-prefix concept-type) new-concept-map)
     (dec (count new-revisions))))
