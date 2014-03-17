@@ -6,9 +6,11 @@
 
                 ;; clj-zipkin macros don't work very well. It's included mostly for some utility
                 ;; functions, and the thrift handling.
-                [clj-zipkin "0.1.1"]
-                [thrift-clj "0.2.1"]
-                [clj-scribe "0.3.1"]
+                [clj-zipkin "0.1.1" :exclusions [ch.qos.logback/logback-classic
+                                                 log4j
+                                                 org.slf4j/slf4j-log4j12]]
+                ;; Turn off the logging noise
+                [com.dadrox/quiet-slf4j "0.1"]
                 [clj-time "0.6.0"]]
 
 

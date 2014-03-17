@@ -17,8 +17,6 @@
             [thrift-clj.core :as thrift]
             [clj-scribe :as scribe]))
 
-;; TODO we'll probably want some function to update the context with zipkin config
-
 (thrift/import
   (:types [com.twitter.zipkin.gen Endpoint])
   (:clients com.twitter.zipkin.gen.ZipkinCollector))
