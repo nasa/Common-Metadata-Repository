@@ -1,4 +1,4 @@
-(defproject nasa-cmr/cmr-system-trace "0.1.0-SNAPSHOT"
+(defproject nasa-cmr/cmr-system-trace-lib "0.1.0-SNAPSHOT"
   :description "Provides library functions for tracing requests throughout the CMR system. Built on
                Twitter Zipkin and clj-zipkin."
   :url "http://example.com/FIXME"
