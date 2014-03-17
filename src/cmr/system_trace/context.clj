@@ -52,6 +52,14 @@
      {:endpoint (Endpoint. (t/ip-str-to-int ip) 0 service-name)
       :scribe-logger scribe-logger})))
 
+(defn build-request-context
+  "Creates a request context. Takes the current system"
+  ;; TODO should be extended to take current request so it can extract trace-id and parent-span-id
+  ;; from headers in the request
+  [system]
+  {:system system
+   :request {:trace-info (trace-info)}})
+
 (defn context->trace-info
   "Extracts trace-info from a request context."
   [context]
