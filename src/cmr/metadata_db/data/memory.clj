@@ -11,7 +11,7 @@
 
 (def concept-id-prefix-length 1)
 
-;;; Uitility methods
+;;; Utility methods
 
 (defn- concept-type-prefix
   "Truncate to four characters and upcase a concept-type to create a prefix for concept-ids"

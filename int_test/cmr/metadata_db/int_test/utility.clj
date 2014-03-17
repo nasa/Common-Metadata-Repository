@@ -11,7 +11,7 @@
   []
   {:concept-type :collection
    :native-id "provider collection id"
-   :concept-id "CO-PROV1-1"
+   :concept-id "C1-PROV1"
    :provider-id "PROV1"
    :metadata "xml here"
    :format "echo10"})
