@@ -38,5 +38,5 @@
         db (metadata-db/create)
         idx-db (indexer/create)
         log (log/create-logger)
-        system (system/start (system/create-system log db web-server))]
+        system (system/start (system/create-system log db idx-db web-server))]
     (info "Running...")))
