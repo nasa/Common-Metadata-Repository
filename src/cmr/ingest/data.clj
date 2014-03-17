@@ -1,5 +1,5 @@
 (ns cmr.ingest.data
-  "Defines a protocol to store concepts in metadata db.")
+  "Defines a protocol to store concepts in metadata db and indexer.")
   
 (defprotocol ConceptStore
   "Functions for saving and retrieving concepts"
@@ -13,3 +13,10 @@
     exists then a new revision will be created. If a revision-id is 
     included and it is not valid, e.g. the revision already exists, 
     then an exception is thrown."))
+
+(defprotocol ConceptIndexStore
+  "Functions for staging concepts for the purposes of indexing."
+    
+  (stage-concept-for-indexing
+    [db concept-id revision-id]
+    "Stage attributes of a concept for indexer app consumption."))

@@ -70,7 +70,6 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   data/ConceptStore
   
-  ;; TODO check for concept existence in metadata db
 
 (get-concept-id
   ;; faking a call to metadata db to get the concept-id
@@ -80,8 +79,7 @@
   (save-concept
     [this concept]              
     (let [{:keys [host port mdb-url]} (:config this)
-          {:keys [concept-type provider-id native-id]} concept
-          concept-id (data/get-concept-id this concept-type provider-id native-id)
+          {:keys [concept-type concept-id provider-id native-id]} concept
           concept-with-id (assoc concept :concept-id concept-id)
           concept-json-str (cheshire/generate-string concept-with-id)
           http-request (build-http-request-fn "post" mdb-url concept-json-str)

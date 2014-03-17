@@ -12,9 +12,10 @@
 
 (defn create-system
   "Returns a new instance of the whole application."
-  [log db web]
+  [log db idx-db web]
   {:log log
    :db db
+   :idx-db idx-db
    :web web})
 
 (defn start

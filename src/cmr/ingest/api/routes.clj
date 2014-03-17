@@ -17,11 +17,13 @@
 (defn- save-concept
   "Store a concept and return the revision"
   [system concept]
-  (let [revision-id (ingest/save-concept system concept)]
+  (let [concept-id (ingest/get-concept-id system concept)
+        revision-id (ingest/save-concept system (assoc concept :concept-id  concept-id))
+        indexer-response-code (ingest/stage-concept-for-indexing system 
+                                                                 (assoc concept :concept-id  concept-id :revision-id revision-id))]
     {:status 201
-     :body {:revision-id revision-id}
+     :body {:revision-id revision-id :concept-id concept-id :indexer-response-code indexer-response-code}
      :headers {"Content-Type" "json"}}))
-
 
 (defn- build-routes [system]
   (routes

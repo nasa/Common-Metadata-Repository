@@ -3,8 +3,7 @@
             [cmr.common.log :as log :refer (debug info warn error)]
             [clj-http.client :as client]
             [cheshire.core :as cheshire])
-  (:use [slingshot.slingshot :only [throw+ try+]])
-  (:use clj-http.fake))
+  (:use [slingshot.slingshot :only [throw+ try+]]))
 
 (defn concept
   "Creates a sample concept."

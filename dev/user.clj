@@ -8,6 +8,7 @@
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.api.web-server :as web]
             [cmr.ingest.data.mdb :as metadata-db]
+            [cmr.ingest.data.indexer :as indexer]
             [cmr.ingest.api.routes :as routes])
   (:use [clojure.test :only [run-all-tests]]
         [clojure.repl]
@@ -23,8 +24,9 @@
   []
   (let [web-server (web/create-web-server 3002 routes/make-api)
         db (metadata-db/create)
+        idx-db (indexer/create)
         log (log/create-logger)
-        s (system/create-system log db web-server)
+        s (system/create-system log db idx-db web-server)
         ]
     (alter-var-root #'system
                     (constantly

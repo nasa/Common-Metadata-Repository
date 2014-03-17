@@ -14,3 +14,10 @@
   [system concept]
   (let [{:keys [db]} system]
     (data/save-concept db concept)))
+
+(defn stage-concept-for-indexing
+  "Stage attributes of a concept for indexer app consumption."
+  [system concept]
+  (let [{:keys [idx-db]} system
+        {:keys [concept-id revision-id]} concept]
+    (data/stage-concept-for-indexing idx-db concept-id revision-id)))
