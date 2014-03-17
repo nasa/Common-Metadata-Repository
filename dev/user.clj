@@ -24,7 +24,8 @@
   (let [web-server (web/create-web-server 3002 routes/make-api)
         db (metadata-db/create)
         log (log/create-logger)
-        s (system/create-system log db web-server)]
+        s (system/create-system log db web-server)
+        ]
     (alter-var-root #'system
                     (constantly
                       (system/start s)))))

@@ -3,7 +3,7 @@
   
 (defprotocol ConceptStore
   "Functions for saving and retrieving concepts"
-  #_(get-concept-id
+  (get-concept-id
     [db concept-type provider-id native-id]
     "Return a distinct identifier for the given arguments.")
     

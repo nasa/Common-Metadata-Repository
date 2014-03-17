@@ -1,6 +1,8 @@
 (defproject nasa-cmr/cmr-ingest-app "0.1.0-SNAPSHOT"
-  :description "FIXME: write description"
-  :url "http://example.com/FIXME"
+  :description "Ingest is an external facing CMR service facilitating providers
+               to create / update their concepts in CMR. Internally it delegates 
+               concept persistence operations to metadata db and indexer micro services."
+  :url "***REMOVED***projects/CMR/repos/cmr-ingest-app/browse"
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [compojure "1.1.6"]
@@ -9,6 +11,8 @@
                  [org.clojure/tools.reader "0.8.3"]
                  [clj-http "0.9.0"]
                  [cheshire "5.3.1"]
+                 [slingshot "0.10.3"]
+                 [clj-http-fake "0.7.8"]
                  [org.clojure/tools.cli "0.3.1"]]
   :plugins []
   :main cmr.ingest.runner
