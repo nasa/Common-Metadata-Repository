@@ -27,6 +27,14 @@
      :body concept
      :headers json-header}))
 
+(defn- get-concepts
+  "Get concepts using concept-id/revision-id tuples."
+  [system concept-id-revisions]
+  (let [concepts (concept-services/get-concepts system concept-id-revisions)]
+    {:status 200
+     :body concepts
+     :headers json-header}))
+
 (defn- save-concept
   "Store a concept record and return the revision"
   [system concept]
@@ -66,9 +74,13 @@
              ;; get a specific revision of a concept
              (GET "/:id/:revision" [id revision] (get-concept system id revision))
              ;; returns the latest revision of a concept
-             (GET "/:id" [id] (get-concept system id nil)))
+             (GET "/:id" [id] (get-concept system id nil))
+             (POST "/search" params
+                   (get-concepts system (get (:body params) "concept-revisions"))))
+    
     (GET "/concept-id" params
          (get-concept-id params))
+    
     (route/not-found "Not Found")))
 
 

@@ -14,7 +14,7 @@
 ;;; Utility methods
 
 (defn- concept-type-prefix
-  "Truncate to four characters and upcase a concept-type to create a prefix for concept-ids"
+  "Truncate and upcase a concept-type to create a prefix for concept-ids"
   [concept-type-keyword]
   (let [concept-type (name concept-type-keyword)]
     (string/upper-case (subs concept-type 0 (min (count concept-type) concept-id-prefix-length)))))
@@ -90,7 +90,6 @@
           (swap! @stored-ids assoc concept-concept-id-key generated-id)
           generated-id))))
   
-  
   (get-concept
     [this concept-id revision-id]
     (if-let [concept (retrieve-concept this concept-id revision-id)]
@@ -104,9 +103,16 @@
                                   "Could not find concept with concept-id of %s."
                                   concept-id))))
                                   
-  
   (get-concepts
-    [this concept-id-revision-id-tuples])
+    [this concept-id-revision-id-tuples]
+    ;; An SQL based DB would have a more efficient way to do this, but
+    ;; an in-memory map like this has to pull things back one-by-one.
+    (let [concepts []]
+      (for [[concept-id revision-id] concept-id-revision-id-tuples]
+        (let [concept (retrieve-concept this concept-id revision-id)]
+          (if concept
+            (conj concepts concept))))
+      concepts))
   
   (save-concept
     [this concept]
@@ -126,9 +132,9 @@
   (force-delete
     [this]
     (reset-database this)))
+   
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;     
         
-
-
 (defn create-db
   "Creates the in memory store."
   []
