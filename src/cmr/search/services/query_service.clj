@@ -56,6 +56,7 @@
   [context concept-type params]
 
   (->> params
+       p/replace-parameter-aliases
        p/validate-parameters
        (p/parameters->query concept-type)
        (find-concepts-by-query context)))

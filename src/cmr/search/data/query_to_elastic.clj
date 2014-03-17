@@ -41,7 +41,6 @@
           field (if case-sensitive? field (str (name field) ".lowercase"))
           value (if case-sensitive? value (s/lower-case value))]
       (if pattern?
-        ;; TODO when it's a pattern we have to convert the % and _ to equivalent in elastic
         {:query {:wildcard {field value}}}
         {:term {field value}})))
 

@@ -5,14 +5,22 @@
             [cmr.common.services.errors :as err]
             [cmr.search.models.query :as qm]))
 
+(def param-aliases
+  "A map of parameter name aliases to their parameter name."
+  {:dataset_id :entry_title})
+
+(defn replace-parameter-aliases
+  "Replaces aliases of parameter names"
+  [params]
+  (-> params
+      (clojure.set/rename-keys param-aliases)
+      (update-in [:options]
+                 #(when % (clojure.set/rename-keys % param-aliases)))))
+
 (def param-name->type
   "A map of parameter names to types so that we can appropriately parse or validate them."
   {:entry_title :string
    :provider :string})
-
-(def param-aliases
-  "A map of parameter name aliases to their parameter name."
-  {:dataset_id :entry_title})
 
 (def valid-param-names
   "A set of the valid parameter names."
@@ -25,10 +33,42 @@
        (clojure.set/difference (set (keys params))
                                valid-param-names)))
 
+(defn unrecognized-params-in-options-validation
+  "Validates that no invalid parameters names in the options were supplied"
+  [params]
+  (if-let [options (:options params)]
+    (map #(str "Parameter [" (name %)"] with option was not recognized.")
+         (clojure.set/difference (set (keys options))
+                                 valid-param-names))
+    []))
+
+(defn options-only-for-string-conditions-validation
+  "Validates that only string conditions support options"
+  [params]
+  ;; TODO once we have more conditions than string conditions add a validation that only
+  ;; string conditions support options.
+  [])
+
+(defn unrecognized-params-settings-in-options-validation
+  "Validates that no invalid parameters names in the options were supplied"
+  [params]
+  (if-let [options (:options params)]
+    (apply concat
+           (map
+             (fn [[param settings]]
+               (map #(str "Option [" (name %) "] for param [" (name param) "] was not recognized." )
+                    (clojure.set/difference (set (keys settings)) (set [:ignore_case :pattern]))))
+             options))
+    []))
+
+
 (def parameter-validations
   "A list of the functions that can validate parameters. They all accept parameters as an argument
   and return a list of errors."
-  [unrecognized-params-validation])
+  [unrecognized-params-validation
+   unrecognized-params-in-options-validation
+   options-only-for-string-conditions-validation
+   unrecognized-params-settings-in-options-validation])
 
 (defn validate-parameters
   "Validates parameters. Throws exceptions to send to the user. Returns parameters if validation
@@ -65,11 +105,6 @@
     (qm/query concept-type) ;; matches everything
     (let [options (get params :options {})
           params (dissoc params :options)
-
-          ;; Correct key names for aliases
-          options (clojure.set/rename-keys options param-aliases)
-          params (clojure.set/rename-keys params param-aliases)
-
           ;; Convert params into conditions
           conditions (map (fn [[param value]]
                             (parameter->condition param value options))
