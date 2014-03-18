@@ -14,25 +14,29 @@
 ;;; Utility methods
 
 (defn- concept-type-prefix
-  "Truncate to four characters and upcase a concept-type to create a prefix for concept-ids"
+  "Truncate and upcase a concept-type to create a prefix for concept-ids"
   [concept-type-keyword]
   (let [concept-type (name concept-type-keyword)]
     (string/upper-case (subs concept-type 0 (min (count concept-type) concept-id-prefix-length)))))
 
 (defn- retrieve-concept
   "Get a concept by concept-id. Returns nil if concept is not found."
-    [db concept-id, revision-id]
-    (let [concepts (:concepts db)
-          concept-map (get @concepts (concept-type-prefix concept-id))
-          revisions (get concept-map concept-id)]
-      (if-let [concept (get revisions revision-id)]
-        concept
-        (last revisions))))
+  [db concept-id, revision-id]
+  (let [concepts (:concepts db)
+        concept-map (get @concepts (concept-type-prefix concept-id))
+        revisions (get concept-map concept-id)]
+    (when (and revision-id (or (< revision-id 0) (> revision-id (dec (count revisions)))))
+      (errors/throw-service-error :not-found "Revision %s" revision-id " does not exist"))
+    (if-let [concept (get revisions revision-id)]
+      concept
+      (last revisions))))
 
 (defn- save 
   "Save a concept"
   [concept-atom concept concept-type concept-map concept-id revisions]
-  (let [new-revisions (conj (or revisions []) concept)
+  (let [revision-id (count revisions)
+        revised-concept (assoc concept :revision-id revision-id)
+        new-revisions (conj (or revisions []) revised-concept)
         new-concept-map (assoc concept-map concept-id new-revisions)]
     (swap! concept-atom assoc (concept-type-prefix concept-type) new-concept-map)
     (dec (count new-revisions))))
@@ -55,7 +59,7 @@
   "Returns a monotonically increasing number."
   [db]
   (swap! (:concept-id-seq db) inc))
-        
+
 ;;; An in-memory implementation of the provider store
 (defrecord InMemoryStore
   [
@@ -71,7 +75,7 @@
   
   (stop [this system]
         this)
-
+  
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   data/ConceptStore
   
@@ -90,23 +94,24 @@
           (swap! @stored-ids assoc concept-concept-id-key generated-id)
           generated-id))))
   
-  
   (get-concept
     [this concept-id revision-id]
     (if-let [concept (retrieve-concept this concept-id revision-id)]
       concept
       (if revision-id
         (errors/throw-service-error :not-found
-                                  "Could not find concept with concept-id of %s and revision %s."
-                                  concept-id
-                                  revision-id)
+                                    "Could not find concept with concept-id of %s and revision %s."
+                                    concept-id
+                                    revision-id)
         (errors/throw-service-error :not-found
-                                  "Could not find concept with concept-id of %s."
-                                  concept-id))))
-                                  
+                                    "Could not find concept with concept-id of %s."
+                                    concept-id))))
   
   (get-concepts
-    [this concept-id-revision-id-tuples])
+    [this concept-id-revision-id-tuples]
+    ;; An SQL based DB would have a more efficient way to do this, but
+    ;; an in-memory map like this has to pull things back one-by-one.
+    (remove nil? (map #(retrieve-concept this (first %) (last %)) concept-id-revision-id-tuples)))
   
   (save-concept
     [this concept]
@@ -126,8 +131,8 @@
   (force-delete
     [this]
     (reset-database this)))
-        
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;     
 
 (defn create-db
   "Creates the in memory store."
@@ -135,4 +140,3 @@
   (map->InMemoryStore {:concept-id-seq (atom 0) ;; number seqeunce generator for id generation
                        :concept-concept-id (atom {}) ;; generated ids
                        :concepts (atom {})})) ;; actual stored concepts                   
-  

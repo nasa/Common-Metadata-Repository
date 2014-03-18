@@ -13,7 +13,7 @@
   
   (get-concepts
     [db concept-id-revision-id-tuples]
-    "Get multiple concepts at once by specifying a list of
+    "Get a sequence of concepts by specifying a list of
     tuples holding concept-id/revision-id") 
     
   (save-concept
