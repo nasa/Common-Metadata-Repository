@@ -7,7 +7,8 @@
                  [clj-http "0.9.0"]
                  [org.clojure/data.xml "0.0.7"]
                  ; include ring-core to support encoding of params
-                 [ring/ring-core "1.2.1"]]
+                 [ring/ring-core "1.2.1"]
+                 [cheshire "5.2.0"]]
 
   :profiles
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.4"]
