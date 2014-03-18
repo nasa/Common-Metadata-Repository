@@ -132,3 +132,21 @@
           dataset-ids (map #(:dataset-id %) references)]
       (is (= 2 (count references)))
       (is (= #{"OneCollectionV1"} (into #{} dataset-ids))))))
+
+(deftest search-error-scenarios
+  (testing "search by un-supported parameter."
+    (try
+      (search/find-collection-refs {:unsupported "dummy"})
+      (catch clojure.lang.ExceptionInfo e
+        (let [status (get-in (ex-data e) [:object :status])
+              body (get-in (ex-data e) [:object :body])]
+          (is (= 400 status))
+          (is (re-matches #".*Unexpected parameter name in the query: unsupported" body))))))
+  (testing "search by un-supported options."
+    (try
+      (search/find-collection-refs {:dataset_id "abcd", "options[dataset_id][unsupported]" "true"})
+      (catch clojure.lang.ExceptionInfo e
+        (let [status (get-in (ex-data e) [:object :status])
+              body (get-in (ex-data e) [:object :body])]
+          (is (= 422 status))
+          (is (re-matches #".*Option \[unsupported\] for param \[entry_title\] was not recognized.*" body)))))))
