@@ -4,7 +4,8 @@
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [com.taoensso/timbre "3.1.6"]
                  [ring/ring-jetty-adapter "1.2.2"]
-                 [org.clojure/test.check "0.5.7"]]
+                 [org.clojure/test.check "0.5.7"]
+                 [org.clojure/data.xml "0.0.7"]]
 
   :profiles
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.4"]
