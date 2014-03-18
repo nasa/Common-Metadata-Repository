@@ -1,8 +1,6 @@
 (ns cmr.common.util
+  "Utility functions that might be useful throughout the CMR."
   (:require [cmr.common.log :refer (debug info warn error)]))
-
-;; Consider moving this and the utils from echo-metaviz into some kind of common cmr library.
-;; Do this before copying and pasting code into here or copying code out of here into another project.
 
 (defn sequence->fn
   [vals]
@@ -42,4 +40,10 @@
       (finally
         (info ~taskname " complete.")))))
 
-
+(defn parse-concept-id
+  "Split a concept id into concept-type-prefix, sequence number, and provider id."
+  [concept-id]
+  (let [prefix (first concept-id)
+        seq-num (re-find #"\d+" concept-id)
+        provider-id (get (re-find #"\d+-(.*)" concept-id) 1)]
+    {:concept-prefix prefix :sequence-number seq-num :provider-id provider-id}))
