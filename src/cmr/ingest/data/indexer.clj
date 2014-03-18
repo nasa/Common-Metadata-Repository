@@ -28,27 +28,13 @@
    :conn-timeout 2000    ;; in milliseconds
    :accept :json})
 
-(defn- indexer-response-handler
-  "Log unexpected errors from indexer app and rethrow errors."
+(defn- indexer 
+  "Submit a concept for indexing."
   [http-request]
-  (info "data indexer req: " http-request)
-  (try
-    (client/request http-request)
-    (catch Exception e 
-      (warn "Exception occurred while accessing indexer app: " (.getMessage e))
-      (throw e))))
-    
-    (defn- indexer
-      "Submit a concept for indexing."
-      [http-request]
-      (let [response (indexer-response-handler http-request) 
-            status (:status response)
-            body (cheshire/parse-string (:body response))
-            error-messages (get body "errors")]
-        (if-not (= 201 status)
-          (errors/internal-error! (str "Operation to index a concept failed. Indexer app response status code: "  status (str response)))
-          {:status status :error-messages error-messages})))
-
+  (let [response (client/request http-request) 
+        status (:status response)]
+    (when-not (= 201 status)
+      (errors/internal-error! (str "Operation to index a concept failed. Indexer app response status code: "  status (str response))))))
 
 ;;; datalayer protocol to access indexer db
 (defrecord Indexer-DB
@@ -71,9 +57,8 @@
     (let [{:keys [host port indexer-url]} (:config this)
           concept-attribs (into {} [[:concept-id concept-id] [:revision-id revision-id]])
           concept-attribs-json-str (cheshire/generate-string concept-attribs)
-          http-request (build-http-request-fn "post" indexer-url concept-attribs-json-str)
-          {:keys [status error-messages]}  (indexer http-request)]
-      status)))
+          http-request (build-http-request-fn "post" indexer-url concept-attribs-json-str)]
+      (indexer http-request))))
 
 (defn create
   "Create proxy to indexer app."

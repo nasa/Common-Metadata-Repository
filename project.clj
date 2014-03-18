@@ -7,7 +7,7 @@
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [compojure "1.1.6"]
                  [ring/ring-core "1.2.1"]
-                 [ring/ring-json "0.2.0"]
+                 [ring/ring-json "0.3.0"]
                  [org.clojure/tools.reader "0.8.3"]
                  [clj-http "0.9.0"]
                  [cheshire "5.3.1"]

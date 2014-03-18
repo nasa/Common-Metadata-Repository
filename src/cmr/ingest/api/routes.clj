@@ -11,8 +11,8 @@
             [cheshire.core :as cheshire]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.api.errors :as errors]
-            [cmr.ingest.services.ingest :as ingest])
-  (:use clojure.walk))
+            [cmr.ingest.services.ingest :as ingest]
+            [clojure.walk :as walk]))
 
 (defn- build-routes [system]
   (routes
@@ -23,12 +23,12 @@
                                  (routes
                                    (context "/:native-id" [native-id]
                                             (PUT "/" params
-                                                 (ingest/save-n-index-concept system 
-                                                               (assoc  (keywordize-keys (:body params)) 
-                                                                 :provider-id provider-id 
-                                                                 :native-id native-id
-                                                                 :concept-type :collections)))))))))
-    (route/not-found "Not Found")))
+                                                 (r/response (ingest/save-concept system 
+                                                                                  (assoc  (walk/keywordize-keys (:body params)) 
+                                                                                    :provider-id provider-id 
+                                                                                    :native-id native-id
+                                                                                    :concept-type :collection)))))))))
+             (route/not-found "Not Found"))))
 
 (defn make-api [system]
   (-> (build-routes system)
