@@ -20,7 +20,9 @@
 (def param-name->type
   "A map of parameter names to types so that we can appropriately parse or validate them."
   {:entry_title :string
-   :provider :string})
+   :provider :string
+   :short_name :string
+   :version :string})
 
 (def valid-param-names
   "A set of the valid parameter names."
