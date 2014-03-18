@@ -4,26 +4,28 @@
   (:require [cheshire.core :as json]
             [pantomime.media :as mt]
             [cmr.common.services.errors :as errors]
-            [clojure.data.xml :as x]
-            [clojure.set]))
+            [clojure.data.xml :as x]))
 
 (def default-search-result-format :json)
 
 (def base-mime-type-to-format
   "A map of base mime types to the format symbols supported"
-  {"application/json" :json
+  {"*/*" default-search-result-format
+   "application/json" :json
    "application/xml" :xml})
 
 (defn mime-type->format
   "Converts a mime-type into the format requested."
   [mime-type]
   (if mime-type
+
     (get base-mime-type-to-format
          (str (mt/base-type (mt/parse mime-type))))
     default-search-result-format))
 
 (def format->mime-type
-  (clojure.set/map-invert base-mime-type-to-format))
+  {:json "application/json"
+   :xml "application/xml"})
 
 (defn validate-search-result-mime-type
   "Validates the requested search result mime type."

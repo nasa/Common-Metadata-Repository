@@ -14,7 +14,8 @@
 (deftest validate-search-result-mime-type-test
   (testing "valid mime types"
     (s/validate-search-result-mime-type "application/json")
-    (s/validate-search-result-mime-type "application/xml"))
+    (s/validate-search-result-mime-type "application/xml")
+    (s/validate-search-result-mime-type "*/*"))
   (testing "invalid mime types"
     (is (thrown-with-msg?
           clojure.lang.ExceptionInfo
