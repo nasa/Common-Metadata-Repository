@@ -1,5 +1,6 @@
 (ns cmr.search.models.query
-  "Defines various query models and conditions.")
+  "Defines various query models and conditions."
+  (:require [cmr.common.services.errors :as errors]))
 
 (defrecord Query
   [
@@ -52,19 +53,21 @@
   ([field value case-sensitive? pattern?]
    (->StringCondition field value case-sensitive? pattern?)))
 
-;; FIXME write test for this stuff after initial prototyping
+(defn group-conds
+  "Combines the conditions together in the specified type of group."
+  [type conditions]
+  (cond
+    (empty? conditions) (errors/internal-error! "Grouping empty list of conditions")
+    (= (count conditions) 1) (first conditions)
+    :else (->ConditionGroup type conditions)))
 
 (defn and-conds
   "Combines conditions in an AND condition."
   [conditions]
-  (if (> (count conditions) 1)
-    (->ConditionGroup :and conditions)
-    (first conditions)))
+  (group-conds :and conditions))
 
 (defn or-conds
   "Combines conditions in an OR condition."
   [conditions]
-  (if (> (count conditions) 1)
-    (->ConditionGroup :or conditions)
-    (first conditions)))
+  (group-conds :or conditions))
 
