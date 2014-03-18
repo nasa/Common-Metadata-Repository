@@ -56,8 +56,8 @@
 
 (defn- get-concept-id
   "Get the concept id for a given concept."
-  [system concept]
-  (let [concept-id (concept-services/get-concept-id system (clojure.walk/keywordize-keys concept))]
+  [system concept-type provider-id native-id]
+  (let [concept-id (concept-services/get-concept-id system concept-type provider-id native-id)]
     {:status 200
      :body {:concept-id concept-id}
      :headers json-header}))
@@ -81,8 +81,8 @@
              (POST "/search" params
                    (get-concepts system (get (:body params) "concept-revisions"))))
     
-    (GET "/concept-id" params
-         (get-concept-id params))
+    (GET "/concept-id/:concept-type/:provider-id/:native-id" [concept-type provider-id native-id]
+         (get-concept-id system concept-type provider-id native-id))
     
     (route/not-found "Not Found")))
 
