@@ -20,7 +20,7 @@
    :format "echo10"})
 
 (defn get-concept-by-id-and-revision
-  "Make a get to retrieve a concept by concept-id and revision."
+  "Make a GET to retrieve a concept by concept-id and revision."
   [concept-id revision-id]
   (let [response (client/get (str service-endpoint concept-id "/" revision-id)
                              {:accept :json
@@ -32,7 +32,7 @@
       {:status status :concept nil})))
 
 (defn get-concept-by-id
-  "Make a get to retrieve a concept by concept-id."
+  "Make a GET to retrieve a concept by concept-id."
   [concept-id]
   (let [response (client/get (str service-endpoint concept-id)
                              {:accept :json
@@ -43,8 +43,29 @@
         {:status status :concept found-concept})
       {:status status :concept nil})))
 
+(defn get-concepts
+  "Make a POST to retrieve concepts by concept-id and revision."
+  [tuples]
+  (let [body {:concept-revisions tuples}]
+    (let [response (client/post (str service-endpoint "search")
+                                {:body (cheshire/generate-string body)
+                                 :body-encoding "UTF-8"
+                                 :content-type :json
+                                 :accept :json
+                                 :throw-exceptions false})
+          status (:status response)
+          concepts (vec (cheshire/parse-string (:body response)))]
+      {:status status :concepts concepts})))
+
+(defn concepts-and-ids-equal?
+  "Compare a vector of concepts returned by the API to a set of concept-ids"
+  [concepts concept-ids]
+  (if (not= (count concepts) (count concept-ids))
+    false
+    (every? true? (map #(= (get %1 "concept-id") %2) concepts concept-ids))))
+                                                                 
 (defn save-concept
-  "Make a post request to save a concept without JSON encoding the concept.  Returns a map with
+  "Make a POST request to save a concept without JSON encoding the concept.  Returns a map with
   status, revision-id, and a list of error messages"
   [concept]
   (let [response (client/post service-endpoint 

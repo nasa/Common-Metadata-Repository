@@ -111,12 +111,7 @@
     [this concept-id-revision-id-tuples]
     ;; An SQL based DB would have a more efficient way to do this, but
     ;; an in-memory map like this has to pull things back one-by-one.
-    (let [concepts []]
-      (for [[concept-id revision-id] concept-id-revision-id-tuples]
-        (let [concept (retrieve-concept this concept-id revision-id)]
-          (if concept
-            (conj concepts concept))))
-      concepts))
+    (remove nil? (map #(retrieve-concept this (first %) (last %)) concept-id-revision-id-tuples)))
   
   (save-concept
     [this concept]

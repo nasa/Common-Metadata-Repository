@@ -12,8 +12,9 @@
 (defn get-concepts
   "Get multiple concepts by concept-id and revision-id."
   [system concept-id-revision-id-tuples]
-  (let [{:keys [db]} system]
-    (data/get-concepts db concept-id-revision-id-tuples)))
+  (let [{:keys [db]} system
+        concepts (data/get-concepts db concept-id-revision-id-tuples)]
+    (vec concepts)))
 
 (defn save-concept
   "Store a concept record and return the revision."
