@@ -101,13 +101,13 @@
   "Converts parameters into a query model."
   [concept-type params]
 
-  (if (empty? params)
-    (qm/query concept-type) ;; matches everything
-    (let [options (get params :options {})
-          params (dissoc params :options)
-          ;; Convert params into conditions
-          conditions (map (fn [[param value]]
-                            (parameter->condition param value options))
-                          params)]
-      (qm/query concept-type (qm/and-conds conditions)))))
+  (let [options (get params :options {})
+        params (dissoc params :options)]
+    (if (empty? params)
+      (qm/query concept-type) ;; matches everything
+      ;; Convert params into conditions
+      (let [conditions (map (fn [[param value]]
+                              (parameter->condition param value options))
+                            params)]
+        (qm/query concept-type (qm/and-conds conditions))))))
 

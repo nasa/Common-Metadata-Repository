@@ -6,7 +6,8 @@
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.api.web-server :as web]
             [cmr.search.api.routes :as routes]
-            [cmr.search.data.elastic-search-index :as idx])
+            [cmr.search.data.elastic-search-index :as idx]
+            [cmr.common.test.repeat-last-request :as repeat-last-request])
   (:use [clojure.test :only [run-all-tests]]
         [clojure.repl]
         [alex-and-georges.debug-repl]))
@@ -19,7 +20,7 @@
 (defn start
   "Starts the current development system."
   []
-  (let [web-server (web/create-web-server 3000 routes/make-api)
+  (let [web-server (web/create-web-server 3003 (repeat-last-request/wrap-api routes/make-api))
         log (log/create-logger)
         search-index (idx/create-elastic-search-index "localhost" 9200)
         s (system/create-system log web-server search-index)]

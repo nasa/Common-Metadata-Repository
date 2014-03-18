@@ -17,7 +17,7 @@
 
 (def arg-description
   [["-h" "--help" "Show help" :default false :flag true]
-   ["-p" "--port" "The HTTP Port to listen on for requests." :default 3000 :parse-fn #(Integer. %)]])
+   ["-p" "--port" "The HTTP Port to listen on for requests." :default 3003 :parse-fn #(Integer. %)]])
 
 
 (defn parse-args [args]

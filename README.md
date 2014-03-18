@@ -47,8 +47,6 @@ curl -H "Accept: application/json" -i "http://localhost:3000/collections?entry_t
 ```
 curl -H "Accept: application/json" -i "http://localhost:3000/collections?entry_title\[\]=DatasetId%204&entry_title\[\]=DatasetId%205"
 ```
-;;
-
 
 ### Find as XML
 TODO implement support for retrieving in XML.
