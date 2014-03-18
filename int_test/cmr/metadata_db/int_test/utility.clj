@@ -34,14 +34,6 @@
         concept-id (:concept-id (clojure.walk/keywordize-keys (cheshire/parse-string (:body response))))]
     {:status status :concept-id concept-id}))
 
-(defn split-concept-id
-  "Split a concept id into concept-type-prefix, sequence number, and provider id."
-  [concept-id]
-  (let [prefix (first concept-id)
-        seq-num (re-find #"\d+" concept-id)
-        provider-id (get (re-find #"\d+-(.*)" concept-id) 1)]
-    {:concept-prefix prefix :sequence-number seq-num :provider-id provider-id}))
-
 (defn get-concept-by-id-and-revision
   "Make a GET to retrieve a concept by concept-id and revision."
   [concept-id revision-id]
