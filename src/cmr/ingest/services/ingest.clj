@@ -7,6 +7,7 @@
   [system concept]
   (let [{:keys [db]} system
         {:keys [concept-type provider-id native-id]} concept]
+    (info "service - concept id: " (data/get-concept-id db concept-type provider-id native-id))
     (data/get-concept-id db concept-type provider-id native-id)))
     
 (defn save-concept
@@ -15,9 +16,22 @@
   (let [{:keys [db]} system]
     (data/save-concept db concept)))
 
-(defn stage-concept-for-indexing
-  "Stage attributes of a concept for indexer app consumption."
+(defn index-concept
+  "Forward newly created concept for indexer app consumption."
   [system concept]
   (let [{:keys [idx-db]} system
         {:keys [concept-id revision-id]} concept]
-    (data/stage-concept-for-indexing idx-db concept-id revision-id)))
+    (data/index-concept idx-db concept-id revision-id)))
+
+(defn save-n-index-concept
+  "Store a concept and return the revision"
+  [system concept]
+  (let [concept-id (get-concept-id system concept)
+        revision-id (save-concept system (assoc concept :concept-id  concept-id))
+        indexer-response-code (index-concept system (assoc concept :concept-id  concept-id :revision-id revision-id))]
+    (info "service - concept id: " concept-id)
+    (info "service - revision-id : " revision-id )
+    (info "service - indexer-response-code: " indexer-response-code)
+    {:status 201
+     :body {:revision-id revision-id :concept-id concept-id :indexer-response-code indexer-response-code}
+     :headers {"Content-Type" "json"}}))

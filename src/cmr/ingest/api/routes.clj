@@ -14,17 +14,6 @@
             [cmr.ingest.services.ingest :as ingest])
   (:use clojure.walk))
 
-(defn- save-concept
-  "Store a concept and return the revision"
-  [system concept]
-  (let [concept-id (ingest/get-concept-id system concept)
-        revision-id (ingest/save-concept system (assoc concept :concept-id  concept-id))
-        indexer-response-code (ingest/stage-concept-for-indexing system 
-                                                                 (assoc concept :concept-id  concept-id :revision-id revision-id))]
-    {:status 201
-     :body {:revision-id revision-id :concept-id concept-id :indexer-response-code indexer-response-code}
-     :headers {"Content-Type" "json"}}))
-
 (defn- build-routes [system]
   (routes
     (context "/providers" []
@@ -34,13 +23,12 @@
                                  (routes
                                    (context "/:native-id" [native-id]
                                             (PUT "/" params
-                                                 (save-concept system 
-                                                               (assoc  (keywordize-keys (:body params)) ;(cheshire/parse-string (:body params))
+                                                 (ingest/save-n-index-concept system 
+                                                               (assoc  (keywordize-keys (:body params)) 
                                                                  :provider-id provider-id 
                                                                  :native-id native-id
                                                                  :concept-type :collections)))))))))
     (route/not-found "Not Found")))
-
 
 (defn make-api [system]
   (-> (build-routes system)

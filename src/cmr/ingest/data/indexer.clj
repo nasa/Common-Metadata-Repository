@@ -6,15 +6,14 @@
             [clj-http.client :as client]
             [cheshire.core :as  cheshire] 
             [cmr.common.log :as log :refer (debug info warn error)]
-            [cmr.common.services.errors :as errors])
-  (:use [slingshot.slingshot :only [throw+ try+]]))
+            [cmr.common.services.errors :as errors]))
 
 (defn indexer-config
   "Returns default Indexer-DB Config."
   []
   (let [host "localhost"
         port 3004
-        indexer-url (str "http://" host ":" port "/concepts")]
+        indexer-url (str "http://" host ":" port)]
     {:host host, :port port, :indexer-url indexer-url}))
 
 (defn build-http-request-fn
@@ -32,27 +31,23 @@
 (defn- indexer-response-handler
   "Log unexpected errors from indexer app and rethrow errors."
   [http-request]
-  (try+
-    ;; suppress errors until indexer service is up 
+  (info "data indexer req: " http-request)
+  (try
     (client/request http-request)
     (catch Exception e 
       (warn "Exception occurred while accessing indexer app: " (.getMessage e))
-      #_(throw e)
-      {:status 201})
-    (catch Object o
-      (warn (:throwable &throw-context) "Unexpected error while accessing indexer app")
-      #_(throw+ o)
-      {:status 201})))
+      (throw e))))
     
-(defn- stage-concept
-  "Submit a concept for indexing."
-  [http-request]
-  (let [;; response (client/request http-request)  ;; need to catch exception here
-        response (indexer-response-handler http-request) 
-        status (:status response)
-        body (cheshire/parse-string (:body response))
-        error-messages (get body "errors")]
-    {:status status :error-messages error-messages}))
+    (defn- indexer
+      "Submit a concept for indexing."
+      [http-request]
+      (let [response (indexer-response-handler http-request) 
+            status (:status response)
+            body (cheshire/parse-string (:body response))
+            error-messages (get body "errors")]
+        (if-not (= 201 status)
+          (errors/internal-error! (str "Operation to index a concept failed. Indexer app response status code: "  status (str response)))
+          {:status status :error-messages error-messages})))
 
 
 ;;; datalayer protocol to access indexer db
@@ -71,13 +66,13 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   data/ConceptIndexStore
   
-  (stage-concept-for-indexing
+  (index-concept
     [this concept-id revision-id]              
     (let [{:keys [host port indexer-url]} (:config this)
           concept-attribs (into {} [[:concept-id concept-id] [:revision-id revision-id]])
           concept-attribs-json-str (cheshire/generate-string concept-attribs)
           http-request (build-http-request-fn "post" indexer-url concept-attribs-json-str)
-          {:keys [status error-messages]}  (stage-concept http-request)]
+          {:keys [status error-messages]}  (indexer http-request)]
       status)))
 
 (defn create

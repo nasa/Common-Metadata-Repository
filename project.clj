@@ -11,7 +11,6 @@
                  [org.clojure/tools.reader "0.8.3"]
                  [clj-http "0.9.0"]
                  [cheshire "5.3.1"]
-                 [slingshot "0.10.3"]
                  [org.clojure/tools.cli "0.3.1"]]
   :plugins []
   :main cmr.ingest.runner

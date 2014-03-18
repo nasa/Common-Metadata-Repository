@@ -31,7 +31,6 @@
     (info "System started")
     started-system))
 
-
 (defn stop
   "Performs side effects to shut down the system and release its
   resources. Returns an updated instance of the system."

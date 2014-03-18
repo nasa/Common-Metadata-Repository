@@ -17,6 +17,6 @@
 (defprotocol ConceptIndexStore
   "Functions for staging concepts for the purposes of indexing."
     
-  (stage-concept-for-indexing
+  (index-concept
     [db concept-id revision-id]
-    "Stage attributes of a concept for indexer app consumption."))
+    "Forward newly created concept for indexer app consumption."))
