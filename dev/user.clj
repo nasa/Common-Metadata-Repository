@@ -22,7 +22,7 @@
   "Starts the current development system."
   []
   (let [db (memory/create-db)
-        web-server (web/create-web-server 3000 routes/make-api)
+        web-server (web/create-web-server 3001 routes/make-api)
         log (log/create-logger)
         s (system/create-system db log web-server)]
     (alter-var-root #'system

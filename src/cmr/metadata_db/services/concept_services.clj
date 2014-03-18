@@ -30,7 +30,6 @@
 
 (defn get-concept-id
   "Get a concept id for a given concept."
-  [system concept]
-  (let [{:keys [db]} system
-        {:keys [concept-type provider-id native-id]} concept]
+  [system concept-type provider-id native-id]
+  (let [{:keys [db]} system]
     (data/get-concept-id db concept-type provider-id native-id)))

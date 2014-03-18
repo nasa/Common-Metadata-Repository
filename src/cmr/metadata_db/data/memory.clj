@@ -89,9 +89,9 @@
           stored-id (get @stored-ids concept-concept-id-key)]
       (if stored-id
         stored-id
-        (let [seq-num (concept-id-seq)
+        (let [seq-num (concept-id-seq this)
               generated-id (str type-prefix seq-num "-" provider-id)]
-          (swap! @stored-ids assoc concept-concept-id-key generated-id)
+          (swap! stored-ids assoc concept-concept-id-key generated-id)
           generated-id))))
   
   (get-concept
