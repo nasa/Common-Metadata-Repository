@@ -22,6 +22,12 @@
   (let [{:keys [db]} system]
     (data/save-concept db concept)))
 
+(defn delete-concept
+  "Add a tombstone record to mark a concept as deleted and return the revision-id of the tomebsone."
+  [system concept-id]
+  (let [{:keys [db]} system]
+    (data/delete-concept db concept-id)))
+
 (defn force-delete
   "Delete all concepts from the concept store."
   [system]

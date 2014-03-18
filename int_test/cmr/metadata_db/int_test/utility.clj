@@ -5,7 +5,7 @@
             [cheshire.core :as cheshire]))
 
 ;;; Enpoints for services - change this for tcp-mon
-(def port 3001)
+(def port 3000)
 
 (def service-endpoint (str "http://localhost:" port "/concepts/"))
 
@@ -80,7 +80,7 @@
     (every? true? (map #(= (get %1 "concept-id") %2) concepts concept-ids))))
 
 (defn save-concept
-  "Make a POST request to save a concept without JSON encoding the concept.  Returns a map with
+  "Make a POST request to save a concept with JSON encoding of the concept.  Returns a map with
   status, revision-id, and a list of error messages"
   [concept]
   (let [response (client/post service-endpoint 
@@ -89,6 +89,18 @@
                                :content-type :json
                                :accept :json
                                :throw-exceptions false})
+        status (:status response)
+        body (cheshire/parse-string (:body response))
+        revision-id (get body "revision-id")
+        error-messages (get body "errors")]
+    {:status status :revision-id revision-id :error-messages error-messages}))
+
+(defn delete-concept
+  "Make a DELETE request to mark a concept as deleted. Returns the status and revision id of the 
+  tombstone."
+  [concept-id]
+  (let [response (client/delete (str service-endpoint concept-id)
+                                {:throw-exceptions false})
         status (:status response)
         body (cheshire/parse-string (:body response))
         revision-id (get body "revision-id")
