@@ -14,7 +14,7 @@
 ;; update it after the indexer and metadata db are implemented
 
 (def concept-type->index-info
-  {:collection {:index-name "echo"
+  {:collection {:index-name "echo_search"
                 :type-name "dataset"
                 :fields ["dataset_id" "provider_id"]}})
 
