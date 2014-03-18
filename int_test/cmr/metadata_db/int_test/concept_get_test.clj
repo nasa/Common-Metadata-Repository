@@ -33,17 +33,17 @@
 
 ;;; tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-#_(deftest mdb-get-concept-test
+(deftest mdb-get-concept-test
   "Get the latest version of a concept by concept-id."
   (let [{:keys [status concept]} (util/get-concept-by-id (:concept-id (util/concept)))]
     (is (and (= status 200) (= (:revision-id concept) 2)))))
 
-#_(deftest mdb-get-concept-with-version-test
+(deftest mdb-get-concept-with-version-test
   "Get a concept by concept-id and version-id."
   (let [{:keys [status concept]} (util/get-concept-by-id-and-revision (:concept-id (util/concept)) 1)]
     (is (and (= status 200) (= (:revision-id concept) 1)))))
 
-#_(deftest mdb-get-concept-invalid-concept-id-or-revision-test
+(deftest mdb-get-concept-invalid-concept-id-or-revision-test
   "Expect a status 4XX if we try to get a concept that doesn't exist or use an improper concept-id."
   (testing "invalid concept-id"
     (let [{:keys [status]} (util/get-concept-by-id "bad id")]
@@ -57,7 +57,7 @@
           {:keys [status]}(util/get-concept-by-id-and-revision (:concept-id concept) "NON-INTEGER")]
       (is (= 422 status)))))
 
-(deftest mdb-get-concept-test
+(deftest mdb-get-concepts-test
   "Get concepts by specifying tuples of concept-ids and revision-ids."
   (let [concept1 (util/concept)
         concept2 (assoc concept1 :concept-id "C2-PROV1")
