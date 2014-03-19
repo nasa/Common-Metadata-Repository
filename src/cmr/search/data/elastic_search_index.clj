@@ -13,7 +13,10 @@
 (def concept-type->index-info
   {:collection {:index-name "collections"
                 :type-name "collection"
-                :fields ["entry-title" "provider-id"]}})
+                :fields ["entry-title"
+                         "provider-id"
+                         "short-name"
+                         "version-id"]}})
 
 (defn- elastic-results->query-results
   "Converts the Elasticsearch results into the results expected from execute-query"
