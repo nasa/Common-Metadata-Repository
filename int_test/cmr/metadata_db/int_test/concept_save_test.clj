@@ -40,6 +40,23 @@
         retrieved-revision (:revision-id retrieved-concept)]
     (is (and (= status 409) (nil? retrieved-revision)))))
 
+(deftest mdb-save-concept-with-missing-required-parameter
+  "Fail to save a concept if a required parameter is missing"
+  (testing "missing concept-type"
+    (let [{:keys [status error-messages]} (util/save-concept (dissoc (util/concept) :concept-type))]
+      (is (and (= 422 status) (re-find #"concept-type" (first error-messages))))))
+  (testing "missing concept-id"
+    (let [{:keys [status error-messages]} (util/save-concept (dissoc (util/concept) :concept-id))]
+      (is (and (= 422 status) (re-find #"concept-id" (first error-messages)))))))
+
+(deftest mdb-save-concept-after-delete
+  "Verify that a save after delete returns the correct revision."
+  (let [concept (util/concept)]
+    (util/save-concept concept)
+    (util/delete-concept (:concept-id concept))
+    (let [{:keys [status revision-id]} (util/save-concept concept)]
+      (is (= revision-id 2)))))
+
 ;;; This test is disabled because the middleware is currently returning a
 ;;; 500 status code instead of a 400. This will be addressed as a separate
 ;;; issue.
@@ -55,15 +72,3 @@
         body (cheshire/parse-string (:body response))
         error-messages (get body "errors")]
     (is (= status 400))))
-
-(deftest mdb-save-concept-with-missing-required-parameter
-  "Fail to save a concept if a required parameter is missing"
-  (testing "missing concept-type"
-    (let [{:keys [status]} (util/save-concept (dissoc (util/concept) :concept-type))]
-      (is (= 422 status))))
-  (testing "missing concept-id"
-    (let [{:keys [status]} (util/save-concept (dissoc (util/concept) :concept-id))]
-      (is (= 422 status)))))
-
-
-

@@ -46,6 +46,14 @@
      :body {:revision-id revision-id}
      :headers json-header}))
 
+(defn- delete-concept
+  "Mark a concept as deleted (create a tombstone)."
+  [system concept-id]
+  (let [revision-id (concept-services/delete-concept system concept-id)]
+    {:status 200
+     :body {:revision-id revision-id}
+     :headers json-header}))
+
 (defn- force-delete
   "Delete all concepts from the data store"
   [system]
@@ -71,6 +79,7 @@
              ;; saves a concept
              (POST "/" params
                    (save-concept system (:body params)))
+             (DELETE "/:id" [id] (delete-concept system id))
              ;; delete the entire database
              (DELETE "/" params
                      (force-delete system))

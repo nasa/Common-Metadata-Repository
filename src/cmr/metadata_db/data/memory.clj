@@ -5,6 +5,7 @@
             [cmr.common.lifecycle :as lifecycle]
             [clojure.string :as string]
             [cmr.common.services.errors :as errors]
+            [cmr.common.util :as cutil]
             [clojure.pprint :refer (pprint pp)]))
 
 ;;; Constants
@@ -40,6 +41,35 @@
         new-concept-map (assoc concept-map concept-id new-revisions)]
     (swap! concept-atom assoc (concept-type-prefix concept-type) new-concept-map)
     (dec (count new-revisions))))
+
+(defn- create-tombstone-for-concept
+  "Create a tombstone from a versioned concept."
+  [concept]
+  {:concept-type (:concept-type concept)
+   :native-id (:native-id concept)
+   :concept-id (:concept-id concept)
+   :provider-id (:provider-id concept)
+   :deleted true
+   :revision-id (inc (:revision-id concept))})
+
+(defn- is-tombstone?
+  "Check to see if an entry is a tombstone (has a :deleted true entry)."
+  [concept]
+  (:deleted concept))
+
+(defn- delete
+  "Delete a concept (create tombstone)."
+  [concept-atom concept-id concept-map revisions]
+  (let [{:keys [concept-prefix]} (cutil/parse-concept-id concept-id)
+        concept (last revisions)
+        tombstone (create-tombstone-for-concept concept)
+        new-revisions (conj revisions tombstone)
+        new-concept-map (assoc concept-map concept-id new-revisions)]
+    (if (is-tombstone? concept)
+      (:revision-id concept)
+      (do (swap! concept-atom assoc concept-prefix new-concept-map)
+        (:revision-id tombstone)))))
+
 
 (defn- validate-concept
   "Validate that a concept has the fields we need to save it."
@@ -111,7 +141,8 @@
     [this concept-id-revision-id-tuples]
     ;; An SQL based DB would have a more efficient way to do this, but
     ;; an in-memory map like this has to pull things back one-by-one.
-    (remove nil? (map #(retrieve-concept this (first %) (last %)) concept-id-revision-id-tuples)))
+    (remove nil? (map #(try (retrieve-concept this (first %) (last %))
+                         (catch Exception e nil)) concept-id-revision-id-tuples)))
   
   (save-concept
     [this concept]
@@ -127,6 +158,18 @@
                                     (count revisions)
                                     revision-id))
       (save concepts concept concept-type concept-map concept-id revisions)))
+  
+  (delete-concept
+    [this concept-id]
+    (let [concepts (:concepts this)
+          concept-prefix (:concept-prefix (cutil/parse-concept-id concept-id))
+          concept-map (get @concepts concept-prefix)
+          revisions (get concept-map concept-id)]
+      (when (nil? revisions)
+        (errors/throw-service-error :not-found
+                                    "Concept %s does not exist."
+                                    concept-id))
+      (delete concepts concept-id concept-map revisions)))
   
   (force-delete
     [this]

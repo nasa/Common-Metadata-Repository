@@ -4,7 +4,8 @@
   (:require [clojure.test :refer :all]
             [clj-http.client :as client]
             [cheshire.core :as cheshire]
-            [cmr.metadata-db.int-test.utility :as util]))
+            [cmr.metadata-db.int-test.utility :as util]
+            [cmr.common.util :as cutil]))
 
 ;;; fixtures
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -17,32 +18,32 @@
   "Get a concept-id for a given"
   (let [concept (util/concept)
         {:keys [status concept-id]} (util/get-concept-id (name (:concept-type concept))
-                                                      (:provider-id concept)
-                                                      (:native-id concept))]
+                                                         (:provider-id concept)
+                                                         (:native-id concept))]
     (is (and (= status 200) (= concept-id (:concept-id concept))))))
 
 (deftest mdb-get-concept-id-repeatedly-test
   "Get a concept-id for a given"
   (let [concept (util/concept)
         concept-id1-map (util/get-concept-id (name (:concept-type concept))
-                                                      (:provider-id concept)
-                                                      (:native-id concept))
+                                             (:provider-id concept)
+                                             (:native-id concept))
         concept-id2-map (util/get-concept-id (name (:concept-type concept))
-                                                      (:provider-id concept)
-                                                      (:native-id concept))]
+                                             (:provider-id concept)
+                                             (:native-id concept))]
     (is (= concept-id1-map concept-id2-map))))
 
 (deftest mdb-get-concpet-id-verify-different-sequence-numbers
   "Concepts with the same provider id and concept type should get concept-ids that differ only in the sequence number."
- (let [concept (util/concept)
+  (let [concept (util/concept)
         concept-id1 (:concept-id (util/get-concept-id (name (:concept-type concept))
                                                       (:provider-id concept)
                                                       (:native-id concept)))
         concept-id2 (:concept-id (util/get-concept-id (name (:concept-type concept))
                                                       (:provider-id concept)
                                                       (str (:native-id concept) "EXTRA TEXT")))
-        concept1-extracted-fields (util/split-concept-id concept-id1)
-        concept2-extracted-fields (util/split-concept-id concept-id2)]
+        concept1-extracted-fields (cutil/parse-concept-id concept-id1)
+        concept2-extracted-fields (cutil/parse-concept-id concept-id2)]
     (is (and (and (= (:concept-prefix concept1-extracted-fields) (:concept-prefix concept2-extracted-fields))
                   (= (:sequence-number concept1-extracted-fields) (:sequence-number concept2-extracted-fields)))
              (= (:provider-id concept1-extracted-fields) (:provider-id concept2-extracted-fields))))))

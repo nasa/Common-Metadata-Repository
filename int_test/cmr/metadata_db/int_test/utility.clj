@@ -7,9 +7,9 @@
 ;;; Enpoints for services - change this for tcp-mon
 (def port 3001)
 
-(def service-endpoint (str "http://localhost:" port "/concepts/"))
+(def concepts-url (str "http://localhost:" port "/concepts/"))
 
-(def id-service-endpoint (str "http://localhost:" port "/concept-id/"))
+(def concept-id-url (str "http://localhost:" port "/concept-id/"))
 
 
 ;;; utility methods
@@ -27,25 +27,17 @@
 (defn get-concept-id
   "Make a GET the id for a given concept-type, provider-id, and native-id."
   [concept-type provider-id native-id]
-  (let [response (client/get (str id-service-endpoint concept-type "/" provider-id "/" native-id)
+  (let [response (client/get (str concept-id-url concept-type "/" provider-id "/" native-id)
                              {:accept :json
                               :throw-exceptions false})
         status (:status response)
-        concept-id (:concept-id (clojure.walk/keywordize-keys (cheshire/parse-string (:body response))))]
+        concept-id (get (cheshire/parse-string (:body response)) "concept-id")]
     {:status status :concept-id concept-id}))
-
-(defn split-concept-id
-  "Split a concept id into concept-type-prefix, sequence number, and provider id."
-  [concept-id]
-  (let [prefix (first concept-id)
-        seq-num (re-find #"\d+" concept-id)
-        provider-id (get (re-find #"\d+-(.*)" concept-id) 1)]
-    {:concept-prefix prefix :sequence-number seq-num :provider-id provider-id}))
 
 (defn get-concept-by-id-and-revision
   "Make a GET to retrieve a concept by concept-id and revision."
   [concept-id revision-id]
-  (let [response (client/get (str service-endpoint concept-id "/" revision-id)
+  (let [response (client/get (str concepts-url concept-id "/" revision-id)
                              {:accept :json
                               :throw-exceptions false})
         status (:status response)]
@@ -57,7 +49,7 @@
 (defn get-concept-by-id
   "Make a GET to retrieve a concept by concept-id."
   [concept-id]
-  (let [response (client/get (str service-endpoint concept-id)
+  (let [response (client/get (str concepts-url concept-id)
                              {:accept :json
                               :throw-exceptions false})
         status (:status response)]
@@ -70,7 +62,7 @@
   "Make a POST to retrieve concepts by concept-id and revision."
   [tuples]
   (let [body {:concept-revisions tuples}]
-    (let [response (client/post (str service-endpoint "search")
+    (let [response (client/post (str concepts-url "search")
                                 {:body (cheshire/generate-string body)
                                  :body-encoding "UTF-8"
                                  :content-type :json
@@ -88,10 +80,10 @@
     (every? true? (map #(= (get %1 "concept-id") %2) concepts concept-ids))))
 
 (defn save-concept
-  "Make a POST request to save a concept without JSON encoding the concept.  Returns a map with
+  "Make a POST request to save a concept with JSON encoding of the concept.  Returns a map with
   status, revision-id, and a list of error messages"
   [concept]
-  (let [response (client/post service-endpoint 
+  (let [response (client/post concepts-url 
                               {:body (cheshire/generate-string concept)
                                :body-encoding "UTF-8"
                                :content-type :json
@@ -103,10 +95,22 @@
         error-messages (get body "errors")]
     {:status status :revision-id revision-id :error-messages error-messages}))
 
+(defn delete-concept
+  "Make a DELETE request to mark a concept as deleted. Returns the status and revision id of the 
+  tombstone."
+  [concept-id]
+  (let [response (client/delete (str concepts-url concept-id)
+                                {:throw-exceptions false})
+        status (:status response)
+        body (cheshire/parse-string (:body response))
+        revision-id (get body "revision-id")
+        error-messages (get body "errors")]
+    {:status status :revision-id revision-id :error-messages error-messages}))
+
 (defn reset-database
   "Make a request to reset the database by clearing out all stored concepts."
   []
-  (let [response (client/delete service-endpoint 
+  (let [response (client/delete concepts-url 
                                 {:throw-exceptions false})
         status (:status response)]
     status))
