@@ -76,22 +76,22 @@
 (defn- build-routes [system]
   (routes
     (context "/concepts" []
-             ;; saves a concept
-             (POST "/" params
-                   (save-concept system (:body params)))
-             ;; delete the entire database
-             (DELETE "/force-delete" params
-                     (force-delete system))
-             (DELETE "/:id" [id] (delete-concept system id))
-             ;; get a specific revision of a concept
-             (GET "/:id/:revision" [id revision] (get-concept system id revision))
-             ;; returns the latest revision of a concept
-             (GET "/:id" [id] (get-concept system id nil))
-             (POST "/search" params
-                   (get-concepts system (get (:body params) "concept-revisions"))))
+      ;; saves a concept
+      (POST "/" params
+        (save-concept system (:body params)))
+      ;; delete the entire database
+      (DELETE "/force-delete" params
+        (force-delete system))
+      (DELETE "/:id" [id] (delete-concept system id))
+      ;; get a specific revision of a concept
+      (GET "/:id/:revision" [id revision] (get-concept system id revision))
+      ;; returns the latest revision of a concept
+      (GET "/:id" [id] (get-concept system id nil))
+      (POST "/search" params
+        (get-concepts system (get (:body params) "concept-revisions"))))
     
     (GET "/concept-id/:concept-type/:provider-id/:native-id" [concept-type provider-id native-id]
-         (get-concept-id system concept-type provider-id native-id))
+      (get-concept-id system concept-type provider-id native-id))
     
     (route/not-found "Not Found")))
 
