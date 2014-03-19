@@ -70,5 +70,18 @@
     (is (and (= status 200) 
              (util/concepts-and-ids-equal? returned-concepts expected)))))
 
+(deftest mdb-get-concepts-with-one-invalid-revision-id-test
+  "Get concetps by specifying tuples of concept-ids and revision-ids with one invalid revision id
+  and only get back existing concepts."
+  (let [concept1 (util/concept)
+        concept2 (assoc concept1 :concept-id "C2-PROV1")
+        tuples [[(:concept-id concept1) 1] [(:concept-id concept2) 10]]
+        results (util/get-concepts tuples)
+        returned-concepts (:concepts results)
+        status (:status results)
+        expected [(:concept-id concept1)]]
+    (is (util/concepts-and-ids-equal? returned-concepts expected))
+    (is (and (= status 200) 
+             (util/concepts-and-ids-equal? returned-concepts expected)))))
 
-    
+

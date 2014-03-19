@@ -141,7 +141,8 @@
     [this concept-id-revision-id-tuples]
     ;; An SQL based DB would have a more efficient way to do this, but
     ;; an in-memory map like this has to pull things back one-by-one.
-    (remove nil? (map #(retrieve-concept this (first %) (last %)) concept-id-revision-id-tuples)))
+    (remove nil? (map #(try (retrieve-concept this (first %) (last %))
+                         (catch Exception e nil)) concept-id-revision-id-tuples)))
   
   (save-concept
     [this concept]
