@@ -27,7 +27,13 @@
                                                                                   (assoc  (walk/keywordize-keys (:body params)) 
                                                                                     :provider-id provider-id 
                                                                                     :native-id native-id
-                                                                                    :concept-type :collection)))))))))
+                                                                                    :concept-type :collection))))
+                                            (DELETE "/" params
+                                                    (r/response (ingest/delete-concept system 
+                                                                                       (assoc  (walk/keywordize-keys (:body params)) 
+                                                                                         :provider-id provider-id 
+                                                                                         :native-id native-id
+                                                                                         :concept-type :collection)))))))))
              (route/not-found "Not Found"))))
 
 (defn make-api [system]

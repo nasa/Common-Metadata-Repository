@@ -13,9 +13,10 @@
   []
   (let [host "localhost"
         port 3001
-        mdb-url (str "http://" host ":" port "/concepts")
-        mdb-concept-id-url (str "http://" host ":" port "/concept-id")]
-    {:host host, :port port, :mdb-url mdb-url, :mdb-concept-id-url mdb-concept-id-url}))
+        mdb-base-url (str "http://" host ":" port)
+        mdb-url (str mdb-base-url "/concepts")
+        mdb-concept-id-url (str mdb-base-url "/concept-id")]
+    {:host host, :port port, :mdb-base-url mdb-base-url, :mdb-url mdb-url, :mdb-concept-id-url mdb-concept-id-url}))
 
 (defn build-http-request-fn
   "Template used for building a request."
@@ -51,6 +52,14 @@
       (errors/internal-error! (str "Concept Id fetch failed. Metadata DB app response status code: "  status (str response))))
     concept-id))
 
+(defn- delete-target-concept
+  "Delete concept from metadata db."
+  [url concept-id revision-id]
+  ;; currently mdb has just the force delete (all) oper hence discarding concept-id and revision-id
+  (let [response (client/delete url) 
+        status (:status response)]
+    (when-not (= 204 status)
+      (errors/internal-error! (str "Delete concept operation failed. Metadata DB app response status code: "  status (str response))))))
 
 ;;; datalayer protocol to access metadata-db
 (defrecord Metadata-DB
@@ -80,8 +89,14 @@
           concept-json-str (cheshire/generate-string concept-with-id)
           http-request (build-http-request-fn "post" mdb-url concept-json-str)
           {:keys [revision-id]}  (store-concept-in-mdb http-request)]
-      revision-id)))
-
+      revision-id))
+  
+  (delete-concept
+    [this concept]              
+    (let [{:keys [mdb-url]} (:config this)
+          {:keys [concept-id revision-id]} concept]
+      (delete-target-concept mdb-url concept-id revision-id))))
+ 
 (defn create
   "Creates proxy to metadata db."
   []

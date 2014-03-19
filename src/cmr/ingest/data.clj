@@ -9,14 +9,19 @@
   
   (save-concept
     [db concept]
-    "Saves a concept and returns the revision id. If the concept already 
-    exists then a new revision will be created. If a revision-id is 
-    included and it is not valid, e.g. the revision already exists, 
-    then an exception is thrown."))
+    "Saves a concept in metadata db and index.")
+
+  (delete-concept
+    [db concept]
+    "Delete a concept from metatdata db."))
 
 (defprotocol ConceptIndexStore
   "Functions for staging concepts for the purposes of indexing."
   
   (index-concept
     [db concept-id revision-id]
-    "Forward newly created concept for indexer app consumption."))
+    "Forward newly created concept for indexer app consumption.")
+  
+  (delete-concept-from-index
+    [db concept-id revision-id]
+    "Delete a concept with given revision-id from index."))

@@ -18,6 +18,12 @@ To start a web server for the application, run:
 - ensure Metadata db, ES, Indexer, Ingest are functioning
 curl -i -v  -X PUT -H "Content-Type:application/json" -H "Accept:application/json" --data '{"concept-type":"collection","metadata":"xml md here ","format":"echo10"}' http://localhost:3002/providers/PROV009/collections/nativeId8
 
+- sample url to check concept existence in index
+curl -XGET "http://localhost:9200/collections/_search?pretty=true&q=_id:C27-PROV968964”
+
+- sample url to get concept id 
+http://localhost:3001/concept-id/collection/PROV99622/nativeId1
+
 ## License
 
 Copyright © 2014 NASA
