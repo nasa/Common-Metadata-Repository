@@ -8,7 +8,7 @@
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.api.errors :as errors]
             [cmr.search.services.query-service :as query-svc]
-            [cmr.system-trace.context :as context]
+            [cmr.system-trace.http :as http-trace]
             [cmr.search.api.search-results :as sr]))
 
 (defn get-search-results-format
@@ -28,13 +28,13 @@
 (defn- build-routes [system]
   (routes
     (context "/collections" []
-      (GET "/" {params :params headers :headers}
-        (find-collection-references
-          (context/build-request-context system) params headers)))
+      (GET "/" {params :params headers :headers context :request-context}
+        (find-collection-references context params headers)))
     (route/not-found "Not Found")))
 
 (defn make-api [system]
   (-> (build-routes system)
+      (http-trace/build-request-context-handler system)
       errors/exception-handler
       handler/site
       ring-json/wrap-json-body
