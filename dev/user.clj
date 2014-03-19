@@ -7,7 +7,7 @@
             [cmr.common.api.web-server :as web]
             [cmr.search.api.routes :as routes]
             [cmr.search.data.elastic-search-index :as idx]
-            [cmr.common.test.repeat-last-request :as repeat-last-request])
+            [cmr.common.test.repeat-last-request :as repeat-last-request :refer (repeat-last-request)])
   (:use [clojure.test :only [run-all-tests]]
         [clojure.repl]
         [alex-and-georges.debug-repl]))

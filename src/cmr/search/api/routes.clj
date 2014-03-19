@@ -20,6 +20,7 @@
 
 (defn find-collection-references [context params headers]
   (let [result-format (get-search-results-format headers)
+        _ (info (format "Search for collections in format [%s] with params [%s]" result-format params))
         results (query-svc/find-concepts-by-parameters context :collection params)]
     {:status 200
      :headers {"Content-Type" (sr/format->mime-type result-format)}

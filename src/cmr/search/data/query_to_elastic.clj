@@ -7,10 +7,10 @@
 (def field-mappings
   "A map of fields in the query to the field name in elastic. Field names are excluded from this
   map if the query field name matches the field name in elastic search."
-  {:entry_title :dataset_id
-   :provider :provider_id
-   :short_name :dataset_sn
-   :version :dataset_version_id})
+  {:entry_title :entry-title
+   :provider :provider-id
+   :short_name :short-name
+   :version :version-id})
 
 (defn query-field->elastic-field
   "Returns the elastic field name for the equivalent query field name."

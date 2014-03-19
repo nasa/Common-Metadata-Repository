@@ -10,13 +10,10 @@
             [cmr.search.models.results :as results]
             [cmr.search.data.query-to-elastic :as q2e]))
 
-;; TODO this is temporarily setup to search data that was ingested by catalog rest.
-;; update it after the indexer and metadata db are implemented
-
 (def concept-type->index-info
-  {:collection {:index-name "echo_search"
-                :type-name "dataset"
-                :fields ["dataset_id" "provider_id"]}})
+  {:collection {:index-name "collections"
+                :type-name "collection"
+                :fields ["entry-title" "provider-id"]}})
 
 (defn- elastic-results->query-results
   "Converts the Elasticsearch results into the results expected from execute-query"
@@ -27,8 +24,8 @@
         refs (map (fn [match]
                     (let [{concept-id :_id
                            revision-id :_version
-                           {native-id :dataset_id
-                            provider-id :provider_id} :fields} match]
+                           {native-id :entry-title
+                            provider-id :provider-id} :fields} match]
                       (results/map->Reference
                         {:concept-id concept-id
                          :revision-id revision-id
