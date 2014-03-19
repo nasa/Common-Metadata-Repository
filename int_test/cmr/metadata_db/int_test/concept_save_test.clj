@@ -43,11 +43,11 @@
 (deftest mdb-save-concept-with-missing-required-parameter
   "Fail to save a concept if a required parameter is missing"
   (testing "missing concept-type"
-    (let [{:keys [status]} (util/save-concept (dissoc (util/concept) :concept-type))]
-      (is (= 422 status))))
+    (let [{:keys [status error-messages]} (util/save-concept (dissoc (util/concept) :concept-type))]
+      (is (and (= 422 status) (re-find #"concept-type" (first error-messages))))))
   (testing "missing concept-id"
-    (let [{:keys [status]} (util/save-concept (dissoc (util/concept) :concept-id))]
-      (is (= 422 status)))))
+    (let [{:keys [status error-messages]} (util/save-concept (dissoc (util/concept) :concept-id))]
+      (is (and (= 422 status) (re-find #"concept-id" (first error-messages)))))))
 
 (deftest mdb-save-concept-after-delete
   "Verify that a save after delete returns the correct revision."

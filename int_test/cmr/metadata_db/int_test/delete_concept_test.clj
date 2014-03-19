@@ -35,15 +35,15 @@
   (let [{:keys [status revision-id]} (util/delete-concept (:concept-id (util/concept)))]
     (is (and (= status 200) (= revision-id num-revisions)))))
 
-(deftest mdb-fail-to-delete-missing-concpet
+(deftest mdb-fail-to-delete-missing-concept
   "Attempt to delete a concept that does not exist and verify that we get a 404."
-  (let [{:keys [status revision-id]} (util/delete-concept "C1-NON-EXISTENT-PROVIDER")]
-    (is (= status 404))))
+  (let [{:keys [status revision-id error-messages]} (util/delete-concept "C1-NON-EXISTENT-PROVIDER")]
+    (is (and (= status 404) (= error-messages ["Concept C1-NON-EXISTENT-PROVIDER does not exist."])))))
 
 (deftest mdb-repeated-calls-to-delete-get-same-revision
   "Delete a concept repeatedly and verify that the revision does not change."
   (let [concept-id (:concept-id (util/concept))
         tombstone-revision-id (:revision-id (util/delete-concept concept-id))]
-    (dorun (repeatedly 1 #(util/delete-concept concept-id)))
+    (dorun (repeatedly 3 #(util/delete-concept concept-id)))
     (let [final-revision-id (:revision-id (util/delete-concept concept-id))]
       (is (= tombstone-revision-id final-revision-id))))) 
