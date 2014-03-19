@@ -29,15 +29,17 @@
 
 (defn trace-info
   "Creates a new trace-info map which contains information about the operation being traced."
-  [trace-id span-id]
-  ;; Numerica identifer of a trace
-  {:trace-id trace-id
-   ;; Numeric identifer of parent span
-   :parent-span-id nil
-   ;; The name of the current operation being traced.
-   :span-name nil
-   ;; Numeric identifer of current span
-   :span-id span-id})
+  ([]
+   (trace-info nil nil))
+  ([trace-id span-id]
+   ;; Numeric identifer of a trace
+   {:trace-id trace-id
+    ;; Numeric identifer of parent span
+    :parent-span-id nil
+    ;; The name of the current operation being traced.
+    :span-name nil
+    ;; Numeric identifer of current span
+    :span-id span-id}))
 
 (defn zipkin-config
   "Creates a map of the information needed when communicating with zipkin.

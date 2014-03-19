@@ -15,9 +15,9 @@
 (defn build-request-context
   "Creates a request context. Takes the current system and an HTTP Request"
   [system request]
-  (let [{{trace-id TRACE_ID_HEADER
-          span-id SPAN_ID_HEADER} :headers} request]
-    (c/request-context system (c/trace-info trace-id span-id))))
+  (let [{{^String trace-id TRACE_ID_HEADER
+          ^String span-id SPAN_ID_HEADER} :headers} request]
+    (c/request-context system (c/trace-info (Long. trace-id) (Long. span-id)))))
 
 (defn build-request-context-handler
   "This is a ring handler that will extract trace info from the current request."
@@ -29,5 +29,5 @@
   "Converts a request context into a map of HTTP headers that need to be sent."
   [context]
   (let [{:keys [span-id trace-id]} (c/context->trace-info context)]
-    {TRACE_ID_HEADER trace-id
-     SPAN_ID_HEADER span-id}))
+    {TRACE_ID_HEADER (str trace-id)
+     SPAN_ID_HEADER (str span-id)}))
