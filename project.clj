@@ -3,6 +3,7 @@
                Twitter Zipkin and clj-zipkin."
   :url "***REMOVED***projects/CMR/repos/cmr-system-trace-lib/browse"
   :dependencies [[org.clojure/clojure "1.5.1"]
+                 [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
 
                 ;; clj-zipkin macros don't work very well. It's included mostly for some utility
                 ;; functions, and the thrift handling.

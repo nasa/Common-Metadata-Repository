@@ -21,17 +21,23 @@
   (:types [com.twitter.zipkin.gen Endpoint])
   (:clients com.twitter.zipkin.gen.ZipkinCollector))
 
+(defn request-context
+  "Creates a new request context with the given system and trace-info"
+  [system trace-info]
+  {:system system
+   :request {:trace-info trace-info}})
+
 (defn trace-info
   "Creates a new trace-info map which contains information about the operation being traced."
-  []
+  [trace-id span-id]
   ;; Numerica identifer of a trace
-  {:trace-id nil
+  {:trace-id trace-id
    ;; Numeric identifer of parent span
    :parent-span-id nil
    ;; The name of the current operation being traced.
    :span-name nil
    ;; Numeric identifer of current span
-   :span-id nil})
+   :span-id span-id})
 
 (defn zipkin-config
   "Creates a map of the information needed when communicating with zipkin.
@@ -49,14 +55,6 @@
                                             :category "zipkin")]
      {:endpoint (Endpoint. (t/ip-str-to-int ip) 0 service-name)
       :scribe-logger scribe-logger})))
-
-(defn build-request-context
-  "Creates a request context. Takes the current system"
-  ;; TODO should be extended to take current request so it can extract trace-id and parent-span-id
-  ;; from headers in the request
-  [system]
-  {:system system
-   :request {:trace-info (trace-info)}})
 
 (defn context->trace-info
   "Extracts trace-info from a request context."

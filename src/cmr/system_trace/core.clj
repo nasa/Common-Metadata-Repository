@@ -12,7 +12,7 @@
            LogEntry StoreAggregatesException AdjustableRateException])
   (:clients com.twitter.zipkin.gen.ZipkinCollector))
 
-(defn- record-span
+(defn record-span
   "Records the span info as a new span with annotations in Zipkin."
   [zipkin-config trace-info start-time stop-time]
   (let [{:keys [endpoint scribe-logger]} zipkin-config
