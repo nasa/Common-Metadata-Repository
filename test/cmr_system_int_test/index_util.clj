@@ -5,9 +5,7 @@
             [clojure.string :as str]
             [cmr-system-int-test.url-helper :as url]))
 
-(defn index-catalog
-  "Index the whole catalog"
+(defn flush-elastic-index
   []
-  (client/post (url/index-catalog-url)
-               {:headers {"Echo-Token" "EFF42B0CD69D2B5AE040007F01000BCF"}})
   (client/post (url/elastic-flush-url)))
+

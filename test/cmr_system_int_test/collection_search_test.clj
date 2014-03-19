@@ -1,50 +1,49 @@
 (ns ^{:doc "Integration test for CMR collection search"}
   cmr-system-int-test.collection-search-test
   (:require [clojure.test :refer :all]
-            [cmr-system-int-test.ingest-util :as ingest]
+            [cmr-system-int-test.faux-ingest-util :as ingest]
             [cmr-system-int-test.search-util :as search]
             [cmr-system-int-test.index-util :as index]))
 
-(def collections [{:short-name "MINIMAL"
-                   :version "1"
-                   :long-name "A minimal valid collection"
-                   :dataset-id "MinimalCollectionV1"}
-                  {:short-name "One"
-                   :version "2"
-                   :long-name "One valid collection"
-                   :dataset-id "OneCollectionV1"}
-                  {:short-name "Another"
-                   :version "3"
-                   :long-name "Another valid collection"
-                   :dataset-id "AnotherCollectionV1"}
-                  ])
+(def provider-collections
+  {"CMR_PROV1" [{:short-name "MINIMAL"
+                 :version "1"
+                 :long-name "A minimal valid collection"
+                 :dataset-id "MinimalCollectionV1"}
+                {:short-name "One"
+                 :version "2"
+                 :long-name "One valid collection"
+                 :dataset-id "OneCollectionV1"}
+                {:short-name "Another"
+                 :version "3"
+                 :long-name "Another valid collection"
+                 :dataset-id "AnotherCollectionV1"}
+                ]
 
-(def collections-2 [{:short-name "One"
-                     :version "2"
-                     :long-name "One valid collection"
-                     :dataset-id "OneCollectionV1"}
-                    {:short-name "Other"
-                     :version "4"
-                     :long-name "Other valid collection"
-                     :dataset-id "OtherCollectionV1"}
-                    ])
+   "CMR_PROV2" [{:short-name "One"
+                 :version "2"
+                 :long-name "One valid collection"
+                 :dataset-id "OneCollectionV1"}
+                {:short-name "Other"
+                 :version "4"
+                 :long-name "Other valid collection"
+                 :dataset-id "OtherCollectionV1"}
+                ]})
 (defn setup
   "set up the fixtures for test"
   []
-  (doseq [i collections]
-    (ingest/update-collection "CMR_PROV1" i))
-  (doseq [i collections-2]
-    (ingest/update-collection "CMR_PROV2" i))
-  ; now index the collectoin
-  (index/index-catalog))
+  (doseq [[provider-id collections] provider-collections
+          collection collections]
+    (ingest/update-collection provider-id collection))
+  (index/flush-elastic-index))
 
 (defn teardown
   "tear down after the test"
   []
-  (doseq [i collections]
-    (ingest/delete-collection "CMR_PROV1" (:dataset-id i)))
-  (doseq [i collections-2]
-    (ingest/delete-collection "CMR_PROV2" (:dataset-id i))))
+  (doseq [[provider-id collections] provider-collections
+          collection collections]
+    (ingest/delete-collection provider-id (:dataset-id collection)))
+  (index/flush-elastic-index))
 
 (defn wrap-setup
   [f]
@@ -74,8 +73,7 @@
       (let [ref (first references)
             {:keys [dataset-id concept-id location]} ref]
         (is (= "MinimalCollectionV1" dataset-id))
-        (is (re-matches #"C[0-9]+-CMR_PROV1" concept-id))
-        #_(is (re-matches #"http.*/catalog-rest/echo_catalog/datasets/C[0-9]+-CMR_PROV1$" location)))))
+        (is (re-matches #"C[0-9]+-CMR_PROV1" concept-id)))))
   (testing "search by multiple dataset ids."
     (let [references (search/find-collection-refs {"dataset_id[]" ["MinimalCollectionV1", "AnotherCollectionV1"]})
           dataset-ids (map #(:dataset-id %) references)]
