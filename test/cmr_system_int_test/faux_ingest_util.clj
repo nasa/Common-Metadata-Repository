@@ -7,13 +7,13 @@
 
 
 ;;; Enpoints for services - change this for tcp-mon
-(def metadata-db-port 4001)
+(def metadata-db-port 3001)
 
 (def mdb-concepts-url (str "http://localhost:" metadata-db-port "/concepts/"))
 
 (def mdb-id-url (str "http://localhost:" metadata-db-port "/concept-id/"))
 
-(def indexer-port 4004)
+(def indexer-port 3004)
 
 (def indexer-endpoint (str "http://localhost:" indexer-port "/"))
 
