@@ -26,13 +26,15 @@
         ingest-rest-url (str "http://" host ":" port "/" ctx-part)]
     ingest-rest-url))
 
-(defn save-concept
-  "Make a put request to ingest a concept without JSON encoding the concept.  Returns a map with
-  status, revision-id, and a list of error messages"
-  [concept]
+(defn ingest-concept
+  "Make a concept create / delete request on ingest.  Returns a map with
+  status, concept-id, and revision-id"
+  [method concept]
+  (info method)
+  (info concept)
   (let [coerced-json-str (cheshire/generate-string concept)
         response (client/request
-                   {:method :put
+                   {:method (keyword method)
                     :url (construct-ingest-rest-url concept) 
                     :body  coerced-json-str
                     :body-encoding "UTF-8"
@@ -43,9 +45,13 @@
                     :throw-exceptions true})
         status (:status response)
         body (cheshire/parse-string (:body response))
-        revision-id (get body "revision-id")
-        error-messages (get body "errors")]
-    {:status status :revision-id revision-id :error-messages error-messages :response response}))
+        concept-id (get body "concept-id")
+        revision-id (get body "revision-id")]
+    (info "ingest-concept fn response" response)
+    (info "test status" status)
+    (info "test concept-id " concept-id )
+    (info "test revision-id " revision-id )
+    {:status status :concept-id concept-id :revision-id revision-id :response response}))
 
 (def provider-suffix-num-atom (atom (rand-int 1000000)))
 
@@ -54,10 +60,10 @@
 ;;; add indexer app etc later to this list
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (deftest concept-ingest-test
-  "Save a valid concept with no revision-id."
+  "Verrify successful ingest of concept."
   (swap! provider-suffix-num-atom inc)
   (try
-    (let [{:keys [status revision-id]} (save-concept (concept @provider-suffix-num-atom))]
+    (let [{:keys [status revision-id]} (ingest-concept "put" (concept @provider-suffix-num-atom))]
       (is (and (= status 200) (= revision-id 0))))
     (catch Exception e
       (error "Exception occurred while executing concept-ingest-test: " (.getMessage e))
@@ -71,11 +77,27 @@
     (let [N 4
           expected-revision-id (- N 1)
           last-revision-id (last (repeatedly N
-                                             #(let [ {:keys [revision-id]} (save-concept (concept @provider-suffix-num-atom))]
+                                             #(let [ {:keys [revision-id]} (ingest-concept "put" (concept @provider-suffix-num-atom))]
                                                 revision-id)))]
       (is (= expected-revision-id last-revision-id)))
     (catch Exception e
       (error "Exception occurred while executing repeat-same-concept-ingest-test: " (.getMessage e))
+      (.printStackTrace e)
+      (is false))))
+
+;; ingest a concept first and delete the very same concept.
+(deftest delete-concept-test
+  "Verify concept is deleted from mdb and index."
+  (swap! provider-suffix-num-atom inc)
+  (try
+    (let [{:keys [status revision-id]} (ingest-concept "put" (concept @provider-suffix-num-atom))
+          saved? (and (= status 200) (= revision-id 0))]
+      (if saved?
+        (let [{:keys [status]} (ingest-concept "delete" (concept @provider-suffix-num-atom))]
+          (is (= status 200)))
+        (is false)))
+    (catch Exception e
+      (error "Exception occurred while executing concept-ingest-test: " (.getMessage e))
       (.printStackTrace e)
       (is false))))
 
