@@ -79,10 +79,10 @@
              ;; saves a concept
              (POST "/" params
                    (save-concept system (:body params)))
-             (DELETE "/:id" [id] (delete-concept system id))
              ;; delete the entire database
-             (DELETE "/" params
+             (DELETE "/force-delete" params
                      (force-delete system))
+             (DELETE "/:id" [id] (delete-concept system id))
              ;; get a specific revision of a concept
              (GET "/:id/:revision" [id revision] (get-concept system id revision))
              ;; returns the latest revision of a concept

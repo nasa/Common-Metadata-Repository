@@ -25,7 +25,7 @@
    :format "echo10"})
 
 (defn get-concept-id
-  "Make a GET the id for a given concept-type, provider-id, and native-id."
+  "Make a GET to retrieve the id for a given concept-type, provider-id, and native-id."
   [concept-type provider-id native-id]
   (let [response (client/get (str concept-id-url concept-type "/" provider-id "/" native-id)
                              {:accept :json
@@ -110,7 +110,7 @@
 (defn reset-database
   "Make a request to reset the database by clearing out all stored concepts."
   []
-  (let [response (client/delete concepts-url 
+  (let [response (client/delete (str concepts-url "force-delete") 
                                 {:throw-exceptions false})
         status (:status response)]
     status))
