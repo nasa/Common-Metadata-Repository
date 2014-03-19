@@ -19,7 +19,7 @@
 (def arg-description
   [["-h" "--help" "Show help" :default false :flag true]
    ["-d" "--db" "Specifies the database type - memory or oracle" :default "memory"]
-   ["-p" "--port" "The HTTP Port to listen on for requests." :default 4242 :parse-fn #(Integer. %)]])
+   ["-p" "--port" "The HTTP Port to listen on for requests." :default 3001 :parse-fn #(Integer. %)]])
 
 
 (defn parse-args [args]
@@ -36,7 +36,7 @@
   (case db
     "memory" (memory/create-db)
     "default" (memory/create-db)))
-  
+
 
 (defn -main
   "Starts the App."
