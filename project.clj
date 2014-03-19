@@ -8,10 +8,17 @@
                  [ring/ring-core "1.2.1"]
                  [ring/ring-json "0.2.0"]
                  [org.clojure/tools.reader "0.8.3"]
-                 [org.clojure/tools.cli "0.3.1"]]
-  :plugins []
+                 [org.clojure/tools.cli "0.3.1"]
+                 [org.clojure/java.jdbc "0.3.3"]
+                 [ragtime "0.3.6"]
+                 [com.oracle/ojdbc6 "11.2.0.3"]]
+  :repositories [["releases" "http://devrepo1.dev.echo.nasa.gov/data/dist/projects/echo/mavenrepo/"]]
+  :plugins [[ragtime/ragtime.lein "0.3.6"]
+            [lein-exec "0.3.2"]]
   :main cmr.metadata-db.runner
   :repl-options {:init-ns user}
+  :ragtime {:migrations ragtime.sql.files/migrations
+          :database "jdbc:oracle://localhost:1521/example_db?user=root"}
   :profiles
   {:dev {:dependencies [[ring-mock "0.1.5"]
                         [org.clojure/tools.namespace "0.2.4"]
