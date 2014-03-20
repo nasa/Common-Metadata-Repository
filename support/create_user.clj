@@ -32,7 +32,8 @@
                 "grant create table to %%CMR_USER%%"
                 "grant create sequence to %%CMR_USER%%"
                 "grant create view to %%CMR_USER%%"
-                "grant create procedure to %%CMR_USER%%"])
+                "grant create procedure to %%CMR_USER%%"
+                "grant unlimited tablespace to %%CMR_USER%%"])
 
 (def replacements {"CMR_USER" "METADATA_DB"
                    "CMR_PASSWORD" "METADATA_DB"})

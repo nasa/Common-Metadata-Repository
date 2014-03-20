@@ -30,7 +30,8 @@
 
 (defn update-db-version [version]
   (println "Start 2")
-  (j/db-do-commands db "INSERT INTO METADATA_DB.schema_version VALUES (version ?)" (str version))
+  (j/insert! db "METADATA_DB.schema_version" {:version version})
+  #_(j/db-do-commands db "INSERT INTO METADATA_DB.schema_version (version) VALUES (?)" (str version))
   (println "END2"))
 
 (defn migrate-config []
