@@ -8,21 +8,21 @@
             [cheshire.core :as cheshire]
             [cmr-system-int-test.ingest-util :as util]))
 
-;;; data related
 (def base-concept-attribs
   {:short-name "SN-Sedac88" 
    :version "Ver88"  
    :long-name "LongName Sedac88"
    :dataset-id "LarcDatasetId88"})
 
+;; Each test ingests and deletes this concept. 
 (defn concept
   "Creates a sample concept."
-  [provider-suffix-num]
+  [provider-num]
   {:concept-type :collection
    :native-id "nativeId1"
-   :provider-id (str "PROV" provider-suffix-num)
+   :provider-id (str "PROV88" provider-num)
    :metadata (util/metadata-xml base-concept-attribs)
-   :format "iso19115+xml"})
+   :format "echo10+xml"})
 
 (defn construct-ingest-rest-url
   "Construct ingest url based on concept."
@@ -34,64 +34,36 @@
         ingest-rest-url (str "http://" host ":" port "/" ctx-part)]
     ingest-rest-url))
 
-;;; operation
+;;; operations
 (defn ingest-concept
-  "Make a concept create / delete request on ingest.  Returns a map with
-  status, concept-id, and revision-id"
-  [method concept]
+  "Ingest a concept and return a map with status, concept-id, and revision-id"
+  [concept]
   (let [response (client/request
-                   {:method (keyword method)
+                   {:method :put
                     :url (construct-ingest-rest-url concept) 
-                    :body  (io/string-input-stream (:metadata concept))
-                    :body-encoding "UTF-8"
+                    :body  (:metadata concept) ;; (io/string-input-stream (:metadata concept))
                     :content-type (:format concept)
-                    :socket-timeout 2000  ;; in milliseconds
-                    :conn-timeout 2000    ;; in milliseconds
                     :accept :json
-                    :throw-exceptions true})
+                    :throw-exceptions false})
         status (:status response)
         body (cheshire/parse-string (:body response))
         concept-id (get body "concept-id")
         revision-id (get body "revision-id")]
     {:status status :concept-id concept-id :revision-id revision-id :response response}))
 
-(def provider-suffix-num-atom (atom (rand-int 1000000)))
-
-;;; fixture related
-(def ^:dynamic *save-concept-list* nil)
-(def ^:dynamic *delete-concept-list* nil)
-(def rand-start-num (atom (rand-int 1000000)))
-
-(defn distinct-concept 
-  "Generate a concept-type, provicer-id, native-id tuple"
-  [token]
-  (hash-map :concept-type :collection
-            :provider-id (str "PROV" token)
-            :native-id (str "nativeId" token)
-            :metadata (util/metadata-xml base-concept-attribs)
-            :format "iso19115+xml"))
-
-(defn gen-distinct-concepts
-  "Generate requested number of distinct concepts."
-  [seed-val num-concepts]
- (map distinct-concept (range seed-val (+ seed-val num-concepts))))
-
-(defn setup
-  "set stage for creating P (save concepts) and Q (delete concepts ) new distinct concepts in mdb and index."
-  [P Q]
-  (alter-var-root #'*save-concept-list* 
-                  (constantly (gen-distinct-concepts @rand-start-num P)))
-  (alter-var-root #'*delete-concept-list* 
-                  (constantly (gen-distinct-concepts (+ @rand-start-num P) Q)))
-  (swap! rand-start-num + P Q))
-
-;; teardown function behavior not correct ???
-(defn teardown
-  "tear down after the test - delete test created concepts"
-  []
-  (for [saved-concept *save-concept-list*]
-    (ingest-concept :delete saved-concept)))
-  
+(defn delete-concept
+  "Delete a given concept."
+  [concept]
+  (let [response (client/request
+                   {:method :delete
+                    :url (construct-ingest-rest-url concept)
+                    :accept :json
+                    :throw-exceptions false})
+        status (:status response)
+        body (cheshire/parse-string (:body response))
+        concept-id (get body "concept-id")
+        revision-id (get body "revision-id")]
+    {:status status :concept-id concept-id :revision-id revision-id :response response}))
 
 ;;; tests
 ;;; ensure metadata and ingest apps are accessable on ports 3001 and 3002 resp; 
@@ -100,49 +72,28 @@
 
 ;; Ingest a new concept with no revision-id.
 (deftest concept-ingest-test
-  (let [{:keys [status revision-id]} (ingest-concept :put (first *save-concept-list*))]
+  (let [provider-num (rand-int 100000)
+        {:keys [status revision-id]} (ingest-concept (concept provider-num))]
+    (delete-concept (concept provider-num))
     (is (and (= status 200) (= revision-id 0)))))
 
 ;; Ingest same concept N times and verify it is in metadata db with revision id value 'N - 1'.
 (deftest repeat-same-concept-ingest-test
-  (let [N 4
-        expected-revision-id (- N 1)
-        last-revision-id (last (repeatedly N
-                                           #(let [ {:keys [revision-id]} (ingest-concept :put (second *save-concept-list*))]
-                                              revision-id)))]
+  (let [n 4
+        provider-num (rand-int 100000)
+        expected-revision-id (- n 1)
+        last-revision-id (last (repeatedly n
+                                           #(:revision-id (ingest-concept (concept provider-num)))))]
+    (repeatedly n #(delete-concept (concept provider-num)))
     (is (= expected-revision-id last-revision-id))))
 
-;; Verify concept is deleted from mdb and index.
-(deftest save-concept-for-future-delete-test
-  (let [{:keys [status revision-id]} (ingest-concept :put (first *delete-concept-list*))]
-    (is (and (= status 200) (= revision-id 0)))))
-
+;; Verify concept ingest and delete are successful.
 (deftest delete-concept-test
-  (let [{:keys [status]} (ingest-concept :delete (first *delete-concept-list*))]
+  (let [provider-num (rand-int 100000)
+        {:keys [revision-id]} (ingest-concept (concept provider-num))
+        {:keys [status]} (delete-concept (concept provider-num))]
     (is (= status 200))))
 
-(deftest save-n-delete-test
-  (save-concept-for-future-delete-test)
-  (delete-concept-test))
-
-(defn ingest-test-fixture 
-  [f]
-  (setup 2 1)
-  (try
-    (f)
-    (finally (teardown))))
-
-(deftest test-suite
-  (concept-ingest-test)
-  (repeat-same-concept-ingest-test)
-  (save-n-delete-test))
-
-(defn test-ns-hook []
-  (ingest-test-fixture test-suite))
-
-
-(comment
-  (test-ns *ns*))
 
 
 
