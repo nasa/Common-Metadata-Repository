@@ -11,7 +11,7 @@
    - Convert Query into Elastic Query Model
    - Send query to Elasticsearch
    - Convert query results into requested format"
-  (:require [cmr.search.data.search-index :as idx]
+  (:require [cmr.search.data.elastic-search-index :as idx]
             [cmr.search.models.query :as qm]
             [cmr.search.services.parameters :as p]
             [cmr.system-trace.core :refer [deftracefn]]))
@@ -38,7 +38,7 @@
 (deftracefn execute-query
   "Executes a query returning results as concept id, native provider id, and revision id."
   [context query]
-  (idx/execute-query (-> context :system :search-index) query))
+  (idx/execute-query context query))
 
 (deftracefn find-concepts-by-query
   "Executes a search for concepts using a query The concepts will be returned with

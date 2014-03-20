@@ -6,9 +6,9 @@
             [clojurewerkz.elastisch.rest.response :as esrsp]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.lifecycle :as lifecycle]
-            [cmr.search.data.search-index]
             [cmr.search.models.results :as results]
-            [cmr.search.data.query-to-elastic :as q2e]))
+            [cmr.search.data.query-to-elastic :as q2e]
+            [cmr.system-trace.core :refer [deftracefn]]))
 
 (def concept-type->index-info
   {:collection {:index-name "collections"
@@ -54,24 +54,26 @@
     this)
 
   (stop [this system]
-        this)
+        this))
+
+(deftracefn send-query-to-elastic
+  "Created to trace only the sending of the query off to elastic search."
+  [context elastic-query concept-type]
+  (let [{:keys [index-name type-name fields]} (concept-type->index-info concept-type)]
+    (esd/search index-name
+                [type-name]
+                :query elastic-query
+                :version true
+                :size 10
+                :fields fields)))
 
 
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  cmr.search.data.search-index/SearchIndex
-
-  (execute-query
-    [this query]
-    (let [{:keys [concept-type]} query
-          {:keys [index-name type-name fields]} (concept-type->index-info concept-type)]
-      (elastic-results->query-results
-        concept-type
-        (esd/search index-name
-                    [type-name]
-                    :query (q2e/query->elastic query)
-                    :version true
-                    :size 10
-                    :fields fields)))))
+(defn execute-query
+  "Executes a query to find concepts. Returns concept id, native id, and revision id."
+  [context query]
+  (let [{:keys [concept-type]} query
+        results (send-query-to-elastic context (q2e/query->elastic query) concept-type)]
+    (elastic-results->query-results concept-type results )))
 
 (defn create-elastic-search-index
   "Creates a new instance of the elastic search index."
