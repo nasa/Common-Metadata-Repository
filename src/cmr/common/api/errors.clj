@@ -17,6 +17,7 @@
   (fn [request]
     (try (f request)
       (catch clojure.lang.ExceptionInfo e
+        (error e)
         (let [{:keys [type errors]} (ex-data e)
               status-code (type->http-status-code type)]
           (if status-code
