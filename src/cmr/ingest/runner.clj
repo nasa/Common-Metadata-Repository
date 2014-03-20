@@ -1,12 +1,14 @@
-(ns cmr.cmr-ingest-app.runner
+(ns cmr.ingest.runner
   "Entry point for the application. Defines a main method that accepts arguments."
-  (:require [cmr.cmr-ingest-app.system :as system]
+  (:require [cmr.ingest.system :as system]
             [clojure.tools.cli :refer [cli]]
             [clojure.edn :as edn]
             [clojure.string :as string]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.api.web-server :as web]
-            [cmr.cmr-ingest-app.api.routes :as routes])
+            [cmr.ingest.data.mdb :as metadata-db]
+            [cmr.ingest.data.indexer :as indexer]
+            [cmr.ingest.api.routes :as routes])
   (:gen-class))
 
 (defn parse-endpoint
@@ -17,7 +19,7 @@
 
 (def arg-description
   [["-h" "--help" "Show help" :default false :flag true]
-   ["-p" "--port" "The HTTP Port to listen on for requests." :default 3000 :parse-fn #(Integer. %)]])
+   ["-p" "--port" "The HTTP Port to listen on for requests." :default 3002 :parse-fn #(Integer. %)]])
 
 
 (defn parse-args [args]
@@ -33,6 +35,8 @@
   [& args]
   (let [{:keys [port]} (parse-args args)
         web-server (web/create-web-server port routes/make-api)
+        db (metadata-db/create)
+        idx-db (indexer/create)
         log (log/create-logger)
-        system (system/start (system/create-system log web-server))]
+        system (system/start (system/create-system log db idx-db web-server))]
     (info "Running...")))
