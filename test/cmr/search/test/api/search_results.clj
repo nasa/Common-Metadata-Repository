@@ -37,7 +37,7 @@
     {:concept-id (cx/string-at-path ref-content :concept-id)
      :revision-id (cx/long-at-path ref-content :revision-id)
      :provider-id (cx/string-at-path ref-content :provider-id)
-     :native-id (cx/string-at-path ref-content :native-id)}))
+     :entry-title (cx/string-at-path ref-content :entry-title)}))
 
 (defmethod parse-search-results-response :xml
   [response-str format]

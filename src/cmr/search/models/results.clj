@@ -11,8 +11,7 @@
 
    provider-id
 
-   ;; The id the provider uses to identify this item, i.e.
-   native-id
+   entry-title
    ])
 
 (defrecord Results
