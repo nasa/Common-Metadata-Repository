@@ -6,7 +6,7 @@
             [cmr.search.models.query :as qm]))
 
 (def param-aliases
-  "A map of parameter name aliases to their parameter name."
+  "A map of non UMM parameter names to their UMM fields."
   {:dataset_id :entry_title})
 
 (defn replace-parameter-aliases
