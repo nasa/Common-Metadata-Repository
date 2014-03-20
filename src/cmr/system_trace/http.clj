@@ -17,7 +17,9 @@
   [system request]
   (let [{{^String trace-id TRACE_ID_HEADER
           ^String span-id SPAN_ID_HEADER} :headers} request]
-    (c/request-context system (c/trace-info (Long. trace-id) (Long. span-id)))))
+    (if (and trace-id span-id)
+      (c/request-context system (c/trace-info (Long. trace-id) (Long. span-id)))
+      (c/request-context system (c/trace-info)))))
 
 (defn build-request-context-handler
   "This is a ring handler that will extract trace info from the current request."
