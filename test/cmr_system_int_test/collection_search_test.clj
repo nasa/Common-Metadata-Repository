@@ -2,7 +2,7 @@
   cmr-system-int-test.collection-search-test
   (:require [clojure.test :refer :all]
             [cmr.system-trace.test-tracing :as t]
-            [cmr-system-int-test.faux-ingest-util :as ingest]
+            [cmr-system-int-test.ingest-util :as ingest]
             [cmr-system-int-test.search-util :as search]
             [cmr-system-int-test.index-util :as index]))
 
@@ -118,6 +118,7 @@
             {:keys [dataset-id concept-id location]} ref]
         (is (= "MinimalCollectionV1" dataset-id))
         (is (re-matches #"C[0-9]+-CMR_PROV1" concept-id))
+        ;; TODO We should return a URL in the references once the retrieval feature is implemented.
         #_(is (re-matches #"http.*/catalog-rest/echo_catalog/datasets/C[0-9]+-CMR_PROV1$" location)))))
   (t/testing "search by multiple versions." [context]
     (let [references (search/find-collection-refs context {"version[]" ["1", "3"]})

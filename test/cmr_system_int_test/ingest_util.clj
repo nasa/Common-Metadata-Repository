@@ -40,7 +40,7 @@
   ([provider-id collection]
    (let [full-collection (merge default-collection collection)
          collection-xml (metadata-xml full-collection)
-         response (client/put (url/collection-ingest-url {:provider-id provider-id :dataset-id (:dataset-id full-collection)})
+         response (client/put (url/collection-ingest-url provider-id (:dataset-id full-collection))
                               {:content-type :xml
                                :body collection-xml
                                :throw-exceptions false})]
@@ -52,7 +52,7 @@
   I call it native-id because the id in the URL used by the provider-id does not have to be
   the dataset id in the collection in general even though catalog rest will enforce this."
   [provider-id native-id]
-  (let [response (client/delete (url/collection-ingest-url {:provider-id provider-id :dataset-id native-id})
+  (let [response (client/delete (url/collection-ingest-url provider-id native-id)
                                 {:throw-exceptions false})
         status (:status response)]
-    (is (some #{204 404} [status]))))
+    (is (some #{200 404} [status]))))
