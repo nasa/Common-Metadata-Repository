@@ -4,7 +4,8 @@
   http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts."
   (:require [cmr.common.lifecycle :as lifecycle]
             [clojure.string :as string]
-            [cmr.common.log :refer (debug info warn error)]))
+            [cmr.common.log :refer (debug info warn error)]
+            [cmr.system-trace.context :as context]))
 
 ;; Design based on http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts
 
@@ -16,9 +17,10 @@
 (defn create-system
   "Returns a new instance of the whole application."
   [db log web]
-  {:db db 
+  {:db db
    :log log
-   :web web})
+   :web web
+   :zipkin (context/zipkin-config "Metadata DB")})
 
 (defn start
   "Performs side effects to initialize the system, acquire resources,
