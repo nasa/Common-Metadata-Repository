@@ -27,13 +27,13 @@
         refs (map (fn [match]
                     (let [{concept-id :_id
                            revision-id :_version
-                           {native-id :entry-title
+                           {entry-title :entry-title
                             provider-id :provider-id} :fields} match]
                       (results/map->Reference
                         {:concept-id concept-id
                          :revision-id revision-id
                          :provider-id provider-id
-                         :native-id native-id})))
+                         :entry-title entry-title})))
                   elastic-matches)]
     (results/map->Results {:hits hits :references refs})))
 
