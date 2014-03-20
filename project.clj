@@ -10,21 +10,20 @@
                  [org.clojure/tools.reader "0.8.3"]
                  [org.clojure/tools.cli "0.3.1"]
                  [org.clojure/java.jdbc "0.3.3"]
-                 [ragtime "0.3.6"]
+                 [drift "1.5.2"]
                  [com.oracle/ojdbc6 "11.2.0.3"]]
   :repositories [["releases" "http://devrepo1.dev.echo.nasa.gov/data/dist/projects/echo/mavenrepo/"]]
-  :plugins [[ragtime/ragtime.lein "0.3.6"]
+  :plugins [[drift "1.5.2"]
             [lein-exec "0.3.2"]]
   :main cmr.metadata-db.runner
   :repl-options {:init-ns user}
-  :ragtime {:migrations ragtime.sql.files/migrations
-          :database "jdbc:oracle://localhost:1521/example_db?user=root"}
   :profiles
   {:dev {:dependencies [[ring-mock "0.1.5"]
                         [org.clojure/tools.namespace "0.2.4"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]
                         [cheshire "5.3.1"]
-                        [clj-http "0.9.0"]]
+                        [clj-http "0.9.0"]
+                        [drift "1.5.2"]]
          :source-paths ["src" "dev" "test" "int_test"]}})
 
 

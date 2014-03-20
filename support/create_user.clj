@@ -13,8 +13,6 @@
          :user "sys as sysdba"
          :password "oracle"})
 
-(j/query db "select * from dual")
-
 ;; TODO - need to decide which tablespaces to use
 ; "create user %%CMR_USER%%
 ; profile default
