@@ -12,7 +12,7 @@
     "Saves a concept in metadata db and index.")
 
   (delete-concept
-    [db concept]
+    [db concept-id]
     "Delete a concept from metatdata db."))
 
 (defprotocol ConceptIndexStore

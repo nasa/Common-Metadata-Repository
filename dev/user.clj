@@ -26,8 +26,7 @@
         db (metadata-db/create)
         idx-db (indexer/create)
         log (log/create-logger)
-        s (system/create-system log db idx-db web-server)
-        ]
+        s (system/create-system log db idx-db web-server)]
     (alter-var-root #'system
                     (constantly
                       (system/start s)))))

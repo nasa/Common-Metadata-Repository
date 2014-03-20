@@ -9,7 +9,7 @@
             [cmr.common.services.errors :as errors]))
 
 (defn metadata-db-config
-  "Returns default Metadata-DB Config."
+  "Returns default MetadatDb config."
   []
   (let [host "localhost"
         port 3001
@@ -21,7 +21,7 @@
 (defn build-http-request-fn
   "Template used for building a request."
   [post-or-put-op mdb-url concept-json-str]
-  {:method (keyword post-or-put-op)
+  {:method post-or-put-op
    :url mdb-url
    :body concept-json-str
    :body-encoding "UTF-8"
@@ -30,7 +30,7 @@
    :conn-timeout 2000    ;; in milliseconds
    :accept :json})
 
-(defn- store-concept-in-mdb
+#_(defn- store-concept-in-mdb
   "Store a concept in metadata db."
   [http-request]
   (let [response (client/request http-request) 
@@ -41,7 +41,7 @@
       (errors/internal-error! (str "Save concept failed. Metadata DB app response status code: "  status (str response))))
     {:revision-id revision-id}))
 
-(defn- fetch-concept-id
+#_(defn- fetch-concept-id
   "Fetch concept id from metadata db."
   [url concept-type provider-id native-id]
   (let [response (client/get (str url "/" (name concept-type) "/" provider-id "/" native-id)) 
@@ -50,19 +50,21 @@
         concept-id (get body "concept-id")]
     (when-not (= 200 status)
       (errors/internal-error! (str "Concept Id fetch failed. Metadata DB app response status code: "  status (str response))))
-    concept-id))
+    {:concept-id concept-id}))
 
-(defn- delete-target-concept
+#_(defn- delete-target-concept
   "Delete concept from metadata db."
-  [url concept-id revision-id]
-  ;; currently mdb has just the force delete (all) oper hence discarding concept-id and revision-id
-  (let [response (client/delete url) 
-        status (:status response)]
-    (when-not (= 204 status)
-      (errors/internal-error! (str "Delete concept operation failed. Metadata DB app response status code: "  status (str response))))))
+  [url concept-id]
+  (let [response (client/delete (str url "/" concept-id)) 
+        status (:status response)
+        body (cheshire/parse-string (:body response))
+        revision-id (get body "revision-id")]
+    (when-not (= 200 status)
+      (errors/internal-error! (str "Delete concept operation failed. Metadata DB app response status code: "  status (str response))))
+    {:revision-id revision-id}))
 
 ;;; datalayer protocol to access metadata-db
-(defrecord Metadata-DB
+(defrecord MetadataDb 
   [config]
   
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -79,26 +81,43 @@
   
   (get-concept-id
     [this concept-type provider-id native-id]
-    (fetch-concept-id (:mdb-concept-id-url (:config this)) concept-type provider-id native-id))
+      (let [url (:mdb-concept-id-url (:config this))
+            response (client/get (str url "/" (name concept-type) "/" provider-id "/" native-id)) 
+        status (:status response)
+        body (cheshire/parse-string (:body response))
+        concept-id (get body "concept-id")]
+    (when-not (= 200 status)
+      (errors/internal-error! (str "Concept id fetch failed. MetadataDb app response status code: "  status (str response))))
+    {:concept-id concept-id}))
   
   (save-concept
     [this concept]              
-    (let [{:keys [host port mdb-url]} (:config this)
-          {:keys [concept-type concept-id provider-id native-id]} concept
-          concept-with-id (assoc concept :concept-id concept-id)
-          concept-json-str (cheshire/generate-string concept-with-id)
-          http-request (build-http-request-fn "post" mdb-url concept-json-str)
-          {:keys [revision-id]}  (store-concept-in-mdb http-request)]
-      revision-id))
-  
-  (delete-concept
-    [this concept]              
     (let [{:keys [mdb-url]} (:config this)
-          {:keys [concept-id revision-id]} concept]
-      (delete-target-concept mdb-url concept-id revision-id))))
+          concept-json-str (cheshire/generate-string concept)
+          http-request (build-http-request-fn :post mdb-url concept-json-str)
+          response (client/request http-request) 
+          status (:status response)
+          body (cheshire/parse-string (:body response))
+          revision-id (get body "revision-id")]
+      (when-not (= 201 status)
+        (errors/internal-error! (str "Save concept failed. MetadataDb app response status code: "  status (str response))))
+      {:revision-id revision-id}))
+
+  (delete-concept
+    [this concept-id]              
+    (let [{:keys [mdb-url]} (:config this)
+          response (client/delete (str mdb-url "/" concept-id))
+          status (:status response)
+          body (cheshire/parse-string (:body response))
+          revision-id (get body "revision-id")]
+      (when-not (= 200 status)
+        (errors/internal-error! (str "Delete concept operation failed. MetadataDb app response status code: "  status (str response))))
+      {:revision-id revision-id})))
+          
  
 (defn create
   "Creates proxy to metadata db."
   []
-  (map->Metadata-DB {:config (metadata-db-config)}))       
+  (map->MetadataDb {:config (metadata-db-config)}))       
+
 

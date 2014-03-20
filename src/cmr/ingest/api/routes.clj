@@ -23,17 +23,19 @@
                                  (routes
                                    (context "/:native-id" [native-id]
                                             (PUT "/" params
-                                                 (r/response (ingest/save-concept system 
-                                                                                  (assoc  (walk/keywordize-keys (:body params)) 
-                                                                                    :provider-id provider-id 
-                                                                                    :native-id native-id
-                                                                                    :concept-type :collection))))
-                                            (DELETE "/" params
-                                                    (r/response (ingest/delete-concept system 
-                                                                                       (assoc  (walk/keywordize-keys (:body params)) 
-                                                                                         :provider-id provider-id 
-                                                                                         :native-id native-id
-                                                                                         :concept-type :collection)))))))))
+                                                 (let [metadata (string/trim (slurp (:body params)))
+                                                       format (:content-type params)
+                                                       concept {:metadata metadata 
+                                                                :format format
+                                                                :provider-id provider-id 
+                                                                :native-id native-id
+                                                                :concept-type :collection}]
+                                                   (r/response (ingest/save-concept system concept))))
+                                            (DELETE "/" []
+                                                    (let [concept-attribs {:provider-id provider-id 
+                                                                           :native-id native-id
+                                                                           :concept-type :collection}]
+                                                      (r/response (ingest/delete-concept system concept-attribs)))))))))
              (route/not-found "Not Found"))))
 
 (defn make-api [system]
