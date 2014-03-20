@@ -12,34 +12,31 @@
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.api.errors :as errors]
             [cmr.ingest.services.ingest :as ingest]
-            [clojure.walk :as walk]))
+            [clojure.walk :as walk]
+            [cmr.system-trace.http :as http-trace]))
 
 (defn- build-routes [system]
   (routes
-    (context "/providers" []
-             (context "/:provider-id" [provider-id] 
-                      (routes
-                        (context "/collections" [] 
-                                 (routes
-                                   (context "/:native-id" [native-id]
-                                            (PUT "/" params
-                                                 (let [metadata (string/trim (slurp (:body params)))
-                                                       format (:content-type params)
-                                                       concept {:metadata metadata 
-                                                                :format format
-                                                                :provider-id provider-id 
-                                                                :native-id native-id
-                                                                :concept-type :collection}]
-                                                   (r/response (ingest/save-concept system concept))))
-                                            (DELETE "/" []
-                                                    (let [concept-attribs {:provider-id provider-id 
-                                                                           :native-id native-id
-                                                                           :concept-type :collection}]
-                                                      (r/response (ingest/delete-concept system concept-attribs)))))))))
-             (route/not-found "Not Found"))))
+    (context "/providers/:provider-id" [provider-id]
+      (context "/collections/:native-id" [native-id]
+        (PUT "/" {:keys [body content-type request-context]}
+          (let [metadata (string/trim (slurp body))
+                concept {:metadata metadata
+                         :format content-type
+                         :provider-id provider-id
+                         :native-id native-id
+                         :concept-type :collection}]
+            (r/response (ingest/save-concept request-context concept))))
+        (DELETE "/" {:keys [request-context]}
+          (let [concept-attribs {:provider-id provider-id
+                                 :native-id native-id
+                                 :concept-type :collection}]
+            (r/response (ingest/delete-concept request-context concept-attribs))))))
+    (route/not-found "Not Found")))
 
 (defn make-api [system]
   (-> (build-routes system)
+      (http-trace/build-request-context-handler system)
       errors/exception-handler
       handler/site
       ring-json/wrap-json-body

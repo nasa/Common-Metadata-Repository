@@ -3,20 +3,25 @@
   represented as a map of components. Design based on
   http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts."
   (:require [cmr.common.lifecycle :as lifecycle]
-            [cmr.common.log :refer (debug info warn error)]))
+            [cmr.common.log :refer (debug info warn error)]
+            [cmr.system-trace.context :as context]))
 
 (def
   ^{:doc "Defines the order to start the components."
     :private true}
-  component-order [:log :db :web])
+  component-order [:log :web])
+
+(def default-config
+  {:mdb-url "http://localhost:3001"
+   :indexer-url "http://localhost:3004"})
 
 (defn create-system
   "Returns a new instance of the whole application."
-  [log db idx-db web]
+  [log config web]
   {:log log
-   :db db
-   :idx-db idx-db
-   :web web})
+   :config config
+   :web web
+   :zipkin (context/zipkin-config "Ingest")})
 
 (defn start
   "Performs side effects to initialize the system, acquire resources,

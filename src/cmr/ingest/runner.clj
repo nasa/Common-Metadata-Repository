@@ -6,8 +6,6 @@
             [clojure.string :as string]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.api.web-server :as web]
-            [cmr.ingest.data.mdb :as metadata-db]
-            [cmr.ingest.data.indexer :as indexer]
             [cmr.ingest.api.routes :as routes])
   (:gen-class))
 
@@ -35,8 +33,6 @@
   [& args]
   (let [{:keys [port]} (parse-args args)
         web-server (web/create-web-server port routes/make-api)
-        db (metadata-db/create)
-        idx-db (indexer/create)
         log (log/create-logger)
-        system (system/start (system/create-system log db idx-db web-server))]
+        system (system/start (system/create-system log system/default-config web-server))]
     (info "Running...")))
