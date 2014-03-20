@@ -16,7 +16,7 @@
                  :long-name "One valid collection"
                  :dataset-id "OneCollectionV1"}
                 {:short-name "Another"
-                 :version "3"
+                 :version "r1"
                  :long-name "Another valid collection"
                  :dataset-id "AnotherCollectionV1"}]
 
@@ -25,7 +25,7 @@
                  :long-name "One valid collection"
                  :dataset-id "OneCollectionV1"}
                 {:short-name "Other"
-                 :version "4"
+                 :version "r2"
                  :long-name "Other valid collection"
                  :dataset-id "OtherCollectionV1"}]})
 (defn setup
@@ -60,7 +60,26 @@
   (t/testing "search by existing provider id." [context]
     (let [references (search/find-collection-refs context {:provider "CMR_PROV1"})]
       (is (= 3 (count references)))
-      (some #{"MinimalCollectionV1" "OneCollectionV1" "AnotherCollectionV1"} (map #(:dataset-id %) references)))))
+      (some #{"MinimalCollectionV1" "OneCollectionV1" "AnotherCollectionV1"}
+            (map #(:dataset-id %) references))))
+  (testing "search by provider id using wildcard *."
+    (let [references (search/find-collection-refs {:provider "CMR_PRO*", "options[provider][pattern]" "true"})]
+      (is (= 5 (count references)))
+      (some #{"MinimalCollectionV1" "OneCollectionV1" "AnotherCollectionV1" "OtherCollectionV1"}
+            (map #(:dataset-id %) references))))
+  (testing "search by provider id using wildcard ?."
+    (let [references (search/find-collection-refs {:provider "CMR_PROV?", "options[provider][pattern]" "true"})]
+      (is (= 5 (count references)))
+      (some #{"MinimalCollectionV1" "OneCollectionV1" "AnotherCollectionV1" "OtherCollectionV1"}
+            (map #(:dataset-id %) references))))
+  (testing "search by provider id case not match."
+    (let [references (search/find-collection-refs {:provider "CMR_prov1"})]
+      (is (= 0 (count references)))))
+  (testing "search by provider id ignore case."
+    (let [references (search/find-collection-refs {:provider "CMR_prov1", "options[provider][ignore_case]" "true"})]
+      (is (= 3 (count references)))
+      (some #{"MinimalCollectionV1" "OneCollectionV1" "AnotherCollectionV1" "OtherCollectionV1"}
+            (map #(:dataset-id %) references)))))
 
 (deftest search-by-dataset-id
   (t/testing "search by non-existent dataset id." [context]
@@ -82,7 +101,20 @@
     (let [references (search/find-collection-refs context {:dataset_id "OneCollectionV1"})
           dataset-ids (map #(:dataset-id %) references)]
       (is (= 2 (count references)))
-      (is (= #{"OneCollectionV1"} (into #{} dataset-ids))))))
+      (is (= #{"OneCollectionV1"} (into #{} dataset-ids)))))
+  (testing "search by dataset id using wildcard *."
+    (let [references (search/find-collection-refs {:dataset_id "O*", "options[dataset_id][pattern]" "true"})
+          dataset-ids (map #(:dataset-id %) references)]
+      (is (= 3 (count references)))
+      (is (= #{"OneCollectionV1" "OtherCollectionV1"} (into #{} dataset-ids)))))
+  (testing "search by dataset id case not match."
+    (let [references (search/find-collection-refs {:dataset_id "minimalCollectionV1"})]
+      (is (= 0 (count references)))))
+  (testing "search by dataset id ignore case."
+    (let [references (search/find-collection-refs {:dataset_id "minimalCollectionV1", "options[dataset_id][ignore_case]" "true"})]
+      (is (= 1 (count references)))
+      (let [{dataset-id :dataset-id} (first references)]
+        (is (= "MinimalCollectionV1" dataset-id))))))
 
 (deftest search-by-short-name
   (t/testing "search by non-existent short name." [context]
@@ -94,8 +126,7 @@
       (let [ref (first references)
             {:keys [dataset-id concept-id location]} ref]
         (is (= "MinimalCollectionV1" dataset-id))
-        (is (re-matches #"C[0-9]+-CMR_PROV1" concept-id))
-        #_(is (re-matches #"http.*/catalog-rest/echo_catalog/datasets/C[0-9]+-CMR_PROV1$" location)))))
+        (is (re-matches #"C[0-9]+-CMR_PROV1" concept-id)))))
   (t/testing "search by multiple short names." [context]
     (let [references (search/find-collection-refs context {"short_name[]" ["MINIMAL", "Another"]})
           dataset-ids (map #(:dataset-id %) references)]
@@ -105,7 +136,20 @@
     (let [references (search/find-collection-refs context {:short_name "One"})
           dataset-ids (map #(:dataset-id %) references)]
       (is (= 2 (count references)))
-      (is (= #{"OneCollectionV1"} (into #{} dataset-ids))))))
+      (is (= #{"OneCollectionV1"} (into #{} dataset-ids)))))
+  (testing "search by short name using wildcard *."
+    (let [references (search/find-collection-refs {:short_name "O*", "options[short_name][pattern]" "true"})
+          dataset-ids (map #(:dataset-id %) references)]
+      (is (= 3 (count references)))
+      (is (= #{"OneCollectionV1" "OtherCollectionV1"} (into #{} dataset-ids)))))
+  (testing "search by short name case not match."
+    (let [references (search/find-collection-refs {:short_name "minimal"})]
+      (is (= 0 (count references)))))
+  (testing "search by short name ignore case."
+    (let [references (search/find-collection-refs {:short_name "minimal", "options[short_name][ignore_case]" "true"})]
+      (is (= 1 (count references)))
+      (let [{dataset-id :dataset-id} (first references)]
+        (is (= "MinimalCollectionV1" dataset-id))))))
 
 (deftest search-by-version-id
   (t/testing "search by non-existent version id." [context]
@@ -129,7 +173,25 @@
     (let [references (search/find-collection-refs context {:version "2"})
           dataset-ids (map #(:dataset-id %) references)]
       (is (= 2 (count references)))
-      (is (= #{"OneCollectionV1"} (into #{} dataset-ids))))))
+      (is (= #{"OneCollectionV1"} (into #{} dataset-ids)))))
+  (testing "search by version using wildcard *."
+    (let [references (search/find-collection-refs {:version "r*", "options[version][pattern]" "true"})
+          dataset-ids (map #(:dataset-id %) references)]
+      (is (= 2 (count references)))
+      (is (= #{"OtherCollectionV1" "AnotherCollectionV1"} (into #{} dataset-ids)))))
+  (testing "search by version using wildcard ?."
+    (let [references (search/find-collection-refs {:version "r?", "options[version][pattern]" "true"})
+          dataset-ids (map #(:dataset-id %) references)]
+      (is (= 2 (count references)))
+      (is (= #{"OtherCollectionV1" "AnotherCollectionV1"} (into #{} dataset-ids)))))
+  (testing "search by version case not match."
+    (let [references (search/find-collection-refs {:version "R1"})]
+      (is (= 0 (count references)))))
+  (testing "search by version ignore case."
+    (let [references (search/find-collection-refs {:version "R1", "options[version][ignore_case]" "true"})]
+      (is (= 1 (count references)))
+      (let [{dataset-id :dataset-id} (first references)]
+        (is (= "AnotherCollectionV1" dataset-id))))))
 
 (deftest search-error-scenarios
   (t/testing "search by un-supported parameter." [context]

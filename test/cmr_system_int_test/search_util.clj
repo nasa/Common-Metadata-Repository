@@ -16,7 +16,7 @@
                                   :headers (h/context->http-headers context)})
         body (:body response)
         result (cheshire/decode body)
-        references (get result "references")]
+        references (result "references")]
     (is (= 200 (:status response)))
     (map (fn [x]
            (let [{:strs [native-id concept-id revision-id]} x]
