@@ -3,40 +3,24 @@
   (:require [clojure.test :refer :all]
             [clj-http.client :as client]
             [clojure.string :as str]
-            [clojure.data.xml :as xml]
-            [cmr-system-int-test.url-helper :as url]))
+            [cheshire.core :as cheshire]
+            [cmr-system-int-test.url-helper :as url]
+            [cmr.system-trace.http :as h]))
 
 (defn find-collection-refs
   "Returns the collection references that are found
   by searching with the input params"
-  [params]
+  [context params]
   (let [url (str (url/collection-search-url params))
-        response (client/get url)
+        response (client/get url {:accept :json
+                                  :headers (h/context->http-headers context)})
         body (:body response)
-        result (:content (xml/parse (java.io.StringReader. body)))]
+        result (cheshire/decode body)
+        references (get result "references")]
     (is (= 200 (:status response)))
     (map (fn [x]
-           (let [elem (:content x)
-                 dataset-id (first (:content (first elem)))
-                 echo-concept-id (first (:content (second elem)))
-                 location (first (:content (nth elem 2)))]
-             {:dataset-id dataset-id
-              :echo-concept-id echo-concept-id
-              :location location}))
-         result)))
-
-
-(comment
-  (let [result (find-collection-refs {:provider "CMR_PROV1"})
-        xml (:body result)
-        c (:content (xml/parse (java.io.StringReader. xml)))]
-    (map (fn [x]
-           (let [elem (:content x)
-                 dataset-id (first (:content (first elem)))
-                 echo-concept-id (first (:content (second elem)))
-                 location (first (:content (nth elem 2)))]
-             {:dataset-id dataset-id
-              :echo-concept-id echo-concept-id
-              :location location}) )
-         c)
-    ))
+           (let [{:strs [native-id concept-id revision-id]} x]
+             {:dataset-id native-id
+              :concept-id concept-id
+              :revision-id revision-id}))
+         references)))

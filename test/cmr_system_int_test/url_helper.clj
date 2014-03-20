@@ -14,13 +14,8 @@
 
 (defn collection-search-url
   [params]
-  (str url_root "/catalog-rest/echo_catalog/datasets?" (codec/form-encode params)))
-
-(defn index-catalog-url
-  []
-  (str url_root "/catalog-rest/index/catalog"))
+  (str "http://localhost:3003/collections?" (codec/form-encode params)))
 
 (defn elastic-flush-url
   []
   (str elastic_root "/_flush"))
-
