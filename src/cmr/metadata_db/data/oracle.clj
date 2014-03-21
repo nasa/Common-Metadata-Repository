@@ -22,6 +22,17 @@
 
 ;;; Utility methods
 
+(defn clob-to-string
+  "Turn an Oracle Clob into a String"
+  [clob]
+  (with-open [rdr (java.io.BufferedReader. (.getCharacterStream clob))]
+    (apply str (line-seq rdr))))
+
+(defn fix-metadata-field
+  "Convert the metadata field from a CLOB to a string."
+  [concept]
+  (assoc concept :metadata (clob-to-string (:metadata concept))))
+
 (defn reset-database
   "Delete everything from the concpet table."
   [db-config]
@@ -96,7 +107,31 @@
   
   
   (get-concept
-    [this concept-id revision-id])
+    [this concept-id revision-id]
+    (let [{:keys [db]} this]
+      (if revision-id
+        (let [concept (first (j/query db ["SELECT concept_type, native_id, provider_id, metadata, format, revision 
+                                          AS revision_id
+                                          FROM METADATA_DB.concept
+                                          WHERE concept_id = ? AND revision = ?"
+                                          concept-id
+                                          revision-id]))]
+          (if (nil? concept)
+            (errors/throw-service-error :not-found
+                                        "Could not find concept with concept-id of %s and revision %s."
+                                        concept-id
+                                        revision-id)
+            (fix-metadata-field concept)))
+        (let [concept (first (j/query db ["SELECT concept_type, native_id, provider_id, metadata, format, revision
+                                          FROM METADATA_DB.concept
+                                          WHERE concept_id = ?
+                                          ORDER BY revision DESC" concept-id]))]
+          (if (nil? concept)
+            (errors/throw-service-error :not-found
+                                        "Could not find concept with concept-id of %s."
+                                        concept-id)
+            (fix-metadata-field concept))))))
+  
   
   (get-concepts
     [this concept-id-revision-id-tuples])
@@ -116,7 +151,6 @@
 (defn create-db
   "Creates the db needed for clojure.java.jdbc library."
   []
-  (println "CREATING ORACLE DB")
   (map->OracleStore {:db {:classname "oracle.jdbc.driver.OracleDriver"
                           :subprotocol "oracle"
                           :subname (format "thin:@%s:%s:%s" db-host db-port db-sid)
