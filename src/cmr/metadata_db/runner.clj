@@ -7,6 +7,7 @@
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.api.web-server :as web]
             [cmr.metadata-db.data.memory :as memory]
+            [cmr.metadata-db.data.oracle :as oracle]
             [cmr.metadata-db.api.routes :as routes])
   (:gen-class))
 
@@ -18,7 +19,7 @@
 
 (def arg-description
   [["-h" "--help" "Show help" :default false :flag true]
-   ["-d" "--db" "Specifies the database type - memory or oracle" :default "memory"]
+   ["-d" "--db" "Specifies the database type - memory or oracle" ***REMOVED***]
    ["-p" "--port" "The HTTP Port to listen on for requests." :default 3001 :parse-fn #(Integer. %)]])
 
 
@@ -33,9 +34,11 @@
 (defn- select-db
   "return an initialization function for database based on user input parameter"
   [{:keys [db]} ]
+  (println (str "USING " db))
   (case db
     "memory" (memory/create-db)
-    "default" (memory/create-db)))
+    "oracle" (oracle/create-db)
+    "default" (oracle/create-db)))
 
 
 (defn -main

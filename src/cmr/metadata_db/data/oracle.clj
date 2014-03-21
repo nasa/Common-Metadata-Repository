@@ -7,7 +7,8 @@
             [cmr.common.services.errors :as errors]
             [cmr.common.util :as cutil]
             [clojure.pprint :refer (pprint pp)]
-            [clojure.java.jdbc :as ]))
+            [clojure.java.jdbc :as j]
+            [cmr.metadata-db.data.utility :as util]))
 
 ;;; Constants
 
@@ -25,10 +26,11 @@
   "Delete everything from the concpet table."
   [])
 
+
 (defrecord OracleStore
   [
-   ;; An atom containing a map with the configuration - no connection pooling for now
-   db-config]
+   ;; A map with the configuration - no connection pooling for now
+   db]
   
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   lifecycle/Lifecycle
@@ -44,7 +46,51 @@
   data/ConceptStore
   
   (get-concept-id
-    [this concept-type provider-id native-id])
+    [this concept-type provider-id native-id]
+    (let [db (:db this)]
+      ;; FIXME - add table locking/transaction
+      ;(j/db-do-commands db "SET TRANSACTION READ WRITE")
+      ;; try to get the current sequence number of this concept
+      ;(j/db-do-commands db "LOCK TABLE METADATA_DB.concept_id IN EXCLUSIVE MODE")
+      (let [seq-num (int (or (:sequence_number (first (j/query db ["SELECT sequence_number 
+                                                                   FROM METADATA_DB.concept_id 
+                                                                   WHERE concept_type = ? 
+                                                                   AND provider_id = ? 
+                                                                   AND native_id = ?"
+                                                                   concept-type 
+                                                                   provider-id 
+                                                                   native-id]))) 
+                             0))]
+        (if (= seq-num 0)
+          ;; This is a new concept so we need to save it with a new sequence number.
+          ;; We check to see if the sequence has already started for this
+          ;; provider/concept type and use it if so.  Otherwise we start a new
+          ;; sequence at 1.
+          (let [new-seq-num (int (or (:msn (first (j/query db ["SELECT MAX(sequence_number)
+                                                               AS msn 
+                                                               FROM METADATA_DB.concept_id 
+                                                               WHERE concept_type = ? 
+                                                               AND provider_id = ?"
+                                                               concept-type 
+                                                               provider-id])))
+                                     1))]
+            ;; Save an entry with the sequence number.
+            (j/insert! db
+                       "METADATA_DB.concept_id"
+                       ["sequence_number"
+                        "concept_type"
+                        "provider_id"
+                        "native_id"]
+                       [new-seq-num
+                        concept-type
+                        provider-id
+                        native-id])
+            
+            ;(j/db-do-commands db "COMMIT")) 
+            
+            (util/generate-concept-id concept-type provider-id new-seq-num))
+          (util/generate-concept-id concept-type provider-id seq-num)))))
+    	
   
   (get-concept
     [this concept-id revision-id])
@@ -53,8 +99,7 @@
     [this concept-id-revision-id-tuples])
   
   (save-concept
-    [this concept]
-    (validate-concept concept))
+    [this concept])
   
   (delete-concept
     [this concept-id])
@@ -68,6 +113,7 @@
 (defn create-db
   "Creates the db needed for clojure.java.jdbc library."
   []
+  (println "CREATING ORACLE DB")
   (map->OracleStore {:classname "oracle.jdbc.driver.OracleDriver"
                      :subprotocol "oracle"
                      :subname (format "thin:@%s:%s:%s" db-host db-port db-sid)

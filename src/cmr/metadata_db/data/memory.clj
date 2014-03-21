@@ -2,29 +2,21 @@
   "Contains a record definition that implements the ConcpetStore and Lifecycle protocols to support
   development using an in-memory data store."
   (:require [cmr.metadata-db.data :as data]
+            [cmr.metadata-db.data.utility :as util]
             [cmr.common.lifecycle :as lifecycle]
             [clojure.string :as string]
             [cmr.common.services.errors :as errors]
             [cmr.common.util :as cutil]
             [clojure.pprint :refer (pprint pp)]))
 
-;;; Constants
-
-(def concept-id-prefix-length 1)
 
 ;;; Utility methods
-
-(defn- concept-type-prefix
-  "Truncate and upcase a concept-type to create a prefix for concept-ids"
-  [concept-type-keyword]
-  (let [concept-type (name concept-type-keyword)]
-    (string/upper-case (subs concept-type 0 (min (count concept-type) concept-id-prefix-length)))))
 
 (defn- retrieve-concept
   "Get a concept by concept-id. Returns nil if concept is not found."
   [db concept-id, revision-id]
   (let [concepts (:concepts db)
-        concept-map (get @concepts (concept-type-prefix concept-id))
+        concept-map (get @concepts (util/concept-type-prefix concept-id))
         revisions (get concept-map concept-id)]
     (when (and revision-id (or (< revision-id 0) (> revision-id (dec (count revisions)))))
       (errors/throw-service-error :not-found "Revision %s" revision-id " does not exist"))
@@ -39,7 +31,7 @@
         revised-concept (assoc concept :revision-id revision-id)
         new-revisions (conj (or revisions []) revised-concept)
         new-concept-map (assoc concept-map concept-id new-revisions)]
-    (swap! concept-atom assoc (concept-type-prefix concept-type) new-concept-map)
+    (swap! concept-atom assoc (util/concept-type-prefix concept-type) new-concept-map)
     (dec (count new-revisions))))
 
 (defn- create-tombstone-for-concept
@@ -113,7 +105,7 @@
     [this concept-type provider-id native-id]
     ;; We don't use the native-id for the in-memory implementation.
     ;; Other implementatations may want to use it.
-    (let [type-prefix (concept-type-prefix concept-type)
+    (let [type-prefix (util/concept-type-prefix concept-type)
           stored-ids (:concept-concept-id this)
           concept-concept-id-key (str type-prefix provider-id native-id)
           stored-id (get @stored-ids concept-concept-id-key)]
@@ -149,7 +141,7 @@
     (validate-concept concept)
     (let [{:keys [concept-type concept-id revision-id]} concept
           concepts (:concepts this)
-          concept-map (get @concepts (concept-type-prefix concept-type))
+          concept-map (get @concepts (util/concept-type-prefix concept-type))
           revisions (get concept-map concept-id [])]
       (when (and revision-id
                  (not= (count revisions) revision-id))

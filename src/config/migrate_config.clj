@@ -29,10 +29,7 @@
   (int (or (:version (first (j/query db ["select version from METADATA_DB.schema_version order by version DESC"]))) 0)))
 
 (defn update-db-version [version]
-  (println "Start 2")
-  (j/insert! db "METADATA_DB.schema_version" ["version"] [version])
-  #_(j/db-do-commands db "INSERT INTO METADATA_DB.schema_version (version) VALUES (?)" (str version))
-  (println "END2"))
+  (j/insert! db "METADATA_DB.schema_version" ["version"] [version]))
 
 (defn migrate-config []
   {:directory "src/migrations/"
@@ -42,3 +39,9 @@
    :init maybe-create-schema-table
    :current-version current-db-version
    :update-version update-db-version })
+
+(comment
+  (let [result (int (inc (or (:msn (first (j/query db ["SELECT MAX(sequence_number) AS MSN FROM METADATA_DB.concept_id
+                             WHERE concept_type = ? AND provider_id = ? AND native_id = ?"
+                            "collection" "PROV1" "ABC"]))) 0)))])
+  )
