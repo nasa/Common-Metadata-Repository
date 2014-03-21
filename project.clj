@@ -6,6 +6,7 @@
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [clj-http "0.9.0"]
                  [org.clojure/data.xml "0.0.7"]
+                 [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [nasa-cmr/cmr-system-trace-lib "0.1.0-SNAPSHOT"]
                  ; include ring-core to support encoding of params
                  [ring/ring-core "1.2.1"]
