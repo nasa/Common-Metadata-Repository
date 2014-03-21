@@ -17,11 +17,11 @@
   (let [concept1 (util/concept)
         concept2 (assoc concept1 :concept-id "C2-PROV1")]
     (dorun (repeatedly num-revisions #(util/save-concept concept1)))
-    
+
     (util/save-concept concept2))
-  
+
   (f)
-  
+
   ;; clear out the database
   (util/reset-database))
 
@@ -33,7 +33,8 @@
 (deftest mdb-delete-concept-test
   "Delete a concept and check the revision id of the tombstone."
   (let [{:keys [status revision-id]} (util/delete-concept (:concept-id (util/concept)))]
-    (is (and (= status 200) (= revision-id num-revisions)))))
+    (is (= status 200))
+    (is (= revision-id num-revisions))))
 
 (deftest mdb-fail-to-delete-missing-concept
   "Attempt to delete a concept that does not exist and verify that we get a 404."
@@ -46,4 +47,4 @@
         tombstone-revision-id (:revision-id (util/delete-concept concept-id))]
     (dorun (repeatedly 3 #(util/delete-concept concept-id)))
     (let [final-revision-id (:revision-id (util/delete-concept concept-id))]
-      (is (= tombstone-revision-id final-revision-id))))) 
+      (is (= tombstone-revision-id final-revision-id)))))

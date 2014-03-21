@@ -83,7 +83,7 @@
   "Make a POST request to save a concept with JSON encoding of the concept.  Returns a map with
   status, revision-id, and a list of error messages"
   [concept]
-  (let [response (client/post concepts-url 
+  (let [response (client/post concepts-url
                               {:body (cheshire/generate-string concept)
                                :body-encoding "UTF-8"
                                :content-type :json
@@ -96,7 +96,7 @@
     {:status status :revision-id revision-id :error-messages error-messages}))
 
 (defn delete-concept
-  "Make a DELETE request to mark a concept as deleted. Returns the status and revision id of the 
+  "Make a DELETE request to mark a concept as deleted. Returns the status and revision id of the
   tombstone."
   [concept-id]
   (let [response (client/delete (str concepts-url concept-id)
@@ -110,7 +110,7 @@
 (defn reset-database
   "Make a request to reset the database by clearing out all stored concepts."
   []
-  (let [response (client/delete (str concepts-url "force-delete") 
+  (let [response (client/delete (str concepts-url "force-delete")
                                 {:throw-exceptions false})
         status (:status response)]
     status))

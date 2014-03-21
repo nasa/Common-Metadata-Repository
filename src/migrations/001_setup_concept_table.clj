@@ -10,10 +10,10 @@
                                native_id VARCHAR(255) NOT NULL,
                                concept_id VARCHAR(255) NOT NULL,
                                provider_id VARCHAR(255) NOT NULL,
-                               metadata CLOB NOT NULL,
+                               metadata VARCHAR(4000) NOT NULL,
                                format VARCHAR(255) NOT NULL,
                                revision_id INTEGER DEFAULT 0 NOT NULL,
-                               PRIMARY KEY (concept_id))")
+                               deleted INTEGER DEFAULT 0 NOT NULL)")
   (println "migrations.001-setup-concept-table up..."))
 
 (defn down

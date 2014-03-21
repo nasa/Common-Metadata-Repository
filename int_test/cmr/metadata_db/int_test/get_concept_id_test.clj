@@ -1,5 +1,5 @@
 (ns cmr.metadata-db.int-test.get-concept-id-test
-  "Contains integration tests for getting concepts. Tests gets with various 
+  "Contains integration tests for getting concepts. Tests gets with various
   configurations including checking for proper error handling."
   (:require [clojure.test :refer :all]
             [clj-http.client :as client]
@@ -44,6 +44,6 @@
                                                       (str (:native-id concept) "EXTRA TEXT")))
         concept1-extracted-fields (cutil/parse-concept-id concept-id1)
         concept2-extracted-fields (cutil/parse-concept-id concept-id2)]
-    (is (and (and (= (:concept-prefix concept1-extracted-fields) (:concept-prefix concept2-extracted-fields))
-                  (= (:sequence-number concept1-extracted-fields) (:sequence-number concept2-extracted-fields)))
-             (= (:provider-id concept1-extracted-fields) (:provider-id concept2-extracted-fields))))))
+    (is (= (:concept-prefix concept1-extracted-fields) (:concept-prefix concept2-extracted-fields)))
+    (is (not= (:sequence-number concept1-extracted-fields) (:sequence-number concept2-extracted-fields)))
+    (is (= (:provider-id concept1-extracted-fields) (:provider-id concept2-extracted-fields)))))

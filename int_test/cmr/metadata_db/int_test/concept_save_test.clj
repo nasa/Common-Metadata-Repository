@@ -17,7 +17,8 @@
   "Save a valid concept with no revision-id."
   (let [concept (util/concept)
         {:keys [status revision-id]} (util/save-concept (util/concept))]
-    (is (and (= status 201) (= revision-id 0)))
+    (is (= status 201))
+    (is (= revision-id 0))
     (util/verify-concept-was-saved concept 0)))
 
 (deftest mdb-save-concept-test-with-proper-revision-id-test
@@ -27,7 +28,8 @@
     (util/save-concept concept)
     ;; save it again with a valid revision-id
     (let [{:keys [status revision-id]} (util/save-concept (assoc concept :revision-id 1))]
-      (is (and (= status 201) (= revision-id 1)))
+      (is (= status 201))
+      (is (= revision-id 1))
       (util/verify-concept-was-saved concept 1))))
 
 (deftest mdb-save-concept-with-bad-revision-test
@@ -62,7 +64,7 @@
 ;;; issue.
 #_(deftest mdb-save-concept-with-invalid-json-test
   "Fail to save a concept if the json is invalid"
-  (let [response (client/post "http://localhost:3000/concepts" 
+  (let [response (client/post "http://localhost:3000/concepts"
                               {:body "some non-json"
                                :body-encoding "UTF-8"
                                :content-type :json

@@ -24,7 +24,7 @@
       concept
       (last revisions))))
 
-(defn- save 
+(defn- save
   "Save a concept"
   [concept-atom concept concept-type concept-map concept-id revisions]
   (let [revision-id (count revisions)
@@ -44,11 +44,6 @@
    :deleted true
    :revision-id (inc (:revision-id concept))})
 
-(defn- is-tombstone?
-  "Check to see if an entry is a tombstone (has a :deleted true entry)."
-  [concept]
-  (:deleted concept))
-
 (defn- delete
   "Delete a concept (create tombstone)."
   [concept-atom concept-id concept-map revisions]
@@ -57,19 +52,10 @@
         tombstone (create-tombstone-for-concept concept)
         new-revisions (conj revisions tombstone)
         new-concept-map (assoc concept-map concept-id new-revisions)]
-    (if (is-tombstone? concept)
+    (if (util/is-tombstone? concept)
       (:revision-id concept)
       (do (swap! concept-atom assoc concept-prefix new-concept-map)
         (:revision-id tombstone)))))
-
-
-(defn- validate-concept
-  "Validate that a concept has the fields we need to save it."
-  [concept]
-  (if-not (:concept-type concept)
-    (errors/throw-service-error :invalid-data "Concept must include concept-type"))
-  (if-not (:concept-id concept)
-    (errors/throw-service-error :invalid-data "Concept must include concept-id")))
 
 (defn- reset-database
   "Empty the database."
@@ -77,7 +63,7 @@
   (swap! (:concepts db) empty)
   (reset! (:concept-id-seq db) 0))
 
-(defn- concept-id-seq 
+(defn- concept-id-seq
   "Returns a monotonically increasing number."
   [db]
   (swap! (:concept-id-seq db) inc))
@@ -87,20 +73,20 @@
   [
    ;; An atom containing maps of concept-ids to concepts
    concepts]
-  
+
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   lifecycle/Lifecycle
-  
+
   (start [this system]
          (reset-database this)
          this)
-  
+
   (stop [this system]
         this)
-  
+
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   data/ConceptStore
-  
+
   (get-concept-id
     [this concept-type provider-id native-id]
     ;; We don't use the native-id for the in-memory implementation.
@@ -115,7 +101,7 @@
               generated-id (str type-prefix seq-num "-" provider-id)]
           (swap! stored-ids assoc concept-concept-id-key generated-id)
           generated-id))))
-  
+
   (get-concept
     [this concept-id revision-id]
     (if-let [concept (retrieve-concept this concept-id revision-id)]
@@ -128,29 +114,29 @@
         (errors/throw-service-error :not-found
                                     "Could not find concept with concept-id of %s."
                                     concept-id))))
-  
+
   (get-concepts
     [this concept-id-revision-id-tuples]
     ;; An SQL based DB would have a more efficient way to do this, but
     ;; an in-memory map like this has to pull things back one-by-one.
     (remove nil? (map #(try (retrieve-concept this (first %) (last %))
                          (catch Exception e nil)) concept-id-revision-id-tuples)))
-  
+
   (save-concept
     [this concept]
-    (validate-concept concept)
+    (util/validate-concept concept)
     (let [{:keys [concept-type concept-id revision-id]} concept
           concepts (:concepts this)
           concept-map (get @concepts (util/concept-type-prefix concept-type))
           revisions (get concept-map concept-id [])]
       (when (and revision-id
                  (not= (count revisions) revision-id))
-        (errors/throw-service-error :conflict 
+        (errors/throw-service-error :conflict
                                     "Expected revision-id of %s got %s"
                                     (count revisions)
                                     revision-id))
       (save concepts concept concept-type concept-map concept-id revisions)))
-  
+
   (delete-concept
     [this concept-id]
     (let [concepts (:concepts this)
@@ -162,16 +148,16 @@
                                     "Concept %s does not exist."
                                     concept-id))
       (delete concepts concept-id concept-map revisions)))
-  
+
   (force-delete
     [this]
     (reset-database this)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;     
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn create-db
   "Creates the in memory store."
   []
   (map->InMemoryStore {:concept-id-seq (atom 0) ;; number seqeunce generator for id generation
                        :concept-concept-id (atom {}) ;; generated ids
-                       :concepts (atom {})})) ;; actual stored concepts                   
+                       :concepts (atom {})})) ;; actual stored concepts
