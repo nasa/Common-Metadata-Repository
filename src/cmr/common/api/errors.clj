@@ -8,7 +8,7 @@
    :conflict 409})
 
 (def internal-error-ring-response
-  {:status 500 :body "An Internal Error has occurred."})
+  {:status 500 :body {:errors ["An Internal Error has occurred."]} :content-type :json})
 
 (defn exception-handler
   "A ring exception handler that will handle errors thrown by the cmr.common.services.errors
