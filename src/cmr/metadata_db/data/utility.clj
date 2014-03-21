@@ -15,4 +15,4 @@
 (defn generate-concept-id
   "Generate a concept-id given concept type, sequence number, and provider id."
   [concept-type provider-id seq-num]
-  (str (concept-type-prefix concept-type seq-num) "-" provider-id))
+  (str (concept-type-prefix concept-type) seq-num "-" provider-id))

@@ -24,7 +24,10 @@
 
 (defn reset-database
   "Delete everything from the concpet table."
-  [db])
+  [db-config]
+  (let [db (:db db-config)]
+    (j/db-do-commands db "DELETE FROM METADATA_DB.concept")
+    (j/db-do-commands db "DELETE FROM METADATA_DB.concept_id")))
 
 
 (defrecord OracleStore
@@ -66,14 +69,14 @@
           ;; We check to see if the sequence has already started for this
           ;; provider/concept type and use it if so.  Otherwise we start a new
           ;; sequence at 1.
-          (let [new-seq-num (int (or (:msn (first (j/query db ["SELECT MAX(sequence_number)
-                                                               AS msn 
-                                                               FROM METADATA_DB.concept_id 
-                                                               WHERE concept_type = ? 
-                                                               AND provider_id = ?"
-                                                               concept-type 
-                                                               provider-id])))
-                                     1))]
+          (let [new-seq-num (inc (int (or (:msn (first (j/query db ["SELECT MAX(sequence_number)
+                                                                    AS msn 
+                                                                    FROM METADATA_DB.concept_id 
+                                                                    WHERE concept_type = ? 
+                                                                    AND provider_id = ?"
+                                                                    concept-type 
+                                                                    provider-id])))
+                                          0)))]
             ;; Save an entry with the sequence number.
             (j/insert! db
                        "METADATA_DB.concept_id"
