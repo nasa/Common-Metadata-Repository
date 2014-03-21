@@ -26,17 +26,17 @@
 
 (defn current-db-version []
   (println "Start")
-  (or (first (j/query db "select version from METADATA_DB.schema_version WHERE rownum = 1 order by created_at DESC")) 0))
+  (int (or (:version (first (j/query db ["select version from METADATA_DB.schema_version order by version DESC"]))) 0)))
 
 (defn update-db-version [version]
   (println "Start 2")
-  (j/insert! db "METADATA_DB.schema_version" {:version version})
+  (j/insert! db "METADATA_DB.schema_version" ["version"] [version])
   #_(j/db-do-commands db "INSERT INTO METADATA_DB.schema_version (version) VALUES (?)" (str version))
   (println "END2"))
 
 (defn migrate-config []
   {:directory "src/migrations/"
-   :ns-content "\n  (:require [clojure.java.jdbc :as j])"
+   :ns-content "\n  (:require [clojure.java.jdbc :as j]\n            [config.migrate-config :as config])"
    :namespace-prefix "migrations"
    :migration-number-generator incremental-migration-number-generator
    :init maybe-create-schema-table
