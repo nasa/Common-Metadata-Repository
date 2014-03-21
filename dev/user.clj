@@ -8,7 +8,8 @@
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.api.web-server :as web]
             [cmr.metadata-db.api.routes :as routes]
-            [cmr.metadata-db.data.memory :as memory])
+            [cmr.metadata-db.data.memory :as memory]
+            [cmr.metadata-db.data.oracle :as oracle])
   (:use [clojure.test :only [run-all-tests]]
         [clojure.repl]
         [alex-and-georges.debug-repl]))
@@ -21,7 +22,7 @@
 (defn start
   "Starts the current development system."
   []
-  (let [db (memory/create-db)
+  (let [db (oracle/create-db)
         web-server (web/create-web-server 3001 routes/make-api)
         log (log/create-logger)
         s (system/create-system db log web-server)]

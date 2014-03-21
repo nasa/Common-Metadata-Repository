@@ -24,7 +24,7 @@
 
 (defn reset-database
   "Delete everything from the concpet table."
-  [])
+  [db])
 
 
 (defrecord OracleStore
@@ -90,7 +90,7 @@
             
             (util/generate-concept-id concept-type provider-id new-seq-num))
           (util/generate-concept-id concept-type provider-id seq-num)))))
-    	
+  
   
   (get-concept
     [this concept-id revision-id])
@@ -114,8 +114,8 @@
   "Creates the db needed for clojure.java.jdbc library."
   []
   (println "CREATING ORACLE DB")
-  (map->OracleStore {:classname "oracle.jdbc.driver.OracleDriver"
-                     :subprotocol "oracle"
-                     :subname (format "thin:@%s:%s:%s" db-host db-port db-sid)
-                     :user db-username
-                     :password db-password}))                  
+  (map->OracleStore {:db {:classname "oracle.jdbc.driver.OracleDriver"
+                          :subprotocol "oracle"
+                          :subname (format "thin:@%s:%s:%s" db-host db-port db-sid)
+                          :user db-username
+                          :password db-password}}))                  
