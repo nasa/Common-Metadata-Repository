@@ -12,8 +12,8 @@
                                provider_id VARCHAR(255) NOT NULL,
                                metadata CLOB NOT NULL,
                                format VARCHAR(255) NOT NULL,
-                               revision INTEGER DEFAULT 0 NOT NULL,
-                               PRIMARY KEY (concept_id))")  
+                               revision_id INTEGER DEFAULT 0 NOT NULL,
+                               PRIMARY KEY (concept_id))")
   (println "migrations.001-setup-concept-table up..."))
 
 (defn down
