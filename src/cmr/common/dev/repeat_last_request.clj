@@ -1,4 +1,4 @@
-(ns cmr.common.test.repeat-last-request
+(ns cmr.common.dev.repeat-last-request
   "A special debug helper that allows the last request to be repeated.
   The debug-repl occasionally has trouble running in the thread Jetty starts. This captures requests
   that have been received and then can rerun them from the repl thread where debug-repl works better.")
