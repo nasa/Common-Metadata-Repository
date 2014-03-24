@@ -2,7 +2,8 @@
   (:require [clojure.pprint :refer (pprint pp)]
             [clojure.tools.namespace.repl :refer (refresh refresh-all)]
             [cmr.dev-system.system :as system]
-            [cmr.common.log :as log :refer (debug info warn error)])
+            [cmr.common.log :as log :refer (debug info warn error)]
+            [cmr.common.dev.util :as d])
   (:use [clojure.test :only [run-all-tests]]
         [clojure.repl]
         [alex-and-georges.debug-repl]))
@@ -15,7 +16,8 @@
   (let [s (system/create-system)]
     (alter-var-root #'system
                     (constantly
-                      (system/start s)))))
+                      (system/start s))))
+  (d/touch-user-clj))
 
 (defn stop
   "Shuts down and destroys the current development system."
