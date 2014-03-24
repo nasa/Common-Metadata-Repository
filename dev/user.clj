@@ -5,13 +5,11 @@
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.api.web-server :as web]
             [cmr.search.api.routes :as routes]
-            [cmr.common.dev.repeat-last-request :as repeat-last-request :refer (repeat-last-request)])
+            [cmr.common.dev.repeat-last-request :as repeat-last-request :refer (repeat-last-request)]
+            [cmr.common.dev.util :as d])
   (:use [clojure.test :only [run-all-tests]]
         [clojure.repl]
         [alex-and-georges.debug-repl]))
-
-; See http://thinkrelevance.com/blog/2013/06/04/clojure-workflow-reloaded
-; for information on why this file is setup this way
 
 (def system nil)
 
@@ -22,7 +20,8 @@
         s (assoc (system/create-system) :web web-server)]
     (alter-var-root #'system
                     (constantly
-                      (system/start s)))))
+                      (system/start s))))
+  (d/touch-user-clj))
 
 (defn stop
   "Shuts down and destroys the current development system."

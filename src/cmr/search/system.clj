@@ -19,7 +19,7 @@
   {:log (log/create-logger)
    :search-index (idx/create-elastic-search-index "localhost" 9200)
    :web (web/create-web-server 3003 routes/make-api)
-   :zipkin (context/zipkin-config "Search")})
+   :zipkin (context/zipkin-config "Search" false)})
 
 (defn start
   "Performs side effects to initialize the system, acquire resources,
