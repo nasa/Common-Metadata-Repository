@@ -23,7 +23,7 @@
   {:db (memory/create-db)
    :log (log/create-logger)
    :web (web/create-web-server 3001 routes/make-api)
-   :zipkin (context/zipkin-config "Metadata DB")})
+   :zipkin (context/zipkin-config "Metadata DB" false)})
 
 (defn start
   "Performs side effects to initialize the system, acquire resources,
