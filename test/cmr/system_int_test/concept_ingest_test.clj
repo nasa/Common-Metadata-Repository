@@ -1,20 +1,20 @@
 (ns ^{:doc "CMR Ingest integration tests"}
-  cmr-system-int-test.concept-ingest-test
+  cmr.system-int-test.concept-ingest-test
   (:require [clojure.test :refer :all]
-            [cmr-system-int-test.ingest-util :as ingest]
-            [cmr-system-int-test.index-util :as index]
+            [cmr.system-int-test.ingest-util :as ingest]
+            [cmr.system-int-test.index-util :as index]
             [ring.util.io :as io]
             [clj-http.client :as client]
             [cheshire.core :as cheshire]
-            [cmr-system-int-test.ingest-util :as util]))
+            [cmr.system-int-test.ingest-util :as util]))
 
 (def base-concept-attribs
-  {:short-name "SN-Sedac88" 
-   :version "Ver88"  
+  {:short-name "SN-Sedac88"
+   :version "Ver88"
    :long-name "LongName Sedac88"
    :dataset-id "LarcDatasetId88"})
 
-;; Each test ingests and deletes this concept. 
+;; Each test ingests and deletes this concept.
 (defn concept
   "Creates a sample concept."
   [provider-num]
@@ -29,7 +29,7 @@
   [concept]
   (let [host "localhost"
         port 3002
-        {:keys [provider-id concept-type native-id ]} concept  
+        {:keys [provider-id concept-type native-id ]} concept
         ctx-part (str "providers" "/" provider-id  "/" "collections" "/" native-id )
         ingest-rest-url (str "http://" host ":" port "/" ctx-part)]
     ingest-rest-url))
@@ -40,7 +40,7 @@
   [concept]
   (let [response (client/request
                    {:method :put
-                    :url (construct-ingest-rest-url concept) 
+                    :url (construct-ingest-rest-url concept)
                     :body  (:metadata concept) ;; (io/string-input-stream (:metadata concept))
                     :content-type (:format concept)
                     :accept :json
@@ -66,7 +66,7 @@
     {:status status :concept-id concept-id :revision-id revision-id :response response}))
 
 ;;; tests
-;;; ensure metadata and ingest apps are accessable on ports 3001 and 3002 resp; 
+;;; ensure metadata and ingest apps are accessable on ports 3001 and 3002 resp;
 ;;; add indexer app etc later to this list
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

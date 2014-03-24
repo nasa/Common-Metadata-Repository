@@ -1,9 +1,9 @@
 (ns ^{:doc "Integration test for CMR collection search"}
-  cmr-system-int-test.collection-search-test
+  cmr.system-int-test.collection-search-test
   (:require [clojure.test :refer :all]
-            [cmr-system-int-test.ingest-util :as ingest]
-            [cmr-system-int-test.search-util :as search]
-            [cmr-system-int-test.index-util :as index]))
+            [cmr.system-int-test.ingest-util :as ingest]
+            [cmr.system-int-test.search-util :as search]
+            [cmr.system-int-test.index-util :as index]))
 
 (def provider-collections
   {"CMR_PROV1" [{:short-name "MINIMAL"

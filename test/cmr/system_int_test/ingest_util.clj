@@ -1,9 +1,9 @@
 (ns ^{:doc "provides ingest realted utilities."}
-  cmr-system-int-test.ingest-util
+  cmr.system-int-test.ingest-util
   (:require [clojure.test :refer :all]
             [clj-http.client :as client]
             [clojure.string :as str]
-            [cmr-system-int-test.url-helper :as url]))
+            [cmr.system-int-test.url-helper :as url]))
 
 (def dummy-metadata
   "<Collection>

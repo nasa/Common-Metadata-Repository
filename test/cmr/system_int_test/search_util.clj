@@ -1,11 +1,10 @@
 (ns ^{:doc "provides search related utilities."}
-  cmr-system-int-test.search-util
+  cmr.system-int-test.search-util
   (:require [clojure.test :refer :all]
             [clj-http.client :as client]
             [clojure.string :as str]
             [cheshire.core :as cheshire]
-            [cmr-system-int-test.url-helper :as url]
-            [cmr.system-trace.http :as h]))
+            [cmr.system-int-test.url-helper :as url]))
 
 (defn find-collection-refs
   "Returns the collection references that are found
