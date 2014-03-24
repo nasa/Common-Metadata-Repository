@@ -6,94 +6,96 @@
             [ring.util.io :as io]
             [clj-http.client :as client]
             [cheshire.core :as cheshire]
+            [clojure.string :as string]
             [cmr-system-int-test.ingest-util :as util]))
 
-(def base-concept-attribs
-  {:short-name "SN-Sedac88" 
-   :version "Ver88"  
-   :long-name "LongName Sedac88"
-   :dataset-id "LarcDatasetId88"})
 
-;; Each test ingests and deletes this concept. 
-(defn concept
-  "Creates a sample concept."
-  [provider-num]
-  {:concept-type :collection
-   :native-id "nativeId1"
-   :provider-id (str "PROV88" provider-num)
-   :metadata (util/metadata-xml base-concept-attribs)
-   :format "echo10+xml"})
-
-(defn construct-ingest-rest-url
-  "Construct ingest url based on concept."
-  [concept]
-  (let [host "localhost"
-        port 3002
-        {:keys [provider-id concept-type native-id ]} concept  
-        ctx-part (str "providers" "/" provider-id  "/" "collections" "/" native-id )
-        ingest-rest-url (str "http://" host ":" port "/" ctx-part)]
-    ingest-rest-url))
-
-;;; operations
-(defn ingest-concept
-  "Ingest a concept and return a map with status, concept-id, and revision-id"
-  [concept]
-  (let [response (client/request
-                   {:method :put
-                    :url (construct-ingest-rest-url concept) 
-                    :body  (:metadata concept) ;; (io/string-input-stream (:metadata concept))
-                    :content-type (:format concept)
-                    :accept :json
-                    :throw-exceptions false})
-        status (:status response)
-        body (cheshire/parse-string (:body response))
-        concept-id (get body "concept-id")
-        revision-id (get body "revision-id")]
-    {:status status :concept-id concept-id :revision-id revision-id :response response}))
-
-(defn delete-concept
-  "Delete a given concept."
-  [concept]
-  (let [response (client/request
-                   {:method :delete
-                    :url (construct-ingest-rest-url concept)
-                    :accept :json
-                    :throw-exceptions false})
-        status (:status response)
-        body (cheshire/parse-string (:body response))
-        concept-id (get body "concept-id")
-        revision-id (get body "revision-id")]
-    {:status status :concept-id concept-id :revision-id revision-id :response response}))
+(def test-concept-list (doall (map util/distinct-concept (range 886700 886705))))
 
 ;;; tests
-;;; ensure metadata and ingest apps are accessable on ports 3001 and 3002 resp; 
-;;; add indexer app etc later to this list
+;;; ensure metadata, indexer and ingest apps are accessable on ports 3001, 3004 and 3002 resp; 
+;;; also ensure zipkip is in place.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; Ingest a new concept with no revision-id.
+;; Verify a new concept is ingested successfully.
 (deftest concept-ingest-test
-  (let [provider-num (rand-int 100000)
-        {:keys [status revision-id]} (ingest-concept (concept provider-num))]
-    (delete-concept (concept provider-num))
-    (is (and (= status 200) (= revision-id 0)))))
+  (let [concept (nth test-concept-list 0)
+        {:keys [status concept-id revision-id]} (util/ingest-concept concept)
+        concept-exists-in-mdb (util/concept-exists? concept-id revision-id)]
+    ;; need to verify these three conditions and existence in oracle/ elastic
+    ;; to be confident about new concept creation.   
+    (is (and concept-exists-in-mdb (= status 200 ) (= revision-id 0)))))
 
-;; Ingest same concept N times and verify it is in metadata db with revision id value 'N - 1'.
+;; Ingest same concept N times and verify same concept-id is returned and
+;; revision id is 1 greater on each subsequent ingest
 (deftest repeat-same-concept-ingest-test
   (let [n 4
-        provider-num (rand-int 100000)
-        expected-revision-id (- n 1)
-        last-revision-id (last (repeatedly n
-                                           #(:revision-id (ingest-concept (concept provider-num)))))]
-    (repeatedly n #(delete-concept (concept provider-num)))
-    (is (= expected-revision-id last-revision-id))))
+        concept (nth test-concept-list 1)
+        created-concepts (take n (repeatedly n #(util/ingest-concept concept)))]
+    (is (and (apply = (map :concept-id created-concepts)) 
+             (= (range 0 n) (map :revision-id created-concepts))))))
 
-;; Verify concept ingest and delete are successful.
+;; Verify ingest behaves properly if empty body is presented in the request.
+(deftest empty-concept-ingest-test
+  (let [concept-with-empty-body  (assoc (last test-concept-list) :metadata "") 
+        {:keys [status concept-id revision-id]} (util/ingest-concept concept-with-empty-body)]
+    (is (= status 400))))
+
+;; Verify non-existent concept deletion results in not found / 404 error.
+(deftest delete-non-existent-concept-test
+  (let [fake-provider-id (clojure.string/join (map :provider-id test-concept-list))
+        non-existent-concept (assoc (last test-concept-list) :provider-id fake-provider-id)
+        {:keys [status]} (util/delete-concept non-existent-concept)]
+    (is (= status 404))))
+
+;; Verify existing concept can be deleted and operation results in revision id 1 greater than 
+;; max revision id of the concept prior to the delete
 (deftest delete-concept-test
-  (let [provider-num (rand-int 100000)
-        {:keys [revision-id]} (ingest-concept (concept provider-num))
-        {:keys [status]} (delete-concept (concept provider-num))]
-    (is (= status 200))))
+  (let [concept (nth test-concept-list 2)
+        ingest-result (util/ingest-concept concept)
+        delete-result (util/delete-concept concept)
+        ingest-revision-id (:revision-id ingest-result)
+        delete-revision-id (:revision-id delete-result)]
+    (is (= 1 (- delete-revision-id ingest-revision-id)))))
 
 
+;; Verify ingest behaves properly if request is missing content type.
+(deftest missing-content-type-ingest-test
+  (let [concept-with-no-content-type  (assoc (last test-concept-list) :format "") 
+        {:keys [status concept-id revision-id]} (util/ingest-concept concept-with-no-content-type)]
+    (is (= status 400))))
+
+;; Verify ingest behaves properly if request contains invalid  content type.
+(deftest invalid-content-type-ingest-test
+  (let [concept-with-no-content-type (assoc (last test-concept-list) :format "blah") 
+        {:keys [status concept-id revision-id]} (util/ingest-concept concept-with-no-content-type)]
+    (is (= status 400))))
+
+;; Verify deleting same concept twice results in error.
+;; why 409 error suppressed by indexer ?? Verify this later.
+#_(deftest delete-same-concept-twice-test
+  (let [concept (nth test-concept-list 3)
+        ingest-result (util/ingest-concept concept)
+        delete1-result (util/delete-concept concept)
+        delete2-result (util/delete-concept concept)]
+    (is (and (= 200 (:status ingest-result))  
+             (= 200 (:status delete1-result)) 
+             (some #{409 500} [(:status delete2-result)])))))
+
+;;; fixture - each test to call this fixture
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; for now both are same
+;; manually reset elastic until indexer reset endpoint is available
+;; ant -f elasticsearch-admin-rc.xml delete-index 
+(defn setup [] (util/reset-database))  
+(defn teardown [] (util/reset-database)) 
+
+(defn each-fixture [f]
+  (setup)
+  (f)
+  (teardown))
+
+(use-fixtures :each each-fixture)
 
 
