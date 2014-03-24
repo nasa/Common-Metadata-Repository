@@ -17,15 +17,15 @@
   (fn [request]
     (try (f request)
       (catch clojure.lang.ExceptionInfo e
-        (error e)
-        (let [{:keys [type errors]} (ex-data e)
-              status-code (type->http-status-code type)]
-          (if status-code
-            {:status status-code
-             :headers {"Content-Type" "application/json"}
-             :body {:errors errors}}
+        (let [data (ex-data e)]
+          (if (:type data)
+            (let [{:keys [type errors]} data
+                  status-code (type->http-status-code type)]
+              {:status status-code
+               :headers {"Content-Type" "application/json"}
+               :body {:errors errors}})
             (do
-              (error (str "Type [" type "] not recognized."))
+              (error e)
               internal-error-ring-response))))
       (catch Exception e
         (error e)
