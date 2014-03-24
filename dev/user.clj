@@ -5,7 +5,7 @@
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.api.web-server :as web]
             [cmr.search.api.routes :as routes]
-            [cmr.common.test.repeat-last-request :as repeat-last-request :refer (repeat-last-request)])
+            [cmr.common.dev.repeat-last-request :as repeat-last-request :refer (repeat-last-request)])
   (:use [clojure.test :only [run-all-tests]]
         [clojure.repl]
         [alex-and-georges.debug-repl]))
