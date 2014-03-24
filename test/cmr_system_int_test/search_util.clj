@@ -10,10 +10,9 @@
 (defn find-collection-refs
   "Returns the collection references that are found
   by searching with the input params"
-  [context params]
+  [params]
   (let [url (str (url/collection-search-url params))
-        response (client/get url {:accept :json
-                                  :headers (h/context->http-headers context)})
+        response (client/get url {:accept :json})
         body (:body response)
         result (cheshire/decode body)
         references (result "references")]
