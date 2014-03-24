@@ -23,7 +23,7 @@
   {:log (log/create-logger)
    :config default-config
    :web (web/create-web-server 3002 routes/make-api)
-   :zipkin (context/zipkin-config "Ingest")})
+   :zipkin (context/zipkin-config "Ingest" false)})
 
 (defn start
   "Performs side effects to initialize the system, acquire resources,
