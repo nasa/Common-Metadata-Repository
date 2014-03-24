@@ -11,6 +11,8 @@
 
 (def concept-id-url (str "http://localhost:" port "/concept-id/"))
 
+(def reset-url (str "http://localhost:" port "/reset"))
+
 
 ;;; utility methods
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -31,8 +33,10 @@
                              {:accept :json
                               :throw-exceptions false})
         status (:status response)
-        concept-id (get (cheshire/parse-string (:body response)) "concept-id")]
-    {:status status :concept-id concept-id}))
+        body (cheshire/parse-string (:body response))
+        concept-id (get body  "concept-id")
+        errors (get body "errors")]
+    {:status status :concept-id concept-id :error-messages errors}))
 
 (defn get-concept-by-id-and-revision
   "Make a GET to retrieve a concept by concept-id and revision."
@@ -123,7 +127,7 @@
 (defn reset-database
   "Make a request to reset the database by clearing out all stored concepts."
   []
-  (let [response (client/delete (str concepts-url "force-delete")
+  (let [response (client/delete (str concepts-url "reset")
                                 {:throw-exceptions false})
         status (:status response)]
     status))

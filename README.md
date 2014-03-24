@@ -66,12 +66,19 @@ returns: the revision id of the tombstone generated for the concept
 __Example Curl:__
 curl -v -XDELETE localhost:3001/concepts/C1-PROV1
 
-### DELETE /concepts/force-delete
+### DELETE /concepts/force-delete/:concept-id/:revision-id
 params: none
 returns: nothing (status 204)
 
 __Example Curl:__
-curl -v -XDELETE localhost:3001/concepts/force-delete
+curl -v -XDELETE /concepts/force-delet/C1-PROV1/1
+
+### POST /reset
+params: none
+returns: nothing (status 204)
+
+__Example Curl:__
+curl -v -XDELETE localhost:3001/reset
 
 
 Different ways to retrieve concepts

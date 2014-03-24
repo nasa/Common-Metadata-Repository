@@ -54,10 +54,10 @@
      :body {:revision-id revision-id}
      :headers json-header}))
 
-(defn- force-delete
+(defn- reset
   "Delete all concepts from the data store"
   [system]
-  (concept-services/force-delete system)
+  (concept-services/reset system)
   {:status 204
    :body nil
    :headers json-header})
@@ -80,8 +80,8 @@
       (POST "/" params
         (save-concept system (:body params)))
       ;; delete the entire database
-      (DELETE "/force-delete" params
-        (force-delete system))
+      (DELETE "/reset" params
+        (reset system))
       (DELETE "/:id" [id] (delete-concept system id))
       ;; get a specific revision of a concept
       (GET "/:id/:revision" [id revision] (get-concept system id revision))

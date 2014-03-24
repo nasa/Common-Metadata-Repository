@@ -148,8 +148,12 @@
                                     "Concept %s does not exist."
                                     concept-id))
       (delete concepts concept-id concept-map revisions)))
-
+  
   (force-delete
+    [this concept-id revision-id])
+    ;; TODO impement this
+
+  (reset
     [this]
     (reset-database this)))
 

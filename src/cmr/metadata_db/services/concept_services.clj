@@ -28,11 +28,11 @@
   (let [{:keys [db]} system]
     (data/delete-concept db concept-id)))
 
-(defn force-delete
+(defn reset
   "Delete all concepts from the concept store."
   [system]
   (let [{:keys [db]} system]
-    (data/force-delete db)))
+    (data/reset db)))
 
 (defn get-concept-id
   "Get a concept id for a given concept."

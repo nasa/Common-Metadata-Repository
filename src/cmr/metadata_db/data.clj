@@ -31,5 +31,9 @@
     thrown resulting in a 404 status code.")
   
   (force-delete
+    [db concept-id revision-id]
+    "Remove a revision of a concept from the database completely.")
+  
+  (reset
     [db]
     "Delete all concepts from the database.  USE WITH CAUTION."))
