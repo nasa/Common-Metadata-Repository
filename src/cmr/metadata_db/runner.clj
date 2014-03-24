@@ -4,17 +4,11 @@
             [clojure.tools.cli :refer [cli]]
             [clojure.edn :as edn]
             [clojure.string :as string]
-            [cmr.common.log :as log :refer (debug info warn error)]
+            [cmr.common.log :refer (debug info warn error)]
             [cmr.common.api.web-server :as web]
             [cmr.metadata-db.data.memory :as memory]
             [cmr.metadata-db.api.routes :as routes])
   (:gen-class))
-
-(defn parse-endpoint
-  "Parses an endpoint in the format host:port"
-  [s]
-  (let [[host port] (string/split s #":" 2)]
-    {:host host :port (Integer. port)}))
 
 (def arg-description
   [["-h" "--help" "Show help" :default false :flag true]
@@ -30,21 +24,19 @@
       (exit-with-banner "Help:\n"))
     options))
 
-(defn- select-db
+(defn- create-db
   "return an initialization function for database based on user input parameter"
-  [{:keys [db]} ]
+  [db]
   (case db
     "memory" (memory/create-db)
     "default" (memory/create-db)))
-
 
 (defn -main
   "Starts the App."
   [& args]
   (let [{:keys [port db]} (parse-args args)
-        db-params {:db db}
-        db (select-db db-params)
+        db (create-db db)
         web-server (web/create-web-server port routes/make-api)
-        log (log/create-logger)
-        system (system/start (system/create-system db log web-server))]
+        system (assoc (system/create-system) :db db :web web-server)
+        system (system/start system)]
     (info "Running...")))
