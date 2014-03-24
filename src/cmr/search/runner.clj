@@ -3,10 +3,9 @@
             [clojure.tools.cli :refer [cli]]
             [clojure.edn :as edn]
             [clojure.string :as string]
-            [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.api.web-server :as web]
-            [cmr.search.api.routes :as routes]
-            [cmr.search.data.elastic-search-index :as idx])
+            [cmr.common.log :refer (debug info warn error)]
+            [cmr.search.api.routes :as routes])
   (:gen-class))
 
 (defn parse-endpoint
@@ -33,9 +32,6 @@
   [& args]
   (let [{:keys [port]} (parse-args args)
         web-server (web/create-web-server port routes/make-api)
-        log (log/create-logger)
-        search-index (idx/create-elastic-search-index "localhost" 9200)
-        system (system/start
-                 (system/create-system
-                   log web-server search-index))]
+        system (assoc (system/create-system) :web web-server)
+        system (system/start system)]
     (info "Running...")))

@@ -1,6 +1,9 @@
 (ns cmr.search.system
   (:require [cmr.common.lifecycle :as lifecycle]
-            [cmr.common.log :refer (debug info warn error)]
+            [cmr.common.log :as log :refer (debug info warn error)]
+            [cmr.common.api.web-server :as web]
+            [cmr.search.api.routes :as routes]
+            [cmr.search.data.elastic-search-index :as idx]
             [cmr.system-trace.context :as context]))
 
 ;; Design based on http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts
@@ -12,12 +15,10 @@
 
 (defn create-system
   "Returns a new instance of the whole application."
-  [log web search-index]
-  {:log log
-   :search-index search-index
-   :web web
-   ;; Zipkin doesn't get started or stopped.
-   ;; TODO We should handle other zipkin hosts and ports
+  []
+  {:log (log/create-logger)
+   :search-index (idx/create-elastic-search-index "localhost" 9200)
+   :web (web/create-web-server 3003 routes/make-api)
    :zipkin (context/zipkin-config "Search")})
 
 (defn start

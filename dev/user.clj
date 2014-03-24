@@ -2,11 +2,9 @@
   (:require [clojure.pprint :refer (pprint pp)]
             [clojure.tools.namespace.repl :refer (refresh refresh-all)]
             [cmr.search.system :as system]
-            [cmr.common.lifecycle :as lifecycle]
-            [cmr.common.log :as log :refer (debug info warn error)]
+            [cmr.common.log :refer (debug info warn error)]
             [cmr.common.api.web-server :as web]
             [cmr.search.api.routes :as routes]
-            [cmr.search.data.elastic-search-index :as idx]
             [cmr.common.test.repeat-last-request :as repeat-last-request :refer (repeat-last-request)])
   (:use [clojure.test :only [run-all-tests]]
         [clojure.repl]
@@ -21,9 +19,7 @@
   "Starts the current development system."
   []
   (let [web-server (web/create-web-server 3003 (repeat-last-request/wrap-api routes/make-api))
-        log (log/create-logger)
-        search-index (idx/create-elastic-search-index "localhost" 9200)
-        s (system/create-system log web-server search-index)]
+        s (assoc (system/create-system) :web web-server)]
     (alter-var-root #'system
                     (constantly
                       (system/start s)))))
