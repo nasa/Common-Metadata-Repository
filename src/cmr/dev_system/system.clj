@@ -1,7 +1,7 @@
 (ns cmr.dev-system.system
   (:require [cmr.common.log :refer (debug info warn error)]
             [cmr.metadata-db.system :as mdb-system]
-            [cmr.cmr-indexer.system :as indexer-system]
+            [cmr.indexer.system :as indexer-system]
             [cmr.search.system :as search-system]
             [cmr.ingest.system :as ingest-system]))
 
