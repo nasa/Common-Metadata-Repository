@@ -31,6 +31,7 @@
         response (client/post (str mdb-url "/concepts") {:body concept-json-str
                                                          :content-type :json
                                                          :accept :json
+                                                         :throw-exceptions false
                                                          :headers (ch/context->http-headers context)})
         status (:status response)]
     (when-not (= 201 status)
@@ -42,10 +43,17 @@
   [context concept-id]
   (let [mdb-url (context->metadata-db-url context)
         response (client/delete (str mdb-url "/concepts/" concept-id) {:accept :json
+                                                                       :throw-exceptions false
                                                                        :headers (ch/context->http-headers context)})
-        status (:status response)]
-    (when-not (= 200 status)
-      (errors/internal-error! (str "Delete concept operation failed. MetadataDb app response status code: "  status (str response))))
-    (get (cheshire/parse-string (:body response)) "revision-id")))
+        status (:status response)
+        body (cheshire/decode (:body response))
+        errors-str (cheshire/generate-string (flatten (get body "errors")))]    
+    (cond (= 200 status) (get body "revision-id")
+          (= 404 status) (errors/throw-service-error :not-found errors-str) ;; donot drop errors from other services
+          (= 400 status) (errors/throw-service-error :bad-request errors-str)
+          (= 409 status) (errors/throw-service-error :conflict errors-str)
+          (= 422 status) (errors/throw-service-error :invalid-data errors-str)
+          :else (errors/internal-error! (str "Delete concept operation failed. MetadataDb app response status code: "  status (str response))))))
+
 
 

@@ -18,6 +18,7 @@
         concept-attribs {:concept-id concept-id, :revision-id revision-id}
         response (client/post indexer-url {:body (cheshire/generate-string concept-attribs)
                                            :content-type :json
+                                           :throw-exceptions false
                                            :headers (ch/context->http-headers context)})
         status (:status response)]
     ;; TODO I think the status checking here and in the metadata db is unnecessary. It will throw an
@@ -30,9 +31,21 @@
   [context concept-id revision-id]
   (let [indexer-url (context->indexer-url context)
         response (client/delete (str indexer-url "/" concept-id "/" revision-id)
-                                {:headers (ch/context->http-headers context)})
-        status (:status response)]
-    (when-not (= 200 status)
-      (errors/internal-error! (str "Delete concept operation failed. Indexer app response status code: "  status (str response))))))
-
+                                {:accept :json
+                                 :throw-exceptions false
+                                 :headers (ch/context->http-headers context)})
+        status (:status response)
+        ;; TODO - resolve com.fasterxml.jackson.core.JsonParseException: Unexpected character ('A' (code 65)): 
+        ;; expected a valid value (number, String, array, object, 'true', 'false' or 'null')
+        body (cheshire/parse-string (:body response))
+        errors-str (cheshire/generate-string (flatten (get body "errors")))]
+    ;; work-around ...
+    ;; errors-str "Indexer reported processing error during delete concept operation."]
+    (cond (= 400 status) (errors/throw-service-error :bad-request errors-str) ;; donot drop errors from other services
+          (= 404 status) (errors/throw-service-error :not-found errors-str)
+          (= 409 status) (errors/throw-service-error :conflict errors-str)
+          (= 422 status) (errors/throw-service-error :invalid-data errors-str)
+          (= 500 status) (errors/throw-service-error :conflict errors-str) ;; eliminating the need to generate stacktrace at multiple services
+          :else (when-not (= 200 status)
+                  (errors/internal-error! (str "Delete concept operation failed. Indexer app response status code: "  status (str response)))))))
 
