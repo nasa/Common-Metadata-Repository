@@ -94,20 +94,20 @@
   [
    ;; A map with the configuration - no connection pooling for now
    db]
-
+  
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   lifecycle/Lifecycle
-
+  
   (start [this system]
          (reset-database this)
          this)
-
+  
   (stop [this system]
         this)
-
+  
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   data/ConceptStore
-
+  
   (get-concept-id
     [this concept-type provider-id native-id]
     (let [db (:db this)]
@@ -148,12 +148,12 @@
                         concept-type
                         provider-id
                         native-id])
-
+            
             ;(j/db-do-commands db "COMMIT"))
-
+            
             (util/generate-concept-id concept-type provider-id new-seq-num))
           (util/generate-concept-id concept-type provider-id seq-num)))))
-
+  
   (get-concept
     [this concept-id revision-id]
     (if-let [concept (get-concept-from-db (:db this) concept-id revision-id)]
@@ -166,10 +166,42 @@
         (errors/throw-service-error :not-found
                                     "Could not find concept with concept-id of %s."
                                     concept-id))))
-
+  
   (get-concepts
-    [this concept-id-revision-id-tuples])
-
+    [this concept-id-revision-id-tuples]
+    (pprint concept-id-revision-id-tuples)
+    ;; use a temporary table to insert our values so we can use a join to 
+    ;; pull evertying in one select
+    (try 
+      (j/db-do-commands db "SET TRANSACTION READ WRITE")
+      (j/db-do-commands db "LOCK TABLE METADATA_DB.get_concepts_work_area IN EXCLUSIVE MODE")
+      (let [insert-args (conj (conj concept-id-revision-id-tuples :transaction) false)]
+        
+        (apply j/insert! db
+               "METADATA_DB.get_concepts_work_area"
+               ["concept_id" 
+                "revision_id"]
+               insert-args))
+      (let [db-concepts (j/query db "SELECT c.concept_id,
+                                    c.concept_type,
+                                    c.provider_id,
+                                    c.native_id,
+                                    c.metadata,
+                                    c.format,
+                                    c.revision_id,
+                                    c.deleted
+                                    FROM concept c,
+                                    get_concepts_work_area t
+                                    WHERE c.concept_id = t.concept_id AND
+                                    c.revision_id = t.revision_id")
+            concepts (map db-result->concept-map db-concepts)]
+        (j/db-do-commands db "DELETE FROM METADATA_DB.get_concepts_work_area")
+        (j/db-do-commands db "COMMIT")
+        concepts)
+      (catch Exception e
+        (j/db-do-commands db "ROLLBACK")
+        (throw e))))
+  
   (save-concept
     [this concept]
     (util/validate-concept concept)
@@ -183,7 +215,7 @@
                                     latest-revision-id
                                     revision-id))
       (save-in-db (:db this) concept-type native-id concept-id provider-id metadata format (inc latest-revision-id) 0)))
-
+  
   (delete-concept
     [this concept-id]
     (if-let [concept (get-concept-from-db (:db this) concept-id nil)]
@@ -194,7 +226,7 @@
       (errors/throw-service-error :not-found
                                   "Concept %s does not exist."
                                   concept-id)))
-
+  
   (force-delete
     [this]
     (reset-database this)))

@@ -72,7 +72,20 @@
           concepts (vec (cheshire/parse-string (:body response)))]
       {:status status :concepts concepts})))
 
-(defn concepts-and-ids-equal?
+(defn concepts-and-concept-id-revisions-equal?
+  "Compare a vector of concepts returned by the API to a set of concept-id/revision-ids."
+  [concepts concept-id-revision-ids]
+  (if (not= (count concepts) (count concept-id-revision-ids))
+    false
+    (every? true? 
+            (map (fn [[con-id rev-id]] 
+                   (some (fn [concept]
+                           (and (= (get concept "concept-id") con-id) 
+                                (= (get concept "revision-id" rev-id))))
+                         concepts))
+                 concept-id-revision-ids))))
+
+#_(defn concepts-and-ids-equal?
   "Compare a vector of concepts returned by the API to a set of concept-ids"
   [concepts concept-ids]
   (if (not= (count concepts) (count concept-ids))

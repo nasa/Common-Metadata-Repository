@@ -15,7 +15,7 @@
 ;;; tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (deftest mdb-get-concept-id-test
-  "Get a concept-id for a given"
+  "Get a concept-id for a given concept-type, provider-id, and native-id."
   (let [concept (util/concept)
         {:keys [status concept-id]} (util/get-concept-id (name (:concept-type concept))
                                                          (:provider-id concept)
@@ -23,7 +23,7 @@
     (is (and (= status 200) (= concept-id (:concept-id concept))))))
 
 (deftest mdb-get-concept-id-repeatedly-test
-  "Get a concept-id for a given"
+  "Get a concept-id repeatedly to verify that it is the same each time."
   (let [concept (util/concept)
         concept-id1-map (util/get-concept-id (name (:concept-type concept))
                                              (:provider-id concept)
@@ -33,7 +33,7 @@
                                              (:native-id concept))]
     (is (= concept-id1-map concept-id2-map))))
 
-(deftest mdb-get-concpet-id-verify-different-sequence-numbers
+(deftest mdb-get-concept-id-verify-different-sequence-numbers
   "Concepts with the same provider id and concept type should get concept-ids that differ only in the sequence number."
   (let [concept (util/concept)
         concept-id1 (:concept-id (util/get-concept-id (name (:concept-type concept))

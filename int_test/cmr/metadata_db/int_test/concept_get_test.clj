@@ -65,10 +65,9 @@
         results (util/get-concepts tuples)
         returned-concepts (:concepts results)
         status (:status results)
-        expected [(:concept-id concept1) (:concept-id concept2)]]
-    (is (util/concepts-and-ids-equal? returned-concepts expected))
-    (is (and (= status 200) 
-             (util/concepts-and-ids-equal? returned-concepts expected)))))
+        expected [[(:concept-id concept1) 1] [(:concept-id concept2) 0]]]
+    (is (util/concepts-and-concept-id-revisions-equal? returned-concepts expected))
+    (is (= status 200))))
 
 (deftest mdb-get-concepts-with-one-invalid-revision-id-test
   "Get concetps by specifying tuples of concept-ids and revision-ids with one invalid revision id
@@ -79,9 +78,8 @@
         results (util/get-concepts tuples)
         returned-concepts (:concepts results)
         status (:status results)
-        expected [(:concept-id concept1)]]
-    (is (util/concepts-and-ids-equal? returned-concepts expected))
-    (is (and (= status 200) 
-             (util/concepts-and-ids-equal? returned-concepts expected)))))
+        expected [[(:concept-id concept1) 1]]]
+    (is (util/concepts-and-concept-id-revisions-equal? returned-concepts expected))
+    (is (= status 200))))
 
 
