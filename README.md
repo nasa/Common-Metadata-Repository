@@ -1,6 +1,6 @@
 # cmr-dev-system
 
-A Clojure library designed to ... well, that part is up to you.
+Dev System combines together the separate microservices of the CMR into a single application to make it simpler to develop.
 
 ## Usage
 

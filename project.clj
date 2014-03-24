@@ -1,6 +1,6 @@
 (defproject nasa-cmr/cmr-dev-system "0.1.0-SNAPSHOT"
-  :description "FIXME: write description"
-  :url "http://example.com/FIXME"
+  :description "Dev System combines together the separate microservices of the CMR into a single application to make it simpler to develop."
+  :url "***REMOVED***projects/CMR/repos/cmr-dev-system/browse"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.5.1"]
