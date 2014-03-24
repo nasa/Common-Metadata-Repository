@@ -44,7 +44,8 @@
           new-context (c/update-context-trace-info context trace-info)
           result (apply f new-context args)
           stop-time (time/now)]
-      (record-span (c/context->zipkin-config context) trace-info start-time stop-time)
+      (when (c/tracing-enabled? context)
+        (record-span (c/context->zipkin-config context) trace-info start-time stop-time))
       result)))
 
 (defmacro deftracefn

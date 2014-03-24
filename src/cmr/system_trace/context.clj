@@ -48,15 +48,21 @@
   * ip - Ip address of the current host.
   * collector-host - Host where zipkin collector is running.
   * collector-port - Port zipkin collector is listening on."
-  ([service-name]
+  ([service-name enabled?]
    ;; Defaults good for local development
-   (zipkin-config service-name "127.0.0.1" "127.0.0.1" 9410))
-  ([service-name ip collector-host collector-port]
+   (zipkin-config service-name "127.0.0.1" "127.0.0.1" 9410 enabled?))
+  ([service-name ip collector-host collector-port enabled?]
    (let [scribe-logger (scribe/async-logger :host collector-host
                                             :port collector-port
                                             :category "zipkin")]
      {:endpoint (Endpoint. (t/ip-str-to-int ip) 0 service-name)
-      :scribe-logger scribe-logger})))
+      :scribe-logger scribe-logger
+      :enabled? enabled?})))
+
+(defn tracing-enabled?
+  "Returns true if tracing is enabled in the given context"
+  [context]
+  (get-in context [:system :zipkin :enabled?]))
 
 (defn context->trace-info
   "Extracts trace-info from a request context."
@@ -71,5 +77,5 @@
 (defn context->zipkin-config
   "Extracts zipkin config from a request context."
   [context]
-  (-> context :system :zipkin))
+  (get-in context [:system :zipkin]))
 
