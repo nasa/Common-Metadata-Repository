@@ -2,7 +2,7 @@
   cmr.system-int-test.url-helper
   (:require [ring.util.codec :as codec]))
 
-(def elastic_root "http://localhost:9200")
+(def elastic_root "http://localhost:9210")
 
 (defn collection-ingest-url
   [provider-id native-id]
