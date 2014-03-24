@@ -3,8 +3,10 @@
   represented as a map of components. Design based on
   http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts."
   (:require [cmr.common.lifecycle :as lifecycle]
-            [cmr.common.log :refer (debug info warn error)]
-            [cmr.system-trace.context :as context]))
+            [cmr.common.log :as log :refer (debug info warn error)]
+            [cmr.common.api.web-server :as web]
+            [cmr.system-trace.context :as context]
+            [cmr.ingest.api.routes :as routes]))
 
 (def
   ^{:doc "Defines the order to start the components."
@@ -17,10 +19,10 @@
 
 (defn create-system
   "Returns a new instance of the whole application."
-  [log config web]
-  {:log log
-   :config config
-   :web web
+  []
+  {:log (log/create-logger)
+   :config default-config
+   :web (web/create-web-server 3002 routes/make-api)
    :zipkin (context/zipkin-config "Ingest")})
 
 (defn start
