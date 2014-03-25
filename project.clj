@@ -6,7 +6,7 @@
                  [ring/ring-jetty-adapter "1.2.2"]
                  [org.clojure/test.check "0.5.7"]
                  [org.clojure/data.xml "0.0.7"]]
-;test commit message for ci
+
   :profiles
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.4"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]]
