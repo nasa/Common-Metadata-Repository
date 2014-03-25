@@ -85,11 +85,8 @@
 ;;; fixture - each test to call this fixture
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; for now both are same
-;; manually reset elastic until indexer reset endpoint is available
-;; ant -f elasticsearch-admin-rc.xml delete-index 
 (defn setup [] (util/reset-database))  
-(defn teardown [] (util/reset-database)) 
+(defn teardown [] (util/reset-database) (util/reset-es-indexes)) 
 
 (defn each-fixture [f]
   (setup)

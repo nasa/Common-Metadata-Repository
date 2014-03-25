@@ -66,6 +66,12 @@
   {:host "localhost"
    :port "3001"})
 
+(defn indexer-endpoint
+  "Returns the host and port of indexer app"
+  []
+  {:host "localhost"
+   :port "3004"})
+
 (def cmr-valid-content-types
   #{"application/echo10+xml", "application/iso_prototype+xml", "application/iso:smap+xml",
     "application/iso19115+xml", "application/dif+xml"})
@@ -147,7 +153,12 @@
         status (:status response)]
     status))
 
-(comment 
-  (str (str "http://localhost:" 3001 "/concepts/") "force-delete")
-  (format "http://%s:%s/concepts/%s" "loc" 3001 "force-delete")
-  (str (format "http://%s:%s/concepts " "loc" 3001)  "force-delete"))
+(defn reset-es-indexes
+  "Reset elastic indexes."
+  []
+  (let [{:keys [host port]} (indexer-endpoint)
+        response (client/post (format "http://%s:%s/%s" host port "reset")
+                                {:accept :json
+                                 :throw-exceptions false})
+        status (:status response)]
+    status))
