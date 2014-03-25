@@ -42,7 +42,18 @@ Insert Flow
   - If we get a conflict from a uniqueness constraint restart from beginning of this flow
 
 
-TODO What are impacts to ingest?
+Impacts to Ingest
+
+  * Ingest flow (after phase 1)
+    * retrieve existing metadata
+    * Use it for validation with new metadata
+    * Send new concept with specified revision id to metadata db
+      * If it fails then it would redo the whole flow.
+  * Ingest Flow (during phase 1)
+    * Send new concept to metadata db
+      * Does not need to specify a revision id.
+      * Does not need to retrieve a concept id.
+        * It should check it's headers for a concept id from catalog rest. If present it should send it to the metadata db.
 
 
 ## Web API
