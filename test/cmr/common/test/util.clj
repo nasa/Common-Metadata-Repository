@@ -31,3 +31,6 @@
       (is (= 3 (f)))
       (is (= 4 (f)))
       (is (= 5 (f))))))
+
+(deftest this-should-fail
+  (is (= 5 4)))
