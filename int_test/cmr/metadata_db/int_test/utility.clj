@@ -5,7 +5,7 @@
             [cheshire.core :as cheshire]))
 
 ;;; Enpoints for services - change this for tcp-mon
-(def port 3001)
+(def port 3000)
 
 (def concepts-url (str "http://localhost:" port "/concepts/"))
 
@@ -21,7 +21,6 @@
   []
   {:concept-type :collection
    :native-id "provider collection id"
-   :concept-id "C1-PROV1"
    :provider-id "PROV1"
    :metadata "xml here"
    :format "echo10"})
@@ -90,11 +89,11 @@
                  concept-id-revision-ids))))
 
 #_(defn concepts-and-ids-equal?
-  "Compare a vector of concepts returned by the API to a set of concept-ids"
-  [concepts concept-ids]
-  (if (not= (count concepts) (count concept-ids))
-    false
-    (every? true? (map #(= (get %1 "concept-id") %2) concepts concept-ids))))
+    "Compare a vector of concepts returned by the API to a set of concept-ids"
+    [concepts concept-ids]
+    (if (not= (count concepts) (count concept-ids))
+      false
+      (every? true? (map #(= (get %1 "concept-id") %2) concepts concept-ids))))
 
 (defn save-concept
   "Make a POST request to save a concept with JSON encoding of the concept.  Returns a map with
@@ -127,8 +126,7 @@
 (defn reset-database
   "Make a request to reset the database by clearing out all stored concepts."
   []
-  (let [response (client/delete (str concepts-url "reset")
-                                {:throw-exceptions false})
+  (let [response (client/post reset-url {:throw-exceptions false})
         status (:status response)]
     status))
 

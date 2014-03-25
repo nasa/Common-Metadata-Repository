@@ -79,9 +79,6 @@
       ;; saves a concept
       (POST "/" params
         (save-concept system (:body params)))
-      ;; delete the entire database
-      (DELETE "/reset" params
-        (reset system))
       (DELETE "/:id" [id] (delete-concept system id))
       ;; get a specific revision of a concept
       (GET "/:id/:revision" [id revision] (get-concept system id revision))
@@ -92,6 +89,9 @@
     
     (GET "/concept-id/:concept-type/:provider-id/:native-id" [concept-type provider-id native-id]
       (get-concept-id system concept-type provider-id native-id))
+    ;; delete the entire database
+    (POST "/reset" params
+      (reset system))
     
     (route/not-found "Not Found")))
 

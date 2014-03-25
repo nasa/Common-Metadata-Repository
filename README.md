@@ -23,6 +23,32 @@
    	"revision-id": 10
    }
 
+General Workflow
+
+Update Flow
+
+  - Retrieve latest revision from DB using provider-id, concept-type, and native id.
+  - Compare revision from client if given to DB revision. If the revision from the client is not the next one we send a conflict error back to the client.
+  - Create a new concept record
+    - increment revision from DB
+    - Reuse concept-id
+    - Set all other fields
+  - Insert into table
+  - If we get a conflict from a uniqueness constraint restart from beginning of this flow
+
+Insert Flow
+
+  - Retrieve latest revision from DB (and none are found)
+  - Check if revision id sent by client is 0 if present. If the revision from the client is not 0 we send a conflict error back to the client.
+  - Create a new concept record
+    - Revision is 0
+    - Generate a new concept-id using a sequence from Oracle or use value from client if provided.
+      - This supports catalog rest specifying the concept-id.
+    - Set all other fields
+  - Insert into table
+  - If we get a conflict from a uniqueness constraint restart from beginning of this flow
+
+
 ### GET /concept-id
 params: [concept-type provider-id native-id]
 returns: new or existing concept-id

@@ -8,7 +8,9 @@
             [cmr.common.util :as cutil]
             [clojure.pprint :refer (pprint pp)]
             [clojure.java.jdbc :as j]
-            [cmr.metadata-db.data.utility :as util]))
+            [cmr.metadata-db.data.utility :as util]
+            [cmr.metadata-db.data.messages :as messages]
+            [slingshot.slingshot :refer [throw+]]))
 
 ;;; Constants
 
@@ -22,17 +24,6 @@
 
 ;;; Utility methods
 
-(defn clob-to-string
-  "Turn an Oracle Clob into a String"
-  [clob]
-  (with-open [rdr (java.io.BufferedReader. (.getCharacterStream clob))]
-    (apply str (line-seq rdr))))
-
-(defn fix-metadata-field
-  "Convert the metadata field from a CLOB to a string."
-  [concept]
-  (assoc concept :metadata (clob-to-string (:metadata concept))))
-
 (defn reset-database
   "Delete everything from the concept table and reset the sequence."
   [db-config]
@@ -41,8 +32,7 @@
     (try (j/db-do-commands db "DROP SEQUENCE METADATA_DB.concept_id_seq")
       (catch Exception e)) ; don't care if the sequence was not there
     (j/db-do-commands db "CREATE SEQUENCE METADATA_DB.concept_id_seq
-                         MINVALUE 1
-                         START WITH 1
+                         START WITH 1000000000
                          INCREMENT BY 1
                          CACHE 20")))
 
@@ -60,7 +50,17 @@
        :revision-id (int revision_id)
        :deleted (not= (int deleted) 0)})))
 
+(defn- generate-concept-id
+  "Create a concept-id for a given concept type and provider id."
+  [db concept]
+  (let [{:keys [concept-type provider-id]} concept
+        seq-num (first (j/query db ["SELECT METADATA_DB.concept_id_seq.NEXTVAL FROM DUAL"]))]
+    (util/generate-concept-id concept-type provider-id seq-num)))
+
+
+
 (defn- get-concept-from-db
+  "Load a concept from the database using a concept-id and revision-id and then transform it into a concept map."
   [db concept-id revision-id]
   (if revision-id
     (db-result->concept-map (first (j/query db ["SELECT concept_type, native_id, concept_id, provider_id, metadata, format, revision_id, deleted
@@ -73,28 +73,85 @@
                                                 WHERE concept_id = ?
                                                 ORDER BY revision_id DESC" concept-id])))))
 
+(defn- get-concept-from-db-with-values
+  "Load a concept from the database using concept-type, provider-id, native-id, and optional revision-id
+  then transform it into a concept map."
+  [db concept]
+  (let [{:keys [concept-type provider-id native-id revision-id]} concept] 
+    (if revision-id
+      (db-result->concept-map (first (j/query db ["SELECT concept_type, native_id, concept_id, provider_id, metadata, format, revision_id, deleted
+                                                  FROM METADATA_DB.concept
+                                                  WHERE concept_type = ? 
+                                                  AND provider_id = ?
+                                                  AND native_id = ?
+                                                  AND revision_id = ?"
+                                                  concept-type
+                                                  provider-id
+                                                  native-id
+                                                  revision-id])))
+      (db-result->concept-map (first (j/query db ["SELECT concept_type, native_id, concept_id, provider_id, metadata, format, revision_id, deleted
+                                                  FROM METADATA_DB.concept
+                                                  WHERE concept_type= ?
+                                                  AND provider_id = ?
+                                                  AND native_id = ?
+                                                  ORDER BY revision_id DESC" 
+                                                  concept-type
+                                                  provider-id
+                                                  native-id]))))))
+
+(defn- get-existing-concept-id
+  "Retrieve concept-id from DB."
+  [db concept]
+  (some-> (get-concept-from-db-with-values db concept)
+          :concept-id))
+
 (defn- save-in-db
   "Saves the concept in database and returns the revision-id"
-  [db concept-type native-id concept-id provider-id metadata format revision-id deleted]
-  (j/insert! db
-             "METADATA_DB.concept"
-             ["concept_type"
-              "native_id"
-              "concept_id"
-              "provider_id"
-              "metadata"
-              "format"
-              "revision_id"
-              "deleted"]
-             [concept-type
-              native-id
-              concept-id
-              provider-id
-              metadata
-              format
-              revision-id
-              deleted])
-  revision-id)
+  [db concept]
+  (try (let [{:keys [concept-type native-id concept-id provider-id metadata format revision-id deleted]} concept]
+         (j/insert! db 
+                    "METADATA_DB.concept"
+                    ["concept_type"
+                     "native_id"
+                     "concept_id"
+                     "provider_id"
+                     "metadata"
+                     "format"
+                     "revision_id"
+                     "deleted"]
+                    [concept-type
+                     native-id
+                     concept-id
+                     provider-id
+                     metadata
+                     format
+                     revision-id
+                     deleted])
+         {:concept-id concept-id :revision-id revision-id})
+    (catch Exception e
+      (pprint e)
+      {:error (.getMessage e)})))
+
+(defn- set-or-generate-concept-id 
+  "Get an exiting concept-if from the DB for the given concept or generate one 
+  if the concept has never been save."
+  [db concept]
+  (if (:concept-id concept) 
+    concept
+    (let [concept-id (get-existing-concept-id concept)]
+      (if concept-id
+        (assoc concept :concept-id concept-id)
+        (assoc concept :concept-id (generate-concept-id db concept))))))
+
+(defn- set-or-generate-revision-id
+  "Get the next available revision id from the DB for the given concept or
+  zero if the concept has never been saved."
+  [db concept]
+  (if (:revision-id concept)
+    concept
+    (let [existing-revision-id (:revision-id (get-concept-from-db-with-values db concept))
+          revision-id (if existing-revision-id (inc existing-revision-id) 0)]
+      (assoc concept :revision-id revision-id))))
 
 (defrecord OracleStore
   [
@@ -126,21 +183,11 @@
                                          provider-id
                                          native-id]))]
       (if concept-id
-            (:concept_id concept-id)
-            ;; TODO - move all error mesage templates into a common library
-            (errors/throw-service-error :not-found "Concept with concept-type %s
-                                                   provider-id %s
-                                                   native-id %s
-                                                   does not exist."
-                                                   concept-type
-                                                   provider-id
-                                                   native-id))))
-  
-  
-  
-  
-  ;   (util/generate-concept-id concept-type provider-id new-seq-num))
-  ; (util/generate-concept-id concept-type provider-id seq-num)))))
+        (:concept_id concept-id)
+        (errors/throw-service-error :not-found messages/missing-concept-id-msg
+                                    concept-type
+                                    provider-id
+                                    native-id))))
   
   (get-concept
     [this concept-id revision-id]
@@ -193,27 +240,33 @@
   (save-concept
     [this concept]
     (util/validate-concept concept)
-    (let [{:keys [concept-type native-id concept-id provider-id metadata format revision-id]} concept
-          returned-revision-id (:revision-id (get-concept-from-db (:db this) concept-id nil))
-          latest-revision-id (if returned-revision-id returned-revision-id -1)]
-      (when (and revision-id
-                 (not= (inc latest-revision-id) revision-id))
-        (errors/throw-service-error :conflict
-                                    "Expected revision-id of %s got %s"
-                                    latest-revision-id
-                                    revision-id))
-      (save-in-db (:db this) concept-type native-id concept-id provider-id metadata format (inc latest-revision-id) 0)))
-  
-  (delete-concept
-    [this concept-id]
-    (if-let [concept (get-concept-from-db (:db this) concept-id nil)]
-      (if (util/is-tombstone? concept)
-        (:revision-id concept)
-        (let [{:keys [concept-type native-id concept-id provider-id format revision-id]} concept]
-          (save-in-db (:db this) concept-type native-id concept-id provider-id " " format (inc revision-id) 1)))
-      (errors/throw-service-error :not-found
-                                  "Concept %s does not exist."
-                                  concept-id)))
+    (let [db (:db this)
+          concept-id-provided? (:concept-id concept)
+          revision-id-provided? (:revision-id concept)
+          concept (->> concept
+                       (set-or-generate-concept-id db)
+                       (set-or-generate-revision-id db))]
+      
+      (loop [concept concept tries-left 3]
+        (let [result (save-in-db db concept)]
+          (if (:error result)
+            ;; depending on the error we will either throw an exception or try again (recur)
+            (cond 
+              (= (:error result) :revision-id-conflict)
+              (if revision-id-provided?
+                (errors/throw-service-error :conflict)
+                (if (= tries-left 1)
+                  (errors/internal-error! "Exhausted tries to save concept - giving up.")
+                  ))
+              
+              (= (:error result) :some-other-conflict)
+              (;; throw something
+                  )
+              ;;; etc. Similar to above. We probably won't have any more recurs for retries
+              ; there might be a case where two first revision of a collection come in at the same time
+              ;; they might accidentally get different concept ids. We'd need to recur then.
+              )
+            (recur (set-or-generate-revision-id concept) (dec tries-left)))))))
   
   (force-delete
     [this concept-id revision-id])
