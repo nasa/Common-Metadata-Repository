@@ -27,8 +27,8 @@
         refs (map (fn [match]
                     (let [{concept-id :_id
                            revision-id :_version
-                           {entry-title :entry-title
-                            provider-id :provider-id} :fields} match]
+                           {[entry-title] :entry-title
+                            [provider-id] :provider-id} :fields} match]
                       (results/map->Reference
                         {:concept-id concept-id
                          :revision-id revision-id
