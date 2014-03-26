@@ -1,14 +1,14 @@
+
 (ns ^{:doc "CMR Ingest integration tests"}
-  cmr-system-int-test.concept-ingest-test
+  cmr.system-int-test.concept-ingest-test
   (:require [clojure.test :refer :all]
-            [cmr-system-int-test.ingest-util :as ingest]
-            [cmr-system-int-test.index-util :as index]
+            [cmr.system-int-test.ingest-util :as ingest]
+            [cmr.system-int-test.index-util :as index]
             [ring.util.io :as io]
             [clj-http.client :as client]
             [cheshire.core :as cheshire]
             [clojure.string :as string]
-            [cmr-system-int-test.ingest-util :as util]))
-
+            [cmr.system-int-test.ingest-util :as util]))
 
 (def test-concept-list (doall (map util/distinct-concept (range 886700 886705))))
 (def test-concept-w-concept-id (util/distinct-concept-w-concept-id 886706))
@@ -18,8 +18,68 @@
                                   :revision-id 34))
 
 ;;; tests
-;;; ensure metadata, indexer and ingest apps are accessable on ports 3001, 3004 and 3002 resp; 
-;;; also ensure zipkip is in place.
+;;; ensure metadata, indexer and ingest apps are accessable on ports 3001, 3004 and 3002 resp;
+
+(def base-concept-attribs
+  {:short-name "SN-Sedac88"
+   :version "Ver88"
+   :long-name "LongName Sedac88"
+   :dataset-id "LarcDatasetId88"})
+
+;; Each test ingests and deletes this concept.
+(defn concept
+  "Creates a sample concept."
+  [provider-num]
+  {:concept-type :collection
+   :native-id "nativeId1"
+   :provider-id (str "PROV88" provider-num)
+   :metadata (util/metadata-xml base-concept-attribs)
+   :format "echo10+xml"})
+
+(defn construct-ingest-rest-url
+  "Construct ingest url based on concept."
+  [concept]
+  (let [host "localhost"
+        port 3002
+        {:keys [provider-id concept-type native-id ]} concept
+        ctx-part (str "providers" "/" provider-id  "/" "collections" "/" native-id )
+        ingest-rest-url (str "http://" host ":" port "/" ctx-part)]
+    ingest-rest-url))
+
+;;; operations
+(defn ingest-concept
+  "Ingest a concept and return a map with status, concept-id, and revision-id"
+  [concept]
+  (let [response (client/request
+                   {:method :put
+                    :url (construct-ingest-rest-url concept)
+                    :body  (:metadata concept) ;; (io/string-input-stream (:metadata concept))
+                    :content-type (:format concept)
+                    :accept :json
+                    :throw-exceptions false})
+        status (:status response)
+        body (cheshire/parse-string (:body response))
+        concept-id (get body "concept-id")
+        revision-id (get body "revision-id")]
+    {:status status :concept-id concept-id :revision-id revision-id :response response}))
+
+(defn delete-concept
+  "Delete a given concept."
+  [concept]
+  (let [response (client/request
+                   {:method :delete
+                    :url (construct-ingest-rest-url concept)
+                    :accept :json
+                    :throw-exceptions false})
+        status (:status response)
+        body (cheshire/parse-string (:body response))
+        concept-id (get body "concept-id")
+        revision-id (get body "revision-id")]
+    {:status status :concept-id concept-id :revision-id revision-id :response response}))
+
+;;; tests
+;;; ensure metadata and ingest apps are accessable on ports 3001 and 3002 resp;
+;;; add indexer app etc later to this list
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Verify a new concept is ingested successfully.
@@ -28,21 +88,21 @@
         {:keys [status concept-id revision-id]} (util/ingest-concept concept)
         concept-exists-in-mdb (util/concept-exists? concept-id revision-id)]
     ;; need to verify these three conditions and existence in oracle/ elastic
-    ;; to be confident about new concept creation.   
+    ;; to be confident about new concept creation.
     (is (and concept-exists-in-mdb (= status 200) (= revision-id 0)))))
 
 ;; Verify a new concept with concept-id is ingested successfully.
 (deftest concept-w-concept-id-ingest-test
-  (let [concept test-concept-w-concept-id 
+  (let [concept test-concept-w-concept-id
         {:keys [status concept-id revision-id]} (util/ingest-concept concept)
-        concept-exists-in-mdb (util/concept-exists? concept-id revision-id)]  
+        concept-exists-in-mdb (util/concept-exists? concept-id revision-id)]
     (is (and concept-exists-in-mdb (= status 200) (= revision-id 0)))))
 
 ;; Verify a new concept with concept-id and revision id is ingested successfully.
 (deftest concept-w-ids-ingest-test
   (let [concept test-concept-w-concept-id-rev-id
         {:keys [status concept-id revision-id]} (util/ingest-concept concept)
-        concept-exists-in-mdb (util/concept-exists? concept-id revision-id)]  
+        concept-exists-in-mdb (util/concept-exists? concept-id revision-id)]
     (is (and concept-exists-in-mdb (= status 200) (= revision-id 0)))))
 
 
@@ -52,12 +112,12 @@
   (let [n 4
         concept (nth test-concept-list 1)
         created-concepts (take n (repeatedly n #(util/ingest-concept concept)))]
-    (is (and (apply = (map :concept-id created-concepts)) 
+    (is (and (apply = (map :concept-id created-concepts))
              (= (range 0 n) (map :revision-id created-concepts))))))
 
 ;; Verify ingest behaves properly if empty body is presented in the request.
 (deftest empty-concept-ingest-test
-  (let [concept-with-empty-body  (assoc (last test-concept-list) :metadata "aa") 
+  (let [concept-with-empty-body  (assoc (last test-concept-list) :metadata "aa")
         {:keys [status concept-id revision-id]} (util/ingest-concept concept-with-empty-body)]
     (is (= status 400))))
 
@@ -68,7 +128,7 @@
         {:keys [status]} (util/delete-concept non-existent-concept)]
     (is (= status 404))))
 
-;; Verify existing concept can be deleted and operation results in revision id 1 greater than 
+;; Verify existing concept can be deleted and operation results in revision id 1 greater than
 ;; max revision id of the concept prior to the delete
 (deftest delete-concept-test
   (let [concept (nth test-concept-list 2)
@@ -81,32 +141,32 @@
 
 ;; Verify ingest behaves properly if request is missing content type.
 (deftest missing-content-type-ingest-test
-  (let [concept-with-no-content-type  (assoc (last test-concept-list) :format "") 
+  (let [concept-with-no-content-type  (assoc (last test-concept-list) :format "")
         {:keys [status concept-id revision-id]} (util/ingest-concept concept-with-no-content-type)]
     (is (= status 400))))
 
 ;; Verify ingest behaves properly if request contains invalid  content type.
 (deftest invalid-content-type-ingest-test
-  (let [concept-with-no-content-type (assoc (last test-concept-list) :format "blah") 
+  (let [concept-with-no-content-type (assoc (last test-concept-list) :format "blah")
         {:keys [status concept-id revision-id]} (util/ingest-concept concept-with-no-content-type)]
     (is (= status 400))))
 
 ;; Verify deleting same concept twice results in error.
 ;; why 409 error suppressed by indexer ?? Verify this later.
 (deftest delete-same-concept-twice-test
-    (let [concept (nth test-concept-list 3)
-          ingest-result (util/ingest-concept concept)
-          delete1-result (util/delete-concept concept)
-          delete2-result (util/delete-concept concept)]
-      (is (and (= 200 (:status ingest-result))  
-               (= 200 (:status delete1-result)) 
-               (some #{409 500} [(:status delete2-result)])))))
+  (let [concept (nth test-concept-list 3)
+        ingest-result (util/ingest-concept concept)
+        delete1-result (util/delete-concept concept)
+        delete2-result (util/delete-concept concept)]
+    (is (and (= 200 (:status ingest-result))
+             (= 200 (:status delete1-result))
+             (some #{409 500} [(:status delete2-result)])))))
 
 ;;; fixture - each test to call this fixture
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn setup [] (util/reset-database))  
-(defn teardown [] (util/reset-database) (util/reset-es-indexes)) 
+(defn setup [] (util/reset-database))
+(defn teardown [] (util/reset-database) (util/reset-es-indexes))
 
 (defn each-fixture [f]
   (setup)

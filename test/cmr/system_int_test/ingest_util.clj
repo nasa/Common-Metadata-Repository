@@ -1,10 +1,10 @@
 (ns ^{:doc "provides ingest realted utilities."}
-  cmr-system-int-test.ingest-util
+  cmr.system-int-test.ingest-util
   (:require [clojure.test :refer :all]
             [clj-http.client :as client]
             [clojure.string :as str]
             [cheshire.core :as cheshire]
-            [cmr-system-int-test.url-helper :as url]))
+            [cmr.system-int-test.url-helper :as url]))
 
 (def dummy-metadata
   "<Collection>
@@ -77,8 +77,8 @@
     "application/iso19115+xml", "application/dif+xml"})
 
 (def base-concept-attribs
-  {:short-name "SN-Sedac88" 
-   :version "Ver88"  
+  {:short-name "SN-Sedac88"
+   :version "Ver88"
    :long-name "LongName Sedac88"
    :dataset-id "LarcDatasetId88"})
 
@@ -105,7 +105,7 @@
   [concept]
   (let [host "localhost"
         port 3002
-        {:keys [provider-id concept-type native-id ]} concept  
+        {:keys [provider-id concept-type native-id ]} concept
         ctx-part (str "providers" "/" provider-id  "/" "collections" "/" native-id )
         ingest-rest-url (str "http://" host ":" port "/" ctx-part)]
     ingest-rest-url))
@@ -116,7 +116,7 @@
   [concept]
   (let [response (client/request
                    {:method :put
-                    :url (construct-ingest-rest-url concept) 
+                    :url (construct-ingest-rest-url concept)
                     :body  (:metadata concept)
                     :content-type (:format concept)
                     :accept :json
@@ -136,7 +136,7 @@
                     :accept :json
                     :throw-exceptions false})
         status (:status response)
-        body (cheshire/decode (:body response)) 
+        body (cheshire/decode (:body response))
         concept-id (get body "concept-id")
         revision-id (get body "revision-id")]
     {:status status :concept-id concept-id :revision-id revision-id :response response}))
