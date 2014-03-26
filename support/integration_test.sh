@@ -2,6 +2,8 @@
 
 # This script installs the dependent libraries, builds the uberjar, runs it and runs the integration tests.
 
+echo "Installing dependent libraries"
+
 ## Install CMR common
 cd ../cmr-common-lib
 lein install
