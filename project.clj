@@ -10,13 +10,14 @@
                  [ring/ring-json "0.3.0"]
                  [org.clojure/tools.reader "0.8.3"]
                  [org.clojure/tools.cli "0.3.1"]]
-  :plugins []
+  :plugins [[lein-test-out "0.3.1"]]
   :repl-options {:init-ns user}
   :profiles
-  {:dev {:dependencies [[ring-mock "0.1.5"]
-                        [org.clojure/tools.namespace "0.2.4"]
+  {:dev {:dependencies [[org.clojure/tools.namespace "0.2.4"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]]
          :source-paths ["src" "dev" "test" "int_test"]}
+   :integration-test {:test-paths ["int_test"]
+                      :dependencies [[clj-http "0.9.1"]]}
    :uberjar {:main cmr.metadata-db.runner
              :aot :all}})
 
