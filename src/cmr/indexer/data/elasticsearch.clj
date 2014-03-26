@@ -64,14 +64,23 @@
 
 (deftracefn save-document-in-elastic
   "Save the document in Elasticsearch, raise error if failed."
-  [context es-index es-mapping es-doc revision-id]
+  [context es-index es-mapping es-doc revision-id ignore-conflict]
   (let [result (try-elastic-operation doc/put es-index es-mapping es-doc revision-id)]
-    (if (not (:created result))
-      (errors/internal-error! (str "Save to Elasticsearch failed " (str result))))))
+    (if (:error result)
+      (if (= 409 (:status result))
+        (if ignore-conflict
+          (info (str "Ignore conflict: " (str result)))
+          (errors/throw-service-error :conflict (str "Save to Elasticsearch failed " (str result))))
+        (errors/internal-error! (str "Save to Elasticsearch failed " (str result)))))))
+
+(deftracefn get-document
+  "Get the document from Elasticsearch, raise error if failed."
+  [context es-index es-mapping id]
+  (doc/get es-index es-mapping id))
 
 (deftracefn delete-document-in-elastic
   "Delete the document from Elasticsearch, raise error if failed."
-  [context es-config es-index es-mapping id revision-id]
+  [context es-config es-index es-mapping id revision-id ignore-conflict]
   ;; Cannot use elastisch for deletion as we require special headers on delete
   #_(let [result (try-elastic-operation doc/delete es-index es-mapping id)]
       (if (not (:ok result))
@@ -84,5 +93,9 @@
                                  :throw-exceptions false})
         status (:status response)]
     (if-not (some #{200 404} [status])
-      (errors/internal-error! (str "Delete from Elasticsearch failed " (str response))))))
+      (if (= 409 status)
+        (if ignore-conflict
+          (info (str "Ignore conflict: " (str response)))
+          (errors/throw-service-error :conflict (str "Delete from Elasticsearch failed " (str response))))
+        (errors/internal-error! (str "Delete from Elasticsearch failed " (str response)))))))
 
