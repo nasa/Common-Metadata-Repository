@@ -11,6 +11,10 @@
             [cmr.umm.echo10.collection :as c]
             [cmr.umm.collection :as umm-c]))
 
+(deftest will-always-fail
+  (println "Failing to test CI")
+  (is (= 5 4)))
+
 (defspec generate-collection-is-valid-xml-test 100
   (for-all [collection umm-gen/collections]
     (let [xml (c/generate-collection collection)]
