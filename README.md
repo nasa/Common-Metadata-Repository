@@ -28,6 +28,10 @@ curl -i -XPOST -H "Content-Type: application/json" http://localhost:3004 -d '{"c
 
 curl -i -XDELETE -H "Content-Type: application/json" http://localhost:3004/C1234-PROV1/2
 
+### Ignore version conflict
+
+By default, version conflict returned from elasticsearch will be ignored. User can override the default by passing in query parameter "ignore_conflict=false" to the request.
+
 ## License
 
 Copyright © 2014 NASA

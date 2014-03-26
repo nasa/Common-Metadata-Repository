@@ -12,17 +12,26 @@
             [cmr.indexer.services.index-service :as index-svc]
             [cmr.system-trace.http :as http-trace]))
 
+(defn- ignore-conflict?
+  "Return false if ignore_conflict parameter is set to false; otherwise return true"
+  [params]
+  (if (= "false" (:ignore_conflict params))
+    false
+    true))
+
 (defn- build-routes [system]
   (routes
 
-    (POST "/" {body :body request-context :request-context}
-      (let [{:strs [concept-id revision-id]} body]
-        (r/created (index-svc/index-concept request-context concept-id revision-id))))
+    (POST "/" {body :body request-context :request-context params :params}
+      (let [{:strs [concept-id revision-id]} body
+            ignore-conflict (ignore-conflict? params)]
+        (r/created (index-svc/index-concept request-context concept-id revision-id ignore-conflict))))
 
     (context "/:concept-id/:revision-id" [concept-id revision-id]
-      (DELETE "/" {request-context :request-context}
-        (index-svc/delete-concept request-context concept-id revision-id)
-        (r/response nil)))
+      (DELETE "/" {request-context :request-context params :params}
+        (let [ignore-conflict (ignore-conflict? params)]
+          (index-svc/delete-concept request-context concept-id revision-id ignore-conflict)
+          (r/response nil))))
 
     (route/not-found "Not Found")))
 

@@ -30,19 +30,19 @@
 
 (deftracefn index-concept
   "Index the given concept and revision-id"
-  [context concept-id revision-id]
+  [context concept-id revision-id ignore-conflict]
   (info (format "Indexing concept %s, revision-id %s" concept-id revision-id))
   (let [concept (meta-db/get-concept context concept-id revision-id)
         ; TODO: should replace echo10.collection with a generic namesapce once umm-lib is complete
         umm-concept (collection/parse-collection (concept "metadata"))
         es-doc (concept->elastic-doc concept umm-concept)]
-    (es/save-document-in-elastic context es-index es-mapping-type es-doc (Integer. revision-id))))
+    (es/save-document-in-elastic context es-index es-mapping-type es-doc (Integer. revision-id) ignore-conflict)))
 
 (deftracefn delete-concept
   "Delete the concept with the given id"
-  [context id revision-id]
+  [context id revision-id ignore-conflict]
   (info (format "Deleting concept %s, revision-id %s" id revision-id))
   ;; Assuming ingest will pass enough info for deletion
   ;; We should avoid making calls to metadata db to get the necessary info if possible
   (let [es-config (-> context :system :db :config)]
-    (es/delete-document-in-elastic context es-config es-index es-mapping-type id revision-id)))
+    (es/delete-document-in-elastic context es-config es-index es-mapping-type id revision-id ignore-conflict)))
