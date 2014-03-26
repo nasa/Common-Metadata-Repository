@@ -15,6 +15,7 @@
                  [org.clojure/tools.cli "0.3.1"]]
   :plugins []
   :main cmr.ingest.runner
+  :jvm-opts ["-Xmx1024m"]
   :repl-options {:init-ns user}
   :profiles
   {:dev {:dependencies [[ring-mock "0.1.5"]

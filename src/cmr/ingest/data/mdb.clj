@@ -18,9 +18,13 @@
         request-url (str mdb-url "/concept-id/" (name concept-type) "/" provider-id "/" native-id)
         response (client/get request-url {:accept :json
                                           :headers (ch/context->http-headers context)})
-        status (:status response)]
-    (when-not (= 200 status)
-      (errors/internal-error! (str "Concept id fetch failed. MetadataDb app response status code: "  status (str response))))
+        status (:status response)
+        body (cheshire/decode (:body response))
+        errors-str (cheshire/generate-string (flatten (get body "errors")))  ;; use this for logging purposes ??
+        err-msg (format "concept-type: %s provider-id: %s native-id: %s does not exist" concept-type provider-id native-id)]
+    (cond (= 404 status) (errors/throw-service-error :not-found err-msg) ;; forward not available message to the provider
+          :else (when-not (= 200 status)
+                  (errors/internal-error! (str "Concept id fetch failed. MetadataDb app response status code: "  status (str response)))))
     (get (cheshire/parse-string (:body response)) "concept-id")))
 
 (deftracefn save-concept
@@ -33,10 +37,15 @@
                                                          :accept :json
                                                          :throw-exceptions false
                                                          :headers (ch/context->http-headers context)})
-        status (:status response)]
-    (when-not (= 201 status)
-      (errors/internal-error! (str "Save concept failed. MetadataDb app response status code: "  status (str response))))
-    (get (cheshire/parse-string (:body response)) "revision-id")))
+        status (:status response)
+        body (cheshire/decode (:body response))
+        errors-str (cheshire/generate-string (flatten (get body "errors")))
+        {:strs [concept-id revision-id]} body]
+    (cond (= 422 status) ;; catalog rest supplied invalid concept id (either no revision id or one supplied)
+          (errors/throw-service-error :invalid-data errors-str) 
+          :else (when-not (= 201 status)
+                  (errors/internal-error! (str "Save concept failed. MetadataDb app response status code: "  status (str response)))))
+    {:concept-id concept-id :revision-id revision-id}))
 
 (deftracefn delete-concept
   "Delete a concept from metatdata db."
@@ -50,9 +59,6 @@
         errors-str (cheshire/generate-string (flatten (get body "errors")))]    
     (cond (= 200 status) (get body "revision-id")
           (= 404 status) (errors/throw-service-error :not-found errors-str) ;; donot drop errors from other services
-          (= 400 status) (errors/throw-service-error :bad-request errors-str)
-          (= 409 status) (errors/throw-service-error :conflict errors-str)
-          (= 422 status) (errors/throw-service-error :invalid-data errors-str)
           :else (errors/internal-error! (str "Delete concept operation failed. MetadataDb app response status code: "  status (str response))))))
 
 

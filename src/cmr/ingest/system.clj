@@ -21,7 +21,7 @@
   {:log log
    :config config
    :web web
-   :zipkin (context/zipkin-config "Ingest")})
+   :zipkin (context/zipkin-config "Ingest" false)})
 
 (defn start
   "Performs side effects to initialize the system, acquire resources,
