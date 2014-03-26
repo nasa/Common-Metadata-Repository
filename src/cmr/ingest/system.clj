@@ -23,34 +23,34 @@
   {:log log
    :config config
    :web web
-  []
-  {:log (log/create-logger)
-   :config default-config
-   :web (web/create-web-server 3002 routes/make-api)
-   :zipkin (context/zipkin-config "Ingest" false)})
+   []
+   {:log (log/create-logger)
+    :config default-config
+    :web (web/create-web-server 3002 routes/make-api)
+    :zipkin (context/zipkin-config "Ingest" false)})
 
-(defn start
-  "Performs side effects to initialize the system, acquire resources,
-  and start it running. Returns an updated instance of the system."
-  [this]
-  (info "System starting")
-  (let [started-system (reduce (fn [system component-name]
-                                 (update-in system [component-name]
-                                            #(lifecycle/start % system)))
-                               this
-                               component-order)]
-    (info "System started")
-    started-system))
+   (defn start
+     "Performs side effects to initialize the system, acquire resources,
+     and start it running. Returns an updated instance of the system."
+     [this]
+     (info "System starting")
+     (let [started-system (reduce (fn [system component-name]
+                                    (update-in system [component-name]
+                                               #(lifecycle/start % system)))
+                                  this
+                                  component-order)]
+       (info "System started")
+       started-system))
 
-(defn stop
-  "Performs side effects to shut down the system and release its
-  resources. Returns an updated instance of the system."
-  [this]
-  (info "System shutting down")
-  (let [stopped-system (reduce (fn [system component-name]
-                                 (update-in system [component-name]
-                                            #(lifecycle/stop % system)))
-                               this
-                               (reverse component-order))]
-    (info "System stopped")
-    stopped-system))
+   (defn stop
+     "Performs side effects to shut down the system and release its
+     resources. Returns an updated instance of the system."
+     [this]
+     (info "System shutting down")
+     (let [stopped-system (reduce (fn [system component-name]
+                                    (update-in system [component-name]
+                                               #(lifecycle/stop % system)))
+                                  this
+                                  (reverse component-order))]
+       (info "System stopped")
+       stopped-system))
