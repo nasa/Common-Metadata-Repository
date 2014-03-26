@@ -8,6 +8,8 @@
                  [org.clojure/data.xml "0.0.7"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]]
 
+  :plugins [[lein-test-out "0.3.1"]]
+
   :profiles
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.4"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]]
