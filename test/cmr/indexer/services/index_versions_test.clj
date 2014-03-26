@@ -1,5 +1,5 @@
-(ns ^{:doc "Integration test for elasticsearch service"}
-  cmr.indexer.data.elasticsearch-test
+(ns ^{:doc "Integration test for index versions during save and delete in elasticsearch"}
+  cmr.indexer.services.index-versions-test
   (:require [clojure.test :refer :all]
             [clojure.string :as s]
             [clojurewerkz.elastisch.rest :as esr]
@@ -69,6 +69,7 @@
     (es/save-document-in-elastic {} "tests" "collection" (es-doc) 10 false)
     (assert-version "C1234-PROV1" 10)))
 
+;; TODO update this test with ignore-conflict true/false after the external_gte support is added
 (deftest save-with-equal-versions-test
     (testing "Save with equal versions"
       (es/save-document-in-elastic {} "tests" "collection" (es-doc) 0 true)
