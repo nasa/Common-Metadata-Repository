@@ -5,6 +5,7 @@
             [cmr.common.lifecycle :as lifecycle]
             [clojure.string :as string]
             [cmr.common.services.errors :as errors]
+            [cmr.common.log :refer (debug info warn error)]
             [cmr.common.util :as cutil]
             [clojure.pprint :refer (pprint pp)]
             [clojure.java.jdbc :as j]
@@ -54,7 +55,7 @@
   "Create a concept-id for a given concept type and provider id."
   [db concept]
   (let [{:keys [concept-type provider-id]} concept
-        seq-num (first (j/query db ["SELECT METADATA_DB.concept_id_seq.NEXTVAL FROM DUAL"]))]
+        seq-num (:nextval (first (j/query db ["SELECT METADATA_DB.concept_id_seq.NEXTVAL FROM DUAL"])))]
     (util/generate-concept-id concept-type provider-id seq-num)))
 
 
@@ -138,7 +139,7 @@
   [db concept]
   (if (:concept-id concept) 
     concept
-    (let [concept-id (get-existing-concept-id concept)]
+    (let [concept-id (get-existing-concept-id db concept)]
       (if concept-id
         (assoc concept :concept-id concept-id)
         (assoc concept :concept-id (generate-concept-id db concept))))))
@@ -152,6 +153,32 @@
     (let [existing-revision-id (:revision-id (get-concept-from-db-with-values db concept))
           revision-id (if existing-revision-id (inc existing-revision-id) 0)]
       (assoc concept :revision-id revision-id))))
+
+;;; TODO move this to the services layer
+(defn- validate-concept-revision-id
+  "Validate that the revision-id for a concept (if given) is one greater than
+  the current maximum revision-id for this concept."
+  [db concept]
+  (let [{:keys [concept-id revision-id]} concept]
+    (if revision-id
+      (if concept-id
+        (let [latest-revision (get-concept-from-db db concept-id nil)
+              expected-revision-id (inc (:revision-id latest-revision))]
+          (when (not= revision-id expected-revision-id)
+            (errors/throw-service-error :conflict
+                                        (format messages/invalid-version-id-msg
+                                                expected-revision-id
+                                                revision-id))))
+        (if (not= revision-id 0)
+          (errors/throw-service-error :conflict
+                                      (format messages/invalid-version-id-msg
+                                              0
+                                              revision-id)))))))
+
+
+
+
+(defn- set-deleted-flag [value concept] (assoc concept :deleted value))
 
 (defrecord OracleStore
   [
@@ -240,33 +267,35 @@
   (save-concept
     [this concept]
     (util/validate-concept concept)
+    (validate-concept-revision-id db concept)
     (let [db (:db this)
           concept-id-provided? (:concept-id concept)
           revision-id-provided? (:revision-id concept)
           concept (->> concept
                        (set-or-generate-concept-id db)
-                       (set-or-generate-revision-id db))]
-      
+                       (set-or-generate-revision-id db)
+                       (set-deleted-flag 0))]
       (loop [concept concept tries-left 3]
         (let [result (save-in-db db concept)]
-          (if (:error result)
+          (if (nil? (:error result))
+            result
             ;; depending on the error we will either throw an exception or try again (recur)
-            (cond 
-              (= (:error result) :revision-id-conflict)
-              (if revision-id-provided?
-                (errors/throw-service-error :conflict)
-                (if (= tries-left 1)
-                  (errors/internal-error! "Exhausted tries to save concept - giving up.")
-                  ))
-              
-              (= (:error result) :some-other-conflict)
-              (;; throw something
+            (do (cond 
+                  (= (:error result) :revision-id-conflict)
+                  (if revision-id-provided?
+                    (errors/throw-service-error :conflict)
+                    (if (= tries-left 1)
+                      (errors/internal-error! "Reached limit of attempts to save concept - giving up.")
+                      ))
+                  
+                  (= (:error result) :some-other-conflict)
+                  (;; throw something
+                      )
+                  ;;; etc. Similar to above. We probably won't have any more recurs for retries
+                  ; there might be a case where two first revision of a collection come in at the same time
+                  ;; they might accidentally get different concept ids. We'd need to recur then.
                   )
-              ;;; etc. Similar to above. We probably won't have any more recurs for retries
-              ; there might be a case where two first revision of a collection come in at the same time
-              ;; they might accidentally get different concept ids. We'd need to recur then.
-              )
-            (recur (set-or-generate-revision-id concept) (dec tries-left)))))))
+              (recur (set-or-generate-revision-id db concept) (dec tries-left))))))))
   
   (force-delete
     [this concept-id revision-id])

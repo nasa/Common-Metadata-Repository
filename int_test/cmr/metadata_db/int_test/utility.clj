@@ -108,8 +108,9 @@
         status (:status response)
         body (cheshire/parse-string (:body response))
         revision-id (get body "revision-id")
+        concept-id (get body "concept-id")
         error-messages (get body "errors")]
-    {:status status :revision-id revision-id :error-messages error-messages}))
+    {:status status :revision-id revision-id :concept-id concept-id :error-messages error-messages}))
 
 (defn delete-concept
   "Make a DELETE request to mark a concept as deleted. Returns the status and revision id of the
@@ -132,8 +133,9 @@
 
 (defn verify-concept-was-saved
   "Check to make sure a concept is stored in the database."
-  [concept revision-id]
+  [concept]
   (let [concept-id (:concept-id concept)
+        revision-id (:revision-id concept)
         stored-concept-and-status (get-concept-by-id-and-revision concept-id revision-id)
         stored-concept (:concept stored-concept-and-status)
         stored-concept-id (:concept-id stored-concept)]

@@ -22,9 +22,7 @@
   "Validate that a concept has the fields we need to save it."
   [concept]
   (if-not (:concept-type concept)
-    (errors/throw-service-error :invalid-data "Concept must include concept-type"))
-  (if-not (:concept-id concept)
-    (errors/throw-service-error :invalid-data "Concept must include concept-id")))
+    (errors/throw-service-error :invalid-data "Concept must include concept-type")))
 
 (defn is-tombstone?
   "Check to see if an entry is a tombstone (has a :deleted true entry)."
