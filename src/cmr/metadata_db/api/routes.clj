@@ -48,8 +48,8 @@
 
 (defn- delete-concept
   "Mark a concept as deleted (create a tombstone)."
-  [system concept-id]
-  (let [revision-id (concept-services/delete-concept system concept-id)]
+  [system concept-id revision-id]
+  (let [{:keys [revision-id]} (concept-services/delete-concept system concept-id revision-id)]
     {:status 200
      :body {:revision-id revision-id}
      :headers json-header}))
@@ -79,11 +79,12 @@
       ;; saves a concept
       (POST "/" params
         (save-concept system (:body params)))
-      (DELETE "/:id" [id] (delete-concept system id))
+      (DELETE "/:concept-id/:revision-id" [concept-id revision-id] (delete-concept system concept-id revision-id))
+      (DELETE "/:concept-id" [concept-id] (delete-concept system concept-id nil))
       ;; get a specific revision of a concept
-      (GET "/:id/:revision" [id revision] (get-concept system id revision))
+      (GET "/:concept-id/:revision-id" [concept-id revision-id] (get-concept system concept-id revision-id))
       ;; returns the latest revision of a concept
-      (GET "/:id" [id] (get-concept system id nil))
+      (GET "/:concept-id" [concept-id] (get-concept system concept-id nil))
       (POST "/search" params
         (get-concepts system (get (:body params) "concept-revisions"))))
     

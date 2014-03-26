@@ -19,10 +19,18 @@
   [concept-type provider-id seq-num]
   (str (concept-type-prefix concept-type) seq-num "-" provider-id))
 
+(defn validate-concept-id
+  "Validate that the concept-id for a concept matches the concept-type and provider-id."
+  [concept]
+  (let [{:keys [concept-id concept-type provider-id]} concept
+        prefix (concept-type-prefix concept-type)
+        pattern (re-pattern (str prefix "\\d*-" provider-id))]
+    (re-find pattern concept-id)))
+
 (defn validate-concept
   "Validate that a concept has the fields we need to save it."
   [concept]
-  (let [{:keys [concept-type provider-id native-id]} concept
+  (let [{:keys [concept-id concept-type provider-id native-id]} concept
         error (cond
                 (nil? concept-type)
                 messages/missing-concept-type-msg
@@ -33,6 +41,9 @@
                 (nil? native-id)
                 messages/missing-native-id-msg
                 
+                (and concept-id (not (validate-concept-id concept)))
+                messages/invalid-concept-id-msg
+                
                 :else nil)]
     (if error (errors/throw-service-error :invalid-data error))))
 
@@ -40,3 +51,12 @@
   "Check to see if an entry is a tombstone (has a :deleted true entry)."
   [concept]
   (:deleted concept))
+
+
+(comment 
+  (let [concept {:concept-id "C1-PROV1" :provider-id "PROV2" :concept-type "collection"}]
+    (if (validate-concept-id concept)
+      (println "OK")
+      (println "BAD")))
+  
+  )

@@ -23,7 +23,7 @@
                                                          (:provider-id concept)
                                                          (:native-id concept))]
     (is (= status 200))
-    (is (= concept-id (:concept-id concept)))))
+    (is (= concept-id "C1000000000-PROV1"))))
 
 (deftest mdb-get-concept-id-repeatedly-test
   "Get a concept-id repeatedly to verify that it is the same each time."

@@ -24,9 +24,9 @@
 
 (defn delete-concept
   "Add a tombstone record to mark a concept as deleted and return the revision-id of the tombstone."
-  [system concept-id]
+  [system concept-id revision-id]
   (let [{:keys [db]} system]
-    (data/delete-concept db concept-id)))
+    (data/delete-concept db concept-id revision-id)))
 
 (defn reset
   "Delete all concepts from the concept store."

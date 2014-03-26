@@ -24,11 +24,13 @@
     then an exception is thrown.")
   
   (delete-concept
-    [db concept-id]
+    [db concept-id revision-id]
     "Marks a concept as deleted by saving a tombstone record.  The tombstone
     is given a revision id one higher than the highest revision id already
     present. If the concept does not already exist then an exception is 
-    thrown resulting in a 404 status code.")
+    thrown resulting in a 404 status code. If the revision-id is given and
+    is not one higher than the highest existing revision-id, then an exception
+    is thrown.")
   
   (force-delete
     [db concept-id revision-id]

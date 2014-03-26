@@ -63,9 +63,9 @@
 
 (deftest mdb-save-concept-after-delete
   "Verify that a save after delete returns the correct revision."
-  (let [concept (util/concept)]
-    (util/save-concept concept)
-    (util/delete-concept (:concept-id concept))
+  (let [concept (util/concept)
+        {:keys [concept-id]} (util/save-concept concept)]
+    (util/delete-concept concept-id)
     (let [{:keys [status revision-id]} (util/save-concept concept)]
       (is (= status 201))
       (is (= revision-id 2)))))

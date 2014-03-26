@@ -59,6 +59,7 @@
     (util/generate-concept-id concept-type provider-id seq-num)))
 
 
+;;; TODO - the next two functons probably should be consolidated
 
 (defn- get-concept-from-db
   "Load a concept from the database using a concept-id and revision-id and then transform it into a concept map."
@@ -130,8 +131,17 @@
                      deleted])
          {:concept-id concept-id :revision-id revision-id})
     (catch Exception e
-      (pprint e)
-      {:error (.getMessage e)})))
+      (let [error-message (.getMessage e)
+            error-code (cond
+                         (re-find #"METADATA_DB.UNIQUE_CONCEPT_REVISION" error-message)
+                         :concept-id-concept-conflict
+                         
+                         (re-find #"METADATA_DB.UNIQUE_CONCEPT_ID_REVISION" error-message)
+                         :revision-id-conflict
+                         
+                         :else
+                         :unknown-error)]
+        {:error error-code}))))
 
 (defn- set-or-generate-concept-id 
   "Get an exiting concept-if from the DB for the given concept or generate one 
@@ -150,7 +160,7 @@
   [db concept]
   (if (:revision-id concept)
     concept
-    (let [existing-revision-id (:revision-id (get-concept-from-db-with-values db concept))
+    (let [existing-revision-id (:revision-id (get-concept-from-db db (:concept-id concept) nil))
           revision-id (if existing-revision-id (inc existing-revision-id) 0)]
       (assoc concept :revision-id revision-id))))
 
@@ -166,17 +176,47 @@
               expected-revision-id (inc (:revision-id latest-revision))]
           (when (not= revision-id expected-revision-id)
             (errors/throw-service-error :conflict
-                                        (format messages/invalid-version-id-msg
+                                        (format messages/invalid-revision-id-msg
                                                 expected-revision-id
                                                 revision-id))))
         (if (not= revision-id 0)
           (errors/throw-service-error :conflict
-                                      (format messages/invalid-version-id-msg
+                                      (format messages/invalid-revision-id-msg
                                               0
                                               revision-id)))))))
 
-
-
+(defn try-to-save
+  "Try to save a concept by looping until we find a good revision-id or give up."
+  [db concept revision-id-provided?]
+  (loop [concept concept tries-left 3]
+    (let [result (save-in-db db concept)]
+      (if (nil? (:error result))
+        result
+        ;; depending on the error we will either throw an exception or try again (recur)
+        (let [error-code (:error result)] 
+          (cond 
+            (= error-code :revision-id-conflict)
+            (if revision-id-provided?
+              (errors/throw-service-error :conflict (format messages/invalid-revision-id-unknown-expected-msg
+                                                            revision-id-provided?))
+              (if (= tries-left 1)
+                (errors/internal-error! messages/maximum-save-attempts-exceeded-msg)))
+            
+            (= error-code :concept-id-concept-conflict)
+            (let [{:keys [concept-id concept-type provider-id native-id]} concept]
+              (errors/throw-service-error :conflict (format messages/concept-exists-with-differnt-id-msg
+                                                            concept-id
+                                                            concept-type
+                                                            provider-id
+                                                            native-id)))
+            
+            (= error-code :unknown-error)
+            (errors/internal-error! "Unknown error saving concept")
+            
+            ; FIXME there might be a case where two first revision of a collection come in at the same time
+            ;; they might accidentally get different concept ids. We'd need to recur then.
+            )
+          (recur (set-or-generate-revision-id db concept) (dec tries-left)))))))
 
 (defn- set-deleted-flag [value concept] (assoc concept :deleted value))
 
@@ -275,27 +315,23 @@
                        (set-or-generate-concept-id db)
                        (set-or-generate-revision-id db)
                        (set-deleted-flag 0))]
-      (loop [concept concept tries-left 3]
-        (let [result (save-in-db db concept)]
-          (if (nil? (:error result))
-            result
-            ;; depending on the error we will either throw an exception or try again (recur)
-            (do (cond 
-                  (= (:error result) :revision-id-conflict)
-                  (if revision-id-provided?
-                    (errors/throw-service-error :conflict)
-                    (if (= tries-left 1)
-                      (errors/internal-error! "Reached limit of attempts to save concept - giving up.")
-                      ))
-                  
-                  (= (:error result) :some-other-conflict)
-                  (;; throw something
-                      )
-                  ;;; etc. Similar to above. We probably won't have any more recurs for retries
-                  ; there might be a case where two first revision of a collection come in at the same time
-                  ;; they might accidentally get different concept ids. We'd need to recur then.
-                  )
-              (recur (set-or-generate-revision-id db concept) (dec tries-left))))))))
+      (try-to-save db concept revision-id-provided?)))
+  
+  (delete-concept
+    [this concept-id revision-id]
+    (let [db (:db this)
+          last-concept-saved (get-concept-from-db db concept-id nil)]
+      (if last-concept-saved
+        (if (util/is-tombstone? last-concept-saved)
+          last-concept-saved
+          (let [tombstone (merge last-concept-saved {:revision-id revision-id :deleted true})]
+            (validate-concept-revision-id db tombstone)
+            (let [revisioned-tombstone (set-or-generate-revision-id db tombstone)]
+              (try-to-save db revisioned-tombstone revision-id))))
+        (errors/throw-service-error :not-found
+                                    (format messages/concept-does-not-exist-msg
+                                            concept-id)))))
+  
   
   (force-delete
     [this concept-id revision-id])

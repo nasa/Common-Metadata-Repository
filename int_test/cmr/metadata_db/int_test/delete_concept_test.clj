@@ -4,7 +4,8 @@
   (:require [clojure.test :refer :all]
             [clj-http.client :as client]
             [cheshire.core :as cheshire]
-            [cmr.metadata-db.int-test.utility :as util]))
+            [cmr.metadata-db.int-test.utility :as util]
+            [cmr.metadata-db.data.messages :as messages]))
 
 ;;; fixtures
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -15,7 +16,7 @@
   [f]
   ;; setup database
   (let [concept1 (util/concept)
-        concept2 (assoc concept1 :concept-id "C2-PROV1")]
+        concept2 (merge concept1 {:concept-id "C2-PROV1" :native-id "some other id"})]
     (dorun (repeatedly num-revisions #(util/save-concept concept1)))
 
     (util/save-concept concept2))
@@ -36,14 +37,15 @@
     (is (= status 200))
     (is (= revision-id num-revisions))))
 
-#_(deftest mdb-fail-to-delete-missing-concept
+(deftest mdb-fail-to-delete-missing-concept
   "Attempt to delete a concept that does not exist and verify that we get a 404."
   (let [{:keys [status revision-id error-messages]} (util/delete-concept "C1-NON-EXISTENT-PROVIDER")]
-    (is (and (= status 404) (= error-messages ["Concept C1-NON-EXISTENT-PROVIDER does not exist."])))))
+    (is (= status 404))
+    (is (= error-messages [(format messages/concept-does-not-exist-msg "C1-NON-EXISTENT-PROVIDER")]))))
 
-#_(deftest mdb-repeated-calls-to-delete-get-same-revision
+(deftest mdb-repeated-calls-to-delete-get-same-revision
   "Delete a concept repeatedly and verify that the revision does not change."
-  (let [concept-id (:concept-id (util/concept))
+  (let [concept-id "C1000000000-PROV1"
         tombstone-revision-id (:revision-id (util/delete-concept concept-id))]
     (dorun (repeatedly 3 #(util/delete-concept concept-id)))
     (let [final-revision-id (:revision-id (util/delete-concept concept-id))]

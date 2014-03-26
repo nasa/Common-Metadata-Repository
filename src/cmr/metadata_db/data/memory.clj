@@ -73,20 +73,20 @@
   [
    ;; An atom containing maps of concept-ids to concepts
    concepts]
-
+  
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   lifecycle/Lifecycle
-
+  
   (start [this system]
          (reset-database this)
          this)
-
+  
   (stop [this system]
         this)
-
+  
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   data/ConceptStore
-
+  
   (get-concept-id
     [this concept-type provider-id native-id]
     ;; We don't use the native-id for the in-memory implementation.
@@ -101,7 +101,7 @@
               generated-id (str type-prefix seq-num "-" provider-id)]
           (swap! stored-ids assoc concept-concept-id-key generated-id)
           generated-id))))
-
+  
   (get-concept
     [this concept-id revision-id]
     (if-let [concept (retrieve-concept this concept-id revision-id)]
@@ -114,14 +114,14 @@
         (errors/throw-service-error :not-found
                                     "Could not find concept with concept-id of %s."
                                     concept-id))))
-
+  
   (get-concepts
     [this concept-id-revision-id-tuples]
     ;; An SQL based DB would have a more efficient way to do this, but
     ;; an in-memory map like this has to pull things back one-by-one.
     (remove nil? (map #(try (retrieve-concept this (first %) (last %))
                          (catch Exception e nil)) concept-id-revision-id-tuples)))
-
+  
   (save-concept
     [this concept]
     (util/validate-concept concept)
@@ -136,9 +136,9 @@
                                     (count revisions)
                                     revision-id))
       (save concepts concept concept-type concept-map concept-id revisions)))
-
+  
   (delete-concept
-    [this concept-id]
+    [this concept-id revision-id]
     (let [concepts (:concepts this)
           concept-prefix (:concept-prefix (cutil/parse-concept-id concept-id))
           concept-map (get @concepts concept-prefix)
@@ -151,8 +151,8 @@
   
   (force-delete
     [this concept-id revision-id])
-    ;; TODO impement this
-
+  ;; TODO impement this
+  
   (reset
     [this]
     (reset-database this)))
