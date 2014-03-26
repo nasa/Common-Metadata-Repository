@@ -11,6 +11,11 @@
 
 
 (def test-concept-list (doall (map util/distinct-concept (range 886700 886705))))
+(def test-concept-w-concept-id (util/distinct-concept-w-concept-id 886706))
+(def test-concept-w-concept-id-rev-id (assoc (util/distinct-concept-w-concept-id 886707)
+                                             :revision-id 33))
+(def test-concept-w-rev-id (assoc (util/distinct-concept 886708)
+                                  :revision-id 34))
 
 ;;; tests
 ;;; ensure metadata, indexer and ingest apps are accessable on ports 3001, 3004 and 3002 resp; 
@@ -24,7 +29,22 @@
         concept-exists-in-mdb (util/concept-exists? concept-id revision-id)]
     ;; need to verify these three conditions and existence in oracle/ elastic
     ;; to be confident about new concept creation.   
-    (is (and concept-exists-in-mdb (= status 200 ) (= revision-id 0)))))
+    (is (and concept-exists-in-mdb (= status 200) (= revision-id 0)))))
+
+;; Verify a new concept with concept-id is ingested successfully.
+(deftest concept-w-concept-id-ingest-test
+  (let [concept test-concept-w-concept-id 
+        {:keys [status concept-id revision-id]} (util/ingest-concept concept)
+        concept-exists-in-mdb (util/concept-exists? concept-id revision-id)]  
+    (is (and concept-exists-in-mdb (= status 200) (= revision-id 0)))))
+
+;; Verify a new concept with concept-id and revision id is ingested successfully.
+(deftest concept-w-ids-ingest-test
+  (let [concept test-concept-w-concept-id-rev-id
+        {:keys [status concept-id revision-id]} (util/ingest-concept concept)
+        concept-exists-in-mdb (util/concept-exists? concept-id revision-id)]  
+    (is (and concept-exists-in-mdb (= status 200) (= revision-id 0)))))
+
 
 ;; Ingest same concept N times and verify same concept-id is returned and
 ;; revision id is 1 greater on each subsequent ingest
@@ -37,7 +57,7 @@
 
 ;; Verify ingest behaves properly if empty body is presented in the request.
 (deftest empty-concept-ingest-test
-  (let [concept-with-empty-body  (assoc (last test-concept-list) :metadata "") 
+  (let [concept-with-empty-body  (assoc (last test-concept-list) :metadata "aa") 
         {:keys [status concept-id revision-id]} (util/ingest-concept concept-with-empty-body)]
     (is (= status 400))))
 
@@ -73,14 +93,14 @@
 
 ;; Verify deleting same concept twice results in error.
 ;; why 409 error suppressed by indexer ?? Verify this later.
-#_(deftest delete-same-concept-twice-test
-  (let [concept (nth test-concept-list 3)
-        ingest-result (util/ingest-concept concept)
-        delete1-result (util/delete-concept concept)
-        delete2-result (util/delete-concept concept)]
-    (is (and (= 200 (:status ingest-result))  
-             (= 200 (:status delete1-result)) 
-             (some #{409 500} [(:status delete2-result)])))))
+(deftest delete-same-concept-twice-test
+    (let [concept (nth test-concept-list 3)
+          ingest-result (util/ingest-concept concept)
+          delete1-result (util/delete-concept concept)
+          delete2-result (util/delete-concept concept)]
+      (is (and (= 200 (:status ingest-result))  
+               (= 200 (:status delete1-result)) 
+               (some #{409 500} [(:status delete2-result)])))))
 
 ;;; fixture - each test to call this fixture
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

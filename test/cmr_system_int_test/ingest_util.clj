@@ -83,13 +83,22 @@
    :dataset-id "LarcDatasetId88"})
 
 (defn distinct-concept
-  "Generate a concept-type, provicer-id, native-id tuple"
+  "Generate a concept"
   [token]
   (hash-map :concept-type :collection
             :provider-id (str "PROV" token)
             :native-id (str "nativeId" token)
             :metadata (metadata-xml base-concept-attribs)
-            :format "echo10+xml"))
+            :format "application/echo10+xml"))
+
+(defn distinct-concept-w-concept-id
+  "Simulates a concept with provider supplied concept-id"
+  [token]
+  (let [concept (distinct-concept token)
+        provider-id (:provider-id concept)
+        concept-id (format "C%s-%s" token provider-id)]
+    (assoc concept :concept-id concept-id)))
+
 
 (defn construct-ingest-rest-url
   "Construct ingest url based on concept."
@@ -158,7 +167,7 @@
   []
   (let [{:keys [host port]} (indexer-endpoint)
         response (client/post (format "http://%s:%s/%s" host port "reset")
-                                {:accept :json
-                                 :throw-exceptions false})
+                              {:accept :json
+                               :throw-exceptions false})
         status (:status response)]
     status))
