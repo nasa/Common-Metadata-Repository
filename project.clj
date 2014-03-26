@@ -14,6 +14,8 @@
                 [com.dadrox/quiet-slf4j "0.1"]
                 [clj-time "0.6.0"]]
 
+  :plugins [[lein-test-out "0.3.1"]]
+
 
   :profiles
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.4"]
