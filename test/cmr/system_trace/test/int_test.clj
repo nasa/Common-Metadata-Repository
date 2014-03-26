@@ -31,9 +31,12 @@
   [request]
   (service-b (:request-context request)))
 
+(def mock-zipkin
+  {:enabled? true})
+
 (def system
   {:db :mock-db
-   :zipkin :mock-zipkin})
+   :zipkin mock-zipkin})
 
 (defn mock-http-request
   [headers]
@@ -56,12 +59,19 @@
   [expected-traces actual-calls]
   (is (= expected-traces (map #(get (vec %) 1) actual-calls)))
 
-  (is (= [:mock-zipkin] (distinct (map first actual-calls))))
+  (is (= [mock-zipkin] (distinct (map first actual-calls))))
   (doseq [[_ _ start stop] actual-calls]
     (is (< (coerce/to-long start) (coerce/to-long stop)))))
 
 
 (deftest everything-integrated-test
+  (testing "tracing disabled"
+    (let [record-span-args (atom [])]
+      (with-redefs [cmr.system-trace.core/record-span (create-arg-recorder record-span-args)
+                    t/create-id (id-generator)]
+        (let [api-b (h/build-request-context-handler api-call-b (assoc-in system [:zipkin :enabled?] false))]
+          (is (= "a" (api-b (mock-http-request {}))))
+          (is (empty? @record-span-args))))))
   (testing "no trace ids in header"
     (let [record-span-args (atom [])]
       (with-redefs [cmr.system-trace.core/record-span (create-arg-recorder record-span-args)
@@ -71,4 +81,18 @@
           (verify-record-span-calls
             [{:trace-id 0 :parent-span-id 1 :span-name "service-a" :span-id 2}
              {:trace-id 0 :parent-span-id nil :span-name "service-b" :span-id 1}]
+            @record-span-args)))))
+  (testing "trace ids in header"
+    (let [record-span-args (atom [])]
+      (with-redefs [cmr.system-trace.core/record-span (create-arg-recorder record-span-args)
+                    t/create-id (id-generator)]
+        (let [header-tracing-id 12
+              header-span-id 35
+              request (mock-http-request {h/TRACE_ID_HEADER (str header-tracing-id)
+                                          h/SPAN_ID_HEADER (str header-span-id)})
+              api-b (h/build-request-context-handler api-call-b system)]
+          (is (= "a" (api-b request)))
+          (verify-record-span-calls
+            [{:trace-id header-tracing-id :parent-span-id 0 :span-name "service-a" :span-id 1}
+             {:trace-id header-tracing-id :parent-span-id header-span-id :span-name "service-b" :span-id 0}]
             @record-span-args))))))
