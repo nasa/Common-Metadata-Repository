@@ -6,3 +6,12 @@
 
 (def invalid-version-id-msg
   "Expected revision-id of %s got %s")
+
+(def missing-concept-type-msg
+  "Concept must include concept-type.")
+
+(def missing-provider-id-msg
+  "Concept must include provider-id.")
+
+(def missing-native-id-msg
+  "Concept must include native-id.")

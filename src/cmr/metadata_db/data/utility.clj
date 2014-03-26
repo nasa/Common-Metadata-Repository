@@ -1,7 +1,8 @@
 (ns cmr.metadata-db.data.utility
   "Utitly methods for concepts."
   (:require [clojure.string :as string]
-            [cmr.common.services.errors :as errors]))
+            [cmr.common.services.errors :as errors]
+            [cmr.metadata-db.data.messages :as messages]))
 
 ;;; Constants
 (def concept-id-prefix-length 1)
@@ -21,8 +22,19 @@
 (defn validate-concept
   "Validate that a concept has the fields we need to save it."
   [concept]
-  (if-not (:concept-type concept)
-    (errors/throw-service-error :invalid-data "Concept must include concept-type")))
+  (let [{:keys [concept-type provider-id native-id]} concept
+        error (cond
+                (nil? concept-type)
+                messages/missing-concept-type-msg
+                
+                (nil? provider-id)
+                messages/missing-provider-id-msg
+                
+                (nil? native-id)
+                messages/missing-native-id-msg
+                
+                :else nil)]
+    (if error (errors/throw-service-error :invalid-data error))))
 
 (defn is-tombstone?
   "Check to see if an entry is a tombstone (has a :deleted true entry)."

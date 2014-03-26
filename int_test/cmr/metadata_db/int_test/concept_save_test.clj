@@ -28,10 +28,12 @@
     (let [{:keys [revision-id concept-id]} (util/save-concept concept)
           new-revision-id (inc revision-id)]
       ;; save it again with a valid revision-id
-      (let [{:keys [status revision-id]} (util/save-concept (merge concept {:revision-id new-revision-id :concept-id concept-id}))]
+      (let [{:keys [status revision-id]} (util/save-concept (merge concept {:revision-id new-revision-id 
+                                                                            :concept-id concept-id}))]
         (is (= status 201))
         (is (= revision-id new-revision-id))
-        (util/verify-concept-was-saved (merge concept {:revision-id revision-id :concept-id concept-id}))))))
+        (util/verify-concept-was-saved (merge concept {:revision-id revision-id 
+                                                       :concept-id concept-id}))))))
 
 (deftest mdb-save-concept-with-bad-revision-test
   "Fail to save a concept with an invalid revision-id"
@@ -44,22 +46,29 @@
     (is (= status 409))
     (is (nil? retrieved-revision))))
 
-; (deftest mdb-save-concept-with-missing-required-parameter
-;   "Fail to save a concept if a required parameter is missing"
-;   (testing "missing concept-type"
-;     (let [{:keys [status error-messages]} (util/save-concept (dissoc (util/concept) :concept-type))]
-;       (is (and (= 422 status) (re-find #"concept-type" (first error-messages))))))
-;   (testing "missing concept-id"
-;     (let [{:keys [status error-messages]} (util/save-concept (dissoc (util/concept) :concept-id))]
-;       (is (and (= 422 status) (re-find #"concept-id" (first error-messages)))))))
+(deftest mdb-save-concept-with-missing-required-parameter
+  "Fail to save a concept if a required parameter is missing"
+  (testing "missing concept-type"
+    (let [{:keys [status error-messages]} (util/save-concept (dissoc (util/concept) :concept-type))]
+      (is (= 422 status)) 
+      (is (re-find #"concept-type" (first error-messages)))))
+  (testing "missing provider-id"
+    (let [{:keys [status error-messages]} (util/save-concept (dissoc (util/concept) :provider-id))]
+      (is (= 422 status)) 
+      (is (re-find #"provider-id" (first error-messages)))))
+  (testing "missing native-id"
+    (let [{:keys [status error-messages]} (util/save-concept (dissoc (util/concept) :native-id))]
+      (is (= 422 status)) 
+      (is (re-find #"native-id" (first error-messages))))))
 
-; (deftest mdb-save-concept-after-delete
-;   "Verify that a save after delete returns the correct revision."
-;   (let [concept (util/concept)]
-;     (util/save-concept concept)
-;     (util/delete-concept (:concept-id concept))
-;     (let [{:keys [status revision-id]} (util/save-concept concept)]
-;       (is (= revision-id 2)))))
+(deftest mdb-save-concept-after-delete
+  "Verify that a save after delete returns the correct revision."
+  (let [concept (util/concept)]
+    (util/save-concept concept)
+    (util/delete-concept (:concept-id concept))
+    (let [{:keys [status revision-id]} (util/save-concept concept)]
+      (is (= status 201))
+      (is (= revision-id 2)))))
 
 ;;; This test is disabled because the middleware is currently returning a
 ;;; 500 status code instead of a 400. This will be addressed as a separate
