@@ -1,5 +1,61 @@
 # cmr-metadata-db-app
 
+## Temporary Notes on id generation
+
+TODO move this stuff to a more permanent home in the README
+
+  * get /concept-id should return a 404 if it doesn't exist in the concepts table
+  * There should only be a concepts table
+  * Concepts table should have a uniqueness constraint on
+    * provider ids and revision id
+      * provider-id
+      * native-id
+      * concept-type
+      * revision-id
+    * concept id and revision id
+
+If there's a conflict on provider ids and revision id uniqueness then we need to retry the transaction.
+
+General Workflow
+
+Update Flow
+
+  - Retrieve latest revision from DB using provider-id, concept-type, and native id.
+  - Compare revision from client if given to DB revision. If the revision from the client is not the next one we send a conflict error back to the client.
+  - Create a new concept record
+    - increment revision from DB
+    - Reuse concept-id
+    - Set all other fields
+  - Insert into table
+  - If we get a conflict from a uniqueness constraint restart from beginning of this flow
+
+Insert Flow
+
+  - Retrieve latest revision from DB (and none are found)
+  - Check if revision id sent by client is 0 if present. If the revision from the client is not 0 we send a conflict error back to the client.
+  - Create a new concept record
+    - Revision is 0
+    - Generate a new concept-id using a sequence from Oracle or use value from client if provided.
+      - This supports catalog rest specifying the concept-id.
+    - Set all other fields
+  - Insert into table
+  - If we get a conflict from a uniqueness constraint restart from beginning of this flow
+
+
+Impacts to Ingest
+
+  * Ingest flow (after phase 1)
+    * retrieve existing metadata
+    * Use it for validation with new metadata
+    * Send new concept with specified revision id to metadata db
+      * If it fails then it would redo the whole flow.
+  * Ingest Flow (during phase 1)
+    * Send new concept to metadata db
+      * Does not need to specify a revision id.
+      * Does not need to retrieve a concept id.
+        * It should check it's headers for a concept id from catalog rest. If present it should send it to the metadata db.
+
+
 ## Web API
 
 ### Sample Concept JSON
@@ -53,7 +109,7 @@ Insert Flow
 params: [concept-type provider-id native-id]
 returns: new or existing concept-id
 
-__Example Curl:__ 
+__Example Curl:__
 curl -v http://localhost:3001/concept-id/collection/PROV1/native-id
 
 ### POST /concepts
@@ -61,7 +117,7 @@ params: [concept] - revision-id optionally in concept
 returns: revision-id.  revision-id begins at 0.
 throws error if revision-id does not match what it will be when saved
 
-__Example Curl:__ 
+__Example Curl:__
 curl -v -XPOST -H "Content-Type: application/json" -d '{"concept-type": "collection", "native-id": "native-id", "concept-id": "C1-PROV1", "provider-id": "PROV1", "metadata": "xml here", "format": "echo10"}' http://localhost:3001/concepts/
 
 ### GET /concepts/#concept-id

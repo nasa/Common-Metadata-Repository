@@ -4,9 +4,7 @@
   (:require [clojure.pprint :refer (pprint pp)]
             [clojure.tools.namespace.repl :refer (refresh refresh-all)]
             [cmr.metadata-db.system :as system]
-            [cmr.common.lifecycle :as lifecycle]
             [cmr.common.log :as log :refer (debug info warn error)]
-            [cmr.common.api.web-server :as web]
             [cmr.metadata-db.api.routes :as routes]
             [cmr.metadata-db.data.memory :as memory]
             [cmr.metadata-db.data.oracle :as oracle])
@@ -22,10 +20,7 @@
 (defn start
   "Starts the current development system."
   []
-  (let [db (oracle/create-db)
-        web-server (web/create-web-server 3001 routes/make-api)
-        log (log/create-logger)
-        s (system/create-system db log web-server)]
+  (let [s (system/create-system)]
     (alter-var-root #'system
                     (constantly
                       (system/start s)))))

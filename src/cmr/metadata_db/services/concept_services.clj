@@ -1,41 +1,39 @@
 (ns cmr.metadata-db.services.concept-services
   "Sevices to support the business logic of the metadata db."
   (:require [cmr.metadata-db.data :as data]
-            [cmr.common.log :refer (debug info warn error)]))
+            [cmr.common.log :refer (debug info warn error)]
+            [cmr.system-trace.core :refer [deftracefn]]))
 
-(defn get-concept
+(defn- context->db
+  [context]
+  (-> context :system :db))
+
+(deftracefn get-concept
   "Get a concept by concept-id."
-  [system concept-id revision-id]
-  (let [{:keys [db]} system]
-    (data/get-concept db concept-id revision-id)))
+  [context concept-id revision-id]
+  (data/get-concept (context->db context) concept-id revision-id))
 
-(defn get-concepts
+(deftracefn get-concepts
   "Get multiple concepts by concept-id and revision-id."
-  [system concept-id-revision-id-tuples]
-  (let [{:keys [db]} system
-        concepts (data/get-concepts db concept-id-revision-id-tuples)]
-    (vec concepts)))
+  [context concept-id-revision-id-tuples]
+  (vec (data/get-concepts (context->db context) concept-id-revision-id-tuples)))
 
-(defn save-concept
+(deftracefn save-concept
   "Store a concept record and return the revision."
-  [system concept]
-  (let [{:keys [db]} system]
-    (data/save-concept db concept)))
+  [context concept]
+  (data/save-concept (context->db context) concept))
 
-(defn delete-concept
+(deftracefn delete-concept
   "Add a tombstone record to mark a concept as deleted and return the revision-id of the tombstone."
-  [system concept-id revision-id]
-  (let [{:keys [db]} system]
-    (data/delete-concept db concept-id revision-id)))
+  [context concept-id revision-id]
+  (data/delete-concept (context->db context) concept-id revision-id))
 
-(defn reset
+(deftracefn reset
   "Delete all concepts from the concept store."
-  [system]
-  (let [{:keys [db]} system]
-    (data/reset db)))
+  [context]
+  (data/reset (context->db context)))
 
-(defn get-concept-id
+(deftracefn get-concept-id
   "Get a concept id for a given concept."
-  [system concept-type provider-id native-id]
-  (let [{:keys [db]} system]
-    (data/get-concept-id db concept-type provider-id native-id)))
+  [context concept-type provider-id native-id]
+  (data/get-concept-id (context->db context) concept-type provider-id native-id))

@@ -11,3 +11,6 @@ pom.xml.asc
 .lein-plugins
 .lein-repl-history
 log
+.nrepl-port
+testreports.xml
+nohup.out
