@@ -1,6 +1,7 @@
 (ns cmr.common.xml
   "Contains XML helpers for extracting data from XML structs created using clojure.data.xml.
-  See the test file for examples.")
+  See the test file for examples."
+  (:require [cmr.common.date-time-parser :as p]))
 
 (declare content-at-path)
 
@@ -60,3 +61,9 @@
   [xml-struct path]
   (when-let [^String s (string-at-path xml-struct path)]
     (Boolean. s)))
+
+(defn datetime-at-path
+  "Extracts a datetime from the given path in the XML structure."
+  [xml-struct path]
+  (when-let [^String s (string-at-path xml-struct path)]
+    (p/string->datetime s)))
