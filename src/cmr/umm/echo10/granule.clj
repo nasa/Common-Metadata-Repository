@@ -1,0 +1,57 @@
+(ns cmr.umm.echo10.granule
+  "Contains functions for parsing and generating the ECHO10 dialect."
+  (:require [clojure.data.xml :as x]
+            [clojure.java.io :as io]
+            [cmr.common.xml :as cx]
+            [cmr.umm.granule :as g]
+            [cmr.umm.xml-schema-validator :as v]))
+
+(defn- xml-elem->CollectionRef
+  "Returns a UMM ref element from a parsed Granule XML structure"
+  [granule-content-node]
+  (let [entry-id (cx/string-at-path granule-content-node [:Collection :DataSetId])
+        short-name (cx/string-at-path granule-content-node [:Collection :ShortName])
+        version-id (cx/string-at-path granule-content-node [:Collection :VersionId])]
+    (g/map->CollectionRef {:entry-id entry-id
+                           :short-name short-name
+                           :version-id version-id})))
+
+(defn- xml-elem->Granule
+  "Returns a UMM Product from a parsed Granule XML structure"
+  [xml-struct]
+  (let [granule-content-node (cx/content-at-path xml-struct [:Granule])
+        coll-ref (xml-elem->CollectionRef granule-content-node)]
+    (g/map->UmmEchoGranule {:granule-ur (cx/string-at-path granule-content-node [:GranuleUR])
+                            :collection-ref coll-ref})))
+
+(defn parse-granule
+  "Parses ECHO10 XML into a UMM Granule record."
+  [xml]
+  (xml-elem->Granule (x/parse-str xml)))
+
+(defn generate-granule
+  "Generates ECHO10 Granule XML from a UMM Granule record."
+  [granule]
+  (let [{{:keys [entry-id short-name version-id]} :collection-ref
+         granule-ur :granule-ur} granule]
+    (x/emit-str
+      (x/element :Granule {}
+                 (x/element :GranuleUR {} granule-ur)
+                 (x/element :InsertTime {} "2012-12-31T19:00:00Z")
+                 (x/element :LastUpdate {} "2013-11-31T19:00:00Z")
+                 (cond (and (not (nil? entry-id) ) (> (count entry-id) 0))
+                       (x/element :Collection {}
+                                  (x/element :DataSetId {} entry-id))
+                       :else
+                       (x/element :Collection {}
+                                  (x/element :ShortName {} short-name)
+                                  (x/element :VersionId {} version-id)))
+                 (x/element :RestrictionFlag {} "0.0")
+                 (x/element :Orderable {} "true")))))
+
+(defn validate-xml
+  "Validates the XML against the Granule ECHO10 schema."
+  [xml]
+  (v/validate-xml (io/resource "schema/echo10/Granule.xsd") xml))
+
+
