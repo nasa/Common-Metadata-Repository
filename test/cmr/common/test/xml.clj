@@ -9,6 +9,8 @@
   <inner ia=\"1\" ib=\"foo\">
   <alpha>45</alpha>
   <bravo>ovarb</bravo>
+  <trueflag>true</trueflag>
+  <falseflag>false</falseflag>
   </inner>
   </top>")
 
@@ -45,6 +47,11 @@
 (deftest double-at-path-test
   (is (= 45.0 (cx/double-at-path parsed-sample-xml [:top :inner :alpha])))
   (is (= nil (cx/double-at-path parsed-sample-xml [:top :inner :foo]))))
+
+(deftest bool-at-path-test
+  (is (= true (cx/bool-at-path parsed-sample-xml [:top :inner :trueflag])))
+  (is (= false (cx/bool-at-path parsed-sample-xml [:top :inner :falseflag])))
+  (is (= nil (cx/bool-at-path parsed-sample-xml [:top :inner :foo]))))
 
 (deftest attrs-at-path-test
   (is (= {:ia "1" :ib "foo"}

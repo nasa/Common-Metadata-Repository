@@ -11,7 +11,7 @@
     (let [path (vec path)
           path-to-last (subvec path 0 (dec (count path)))
           container (reduce content-at-path xml-struct path-to-last)]
-        (when container (element-at-path container (last path))))
+      (when container (element-at-path container (last path))))
     (cond
       (sequential? xml-struct)
       (->> xml-struct (filter #(= path (:tag %))) first)
@@ -54,3 +54,9 @@
   [xml-struct path]
   (when-let [^String s (string-at-path xml-struct path)]
     (Double. s)))
+
+(defn bool-at-path
+  "Extracts a boolean from the given path in the XML structure."
+  [xml-struct path]
+  (when-let [^String s (string-at-path xml-struct path)]
+    (Boolean. s)))
