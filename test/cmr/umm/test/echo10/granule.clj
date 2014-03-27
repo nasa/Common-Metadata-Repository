@@ -6,26 +6,10 @@
             [clojure.test.check.generators :as gen]
             [clojure.string :as s]
             [cmr.umm.test.generators :as umm-gen]
-
             [cmr.umm.echo10.granule :as g]
             [cmr.umm.granule :as umm-g]))
 
-;; TODO - test fails
-#_(defspec generate-granule-is-valid-xml-test 100
-  (for-all [granule umm-gen/granules]
-    (let [xml (g/generate-granule granule)]
-      (and
-        (> (count xml) 0)
-        (= 0 (count (g/validate-xml xml)))))))
-
-;; TODO - tests fails
-#_(defspec generate-and-parse-granule-test 100
-  (for-all [granule umm-gen/granules]
-    (let [xml (g/generate-granule granule)
-          parsed (g/parse-granule xml)]
-      (= parsed granule))))
-
-(def valid-granule1-xml
+(def valid-granule-xml-w-datasetid
   "<Granule>
   <GranuleUR>Q2011143115400.L1A_SCI</GranuleUR>
   <InsertTime>2011-08-26T11:10:44.490Z</InsertTime>
@@ -37,7 +21,7 @@
   <Orderable>false</Orderable>
   </Granule>")
 
-(def valid-granule2-xml
+(def valid-granule-xml-w-sn-ver
   "<Granule>
   <GranuleUR>GranuleUR100</GranuleUR>
   <InsertTime>2010-01-05T05:30:30.550-05:00</InsertTime>
@@ -50,34 +34,61 @@
   <Orderable>true</Orderable>
   </Granule>")
 
-(deftest parse-granule1-test
+(defspec generate-granule-is-valid-xml-test 100
+  (for-all [granule umm-gen/granules]
+    (let [xml (g/generate-granule granule)]
+      (and
+        (> (count xml) 0)
+        (= 0 (count (g/validate-xml xml)))))))
+
+(defspec generate-and-parse-granule-test 100
+  (for-all [granule umm-gen/granules]
+    (let [xml (g/generate-granule granule)
+          parsed (g/parse-granule xml)]
+      (= parsed granule))))
+
+(deftest umm-gran-w-entryid-equality-test
+  (let [
+        granule-ur "GranUR1"
+        entry-title "Entry-title1"
+        coll-ref (umm-g/collection-ref  entry-title)
+        expected-umm-gran-rec (umm-g/map->UmmEchoGranule {:granule-ur granule-ur :collection-ref coll-ref})
+        gran-xml (g/generate-granule expected-umm-gran-rec)
+        actual-umm-gran-rec (g/parse-granule gran-xml)]
+    (is (= expected-umm-gran-rec actual-umm-gran-rec))))
+
+(deftest umm-gran-w-sn-ver-equality-test
+  (let [short-name "Test1"
+        version-id "7"
+        granule-ur "GranUR1"
+        coll-ref (umm-g/collection-ref short-name version-id)
+        expected-umm-gran-rec (umm-g/map->UmmEchoGranule {:granule-ur granule-ur :collection-ref coll-ref})
+        gran-xml (g/generate-granule expected-umm-gran-rec)
+        actual-umm-gran-rec (g/parse-granule gran-xml)]
+    (is (= expected-umm-gran-rec actual-umm-gran-rec))))
+
+(deftest parse-granule-xml-w-datasetid-test
   (let [expected (umm-g/map->UmmEchoGranule
                    {:granule-ur "Q2011143115400.L1A_SCI"
-                    :collection-ref (umm-g/map->CollectionRef
-                                      {:entry-id "AQUARIUS_L1A_SSS:1"
-                                       :short-name nil
-                                       :version-id nil})})
-        actual (g/parse-granule valid-granule1-xml)]
+                    :collection-ref (umm-g/collection-ref "AQUARIUS_L1A_SSS:1")})
+        actual (g/parse-granule valid-granule-xml-w-datasetid)]
     (is (= expected actual))))
 
-(deftest parse-granule2-test
+(deftest parse-granule-xml-w-sn-ver-test
   (let [expected (umm-g/map->UmmEchoGranule
                    {:granule-ur "GranuleUR100"
-                    :collection-ref (umm-g/map->CollectionRef
-                                      {:entry-id nil
-                                       :short-name "TESTCOLL-100"
-                                       :version-id "1.0"})})
-        actual (g/parse-granule valid-granule2-xml)]
+                    :collection-ref (umm-g/collection-ref "TESTCOLL-100" "1.0")})
+        actual (g/parse-granule valid-granule-xml-w-sn-ver)]
     (is (= expected actual))))
 
 (deftest validate-xml
   (testing "valid xml1"
-    (is (= 0 (count (g/validate-xml valid-granule1-xml)))))
+    (is (= 0 (count (g/validate-xml valid-granule-xml-w-datasetid)))))
   (testing "valid xml2"
-    (is (= 0 (count (g/validate-xml valid-granule2-xml)))))
+    (is (= 0 (count (g/validate-xml valid-granule-xml-w-sn-ver)))))
   (testing "invalid xml"
     (is (= ["Line 3 - cvc-datatype-valid.1.2.1: 'XXXX-01-05T05:30:30.550-05:00' is not a valid value for 'dateTime'."
             "Line 3 - cvc-type.3.1.3: The value 'XXXX-01-05T05:30:30.550-05:00' of element 'InsertTime' is not valid."
             "Line 4 - cvc-datatype-valid.1.2.1: 'XXXX-01-05T05:30:30.550-05:00' is not a valid value for 'dateTime'."
             "Line 4 - cvc-type.3.1.3: The value 'XXXX-01-05T05:30:30.550-05:00' of element 'LastUpdate' is not valid."]
-           (g/validate-xml (s/replace valid-granule2-xml "2010" "XXXX"))))))
+           (g/validate-xml (s/replace valid-granule-xml-w-sn-ver "2010" "XXXX"))))))

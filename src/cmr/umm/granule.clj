@@ -4,14 +4,14 @@
 (defrecord CollectionRef
   [
    ;; maps to  Granule/Collection/DataSetId in echo granule schema
-   entry-id
+   entry-title
 
    ;; maps to Granule/Collection/ShortName
    short-name
 
    ;;  maps to Granule/Collection/VersionId
    version-id
-  ])
+   ])
 
 (defrecord UmmEchoGranule
   [
@@ -21,3 +21,9 @@
    ;; granule parent
    collection-ref
    ])
+
+(defn collection-ref
+  ([entry-title]
+   (map->CollectionRef {:entry-title entry-title}))
+  ([short-name version-id]
+   (map->CollectionRef {:short-name short-name :version-id version-id})))

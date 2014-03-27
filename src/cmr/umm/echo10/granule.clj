@@ -9,12 +9,12 @@
 (defn- xml-elem->CollectionRef
   "Returns a UMM ref element from a parsed Granule XML structure"
   [granule-content-node]
-  (let [entry-id (cx/string-at-path granule-content-node [:Collection :DataSetId])
+  (let [entry-title (cx/string-at-path granule-content-node [:Collection :DataSetId])
         short-name (cx/string-at-path granule-content-node [:Collection :ShortName])
         version-id (cx/string-at-path granule-content-node [:Collection :VersionId])]
-    (g/map->CollectionRef {:entry-id entry-id
-                           :short-name short-name
-                           :version-id version-id})))
+    (if-not (nil? entry-title)
+      (g/collection-ref entry-title)
+      (g/collection-ref short-name version-id))))
 
 (defn- xml-elem->Granule
   "Returns a UMM Product from a parsed Granule XML structure"
@@ -32,20 +32,19 @@
 (defn generate-granule
   "Generates ECHO10 Granule XML from a UMM Granule record."
   [granule]
-  (let [{{:keys [entry-id short-name version-id]} :collection-ref
+  (let [{{:keys [entry-title short-name version-id]} :collection-ref
          granule-ur :granule-ur} granule]
     (x/emit-str
       (x/element :Granule {}
                  (x/element :GranuleUR {} granule-ur)
                  (x/element :InsertTime {} "2012-12-31T19:00:00Z")
-                 (x/element :LastUpdate {} "2013-11-31T19:00:00Z")
-                 (cond (and (not (nil? entry-id) ) (> (count entry-id) 0))
+                 (x/element :LastUpdate {} "2013-11-30T19:00:00Z")
+                 (cond (and (not (nil? entry-title) ) (> (count entry-title) 0))
                        (x/element :Collection {}
-                                  (x/element :DataSetId {} entry-id))
-                       :else
-                       (x/element :Collection {}
-                                  (x/element :ShortName {} short-name)
-                                  (x/element :VersionId {} version-id)))
+                                  (x/element :DataSetId {} entry-title))
+                       :else (x/element :Collection {}
+                                        (x/element :ShortName {} short-name)
+                                        (x/element :VersionId {} version-id)))
                  (x/element :RestrictionFlag {} "0.0")
                  (x/element :Orderable {} "true")))))
 

@@ -28,22 +28,16 @@
 
 ;;; granule related
 (def granule-urs
-  (ext-gen/string-ascii 1 1024))
+  (ext-gen/string-ascii 1 80))
 
-(def entry-ids
-  (ext-gen/string-ascii 1 85))
-
-;; all of the collection elements would have DataSetId
-(def coll-refs
-  (ext-gen/model-gen g/->CollectionRef entry-ids short-names version-ids))
-
-;; TODO - make this work
 (def coll-refs1
-  (ext-gen/model-gen g/->CollectionRef entry-ids "" ""))
+  (ext-gen/model-gen g/collection-ref entry-titles))
 
-;; TODO - make this work
 (def coll-refs2
-  (ext-gen/model-gen g/->CollectionRef "" short-names version-ids))
+  (ext-gen/model-gen g/collection-ref short-names version-ids))
+
+(def coll-refs
+  (gen/one-of [coll-refs1 coll-refs2]))
 
 (def granules
   (gen/fmap (fn [[granule-ur coll-ref]]
