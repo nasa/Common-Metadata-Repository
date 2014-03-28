@@ -271,38 +271,29 @@
   
   (get-concepts
     [this concept-id-revision-id-tuples]
-    (pprint concept-id-revision-id-tuples)
-    ;; use a temporary table to insert our values so we can use a join to 
-    ;; pull evertying in one select
-    (try 
-      (j/db-do-commands db "SET TRANSACTION READ WRITE")
-      (j/db-do-commands db "LOCK TABLE METADATA_DB.get_concepts_work_area IN EXCLUSIVE MODE")
-      (let [insert-args (conj (conj concept-id-revision-id-tuples :transaction) false)]
-        
-        (apply j/insert! db
-               "METADATA_DB.get_concepts_work_area"
-               ["concept_id" 
-                "revision_id"]
-               insert-args))
-      (let [db-concepts (j/query db "SELECT c.concept_id,
-                                    c.concept_type,
-                                    c.provider_id,
-                                    c.native_id,
-                                    c.metadata,
-                                    c.format,
-                                    c.revision_id,
-                                    c.deleted
-                                    FROM concept c,
-                                    get_concepts_work_area t
-                                    WHERE c.concept_id = t.concept_id AND
-                                    c.revision_id = t.revision_id")
-            concepts (map db-result->concept-map db-concepts)]
-        (j/db-do-commands db "DELETE FROM METADATA_DB.get_concepts_work_area")
-        (j/db-do-commands db "COMMIT")
-        concepts)
-      (catch Exception e
-        (j/db-do-commands db "ROLLBACK")
-        (throw e))))
+    (let [db (:db this)]
+      (j/with-db-transaction [conn db]
+                             ;; use a temporary table to insert our values so we can use a join to 
+                             ;; pull evertying in one select
+                             (let [insert-args (conj (conj concept-id-revision-id-tuples :transaction) false)]
+                               (apply j/insert! conn
+                                      "METADATA_DB.get_concepts_work_area"
+                                      ["concept_id" 
+                                       "revision_id"]
+                                      insert-args))
+                             (let [db-concepts (j/query conn "SELECT c.concept_id,
+                                                           c.concept_type,
+                                                           c.provider_id,
+                                                           c.native_id,
+                                                           c.metadata,
+                                                           c.format,
+                                                           c.revision_id,
+                                                           c.deleted
+                                                           FROM concept c,
+                                                           get_concepts_work_area t
+                                                           WHERE c.concept_id = t.concept_id AND
+                                                           c.revision_id = t.revision_id")]
+                               (map db-result->concept-map db-concepts)))))
   
   (save-concept
     [this concept]

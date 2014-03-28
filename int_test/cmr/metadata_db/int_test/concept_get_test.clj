@@ -13,7 +13,7 @@
   [f]
   ;; setup database
   (let [concept1 (util/concept)
-        concept2 (assoc concept1 :concept-id "C2-PROV1")]
+        concept2 (merge concept1 {:concept-id "C2-PROV1" :native-id "SOME OTHER ID"})]
     ;; save a concept
     (util/save-concept concept1)
     ;; save a revision
@@ -62,7 +62,7 @@
 #_(deftest mdb-get-concepts-test
   "Get concepts by specifying tuples of concept-ids and revision-ids."
   (let [concept1 (util/concept)
-        concept2 (assoc concept1 :concept-id "C2-PROV1")
+        concept2 (merge concept1 {:concept-id "C2-PROV1" :native-id "SOME OTHER ID"})
         tuples [[(:concept-id concept1) 1] [(:concept-id concept2) 0]]
         results (util/get-concepts tuples)
         returned-concepts (:concepts results)
@@ -72,7 +72,7 @@
     (is (= status 200))))
 
 #_(deftest mdb-get-concepts-with-one-invalid-revision-id-test
-  "Get concetps by specifying tuples of concept-ids and revision-ids with one invalid revision id
+  "Get concepts by specifying tuples of concept-ids and revision-ids with one invalid revision id
   and only get back existing concepts."
   (let [concept1 (util/concept)
         concept2 (assoc concept1 :concept-id "C2-PROV1")

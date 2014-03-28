@@ -70,6 +70,10 @@
       (is (= status 201))
       (is (= revision-id 2)))))
 
+
+;;; TODO - add test for saving concept with concept-type, provider-id, and native-id
+;;; of existing concept but with different concept-id to be sure it fails.
+
 ;;; This test is disabled because the middleware is currently returning a
 ;;; 500 status code instead of a 400. This will be addressed as a separate
 ;;; issue.
