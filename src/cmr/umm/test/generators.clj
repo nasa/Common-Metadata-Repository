@@ -41,5 +41,5 @@
 
 (def granules
   (gen/fmap (fn [[granule-ur coll-ref]]
-              (g/->UmmEchoGranule granule-ur coll-ref))
+              (g/->UmmGranule granule-ur coll-ref))
             (gen/tuple granule-urs coll-refs)))

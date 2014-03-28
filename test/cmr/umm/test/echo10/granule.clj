@@ -52,7 +52,7 @@
         granule-ur "GranUR1"
         entry-title "Entry-title1"
         coll-ref (umm-g/collection-ref  entry-title)
-        expected-umm-gran-rec (umm-g/map->UmmEchoGranule {:granule-ur granule-ur :collection-ref coll-ref})
+        expected-umm-gran-rec (umm-g/map->UmmGranule {:granule-ur granule-ur :collection-ref coll-ref})
         gran-xml (g/generate-granule expected-umm-gran-rec)
         actual-umm-gran-rec (g/parse-granule gran-xml)]
     (is (= expected-umm-gran-rec actual-umm-gran-rec))))
@@ -62,20 +62,20 @@
         version-id "7"
         granule-ur "GranUR1"
         coll-ref (umm-g/collection-ref short-name version-id)
-        expected-umm-gran-rec (umm-g/map->UmmEchoGranule {:granule-ur granule-ur :collection-ref coll-ref})
+        expected-umm-gran-rec (umm-g/map->UmmGranule {:granule-ur granule-ur :collection-ref coll-ref})
         gran-xml (g/generate-granule expected-umm-gran-rec)
         actual-umm-gran-rec (g/parse-granule gran-xml)]
     (is (= expected-umm-gran-rec actual-umm-gran-rec))))
 
 (deftest parse-granule-xml-w-datasetid-test
-  (let [expected (umm-g/map->UmmEchoGranule
+  (let [expected (umm-g/map->UmmGranule
                    {:granule-ur "Q2011143115400.L1A_SCI"
                     :collection-ref (umm-g/collection-ref "AQUARIUS_L1A_SSS:1")})
         actual (g/parse-granule valid-granule-xml-w-datasetid)]
     (is (= expected actual))))
 
 (deftest parse-granule-xml-w-sn-ver-test
-  (let [expected (umm-g/map->UmmEchoGranule
+  (let [expected (umm-g/map->UmmGranule
                    {:granule-ur "GranuleUR100"
                     :collection-ref (umm-g/collection-ref "TESTCOLL-100" "1.0")})
         actual (g/parse-granule valid-granule-xml-w-sn-ver)]

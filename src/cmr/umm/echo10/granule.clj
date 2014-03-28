@@ -21,7 +21,7 @@
   [xml-struct]
   (let [granule-content-node (cx/content-at-path xml-struct [:Granule])
         coll-ref (xml-elem->CollectionRef granule-content-node)]
-    (g/map->UmmEchoGranule {:granule-ur (cx/string-at-path granule-content-node [:GranuleUR])
+    (g/map->UmmGranule {:granule-ur (cx/string-at-path granule-content-node [:GranuleUR])
                             :collection-ref coll-ref})))
 
 (defn parse-granule

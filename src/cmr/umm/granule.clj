@@ -13,7 +13,7 @@
    version-id
    ])
 
-(defrecord UmmEchoGranule
+(defrecord UmmGranule
   [
    ;; maps to Granule/GranuleUR in echo granule schema
    granule-ur
