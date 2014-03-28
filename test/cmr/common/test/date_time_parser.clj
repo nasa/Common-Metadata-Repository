@@ -30,6 +30,7 @@
                   "1998"
                   "1986-10-14"           ;; just date is invalid
                   "F1986-10-14T04:03:27"
+                  "-1986-10-14T04:03:27"
                   "1986-10-14 04:03:27"  ;; missing separator is invalid
                   "1986-10-14Q04:03:27"  ;; wrong separator is invalid
                   "1986-10-14T04:03:"
