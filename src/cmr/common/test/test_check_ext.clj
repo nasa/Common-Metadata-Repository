@@ -1,6 +1,7 @@
 (ns cmr.common.test.test-check-ext
   (:require [clojure.test.check.generators :as gen]
-            [clojure.string :as s])
+            [clojure.string :as s]
+            [clj-time.coerce :as c])
   (:import java.util.Random))
 
 (defn model-gen
@@ -66,3 +67,14 @@
   ([min-size max-size]
    (gen/fmap s/join (gen/vector gen/char-ascii min-size max-size))))
 
+(defn string-alpha-numeric
+  "Like the clojure.test.check.generators/string-alpha-numeric but allows a min and max length to be set"
+  ([]
+   gen/string-alpha-numeric)
+  ([min-size max-size]
+   (gen/fmap s/join (gen/vector gen/char-alpha-numeric min-size max-size))))
+
+(defn date-time
+  "Creates a generator that will return a Joda DateTime between 1970-01-01T00:00:00.000Z and 2114-01-01T00:00:00.000Z"
+  []
+  (gen/fmap c/from-long (gen/choose 0 4544208000000)))
