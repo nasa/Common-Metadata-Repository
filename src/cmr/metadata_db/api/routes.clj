@@ -51,10 +51,13 @@
 (defn- delete-concept
   "Mark a concept as deleted (create a tombstone)."
   [context concept-id revision-id]
-  (let [{:keys [revision-id]} (concept-services/delete-concept context concept-id revision-id)]
-    {:status 200
-     :body {:revision-id revision-id}
-     :headers json-header}))
+  (try (let [revision-id (if revision-id (Integer. revision-id) nil)]
+         (let [{:keys [revision-id]} (concept-services/delete-concept context concept-id revision-id)]
+           {:status 200
+            :body {:revision-id revision-id}
+            :headers json-header}))
+    (catch NumberFormatException e
+      (serv-err/throw-service-error :invalid-data (.getMessage e)))))
 
 (defn- reset
   "Delete all concepts from the data store"

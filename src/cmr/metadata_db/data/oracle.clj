@@ -157,10 +157,11 @@
 (defn- set-or-generate-revision-id
   "Get the next available revision id from the DB for the given concept or
   zero if the concept has never been saved."
-  [db concept]
+  [db concept & previous-revision]
   (if (:revision-id concept)
     concept
-    (let [existing-revision-id (:revision-id (get-concept-from-db db (:concept-id concept) nil))
+    (let [previous-revision (first previous-revision)
+          existing-revision-id (:revision-id (or previous-revision (get-concept-from-db db (:concept-id concept) nil)))
           revision-id (if existing-revision-id (inc existing-revision-id) 0)]
       (assoc concept :revision-id revision-id))))
 
@@ -168,11 +169,11 @@
 (defn- validate-concept-revision-id
   "Validate that the revision-id for a concept (if given) is one greater than
   the current maximum revision-id for this concept."
-  [db concept]
+  [db concept previous-revision]
   (let [{:keys [concept-id revision-id]} concept]
     (if revision-id
       (if concept-id
-        (let [latest-revision (get-concept-from-db db concept-id nil)
+        (let [latest-revision (or previous-revision (get-concept-from-db db concept-id nil))
               expected-revision-id (inc (:revision-id latest-revision))]
           (when (not= revision-id expected-revision-id)
             (errors/throw-service-error :conflict
@@ -216,7 +217,7 @@
             ; FIXME there might be a case where two first revision of a collection come in at the same time
             ;; they might accidentally get different concept ids. We'd need to recur then.
             )
-          (recur (set-or-generate-revision-id db concept) (dec tries-left)))))))
+          (recur (set-or-generate-revision-id db concept nil) (dec tries-left)))))))
 
 (defn- set-deleted-flag [value concept] (assoc concept :deleted value))
 
@@ -282,23 +283,23 @@
                                        "revision_id"]
                                       insert-args))
                              (let [db-concepts (j/query conn "SELECT c.concept_id,
-                                                           c.concept_type,
-                                                           c.provider_id,
-                                                           c.native_id,
-                                                           c.metadata,
-                                                           c.format,
-                                                           c.revision_id,
-                                                           c.deleted
-                                                           FROM concept c,
-                                                           get_concepts_work_area t
-                                                           WHERE c.concept_id = t.concept_id AND
-                                                           c.revision_id = t.revision_id")]
+                                                             c.concept_type,
+                                                             c.provider_id,
+                                                             c.native_id,
+                                                             c.metadata,
+                                                             c.format,
+                                                             c.revision_id,
+                                                             c.deleted
+                                                             FROM concept c,
+                                                             get_concepts_work_area t
+                                                             WHERE c.concept_id = t.concept_id AND
+                                                             c.revision_id = t.revision_id")]
                                (map db-result->concept-map db-concepts)))))
   
   (save-concept
     [this concept]
     (util/validate-concept concept)
-    (validate-concept-revision-id db concept)
+    (validate-concept-revision-id db concept nil)
     (let [db (:db this)
           concept-id-provided? (:concept-id concept)
           revision-id-provided? (:revision-id concept)
@@ -311,13 +312,13 @@
   (delete-concept
     [this concept-id revision-id]
     (let [db (:db this)
-          last-concept-saved (get-concept-from-db db concept-id nil)]
-      (if last-concept-saved
-        (if (util/is-tombstone? last-concept-saved)
-          last-concept-saved
-          (let [tombstone (merge last-concept-saved {:revision-id revision-id :deleted true})]
-            (validate-concept-revision-id db tombstone)
-            (let [revisioned-tombstone (set-or-generate-revision-id db tombstone)]
+          previous-revision (get-concept-from-db db concept-id nil)]
+      (if previous-revision
+        (if (util/is-tombstone? previous-revision)
+          previous-revision
+          (let [tombstone (merge previous-revision {:revision-id revision-id :deleted true})]
+            (validate-concept-revision-id db tombstone previous-revision)
+            (let [revisioned-tombstone (set-or-generate-revision-id db tombstone previous-revision)]
               (try-to-save db revisioned-tombstone revision-id))))
         (errors/throw-service-error :not-found
                                     (format messages/concept-does-not-exist-msg

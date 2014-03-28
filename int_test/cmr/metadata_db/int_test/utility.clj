@@ -5,7 +5,7 @@
             [cheshire.core :as cheshire]))
 
 ;;; Enpoints for services - change this for tcp-mon
-(def port 3001)
+(def port 3000)
 
 (def concepts-url (str "http://localhost:" port "/concepts/"))
 
@@ -115,8 +115,12 @@
 (defn delete-concept
   "Make a DELETE request to mark a concept as deleted. Returns the status and revision id of the
   tombstone."
-  [concept-id]
-  (let [response (client/delete (str concepts-url concept-id)
+  [concept-id & revision-id]
+  (let [revision-id (first revision-id)
+        url (if revision-id 
+              (format "%s%s/%s" concepts-url concept-id revision-id)
+              (format "%s%s" concepts-url concept-id))
+        response (client/delete url
                                 {:throw-exceptions false})
         status (:status response)
         body (cheshire/parse-string (:body response))
