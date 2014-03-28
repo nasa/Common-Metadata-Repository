@@ -5,7 +5,7 @@
   :url "***REMOVED***projects/CMR/repos/cmr-umm-lib/browse"
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [org.clojure/test.check "0.5.7"]
-                 [org.clojure/data.xml "0.0.7"]
+                 [org.clojure/data.xml "0.0.8-SNAPSHOT"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]]
 
   :plugins [[lein-test-out "0.3.1"]]

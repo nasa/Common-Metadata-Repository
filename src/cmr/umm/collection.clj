@@ -6,7 +6,36 @@
    short-name
    long-name
    version-id
-  ])
+   ])
+
+(defrecord RangeDateTime
+  [
+   beginning-date-time
+   ending-date-time
+   ])
+
+(defrecord PeriodicDateTime
+  [
+   name
+   start-date
+   end-date
+   duration-unit
+   duration-value
+   period-cycle-duration-unit
+   period-cycle-duration-value
+   ])
+
+(defrecord TemporalCoverage
+  [
+   time-type
+   date-type
+   temporal-range-type
+   precision-of-seconds
+   ends-at-present-flag
+   range-date-time
+   single-date-time
+   periodic-date-time
+   ])
 
 (defrecord UmmCollection
   [
@@ -18,5 +47,8 @@
 
    ;; Refers to a Product
    product
+
+   ;; TemporalCoverage
+   temporal-coverage
    ])
 
