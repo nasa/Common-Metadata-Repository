@@ -1,7 +1,8 @@
 (ns cmr.common.test.xml
   (:require [clojure.test :refer :all]
             [cmr.common.xml :as cx]
-            [clojure.data.xml :as x]))
+            [clojure.data.xml :as x]
+            [clj-time.core :as t]))
 
 
 (def sample-xml
@@ -11,6 +12,7 @@
   <bravo>ovarb</bravo>
   <trueflag>true</trueflag>
   <falseflag>false</falseflag>
+  <datetime>1986-10-14T04:03:27.456Z</datetime>
   </inner>
   </top>")
 
@@ -52,6 +54,10 @@
   (is (= true (cx/bool-at-path parsed-sample-xml [:top :inner :trueflag])))
   (is (= false (cx/bool-at-path parsed-sample-xml [:top :inner :falseflag])))
   (is (= nil (cx/bool-at-path parsed-sample-xml [:top :inner :foo]))))
+
+(deftest datetime-at-path-test
+  (is (= (t/date-time 1986 10 14 4 3 27 456) (cx/datetime-at-path parsed-sample-xml [:top :inner :datetime])))
+  (is (= nil (cx/datetime-at-path parsed-sample-xml [:top :inner :foo]))))
 
 (deftest attrs-at-path-test
   (is (= {:ia "1" :ib "foo"}
