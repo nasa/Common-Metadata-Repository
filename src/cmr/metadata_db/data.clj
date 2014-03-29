@@ -6,24 +6,34 @@
   (get-concept-id
     [db concept-type provider-id native-id]
     "Return a distinct identifier for the given arguments.")
+  
+  (generate-concept-id
+    [db concept]
+    "Create a concept-id for a given concept type and provider id.")
 
   (get-concept
     [db concept-id revision-id]
-    "Gets a version of a concept with a given id")
+    "Gets a version of a concept with a given concept-id and revision-id. If the
+    revsision-id is nil then the latest revision is returned.")
+  
+  (get-concept-with-values
+    [db concept]
+    "Gets a version of a concept that has the same concept-type, provider-id, and native-id
+    as the given concept.")
   
   (get-concepts
     [db concept-id-revision-id-tuples]
     "Get a sequence of concepts by specifying a list of
     tuples holding concept-id/revision-id") 
     
-  (save-concept
+  (save
     [db concept]
     "Saves a concept and returns the revision id. If the concept already 
     exists then a new revision will be created. If a revision-id is 
     included and it is not valid, e.g. the revision already exists, 
     then an exception is thrown.")
   
-  (delete-concept
+  (delete
     [db concept-id revision-id]
     "Marks a concept as deleted by saving a tombstone record.  The tombstone
     is given a revision id one higher than the highest revision id already

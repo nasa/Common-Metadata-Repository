@@ -6,7 +6,6 @@
             [cmr.metadata-db.system :as system]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.metadata-db.api.routes :as routes]
-            [cmr.metadata-db.data.memory :as memory]
             [cmr.metadata-db.data.oracle :as oracle])
   (:use [clojure.test :only [run-all-tests]]
         [clojure.repl]

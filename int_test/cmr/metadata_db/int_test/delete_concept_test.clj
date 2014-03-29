@@ -28,7 +28,6 @@
   ;; clear out the database
   (util/reset-database))
 
-
 (use-fixtures :once setup-database-fixture)
 
 ;;; tests

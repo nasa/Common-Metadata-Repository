@@ -24,6 +24,7 @@
 (defn- get-concept
   "Get a concept by concept-id and optional revision"
   [context concept-id ^String revision]
+  (println (str "get-concept: " context))
   (try (let [revision-id (if revision (Integer. revision) nil)
              concept (concept-services/get-concept context concept-id revision-id)]
          {:status 200

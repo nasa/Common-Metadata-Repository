@@ -7,7 +7,6 @@
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.api.web-server :as web]
             [cmr.system-trace.context :as context]
-            [cmr.metadata-db.data.memory :as memory]
             [cmr.metadata-db.data.oracle :as oracle]
             [cmr.metadata-db.api.routes :as routes]))
 
