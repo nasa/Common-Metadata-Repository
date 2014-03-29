@@ -105,8 +105,8 @@
 (def collections
   (gen/fmap (fn [[entry-title product temporal-coverage]]
               (let [entry-id (str (:short-name product) "_" (:version-id product))]
-                (c/->UmmCollection entry-id entry-title product)))
-            (gen/tuple entry-titles products)))
+                (c/->UmmCollection entry-id entry-title product temporal-coverage)))
+            (gen/tuple entry-titles products temporal-coverages)))
 
 ;;; granule related
 (def granule-urs
@@ -120,6 +120,7 @@
 
 (def coll-refs
   (gen/one-of [coll-refs1 coll-refs2]))
+
 (def granules
   (gen/fmap (fn [[granule-ur coll-ref]]
               (g/->UmmGranule granule-ur coll-ref))
