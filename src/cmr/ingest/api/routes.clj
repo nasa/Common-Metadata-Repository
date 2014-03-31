@@ -18,19 +18,14 @@
   (routes
     (context "/providers/:provider-id" [provider-id]
       (context "/collections/:native-id" [native-id]
-        (PUT "/" {:keys [body content-type concept-id revision-id request-context]}
+        (PUT "/" {:keys [body content-type headers request-context]}
           (let [metadata (string/trim (slurp body))
                 base-concept {:metadata metadata
                               :format content-type
                               :provider-id provider-id
                               :native-id native-id
                               :concept-type :collection}
-                concept-id? (not (nil? concept-id))
-                revision-id? (not (nil? revision-id))
-                concept (cond (and concept-id? revision-id?) (assoc base-concept :concept-id concept-id :revision-id revision-id)
-                              concept-id? (assoc base-concept :concept-id concept-id)
-                              revision-id? (assoc base-concept :revision-id revision-id) ;; should we include this if concept-id is not present or throw error?
-                              :else base-concept)]
+                concept (assoc base-concept :concept-id (get headers "concept-id"))]
             (r/response (ingest/save-concept request-context concept))))
         (DELETE "/" {:keys [request-context]}
           (let [concept-attribs {:provider-id provider-id
