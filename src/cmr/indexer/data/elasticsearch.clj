@@ -26,16 +26,22 @@
 
 (defn- delete-indexes
   "Delete configured elastic indexes"
-  [es-config]
-  (let [{:keys [admin-token]} es-config
-        {:keys [index-name]} es-prop/indexes
-        response (client/delete (esr/index-url index-name)
-                                {:headers {"Authorization" admin-token
-                                           "Confirm-delete-action" "true"}
-                                 :throw-exceptions false})
-        status (:status response)]
-    (if-not (some #{200 202 204} [status])
-      (errors/internal-error! (str "Delete elasticsearch index operation failed " (str response))))))
+  [{:keys [admin-token] :as es-config}]
+  (doseq [{:keys [index-name]} es-prop/indexes]
+    (when (esi/exists? index-name)
+      (let [response (client/delete (esr/index-url index-name)
+                                    {:headers {"Authorization" admin-token
+                                               "Confirm-delete-action" "true"}
+                                     :throw-exceptions false})
+            status (:status response)]
+        (if-not (some #{200 202 204} [status])
+          (errors/internal-error! (str "Index name: " index-name " delete elasticsearch index operation failed " response)))))))
+
+(defn reset-es-store
+  "Delete elasticsearch indexes and re-create them. A nuclear option just for the development team."
+  [context es-config]
+  (delete-indexes es-config)
+  (create-indexes))
 
 (defrecord ESstore
   [
@@ -112,13 +118,7 @@
           (errors/throw-service-error :conflict (str "Delete from Elasticsearch failed " (str response))))
         (errors/internal-error! (str "Delete from Elasticsearch failed " (str response)))))))
 
-(defn reset-es-store
-  "Delete elasticsearch indexes and re-create them."
-  [context es-config]
-  (let [{:keys [index-name]} es-prop/indexes
-        err-msg "Delete elasticsearch indexes and re-create operation failed."]
-    (delete-indexes es-config)
-    (create-indexes)
-    (when-not (esi/exists? index-name)
-      (errors/internal-error! err-msg))))
+
+
+
 
