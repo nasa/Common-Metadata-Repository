@@ -9,6 +9,7 @@
                  [compojure "1.1.6"]
                  [ring/ring-core "1.2.2"]
                  [ring/ring-json "0.3.0"]
+                 [clj-http "0.9.0"]
                  [org.clojure/tools.reader "0.8.3"]
                  [org.clojure/tools.cli "0.3.1"]]
   :plugins []

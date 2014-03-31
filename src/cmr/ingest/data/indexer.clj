@@ -18,21 +18,22 @@
         concept-attribs {:concept-id concept-id, :revision-id revision-id}
         response (client/post indexer-url {:body (cheshire/generate-string concept-attribs)
                                            :content-type :json
+                                           :throw-exceptions false
+                                           :accept :json
                                            :headers (ch/context->http-headers context)})
         status (:status response)]
-    ;; TODO I think the status checking here and in the metadata db is unnecessary. It will throw an
-    ;; exception if it doesn't return a success code. Need to test this.
     (when-not (= 201 status)
-      (errors/internal-error! (str "Operation to index a concept failed. Indexer app response status code: "  status (str response))))))
+      (errors/internal-error! (str "Operation to index a concept failed. Indexer app response status code: "  status  " " response)))))
 
 (deftracefn delete-concept-from-index
   "Delete a concept with given revision-id from index."
   [context concept-id revision-id]
   (let [indexer-url (context->indexer-url context)
-        response (client/delete (str indexer-url "/" concept-id "/" revision-id)
-                                {:headers (ch/context->http-headers context)})
+        response (client/delete (format "%s/%s/%s" indexer-url concept-id revision-id)
+                                {:accept :json
+                                 :throw-exceptions false
+                                 :headers (ch/context->http-headers context)})
         status (:status response)]
-    (when-not (= 200 status)
-      (errors/internal-error! (str "Delete concept operation failed. Indexer app response status code: "  status (str response))))))
-
+    (when-not (some #{200, 201} [status])
+      (errors/internal-error! (str "Delete concept operation failed. Indexer app response status code: "  status " " response)))))
 

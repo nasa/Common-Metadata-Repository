@@ -12,20 +12,20 @@
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.api.errors :as errors]
             [cmr.ingest.services.ingest :as ingest]
-            [clojure.walk :as walk]
             [cmr.system-trace.http :as http-trace]))
 
 (defn- build-routes [system]
   (routes
     (context "/providers/:provider-id" [provider-id]
       (context "/collections/:native-id" [native-id]
-        (PUT "/" {:keys [body content-type request-context]}
+        (PUT "/" {:keys [body content-type headers request-context]}
           (let [metadata (string/trim (slurp body))
-                concept {:metadata metadata
-                         :format content-type
-                         :provider-id provider-id
-                         :native-id native-id
-                         :concept-type :collection}]
+                base-concept {:metadata metadata
+                              :format content-type
+                              :provider-id provider-id
+                              :native-id native-id
+                              :concept-type :collection}
+                concept (assoc base-concept :concept-id (get headers "concept-id"))]
             (r/response (ingest/save-concept request-context concept))))
         (DELETE "/" {:keys [request-context]}
           (let [concept-attribs {:provider-id provider-id
