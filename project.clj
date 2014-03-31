@@ -13,7 +13,6 @@
                  [clojurewerkz/elastisch "2.0.0-beta1" :exclusions [commons-codec]]
                  [org.clojure/data.xml "0.0.7"]
                  [org.clojure/data.codec "0.1.0"]]
-
   :plugins [[lein-test-out "0.3.1"]]
   :repl-options {:init-ns user}
   :profiles

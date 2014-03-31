@@ -24,6 +24,25 @@
       (let [response (esi/create index-name :settings setting :mappings mapping)]
         (info "index creation attempt result:" response)))))
 
+(defn- delete-indexes
+  "Delete configured elastic indexes"
+  [{:keys [admin-token] :as es-config}]
+  (doseq [{:keys [index-name]} es-prop/indexes]
+    (when (esi/exists? index-name)
+      (let [response (client/delete (esr/index-url index-name)
+                                    {:headers {"Authorization" admin-token
+                                               "Confirm-delete-action" "true"}
+                                     :throw-exceptions false})
+            status (:status response)]
+        (if-not (some #{200 202 204} [status])
+          (errors/internal-error! (str "Index name: " index-name " delete elasticsearch index operation failed " response)))))))
+
+(defn reset-es-store
+  "Delete elasticsearch indexes and re-create them. A nuclear option just for the development team."
+  [context es-config]
+  (delete-indexes es-config)
+  (create-indexes))
+
 (defrecord ESstore
   [
    ;; configuration of host, port and admin-token for elasticsearch
@@ -98,4 +117,8 @@
           (info (str "Ignore conflict: " (str response)))
           (errors/throw-service-error :conflict (str "Delete from Elasticsearch failed " (str response))))
         (errors/internal-error! (str "Delete from Elasticsearch failed " (str response)))))))
+
+
+
+
 
