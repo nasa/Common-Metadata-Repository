@@ -46,3 +46,11 @@
   ;; We should avoid making calls to metadata db to get the necessary info if possible
   (let [es-config (-> context :system :db :config)]
     (es/delete-document-in-elastic context es-config es-index es-mapping-type id revision-id ignore-conflict)))
+
+(deftracefn reset-indexes
+  "Reset elastic indexes"
+  [context]
+  (info (format "Recreating elastic index: %s" es-index))
+  (let [es-config (-> context :system :db :config)]
+    (es/reset-es-store context es-config)))
+
