@@ -17,3 +17,36 @@
 (defn elastic-flush-url
   []
   (str elastic_root "/_flush"))
+
+(defn mdb-concept-url
+  "URL to concept in mdb."
+  [concept-id revision-id]
+  (format "http://localhost:3001/concepts/%s/%s" concept-id revision-id))
+
+(defn mdb-reset-url
+  "Force delete all concepts from mdb."
+  []
+  (format "http://localhost:3001/concepts/%s" "force-delete"))
+
+(defn indexer-reset-url
+  "Delete and re-create indexes in elastic. Only development team to use this functionality."
+  []
+  (format "http://localhost:3004/reset"))
+
+(defn construct-ingest-rest-url
+  "Construct ingest url based on concept."
+  [concept]
+  (let [host "localhost"
+        port 3002
+        {:keys [provider-id concept-type native-id ]} concept
+        ctx-part (str "providers" "/" provider-id  "/" "collections" "/" native-id )
+        ingest-rest-url (str "http://" host ":" port "/" ctx-part)]
+    ingest-rest-url))
+
+;; discard this once oracle impl is in place
+(defn mdb-concept-coll-id-url
+  "URL to access a collection concept in mdb with given prov and native id."
+  [provider-id native-id]
+  (format "http://localhost:3001/concept-id/collection/%s/%s" provider-id native-id))
+
+
