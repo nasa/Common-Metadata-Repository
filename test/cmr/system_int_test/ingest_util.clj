@@ -108,12 +108,10 @@
 (defn get-concept-id
   "Get a concept-id from memory db before save concept."
   [{:keys [provider-id native-id] :as concept}]
-  (let [request-url
-        (format "http://%s:%s/concept-id/%s/%s/%s" "localhost" "3001" "collection" provider-id native-id)
-        response (client/get request-url {:accept :json
-                                          :throw-exceptions false})
+  (let [response (client/get (url/mdb-concept-coll-id-url provider-id native-id)
+                             {:accept :json
+                              :throw-exceptions false})
         status (:status response)]
-    ;; (println response)
     (when-not (= 200 status)
       (println (str "Concept id fetch failed. MetadataDb app response status code: "  status (str response))))
     (get (cheshire/parse-string (:body response)) "concept-id")))
@@ -150,8 +148,7 @@
 (defn concept-exists-in-mdb?
   "Check concept in mdb with the given concept and revision-id"
   [concept-id revision-id]
-  (let [{:keys [host port]} (url/mdb-endpoint)
-        response (client/get (format "http://%s:%s/concepts/%s/%s" host port concept-id revision-id)
+  (let [response (client/get  (url/mdb-concept-url concept-id revision-id)
                              {:accept :json
                               :throw-exceptions false})
         status (:status response)]
@@ -160,8 +157,7 @@
 (defn reset-database
   "Make a request to reset the database by clearing out all stored concepts."
   []
-  (let [{:keys [host port]} (url/mdb-endpoint)
-        response (client/delete (format "http://%s:%s/concepts/%s" host port "force-delete")
+  (let [response (client/delete (url/mdb-reset-url)
                                 {:accept :json
                                  :throw-exceptions false})
         status (:status response)]
@@ -170,8 +166,7 @@
 (defn reset-es-indexes
   "Reset elastic indexes."
   []
-  (let [{:keys [host port]} (url/indexer-endpoint)
-        response (client/post (format "http://%s:%s/%s" host port "reset")
+  (let [response (client/post  (url/indexer-reset-url)
                               {:accept :json
                                :throw-exceptions false})
         status (:status response)]
