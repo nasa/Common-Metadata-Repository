@@ -17,3 +17,26 @@
 (defn elastic-flush-url
   []
   (str elastic_root "/_flush"))
+
+(defn mdb-endpoint
+  "Returns the host and port of metadata db"
+  []
+  {:host "localhost"
+   :port "3001"})
+
+(defn indexer-endpoint
+  "Returns the host and port of indexer app"
+  []
+  {:host "localhost"
+   :port "3004"})
+
+(defn construct-ingest-rest-url
+  "Construct ingest url based on concept."
+  [concept]
+  (let [host "localhost"
+        port 3002
+        {:keys [provider-id concept-type native-id ]} concept
+        ctx-part (str "providers" "/" provider-id  "/" "collections" "/" native-id )
+        ingest-rest-url (str "http://" host ":" port "/" ctx-part)]
+    ingest-rest-url))
+
