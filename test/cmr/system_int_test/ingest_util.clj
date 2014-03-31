@@ -72,12 +72,13 @@
    :dataset-id "LarcDatasetId88"})
 
 ;;; operations
+;;; make this generic to be applicable to other concept types
 (defn ingest-concept
   "Ingest a concept and return a map with status, concept-id, and revision-id"
-  [{:keys [metadata content-type concept-id revision-id] :as concept}]
+  [{:keys [metadata content-type concept-id revision-id provider-id native-id] :as concept}]
   (let [response (client/request
                    {:method :put
-                    :url (url/construct-ingest-rest-url concept)
+                    :url (url/collection-ingest-url provider-id native-id)
                     :body  metadata
                     :content-type content-type
                     :headers {"concept-id" concept-id, "revision-id"  revision-id}
@@ -92,10 +93,10 @@
 
 (defn delete-concept
   "Delete a given concept."
-  [concept]
+  [{:keys [provider-id native-id] :as concept}]
   (let [response (client/request
                    {:method :delete
-                    :url (url/construct-ingest-rest-url concept)
+                    :url (url/collection-ingest-url provider-id native-id)
                     :accept :json
                     :throw-exceptions false})
         status (:status response)

@@ -33,16 +33,6 @@
   []
   (format "http://localhost:3004/reset"))
 
-(defn construct-ingest-rest-url
-  "Construct ingest url based on concept."
-  [concept]
-  (let [host "localhost"
-        port 3002
-        {:keys [provider-id concept-type native-id ]} concept
-        ctx-part (str "providers" "/" provider-id  "/" "collections" "/" native-id )
-        ingest-rest-url (str "http://" host ":" port "/" ctx-part)]
-    ingest-rest-url))
-
 ;; discard this once oracle impl is in place
 (defn mdb-concept-coll-id-url
   "URL to access a collection concept in mdb with given prov and native id."
