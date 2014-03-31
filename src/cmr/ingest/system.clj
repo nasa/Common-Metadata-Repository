@@ -19,15 +19,15 @@
 
 (defn create-system
   "Returns a new instance of the whole application."
-  [log config web]
+  ([log config web]
   {:log log
    :config config
-   :web web}
-  []
+   :web web})
+  ([]
   {:log (log/create-logger)
    :config default-config
    :web (web/create-web-server 3002 routes/make-api)
-   :zipkin (context/zipkin-config "Ingest" false)})
+   :zipkin (context/zipkin-config "Ingest" false)}))
 
    (defn start
      "Performs side effects to initialize the system, acquire resources,
