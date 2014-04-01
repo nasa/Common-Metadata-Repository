@@ -71,6 +71,35 @@
 
 (defn- set-deleted-flag [value concept] (assoc concept :deleted value))
 
+(defn- handle-save-errors 
+  "Deal with errors encountered during saves."
+  [concept result tries-left revision-id-provided?]
+  (let [error-code (:error-code result)]
+    (cond 
+      (= error-code :revision-id-conflict)
+      (if revision-id-provided?
+        (messages/data-error :conflict 
+                             messages/invalid-revision-id-unknown-expected-msg
+                             revision-id-provided?)
+        (if (= tries-left 1)
+          (errors/internal-error! (messages/maximum-save-attempts-exceeded-msg))))
+      
+      (= error-code :concept-id-concept-conflict)
+      (let [{:keys [concept-id concept-type provider-id native-id]} concept]
+        (messages/data-error :conflict 
+                             messages/concept-exists-with-differnt-id-msg
+                             concept-id
+                             concept-type
+                             provider-id
+                             native-id))
+      
+      (= error-code :unknown-error)
+      (errors/internal-error! "Unknown error saving concept")
+      
+      ; FIXME there might be a case where two first revision of a collection come in at the same time
+      ;; they might accidentally get different concept ids. We'd need to recur then.
+      )))
+
 
 (defn- try-to-save
   "Try to save a concept by looping until we find a good revision-id or give up."
@@ -80,31 +109,8 @@
       (if (nil? (:error result))
         result
         ;; depending on the error we will either throw an exception or try again (recur)
-        (let [error-code (:error result)] 
-          (cond 
-            (= error-code :revision-id-conflict)
-            (if revision-id-provided?
-              (messages/data-error :conflict 
-                                   messages/invalid-revision-id-unknown-expected-msg
-                                   revision-id-provided?)
-              (if (= tries-left 1)
-                (errors/internal-error! (messages/maximum-save-attempts-exceeded-msg))))
-            
-            (= error-code :concept-id-concept-conflict)
-            (let [{:keys [concept-id concept-type provider-id native-id]} concept]
-              (messages/data-error :conflict 
-                                   messages/concept-exists-with-differnt-id-msg
-                                   concept-id
-                                   concept-type
-                                   provider-id
-                                   native-id))
-            
-            (= error-code :unknown-error)
-            (errors/internal-error! "Unknown error saving concept")
-            
-            ; FIXME there might be a case where two first revision of a collection come in at the same time
-            ;; they might accidentally get different concept ids. We'd need to recur then.
-            )
+        (do
+          (handle-save-errors concept result tries-left revision-id-provided?)
           (recur (set-or-generate-revision-id db concept nil) (dec tries-left)))))))
 
 ;;; service methods

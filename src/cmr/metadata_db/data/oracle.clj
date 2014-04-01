@@ -9,8 +9,8 @@
             [cmr.common.util :as cutil]
             [clojure.pprint :refer (pprint pp)]
             [clojure.java.jdbc :as j]
-            [cmr.metadata-db.data.utility :as util]
-            [slingshot.slingshot :refer [throw+]]))
+            [cmr.metadata-db.data.utility :as util])
+  (:import com.mchange.v2.c3p0.ComboPooledDataSource))
 
 ;;; Constants
 
@@ -207,11 +207,27 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn create-db
-  "Creates the db needed for clojure.java.jdbc library."
-  []
-  (map->OracleStore {:classname "oracle.jdbc.driver.OracleDriver"
+(def db-spec
+  {:classname "oracle.jdbc.driver.OracleDriver"
                      :subprotocol "oracle"
                      :subname (format "thin:@%s:%s:%s" db-host db-port db-sid)
                      :user db-username
-                     :password db-password}))
+                     :password db-password})
+
+(defn pool
+  [spec]
+  (let [cpds (doto (ComboPooledDataSource.)
+               (.setDriverClass (:classname spec)) 
+               (.setJdbcUrl (str "jdbc:" (:subprotocol spec) ":" (:subname spec)))
+               (.setUser (:user spec))
+               (.setPassword (:password spec))
+               ;; expire excess connections after 30 minutes of inactivity:
+               (.setMaxIdleTimeExcessConnections (* 30 60))
+               ;; expire connections after 3 hours of inactivity:
+               (.setMaxIdleTime (* 3 60 60)))] 
+    {:datasource cpds}))
+
+(defn create-db
+  "Creates the db needed for clojure.java.jdbc library."
+  []
+  (map->OracleStore (pool db-spec)))

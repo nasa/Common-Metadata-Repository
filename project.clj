@@ -13,7 +13,7 @@
                  [org.clojure/java.jdbc "0.3.3"]
                  [drift "1.5.2"]
                  [com.oracle/ojdbc6 "11.2.0.3"]
-                 [slingshot "0.10.3"]]
+                 [com.mchange/c3p0 "0.9.2.1"]]
   :repositories [["releases" "http://devrepo1.dev.echo.nasa.gov/data/dist/projects/echo/mavenrepo/"]]
   :plugins [[lein-test-out "0.3.1"]
             [drift "1.5.2"]
