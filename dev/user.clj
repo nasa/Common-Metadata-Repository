@@ -4,9 +4,7 @@
   (:require [clojure.pprint :refer (pprint pp)]
             [clojure.tools.namespace.repl :refer (refresh refresh-all)]
             [cmr.metadata-db.system :as system]
-            [cmr.common.log :as log :refer (debug info warn error)]
-            [cmr.metadata-db.api.routes :as routes]
-            [cmr.metadata-db.data.oracle :as oracle])
+            [cmr.common.log :as log :refer (debug info warn error)])
   (:use [clojure.test :only [run-all-tests]]
         [clojure.repl]
         [alex-and-georges.debug-repl]))

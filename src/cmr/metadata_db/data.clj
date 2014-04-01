@@ -16,7 +16,7 @@
     "Gets a version of a concept with a given concept-id and revision-id. If the
     revsision-id is nil then the latest revision is returned.")
   
-  (get-concept-with-values
+  (get-concept-by-provider-id-native-id-concept-type
     [db concept]
     "Gets a version of a concept that has the same concept-type, provider-id, and native-id
     as the given concept.")

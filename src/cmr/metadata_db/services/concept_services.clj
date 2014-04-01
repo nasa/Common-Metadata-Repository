@@ -16,7 +16,7 @@
 (defn- get-existing-concept-id
   "Retrieve concept-id from DB."
   [db concept]
-  (some-> (data/get-concept-with-values db concept)
+  (some-> (data/get-concept-by-provider-id-native-id-concept-type  db concept)
           :concept-id))
 
 (defn- save-in-db
