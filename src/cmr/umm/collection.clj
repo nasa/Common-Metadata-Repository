@@ -32,9 +32,9 @@
    temporal-range-type
    precision-of-seconds
    ends-at-present-flag
-   range-date-time
-   single-date-time
-   periodic-date-time
+   range-date-times
+   single-date-times
+   periodic-date-times
    ])
 
 (defrecord UmmCollection

@@ -64,18 +64,18 @@
                        period-cycle-duration-units
                        period-cycle-duration-values)))
 
-(def temporal-coverages-range
+(def temporal-coverages-ranges
   (ext-gen/model-gen c/->TemporalCoverage
                      time-types
                      date-types
                      temporal-range-types
                      gen/s-pos-int  ;; precision-of-seconds
                      gen/boolean    ;; ends-at-present-flag
-                     range-date-times
+                     (gen/vector range-date-times 1 3)
                      (gen/return nil)
                      (gen/return nil)))
 
-(def temporal-coverages-single
+(def temporal-coverages-singles
   (ext-gen/model-gen c/->TemporalCoverage
                      time-types
                      date-types
@@ -83,10 +83,10 @@
                      gen/s-pos-int  ;; precision-of-seconds
                      gen/boolean    ;; ends-at-present-flag
                      (gen/return nil)
-                     (ext-gen/date-time)
+                     (gen/vector (ext-gen/date-time) 1 3)
                      (gen/return nil)))
 
-(def temporal-coverages-periodic
+(def temporal-coverages-periodics
   (ext-gen/model-gen c/->TemporalCoverage
                      time-types
                      date-types
@@ -95,12 +95,12 @@
                      gen/boolean    ;; ends-at-present-flag
                      (gen/return nil)
                      (gen/return nil)
-                     periodic-date-times))
+                     (gen/vector periodic-date-times 1 3)))
 
 (def temporal-coverages
-  (gen/one-of [temporal-coverages-range
-               temporal-coverages-single
-               temporal-coverages-periodic]))
+  (gen/one-of [temporal-coverages-ranges
+               temporal-coverages-singles
+               temporal-coverages-periodics]))
 
 (def collections
   (gen/fmap (fn [[entry-title product temporal-coverage]]
