@@ -59,12 +59,8 @@
 (defn contents-at-path
   "This is a helper that will pull the XML content from the xml-struct at the given path."
   [xml-struct path]
-  (let [elements (elements-at-path xml-struct path)]
-    (cond
-      (sequential? elements)
-      (map #(:content %) elements)
-      :else
-      (first elements))))
+  (if-let [elements (elements-at-path xml-struct path)]
+    (map #(:content %) elements)))
 
 (defn attrs-at-path
   "This is a helper that will pull the XML attributes from the xml-struct at the given path."
@@ -81,12 +77,8 @@
 (defn strings-at-path
   "Extracts a string from the given path in the XML structure."
   [xml-struct path]
-  (let [contents (contents-at-path xml-struct path)]
-    (cond
-      (sequential? contents)
-      (map #(str (first %)) contents)
-      :else
-      (if (not (nil? contents)) (str (first contents))))))
+  (if-let [contents (contents-at-path xml-struct path)]
+    (map #(str (first %)) contents)))
 
 (defn long-at-path
   "Extracts a long number from the given path in the XML structure."
@@ -115,9 +107,5 @@
 (defn datetimes-at-path
   "Extracts a datetime from the given path in the XML structure."
   [xml-struct path]
-  (let [value (strings-at-path xml-struct path)]
-    (cond
-      (sequential? value)
-      (map #(p/string->datetime %) value)
-      :else
-      (if (not (empty? value)) value))))
+  (if-let [value (strings-at-path xml-struct path)]
+    (map #(p/string->datetime %) value)))
