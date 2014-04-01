@@ -59,28 +59,27 @@
           {:keys [status]}(util/get-concept-by-id-and-revision "C1000000000-PROV1" "NON-INTEGER")]
       (is (= 422 status)))))
 
-#_(deftest mdb-get-concepts-test
+(deftest mdb-get-concepts-test
   "Get concepts by specifying tuples of concept-ids and revision-ids."
   (let [concept1 (util/concept)
         concept2 (merge concept1 {:concept-id "C2-PROV1" :native-id "SOME OTHER ID"})
-        tuples [[(:concept-id concept1) 1] [(:concept-id concept2) 0]]
+        tuples [["C1000000000-PROV1" 1] ["C2-PROV1" 0]]
         results (util/get-concepts tuples)
         returned-concepts (:concepts results)
-        status (:status results)
-        expected [[(:concept-id concept1) 1] [(:concept-id concept2) 0]]]
-    (is (util/concepts-and-concept-id-revisions-equal? returned-concepts expected))
+        status (:status results)]
+    (is (util/concepts-and-concept-id-revisions-equal? returned-concepts tuples))
     (is (= status 200))))
 
-#_(deftest mdb-get-concepts-with-one-invalid-revision-id-test
+(deftest mdb-get-concepts-with-one-invalid-revision-id-test
   "Get concepts by specifying tuples of concept-ids and revision-ids with one invalid revision id
   and only get back existing concepts."
   (let [concept1 (util/concept)
-        concept2 (assoc concept1 :concept-id "C2-PROV1")
-        tuples [[(:concept-id concept1) 1] [(:concept-id concept2) 10]]
+        concept2 (merge concept1 {:concept-id "C2-PROV1" :native-id "SOME OTHER ID"})
+        tuples [["C1000000000-PROV1" 1] ["C2-PROV1" 10]]
         results (util/get-concepts tuples)
         returned-concepts (:concepts results)
         status (:status results)
-        expected [[(:concept-id concept1) 1]]]
+        expected [["C1000000000-PROV1" 1]]]
     (is (util/concepts-and-concept-id-revisions-equal? returned-concepts expected))
     (is (= status 200))))
 

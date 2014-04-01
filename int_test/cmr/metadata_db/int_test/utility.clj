@@ -88,7 +88,8 @@
                          concepts))
                  concept-id-revision-ids))))
 
-#_(defn concepts-and-ids-equal?
+(defn concepts-and-ids-equal?
+  ;; TODO - this might need to be changed to be order independent
     "Compare a vector of concepts returned by the API to a set of concept-ids"
     [concepts concept-ids]
     (if (not= (count concepts) (count concept-ids))
