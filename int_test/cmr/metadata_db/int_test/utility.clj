@@ -129,6 +129,18 @@
         error-messages (get body "errors")]
     {:status status :revision-id revision-id :error-messages error-messages}))
 
+(defn force-delete-concept
+  "Make a DELETE request to permanently remove a revison of a concept."
+  [concept-id revision-id]
+  (let [url (format "%sforce-delete/%s/%s" concepts-url concept-id revision-id)
+        response (client/delete url
+                                {:throw-exceptions false})
+        status (:status response)
+        body (cheshire/parse-string (:body response))
+        revision-id (get body "revision-id")
+        error-messages (get body "errors")]
+    {:status status :revision-id revision-id :error-messages error-messages}))
+
 (defn reset-database
   "Make a request to reset the database by clearing out all stored concepts."
   []

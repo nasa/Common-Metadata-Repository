@@ -53,7 +53,7 @@
   "Attempt to delete a concept that does not exist and verify that we get a 404."
   (let [{:keys [status revision-id error-messages]} (util/delete-concept "C1-NON-EXISTENT-PROVIDER")]
     (is (= status 404))
-    (is (= error-messages [(format messages/concept-does-not-exist-msg "C1-NON-EXISTENT-PROVIDER")]))))
+    (is (= error-messages [(messages/concept-does-not-exist-msg "C1-NON-EXISTENT-PROVIDER")]))))
 
 (deftest mdb-repeated-calls-to-delete-get-same-revision
   "Delete a concept repeatedly and verify that the revision does not change."

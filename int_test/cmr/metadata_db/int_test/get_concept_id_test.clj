@@ -43,12 +43,11 @@
         response (util/get-concept-id (name (:concept-type concept))
                                       (:provider-id concept)
                                       (:native-id concept))
-        _ (println response)
         {:keys [status concept-id error-messages]} response]
     (is (= status 404))
     (is (= error-messages
-           [(format messages/missing-concept-id-msg
-                    (name (:concept-type concept))
-                    (:provider-id concept)
-                    (:native-id concept))]))))
+           [(messages/missing-concept-id-msg
+              (name (:concept-type concept))
+              (:provider-id concept)
+              (:native-id concept))]))))
 

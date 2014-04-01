@@ -10,7 +10,6 @@
             [clojure.pprint :refer (pprint pp)]
             [clojure.java.jdbc :as j]
             [cmr.metadata-db.data.utility :as util]
-            [cmr.metadata-db.data.messages :as messages]
             [slingshot.slingshot :refer [throw+]]))
 
 ;;; Constants
@@ -187,14 +186,13 @@
                              :unknown-error)]
             {:error error-code})))))
   
-  (delete
-    [this concept-id revision-id]
-    )
-  
   
   (force-delete
-    [this concept-id revision-id])
-  ;; TODO - implement this
+    [this concept-id revision-id]
+    (j/execute! this 
+                ["DELETE FROM METADATA_DB.concept WHERE concept_id = ? and revision_id = ?"
+                concept-id
+                revision-id]))
   
   (reset
     [this]

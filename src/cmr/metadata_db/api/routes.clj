@@ -24,7 +24,6 @@
 (defn- get-concept
   "Get a concept by concept-id and optional revision"
   [context concept-id ^String revision]
-  (println (str "get-concept: " context))
   (try (let [revision-id (if revision (Integer. revision) nil)
              concept (concept-services/get-concept context concept-id revision-id)]
          {:status 200
@@ -60,6 +59,17 @@
     (catch NumberFormatException e
       (serv-err/throw-service-error :invalid-data (.getMessage e)))))
 
+(defn- force-delete
+  "Permanently remove a concept version from the database."
+  [context concept-id revision-id]
+  (try (let [revision-id (Integer. revision-id)]
+         (let [{:keys [revision-id]} (concept-services/force-delete context concept-id revision-id)]
+           {:status 200
+            :body {:revision-id revision-id}
+            :headers json-header}))
+    (catch NumberFormatException e
+      (serv-err/throw-service-error :invalid-data (.getMessage e)))))
+
 (defn- reset
   "Delete all concepts from the data store"
   [context]
@@ -88,6 +98,7 @@
         (save-concept request-context body))
       (DELETE "/:concept-id/:revision-id" {{:keys [concept-id revision-id]} :params request-context :request-context} (delete-concept request-context concept-id revision-id))
       (DELETE "/:concept-id" {{:keys [concept-id]} :params request-context :request-context} (delete-concept request-context concept-id nil))
+      (DELETE "/force-delete/:concept-id/:revision-id" {{:keys [concept-id revision-id]} :params request-context :request-context} (force-delete request-context concept-id revision-id))
       ;; get a specific revision of a concept
       (GET "/:concept-id/:revision-id" {{:keys [concept-id revision-id]} :params request-context :request-context} (get-concept request-context concept-id revision-id))
       ;; returns the latest revision of a concept

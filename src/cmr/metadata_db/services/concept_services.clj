@@ -57,15 +57,15 @@
         (let [latest-revision (or previous-revision (data/get-concept db concept-id nil))
               expected-revision-id (inc (:revision-id latest-revision))]
           (when (not= revision-id expected-revision-id)
-            (errors/throw-service-error :conflict
-                                        (format messages/invalid-revision-id-msg
-                                                expected-revision-id
-                                                revision-id))))
+            (messages/data-error :conflict
+                                 messages/invalid-revision-id-msg
+                                 expected-revision-id
+                                 revision-id)))
         (if (not= revision-id 0)
-          (errors/throw-service-error :conflict
-                                      (format messages/invalid-revision-id-msg
-                                              0
-                                              revision-id)))))))
+          (messages/data-error :conflict
+                               messages/invalid-revision-id-msg
+                               0
+                               revision-id))))))
 
 
 
@@ -84,18 +84,20 @@
           (cond 
             (= error-code :revision-id-conflict)
             (if revision-id-provided?
-              (errors/throw-service-error :conflict (format messages/invalid-revision-id-unknown-expected-msg
-                                                            revision-id-provided?))
+              (messages/data-error :conflict 
+                                   messages/invalid-revision-id-unknown-expected-msg
+                                   revision-id-provided?)
               (if (= tries-left 1)
-                (errors/internal-error! messages/maximum-save-attempts-exceeded-msg)))
+                (errors/internal-error! (messages/maximum-save-attempts-exceeded-msg))))
             
             (= error-code :concept-id-concept-conflict)
             (let [{:keys [concept-id concept-type provider-id native-id]} concept]
-              (errors/throw-service-error :conflict (format messages/concept-exists-with-differnt-id-msg
-                                                            concept-id
-                                                            concept-type
-                                                            provider-id
-                                                            native-id)))
+              (messages/data-error :conflict 
+                                   messages/concept-exists-with-differnt-id-msg
+                                   concept-id
+                                   concept-type
+                                   provider-id
+                                   native-id))
             
             (= error-code :unknown-error)
             (errors/internal-error! "Unknown error saving concept")
@@ -110,17 +112,16 @@
 (deftracefn get-concept
   "Get a concept by concept-id."
   [context concept-id revision-id]
-  (println (str "get context: " context))
   (if-let [concept (data/get-concept (context->db context) concept-id revision-id)]
     concept
     (if revision-id
-      (errors/throw-service-error :not-found
-                                  "Could not find concept with concept-id of %s and revision %s."
-                                  concept-id
-                                  revision-id)
-      (errors/throw-service-error :not-found
-                                  "Could not find concept with concept-id of %s."
-                                  concept-id))))
+      (messages/data-error :not-found
+                           messages/concept-with-concept-id-and-rev-id-does-not-exist
+                           concept-id
+                           revision-id)
+      ((messages/data-error :not-found
+                            messages/concept-does-not-exist-msg
+                            concept-id)))))
 
 (deftracefn get-concepts
   "Get multiple concepts by concept-id and revision-id."
@@ -131,7 +132,6 @@
 (deftracefn save-concept
   "Store a concept record and return the revision."
   [context concept]
-  (println (str "SAVE context: " context))
   (util/validate-concept concept)
   (let [db (context->db context)]
     (validate-concept-revision-id db concept nil)
@@ -146,7 +146,6 @@
 (deftracefn delete-concept
   "Add a tombstone record to mark a concept as deleted and return the revision-id of the tombstone."
   [context concept-id revision-id]
-  (println (str "delete-concept " context))
   (let [db (context->db context)
         previous-revision (data/get-concept db concept-id nil)]
     (if previous-revision
@@ -156,13 +155,29 @@
           (validate-concept-revision-id db tombstone previous-revision)
           (let [revisioned-tombstone (set-or-generate-revision-id db tombstone previous-revision)]
             (try-to-save db revisioned-tombstone revision-id))))
-      (errors/throw-service-error :not-found
-                                  (format messages/concept-does-not-exist-msg
-                                          concept-id)))))
+      (if revision-id
+        (messages/data-error :not-found
+                             messages/concept-with-concept-id-and-rev-id-does-not-exist
+                             concept-id
+                             revision-id)
+        ((messages/data-error :not-found
+                              messages/concept-does-not-exist-msg
+                              concept-id))))))
 
 (deftracefn force-delete
   "Remove a revision of a concept from the database completely."
-  [context concept-id revision-id])
+  [context concept-id revision-id]
+  (let [db (context->db context)
+        concept (data/get-concept db concept-id revision-id)]
+    (if concept
+      (data/force-delete db concept-id revision-id)
+      (messages/data-error :not-found
+                           messages/concept-with-concept-id-and-rev-id-does-not-exist
+                           concept-id
+                           revision-id))
+    {:concept-id concept-id
+     :revision-id revision-id}))
+
 
 (deftracefn reset
   "Delete all concepts from the concept store."
@@ -175,7 +190,8 @@
   (let [concept-id (data/get-concept-id (context->db context) concept-type provider-id native-id)]
     (if concept-id
       (:concept_id concept-id)
-      (errors/throw-service-error :not-found messages/missing-concept-id-msg
-                                  concept-type
-                                  provider-id
-                                  native-id))))
+      (messages/data-error :not-found 
+                           messages/missing-concept-id-msg
+                           concept-type
+                           provider-id
+                           native-id))))

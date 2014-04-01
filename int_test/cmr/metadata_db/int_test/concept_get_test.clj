@@ -11,6 +11,9 @@
 (defn setup-database-fixture
   "Load the database with test data."
   [f]
+  
+  ;; clear out the database
+  (util/reset-database)
   ;; setup database
   (let [concept1 (util/concept)
         concept2 (merge concept1 {:concept-id "C2-PROV1" :native-id "SOME OTHER ID"})]

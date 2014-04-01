@@ -45,18 +45,9 @@
                 messages/invalid-concept-id-msg
                 
                 :else nil)]
-    (if error (errors/throw-service-error :invalid-data error))))
+    (if error (messages/data-error :invalid-data error))))
 
 (defn is-tombstone?
   "Check to see if an entry is a tombstone (has a :deleted true entry)."
   [concept]
   (:deleted concept))
-
-
-(comment 
-  (let [concept {:concept-id "C1-PROV1" :provider-id "PROV2" :concept-type "collection"}]
-    (if (validate-concept-id concept)
-      (println "OK")
-      (println "BAD")))
-  
-  )
