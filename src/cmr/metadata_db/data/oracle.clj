@@ -73,7 +73,6 @@
   lifecycle/Lifecycle
   
   (start [this system]
-         (reset-database this)
          this)
   
   (stop [this system]
