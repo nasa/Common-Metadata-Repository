@@ -6,18 +6,16 @@
             [cmr.umm.collection :as c]
             [cmr.umm.xml-schema-validator :as v]))
 
-;; TODO update temporal method names and documentation to indicate they are not singular
-
 (defn- xml-elem->RangeDateTimes
-  "Returns a UMM RangeDateTime from a parsed Temporal XML structure"
+  "Returns a list of UMM RangeDateTimes from a parsed Temporal XML structure"
   [temporal-element]
   (let [elements (cx/elements-at-path temporal-element [:RangeDateTime])]
     (map #(c/map->RangeDateTime {:beginning-date-time (cx/datetime-at-path % [:BeginningDateTime])
                                  :ending-date-time (cx/datetime-at-path % [:EndingDateTime])})
          elements)))
 
-(defn- xml-elem->PeriodicDateTime
-  "Returns a UMM PeriodicDateTime from a parsed Temporal XML structure"
+(defn- xml-elem->PeriodicDateTimes
+  "Returns a list of UMM PeriodicDateTimes from a parsed Temporal XML structure"
   [temporal-element]
   (let [elements (cx/elements-at-path temporal-element [:PeriodicDateTime])]
     (map #(c/map->PeriodicDateTime {:name (cx/string-at-path % [:Name])
@@ -34,7 +32,7 @@
   [collection-element]
   (let [temporal-element (cx/element-at-path collection-element [:Temporal])
         range-date-times (xml-elem->RangeDateTimes temporal-element)
-        periodic-date-times (xml-elem->PeriodicDateTime temporal-element)
+        periodic-date-times (xml-elem->PeriodicDateTimes temporal-element)
         temp-map {:time-type (cx/string-at-path temporal-element [:TimeType])
                   :date-type (cx/string-at-path temporal-element [:DateType])
                   :temporal-range-type (cx/string-at-path temporal-element [:TemporalRangeType])

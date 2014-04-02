@@ -6,6 +6,11 @@
             [cmr.umm.collection :as c]
             [cmr.umm.granule :as g]))
 
+(defn- optional
+  "Returns either nil or the given generator. This should be used for optional fields"
+  [generator]
+  (gen/one-of [(gen/return nil) generator]))
+
 (def short-names
   (ext-gen/string-alpha-numeric 1 85))
 
@@ -23,18 +28,24 @@
 
 ;; temporal attributes
 (def time-types
-  (ext-gen/string-alpha-numeric 1 80))
+  (optional (ext-gen/string-alpha-numeric 1 80)))
 
 (def date-types
-  (ext-gen/string-alpha-numeric 1 80))
+  (optional (ext-gen/string-alpha-numeric 1 80)))
 
 (def temporal-range-types
-  (ext-gen/string-alpha-numeric 1 80))
+  (optional (ext-gen/string-alpha-numeric 1 80)))
+
+(def precision-of-seconds
+  (optional gen/s-pos-int))
+
+(def ends-at-present-flag
+  (optional gen/boolean))
 
 (def range-date-times
   (let [begin (first (gen/sample (ext-gen/date-time) 1))
         end (t/plus begin (t/days 1))]
-    (ext-gen/model-gen c/->RangeDateTime (gen/return begin) (gen/return end))))
+    (ext-gen/model-gen c/->RangeDateTime (gen/return begin) (optional (gen/return end)))))
 
 ;; periodic-date-time attributes
 (def names
@@ -69,8 +80,8 @@
                      time-types
                      date-types
                      temporal-range-types
-                     gen/s-pos-int  ;; precision-of-seconds
-                     gen/boolean    ;; ends-at-present-flag
+                     precision-of-seconds
+                     ends-at-present-flag
                      (gen/vector range-date-times 1 3)
                      (gen/return [])
                      (gen/return [])))
@@ -80,8 +91,8 @@
                      time-types
                      date-types
                      temporal-range-types
-                     gen/s-pos-int  ;; precision-of-seconds
-                     gen/boolean    ;; ends-at-present-flag
+                     precision-of-seconds
+                     ends-at-present-flag
                      (gen/return [])
                      (gen/vector (ext-gen/date-time) 1 3)
                      (gen/return [])))
@@ -91,8 +102,8 @@
                      time-types
                      date-types
                      temporal-range-types
-                     gen/s-pos-int  ;; precision-of-seconds
-                     gen/boolean    ;; ends-at-present-flag
+                     precision-of-seconds
+                     ends-at-present-flag
                      (gen/return [])
                      (gen/return [])
                      (gen/vector periodic-date-times 1 3)))
