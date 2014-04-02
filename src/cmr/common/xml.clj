@@ -66,7 +66,7 @@
     (Boolean. s)))
 
 (defn datetimes-at-path
-  "Extracts a datetime from the given path in the XML structure."
+  "Extracts all the datetimes from the given path in the XML structure."
   [xml-struct path]
   (map p/string->datetime (strings-at-path xml-struct path)))
 
