@@ -6,15 +6,13 @@
             [clojure.string :as string]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.api.web-server :as web]
-            [cmr.metadata-db.data.memory :as memory]
+            [cmr.metadata-db.data.oracle :as oracle]
             [cmr.metadata-db.api.routes :as routes])
   (:gen-class))
 
 (def arg-description
   [["-h" "--help" "Show help" :default false :flag true]
-   ["-d" "--db" "Specifies the database type - memory or oracle" :default "memory"]
    ["-p" "--port" "The HTTP Port to listen on for requests." :default 3001 :parse-fn #(Integer. %)]])
-
 
 (defn parse-args [args]
   (let [[options extra-args banner] (apply cli args arg-description)
@@ -24,18 +22,11 @@
       (exit-with-banner "Help:\n"))
     options))
 
-(defn- create-db
-  "return an initialization function for database based on user input parameter"
-  [db]
-  (case db
-    "memory" (memory/create-db)
-    "default" (memory/create-db)))
-
 (defn -main
   "Starts the App."
   [& args]
   (let [{:keys [port db]} (parse-args args)
-        db (create-db db)
+        db (oracle/create-db oracle/db-spec)
         web-server (web/create-web-server port routes/make-api)
         system (assoc (system/create-system) :db db :web web-server)
         system (system/start system)]

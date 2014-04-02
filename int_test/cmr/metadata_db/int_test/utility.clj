@@ -5,11 +5,13 @@
             [cheshire.core :as cheshire]))
 
 ;;; Enpoints for services - change this for tcp-mon
-(def port 3001)
+(def port 3000)
 
 (def concepts-url (str "http://localhost:" port "/concepts/"))
 
 (def concept-id-url (str "http://localhost:" port "/concept-id/"))
+
+(def reset-url (str "http://localhost:" port "/reset"))
 
 
 ;;; utility methods
@@ -19,7 +21,6 @@
   []
   {:concept-type :collection
    :native-id "provider collection id"
-   :concept-id "C1-PROV1"
    :provider-id "PROV1"
    :metadata "xml here"
    :format "echo10"})
@@ -31,8 +32,10 @@
                              {:accept :json
                               :throw-exceptions false})
         status (:status response)
-        concept-id (get (cheshire/parse-string (:body response)) "concept-id")]
-    {:status status :concept-id concept-id}))
+        body (cheshire/parse-string (:body response))
+        concept-id (get body  "concept-id")
+        errors (get body "errors")]
+    {:status status :concept-id concept-id :error-messages errors}))
 
 (defn get-concept-by-id-and-revision
   "Make a GET to retrieve a concept by concept-id and revision."
@@ -72,18 +75,32 @@
           concepts (vec (cheshire/parse-string (:body response)))]
       {:status status :concepts concepts})))
 
-(defn concepts-and-ids-equal?
-  "Compare a vector of concepts returned by the API to a set of concept-ids"
-  [concepts concept-ids]
-  (if (not= (count concepts) (count concept-ids))
+(defn concepts-and-concept-id-revisions-equal?
+  "Compare a vector of concepts returned by the API to a set of concept-id/revision-ids."
+  [concepts concept-id-revision-ids]
+  (if (not= (count concepts) (count concept-id-revision-ids))
     false
-    (every? true? (map #(= (get %1 "concept-id") %2) concepts concept-ids))))
+    (every? true? 
+            (map (fn [[con-id rev-id]] 
+                   (some (fn [concept]
+                           (and (= (get concept "concept-id") con-id) 
+                                (= (get concept "revision-id" rev-id))))
+                         concepts))
+                 concept-id-revision-ids))))
+
+(defn concepts-and-ids-equal?
+  ;; TODO - this might need to be changed to be order independent
+    "Compare a vector of concepts returned by the API to a set of concept-ids"
+    [concepts concept-ids]
+    (if (not= (count concepts) (count concept-ids))
+      false
+      (every? true? (map #(= (get %1 "concept-id") %2) concepts concept-ids))))
 
 (defn save-concept
   "Make a POST request to save a concept with JSON encoding of the concept.  Returns a map with
   status, revision-id, and a list of error messages"
   [concept]
-  (let [response (client/post concepts-url 
+  (let [response (client/post concepts-url
                               {:body (cheshire/generate-string concept)
                                :body-encoding "UTF-8"
                                :content-type :json
@@ -92,14 +109,31 @@
         status (:status response)
         body (cheshire/parse-string (:body response))
         revision-id (get body "revision-id")
+        concept-id (get body "concept-id")
+        error-messages (get body "errors")]
+    {:status status :revision-id revision-id :concept-id concept-id :error-messages error-messages}))
+
+(defn delete-concept
+  "Make a DELETE request to mark a concept as deleted. Returns the status and revision id of the
+  tombstone."
+  [concept-id & revision-id]
+  (let [revision-id (first revision-id)
+        url (if revision-id 
+              (format "%s%s/%s" concepts-url concept-id revision-id)
+              (format "%s%s" concepts-url concept-id))
+        response (client/delete url
+                                {:throw-exceptions false})
+        status (:status response)
+        body (cheshire/parse-string (:body response))
+        revision-id (get body "revision-id")
         error-messages (get body "errors")]
     {:status status :revision-id revision-id :error-messages error-messages}))
 
-(defn delete-concept
-  "Make a DELETE request to mark a concept as deleted. Returns the status and revision id of the 
-  tombstone."
-  [concept-id]
-  (let [response (client/delete (str concepts-url concept-id)
+(defn force-delete-concept
+  "Make a DELETE request to permanently remove a revison of a concept."
+  [concept-id revision-id]
+  (let [url (format "%sforce-delete/%s/%s" concepts-url concept-id revision-id)
+        response (client/delete url
                                 {:throw-exceptions false})
         status (:status response)
         body (cheshire/parse-string (:body response))
@@ -110,15 +144,15 @@
 (defn reset-database
   "Make a request to reset the database by clearing out all stored concepts."
   []
-  (let [response (client/delete (str concepts-url "force-delete") 
-                                {:throw-exceptions false})
+  (let [response (client/post reset-url {:throw-exceptions false})
         status (:status response)]
     status))
 
 (defn verify-concept-was-saved
   "Check to make sure a concept is stored in the database."
-  [concept revision-id]
+  [concept]
   (let [concept-id (:concept-id concept)
+        revision-id (:revision-id concept)
         stored-concept-and-status (get-concept-by-id-and-revision concept-id revision-id)
         stored-concept (:concept stored-concept-and-status)
         stored-concept-id (:concept-id stored-concept)]
