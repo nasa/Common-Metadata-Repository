@@ -8,20 +8,13 @@
   [element tag]
   (filter #(= tag (:tag %)) (:content element)))
 
-(defn- children-by-path
+(defn elements-at-path
   "Extracts the children down the specified path."
   [element path]
   (reduce (fn [elements tag]
             (mapcat #(children-by-tag % tag) elements))
           [element]
           path))
-
-(defn elements-at-path
-  "Returns a list of elements from within an XML structure at the given path."
-  [xml-struct path]
-  (if (= (:tag xml-struct) (first path))
-    (children-by-path xml-struct (rest path))
-    []))
 
 (defn element-at-path
   "Returns a single element from within an XML structure at the given path."
