@@ -6,7 +6,7 @@
             [cheshire.core :as cheshire]
             [cmr.metadata-db.int-test.utility :as util]
             [cmr.common.util :as cutil]
-            [cmr.metadata-db.data.messages :as messages]))
+            [cmr.metadata-db.services.messages :as messages]))
 
 ;;; fixtures
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

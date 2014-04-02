@@ -1,8 +1,8 @@
-(ns cmr.metadata-db.data.utility
+(ns cmr.metadata-db.services.utility
   "Utitly methods for concepts."
   (:require [clojure.string :as string]
             [cmr.common.services.errors :as errors]
-            [cmr.metadata-db.data.messages :as messages]))
+            [cmr.metadata-db.services.messages :as messages]))
 
 ;;; Constants
 (def concept-id-prefix-length 1)

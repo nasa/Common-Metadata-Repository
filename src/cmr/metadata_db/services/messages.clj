@@ -1,4 +1,4 @@
-(ns cmr.metadata-db.data.messages
+(ns cmr.metadata-db.services.messages
   (:require [clojure.string :as string]
             [cmr.common.services.errors :as errors]))
 

@@ -12,21 +12,6 @@
 
 ;; Design based on http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts
 
-;;; Constants
-
-(def db-username (get (System/getenv) "MDB_DB_USERNAME" "METADATA_DB"))
-(def db-password (get (System/getenv) "MDB_DB_PASSWORD" "METADATA_DB"))
-(def db-host (get (System/getenv) "MDB_DB_HOST" "localhost"))
-(def db-port (get (System/getenv) "MDB_DB_PORT" "1521"))
-(def db-sid (get (System/getenv) "MDB_DB_SID" "orcl"))
-
-(def db-spec
-  {:classname "oracle.jdbc.driver.OracleDriver"
-   :subprotocol "oracle"
-   :subname (format "thin:@%s:%s:%s" db-host db-port db-sid)
-   :user db-username
-   :password db-password})
-
 (def
   ^{:doc "Defines the order to start the components."
     :private true}
@@ -35,7 +20,7 @@
 (defn create-system
   "Returns a new instance of the whole application."
   []
-  {:db (oracle/create-db db-spec)
+  {:db (oracle/create-db oracle/db-spec)
    :log (log/create-logger)
    :web (web/create-web-server 3001 routes/make-api)
    :zipkin (context/zipkin-config "Metadata DB" false)})

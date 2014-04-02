@@ -12,9 +12,10 @@
     "Create a concept-id for a given concept type and provider id.")
 
   (get-concept
+    [db concept-id]
     [db concept-id revision-id]
     "Gets a version of a concept with a given concept-id and revision-id. If the
-    revsision-id is nil then the latest revision is returned.")
+    revsision-id is not given or is nil then the latest revision is returned.")
   
   (get-concept-by-provider-id-native-id-concept-type
     [db concept]

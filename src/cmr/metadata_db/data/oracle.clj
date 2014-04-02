@@ -9,28 +9,48 @@
             [cmr.common.util :as cutil]
             [clojure.pprint :refer (pprint pp)]
             [clojure.java.jdbc :as j]
-            [cmr.metadata-db.data.utility :as util])
+            [cmr.metadata-db.services.utility :as util])
   (:import com.mchange.v2.c3p0.ComboPooledDataSource))
 
 ;;; Constants
-
-(def concept-id-prefix-length 1)
 
 (def select-all-columns-str "SELECT concept_type, native_id, concept_id, 
                             provider_id, metadata, format, revision_id, 
                             deleted FROM METADATA_DB.concept ")
 
+;;; Constants
+
+(def db-username (get (System/getenv) "MDB_DB_USERNAME" "METADATA_DB"))
+(def db-password (get (System/getenv) "MDB_DB_PASSWORD" "METADATA_DB"))
+(def db-host (get (System/getenv) "MDB_DB_HOST" "localhost"))
+(def db-port (get (System/getenv) "MDB_DB_PORT" "1521"))
+(def db-sid (get (System/getenv) "MDB_DB_SID" "orcl"))
+
+(def db-spec
+  {:classname "oracle.jdbc.driver.OracleDriver"
+   :subprotocol "oracle"
+   :subname (format "thin:@%s:%s:%s" db-host db-port db-sid)
+   :user db-username
+   :password db-password})
+
 ;;; Utility methods
 
 (defn reset-database
   "Delete everything from the concept table and reset the sequence."
-  [db-config]
-  )
+  [db]
+  (j/db-do-commands db "DELETE FROM METADATA_DB.concept")
+  (try 
+    (j/db-do-commands db "DROP SEQUENCE METADATA_DB.concept_id_seq")
+    (catch Exception e)) ; don't care if the sequence was not there
+  (j/db-do-commands db "CREATE SEQUENCE METADATA_DB.concept_id_seq
+                       START WITH 1000000000
+                       INCREMENT BY 1
+                       CACHE 20"))
 
 (defn- db-result->concept-map
   "Translate concept result returned from db into a concept map"
   [result]
-  (if result
+  (when result
     (let [{:keys [concept_type, native_id, concept_id, provider_id, metadata, format, revision_id deleted]} result]
       {:concept-type concept_type
        :native-id native_id
@@ -71,17 +91,17 @@
   
   (get-concept-id
     [this concept-type provider-id native-id]
-    (let [concept-id (first (j/query this ["SELECT concept_id
-                                           FROM METADATA_DB.concept
-                                           WHERE concept_type = ?
-                                           AND provider_id = ?
-                                           AND native_id = ?"
-                                           concept-type
-                                           provider-id
-                                           native-id]))]
-      concept-id))
+    (first (j/query this ["SELECT concept_id
+                          FROM METADATA_DB.concept
+                          WHERE concept_type = ?
+                          AND provider_id = ?
+                          AND native_id = ?
+                          AND ROWNUM = 1"
+                          concept-type
+                          provider-id
+                          native-id])))
   
-  (get-concept-by-provider-id-native-id-concept-type 
+  (get-concept-by-provider-id-native-id-concept-type
     [this concept]
     (let [{:keys [concept-type provider-id native-id revision-id]} concept] 
       (if revision-id
@@ -89,36 +109,48 @@
                                                            "WHERE concept_type = ? 
                                                            AND provider_id = ?
                                                            AND native_id = ?
-                                                           AND revision_id = ?")
+                                                           AND revision_id = ?
+                                                           AND ROWNUM = 1")
                                                       concept-type
                                                       provider-id
                                                       native-id
                                                       revision-id])))
-        (db-result->concept-map (first (j/query this [(str select-all-columns-str
+        (db-result->concept-map (first (j/query this [(str "SELECT * FROM (" 
+                                                           select-all-columns-str
                                                            "WHERE concept_type= ?
                                                            AND provider_id = ?
                                                            AND native_id = ?
-                                                           ORDER BY revision_id DESC" )
+                                                           ORDER BY revision_id DESC) 
+                                                           WHERE ROWNUM = 1" )
                                                       concept-type
                                                       provider-id
                                                       native-id]))))))
   
   (get-concept
+    [this concept-id]
+    (db-result->concept-map (first (j/query this [(str "SELECT * FROM (" 
+                                                       select-all-columns-str
+                                                       "WHERE concept_id = ?
+                                                       ORDER BY revision_id DESC) 
+                                                       WHERE ROWNUM = 1") 
+                                                  concept-id]))))
+  (get-concept
     [this concept-id revision-id]
     (if revision-id
       (db-result->concept-map (first (j/query this [(str select-all-columns-str
-                                                         "WHERE concept_id = ? AND revision_id = ?")
+                                                         "WHERE concept_id = ? 
+                                                         AND revision_id = ?
+                                                         AND ROWNUM = 1")
                                                     concept-id
                                                     revision-id])))
-      (db-result->concept-map (first (j/query this [(str select-all-columns-str
-                                                         "WHERE concept_id = ?
-                                                         ORDER BY revision_id DESC") concept-id])))))
+      (data/get-concept this concept-id)))
+  
   
   (get-concepts
     [this concept-id-revision-id-tuples]
     (j/with-db-transaction [conn this]
                            ;; use a temporary table to insert our values so we can use a join to 
-                           ;; pull evertying in one select
+                           ;; pull everything in one select
                            (let [insert-args (conj (conj concept-id-revision-id-tuples :transaction) false)]
                              (apply j/insert! conn
                                     "METADATA_DB.get_concepts_work_area"
@@ -172,7 +204,7 @@
                            
                            :else
                            :unknown-error)]
-          {:error error-code}))))
+          {:error error-code :error-message error-message}))))
   
   
   (force-delete
@@ -184,18 +216,9 @@
   
   (reset
     [this]
-    (let [db this]
-      (j/db-do-commands db "DELETE FROM METADATA_DB.concept")
-      (try 
-        (j/db-do-commands db "DROP SEQUENCE METADATA_DB.concept_id_seq")
-        (catch Exception e)) ; don't care if the sequence was not there
-      (j/db-do-commands db "CREATE SEQUENCE METADATA_DB.concept_id_seq
-                           START WITH 1000000000
-                           INCREMENT BY 1
-                           CACHE 20"))))
+    (reset-database this)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 
 (defn pool
   [spec]
@@ -211,6 +234,6 @@
     {:datasource cpds}))
 
 (defn create-db
-  "Creates the db needed for clojure.java.jdbc library."
+  "Creates and returns the database connection pool."
   [db-spec]
   (map->OracleStore (pool db-spec)))

@@ -2,8 +2,8 @@
   "Sevices to support the business logic of the metadata db."
   (:require [cmr.metadata-db.data :as data]
             [cmr.common.services.errors :as errors]
-            [cmr.metadata-db.data.messages :as messages]
-            [cmr.metadata-db.data.utility :as util]
+            [cmr.metadata-db.services.messages :as messages]
+            [cmr.metadata-db.services.utility :as util]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.system-trace.core :refer [deftracefn]]))
 
@@ -18,11 +18,6 @@
   [db concept]
   (some-> (data/get-concept-by-provider-id-native-id-concept-type  db concept)
           :concept-id))
-
-(defn- save-in-db
-  "Saves the concept in database and returns the revision-id"
-  [db concept]
-  )
 
 (defn- set-or-generate-concept-id 
   "Get an existing concept-id from the DB for the given concept or generate one 
@@ -51,20 +46,32 @@
   the current maximum revision-id for this concept."
   [db concept previous-revision]
   (let [{:keys [concept-id revision-id]} concept]
-    (if revision-id
-      (if concept-id
-        (let [latest-revision (or previous-revision (data/get-concept db concept-id nil))
-              expected-revision-id (inc (:revision-id latest-revision))]
-          (when (not= revision-id expected-revision-id)
-            (messages/data-error :conflict
-                                 messages/invalid-revision-id-msg
-                                 expected-revision-id
-                                 revision-id)))
-        (if (not= revision-id 0)
+    (cond
+      (and revision-id concept-id)
+      ;; both provided
+      (let [latest-revision (or previous-revision (data/get-concept db concept-id nil))
+            expected-revision-id (inc (:revision-id latest-revision))]
+        (when (not= revision-id expected-revision-id)
           (messages/data-error :conflict
                                messages/invalid-revision-id-msg
-                               0
-                               revision-id))))))
+                               expected-revision-id
+                               revision-id)))
+      
+      revision-id
+      ;; only revision-id provided so it should be zero (no concept-id has been assigned yet)
+      (if (not= revision-id 0)
+        (messages/data-error :conflict
+                             messages/invalid-revision-id-msg
+                             0
+                             revision-id))
+      
+      concept-id
+      ;; only concept-id provided - do nothing
+      
+      :else
+      ;; neither provided - do nothing
+      )))
+
 
 (defn- set-deleted-flag [value concept] (assoc concept :deleted value))
 
@@ -72,14 +79,14 @@
   "Deal with errors encountered during saves."
   [concept result tries-left revision-id-provided?]
   (let [error-code (:error-code result)]
+    (when (= tries-left 1)
+      (errors/internal-error! (messages/maximum-save-attempts-exceeded-msg)))
     (cond 
       (= error-code :revision-id-conflict)
-      (if revision-id-provided?
+      (when revision-id-provided?
         (messages/data-error :conflict 
                              messages/invalid-revision-id-unknown-expected-msg
-                             revision-id-provided?)
-        (if (= tries-left 1)
-          (errors/internal-error! (messages/maximum-save-attempts-exceeded-msg))))
+                             revision-id-provided?))
       
       (= error-code :concept-id-concept-conflict)
       (let [{:keys [concept-id concept-type provider-id native-id]} concept]
@@ -90,8 +97,8 @@
                              provider-id
                              native-id))
       
-      (= error-code :unknown-error)
-      (errors/internal-error! "Unknown error saving concept")
+      :else
+      (errors/internal-error! (:error-message result))
       
       ; FIXME there might be a case where two first revision of a collection come in at the same time
       ;; they might accidentally get different concept ids. We'd need to recur then.
@@ -113,17 +120,19 @@
 
 (deftracefn get-concept
   "Get a concept by concept-id."
-  [context concept-id revision-id]
-  (if-let [concept (data/get-concept (context->db context) concept-id revision-id)]
-    concept
-    (if revision-id
-      (messages/data-error :not-found
-                           messages/concept-with-concept-id-and-rev-id-does-not-exist
-                           concept-id
-                           revision-id)
-      ((messages/data-error :not-found
-                            messages/concept-does-not-exist-msg
-                            concept-id)))))
+  ([context concept-id]
+   (if-let [concept (data/get-concept (context->db context) concept-id)]
+     concept
+     (messages/data-error :not-found
+                          messages/concept-does-not-exist-msg
+                          concept-id)))
+  ([context concept-id revision-id]
+   (if-let [concept (data/get-concept (context->db context) concept-id revision-id)]
+     concept
+     (messages/data-error :not-found
+                          messages/concept-with-concept-id-and-rev-id-does-not-exist
+                          concept-id
+                          revision-id))))
 
 (deftracefn get-concepts
   "Get multiple concepts by concept-id and revision-id."

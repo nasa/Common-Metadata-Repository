@@ -5,7 +5,7 @@
             [clj-http.client :as client]
             [cheshire.core :as cheshire]
             [cmr.metadata-db.int-test.utility :as util]
-            [cmr.metadata-db.data.messages :as messages]))
+            [cmr.metadata-db.services.messages :as messages]))
 
 ;;; fixtures
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

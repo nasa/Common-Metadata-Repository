@@ -26,7 +26,7 @@
   "Starts the App."
   [& args]
   (let [{:keys [port db]} (parse-args args)
-        db (oracle/create-db system/db-spec)
+        db (oracle/create-db oracle/db-spec)
         web-server (web/create-web-server port routes/make-api)
         system (assoc (system/create-system) :db db :web web-server)
         system (system/start system)]
