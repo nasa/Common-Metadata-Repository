@@ -25,7 +25,7 @@
   )
 
 (defn- set-or-generate-concept-id 
-  "Get an exiting concept-id from the DB for the given concept or generate one 
+  "Get an existing concept-id from the DB for the given concept or generate one 
   if the concept has never been saved."
   [db concept]
   (if (:concept-id concept) 
@@ -46,8 +46,7 @@
           revision-id (if existing-revision-id (inc existing-revision-id) 0)]
       (assoc concept :revision-id revision-id))))
 
-;;; TODO move this to the services layer
-(defn- validate-concept-revision-id
+(defn validate-concept-revision-id
   "Validate that the revision-id for a concept (if given) is one greater than
   the current maximum revision-id for this concept."
   [db concept previous-revision]
@@ -66,8 +65,6 @@
                                messages/invalid-revision-id-msg
                                0
                                revision-id))))))
-
-
 
 (defn- set-deleted-flag [value concept] (assoc concept :deleted value))
 
@@ -99,7 +96,6 @@
       ; FIXME there might be a case where two first revision of a collection come in at the same time
       ;; they might accidentally get different concept ids. We'd need to recur then.
       )))
-
 
 (defn- try-to-save
   "Try to save a concept by looping until we find a good revision-id or give up."
