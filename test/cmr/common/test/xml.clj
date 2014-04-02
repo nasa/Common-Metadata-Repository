@@ -67,49 +67,46 @@
 
 (def sample-multiple-elements-xml
   "<top>
-  <inner ia=\"1\" ib=\"foo\">
-  <alpha>45</alpha>
-  <alpha>46</alpha>
-  <bravo>ovarb</bravo>
-  <bravo>ovary</bravo>
-  <single>single_value</single>
-  <datetime>1986-10-14T04:03:27.456Z</datetime>
-  <datetime>1988-10-14T04:03:27.456Z</datetime>
-  <single_datetime>1989-10-14T04:03:27.456Z</single_datetime>
-  </inner>
+    <inner ia=\"1\" ib=\"foo\">
+      <alpha>45</alpha>
+      <alpha>46</alpha>
+      <bravo>ovarb</bravo>
+      <bravo>ovary</bravo>
+      <single>single_value</single>
+      <datetime>1986-10-14T04:03:27.456Z</datetime>
+      <datetime>1988-10-14T04:03:27.456Z</datetime>
+      <single_datetime>1989-10-14T04:03:27.456Z</single_datetime>
+    </inner>
   </top>")
 
 (def parsed-sample-multiple-elements-xml
   (x/parse-str sample-multiple-elements-xml))
 
 (deftest elements-at-path-test
-  (are [xml path] (= (when xml (:content (x/parse-str xml)))
+  (are [xml path] (= (:content (x/parse-str xml))
                      (cx/elements-at-path parsed-sample-multiple-elements-xml path))
        "<a><alpha>45</alpha><alpha>46</alpha></a>" [:top :inner :alpha]
        "<a><bravo>ovarb</bravo><bravo>ovary</bravo></a>" [:top :inner :bravo]
-       "<a><single>single_value</single></a>" [:top :inner :single]
-       nil [:foo]
-       nil [:top :foo]
-       nil [:foo :bar]))
+       "<a><single>single_value</single></a>" [:top :inner :single]))
 
 (deftest contents-at-path-test
   (are [expected path] (= expected (cx/contents-at-path parsed-sample-multiple-elements-xml path))
-       (list (list "45") (list "46")) [:top :inner :alpha]
-       (list (list "ovarb") (list "ovary")) [:top :inner :bravo]
-       (list (list "single_value")) [:top :inner :single]
-       nil [:foo]))
+       [["45"] ["46"]] [:top :inner :alpha]
+       [["ovarb"] ["ovary"]] [:top :inner :bravo]
+       [["single_value"]] [:top :inner :single]
+       [] [:foo]))
 
 (deftest strings-at-path-test
   (are [expected path] (= expected (cx/strings-at-path parsed-sample-multiple-elements-xml path))
-       (list "45" "46") [:top :inner :alpha]
-       (list "ovarb" "ovary") [:top :inner :bravo]
-       (list "single_value") [:top :inner :single]
-       nil [:top :foo]
-       nil [:top :inner :foo]))
+       ["45" "46"] [:top :inner :alpha]
+       ["ovarb" "ovary"] [:top :inner :bravo]
+       ["single_value"] [:top :inner :single]
+       [] [:top :foo]
+       [] [:top :inner :foo]))
 
 (deftest datetimes-at-path-test
   (are [expected path] (= expected (cx/datetimes-at-path parsed-sample-multiple-elements-xml path))
-       (list (t/date-time 1986 10 14 4 3 27 456) (t/date-time 1988 10 14 4 3 27 456)) [:top :inner :datetime]
-       (list (t/date-time 1989 10 14 4 3 27 456)) [:top :inner :single_datetime]
-       nil [:top :foo]
-       nil [:top :inner :foo]))
+       [(t/date-time 1986 10 14 4 3 27 456) (t/date-time 1988 10 14 4 3 27 456)] [:top :inner :datetime]
+       [(t/date-time 1989 10 14 4 3 27 456)] [:top :inner :single_datetime]
+       [] [:top :foo]
+       [] [:top :inner :foo]))

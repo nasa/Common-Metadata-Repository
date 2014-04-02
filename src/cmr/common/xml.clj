@@ -3,82 +3,56 @@
   See the test file for examples."
   (:require [cmr.common.date-time-parser :as p]))
 
-(declare content-at-path)
+(defn- children-by-tag
+  "Extracts the child elements with the given tag name."
+  [element tag]
+  (filter #(= tag (:tag %)) (:content element)))
 
-(defn element-at-path
-  "This is a helper that will pull an XML element from the xml-struct at the given path."
-  [xml-struct path]
-  (if (sequential? path)
-    (let [path (vec path)
-          path-to-last (subvec path 0 (dec (count path)))
-          container (reduce content-at-path xml-struct path-to-last)]
-      (when container (element-at-path container (last path))))
-    (cond
-      (sequential? xml-struct)
-      (->> xml-struct (filter #(= path (:tag %))) first)
-
-      (map? xml-struct)
-      (when (= path (:tag xml-struct)) xml-struct)
-
-      :else
-      (throw (Exception.
-               (format
-                 "Unexpected xml-struct at path. path: [%s] xml-struct: [%s]"
-                 path xml-struct))))))
+(defn- children-by-path
+  "Extracts the children down the specified path."
+  [element path]
+  (reduce (fn [elements tag]
+            (mapcat #(children-by-tag % tag) elements))
+          [element]
+          path))
 
 (defn elements-at-path
-  "This is a helper that will pull an XML element from the xml-struct at the given path."
+  "Returns a list of elements from within an XML structure at the given path."
   [xml-struct path]
-  (if (sequential? path)
-    (let [path (vec path)
-          path-to-last (subvec path 0 (dec (count path)))
-          container (reduce content-at-path xml-struct path-to-last)]
-      (when container (elements-at-path container (last path))))
-    (cond
-      (sequential? xml-struct)
-      (let [result (filter #(= path (:tag %)) xml-struct)]
-        (if (empty? result)
-          nil
-          result))
+  (if (= (:tag xml-struct) (first path))
+    (children-by-path xml-struct (rest path))
+    []))
 
-      (map? xml-struct)
-      (when (= path (:tag xml-struct)) xml-struct)
-
-      :else
-      (throw (Exception.
-               (format
-                 "Unexpected xml-struct at path. path: [%s] xml-struct: [%s]"
-                 path xml-struct))))))
-
-(defn content-at-path
-  "This is a helper that will pull the XML content from the xml-struct at the given path."
+(defn element-at-path
+  "Returns a single element from within an XML structure at the given path."
   [xml-struct path]
-  (when-let [element (element-at-path xml-struct path)]
-    (:content element)))
+  (first (elements-at-path xml-struct path)))
 
 (defn contents-at-path
-  "This is a helper that will pull the XML content from the xml-struct at the given path."
+  "Pulls the contents from the elements found at the given path."
   [xml-struct path]
-  (if-let [elements (elements-at-path xml-struct path)]
-    (map #(:content %) elements)))
+  (map :content (elements-at-path xml-struct path)))
+
+(defn content-at-path
+  "Extracts the content from the first element at the given path."
+  [xml-struct path]
+  (first (contents-at-path xml-struct path)))
 
 (defn attrs-at-path
   "This is a helper that will pull the XML attributes from the xml-struct at the given path."
   [xml-struct path]
-  (when-let [element (element-at-path xml-struct path)]
-    (:attrs element)))
+  (some-> (element-at-path xml-struct path)
+          :attrs))
+
+(defn strings-at-path
+  "Extracts all the strings from the given path in the XML structure."
+  [xml-struct path]
+  (map str (apply concat (contents-at-path xml-struct path))))
 
 (defn string-at-path
   "Extracts a string from the given path in the XML structure."
   [xml-struct path]
-  (when-let [content (content-at-path xml-struct path)]
-    (str (first content))))
-
-(defn strings-at-path
-  "Extracts a string from the given path in the XML structure."
-  [xml-struct path]
-  (if-let [contents (contents-at-path xml-struct path)]
-    (map #(str (first %)) contents)))
+  (first (strings-at-path xml-struct path)))
 
 (defn long-at-path
   "Extracts a long number from the given path in the XML structure."
@@ -98,14 +72,13 @@
   (when-let [^String s (string-at-path xml-struct path)]
     (Boolean. s)))
 
-(defn datetime-at-path
-  "Extracts a datetime from the given path in the XML structure."
-  [xml-struct path]
-  (when-let [^String s (string-at-path xml-struct path)]
-    (p/string->datetime s)))
-
 (defn datetimes-at-path
   "Extracts a datetime from the given path in the XML structure."
   [xml-struct path]
-  (if-let [value (strings-at-path xml-struct path)]
-    (map #(p/string->datetime %) value)))
+  (map p/string->datetime (strings-at-path xml-struct path)))
+
+(defn datetime-at-path
+  "Extracts a datetime from the given path in the XML structure."
+  [xml-struct path]
+  (first (datetimes-at-path xml-struct path)))
+
