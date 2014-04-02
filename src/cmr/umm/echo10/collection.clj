@@ -6,41 +6,42 @@
             [cmr.umm.collection :as c]
             [cmr.umm.xml-schema-validator :as v]))
 
+;; TODO update temporal method names and documentation to indicate they are not singular
 
 (defn- xml-elem->RangeDateTimes
   "Returns a UMM RangeDateTime from a parsed Temporal XML structure"
-  [temporal-content]
-  (let [content (cx/contents-at-path temporal-content [:RangeDateTime])]
-    (if-not (empty? content)
-      (map #(c/map->RangeDateTime {:beginning-date-time (cx/datetime-at-path % [:BeginningDateTime])
-                                   :ending-date-time (cx/datetime-at-path % [:EndingDateTime])}) content))))
+  [temporal-element]
+  (let [elements (cx/elements-at-path temporal-element [:RangeDateTime])]
+    (map #(c/map->RangeDateTime {:beginning-date-time (cx/datetime-at-path % [:BeginningDateTime])
+                                 :ending-date-time (cx/datetime-at-path % [:EndingDateTime])})
+         elements)))
 
 (defn- xml-elem->PeriodicDateTime
   "Returns a UMM PeriodicDateTime from a parsed Temporal XML structure"
-  [temporal-content]
-  (let [content (cx/contents-at-path temporal-content [:PeriodicDateTime])]
-    (if-not (empty? content)
-      (map #(c/map->PeriodicDateTime {:name (cx/string-at-path % [:Name])
-                                      :start-date (cx/datetime-at-path % [:StartDate])
-                                      :end-date (cx/datetime-at-path % [:EndDate])
-                                      :duration-unit (cx/string-at-path % [:DurationUnit])
-                                      :duration-value (cx/long-at-path % [:DurationValue])
-                                      :period-cycle-duration-unit (cx/string-at-path % [:PeriodCycleDurationUnit])
-                                      :period-cycle-duration-value (cx/long-at-path % [:PeriodCycleDurationValue])}) content))))
+  [temporal-element]
+  (let [elements (cx/elements-at-path temporal-element [:PeriodicDateTime])]
+    (map #(c/map->PeriodicDateTime {:name (cx/string-at-path % [:Name])
+                                    :start-date (cx/datetime-at-path % [:StartDate])
+                                    :end-date (cx/datetime-at-path % [:EndDate])
+                                    :duration-unit (cx/string-at-path % [:DurationUnit])
+                                    :duration-value (cx/long-at-path % [:DurationValue])
+                                    :period-cycle-duration-unit (cx/string-at-path % [:PeriodCycleDurationUnit])
+                                    :period-cycle-duration-value (cx/long-at-path % [:PeriodCycleDurationValue])})
+         elements)))
 
 (defn- xml-elem->TemporalCoverage
   "Returns a UMM TemporalCoverage from a parsed Collection Content XML structure"
-  [collection-content]
-  (let [content (cx/content-at-path collection-content [:Temporal])
-        range-date-times (xml-elem->RangeDateTimes content)
-        periodic-date-times (xml-elem->PeriodicDateTime content)
-        temp-map {:time-type (cx/string-at-path content [:TimeType])
-                  :date-type (cx/string-at-path content [:DateType])
-                  :temporal-range-type (cx/string-at-path content [:TemporalRangeType])
-                  :precision-of-seconds (cx/long-at-path content [:PrecisionOfSeconds])
-                  :ends-at-present-flag (cx/bool-at-path content [:EndsAtPresentFlag])
+  [collection-element]
+  (let [temporal-element (cx/element-at-path collection-element [:Temporal])
+        range-date-times (xml-elem->RangeDateTimes temporal-element)
+        periodic-date-times (xml-elem->PeriodicDateTime temporal-element)
+        temp-map {:time-type (cx/string-at-path temporal-element [:TimeType])
+                  :date-type (cx/string-at-path temporal-element [:DateType])
+                  :temporal-range-type (cx/string-at-path temporal-element [:TemporalRangeType])
+                  :precision-of-seconds (cx/long-at-path temporal-element [:PrecisionOfSeconds])
+                  :ends-at-present-flag (cx/bool-at-path temporal-element [:EndsAtPresentFlag])
                   :range-date-times range-date-times
-                  :single-date-times (cx/datetimes-at-path content [:SingleDateTime])
+                  :single-date-times (cx/datetimes-at-path temporal-element [:SingleDateTime])
                   :periodic-date-times periodic-date-times}
         simplified-map (apply dissoc temp-map (for [[k v] temp-map :when (nil? v)] k))]
     (c/map->TemporalCoverage simplified-map)))
@@ -55,11 +56,10 @@
 (defn- xml-elem->Collection
   "Returns a UMM Product from a parsed Collection XML structure"
   [xml-struct]
-  (let [collection-content (cx/content-at-path xml-struct [:Collection])
-        product (xml-elem->Product collection-content)
-        temporal-coverage (xml-elem->TemporalCoverage collection-content)]
+  (let [product (xml-elem->Product xml-struct)
+        temporal-coverage (xml-elem->TemporalCoverage xml-struct)]
     (c/map->UmmCollection {:entry-id (str (:short-name product) "_" (:version-id product))
-                           :entry-title (cx/string-at-path collection-content [:DataSetId])
+                           :entry-title (cx/string-at-path xml-struct [:DataSetId])
                            :product product
                            :temporal-coverage temporal-coverage})))
 
@@ -100,16 +100,22 @@
                             (x-element :TemporalRangeType temporal-range-type)
                             (x-element :PrecisionOfSeconds precision-of-seconds)
                             (x-element :EndsAtPresentFlag ends-at-present-flag)
+
                             (for [range-date-time range-date-times]
                               (let [{:keys [beginning-date-time ending-date-time]} range-date-time]
-                                (if (some #(not (nil? %)) [beginning-date-time ending-date-time])
+                                (when (some #(not (nil? %)) [beginning-date-time ending-date-time])
                                   (x/element :RangeDateTime {}
-                                             (if (not (nil? beginning-date-time)) (x/element :BeginningDateTime {} (str beginning-date-time)))
-                                             (if (not (nil? ending-date-time)) (x/element :EndingDateTime {} (str ending-date-time)))))))
+                                             (when (not (nil? beginning-date-time))
+                                               (x/element :BeginningDateTime {} (str beginning-date-time)))
+                                             (when (not (nil? ending-date-time))
+                                               (x/element :EndingDateTime {} (str ending-date-time)))))))
+
                             (for [single-date-time single-date-times]
-                              (if (not (nil? single-date-time)) (x/element :SingleDateTime {} (str single-date-time))))
+                              (x/element :SingleDateTime {} (str single-date-time)))
+
                             (for [periodic-date-time periodic-date-times]
-                              (let [{:keys [name start-date end-date duration-unit duration-value period-cycle-duration-unit period-cycle-duration-value]} periodic-date-time]
+                              (let [{:keys [name start-date end-date duration-unit duration-value
+                                            period-cycle-duration-unit period-cycle-duration-value]} periodic-date-time]
                                 (if (some #(not (nil? %)) [name
                                                            start-date
                                                            end-date

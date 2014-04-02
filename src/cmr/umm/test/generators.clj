@@ -72,8 +72,8 @@
                      gen/s-pos-int  ;; precision-of-seconds
                      gen/boolean    ;; ends-at-present-flag
                      (gen/vector range-date-times 1 3)
-                     (gen/return nil)
-                     (gen/return nil)))
+                     (gen/return [])
+                     (gen/return [])))
 
 (def temporal-coverages-singles
   (ext-gen/model-gen c/->TemporalCoverage
@@ -82,9 +82,9 @@
                      temporal-range-types
                      gen/s-pos-int  ;; precision-of-seconds
                      gen/boolean    ;; ends-at-present-flag
-                     (gen/return nil)
+                     (gen/return [])
                      (gen/vector (ext-gen/date-time) 1 3)
-                     (gen/return nil)))
+                     (gen/return [])))
 
 (def temporal-coverages-periodics
   (ext-gen/model-gen c/->TemporalCoverage
@@ -93,8 +93,8 @@
                      temporal-range-types
                      gen/s-pos-int  ;; precision-of-seconds
                      gen/boolean    ;; ends-at-present-flag
-                     (gen/return nil)
-                     (gen/return nil)
+                     (gen/return [])
+                     (gen/return [])
                      (gen/vector periodic-date-times 1 3)))
 
 (def temporal-coverages
