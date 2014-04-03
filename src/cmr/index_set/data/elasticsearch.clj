@@ -19,13 +19,12 @@
   "Create elastic index"
   [{:keys [index-name settings mapping] :as idx-w-config}]
   (when-not (esi/exists? index-name)
-  (try
+    (try
       (let [response (esi/create index-name :settings settings :mappings mapping)]
-      (println response)
-      (info "index creation attempt result:" response))
-    (catch Exception e
-      (.printStackTrace e)
-      (errors/internal-error! (:error-message (format "error creating %s elastic index - %s" index-name (.getMessage e))))))))
+        #_(info "index creation attempt result:" response))
+      (catch Exception e
+        (.printStackTrace e)
+        (errors/internal-error! (:error-message (format "error creating %s elastic index - %s" index-name (.getMessage e))))))))
 
 (defrecord ESstore
   [

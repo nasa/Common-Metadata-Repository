@@ -15,10 +15,6 @@
 (defn- build-routes [system]
   (routes
     (POST "/index-sets" {body :body request-context :request-context params :params}
-      (println "body: " body)
-      (println "============")
-      ;; (println (json/parse-string body true))
-      (println (walk/keywordize-keys body))
       (let [index-set (walk/keywordize-keys body)]
         (r/created (index-svc/create-index-set request-context index-set))))
     (route/not-found "Not Found")))
