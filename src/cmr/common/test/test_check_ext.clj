@@ -4,6 +4,11 @@
             [clj-time.coerce :as c])
   (:import java.util.Random))
 
+(defn optional
+  "Returns either nil or the given generator. This should be used for optional fields"
+  [generator]
+  (gen/one-of [(gen/return nil) generator]))
+
 (defn model-gen
   "Creates a generator for models. Takes the constructor function for the model and generators
   for each argument."
