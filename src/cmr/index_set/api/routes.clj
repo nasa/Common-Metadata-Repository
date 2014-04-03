@@ -5,17 +5,22 @@
             [compojure.core :refer :all]
             [ring.middleware.json :as ring-json]
             [cheshire.core :as json]
+            [ring.util.response :as r]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.api.errors :as errors]
+            [clojure.walk :as walk]
+            [cmr.index-set.services.index-service :as index-svc]
             [cmr.system-trace.http :as http-trace]))
 
 (defn- build-routes [system]
   (routes
-    (context "/foo" []
-      (GET "/" {params :params headers :headers context :request-context}
-        {:status 200
-         :headers {"Content-Type" "text/plain"}
-         :body "foo"}))
+    (POST "/index-sets" {body :body request-context :request-context params :params}
+      (println "body: " body)
+      (println "============")
+      ;; (println (json/parse-string body true))
+      (println (walk/keywordize-keys body))
+      (let [index-set (walk/keywordize-keys body)]
+        (r/created (index-svc/create-index-set request-context index-set))))
     (route/not-found "Not Found")))
 
 (defn make-api [system]

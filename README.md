@@ -19,6 +19,8 @@ To start a web server for the application, run:
 
     lein run
 
+## Add curl statement after test somemore testing. Mean while see docs attached to issue CMR-152 for design intent.
+
 ## License
 
 Copyright © 2014 NASA
