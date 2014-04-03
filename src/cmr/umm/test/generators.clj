@@ -2,14 +2,10 @@
   "Provides clojure.test.check generators for use in testing other projects."
   (:require [clojure.test.check.generators :as gen]
             [clj-time.core :as t]
-            [cmr.common.test.test-check-ext :as ext-gen]
+            [cmr.common.test.test-check-ext :as ext-gen :refer [optional]]
             [cmr.umm.collection :as c]
-            [cmr.umm.granule :as g]))
-
-(defn- optional
-  "Returns either nil or the given generator. This should be used for optional fields"
-  [generator]
-  (gen/one-of [(gen/return nil) generator]))
+            [cmr.umm.granule :as g]
+            [cmr.umm.temporal-coverage :as tc]))
 
 (def short-names
   (ext-gen/string-alpha-numeric 1 85))
@@ -66,47 +62,45 @@
 (def periodic-date-times
   (let [begin (first (gen/sample (ext-gen/date-time) 1))
         end (t/plus begin (t/days 1))]
-    (ext-gen/model-gen c/->PeriodicDateTime
-                       names
-                       (gen/return begin)
-                       (gen/return end)
-                       duration-units
-                       duration-values
-                       period-cycle-duration-units
-                       period-cycle-duration-values)))
+    (ext-gen/model-gen
+      c/map->PeriodicDateTime
+      (gen/hash-map :name names
+                    :start-date (gen/return begin)
+                    :end-date (gen/return end)
+                    :duration-unit duration-units
+                    :duration-value duration-values
+                    :period-cycle-duration-unit period-cycle-duration-units
+                    :period-cycle-duration-value period-cycle-duration-values))))
 
 (def temporal-coverages-ranges
-  (ext-gen/model-gen c/->TemporalCoverage
-                     time-types
-                     date-types
-                     temporal-range-types
-                     precision-of-seconds
-                     ends-at-present-flag
-                     (gen/vector range-date-times 1 3)
-                     (gen/return [])
-                     (gen/return [])))
+  (ext-gen/model-gen
+    tc/temporal-coverage
+    (gen/hash-map :time-type time-types
+                  :date-type date-types
+                  :temporal-range-type temporal-range-types
+                  :precision-of-seconds precision-of-seconds
+                  :ends-at-present-flag ends-at-present-flag
+                  :range-date-times (gen/vector range-date-times 1 3))))
 
 (def temporal-coverages-singles
-  (ext-gen/model-gen c/->TemporalCoverage
-                     time-types
-                     date-types
-                     temporal-range-types
-                     precision-of-seconds
-                     ends-at-present-flag
-                     (gen/return [])
-                     (gen/vector (ext-gen/date-time) 1 3)
-                     (gen/return [])))
+  (ext-gen/model-gen
+    tc/temporal-coverage
+    (gen/hash-map :time-type time-types
+                  :date-type date-types
+                  :temporal-range-type temporal-range-types
+                  :precision-of-seconds precision-of-seconds
+                  :ends-at-present-flag ends-at-present-flag
+                  :single-date-times (gen/vector (ext-gen/date-time) 1 3))))
 
 (def temporal-coverages-periodics
-  (ext-gen/model-gen c/->TemporalCoverage
-                     time-types
-                     date-types
-                     temporal-range-types
-                     precision-of-seconds
-                     ends-at-present-flag
-                     (gen/return [])
-                     (gen/return [])
-                     (gen/vector periodic-date-times 1 3)))
+  (ext-gen/model-gen
+    tc/temporal-coverage
+    (gen/hash-map :time-type time-types
+                  :date-type date-types
+                  :temporal-range-type temporal-range-types
+                  :precision-of-seconds precision-of-seconds
+                  :ends-at-present-flag ends-at-present-flag
+                  :periodic-date-times (gen/vector periodic-date-times 1 3))))
 
 (def temporal-coverages
   (gen/one-of [temporal-coverages-ranges

@@ -51,4 +51,3 @@
    ;; TemporalCoverage
    temporal-coverage
    ])
-

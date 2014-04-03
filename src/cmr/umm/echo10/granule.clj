@@ -20,7 +20,7 @@
   [xml-struct]
   (let [coll-ref (xml-elem->CollectionRef xml-struct)]
     (g/map->UmmGranule {:granule-ur (cx/string-at-path xml-struct [:GranuleUR])
-                            :collection-ref coll-ref})))
+                        :collection-ref coll-ref})))
 
 (defn parse-granule
   "Parses ECHO10 XML into a UMM Granule record."
