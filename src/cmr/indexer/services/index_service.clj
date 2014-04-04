@@ -1,11 +1,13 @@
 (ns cmr.indexer.services.index-service
   "Provide functions to index concept"
   (:require [clojure.string :as s]
+            [clj-time.format :as f]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.indexer.data.metadata-db :as meta-db]
             [cmr.indexer.data.elasticsearch :as es]
             [cmr.umm.echo10.collection :as collection]
-            [cmr.system-trace.core :refer [deftracefn]]))
+            [cmr.system-trace.core :refer [deftracefn]]
+            [cmr.indexer.services.temporal :as temporal]))
 
 ;; hard-code the index name and mapping type for now
 (def es-index "collections")
@@ -15,9 +17,12 @@
   "Returns elasticsearch json that can be used to insert into Elasticsearch
   for the given concept"
   [concept umm-concept]
-  (let [{{:keys [short-name version-id]} :product
-         entry-title :entry-title} umm-concept
-        {:strs [concept-id provider-id]} concept]
+  (let [{:strs [concept-id provider-id]} concept
+        {{:keys [short-name version-id]} :product
+         entry-title :entry-title
+         temporal-coverage :temporal-coverage} umm-concept
+        start-date (temporal/start-date temporal-coverage)
+        end-date (temporal/end-date temporal-coverage)]
     {:concept-id concept-id
      :entry-title entry-title
      :entry-title.lowercase (s/lower-case entry-title)
@@ -26,7 +31,9 @@
      :short-name short-name
      :short-name.lowercase (s/lower-case short-name)
      :version-id version-id
-     :version-id.lowercase (s/lower-case version-id)}))
+     :version-id.lowercase (s/lower-case version-id)
+     :start-date (f/unparse (f/formatters :date-time) start-date)
+     :end-date (f/unparse (f/formatters :date-time) end-date)}))
 
 (deftracefn index-concept
   "Index the given concept and revision-id"
