@@ -57,29 +57,27 @@
   "Validate that the revision-id for a concept (if given) is one greater than
   the current maximum revision-id for this concept."
   ([db concept previous-revision]
-  (let [{:keys [concept-id revision-id]} concept]
-    (cond
-      (and revision-id concept-id)
-      ;; both provided
-      (let [result (check-concept-revision-id db concept previous-revision)]
-        (when (= (:status result) :fail)
-          (messages/data-error :conflict
-                               messages/invalid-revision-id-msg
-                               (:expected result)
-                               revision-id)))
-      
-      revision-id
-      ;; only revision-id provided so it should be zero (no concept-id has been assigned yet)
-      (if (not= revision-id 0)
-        (messages/data-error :conflict
-                             messages/invalid-revision-id-msg
-                             0
-                             revision-id))
-      
-      :else
-      ;; just concept-id or neither provided - do nothing
-      ()
-      ))))
+   (let [{:keys [concept-id revision-id]} concept]
+     (cond
+       (and revision-id concept-id)
+       ;; both provided
+       (let [result (check-concept-revision-id db concept previous-revision)]
+         (when (= (:status result) :fail)
+           (messages/data-error :conflict
+                                messages/invalid-revision-id-msg
+                                (:expected result)
+                                revision-id)))
+       
+       revision-id
+       ;; only revision-id provided so it should be zero (no concept-id has been assigned yet)
+       (when-not (= revision-id 0)
+         (messages/data-error :conflict
+                              messages/invalid-revision-id-msg
+                              0
+                              revision-id))
+       
+       ;; just concept-id or neither provided - do nothing
+       ))))
 
 ;;; this is abstracted here in case we switch to some other mechanism of
 ;;; marking tombstones
@@ -88,7 +86,7 @@
 (defn- handle-save-errors 
   "Deal with errors encountered during saves."
   [concept result tries-left revision-id-provided?]
-  (let [error-code (:error-code result)]
+  (let [error-code (:error result)]
     (when (= tries-left 1)
       (errors/internal-error! (messages/maximum-save-attempts-exceeded-msg)))
     (cond 

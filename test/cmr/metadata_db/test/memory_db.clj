@@ -5,12 +5,12 @@
 
 ;;; concept used for tests
 (def test-concept {:concept-id "C1000000000-PROV1"
-              :concept-type :collection
-              :native-id "provider collection id"
-              :provider-id "PROV1"
-              :metadata "xml here"
-              :format "echo10"
-              :revision-id 0})
+                   :concept-type :collection
+                   :native-id "provider collection id"
+                   :provider-id "PROV1"
+                   :metadata "xml here"
+                   :format "echo10"
+                   :revision-id 0})
 
 (defrecord MemoryDB
   [db]
