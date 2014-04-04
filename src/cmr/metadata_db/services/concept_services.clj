@@ -81,7 +81,11 @@
 
 ;;; this is abstracted here in case we switch to some other mechanism of
 ;;; marking tombstones
-(defn- set-deleted-flag [value concept] (assoc concept :deleted value))
+(defn- set-deleted-flag 
+  "Create a copy of the given and set its deleted flag to the given value.
+  Used to create tombstones from concepts and vice-versa."
+  [value concept] 
+  (assoc concept :deleted value))
 
 (defn- handle-save-errors 
   "Deal with errors encountered during saves."
