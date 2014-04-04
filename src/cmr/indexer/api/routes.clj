@@ -7,6 +7,7 @@
             [ring.util.response :as r]
             [ring.middleware.json :as ring-json]
             [clojure.stacktrace :refer [print-stack-trace]]
+            [clojure.walk :as walk]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.api.errors :as errors]
             [cmr.indexer.services.index-service :as index-svc]
@@ -23,7 +24,7 @@
   (routes
 
     (POST "/" {body :body request-context :request-context params :params}
-      (let [{:strs [concept-id revision-id]} body
+      (let [{:keys [concept-id revision-id]} (walk/keywordize-keys body)
             ignore-conflict (ignore-conflict? params)]
         (r/created (index-svc/index-concept request-context concept-id revision-id ignore-conflict))))
 

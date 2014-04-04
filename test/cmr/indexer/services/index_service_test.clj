@@ -10,8 +10,8 @@
         dataset-id "A minimal valid collection V 1"
         provider-id "PROV1"
         concept-id "C1234-PROV1"
-        concept {"concept-id" concept-id
-                 "provider-id" provider-id}
+        concept {:concept-id concept-id
+                 :provider-id provider-id}
         umm-concept {:entry-id "MINIMAL_1"
                      :entry-title dataset-id
                      :product {:short-name short-name

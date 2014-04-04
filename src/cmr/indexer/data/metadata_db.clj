@@ -3,6 +3,7 @@
   (:require [clj-http.client :as client]
             [cmr.common.services.errors :as errors]
             [cheshire.core :as cheshire]
+            [clojure.walk :as walk]
             [cmr.system-trace.http :as ch]
             [cmr.system-trace.core :refer [deftracefn]]))
 
@@ -35,7 +36,7 @@
                               :headers (ch/context->http-headers context)})
         status (:status response)]
     (if (= 200 status)
-      (cheshire/decode (:body response))
+      (walk/keywordize-keys (cheshire/decode (:body response)))
       (errors/internal-error!
         (str "Failed to retrieve concept " concept-id "/" revision-id " from metadata-db: " (:body response))))))
 

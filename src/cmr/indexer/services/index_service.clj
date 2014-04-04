@@ -17,7 +17,7 @@
   "Returns elasticsearch json that can be used to insert into Elasticsearch
   for the given concept"
   [concept umm-concept]
-  (let [{:strs [concept-id provider-id]} concept
+  (let [{:keys [concept-id provider-id]} concept
         {{:keys [short-name version-id]} :product
          entry-title :entry-title
          temporal-coverage :temporal-coverage} umm-concept
