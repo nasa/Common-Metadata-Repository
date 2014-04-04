@@ -18,10 +18,9 @@
 (defn- xml-elem->Granule
   "Returns a UMM Product from a parsed Granule XML structure"
   [xml-struct]
-  (let [granule-content-node (cx/content-at-path xml-struct [:Granule])
-        coll-ref (xml-elem->CollectionRef granule-content-node)]
-    (g/map->UmmGranule {:granule-ur (cx/string-at-path granule-content-node [:GranuleUR])
-                            :collection-ref coll-ref})))
+  (let [coll-ref (xml-elem->CollectionRef xml-struct)]
+    (g/map->UmmGranule {:granule-ur (cx/string-at-path xml-struct [:GranuleUR])
+                        :collection-ref coll-ref})))
 
 (defn parse-granule
   "Parses ECHO10 XML into a UMM Granule record."
