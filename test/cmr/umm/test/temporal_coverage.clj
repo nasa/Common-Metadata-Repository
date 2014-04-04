@@ -8,14 +8,27 @@
 (deftest validate-temporal-map
   (testing "empty map is valid"
     (tc/validate-temporal-map {}))
+  (testing "map with empty temporal values is valid"
+    (tc/validate-temporal-map {:range-date-times []
+                               :single-date-times []
+                               :periodic-date-times []}))
   (testing "map with one of the temproal date times is valid"
-    (tc/validate-temporal-map {:range-date-times []})
-    (tc/validate-temporal-map {:single-date-times []})
-    (tc/validate-temporal-map {:periodic-date-times []}))
+    (tc/validate-temporal-map {:range-date-times ["dummy"]})
+    (tc/validate-temporal-map {:single-date-times ["dummy"]})
+    (tc/validate-temporal-map {:periodic-date-times ["dummy"]}))
   (testing "map with more than one of the temproal date times is invalid"
-    (is (thrown? Exception (tc/validate-temporal-map {:range-date-times [] :single-date-times []})))
-    (is (thrown? Exception (tc/validate-temporal-map {:range-date-times [] :periodic-date-times []})))
-    (is (thrown? Exception (tc/validate-temporal-map {:single-date-times [] :periodic-date-times []})))))
+    (is (thrown-with-msg?
+          Exception
+          #"Only one of range-date-times, single-date-times and periodic-date-times can be provided."
+          (tc/validate-temporal-map {:range-date-times ["dummy"] :single-date-times ["dummy"]})))
+    (is (thrown-with-msg?
+          Exception
+          #"Only one of range-date-times, single-date-times and periodic-date-times can be provided."
+          (tc/validate-temporal-map {:range-date-times ["dummy"] :periodic-date-times ["dummy"]})))
+    (is (thrown-with-msg?
+          Exception
+          #"Only one of range-date-times, single-date-times and periodic-date-times can be provided."
+          (tc/validate-temporal-map {:single-date-times ["dummy"] :periodic-date-times ["dummy"]})))))
 
 (deftest temporal-coverage
   (testing "construct temporal coverage with the correct default datetimes"
