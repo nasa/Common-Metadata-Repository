@@ -2,6 +2,7 @@
   cmr.indexer.services.index-versions-test
   (:require [clojure.test :refer :all]
             [clojure.string :as s]
+            [taoensso.timbre :as timbre]
             [clojurewerkz.elastisch.rest :as esr]
             [clojurewerkz.elastisch.rest.index :as esi]
             [clojurewerkz.elastisch.rest.document :as doc]
@@ -52,12 +53,17 @@
   (let [http-port (:port test-config)
         server (lifecycle/start (elastic-server/create-server http-port 9215) nil)]
     (esr/connect! (str "http://localhost:" http-port))
+
+    ;; Disables standard out logging during testing because it breaks the JUnit parser in bamboo.
+    (timbre/set-config! [:appenders :standard-out :enabled?] false)
+
     (try
       (f)
       (finally
         (lifecycle/stop server nil)))))
 ;; Run once for the whole test suite
 (use-fixtures :once server-setup)
+
 
 (defn index-setup
   "Fixture that creates an index and drops it."
@@ -69,6 +75,8 @@
       (esi/delete "tests"))))
 ;; Run once for each test to clear out data.
 (use-fixtures :each index-setup)
+
+
 
 (deftest save-with-increment-versions-test
   (testing "Save with increment versions"
