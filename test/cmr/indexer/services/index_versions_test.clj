@@ -6,8 +6,10 @@
             [clojurewerkz.elastisch.rest.index :as esi]
             [clojurewerkz.elastisch.rest.document :as doc]
             [cmr.indexer.config.elasticsearch-config :as conf]
+            [cmr.elastic-utils.embedded-elastic-server :as elastic-server]
             [cmr.indexer.data.elasticsearch :as es]
-            [cmr.indexer.data.elasticsearch-properties :as es-prop]))
+            [cmr.indexer.data.elasticsearch-properties :as es-prop]
+            [cmr.common.lifecycle :as lifecycle]))
 
 (defn- es-doc
   "Returns dummy elasticsearch doc for testing"
@@ -39,26 +41,34 @@
   (let [result (es/get-document {} "tests" "collection" id)]
     (is (nil? result))))
 
-(defn setup
-  "set up the fixtures for test"
-  []
-  (let [{:keys [host port]} (conf/config)]
-    (esr/connect! (str "http://" host ":" port)))
-  (esi/create "tests" :settings es-prop/collection-setting :mappings es-prop/collection-mapping))
+(def test-config
+  "Configuration to use for elasticsearch during test run."
+  (assoc (conf/config) :port 9205))
 
-(defn teardown
-  "tear down after the test"
-  []
-  (esi/delete "tests"))
 
-(defn wrap-setup
+(defn server-setup
+  "Fixture that starts an instance of elastic in the JVM runs the tests and then shuts it down."
   [f]
-  (setup)
+  (let [http-port (:port test-config)
+        server (lifecycle/start (elastic-server/create-server http-port 9215) nil)]
+    (esr/connect! (str "http://localhost:" http-port))
+    (try
+      (f)
+      (finally
+        (lifecycle/stop server nil)))))
+;; Run once for the whole test suite
+(use-fixtures :once server-setup)
+
+(defn index-setup
+  "Fixture that creates an index and drops it."
+  [f]
+  (esi/create "tests" :settings es-prop/collection-setting :mappings es-prop/collection-mapping)
   (try
     (f)
-    (finally (teardown))))
-
-(use-fixtures :each wrap-setup)
+    (finally
+      (esi/delete "tests"))))
+;; Run once for each test to clear out data.
+(use-fixtures :each index-setup)
 
 (deftest save-with-increment-versions-test
   (testing "Save with increment versions"
@@ -97,9 +107,9 @@
 (deftest delete-with-increment-versions-test
   (testing "Delete with increment versions"
     (es/save-document-in-elastic {} "tests" "collection" (es-doc) 0 false)
-    (es/delete-document-in-elastic {} (conf/config) "tests" "collection" "C1234-PROV1" "1" false)
+    (es/delete-document-in-elastic {} test-config "tests" "collection" "C1234-PROV1" "1" false)
     (assert-delete "C1234-PROV1")
-    (es/delete-document-in-elastic {} (conf/config) "tests" "collection" "C1234-PROV1" "8" false)
+    (es/delete-document-in-elastic {} test-config "tests" "collection" "C1234-PROV1" "8" false)
     (assert-delete "C1234-PROV1")))
 
 ; TODO this test needs the new elasticsearch external_gte feature to pass
@@ -108,18 +118,18 @@
 #_(deftest delete-with-equal-versions-test
     (testing "Delete with equal versions"
       (es/save-document-in-elastic {} "tests" "collection" (es-doc) 0 false)
-      (es/delete-document-in-elastic {} (conf/config) "tests" "collection" "C1234-PROV1" "0" false)
+      (es/delete-document-in-elastic {} test-config "tests" "collection" "C1234-PROV1" "0" false)
       (assert-delete "C1234-PROV1")))
 
 (deftest delete-with-earlier-versions-test
   (testing "Delete with earlier versions ignore-conflict false"
     (es/save-document-in-elastic {} "tests" "collection" (es-doc) 2 false)
     (try
-      (es/delete-document-in-elastic {} (conf/config) "tests" "collection" "C1234-PROV1" "1" false)
+      (es/delete-document-in-elastic {} test-config "tests" "collection" "C1234-PROV1" "1" false)
       (catch java.lang.Exception e
         (is (re-find #"version conflict, current \[2\], provided \[1\]" (.getMessage e))))))
   (testing "Delete with earlier versions ignore-conflict true"
       (es/save-document-in-elastic {} "tests" "collection" (es-doc) 2 true)
-      (es/delete-document-in-elastic {} (conf/config) "tests" "collection" "C1234-PROV1" "1" true)
+      (es/delete-document-in-elastic {} test-config "tests" "collection" "C1234-PROV1" "1" true)
       (assert-version "C1234-PROV1" 2)))
 
