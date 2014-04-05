@@ -1,5 +1,5 @@
 # you can override this using by setting a system property, for example -Des.logger.level=DEBUG
-es.logger.level: INFO
+es.logger.level: WARN
 rootLogger: ${es.logger.level}, console
 
 appender:

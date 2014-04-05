@@ -55,13 +55,11 @@
     [this system]
     (let [node-settings (create-settings this)]
       (setup-logging node-settings)
-      (println "Starting Embedded Elasticsearch server")
       (assoc this :node (build-node node-settings))))
 
   (stop
     [this system]
     (when-let [^Node node (:node this)]
-      (println "Stopping Embedded Elasticsearch server")
       (.close node))
     (assoc this :node nil)))
 
