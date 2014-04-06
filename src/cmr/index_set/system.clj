@@ -15,13 +15,13 @@
 (def
   ^{:doc "Defines the order to start the components."
     :private true}
-  component-order [:log :db :web])
+  component-order [:log :index :web])
 
 (defn create-system
   "Returns a new instance of the whole application."
   []
   {:log (log/create-logger)
-   :db (es/create-elasticsearch-store (es-config/config))
+   :index (es/create-elasticsearch-store (es-config/config))
    :web (web/create-web-server DEFAULT_PORT routes/make-api)
    :zipkin (context/zipkin-config "index-set" false)})
 

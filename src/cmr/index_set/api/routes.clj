@@ -16,7 +16,13 @@
   (routes
     (POST "/index-sets" {body :body request-context :request-context params :params}
       (let [index-set (walk/keywordize-keys body)]
-        (r/created (index-svc/create-index-set request-context index-set))))
+        (r/created (index-svc/create-indices-listed-in-index-set request-context index-set))))
+
+    (GET "/index-sets/:id" {{:keys [id]} :params request-context :request-context}
+      (r/response (index-svc/get-index-set request-context id)))
+
+    (DELETE "/index-sets/:id" {{:keys [id]} :params request-context :request-context}
+      (r/response (index-svc/delete-indices-listed-in-index-set request-context id)))
     (route/not-found "Not Found")))
 
 (defn make-api [system]
