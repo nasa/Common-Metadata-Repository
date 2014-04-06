@@ -19,16 +19,15 @@
 
 (defn create-index
   "Create elastic index"
-  [; {:keys [index-name settings mapping] :as idx-w-config}
-   idx-w-config]
+  [idx-w-config]
   (let [{:keys [index-name settings mapping]} idx-w-config]
     (when-not (esi/exists? index-name)
       (try
         (let [response (esi/create index-name :settings settings :mappings mapping)]
-          #_(info "index creation attempt result:" response))
+          (debug "index creation attempt result:" response))
         (catch Exception e
-          (.printStackTrace e)
-          (errors/internal-error! (:error-message (format "error creating %s elastic index - %s" index-name (.getMessage e)))))))))
+          ;; internal-errpr now takes custom msg and error
+          (errors/internal-error! (format "error creating %s elastic index - %s" index-name (.getMessage e)) e))))))
 
 (defn get-index-set
   "Fetch index-set associated with an id. Convert stored index set json string to a map."

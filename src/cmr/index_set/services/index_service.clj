@@ -9,7 +9,7 @@
             [cmr.system-trace.core :refer [deftracefn]]))
 
 ;; configured list of cmr concepts
-(def cmr-concepts (list :collection :granule))
+(def cmr-concepts [:collection :granule])
 
 (defn- build-indices-list-w-config
   "given a index-set, build list of indices with config"
@@ -45,28 +45,24 @@
   [context index-set]
   (info (format "Indexing requested index-set: %s" index-set))
   (let [es-doc {:index-set-id (-> index-set :index-set :id)
-              :index-set-name (-> index-set :index-set :name)
-              :index-set-request (json/generate-string index-set)}
+                :index-set-name (-> index-set :index-set :name)
+                :index-set-request (json/generate-string index-set)}
         doc-id (str (:index-set-id es-doc))
         {:keys [index-name mapping]} es-config/index-w-config
         es-mapping-type (first (keys mapping))]
-    (println index-name)
-    (println es-mapping-type)
-    (println es-doc)
-    (println doc-id)
     (es/save-document-in-elastic context index-name es-mapping-type doc-id es-doc)))
 
 ;; TODO - implement rollback (remove indices alleardy created in this index-set if index creation in elastic fails)
 (deftracefn create-indices-listed-in-index-set
   "create indices listed in index-set"
   [context index-set]
-  (let [indices (build-indices-list-w-config index-set)]
-    (info indices)
-    (dorun (map #(es/create-index %) indices))
+  (let [index-names (build-indices-list-w-config index-set)]
+    (info index-names)
+    (dorun (map #(es/create-index %) index-names))
     (index-requested-index-set context index-set)))
 
 (deftracefn get-index-set
-   "Fetch index-set associated with an id"
+  "Fetch index-set associated with an id"
   [context index-set-id]
   (let [{:keys [index-name mapping]} es-config/index-w-config
         es-mapping-type (first (keys mapping))]
@@ -75,7 +71,6 @@
 (deftracefn delete-indices-listed-in-index-set
   "delete all indices having 'id_' as the prefix in the elastic"
   [context index-set-id]
-  (println "svc delete index id: " index-set-id)
   (let [
         index-names (get-index-names (get-index-set context index-set-id))
         es-config (-> context :system :index :config)]
