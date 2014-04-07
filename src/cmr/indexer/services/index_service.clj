@@ -41,7 +41,7 @@
   (info (format "Indexing concept %s, revision-id %s" concept-id revision-id))
   (let [concept (meta-db/get-concept context concept-id revision-id)
         ; TODO: should replace echo10.collection with a generic namesapce once umm-lib is complete
-        umm-concept (collection/parse-collection (concept "metadata"))
+        umm-concept (collection/parse-collection (concept :metadata))
         es-doc (concept->elastic-doc concept umm-concept)]
     (es/save-document-in-elastic context es-index es-mapping-type es-doc (Integer. revision-id) ignore-conflict)))
 
