@@ -26,8 +26,8 @@
         (let [response (esi/create index-name :settings settings :mappings mapping)]
           (debug "index creation attempt result:" response))
         (catch Exception e
-          ;; internal-errpr now takes custom msg and error
-          (errors/internal-error! (format "error creating %s elastic index - %s" index-name (.getMessage e)) e))))))
+          ;; service layer to rollback index-set create  progress on error
+          (throw (format "error creating %s elastic index - %s" index-name (.getMessage e)) e))))))
 
 (defn get-index-set
   "Fetch index-set associated with an id. Convert stored index set json string to a map."
@@ -39,9 +39,9 @@
 
 (defn delete-index
   "Delete given elastic index"
-  [index-name es-config]
+  [index-name es-cfg]
   (when (esi/exists? index-name)
-    (let [admin-token (:admin-token es-config)
+    (let [admin-token (:admin-token es-cfg)
           response (client/delete (esr/index-url index-name)
                                   {:headers {"Authorization" admin-token
                                              "Confirm-delete-action" "true"}
@@ -80,13 +80,12 @@
   (try
     (let [result (doc/put es-index es-mapping-type doc-id es-doc)]
       (if (:error result)
-        (if (= 409 (:status result)) ;; this should never happen on 'put' operation but ES throws this error
-          (errors/throw-service-error :conflict (str "Save to Elasticsearch failed " (str result)))
-          (errors/internal-error! (str "Save to Elasticsearch failed " (str result))))))
+        ;; service layer to rollback index-set create  progress on error
+        (throw (str "Save to Elasticsearch failed " (str result)))))
     (catch clojure.lang.ExceptionInfo e
       (let [err-msg (get-in (ex-data e) [:object :body])
             msg (str "Call to Elasticsearch caught exception " err-msg)]
-        (errors/internal-error! msg)))))
+        (throw msg)))))
 
 (comment
   (create-index es-config/index-w-config)
