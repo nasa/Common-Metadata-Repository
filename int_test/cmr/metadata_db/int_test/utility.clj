@@ -19,9 +19,7 @@
 (defn concept
   "Creates a concept to be used for testing."
   []
-  {
-   :concept-id ""
-   :concept-type :collection
+  {:concept-type :collection
    :native-id "provider collection id"
    :provider-id "PROV1"
    :metadata "xml here"
@@ -82,10 +80,10 @@
   [concepts concept-id-revision-ids]
   (if (not= (count concepts) (count concept-id-revision-ids))
     false
-    (every? true? 
-            (map (fn [[con-id rev-id]] 
+    (every? true?
+            (map (fn [[con-id rev-id]]
                    (some (fn [concept]
-                           (and (= (get concept "concept-id") con-id) 
+                           (and (= (get concept "concept-id") con-id)
                                 (= (get concept "revision-id" rev-id))))
                          concepts))
                  concept-id-revision-ids))))
@@ -120,7 +118,7 @@
   tombstone."
   [concept-id & revision-id]
   (let [revision-id (first revision-id)
-        url (if revision-id 
+        url (if revision-id
               (format "%s%s/%s" concepts-url concept-id revision-id)
               (format "%s%s" concepts-url concept-id))
         response (client/delete url
