@@ -61,12 +61,8 @@
        :revision-id (int revision_id)
        :deleted (not= (int deleted) 0)})))
 
-
-
-
 (defrecord OracleStore
   [
-   ;; A map with the configuration - no connection pooling for now
    db]
   
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

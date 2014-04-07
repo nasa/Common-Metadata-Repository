@@ -85,5 +85,3 @@
         expected [["C1000000000-PROV1" 1]]]
     (is (util/concepts-and-concept-id-revisions-equal? returned-concepts expected))
     (is (= status 200))))
-
-

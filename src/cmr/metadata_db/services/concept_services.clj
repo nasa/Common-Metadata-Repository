@@ -41,44 +41,56 @@
           revision-id (if existing-revision-id (inc existing-revision-id) 0)]
       (assoc concept :revision-id revision-id))))
 
+(defn check-concept-revision-id
+  "Checks that the revision-id for a concept is one greater than
+  the current maximum revision-id for this concept."
+  [db concept previous-revision]
+  (let [{:keys [concept-id revision-id]} concept
+        latest-revision (or previous-revision (data/get-concept db concept-id nil))
+        expected-revision-id (inc (:revision-id latest-revision))]
+    (if (= revision-id expected-revision-id)
+      {:status :pass}
+      {:status :fail
+       :expected expected-revision-id})))
+
 (defn validate-concept-revision-id
   "Validate that the revision-id for a concept (if given) is one greater than
   the current maximum revision-id for this concept."
-  [db concept previous-revision]
-  (let [{:keys [concept-id revision-id]} concept]
-    (cond
-      (and revision-id concept-id)
-      ;; both provided
-      (let [latest-revision (or previous-revision (data/get-concept db concept-id nil))
-            expected-revision-id (inc (:revision-id latest-revision))]
-        (when (not= revision-id expected-revision-id)
-          (messages/data-error :conflict
-                               messages/invalid-revision-id-msg
-                               expected-revision-id
-                               revision-id)))
-      
-      revision-id
-      ;; only revision-id provided so it should be zero (no concept-id has been assigned yet)
-      (if (not= revision-id 0)
-        (messages/data-error :conflict
-                             messages/invalid-revision-id-msg
-                             0
-                             revision-id))
-      
-      concept-id
-      ;; only concept-id provided - do nothing
-      
-      :else
-      ;; neither provided - do nothing
-      )))
+  ([db concept previous-revision]
+   (let [{:keys [concept-id revision-id]} concept]
+     (cond
+       (and revision-id concept-id)
+       ;; both provided
+       (let [result (check-concept-revision-id db concept previous-revision)]
+         (when (= (:status result) :fail)
+           (messages/data-error :conflict
+                                messages/invalid-revision-id-msg
+                                (:expected result)
+                                revision-id)))
+       
+       revision-id
+       ;; only revision-id provided so it should be zero (no concept-id has been assigned yet)
+       (when-not (= revision-id 0)
+         (messages/data-error :conflict
+                              messages/invalid-revision-id-msg
+                              0
+                              revision-id))
+       
+       ;; just concept-id or neither provided - do nothing
+       ))))
 
-
-(defn- set-deleted-flag [value concept] (assoc concept :deleted value))
+;;; this is abstracted here in case we switch to some other mechanism of
+;;; marking tombstones
+(defn- set-deleted-flag 
+  "Create a copy of the given and set its deleted flag to the given value.
+  Used to create tombstones from concepts and vice-versa."
+  [value concept] 
+  (assoc concept :deleted value))
 
 (defn- handle-save-errors 
   "Deal with errors encountered during saves."
   [concept result tries-left revision-id-provided?]
-  (let [error-code (:error-code result)]
+  (let [error-code (:error result)]
     (when (= tries-left 1)
       (errors/internal-error! (messages/maximum-save-attempts-exceeded-msg)))
     (cond 
@@ -98,13 +110,9 @@
                              native-id))
       
       :else
-      (errors/internal-error! (:error-message result))
-      
-      ; FIXME there might be a case where two first revision of a collection come in at the same time
-      ;; they might accidentally get different concept ids. We'd need to recur then.
-      )))
+      (errors/internal-error! (:error-message result)))))
 
-(defn- try-to-save
+(defn try-to-save
   "Try to save a concept by looping until we find a good revision-id or give up."
   [db concept revision-id-provided?]
   (loop [concept concept tries-left 3]

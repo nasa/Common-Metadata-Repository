@@ -13,8 +13,6 @@
          :user "sys as sysdba"
          :password "oracle"})
 
-;(j/query db "select * from dual")
-
 (def drop-user-sql "drop user %%CMR_USER%% cascade")
 
 ;;; Values to use in our sql drop statement
