@@ -6,7 +6,8 @@
    :cmr-metadata-db-app "0.1.0-SNAPSHOT"
    :cmr-common-lib "0.1.1-SNAPSHOT"
    :cmr-umm-lib "0.1.0-SNAPSHOT"
-   :cmr-system-trace-lib "0.1.0-SNAPSHOT"})
+   :cmr-system-trace-lib "0.1.0-SNAPSHOT"
+   :cmr-elastic-utils-lib "0.1.0-SNAPSHOT"})
 
 (def project-dependencies
   "A list of other projects as maven dependencies"
