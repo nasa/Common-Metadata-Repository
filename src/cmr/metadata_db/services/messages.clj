@@ -41,8 +41,11 @@
 (defn missing-native-id-msg []
   "Concept must include native-id.")
 
-(defn invalid-concept-id-msg []
-  "concept-id for concept does not match provider-id or concept-type.")
+(defn invalid-concept-id-msg [concept-id provider-id concept-type]
+  (format "concept-id [%s] for concept does not match provider-id [%s] or concept-type [%s]."
+          concept-id
+          provider-id
+          concept-type))
 
 (defn concept-exists-with-differnt-id-msg [concept-id concept-type provider-id native-id]
   (format

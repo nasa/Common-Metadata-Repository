@@ -19,7 +19,9 @@
 (defn concept
   "Creates a concept to be used for testing."
   []
-  {:concept-type :collection
+  {
+   :concept-id ""
+   :concept-type :collection
    :native-id "provider collection id"
    :provider-id "PROV1"
    :metadata "xml here"

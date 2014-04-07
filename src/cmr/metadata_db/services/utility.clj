@@ -33,19 +33,19 @@
   (let [{:keys [concept-id concept-type provider-id native-id]} concept
         error (cond
                 (nil? concept-type)
-                messages/missing-concept-type-msg
+                (messages/missing-concept-type-msg)
                 
                 (nil? provider-id)
-                messages/missing-provider-id-msg
+                (messages/missing-provider-id-msg)
                 
                 (nil? native-id)
-                messages/missing-native-id-msg
+                (messages/missing-native-id-msg)
                 
                 (and concept-id (not (validate-concept-id concept)))
-                messages/invalid-concept-id-msg
+                (messages/invalid-concept-id-msg concept-id provider-id concept-type)
                 
                 :else nil)]
-    (if error (messages/data-error :invalid-data error))))
+    (if error (errors/throw-service-error :invalid-data error))))
 
 (defn is-tombstone?
   "Check to see if an entry is a tombstone (has a :deleted true entry)."
