@@ -42,7 +42,7 @@
    (let [full-collection (merge default-collection collection)
          collection-xml (metadata-xml full-collection)
          response (client/put (url/collection-ingest-url provider-id (:dataset-id full-collection))
-                              {:content-type :xml
+                              {:content-type :echo10+xml
                                :body collection-xml
                                :throw-exceptions false})]
      (is (some #{201 200} [(:status response)])))))
@@ -119,7 +119,7 @@
 
 ;; set this to false when oracle impl is available
 ;; memory db requires concept id for save oper; hence get and set concept id before save concept oper.
-(def memory-db? true)
+(def memory-db? false)
 
 (defn distinct-concept
   "Generate a concept"
@@ -158,7 +158,7 @@
 (defn reset-database
   "Make a request to reset the database by clearing out all stored concepts."
   []
-  (let [response (client/delete (url/mdb-reset-url)
+  (let [response (client/post (url/mdb-reset-url)
                                 {:accept :json
                                  :throw-exceptions false})
         status (:status response)]

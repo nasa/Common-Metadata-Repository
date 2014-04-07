@@ -6,7 +6,7 @@
 
 (defn collection-ingest-url
   [provider-id native-id]
-  (format "http://localhost:3002/providers/%s/collections/%s"
+  (format "http://localhost:4000/providers/%s/collections/%s"
           provider-id
           native-id))
 
@@ -26,7 +26,7 @@
 (defn mdb-reset-url
   "Force delete all concepts from mdb."
   []
-  (format "http://localhost:3001/concepts/%s" "force-delete"))
+  (format "http://localhost:3000/reset"))
 
 (defn indexer-reset-url
   "Delete and re-create indexes in elastic. Only development team to use this functionality."
