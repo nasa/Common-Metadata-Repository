@@ -17,7 +17,8 @@
   (let [mdb-url (context->metadata-db-url context)
         request-url (str mdb-url "/concept-id/" (name concept-type) "/" provider-id "/" native-id)
         response (client/get request-url {:accept :json
-                                          :headers (ch/context->http-headers context)})
+                                          :headers (ch/context->http-headers context)
+                                          :throw-exceptions false})
         status (:status response)
         body (cheshire/decode (:body response))]
     (cond (= 404 status) (let [err-msg (format "concept-type: %s provider-id: %s native-id: %s does not exist" concept-type provider-id native-id)]

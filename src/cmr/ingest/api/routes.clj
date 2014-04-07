@@ -14,6 +14,14 @@
             [cmr.ingest.services.ingest :as ingest]
             [cmr.system-trace.http :as http-trace]))
 
+(defn- set-concept-id
+  "Set concept-id in concept if it is passed in the header"
+  [concept headers]
+  (let [concept-id (get headers "concept-id")]
+    (if (empty? concept-id)
+      concept
+      (assoc concept :concept-id concept-id))))
+
 (defn- build-routes [system]
   (routes
     (context "/providers/:provider-id" [provider-id]
@@ -25,7 +33,7 @@
                               :provider-id provider-id
                               :native-id native-id
                               :concept-type :collection}
-                concept (assoc base-concept :concept-id (get headers "concept-id"))]
+                concept (set-concept-id base-concept headers)]
             (r/response (ingest/save-concept request-context concept))))
         (DELETE "/" {:keys [request-context]}
           (let [concept-attribs {:provider-id provider-id
