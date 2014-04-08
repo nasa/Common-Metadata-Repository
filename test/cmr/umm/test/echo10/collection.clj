@@ -1,7 +1,11 @@
 (ns cmr.umm.test.echo10.collection
   "Tests parsing and generating ECHO10 Collection XML."
   (:require [clojure.test :refer :all]
-            [clojure.test.check.clojure-test :refer [defspec]]
+
+            ; [clojure.test.check.clojure-test :refer [defspec]]
+            ;; Temporarily included to use the fixed defspec. Remove once issue is fixed.
+            [cmr.common.test.test-check-ext :refer [defspec]]
+
             [clojure.test.check.properties :refer [for-all]]
             [clojure.test.check.generators :as gen]
             [clojure.string :as s]
