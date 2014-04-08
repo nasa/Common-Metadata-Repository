@@ -3,7 +3,8 @@
   (:require [clojure.set]
             [clojure.string :as s]
             [cmr.common.services.errors :as err]
-            [cmr.search.models.query :as qm]))
+            [cmr.search.models.query :as qm]
+            [cmr.search.services.parameter-converters.temporal :as temporal-converter]))
 
 (def param-aliases
   "A map of non UMM parameter names to their UMM fields."
@@ -22,7 +23,8 @@
   {:entry_title :string
    :provider :string
    :short_name :string
-   :version :string})
+   :version :string
+   :temporal :temporal})
 
 (def valid-param-names
   "A set of the valid parameter names."
@@ -99,10 +101,13 @@
        :case-sensitive? (not= "true" (get-in options [param :ignore_case]))
        :pattern? (= "true" (get-in options [param :pattern]))})))
 
+(defmethod parameter->condition :temporal
+  [param value options]
+  (temporal-converter/parameter->condition param value))
+
 (defn parameters->query
   "Converts parameters into a query model."
   [concept-type params]
-
   (let [options (get params :options {})
         params (dissoc params :options)]
     (if (empty? params)
