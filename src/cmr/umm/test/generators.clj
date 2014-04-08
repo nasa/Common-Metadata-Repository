@@ -113,6 +113,13 @@
                 (c/->UmmCollection entry-id entry-title product temporal-coverage)))
             (gen/tuple entry-titles products temporal-coverages)))
 
+; Generator for basic collections that only have the bare minimal fields
+(def basic-collections
+  (gen/fmap (fn [[entry-title product]]
+              (let [entry-id (str (:short-name product) "_" (:version-id product))]
+                (c/->UmmCollection entry-id entry-title product nil)))
+            (gen/tuple entry-titles products)))
+
 ;;; granule related
 (def granule-urs
   (ext-gen/string-ascii 1 80))
