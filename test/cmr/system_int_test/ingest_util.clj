@@ -4,34 +4,19 @@
             [clj-http.client :as client]
             [clojure.string :as str]
             [cheshire.core :as cheshire]
+            [cmr.umm.test.collection :as tc]
+            [cmr.umm.echo10.collection :as c]
             [cmr.system-int-test.url-helper :as url]))
 
-(def dummy-metadata
-  "<Collection>
-  <ShortName>DummyShortName</ShortName>
-  <VersionId>DummyVersion</VersionId>
-  <InsertTime>1999-12-31T19:00:00-05:00</InsertTime>
-  <LastUpdate>1999-12-31T19:00:00-05:00</LastUpdate>
-  <LongName>DummyLongName</LongName>
-  <DataSetId>DummyDatasetId</DataSetId>
-  <Description>A minimal valid collection</Description>
-  <Orderable>true</Orderable>
-  <Visible>true</Visible>
-  </Collection>")
-
 (def default-collection {:short-name "MINIMAL"
-                         :version "1"
+                         :version-id "1"
                          :long-name "A minimal valid collection"
-                         :dataset-id "MinimalCollectionV1"})
+                         :entry-title "MinimalCollectionV1"})
 
 (defn metadata-xml
   "Returns metadata xml of the collection"
-  [{:keys [short-name version long-name dataset-id]}]
-  (-> dummy-metadata
-      (str/replace #"DummyShortName" short-name)
-      (str/replace #"DummyVersion" version)
-      (str/replace #"DummyLongName" long-name)
-      (str/replace #"DummyDatasetId" dataset-id)))
+  [field-values]
+  (c/generate-collection (tc/collection field-values)))
 
 (defn update-collection
   "Update collection (given or the default one) through CMR metadata API.
@@ -41,7 +26,7 @@
   ([provider-id collection]
    (let [full-collection (merge default-collection collection)
          collection-xml (metadata-xml full-collection)
-         response (client/put (url/collection-ingest-url provider-id (:dataset-id full-collection))
+         response (client/put (url/collection-ingest-url provider-id (:entry-title full-collection))
                               {:content-type :echo10+xml
                                :body collection-xml
                                :throw-exceptions false})]

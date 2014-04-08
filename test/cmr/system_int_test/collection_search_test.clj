@@ -7,26 +7,26 @@
 
 (def provider-collections
   {"CMR_PROV1" [{:short-name "MINIMAL"
-                 :version "1"
+                 :version-id "1"
                  :long-name "A minimal valid collection"
-                 :dataset-id "MinimalCollectionV1"}
+                 :entry-title "MinimalCollectionV1"}
                 {:short-name "One"
-                 :version "2"
+                 :version-id "2"
                  :long-name "One valid collection"
-                 :dataset-id "OneCollectionV1"}
+                 :entry-title "OneCollectionV1"}
                 {:short-name "Another"
-                 :version "r1"
+                 :version-id "r1"
                  :long-name "Another valid collection"
-                 :dataset-id "AnotherCollectionV1"}]
+                 :entry-title "AnotherCollectionV1"}]
 
    "CMR_PROV2" [{:short-name "One"
-                 :version "2"
+                 :version-id "2"
                  :long-name "One valid collection"
-                 :dataset-id "OneCollectionV1"}
+                 :entry-title "OneCollectionV1"}
                 {:short-name "Other"
-                 :version "r2"
+                 :version-id "r2"
                  :long-name "Other valid collection"
-                 :dataset-id "OtherCollectionV1"}]})
+                 :entry-title "OtherCollectionV1"}]})
 (defn setup
   "set up the fixtures for test"
   []
@@ -40,7 +40,7 @@
   []
   (doseq [[provider-id collections] provider-collections
           collection collections]
-    (ingest/delete-collection provider-id (:dataset-id collection)))
+    (ingest/delete-collection provider-id (:entry-title collection)))
   (index/flush-elastic-index))
 
 (defn wrap-setup

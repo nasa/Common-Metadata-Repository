@@ -13,6 +13,7 @@
                  [clj-http "0.9.0"]
                  [org.clojure/data.xml "0.0.8-SNAPSHOT"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
+                 [nasa-cmr/cmr-umm-lib "0.1.0-SNAPSHOT"]
                  ; include ring-core to support encoding of params
                  [ring/ring-core "1.2.2"]
                  [cheshire "5.2.0"]]
