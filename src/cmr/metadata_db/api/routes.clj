@@ -114,7 +114,7 @@
         (get-concept request-context concept-id revision-id))
       ;; get the latest revision of a concept
       (GET "/:concept-id" {{:keys [concept-id]} :params request-context :request-context} 
-        (get-concept request-context concept-id nil))
+        (get-concept request-context concept-id))
       ;; get multiple concpts by concept-id and revision-id
       (POST "/search" {:keys [request-context body]}
         (get-concepts request-context (get body "concept-revisions"))))

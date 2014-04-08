@@ -19,7 +19,7 @@
 
 (defn concept-with-concept-id-and-rev-id-does-not-exist [concept-id revision-id]
   (format
-    "Concept with concept-id %s does not exist."
+    "Concept with concept-id %s and revision-id %s does not exist."
     concept-id revision-id))
 
 (defn invalid-revision-id-msg [expected-id received-id]
