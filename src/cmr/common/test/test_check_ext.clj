@@ -1,8 +1,55 @@
 (ns cmr.common.test.test-check-ext
   (:require [clojure.test.check.generators :as gen]
             [clojure.string :as s]
-            [clj-time.coerce :as c])
+            [clj-time.coerce :as c]
+            [clojure.test.check.clojure-test]
+            [clojure.test])
   (:import java.util.Random))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; The following two functions were copy and pasted from the clojure test.check library to fix a small
+;; issue relating to the printing out of failed specs.
+;; See http://dev.clojure.org/jira/browse/TCHECK-18
+;; This defspec can be used until the test.check issue is fixed and released.
+
+(defn- assert-check
+  [{:keys [result] :as m}]
+  (println (pr-str m))
+  (if (instance? Throwable result)
+    (throw result)
+    (clojure.test/is result)))
+
+(defmacro defspec
+  "Defines a new clojure.test test var that uses `quick-check` to verify
+  [property] with the given [args] (should be a sequence of generators),
+  [default-times] times by default.  You can call the function defined as [name]
+  with no arguments to trigger this test directly (i.e.  without starting a
+  wider clojure.test run), or with a single argument that will override
+  [default-times]."
+  ([name property]
+   `(defspec ~name ~clojure.test.check.clojure-test/*default-test-count* ~property))
+
+  ([name default-times property]
+   `(do
+      ;; consider my shame for introducing a cyclical dependency like this...
+      ;; Don't think we'll know what the solution is until clojure.test.check
+      ;; integration with another test framework is attempted.
+      (require 'clojure.test.check)
+      (defn ~(vary-meta name assoc
+                        ::defspec true
+                        :test `#(#'cmr.common.test.test-check-ext/assert-check (assoc (~name) :test-var (str '~name))))
+        ([] (~name ~default-times))
+        ([times# & {:keys [seed# max-size#] :as quick-check-opts#}]
+           (apply
+             clojure.test.check/quick-check
+             times#
+             (vary-meta ~property assoc :name (str '~property))
+             (flatten (seq quick-check-opts#))))))))
+
+
+;; End of copy and pasted section
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
 (defn optional
   "Returns either nil or the given generator. This should be used for optional fields"
@@ -65,12 +112,17 @@
           #(and (>= % lower) (<= % upper))
           [value (map double-rose-tree (shrink-double value))])))))
 
+(defn- not-whitespace
+  "Takes a string generator and returns a new string generator that will not contain only whitespace"
+  [generator]
+  (gen/such-that #(not (re-matches #"^\s+$" %)) generator))
+
 (defn string-ascii
   "Like the clojure.test.check.generators/string-ascii but allows a min and max length to be set"
   ([]
    gen/string-ascii)
   ([min-size max-size]
-   (gen/fmap s/join (gen/vector gen/char-ascii min-size max-size))))
+   (not-whitespace (gen/fmap s/join (gen/vector gen/char-ascii min-size max-size)))))
 
 (defn string-alpha-numeric
   "Like the clojure.test.check.generators/string-alpha-numeric but allows a min and max length to be set"
