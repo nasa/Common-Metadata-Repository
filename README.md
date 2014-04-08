@@ -167,7 +167,7 @@ params: none
 returns: nothing (status 204)
 
 __Example Curl:__
-curl -v -XDELETE localhost:3001/reset
+curl -v -XPOST localhost:3001/reset
 
 
 Different ways to retrieve concepts
