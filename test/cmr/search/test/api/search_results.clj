@@ -1,6 +1,10 @@
 (ns cmr.search.test.api.search-results
   (:require [clojure.test :refer :all]
-            [clojure.test.check.clojure-test :refer [defspec]]
+            
+            ; [clojure.test.check.clojure-test :refer [defspec]]
+            ;; Temporarily included to use the fixed defspec. Remove once issue is fixed.
+            [cmr.common.test.test-check-ext :refer [defspec]]
+            
             [clojure.test.check.properties :refer [for-all]]
             [clojure.test.check.generators :as gen]
             [clojure.walk :as walk]
@@ -33,17 +37,16 @@
 (defn ref-xml-struct->reference
   "Converts a parsed XML reference into a map"
   [xml-struct]
-  (let [ref-content (:content xml-struct)]
-    {:concept-id (cx/string-at-path ref-content :concept-id)
-     :revision-id (cx/long-at-path ref-content :revision-id)
-     :provider-id (cx/string-at-path ref-content :provider-id)
-     :entry-title (cx/string-at-path ref-content :entry-title)}))
+  {:concept-id (cx/string-at-path xml-struct [:concept-id])
+   :revision-id (cx/long-at-path xml-struct [:revision-id])
+   :provider-id (cx/string-at-path xml-struct [:provider-id])
+   :entry-title (cx/string-at-path xml-struct [:entry-title])})
 
 (defmethod parse-search-results-response :xml
   [response-str format]
   (let [xml-struct (x/parse-str response-str)
-        hits (cx/long-at-path xml-struct [:results :hits])
-        ref-structs (cx/content-at-path xml-struct [:results :references])
+        hits (cx/long-at-path xml-struct [:hits])
+        ref-structs (cx/content-at-path xml-struct [:references])
         references (map ref-xml-struct->reference ref-structs)]
     {:hits hits
      :references references}))
@@ -56,7 +59,7 @@
              [:references]
              (partial map (partial into {}))))
 
-(defspec search-result->response-test
+(defspec search-result->response-test 100
   (for-all [result results-gen/results
             format (gen/elements [:json :xml])]
     (let [resp (s/search-results->response result format)
