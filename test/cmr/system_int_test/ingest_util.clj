@@ -4,7 +4,7 @@
             [clj-http.client :as client]
             [clojure.string :as str]
             [cheshire.core :as cheshire]
-            [cmr.umm.test.collection :as tc]
+            [cmr.system-int-test.collection-helper :as ch]
             [cmr.umm.echo10.collection :as c]
             [cmr.system-int-test.url-helper :as url]))
 
@@ -16,7 +16,7 @@
 (defn metadata-xml
   "Returns metadata xml of the collection"
   [field-values]
-  (c/generate-collection (tc/collection field-values)))
+  (c/generate-collection (ch/collection field-values)))
 
 (defn update-collection
   "Update collection (given or the default one) through CMR metadata API.
