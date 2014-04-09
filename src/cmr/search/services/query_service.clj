@@ -22,7 +22,7 @@
   "Validates a query model. Throws an exception to return to user with errors.
   Returns the query model if validation is successful so it can be chained with other calls."
   [context query]
-  (let [errors (v/validate-query query)]
+  (let [errors (v/validate query)]
     (when-not (empty? errors)
       (err/throw-service-errors :invalid-data errors))
     query))

@@ -9,12 +9,12 @@
     [c]
     "Validate condition and return errors if found"))
 
-(defn validate-query
-  "Validate the query"
-  [query]
-  (validate (:condition query)))
-
 (extend-protocol Validator
+  cmr.search.models.query.Query
+  (validate
+    [{:keys [condition]}]
+    (validate condition))
+
   cmr.search.models.query.ConditionGroup
   (validate
     [{:keys [conditions]}]
@@ -23,4 +23,3 @@
   ;; catch all validator
   java.lang.Object
   (validate [this] []))
-
