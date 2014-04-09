@@ -1,14 +1,6 @@
 (ns cmr.search.models.query
   "Defines various query models and conditions."
-  (:require [cmr.common.services.errors :as errors]
-            [cmr.search.validators.temporal :as temporal-validator]
-            [cmr.search.validators.date-range :as dr-validator]))
-
-(defprotocol Condition
-  "Defines the protocol for validating query conditions.
-  All query conditions must implement the validate function to validate self,
-  A sequence of errors should be returned if validation fails, otherwise an empty sequence is returned."
-  (validate [this] "validate condition"))
+  (:require [cmr.common.services.errors :as errors]))
 
 (defrecord Query
   [
@@ -17,11 +9,7 @@
 
    ;; The root level condition
    condition
-   ]
-
-  Condition
-  (validate [this]
-            (validate condition)))
+   ])
 
 (defrecord ConditionGroup
   [
@@ -30,11 +18,7 @@
 
    ;; A sequence of conditions in the group
    conditions
-   ]
-
-  Condition
-  (validate [this]
-            (flatten (concat (map #(validate %) conditions)))))
+   ])
 
 (defrecord StringCondition
   [
@@ -49,31 +33,21 @@
 
    ;; Indicates if the search contains pattern matching expressions. Defaults to false.
    pattern?
-   ]
-
-  Condition
-  (validate [this]
-            []))
+   ])
 
 ;; ExistCondition represents the specified field must have value, i.e. filed is not null
 (defrecord ExistCondition
   [
    ;; The field being searched.
    field
-   ]
-
-  Condition
-  (validate [this] []))
+   ])
 
 ;; MissingCondition represents the specified field must not have value, i.e. filed is nil
 (defrecord MissingCondition
   [
    ;; The field being searched.
    field
-   ]
-
-  Condition
-  (validate [this] []))
+   ])
 
 (defrecord DateRangeCondition
   [
@@ -85,11 +59,7 @@
 
    ;; The end-date value
    end-date
-   ]
-
-  Condition
-  (validate [this]
-            (dr-validator/validate this)))
+   ])
 
 (defrecord TemporalCondition
   [
@@ -104,19 +74,10 @@
 
    ;; The end-day value
    end-day
-   ]
-
-  Condition
-  (validate [this]
-            (concat
-              (temporal-validator/validate this)
-              (validate date-range-condition))))
+   ])
 
 (defrecord MatchAllCondition
-  []
-
-  Condition
-  (validate [this] []))
+  [])
 
 (defn query
   "Constructs a query with the given type and root condition.

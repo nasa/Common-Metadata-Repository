@@ -14,7 +14,7 @@
   (:require [cmr.search.data.elastic-search-index :as idx]
             [cmr.search.models.query :as qm]
             [cmr.search.services.parameters :as p]
-            [cmr.search.services.simplifiers :as s]
+            [cmr.search.validators.validation :as v]
             [cmr.system-trace.core :refer [deftracefn]]
             [cmr.common.services.errors :as err]))
 
@@ -22,7 +22,7 @@
   "Validates a query model. Throws an exception to return to user with errors.
   Returns the query model if validation is successful so it can be chained with other calls."
   [context query]
-  (let [errors (qm/validate query)]
+  (let [errors (v/validate-query query)]
     (when-not (empty? errors)
       (err/throw-service-errors :invalid-data errors))
     query))
@@ -35,9 +35,9 @@
 
 (deftracefn simplify-query
   "Simplifies the query."
-  [context query]
-  (qm/map->Query {:concept-type (:concept-type query)
-                  :condition (s/simplify-query query)}))
+   [context query]
+  ;; TODO query simplification
+  query)
 
 (deftracefn execute-query
   "Executes a query returning results as concept id, native provider id, and revision id."

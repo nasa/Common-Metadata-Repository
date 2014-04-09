@@ -2,7 +2,8 @@
   "Contains functions for validating temporal condition"
   (:require [clojure.set]
             [clj-time.core :as t]
-            [clj-time.format :as f]))
+            [clj-time.format :as f]
+            [cmr.search.validators.validation :as v]))
 
 ;; map of temporal field to parameter name in the api document
 (def printable-name {:start-day "temporal_start_day"
@@ -48,10 +49,10 @@
    start-day-must-be-with-start-date
    end-day-must-be-with-end-date])
 
-(defn validate
-  "Validate the given temporal condition, returns a sequence of errors if validation fails"
-  [temporal]
-  (seq (reduce (fn [errors validation]
-                 (concat errors (validation temporal)))
-               []
-               temporal-validations)))
+(extend-protocol v/Validator
+  cmr.search.models.query.TemporalCondition
+  (validate
+    [temporal]
+    (concat
+      (mapcat #(% temporal) temporal-validations)
+      (v/validate (:date-range-condition temporal)))))

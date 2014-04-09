@@ -3,8 +3,7 @@
   (:require [clojure.set]
             [clojure.string :as s]
             [cmr.common.services.errors :as err]
-            [cmr.search.models.query :as qm]
-            [cmr.search.services.parameter-converters.temporal :as temporal-converter]))
+            [cmr.search.models.query :as qm]))
 
 (def param-aliases
   "A map of non UMM parameter names to their UMM fields."
@@ -65,7 +64,6 @@
              options))
     []))
 
-
 (def parameter-validations
   "A list of the functions that can validate parameters. They all accept parameters as an argument
   and return a list of errors."
@@ -78,11 +76,9 @@
   "Validates parameters. Throws exceptions to send to the user. Returns parameters if validation
   was successful so it can be chained with other calls."
   [params]
-  (when-let [errors (seq (reduce (fn [errors validation]
-                                   (concat errors (validation params)))
-                                 []
-                                 parameter-validations))]
-    (err/throw-service-errors :invalid-data errors))
+  (let [errors (mapcat #(% params) parameter-validations)]
+    (when-not (empty? errors)
+      (err/throw-service-errors :invalid-data errors)))
   params)
 
 (defmulti parameter->condition
@@ -100,10 +96,6 @@
        :value value
        :case-sensitive? (not= "true" (get-in options [param :ignore_case]))
        :pattern? (= "true" (get-in options [param :pattern]))})))
-
-(defmethod parameter->condition :temporal
-  [param value options]
-  (temporal-converter/parameter->condition param value))
 
 (defn parameters->query
   "Converts parameters into a query model."

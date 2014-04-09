@@ -3,7 +3,8 @@
   (:require [clojure.set]
             [clojure.string :as s]
             [cmr.common.services.errors :as err]
-            [cmr.search.models.query :as qm]))
+            [cmr.search.models.query :as qm]
+            [cmr.search.services.parameters :as p]))
 
 (defn- value-or-nil
   "Return argument string if it is not blank or nil if it is"
@@ -21,11 +22,13 @@
                                 :date-range-condition date-range-condition
                                 :start-day start-day
                                 :end-day end-day})))
-(defn parameter->condition
-  [param value]
+
+;; Converts temporal parameter and values into query condition, returns the converted condition
+(defmethod p/parameter->condition :temporal
+  [param value options]
   (if (sequential? value)
     (qm/or-conds
-      (map #(parameter->condition param %) value))
+      (map #(p/parameter->condition param % options) value))
     (let [[start-date end-date start-day end-day] (map s/trim (s/split value #","))]
       (map->temporal-condition {:field param
                                 :start-date (value-or-nil start-date)

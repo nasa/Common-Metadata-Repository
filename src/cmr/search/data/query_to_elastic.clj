@@ -61,7 +61,7 @@
   (condition->elastic
     [{:keys [field start-date end-date]}]
     (let [from-value (if start-date (h/utc-time->elastic-time start-date) h/earliest-echo-start-date)
-          value (assoc {} :from from-value)
+          value {:from from-value}
           value (if end-date (assoc value :to (h/utc-time->elastic-time end-date)) value)]
       {:range { field value }}))
 
