@@ -2,7 +2,8 @@
   "Defines protocols and functions to map from a query model to elastic search query"
   (:require [clojurewerkz.elastisch.query :as q]
             [clojure.string :as s]
-            [cmr.search.models.query :as qm]))
+            [cmr.search.models.query :as qm]
+            [cmr.search.data.datetime-helper :as h]))
 
 (def field-mappings
   "A map of fields in the query to the field name in elastic. Field names are excluded from this
@@ -16,7 +17,6 @@
   "Returns the elastic field name for the equivalent query field name."
   [field]
   (get field-mappings field field))
-
 
 (defprotocol ConditionToElastic
   "Defines a function to map from a query to elastic search query"
@@ -46,6 +46,24 @@
       (if pattern?
         {:query {:wildcard {field value}}}
         {:term {field value}})))
+
+  cmr.search.models.query.ExistCondition
+  (condition->elastic
+    [{:keys [field]}]
+    {:exists {:field field}})
+
+  cmr.search.models.query.MissingCondition
+  (condition->elastic
+    [{:keys [field]}]
+    {:missing {:field field}})
+
+  cmr.search.models.query.DateRangeCondition
+  (condition->elastic
+    [{:keys [field start-date end-date]}]
+    (let [from-value (if start-date (h/utc-time->elastic-time start-date) h/earliest-echo-start-date)
+          value {:from from-value}
+          value (if end-date (assoc value :to (h/utc-time->elastic-time end-date)) value)]
+      {:range { field value }}))
 
   cmr.search.models.query.MatchAllCondition
   (condition->elastic

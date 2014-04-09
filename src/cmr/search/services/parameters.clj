@@ -22,7 +22,8 @@
   {:entry_title :string
    :provider :string
    :short_name :string
-   :version :string})
+   :version :string
+   :temporal :temporal})
 
 (def valid-param-names
   "A set of the valid parameter names."
@@ -63,7 +64,6 @@
              options))
     []))
 
-
 (def parameter-validations
   "A list of the functions that can validate parameters. They all accept parameters as an argument
   and return a list of errors."
@@ -76,11 +76,9 @@
   "Validates parameters. Throws exceptions to send to the user. Returns parameters if validation
   was successful so it can be chained with other calls."
   [params]
-  (when-let [errors (seq (reduce (fn [errors validation]
-                                   (concat errors (validation params)))
-                                 []
-                                 parameter-validations))]
-    (err/throw-service-errors :invalid-data errors))
+  (let [errors (mapcat #(% params) parameter-validations)]
+    (when-not (empty? errors)
+      (err/throw-service-errors :invalid-data errors)))
   params)
 
 (defmulti parameter->condition
@@ -102,7 +100,6 @@
 (defn parameters->query
   "Converts parameters into a query model."
   [concept-type params]
-
   (let [options (get params :options {})
         params (dissoc params :options)]
     (if (empty? params)

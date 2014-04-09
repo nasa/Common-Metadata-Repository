@@ -35,6 +35,47 @@
    pattern?
    ])
 
+;; ExistCondition represents the specified field must have value, i.e. filed is not null
+(defrecord ExistCondition
+  [
+   ;; The field being searched.
+   field
+   ])
+
+;; MissingCondition represents the specified field must not have value, i.e. filed is nil
+(defrecord MissingCondition
+  [
+   ;; The field being searched.
+   field
+   ])
+
+(defrecord DateRangeCondition
+  [
+   ;; The field being searched.
+   field
+
+   ;; The start-date value
+   start-date
+
+   ;; The end-date value
+   end-date
+   ])
+
+(defrecord TemporalCondition
+  [
+   ;; The field being searched.
+   field
+
+   ;; The date range condition
+   date-range-condition
+
+   ;; The start-day value
+   start-day
+
+   ;; The end-day value
+   end-day
+   ])
+
 (defrecord MatchAllCondition
   [])
 

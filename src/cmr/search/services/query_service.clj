@@ -3,25 +3,29 @@
 
   Steps to process a query:
 
-   - Validate parameters
-   - Convert parameters into query model
-   - Query validation
-   - Apply ACLs to query
-   - Query simplification
-   - Convert Query into Elastic Query Model
-   - Send query to Elasticsearch
-   - Convert query results into requested format"
+  - Validate parameters
+  - Convert parameters into query model
+  - Query validation
+  - Apply ACLs to query
+  - Query simplification
+  - Convert Query into Elastic Query Model
+  - Send query to Elasticsearch
+  - Convert query results into requested format"
   (:require [cmr.search.data.elastic-search-index :as idx]
             [cmr.search.models.query :as qm]
             [cmr.search.services.parameters :as p]
-            [cmr.system-trace.core :refer [deftracefn]]))
+            [cmr.search.validators.validation :as v]
+            [cmr.system-trace.core :refer [deftracefn]]
+            [cmr.common.services.errors :as err]))
 
 (deftracefn validate-query
   "Validates a query model. Throws an exception to return to user with errors.
   Returns the query model if validation is successful so it can be chained with other calls."
   [context query]
-  ;; TODO validate query
-  query)
+  (let [errors (v/validate-query query)]
+    (when-not (empty? errors)
+      (err/throw-service-errors :invalid-data errors))
+    query))
 
 (deftracefn apply-acls
   "Modifies the query to apply ACLs for the current user."
@@ -31,7 +35,7 @@
 
 (deftracefn simplify-query
   "Simplifies the query."
-  [context query]
+   [context query]
   ;; TODO query simplification
   query)
 
