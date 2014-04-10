@@ -57,3 +57,7 @@
 
 (defn maximum-save-attempts-exceeded-msg []
   "Reached limit of attempts to save concept - giving up.")
+
+(defn provider-exists [provider-id]
+  (format "Provider %s already exists."
+          provider-id))
