@@ -5,7 +5,7 @@
             [cheshire.core :as cheshire]))
 
 ;;; Enpoints for services - change this for tcp-mon
-(def port 3001)
+(def port 3000)
 
 (def concepts-url (str "http://localhost:" port "/concepts/"))
 
@@ -13,9 +13,20 @@
 
 (def reset-url (str "http://localhost:" port "/reset"))
 
+(def providers-url (str "http://localhost:" port "/providers"))
 
+;;; constants
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(def sample-provider-id "PROV1")
+  
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; utility methods
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;; concepts
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defn concept
   "Creates a concept to be used for testing."
   []
@@ -141,13 +152,6 @@
         error-messages (get body "errors")]
     {:status status :revision-id revision-id :error-messages error-messages}))
 
-(defn reset-database
-  "Make a request to reset the database by clearing out all stored concepts."
-  []
-  (let [response (client/post reset-url {:throw-exceptions false})
-        status (:status response)]
-    status))
-
 (defn verify-concept-was-saved
   "Check to make sure a concept is stored in the database."
   [concept]
@@ -157,6 +161,35 @@
         stored-concept (:concept stored-concept-and-status)
         stored-concept-id (:concept-id stored-concept)]
     (is (= stored-concept-id concept-id))))
+
+;;; providers
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn save-provider
+  "Make a POST request to save a provider with JSON encoding of the provider  Returns a map with
+  status and a list of error messages."
+  [provider-id]
+  (let [response (client/post providers-url
+                              {:body (cheshire/generate-string {:provider-id provider-id})
+                               :body-encoding "UTF-8"
+                               :content-type :json
+                               :accept :json
+                               :throw-exceptions false})
+        status (:status response)
+        body (cheshire/parse-string (:body response))
+        error-messages (get body "errors")]
+    {:status status :error-messages error-messages}))
+
+
+;;; miscellaneous
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn reset-database
+  "Make a request to reset the database by clearing out all stored concepts."
+  []
+  (let [response (client/post reset-url {:throw-exceptions false})
+        status (:status response)]
+    status))
 
 ;;; fixtures
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

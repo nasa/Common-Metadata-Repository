@@ -8,6 +8,10 @@
 (def concept-id-prefix-length 1)
 
 ;;; Utility methods
+(defn context->db
+  [context]
+  (-> context :system :db))
+
 (defn concept-type-prefix
   "Truncate and upcase a concept-type to create a prefix for concept-ids"
   [concept-type-keyword]

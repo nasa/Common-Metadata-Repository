@@ -44,7 +44,7 @@
     [this concept-id-revision-id-tuples]
     [test-concept])
   
-  (save
+  (save-concept
     [this concept]
     (let [revision-id (:revision-id concept)]
       (if (or (nil? revision-id) (= revision-id 1))
@@ -56,7 +56,7 @@
     [this concept-id revision-id]
     )
   
-  (reset
+  (reset-concepts
     [this]
     ))
 

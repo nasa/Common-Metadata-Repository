@@ -13,7 +13,8 @@
             [cmr.common.api.errors :as errors]
             [cmr.common.services.errors :as serv-err]
             [cmr.system-trace.http :as http-trace]
-            [cmr.metadata-db.services.concept-services :as concept-services]))
+            [cmr.metadata-db.services.concept-services :as concept-services]
+            [cmr.metadata-db.services.provider-services :as provider-services]))
 
 ;;; service proxies
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -89,6 +90,24 @@
      :body {:concept-id concept-id}
      :headers json-header}))
 
+(defn- save-provider
+  "Save a provider."
+  [context provider-id]
+  (let [saved-provider-id (provider-services/create-provider context provider-id)]
+    {:status 201
+     :body {:provider-id saved-provider-id}
+     :headers json-header}))
+
+(defn- delete-provider
+  "Delete a provider and all its concepts."
+  [context {provider-id :provider-id}]
+  )
+
+(defn- get-providers
+  "Get a list of provider ids"
+  [context {provider-id :provider-id}]
+  )
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -99,7 +118,7 @@
       ;; saves a concept
       (POST "/" {:keys [request-context body]}
         (save-concept request-context body))
-      ;; mark a concept as deleted (add a tombstone) specifity the revision the tombstone should have
+      ;; mark a concept as deleted (add a tombstone) specifying the revision the tombstone should have
       (DELETE "/:concept-id/:revision-id" {{:keys [concept-id revision-id]} :params request-context :request-context} 
         (delete-concept request-context concept-id revision-id))
       ;; mark a concept as deleted (add a tombstone)
@@ -118,10 +137,23 @@
       ;; get multiple concpts by concept-id and revision-id
       (POST "/search" {:keys [request-context body]}
         (get-concepts request-context (get body "concept-revisions"))))
+    
     ;; get the concept id for a given concept-type, provider-id, and native-id
     (GET "/concept-id/:concept-type/:provider-id/:native-id"
       {{:keys [concept-type provider-id native-id]} :params request-context :request-context}
       (get-concept-id request-context concept-type provider-id native-id))
+    
+    (context "/providers" []
+      ;; create a new provider
+      (POST "/" {:keys [request-context body]}
+        (save-provider request-context (get body "provider-id")))
+      ;; delete a provider
+      (DELETE "/:provider-id" {{:keys [provider-id]} :params request-context :request-context}
+        (delete-provider request-context provider-id))
+      ;; get a list of providers
+      (GET "/" {request-context :request-context}
+        (get-providers request-context)))
+    
     ;; delete the entire database
     (POST "/reset" {:keys [request-context]}
       (reset request-context))
