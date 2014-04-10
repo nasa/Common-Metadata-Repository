@@ -105,8 +105,11 @@ Insert Flow
   - If we get a conflict from a uniqueness constraint restart from beginning of this flow
 
 
-### GET /concept-id
-params: [concept-type provider-id native-id]
+## Old API
+
+
+### GET /concept-id/:concept-type/:provider-id/:native-id
+TODO consider changing this to use query params instead of URL vars
 returns: new or existing concept-id
 
 __Example Curl:__
@@ -135,6 +138,7 @@ __Example Curl:__
 curl -v http://localhost:3001/concepts/C1-PROV1/2
 
 ### POST /concepts/search
+TODO consider changing this to /concepts/get_multiple
 params: [{"concept-revisions": [concept-id/revision-id tuple] ...]}]
 returns: list of concepts matching the touples provided in the body of the POST
 

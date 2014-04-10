@@ -6,11 +6,6 @@
   (fn [db concept-type provider-id native-id]
     concept-type))
 
-(defmulti generate-concept-id
-  "Create a concept-id for a given concept type and provider id."
-  (fn [db concept]
-    (:concept-type concept)))
-
 (defmulti get-concept
   "Gets a version of a concept with a given concept-id and revision-id. If the
   revision-id is not given or is nil then the latest revision is returned."

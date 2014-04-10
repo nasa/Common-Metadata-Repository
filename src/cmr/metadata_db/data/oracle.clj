@@ -3,7 +3,6 @@
   backed by an Oracle database."
   (:require [cmr.metadata-db.data :as data]
             [cmr.metadata-db.providers :as provider]
-            [cmr.metadata-db.database :as database]
             [cmr.common.lifecycle :as lifecycle]
             [clojure.string :as string]
             [cmr.common.services.errors :as errors]
@@ -30,24 +29,24 @@
    :password db-password})
 
 
-(defrecord OracleStore
-  [
-   db]
-  
+(defn generate-concept-id
+  "Create a concept-id for a given concept type and provider id."
+  [db concept]
+  (let [{:keys [concept-type provider-id]} concept
+        seq-num (:nextval (first (j/query db ["SELECT METADATA_DB.concept_id_seq.NEXTVAL FROM DUAL"])))]
+    (util/generate-concept-id concept-type provider-id seq-num)))
+
+
+(defrecord OracleStore [db]
+
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   lifecycle/Lifecycle
-  
+
   (start [this system]
          this)
-  
+
   (stop [this system]
-        this)
-  
-  database/Database
-  
-  (reset [this]
-         (data/reset-concepts this)
-         (provider/reset-providers this)))
+        this))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -55,14 +54,14 @@
 (defn pool
   [spec]
   (let [cpds (doto (ComboPooledDataSource.)
-               (.setDriverClass (:classname spec)) 
+               (.setDriverClass (:classname spec))
                (.setJdbcUrl (str "jdbc:" (:subprotocol spec) ":" (:subname spec)))
                (.setUser (:user spec))
                (.setPassword (:password spec))
                ;; expire excess connections after 30 minutes of inactivity:
                (.setMaxIdleTimeExcessConnections (* 30 60))
                ;; expire connections after 3 hours of inactivity:
-               (.setMaxIdleTime (* 3 60 60)))] 
+               (.setMaxIdleTime (* 3 60 60)))]
     {:datasource cpds}))
 
 (defn create-db
