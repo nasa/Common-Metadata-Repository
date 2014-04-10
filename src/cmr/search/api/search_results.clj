@@ -45,12 +45,12 @@
 (defn- reference->xml-element
   "Converts a search result reference into an XML element"
   [reference]
-  (let [{:keys [concept-id revision-id provider-id entry-title]} reference]
+  (let [{:keys [concept-id revision-id provider-id name]} reference]
     (x/element :reference {}
                (x/element :concept-id {} concept-id)
                (x/element :revision-id {} (str revision-id))
                (x/element :provider-id {} provider-id)
-               (x/element :entry-title {} entry-title))))
+               (x/element :name {} name))))
 
 (defmethod search-results->response :xml
   [results result-type]

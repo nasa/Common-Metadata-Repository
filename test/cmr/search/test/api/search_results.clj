@@ -1,10 +1,10 @@
 (ns cmr.search.test.api.search-results
   (:require [clojure.test :refer :all]
-            
+
             ; [clojure.test.check.clojure-test :refer [defspec]]
             ;; Temporarily included to use the fixed defspec. Remove once issue is fixed.
             [cmr.common.test.test-check-ext :refer [defspec]]
-            
+
             [clojure.test.check.properties :refer [for-all]]
             [clojure.test.check.generators :as gen]
             [clojure.walk :as walk]
@@ -40,7 +40,7 @@
   {:concept-id (cx/string-at-path xml-struct [:concept-id])
    :revision-id (cx/long-at-path xml-struct [:revision-id])
    :provider-id (cx/string-at-path xml-struct [:provider-id])
-   :entry-title (cx/string-at-path xml-struct [:entry-title])})
+   :name (cx/string-at-path xml-struct [:name])})
 
 (defmethod parse-search-results-response :xml
   [response-str format]

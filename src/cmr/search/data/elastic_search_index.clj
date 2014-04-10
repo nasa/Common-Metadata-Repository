@@ -33,7 +33,7 @@
                         {:concept-id concept-id
                          :revision-id revision-id
                          :provider-id provider-id
-                         :entry-title entry-title})))
+                         :name entry-title})))
                   elastic-matches)]
     (results/map->Results {:hits hits :references refs})))
 

@@ -11,7 +11,7 @@
 
    provider-id
 
-   entry-title
+   name
    ])
 
 (defrecord Results
