@@ -1,7 +1,7 @@
 (ns cmr.metadata-db.services.concept-services
   "Sevices to support the business logic of the metadata db."
   (:require [cmr.metadata-db.data :as data]
-            [cmr.metadata-db.database :as database]
+            [cmr.metadata-db.data.oracle :as oracle]
             [cmr.common.services.errors :as errors]
             [cmr.metadata-db.services.messages :as messages]
             [cmr.metadata-db.services.utility :as util]
@@ -16,16 +16,16 @@
   (some-> (data/get-concept-by-provider-id-native-id-concept-type  db concept)
           :concept-id))
 
-(defn- set-or-generate-concept-id 
-  "Get an existing concept-id from the DB for the given concept or generate one 
+(defn- set-or-generate-concept-id
+  "Get an existing concept-id from the DB for the given concept or generate one
   if the concept has never been saved."
   [db concept]
-  (if (:concept-id concept) 
+  (if (:concept-id concept)
     concept
     (let [concept-id (get-existing-concept-id db concept)]
       (if concept-id
         (assoc concept :concept-id concept-id)
-        (assoc concept :concept-id (data/generate-concept-id db concept))))))
+        (assoc concept :concept-id (oracle/generate-concept-id db concept))))))
 
 (defn- set-or-generate-revision-id
   "Get the next available revision id from the DB for the given concept or
@@ -64,7 +64,7 @@
                                 messages/invalid-revision-id-msg
                                 (:expected result)
                                 revision-id)))
-       
+
        revision-id
        ;; only revision-id provided so it should be zero (no concept-id has been assigned yet)
        (when-not (= revision-id 0)
@@ -72,40 +72,40 @@
                               messages/invalid-revision-id-msg
                               0
                               revision-id))
-       
+
        ;; just concept-id or neither provided - do nothing
        ))))
 
 ;;; this is abstracted here in case we switch to some other mechanism of
 ;;; marking tombstones
-(defn- set-deleted-flag 
+(defn- set-deleted-flag
   "Create a copy of the given and set its deleted flag to the given value.
   Used to create tombstones from concepts and vice-versa."
-  [value concept] 
+  [value concept]
   (assoc concept :deleted value))
 
-(defn- handle-save-errors 
+(defn- handle-save-errors
   "Deal with errors encountered during saves."
   [concept result tries-left revision-id-provided?]
   (let [error-code (:error result)]
     (when (= tries-left 1)
       (errors/internal-error! (messages/maximum-save-attempts-exceeded-msg)))
-    (cond 
+    (cond
       (= error-code :revision-id-conflict)
       (when revision-id-provided?
-        (messages/data-error :conflict 
+        (messages/data-error :conflict
                              messages/invalid-revision-id-unknown-expected-msg
                              revision-id-provided?))
-      
+
       (= error-code :concept-id-concept-conflict)
       (let [{:keys [concept-id concept-type provider-id native-id]} concept]
-        (messages/data-error :conflict 
+        (messages/data-error :conflict
                              messages/concept-exists-with-differnt-id-msg
                              concept-id
                              concept-type
                              provider-id
                              native-id))
-      
+
       :else
       (errors/internal-error! (:error-message result)))))
 
@@ -198,7 +198,8 @@
 (deftracefn reset
   "Delete all concepts from the concept store and all providers."
   [context]
-  (database/reset (util/context->db context)))
+  ;; TODO fix this
+  #_(database/reset (util/context->db context)))
 
 (deftracefn get-concept-id
   "Get a concept id for a given concept."
@@ -206,7 +207,7 @@
   (let [concept-id (data/get-concept-id (util/context->db context) concept-type provider-id native-id)]
     (if concept-id
       (:concept_id concept-id)
-      (messages/data-error :not-found 
+      (messages/data-error :not-found
                            messages/missing-concept-id-msg
                            concept-type
                            provider-id

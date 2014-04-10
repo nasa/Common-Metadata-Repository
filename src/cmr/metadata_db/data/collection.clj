@@ -5,11 +5,14 @@
             [clojure.java.jdbc :as j]))
 
 
-(defmethod get-concept-id :collection
-  [db concept-type provider-id native-id]
-  (let [table (concept-tables)])
 
-  (first (j/query this ["SELECT concept_id
+
+
+(defmethod data/get-concept-id :collection
+  [db concept-type provider-id native-id]
+  ; (let [table (concept-tables)])
+
+  (first (j/query db ["SELECT concept_id
                         FROM METADATA_DB.concept
                         WHERE concept_type = ?
                         AND provider_id = ?

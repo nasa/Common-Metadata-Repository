@@ -16,16 +16,16 @@
 
 ;;; Constants
 
-(def select-all-columns-str "SELECT concept_type, native_id, concept_id, 
-                            provider_id, metadata, format, revision_id, 
+(def select-all-columns-str "SELECT concept_type, native_id, concept_id,
+                            provider_id, metadata, format, revision_id,
                             deleted FROM METADATA_DB.concept ")
 
-;;; Utility methods 
+;;; Utility methods
 
 (defn reset-sequence
   "Drop the concept sequence and recreate it."
   [db]
-  (try 
+  (try
     (j/db-do-commands db "DROP SEQUENCE METADATA_DB.concept_id_seq")
     (catch Exception e)) ; don't care if the sequence was not there
   (j/db-do-commands db "CREATE SEQUENCE METADATA_DB.concept_id_seq
@@ -54,17 +54,19 @@
        :revision-id (int revision_id)
        :deleted (not= (int deleted) 0)})))
 
-(extend-type OracleStore
+;; TODO commented out for now.
+
+#_(extend-type OracleStore
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   data/ConceptStore
-  
+
   (generate-concept-id
     [this concept]
     (let [{:keys [concept-type provider-id]} concept
           seq-num (:nextval (first (j/query this ["SELECT METADATA_DB.concept_id_seq.NEXTVAL FROM DUAL"])))]
       (util/generate-concept-id concept-type provider-id seq-num)))
-  
-  
+
+
   (get-concept-id
     [this concept-type provider-id native-id]
     (first (j/query this ["SELECT concept_id
@@ -76,13 +78,13 @@
                           concept-type
                           provider-id
                           native-id])))
-  
+
   (get-concept-by-provider-id-native-id-concept-type
     [this concept]
-    (let [{:keys [concept-type provider-id native-id revision-id]} concept] 
+    (let [{:keys [concept-type provider-id native-id revision-id]} concept]
       (if revision-id
         (db-result->concept-map (first (j/query this [(str select-all-columns-str
-                                                           "WHERE concept_type = ? 
+                                                           "WHERE concept_type = ?
                                                            AND provider_id = ?
                                                            AND native_id = ?
                                                            AND revision_id = ?
@@ -91,46 +93,46 @@
                                                       provider-id
                                                       native-id
                                                       revision-id])))
-        (db-result->concept-map (first (j/query this [(str "SELECT * FROM (" 
+        (db-result->concept-map (first (j/query this [(str "SELECT * FROM ("
                                                            select-all-columns-str
                                                            "WHERE concept_type= ?
                                                            AND provider_id = ?
                                                            AND native_id = ?
-                                                           ORDER BY revision_id DESC) 
+                                                           ORDER BY revision_id DESC)
                                                            WHERE ROWNUM = 1" )
                                                       concept-type
                                                       provider-id
                                                       native-id]))))))
-  
+
   (get-concept
     ([this concept-id]
-     (db-result->concept-map (first (j/query this [(str "SELECT * FROM (" 
+     (db-result->concept-map (first (j/query this [(str "SELECT * FROM ("
                                                         select-all-columns-str
                                                         "WHERE concept_id = ?
-                                                        ORDER BY revision_id DESC) 
-                                                        WHERE ROWNUM = 1") 
+                                                        ORDER BY revision_id DESC)
+                                                        WHERE ROWNUM = 1")
                                                    concept-id]))))
     ([this concept-id revision-id]
      (if revision-id
        (db-result->concept-map (first (j/query this [(str select-all-columns-str
-                                                          "WHERE concept_id = ? 
+                                                          "WHERE concept_id = ?
                                                           AND revision_id = ?
                                                           AND ROWNUM = 1")
                                                      concept-id
                                                      revision-id])))
        (data/get-concept this concept-id))))
-  
-  
-  
+
+
+
   (get-concepts
     [this concept-id-revision-id-tuples]
     (j/with-db-transaction [conn this]
-                           ;; use a temporary table to insert our values so we can use a join to 
+                           ;; use a temporary table to insert our values so we can use a join to
                            ;; pull everything in one select
                            (let [insert-args (conj (conj concept-id-revision-id-tuples :transaction) false)]
                              (apply j/insert! conn
                                     "METADATA_DB.get_concepts_work_area"
-                                    ["concept_id" 
+                                    ["concept_id"
                                      "revision_id"]
                                     insert-args))
                            (let [db-concepts (j/query conn "SELECT c.concept_id,
@@ -146,11 +148,11 @@
                                                            WHERE c.concept_id = t.concept_id AND
                                                            c.revision_id = t.revision_id")]
                              (map db-result->concept-map db-concepts))))
-  
+
   (save-concept
     [this concept]
     (try (let [{:keys [concept-type native-id concept-id provider-id metadata format revision-id deleted]} concept]
-           (j/insert! this 
+           (j/insert! this
                       "METADATA_DB.concept"
                       ["concept_type"
                        "native_id"
@@ -174,22 +176,22 @@
               error-code (cond
                            (re-find #"METADATA_DB.UNIQUE_CONCEPT_REVISION" error-message)
                            :concept-id-concept-conflict
-                           
+
                            (re-find #"METADATA_DB.UNIQUE_CONCEPT_ID_REVISION" error-message)
                            :revision-id-conflict
-                           
+
                            :else
                            :unknown-error)]
           {:error error-code :error-message error-message}))))
-  
-  
+
+
   (force-delete
     [this concept-id revision-id]
-    (j/execute! this 
+    (j/execute! this
                 ["DELETE FROM METADATA_DB.concept WHERE concept_id = ? and revision_id = ?"
                  concept-id
                  revision-id]))
-  
+
   (reset-concepts
     [this]
     (reset-database this)))

@@ -18,15 +18,15 @@
   "Delete the concept tables associated with the given provider-id."
   [db provider-id]
   (for [concept-type all-concept-types]
-    (let [table-name ]
+    (let [table-name (get-table-name provider-id concept-type)]
       (j/db-do-commands db (str "DROP TABLE METADATA_DB." table-name)))))
 
-(defmulti create-concept-table 
+(defmulti create-concept-table
   "Create a table to hold concepts of a given type."
   :concept-type)
 
 (defmethod create-concept-table :collection [db provider_id]
- 
+
   (j/db-do-commands db (format "CREATE TABLE METADATA_DB.concept (
                                       concept_type VARCHAR(255) NOT NULL,
                                       native_id VARCHAR(255) NOT NULL,
@@ -36,11 +36,11 @@
                                       format VARCHAR(255) NOT NULL,
                                       revision_id INTEGER DEFAULT 0 NOT NULL,
                                       deleted INTEGER DEFAULT 0 NOT NULL,
-                                      CONSTRAINT unique_concept_revision 
+                                      CONSTRAINT unique_concept_revision
                                       UNIQUE (concept_type, provider_id, native_id, revision_id)
-                                      USING INDEX (create unique index ucr_index on 
+                                      USING INDEX (create unique index ucr_index on
                                       concept(concept_type, provider_id, native_id, revision_id)),
                                       CONSTRAINT unique_concept_id_revision
                                       UNIQUE (concept_id, revision_id)
-                                      USING INDEX (create unique index cid_rev_indx 
+                                      USING INDEX (create unique index cid_rev_indx
                                       ON concept(concept_id, revision_id)))")))

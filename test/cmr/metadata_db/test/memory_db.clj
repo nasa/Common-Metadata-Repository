@@ -14,51 +14,53 @@
 
 (defrecord MemoryDB
   [db]
-  
-  
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  data/ConceptStore
-  
-  (generate-concept-id
-    [this concept]
-    "C1000000000-PROV1")
-  
-  
-  (get-concept-id
-    [this concept-type provider-id native-id]
-    "C1000000000-PROV1")
-  
-  (get-concept-by-provider-id-native-id-concept-type
-    [this concept]
-    test-concept)
-  
-  (get-concept
-    [this concept-id]
-    test-concept)
-  
-  (get-concept
-    [this concept-id revision-id]
-    test-concept)
-  
-  (get-concepts
-    [this concept-id-revision-id-tuples]
-    [test-concept])
-  
-  (save-concept
-    [this concept]
-    (let [revision-id (:revision-id concept)]
-      (if (or (nil? revision-id) (= revision-id 1))
-        {:concept-id "C1000000000-PROV1" :revision-id 1}
-        {:error :revision-id-conflict})))
-  
-  
-  (force-delete
-    [this concept-id revision-id]
-    )
-  
-  (reset-concepts
-    [this]
-    ))
+
+  ;; TODO fix this
+
+  ; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ; data/ConceptStore
+
+  ; (generate-concept-id
+  ;   [this concept]
+  ;   "C1000000000-PROV1")
+
+
+  ; (get-concept-id
+  ;   [this concept-type provider-id native-id]
+  ;   "C1000000000-PROV1")
+
+  ; (get-concept-by-provider-id-native-id-concept-type
+  ;   [this concept]
+  ;   test-concept)
+
+  ; (get-concept
+  ;   [this concept-id]
+  ;   test-concept)
+
+  ; (get-concept
+  ;   [this concept-id revision-id]
+  ;   test-concept)
+
+  ; (get-concepts
+  ;   [this concept-id-revision-id-tuples]
+  ;   [test-concept])
+
+  ; (save-concept
+  ;   [this concept]
+  ;   (let [revision-id (:revision-id concept)]
+  ;     (if (or (nil? revision-id) (= revision-id 1))
+  ;       {:concept-id "C1000000000-PROV1" :revision-id 1}
+  ;       {:error :revision-id-conflict})))
+
+
+  ; (force-delete
+  ;   [this concept-id revision-id]
+  ;   )
+
+  ; (reset-concepts
+  ;   [this]
+  ;   )
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
