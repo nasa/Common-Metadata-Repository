@@ -17,8 +17,8 @@
         references (result "references")]
     (is (= 200 (:status response)))
     (map (fn [x]
-           (let [{:strs [entry-title concept-id revision-id]} x]
-             {:dataset-id entry-title
+           (let [{:strs [name concept-id revision-id]} x]
+             {:dataset-id name
               :concept-id concept-id
               :revision-id revision-id}))
          references)))
