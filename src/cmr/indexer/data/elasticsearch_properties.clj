@@ -33,14 +33,9 @@
                  "_all"     {"enabled" false}
                  "_id"      {"path" "concept-id"}
                  :properties {:concept-id  {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}
-                              :entry-title {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}
-                              :entry-title.lowercase {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs"}
+                              :collection-concept-id {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}
                               :provider-id {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}
                               :provider-id.lowercase {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs"}
-                              :short-name  {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs"}
-                              :short-name.lowercase  {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs"}
-                              :version-id  {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs"}
-                              :version-id.lowercase  {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs"}
                               :granule-ur  {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}
                               :granule-ur.lowercase  {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs"}}}})
 
