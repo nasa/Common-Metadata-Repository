@@ -2,7 +2,8 @@
   cmr.indexer.services.index-service-test
   (:require [clojure.test :refer :all]
             [clj-time.core :as t]
-            [cmr.indexer.services.index-service :as svc]))
+            [cmr.indexer.services.index-service :as svc]
+            [cmr.indexer.services.collection]))
 
 (deftest concept->elastic-doc-test
   (let [short-name "MINIMAL"
