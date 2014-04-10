@@ -8,6 +8,7 @@
             [cmr.common.lifecycle :as lifecycle]
             [cmr.search.models.results :as results]
             [cmr.search.data.query-to-elastic :as q2e]
+            [cmr.search.data.elastic-results-to-query-results :as rc]
             [cmr.system-trace.core :refer [deftracefn]]))
 
 (def concept-type->index-info
@@ -16,27 +17,11 @@
                 :fields ["entry-title"
                          "provider-id"
                          "short-name"
-                         "version-id"]}})
-
-(defn- elastic-results->query-results
-  "Converts the Elasticsearch results into the results expected from execute-query"
-  [concept-type elastic-results]
-  ;; TODO we'll eventually switch on concept type. The fields in elastic will be different for granules and collections.
-  (let [hits (get-in elastic-results [:hits :total])
-        elastic-matches (get-in elastic-results [:hits :hits])
-        refs (map (fn [match]
-                    (let [{concept-id :_id
-                           revision-id :_version
-                           {[entry-title] :entry-title
-                            [provider-id] :provider-id} :fields} match]
-                      (results/map->Reference
-                        {:concept-id concept-id
-                         :revision-id revision-id
-                         :provider-id provider-id
-                         :name entry-title})))
-                  elastic-matches)]
-    (results/map->Results {:hits hits :references refs})))
-
+                         "version-id"]}
+   :granule {:index-name "granules"
+                :type-name "small_collections"
+                :fields ["granule-ur"
+                         "provider-id"]}})
 
 (defrecord ElasticSearchIndex
   [
@@ -73,7 +58,7 @@
   [context query]
   (let [{:keys [concept-type]} query
         results (send-query-to-elastic context (q2e/query->elastic query) concept-type)]
-    (elastic-results->query-results concept-type results )))
+    (rc/elastic-results->query-results concept-type results)))
 
 (defn create-elastic-search-index
   "Creates a new instance of the elastic search index."

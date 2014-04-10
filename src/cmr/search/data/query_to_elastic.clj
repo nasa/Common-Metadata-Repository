@@ -11,7 +11,8 @@
   {:entry_title :entry-title
    :provider :provider-id
    :short_name :short-name
-   :version :version-id})
+   :version :version-id
+   :granule_ur :granule-ur})
 
 (defn query-field->elastic-field
   "Returns the elastic field name for the equivalent query field name."

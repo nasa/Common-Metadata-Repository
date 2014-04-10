@@ -23,6 +23,7 @@
    :provider :string
    :short_name :string
    :version :string
+   :granule_ur :string
    :temporal :temporal})
 
 (def valid-param-names
