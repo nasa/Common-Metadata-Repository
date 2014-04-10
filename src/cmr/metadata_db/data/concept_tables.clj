@@ -1,4 +1,4 @@
-(ns cmr.metadata-db.data.oracle-concept-tables
+(ns cmr.metadata-db.data.concept-tables
   (require [cmr.common.services.errors :as errors]
            [cmr.common.log :refer (debug info warn error)]
            [cmr.common.util :as cutil]
