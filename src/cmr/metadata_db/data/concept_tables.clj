@@ -9,11 +9,16 @@
 
 (def all-concept-types [:collection :granule])
 
+(defn get-table-name
+  "Get the name for the table for a given provider-id and concept-type"
+  [provider-id concept-type]
+  (format "%s_%s" (string/lower-case provider-id) (name concept-type)))
+
 (defn delete-provider-concept-tables
   "Delete the concept tables associated with the given provider-id."
   [db provider-id]
   (for [concept-type all-concept-types]
-    (let [table-name (format "%s_%s" (string/lower-case provider-id) (name concept-type))]
+    (let [table-name ]
       (j/db-do-commands db (str "DROP TABLE METADATA_DB." table-name)))))
 
 (defmulti create-concept-table 
