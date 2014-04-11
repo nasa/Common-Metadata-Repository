@@ -1,11 +1,6 @@
 (ns cmr.metadata-db.data.concepts
   "Defines a protocol for CRUD operations on concepts.")
 
-
-;; TODO move this to cmr.metadata-db.data.concepts
-;; it will contain concepts functions.
-;; then move the implementations for different concepts to cmr.metadata-db.data.oracle.collection etc.
-
 (defmulti get-concept-id
   "Return a distinct identifier for the given arguments."
   (fn [db concept-type provider-id native-id]
@@ -41,3 +36,13 @@
   "Remove a revision of a concept from the database completely."
   (fn [db concept-type provider-id concept-id revision-id]
     concept-type))
+
+(defmulti db-result->concept-map
+  "Translate concept result returned from db into a concept map"
+  (fn [concept-type provider-id result]
+    concept-type))
+
+(defmulti concept->insert-args
+  "Converts a concept into the insert arguments"
+  (fn [concept]
+    (:concept-type concept)))

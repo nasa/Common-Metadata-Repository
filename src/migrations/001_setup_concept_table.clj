@@ -15,7 +15,7 @@
                               format VARCHAR(255) NOT NULL,
                               revision_id INTEGER DEFAULT 0 NOT NULL,
                               deleted INTEGER DEFAULT 0 NOT NULL,
-                              CONSTRAINT unique_concept_revision 
+                              CONSTRAINT unique_concept_revision
                               UNIQUE (concept_type, provider_id, native_id, revision_id)
                               USING INDEX (create unique index ucr_index on concept(concept_type, provider_id, native_id, revision_id)),
                               CONSTRAINT unique_concept_id_revision
