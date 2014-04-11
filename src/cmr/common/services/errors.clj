@@ -18,6 +18,10 @@
    (throw (ex-info (first errors) {:type type :errors errors}))))
 
 (defn internal-error!
-  "Throws an Exception with the given message to indicate an internal error in the system."
-  [msg]
-  (throw (Exception. msg)))
+  "Throws an Exception with the given message and error, if given, to indicate an internal error in the system."
+  ([msg]
+   (throw (Exception. msg)))
+  ([msg-format arg]
+   (throw (Exception.  (apply format msg-format arg))))
+  ([^Exception excp msg-format & args]
+   (throw (Exception. (apply format msg-format args) excp))))
