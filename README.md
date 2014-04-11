@@ -61,6 +61,76 @@ curl -H "Accept: application/xml" -i "http://localhost:3003/collections"
 ```
 
 
+## Search Flow
+
+### Stage 1: Convert to query model
+
+/granules?provider=PROV1&dataset_id=foo&cloud_cover=50
+
+  * Query
+    * type: granule
+    * condition:
+      * AND
+        * collection_query_condition:
+          * condition:
+            * provider=PROV1
+        * collection_query_condition:
+          * condition
+            * dataset_id=foo
+        * NumericRange
+          * cloud_cover=50
+
+### Stage 2: Add Acls to query
+
+
+In a future sprint lookup acls and convert to query conditions then add on to the query.
+
+
+
+
+### Stage 3: Resolve Dataset Query Conditions
+
+#### A: Merge dataset query conditiosn
+
+query = Search::Simplification::DatasetQueryConditionSimplifier.simplify(query)
+
+  * Query
+    * type: granule
+    * condition:
+      * AND
+        * collection_query_condition:
+          * condition:
+            * AND
+              * provider=PROV1
+              * dataset_id=foo
+        * NumericRange
+          * cloud_cover=50
+
+#### B: Resolve dataset query conditiosn
+
+query = ElasticSearch::DatasetQueryResolver.resolve_collection_query_conditions(query)
+
+Executes this query for collections
+  * Query
+    * type: collection
+    * condition:
+      * AND
+        * provider=PROV1
+        * dataset_id=foo
+
+  * Query
+    * type: granule
+    * condition:
+      * AND
+        * String
+          * echo_collection_id=C5-PROV1
+        * NumericRange
+          * cloud_cover=50
+
+
+### Normal path...
+
+
 
 ## Prerequisites
 
