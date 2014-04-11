@@ -18,4 +18,11 @@
   (let [provider-id util/sample-provider-id
         {:keys [status provider-id]} (util/save-provider provider-id)]
     (is (= status 201))
-    #_(util/verify-provider-was-saved provider-id)))
+    (is (util/verify-provider-was-saved provider-id))))
+
+(deftest mdb-save-provider-twice-test
+  "Fail to save a provider that has been saved before."
+  (let [provider-id util/sample-provider-id
+        _ (util/save-provider provider-id)
+        {:keys [status provider-id]} (util/save-provider provider-id)]
+    (is (= status 409))))

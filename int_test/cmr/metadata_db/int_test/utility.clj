@@ -19,7 +19,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def sample-provider-id "PROV1")
-  
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; utility methods
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -101,11 +101,11 @@
 
 (defn concepts-and-ids-equal?
   ;; TODO - this might need to be changed to be order independent
-    "Compare a vector of concepts returned by the API to a set of concept-ids"
-    [concepts concept-ids]
-    (if (not= (count concepts) (count concept-ids))
-      false
-      (every? true? (map #(= (get %1 "concept-id") %2) concepts concept-ids))))
+  "Compare a vector of concepts returned by the API to a set of concept-ids"
+  [concepts concept-ids]
+  (if (not= (count concepts) (count concept-ids))
+    false
+    (every? true? (map #(= (get %1 "concept-id") %2) concepts concept-ids))))
 
 (defn save-concept
   "Make a POST request to save a concept with JSON encoding of the concept.  Returns a map with
@@ -177,9 +177,27 @@
                                :throw-exceptions false})
         status (:status response)
         body (cheshire/parse-string (:body response))
-        error-messages (get body "errors")]
-    {:status status :error-messages error-messages}))
+        error-messages (get body "errors")
+        provider-id (get body "provider-id")]
+    {:status status :error-messages error-messages :provider-id provider-id}))
 
+(defn get-providers
+  "Make a GET request to retrieve the list of providers."
+  []
+  (let [response (client/get providers-url
+                             {:accept :json
+                              :throw-exceptions false})
+        status (:status response)
+        body (cheshire/parse-string (:body response))
+        error-messages (get body "errors")
+        providers (get body "providers")]
+    {:status status :error-messages error-messages :providers providers}))
+
+
+(defn verify-provider-was-saved
+  "Verify that the given provider-id is in the list of providers."
+  [provider-id]
+  (some #{provider-id} (:providers (get-providers))))
 
 ;;; miscellaneous
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

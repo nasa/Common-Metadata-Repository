@@ -77,7 +77,8 @@
 (defn- reset
   "Delete all concepts from the data store"
   [context]
-  (concept-services/reset context)
+  ;(concept-services/reset context)
+  (provider-services/reset-providers context)
   {:status 204
    :body nil
    :headers json-header})
@@ -95,18 +96,22 @@
   [context provider-id]
   (let [saved-provider-id (provider-services/create-provider context provider-id)]
     {:status 201
-     :body {:provider-id saved-provider-id}
+     :body saved-provider-id
      :headers json-header}))
 
 (defn- delete-provider
   "Delete a provider and all its concepts."
-  [context {provider-id :provider-id}]
-  )
+  [context provider-id]
+  (provider-services/delete-provider context provider-id)
+  {:status 200})
 
 (defn- get-providers
   "Get a list of provider ids"
-  [context {provider-id :provider-id}]
-  )
+  [context]
+  (let [providers (provider-services/get-providers context)]
+    {:status 200
+     :body providers
+     :headers json-header}))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

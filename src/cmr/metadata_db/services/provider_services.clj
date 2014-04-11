@@ -34,3 +34,37 @@
         :else
         (errors/internal-error! (:error-message result))))
     result))
+
+(deftracefn get-providers
+  "Get the list of providers."
+  [context]
+  (info "Getting provider list.")
+  (let [db (util/context->db context)
+        result (provider/get-providers db)
+        error-code (:error result)]
+    (when error-code
+      (errors/internal-error! (:error-message result)))
+    result))
+
+(deftracefn delete-provider
+  "Delete a provider and all its concept tables."
+  [context provider-id]
+  (info "Deleting provider " provider-id)
+  (let [db (util/context->db context)
+        result (provider/delete-provider db provider-id)
+        error-code (:error result)]
+    (when error-code
+      (errors/internal-error! (:error-message result)))
+    result))
+    
+
+(deftracefn reset-providers
+  "Delete all the providers and their concepts."
+  [context]
+  (info "Deleting all providers and concepts.")
+  (let [db (util/context->db context)
+        result (provider/reset-providers db)
+        error-code (:error result)]
+    (when error-code
+      (errors/internal-error! (:error-message result)))
+    result))
