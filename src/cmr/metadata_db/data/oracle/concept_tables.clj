@@ -1,4 +1,4 @@
-(ns cmr.metadata-db.data.concept-tables
+(ns cmr.metadata-db.data.oracle.concept-tables
   (require [cmr.common.services.errors :as errors]
            [cmr.common.log :refer (debug info warn error)]
            [cmr.common.util :as cutil]
@@ -18,8 +18,7 @@
   "Delete the concept tables associated with the given provider-id."
   [db provider-id]
   (for [concept-type all-concept-types]
-    (let [table-name (get-table-name provider-id concept-type)]
-      (j/db-do-commands db (str "DROP TABLE METADATA_DB." table-name)))))
+    (j/db-do-commands db (str "DROP TABLE " (get-table-name provider-id concept-type)))))
 
 (defmulti create-concept-table
   "Create a table to hold concepts of a given type."

@@ -1,4 +1,4 @@
-(ns cmr.metadata-db.data.provider
+(ns cmr.metadata-db.data.oracle.provider
   "Functions for saving, retrieving, deleting providers."
   (:require [cmr.common.services.errors :as errors]
             [cmr.common.log :refer (debug info warn error)]

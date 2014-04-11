@@ -1,6 +1,6 @@
 (ns cmr.metadata-db.data.oracle.collection
   (:require [cmr.metadata-db.data.concepts :as concepts]
-            [cmr.metadata-db.data.concept-tables :as tables]
+            [cmr.metadata-db.data.oracle.concept-tables :as tables]
             [cmr.common.log :refer (debug info warn error)]
             [clojure.java.jdbc :as j]
             [sqlingvo.core :as s :refer [select from where with order-by desc delete as]]
