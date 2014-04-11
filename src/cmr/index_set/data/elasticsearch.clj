@@ -6,6 +6,7 @@
             [clj-http.client :as client]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.services.errors :as errors]
+            [cmr.index-set.services.messages :as m]
             [cheshire.core :as cheshire]
             [cmr.index-set.config.elasticsearch-config :as es-config]
             [cmr.system-trace.core :refer [deftracefn]]))
@@ -23,19 +24,46 @@
   (let [{:keys [index-name settings mapping]} idx-w-config]
     (when-not (esi/exists? index-name)
       (try
-        (let [response (esi/create index-name :settings settings :mappings mapping)]
-          (debug "index creation attempt result:" response))
+        (esi/create index-name :settings settings :mappings mapping)
         (catch Exception e
-          ;; service layer to rollback index-set create  progress on error
-          (throw (format "error creating %s elastic index - %s" index-name (.getMessage e)) e))))))
+          (let [body (cheshire/decode (get-in (ex-data e) [:object :body]) true)
+                error (:error body)]
+            (info (format "error creating %s elastic index, elastic reported error: %s" index-name error)))
+          (throw e))))))
+
+(defn index-set-exists?
+  "Check index-set existence in elastic."
+  [index-name idx-mapping-type index-set-id]
+  (let [result (doc/get index-name idx-mapping-type index-set-id "fields" "index-set-id,index-set-name,index-set-request")]
+    (:exists result)))
 
 (defn get-index-set
-  "Fetch index-set associated with an id. Convert stored index set json string to a map."
-  [index-name es-mapping-type index-set-id]
+  "Fetch index-set associated with an id."
+  [index-name idx-mapping-type index-set-id]
   (when (esi/exists? index-name)
-    (let [hit-doc (doc/get index-name es-mapping-type index-set-id "fields" "index-set-id,index-set-name,index-set-request")
-          index-set-json-str (-> hit-doc :fields :index-set-request)]
+    (let [result (doc/get index-name idx-mapping-type index-set-id "fields" "index-set-id,index-set-name,index-set-request")
+          index-set-json-str (-> result :fields :index-set-request)
+          exists? (:exists result)]
+      (when-not exists?
+        (errors/throw-service-error :not-found
+                                    (get-in m/err-msg-fmts [:get :index-set-not-found])
+                                    index-set-id))
       (cheshire.core/decode index-set-json-str true))))
+
+(defn get-index-set-ids
+  "Fetch ids of all index-sets in elastic."
+  [index-name idx-mapping-type]
+  (when (esi/exists? index-name)
+    (let [result (doc/search index-name idx-mapping-type "fields" "index-set-id")]
+      (map #(-> % :fields :index-set-id) (get-in result [:hits :hits])))))
+
+
+(defn get-index-sets
+  "Fetch all index-sets in elastic."
+  [index-name idx-mapping-type]
+  (when (esi/exists? index-name)
+    (let [result (doc/search index-name idx-mapping-type "fields" "index-set-request")]
+      (map (comp #(cheshire/decode % true) :index-set-request :fields) (get-in result [:hits :hits])))))
 
 (defn delete-index
   "Delete given elastic index"
@@ -48,7 +76,7 @@
                                    :throw-exceptions false})
           status (:status response)]
       (if-not (some #{200 202 204} [status])
-        (errors/internal-error! (str "Index name: " index-name " delete elasticsearch index operation failed " response))))))
+        (errors/internal-error! (get-in m/err-msg-fmts [:delete :index-fail]) response)))))
 
 (defrecord ESstore
   [
@@ -62,7 +90,7 @@
   (start
     [this system]
     (connect-with-config (:config this))
-    (create-index es-config/index-w-config)
+    (create-index es-config/idx-cfg-for-index-sets)
     this)
 
   (stop [this system]
@@ -73,38 +101,31 @@
   [config]
   (map->ESstore {:config config}))
 
-
 (deftracefn save-document-in-elastic
   "Save the document in Elasticsearch, raise error on failure."
   [context es-index es-mapping-type doc-id es-doc]
   (try
-    (let [result (doc/put es-index es-mapping-type doc-id es-doc)]
+    (let [result (doc/put es-index es-mapping-type doc-id es-doc)
+          {:keys [error status]} result]
       (if (:error result)
         ;; service layer to rollback index-set create  progress on error
-        (throw (str "Save to Elasticsearch failed " (str result)))))
+        ;; to result in 503 if replicas setting value of 'indext-sets' is set to > 0 when running on a single node
+        (throw (Exception. (format "Save to Elasticsearch failed. Reported status: %s and error: %s " status error)))))
     (catch clojure.lang.ExceptionInfo e
       (let [err-msg (get-in (ex-data e) [:object :body])
             msg (str "Call to Elasticsearch caught exception " err-msg)]
-        (throw msg)))))
+        (throw (Exception. msg))))))
 
-(comment
-  (create-index es-config/index-w-config)
-  (doc/count "index-sets" "set")
-  (doc/put "index-sets" "set" "3" sample-index-set)
-  (doc/get "index-sets" "set" "55" "fields" "index-set-id,index-set-name,index-set-request")
-  (let [hit-doc (doc/get "index-sets" "set" "55" "fields" "index-set-id,index-set-name,index-set-request")
-        index-set-json-str (-> hit-doc :fields :index-set-request)]
-    (cheshire.core/decode index-set-json-str true))
-  (let [data {:index-set-id (-> sample-index-set :index-set :id)
-              :index-set-name (-> sample-index-set :index-set :name)
-              :index-set-request (cheshire.core/generate-string sample-index-set)}]
-    (doc/put "index-sets" "set" "3" data))
-  (doc/put "index-sets" "set" "3"  (cheshire.core/generate-string  sample-index-set))
-  )
-
-
-
-
-
-
+(deftracefn delete-document-in-elastic
+  "Delete the document from elastic, raise error on failure."
+  [context es-cfg index-name mapping-type id]
+  (let [{:keys [host port admin-token]} es-cfg
+        delete-doc-url (format "http://%s:%s/%s/%s/%s" host port index-name mapping-type id)
+        result (client/delete delete-doc-url
+                              {:headers {"Authorization" admin-token
+                                         "Confirm-delete-action" "true"}
+                               :throw-exceptions false})
+        status (:status result)]
+    (when-not (= status 200)
+      (errors/internal-error! (get-in m/err-msg-fmts [:delete :doc-fail]) result))))
 

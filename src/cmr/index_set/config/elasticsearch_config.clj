@@ -17,11 +17,11 @@
 ;; index name and config for storing index-set requests
 ;; index the request after creating all of the requested indices successfully
 ;; foot print of this index will remain small
-(def index-w-config
+(def idx-cfg-for-index-sets
   {:index-name "index-sets"
-   :setting {"number_of_shards" 1
-             "number_of_replicas"  2
-             "refresh_interval" "10s"}
+   :settings {"index" {"number_of_shards" 1
+             "number_of_replicas"  0
+             "refresh_interval" "30s"}}
    :mapping {"set" { "dynamic"  "strict"
                           "_source"  {"enabled" false}
                           "_all"     {"enabled" false}

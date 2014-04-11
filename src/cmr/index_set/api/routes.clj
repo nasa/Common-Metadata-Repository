@@ -21,8 +21,16 @@
     (GET "/index-sets/:id" {{:keys [id]} :params request-context :request-context}
       (r/response (index-svc/get-index-set request-context id)))
 
+    ;; respond with index-sets in elastic
+    (GET "/index-sets" {request-context :request-context}
+      (r/response (index-svc/get-index-sets request-context)))
+
     (DELETE "/index-sets/:id" {{:keys [id]} :params request-context :request-context}
       (r/response (index-svc/delete-indices-listed-in-index-set request-context id)))
+
+    ;; delete all of the indices associated with index-sets and index-set docs in elastic
+    (POST "/reset" {request-context :request-context}
+      (r/response (index-svc/reset request-context)))
     (route/not-found "Not Found")))
 
 (defn make-api [system]
