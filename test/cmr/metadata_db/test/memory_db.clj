@@ -1,7 +1,7 @@
 (ns cmr.metadata-db.test.memory-db
   "Contains a record definition that implements the ConcpetStore protocol
   using fixed return values for testing purposes."
-  (:require [cmr.metadata-db.data :as data]))
+  (:require [cmr.metadata-db.data.concepts :as concepts]))
 
 ;;; concept used for tests
 (def test-concept {:concept-id "C1000000000-PROV1"

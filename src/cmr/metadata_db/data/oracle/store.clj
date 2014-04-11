@@ -1,4 +1,4 @@
-(ns cmr.metadata-db.data.oracle
+(ns cmr.metadata-db.data.oracle.core
   "Contains a record definition that implements the ConcpetStore and Lifecycle protocols
   backed by an Oracle database."
   (:require [cmr.metadata-db.data :as data]
