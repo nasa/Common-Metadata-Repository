@@ -15,6 +15,7 @@
             [cmr.search.models.query :as qm]
             [cmr.search.services.parameters :as p]
             [cmr.search.validators.validation :as v]
+            [cmr.search.services.collection-query-resolver :as r]
             [cmr.system-trace.core :refer [deftracefn]]
             [cmr.common.services.errors :as err]))
 
@@ -33,9 +34,14 @@
   ;; TODO adjust this operation to take a token or similar and apply ACLS to the query
   query)
 
+(deftracefn resolve-collection-query
+  "Replace the collection query conditions in the query with conditions of collection-concept-ids."
+  [context query]
+  (r/resolve-collection-query query context))
+
 (deftracefn simplify-query
   "Simplifies the query."
-   [context query]
+  [context query]
   ;; TODO query simplification
   query)
 
@@ -51,6 +57,7 @@
   (->> query
        (validate-query context)
        (apply-acls context)
+       (resolve-collection-query context)
        (simplify-query context)
        (execute-query context)))
 
@@ -61,6 +68,6 @@
 
   (->> params
        p/replace-parameter-aliases
-       p/validate-parameters
+       (p/validate-parameters concept-type)
        (p/parameters->query concept-type)
        (find-concepts-by-query context)))

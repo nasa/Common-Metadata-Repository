@@ -1,6 +1,6 @@
 (ns cmr.search.services.parameters
   "Contains functions for parsing and validating query parameters"
-  (:require [clojure.set]
+  (:require [clojure.set :as set]
             [clojure.string :as s]
             [cmr.common.services.errors :as err]
             [cmr.search.models.query :as qm]))
@@ -13,49 +13,59 @@
   "Replaces aliases of parameter names"
   [params]
   (-> params
-      (clojure.set/rename-keys param-aliases)
+      (set/rename-keys param-aliases)
       (update-in [:options]
                  #(when % (clojure.set/rename-keys % param-aliases)))))
 
-(def param-name->type
-  "A map of parameter names to types so that we can appropriately parse or validate them."
-  {:entry_title :string
-   :provider :string
-   :short_name :string
-   :version :string
-   :granule_ur :string
-   :temporal :temporal})
+(def concept-param->type
+  "A mapping of param names to query condition types based on concept-type"
+  {:collection {:entry_title :string
+                :provider :string
+                :short_name :string
+                :version :string
+                :temporal :temporal}
 
-(def valid-param-names
-  "A set of the valid parameter names."
-  (set (concat (keys param-name->type) (keys param-aliases) [:options])))
+   :granule {:granule_ur :string
+             :collection_concept_id :string
+             :provider :collection-query
+             :entry_title :collection-query}})
+
+(defn- param-name->type
+  "Returns the query condition type based on the given concept-type and param-name."
+  [concept-type param-name]
+  (param-name (concept-type concept-param->type)))
+
+(defn- valid-param-names
+  "A set of the valid parameter names for the given concept-type."
+  [concept-type]
+  (set (concat (keys (concept-type concept-param->type)) (keys param-aliases) [:options])))
 
 (defn unrecognized-params-validation
   "Validates that no invalid parameters were supplied"
-  [params]
+  [concept-type params]
   (map #(str "Parameter [" (name % )"] was not recognized.")
        (clojure.set/difference (set (keys params))
-                               valid-param-names)))
+                               (valid-param-names concept-type))))
 
 (defn unrecognized-params-in-options-validation
   "Validates that no invalid parameters names in the options were supplied"
-  [params]
+  [concept-type params]
   (if-let [options (:options params)]
     (map #(str "Parameter [" (name %)"] with option was not recognized.")
          (clojure.set/difference (set (keys options))
-                                 valid-param-names))
+                                 (valid-param-names concept-type)))
     []))
 
 (defn options-only-for-string-conditions-validation
   "Validates that only string conditions support options"
-  [params]
+  [concept-type params]
   ;; TODO once we have more conditions than string conditions add a validation that only
   ;; string conditions support options.
   [])
 
 (defn unrecognized-params-settings-in-options-validation
   "Validates that no invalid parameters names in the options were supplied"
-  [params]
+  [concept-type params]
   (if-let [options (:options params)]
     (apply concat
            (map
@@ -76,22 +86,22 @@
 (defn validate-parameters
   "Validates parameters. Throws exceptions to send to the user. Returns parameters if validation
   was successful so it can be chained with other calls."
-  [params]
-  (let [errors (mapcat #(% params) parameter-validations)]
+  [concept-type params]
+  (let [errors (mapcat #(% concept-type params) parameter-validations)]
     (when-not (empty? errors)
       (err/throw-service-errors :invalid-data errors)))
   params)
 
 (defmulti parameter->condition
   "Converts a parameter into a condition"
-  (fn [param value options]
-    (param-name->type param)))
+  (fn [concept-type param value options]
+    (param-name->type concept-type param)))
 
 (defmethod parameter->condition :string
-  [param value options]
+  [concept-type param value options]
   (if (sequential? value)
     (qm/or-conds
-      (map #(parameter->condition param % options) value))
+      (map #(parameter->condition concept-type param % options) value))
     (qm/map->StringCondition
       {:field param
        :value value
@@ -107,7 +117,7 @@
       (qm/query concept-type) ;; matches everything
       ;; Convert params into conditions
       (let [conditions (map (fn [[param value]]
-                              (parameter->condition param value options))
+                              (parameter->condition concept-type param value options))
                             params)]
         (qm/query concept-type (qm/and-conds conditions))))))
 
