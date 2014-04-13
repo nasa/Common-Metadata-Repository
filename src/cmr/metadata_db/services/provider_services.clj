@@ -12,7 +12,17 @@
 (defn validate-provider-id
   "Verify that a provider-id is in the correct format."
   [provider-id]
-  )
+  (when-let [error-message (cond
+                             (> (count provider-id) 10)
+                             messages/provider-id-too-long
+                             
+                             (empty? provider-id) 
+                             messages/provider-id-empty
+                             
+                             (not (re-matches #"^[a-zA-Z](\w|_)*" provider-id))
+                             messages/invalid-provider-id)]
+    (messages/data-error :invalid-data error-message provider-id)))
+                        
 
 
 

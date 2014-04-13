@@ -61,3 +61,12 @@
 (defn provider-exists [provider-id]
   (format "Provider %s already exists."
           provider-id))
+
+(defn provider-id-empty [provider-id]
+  (format "Provider ID cannot be empty"))
+
+(defn provider-id-too-long [provider-id]
+  (format "Provider ID %s exceeds ten characters"))
+
+(defn invalid-provider-id [provider-id]
+  (format "provider-id %s invalid" provider-id))
