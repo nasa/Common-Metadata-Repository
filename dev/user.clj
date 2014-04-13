@@ -4,7 +4,8 @@
   (:require [clojure.pprint :refer (pprint pp)]
             [clojure.tools.namespace.repl :refer (refresh refresh-all)]
             [cmr.metadata-db.system :as system]
-            [cmr.common.log :as log :refer (debug info warn error)])
+            [cmr.common.log :as log :refer (debug info warn error)]
+            [cmr.common.dev.util :as d])
   (:use [clojure.test :only [run-all-tests]]
         [clojure.repl]
         [alex-and-georges.debug-repl]))
@@ -20,7 +21,9 @@
   (let [s (system/create-system)]
     (alter-var-root #'system
                     (constantly
-                      (system/start s)))))
+                      (system/start s))))
+  (d/touch-user-clj)
+  (d/touch-files-in-dir "src/cmr/metadata_db/services"))
 
 (defn stop
   "Shuts down and destroys the current development system."
@@ -34,4 +37,4 @@
   ; Refreshes all of the code and then restarts the system
   (refresh :after 'user/start))
 
-(info "Custom user.clj loaded.")
+(info "Custom user.clj loaded 4.")

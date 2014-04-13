@@ -110,7 +110,7 @@
   [context]
   (let [providers (provider-services/get-providers context)]
     {:status 200
-     :body providers
+     :body {:providers providers}
      :headers json-header}))
 
 
@@ -151,6 +151,7 @@
     (context "/providers" []
       ;; create a new provider
       (POST "/" {:keys [request-context body]}
+        #_(throw (Exception. "stop"))
         (save-provider request-context (get body "provider-id")))
       ;; delete a provider
       (DELETE "/:provider-id" {{:keys [provider-id]} :params request-context :request-context}
