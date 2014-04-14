@@ -19,13 +19,16 @@
     (is (= {:concept-type :granule
             :sequence-number 12
             :provider-id "PROV_A42"}
-           (c/parse-concept-id "G12-PROV_A42")))))
+           (c/parse-concept-id "G12-PROV_A42"))))
+  (testing "parse invalid concept id"
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"Concept-id \[.*\] is not valid."
+                          (c/parse-concept-id "G5-PROV1;")))))
 
 (def concept-id-maps
   "A generator for concept id maps"
   (gen/hash-map :concept-type (gen/elements (vec c/concept-types))
                 :sequence-number gen/s-pos-int
-                :provider-id (gen/not-empty gen/string-ascii)))
+                :provider-id (gen/not-empty gen/string-alpha-numeric)))
 
 ;; Tests that all generated concept id maps can converted to concept ids and parsed.
 (defspec parse-build-concept-id-test 100

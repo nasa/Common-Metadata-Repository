@@ -1,6 +1,7 @@
 (ns cmr.common.concepts
   "This contains utility functions and vars related to concepts in the CMR"
-  (:require [clojure.set]))
+  (:require [clojure.set]
+            [cmr.common.services.errors :as errors]))
 
 (def concept-types
   "This is the set of the types of concepts in the CMR."
@@ -15,9 +16,16 @@
   "Maps a concept type to the concept id prefix"
   (clojure.set/map-invert concept-prefix->concept-type))
 
+(defn validate-concept-id
+  [concept-id]
+  (let [regex #"[CG]\d+-[A-Za-z0-9_]+"]
+    (when-not (re-matches regex concept-id)
+      (errors/throw-service-error :bad-request "Concept-id [%s] is not valid." concept-id))))
+
 (defn parse-concept-id
   "Split a concept id into concept-type-prefix, sequence number, and provider id."
   [concept-id]
+  (validate-concept-id concept-id)
   (let [prefix (subs concept-id 0 1)
         ^String seq-num (re-find #"\d+" concept-id)
         provider-id (get (re-find #"\d+-(.*)" concept-id) 1)]
