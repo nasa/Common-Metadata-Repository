@@ -15,11 +15,12 @@
   "Load the database with test data."
   [f]
   ;; setup database
+  (util/save-provider "PROV1")
   (let [concept1 (util/concept)]
     (dorun (repeatedly num-revisions #(util/save-concept concept1))))
-  
+
   (f)
-  
+
   ;; clear out the database
   (util/reset-database))
 
@@ -41,14 +42,13 @@
     (is (= status 404))))
 
 (deftest force-delete-fail-to-delete-nonexistent-concept-revision
-  "Verify we get a 404 when whe try to delete a concept revision that 
+  "Verify we get a 404 when whe try to delete a concept revision that
   does not exist."
   (let [{:keys [status revision-id]} (util/force-delete-concept concept1-id 10)]
     (is (= status 404))))
 
 (deftest force-delete-fail-to-delete-nonexistent-concept-id
-  "Verify we get a 404 when whe try to delete a concept with id that 
+  "Verify we get a 404 when whe try to delete a concept with id that
   does not exist."
-  (let [{:keys [status revision-id]} (util/force-delete-concept "SOME-ID" 0)]
+  (let [{:keys [status revision-id]} (util/force-delete-concept "C22-PROV1" 0)]
     (is (= status 404))))
-  

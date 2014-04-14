@@ -5,7 +5,7 @@
            [clojure.string :as string]
            [clojure.pprint :refer (pprint pp)]
            [clojure.java.jdbc :as j]
-           [cmr.metadata-db.services.utility :as util]
+           [cmr.metadata-db.services.util :as util]
            [inflections.core :as inf]))
 
 (def all-concept-types [:collection :granule])
@@ -78,12 +78,12 @@
   "Create all the concept tables for the given provider-id."
   [db provider-id]
   (info "Creating concept tables for provider " provider-id)
-  (dorun (for [concept-type all-concept-types]
-           (create-concept-table {:db db :provider-id provider-id :concept-type concept-type}))))
+  (doseq [concept-type all-concept-types]
+    (create-concept-table {:db db :provider-id provider-id :concept-type concept-type})))
 
 (defn delete-provider-concept-tables
   "Delete the concept tables associated with the given provider-id."
   [db provider-id]
   (info "Deleting concept tables for provider " provider-id)
-  (dorun (for [concept-type all-concept-types]
-           (j/db-do-commands db (str "DROP TABLE " (get-table-name provider-id concept-type))))))
+  (doseq [concept-type all-concept-types]
+    (j/db-do-commands db (str "DROP TABLE " (get-table-name provider-id concept-type)))))

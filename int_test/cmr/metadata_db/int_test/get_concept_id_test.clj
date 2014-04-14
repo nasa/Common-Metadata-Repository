@@ -11,7 +11,15 @@
 ;;; fixtures
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(use-fixtures :each util/reset-database-fixture)
+(defn fixture
+  [f]
+  (try
+    (util/save-provider "PROV1")
+    (f)
+    (finally
+      (util/reset-database))))
+
+(use-fixtures :each fixture)
 
 ;;; tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -46,7 +54,7 @@
         {:keys [status concept-id error-messages]} response]
     (is (= status 404))
     (is (= error-messages
-           [(messages/missing-concept-id-msg
+           [(messages/missing-concept-id
               (name (:concept-type concept))
               (:provider-id concept)
               (:native-id concept))]))))

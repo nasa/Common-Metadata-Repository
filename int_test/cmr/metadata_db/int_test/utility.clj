@@ -5,7 +5,7 @@
             [cheshire.core :as cheshire]))
 
 ;;; Enpoints for services - change this for tcp-mon
-(def port 3000)
+(def port 4001)
 
 (def concepts-url (str "http://localhost:" port "/concepts/"))
 

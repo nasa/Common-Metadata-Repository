@@ -2,7 +2,7 @@
   (require [cmr.metadata-db.data.oracle.provider :as provider]
            [cmr.common.services.errors :as errors]
            [cmr.metadata-db.services.messages :as messages]
-           [cmr.metadata-db.services.utility :as util]
+           [cmr.metadata-db.services.util :as util]
            [cmr.common.log :refer (debug info warn error)]
            [cmr.system-trace.core :refer [deftracefn]]))
 
@@ -42,7 +42,7 @@
     (when error-code
       (cond
         (= error-code :not-found)
-        (messages/data-error :not-found messages/provider-does-not-exist-msg provider-id)
+        (messages/data-error :not-found messages/provider-does-not-exist provider-id)
 
         :else
         (errors/internal-error! (:error-message result))))))

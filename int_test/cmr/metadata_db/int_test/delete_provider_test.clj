@@ -23,4 +23,4 @@
   (testing "Delete provider that doesn't exist"
     (let [{:keys [status error-messages]} (util/delete-provider "PROV3")]
       (is (= status 404))
-      (is (= (first error-messages) (messages/provider-does-not-exist-msg "PROV3"))))))
+      (is (= (first error-messages) (messages/provider-does-not-exist "PROV3"))))))

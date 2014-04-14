@@ -17,15 +17,17 @@
   ;; setup database
   (util/save-provider "PROV1")
   (let [concept1 (util/concept)
-        concept2 (merge concept1 {:concept-id "C2-PROV1" :native-id "SOME OTHER ID"})]
+        concept2 (merge concept1 {:concept-id "C2-PROV1" :native-id "SOME OTHER ID"})
+        verify #(when-not (= 201 (:status %))
+                  (throw (ex-info "Failed to create concept" %)))]
     ;; save a concept
-    (util/save-concept concept1)
+    (verify (util/save-concept concept1))
     ;; save a revision
-    (util/save-concept concept1)
+    (verify (util/save-concept concept1))
     ;; save it a third time
-    (util/save-concept concept1)
+    (verify (util/save-concept concept1))
    	;; save another concept
-    (util/save-concept concept2))
+    (verify (util/save-concept concept2)))
 
   (f)
 
@@ -38,10 +40,16 @@
 ;;; tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (deftest get-concept-test
-  "Get the latest version of a concept by concept-id."
-  (let [{:keys [status concept]} (util/get-concept-by-id "C1000000000-PROV1")]
-    (is (= status 200))
-    (is (= (:revision-id concept) 2))))
+  (testing "latest version"
+    (let [{:keys [status concept]} (util/get-concept-by-id "C1000000000-PROV1")]
+      (is (= 200 status))
+      (is (= 2 (:revision-id concept))))))
+
+(deftest get-non-existant-concept-test
+  (testing "Non existant collection id"
+    (is (= 404 (:status (util/get-concept-by-id "C123-PROV1")))))
+  (testing "Non existant provider id"
+    (is (= 404 (:status (util/get-concept-by-id "C1000000000-PROV12"))))))
 
 (deftest get-concept-with-version-test
   "Get a concept by concept-id and version-id."

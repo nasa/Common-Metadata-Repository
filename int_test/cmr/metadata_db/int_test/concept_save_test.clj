@@ -22,7 +22,6 @@
 ;;; tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (deftest save-concept-test
-  "Save a valid concept with no revision-id."
   (let [concept (util/concept)
         {:keys [status revision-id concept-id]} (util/save-concept (util/concept))]
     (is (= status 201))
@@ -30,7 +29,6 @@
     (util/verify-concept-was-saved (merge concept {:revision-id revision-id :concept-id concept-id}))))
 
 (deftest save-concept-test-with-proper-revision-id-test
-  "Save a valid concept with a valid revision-id"
   (let [concept (util/concept)]
     ;; save the concept once
     (let [{:keys [revision-id concept-id]} (util/save-concept concept)
@@ -44,7 +42,6 @@
                                                        :concept-id concept-id}))))))
 
 (deftest save-concept-with-bad-revision-test
-  "Fail to save a concept with an invalid revision-id"
   (let [concept (util/concept)
         {:keys [concept-id]} (util/save-concept concept)
         concept-with-bad-revision (merge concept {:concept-id concept-id :revision-id 2})
@@ -55,7 +52,6 @@
     (is (nil? retrieved-revision))))
 
 (deftest save-concept-with-missing-required-parameter
-  "Fail to save a concept if a required parameter is missing"
   (testing "missing concept-type"
     (let [{:keys [status error-messages]} (util/save-concept (dissoc (util/concept) :concept-type))]
       (is (= 422 status))
@@ -70,7 +66,6 @@
       (is (re-find #"native-id" (first error-messages))))))
 
 (deftest save-concept-after-delete
-  "Verify that a save after delete returns the correct revision."
   (let [concept (util/concept)
         {:keys [concept-id]} (util/save-concept concept)]
     (util/delete-concept concept-id)
@@ -86,7 +81,6 @@
 ;;; 500 status code instead of a 400. This will be addressed as a separate
 ;;; issue.
 #_(deftest save-concept-with-invalid-json-test
-    "Fail to save a concept if the json is invalid"
     (let [response (client/post "http://localhost:3000/concepts"
                                 {:body "some non-json"
                                  :body-encoding "UTF-8"
