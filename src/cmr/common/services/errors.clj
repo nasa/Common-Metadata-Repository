@@ -8,20 +8,20 @@
   error and a message. See http://stackoverflow.com/a/16159584."
   ([type msg]
    (throw (ex-info msg {:type type :errors [msg]})))
-  ([type msg-format & args]
-   (throw-service-error type (apply format msg-format args))))
+  ([type msg cause]
+   (throw (ex-info msg {:type type :errors [msg]} cause))))
 
 (defn throw-service-errors
   "Throws an instance of clojure.lang.ExceptionInfo that will contain a map with the type of
   error and errors. See http://stackoverflow.com/a/16159584."
   ([type errors]
-   (throw (ex-info (first errors) {:type type :errors errors}))))
+   (throw (ex-info (first errors) {:type type :errors errors})))
+  ([type errors cause]
+   (throw (ex-info (first errors) {:type type :errors errors} cause))))
 
 (defn internal-error!
   "Throws an Exception with the given message and error, if given, to indicate an internal error in the system."
   ([msg]
    (throw (Exception. msg)))
-  ([msg-format arg]
-   (throw (Exception.  (apply format msg-format arg))))
-  ([^Exception excp msg-format & args]
-   (throw (Exception. (apply format msg-format args) excp))))
+  ([msg cause]
+   (throw (Exception. msg cause))))
