@@ -9,7 +9,7 @@
 (deftracefn create-provider
   "Save a provider and setup concept tables in the database."
   [context provider-id]
-  (info "Creating provider " provider-id)
+  (info "Creating provider [" provider-id "]")
   (util/validate-provider-id provider-id)
   (let [db (util/context->db context)
         result (provider/save-provider db provider-id)
@@ -35,7 +35,7 @@
 (deftracefn delete-provider
   "Delete a provider and all its concept tables."
   [context provider-id]
-  (info "Deleting provider " provider-id)
+  (info "Deleting provider [" provider-id "]")
   (let [db (util/context->db context)
         result (provider/delete-provider db provider-id)
         error-code (:error result)]
