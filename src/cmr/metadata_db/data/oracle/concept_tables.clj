@@ -13,6 +13,7 @@
 (defn get-table-name
   "Get the name for the table for a given provider-id and concept-type"
   [provider-id concept-type]
+  (util/validate-provider-id provider-id)
   (format "%s_%s" (string/lower-case provider-id) (inf/plural (name concept-type))))
 
 (defmulti create-concept-table
@@ -38,7 +39,7 @@
                                  USING INDEX (create unique index %s_cri
                                  ON %s(concept_id, revision_id)))"
                                  table-name
-                                 table-name 
+                                 table-name
                                  table-name
                                  table-name
                                  table-name

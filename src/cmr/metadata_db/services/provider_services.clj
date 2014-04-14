@@ -6,26 +6,11 @@
            [cmr.common.log :refer (debug info warn error)]
            [cmr.system-trace.core :refer [deftracefn]]))
 
-
-(defn validate-provider-id
-  "Verify that a provider-id is in the correct format."
-  [provider-id]
-  (when-let [error-message (cond
-                             (> (count provider-id) 10)
-                             messages/provider-id-too-long
-
-                             (empty? provider-id)
-                             messages/provider-id-empty
-
-                             (not (re-matches #"^[a-zA-Z](\w|_)*" provider-id))
-                             messages/invalid-provider-id)]
-    (messages/data-error :invalid-data error-message provider-id)))
-
 (deftracefn create-provider
   "Save a provider and setup concept tables in the database."
   [context provider-id]
   (info "Creating provider " provider-id)
-  (validate-provider-id provider-id)
+  (util/validate-provider-id provider-id)
   (let [db (util/context->db context)
         result (provider/save-provider db provider-id)
         error-code (:error result)]

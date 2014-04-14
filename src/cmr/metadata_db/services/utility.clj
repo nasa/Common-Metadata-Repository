@@ -38,16 +38,16 @@
         error (cond
                 (nil? concept-type)
                 (messages/missing-concept-type-msg)
-                
+
                 (nil? provider-id)
                 (messages/missing-provider-id-msg)
-                
+
                 (nil? native-id)
                 (messages/missing-native-id-msg)
-                
+
                 (and concept-id (not (validate-concept-id concept)))
                 (messages/invalid-concept-id-msg concept-id provider-id concept-type)
-                
+
                 :else nil)]
     (if error (errors/throw-service-error :invalid-data error))))
 
@@ -55,3 +55,17 @@
   "Check to see if an entry is a tombstone (has a :deleted true entry)."
   [concept]
   (:deleted concept))
+
+(defn validate-provider-id
+  "Verify that a provider-id is in the correct format."
+  [provider-id]
+  (when-let [error-message (cond
+                             (> (count provider-id) 10)
+                             messages/provider-id-too-long
+
+                             (empty? provider-id)
+                             messages/provider-id-empty
+
+                             (not (re-matches #"^[a-zA-Z](\w|_)*" provider-id))
+                             messages/invalid-provider-id)]
+    (messages/data-error :invalid-data error-message provider-id)))
