@@ -53,20 +53,20 @@
 
 (extend-protocol c/ConceptsStore
   OracleStore
-
+  
   (generate-concept-id
     [db concept]
     (let [{:keys [concept-type provider-id]} concept
           seq-num (:nextval (first (j/query db ["SELECT METADATA_DB.concept_id_seq.NEXTVAL FROM DUAL"])))]
       (util/generate-concept-id concept-type provider-id seq-num)))
-
+  
   (get-concept-id
     [db concept-type provider-id native-id]
     (let [table (tables/get-table-name provider-id concept-type)]
       (su/find-one db (select [:concept-id]
-                        (from table)
-                        (where `(= :native-id ~native-id))))))
-
+                              (from table)
+                              (where `(= :native-id ~native-id))))))
+  
   (get-concept-by-provider-id-native-id-concept-type
     [db concept]
     (let [{:keys [concept-type provider-id native-id revision-id]} concept
@@ -74,35 +74,35 @@
           stmt (if revision-id
                  ;; find specific revision
                  (select '[*]
-                   (from table)
-                   (where `(and (= :native-id ~native-id)
-                                (= :revision-id ~revision-id))))
+                         (from table)
+                         (where `(and (= :native-id ~native-id)
+                                      (= :revision-id ~revision-id))))
                  ;; find latest
                  (select '[*]
-                   (from table)
-                   (where `(= :native-id ~native-id))
-                   (order-by (desc :revision-id))))]
+                         (from table)
+                         (where `(= :native-id ~native-id))
+                         (order-by (desc :revision-id))))]
       (db-result->concept-map concept-type provider-id
                               (su/find-one db stmt))))
-
+  
   (get-concept
     ([db concept-type provider-id concept-id]
      (let [table (tables/get-table-name provider-id concept-type)]
        (db-result->concept-map concept-type provider-id
                                (su/find-one db (select '[*]
-                                                 (from table)
-                                                 (where `(= :concept-id ~concept-id))
-                                                 (order-by (desc :revision-id)))))))
+                                                       (from table)
+                                                       (where `(= :concept-id ~concept-id))
+                                                       (order-by (desc :revision-id)))))))
     ([db concept-type provider-id concept-id revision-id]
      (if revision-id
        (let [table (tables/get-table-name provider-id concept-type)]
          (db-result->concept-map concept-type provider-id
                                  (su/find-one db (select '[*]
-                                                   (from table)
-                                                   (where `(and (= :concept-id ~concept-id)
-                                                                (= :revision-id ~revision-id)))))))
+                                                         (from table)
+                                                         (where `(and (= :concept-id ~concept-id)
+                                                                      (= :revision-id ~revision-id)))))))
        (c/get-concept db concept-type provider-id concept-id))))
-
+  
   (get-concepts
     [db concept-type provider-id concept-id-revision-id-tuples]
     (j/with-db-transaction
@@ -115,13 +115,13 @@
              (concat concept-id-revision-id-tuples [:transaction false]))
       (let [table (tables/get-table-name provider-id concept-type)
             stmt (su/build (select [:c.*]
-                             (from (as (keyword table) :c)
-                                   (as :get-concepts-work-area :t))
-                             (where `(and (= :c.concept-id :t.concept-id)
-                                          (= :c.revision-id :t.revision-id)))))]
+                                   (from (as (keyword table) :c)
+                                         (as :get-concepts-work-area :t))
+                                   (where `(and (= :c.concept-id :t.concept-id)
+                                                (= :c.revision-id :t.revision-id)))))]
         (map (partial db-result->concept-map concept-type provider-id)
              (j/query conn stmt)))))
-
+  
   (save-concept
     [db concept]
     (try
@@ -133,16 +133,16 @@
               error-code (cond
                            ;;TODO confirm that these error messages are still correct.
                            ;; we should have unit tests for this
-                           (re-find #"UNIQUE_CONCEPT_REVISION" error-message)
+                           (re-find #"unique constraint.*_CID_REV" error-message)
                            :concept-id-concept-conflict
-
-                           (re-find #"UNIQUE_CONCEPT_ID_REVISION" error-message)
+                           
+                           (re-find #"unique constraint.*_CON_REV" error-message)
                            :revision-id-conflict
-
+                           
                            :else
                            :unknown-error)]
           {:error error-code :error-message error-message}))))
-
+  
   (force-delete
     [this concept-type provider-id concept-id revision-id]
     (let [table (tables/get-table-name provider-id concept-type)]

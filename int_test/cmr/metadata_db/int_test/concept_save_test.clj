@@ -13,6 +13,7 @@
   [f]
   (try
     (util/save-provider "PROV1")
+    (f)
     (finally
       (util/reset-database))))
 
