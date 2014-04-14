@@ -53,6 +53,16 @@ curl -H "Accept: application/json" -i "http://localhost:3003/collections?entry_t
 curl -H "Accept: application/json" -i "http://localhost:3003/collections?temporal[]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z,30,60&temporal[]=2000-01-01T10:00:00Z,,30&temporal[]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z"
 ```
 
+### Find all granules
+```
+curl -H "Accept: application/json" -i "http://localhost:3003/granules"
+```
+
+### Find all granules with a granule-ur
+```
+curl -H "Accept: application/json" -i "http://localhost:3003/granules?granule_ur\[\]=DummyGranuleUR"
+```
+
 ### Find as XML
 TODO implement support for retrieving in XML.
 Also make sure enough information is returned that Catalog-REST can work.

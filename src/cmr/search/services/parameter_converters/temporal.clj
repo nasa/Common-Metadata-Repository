@@ -1,7 +1,6 @@
 (ns cmr.search.services.parameter-converters.temporal
   "Contains functions for parsing, validating and converting temporal query parameters to query conditions"
-  (:require [clojure.set]
-            [clojure.string :as s]
+  (:require [clojure.string :as s]
             [cmr.common.services.errors :as err]
             [cmr.search.models.query :as qm]
             [cmr.search.services.parameters :as p]))
@@ -25,10 +24,10 @@
 
 ;; Converts temporal parameter and values into query condition, returns the converted condition
 (defmethod p/parameter->condition :temporal
-  [param value options]
+  [concept-type param value options]
   (if (sequential? value)
     (qm/or-conds
-      (map #(p/parameter->condition param % options) value))
+      (map #(p/parameter->condition concept-type param % options) value))
     (let [[start-date end-date start-day end-day] (map s/trim (s/split value #","))]
       (map->temporal-condition {:field param
                                 :start-date (value-or-nil start-date)

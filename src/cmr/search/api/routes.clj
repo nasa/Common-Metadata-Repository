@@ -11,17 +11,19 @@
             [cmr.system-trace.http :as http-trace]
             [cmr.search.api.search-results :as sr]))
 
-(defn get-search-results-format
+(defn- get-search-results-format
   "Returns the requested search results format parsed from headers"
   [headers]
   (let [mime-type (get headers "accept")]
     (sr/validate-search-result-mime-type mime-type)
     (sr/mime-type->format mime-type)))
 
-(defn find-collection-references [context params headers]
+(defn- find-references
+  "Invokes query service to find references and returns the response"
+  [context concept-type params headers]
   (let [result-format (get-search-results-format headers)
-        _ (info (format "Search for collections in format [%s] with params [%s]" result-format params))
-        results (query-svc/find-concepts-by-parameters context :collection params)]
+        _ (info (format "Search for %ss in format [%s] with params [%s]" (name concept-type) result-format params))
+        results (query-svc/find-concepts-by-parameters context concept-type params)]
     {:status 200
      :headers {"Content-Type" (sr/format->mime-type result-format)}
      :body (sr/search-results->response results result-format)}))
@@ -30,7 +32,10 @@
   (routes
     (context "/collections" []
       (GET "/" {params :params headers :headers context :request-context}
-        (find-collection-references context params headers)))
+        (find-references context :collection params headers)))
+    (context "/granules" []
+      (GET "/" {params :params headers :headers context :request-context}
+        (find-references context :granule params headers)))
     (route/not-found "Not Found")))
 
 (defn make-api [system]

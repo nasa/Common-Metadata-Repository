@@ -76,7 +76,16 @@
    end-day
    ])
 
+(defrecord CollectionQueryCondition
+  [
+   ;; The condition to find collections
+   condition
+   ])
+
 (defrecord MatchAllCondition
+  [])
+
+(defrecord MatchNoneCondition
   [])
 
 (defn query
