@@ -32,30 +32,30 @@
 
 ;;; tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(deftest mdb-delete-concept-test
+(deftest delete-concept-test
   "Delete a concept and check the revision id of the tombstone."
   (let [{:keys [status revision-id]} (util/delete-concept concept1-id)]
     (is (= status 200))
     (is (= revision-id num-revisions))))
 
-(deftest mdb-delete-concept-with-valid-revision
+(deftest delete-concept-with-valid-revision
   "Delete a concept while specifying a valid revision."
   (let [{:keys [status revision-id]} (util/delete-concept concept1-id num-revisions)]
     (is (= status 200))
     (is (= revision-id num-revisions))))
 
-(deftest mdb-delete-concept-with-invalid-revision
+(deftest delete-concept-with-invalid-revision
   "Delete a concept while specifying an invalid revision."
   (let [{:keys [status]} (util/delete-concept concept1-id (+ num-revisions 10))]
     (is (= status 409))))
 
-(deftest mdb-fail-to-delete-missing-concept
+(deftest fail-to-delete-missing-concept
   "Attempt to delete a concept that does not exist and verify that we get a 404."
   (let [{:keys [status revision-id error-messages]} (util/delete-concept "C1-NON-EXISTENT-PROVIDER")]
     (is (= status 404))
     (is (= error-messages [(messages/concept-does-not-exist-msg "C1-NON-EXISTENT-PROVIDER")]))))
 
-(deftest mdb-repeated-calls-to-delete-get-same-revision
+(deftest repeated-calls-to-delete-get-same-revision
   "Delete a concept repeatedly and verify that the revision does not change."
   (let [concept-id concept1-id
         tombstone-revision-id (:revision-id (util/delete-concept concept-id))]

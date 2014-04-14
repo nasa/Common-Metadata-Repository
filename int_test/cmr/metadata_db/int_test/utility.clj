@@ -193,6 +193,17 @@
         providers (get body "providers")]
     {:status status :error-messages error-messages :providers providers}))
 
+(defn delete-provider
+  "Make a DELETE request to remove a provider."
+  [provider-id]
+  (let [response (client/delete (format "%s/%s" providers-url provider-id)
+                                {:accept :json
+                                 :throw-exceptions false})
+        status (:status response)
+        body (cheshire/parse-string (:body response))
+        error-messages (get body "errors")]
+    {:status status :error-messages error-messages}))
+
 
 (defn verify-provider-was-saved
   "Verify that the given provider-id is in the list of providers."

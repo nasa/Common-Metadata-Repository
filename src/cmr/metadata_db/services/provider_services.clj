@@ -7,8 +7,6 @@
            [cmr.system-trace.core :refer [deftracefn]]))
 
 
-;;; Utility methods
-
 (defn validate-provider-id
   "Verify that a provider-id is in the correct format."
   [provider-id]
@@ -53,8 +51,16 @@
   "Delete a provider and all its concept tables."
   [context provider-id]
   (info "Deleting provider " provider-id)
-  (let [db (util/context->db context)]
-    (provider/delete-provider db provider-id)))
+  (let [db (util/context->db context)
+        result (provider/delete-provider db provider-id)
+        error-code (:error result)]
+    (when error-code
+      (cond
+        (= error-code :not-found)
+        (messages/data-error :not-found messages/provider-does-not-exist-msg provider-id)
+
+        :else
+        (errors/internal-error! (:error-message result))))))
 
 
 (deftracefn reset-providers

@@ -43,10 +43,6 @@
                                  table-name
                                  table-name
                                  table-name
-                                 table-name))
-    (info "Creating concept-id index")
-    (j/db-do-commands db (format "CREATE INDEX %s_cid_i ON %s(concept_id) TABLESPACE users"
-                                 table-name
                                  table-name))))
 
 (defmethod create-concept-table :granule [{:keys [db provider-id]}]
@@ -55,7 +51,7 @@
     (j/db-do-commands db (format "CREATE TABLE %s (
                                  concept_id VARCHAR(255) NOT NULL,
                                  native_id VARCHAR(255) NOT NULL,
-                                 parent_concept_id VARCHAR(255) NOT NULL,
+                                 parent_collection_id VARCHAR(255) NOT NULL,
                                  metadata VARCHAR(4000) NOT NULL,
                                  format VARCHAR(255) NOT NULL,
                                  revision_id INTEGER DEFAULT 0 NOT NULL,
@@ -73,9 +69,6 @@
                                  table-name
                                  table-name
                                  table-name
-                                 table-name
-                                 table-name))
-    (j/db-do-commands db (format "CREATE INDEX %s_cid_i ON %s(concept_id) TABLESPACE users"
                                  table-name
                                  table-name))))
 

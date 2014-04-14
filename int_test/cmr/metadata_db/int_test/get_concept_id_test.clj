@@ -15,7 +15,7 @@
 
 ;;; tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(deftest mdb-get-concept-id-test
+(deftest get-concept-id-test
   "Get a concept-id for a given concept-type, provider-id, and native-id."
   (let [concept (util/concept)
         _ (util/save-concept concept)
@@ -25,7 +25,7 @@
     (is (= status 200))
     (is (= concept-id "C1000000000-PROV1"))))
 
-(deftest mdb-get-concept-id-repeatedly-test
+(deftest get-concept-id-repeatedly-test
   "Get a concept-id repeatedly to verify that it is the same each time."
   (let [concept (util/concept)
         _ (util/save-concept concept)
@@ -37,7 +37,7 @@
                                              (:native-id concept))]
     (is (= concept-id1-map concept-id2-map))))
 
-(deftest mdb-fail-to-get-concept-id-for-non-existing-concept
+(deftest fail-to-get-concept-id-for-non-existing-concept
   "Requests for concept-ids for concepts that have not been saved should return a 404."
   (let [concept (util/concept)
         response (util/get-concept-id (name (:concept-type concept))

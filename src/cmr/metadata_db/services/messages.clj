@@ -58,6 +58,10 @@
 (defn maximum-save-attempts-exceeded-msg []
   "Reached limit of attempts to save concept - giving up.")
 
+(defn provider-does-not-exist-msg [provider-id]
+  (format "Provider with provider-id %s does not exist."
+          provider-id))
+
 (defn provider-exists [provider-id]
   (format "Provider %s already exists."
           provider-id))
@@ -66,7 +70,8 @@
   (format "Provider ID cannot be empty"))
 
 (defn provider-id-too-long [provider-id]
-  (format "Provider ID %s exceeds ten characters"))
+  (format "Provider ID %s exceeds ten characters"
+          provider-id))
 
 (defn invalid-provider-id [provider-id]
-  (format "provider-id %s invalid" provider-id))
+  (format "provider-id %s is invalid" provider-id))

@@ -28,25 +28,25 @@
 ;;; tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(deftest mdb-force-delete-concept-test
+(deftest force-delete-concept-test
   "Delete a concept and check the revision id of the return message."
   (let [{:keys [status revision-id]} (util/force-delete-concept concept1-id 1)]
     (is (= status 200))
     (is (= revision-id 1))))
 
-(deftest mdb-force-delete-verify-gone
+(deftest force-delete-verify-gone
   "Delete a concept and make sure it is no longer available."
   (util/force-delete-concept concept1-id 1)
   (let [{:keys [status concept]} (util/get-concept-by-id-and-revision concept1-id 1)]
     (is (= status 404))))
 
-(deftest mdb-force-delete-fail-to-delete-nonexistent-concept-revision
+(deftest force-delete-fail-to-delete-nonexistent-concept-revision
   "Verify we get a 404 when whe try to delete a concept revision that 
   does not exist."
   (let [{:keys [status revision-id]} (util/force-delete-concept concept1-id 10)]
     (is (= status 404))))
 
-(deftest mdb-force-delete-fail-to-delete-nonexistent-concept-id
+(deftest force-delete-fail-to-delete-nonexistent-concept-id
   "Verify we get a 404 when whe try to delete a concept with id that 
   does not exist."
   (let [{:keys [status revision-id]} (util/force-delete-concept "SOME-ID" 0)]
