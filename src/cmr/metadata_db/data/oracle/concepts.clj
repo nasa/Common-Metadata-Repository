@@ -6,7 +6,8 @@
             [clojure.java.jdbc :as j]
             [sqlingvo.core :refer [select from where with order-by desc delete as]]
             [cmr.metadata-db.data.oracle.sql-utils :as su]
-            [cmr.metadata-db.services.utility :as util])
+            [cmr.metadata-db.services.utility :as util]
+            [cmr.metadata-db.services.provider-services :as provider-services])
   (:import cmr.metadata_db.data.oracle.core.OracleStore))
 
 (defmulti db-result->concept-map
@@ -148,7 +149,17 @@
       (j/execute! this (su/build (delete
                                    (from table)
                                    (where `(and (= :concept-id ~concept-id)
-                                                (= :revision-id ~revision-id)))))))))
+                                                (= :revision-id ~revision-id))))))))
+  (reset
+    [this]
+    (j/db-do-commands this "DELETE FROM METADATA_DB.concept")
+    (try
+      (j/db-do-commands this "DROP SEQUENCE METADATA_DB.concept_id_seq")
+      (catch Exception e)) ; don't care if the sequence was not there
+    (j/db-do-commands this "CREATE SEQUENCE METADATA_DB.concept_id_seq
+                           START WITH 1000000000
+                           INCREMENT BY 1
+                           CACHE 20")))
 
 
 

@@ -3,9 +3,10 @@
   (:require [cmr.metadata-db.data.concepts :as c]
             [cmr.metadata-db.data.oracle.core :as oracle]
             [cmr.common.services.errors :as errors]
-            [cmr.common.util :as cu]
+            [cmr.common.concepts :as cu]
             [cmr.metadata-db.services.messages :as msg]
             [cmr.metadata-db.services.utility :as util]
+            [cmr.metadata-db.services.provider-services :as provider-services]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.system-trace.core :refer [deftracefn]]))
 
@@ -17,7 +18,7 @@
   (some-> (c/get-concept-by-provider-id-native-id-concept-type db concept)
           :concept-id))
 
-(defn- set-or-generate-concept-id
+(defn set-or-generate-concept-id
   "Get an existing concept-id from the DB for the given concept or generate one
   if the concept has never been saved."
   [db concept]
@@ -28,7 +29,7 @@
         (assoc concept :concept-id concept-id)
         (assoc concept :concept-id (c/generate-concept-id db concept))))))
 
-(defn- set-or-generate-revision-id
+(defn set-or-generate-revision-id
   "Get the next available revision id from the DB for the given concept or
   zero if the concept has never been saved."
   [db concept & previous-revision]
@@ -117,7 +118,7 @@
   (loop [concept concept tries-left 3]
     (let [result (c/save-concept db concept)]
       (if (nil? (:error result))
-        result
+        concept
         ;; depending on the error we will either throw an exception or try again (recur)
         (do
           (handle-save-errors concept result tries-left revision-id-provided?)
@@ -205,13 +206,11 @@
     {:concept-id concept-id
      :revision-id revision-id}))
 
-;; TODO - move this to a separate service since it affects provider database as well
 (deftracefn reset
   "Delete all concepts from the concept store and all providers."
   [context]
-  ;; TODO fix this. Do this on the providers
-  (throw (Exception. "aahhhhh!"))
-  #_(database/reset (util/context->db context)))
+  (provider-services/reset-providers context)
+  (c/reset (util/context->db context)))
 
 (deftracefn get-concept-id
   "Get a concept id for a given concept."

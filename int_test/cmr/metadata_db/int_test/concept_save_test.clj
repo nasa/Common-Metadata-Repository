@@ -9,7 +9,14 @@
 ;;; fixtures
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(use-fixtures :each util/reset-database-fixture)
+(defn fixture
+  [f]
+  (try
+    (util/save-provider "PROV1")
+    (finally
+      (util/reset-database))))
+
+(use-fixtures :each fixture)
 
 ;;; tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -28,11 +35,11 @@
     (let [{:keys [revision-id concept-id]} (util/save-concept concept)
           new-revision-id (inc revision-id)]
       ;; save it again with a valid revision-id
-      (let [{:keys [status revision-id]} (util/save-concept (merge concept {:revision-id new-revision-id 
+      (let [{:keys [status revision-id]} (util/save-concept (merge concept {:revision-id new-revision-id
                                                                             :concept-id concept-id}))]
         (is (= status 201))
         (is (= revision-id new-revision-id))
-        (util/verify-concept-was-saved (merge concept {:revision-id revision-id 
+        (util/verify-concept-was-saved (merge concept {:revision-id revision-id
                                                        :concept-id concept-id}))))))
 
 (deftest mdb-save-concept-with-bad-revision-test
@@ -50,15 +57,15 @@
   "Fail to save a concept if a required parameter is missing"
   (testing "missing concept-type"
     (let [{:keys [status error-messages]} (util/save-concept (dissoc (util/concept) :concept-type))]
-      (is (= 422 status)) 
+      (is (= 422 status))
       (is (re-find #"concept-type" (first error-messages)))))
   (testing "missing provider-id"
     (let [{:keys [status error-messages]} (util/save-concept (dissoc (util/concept) :provider-id))]
-      (is (= 422 status)) 
+      (is (= 422 status))
       (is (re-find #"provider-id" (first error-messages)))))
   (testing "missing native-id"
     (let [{:keys [status error-messages]} (util/save-concept (dissoc (util/concept) :native-id))]
-      (is (= 422 status)) 
+      (is (= 422 status))
       (is (re-find #"native-id" (first error-messages))))))
 
 (deftest mdb-save-concept-after-delete

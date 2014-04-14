@@ -77,8 +77,7 @@
 (defn- reset
   "Delete all concepts from the data store"
   [context]
-  ;(concept-services/reset context)
-  (provider-services/reset-providers context)
+  (concept-services/reset context)
   {:status 204
    :body nil
    :headers json-header})
@@ -119,35 +118,35 @@
 (defn- build-routes [system]
   (routes
     (context "/concepts" []
-      
+
       ;; saves a concept
       (POST "/" {:keys [request-context body]}
         (save-concept request-context body))
       ;; mark a concept as deleted (add a tombstone) specifying the revision the tombstone should have
-      (DELETE "/:concept-id/:revision-id" {{:keys [concept-id revision-id]} :params request-context :request-context} 
+      (DELETE "/:concept-id/:revision-id" {{:keys [concept-id revision-id]} :params request-context :request-context}
         (delete-concept request-context concept-id revision-id))
       ;; mark a concept as deleted (add a tombstone)
-      (DELETE "/:concept-id" {{:keys [concept-id]} :params request-context :request-context} 
+      (DELETE "/:concept-id" {{:keys [concept-id]} :params request-context :request-context}
         (delete-concept request-context concept-id nil))
       ;; remove a specific revision of a concpet form the database
-      (DELETE "/force-delete/:concept-id/:revision-id" {{:keys [concept-id revision-id]} :params 
-                                                        request-context :request-context} 
+      (DELETE "/force-delete/:concept-id/:revision-id" {{:keys [concept-id revision-id]} :params
+                                                        request-context :request-context}
         (force-delete request-context concept-id revision-id))
       ;; get a specific revision of a concept
-      (GET "/:concept-id/:revision-id" {{:keys [concept-id revision-id]} :params request-context :request-context} 
+      (GET "/:concept-id/:revision-id" {{:keys [concept-id revision-id]} :params request-context :request-context}
         (get-concept request-context concept-id revision-id))
       ;; get the latest revision of a concept
-      (GET "/:concept-id" {{:keys [concept-id]} :params request-context :request-context} 
+      (GET "/:concept-id" {{:keys [concept-id]} :params request-context :request-context}
         (get-concept request-context concept-id))
       ;; get multiple concpts by concept-id and revision-id
       (POST "/search" {:keys [request-context body]}
         (get-concepts request-context (get body "concept-revisions"))))
-    
+
     ;; get the concept id for a given concept-type, provider-id, and native-id
     (GET "/concept-id/:concept-type/:provider-id/:native-id"
       {{:keys [concept-type provider-id native-id]} :params request-context :request-context}
       (get-concept-id request-context concept-type provider-id native-id))
-    
+
     (context "/providers" []
       ;; create a new provider
       (POST "/" {:keys [request-context body]}
@@ -159,11 +158,11 @@
       ;; get a list of providers
       (GET "/" {request-context :request-context}
         (get-providers request-context)))
-    
+
     ;; delete the entire database
     (POST "/reset" {:keys [request-context]}
       (reset request-context))
-    
+
     (route/not-found "Not Found")))
 
 

@@ -15,16 +15,13 @@
   (when-let [error-message (cond
                              (> (count provider-id) 10)
                              messages/provider-id-too-long
-                             
-                             (empty? provider-id) 
+
+                             (empty? provider-id)
                              messages/provider-id-empty
-                             
+
                              (not (re-matches #"^[a-zA-Z](\w|_)*" provider-id))
                              messages/invalid-provider-id)]
     (messages/data-error :invalid-data error-message provider-id)))
-                        
-
-
 
 (deftracefn create-provider
   "Save a provider and setup concept tables in the database."
@@ -40,7 +37,7 @@
         (messages/data-error :conflict
                              messages/provider-exists
                              provider-id)
-        
+
         :else
         (errors/internal-error! (:error-message result))))
     result))

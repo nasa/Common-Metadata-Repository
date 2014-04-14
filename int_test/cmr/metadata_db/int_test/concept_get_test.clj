@@ -1,5 +1,5 @@
 (ns cmr.metadata-db.int-test.concept-get-test
-  "Contains integration tests for getting concepts. Tests gets with various 
+  "Contains integration tests for getting concepts. Tests gets with various
   configurations including checking for proper error handling."
   (:require [clojure.test :refer :all]
             [clj-http.client :as client]
@@ -11,10 +11,11 @@
 (defn setup-database-fixture
   "Load the database with test data."
   [f]
-  
+
   ;; clear out the database
   (util/reset-database)
   ;; setup database
+  (util/save-provider "PROV1")
   (let [concept1 (util/concept)
         concept2 (merge concept1 {:concept-id "C2-PROV1" :native-id "SOME OTHER ID"})]
     ;; save a concept
@@ -25,9 +26,9 @@
     (util/save-concept concept1)
    	;; save another concept
     (util/save-concept concept2))
-  
+
   (f)
-  
+
   ;; clear out the database
   (util/reset-database))
 
@@ -45,14 +46,14 @@
 (deftest mdb-get-concept-with-version-test
   "Get a concept by concept-id and version-id."
   (let [{:keys [status concept]} (util/get-concept-by-id-and-revision "C1000000000-PROV1" 1)]
-    (is (= status 200)) 
+    (is (= status 200))
     (is (= (:revision-id concept) 1))))
 
 (deftest mdb-get-concept-invalid-concept-id-or-revision-test
   "Expect a status 4XX if we try to get a concept that doesn't exist or use an improper concept-id."
   (testing "invalid concept-id"
     (let [{:keys [status]} (util/get-concept-by-id "bad id")]
-      (is (= 404 status))))
+      (is (= 400 status))))
   (testing "out of range revision-id"
     (let [concept (util/concept)
           {:keys [status]} (util/get-concept-by-id-and-revision "C1000000000-PROV1" 10)]

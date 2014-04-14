@@ -37,7 +37,11 @@
 
   (force-delete
     [db concept-type provider-id concept-id revision-id]
-    "Remove a revision of a concept from the database completely."))
+    "Remove a revision of a concept from the database completely.")
+
+  (reset
+    [db]
+    "Resets concept related data back to an initial fresh state. WARNING: For dev use only."))
 
 
 
