@@ -1,8 +1,7 @@
 (ns cmr.search.services.collection-query-resolver
   "Defines protocols and functions to resolve collection query conditions"
   (:require [cmr.search.models.query :as qm]
-            [cmr.search.data.elastic-search-index :as idx]
-            [cmr.search.services.parameters :as p]))
+            [cmr.search.data.elastic-search-index :as idx]))
 
 (defprotocol ResolveCollectionQuery
   "Defines a function to resolve a collection query condition into conditions of collection-concept-ids."
@@ -25,14 +24,14 @@
 
   cmr.search.models.query.CollectionQueryCondition
   (resolve-collection-query
-    [condition context]
-    (let [result (idx/execute-query context (qm/->Query :collection (:condition condition)))
+    [{:keys [condition]} context]
+    (let [result (idx/execute-query context (qm/->Query :collection condition))
           {:keys [references]} result
           collection-concept-ids (map :concept-id references)]
       (if (empty? collection-concept-ids)
         (qm/->MatchNoneCondition)
         (qm/or-conds
-          (map #(p/parameter->condition :granule :collection_concept_id % {}) collection-concept-ids)))))
+          (map #(qm/->StringCondition :collection_concept_id % true false) collection-concept-ids)))))
 
   ;; catch all resolver
   java.lang.Object

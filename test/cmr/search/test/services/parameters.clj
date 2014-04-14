@@ -14,52 +14,6 @@
     (is (= {:entry_title "foo" :options nil}
            (p/replace-parameter-aliases {:dataset_id "foo"})))))
 
-
-(def valid-params
-  "Example valid parameters"
-  {:entry_title "foo"
-   :options {:entry_title {:ignore_case "true"}}})
-
-(deftest individual-parameter-validation-test
-  (testing "unrecognized parameters"
-    (is (= [] (p/unrecognized-params-validation :collection valid-params)))
-    (is (= ["Parameter [foo] was not recognized."
-            "Parameter [bar] was not recognized."]
-           (p/unrecognized-params-validation :collection
-             {:entry_title "fdad"
-              :foo 1
-              :bar 2}))))
-  (testing "invalid options param names"
-    (is (= [] (p/unrecognized-params-in-options-validation :collection valid-params)))
-    (is (= ["Parameter [foo] with option was not recognized."]
-           (p/unrecognized-params-in-options-validation :collection
-             {:entry_title "fdad"
-              :options {:foo {:ignore_case "true"}}}))))
-  (testing "invalid options param args"
-    (is (= ["Option [foo] for param [entry_title] was not recognized."]
-           (p/unrecognized-params-settings-in-options-validation :collection
-             {:entry_title "fdad"
-              :options {:entry_title {:foo "true"}}})))))
-
-(deftest validate-parameters-test
-  (testing "parameters are returned when valid"
-    (is (= valid-params (p/validate-parameters :collection valid-params)))
-    (is (= valid-params (p/validate-parameters :granule valid-params))))
-  (testing "parameters are validated according to concept-type"
-    (is (= {:granule_ur "Dummy"} (p/validate-parameters :granule {:granule_ur "Dummy"})))
-    (is (thrown? clojure.lang.ExceptionInfo (p/validate-parameters :collection {:granule_ur "Dummy"}))))
-  (testing "errors thrown when parameters are invalid."
-    (try
-      (p/validate-parameters :collection {:entry_title "fdad"
-                              :foo 1
-                              :bar 2})
-      (is false "An error should have been thrown.")
-      (catch clojure.lang.ExceptionInfo e
-        (is (= {:type :invalid-data
-                :errors ["Parameter [foo] was not recognized."
-                         "Parameter [bar] was not recognized."]}
-               (ex-data e)))))))
-
 (deftest parameter->condition-test
   (testing "String conditions"
     (testing "with one value"
@@ -77,7 +31,6 @@
              (p/parameter->condition :collection :entry_title "bar*" {})))
       (is (= (q/string-condition :entry_title "bar*" true true)
              (p/parameter->condition :collection :entry_title "bar*" {:entry_title {:pattern "true"}}))))))
-
 
 (deftest parameters->query-test
   (testing "Empty parameters"
