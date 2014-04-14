@@ -18,7 +18,6 @@
   [(str (clojure.string/join "." (map #(s/sql-quote db %1) (remove nil? [schema name])))
         (when as (str " " (s/sql-quote db as))))])
 
-
 (defn build
   "Creates a sql statement vector for clojure.java.jdbc."
   [stmt]

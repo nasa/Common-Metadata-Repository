@@ -23,7 +23,8 @@
                     (constantly
                       (system/start s))))
   (d/touch-user-clj)
-  (d/touch-files-in-dir "src/cmr/metadata_db/services"))
+  ;; Waiting for James to check in some changes
+  #_(d/touch-files-in-dir "src/cmr/metadata_db/services"))
 
 (defn stop
   "Shuts down and destroys the current development system."

@@ -2,9 +2,7 @@
   "Contains a record definition that implements the ConcpetStore and Lifecycle protocols
   backed by an Oracle database."
   (:require [cmr.common.lifecycle :as lifecycle]
-            [cmr.common.log :refer (debug info warn error)]
-            [clojure.java.jdbc :as j]
-            [cmr.metadata-db.services.utility :as util])
+            [cmr.common.log :refer (debug info warn error)])
   (:import com.mchange.v2.c3p0.ComboPooledDataSource))
 
 ;;; Constants
@@ -21,14 +19,6 @@
    :subname (format "thin:@%s:%s:%s" db-host db-port db-sid)
    :user db-username
    :password db-password})
-
-
-(defn generate-concept-id
-  "Create a concept-id for a given concept type and provider id."
-  [db concept]
-  (let [{:keys [concept-type provider-id]} concept
-        seq-num (:nextval (first (j/query db ["SELECT METADATA_DB.concept_id_seq.NEXTVAL FROM DUAL"])))]
-    (util/generate-concept-id concept-type provider-id seq-num)))
 
 
 (defrecord OracleStore [db]

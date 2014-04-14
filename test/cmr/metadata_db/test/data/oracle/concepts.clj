@@ -1,6 +1,6 @@
 (ns cmr.metadata-db.test.data.oracle.concepts
   (:require [clojure.test :refer :all]
-            [cmr.metadata-db.data.concepts :as c]))
+            [cmr.metadata-db.data.oracle.concepts :as c]))
 
 
 (deftest db-result->concept-map-test

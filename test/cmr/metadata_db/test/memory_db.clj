@@ -15,52 +15,43 @@
 (defrecord MemoryDB
   [db]
 
-  ;; TODO fix this
+  concepts/ConceptsStore
 
-  ; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  ; data/ConceptStore
+  (generate-concept-id
+    [this concept]
+    "C1000000000-PROV1")
 
-  ; (generate-concept-id
-  ;   [this concept]
-  ;   "C1000000000-PROV1")
+  (get-concept-id
+    [this concept-type provider-id native-id]
+    "C1000000000-PROV1")
 
+  (get-concept
+    [db concept-type provider-id concept-id]
+    (concepts/get-concept db concept-type provider-id concept-id nil))
 
-  ; (get-concept-id
-  ;   [this concept-type provider-id native-id]
-  ;   "C1000000000-PROV1")
+  (get-concept
+    [db concept-type provider-id concept-id revision-id]
+    test-concept)
 
-  ; (get-concept-by-provider-id-native-id-concept-type
-  ;   [this concept]
-  ;   test-concept)
+  (get-concept-by-provider-id-native-id-concept-type
+    [this concept]
+    test-concept)
 
-  ; (get-concept
-  ;   [this concept-id]
-  ;   test-concept)
+  (get-concepts
+    [this concept-type provider-id concept-id-revision-id-tuples]
+    [test-concept])
 
-  ; (get-concept
-  ;   [this concept-id revision-id]
-  ;   test-concept)
+  (save-concept
+    [this concept]
+    (let [revision-id (:revision-id concept)]
+      (if (or (nil? revision-id) (= revision-id 1))
+        {:concept-id "C1000000000-PROV1" :revision-id 1}
+        {:error :revision-id-conflict})))
 
-  ; (get-concepts
-  ;   [this concept-id-revision-id-tuples]
-  ;   [test-concept])
-
-  ; (save-concept
-  ;   [this concept]
-  ;   (let [revision-id (:revision-id concept)]
-  ;     (if (or (nil? revision-id) (= revision-id 1))
-  ;       {:concept-id "C1000000000-PROV1" :revision-id 1}
-  ;       {:error :revision-id-conflict})))
-
-
-  ; (force-delete
-  ;   [this concept-id revision-id]
-  ;   )
-
-  ; (reset-concepts
-  ;   [this]
-  ;   )
-  )
+  (force-delete
+    [db concept-type provider-id concept-id revision-id]
+    ;;does nothing
+    ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

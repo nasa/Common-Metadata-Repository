@@ -20,7 +20,7 @@
   [f]
   ;; setup database
   (def db (memory/create-db nil))
-  
+
   (f))
 
 (use-fixtures :once setup-database-fixture)
@@ -72,10 +72,10 @@
     (let [result (cs/try-to-save db (assoc memory/test-concept :revision-id 1) 1)]
       (is (= (:revision-id result) 1))))
   (testing "invalid with low revision-id"
-    (is (thrown-with-msg? ExceptionInfo (re-pattern (messages/invalid-revision-id-unknown-expected-msg 0)) 
+    (is (thrown-with-msg? ExceptionInfo (re-pattern (messages/invalid-revision-id-unknown-expected-msg 0))
                           (cs/try-to-save db (assoc memory/test-concept :revision-id 0) 0))))
   (testing "invalid with high revision-id"
-    (is (thrown-with-msg? ExceptionInfo (re-pattern (messages/invalid-revision-id-unknown-expected-msg 10)) 
+    (is (thrown-with-msg? ExceptionInfo (re-pattern (messages/invalid-revision-id-unknown-expected-msg 10))
                           (cs/try-to-save db (assoc memory/test-concept :revision-id 10) 10)))))
 
 

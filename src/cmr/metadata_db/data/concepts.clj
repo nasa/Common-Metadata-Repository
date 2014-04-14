@@ -1,48 +1,53 @@
 (ns cmr.metadata-db.data.concepts
   "Defines a protocol for CRUD operations on concepts.")
 
-(defmulti get-concept-id
-  "Return a distinct identifier for the given arguments."
-  (fn [db concept-type provider-id native-id]
-    concept-type))
+(defprotocol ConceptsStore
+  "Functions for saving and retrieving concepts"
 
-(defmulti get-concept
-  "Gets a version of a concept with a given concept-id and revision-id. If the
-  revision-id is not given or is nil then the latest revision is returned."
-  (fn [db concept-type provider-id & args]
-    concept-type))
+  (generate-concept-id
+    [db concept]
+    "Create a concept-id for a given concept type and provider id.")
 
-(defmulti get-concept-by-provider-id-native-id-concept-type
-  "Gets a version of a concept that has the same concept-type, provider-id, and native-id
-  as the given concept."
-  (fn [db concept]
-    (:concept-type concept)))
+  (get-concept-id
+    [db concept-type provider-id native-id]
+    "Return a distinct identifier for the given arguments.")
 
-(defmulti get-concepts
-  "Get a sequence of concepts by specifying a list of
-  tuples holding concept-id/revision-id"
-  (fn [db concept-type provider-id concept-id-revision-id-tuples]
-    concept-type))
+  (get-concept
+    [db concept-type provider-id concept-id revision-id]
+    [db concept-type provider-id concept-id]
+    "Gets a version of a concept with a given concept-id and revision-id. If the
+    revision-id is not given or is nil then the latest revision is returned.")
 
-(defmulti save-concept
-  "Saves a concept and returns the revision id. If the concept already
-  exists then a new revision will be created. If a revision-id is
-  included and it is not valid, e.g. the revision already exists,
-  then an exception is thrown."
-  (fn [db concept]
-    (:concept-type concept)))
+  (get-concept-by-provider-id-native-id-concept-type
+    [db concept]
+    "Gets a version of a concept that has the same concept-type, provider-id, and native-id
+    as the given concept.")
 
-(defmulti force-delete
-  "Remove a revision of a concept from the database completely."
-  (fn [db concept-type provider-id concept-id revision-id]
-    concept-type))
+  (get-concepts
+    [db concept-type provider-id concept-id-revision-id-tuples]
+    "Get a sequence of concepts by specifying a list of
+    tuples holding concept-id/revision-id")
 
-(defmulti db-result->concept-map
-  "Translate concept result returned from db into a concept map"
-  (fn [concept-type provider-id result]
-    concept-type))
+  (save-concept
+    [db concept]
+    "Saves a concept and returns the revision id. If the concept already
+    exists then a new revision will be created. If a revision-id is
+    included and it is not valid, e.g. the revision already exists,
+    then an exception is thrown.")
 
-(defmulti concept->insert-args
-  "Converts a concept into the insert arguments"
-  (fn [concept]
-    (:concept-type concept)))
+  (force-delete
+    [db concept-type provider-id concept-id revision-id]
+    "Remove a revision of a concept from the database completely."))
+
+
+
+
+
+
+
+
+
+
+
+
+

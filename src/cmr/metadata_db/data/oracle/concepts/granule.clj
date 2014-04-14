@@ -1,6 +1,6 @@
 (ns cmr.metadata-db.data.oracle.concepts.granule
   "Implements multi-method variations for granules"
-  (:require [cmr.metadata-db.data.concepts :as c]
+  (:require [cmr.metadata-db.data.oracle.concepts :as c]
             [cmr.metadata-db.data.oracle.concept-tables :as tables]
             [cmr.common.log :refer (debug info warn error)]
             [clojure.java.jdbc :as j]
