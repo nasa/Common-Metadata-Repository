@@ -1,4 +1,4 @@
-(ns cmr.metadata-db.int-test.delete-concept-test
+(ns cmr.metadata-db.int-test.concepts.delete-test
   "Contains integration tests for deleting concepts. Tests delete with various configurations including
   checking for proper error handling."
   (:require [clojure.test :refer :all]
@@ -18,8 +18,8 @@
   [f]
   ;; setup database
   (util/save-provider "PROV1")
-  (let [concept1 (util/concept)
-        concept2 (merge concept1 {:concept-id "C2-PROV1" :native-id "some other id"})]
+  (let [concept1 (util/collection-concept "PROV1" 1)
+        concept2 (assoc (util/collection-concept "PROV1" 2) :concept-id "C2-PROV1")]
     (dorun (repeatedly num-revisions #(util/save-concept concept1)))
 
     (util/save-concept concept2))

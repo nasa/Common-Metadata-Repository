@@ -1,11 +1,12 @@
 (ns cmr.metadata-db.int-test.utility
-  "Contains various utitiltiy methods to support integeration tests."
+  "Contains various utility methods to support integration tests."
   (:require [clojure.test :refer :all]
             [clj-http.client :as client]
-            [cheshire.core :as cheshire]))
+            [cheshire.core :as cheshire]
+            [clojure.walk :as walk]))
 
 ;;; Enpoints for services - change this for tcp-mon
-(def port 4001)
+(def port 3001)
 
 (def concepts-url (str "http://localhost:" port "/concepts/"))
 
@@ -27,14 +28,47 @@
 ;;; concepts
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn concept
-  "Creates a concept to be used for testing."
-  []
+(defn collection-concept
+  "Creates a collection concept"
+  [provider-id uniq-num]
   {:concept-type :collection
-   :native-id "provider collection id"
-   :provider-id "PROV1"
-   :metadata "xml here"
-   :format "echo10"})
+   :native-id (str "native-id " uniq-num)
+   :provider-id provider-id
+   :metadata (str "xml here " uniq-num)
+   :format "echo10"
+   :deleted false})
+
+(defn granule-concept
+  "Creates a collection concept"
+  [provider-id parent-collection-id uniq-num]
+  {:concept-type :granule
+   :native-id (str "native-id " uniq-num)
+   :provider-id provider-id
+   :parent-collection-id parent-collection-id
+   :metadata (str "xml here " uniq-num)
+   :format "echo10"
+   :deleted false})
+
+;; TODO add parse concept function that's called for the response.
+
+(defn- parse-concept
+  "Parses a concept from a JSON response"
+  [response]
+  (-> response
+      :body
+      cheshire/parse-string
+      walk/keywordize-keys
+      (update-in [:concept-type] keyword)))
+
+(defn- parse-concepts
+  "Parses multiple concept from a JSON response"
+  [response]
+  (->> response
+      :body
+      cheshire/parse-string
+      (map walk/keywordize-keys)
+      (map #(update-in % [:concept-type] keyword))))
+
 
 (defn get-concept-id
   "Make a GET to retrieve the id for a given concept-type, provider-id, and native-id."
@@ -44,8 +78,7 @@
                               :throw-exceptions false})
         status (:status response)
         body (cheshire/parse-string (:body response))
-        concept-id (get body  "concept-id")
-        errors (get body "errors")]
+        {:strs [concept-id errors]} body]
     {:status status :concept-id concept-id :error-messages errors}))
 
 (defn get-concept-by-id-and-revision
@@ -56,8 +89,7 @@
                               :throw-exceptions false})
         status (:status response)]
     (if (= status 200)
-      (let [found-concept (clojure.walk/keywordize-keys (cheshire/parse-string (:body response)))]
-        {:status status :concept found-concept})
+      {:status status :concept (parse-concept response)}
       {:status status :concept nil})))
 
 (defn get-concept-by-id
@@ -68,8 +100,7 @@
                               :throw-exceptions false})
         status (:status response)]
     (if (= status 200)
-      (let [found-concept (clojure.walk/keywordize-keys (cheshire/parse-string (:body response)))]
-        {:status status :concept found-concept})
+      {:status status :concept (parse-concept response)}
       {:status status :concept nil})))
 
 (defn get-concepts
@@ -81,31 +112,21 @@
                                  :body-encoding "UTF-8"
                                  :content-type :json
                                  :accept :json
-                                 :throw-exceptions false})
-          status (:status response)
-          concepts (vec (cheshire/parse-string (:body response)))]
-      {:status status :concepts concepts})))
+                                 :throw-exceptions false})]
+      {:status (:status response)
+       :concepts (parse-concepts response)})))
 
 (defn concepts-and-concept-id-revisions-equal?
   "Compare a vector of concepts returned by the API to a set of concept-id/revision-ids."
   [concepts concept-id-revision-ids]
-  (if (not= (count concepts) (count concept-id-revision-ids))
-    false
-    (every? true?
-            (map (fn [[con-id rev-id]]
-                   (some (fn [concept]
-                           (and (= (get concept "concept-id") con-id)
-                                (= (get concept "revision-id" rev-id))))
-                         concepts))
-                 concept-id-revision-ids))))
-
-(defn concepts-and-ids-equal?
-  ;; TODO - this might need to be changed to be order independent
-  "Compare a vector of concepts returned by the API to a set of concept-ids"
-  [concepts concept-ids]
-  (if (not= (count concepts) (count concept-ids))
-    false
-    (every? true? (map #(= (get %1 "concept-id") %2) concepts concept-ids))))
+  (and (= (count concepts) (count concept-id-revision-ids))
+       (every? true?
+               (map (fn [[con-id rev-id]]
+                      (some (fn [{:keys [concept-id revision-id]}]
+                              (and (= concept-id con-id)
+                                   (= revision-id rev-id)))
+                            concepts))
+                    concept-id-revision-ids))))
 
 (defn save-concept
   "Make a POST request to save a concept with JSON encoding of the concept.  Returns a map with
@@ -119,10 +140,8 @@
                                :throw-exceptions false})
         status (:status response)
         body (cheshire/parse-string (:body response))
-        revision-id (get body "revision-id")
-        concept-id (get body "concept-id")
-        error-messages (get body "errors")]
-    {:status status :revision-id revision-id :concept-id concept-id :error-messages error-messages}))
+        {:strs [revision-id concept-id errors]} body]
+    {:status status :revision-id revision-id :concept-id concept-id :error-messages errors}))
 
 (defn delete-concept
   "Make a DELETE request to mark a concept as deleted. Returns the status and revision id of the
@@ -136,9 +155,8 @@
                                 {:throw-exceptions false})
         status (:status response)
         body (cheshire/parse-string (:body response))
-        revision-id (get body "revision-id")
-        error-messages (get body "errors")]
-    {:status status :revision-id revision-id :error-messages error-messages}))
+        {:strs [revision-id errors]} body]
+    {:status status :revision-id revision-id :error-messages errors}))
 
 (defn force-delete-concept
   "Make a DELETE request to permanently remove a revison of a concept."
@@ -148,19 +166,15 @@
                                 {:throw-exceptions false})
         status (:status response)
         body (cheshire/parse-string (:body response))
-        revision-id (get body "revision-id")
-        error-messages (get body "errors")]
-    {:status status :revision-id revision-id :error-messages error-messages}))
+        {:strs [revision-id errors]} body]
+    {:status status :revision-id revision-id :error-messages errors}))
 
 (defn verify-concept-was-saved
   "Check to make sure a concept is stored in the database."
   [concept]
-  (let [concept-id (:concept-id concept)
-        revision-id (:revision-id concept)
-        stored-concept-and-status (get-concept-by-id-and-revision concept-id revision-id)
-        stored-concept (:concept stored-concept-and-status)
-        stored-concept-id (:concept-id stored-concept)]
-    (is (= stored-concept-id concept-id))))
+  (let [{:keys [concept-id revision-id]} concept
+        stored-concept (:concept (get-concept-by-id-and-revision concept-id revision-id))]
+    (is (= concept stored-concept))))
 
 ;;; providers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

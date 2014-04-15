@@ -1,4 +1,4 @@
-(ns cmr.metadata-db.int-test.get-concept-id-test
+(ns cmr.metadata-db.int-test.concepts.get-concept-id-test
   "Contains integration tests for getting concepts. Tests gets with various
   configurations including checking for proper error handling."
   (:require [clojure.test :refer :all]
@@ -25,7 +25,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (deftest get-concept-id-test
   "Get a concept-id for a given concept-type, provider-id, and native-id."
-  (let [concept (util/concept)
+  (let [concept (util/collection-concept "PROV1" 1)
         _ (util/save-concept concept)
         {:keys [status concept-id]} (util/get-concept-id (name (:concept-type concept))
                                                          (:provider-id concept)
@@ -35,7 +35,7 @@
 
 (deftest get-concept-id-repeatedly-test
   "Get a concept-id repeatedly to verify that it is the same each time."
-  (let [concept (util/concept)
+  (let [concept (util/collection-concept "PROV1" 1)
         _ (util/save-concept concept)
         concept-id1-map (util/get-concept-id (name (:concept-type concept))
                                              (:provider-id concept)
@@ -47,7 +47,7 @@
 
 (deftest fail-to-get-concept-id-for-non-existing-concept
   "Requests for concept-ids for concepts that have not been saved should return a 404."
-  (let [concept (util/concept)
+  (let [concept (util/collection-concept "PROV1" 1)
         response (util/get-concept-id (name (:concept-type concept))
                                       (:provider-id concept)
                                       (:native-id concept))

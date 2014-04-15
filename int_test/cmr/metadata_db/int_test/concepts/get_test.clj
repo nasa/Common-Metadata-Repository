@@ -1,10 +1,13 @@
-(ns cmr.metadata-db.int-test.concept-get-test
+(ns cmr.metadata-db.int-test.concepts.get-test
   "Contains integration tests for getting concepts. Tests gets with various
   configurations including checking for proper error handling."
   (:require [clojure.test :refer :all]
             [clj-http.client :as client]
             [cheshire.core :as cheshire]
             [cmr.metadata-db.int-test.utility :as util]))
+
+(def concept1 (util/collection-concept "PROV1" 1))
+(def concept2 (assoc (util/collection-concept "PROV1" 2) :concept-id "C2-PROV1"))
 
 ;;; fixtures
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -16,9 +19,7 @@
   (util/reset-database)
   ;; setup database
   (util/save-provider "PROV1")
-  (let [concept1 (util/concept)
-        concept2 (merge concept1 {:concept-id "C2-PROV1" :native-id "SOME OTHER ID"})
-        verify #(when-not (= 201 (:status %))
+  (let [verify #(when-not (= 201 (:status %))
                   (throw (ex-info "Failed to create concept" %)))]
     ;; save a concept
     (verify (util/save-concept concept1))
@@ -63,19 +64,16 @@
     (let [{:keys [status]} (util/get-concept-by-id "bad id")]
       (is (= 400 status))))
   (testing "out of range revision-id"
-    (let [concept (util/concept)
+    (let [concept (util/collection-concept "PROV1" 1)
           {:keys [status]} (util/get-concept-by-id-and-revision "C1000000000-PROV1" 10)]
       (is (= 404 status))))
   (testing "non-integer revision-id"
-    (let [concept (util/concept)
-          {:keys [status]}(util/get-concept-by-id-and-revision "C1000000000-PROV1" "NON-INTEGER")]
+    (let [{:keys [status]}(util/get-concept-by-id-and-revision "C1000000000-PROV1" "NON-INTEGER")]
       (is (= 422 status)))))
 
 (deftest get-concepts-test
   "Get concepts by specifying tuples of concept-ids and revision-ids."
-  (let [concept1 (util/concept)
-        concept2 (merge concept1 {:concept-id "C2-PROV1" :native-id "SOME OTHER ID"})
-        tuples [["C1000000000-PROV1" 1] ["C2-PROV1" 0]]
+  (let [tuples [["C1000000000-PROV1" 1] ["C2-PROV1" 0]]
         results (util/get-concepts tuples)
         returned-concepts (:concepts results)
         status (:status results)]
@@ -85,9 +83,7 @@
 (deftest get-concepts-with-one-invalid-revision-id-test
   "Get concepts by specifying tuples of concept-ids and revision-ids with one invalid revision id
   and only get back existing concepts."
-  (let [concept1 (util/concept)
-        concept2 (merge concept1 {:concept-id "C2-PROV1" :native-id "SOME OTHER ID"})
-        tuples [["C1000000000-PROV1" 1] ["C2-PROV1" 10]]
+  (let [tuples [["C1000000000-PROV1" 1] ["C2-PROV1" 10]]
         results (util/get-concepts tuples)
         returned-concepts (:concepts results)
         status (:status results)

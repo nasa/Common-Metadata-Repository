@@ -1,4 +1,4 @@
-(ns cmr.metadata-db.int-test.force-delete-test
+(ns cmr.metadata-db.int-test.concepts.force-delete-test
   "Contains integration test for emptying database via force-delete."
   (:require [clojure.test :refer :all]
             [clj-http.client :as client]
@@ -16,7 +16,7 @@
   [f]
   ;; setup database
   (util/save-provider "PROV1")
-  (let [concept1 (util/concept)]
+  (let [concept1 (util/collection-concept "PROV1" 1)]
     (dorun (repeatedly num-revisions #(util/save-concept concept1))))
 
   (f)
