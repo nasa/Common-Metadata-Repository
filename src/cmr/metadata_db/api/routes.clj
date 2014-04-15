@@ -142,8 +142,9 @@
       (GET "/:concept-id" {{:keys [concept-id]} :params request-context :request-context}
         (get-concept request-context concept-id))
       ;; get multiple concpts by concept-id and revision-id
-      (POST "/search" {:keys [request-context body]}
-        (get-concepts request-context (get body "concept-revisions"))))
+      (context "/search" []
+        (POST "/concept-revisions" {:keys [request-context body]}
+          (get-concepts request-context body))))
 
     ;; get the concept id for a given concept-type, provider-id, and native-id
     (GET "/concept-id/:concept-type/:provider-id/:native-id"

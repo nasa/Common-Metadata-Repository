@@ -74,23 +74,3 @@
   (testing "non-integer revision-id"
     (let [{:keys [status]}(util/get-concept-by-id-and-revision "C1000000000-PROV1" "NON-INTEGER")]
       (is (= 422 status)))))
-
-(deftest get-concepts-test
-  "Get concepts by specifying tuples of concept-ids and revision-ids."
-  (let [tuples [["C1000000000-PROV1" 1] ["C2-PROV1" 0]]
-        results (util/get-concepts tuples)
-        returned-concepts (:concepts results)
-        status (:status results)]
-    (is (util/concepts-and-concept-id-revisions-equal? returned-concepts tuples))
-    (is (= status 200))))
-
-(deftest get-concepts-with-one-invalid-revision-id-test
-  "Get concepts by specifying tuples of concept-ids and revision-ids with one invalid revision id
-  and only get back existing concepts."
-  (let [tuples [["C1000000000-PROV1" 1] ["C2-PROV1" 10]]
-        results (util/get-concepts tuples)
-        returned-concepts (:concepts results)
-        status (:status results)
-        expected [["C1000000000-PROV1" 1]]]
-    (is (util/concepts-and-concept-id-revisions-equal? returned-concepts expected))
-    (is (= status 200))))

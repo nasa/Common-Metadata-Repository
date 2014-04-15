@@ -25,6 +25,7 @@
    :granule #{:parent-collection-id}})
 
 (defn extra-fields-missing-validation
+  "Validates that the concept is provided with extra fields and that all of them are present."
   [concept]
   (if-let [extra-fields (:extra-fields concept)]
     (map #(msg/missing-extra-field %)

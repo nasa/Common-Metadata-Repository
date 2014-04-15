@@ -61,7 +61,6 @@
          :native-id
          :extra-fields)))
 
-
 (deftest save-concept-after-delete
   (let [concept (util/collection-concept "PROV1" 1)
         {:keys [concept-id]} (util/save-concept concept)]

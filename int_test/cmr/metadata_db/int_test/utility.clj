@@ -107,15 +107,14 @@
 (defn get-concepts
   "Make a POST to retrieve concepts by concept-id and revision."
   [tuples]
-  (let [body {:concept-revisions tuples}]
-    (let [response (client/post (str concepts-url "search")
-                                {:body (cheshire/generate-string body)
-                                 :body-encoding "UTF-8"
-                                 :content-type :json
-                                 :accept :json
-                                 :throw-exceptions false})]
-      {:status (:status response)
-       :concepts (parse-concepts response)})))
+  (let [response (client/post (str concepts-url "search/concept-revisions")
+                              {:body (cheshire/generate-string tuples)
+                               :body-encoding "UTF-8"
+                               :content-type :json
+                               :accept :json
+                               :throw-exceptions false})]
+    {:status (:status response)
+     :concepts (parse-concepts response)}))
 
 (defn concepts-and-concept-id-revisions-equal?
   "Compare a vector of concepts returned by the API to a set of concept-id/revision-ids."
