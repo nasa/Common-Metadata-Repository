@@ -1,4 +1,4 @@
-(ns cmr.metadata-db.test.provider-service
+(ns cmr.metadata-db.test.services.provider-service
   "Contains unit tests for service layer methods and associated utility methods."
   (:require [clojure.test :refer :all]
             [clojure.test.check :as tc]

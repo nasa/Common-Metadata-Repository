@@ -243,6 +243,7 @@
 (deftracefn get-concept-id
   "Get a concept id for a given concept."
   [context concept-type provider-id native-id]
+  (cu/validate-concept-type concept-type)
   (let [db (util/context->db context)
         _ (validate-providers-exist db [provider-id])
         concept-id (c/get-concept-id db concept-type provider-id native-id)]
