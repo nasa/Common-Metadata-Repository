@@ -43,8 +43,19 @@
 (defn delete-provider
   "Remove a provider from the database completely, including all of its concepts."
   [db provider-id]
-  (ct/delete-provider-concept-tables db provider-id)
-  (j/delete! db  :providers ["provider_id = ?" provider-id]))
+  (try (do
+      (ct/delete-provider-concept-tables db provider-id)
+      (j/delete! db  :providers ["provider_id = ?" provider-id]))
+    (catch Exception e
+      (error (.getMessage e))
+      (let [error-message (.getMessage e)
+            error-code (cond
+                         (re-find #"table or view does not exist" error-message)
+                         :not-found
+
+                         :else
+                         :unknown-error)]
+        {:error error-code :error-message error-message}))))
 
 (defn reset-providers
   "Delete all providers from the database including their concept tables.  USE WITH CAUTION."
