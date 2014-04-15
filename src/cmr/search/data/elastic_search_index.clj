@@ -19,9 +19,9 @@
                          "short-name"
                          "version-id"]}
    :granule {:index-name "granules"
-                :type-name "small_collections"
-                :fields ["granule-ur"
-                         "provider-id"]}})
+             :type-name "small_collections"
+             :fields ["granule-ur"
+                      "provider-id"]}})
 
 (defrecord ElasticSearchIndex
   [

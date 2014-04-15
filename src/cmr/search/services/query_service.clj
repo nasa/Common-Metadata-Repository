@@ -14,6 +14,7 @@
   (:require [cmr.search.data.elastic-search-index :as idx]
             [cmr.search.models.query :as qm]
             [cmr.search.services.parameters :as p]
+            [cmr.search.services.parameter-validation :as pv]
             [cmr.search.validators.validation :as v]
             [cmr.search.services.collection-query-resolver :as r]
             [cmr.system-trace.core :refer [deftracefn]]
@@ -68,6 +69,6 @@
 
   (->> params
        p/replace-parameter-aliases
-       (p/validate-parameters concept-type)
+       (pv/validate-parameters concept-type)
        (p/parameters->query concept-type)
        (find-concepts-by-query context)))

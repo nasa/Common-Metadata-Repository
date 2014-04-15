@@ -7,7 +7,4 @@
 ;; Converts parameter and values into collection query condition
 (defmethod p/parameter->condition :collection-query
   [concept-type param value options]
-  (if (sequential? value)
-    (qm/->CollectionQueryCondition (qm/or-conds
-                                     (map #(p/parameter->condition :collection param % options) value)))
-    (qm/->CollectionQueryCondition (p/parameter->condition :collection param value options))))
+  (qm/->CollectionQueryCondition (p/parameter->condition :collection param value options)))
