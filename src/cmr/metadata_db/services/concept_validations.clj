@@ -21,12 +21,12 @@
 (defn concept-id-validation
   [concept]
   (when-let [concept-id (:concept-id concept)]
-    (cc/validate-concept-id concept-id)))
+    (cc/concept-id-validation concept-id)))
 
 (defn concept-id-match-fields-validation
   [concept]
   (when-let [concept-id (:concept-id concept)]
-    (when-not (cc/validate-concept-id concept-id)
+    (when-not (cc/concept-id-validation concept-id)
       (let [{:keys [concept-type provider-id]} (cc/parse-concept-id concept-id)]
         (when-not (and (= concept-type (:concept-type concept))
                        (= provider-id (:provider-id concept)))
