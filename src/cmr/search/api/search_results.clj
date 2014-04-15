@@ -32,7 +32,7 @@
   [mime-type]
   (when-not (mime-type->format mime-type)
     (errors/throw-service-error
-      :bad-request "The mime type [%s] is not supported for search results." mime-type)))
+      :bad-request (format "The mime type [%s] is not supported for search results." mime-type))))
 
 (defmulti search-results->response
   (fn [results result-type]
