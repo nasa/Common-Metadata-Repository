@@ -21,6 +21,7 @@
           (if (:type data)
             (let [{:keys [type errors]} data
                   status-code (type->http-status-code type)]
+              (when (.getCause e) (error e))
               {:status status-code
                :headers {"Content-Type" "application/json"}
                :body {:errors errors}})
