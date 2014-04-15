@@ -7,48 +7,55 @@
 
 ;;; fixtures
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(def num-revisions 3) ; number of times the first concept will be saved
-
-(def concept1-id "C1000000000-PROV1")
-
-(defn setup-database-fixture
-  "Load the database with test data."
-  [f]
-  ;; setup database
-  (util/save-provider "PROV1")
-  (let [concept1 (util/collection-concept "PROV1" 1)]
-    (dorun (repeatedly num-revisions #(util/save-concept concept1))))
-
-  (f)
-
-  ;; clear out the database
-  (util/reset-database))
-
-(use-fixtures :each setup-database-fixture)
+(use-fixtures :each (util/reset-database-fixture "PROV1"))
 
 ;;; tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(deftest force-delete-concept-test
-  "Delete a concept and check the revision id of the return message."
-  (let [{:keys [status revision-id]} (util/force-delete-concept concept1-id 1)]
-    (is (= status 200))
-    (is (= revision-id 1))))
+(deftest force-delete-collection-test
+  (let [coll (util/create-and-save-collection "PROV1" 1)
+        concept-id (:concept-id coll)
+        _ (dorun (repeatedly 3 #(util/save-concept (dissoc coll :revision-id))))
+        {:keys [status revision-id]} (util/force-delete-concept concept-id 1)]
+    (testing "revision-id correct"
+      (is (= status 200))
+      (is (= revision-id 1)))
+    (testing "revision is gone"
+      (is (= 404 (:status (util/get-concept-by-id-and-revision concept-id 1)))))
+    (testing "earlier revisions still available"
+      (util/verify-concept-was-saved (assoc coll :revision-id 0)))
+    (testing "later revisions still available"
+      (util/verify-concept-was-saved (assoc coll :revision-id 2))
+      (util/verify-concept-was-saved (assoc coll :revision-id 3)))
+    (testing "delete non-existant revision gets 404"
+      (is (= 404 (:status (util/force-delete-concept concept-id 1))))
+      (is (= 404 (:status (util/force-delete-concept concept-id 22)))))))
 
-(deftest force-delete-verify-gone
-  "Delete a concept and make sure it is no longer available."
-  (util/force-delete-concept concept1-id 1)
-  (let [{:keys [status concept]} (util/get-concept-by-id-and-revision concept1-id 1)]
-    (is (= status 404))))
+(deftest force-delete-granule-test
+  (let [coll (util/create-and-save-collection "PROV1" 1)
+        gran (util/create-and-save-granule "PROV1" (:concept-id coll) 1)
+        concept-id (:concept-id gran)
+        _ (dorun (repeatedly 3 #(util/save-concept (dissoc gran :revision-id))))
+        {:keys [status revision-id]} (util/force-delete-concept concept-id 1)]
+    (testing "revision-id correct"
+      (is (= status 200))
+      (is (= revision-id 1)))
+    (testing "revision is gone"
+      (is (= 404 (:status (util/get-concept-by-id-and-revision concept-id 1)))))
+    (testing "earlier revisions still available"
+      (util/verify-concept-was-saved (assoc gran :revision-id 0)))
+    (testing "later revisions still available"
+      (util/verify-concept-was-saved (assoc gran :revision-id 2))
+      (util/verify-concept-was-saved (assoc gran :revision-id 3)))
+    (testing "delete non-existant revision gets 404"
+      (is (= 404 (:status (util/force-delete-concept concept-id 1))))
+      (is (= 404 (:status (util/force-delete-concept concept-id 22)))))))
 
-(deftest force-delete-fail-to-delete-nonexistent-concept-revision
-  "Verify we get a 404 when whe try to delete a concept revision that
-  does not exist."
-  (let [{:keys [status revision-id]} (util/force-delete-concept concept1-id 10)]
-    (is (= status 404))))
+(deftest force-delete-non-existent-test
+  (testing "id not exist"
+    (is (= 404 (:status (util/force-delete-concept "C22-PROV1" 0))))
+    (is (= 404 (:status (util/force-delete-concept "G22-PROV1" 0)))))
+  (testing "provider not exist"
+    (is (= 404 (:status (util/force-delete-concept "C22-PROV2" 0))))
+    (is (= 404 (:status (util/force-delete-concept "G22-PROV2" 0))))))
 
-(deftest force-delete-fail-to-delete-nonexistent-concept-id
-  "Verify we get a 404 when whe try to delete a concept with id that
-  does not exist."
-  (let [{:keys [status revision-id]} (util/force-delete-concept "C22-PROV1" 0)]
-    (is (= status 404))))

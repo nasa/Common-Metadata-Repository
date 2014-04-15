@@ -16,7 +16,6 @@
 
 ;;; utility methods
 
-;; TODO make sure every call to this is tested at integration level
 (defn validate-providers-exist
   "Validates that all of the providers in the list exist."
   [db provider-ids]

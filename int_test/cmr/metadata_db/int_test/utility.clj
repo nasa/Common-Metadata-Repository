@@ -49,8 +49,6 @@
    :format "echo10"
    :deleted false})
 
-;; TODO add parse concept function that's called for the response.
-
 (defn- parse-concept
   "Parses a concept from a JSON response"
   [response]
@@ -176,6 +174,20 @@
         stored-concept (:concept (get-concept-by-id-and-revision concept-id revision-id))]
     (is (= concept stored-concept))))
 
+(defn create-and-save-collection
+  "Creates, saves, and returns a concept with its data from metadata-db"
+  [provider-id uniq-num]
+  (let [concept (collection-concept provider-id uniq-num)
+        {:keys [concept-id revision-id]} (save-concept concept)]
+    (assoc concept :concept-id concept-id :revision-id revision-id)))
+
+(defn create-and-save-granule
+  "Creates, saves, and returns a concept with its data from metadata-db"
+  [provider-id parent-collection-id uniq-num]
+  (let [concept (granule-concept provider-id parent-collection-id uniq-num)
+        {:keys [concept-id revision-id]} (save-concept concept)]
+    (assoc concept :concept-id concept-id :revision-id revision-id)))
+
 ;;; providers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -237,8 +249,11 @@
 ;;; fixtures
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn reset-database-fixture
-  "Reset the database after every test."
-  [f]
-  (try
-    (f)
-    (finally (reset-database))))
+  "Creates a database fixture function to reset the database after every test.
+  Optionally accepts a list of provider-ids to create before the test"
+  [& provider-ids]
+  (fn [f]
+    (try
+      (doseq [pid provider-ids] (save-provider pid))
+      (f)
+      (finally (reset-database)))))

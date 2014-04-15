@@ -9,42 +9,49 @@
 
 ;;; fixtures
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(def num-revisions 3) ; number of times the first concept will be saved
-
-(def concept1-id "C1000000000-PROV1")
-
-(defn setup-database-fixture
-  "Load the database with test data."
-  [f]
-  ;; setup database
-  (util/save-provider "PROV1")
-  (let [concept1 (util/collection-concept "PROV1" 1)
-        concept2 (assoc (util/collection-concept "PROV1" 2) :concept-id "C2-PROV1")]
-    (dorun (repeatedly num-revisions #(util/save-concept concept1)))
-
-    (util/save-concept concept2))
-
-  (f)
-
-  ;; clear out the database
-  (util/reset-database))
-
-(use-fixtures :each setup-database-fixture)
+(use-fixtures :each (util/reset-database-fixture "PROV1"))
 
 ;;; tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(deftest delete-concept-test
-  (let [{:keys [status revision-id]} (util/delete-concept concept1-id)]
+(deftest delete-collection-test
+  (let [collection1 (util/create-and-save-collection "PROV1" 1)
+        collection2 (util/create-and-save-collection "PROV1" 2)
+        _ (dorun (repeatedly 2 #(util/save-concept (dissoc collection1 :revision-id))))
+        {:keys [status revision-id]} (util/delete-concept (:concept-id collection1))]
     (is (= status 200))
-    (is (= revision-id num-revisions))))
+    (is (= revision-id 3))
+    ;; Other data left in database
+    (util/verify-concept-was-saved collection2)))
 
-(deftest delete-concept-with-valid-revision
-  (let [{:keys [status revision-id]} (util/delete-concept concept1-id num-revisions)]
+(deftest delete-collection-with-valid-revision-test
+  (let [collection1 (util/create-and-save-collection "PROV1" 1)
+        _ (dorun (repeatedly 2 #(util/save-concept (dissoc collection1 :revision-id))))
+        {:keys [status revision-id]} (util/delete-concept (:concept-id collection1) 3)]
     (is (= status 200))
-    (is (= revision-id num-revisions))))
+    (is (= revision-id 3))))
+
+(deftest delete-granule-test
+  (let [parent-coll-id (:concept-id (util/create-and-save-collection "PROV1" 1))
+        granule1 (util/create-and-save-granule "PROV1" parent-coll-id 1)
+        granule2 (util/create-and-save-granule "PROV1" parent-coll-id 2)
+        _ (dorun (repeatedly 2 #(util/save-concept (dissoc granule1 :revision-id))))
+        {:keys [status revision-id]} (util/delete-concept (:concept-id granule1))]
+    (is (= status 200))
+    (is (= revision-id 3))
+    ;; Other data left in database
+    (util/verify-concept-was-saved granule2)))
+
+(deftest delete-granule-with-valid-revision-test
+  (let [parent-coll-id (:concept-id (util/create-and-save-collection "PROV1" 1))
+        granule1 (util/create-and-save-granule "PROV1" parent-coll-id 1)
+        _ (dorun (repeatedly 2 #(util/save-concept (dissoc granule1 :revision-id))))
+        {:keys [status revision-id]} (util/delete-concept (:concept-id granule1) 3)]
+    (is (= status 200))
+    (is (= revision-id 3))))
 
 (deftest delete-concept-with-invalid-revision
-  (let [{:keys [status]} (util/delete-concept concept1-id (+ num-revisions 10))]
+  (let [collection1 (util/create-and-save-collection "PROV1" 1)
+        {:keys [status]} (util/delete-concept (:concept-id collection1) 2)]
     (is (= status 409))))
 
 (deftest fail-to-delete-missing-concept
@@ -58,8 +65,7 @@
     (is (= error-messages [(messages/providers-do-not-exist ["NONEXIST"])]))))
 
 (deftest repeated-calls-to-delete-get-same-revision
-  (let [concept-id concept1-id
-        tombstone-revision-id (:revision-id (util/delete-concept concept-id))]
-    (dorun (repeatedly 3 #(util/delete-concept concept-id)))
-    (let [final-revision-id (:revision-id (util/delete-concept concept-id))]
-      (is (= tombstone-revision-id final-revision-id)))))
+  (let [collection1 (util/create-and-save-collection "PROV1" 1)]
+    (is (= (util/delete-concept (:concept-id collection1))
+           (util/delete-concept (:concept-id collection1))
+           (util/delete-concept (:concept-id collection1))))))

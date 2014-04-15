@@ -9,24 +9,25 @@
 ;;; fixtures
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn fixture
-  [f]
-  (try
-    (util/save-provider "PROV1")
-    (f)
-    (finally
-      (util/reset-database))))
-
-(use-fixtures :each fixture)
+(use-fixtures :each (util/reset-database-fixture "PROV1"))
 
 ;;; tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(deftest save-concept-test
+(deftest save-collection-test
   (let [concept (util/collection-concept "PROV1" 1)
         {:keys [status revision-id concept-id]} (util/save-concept concept)]
     (is (= status 201))
     (is (= revision-id 0))
-    (util/verify-concept-was-saved (merge concept {:revision-id revision-id :concept-id concept-id}))))
+    (util/verify-concept-was-saved (assoc concept :revision-id revision-id :concept-id concept-id))))
+
+(deftest save-granule-test
+  (let [collection (util/collection-concept "PROV1" 1)
+        parent-collection-id (:concept-id (util/save-concept collection))
+        granule (util/granule-concept "PROV1" parent-collection-id 1)
+        {:keys [status revision-id concept-id]} (util/save-concept granule)]
+    (is (= status 201))
+    (is (= revision-id 0))
+    (util/verify-concept-was-saved (assoc granule :revision-id revision-id :concept-id concept-id))))
 
 (deftest save-concept-test-with-proper-revision-id-test
   (let [concept (util/collection-concept "PROV1" 1)]
@@ -34,17 +35,16 @@
     (let [{:keys [revision-id concept-id]} (util/save-concept concept)
           new-revision-id (inc revision-id)]
       ;; save it again with a valid revision-id
-      (let [{:keys [status revision-id]} (util/save-concept (merge concept {:revision-id new-revision-id
-                                                                            :concept-id concept-id}))]
+      (let [updated-concept (assoc concept :revision-id new-revision-id :concept-id concept-id)
+            {:keys [status revision-id]} (util/save-concept updated-concept)]
         (is (= status 201))
         (is (= revision-id new-revision-id))
-        (util/verify-concept-was-saved (merge concept {:revision-id revision-id
-                                                       :concept-id concept-id}))))))
+        (util/verify-concept-was-saved updated-concept)))))
 
 (deftest save-concept-with-bad-revision-test
   (let [concept (util/collection-concept "PROV1" 1)
         {:keys [concept-id]} (util/save-concept concept)
-        concept-with-bad-revision (merge concept {:concept-id concept-id :revision-id 2})
+        concept-with-bad-revision (assoc concept :concept-id concept-id :revision-id 2)
         {:keys [status]} (util/save-concept concept-with-bad-revision)
         {:keys [retrieved-concept]} (util/get-concept-by-id (:concept-id concept))
         retrieved-revision (:revision-id retrieved-concept)]

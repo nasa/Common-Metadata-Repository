@@ -38,6 +38,8 @@
 
 (use-fixtures :once setup-database-fixture)
 
+;; TODO this needs more tests for granules
+
 ;;; tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (deftest get-concept-test

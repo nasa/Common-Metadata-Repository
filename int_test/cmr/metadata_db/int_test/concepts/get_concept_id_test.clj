@@ -11,15 +11,9 @@
 ;;; fixtures
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn fixture
-  [f]
-  (try
-    (util/save-provider "PROV1")
-    (f)
-    (finally
-      (util/reset-database))))
+(use-fixtures :each (util/reset-database-fixture "PROV1"))
 
-(use-fixtures :each fixture)
+;; TODO this needs more tests for granules.
 
 ;;; tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
