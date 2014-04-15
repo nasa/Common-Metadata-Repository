@@ -27,7 +27,7 @@
     (j/db-do-commands db (format "CREATE TABLE %s (
                                  concept_id VARCHAR(255) NOT NULL,
                                  native_id VARCHAR(1030) NOT NULL,
-                                 metadata VARCHAR(4000) NOT NULL,
+                                 metadata BLOB NOT NULL,
                                  format VARCHAR(255) NOT NULL,
                                  revision_id INTEGER DEFAULT 0 NOT NULL,
                                  deleted INTEGER DEFAULT 0 NOT NULL,
@@ -57,7 +57,7 @@
                                  concept_id VARCHAR(255) NOT NULL,
                                  native_id VARCHAR(250) NOT NULL,
                                  parent_collection_id VARCHAR(255) NOT NULL,
-                                 metadata VARCHAR(4000) NOT NULL,
+                                 metadata BLOB NOT NULL,
                                  format VARCHAR(255) NOT NULL,
                                  revision_id INTEGER DEFAULT 0 NOT NULL,
                                  deleted INTEGER DEFAULT 0 NOT NULL,

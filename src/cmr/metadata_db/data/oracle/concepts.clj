@@ -4,12 +4,44 @@
             [cmr.metadata-db.data.oracle.concept-tables :as tables]
             [cmr.common.log :refer (debug info warn error)]
             [clojure.java.jdbc :as j]
+            [clojure.java.io :as io]
             [sqlingvo.core :as s :refer [select from where with order-by desc delete as]]
             [cmr.metadata-db.data.oracle.sql-utils :as su]
             [cmr.metadata-db.services.util :as util]
-            [cmr.metadata-db.services.provider-service :as provider-service]
+            [cmr.metadata-db.services.provider-services :as provider-services]
             [cmr.common.concepts :as cc])
-  (:import cmr.metadata_db.data.oracle.core.OracleStore))
+  (:import cmr.metadata_db.data.oracle.core.OracleStore
+           java.util.zip.GZIPInputStream
+           java.util.zip.GZIPOutputStream
+           java.io.InputStream
+           java.io.OutputStream
+           oracle.sql.BLOB))
+
+(defn blob->input-stream
+  "Convert a BLOB to an InputStream"
+  [blob]
+  (.getBinaryStream blob))
+
+(defn input-stream->blob
+  "Convert an InputStream to a blob"
+  [input]
+  (let [blob (BLOB/getEmptyBLOB)]
+    (io/copy input (.setBinaryStream blob 0))
+    blob))
+
+
+(defn blob->string
+  "Convert a BLOB to a string"
+  [blob]
+  (-> blob blob->input-stream slurp))
+
+(defn string->blob
+  "Convert a string to a BLOB"
+  [input]
+  ;; clojure.java.io.copy can read a string or an InputStream, so no need to
+  ;; convert our input to an InputStream first
+  (input-stream->blob input))
+
 
 (defmulti db-result->concept-map
   "Translate concept result returned from db into a concept map"
@@ -34,7 +66,7 @@
        :native-id native_id
        :concept-id concept_id
        :provider-id provider-id
-       :metadata metadata
+       :metadata (blob->string metadata)
        :format format
        :revision-id (int revision_id)
        :deleted (not= (int deleted) 0)})))
@@ -50,7 +82,7 @@
                 revision-id
                 deleted]} concept]
     [["native_id" "concept_id" "metadata" "format" "revision_id" "deleted"]
-     [native-id concept-id metadata format revision-id deleted]]))
+     [native-id concept-id (.getBytes metadata) format revision-id deleted]]))
 
 (extend-protocol c/ConceptsStore
   OracleStore
@@ -134,8 +166,7 @@
       (catch Exception e
         (let [error-message (.getMessage e)
               error-code (cond
-                           ;;TODO confirm that these error messages are still correct.
-                           ;; we should have unit tests for this
+                           ;;TODO we should have unit tests for this
                            (re-find #"unique constraint.*_CID_REV" error-message)
                            :concept-id-concept-conflict
 
