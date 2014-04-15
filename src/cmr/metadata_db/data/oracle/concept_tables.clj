@@ -23,7 +23,7 @@
 
 (defmethod create-concept-table :collection [{:keys [db provider-id]}]
   (let [table-name (get-table-name provider-id :collection)]
-    (info "Creating table " table-name)
+    (info "Creating table [" table-name "]")
     (j/db-do-commands db (format "CREATE TABLE %s (
                                  concept_id VARCHAR(255) NOT NULL,
                                  native_id VARCHAR(1030) NOT NULL,
@@ -52,7 +52,7 @@
 
 (defmethod create-concept-table :granule [{:keys [db provider-id]}]
   (let [table-name (get-table-name provider-id :granule)]
-    (info "Creating table " table-name)
+    (info "Creating table [" table-name "]")
     (j/db-do-commands db (format "CREATE TABLE %s (
                                  concept_id VARCHAR(255) NOT NULL,
                                  native_id VARCHAR(250) NOT NULL,
@@ -80,13 +80,13 @@
 (defn create-provider-concept-tables
   "Create all the concept tables for the given provider-id."
   [db provider-id]
-  (info "Creating concept tables for provider " provider-id)
+  (info "Creating concept tables for provider [" provider-id "]")
   (doseq [concept-type all-concept-types]
     (create-concept-table {:db db :provider-id provider-id :concept-type concept-type})))
 
 (defn delete-provider-concept-tables
   "Delete the concept tables associated with the given provider-id."
   [db provider-id]
-  (info "Deleting concept tables for provider " provider-id)
+  (info "Deleting concept tables for provider [" provider-id "]")
   (doseq [concept-type all-concept-types]
     (j/db-do-commands db (str "DROP TABLE " (get-table-name provider-id concept-type)))))

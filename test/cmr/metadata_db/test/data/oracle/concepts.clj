@@ -1,13 +1,31 @@
 (ns cmr.metadata-db.test.data.oracle.concepts
   (:require [clojure.test :refer :all]
-            [cmr.metadata-db.data.oracle.concepts :as c]))
+            [cmr.metadata-db.data.oracle.concepts :as c])
+  (:import javax.sql.rowset.serial.SerialBlob
+           java.util.zip.GZIPInputStream
+           java.io.ByteArrayInputStream))
+
+(defn mock-blob
+  "Create a mock blob"
+  [value]
+  (SerialBlob. (c/string->gzip-bytes value)))
+
+(defn gzip-bytes->string
+  "Convert compressed byte array to string"
+  [input]
+  (-> input ByteArrayInputStream. GZIPInputStream. slurp))
+
+(defn fix-result
+  [result]
+  (let [vector-result (apply vector (map #(apply vector %) result))]
+    (update-in vector-result [1 2] #(gzip-bytes->string %))))
 
 
 (deftest db-result->concept-map-test
   (testing "collection results"
     (let [result {:native_id "foo"
                   :concept_id "C5-PROV1"
-                  :metadata "<foo>"
+                  :metadata (mock-blob "<foo>")
                   :format "xml"
                   :revision_id 2
                   :deleted 0
@@ -26,24 +44,25 @@
                              :version-id "v1"
                              :entry-title "entry"}}
              (c/db-result->concept-map :collection "PROV1" result)))))
-    (testing "granule results"
-      (let [result {:native_id "foo"
-                    :concept_id "G7-PROV1"
-                    :metadata "<foo>"
-                    :format "xml"
-                    :revision_id 2
-                    :deleted 0
-                    :parent_collection_id "C5-PROV1"}]
-        (is (= {:concept-type :granule
-                :native-id "foo"
-                :concept-id "G7-PROV1"
-                :provider-id "PROV1"
-                :metadata "<foo>"
-                :format "xml"
-                :revision-id 2
-                :deleted false
-                :extra-fields {:parent-collection-id "C5-PROV1"}}
-               (c/db-result->concept-map :granule "PROV1" result))))))
+  (testing "granule results"
+    (let [result {:native_id "foo"
+                  :concept_id "G7-PROV1"
+                  :metadata (mock-blob "<foo>")
+                  :format "xml"
+                  :revision_id 2
+                  :deleted 0
+                  :parent_collection_id "C5-PROV1"}]
+      (is (= {:concept-type :granule
+              :native-id "foo"
+              :concept-id "G7-PROV1"
+              :provider-id "PROV1"
+              :metadata "<foo>"
+              :format "xml"
+              :revision-id 2
+              :deleted false
+              :extra-fields {:parent-collection-id "C5-PROV1"}}
+             (c/db-result->concept-map :granule "PROV1" result))))))
+
 
 (deftest concept->insert-args-test
   (testing "collection insert-args"
@@ -61,7 +80,7 @@
       (is (= [["native_id" "concept_id" "metadata" "format" "revision_id" "deleted"
                "short_name" "version_id" "entry_title"]
               ["foo" "C5-PROV1" "<foo>" "xml" 2 false "short" "v1" "entry"]]
-             (c/concept->insert-args concept)))))
+             (fix-result (c/concept->insert-args concept))))))
   (testing "granule insert-args"
     (let [concept {:concept-type :granule
                    :native-id "foo"
@@ -74,4 +93,4 @@
                    :extra-fields {:parent-collection-id "C5-PROV1"}}]
       (is (= [["native_id" "concept_id" "metadata" "format" "revision_id" "deleted" "parent_collection_id"]
               ["foo" "G7-PROV1" "<foo>" "xml" 2 false "C5-PROV1"]]
-             (c/concept->insert-args concept))))))
+             (fix-result (c/concept->insert-args concept)))))))
