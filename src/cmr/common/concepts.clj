@@ -16,11 +16,18 @@
   "Maps a concept type to the concept id prefix"
   (clojure.set/map-invert concept-prefix->concept-type))
 
-(defn validate-concept-id
+(defn concept-id-validation
+  "Validates the concept id and returns errors if it's invalid. Returns nil if valid."
   [concept-id]
   (let [regex #"[CG]\d+-[A-Za-z0-9_]+"]
     (when-not (re-matches regex concept-id)
-      (errors/throw-service-error :bad-request "Concept-id [%s] is not valid." concept-id))))
+      [(format "Concept-id [%s] is not valid." concept-id)])))
+
+(defn validate-concept-id
+  "Validates a concept-id and throws an error if invalid"
+  [concept-id]
+  (when-let [[error-msg] (concept-id-validation concept-id)]
+    (errors/throw-service-error :bad-request error-msg)))
 
 (defn parse-concept-id
   "Split a concept id into concept-type-prefix, sequence number, and provider id."
