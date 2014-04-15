@@ -24,26 +24,21 @@
 (defn- build-indices-list-w-config
   "Given a index-set, build list of indices with config."
   [idx-set]
-  (let [prefix-id (-> idx-set :index-set :id)]
+  (let [prefix-id (get-in idx-set [:index-set :id])]
     (for [concept cmr-concepts
-          suffix-index-name (-> idx-set :index-set concept :index-names)]
-      (let [indices-config (-> idx-set :index-set concept)
-            settings (:settings indices-config)
-            mapping (:mapping indices-config)]
-        (into {} (list
-                   (when suffix-index-name
-                     {:index-name (gen-valid-index-name prefix-id suffix-index-name)})
-                   (when settings
-                     {:settings settings})
-                   (when mapping
-                     {:mapping mapping})))))))
+          suffix-index-name (get-in idx-set [:index-set concept :index-names])]
+      (let [indices-config (get-in idx-set [:index-set concept])
+            {:keys [settings mapping]} indices-config]
+        {:index-name (gen-valid-index-name prefix-id suffix-index-name)
+         :settings settings
+         :mapping mapping}))))
 
 (defn get-index-names
   "Given a index set build list of index names."
   [idx-set]
-  (let [prefix-id (-> idx-set :index-set :id)]
+  (let [prefix-id (get-in idx-set [:index-set :id])]
     (for [concept cmr-concepts
-          suffix-index-name (-> idx-set :index-set concept :index-names)]
+          suffix-index-name (get-in idx-set [:index-set concept :index-names])]
       (gen-valid-index-name prefix-id suffix-index-name))))
 
 (defn given-index-names->es-index-names
@@ -58,7 +53,8 @@
   [index-set]
   (let [id (:id index-set)
         name (:name index-set)
-        stripped-index-set (first (walk/postwalk #(if (map? %) (dissoc % :create-reason :settings :mapping) %) (list index-set)))]
+        stripped-index-set (first (walk/postwalk #(if (map? %) (dissoc % :create-reason :settings :mapping) %)
+                                                 (list index-set)))]
     {:id id
      :name name
      :concepts (apply merge (for [k (keys stripped-index-set)]
@@ -88,94 +84,94 @@
         idx-mapping-type (first (keys mapping))]
     (es/get-index-set index-name idx-mapping-type index-set-id)))
 
+(defn index-set-id-validation
+  "Verify id is a positive integer."
+  [index-set]
+  (let [index-set-id (get-in index-set [:index-set :id])
+        json-index-set-str (json/generate-string index-set)]
+    (when-not (and (integer? index-set-id) (> index-set-id 0))
+      (m/invalid-id-msg index-set-id json-index-set-str))))
+
+(defn id-name-existence-check
+  "check for index-set id and name."
+  [index-set]
+  (let [index-set-id (get-in index-set [:index-set :id])
+        index-set-name (get-in index-set [:index-set :name])
+        json-index-set-str (json/generate-string index-set)]
+    (when-not (and index-set-id index-set-name)
+      (m/missing-id-name-msg json-index-set-str))))
+
+(defn index-cfg-validation
+  "verify if required elements are present to create an elastic index."
+  [index-set]
+  (let [indices-w-config (build-indices-list-w-config index-set)
+        json-index-set-str (json/generate-string index-set)]
+    (when-not (every? true? (map #(and (boolean (% :index-name))
+                                       (boolean (% :settings)) (boolean (% :mapping))) indices-w-config))
+      (m/missing-idx-cfg-msg json-index-set-str))))
+
+(defn index-set-existence-check
+  "Check index-set existsence"
+  [index-set]
+  (let [index-set-id (get-in index-set [:index-set :id])
+        {:keys [index-name mapping]} es-config/idx-cfg-for-index-sets
+        idx-mapping-type (first (keys mapping))]
+    (when (es/index-set-exists? index-name idx-mapping-type index-set-id)
+      (m/index-set-exists-msg index-set-id))))
+
+
 (deftracefn validate-requested-index-set
   "Verify input index-set is valid."
   [context index-set]
-  (let [index-set-id (-> index-set :index-set :id)
-        index-set-name (-> index-set :index-set :name)
-        indices-w-config (build-indices-list-w-config index-set)
-        json-index-set-str (json/generate-string index-set)]
-    (cond (not (and (integer? index-set-id) (> index-set-id 0)))
-          (errors/throw-service-error :invalid-data
-                                      (get-in m/err-msg-fmts [:create :invalid-id])
-                                      index-set-id
-                                      json-index-set-str)
-          (not (and index-set-id index-set-name))
-          (errors/throw-service-error :invalid-data
-                                      (get-in m/err-msg-fmts [:create :missing-id-name])
-                                      json-index-set-str)
-          ;; bail out if index-config defs do not have required 3 elements
-          (not (apply = (map #(and (contains? % :index-name)
-                                   (contains? % :settings) (contains? % :mapping)) indices-w-config)))
-          (errors/throw-service-error :invalid-data
-                                      (get-in m/err-msg-fmts [:create :missing-idx-cfg])
-                                      json-index-set-str)
-          ;; bail out if req index-set exists
-          (index-set-exists? context (str index-set-id))
-          (errors/throw-service-error :conflict
-                                      (get-in m/err-msg-fmts [:create :index-set-exists])
-                                      index-set-id)
-          :else true)))
+  (when-let [error (index-set-id-validation index-set)]
+    (errors/throw-service-error :invalid-data error))
+  (when-let [error (id-name-existence-check index-set)]
+    (errors/throw-service-error :invalid-data error))
+  (when-let [error (index-cfg-validation index-set)]
+    (errors/throw-service-error :invalid-data error))
+  (when-let [error (index-set-existence-check index-set)]
+    (errors/throw-service-error :conflict error)))
 
 (deftracefn index-requested-index-set
   "Index requested index-set along with generated elastic index names"
   [context index-set]
-  (try
-    (let [ index-set-w-es-index-names (assoc-in index-set [:index-set :concepts]
-                                                (:concepts (prune-index-set (:index-set index-set))))
-          es-doc {:index-set-id (-> index-set :index-set :id)
-                  :index-set-name (-> index-set :index-set :name)
-                  :index-set-request (json/generate-string index-set-w-es-index-names)}
-          doc-id (str (:index-set-id es-doc))
-          {:keys [index-name mapping]} es-config/idx-cfg-for-index-sets
-          idx-mapping-type (first (keys mapping))]
-      (es/save-document-in-elastic context index-name idx-mapping-type doc-id es-doc))
-    (catch Exception e
-      ;; allow caller to perform rollback on data layer errors
-      (throw e))))
+  (let [ index-set-w-es-index-names (assoc-in index-set [:index-set :concepts]
+                                              (:concepts (prune-index-set (:index-set index-set))))
+        es-doc {:index-set-id (get-in index-set [:index-set :id])
+                :index-set-name (get-in index-set [:index-set :name])
+                :index-set-request (json/generate-string index-set-w-es-index-names)}
+        doc-id (str (:index-set-id es-doc))
+        {:keys [index-name mapping]} es-config/idx-cfg-for-index-sets
+        idx-mapping-type (first (keys mapping))]
+    (es/save-document-in-elastic context index-name idx-mapping-type doc-id es-doc)))
 
-(defn- handle-error
-  "Handle 4xx type errors correctly"
-  [e]
-  (let [status (get-in (ex-data e) [:object :status])
-        body (cheshire/decode (get-in (ex-data e) [:object :body]) true)
-        error (:error body)]
-    (when (= status 400) (errors/throw-service-error :bad-request error))
-    (when (= status 404) (errors/throw-service-error :not-found error))
-    (when (= status 409) (errors/throw-service-error :conflict error))
-    (when (= status 422) (errors/throw-service-error :invalid-data error))
-    (if (some #{400 404 409 422} [status])
-      (error e)
-      (errors/internal-error! e (get-in m/err-msg-fmts [:create :fail]) error))))
-
-(deftracefn create-indices-listed-in-index-set
+(deftracefn create-index-set
   "Create indices listed in index-set. Rollback occurs if indices creation or index-set doc indexing fails."
   [context index-set]
   (info (format "Creating index-set: %s" index-set))
-  (let [valid-index-set? (validate-requested-index-set context index-set)
+  (let [_ (validate-requested-index-set context index-set)
         index-names (get-index-names index-set)
         indices-w-config (build-indices-list-w-config index-set)
         es-cfg (-> context :system :index :config)
-        json-index-set-str (json/generate-string index-set)]
-    (if valid-index-set?
-      (when-not (esi/exists? (:index-name es-config/idx-cfg-for-index-sets))
-        (errors/internal-error! (get-in m/err-msg-fmts [:create :missing-idx])))
-      (errors/throw-service-error :invalid-data
-                                  (get-in m/err-msg-fmts [:create :invalid-index-set])
-                                  json-index-set-str))
+        json-index-set-str (json/generate-string index-set)
+        idx-name-of-index-sets (:index-name es-config/idx-cfg-for-index-sets)]
+
+    (when-not (esi/exists? idx-name-of-index-sets)
+      (errors/internal-error! (m/missing-index-for-index-sets-msg idx-name-of-index-sets)))
+
     ;; rollback index-set creation if index creation fails
     (try
       (dorun (map #(es/create-index %) indices-w-config))
       (catch Exception e
         (dorun (map #(es/delete-index % es-cfg) index-names))
-        (handle-error e)))
+        (m/create-failure-msg "attempt to create indices of index-set failed" e)))
     (try
       (index-requested-index-set context index-set)
       (catch Exception e
         (dorun (map #(es/delete-index % es-cfg) index-names))
-        (handle-error e)))))
+        (m/create-failure-msg "attempt to index index-set doc failed"  e)))))
 
-(deftracefn delete-indices-listed-in-index-set
+(deftracefn delete-index-set
   "Delete all indices having 'id_' as the prefix in the elastic, followed by index-set doc delete"
   [context index-set-id]
   (let [index-names (get-index-names (get-index-set context index-set-id))
@@ -194,5 +190,6 @@
         es-cfg (-> context :system :index :config)]
     ;; delete indices assoc with index-set
     (doseq [id index-set-ids]
-      (delete-indices-listed-in-index-set context (str id)))))
+      (delete-index-set context (str id)))))
 
+(prune-index-set cmr.index-set.int-test.utility/sample-index-set)

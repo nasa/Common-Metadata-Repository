@@ -20,14 +20,14 @@
 (def idx-cfg-for-index-sets
   {:index-name "index-sets"
    :settings {"index" {"number_of_shards" 1
-             "number_of_replicas"  0
-             "refresh_interval" "30s"}}
+                       "number_of_replicas"  0
+                       "refresh_interval" "30s"}}
    :mapping {"set" { "dynamic"  "strict"
-                          "_source"  {"enabled" false}
-                          "_all"     {"enabled" false}
-                          "_id"      {"path" "index-set-id"}
-                          :properties {:index-set-id  {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}
-                                       :index-set-name {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}
-                                       :index-set-name.lowercase {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs"}
-                                       :index-set-request {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}}}}})
+                    "_source"  {"enabled" true}
+                    "_all"     {"enabled" false}
+                    "_id"      {"path" "index-set-id"}
+                    :properties {:index-set-id  {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}
+                                 :index-set-name {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}
+                                 :index-set-name.lowercase {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs"}
+                                 :index-set-request {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}}}}})
 

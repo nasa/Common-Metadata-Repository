@@ -34,20 +34,20 @@
 (defn index-set-exists?
   "Check index-set existence in elastic."
   [index-name idx-mapping-type index-set-id]
-  (let [result (doc/get index-name idx-mapping-type index-set-id "fields" "index-set-id,index-set-name,index-set-request")]
-    (:exists result)))
+  (when (esi/exists? index-name)
+    (let [result (doc/get index-name idx-mapping-type (str index-set-id) "fields" "index-set-id,index-set-name,index-set-request")]
+      (:exists result))))
 
 (defn get-index-set
   "Fetch index-set associated with an id."
   [index-name idx-mapping-type index-set-id]
   (when (esi/exists? index-name)
     (let [result (doc/get index-name idx-mapping-type index-set-id "fields" "index-set-id,index-set-name,index-set-request")
-          index-set-json-str (-> result :fields :index-set-request)
+          index-set-json-str (get-in result [:fields :index-set-request])
           exists? (:exists result)]
       (when-not exists?
         (errors/throw-service-error :not-found
-                                    (get-in m/err-msg-fmts [:get :index-set-not-found])
-                                    index-set-id))
+                                    (m/index-set-not-found-msg index-set-id)))
       (cheshire.core/decode index-set-json-str true))))
 
 (defn get-index-set-ids
@@ -76,7 +76,7 @@
                                    :throw-exceptions false})
           status (:status response)]
       (if-not (some #{200 202 204} [status])
-        (errors/internal-error! (get-in m/err-msg-fmts [:delete :index-fail]) response)))))
+        (errors/internal-error! (m/index-delete-failure-msg response))))))
 
 (defrecord ESstore
   [
@@ -127,5 +127,6 @@
                                :throw-exceptions false})
         status (:status result)]
     (when-not (= status 200)
-      (errors/internal-error! (get-in m/err-msg-fmts [:delete :doc-fail]) result))))
+      (errors/internal-error! (m/index-set-doc-delete-msg result)))))
+
 

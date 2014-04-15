@@ -12,6 +12,11 @@ An Index Set consists of the following:
   * id - A positive integer to uniquely identify an index set. The id is used as a prefix for the indexes in elasticsearch.
   * concept-type-index-config - A map of concept types to Index configs
 
+## config
+
+Copy config/elasticsearch_config.json.template to config/elasticsearch_config.json
+
+Replace the placeholder values of Elasticsearch configuration parameters with the appropriate values in config/elasticsearch_config.json
 
 ## Running
 

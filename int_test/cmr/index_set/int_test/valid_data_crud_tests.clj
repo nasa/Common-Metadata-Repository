@@ -29,19 +29,19 @@
   (testing "create index-set"
     (let [index-set util/sample-index-set
           {:keys [status]} (util/submit-create-index-set-req index-set)]
-      (is (= status 201))))
+      (is (= 201 status))))
   (testing "indices existence"
     (let [index-set util/sample-index-set
-          index-set-id (-> index-set :index-set :id)
+          index-set-id (get-in index-set [:index-set :id])
           _ (util/flush-elastic)
           index-names (util/get-index-names index-set)]
       (for [idx-name index-names]
         (is (esi/exists? idx-name)))))
   (testing "index-set doc existence"
     (let [index-set util/sample-index-set
-          index-set-id (-> index-set :index-set :id)
+          index-set-id (get-in index-set [:index-set :id])
           {:keys [status]} (util/get-index-set index-set-id)]
-      (is (= status 200)))))
+      (is (= 200 status)))))
 
 ;; Verify index-set fetch is successful.
 ;; First create a index-set, fetch the index-set using an id successfully and then
@@ -53,14 +53,14 @@
           mod-index-set (-> index-set
                             (assoc-in [:index-set :collection :index-names] (vec (list suffix-idx-name)))
                             (assoc-in [:index-set :id] 77))
-          index-set-id (-> mod-index-set :index-set :id)
+          index-set-id (get-in mod-index-set [:index-set :id])
           expected-idx-name (util/gen-valid-index-name index-set-id suffix-idx-name)
           {:keys [status]} (util/submit-create-index-set-req mod-index-set)
           _ (util/flush-elastic)
           body (-> (util/get-index-set index-set-id) :response :body)
           fetched-index-set (cheshire.core/decode body true)
           actual-idx-name (get-in fetched-index-set [:index-set :concepts :collection (keyword suffix-idx-name)])]
-      (is (= status 201))
+      (is (= 201 status))
       (is (= expected-idx-name actual-idx-name)))))
 
 ;; Verify index-set delete is successful.
@@ -72,18 +72,18 @@
           suffix-idx-name "C99-Collections"
           mod-index-set (-> index-set
                             (assoc-in [:index-set :collection :index-names] (vec (list suffix-idx-name))))
-          index-set-id (-> mod-index-set :index-set :id)
+          index-set-id (get-in mod-index-set [:index-set :id])
           expected-idx-name (util/gen-valid-index-name index-set-id suffix-idx-name)
           {:keys [status]} (util/submit-create-index-set-req mod-index-set)]
-      (is (= status 201))
+      (is (= 201 status))
       (is (esi/exists? expected-idx-name))))
   (testing "delete index-set"
     (let [index-set util/sample-index-set
-          index-set-id (-> index-set :index-set :id)
+          index-set-id (get-in index-set [:index-set :id])
           suffix-idx-name "C99-Collections"
           expected-idx-name (util/gen-valid-index-name index-set-id suffix-idx-name)
           {:keys [status]} (util/submit-delete-index-set-req index-set-id)]
-      (is (= status 200))
+      (is (= 200 status))
       (is (not (esi/exists? expected-idx-name))))))
 
 ;; Verify get index-sets fetches all index-sets in elastic.
@@ -96,13 +96,14 @@
     (let [index-set util/sample-index-set
           _ (util/submit-create-index-set-req index-set)
           _ (util/submit-create-index-set-req (assoc-in index-set [:index-set :id] 77))
-          indices-cnt (reduce (fn [cnt concept] (+ cnt
-                                                   (count (get-in util/sample-index-set
-                                                                  [:index-set concept :index-names])))) 0 util/cmr-concepts)
+          indices-cnt (reduce (fn [cnt concept]
+                                (+ cnt (count (get-in util/sample-index-set
+                                                      [:index-set concept :index-names]))))
+                              0
+                              util/cmr-concepts)
           expected-idx-cnt (* 2 indices-cnt)
           _ (util/flush-elastic)
           body (-> (util/get-index-sets) :response :body (cheshire.core/decode true))
-          ;; actual-indices-map (apply merge (util/list-es-indices body))
           actual-es-indices (util/list-es-indices body)]
       (for [es-idx-name actual-es-indices]
         (is (esi/exists? es-idx-name)))
@@ -114,20 +115,19 @@
   (testing "create index-set"
     (let [index-set util/sample-index-set
           {:keys [status]} (util/submit-create-index-set-req index-set)]
-      (is (= status 201))))
+      (is (= 201 status))))
   (testing "create same index-set"
     (let [index-set util/sample-index-set
-          index-set-id (-> index-set :index-set :id)
+          index-set-id (get-in index-set [:index-set :id])
           {:keys [status errors-str]} (util/submit-create-index-set-req index-set)]
-      (is (= status 409))
+      (is (= 409 status))
       (is (re-find #"already exists" errors-str)))))
 
 ;; Verify reset deletes all of the indices assoc with index-sets and index-set docs
 (deftest reset-index-sets-test
   (testing "reset index-set app"
     (let [{:keys [status]} (util/reset)]
-      (is (= status 200)))))
-
+      (is (= 200 status)))))
 
 
 

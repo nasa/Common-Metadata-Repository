@@ -84,9 +84,9 @@
                :id 7
                :create-reason "include message about reasons for creating this index set"
                :collection {:index-names ["C4-collections", "c6_Collections"]
-                            ; :settings {:index {:number_of_shards 1,
-                            ;                 :number_of_replicas 0,
-                            ;                :refresh_interval "20s"}}
+                            :settings {:index {:number_of_shards 1,
+                                               :number_of_replicas 0,
+                                               :refresh_interval "20s"}}
                             :mapping {:collection {:dynamic "strict",
                                                    :_source {:enabled false},
                                                    :_all {:enabled false},
@@ -126,9 +126,9 @@
 (defn get-index-names
   "Given a index set build list of index names."
   [idx-set]
-  (let [prefix-id (-> idx-set :index-set :id)]
+  (let [prefix-id (get-in idx-set [:index-set :id])]
     (for [concept cmr-concepts
-          suffix-index-name (-> idx-set :index-set concept :index-names)]
+          suffix-index-name (get-in idx-set [:index-set concept :index-names])]
       (gen-valid-index-name prefix-id suffix-index-name))))
 
 (defn  submit-create-index-set-req
@@ -139,13 +139,11 @@
                     :url index-set-url
                     :body (cheshire.core/generate-string idx-set)
                     :content-type :json
-                    ;; :headers {}
                     :accept :json
                     :throw-exceptions false})
         status (:status response)
         body (cheshire/parse-string (:body response))
         errors-str (cheshire/generate-string (flatten (get body "errors")))]
-    ; (println "int test submit-create-index-set-req - " response)
     {:status status :errors-str errors-str :response response}))
 
 (defn  submit-delete-index-set-req
@@ -154,13 +152,11 @@
   (let [response (client/request
                    {:method :delete
                     :url (format "%s/%s" index-set-url id)
-                    ;; :headers {}
                     :accept :json
                     :throw-exceptions false})
         status (:status response)
         body (cheshire/parse-string (:body response))
         errors-str (cheshire/generate-string (flatten (get body "errors")))]
-    ; (println "int test submit-delete-index-set-req - " response)
     {:status status :errors-str errors-str :response response}))
 
 (defn  get-index-set
@@ -169,13 +165,11 @@
   (let [response (client/request
                    {:method :get
                     :url (format "%s/%s" index-set-url id)
-                    ;; :headers {}
                     :accept :json
                     :throw-exceptions false})
         status (:status response)
         body (cheshire/parse-string (:body response))
         errors-str (cheshire/generate-string (flatten (get body "errors")))]
-    ; (println "int test get-index-set - " response)
     {:status status :errors-str errors-str :response response}))
 
 (defn get-index-sets
@@ -184,13 +178,11 @@
   (let [response (client/request
                    {:method :get
                     :url index-set-url
-                    ;; :headers {}
                     :accept :json
                     :throw-exceptions false})
         status (:status response)
         body (cheshire/parse-string (:body response))
         errors-str (cheshire/generate-string (flatten (get body "errors")))]
-    ; (println "int test get-index-sets - " response)
     {:status status :errors-str errors-str :response response}))
 
 (defn reset
@@ -199,12 +191,10 @@
   (let [result (client/request
                  {:method :post
                   :url (format "%s/%s" index-set-root-url "reset")
-                  ;; :headers {}
                   :accept :json
                   :throw-exceptions false})
         status (:status result)
         {:keys [status errors-str response]} result]
-    ; (println "int test reset - " result)
     {:status status :errors-str errors-str :response response}))
 
 (defn list-es-indices
