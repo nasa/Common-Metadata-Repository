@@ -24,6 +24,18 @@
     (is (thrown-with-msg? clojure.lang.ExceptionInfo #"Concept-id \[.*\] is not valid."
                           (c/parse-concept-id "G5-PROV1;")))))
 
+(deftest concept-type-validation-test
+  (testing "valid types"
+    (are [type] (and (nil? (c/concept-type-validation type))
+                     (nil? (c/concept-type-validation (name type))))
+         :collection
+         :granule))
+  (testing "invalid type"
+    (is (= ["[foo] is not a valid concept type."]
+           (c/concept-type-validation "foo")))
+    (is (= ["[foo] is not a valid concept type."]
+           (c/concept-type-validation :foo)))))
+
 (def concept-id-maps
   "A generator for concept id maps"
   (gen/hash-map :concept-type (gen/elements (vec c/concept-types))

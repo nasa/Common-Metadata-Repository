@@ -1,6 +1,7 @@
 (ns cmr.common.concepts
   "This contains utility functions and vars related to concepts in the CMR"
   (:require [clojure.set]
+            [cmr.common.util :as util]
             [cmr.common.services.errors :as errors]))
 
 (def concept-types
@@ -23,11 +24,24 @@
     (when-not (re-matches regex concept-id)
       [(format "Concept-id [%s] is not valid." concept-id)])))
 
-(defn validate-concept-id
+(def validate-concept-id
   "Validates a concept-id and throws an error if invalid"
-  [concept-id]
-  (when-let [[error-msg] (concept-id-validation concept-id)]
-    (errors/throw-service-error :bad-request error-msg)))
+  (util/build-validator :bad-request concept-id-validation))
+
+(defn concept-type-validation
+  "Validates a concept type is known. Returns an error if invalid. A string or keyword can be passed in."
+  [concept-type]
+  (let [concept-type (cond
+                       (string? concept-type) (keyword concept-type)
+                       (keyword? concept-type) concept-type
+                       :else (errors/internal-error! (format "Received invalid concept-type [%s]" concept-type)))]
+    (when-not (concept-types concept-type)
+      [(format "[%s] is not a valid concept type." (name concept-type))])))
+
+(def validate-concept-type
+  "A function that will validate concept-type and thrown and exception if it's invalid"
+  (util/build-validator :bad-request concept-type-validation))
+
 
 (defn parse-concept-id
   "Split a concept id into concept-type-prefix, sequence number, and provider id."

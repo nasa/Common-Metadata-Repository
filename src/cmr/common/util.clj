@@ -1,6 +1,7 @@
 (ns cmr.common.util
   "Utility functions that might be useful throughout the CMR."
-  (:require [cmr.common.log :refer (debug info warn error)]))
+  (:require [cmr.common.log :refer (debug info warn error)]
+            [cmr.common.services.errors :as errors]))
 
 (defn sequence->fn
   [vals]
@@ -39,3 +40,12 @@
         (throw e#))
       (finally
         (info ~taskname " complete.")))))
+
+(defn build-validator
+  "Creates a function that will call f with it's arguments. If f returns any errors then it will
+  throw a service error of the type given."
+  [error-type f]
+  (fn [& args]
+    (when-let [errors (apply f args)]
+      (when (> (count errors) 0)
+        (errors/throw-service-errors error-type errors)))))
