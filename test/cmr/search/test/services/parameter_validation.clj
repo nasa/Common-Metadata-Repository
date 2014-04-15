@@ -13,20 +13,20 @@
     (is (= ["Parameter [foo] was not recognized."
             "Parameter [bar] was not recognized."]
            (pv/unrecognized-params-validation :collection
-             {:entry_title "fdad"
-              :foo 1
-              :bar 2}))))
+                                              {:entry_title "fdad"
+                                               :foo 1
+                                               :bar 2}))))
   (testing "invalid options param names"
     (is (= [] (pv/unrecognized-params-in-options-validation :collection valid-params)))
     (is (= ["Parameter [foo] with option was not recognized."]
            (pv/unrecognized-params-in-options-validation :collection
-             {:entry_title "fdad"
-              :options {:foo {:ignore_case "true"}}}))))
+                                                         {:entry_title "fdad"
+                                                          :options {:foo {:ignore_case "true"}}}))))
   (testing "invalid options param args"
     (is (= ["Option [foo] for param [entry_title] was not recognized."]
            (pv/unrecognized-params-settings-in-options-validation :collection
-             {:entry_title "fdad"
-              :options {:entry_title {:foo "true"}}})))))
+                                                                  {:entry_title "fdad"
+                                                                   :options {:entry_title {:foo "true"}}})))))
 
 (deftest validate-parameters-test
   (testing "parameters are returned when valid"
@@ -38,8 +38,8 @@
   (testing "errors thrown when parameters are invalid."
     (try
       (pv/validate-parameters :collection {:entry_title "fdad"
-                              :foo 1
-                              :bar 2})
+                                           :foo 1
+                                           :bar 2})
       (is false "An error should have been thrown.")
       (catch clojure.lang.ExceptionInfo e
         (is (= {:type :invalid-data
