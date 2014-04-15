@@ -26,11 +26,14 @@
     (info "Creating table " table-name)
     (j/db-do-commands db (format "CREATE TABLE %s (
                                  concept_id VARCHAR(255) NOT NULL,
-                                 native_id VARCHAR(255) NOT NULL,
+                                 native_id VARCHAR(1030) NOT NULL,
                                  metadata VARCHAR(4000) NOT NULL,
                                  format VARCHAR(255) NOT NULL,
                                  revision_id INTEGER DEFAULT 0 NOT NULL,
                                  deleted INTEGER DEFAULT 0 NOT NULL,
+                                 short_name VARCHAR(85) NOT NULL,
+                                 version_id VARCHAR(80) NOT NULL,
+                                 entry_title VARCHAR(1030) NOT NULL,
                                  CONSTRAINT %s_con_rev
                                  UNIQUE (native_id, revision_id)
                                  USING INDEX (create unique index %s_ucr_i on
@@ -52,7 +55,7 @@
     (info "Creating table " table-name)
     (j/db-do-commands db (format "CREATE TABLE %s (
                                  concept_id VARCHAR(255) NOT NULL,
-                                 native_id VARCHAR(255) NOT NULL,
+                                 native_id VARCHAR(250) NOT NULL,
                                  parent_collection_id VARCHAR(255) NOT NULL,
                                  metadata VARCHAR(4000) NOT NULL,
                                  format VARCHAR(255) NOT NULL,

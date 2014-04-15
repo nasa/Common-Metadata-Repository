@@ -1,6 +1,7 @@
 (ns cmr.metadata-db.services.concept-validations
   (:require [cmr.metadata-db.services.messages :as msg]
             [cmr.common.concepts :as cc]
+            [clojure.set :as set]
             [cmr.common.services.errors :as errors]))
 
 (defn concept-type-missing-validation
@@ -17,6 +18,19 @@
   [concept]
   (when-not (:native-id concept)
     [(msg/missing-native-id)]))
+
+(def concept-type->required-extra-fields
+  "A map of concept type to the required extra fields"
+  {:collection #{:short-name :version-id :entry-title}
+   :granule #{:parent-collection-id}})
+
+(defn extra-fields-missing-validation
+  [concept]
+  (if-let [extra-fields (:extra-fields concept)]
+    (map #(msg/missing-extra-field %)
+         (set/difference (concept-type->required-extra-fields (:concept-type concept))
+                         (set (keys extra-fields))))
+    [(msg/missing-extra-fields)]))
 
 (defn concept-id-validation
   [concept]
@@ -37,6 +51,7 @@
    provider-id-missing-validation
    native-id-missing-validation
    concept-id-validation
+   extra-fields-missing-validation
    concept-id-match-fields-validation])
 
 (defn concept-validation

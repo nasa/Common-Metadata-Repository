@@ -58,7 +58,8 @@
                         (re-find (re-pattern (name field)) (first error-messages))))
          :concept-type
          :provider-id
-         :native-id)))
+         :native-id
+         :extra-fields)))
 
 
 (deftest save-concept-after-delete

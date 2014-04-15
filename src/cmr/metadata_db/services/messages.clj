@@ -41,6 +41,12 @@
 (defn missing-native-id []
   "Concept must include native-id.")
 
+(defn missing-extra-fields []
+  "Concept must include extra-fields")
+
+(defn missing-extra-field [field]
+  (format "Concept must include extra-field value for field [%s]" (name field)))
+
 (defn invalid-concept-id [concept-id provider-id concept-type]
   (format "Concept-id [%s] for concept does not match provider-id [%s] or concept-type [%s]."
           concept-id

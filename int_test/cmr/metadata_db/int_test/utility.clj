@@ -36,7 +36,10 @@
    :provider-id provider-id
    :metadata (str "xml here " uniq-num)
    :format "echo10"
-   :deleted false})
+   :deleted false
+   :extra-fields {:short-name (str "short" uniq-num)
+                  :version-id (str "V" uniq-num)
+                  :entry-title (str "dataset" uniq-num)}})
 
 (defn granule-concept
   "Creates a collection concept"
@@ -44,10 +47,10 @@
   {:concept-type :granule
    :native-id (str "native-id " uniq-num)
    :provider-id provider-id
-   :parent-collection-id parent-collection-id
    :metadata (str "xml here " uniq-num)
    :format "echo10"
-   :deleted false})
+   :deleted false
+   :extra-fields {:parent-collection-id parent-collection-id}})
 
 (defn- parse-concept
   "Parses a concept from a JSON response"
