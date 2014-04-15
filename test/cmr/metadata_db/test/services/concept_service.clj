@@ -1,4 +1,4 @@
-(ns cmr.metadata-db.test.services.concept-services
+(ns cmr.metadata-db.test.services.concept-service
   "Contains unit tests for service layer methods and associated utility methods."
   (:require [clojure.test :refer :all]
             [clojure.test.check :as tc]
@@ -6,7 +6,7 @@
             [clojure.test.check.properties :as prop]
             [clojure.string :as str]
             [cmr.metadata-db.services.util :as util]
-            [cmr.metadata-db.services.concept-services :as cs]
+            [cmr.metadata-db.services.concept-service :as cs]
             [cmr.metadata-db.data.concepts :as c]
             [cmr.metadata-db.test.memory-db :as memory]
             [cmr.metadata-db.services.messages :as messages]

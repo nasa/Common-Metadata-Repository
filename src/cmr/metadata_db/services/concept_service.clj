@@ -1,4 +1,4 @@
-(ns cmr.metadata-db.services.concept-services
+(ns cmr.metadata-db.services.concept-service
   "Sevices to support the business logic of the metadata db."
   (:require [cmr.metadata-db.data.concepts :as c]
             [cmr.metadata-db.data.oracle.core :as oracle]
@@ -7,7 +7,7 @@
             [cmr.metadata-db.services.messages :as msg]
             [cmr.metadata-db.services.util :as util]
             [cmr.metadata-db.services.concept-validations :as cv]
-            [cmr.metadata-db.services.provider-services :as provider-services]
+            [cmr.metadata-db.services.provider-service :as provider-service]
             [cmr.metadata-db.data.oracle.provider :as provider-db]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.system-trace.core :refer [deftracefn]]
@@ -237,7 +237,7 @@
 (deftracefn reset
   "Delete all concepts from the concept store and all providers."
   [context]
-  (provider-services/reset-providers context)
+  (provider-service/reset-providers context)
   (c/reset (util/context->db context)))
 
 (deftracefn get-concept-id

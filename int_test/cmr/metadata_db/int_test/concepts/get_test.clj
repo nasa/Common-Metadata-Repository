@@ -39,6 +39,7 @@
 (use-fixtures :once setup-database-fixture)
 
 ;; TODO this needs more tests for granules
+;; This also needs a test where it retrieves granules and collections at the same time.
 
 ;;; tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

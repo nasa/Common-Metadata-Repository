@@ -13,8 +13,8 @@
             [cmr.common.api.errors :as errors]
             [cmr.common.services.errors :as serv-err]
             [cmr.system-trace.http :as http-trace]
-            [cmr.metadata-db.services.concept-services :as concept-services]
-            [cmr.metadata-db.services.provider-services :as provider-services]))
+            [cmr.metadata-db.services.concept-service :as concept-service]
+            [cmr.metadata-db.services.provider-service :as provider-service]))
 
 ;;; service proxies
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -26,12 +26,12 @@
   "Get a concept by concept-id and optional revision"
   ([context concept-id]
    {:status 200
-    :body (concept-services/get-concept context concept-id)
+    :body (concept-service/get-concept context concept-id)
     :headers json-header})
   ([context concept-id ^String revision]
    (try (let [revision-id (if revision (Integer. revision) nil)]
           {:status 200
-           :body (concept-services/get-concept context concept-id revision-id)
+           :body (concept-service/get-concept context concept-id revision-id)
            :headers json-header})
      (catch NumberFormatException e
        (serv-err/throw-service-error :invalid-data (.getMessage e))))))
@@ -39,7 +39,7 @@
 (defn- get-concepts
   "Get concepts using concept-id/revision-id tuples."
   [context concept-id-revisions]
-  (let [concepts (concept-services/get-concepts context concept-id-revisions)]
+  (let [concepts (concept-service/get-concepts context concept-id-revisions)]
     {:status 200
      :body concepts
      :headers json-header}))
@@ -50,7 +50,7 @@
   (let [concept (-> concept
                     clojure.walk/keywordize-keys
                     (update-in [:concept-type] keyword))
-        {:keys [concept-id revision-id]} (concept-services/save-concept context concept)]
+        {:keys [concept-id revision-id]} (concept-service/save-concept context concept)]
     {:status 201
      :body {:revision-id revision-id :concept-id concept-id}
      :headers json-header}))
@@ -59,7 +59,7 @@
   "Mark a concept as deleted (create a tombstone)."
   [context concept-id revision-id]
   (try (let [revision-id (if revision-id (Integer. revision-id) nil)]
-         (let [{:keys [revision-id]} (concept-services/delete-concept context concept-id revision-id)]
+         (let [{:keys [revision-id]} (concept-service/delete-concept context concept-id revision-id)]
            {:status 200
             :body {:revision-id revision-id}
             :headers json-header}))
@@ -70,7 +70,7 @@
   "Permanently remove a concept version from the database."
   [context concept-id revision-id]
   (try (let [revision-id (Integer. revision-id)]
-         (let [{:keys [revision-id]} (concept-services/force-delete context concept-id revision-id)]
+         (let [{:keys [revision-id]} (concept-service/force-delete context concept-id revision-id)]
            {:status 200
             :body {:revision-id revision-id}
             :headers json-header}))
@@ -80,7 +80,7 @@
 (defn- reset
   "Delete all concepts from the data store"
   [context]
-  (concept-services/reset context)
+  (concept-service/reset context)
   {:status 204
    :body nil
    :headers json-header})
@@ -88,7 +88,7 @@
 (defn- get-concept-id
   "Get the concept id for a given concept."
   [context concept-type provider-id native-id]
-  (let [concept-id (concept-services/get-concept-id context concept-type provider-id native-id)]
+  (let [concept-id (concept-service/get-concept-id context concept-type provider-id native-id)]
     {:status 200
      :body {:concept-id concept-id}
      :headers json-header}))
@@ -96,7 +96,7 @@
 (defn- save-provider
   "Save a provider."
   [context provider-id]
-  (let [saved-provider-id (provider-services/create-provider context provider-id)]
+  (let [saved-provider-id (provider-service/create-provider context provider-id)]
     {:status 201
      :body saved-provider-id
      :headers json-header}))
@@ -104,13 +104,13 @@
 (defn- delete-provider
   "Delete a provider and all its concepts."
   [context provider-id]
-  (provider-services/delete-provider context provider-id)
+  (provider-service/delete-provider context provider-id)
   {:status 200})
 
 (defn- get-providers
   "Get a list of provider ids"
   [context]
-  (let [providers (provider-services/get-providers context)]
+  (let [providers (provider-service/get-providers context)]
     {:status 200
      :body {:providers providers}
      :headers json-header}))

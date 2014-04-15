@@ -1,4 +1,4 @@
-(ns cmr.metadata-db.services.provider-services
+(ns cmr.metadata-db.services.provider-service
   (require [cmr.metadata-db.data.oracle.provider :as provider]
            [cmr.common.services.errors :as errors]
            [cmr.metadata-db.services.messages :as messages]

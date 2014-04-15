@@ -7,7 +7,7 @@
             [sqlingvo.core :as s :refer [select from where with order-by desc delete as]]
             [cmr.metadata-db.data.oracle.sql-utils :as su]
             [cmr.metadata-db.services.util :as util]
-            [cmr.metadata-db.services.provider-services :as provider-services]
+            [cmr.metadata-db.services.provider-service :as provider-service]
             [cmr.common.concepts :as cc])
   (:import cmr.metadata_db.data.oracle.core.OracleStore))
 
