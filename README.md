@@ -59,25 +59,52 @@ Impacts to Ingest
 ## Web API
 
 ### Sample Concept JSON
-	{
-		"concept-type": "collection"
-   	"native-id": "provider collection id"
-   	"concept-id": "C1-PROV1"
-   	"provider-id": "PROV1"
-   	"metadata": "xml here"
-   	"format": "echo10"
-   	"revision-id": 1 (optional field)
-	}
+
+#### Collection
+  	{
+      "concept-type": "collection",
+      "native-id": "provider collection id",
+      "concept-id": "C1-PROV1",
+      "provider-id": "PROV1",
+      "metadata": "xml here",
+      "format": "echo10",
+      "revision-id": 1, //(optional field)
+      "extra-fields": {
+        "short-name": "short",
+        "version-id": "V01",
+        "entry-title": "Dataset V01"
+      }
+    }
+
+#### Granule
+
+    {
+      "concept-type": "granule",
+      "native-id": "provider granule id",
+      "concept-id": "G1-PROV1",
+      "provider-id": "PROV1",
+      "metadata": "xml here",
+      "format": "echo10",
+      "revision-id": 1, //(optional field)
+      "extra-fields": {
+        "parent-collection-id": "C5-PROV1"
+      }
+    }
 
 ### Sample Tombstone (deleted concept) JSON
-	{
-		"concept-type": "collection"
-		"native-id": "provider collection id"
-   	"concept-id": "C1-PROV1"
-   	"provider-id": "PROV1"
-   	"deleted": true
-   	"revision-id": 10
-   }
+  	{
+  		"concept-type": "collection"
+  		"native-id": "provider collection id"
+     	"concept-id": "C1-PROV1"
+     	"provider-id": "PROV1"
+     	"deleted": true
+     	"revision-id": 10
+      "extra-fields": {
+        "short-name": "short",
+        "version-id": "V01",
+        "entry-title": "Dataset V01"
+      }
+     }
 
 General Workflow
 
@@ -105,8 +132,11 @@ Insert Flow
   - If we get a conflict from a uniqueness constraint restart from beginning of this flow
 
 
-### GET /concept-id
-params: [concept-type provider-id native-id]
+## Old API
+
+
+### GET /concept-id/:concept-type/:provider-id/:native-id
+TODO consider changing this to use query params instead of URL vars
 returns: new or existing concept-id
 
 __Example Curl:__
@@ -134,12 +164,23 @@ returns: concept with the given concept-id and revision-id
 __Example Curl:__
 curl -v http://localhost:3001/concepts/C1-PROV1/2
 
-### POST /concepts/search
-params: [{"concept-revisions": [concept-id/revision-id tuple] ...]}]
+### POST /concepts/search/concept-revisions
+params: [[concept-id/revision-id tuple] ...]
 returns: list of concepts matching the touples provided in the body of the POST
 
 __Example Curl:__
-curl -v -XPOST -H "Content-Type: application/json" -d '{"concept-revisions": [["C1-PROV1", 1], ["C2-PROV1", 1]]}' http://localhost:3001/concepts/search
+curl -v -XPOST -H "Content-Type: application/json" -d '[["C1-PROV1", 1], ["C2-PROV1", 1]]' http://localhost:3001/concepts/search/concept-revisions
+
+### GET /concepts/search/:concept-types?param1=value&...
+
+Supported combinations of concept type and parameters:
+  * colllections, provider-id, short-name, version-id
+  * colllections, provider-id, entry-title
+
+__Example Curl:__
+curl "http://localhost:3001/concepts/search/collections?provider-id=PROV1&short-name=s&version-id=1"
+curl "http://localhost:3001/concepts/search/collections?provider-id=PROV1&entry-title=et"
+
 
 ### DELETE /concepts/#concept-id/#revision-id
 params: none

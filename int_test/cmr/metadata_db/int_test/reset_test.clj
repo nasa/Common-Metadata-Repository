@@ -8,13 +8,13 @@
 ;;; fixtures
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(use-fixtures :each util/reset-database-fixture)
+(use-fixtures :each (util/reset-database-fixture))
 
 ;;; tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (deftest reset
   "Reset the database to an empty state"
-  (let [concept (util/concept)
+  (let [concept (util/collection-concept "PROV1" 1)
         _ (util/save-concept concept)
         _ (util/reset-database)
         stored-concept (util/get-concept-by-id-and-revision (:concept-id concept) 0)

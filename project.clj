@@ -11,9 +11,11 @@
                  [org.clojure/tools.reader "0.8.3"]
                  [org.clojure/tools.cli "0.3.1"]
                  [org.clojure/java.jdbc "0.3.3"]
+                 [sqlingvo "0.5.16"]
                  [drift "1.5.2"]
                  [com.oracle/ojdbc6 "11.2.0.3"]
-                 [com.mchange/c3p0 "0.9.2.1"]]
+                 [com.mchange/c3p0 "0.9.2.1"]
+                 [inflections "0.9.6"]]
   ;; Need the maven repo for Oracle jars that aren't available in public maven repos.
   :repositories [["releases" "http://devrepo1.dev.echo.nasa.gov/data/dist/projects/echo/mavenrepo/"]]
   :plugins [[lein-test-out "0.3.1"]
