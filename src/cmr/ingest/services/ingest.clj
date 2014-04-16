@@ -34,15 +34,11 @@
 (defmethod add-extra-fields :granule
   [context concept]
   (let [granule (g/parse-granule (:metadata concept))
-        {{:keys [entry-title short-name version-id]} :collection-ref
-         :keys [granule-ur]} granule
-        params {:provider-id (:provider-id concept)
-                :entry-title entry-title
-                :short-name short-name
-                :version-id version-id}
-        search-params (into {} (remove (comp empty? second) params))
-        parent-collection-id (mdb/get-collection-concept-id context search-params)]
-    (assoc concept :extra-fields {:parent-collection-id parent-collection-id})))
+        {:keys [collection-ref granule-ur]} granule
+        params (merge {:provider-id (:provider-id concept)} collection-ref)
+        params (into {} (remove (comp empty? second) params))
+        parent-collection-id (mdb/get-collection-concept-id context params)]
+    (assoc-in concept [:extra-fields :parent-collection-id] parent-collection-id)))
 
 (deftracefn save-concept
   "Store a concept in mdb and indexer and return concept-id and revision-id."

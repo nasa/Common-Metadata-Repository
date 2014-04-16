@@ -33,25 +33,22 @@
   "Search metadata db and return the collection-concept-id that matches the search params"
   [context search-params]
   (let [mdb-url (context->metadata-db-url context)
-        ;; TODO: Here we are working around the fact that the collection search API
-        ;; is not ready in metadata db. Switch to that API when it is ready.
-        ;; This hack is wrong and only works for system-int-test.
-        ; request-url (str mdb-url "/search/collection?" (codec/form-encode search-params))
-        request-url (format "%s/concept-id/collection/%s/%s"
-                            mdb-url
-                            (:provider-id search-params)
-                            (:entry-title search-params))
+        request-url (str mdb-url "/concepts/search/collections")
         response (client/get request-url {:accept :json
+                                          :query-params search-params
                                           :headers (ch/context->http-headers context)
                                           :throw-exceptions false})
         status (:status response)
         body (cheshire/decode (:body response))]
-    (cond (= 404 status) (let [err-msg (str "Unable to find collection-concept-id for search params: " search-params)]
-                           (errors/throw-service-error :not-found err-msg))
-          :else (when-not (= 200 status) (let [errors-str (cheshire/generate-string (flatten (get body "errors")))
-                                               err-msg (str "Collection concept id fetch failed. MetadataDb app response status code: "  status)]
-                                           (errors/internal-error! (str err-msg  " " errors-str)))))
-    (get body "concept-id")))
+    (cond (= 404 status)
+          (let [err-msg (str "Unable to find collection-concept-id for search params: " search-params)]
+            (errors/throw-service-error :not-found err-msg))
+          :else
+          (when-not (= 200 status)
+            (let [errors-str (cheshire/generate-string (flatten (get body "errors")))
+                  err-msg (str "Collection concept id fetch failed. MetadataDb app response status code: "  status)]
+              (errors/internal-error! (str err-msg  " " errors-str)))))
+    (get (first body) "concept-id")))
 
 (deftracefn save-concept
   "Saves a concept in metadata db and index."
