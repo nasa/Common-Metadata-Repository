@@ -48,6 +48,12 @@
                                  table-name
                                  table-name
                                  table-name
+                                 table-name))
+     (j/db-do-commands db (format "CREATE INDEX %s_snv_i ON %s(short_name, version_id) TABLESPACE users"
+                                 table-name
+                                 table-name))
+     (j/db-do-commands db (format "CREATE INDEX %s_et_i ON %s(entry_title) TABLESPACE users"
+                                 table-name
                                  table-name))))
 
 (defmethod create-concept-table :granule [{:keys [db provider-id]}]

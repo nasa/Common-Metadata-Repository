@@ -12,6 +12,10 @@
             [cmr.metadata-db.test.util :as tu])
   (import clojure.lang.ExceptionInfo))
 
+; (deftest provider-id-validation-test
+;   (testing "valid provider-id"
+;     (let [prov
+
 (deftest validate-provider-id-test
   (testing "valid provider-id"
     (let [provider-id "PROV_1"]

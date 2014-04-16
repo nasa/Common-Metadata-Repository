@@ -13,11 +13,11 @@
 ;;; tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (deftest reset
-  "Reset the database to an empty state"
-  (let [concept (util/collection-concept "PROV1" 1)
-        _ (util/save-concept concept)
-        _ (util/reset-database)
-        stored-concept (util/get-concept-by-id-and-revision (:concept-id concept) 0)
-        status (:status stored-concept)]
-    ;; make sure the previously stored concept is not found
-    (is (= status 404))))
+  (testing "Reset the database to an empty state"
+    (let [concept (util/collection-concept "PROV1" 1)
+          _ (util/save-concept concept)
+          _ (util/reset-database)
+          stored-concept (util/get-concept-by-id-and-revision (:concept-id concept) 0)
+          status (:status stored-concept)]
+      ;; make sure the previously stored concept is not found
+      (is (= status 404)))))

@@ -13,26 +13,26 @@
 ;;; tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (deftest save-provider-test
-  "Save a provider that has never been saved before."
-  (let [provider-id util/sample-provider-id
-        {:keys [status provider-id]} (util/save-provider provider-id)]
-    (is (= status 201))
-    (is (util/verify-provider-was-saved provider-id))))
+  (testing "Save a provider that has never been saved before."
+    (let [provider-id util/sample-provider-id
+          {:keys [status provider-id]} (util/save-provider provider-id)]
+      (is (= status 201))
+      (is (util/verify-provider-was-saved provider-id)))))
 
 (deftest save-provider-twice-test
-  "Fail to save a provider that has been saved before."
-  (let [provider-id util/sample-provider-id
-        _ (util/save-provider provider-id)
-        {:keys [status provider-id]} (util/save-provider provider-id)]
-    (is (= status 409))))
+  (testing "Fail to save a provider that has been saved before."
+    (let [provider-id util/sample-provider-id
+          _ (util/save-provider provider-id)
+          {:keys [status provider-id]} (util/save-provider provider-id)]
+      (is (= status 409)))))
 
 (deftest get-providers-test
-  "Get the list of providers."
-  (util/save-provider "PROV1")
-  (util/save-provider "PROV2")
-  (let [{:keys [status providers]} (util/get-providers)]
-    (is (= status 200))
-    (is (= (sort providers) ["PROV1" "PROV2"]))))
+  (testing "Get the list of providers."
+    (util/save-provider "PROV1")
+    (util/save-provider "PROV2")
+    (let [{:keys [status providers]} (util/get-providers)]
+      (is (= status 200))
+      (is (= (sort providers) ["PROV1" "PROV2"])))))
 
 (deftest delete-provider-test
   (testing "Delete provider removes provider"

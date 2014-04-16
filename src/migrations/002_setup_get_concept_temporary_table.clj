@@ -3,7 +3,7 @@
             [config.migrate-config :as config]))
 
 (defn up
-  "Migrates the database up to version 2s."
+  "Migrates the database up to version 2."
   []
   (println "migrations.002-setup-get-concept-temporary-table up...")
   (j/db-do-commands config/db "CREATE GLOBAL TEMPORARY TABLE METADATA_DB.get_concepts_work_area
