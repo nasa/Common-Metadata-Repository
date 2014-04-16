@@ -32,6 +32,8 @@
 (defn setup
   "set up the fixtures for test"
   []
+  (doseq [provider-id (keys provider-collections)]
+    (ingest/create-provider provider-id))
   (doseq [[provider-id collections] provider-collections
           collection collections]
     (ingest/update-collection provider-id collection))
@@ -43,6 +45,8 @@
   (doseq [[provider-id collections] provider-collections
           collection collections]
     (ingest/delete-collection provider-id (:entry-title collection)))
+  (doseq [provider-id (keys provider-collections)]
+    (ingest/delete-provider provider-id))
   (index/flush-elastic-index))
 
 (defn wrap-setup

@@ -5,18 +5,43 @@
             [clojure.string :as str]
             [cheshire.core :as cheshire]
             [cmr.system-int-test.collection-helper :as ch]
+            [cmr.system-int-test.granule-helper :as gh]
             [cmr.umm.echo10.collection :as c]
+            [cmr.umm.echo10.granule :as g]
             [cmr.system-int-test.url-helper :as url]))
+
+(defn create-provider
+  "Create the provider with the given provider id"
+  [provider-id]
+  (let [response (client/post url/create-provider-url
+                              {:body (format "{\"provider-id\": \"%s\"}" provider-id)
+                               :content-type :json
+                               :accept :json
+                               :throw-exceptions false})]
+    (is (some #{201 200} [(:status response)]))))
+
+(defn delete-provider
+  "Delete the provider with the matching provider-id from the CMR metadata repo."
+  [provider-id]
+  (let [response (client/delete (url/delete-provider-url provider-id)
+                                {:throw-exceptions false})
+        status (:status response)]
+    (is (some #{200 404} [status]))))
 
 (def default-collection {:short-name "MINIMAL"
                          :version-id "1"
                          :long-name "A minimal valid collection"
                          :entry-title "MinimalCollectionV1"})
 
-(defn metadata-xml
+(defn collection-xml
   "Returns metadata xml of the collection"
   [field-values]
   (c/generate-collection (ch/collection field-values)))
+
+(defn granule-xml
+  "Returns metadata xml of the granule"
+  [field-values]
+  (g/generate-granule (gh/granule field-values)))
 
 (defn update-collection
   "Update collection (given or the default one) through CMR metadata API.
@@ -25,10 +50,23 @@
    (update-collection provider-id {}))
   ([provider-id collection]
    (let [full-collection (merge default-collection collection)
-         collection-xml (metadata-xml full-collection)
+         collection-xml (collection-xml full-collection)
          response (client/put (url/collection-ingest-url provider-id (:entry-title full-collection))
                               {:content-type :echo10+xml
                                :body collection-xml
+                               :throw-exceptions false})]
+     (is (some #{201 200} [(:status response)])))))
+
+(defn update-granule
+  "Update granule (given or the default one) through CMR metadata API.
+  TODO Returns cmr-granule id eventually"
+  ([provider-id]
+   (update-granule provider-id {}))
+  ([provider-id granule]
+   (let [granule-xml (granule-xml granule)
+         response (client/put (url/granule-ingest-url provider-id (:granule-ur granule))
+                              {:content-type :echo10+xml
+                               :body granule-xml
                                :throw-exceptions false})]
      (is (some #{201 200} [(:status response)])))))
 
@@ -39,6 +77,17 @@
   the dataset id in the collection in general even though catalog rest will enforce this."
   [provider-id native-id]
   (let [response (client/delete (url/collection-ingest-url provider-id native-id)
+                                {:throw-exceptions false})
+        status (:status response)]
+    (is (some #{200 404} [status]))))
+
+(defn delete-granule
+  "Delete the granule with the matching native-id from the CMR metadata repo.
+  native-id is equivalent to dataset id.
+  I call it native-id because the id in the URL used by the provider-id does not have to be
+  the dataset id in the granule in general even though catalog rest will enforce this."
+  [provider-id native-id]
+  (let [response (client/delete (url/granule-ingest-url provider-id native-id)
                                 {:throw-exceptions false})
         status (:status response)]
     (is (some #{200 404} [status]))))
@@ -107,25 +156,28 @@
 (def memory-db? false)
 
 (defn distinct-concept
-  "Generate a concept"
+  "Generate a concept and create the reqired provider in metadata db"
   [unique-id]
-  (let [concept (hash-map :concept-type :collection
-                          :provider-id (str "PROV" unique-id)
+  (let [provider-id (str "PROV" unique-id)
+        _ (create-provider provider-id)
+        concept (hash-map :concept-type :collection
+                          :provider-id provider-id
                           :native-id (str "nativeId" unique-id)
-                          :metadata (metadata-xml base-concept-attribs)
+                          :metadata (collection-xml base-concept-attribs)
                           :content-type "application/echo10+xml")]
     (if memory-db?
       (assoc concept :concept-id (get-concept-id concept))
       concept)))
 
 (defn distinct-concept-w-concept-id
-  "Simulates a concept with provider supplied concept-id"
+  "Simulates a concept with provider supplied concept-id and create the provider in metadata db"
   [unique-id]
   (let [provider-id (str "PROV" unique-id)
+        _ (create-provider provider-id)
         concept (hash-map :concept-type :collection
                           :provider-id provider-id
                           :native-id (str "nativeId" unique-id)
-                          :metadata (metadata-xml base-concept-attribs)
+                          :metadata (collection-xml base-concept-attribs)
                           :content-type "application/echo10+xml")
         concept-id (format "C%s-%s" unique-id provider-id)]
     (assoc concept :concept-id concept-id)))
@@ -134,7 +186,7 @@
 (defn concept-exists-in-mdb?
   "Check concept in mdb with the given concept and revision-id"
   [concept-id revision-id]
-  (let [response (client/get  (url/mdb-concept-url concept-id revision-id)
+  (let [response (client/get (url/mdb-concept-url concept-id revision-id)
                              {:accept :json
                               :throw-exceptions false})
         status (:status response)]
@@ -144,8 +196,8 @@
   "Make a request to reset the database by clearing out all stored concepts."
   []
   (let [response (client/post (url/mdb-reset-url)
-                                {:accept :json
-                                 :throw-exceptions false})
+                              {:accept :json
+                               :throw-exceptions false})
         status (:status response)]
     status))
 

@@ -4,6 +4,12 @@
 
 (def elastic_root "http://localhost:9210")
 
+(def create-provider-url "http://localhost:3001/providers")
+
+(defn delete-provider-url
+  [provider-id]
+  (format "http://localhost:3001/providers/%s" provider-id))
+
 (defn collection-ingest-url
   [provider-id native-id]
   (format "http://localhost:3002/providers/%s/collections/%s"
@@ -13,6 +19,16 @@
 (defn collection-search-url
   [params]
   (str "http://localhost:3003/collections?" (codec/form-encode params)))
+
+(defn granule-ingest-url
+  [provider-id native-id]
+  (format "http://localhost:3002/providers/%s/granules/%s"
+          provider-id
+          native-id))
+
+(defn granule-search-url
+  [params]
+  (str "http://localhost:3003/granules?" (codec/form-encode params)))
 
 (defn elastic-flush-url
   []
