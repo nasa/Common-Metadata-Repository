@@ -64,3 +64,43 @@
   (let [es-config (-> context :system :db :config)]
     (es/reset-es-store context es-config)))
 
+(comment
+  (let [concept-id "G1234-PROV1"
+        revision-id "2"
+        ignore-conflict true
+        concept {:concept-id concept-id
+                 :provider-id "PROV1"
+                 :granule-ur "DummyGranuleUR"
+                 :extra-fields {:parent-collection-id "C1234-PROV1"}}
+        concept-type (concept-id->type concept-id)
+        umm-concept nil
+        es-doc (concept->elastic-doc concept umm-concept)]
+    (es/save-document-in-elastic
+      {} (es-index concept-type) (es-mapping-type concept-type) es-doc (Integer. revision-id) ignore-conflict))
+
+  (def valid-collection-xml
+  "<Collection>
+    <ShortName>MINIMAL</ShortName>
+    <VersionId>1</VersionId>
+    <InsertTime>1999-12-31T19:00:00-05:00</InsertTime>
+    <LastUpdate>1999-12-31T19:00:00-05:00</LastUpdate>
+    <LongName>A minimal valid collection</LongName>
+    <DataSetId>A minimal valid collection V 1</DataSetId>
+    <Description>A minimal valid collection</Description>
+    <Orderable>true</Orderable>
+    <Visible>true</Visible>
+  </Collection>")
+
+(let [concept-id "C1234-PROV1"
+        revision-id "1"
+        ignore-conflict true
+        concept {:concept-id concept-id
+                 :provider-id "PROV1"
+                 :metadata valid-collection-xml}
+        concept-type (concept-id->type concept-id)
+        umm-concept (parse-concept concept)
+        es-doc (concept->elastic-doc concept umm-concept)]
+    (es/save-document-in-elastic
+      {} (es-index concept-type) (es-mapping-type concept-type) es-doc (Integer. revision-id) ignore-conflict))
+
+  )

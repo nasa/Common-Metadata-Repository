@@ -10,11 +10,11 @@
 
 (defmethod idx/concept->elastic-doc :granule
   [concept umm-concept]
-  ;; Currently every field we need can be extracted from concept
-  ;; In the future, we will have to use fields in the umm-concept
-  (let [{:keys [concept-id collection-concept-id provider-id granule-ur]} concept]
+  (let [{:keys [concept-id extra-fields provider-id]} concept
+        {:keys [parent-collection-id]} extra-fields
+        {:keys [granule-ur]} umm-concept]
     {:concept-id concept-id
-     :collection-concept-id collection-concept-id
+     :collection-concept-id parent-collection-id
      :provider-id provider-id
      :provider-id.lowercase (s/lower-case provider-id)
      :granule-ur granule-ur
