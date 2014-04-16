@@ -50,7 +50,12 @@
 (defn server-setup
   "Fixture that starts an instance of elastic in the JVM runs the tests and then shuts it down."
   [f]
-  (let [http-port (:port test-config)
+
+  ;; When this test runs as part of dev-systems all tests it changes the global endpoint and breaks
+  ;; other tests that run after it. We keep track of the internal endpoint of the elastisch endpoint
+  ;; and set it back after the tests have completed.
+  (let [current-endpoint esr/*endpoint*
+        http-port (:port test-config)
         server (lifecycle/start (elastic-server/create-server http-port 9215) nil)]
     (esr/connect! (str "http://localhost:" http-port))
 
@@ -60,7 +65,8 @@
     (try
       (f)
       (finally
-        (lifecycle/stop server nil)))))
+        (lifecycle/stop server nil)
+        (alter-var-root (var esr/*endpoint*) (constantly current-endpoint))))))
 ;; Run once for the whole test suite
 (use-fixtures :once server-setup)
 
@@ -75,7 +81,6 @@
       (esi/delete "tests"))))
 ;; Run once for each test to clear out data.
 (use-fixtures :each index-setup)
-
 
 
 (deftest save-with-increment-versions-test
