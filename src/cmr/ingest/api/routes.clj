@@ -39,6 +39,21 @@
           (let [concept-attribs {:provider-id provider-id
                                  :native-id native-id
                                  :concept-type :collection}]
+            (r/response (ingest/delete-concept request-context concept-attribs)))))
+      (context "/granules/:native-id" [native-id]
+        (PUT "/" {:keys [body content-type headers request-context]}
+          (let [metadata (string/trim (slurp body))
+                base-concept {:metadata metadata
+                              :format content-type
+                              :provider-id provider-id
+                              :native-id native-id
+                              :concept-type :granule}
+                concept (set-concept-id base-concept headers)]
+            (r/response (ingest/save-concept request-context concept))))
+        (DELETE "/" {:keys [request-context]}
+          (let [concept-attribs {:provider-id provider-id
+                                 :native-id native-id
+                                 :concept-type :granule}]
             (r/response (ingest/delete-concept request-context concept-attribs))))))
     (route/not-found "Not Found")))
 
