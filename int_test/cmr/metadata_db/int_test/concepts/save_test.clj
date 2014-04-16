@@ -53,9 +53,9 @@
 
 (deftest save-concept-with-missing-required-parameter
   (let [concept (util/collection-concept "PROV1" 1)]
-    (are [field] (let [{:keys [status error-messages]} (util/save-concept (dissoc concept field))]
+    (are [field] (let [{:keys [status errors]} (util/save-concept (dissoc concept field))]
                    (and (= 422 status)
-                        (re-find (re-pattern (name field)) (first error-messages))))
+                        (re-find (re-pattern (name field)) (first errors))))
          :concept-type
          :provider-id
          :native-id
@@ -85,5 +85,5 @@
                                  :throw-exceptions false})
           status (:status response)
           body (cheshire/parse-string (:body response))
-          error-messages (get body "errors")]
+          errors (get body "errors")]
       (is (= status 400))))

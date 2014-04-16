@@ -171,15 +171,29 @@
           concept-id-revision-id-tuples))
 
 (deftracefn get-concepts
-  "Get multiple concepts by concept-id and revision-id."
+  "Get multiple concepts by concept-id and revision-id. Returns concepts in order requested"
   [context concept-id-revision-id-tuples]
   (let [db (util/context->db context)
+        ;; Split the tuples so they can be requested separately for each provider and concept type
         split-tuples-map (split-concept-id-revision-id-tuples concept-id-revision-id-tuples)]
     (validate-providers-exist db (keys split-tuples-map))
-    (apply concat
-           (for [[provider-id concept-type-tuples-map] split-tuples-map
-                 [concept-type tuples] concept-type-tuples-map]
-             (c/get-concepts db concept-type provider-id tuples)))))
+    (let [concepts (apply concat
+                          (for [[provider-id concept-type-tuples-map] split-tuples-map
+                                [concept-type tuples] concept-type-tuples-map]
+                            ;; Retrieve the concepts for this type and provider id.
+                            (c/get-concepts db concept-type provider-id tuples)))
+          ;; Create a map of tuples to concepts
+          concepts-by-tuple (into {} (for [c concepts] [[(:concept-id c) (:revision-id c)] c]))]
+      (if (= (count concepts) (count concept-id-revision-id-tuples))
+        ;; Return the concepts in the order they were requested
+        (map concepts-by-tuple concept-id-revision-id-tuples)
+        ;; some concepts weren't found
+        (let [missing-concept-tuples (set/difference (set concept-id-revision-id-tuples)
+                                                     (set (keys concepts-by-tuple)))]
+          (errors/throw-service-errors
+            :not-found
+            (map (partial apply msg/concept-with-concept-id-and-rev-id-does-not-exist)
+                 missing-concept-tuples)))))))
 
 (deftracefn save-concept
   "Store a concept record and return the revision."

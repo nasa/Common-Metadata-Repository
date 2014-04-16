@@ -61,14 +61,22 @@
       walk/keywordize-keys
       (update-in [:concept-type] keyword)))
 
+(defn- parse-errors
+  "Parses an error response from a JSON response"
+  [response]
+  (->> response
+       :body
+       cheshire/parse-string
+       walk/keywordize-keys))
+
 (defn- parse-concepts
   "Parses multiple concept from a JSON response"
   [response]
   (->> response
-      :body
-      cheshire/parse-string
-      (map walk/keywordize-keys)
-      (map #(update-in % [:concept-type] keyword))))
+       :body
+       cheshire/parse-string
+       (map walk/keywordize-keys)
+       (map #(update-in % [:concept-type] (fn [v] (when v (keyword v)))))))
 
 
 (defn get-concept-id
@@ -80,7 +88,7 @@
         status (:status response)
         body (cheshire/parse-string (:body response))
         {:strs [concept-id errors]} body]
-    {:status status :concept-id concept-id :error-messages errors}))
+    {:status status :concept-id concept-id :errors errors}))
 
 (defn get-concept-by-id-and-revision
   "Make a GET to retrieve a concept by concept-id and revision."
@@ -91,7 +99,7 @@
         status (:status response)]
     (if (= status 200)
       {:status status :concept (parse-concept response)}
-      {:status status :concept nil})))
+      {:status status})))
 
 (defn get-concept-by-id
   "Make a GET to retrieve a concept by concept-id."
@@ -102,7 +110,7 @@
         status (:status response)]
     (if (= status 200)
       {:status status :concept (parse-concept response)}
-      {:status status :concept nil})))
+      {:status status})))
 
 (defn get-concepts
   "Make a POST to retrieve concepts by concept-id and revision."
@@ -112,21 +120,12 @@
                                :body-encoding "UTF-8"
                                :content-type :json
                                :accept :json
-                               :throw-exceptions false})]
-    {:status (:status response)
-     :concepts (parse-concepts response)}))
-
-(defn concepts-and-concept-id-revisions-equal?
-  "Compare a vector of concepts returned by the API to a set of concept-id/revision-ids."
-  [concepts concept-id-revision-ids]
-  (and (= (count concepts) (count concept-id-revision-ids))
-       (every? true?
-               (map (fn [[con-id rev-id]]
-                      (some (fn [{:keys [concept-id revision-id]}]
-                              (and (= concept-id con-id)
-                                   (= revision-id rev-id)))
-                            concepts))
-                    concept-id-revision-ids))))
+                               :throw-exceptions false})
+        status (:status response)]
+    (if (= status 200)
+      {:status status
+       :concepts (parse-concepts response)}
+      (assoc (parse-errors response) :status status))))
 
 (defn save-concept
   "Make a POST request to save a concept with JSON encoding of the concept.  Returns a map with
@@ -141,7 +140,7 @@
         status (:status response)
         body (cheshire/parse-string (:body response))
         {:strs [revision-id concept-id errors]} body]
-    {:status status :revision-id revision-id :concept-id concept-id :error-messages errors}))
+    {:status status :revision-id revision-id :concept-id concept-id :errors errors}))
 
 (defn delete-concept
   "Make a DELETE request to mark a concept as deleted. Returns the status and revision id of the
@@ -156,7 +155,7 @@
         status (:status response)
         body (cheshire/parse-string (:body response))
         {:strs [revision-id errors]} body]
-    {:status status :revision-id revision-id :error-messages errors}))
+    {:status status :revision-id revision-id :errors errors}))
 
 (defn force-delete-concept
   "Make a DELETE request to permanently remove a revison of a concept."
@@ -167,7 +166,7 @@
         status (:status response)
         body (cheshire/parse-string (:body response))
         {:strs [revision-id errors]} body]
-    {:status status :revision-id revision-id :error-messages errors}))
+    {:status status :revision-id revision-id :errors errors}))
 
 (defn verify-concept-was-saved
   "Check to make sure a concept is stored in the database."
@@ -178,17 +177,23 @@
 
 (defn create-and-save-collection
   "Creates, saves, and returns a concept with its data from metadata-db"
-  [provider-id uniq-num]
-  (let [concept (collection-concept provider-id uniq-num)
-        {:keys [concept-id revision-id]} (save-concept concept)]
-    (assoc concept :concept-id concept-id :revision-id revision-id)))
+  ([provider-id uniq-num]
+   (create-and-save-collection provider-id uniq-num 1))
+  ([provider-id uniq-num num-revisions]
+   (let [concept (collection-concept provider-id uniq-num)
+         _ (dotimes [n (dec num-revisions)] (save-concept concept))
+         {:keys [concept-id revision-id]} (save-concept concept)]
+     (assoc concept :concept-id concept-id :revision-id revision-id))))
 
 (defn create-and-save-granule
   "Creates, saves, and returns a concept with its data from metadata-db"
-  [provider-id parent-collection-id uniq-num]
-  (let [concept (granule-concept provider-id parent-collection-id uniq-num)
-        {:keys [concept-id revision-id]} (save-concept concept)]
-    (assoc concept :concept-id concept-id :revision-id revision-id)))
+  ([provider-id parent-collection-id uniq-num]
+   (create-and-save-granule provider-id parent-collection-id uniq-num 1))
+  ([provider-id parent-collection-id uniq-num num-revisions]
+   (let [concept (granule-concept provider-id parent-collection-id uniq-num)
+         _ (dotimes [n (dec num-revisions)] (save-concept concept))
+         {:keys [concept-id revision-id]} (save-concept concept)]
+     (assoc concept :concept-id concept-id :revision-id revision-id))))
 
 ;;; providers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -205,9 +210,9 @@
                                :throw-exceptions false})
         status (:status response)
         body (cheshire/parse-string (:body response))
-        error-messages (get body "errors")
+        errors (get body "errors")
         provider-id (get body "provider-id")]
-    {:status status :error-messages error-messages :provider-id provider-id}))
+    {:status status :errors errors :provider-id provider-id}))
 
 (defn get-providers
   "Make a GET request to retrieve the list of providers."
@@ -217,9 +222,9 @@
                               :throw-exceptions false})
         status (:status response)
         body (cheshire/parse-string (:body response))
-        error-messages (get body "errors")
+        errors (get body "errors")
         providers (get body "providers")]
-    {:status status :error-messages error-messages :providers providers}))
+    {:status status :errors errors :providers providers}))
 
 (defn delete-provider
   "Make a DELETE request to remove a provider."
@@ -229,8 +234,8 @@
                                  :throw-exceptions false})
         status (:status response)
         body (cheshire/parse-string (:body response))
-        error-messages (get body "errors")]
-    {:status status :error-messages error-messages}))
+        errors (get body "errors")]
+    {:status status :errors errors}))
 
 
 (defn verify-provider-was-saved

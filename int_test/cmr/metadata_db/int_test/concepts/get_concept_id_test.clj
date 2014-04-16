@@ -20,7 +20,7 @@
     (testing "collection"
       (is (= {:status 200
               :concept-id (:concept-id coll)
-              :error-messages nil}
+              :errors nil}
              (util/get-concept-id "collection" "PROV1" (:native-id coll)))))
     (testing "multiple retrievals"
       (is (= (util/get-concept-id "collection" "PROV1" (:native-id coll))
@@ -29,7 +29,7 @@
       (let [gran (util/create-and-save-granule "PROV1" (:concept-id coll) 1)]
         (is (= {:status 200
                 :concept-id (:concept-id gran)
-                :error-messages nil}
+                :errors nil}
                (util/get-concept-id "granule" "PROV1" (:native-id gran))))))))
 
 (deftest fail-to-get-concept-id-for-non-existing-concept
@@ -39,7 +39,7 @@
       (are [concept-type provider-id native-id]
            (= {:status 404
                :concept-id nil
-               :error-messages [(messages/missing-concept-id concept-type provider-id native-id)]}
+               :errors [(messages/missing-concept-id concept-type provider-id native-id)]}
               (util/get-concept-id concept-type provider-id native-id))
            "collection" "PROV1" "foo"
            "granule" "PROV1" "foo"))
@@ -47,7 +47,7 @@
       (are [concept-type provider-id native-id]
            (= {:status 400
                :concept-id nil
-               :error-messages ["[foo] is not a valid concept type."]}
+               :errors ["[foo] is not a valid concept type."]}
               (util/get-concept-id concept-type provider-id native-id))
            "foo" "PROV1" (:native-id coll)
            "foo" "PROV1" (:native-id gran)))
@@ -55,7 +55,7 @@
       (are [concept-type provider-id native-id]
            (= {:status 404
                :concept-id nil
-               :error-messages ["Providers with provider-ids [PROV2] do not exist."]}
+               :errors ["Providers with provider-ids [PROV2] do not exist."]}
               (util/get-concept-id concept-type provider-id native-id))
            "collection" "PROV2" (:native-id coll)
            "granule" "PROV2" (:native-id gran)))))
