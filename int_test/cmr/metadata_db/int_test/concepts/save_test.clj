@@ -69,6 +69,16 @@
       (is (= status 201))
       (is (= revision-id 2)))))
 
+(deftest save-granule-with-concept-id
+  (let [collection (util/collection-concept "PROV1" 1)
+        parent-collection-id (:concept-id (util/save-concept collection))
+        granule (util/granule-concept "PROV1" parent-collection-id 1 "G10-PROV1")
+        {:keys [status revision-id concept-id]} (util/save-concept granule)]
+    (is (= status 201))
+    (is (= revision-id 0))
+    (util/verify-concept-was-saved (assoc granule :revision-id revision-id :concept-id concept-id))))
+
+
 
 ;;; TODO - add test for saving concept with concept-type, provider-id, and native-id
 ;;; of existing concept but with different concept-id to be sure it fails.

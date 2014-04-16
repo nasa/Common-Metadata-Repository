@@ -43,15 +43,18 @@
                   :entry-title (str "dataset" uniq-num)}})
 
 (defn granule-concept
-  "Creates a collection concept"
-  [provider-id parent-collection-id uniq-num]
-  {:concept-type :granule
-   :native-id (str "native-id " uniq-num)
-   :provider-id provider-id
-   :metadata (str "xml here " uniq-num)
-   :format "echo10"
-   :deleted false
-   :extra-fields {:parent-collection-id parent-collection-id}})
+  "Creates a granule concept"
+  [provider-id parent-collection-id uniq-num & concept-id]
+  (let [granule {:concept-type :granule
+                 :native-id (str "native-id " uniq-num)
+                 :provider-id provider-id
+                 :metadata (str "xml here " uniq-num)
+                 :format "echo10"
+                 :deleted false
+                 :extra-fields {:parent-collection-id parent-collection-id}}]
+    (if concept-id
+      (assoc granule :concept-id (first concept-id))
+      granule)))
 
 (defn- parse-concept
   "Parses a concept from a JSON response"
@@ -131,9 +134,9 @@
   "Make a get to retrieve concepts by parameters for a specific concept type"
   [concept-type params]
   (let [response (client/get (str concepts-url "search/" (inf/plural (name concept-type)))
-                              {:query-params params
-                               :accept :json
-                               :throw-exceptions false})
+                             {:query-params params
+                              :accept :json
+                              :throw-exceptions false})
         status (:status response)]
     (if (= status 200)
       {:status status
