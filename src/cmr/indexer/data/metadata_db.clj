@@ -7,19 +7,6 @@
             [cmr.system-trace.http :as ch]
             [cmr.system-trace.core :refer [deftracefn]]))
 
-(def dummy-metadata
-  "<Collection>
-  <ShortName>DummyShortName</ShortName>
-  <VersionId>DummyVersion</VersionId>
-  <InsertTime>1999-12-31T19:00:00-05:00</InsertTime>
-  <LastUpdate>1999-12-31T19:00:00-05:00</LastUpdate>
-  <LongName>DummyLongName</LongName>
-  <DataSetId>DummyDatasetId</DataSetId>
-  <Description>A minimal valid collection</Description>
-  <Orderable>true</Orderable>
-  <Visible>true</Visible>
-  </Collection>")
-
 (defn endpoint
   "Returns the host and port of metadata db"
   []
