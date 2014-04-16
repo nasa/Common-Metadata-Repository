@@ -22,7 +22,6 @@
 ;;; tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
 ;; Verify non numeric index-set id results in 422
 (deftest invalid-index-set-id-test
   (testing "invalid index-set id"

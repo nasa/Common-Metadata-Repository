@@ -43,9 +43,8 @@
   [index-name idx-mapping-type index-set-id]
   (when (esi/exists? index-name)
     (let [result (doc/get index-name idx-mapping-type index-set-id "fields" "index-set-id,index-set-name,index-set-request")
-          index-set-json-str (get-in result [:fields :index-set-request])
-          exists? (:exists result)]
-      (when-not exists?
+          index-set-json-str (get-in result [:fields :index-set-request])]
+      (when-not (:exists result)
         (errors/throw-service-error :not-found
                                     (m/index-set-not-found-msg index-set-id)))
       (cheshire.core/decode index-set-json-str true))))
@@ -107,7 +106,7 @@
   (try
     (let [result (doc/put es-index es-mapping-type doc-id es-doc)
           {:keys [error status]} result]
-      (if (:error result)
+      (when (:error result)
         ;; service layer to rollback index-set create  progress on error
         ;; to result in 503 if replicas setting value of 'indext-sets' is set to > 0 when running on a single node
         (throw (Exception. (format "Save to Elasticsearch failed. Reported status: %s and error: %s " status error)))))

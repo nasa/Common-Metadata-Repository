@@ -192,4 +192,3 @@
     (doseq [id index-set-ids]
       (delete-index-set context (str id)))))
 
-(prune-index-set cmr.index-set.int-test.utility/sample-index-set)
