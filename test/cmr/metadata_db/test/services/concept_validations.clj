@@ -20,6 +20,30 @@
    :extra-fields {:parent-collection-id "C1-PROV1"}})
 
 
+(deftest find-params-validation-test
+  (testing "valid params"
+    (is (= [] (v/find-params-validation {:concept-type :collection
+                                         :short-name "s"
+                                         :version-id "v"
+                                         :provider-id "p"})))
+    (is (= [] (v/find-params-validation {:concept-type :collection
+                                         :entry-title "e"
+                                         :provider-id "p"}))))
+  (testing "invalid concept-type"
+    (is (= [(msg/find-not-supported :foo [:entry-title :provider-id])]
+           (v/find-params-validation {:concept-type "foo"
+                                      :entry-title "e"
+                                      :provider-id "p"}))))
+  (testing "missing parameters"
+    (is (= [(msg/find-not-supported :collection [:provider-id])]
+           (v/find-params-validation {:concept-type :collection :provider-id "p"}))))
+  (testing "extra parameters"
+    (is (= [(msg/find-not-supported :collection [:short-name :entry-title :provider-id])]
+           (v/find-params-validation {:concept-type :collection
+                                      :entry-title "e"
+                                      :short-name "s"
+                                      :provider-id "p"})))))
+
 (deftest collection-validation-test
   (testing "valid-concept"
     (is (= [] (v/concept-validation valid-collection))))

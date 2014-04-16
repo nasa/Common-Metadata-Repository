@@ -2,7 +2,8 @@
   (:require [cmr.metadata-db.services.messages :as msg]
             [cmr.common.concepts :as cc]
             [clojure.set :as set]
-            [cmr.common.services.errors :as errors]))
+            [cmr.common.services.errors :as errors]
+            [cmr.common.util :as util]))
 
 (defn concept-type-missing-validation
   [concept]
@@ -47,27 +48,43 @@
                        (= provider-id (:provider-id concept)))
           [(msg/invalid-concept-id concept-id (:provider-id concept) (:concept-type concept))])))))
 
-(def concept-validations
-  [concept-type-missing-validation
-   provider-id-missing-validation
-   native-id-missing-validation
-   concept-id-validation
-   extra-fields-missing-validation
-   concept-id-match-fields-validation])
-
-(defn concept-validation
+(def concept-validation
   "Validates a concept and returns a list of errors"
-  [concept]
-  (reduce (fn [errors validation]
-            (if-let [new-errors (validation concept)]
-              (concat errors new-errors)
-              errors))
-          []
-          concept-validations))
+  (util/compose-validations [concept-type-missing-validation
+                             provider-id-missing-validation
+                             native-id-missing-validation
+                             concept-id-validation
+                             extra-fields-missing-validation
+                             concept-id-match-fields-validation]))
 
-(defn validate-concept
+(def validate-concept
   "Validates a concept. Throws an error if invalid."
-  [concept]
-  (let [errors (concept-validation concept)]
-    (when (> (count errors) 0)
-      (errors/throw-service-errors :invalid-data errors))))
+  (util/build-validator :invalid-data concept-validation))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Validations for concept find
+
+(defn concept-types-supported
+  [{:keys [concept-type] :as params}]
+  (when-not (= :collection concept-type)
+    [(msg/find-not-supported concept-type (keys (dissoc params :concept-type)))]))
+
+(def supported-parameter-combinations
+  #{#{:short-name :provider-id :version-id}
+    #{:entry-title :provider-id}})
+
+(defn supported-parameter-combinations-validation
+  [{:keys [concept-type] :as params}]
+  (let [params (dissoc params :concept-type)]
+    (when-not (supported-parameter-combinations
+                (set (keys params)))
+      [(msg/find-not-supported concept-type (keys params))])))
+
+(def find-params-validation
+  "Validates parameters for finding a concept"
+  (util/compose-validations [concept-types-supported
+                             supported-parameter-combinations-validation]))
+
+(def validate-find-params
+  "Validates find parameters. Throws an eror if invalid."
+  (util/build-validator :bad-request find-params-validation))

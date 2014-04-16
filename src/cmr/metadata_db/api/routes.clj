@@ -14,7 +14,8 @@
             [cmr.common.services.errors :as serv-err]
             [cmr.system-trace.http :as http-trace]
             [cmr.metadata-db.services.concept-service :as concept-service]
-            [cmr.metadata-db.services.provider-service :as provider-service]))
+            [cmr.metadata-db.services.provider-service :as provider-service]
+            [inflections.core :as inf]))
 
 ;;; service proxies
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -40,6 +41,15 @@
   "Get concepts using concept-id/revision-id tuples."
   [context concept-id-revisions]
   (let [concepts (concept-service/get-concepts context concept-id-revisions)]
+    {:status 200
+     :body concepts
+     :headers json-header}))
+
+(defn- find-concepts
+  "Find concepts for a concept type with specific params"
+  [context params]
+  (let [params (update-in params [:concept-type] (comp keyword inf/singular))
+        concepts (concept-service/find-concepts context params)]
     {:status 200
      :body concepts
      :headers json-header}))
@@ -122,6 +132,14 @@
   (routes
     (context "/concepts" []
 
+      (context "/search" []
+      ;; get multiple concpts by concept-id and revision-id
+        (POST "/concept-revisions" {:keys [request-context body]}
+          (get-concepts request-context body))
+        ;; Find concepts by parameters
+        (GET "/:concept-type" {:keys [params request-context]}
+          (find-concepts request-context params)))
+
       ;; saves a concept
       (POST "/" {:keys [request-context body]}
         (save-concept request-context body))
@@ -140,11 +158,7 @@
         (get-concept request-context concept-id revision-id))
       ;; get the latest revision of a concept
       (GET "/:concept-id" {{:keys [concept-id]} :params request-context :request-context}
-        (get-concept request-context concept-id))
-      ;; get multiple concpts by concept-id and revision-id
-      (context "/search" []
-        (POST "/concept-revisions" {:keys [request-context body]}
-          (get-concepts request-context body))))
+        (get-concept request-context concept-id)))
 
     ;; get the concept id for a given concept-type, provider-id, and native-id
     (GET "/concept-id/:concept-type/:provider-id/:native-id"

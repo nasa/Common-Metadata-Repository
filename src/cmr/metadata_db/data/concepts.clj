@@ -28,6 +28,10 @@
     "Get a sequence of concepts by specifying a list of
     tuples holding concept-id/revision-id")
 
+  (find-concepts
+    [db params]
+    "Finds concepts by the given parameters")
+
   (save-concept
     [db concept]
     "Saves a concept and returns the revision id. If the concept already

@@ -1,5 +1,5 @@
 (ns cmr.metadata-db.services.messages
-  (:require [clojure.string :as string]
+  (:require [clojure.string :as str]
             [cmr.common.services.errors :as errors]))
 
 (defn data-error [error-type msg-fn & args]
@@ -47,6 +47,11 @@
 (defn missing-extra-field [field]
   (format "Concept must include extra-field value for field [%s]" (name field)))
 
+(defn find-not-supported [concept-type params]
+  (format "Finding concept type [%s] with parameter combination [%s] is not supported."
+          (name concept-type)
+          (str/join ", " params)))
+
 (defn invalid-concept-id [concept-id provider-id concept-type]
   (format "Concept-id [%s] for concept does not match provider-id [%s] or concept-type [%s]."
           concept-id
@@ -70,7 +75,7 @@
 
 (defn providers-do-not-exist [provider-ids]
   (format "Providers with provider-ids [%s] do not exist."
-          (string/join ", " provider-ids)))
+          (str/join ", " provider-ids)))
 
 (defn provider-exists [provider-id]
   (format "Provider [%s] already exists."

@@ -195,6 +195,16 @@
             (map (partial apply msg/concept-with-concept-id-and-rev-id-does-not-exist)
                  missing-concept-tuples)))))))
 
+(deftracefn find-concepts
+  "Find concepts with for a concept type with specific parameters"
+  [context params]
+  (cv/validate-find-params params)
+  (let [db (util/context->db context)]
+    (if (contains? (set (provider-db/get-providers db)) (:provider-id params))
+      (c/find-concepts db params)
+      ;; the provider doesn't exist
+      [])))
+
 (deftracefn save-concept
   "Store a concept record and return the revision."
   [context concept]

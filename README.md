@@ -171,6 +171,17 @@ returns: list of concepts matching the touples provided in the body of the POST
 __Example Curl:__
 curl -v -XPOST -H "Content-Type: application/json" -d '[["C1-PROV1", 1], ["C2-PROV1", 1]]' http://localhost:3001/concepts/search/concept-revisions
 
+### GET /concepts/search/:concept-types?param1=value&...
+
+Supported combinations of concept type and parameters:
+  * colllections, provider-id, short-name, version-id
+  * colllections, provider-id, entry-title
+
+__Example Curl:__
+curl "http://localhost:3001/concepts/search/collections?provider-id=PROV1&short-name=s&version-id=1"
+curl "http://localhost:3001/concepts/search/collections?provider-id=PROV1&entry-title=et"
+
+
 ### DELETE /concepts/#concept-id/#revision-id
 params: none
 returns: the revision id of the tombstone generated for the concept

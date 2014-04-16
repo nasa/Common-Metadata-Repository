@@ -3,7 +3,8 @@
   (:require [clojure.test :refer :all]
             [clj-http.client :as client]
             [cheshire.core :as cheshire]
-            [clojure.walk :as walk]))
+            [clojure.walk :as walk]
+            [inflections.core :as inf]))
 
 ;;; Enpoints for services - change this for tcp-mon
 (def port 3001)
@@ -117,8 +118,20 @@
   [tuples]
   (let [response (client/post (str concepts-url "search/concept-revisions")
                               {:body (cheshire/generate-string tuples)
-                               :body-encoding "UTF-8"
                                :content-type :json
+                               :accept :json
+                               :throw-exceptions false})
+        status (:status response)]
+    (if (= status 200)
+      {:status status
+       :concepts (parse-concepts response)}
+      (assoc (parse-errors response) :status status))))
+
+(defn find-concepts
+  "Make a get to retrieve concepts by parameters for a specific concept type"
+  [concept-type params]
+  (let [response (client/get (str concepts-url "search/" (inf/plural (name concept-type)))
+                              {:query-params params
                                :accept :json
                                :throw-exceptions false})
         status (:status response)]
@@ -133,7 +146,6 @@
   [concept]
   (let [response (client/post concepts-url
                               {:body (cheshire/generate-string concept)
-                               :body-encoding "UTF-8"
                                :content-type :json
                                :accept :json
                                :throw-exceptions false})
@@ -204,7 +216,6 @@
   [provider-id]
   (let [response (client/post providers-url
                               {:body (cheshire/generate-string {:provider-id provider-id})
-                               :body-encoding "UTF-8"
                                :content-type :json
                                :accept :json
                                :throw-exceptions false})

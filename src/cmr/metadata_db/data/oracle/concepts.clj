@@ -4,7 +4,9 @@
             [cmr.metadata-db.data.oracle.concept-tables :as tables]
             [cmr.common.log :refer (debug info warn error)]
             [clojure.java.jdbc :as j]
+            [cmr.common.services.errors :as errors]
             [clojure.java.io :as io]
+            [clojure.string :as str]
             [sqlingvo.core :as s :refer [select from where with order-by desc delete as]]
             [cmr.metadata-db.data.oracle.sql-utils :as su]
             [cmr.metadata-db.services.util :as util]
@@ -77,6 +79,20 @@
     [["native_id" "concept_id" "metadata" "format" "revision_id" "deleted"]
      [native-id concept-id (string->gzip-bytes metadata) format revision-id deleted]]))
 
+(defn find-params->sql-clause
+  "Converts a parameter map for finding concept types into a sql clause for inclusion in a query."
+  [params]
+  ;; Validate parameter names as a sanity check to prevent sql injection
+  (let [valid-param-name #"^[a-zA-Z][a-zA-Z0-9_\-]*$"]
+    (when-let [invalid-names (seq (filter #(not (re-matches valid-param-name (name %))) (keys params)))]
+      (errors/internal-error! (format "Attempting to search with invalid parameter names [%s]"
+                                      (str/join ", " invalid-names)))))
+  (let [comparisons (for [[k v] params]
+                      `(= ~k ~v))]
+    (if (> (count comparisons) 1)
+      (cons `and comparisons)
+      (first comparisons))))
+
 (extend-protocol c/ConceptsStore
   OracleStore
 
@@ -92,8 +108,8 @@
     [db concept-type provider-id native-id]
     (let [table (tables/get-table-name provider-id concept-type)]
       (su/find-one db (select [:concept-id]
-                              (from table)
-                              (where `(= :native-id ~native-id))))))
+                        (from table)
+                        (where `(= :native-id ~native-id))))))
 
   (get-concept-by-provider-id-native-id-concept-type
     [db concept]
@@ -102,14 +118,14 @@
           stmt (if revision-id
                  ;; find specific revision
                  (select '[*]
-                         (from table)
-                         (where `(and (= :native-id ~native-id)
-                                      (= :revision-id ~revision-id))))
+                   (from table)
+                   (where `(and (= :native-id ~native-id)
+                                (= :revision-id ~revision-id))))
                  ;; find latest
                  (select '[*]
-                         (from table)
-                         (where `(= :native-id ~native-id))
-                         (order-by (desc :revision-id))))]
+                   (from table)
+                   (where `(= :native-id ~native-id))
+                   (order-by (desc :revision-id))))]
       (db-result->concept-map concept-type provider-id
                               (su/find-one db stmt))))
 
@@ -118,17 +134,17 @@
      (let [table (tables/get-table-name provider-id concept-type)]
        (db-result->concept-map concept-type provider-id
                                (su/find-one db (select '[*]
-                                                       (from table)
-                                                       (where `(= :concept-id ~concept-id))
-                                                       (order-by (desc :revision-id)))))))
+                                                 (from table)
+                                                 (where `(= :concept-id ~concept-id))
+                                                 (order-by (desc :revision-id)))))))
     ([db concept-type provider-id concept-id revision-id]
      (if revision-id
        (let [table (tables/get-table-name provider-id concept-type)]
          (db-result->concept-map concept-type provider-id
                                  (su/find-one db (select '[*]
-                                                         (from table)
-                                                         (where `(and (= :concept-id ~concept-id)
-                                                                      (= :revision-id ~revision-id)))))))
+                                                   (from table)
+                                                   (where `(and (= :concept-id ~concept-id)
+                                                                (= :revision-id ~revision-id)))))))
        (c/get-concept db concept-type provider-id concept-id))))
 
   (get-concepts
@@ -143,12 +159,24 @@
              (concat concept-id-revision-id-tuples [:transaction false]))
       (let [table (tables/get-table-name provider-id concept-type)
             stmt (su/build (select [:c.*]
-                                   (from (as (keyword table) :c)
-                                         (as :get-concepts-work-area :t))
-                                   (where `(and (= :c.concept-id :t.concept-id)
-                                                (= :c.revision-id :t.revision-id)))))]
+                             (from (as (keyword table) :c)
+                                   (as :get-concepts-work-area :t))
+                             (where `(and (= :c.concept-id :t.concept-id)
+                                          (= :c.revision-id :t.revision-id)))))]
         (map (partial db-result->concept-map concept-type provider-id)
              (j/query conn stmt)))))
+
+  (find-concepts
+    [db params]
+    (let [{:keys [concept-type provider-id]} params
+          params (dissoc params :concept-type :provider-id)
+          table (tables/get-table-name provider-id concept-type)
+          stmt (su/build (select [:*]
+                           (from table)
+                           (where (find-params->sql-clause params))))]
+      (map (partial db-result->concept-map concept-type provider-id)
+           (j/query db stmt))))
+
 
   (save-concept
     [db concept]
@@ -174,8 +202,8 @@
     [this concept-type provider-id concept-id revision-id]
     (let [table (tables/get-table-name provider-id concept-type)
           stmt (su/build (delete table
-                                 (where `(and (= :concept-id ~concept-id)
-                                              (= :revision-id ~revision-id)))))]
+                           (where `(and (= :concept-id ~concept-id)
+                                        (= :revision-id ~revision-id)))))]
       (j/execute! this stmt)))
 
   (reset

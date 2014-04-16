@@ -20,6 +20,20 @@
   (let [vector-result (apply vector (map #(apply vector %) result))]
     (update-in vector-result [1 2] #(gzip-bytes->string %))))
 
+(deftest find-params->sql-clause-test
+  (testing "only allows valid param names to prevent sql-injection"
+    (are [keystring] (c/find-params->sql-clause {(keyword keystring) 1})
+         "a" "a1" "A" "A1" "A_1" "b123__dkA" "a-b")
+    (are [keystring] (thrown? Exception (c/find-params->sql-clause {(keyword keystring) 1}))
+         "a;b" "a&b" "a!b" ))
+  (testing "converting single parameter"
+    (is (= `(= :a 5)
+           (c/find-params->sql-clause {:a 5}))))
+  (testing "converting multiple parameters"
+    (is (= `(and (= :a 5)
+                 (= :b "bravo"))
+           (c/find-params->sql-clause {:a 5 :b "bravo"})))))
+
 
 (deftest db-result->concept-map-test
   (testing "collection results"
