@@ -137,3 +137,9 @@
   (gen/fmap (fn [[granule-ur coll-ref]]
               (g/->UmmGranule granule-ur coll-ref))
             (gen/tuple granule-urs coll-refs)))
+
+;; Generator that only returns collection ref with entry-title
+(def granules-entry-title
+  (gen/fmap (fn [[granule-ur coll-ref]]
+              (g/->UmmGranule granule-ur coll-ref))
+            (gen/tuple granule-urs coll-refs1)))
