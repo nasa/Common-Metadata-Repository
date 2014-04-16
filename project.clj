@@ -36,6 +36,7 @@
                          project-dependencies)
   :plugins [[lein-shell "0.4.0"]]
   :repl-options {:init-ns user}
+  :jvm-opts ["-XX:PermSize=256m" "-XX:MaxPermSize=256m"]
   :profiles
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.4"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]]
