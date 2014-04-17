@@ -201,7 +201,7 @@ params: none
 returns: nothing (status 204)
 
 __Example Curl:__
-curl -v -XDELETE /concepts/force-delet/C1-PROV1/1
+curl -v -XDELETE /concepts/force-delete/C1-PROV1/1
 
 ### POST /reset
 params: none
