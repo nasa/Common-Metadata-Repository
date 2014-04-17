@@ -35,12 +35,12 @@
       :bad-request (format "The mime type [%s] is not supported for search results." mime-type))))
 
 (defmulti search-results->response
-  (fn [results result-type]
+  (fn [results result-type pretty]
     result-type))
 
 (defmethod search-results->response :json
-  [results result-type]
-  (json/generate-string results))
+  [results result-type pretty]
+  (json/generate-string results {:pretty pretty}))
 
 (defn- reference->xml-element
   "Converts a search result reference into an XML element"
@@ -53,9 +53,10 @@
                (x/element :name {} name))))
 
 (defmethod search-results->response :xml
-  [results result-type]
-  (let [{:keys [hits references]} results]
-    (x/emit-str
+  [results result-typ pretty]
+  (let [{:keys [hits references]} results
+        xml-fn (if pretty x/indent-str x/emit-str)]
+    (xml-fn
       (x/element :results {}
                  (x/element :hits {} (str hits))
                  (x/->Element :references {}

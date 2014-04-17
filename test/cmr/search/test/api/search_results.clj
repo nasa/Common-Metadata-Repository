@@ -61,7 +61,8 @@
 
 (defspec search-result->response-test 100
   (for-all [result results-gen/results
-            format (gen/elements [:json :xml])]
-    (let [resp (s/search-results->response result format)
+            format (gen/elements [:json :xml])
+            pretty gen/boolean]
+    (let [resp (s/search-results->response result format pretty)
           result (result-records->map result)]
       (= result (parse-search-results-response resp format)))))

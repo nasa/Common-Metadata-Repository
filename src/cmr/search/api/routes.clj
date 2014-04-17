@@ -22,11 +22,13 @@
   "Invokes query service to find references and returns the response"
   [context concept-type params headers]
   (let [result-format (get-search-results-format headers)
+        pretty? (= (get params :pretty) "true")
         _ (info (format "Search for %ss in format [%s] with params [%s]" (name concept-type) result-format params))
+        params (dissoc params :pretty)
         results (query-svc/find-concepts-by-parameters context concept-type params)]
     {:status 200
      :headers {"Content-Type" (sr/format->mime-type result-format)}
-     :body (sr/search-results->response results result-format)}))
+     :body (sr/search-results->response results result-format pretty?)}))
 
 (defn- build-routes [system]
   (routes
