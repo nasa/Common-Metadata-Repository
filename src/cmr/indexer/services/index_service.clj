@@ -2,19 +2,14 @@
   "Provide functions to index concept"
   (:require [clojure.string :as s]
             [cmr.common.log :as log :refer (debug info warn error)]
+            [cmr.common.services.errors :as errors]
             [cmr.indexer.data.metadata-db :as meta-db]
             [cmr.indexer.data.elasticsearch :as es]
             [cmr.umm.echo10.collection :as collection]
             [cmr.umm.echo10.granule :as granule]
+            [cheshire.core :as cheshire]
             [cmr.system-trace.core :refer [deftracefn]]))
 
-;; map of concept-type to elasticsearch index name
-(def es-index {:collection "collections"
-               :granule "granules"})
-
-;; map of concept-type to elasticsearch index type
-(def es-mapping-type {:collection "collection"
-                      :granule "small_collections"})
 
 (def concept-prefix->type
   {\C :collection
@@ -44,7 +39,8 @@
         umm-concept (parse-concept concept)
         es-doc (concept->elastic-doc concept umm-concept)]
     (es/save-document-in-elastic
-      context (es-index concept-type) (es-mapping-type concept-type) es-doc (Integer. revision-id) ignore-conflict)))
+      context (@es/es-concept-indices concept-type) (@es/es-concept-mapping-types concept-type) es-doc (Integer. revision-id) ignore-conflict)))
+
 
 (deftracefn delete-concept
   "Delete the concept with the given id"
@@ -55,14 +51,13 @@
   (let [es-config (-> context :system :db :config)
         concept-type (concept-id->type id)]
     (es/delete-document-in-elastic
-      context es-config (es-index concept-type) (es-mapping-type concept-type) id revision-id ignore-conflict)))
+      context es-config (@es/es-concept-indices concept-type) (@es/es-concept-mapping-types concept-type) id revision-id ignore-conflict)))
+
 
 (deftracefn reset-indexes
-  "Reset elastic indexes"
+  "Delegate reset elastic indices operation to index-set app"
   [context]
-  (info (format "Recreating elastic index: %s" es-index))
-  (let [es-config (-> context :system :db :config)]
-    (es/reset-es-store context es-config)))
+  (es/reset-es-store))
 
 (comment
   (let [concept-id "G1234-PROV1"
