@@ -101,13 +101,40 @@
 
 (def base-concept-attribs
   {:short-name "SN-Sedac88"
-   :version "Ver88"
+   :version-id "Ver88"
+   :entry-title "ABC"
    :long-name "LongName Sedac88"
    :dataset-id "LarcDatasetId88"})
 
+(defn collection-concept
+  "Creates a collection concept"
+  [provider-id uniq-num]
+  {:concept-type :collection
+   :native-id (str "native-id " uniq-num)
+   :provider-id provider-id
+   :metadata (collection-xml base-concept-attribs)
+   :content-type "application/echo10+xml"
+   :deleted false
+   :extra-fields {:short-name (str "short" uniq-num)
+                  :version-id (str "V" uniq-num)
+                  :entry-title (str "dataset" uniq-num)}})
+
+(defn granule-concept
+  "Creates a granule concept"
+  [provider-id parent-collection-id uniq-num & concept-id]
+  (let [granule {:concept-type :granule
+                 :native-id (str "native-id " uniq-num)
+                 :provider-id provider-id
+                 :metadata (granule-xml base-concept-attribs)
+                 :content-type "application/echo10+xml"
+                 :deleted false
+                 :extra-fields {:parent-collection-id parent-collection-id}}]
+    (if concept-id
+      (assoc granule :concept-id (first concept-id))
+      granule)))
+
 ;;; operations
-;;; make this generic to be applicable to other concept types
-(defn ingest-concept
+(defn ingest-collection
   "Ingest a concept and return a map with status, concept-id, and revision-id"
   [{:keys [metadata content-type concept-id revision-id provider-id native-id] :as concept}]
   (let [response (client/request
@@ -124,6 +151,26 @@
         concept-id (get body "concept-id")
         revision-id (get body "revision-id")]
     {:status status :concept-id concept-id :revision-id revision-id :errors-str errors-str :response response}))
+
+
+(defn ingest-granule
+  "Ingest a concept and return a map with status, concept-id, and revision-id"
+  [{:keys [metadata content-type concept-id parent-collection-id revision-id provider-id native-id] :as concept}]
+  (let [response (client/request
+                   {:method :put
+                    :url (url/granule-ingest-url provider-id native-id)
+                    :body  metadata
+                    :content-type content-type
+                    :headers {"concept-id" concept-id, "revision-id"  revision-id}
+                    :accept :json
+                    :throw-exceptions false})
+        status (:status response)
+        body (cheshire/parse-string (:body response))
+        errors-str (cheshire/generate-string (flatten (get body "errors")))
+        concept-id (get body "concept-id")
+        revision-id (get body "revision-id")]
+    {:status status :concept-id concept-id :revision-id revision-id :errors-str errors-str :response response}))
+
 
 (defn delete-concept
   "Delete a given concept."
@@ -209,3 +256,26 @@
                                :throw-exceptions false})
         status (:status response)]
     status))
+
+
+;;; fixture - each test to call this fixture
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn setup [] (reset-database) (reset-es-indexes))
+(defn teardown [] (reset-database))
+
+(defn each-fixture [f]
+  (setup)
+  (f)
+  (teardown))
+
+(defn reset-fixture
+  "Creates a database fixture function to reset the database after every test.
+  Optionally accepts a list of provider-ids to create before the test"
+  [& provider-ids]
+  (fn [f]
+    (try
+      (setup)
+      (doseq [pid provider-ids] (create-provider pid))
+      (f)
+      (finally (reset-database)))))

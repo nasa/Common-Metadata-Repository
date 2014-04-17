@@ -12,7 +12,7 @@
 
 (defn collection-ingest-url
   [provider-id native-id]
-  (format "http://localhost:3002/providers/%s/collections/%s"
+  (format "http://localhost:3000/providers/%s/collections/%s"
           provider-id
           native-id))
 
@@ -22,7 +22,7 @@
 
 (defn granule-ingest-url
   [provider-id native-id]
-  (format "http://localhost:3002/providers/%s/granules/%s"
+  (format "http://localhost:3000/providers/%s/granules/%s"
           provider-id
           native-id))
 

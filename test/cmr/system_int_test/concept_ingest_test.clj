@@ -17,7 +17,7 @@
 (deftest concept-ingest-test
   (testing "ingest of a new concept"
     (let [concept (util/distinct-concept 0)
-          {:keys [concept-id revision-id]} (util/ingest-concept concept)]
+          {:keys [concept-id revision-id]} (util/ingest-collection concept)]
       (is (util/concept-exists-in-mdb? concept-id revision-id))
       (is (= revision-id 0)))))
 
@@ -26,7 +26,7 @@
   (testing "ingest of a new concept with concept-id present"
     (let [concept (util/distinct-concept-w-concept-id 7)
           supplied-concept-id (:concept-id concept)
-          {:keys [concept-id revision-id]} (util/ingest-concept concept)]
+          {:keys [concept-id revision-id]} (util/ingest-collection concept)]
       (is (util/concept-exists-in-mdb? concept-id revision-id))
       (is (= supplied-concept-id concept-id))
       (is (= revision-id 0)))))
@@ -37,14 +37,14 @@
   (testing "ingest same concept n times ..."
     (let [n 4
           concept (util/distinct-concept 1)
-          created-concepts (take n (repeatedly n #(util/ingest-concept concept)))]
+          created-concepts (take n (repeatedly n #(util/ingest-collection concept)))]
       (is (apply = (map :concept-id created-concepts)))
       (is (= (range 0 n) (map :revision-id created-concepts))))))
 
 ;; Verify ingest behaves properly if empty body is presented in the request.
 (deftest empty-concept-ingest-test
   (let [concept-with-empty-body  (assoc (util/distinct-concept 2) :metadata "")
-        {:keys [status errors-str]} (util/ingest-concept concept-with-empty-body)]
+        {:keys [status errors-str]} (util/ingest-collection concept-with-empty-body)]
     (is (= status 400))
     (is (re-find #"Invalid XML file." errors-str))))
 
@@ -60,7 +60,7 @@
 ;; max revision id of the concept prior to the delete
 (deftest delete-concept-test
   (let [concept (util/distinct-concept 3)
-        ingest-result (util/ingest-concept concept)
+        ingest-result (util/ingest-collection concept)
         delete-result (util/delete-concept concept)
         ingest-revision-id (:revision-id ingest-result)
         delete-revision-id (:revision-id delete-result)]
@@ -69,21 +69,21 @@
 ;; Verify ingest behaves properly if request is missing content type.
 (deftest missing-content-type-ingest-test
   (let [concept-with-no-content-type  (assoc (util/distinct-concept 4) :content-type "")
-        {:keys [status errors-str]} (util/ingest-concept concept-with-no-content-type)]
+        {:keys [status errors-str]} (util/ingest-collection concept-with-no-content-type)]
     (is (= status 400))
     (is (re-find #"Invalid content-type" errors-str))))
 
 ;; Verify ingest behaves properly if request contains invalid  content type.
 (deftest invalid-content-type-ingest-test
   (let [concept-with-no-content-type (assoc (util/distinct-concept 4) :content-type "blah")
-        {:keys [status errors-str]} (util/ingest-concept concept-with-no-content-type)]
+        {:keys [status errors-str]} (util/ingest-collection concept-with-no-content-type)]
     (is (= status 400))
     (is (re-find #"Invalid content-type" errors-str))))
 
 ;; Verify deleting same concept twice is not an error if ignore conflict is true.
 (deftest delete-same-concept-twice-test
   (let [concept (util/distinct-concept 5)
-        ingest-result (util/ingest-concept concept)
+        ingest-result (util/ingest-collection concept)
         delete1-result (util/delete-concept concept)
         delete2-result (util/delete-concept concept)]
     (is (= 200 (:status ingest-result)))
@@ -93,15 +93,7 @@
 ;;; fixture - each test to call this fixture
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn setup [] (util/reset-database) (util/reset-es-indexes))
-(defn teardown [] (util/reset-database))
-
-(defn each-fixture [f]
-  (setup)
-  (f)
-  (teardown))
-
-(use-fixtures :each each-fixture)
+(use-fixtures :each util/each-fixture)
 
 
 
