@@ -168,7 +168,6 @@
     (context "/providers" []
       ;; create a new provider
       (POST "/" {:keys [request-context body]}
-        #_(throw (Exception. "stop"))
         (save-provider request-context (get body "provider-id")))
       ;; delete a provider
       (DELETE "/:provider-id" {{:keys [provider-id]} :params request-context :request-context}

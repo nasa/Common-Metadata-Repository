@@ -210,6 +210,40 @@ returns: nothing (status 204)
 __Example Curl:__
 curl -v -XPOST localhost:3001/reset
 
+## Providers API
+
+### POST /providers
+params: [provider]
+returns: provider-id
+
+__Example Curl:__
+curl -v -XPOST -H "Content-Type: application/json" -d '{"provider-id": "PROV1"}' http://localhost:3001/providers
+
+### DELETE /providers/#provider-id
+params: none
+returns: nothing (status 204)
+
+__Example Curl:__
+curl -v XDELETE http://localhost:3001/providers/PROV1
+
+### GET "/providers"
+params: none
+returns: list of provider-ids
+
+__Example Curl:__
+curl http://localhost:3001/providers
+
+ ;; create a new provider
+      (POST "/" {:keys [request-context body]}
+        (save-provider request-context (get body "provider-id")))
+      ;; delete a provider
+      (DELETE "/:provider-id" {{:keys [provider-id]} :params request-context :request-context}
+        (delete-provider request-context provider-id))
+      ;; get a list of providers
+      (GET "/" {request-context :request-context}
+        (get-providers request-context)))
+
+
 
 Different ways to retrieve concepts
 1 - by concept-id and revision-id
