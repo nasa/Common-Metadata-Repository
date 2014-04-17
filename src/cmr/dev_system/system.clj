@@ -3,12 +3,15 @@
             [cmr.metadata-db.system :as mdb-system]
             [cmr.indexer.system :as indexer-system]
             [cmr.search.system :as search-system]
-            [cmr.ingest.system :as ingest-system]))
+            [cmr.ingest.system :as ingest-system]
+            [cmr.index-set.system :as index-set-system]))
 
 (def app-control-functions
   "A map of application name to the start function"
   {:metadata-db {:start mdb-system/start
                  :stop mdb-system/stop}
+   :index-set-system {:start index-set-system/start
+                      :stop index-set-system/stop}
    :indexer {:start indexer-system/start
              :stop indexer-system/stop}
    :ingest {:start ingest-system/start
@@ -21,6 +24,7 @@
   "Returns a new instance of the whole application."
   []
   {:metadata-db (mdb-system/create-system)
+   :index-set-system (index-set-system/create-system)
    :indexer (indexer-system/create-system)
    :ingest (ingest-system/create-system)
    :search (search-system/create-system)})
