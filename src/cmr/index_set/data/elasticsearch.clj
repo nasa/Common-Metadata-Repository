@@ -35,19 +35,19 @@
   "Check index-set existence in elastic."
   [index-name idx-mapping-type index-set-id]
   (when (esi/exists? index-name)
-    (let [result (doc/get index-name idx-mapping-type (str index-set-id) "fields" "index-set-id,index-set-name,index-set-request")]
-      (:exists result))))
+    ;; result will be nil if doc doeesn't exist
+    (doc/get index-name idx-mapping-type (str index-set-id) "fields" "index-set-id,index-set-name,index-set-request")))
 
 (defn get-index-set
   "Fetch index-set associated with an id."
   [index-name idx-mapping-type index-set-id]
   (when (esi/exists? index-name)
-    (let [result (doc/get index-name idx-mapping-type index-set-id "fields" "index-set-id,index-set-name,index-set-request")
+    (let [result (doc/get index-name idx-mapping-type (str index-set-id) "fields" "index-set-id,index-set-name,index-set-request")
           index-set-json-str (get-in result [:fields :index-set-request])]
-      (when-not (:exists result)
+      (when-not result
         (errors/throw-service-error :not-found
                                     (m/index-set-not-found-msg index-set-id)))
-      (cheshire.core/decode index-set-json-str true))))
+      (cheshire.core/decode (first index-set-json-str) true))))
 
 (defn get-index-set-ids
   "Fetch ids of all index-sets in elastic."
@@ -62,7 +62,7 @@
   [index-name idx-mapping-type]
   (when (esi/exists? index-name)
     (let [result (doc/search index-name idx-mapping-type "fields" "index-set-request")]
-      (map (comp #(cheshire/decode % true) :index-set-request :fields) (get-in result [:hits :hits])))))
+      (map (comp #(cheshire/decode (first % ) true) :index-set-request :fields) (get-in result [:hits :hits])))))
 
 (defn delete-index
   "Delete given elastic index"
@@ -128,4 +128,6 @@
     (when-not (= status 200)
       (errors/internal-error! (m/index-set-doc-delete-msg result)))))
 
-
+(comment
+  (doc/get "index-sets" "set" "1" "fields" "index-set-id,index-set-name,index-set-request")
+  )
