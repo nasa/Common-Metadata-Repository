@@ -64,7 +64,7 @@
 (deftest save-concept-after-delete
   (let [concept (util/collection-concept "PROV1" 1)
         {:keys [concept-id]} (util/save-concept concept)]
-    (util/delete-concept concept-id)
+    (is (= 200 (:status (util/delete-concept concept-id))))
     (let [{:keys [status revision-id]} (util/save-concept concept)]
       (is (= status 201))
       (is (= revision-id 2)))))
@@ -77,7 +77,6 @@
     (is (= status 201))
     (is (= revision-id 0))
     (util/verify-concept-was-saved (assoc granule :revision-id revision-id :concept-id concept-id))))
-
 
 
 ;;; TODO - add test for saving concept with concept-type, provider-id, and native-id

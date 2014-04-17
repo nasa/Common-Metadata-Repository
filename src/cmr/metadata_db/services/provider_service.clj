@@ -1,5 +1,5 @@
 (ns cmr.metadata-db.services.provider-service
-  (require [cmr.metadata-db.data.oracle.provider :as provider]
+  (require [cmr.metadata-db.data.providers :as providers]
            [cmr.common.services.errors :as errors]
            [cmr.metadata-db.services.messages :as messages]
            [cmr.metadata-db.services.util :as util]
@@ -12,7 +12,7 @@
   (info "Creating provider [" provider-id "]")
   (util/validate-provider-id provider-id)
   (let [db (util/context->db context)
-        result (provider/save-provider db provider-id)
+        result (providers/save-provider db provider-id)
         error-code (:error result)]
     (when error-code
       (cond
@@ -30,14 +30,14 @@
   [context]
   (info "Getting provider list.")
   (let [db (util/context->db context)]
-    (provider/get-providers db)))
+    (providers/get-providers db)))
 
 (deftracefn delete-provider
   "Delete a provider and all its concept tables."
   [context provider-id]
   (info "Deleting provider [" provider-id "]")
   (let [db (util/context->db context)
-        result (provider/delete-provider db provider-id)
+        result (providers/delete-provider db provider-id)
         error-code (:error result)]
     (when error-code
       (cond
@@ -53,4 +53,4 @@
   [context]
   (info "Deleting all providers and concepts.")
   (let [db (util/context->db context)]
-    (provider/reset-providers db)))
+    (providers/reset-providers db)))

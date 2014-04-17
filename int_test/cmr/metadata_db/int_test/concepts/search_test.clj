@@ -38,11 +38,11 @@
         tuples [[(:concept-id coll1) 0]
                 [(:concept-id coll1) 1]
                 ["C2-PROV1" 0] ]
-        result (util/get-concepts tuples)]
-    (is (= {:status 404
-            :errors  [(msg/concept-with-concept-id-and-rev-id-does-not-exist (:concept-id coll1) 1)
-                      (msg/concept-with-concept-id-and-rev-id-does-not-exist "C2-PROV1" 0)]}
-           result))))
+        {:keys [status errors]} (util/get-concepts tuples)]
+    (is (= 404 status ))
+    (is (= #{(msg/concept-with-concept-id-and-rev-id-does-not-exist (:concept-id coll1) 1)
+             (msg/concept-with-concept-id-and-rev-id-does-not-exist "C2-PROV1" 0)}
+           (set errors)))))
 
 (deftest find-collections
   (let [coll1 (util/create-and-save-collection "PROV1" 1)

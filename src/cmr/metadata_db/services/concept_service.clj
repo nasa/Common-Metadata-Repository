@@ -1,14 +1,13 @@
 (ns cmr.metadata-db.services.concept-service
   "Sevices to support the business logic of the metadata db."
   (:require [cmr.metadata-db.data.concepts :as c]
-            [cmr.metadata-db.data.oracle.core :as oracle]
             [cmr.common.services.errors :as errors]
             [cmr.common.concepts :as cu]
             [cmr.metadata-db.services.messages :as msg]
             [cmr.metadata-db.services.util :as util]
             [cmr.metadata-db.services.concept-validations :as cv]
             [cmr.metadata-db.services.provider-service :as provider-service]
-            [cmr.metadata-db.data.oracle.provider :as provider-db]
+            [cmr.metadata-db.data.providers :as provider-db]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.system-trace.core :refer [deftracefn]]
             [clojure.set :as set]
@@ -216,7 +215,7 @@
           concept (->> concept
                        (set-or-generate-concept-id db)
                        (set-or-generate-revision-id db)
-                       (set-deleted-flag 0))]
+                       (set-deleted-flag false))]
       (try-to-save db concept revision-id-provided?))))
 
 (deftracefn delete-concept
@@ -225,7 +224,7 @@
   (let [db (util/context->db context)
         {:keys [concept-type provider-id]} (cu/parse-concept-id concept-id)
         _ (validate-providers-exist db [provider-id])
-        previous-revision (c/get-concept db concept-type provider-id concept-id nil)]
+        previous-revision (c/get-concept db concept-type provider-id concept-id)]
     (if previous-revision
       (if (util/is-tombstone? previous-revision)
         previous-revision
@@ -272,7 +271,7 @@
         _ (validate-providers-exist db [provider-id])
         concept-id (c/get-concept-id db concept-type provider-id native-id)]
     (if concept-id
-      (:concept_id concept-id)
+      concept-id
       (msg/data-error :not-found
                       msg/missing-concept-id
                       concept-type

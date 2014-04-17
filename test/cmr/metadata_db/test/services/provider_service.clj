@@ -7,14 +7,9 @@
             [cmr.metadata-db.services.util :as util]
             [cmr.metadata-db.services.concept-service :as cs]
             [cmr.metadata-db.data.concepts :as c]
-            [cmr.metadata-db.test.memory-db :as memory]
             [cmr.metadata-db.services.messages :as messages]
             [cmr.metadata-db.test.util :as tu])
   (import clojure.lang.ExceptionInfo))
-
-; (deftest provider-id-validation-test
-;   (testing "valid provider-id"
-;     (let [prov
 
 (deftest validate-provider-id-test
   (testing "valid provider-id"

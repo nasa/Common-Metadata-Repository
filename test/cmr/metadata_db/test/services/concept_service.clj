@@ -8,7 +8,7 @@
             [cmr.metadata-db.services.util :as util]
             [cmr.metadata-db.services.concept-service :as cs]
             [cmr.metadata-db.data.concepts :as c]
-            [cmr.metadata-db.test.memory-db :as memory]
+            [cmr.metadata-db.data.memory-db :as memory]
             [cmr.metadata-db.services.messages :as messages]
             [cmr.metadata-db.test.util :as tu])
   (import clojure.lang.ExceptionInfo))
@@ -42,19 +42,19 @@
 
 ;;; Verify that the revision id check works as expected.
 (deftest check-concept-revision-id-test
-  (let [previous-concept memory/test-concept]
+  (let [previous-concept example-concept]
     (testing "valid revision-id"
-      (let [db (memory/create-db)
+      (let [db (memory/create-db [example-concept])
             concept (assoc previous-concept :revision-id 1)]
         (is (= {:status :pass} (cs/check-concept-revision-id db concept previous-concept)))))
     (testing "invalid revision-id - high"
-      (let [db (memory/create-db)
+      (let [db (memory/create-db [example-concept])
             concept (assoc previous-concept :revision-id 2)
             result (cs/check-concept-revision-id db concept previous-concept)]
         (is (= (:status result) :fail))
         (is (= (:expected result) 1))))
     (testing "invalid revision-id - low"
-      (let [db (memory/create-db)
+      (let [db (memory/create-db [example-concept])
             concept (assoc previous-concept :revision-id 0)
             result (cs/check-concept-revision-id db concept previous-concept)]
         (is (= (:status result) :fail))
@@ -62,39 +62,39 @@
 
 ;;; Verify that the revision id validation works as expected.
 (deftest validate-concept-revision-id-test
-  (let [previous-concept memory/test-concept]
+  (let [previous-concept example-concept]
     (testing "valid concept revision-id"
       (let [concept (assoc previous-concept :revision-id 1)]
-        (cs/validate-concept-revision-id (memory/create-db) concept previous-concept)))
+        (cs/validate-concept-revision-id (memory/create-db [example-concept]) concept previous-concept)))
     (testing "invalid concept revision-id"
       (let [concept (assoc previous-concept :revision-id 2)]
         (is (thrown-with-msg? ExceptionInfo (tu/message->regex (messages/invalid-revision-id 1 2))
-                              (cs/validate-concept-revision-id (memory/create-db) concept previous-concept)))))
+                              (cs/validate-concept-revision-id (memory/create-db [example-concept]) concept previous-concept)))))
     (testing "missing concept-id no revision-id"
       (let [concept (dissoc previous-concept :concept-id)]
-        (cs/validate-concept-revision-id (memory/create-db) concept previous-concept)))
+        (cs/validate-concept-revision-id (memory/create-db [example-concept]) concept previous-concept)))
     (testing "missing concept-id valid revision-id"
       (let [concept (-> previous-concept (dissoc :concept-id) (assoc :revision-id 0))]
-        (cs/validate-concept-revision-id (memory/create-db) concept previous-concept)))
+        (cs/validate-concept-revision-id (memory/create-db [example-concept]) concept previous-concept)))
     (testing "missing concept-id invalid revision-id"
       (let [concept (-> previous-concept (dissoc :concept-id) (assoc :revision-id 1))]
         (is (thrown-with-msg? ExceptionInfo (tu/message->regex (messages/invalid-revision-id 0 1))
-                              (cs/validate-concept-revision-id (memory/create-db) concept previous-concept)))))))
+                              (cs/validate-concept-revision-id (memory/create-db [example-concept]) concept previous-concept)))))))
 
 
 ;;; Verify that the try-to-save logic is correct.
 (deftest try-to-save-test
   (testing "valid no revision-id"
-    (let [db (memory/create-db)
-          result (cs/try-to-save db (dissoc memory/test-concept :revision-id) nil)]
+    (let [db (memory/create-db [example-concept])
+          result (cs/try-to-save db (dissoc example-concept :revision-id) nil)]
       (is (= (:revision-id result) 1))))
   (testing "valid with revision-id"
-    (let [db (memory/create-db)
-          result (cs/try-to-save db (assoc memory/test-concept :revision-id 1) 1)]
+    (let [db (memory/create-db [example-concept])
+          result (cs/try-to-save db (assoc example-concept :revision-id 1) 1)]
       (is (= (:revision-id result) 1))))
   (testing "invalid with low revision-id"
     (is (thrown-with-msg? ExceptionInfo (tu/message->regex (messages/invalid-revision-id-unknown-expected 0))
-                          (cs/try-to-save (memory/create-db) (assoc memory/test-concept :revision-id 0) 0)))))
+                          (cs/try-to-save (memory/create-db [example-concept]) (assoc example-concept :revision-id 0) 0)))))
 
 
 

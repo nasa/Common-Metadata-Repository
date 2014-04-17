@@ -5,6 +5,7 @@
             [clojure.tools.namespace.repl :refer (refresh refresh-all)]
             [cmr.metadata-db.system :as system]
             [cmr.common.log :as log :refer (debug info warn error)]
+            [cmr.metadata-db.data.memory-db :as memory]
             [cmr.common.dev.util :as d])
   (:use [clojure.test :only [run-all-tests]]
         [clojure.repl]

@@ -18,6 +18,11 @@
            java.io.ByteArrayOutputStream
            java.sql.Blob))
 
+(def INITIAL_CONCEPT_NUM
+  "The number to use as the numeric value for the first concept."
+  1000000000)
+
+
 (defn blob->input-stream
   "Convert a BLOB to an InputStream"
   [^Blob blob]
@@ -107,9 +112,10 @@
   (get-concept-id
     [db concept-type provider-id native-id]
     (let [table (tables/get-table-name provider-id concept-type)]
-      (su/find-one db (select [:concept-id]
-                        (from table)
-                        (where `(= :native-id ~native-id))))))
+      (:concept_id
+        (su/find-one db (select [:concept-id]
+                          (from table)
+                          (where `(= :native-id ~native-id)))))))
 
   (get-concept-by-provider-id-native-id-concept-type
     [db concept]
@@ -211,10 +217,10 @@
     (try
       (j/db-do-commands this "DROP SEQUENCE concept_id_seq")
       (catch Exception e)) ; don't care if the sequence was not there
-    (j/db-do-commands this "CREATE SEQUENCE concept_id_seq
-                           START WITH 1000000000
-                           INCREMENT BY 1
-                           CACHE 20")))
+    (j/db-do-commands this (format "CREATE SEQUENCE concept_id_seq
+                                   START WITH %d
+                                   INCREMENT BY 1
+                                   CACHE 20" INITIAL_CONCEPT_NUM))))
 
 
 

@@ -14,17 +14,14 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (deftest save-provider-test
   (testing "Save a provider that has never been saved before."
-    (let [provider-id util/sample-provider-id
-          {:keys [status provider-id]} (util/save-provider provider-id)]
+    (let [{:keys [status]} (util/save-provider "PROV1")]
       (is (= status 201))
-      (is (util/verify-provider-was-saved provider-id)))))
+      (is (util/verify-provider-was-saved "PROV1")))))
 
 (deftest save-provider-twice-test
   (testing "Fail to save a provider that has been saved before."
-    (let [provider-id util/sample-provider-id
-          _ (util/save-provider provider-id)
-          {:keys [status provider-id]} (util/save-provider provider-id)]
-      (is (= status 409)))))
+    (util/save-provider "PROV1")
+    (is (= 409 (:status (util/save-provider "PROV1"))))))
 
 (deftest get-providers-test
   (testing "Get the list of providers."
