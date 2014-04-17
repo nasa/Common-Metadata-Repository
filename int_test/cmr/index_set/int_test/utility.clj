@@ -207,6 +207,18 @@
 ;;; comment stuff
 ;;;;;;;;;;;;;;;;;;;;;;;;;;
 (comment
+  (reset)
+  (client/request
+    {:method :post
+     :url (format "%s/%s" index-set-root-url "reset")
+     :accept :json
+     :throw-exceptions false})
+  (client/request
+    {:method :get
+     :url (format "%s/%s" "http://localhost:3005/index-sets" 1)
+     :accept :json
+     :throw-exceptions false})
+  (get-index-set "1")
   (submit-create-index-set-req sample-index-set)
   (submit-create-index-set-req index-set-w-invalid-idx-prop)
   )

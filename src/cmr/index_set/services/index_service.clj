@@ -148,7 +148,6 @@
 (deftracefn create-index-set
   "Create indices listed in index-set. Rollback occurs if indices creation or index-set doc indexing fails."
   [context index-set]
-  (info (format "Creating index-set: %s" index-set))
   (let [_ (validate-requested-index-set context index-set)
         index-names (get-index-names index-set)
         indices-w-config (build-indices-list-w-config index-set)
@@ -186,7 +185,7 @@
   [context]
   (let [{:keys [index-name mapping]} es-config/idx-cfg-for-index-sets
         idx-mapping-type (first (keys mapping))
-        index-set-ids (es/get-index-set-ids index-name idx-mapping-type)
+        index-set-ids (map #(first %) (es/get-index-set-ids index-name idx-mapping-type))
         es-cfg (-> context :system :index :config)]
     ;; delete indices assoc with index-set
     (doseq [id index-set-ids]
