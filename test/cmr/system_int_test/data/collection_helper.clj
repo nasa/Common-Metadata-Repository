@@ -1,4 +1,4 @@
-(ns cmr.system-int-test.collection-helper
+(ns cmr.system-int-test.data.collection-helper
   "Provides function to generate UMM collection with generated values and use the given values if provided."
   (:require [cmr.umm.test.generators :as test-gen]
             [clojure.test.check.generators :as gen]

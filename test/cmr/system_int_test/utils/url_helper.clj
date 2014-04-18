@@ -1,5 +1,5 @@
 (ns ^{:doc "helper to provide the urls to various service endpoints"}
-  cmr.system-int-test.url-helper
+  cmr.system-int-test.utils.url-helper
   (:require [ring.util.codec :as codec]))
 
 (def elastic_root "http://localhost:9210")

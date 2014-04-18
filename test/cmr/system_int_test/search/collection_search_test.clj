@@ -1,9 +1,9 @@
 (ns ^{:doc "Integration test for CMR collection search"}
-  cmr.system-int-test.collection-search-test
+  cmr.system-int-test.search.collection-search-test
   (:require [clojure.test :refer :all]
-            [cmr.system-int-test.ingest-util :as ingest]
-            [cmr.system-int-test.search-util :as search]
-            [cmr.system-int-test.index-util :as index]))
+            [cmr.system-int-test.utils.ingest-util :as ingest]
+            [cmr.system-int-test.utils.search-util :as search]
+            [cmr.system-int-test.utils.index-util :as index]))
 
 (def provider-collections
   {"CMR_PROV1" [{:short-name "MINIMAL"
@@ -30,6 +30,7 @@
 (defn setup
   "set up the fixtures for test"
   []
+  (ingest/reset)
   (doseq [provider-id (keys provider-collections)]
     (ingest/create-provider provider-id))
   (doseq [[provider-id collections] provider-collections
@@ -40,12 +41,7 @@
 (defn teardown
   "tear down after the test"
   []
-  (doseq [[provider-id collections] provider-collections
-          collection collections]
-    (ingest/delete-collection provider-id (:entry-title collection)))
-  (doseq [provider-id (keys provider-collections)]
-    (ingest/delete-provider provider-id))
-  (index/flush-elastic-index))
+  (ingest/reset))
 
 (defn wrap-setup
   [f]

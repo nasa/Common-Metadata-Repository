@@ -1,9 +1,9 @@
 (ns ^{:doc "Integration test for CMR granule search"}
-  cmr.system-int-test.granule-search-test
+  cmr.system-int-test.search.granule-search-test
   (:require [clojure.test :refer :all]
-            [cmr.system-int-test.ingest-util :as ingest]
-            [cmr.system-int-test.search-util :as search]
-            [cmr.system-int-test.index-util :as index]))
+            [cmr.system-int-test.utils.ingest-util :as ingest]
+            [cmr.system-int-test.utils.search-util :as search]
+            [cmr.system-int-test.utils.index-util :as index]))
 
 (def provider-granules
   {"CMR_PROV1" [{:entry-title "OneCollectionV1"
@@ -35,6 +35,7 @@
 (defn setup
   "set up the fixtures for test"
   []
+  (ingest/reset)
   (doseq [provider-id (keys provider-granules)]
     (ingest/create-provider provider-id))
   (doseq [[provider-id collections] (provider-collections)
@@ -49,15 +50,7 @@
 (defn teardown
   "tear down after the test"
   []
-  (doseq [[provider-id granules] provider-granules
-          granule granules]
-    (ingest/delete-granule provider-id (:granule-ur granule)))
-  (doseq [[provider-id collections] (provider-collections)
-          collection collections]
-    (ingest/delete-collection provider-id (:entry-title collection)))
-  (doseq [provider-id (keys provider-granules)]
-    (ingest/delete-provider provider-id))
-  (index/flush-elastic-index))
+  (ingest/reset))
 
 (defn wrap-setup
   [f]

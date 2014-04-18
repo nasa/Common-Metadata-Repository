@@ -1,14 +1,14 @@
 (ns ^{:doc "provides ingest realted utilities."}
-  cmr.system-int-test.ingest-util
+  cmr.system-int-test.utils.ingest-util
   (:require [clojure.test :refer :all]
             [clj-http.client :as client]
             [clojure.string :as str]
             [cheshire.core :as cheshire]
-            [cmr.system-int-test.collection-helper :as ch]
-            [cmr.system-int-test.granule-helper :as gh]
+            [cmr.system-int-test.data.collection-helper :as ch]
+            [cmr.system-int-test.data.granule-helper :as gh]
             [cmr.umm.echo10.collection :as c]
             [cmr.umm.echo10.granule :as g]
-            [cmr.system-int-test.url-helper :as url]))
+            [cmr.system-int-test.utils.url-helper :as url]))
 
 (defn create-provider
   "Create the provider with the given provider id"
@@ -239,35 +239,21 @@
         status (:status response)]
     (if (= 200 status) true false)))
 
-(defn reset-database
-  "Make a request to reset the database by clearing out all stored concepts."
+(defn reset
+  "Resets the database and the elastic indexes"
   []
-  (let [response (client/post (url/mdb-reset-url)
-                              {:accept :json
-                               :throw-exceptions false})
-        status (:status response)]
-    status))
-
-(defn reset-es-indexes
-  "Reset elastic indexes."
-  []
-  (let [response (client/post  (url/indexer-reset-url)
-                              {:accept :json
-                               :throw-exceptions false})
-        status (:status response)]
-    status))
+  (client/post (url/mdb-reset-url))
+  (client/post (url/indexer-reset-url)))
 
 
 ;;; fixture - each test to call this fixture
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn setup [] (reset-database) (reset-es-indexes))
-(defn teardown [] (reset-database))
 
 (defn each-fixture [f]
-  (setup)
+  (reset)
   (f)
-  (teardown))
+  (reset))
 
 (defn reset-fixture
   "Creates a database fixture function to reset the database after every test.
@@ -275,7 +261,8 @@
   [& provider-ids]
   (fn [f]
     (try
-      (setup)
+      (reset)
       (doseq [pid provider-ids] (create-provider pid))
       (f)
-      (finally (reset-database)))))
+      (finally
+        (reset)))))

@@ -1,7 +1,7 @@
-(ns cmr.system-int-test.collection-helper-test
+(ns cmr.system-int-test.data.collection-helper-test
   "Tests generating UMM collection."
   (:require [clojure.test :refer :all]
-            [cmr.system-int-test.collection-helper :as ch]
+            [cmr.system-int-test.data.collection-helper :as ch]
             [cmr.common.date-time-parser :as p]))
 
 (deftest generated-collection-has-correct-field-value-test

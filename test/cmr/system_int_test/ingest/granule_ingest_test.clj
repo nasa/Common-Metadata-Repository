@@ -1,13 +1,13 @@
 (ns ^{:doc "CMR granule ingest integration tests"}
-  cmr.system-int-test.granule-ingest-test
+  cmr.system-int-test.ingest.granule-ingest-test
   (:require [clojure.test :refer :all]
-            [cmr.system-int-test.ingest-util :as ingest]
-            [cmr.system-int-test.index-util :as index]
+            [cmr.system-int-test.utils.ingest-util :as ingest]
+            [cmr.system-int-test.utils.index-util :as index]
             [ring.util.io :as io]
             [clj-http.client :as client]
             [cheshire.core :as cheshire]
             [clojure.string :as string]
-            [cmr.system-int-test.ingest-util :as util]))
+            [cmr.system-int-test.utils.ingest-util :as util]))
 
 ;;; tests
 ;;; ensure metadata, indexer and ingest apps are accessable on ports 3001, 3004 and 3002 resp;

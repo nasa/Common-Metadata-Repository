@@ -1,4 +1,4 @@
-(ns cmr.system-int-test.granule-helper
+(ns cmr.system-int-test.data.granule-helper
   "Provides function to generate UMM granule with generated values and use the given values if provided."
   (:require [cmr.umm.test.generators :as test-gen]
             [clojure.test.check.generators :as gen]))
