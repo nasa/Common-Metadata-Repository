@@ -8,8 +8,9 @@
             [cmr.umm.echo10.collection :as collection]
             [cmr.umm.echo10.granule :as granule]
             [cheshire.core :as cheshire]
+            [cmr.indexer.data.elasticsearch-properties :as es-prop]
+            [cmr.indexer.data.index-set :as idx-set]
             [cmr.system-trace.core :refer [deftracefn]]))
-
 
 (def concept-prefix->type
   {\C :collection
@@ -37,10 +38,12 @@
   (let [concept (meta-db/get-concept context concept-id revision-id)
         concept-type (concept-id->type concept-id)
         umm-concept (parse-concept concept)
-        es-doc (concept->elastic-doc concept umm-concept)]
+        es-doc (concept->elastic-doc concept umm-concept)
+        index-set-id (get-in es-prop/index-set [:index-set :id])]
     (es/save-document-in-elastic
-      context (@es/es-concept-indices concept-type) (@es/es-concept-mapping-types concept-type) es-doc (Integer. revision-id) ignore-conflict)))
-
+      context
+      ((idx-set/es-concept-indices index-set-id) concept-type)
+      ((idx-set/es-concept-mapping-types index-set-id) concept-type) es-doc (Integer. revision-id) ignore-conflict)))
 
 (deftracefn delete-concept
   "Delete the concept with the given id"
@@ -49,10 +52,12 @@
   ;; Assuming ingest will pass enough info for deletion
   ;; We should avoid making calls to metadata db to get the necessary info if possible
   (let [es-config (-> context :system :db :config)
-        concept-type (concept-id->type id)]
+        concept-type (concept-id->type id)
+        index-set-id (get-in es-prop/index-set [:index-set :id])]
     (es/delete-document-in-elastic
-      context es-config (@es/es-concept-indices concept-type) (@es/es-concept-mapping-types concept-type) id revision-id ignore-conflict)))
-
+      context es-config
+      ((idx-set/es-concept-indices index-set-id) concept-type)
+      ((idx-set/es-concept-mapping-types index-set-id) concept-type) id revision-id ignore-conflict)))
 
 (deftracefn reset-indexes
   "Delegate reset elastic indices operation to index-set app"
@@ -74,7 +79,7 @@
       {} (es-index concept-type) (es-mapping-type concept-type) es-doc (Integer. revision-id) ignore-conflict))
 
   (def valid-collection-xml
-  "<Collection>
+    "<Collection>
     <ShortName>MINIMAL</ShortName>
     <VersionId>1</VersionId>
     <InsertTime>1999-12-31T19:00:00-05:00</InsertTime>
@@ -84,9 +89,9 @@
     <Description>A minimal valid collection</Description>
     <Orderable>true</Orderable>
     <Visible>true</Visible>
-  </Collection>")
+    </Collection>")
 
-(let [concept-id "C1234-PROV1"
+  (let [concept-id "C1234-PROV1"
         revision-id "1"
         ignore-conflict true
         concept {:concept-id concept-id

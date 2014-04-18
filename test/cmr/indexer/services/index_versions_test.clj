@@ -115,11 +115,11 @@
 
 ;; TODO update this test with ignore-conflict true/false after the external_gte support is added
 (deftest save-with-equal-versions-test
-    (testing "Save with equal versions"
-      (es/save-document-in-elastic {} "tests" "collection" (es-doc) 0 true)
-      (assert-version "C1234-PROV1" 0)
-      (es/save-document-in-elastic {} "tests" "collection" (es-doc) 0 true)
-      (assert-version "C1234-PROV1" 0)))
+  (testing "Save with equal versions"
+    (es/save-document-in-elastic {} "tests" "collection" (es-doc) 0 true)
+    (assert-version "C1234-PROV1" 0)
+    (es/save-document-in-elastic {} "tests" "collection" (es-doc) 0 true)
+    (assert-version "C1234-PROV1" 0)))
 
 (deftest save-with-earlier-versions-test
   (testing "Save with earlier versions with ignore-conflict false"
@@ -163,7 +163,7 @@
       (catch java.lang.Exception e
         (is (re-find #"version conflict, current \[2\], provided \[1\]" (.getMessage e))))))
   (testing "Delete with earlier versions ignore-conflict true"
-      (es/save-document-in-elastic {} "tests" "collection" (es-doc) 2 true)
-      (es/delete-document-in-elastic {} test-config "tests" "collection" "C1234-PROV1" "1" true)
-      (assert-version "C1234-PROV1" 2)))
+    (es/save-document-in-elastic {} "tests" "collection" (es-doc) 2 true)
+    (es/delete-document-in-elastic {} test-config "tests" "collection" "C1234-PROV1" "1" true)
+    (assert-version "C1234-PROV1" 2)))
 

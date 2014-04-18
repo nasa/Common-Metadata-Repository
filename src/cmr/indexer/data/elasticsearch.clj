@@ -4,22 +4,11 @@
             [clojurewerkz.elastisch.rest.index :as esi]
             [clojurewerkz.elastisch.rest.document :as doc]
             [clj-http.client :as client]
-            [cheshire.core :as cheshire]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.services.errors :as errors]
-            [cmr.indexer.data.elasticsearch-properties :as es-prop]
+            [cmr.indexer.data.index-set :as idx-set]
             [cmr.system-trace.core :refer [deftracefn]]))
 
-
-;; TODO - have functionality in indexer app to use multiple indices of a concept
-;;indexer app to fetch and remember info from index-set app only at the start up time
-;; map of concept-type to elasticsearch index name
-(def es-concept-indices (atom {}))
-
-
-;;indexer app to fetch and remember info from index-set app only at the start up time
-;; map of concept-type to elasticsearch index type
-(def es-concept-mapping-types (atom {}))
 
 (defn- connect-with-config
   "Connects to ES with the given config"
@@ -29,87 +18,11 @@
     (esr/connect! (str "http://" host ":" port))))
 
 
-(defn  get-index-set
-  "submit a request to index-set app to fetch an index-set assoc with an id"
-  [id]
-  (let [response (client/request
-                   {:method :get
-                    :url (format "%s/%s" es-prop/index-set-url (str id))
-                    :accept :json
-                    :throw-exceptions false})
-        status (:status response)
-        body (cheshire/parse-string (:body response))
-        fetched-index-set (cheshire/decode (:body response) true)
-        errors-str (cheshire/generate-string (flatten (get body "errors")))]
-    {:status status :errors-str errors-str :fetched-index-set fetched-index-set :response response}))
-
-(defn  create-index-set-req
-  "submit a request to index-set app to create indices"
-  [idx-set]
-  (let [response (client/request
-                   {:method :post
-                    :url es-prop/index-set-url
-                    :body (cheshire.core/generate-string idx-set)
-                    :content-type :json
-                    :accept :json
-                    :throw-exceptions false})
-        status (:status response)
-        body (cheshire/parse-string (:body response))
-        errors-str (cheshire/generate-string (flatten (get body "errors")))]
-    {:status status :errors-str errors-str :response response}))
-
-(defn create-index-set
-  "submit a request to create index-set"
-  [index-set]
-  (let [{:keys [status errors-str response]} (create-index-set-req index-set)]
-    (when-not (= 201 status)
-      (errors/internal-error! (format "Failed to create index-set: %s, errors: %s, index-set app response: %s"
-                                      (cheshire/generate-string index-set) errors-str response)))))
-
-(defn set-concept-indices-info
-  "fetch index names and mapping types for each concept type from index-set app"
-  [index-set-id]
-  (let [{:keys [status fetched-index-set errors-str response]} (get-index-set index-set-id)]
-    (when-not (= 200 status)
-      (errors/internal-error! (format "index-set with id: %s not found. index-set app reported errors: %s, response: %s"
-                                      index-set-id errors-str response)))
-    (reset!  es-concept-indices {:collection (first (vals (get-in fetched-index-set [:index-set :concepts :collection])))
-                                 :granule (first (vals (get-in fetched-index-set [:index-set :concepts :granule])))})
-    (reset! es-concept-mapping-types {:collection (name (first (keys (get-in fetched-index-set [:index-set :collection :mapping]))))
-                                      :granule (name (first (keys (get-in fetched-index-set [:index-set :granule :mapping]))))})))
-
-(defn- create-indexes
-  "Create elastic index for each index name"
-  []
-  (let [index-set es-prop/index-set
-        index-set-id (get-in index-set [:index-set :id])
-        {:keys [status]} (get-index-set index-set-id)]
-    (when (= 404 status)
-      (info "Creating index-set: " (cheshire/generate-string index-set))
-      (create-index-set index-set))
-    (set-concept-indices-info index-set-id)))
-
-
-(defn- delete-indexes
-  "Delete configured elastic indexes"
-  []
-  (let [response (client/request
-                   {:method :post
-                    :url es-prop/index-set-reset-url
-                    :content-type :json
-                    :accept :json
-                    :throw-exceptions false})
-        status (:status response)
-        body (cheshire/parse-string (:body response))
-        errors-str (cheshire/generate-string (flatten (get body "errors")))]
-    {:status status :errors-str errors-str :response response}))
-
-
 (defn reset-es-store
   "Delete elasticsearch indexes and re-create them via index-set app. A nuclear option just for the development team."
   []
-  (delete-indexes)
-  (create-indexes))
+  (idx-set/delete-indexes)
+  (idx-set/create-indexes))
 
 
 (defrecord ESstore
@@ -124,7 +37,7 @@
   (start
     [this system]
     (connect-with-config (:config this))
-    (create-indexes)
+    (idx-set/create-indexes)
     this)
 
   (stop [this system]
