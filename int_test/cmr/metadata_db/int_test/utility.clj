@@ -183,7 +183,7 @@
   [concept]
   (let [{:keys [concept-id revision-id]} concept
         stored-concept (:concept (get-concept-by-id-and-revision concept-id revision-id))]
-    (is (= concept stored-concept))))
+    (= concept stored-concept)))
 
 (defn create-and-save-collection
   "Creates, saves, and returns a concept with its data from metadata-db"

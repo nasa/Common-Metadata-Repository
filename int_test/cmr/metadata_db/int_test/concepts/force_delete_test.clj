@@ -23,10 +23,10 @@
     (testing "revision is gone"
       (is (= 404 (:status (util/get-concept-by-id-and-revision concept-id 1)))))
     (testing "earlier revisions still available"
-      (util/verify-concept-was-saved (assoc coll :revision-id 0)))
+      (is (util/verify-concept-was-saved (assoc coll :revision-id 0))))
     (testing "later revisions still available"
-      (util/verify-concept-was-saved (assoc coll :revision-id 2))
-      (util/verify-concept-was-saved (assoc coll :revision-id 3)))
+      (is (util/verify-concept-was-saved (assoc coll :revision-id 2)))
+      (is (util/verify-concept-was-saved (assoc coll :revision-id 3))))
     (testing "delete non-existant revision gets 404"
       (is (= 404 (:status (util/force-delete-concept concept-id 1))))
       (is (= 404 (:status (util/force-delete-concept concept-id 22)))))))
@@ -43,10 +43,10 @@
     (testing "revision is gone"
       (is (= 404 (:status (util/get-concept-by-id-and-revision concept-id 1)))))
     (testing "earlier revisions still available"
-      (util/verify-concept-was-saved (assoc gran :revision-id 0)))
+      (is (util/verify-concept-was-saved (assoc gran :revision-id 0))))
     (testing "later revisions still available"
-      (util/verify-concept-was-saved (assoc gran :revision-id 2))
-      (util/verify-concept-was-saved (assoc gran :revision-id 3)))
+      (is (util/verify-concept-was-saved (assoc gran :revision-id 2)))
+      (is (util/verify-concept-was-saved (assoc gran :revision-id 3))))
     (testing "delete non-existant revision gets 404"
       (is (= 404 (:status (util/force-delete-concept concept-id 1))))
       (is (= 404 (:status (util/force-delete-concept concept-id 22)))))))

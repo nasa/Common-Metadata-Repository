@@ -16,18 +16,18 @@
 (deftest save-collection-test
   (let [concept (util/collection-concept "PROV1" 1)
         {:keys [status revision-id concept-id]} (util/save-concept concept)]
-    (is (= status 201))
+    (is (= 201 status))
     (is (= revision-id 0))
-    (util/verify-concept-was-saved (assoc concept :revision-id revision-id :concept-id concept-id))))
+    (is (util/verify-concept-was-saved (assoc concept :revision-id revision-id :concept-id concept-id)))))
 
 (deftest save-granule-test
   (let [collection (util/collection-concept "PROV1" 1)
         parent-collection-id (:concept-id (util/save-concept collection))
         granule (util/granule-concept "PROV1" parent-collection-id 1)
         {:keys [status revision-id concept-id]} (util/save-concept granule)]
-    (is (= status 201))
+    (is (= 201 status))
     (is (= revision-id 0))
-    (util/verify-concept-was-saved (assoc granule :revision-id revision-id :concept-id concept-id))))
+    (is (util/verify-concept-was-saved (assoc granule :revision-id revision-id :concept-id concept-id)))))
 
 (deftest save-concept-test-with-proper-revision-id-test
   (let [concept (util/collection-concept "PROV1" 1)]
@@ -37,9 +37,9 @@
       ;; save it again with a valid revision-id
       (let [updated-concept (assoc concept :revision-id new-revision-id :concept-id concept-id)
             {:keys [status revision-id]} (util/save-concept updated-concept)]
-        (is (= status 201))
+        (is (= 201 status))
         (is (= revision-id new-revision-id))
-        (util/verify-concept-was-saved updated-concept)))))
+        (is (util/verify-concept-was-saved updated-concept))))))
 
 (deftest save-concept-with-bad-revision-test
   (let [concept (util/collection-concept "PROV1" 1)
@@ -48,7 +48,7 @@
         {:keys [status]} (util/save-concept concept-with-bad-revision)
         {:keys [retrieved-concept]} (util/get-concept-by-id (:concept-id concept))
         retrieved-revision (:revision-id retrieved-concept)]
-    (is (= status 409))
+    (is (= 409 status))
     (is (nil? retrieved-revision))))
 
 (deftest save-concept-with-missing-required-parameter
@@ -66,7 +66,7 @@
         {:keys [concept-id]} (util/save-concept concept)]
     (is (= 200 (:status (util/delete-concept concept-id))))
     (let [{:keys [status revision-id]} (util/save-concept concept)]
-      (is (= status 201))
+      (is (= 201 status))
       (is (= revision-id 2)))))
 
 (deftest save-granule-with-concept-id
@@ -74,10 +74,16 @@
         parent-collection-id (:concept-id (util/save-concept collection))
         granule (util/granule-concept "PROV1" parent-collection-id 1 "G10-PROV1")
         {:keys [status revision-id concept-id]} (util/save-concept granule)]
-    (is (= status 201))
+    (is (= 201 status))
     (is (= revision-id 0))
-    (util/verify-concept-was-saved (assoc granule :revision-id revision-id :concept-id concept-id))))
+    (is (util/verify-concept-was-saved (assoc granule :revision-id revision-id :concept-id concept-id)))))
 
+(deftest save-granule-with-nil-required-field
+  (testing "nil parent-collection-id"
+    (let [granule (util/granule-concept "PROV1" nil 1)
+        {:keys [status revision-id concept-id]} (util/save-concept granule)]
+    (is (= 422 status))
+    (is (not (util/verify-concept-was-saved (assoc granule :revision-id revision-id :concept-id concept-id)))))))
 
 ;;; TODO - add test for saving concept with concept-type, provider-id, and native-id
 ;;; of existing concept but with different concept-id to be sure it fails.
@@ -95,4 +101,4 @@
           status (:status response)
           body (cheshire/parse-string (:body response))
           errors (get body "errors")]
-      (is (= status 400))))
+      (is (= 400 status))))

@@ -47,6 +47,9 @@
 (defn missing-extra-field [field]
   (format "Concept must include extra-field value for field [%s]" (name field)))
 
+(defn nil-field [field]
+  (format "Concept field [%s] cannot be nil." (name field)))
+
 (defn find-not-supported [concept-type params]
   (format "Finding concept type [%s] with parameter combination [%s] is not supported."
           (name concept-type)

@@ -26,13 +26,28 @@
    :granule #{:parent-collection-id}})
 
 (defn extra-fields-missing-validation
-  "Validates that the concept is provided with extra fields and that all of them are present."
+  "Validates that the concept is provided with extra fields and that all of them are present and not nil."
   [concept]
   (if-let [extra-fields (:extra-fields concept)]
     (map #(msg/missing-extra-field %)
          (set/difference (concept-type->required-extra-fields (:concept-type concept))
                          (set (keys extra-fields))))
     [(msg/missing-extra-fields)]))
+
+(defn nil-fields-validation
+  "Validates that none of the fields are nil."
+  [concept]
+  (reduce-kv (fn [acc field value]
+               (if (nil? value)
+                 (conj acc (msg/nil-field field))
+                 acc))
+             []
+             concept))
+
+(defn nil-extra-fields-validation
+  "Validates that none of the extra fields are nil."
+  [concept]
+  (nil-fields-validation (:extra-fields concept)))
 
 (defn concept-id-validation
   [concept]
@@ -55,6 +70,8 @@
                              native-id-missing-validation
                              concept-id-validation
                              extra-fields-missing-validation
+                             nil-fields-validation
+                             nil-extra-fields-validation
                              concept-id-match-fields-validation]))
 
 (def validate-concept

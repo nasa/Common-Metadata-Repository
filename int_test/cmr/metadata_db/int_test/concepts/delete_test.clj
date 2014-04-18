@@ -20,7 +20,7 @@
     (is (= status 200))
     (is (= revision-id 3))
     ;; Other data left in database
-    (util/verify-concept-was-saved collection2)))
+    (is (util/verify-concept-was-saved collection2))))
 
 (deftest delete-collection-with-valid-revision-test
   (let [collection1 (util/create-and-save-collection "PROV1" 1 3)
@@ -36,7 +36,7 @@
     (is (= status 200))
     (is (= revision-id 3))
     ;; Other data left in database
-    (util/verify-concept-was-saved granule2)))
+    (is (util/verify-concept-was-saved granule2))))
 
 (deftest delete-granule-with-valid-revision-test
   (let [parent-coll-id (:concept-id (util/create-and-save-collection "PROV1" 1))
