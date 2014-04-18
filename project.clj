@@ -17,6 +17,7 @@
                  ; include ring-core to support encoding of params
                  [ring/ring-core "1.2.2"]
                  [cheshire "5.2.0"]]
+  :plugins [[lein-test-out "0.3.1"]]
 
   :profiles
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.4"]
