@@ -10,6 +10,11 @@
             [clojure.walk :as walk]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.api.errors :as errors]
+
+            ;; These must be required here to make multimethod implementations available.
+            [cmr.indexer.services.collection]
+            [cmr.indexer.services.granule]
+
             [cmr.indexer.services.index-service :as index-svc]
             [cmr.system-trace.http :as http-trace]))
 
