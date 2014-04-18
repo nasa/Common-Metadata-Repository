@@ -1,34 +1,58 @@
 (ns ^{:doc "helper to provide the urls to various service endpoints"}
   cmr.system-int-test.utils.url-helper
-  (:require [ring.util.codec :as codec]))
+  (:require [ring.util.codec :as codec]
+            [clojure.string :as str]))
 
-(def elastic_root "http://localhost:9210")
+(defn config-value
+  "Retrieves a configuration value which can be set as an environment variable on the command line
+  or default to a value"
+  [config-name default-value]
+  (let [env-name (str "CMR_" (-> config-name
+                                 name
+                                 (str/replace "-" "_")
+                                 str/upper-case))]
+    (or (System/getenv env-name)
+        default-value)))
 
-(def create-provider-url "http://localhost:3001/providers")
+(def elastic-port (config-value :elastic-port 9210))
+
+(def metadata-db-port (config-value :metadata-db-port 3001))
+
+(def ingest-port (config-value :ingest-port 3002))
+
+(def indexer-port (config-value :indexer-port 3004))
+
+(def search-port (config-value :search-port 3003))
+
+(def elastic_root (format "http://localhost:%s" elastic-port))
+
+(def create-provider-url (format "http://localhost:%s/providers" metadata-db-port))
 
 (defn delete-provider-url
   [provider-id]
-  (format "http://localhost:3001/providers/%s" provider-id))
+  (format "http://localhost:%s/providers/%s" metadata-db-port provider-id))
 
 (defn collection-ingest-url
   [provider-id native-id]
-  (format "http://localhost:3002/providers/%s/collections/%s"
+  (format "http://localhost:%s/providers/%s/collections/%s"
+          ingest-port
           provider-id
           native-id))
 
 (defn collection-search-url
   [params]
-  (str "http://localhost:3003/collections?" (codec/form-encode params)))
+  (format "http://localhost:%s/collections?%s" search-port (codec/form-encode params)))
 
 (defn granule-ingest-url
   [provider-id native-id]
-  (format "http://localhost:3002/providers/%s/granules/%s"
+  (format "http://localhost:%s/providers/%s/granules/%s"
+          ingest-port
           provider-id
           native-id))
 
 (defn granule-search-url
   [params]
-  (str "http://localhost:3003/granules?" (codec/form-encode params)))
+  (format "http://localhost:%s/granules?%s" search-port (codec/form-encode params)))
 
 (defn elastic-flush-url
   []
@@ -37,22 +61,25 @@
 (defn mdb-concept-url
   "URL to concept in mdb."
   [concept-id revision-id]
-  (format "http://localhost:3001/concepts/%s/%s" concept-id revision-id))
+  (format "http://localhost:%s/concepts/%s/%s" metadata-db-port concept-id revision-id))
 
 (defn mdb-reset-url
   "Force delete all concepts from mdb."
   []
-  (format "http://localhost:3001/reset"))
+  (format "http://localhost:%s/reset" metadata-db-port))
 
 (defn indexer-reset-url
   "Delete and re-create indexes in elastic. Only development team to use this functionality."
   []
-  (format "http://localhost:3004/reset"))
+  (format "http://localhost:%s/reset" indexer-port))
 
 ;; discard this once oracle impl is in place
 (defn mdb-concept-coll-id-url
   "URL to access a collection concept in mdb with given prov and native id."
   [provider-id native-id]
-  (format "http://localhost:3001/concept-id/collection/%s/%s" provider-id native-id))
+  (format "http://localhost:%s/concept-id/collection/%s/%s"
+          metadata-db-port
+          provider-id
+          native-id))
 
 
