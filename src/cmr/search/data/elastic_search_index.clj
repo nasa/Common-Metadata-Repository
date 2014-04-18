@@ -8,6 +8,11 @@
             [cmr.common.lifecycle :as lifecycle]
             [cmr.search.models.results :as results]
             [cmr.search.data.query-to-elastic :as q2e]
+
+            ;; Query To Elastic implementations
+            ;; Must be required here to be available in uberjar
+            [cmr.search.data.temporal-to-elastic]
+
             [cmr.search.data.elastic-results-to-query-results :as rc]
             [cmr.system-trace.core :refer [deftracefn]]))
 

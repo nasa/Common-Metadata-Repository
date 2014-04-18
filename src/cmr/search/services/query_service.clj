@@ -13,9 +13,19 @@
   - Convert query results into requested format"
   (:require [cmr.search.data.elastic-search-index :as idx]
             [cmr.search.models.query :as qm]
+
+            ;; parameter-converters
+            ;; These must be required here to make multimethod implementations available.
             [cmr.search.services.parameters :as p]
-            [cmr.search.services.parameter-validation :as pv]
+            [cmr.search.services.parameter-converters.collection-query]
+            [cmr.search.services.parameter-converters.temporal]
+
+            ;; Validation
             [cmr.search.validators.validation :as v]
+            [cmr.search.validators.temporal]
+            [cmr.search.validators.date-range]
+
+            [cmr.search.services.parameter-validation :as pv]
             [cmr.search.services.collection-query-resolver :as r]
             [cmr.system-trace.core :refer [deftracefn]]
             [cmr.common.services.errors :as err]))
