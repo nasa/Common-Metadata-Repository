@@ -13,9 +13,7 @@
 
 (def app-control-functions
   "A map of application name to the start function"
-  {:elastic-server {:start #(when % (lifecycle/start % nil))
-                    :stop  #(when % (lifecycle/stop % nil))}
-   :metadata-db {:start mdb-system/start
+  {:metadata-db {:start mdb-system/start
                  :stop mdb-system/stop}
    :indexer {:start indexer-system/start
              :stop indexer-system/stop}
@@ -35,35 +33,65 @@
   [type]
 
   ;; Memory DB configured to run in memory
-  {:metadata-db (assoc (mdb-system/create-system)
-                       :db (memory/create-db))
+  {:apps {:metadata-db (assoc (mdb-system/create-system)
+                              :db (memory/create-db))
 
-   ;; An in memory instance of elastic
-   :elastic-server (elastic-server/create-server
-                     in-memory-elastic-port
-                     (+ in-memory-elastic-port 10))
 
-   ;; Indexer will use embedded elastic server
-   :indexer (assoc (indexer-system/create-system)
-                   :db (es-index/create-elasticsearch-store
-                         {:host "localhost"
-                          :port in-memory-elastic-port
-                          :admin-token "none"}))
+          ;; Indexer will use embedded elastic server
+          :indexer (assoc (indexer-system/create-system)
+                          :db (es-index/create-elasticsearch-store
+                                {:host "localhost"
+                                 :port in-memory-elastic-port
+                                 :admin-token "none"}))
 
-   :ingest (ingest-system/create-system)
+          :ingest (ingest-system/create-system)
 
-   ;; Search will use the embedded elastic server
-   :search (assoc (search-system/create-system)
-                  :search-index
-                  (es-search/create-elastic-search-index
-                    "localhost" in-memory-elastic-port))})
+          ;; Search will use the embedded elastic server
+          :search (assoc (search-system/create-system)
+                         :search-index
+                         (es-search/create-elastic-search-index
+                           "localhost" in-memory-elastic-port))}
+   :components {:elastic-server (elastic-server/create-server
+                                  in-memory-elastic-port
+                                  (+ in-memory-elastic-port 10))}})
 
 (defmethod create-system :external-dbs
   [type]
-  {:metadata-db (mdb-system/create-system)
-   :indexer (indexer-system/create-system)
-   :ingest (ingest-system/create-system)
-   :search (search-system/create-system)})
+  {:apps {:metadata-db (mdb-system/create-system)
+          :indexer (indexer-system/create-system)
+          :ingest (ingest-system/create-system)
+          :search (search-system/create-system)}
+   :components {}})
+
+(defn- start-components
+  [system]
+  (reduce (fn [system component]
+            (update-in system [:components component]
+                       #(lifecycle/start % system)))
+          system
+          (keys (:components system))))
+
+(defn- start-apps
+  [system]
+  (reduce (fn [system [app {start-fn :start}]]
+            (update-in system [:apps app] start-fn))
+          system
+          app-control-functions))
+
+(defn- stop-components
+  [system]
+  (reduce (fn [system component]
+            (update-in system [:components component]
+                       #(lifecycle/stop % system)))
+          system
+          (keys (:components system))))
+
+(defn- stop-apps
+  [system]
+  (reduce (fn [system [app {stop-fn :stop}]]
+            (update-in system [:apps app] stop-fn))
+          system
+          app-control-functions))
 
 
 (defn start
@@ -72,10 +100,9 @@
   [this]
   (info "System starting")
 
-  (reduce (fn [system [app {start-fn :start}]]
-            (update-in system [app] start-fn))
-          this
-          app-control-functions))
+  (-> this
+      start-components
+      start-apps))
 
 
 (defn stop
@@ -84,7 +111,6 @@
   [this]
   (info "System shutting down")
 
-  (reduce (fn [system [app {stop-fn :stop}]]
-            (update-in system [app] stop-fn))
-          this
-          app-control-functions))
+  (-> this
+      stop-apps
+      stop-components))

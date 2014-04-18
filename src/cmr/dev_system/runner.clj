@@ -3,7 +3,9 @@
   (:require [cmr.dev-system.system :as system]
             [clojure.tools.cli :refer [cli]]
             [clojure.string :as string]
-            [cmr.common.log :refer (debug info warn error)])
+            [cmr.common.log :refer (debug info warn error)]
+            [cmr.common.api.web-server :as web]
+            [cmr.dev-system.control :as control])
   (:gen-class))
 
 
@@ -23,5 +25,7 @@
   [& args]
   (let [{:keys [port]} (parse-args args)
         system (system/create-system :in-memory)
+        control-server (web/create-web-server 2999 control/make-api)
+        system (assoc-in system [:components :control-server] control-server)
         system (system/start system)]
     (info "Running...")))
