@@ -1,7 +1,8 @@
 (ns cmr.metadata-db.services.provider-service
   (require [cmr.metadata-db.data.providers :as providers]
            [cmr.common.services.errors :as errors]
-           [cmr.metadata-db.services.messages :as messages]
+           [cmr.metadata-db.services.messages :as msg]
+           [cmr.common.services.messages :as cmsg]
            [cmr.metadata-db.services.util :as util]
            [cmr.common.log :refer (debug info warn error)]
            [cmr.system-trace.core :refer [deftracefn]]))
@@ -17,8 +18,8 @@
     (when error-code
       (cond
         (= error-code :provider-id-conflict)
-        (messages/data-error :conflict
-                             messages/provider-exists
+        (cmsg/data-error :conflict
+                             msg/provider-exists
                              provider-id)
 
         :else
@@ -42,7 +43,7 @@
     (when error-code
       (cond
         (= error-code :not-found)
-        (messages/data-error :not-found messages/provider-does-not-exist provider-id)
+        (cmsg/data-error :not-found msg/provider-does-not-exist provider-id)
 
         :else
         (errors/internal-error! (:error-message result))))))

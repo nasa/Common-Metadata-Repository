@@ -1,9 +1,5 @@
 (ns cmr.metadata-db.services.messages
-  (:require [clojure.string :as str]
-            [cmr.common.services.errors :as errors]))
-
-(defn data-error [error-type msg-fn & args]
-  (errors/throw-service-error error-type (apply msg-fn args)))
+  (:require [clojure.string :as str]))
 
 (defn missing-concept-id [concept-type provider-id native-id]
   (format

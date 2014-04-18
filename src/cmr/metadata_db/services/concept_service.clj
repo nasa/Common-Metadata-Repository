@@ -4,6 +4,7 @@
             [cmr.common.services.errors :as errors]
             [cmr.common.concepts :as cu]
             [cmr.metadata-db.services.messages :as msg]
+            [cmr.common.services.messages :as cmsg]
             [cmr.metadata-db.services.util :as util]
             [cmr.metadata-db.services.concept-validations :as cv]
             [cmr.metadata-db.services.provider-service :as provider-service]
@@ -76,7 +77,7 @@
        ;; both provided
        (let [result (check-concept-revision-id db concept previous-revision)]
          (when (= (:status result) :fail)
-           (msg/data-error :conflict
+           (cmsg/data-error :conflict
                            msg/invalid-revision-id
                            (:expected result)
                            revision-id)))
@@ -84,7 +85,7 @@
        revision-id
        ;; only revision-id provided so it should be zero (no concept-id has been assigned yet)
        (when-not (= revision-id 0)
-         (msg/data-error :conflict
+         (cmsg/data-error :conflict
                          msg/invalid-revision-id
                          0
                          revision-id))
@@ -109,13 +110,13 @@
     (condp = error-code
       :revision-id-conflict
       (when revision-id-provided?
-        (msg/data-error :conflict
+        (cmsg/data-error :conflict
                         msg/invalid-revision-id-unknown-expected
                         revision-id-provided?))
 
       :concept-id-concept-conflict
       (let [{:keys [concept-id concept-type provider-id native-id]} concept]
-        (msg/data-error :conflict
+        (cmsg/data-error :conflict
                         msg/concept-exists-with-differnt-id
                         concept-id
                         concept-type
@@ -145,7 +146,7 @@
          {:keys [concept-type provider-id]} (cu/parse-concept-id concept-id)]
      (validate-providers-exist db [provider-id])
      (or (c/get-concept db concept-type provider-id concept-id)
-         (msg/data-error :not-found
+         (cmsg/data-error :not-found
                          msg/concept-does-not-exist
                          concept-id))))
   ([context concept-id revision-id]
@@ -153,7 +154,7 @@
          {:keys [concept-type provider-id]} (cu/parse-concept-id concept-id)]
      (validate-providers-exist db [provider-id])
      (or (c/get-concept db concept-type provider-id concept-id revision-id)
-         (msg/data-error :not-found
+         (cmsg/data-error :not-found
                          msg/concept-with-concept-id-and-rev-id-does-not-exist
                          concept-id
                          revision-id)))))
@@ -233,11 +234,11 @@
           (let [revisioned-tombstone (set-or-generate-revision-id db tombstone previous-revision)]
             (try-to-save db revisioned-tombstone revision-id))))
       (if revision-id
-        (msg/data-error :not-found
+        (cmsg/data-error :not-found
                         msg/concept-with-concept-id-and-rev-id-does-not-exist
                         concept-id
                         revision-id)
-        ((msg/data-error :not-found
+        ((cmsg/data-error :not-found
                          msg/concept-does-not-exist
                          concept-id))))))
 
@@ -250,7 +251,7 @@
         concept (c/get-concept db concept-type provider-id concept-id revision-id)]
     (if concept
       (c/force-delete db concept-type provider-id concept-id revision-id)
-      (msg/data-error :not-found
+      (cmsg/data-error :not-found
                       msg/concept-with-concept-id-and-rev-id-does-not-exist
                       concept-id
                       revision-id))
@@ -272,7 +273,7 @@
         concept-id (c/get-concept-id db concept-type provider-id native-id)]
     (if concept-id
       concept-id
-      (msg/data-error :not-found
+      (cmsg/data-error :not-found
                       msg/missing-concept-id
                       concept-type
                       provider-id
