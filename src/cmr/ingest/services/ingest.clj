@@ -1,8 +1,10 @@
 (ns cmr.ingest.services.ingest
   (:require [cmr.ingest.data.mdb :as mdb]
             [cmr.ingest.data.indexer :as indexer]
+            [cmr.ingest.services.messages :as msg]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.services.errors :as serv-errors]
+            [cmr.common.services.messages :as cmsg]
             [cmr.umm.echo10.collection :as c]
             [cmr.umm.echo10.granule :as g]
             [clojure.string :as string]
@@ -38,11 +40,17 @@
         params (merge {:provider-id (:provider-id concept)} collection-ref)
         params (into {} (remove (comp empty? second) params))
         parent-collection-id (mdb/get-collection-concept-id context params)]
+    (when-not parent-collection-id
+      (cmsg/data-error :not-found
+                       msg/parent-collection-does-not-exist
+                       granule-ur))
     (assoc-in concept [:extra-fields :parent-collection-id] parent-collection-id)))
 
 (deftracefn save-concept
   "Store a concept in mdb and indexer and return concept-id and revision-id."
   [context concept]
+  ;; TODO break these checks out as validations and create a validation method that calls them
+  ;;      to validate before saving.
   (let [metadata (:metadata concept)
         content-type (:format concept)
         xml-content? (> (count metadata) smallest-xml-file-length)
