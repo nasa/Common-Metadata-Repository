@@ -10,10 +10,11 @@
 
 (def system nil)
 
+
 (defn start
   "Starts the current development system."
   []
-  (let [s (system/create-system)]
+  (let [s (system/create-system :external-dbs #_:in-memory)]
     (alter-var-root #'system
                     (constantly
                       (system/start s))))
@@ -23,7 +24,8 @@
   "Shuts down and destroys the current development system."
   []
   (alter-var-root #'system
-                  (fn [s] (when s (system/stop s)))))
+                  (fn [s]
+                    (when s (system/stop s)))))
 
 (defn reset []
   ; Stops the running code

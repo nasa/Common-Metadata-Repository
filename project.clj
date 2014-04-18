@@ -32,7 +32,8 @@
   :url "***REMOVED***projects/CMR/repos/cmr-dev-system/browse"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies ~(concat '[[org.clojure/clojure "1.5.1"]]
+  :dependencies ~(concat '[[org.clojure/clojure "1.5.1"]
+                           [nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]]
                          project-dependencies)
   :plugins [[lein-shell "0.4.0"]]
   :repl-options {:init-ns user}
@@ -42,6 +43,8 @@
                         [org.clojars.gjahad/debug-repl "0.3.3"]]
          :source-paths ["src" "dev" "test"]}
    :uberjar {:main cmr.dev-system.runner
+             ;; See http://stephen.genoprime.com/2013/11/14/uberjar-with-titan-dependency.html
+             :uberjar-merge-with {#"org\.apache\.lucene\.codecs\.*" [slurp str spit]}
              :aot :all}}
   :aliases {;; Creates the checkouts directory to the local projects
             "create-checkouts" ~create-checkouts-commands})
