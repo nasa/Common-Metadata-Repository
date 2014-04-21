@@ -39,3 +39,26 @@
               :concept-id concept-id
               :revision-id revision-id}))
          references)))
+
+
+(defn collection-concept
+  "Creates a collection concept"
+  [provider-id uniq-num]
+  {:short-name (str "short" uniq-num)
+   :version-id (str "V" uniq-num)
+   :long-name (str "A minimal valid collection" uniq-num)
+   :entry-title (str "MinimalCollection" uniq-num "V1")})
+
+(defn granule-concept
+  "Creates a granule concept"
+  [provider-id parent-collection-id uniq-num & concept-id]
+  (let [granule {:concept-type :granule
+                 :native-id (str "native-id " uniq-num)
+                 :provider-id provider-id
+                 :metadata (str "xml here " uniq-num)
+                 :format "echo10"
+                 :deleted false
+                 :extra-fields {:parent-collection-id parent-collection-id}}]
+    (if concept-id
+      (assoc granule :concept-id (first concept-id))
+      granule)))
