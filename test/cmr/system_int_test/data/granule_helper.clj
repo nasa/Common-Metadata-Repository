@@ -1,6 +1,6 @@
 (ns cmr.system-int-test.data.granule-helper
   "Provides function to generate UMM granule with generated values and use the given values if provided."
-  (:require [cmr.umm.test.generators :as test-gen]
+  (:require [cmr.umm.test.generators.granule :as gran-gen]
             [clojure.test.check.generators :as gen]))
 
 (defn- fill-in-value
@@ -22,7 +22,7 @@
   fields with no given values will be filled in with generated ones."
   [values]
   (let [{:keys [entry-title short-name version-id granule-ur]} values]
-        (-> (first (gen/sample test-gen/granules-entry-title 1))
+        (-> (first (gen/sample gran-gen/granules-entry-title 1))
             (fill-in-value :granule-ur granule-ur)
             (fill-in-collection-value :entry-title entry-title)
             (fill-in-collection-value :short-name short-name)
