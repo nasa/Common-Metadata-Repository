@@ -31,7 +31,7 @@
 
 (use-fixtures :once wrap-setup)
 
-(deftest search_with_page_size
+(deftest search-with-page-size
   (testing "Search with page size."
     (let [references (search/find-collection-refs {:provider "PROV1"
                                                    :page_size 5})]
