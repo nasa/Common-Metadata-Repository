@@ -79,7 +79,7 @@
       200 body
       (errors/internal-error! (format "Unexpected error fetching index-set with id: %s,
                                       Index set app reported status: %s, error: %s"
-                                      id status (cheshire/generate-string (flatten (:errors body))))))))
+                                      id status (pr-str (flatten (:errors body))))))))
 
 (defn  get-elastic-config
   "Submit a request to index-set app to fetch an index-set assoc with an id"
@@ -87,28 +87,18 @@
   (let [response (client/request
                    {:method :get
                     :url index-set-es-cfg-url
-                    :accept :json
-                    :throw-exceptions false})
-        status (:status response)
-        body (cheshire/decode (:body response) true)]
-    (when-not (= 200 status)
-      (errors/internal-error! (cheshire/generate-string (flatten (:errors body)))))
-    body))
+                    :accept :json})]
+    (cheshire/decode (:body response) true)))
 
 
 (defn reset
   "Reset configured elastic indexes"
   []
-  (let [response (client/request
-                   {:method :post
-                    :url index-set-reset-url
-                    :content-type :json
-                    :accept :json
-                    :throw-exceptions false})
-        status (:status response)
-        body (cheshire/decode (:body response) true)]
-    (when-not (= 200 status)
-      (errors/internal-error! (cheshire/generate-string (flatten (:errors body)))))))
+  (client/request
+    {:method :post
+     :url index-set-reset-url
+     :content-type :json
+     :accept :json}))
 
 (defn create-index-set
   "Submit a request to create index-set"
@@ -120,20 +110,16 @@
                     :content-type :json
                     :accept :json
                     :throw-exceptions false})
-        status (:status response)
-        body (cheshire/decode (:body response) true)]
+        status (:status response)]
     (when-not (= 201 status)
       (errors/internal-error! (format "Failed to create index-set: %s, errors: %s"
                                       (cheshire/generate-string index-set)
-                                      (cheshire/generate-string (flatten (:errors body))))))))
+                                      (:body response))))))
 
 (defn get-concept-type-index-names
   "Fetch index names for each concept type from index-set app"
   [index-set-id]
   (let [fetched-index-set (get-index-set index-set-id)]
-    ; {:collection (first (vals (get-in fetched-index-set [:index-set :concepts :collection])))
-    ; :granule (first (vals (get-in fetched-index-set [:index-set :concepts :granule])))}
-    ;; super!! thanks Jason.
     (into {} (map (fn [[k v]] [k (first (vals v))])
                   (get-in fetched-index-set [:index-set :concepts])))))
 

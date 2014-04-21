@@ -7,6 +7,7 @@
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.services.errors :as errors]
             [cmr.indexer.data.index-set :as idx-set]
+            [cmr.indexer.data.cache :as cache]
             [cmr.system-trace.core :refer [deftracefn]]))
 
 
@@ -32,7 +33,6 @@
   (idx-set/reset)
   (create-indexes))
 
-
 (defrecord ESstore
   [
    ;; configuration of host, port and admin-token for elasticsearch
@@ -44,9 +44,10 @@
 
   (start
     [this system]
-    ; (connect-with-config (:config this))
-    (let [kv-store (-> system :sys-cache :kv-store)
-          elastic-config (get-in kv-store [:elastic-config])]
+    (let [cache (-> system :cache)
+          elastic-config (cache/cache-lookup cache
+                                             :elastic-config
+                                             (constantly (idx-set/get-elastic-config)))]
       (connect-with-config elastic-config))
     (create-indexes)
     this)

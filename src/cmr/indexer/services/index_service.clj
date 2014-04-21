@@ -9,6 +9,7 @@
             [cmr.umm.echo10.granule :as granule]
             [cheshire.core :as cheshire]
             [cmr.indexer.data.index-set :as idx-set]
+            [cmr.indexer.data.cache :as cache]
             [cmr.system-trace.core :refer [deftracefn]]))
 
 (def concept-prefix->type
@@ -36,9 +37,14 @@
   (info (format "Indexing concept %s, revision-id %s" concept-id revision-id))
   (let [concept (meta-db/get-concept context concept-id revision-id)
         concept-type (concept-id->type concept-id)
-        kv-store (-> context :system :sys-cache :kv-store)
-        concept-indices (get-in kv-store [:index-set :concept-indices])
-        concept-mapping-types (get-in kv-store [:index-set :concept-mapping-types])
+        cache (-> context :system :cache)
+        index-set-id (get-in idx-set/index-set [:index-set :id])
+        concept-indices (cache/cache-lookup cache
+                                            :concept-indices
+                                            (constantly (idx-set/get-concept-type-index-names index-set-id)))
+        concept-mapping-types (cache/cache-lookup cache
+                                                  :concept-mapping-types
+                                                  (constantly (idx-set/get-concept-mapping-types index-set-id)))
         umm-concept (parse-concept concept)
         es-doc (concept->elastic-doc concept umm-concept)]
     (es/save-document-in-elastic
@@ -52,19 +58,27 @@
   (info (format "Deleting concept %s, revision-id %s" id revision-id))
   ;; Assuming ingest will pass enough info for deletion
   ;; We should avoid making calls to metadata db to get the necessary info if possible
-  (let [kv-store (-> context :system :sys-cache :kv-store)
-        elastic-config (get-in kv-store [:elastic-config])
+  (let [cache (-> context :system :cache)
+        elastic-config (cache/cache-lookup cache
+                                           :elastic-config
+                                           (constantly (idx-set/get-elastic-config)))
         concept-type (concept-id->type id)
-        concept-indices (get-in kv-store [:index-set :concept-indices])
-        concept-mapping-types (get-in kv-store [:index-set :concept-mapping-types])]
+        index-set-id (get-in idx-set/index-set [:index-set :id])
+        concept-indices (cache/cache-lookup cache
+                                            :concept-indices
+                                            (constantly (idx-set/get-concept-type-index-names index-set-id)))
+        concept-mapping-types (cache/cache-lookup cache
+                                                  :concept-mapping-types
+                                                  (constantly (idx-set/get-concept-mapping-types index-set-id)))]
     (es/delete-document-in-elastic
       context elastic-config
       (concept-indices concept-type)
       (concept-mapping-types concept-type) id revision-id ignore-conflict)))
 
-
 (deftracefn reset-indexes
   "Delegate reset elastic indices operation to index-set app"
   [context]
+  (assoc-in (-> context :system) [:cache] (cache/create-cache))
   (es/reset-es-store))
+
 
