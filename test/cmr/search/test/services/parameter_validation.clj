@@ -36,6 +36,7 @@
     (is (= {:granule_ur "Dummy"} (pv/validate-parameters :granule {:granule_ur "Dummy"})))
     (is (thrown? clojure.lang.ExceptionInfo (pv/validate-parameters :collection {:granule_ur "Dummy"}))))
   (testing "errors thrown when parameters are invalid."
+    ;; TODO Refactor this to use (is (thrown-with-msg?.
     (try
       (pv/validate-parameters :collection {:entry_title "fdad"
                                            :foo 1
