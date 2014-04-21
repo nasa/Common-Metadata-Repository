@@ -23,9 +23,10 @@
   [context concept-type params headers]
   (let [result-format (get-search-results-format headers)
         pretty? (= (get params :pretty) "true")
+        page-size (or (:page_size params) 10)
         _ (info (format "Search for %ss in format [%s] with params [%s]" (name concept-type) result-format params))
-        params (dissoc params :pretty)
-        results (query-svc/find-concepts-by-parameters context concept-type params)]
+        params (dissoc params :pretty :page_size)
+        results (query-svc/find-concepts-by-parameters context concept-type params page-size)]
     {:status 200
      :headers {"Content-Type" (sr/format->mime-type result-format)}
      :body (sr/search-results->response results result-format pretty?)}))

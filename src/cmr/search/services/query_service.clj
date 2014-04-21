@@ -58,27 +58,27 @@
 
 (deftracefn execute-query
   "Executes a query returning results as concept id, native provider id, and revision id."
-  [context query]
-  (idx/execute-query context query))
+  [context page-size query]
+  (idx/execute-query context query page-size))
 
 (deftracefn find-concepts-by-query
   "Executes a search for concepts using a query The concepts will be returned with
   concept id and native provider id."
-  [context query]
+  [context page-size query]
   (->> query
        (validate-query context)
        (apply-acls context)
        (resolve-collection-query context)
        (simplify-query context)
-       (execute-query context)))
+       (execute-query context page-size)))
 
 (deftracefn find-concepts-by-parameters
   "Executes a search for concepts using the given parameters. The concepts will be returned with
   concept id and native provider id."
-  [context concept-type params]
+  [context concept-type params page-size]
 
   (->> params
        p/replace-parameter-aliases
        (pv/validate-parameters concept-type)
        (p/parameters->query concept-type)
-       (find-concepts-by-query context)))
+       (find-concepts-by-query context page-size)))
