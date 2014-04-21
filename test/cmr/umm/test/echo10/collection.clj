@@ -28,6 +28,7 @@
           parsed (c/parse-collection xml)]
       (= parsed collection))))
 
+
 ;; This is a made-up include all fields collection xml sample for the parse collection test
 (def all-fields-collection-xml
   "<Collection>
@@ -65,6 +66,24 @@
         <PeriodCycleDurationValue>7</PeriodCycleDurationValue>
       </PeriodicDateTime>
     </Temporal>
+    <AdditionalAttributes>
+      <AdditionalAttribute>
+        <Name>String add attrib</Name>
+        <DataType>STRING</DataType>
+        <Description>something string</Description>
+        <ParameterRangeBegin>alpha</ParameterRangeBegin>
+        <ParameterRangeEnd>bravo</ParameterRangeEnd>
+        <Value>alpha1</Value>
+      </AdditionalAttribute>
+      <AdditionalAttribute>
+        <Name>Float add attrib</Name>
+        <DataType>FLOAT</DataType>
+        <Description>something float</Description>
+        <ParameterRangeBegin>0.1</ParameterRangeBegin>
+        <ParameterRangeEnd>100.43</ParameterRangeEnd>
+        <Value>12.3</Value>
+      </AdditionalAttribute>
+    </AdditionalAttributes>
   </Collection>")
 
 (def valid-collection-xml
@@ -88,27 +107,46 @@
                                {:short-name "MINIMAL"
                                 :long-name "A minimal valid collection"
                                 :version-id "1"})
-                    :temporal-coverage (umm-c/map->TemporalCoverage
-                                         {:time-type "Universal Time"
-                                          :date-type "Eastern Daylight"
-                                          :temporal-range-type "Long Range"
-                                          :precision-of-seconds 1
-                                          :ends-at-present-flag false
-                                          :range-date-times [(umm-c/map->RangeDateTime
-                                                               {:beginning-date-time (p/string->datetime "1996-02-24T22:20:41-05:00")
-                                                                :ending-date-time (p/string->datetime "1997-03-24T22:20:41-05:00")})
-                                                             (umm-c/map->RangeDateTime
-                                                               {:beginning-date-time (p/string->datetime "1998-02-24T22:20:41-05:00")
-                                                                :ending-date-time (p/string->datetime "1999-03-24T22:20:41-05:00")})]
-                                          :single-date-times [(p/string->datetime "2010-01-05T05:30:30.550-05:00")]
-                                          :periodic-date-times [(umm-c/map->PeriodicDateTime
-                                                                  {:name "autumn, southwest"
-                                                                   :start-date (p/string->datetime "1998-08-12T20:00:00-04:00")
-                                                                   :end-date (p/string->datetime "1998-09-22T21:32:00-04:00")
-                                                                   :duration-unit "DAY"
-                                                                   :duration-value 3
-                                                                   :period-cycle-duration-unit "MONTH"
-                                                                   :period-cycle-duration-value 7})]})})
+                    :temporal-coverage
+                    (umm-c/map->TemporalCoverage
+                      {:time-type "Universal Time"
+                       :date-type "Eastern Daylight"
+                       :temporal-range-type "Long Range"
+                       :precision-of-seconds 1
+                       :ends-at-present-flag false
+                       :range-date-times
+                       [(umm-c/map->RangeDateTime
+                          {:beginning-date-time (p/string->datetime "1996-02-24T22:20:41-05:00")
+                           :ending-date-time (p/string->datetime "1997-03-24T22:20:41-05:00")})
+                        (umm-c/map->RangeDateTime
+                          {:beginning-date-time (p/string->datetime "1998-02-24T22:20:41-05:00")
+                           :ending-date-time (p/string->datetime "1999-03-24T22:20:41-05:00")})]
+                       :single-date-times
+                       [(p/string->datetime "2010-01-05T05:30:30.550-05:00")]
+                       :periodic-date-times
+                       [(umm-c/map->PeriodicDateTime
+                          {:name "autumn, southwest"
+                           :start-date (p/string->datetime "1998-08-12T20:00:00-04:00")
+                           :end-date (p/string->datetime "1998-09-22T21:32:00-04:00")
+                           :duration-unit "DAY"
+                           :duration-value 3
+                           :period-cycle-duration-unit "MONTH"
+                           :period-cycle-duration-value 7})]})
+                    :product-specific-attributes
+                    [(umm-c/map->ProductSpecificAttribute
+                       {:name "String add attrib"
+                        :description "something string"
+                        :data-type :string
+                        :parameter-range-begin "alpha"
+                        :parameter-range-end "bravo"
+                        :value "alpha1"})
+                     (umm-c/map->ProductSpecificAttribute
+                       {:name "Float add attrib"
+                        :description "something float"
+                        :data-type :float
+                        :parameter-range-begin 0.1
+                        :parameter-range-end 100.43
+                        :value 12.3})]})
         actual (c/parse-collection all-fields-collection-xml)]
     (is (= expected actual))))
 
@@ -121,15 +159,3 @@
             "Line 5 - cvc-datatype-valid.1.2.1: 'XXXX-12-31T19:00:00-05:00' is not a valid value for 'dateTime'."
             "Line 5 - cvc-type.3.1.3: The value 'XXXX-12-31T19:00:00-05:00' of element 'LastUpdate' is not valid."]
            (c/validate-xml (s/replace valid-collection-xml "1999" "XXXX"))))))
-
-(comment
-
-  (require '[clojure.test.check :as tc])
-  (tc/quick-check 1
-  (for-all [collection coll-gen/collections]
-    (let [xml (c/generate-collection collection)
-          _ (println "----xml: " xml)]
-      (and
-        (> (count xml) 0)
-        (= 0 (count (c/validate-xml xml)))))))
-  )
