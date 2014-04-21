@@ -8,7 +8,6 @@
             [cmr.umm.echo10.collection :as collection]
             [cmr.umm.echo10.granule :as granule]
             [cheshire.core :as cheshire]
-            [cmr.indexer.data.elasticsearch-properties :as es-prop]
             [cmr.indexer.data.index-set :as idx-set]
             [cmr.system-trace.core :refer [deftracefn]]))
 
@@ -37,13 +36,15 @@
   (info (format "Indexing concept %s, revision-id %s" concept-id revision-id))
   (let [concept (meta-db/get-concept context concept-id revision-id)
         concept-type (concept-id->type concept-id)
+        kv-store (-> context :system :sys-cache :kv-store)
+        concept-indices (get-in kv-store [:index-set :concept-indices])
+        concept-mapping-types (get-in kv-store [:index-set :concept-mapping-types])
         umm-concept (parse-concept concept)
-        es-doc (concept->elastic-doc concept umm-concept)
-        index-set-id (get-in es-prop/index-set [:index-set :id])]
+        es-doc (concept->elastic-doc concept umm-concept)]
     (es/save-document-in-elastic
       context
-      ((idx-set/es-concept-indices index-set-id) concept-type)
-      ((idx-set/es-concept-mapping-types index-set-id) concept-type) es-doc (Integer. revision-id) ignore-conflict)))
+      (concept-indices concept-type)
+      (concept-mapping-types concept-type) es-doc (Integer. revision-id) ignore-conflict)))
 
 (deftracefn delete-concept
   "Delete the concept with the given id"
@@ -51,56 +52,19 @@
   (info (format "Deleting concept %s, revision-id %s" id revision-id))
   ;; Assuming ingest will pass enough info for deletion
   ;; We should avoid making calls to metadata db to get the necessary info if possible
-  (let [es-config (-> context :system :db :config)
+  (let [kv-store (-> context :system :sys-cache :kv-store)
+        elastic-config (get-in kv-store [:elastic-config])
         concept-type (concept-id->type id)
-        index-set-id (get-in es-prop/index-set [:index-set :id])]
+        concept-indices (get-in kv-store [:index-set :concept-indices])
+        concept-mapping-types (get-in kv-store [:index-set :concept-mapping-types])]
     (es/delete-document-in-elastic
-      context es-config
-      ((idx-set/es-concept-indices index-set-id) concept-type)
-      ((idx-set/es-concept-mapping-types index-set-id) concept-type) id revision-id ignore-conflict)))
+      context elastic-config
+      (concept-indices concept-type)
+      (concept-mapping-types concept-type) id revision-id ignore-conflict)))
+
 
 (deftracefn reset-indexes
   "Delegate reset elastic indices operation to index-set app"
   [context]
   (es/reset-es-store))
 
-(comment
-  (let [concept-id "G1234-PROV1"
-        revision-id "2"
-        ignore-conflict true
-        concept {:concept-id concept-id
-                 :provider-id "PROV1"
-                 :granule-ur "DummyGranuleUR"
-                 :extra-fields {:parent-collection-id "C1234-PROV1"}}
-        concept-type (concept-id->type concept-id)
-        umm-concept nil
-        es-doc (concept->elastic-doc concept umm-concept)]
-    (es/save-document-in-elastic
-      {} (es-index concept-type) (es-mapping-type concept-type) es-doc (Integer. revision-id) ignore-conflict))
-
-  (def valid-collection-xml
-    "<Collection>
-    <ShortName>MINIMAL</ShortName>
-    <VersionId>1</VersionId>
-    <InsertTime>1999-12-31T19:00:00-05:00</InsertTime>
-    <LastUpdate>1999-12-31T19:00:00-05:00</LastUpdate>
-    <LongName>A minimal valid collection</LongName>
-    <DataSetId>A minimal valid collection V 1</DataSetId>
-    <Description>A minimal valid collection</Description>
-    <Orderable>true</Orderable>
-    <Visible>true</Visible>
-    </Collection>")
-
-  (let [concept-id "C1234-PROV1"
-        revision-id "1"
-        ignore-conflict true
-        concept {:concept-id concept-id
-                 :provider-id "PROV1"
-                 :metadata valid-collection-xml}
-        concept-type (concept-id->type concept-id)
-        umm-concept (parse-concept concept)
-        es-doc (concept->elastic-doc concept umm-concept)]
-    (es/save-document-in-elastic
-      {} (es-index concept-type) (es-mapping-type concept-type) es-doc (Integer. revision-id) ignore-conflict))
-
-  )

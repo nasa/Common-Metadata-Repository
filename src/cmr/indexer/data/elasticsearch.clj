@@ -18,11 +18,19 @@
     (esr/connect! (str "http://" host ":" port))))
 
 
+(defn create-indexes
+  "Create elastic index for each index name"
+  []
+  (let [index-set idx-set/index-set
+        index-set-id (get-in index-set [:index-set :id])]
+    (when-not (idx-set/get-index-set index-set-id)
+      (idx-set/create-index-set idx-set/index-set))))
+
 (defn reset-es-store
   "Delete elasticsearch indexes and re-create them via index-set app. A nuclear option just for the development team."
   []
-  (idx-set/delete-indexes)
-  (idx-set/create-indexes))
+  (idx-set/reset)
+  (create-indexes))
 
 
 (defrecord ESstore
@@ -36,8 +44,11 @@
 
   (start
     [this system]
-    (connect-with-config (:config this))
-    (idx-set/create-indexes)
+    ; (connect-with-config (:config this))
+    (let [kv-store (-> system :sys-cache :kv-store)
+          elastic-config (get-in kv-store [:elastic-config])]
+      (connect-with-config elastic-config))
+    (create-indexes)
     this)
 
   (stop [this system]

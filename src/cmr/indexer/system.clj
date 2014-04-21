@@ -8,19 +8,23 @@
             [cmr.indexer.config.elasticsearch-config :as es-config]
             [cmr.common.api.web-server :as web]
             [cmr.indexer.data.elasticsearch :as es]
+            [cmr.indexer.data.index-set :as idx-set]
+            [clojure.core.cache :as cc]
+            [cmr.indexer.data.cache :as cache]
             [cmr.indexer.api.routes :as routes]))
 
 (def
   ^{:doc "Defines the order to start the components."
     :private true}
-  component-order [:log :db :web])
+  component-order [:log :sys-cache :db :web :sys-cache])
 
 (defn create-system
   "Returns a new instance of the whole application."
   []
   {:log (log/create-logger)
-   :db (es/create-elasticsearch-store (es-config/config))
+   :db (es/create-elasticsearch-store {})
    :web (web/create-web-server 3004 routes/make-api)
+   :sys-cache (cache/create-cache (cc/soft-cache-factory {}))
    :zipkin (context/zipkin-config "Indexer" false)})
 
 (defn start
