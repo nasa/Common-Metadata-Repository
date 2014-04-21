@@ -21,7 +21,8 @@
                 :provider :string
                 :short_name :string
                 :version :string
-                :temporal :temporal}
+                :temporal :temporal
+                :concept-id :string}
 
    :granule {:granule_ur :string
              :collection_concept_id :string
