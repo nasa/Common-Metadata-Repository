@@ -88,8 +88,7 @@
 (deftracefn get-elastic-config
   "Forward elastic config to index-set app clients."
   [context]
-  (cheshire/generate-string (es-config/config)))
-
+  (es-config/config))
 
 (defn index-set-id-validation
   "Verify id is a positive integer."
