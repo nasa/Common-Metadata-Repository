@@ -23,7 +23,8 @@
   [context concept-type params headers]
   (let [result-format (get-search-results-format headers)
         pretty? (= (get params :pretty) "true")
-        page-size (or (:page_size params) 10)
+        page-size (Integer/parseInt (or (:page_size params) "10"))
+        page-size (if (> page-size 2000) 2000 page-size)
         _ (info (format "Search for %ss in format [%s] with params [%s]" (name concept-type) result-format params))
         params (dissoc params :pretty :page_size)
         results (query-svc/find-concepts-by-parameters context concept-type params page-size)]
@@ -48,6 +49,3 @@
       handler/site
       ring-json/wrap-json-body
       ring-json/wrap-json-response))
-
-
-
