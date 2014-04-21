@@ -47,7 +47,7 @@
 
 (deftracefn resolve-collection-query
   "Replace the collection query conditions in the query with conditions of collection-concept-ids."
-  [context query]
+  [context page-size query]
   (r/resolve-collection-query query context))
 
 (deftracefn simplify-query
@@ -68,7 +68,7 @@
   (->> query
        (validate-query context)
        (apply-acls context)
-       (resolve-collection-query context)
+       (resolve-collection-query context page-size)
        (simplify-query context)
        (execute-query context page-size)))
 

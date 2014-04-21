@@ -57,12 +57,10 @@
                 :size page-size
                 :fields fields)))
 
-
 (defn execute-query
   "Executes a query to find concepts. Returns concept id, native id, and revision id."
   [context query & [page-size]]
   (let [{:keys [concept-type]} query
-        page-size (or page-size 10)
         results (send-query-to-elastic context (q2e/query->elastic query) concept-type page-size)]
     (rc/elastic-results->query-results concept-type results)))
 
