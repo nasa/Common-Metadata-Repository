@@ -9,7 +9,7 @@
             [clojure.test.check.properties :refer [for-all]]
             [clojure.test.check.generators :as gen]
             [clojure.string :as s]
-            [cmr.umm.test.generators :as umm-gen]
+            [cmr.umm.test.generators.granule :as gran-gen]
             [cmr.umm.echo10.granule :as g]
             [cmr.umm.granule :as umm-g]))
 
@@ -39,14 +39,14 @@
   </Granule>")
 
 (defspec generate-granule-is-valid-xml-test 100
-  (for-all [granule umm-gen/granules]
+  (for-all [granule gran-gen/granules]
     (let [xml (g/generate-granule granule)]
       (and
         (> (count xml) 0)
         (= 0 (count (g/validate-xml xml)))))))
 
 (defspec generate-and-parse-granule-test 100
-  (for-all [granule umm-gen/granules]
+  (for-all [granule gran-gen/granules]
     (let [xml (g/generate-granule granule)
           parsed (g/parse-granule xml)]
       (= parsed granule))))

@@ -11,19 +11,19 @@
             [clojure.string :as s]
             [cmr.common.joda-time]
             [cmr.common.date-time-parser :as p]
-            [cmr.umm.test.generators :as umm-gen]
+            [cmr.umm.test.generators.collection :as coll-gen]
             [cmr.umm.echo10.collection :as c]
             [cmr.umm.collection :as umm-c]))
 
 (defspec generate-collection-is-valid-xml-test 100
-  (for-all [collection umm-gen/collections]
+  (for-all [collection coll-gen/collections]
     (let [xml (c/generate-collection collection)]
       (and
         (> (count xml) 0)
         (= 0 (count (c/validate-xml xml)))))))
 
 (defspec generate-and-parse-collection-test 100
-  (for-all [collection umm-gen/collections]
+  (for-all [collection coll-gen/collections]
     (let [xml (c/generate-collection collection)
           parsed (c/parse-collection xml)]
       (= parsed collection))))
@@ -126,7 +126,7 @@
 
   (require '[clojure.test.check :as tc])
   (tc/quick-check 1
-  (for-all [collection umm-gen/collections]
+  (for-all [collection coll-gen/collections]
     (let [xml (c/generate-collection collection)
           _ (println "----xml: " xml)]
       (and
