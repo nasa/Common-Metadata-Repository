@@ -52,6 +52,20 @@
 
 (use-fixtures :once wrap-setup)
 
+(deftest search-by-concpet-id
+  (testing "Search by existing concpet-id."
+    (let [references (search/find-collection-refs {:concept-id "C1000000000-CMR_PROV1"})]
+      (is (= 1 (count references)))))
+  (testing "Search by multiple concept-ids."
+    (let [references (search/find-collection-refs {:concept-id ["C1000000000-CMR_PROV1" "C1000000001-CMR_PROV1"]})]
+      (is (= 2 (count references)))))
+  (testing "Search for non-existent concept-id."
+    (let [references (search/find-collection-refs {:concept-id ["C2000000000-CMR_PROV1"]})]
+      (is (= 0 (count references)))))
+  (testing "Search for both existing and non-existing concept-id."
+    (let [references (search/find-collection-refs {:concept-id ["C1000000000-CMR_PROV1" "C1000000001-CMR_PROV1" "C2000000000-CMR_PROV1"]})]
+      (is (= 2 (count references))))))
+
 (deftest search-by-provider-id
   (testing "search by non-existent provider id."
     (let [references (search/find-collection-refs {:provider "NON_EXISTENT"})]
@@ -60,17 +74,17 @@
     (let [references (search/find-collection-refs {:provider "CMR_PROV1"})]
       (is (= 3 (count references)))
       (is (some #{"MinimalCollectionV1" "OneCollectionV1" "AnotherCollectionV1"}
-            (map #(:dataset-id %) references)))))
+                (map #(:dataset-id %) references)))))
   (testing "search by provider id using wildcard *."
     (let [references (search/find-collection-refs {:provider "CMR_PRO*", "options[provider][pattern]" "true"})]
       (is (= 5 (count references)))
       (is (some #{"MinimalCollectionV1" "OneCollectionV1" "AnotherCollectionV1" "OtherCollectionV1"}
-            (map #(:dataset-id %) references)))))
+                (map #(:dataset-id %) references)))))
   (testing "search by provider id using wildcard ?."
     (let [references (search/find-collection-refs {:provider "CMR_PROV?", "options[provider][pattern]" "true"})]
       (is (= 5 (count references)))
       (is (some #{"MinimalCollectionV1" "OneCollectionV1" "AnotherCollectionV1" "OtherCollectionV1"}
-            (map #(:dataset-id %) references)))))
+                (map #(:dataset-id %) references)))))
   (testing "search by provider id case not match."
     (let [references (search/find-collection-refs {:provider "CMR_prov1"})]
       (is (= 0 (count references)))))
@@ -81,7 +95,7 @@
     (let [references (search/find-collection-refs {:provider "CMR_prov1", "options[provider][ignore_case]" "true"})]
       (is (= 3 (count references)))
       (is (some #{"MinimalCollectionV1" "OneCollectionV1" "AnotherCollectionV1"}
-            (map #(:dataset-id %) references))))))
+                (map #(:dataset-id %) references))))))
 
 (deftest search-by-dataset-id
   (testing "search by non-existent dataset id."
