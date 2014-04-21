@@ -131,7 +131,6 @@
   ([min-size max-size]
    (gen/fmap s/join (gen/vector gen/char-alpha-numeric min-size max-size))))
 
-(defn date-time
-  "Creates a generator that will return a Joda DateTime between 1970-01-01T00:00:00.000Z and 2114-01-01T00:00:00.000Z"
-  []
+(def date-time
+  "A generator that will return a Joda DateTime between 1970-01-01T00:00:00.000Z and 2114-01-01T00:00:00.000Z"
   (gen/fmap c/from-long (gen/choose 0 4544208000000)))
