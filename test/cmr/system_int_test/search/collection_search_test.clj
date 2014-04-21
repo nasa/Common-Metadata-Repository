@@ -52,8 +52,8 @@
 
 (use-fixtures :once wrap-setup)
 
-(deftest search-by-concpet-id
-  (testing "Search by existing concpet-id."
+(deftest search-by-concept-id
+  (testing "Search by existing concept-id."
     (let [references (search/find-collection-refs {:concept-id "C1000000000-CMR_PROV1"})]
       (is (= 1 (count references)))))
   (testing "Search by multiple concept-ids."
