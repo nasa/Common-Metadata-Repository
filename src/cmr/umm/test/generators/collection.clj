@@ -32,9 +32,13 @@
               (ext-gen/nil-if-empty (gen/vector psa/product-specific-attributes 0 10)))))
 
 ; Generator for basic collections that only have the bare minimal fields
+;; DEPRECATED - this will go away in the future. Don't use it.
 (def basic-collections
   (gen/fmap (fn [[entry-title product]]
               (let [entry-id (str (:short-name product) "_" (:version-id product))]
-                (c/->UmmCollection entry-id entry-title product nil)))
+                (c/map->UmmCollection
+                  {:entry-id entry-id
+                   :entry-title entry-title
+                   :product product})))
             (gen/tuple entry-titles products)))
 

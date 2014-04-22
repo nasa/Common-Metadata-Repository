@@ -5,10 +5,10 @@
             [cmr.common.xml :as cx]
             [cmr.umm.collection :as c]
             [cmr.umm.xml-schema-validator :as v]
-
             [cmr.umm.echo10.collection.temporal :as t]
             [cmr.umm.echo10.collection.product-specific-attribute :as psa]
-            ))
+            [cmr.umm.echo10.core])
+  (:import cmr.umm.collection.UmmCollection))
 
 (defn- xml-elem->Product
   "Returns a UMM Product from a parsed Collection Content XML structure"
@@ -33,26 +33,27 @@
   [xml]
   (xml-elem->Collection (x/parse-str xml)))
 
-(defn generate-collection
-  "Generates ECHO10 XML from a UMM Collection record."
-  [collection]
-  (let [{{:keys [short-name long-name version-id]} :product
-         dataset-id :entry-title} collection]
-    (x/emit-str
-      (x/element :Collection {}
-                 (x/element :ShortName {} short-name)
-                 (x/element :VersionId {} version-id)
-                 ;; required fields that are not implemented yet are stubbed out.
-                 (x/element :InsertTime {} "1999-12-31T19:00:00Z")
-                 (x/element :LastUpdate {} "1999-12-31T19:00:00Z")
-                 (x/element :LongName {} long-name)
-                 (x/element :DataSetId {} dataset-id)
-                 (x/element :Description {} "stubbed")
-                 (x/element :Orderable {} "true")
-                 (x/element :Visible {} "true")
-                 (t/generate-temporal collection)
-                 (psa/generate-product-specific-attributes
-                   (:product-specific-attributes collection))))))
+(extend-protocol cmr.umm.echo10.core/UmmToEcho10Xml
+  UmmCollection
+  (umm->echo10-xml
+    [collection]
+    (let [{{:keys [short-name long-name version-id]} :product
+           dataset-id :entry-title} collection]
+      (x/emit-str
+        (x/element :Collection {}
+                   (x/element :ShortName {} short-name)
+                   (x/element :VersionId {} version-id)
+                   ;; required fields that are not implemented yet are stubbed out.
+                   (x/element :InsertTime {} "1999-12-31T19:00:00Z")
+                   (x/element :LastUpdate {} "1999-12-31T19:00:00Z")
+                   (x/element :LongName {} long-name)
+                   (x/element :DataSetId {} dataset-id)
+                   (x/element :Description {} "stubbed")
+                   (x/element :Orderable {} "true")
+                   (x/element :Visible {} "true")
+                   (t/generate-temporal collection)
+                   (psa/generate-product-specific-attributes
+                     (:product-specific-attributes collection)))))))
 
 (defn validate-xml
   "Validates the XML against the ECHO10 schema."

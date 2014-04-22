@@ -13,18 +13,19 @@
             [cmr.common.date-time-parser :as p]
             [cmr.umm.test.generators.collection :as coll-gen]
             [cmr.umm.echo10.collection :as c]
+            [cmr.umm.echo10.core :as echo10]
             [cmr.umm.collection :as umm-c]))
 
 (defspec generate-collection-is-valid-xml-test 100
   (for-all [collection coll-gen/collections]
-    (let [xml (c/generate-collection collection)]
+    (let [xml (echo10/umm->echo10-xml collection)]
       (and
         (> (count xml) 0)
         (= 0 (count (c/validate-xml xml)))))))
 
 (defspec generate-and-parse-collection-test 100
   (for-all [collection coll-gen/collections]
-    (let [xml (c/generate-collection collection)
+    (let [xml (echo10/umm->echo10-xml collection)
           parsed (c/parse-collection xml)]
       (= parsed collection))))
 

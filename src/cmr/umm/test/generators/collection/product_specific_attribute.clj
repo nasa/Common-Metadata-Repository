@@ -38,7 +38,7 @@
   "Generates time values without a date component"
   (gen/fmap
     (fn [t]
-      (t/date-time 1970 1 1 (t/hour t) (t/minute t) (t/sec t) (t/milli t)))
+      (t/date-time 1970 1 1 (t/hour t) (t/minute t) (t/second t) (t/milli t)))
     ext-gen/date-time))
 
 (def datetime-values
