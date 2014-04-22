@@ -8,6 +8,7 @@
             [cmr.system-int-test.data.granule-helper :as gh]
             [cmr.umm.echo10.collection :as c]
             [cmr.umm.echo10.granule :as g]
+            [cmr.umm.echo10.core :as echo10]
             [cmr.system-int-test.utils.url-helper :as url]))
 
 (defn create-provider
@@ -36,12 +37,12 @@
 (defn collection-xml
   "Returns metadata xml of the collection"
   [field-values]
-  (c/generate-collection (ch/collection field-values)))
+  (echo10/umm->echo10-xml (ch/collection field-values)))
 
 (defn granule-xml
   "Returns metadata xml of the granule"
   [field-values]
-  (g/generate-granule (gh/granule field-values)))
+  (echo10/umm->echo10-xml (gh/granule field-values)))
 
 (defn update-collection
   "Update collection (given or the default one) through CMR metadata API.
