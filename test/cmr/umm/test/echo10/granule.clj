@@ -11,6 +11,7 @@
             [clojure.string :as s]
             [cmr.umm.test.generators.granule :as gran-gen]
             [cmr.umm.echo10.granule :as g]
+            [cmr.umm.echo10.core :as echo10]
             [cmr.umm.granule :as umm-g]))
 
 (def valid-granule-xml-w-datasetid
@@ -40,14 +41,14 @@
 
 (defspec generate-granule-is-valid-xml-test 100
   (for-all [granule gran-gen/granules]
-    (let [xml (g/generate-granule granule)]
+    (let [xml (echo10/umm->echo10-xml granule)]
       (and
         (> (count xml) 0)
         (= 0 (count (g/validate-xml xml)))))))
 
 (defspec generate-and-parse-granule-test 100
   (for-all [granule gran-gen/granules]
-    (let [xml (g/generate-granule granule)
+    (let [xml (echo10/umm->echo10-xml granule)
           parsed (g/parse-granule xml)]
       (= parsed granule))))
 

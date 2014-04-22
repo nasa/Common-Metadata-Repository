@@ -37,6 +37,20 @@
    periodic-date-times
    ])
 
+(def product-specific-attribute-types
+  [:string :float :int :boolean :date :time :datetime :date-string :time-string :datetime-string])
+
+(defrecord ProductSpecificAttribute
+  [
+   name
+   description
+   data-type
+   parameter-range-begin
+   parameter-range-end
+   value
+  ])
+
+
 (defrecord UmmCollection
   [
    ;; A combination of shortname and version id with an underscore.
@@ -45,9 +59,9 @@
    ;; The dataset-id in ECHO10
    entry-title
 
-   ;; Refers to a Product
    product
 
-   ;; TemporalCoverage
    temporal-coverage
+
+   product-specific-attributes
    ])
