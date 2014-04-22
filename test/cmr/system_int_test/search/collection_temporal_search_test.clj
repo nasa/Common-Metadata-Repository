@@ -91,7 +91,7 @@
         (let [status (get-in (ex-data e) [:object :status])
               body (get-in (ex-data e) [:object :body])]
           (is (= 422 status))
-          (is (re-find #"temporal date is invalid:.*" body))))))
+          (is (re-find #"temporal datetime is invalid:.*" body))))))
   (testing "search by invalid temporal start-date after end-date."
     (try
       (search/find-collection-refs {"temporal[]" "2011-01-01T10:00:00Z,2010-01-10T12:00:00Z"})
