@@ -13,7 +13,8 @@
                  [org.clojure/test.check "0.5.7"]
                  [org.clojure/data.xml "0.0.8-SNAPSHOT"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
-                 [camel-snake-kebab "0.1.5"]]
+                 [camel-snake-kebab "0.1.5"]
+                 [clj-time "0.7.0"]]
 
   :plugins [[lein-test-out "0.3.1"]]
 
