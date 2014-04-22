@@ -50,7 +50,7 @@ curl -H "Accept: application/json" -i "http://localhost:3003/collections?entry_t
 
 ### Find all collections with multiple temporal
 ```
-curl -H "Accept: application/json" -i "http://localhost:3003/collections?temporal[]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z,30,60&temporal[]=2000-01-01T10:00:00Z,,30&temporal[]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z"
+curl -H "Accept: application/json" -i "http://localhost:3003/collections?temporal\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z,30,60&temporal\[\]=2000-01-01T10:00:00Z,,30&temporal\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z"
 ```
 
 ### Find all granules
