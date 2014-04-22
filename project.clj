@@ -12,7 +12,7 @@
                                                  org.slf4j/slf4j-log4j12]]
                 ;; Turn off the logging noise
                 [com.dadrox/quiet-slf4j "0.1"]
-                [clj-time "0.6.0"]]
+                [clj-time "0.7.0"]]
 
   :plugins [[lein-test-out "0.3.1"]]
 
