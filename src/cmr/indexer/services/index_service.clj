@@ -37,8 +37,8 @@
   (info (format "Indexing concept %s, revision-id %s" concept-id revision-id))
   (let [concept (meta-db/get-concept context concept-id revision-id)
         concept-type (concept-id->type concept-id)
-        concept-indices (cache/get-concept-type-index-names context)
-        concept-mapping-types (cache/get-concept-mapping-types context)
+        concept-indices (es/get-concept-type-index-names context)
+        concept-mapping-types (es/get-concept-mapping-types context)
         umm-concept (parse-concept concept)
         es-doc (concept->elastic-doc concept umm-concept)]
     (es/save-document-in-elastic
@@ -53,10 +53,10 @@
   (info (format "Deleting concept %s, revision-id %s" id revision-id))
   ;; Assuming ingest will pass enough info for deletion
   ;; We should avoid making calls to metadata db to get the necessary info if possible
-  (let [elastic-config (cache/get-elastic-config context)
+  (let [elastic-config (es/get-elastic-config context)
         concept-type (concept-id->type id)
-        concept-indices (cache/get-concept-type-index-names context)
-        concept-mapping-types (cache/get-concept-mapping-types context)]
+        concept-indices (es/get-concept-type-index-names context)
+        concept-mapping-types (es/get-concept-mapping-types context)]
     (es/delete-document-in-elastic
       context elastic-config
       (concept-indices concept-type)

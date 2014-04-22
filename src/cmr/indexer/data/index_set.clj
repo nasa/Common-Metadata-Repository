@@ -24,44 +24,52 @@
 (def index-set-reset-url
   (format "%s/%s" index-set-root-url "reset"))
 
+(def collection-setting {:index
+                         {:number_of_shards 2,
+                          :number_of_replicas 1,
+                          :refresh_interval "1s"}})
+(def collection-mapping
+  {:collection {:dynamic "strict",
+                :_source {:enabled false},
+                :_all {:enabled false},
+                :_id   {:path "concept-id"},
+                :properties {:concept-id  {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}
+                             :entry-title {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}
+                             :entry-title.lowercase {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs"}
+                             :provider-id {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}
+                             :provider-id.lowercase {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs"}
+                             :short-name  {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}
+                             :short-name.lowercase  {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs"}
+                             :version-id  {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}
+                             :version-id.lowercase  {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs"}
+                             :start-date  {:type "date" :format "yyyy-MM-dd'T'HH:mm:ssZ||yyyy-MM-dd'T'HH:mm:ss.SSSZ"}
+                             :end-date    {:type "date" :format "yyyy-MM-dd'T'HH:mm:ssZ||yyyy-MM-dd'T'HH:mm:ss.SSSZ"}}}})
+
+(def granule-setting {:index {:number_of_shards 2,
+                              :number_of_replicas 1,
+                              :refresh_interval "1s"}})
+
+(def granule-mapping {:small_collections {:dynamic "strict",
+                                          :_source { "enabled" false},
+                                          :_all {"enabled" false},
+                                          :_id  {:path "concept-id"},
+                                          :properties {:concept-id  {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}
+                                                       :collection-concept-id {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}
+                                                       :provider-id {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}
+                                                       :provider-id.lowercase {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs"}
+                                                       :granule-ur  {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}
+                                                       :granule-ur.lowercase  {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs"}}}})
+
 (def index-set
   {:index-set {:name "cmr-base-index-set"
                :id 1
                :create-reason "indexer app requires this index set"
                :collection {:index-names ["collections"]
-                            :settings {:index {:number_of_shards 2,
-                                               :number_of_replicas 1,
-                                               :refresh_interval "1s"}}
-                            :mapping {:collection {:dynamic "strict",
-                                                   :_source {:enabled false},
-                                                   :_all {:enabled false},
-                                                   :_id   {:path "concept-id"},
-                                                   :properties {:concept-id  {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}
-                                                                :entry-title {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}
-                                                                :entry-title.lowercase {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs"}
-                                                                :provider-id {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}
-                                                                :provider-id.lowercase {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs"}
-                                                                :short-name  {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}
-                                                                :short-name.lowercase  {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs"}
-                                                                :version-id  {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}
-                                                                :version-id.lowercase  {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs"}
-                                                                :start-date  {:type "date" :format "yyyy-MM-dd'T'HH:mm:ssZ||yyyy-MM-dd'T'HH:mm:ss.SSSZ"}
-                                                                :end-date    {:type "date" :format "yyyy-MM-dd'T'HH:mm:ssZ||yyyy-MM-dd'T'HH:mm:ss.SSSZ"}}}}}
+                            :settings collection-setting
+                            :mapping collection-mapping}
                :granule {:index-names ["granules"]
-                         :settings {:index {:number_of_shards 2,
-                                            :number_of_replicas 1,
-                                            :refresh_interval "1s"}}
-                         :mapping {:small_collections {:dynamic "strict",
-                                                       :_source { "enabled" false},
-                                                       :_all {"enabled" false},
-                                                       :_id  {:path "concept-id"},
-                                                       :properties {:concept-id  {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}
-                                                                    :collection-concept-id {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}
-                                                                    :provider-id {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}
-                                                                    :provider-id.lowercase {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs"}
-                                                                    :granule-ur  {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}
-                                                                    :granule-ur.lowercase  {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs"}}}}}}})
-
+                         :settings granule-setting
+                         :mapping granule-mapping}}})
 
 
 (defn  get-index-set

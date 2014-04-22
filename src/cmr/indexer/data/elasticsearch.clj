@@ -18,6 +18,23 @@
     (info (format "Connecting to single ES on %s %d" host port))
     (esr/connect! (str "http://" host ":" port))))
 
+(defn get-elastic-config
+  "Fetch elastic config from the cache."
+  [context]
+  (let [cache-atom (-> context :system :cache)]
+    (cache/cache-lookup cache-atom :elastic-config #(idx-set/get-elastic-config))))
+
+(defn get-concept-type-index-names
+  "Fetch index names associated with concepts."
+  [context]
+  (let [cache-atom (-> context :system :cache)]
+    (cache/cache-lookup cache-atom :concept-indices #(idx-set/get-concept-type-index-names))))
+
+(defn get-concept-mapping-types
+  "Fetch mapping types associated with concepts."
+  [context]
+  (let [cache-atom (-> context :system :cache)]
+    (cache/cache-lookup cache-atom :concept-mapping-types #(idx-set/get-concept-mapping-types))))
 
 (defn create-indexes
   "Create elastic index for each index name"
@@ -45,7 +62,7 @@
   (start
     [this system]
     (let [context {:system system}
-          elastic-config (cache/get-elastic-config context)]
+          elastic-config (get-elastic-config context)]
       (connect-with-config elastic-config))
     (create-indexes)
     this)

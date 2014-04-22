@@ -23,24 +23,6 @@
   []
   (atom (cc/lru-cache-factory {})))
 
-(defn get-elastic-config
-  "Fetch elastic config from the cache."
-  [context]
-  (let [cache-atom (-> context :system :cache)]
-    (cache-lookup cache-atom :elastic-config #(idx-set/get-elastic-config))))
-
-(defn get-concept-type-index-names
-  "Fetch index names associated with concepts."
-  [context]
-  (let [cache-atom (-> context :system :cache)]
-    (cache-lookup cache-atom :concept-indices #(idx-set/get-concept-type-index-names))))
-
-(defn get-concept-mapping-types
-  "Fetch mapping types associated with concepts."
-  [context]
-  (let [cache-atom (-> context :system :cache)]
-    (cache-lookup cache-atom :concept-mapping-types #(idx-set/get-concept-mapping-types))))
-
 (defn reset-cache
   [cache-atom]
   (reset! cache-atom (cc/lru-cache-factory {})))
