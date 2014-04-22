@@ -84,6 +84,12 @@
         idx-mapping-type (first (keys mapping))]
     (es/get-index-set index-name idx-mapping-type index-set-id)))
 
+
+(deftracefn get-elastic-config
+  "Forward elastic config to index-set app clients."
+  [context]
+  (es-config/config))
+
 (defn index-set-id-validation
   "Verify id is a positive integer."
   [index-set]
@@ -93,7 +99,7 @@
       (m/invalid-id-msg index-set-id json-index-set-str))))
 
 (defn id-name-existence-check
-  "check for index-set id and name."
+  "Check for index-set id and name."
   [index-set]
   (let [index-set-id (get-in index-set [:index-set :id])
         index-set-name (get-in index-set [:index-set :name])
@@ -102,7 +108,7 @@
       (m/missing-id-name-msg json-index-set-str))))
 
 (defn index-cfg-validation
-  "verify if required elements are present to create an elastic index."
+  "Verify if required elements are present to create an elastic index."
   [index-set]
   (let [indices-w-config (build-indices-list-w-config index-set)
         json-index-set-str (json/generate-string index-set)]
