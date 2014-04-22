@@ -34,18 +34,27 @@
 
 (deftest parameters->query-test
   (testing "Empty parameters"
-    (is (= (q/query :collection)
+    (is (= (q/query :collection p/default-page-size p/default-page-num)
            (p/parameters->query :collection {}))))
   (testing "option map aliases are corrected"
-    (is (= (q/query :collection (q/string-condition :entry_title "foo" false false))
+    (is (= (q/query :collection
+                    p/default-page-size
+                    p/default-page-num
+                    (q/string-condition :entry_title "foo" false false))
            (p/parameters->query :collection {:entry_title ["foo"]
                                              :options {:entry_title {:ignore_case "true"}}}))))
   (testing "with one condition"
-    (is (= (q/query :collection (q/string-condition :entry_title "foo"))
+    (is (= (q/query :collection
+                    p/default-page-size
+                    p/default-page-num
+                    (q/string-condition :entry_title "foo"))
            (p/parameters->query :collection {:entry_title ["foo"]}))))
   (testing "with multiple conditions"
-    (is (= (q/query :collection (q/and-conds [(q/string-condition :entry_title "foo")
-                                              (q/string-condition :provider "bar")]))
+    (is (= (q/query :collection
+                    p/default-page-size
+                    p/default-page-num
+                    (q/and-conds [(q/string-condition :entry_title "foo")
+                                  (q/string-condition :provider "bar")]))
            (p/parameters->query :collection {:entry_title ["foo"] :provider "bar"})))))
 
 

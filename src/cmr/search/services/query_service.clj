@@ -47,7 +47,7 @@
 
 (deftracefn resolve-collection-query
   "Replace the collection query conditions in the query with conditions of collection-concept-ids."
-  [context page-size query]
+  [context query]
   (r/resolve-collection-query query context))
 
 (deftracefn simplify-query
@@ -58,27 +58,29 @@
 
 (deftracefn execute-query
   "Executes a query returning results as concept id, native provider id, and revision id."
-  [context page-size query]
-  (idx/execute-query context query page-size))
+  [context query]
+  (idx/execute-query context query))
+
 
 (deftracefn find-concepts-by-query
   "Executes a search for concepts using a query The concepts will be returned with
   concept id and native provider id."
-  [context page-size query]
+  [context query]
+
   (->> query
        (validate-query context)
        (apply-acls context)
-       (resolve-collection-query context page-size)
+       (resolve-collection-query context)
        (simplify-query context)
-       (execute-query context page-size)))
+       (execute-query context)))
 
 (deftracefn find-concepts-by-parameters
   "Executes a search for concepts using the given parameters. The concepts will be returned with
   concept id and native provider id."
-  [context concept-type params page-size]
+  [context concept-type params]
 
   (->> params
        p/replace-parameter-aliases
        (pv/validate-parameters concept-type)
        (p/parameters->query concept-type)
-       (find-concepts-by-query context page-size)))
+       (find-concepts-by-query context)))

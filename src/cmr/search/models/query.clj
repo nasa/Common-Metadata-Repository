@@ -9,6 +9,12 @@
 
    ;; The root level condition
    condition
+
+   ;; the desired number of results
+   page-size
+
+   ;; the desired page in the result set - starting at zero
+   page-num
    ])
 
 (defrecord ConditionGroup
@@ -89,12 +95,12 @@
   [])
 
 (defn query
-  "Constructs a query with the given type and root condition.
-  If root condition is not provided it matches everything."
-  ([type]
-   (query type (->MatchAllCondition)))
-  ([type condition]
-   (->Query type condition)))
+  "Constructs a query with the given type, page-size, page-num,
+  and root condition. If root condition is not provided it matches everything."
+  ([type page-size page-num]
+   (query type page-size page-num (->MatchAllCondition)))
+  ([type page-size page-num condition]
+   (->Query type condition page-size page-num )))
 
 (defn string-condition
   "Creates a string condition."
