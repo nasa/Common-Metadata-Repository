@@ -58,9 +58,9 @@
   (testing "search by temporal_start."
     (let [references (search/find-collection-refs
                        {"temporal[]" "2010-12-12T12:00:00Z,"})]
-      (is (= 8 (count references)))
+      (is (= 7 (count references)))
       (some #{"Dataset2" "Dataset3" "Dataset4" "Dataset5"
-              "Dataset6" "Dataset7" "Dataset8" "Dataset10"}
+              "Dataset6" "Dataset7" "Dataset8"}
             (map #(:dataset-id %) references))))
   (testing "search by temporal_end."
     (let [references (search/find-collection-refs
