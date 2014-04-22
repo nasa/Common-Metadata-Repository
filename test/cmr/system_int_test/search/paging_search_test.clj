@@ -49,7 +49,16 @@
               body (get-in (ex-data e) [:object :body])]
           (is (= 422 status))
           (is (re-matches #".*page_size 0 is less than 1.*" body))))))
-  (testing "Non-numeric page size"
+  (testing "Negative page size."
+    (try
+      (search/find-collection-refs {:provider "PROV1"
+                                    :page_size -1})
+      (catch clojure.lang.ExceptionInfo e
+        (let [status (get-in (ex-data e) [:object :status])
+              body (get-in (ex-data e) [:object :body])]
+          (is (= 422 status))
+          (is (re-matches #".*page_size -1 is less than 1.*" body))))))
+  (testing "Page size too large."
     (try
       (search/find-collection-refs {:provider "PROV1"
                                     :page_size 2001})
