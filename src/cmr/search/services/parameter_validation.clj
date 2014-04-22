@@ -57,7 +57,8 @@
       (f/parse (f/formatters format-type) dt))
     []
     (catch IllegalArgumentException e
-      [(format "temporal date is invalid: %s" e)])))
+      [(format "temporal datetime is invalid: %s, should be in yyyy-MM-ddTHH:mm:ssZ format."
+               (.getMessage e))])))
 
 (defn- day-valid?
   "Validates if the given day in temporal is an integer between 1 and 366 inclusive"
@@ -72,7 +73,8 @@
     []))
 
 (defn temporal-format-validation
-  "Validates that temporal datetime parameter conforms to the :date-time-no-ms format, start-day and end-day are integer between 1 and 366"
+  "Validates that temporal datetime parameter conforms to the :date-time-no-ms format,
+  start-day and end-day are integer between 1 and 366"
   [concept-type params]
   (if-let [temporal (:temporal params)]
     (apply concat
