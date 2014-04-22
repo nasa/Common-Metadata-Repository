@@ -13,6 +13,15 @@
    version-id
    ])
 
+;; A reference to a product specific attribute in the parent collection. The attribute reference may
+;; contain a granule specific value that will override the value in the parent collection for this
+;; granule. An attribute with the same name must exist in the parent collection.
+(defrecord ProductSpecificAttributeRef
+  [
+   name
+   values
+  ])
+
 (defrecord UmmGranule
   [
    ;; maps to Granule/GranuleUR in echo granule schema
@@ -20,6 +29,9 @@
 
    ;; granule parent
    collection-ref
+
+   ;; reference to PSAs in the parent collection
+   product-specific-attributes
    ])
 
 (defn collection-ref

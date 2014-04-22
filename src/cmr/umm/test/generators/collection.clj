@@ -21,14 +21,6 @@
 (def entry-titles
   (ext-gen/string-alpha-numeric 1 1030))
 
-(defn nil-if-empty
-  "Creates a generator that takes another sequence generator. If the sequence produced is empty then
-  a nil value will be returned"
-  [gen]
-  (gen/fmap #(when (not (empty? %))
-               %)
-            gen))
-
 (def collections
   (gen/fmap (fn [[entry-title product temporal-coverage psa]]
               (let [entry-id (str (:short-name product) "_" (:version-id product))]
@@ -37,7 +29,7 @@
               entry-titles
               products
               t/temporal-coverages
-              (nil-if-empty (gen/vector psa/product-specific-attributes 0 10)))))
+              (ext-gen/nil-if-empty (gen/vector psa/product-specific-attributes 0 10)))))
 
 ; Generator for basic collections that only have the bare minimal fields
 (def basic-collections

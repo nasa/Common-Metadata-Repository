@@ -4,6 +4,7 @@
             [clojure.java.io :as io]
             [cmr.common.xml :as cx]
             [cmr.umm.granule :as g]
+            [cmr.umm.echo10.granule.product-specific-attribute-ref :as psa]
             [cmr.umm.xml-schema-validator :as v]))
 
 (defn- xml-elem->CollectionRef
@@ -20,7 +21,8 @@
   [xml-struct]
   (let [coll-ref (xml-elem->CollectionRef xml-struct)]
     (g/map->UmmGranule {:granule-ur (cx/string-at-path xml-struct [:GranuleUR])
-                        :collection-ref coll-ref})))
+                        :collection-ref coll-ref
+                        :product-specific-attributes (psa/xml-elem->ProductSpecificAttributeRefs xml-struct)})))
 
 (defn parse-granule
   "Parses ECHO10 XML into a UMM Granule record."
@@ -31,7 +33,8 @@
   "Generates ECHO10 Granule XML from a UMM Granule record."
   [granule]
   (let [{{:keys [entry-title short-name version-id]} :collection-ref
-         granule-ur :granule-ur} granule]
+         granule-ur :granule-ur
+         psas :product-specific-attributes} granule]
     (x/emit-str
       (x/element :Granule {}
                  (x/element :GranuleUR {} granule-ur)
@@ -44,6 +47,7 @@
                                         (x/element :ShortName {} short-name)
                                         (x/element :VersionId {} version-id)))
                  (x/element :RestrictionFlag {} "0.0")
+                 (psa/generate-product-specific-attribute-refs psas)
                  (x/element :Orderable {} "true")))))
 
 (defn validate-xml
