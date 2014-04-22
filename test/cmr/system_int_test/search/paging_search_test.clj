@@ -24,14 +24,14 @@
 
 (defn wrap-setup
   [f]
-  (setup)
   (try
     (f)
     (finally (teardown))))
 
-(use-fixtures :once wrap-setup)
+(use-fixtures :each wrap-setup)
 
 (deftest search-with-page-size
+  (setup)
   (testing "Search with page size."
     (let [references (search/find-collection-refs {:provider "PROV1"
                                                    :page_size 5})]
@@ -78,9 +78,10 @@
           (is (re-matches #".*page_size must be a number between 1 and 2000.*" body)))))))
 
 ;; TODO Implement this when paging is implemented in search.
-#_(deftest search-with-page-num
-    (testing "Search with page num."
-      (let [references (search/find-collection-refs {:provider "PROV1"
-                                                     :page_size 5
-                                                     :page_num 1})]
-        (is (= 5 (count references))))))
+(deftest search-with-page-num
+  (setup)
+  (testing "Search with page num."
+    (let [references (search/find-collection-refs {:provider "PROV1"
+                                                   :page_size 5
+                                                   :page_num 1})]
+      (is (= 5 (count references))))))
