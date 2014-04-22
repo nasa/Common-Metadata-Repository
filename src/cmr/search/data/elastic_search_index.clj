@@ -54,7 +54,7 @@
                 [type-name]
                 :query elastic-query
                 :version true
-                :size 10
+                :size 2000
                 :fields fields)))
 
 
