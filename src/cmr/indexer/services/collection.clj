@@ -27,5 +27,5 @@
      :short-name.lowercase (s/lower-case short-name)
      :version-id version-id
      :version-id.lowercase (s/lower-case version-id)
-     :start-date (f/unparse (f/formatters :date-time) start-date)
-     :end-date (f/unparse (f/formatters :date-time) end-date)}))
+     :start-date (when-not (nil? start-date) (f/unparse (f/formatters :date-time) start-date))
+     :end-date (when-not (nil? end-date) (f/unparse (f/formatters :date-time) end-date))}))
