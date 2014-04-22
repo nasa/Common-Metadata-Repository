@@ -17,11 +17,11 @@
 
 (defmethod ingest-path UmmCollection
   [provider-id item]
-  (url/collection-ingest-url provider-id (:entry-title item)))
+  (url/ingest-url provider-id :collection (:entry-title item)))
 
 (defmethod ingest-path UmmGranule
   [provider-id item]
-  (url/granule-ingest-url provider-id (:granule-ur item)))
+  (url/ingest-url provider-id :granule (:granule-ur item)))
 
 (defn ingest
   "Ingests the catalog item. Returns it with concept-id and revision-id set on it."

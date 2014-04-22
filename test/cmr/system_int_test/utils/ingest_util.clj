@@ -52,7 +52,7 @@
   ([provider-id collection]
    (let [full-collection (merge default-collection collection)
          collection-xml (collection-xml full-collection)
-         response (client/put (url/collection-ingest-url provider-id (:entry-title full-collection))
+         response (client/put (url/ingest-url provider-id :collection (:entry-title full-collection))
                               {:content-type :echo10+xml
                                :body collection-xml
                                :throw-exceptions false})]
@@ -65,7 +65,7 @@
    (update-granule provider-id {}))
   ([provider-id granule]
    (let [granule-xml (granule-xml granule)
-         response (client/put (url/granule-ingest-url provider-id (:granule-ur granule))
+         response (client/put (url/ingest-url provider-id :granule (:granule-ur granule))
                               {:content-type :echo10+xml
                                :body granule-xml
                                :throw-exceptions false})]
@@ -77,7 +77,7 @@
   I call it native-id because the id in the URL used by the provider-id does not have to be
   the dataset id in the collection in general even though catalog rest will enforce this."
   [provider-id native-id]
-  (let [response (client/delete (url/collection-ingest-url provider-id native-id)
+  (let [response (client/delete (url/ingest-url provider-id :collection native-id)
                                 {:throw-exceptions false})
         status (:status response)]
     (is (some #{200 404} [status]))))
@@ -88,7 +88,7 @@
   I call it native-id because the id in the URL used by the provider-id does not have to be
   the dataset id in the granule in general even though catalog rest will enforce this."
   [provider-id native-id]
-  (let [response (client/delete (url/granule-ingest-url provider-id native-id)
+  (let [response (client/delete (url/ingest-url provider-id :granule native-id)
                                 {:throw-exceptions false})
         status (:status response)]
     (is (some #{200 404} [status]))))
@@ -140,7 +140,7 @@
   [{:keys [metadata content-type concept-id revision-id provider-id native-id] :as concept}]
   (let [response (client/request
                    {:method :put
-                    :url (url/collection-ingest-url provider-id native-id)
+                    :url (url/ingest-url provider-id :collection native-id)
                     :body  metadata
                     :content-type content-type
                     :headers {"concept-id" concept-id, "revision-id"  revision-id}
@@ -159,7 +159,7 @@
   [{:keys [metadata content-type concept-id parent-collection-id revision-id provider-id native-id] :as concept}]
   (let [response (client/request
                    {:method :put
-                    :url (url/granule-ingest-url provider-id native-id)
+                    :url (url/ingest-url provider-id :granule native-id)
                     :body  metadata
                     :content-type content-type
                     :headers {"concept-id" concept-id, "revision-id"  revision-id}
@@ -178,7 +178,7 @@
   [{:keys [provider-id native-id] :as concept}]
   (let [response (client/request
                    {:method :delete
-                    :url (url/collection-ingest-url provider-id native-id)
+                    :url (url/ingest-url provider-id (:concept-type concept) native-id)
                     :accept :json
                     :throw-exceptions false})
         status (:status response)
