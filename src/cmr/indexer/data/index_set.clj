@@ -72,7 +72,7 @@
                          :mapping granule-mapping}}})
 
 
-(defn  get-index-set
+(defn  get
   "Submit a request to index-set app to fetch an index-set assoc with an id"
   [id]
   (let [response (client/request
@@ -108,7 +108,7 @@
      :content-type :json
      :accept :json}))
 
-(defn create-index-set
+(defn create
   "Submit a request to create index-set"
   [index-set]
   (let [response (client/request
@@ -130,7 +130,7 @@
    (let [index-set-id (get-in index-set [:index-set :id])]
      (get-concept-type-index-names index-set-id)))
   ([index-set-id]
-   (let [fetched-index-set (get-index-set index-set-id)]
+   (let [fetched-index-set (get index-set-id)]
      (into {} (map (fn [[k v]] [k (first (vals v))])
                    (get-in fetched-index-set [:index-set :concepts]))))))
 
@@ -141,7 +141,7 @@
    (let [index-set-id (get-in index-set [:index-set :id])]
      (get-concept-mapping-types index-set-id)))
   ([index-set-id]
-   (let [fetched-index-set (get-index-set index-set-id)]
+   (let [fetched-index-set (get index-set-id)]
      {:collection (name (first (keys (get-in fetched-index-set [:index-set :collection :mapping]))))
       :granule (name (first (keys (get-in fetched-index-set [:index-set :granule :mapping]))))})))
 

@@ -10,16 +10,13 @@
             [cheshire.core :as cheshire]
             [cmr.indexer.data.index-set :as idx-set]
             [cmr.indexer.data.cache :as cache]
+            [cmr.common.concepts :as cs]
             [cmr.system-trace.core :refer [deftracefn]]))
-
-(def concept-prefix->type
-  {\C :collection
-   \G :granule})
 
 (defn- concept-id->type
   "Returns concept type for the given concept-id"
   [concept-id]
-  (concept-prefix->type (first concept-id)))
+  (cs/concept-prefix->concept-type (subs concept-id 0 1)))
 
 (defmulti parse-concept
   "Returns the UMM model of the concept by parsing its metadata field"

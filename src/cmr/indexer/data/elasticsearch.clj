@@ -41,8 +41,8 @@
   []
   (let [index-set idx-set/index-set
         index-set-id (get-in index-set [:index-set :id])]
-    (when-not (idx-set/get-index-set index-set-id)
-      (idx-set/create-index-set idx-set/index-set))))
+    (when-not (idx-set/get index-set-id)
+      (idx-set/create index-set))))
 
 (defn reset-es-store
   "Delete elasticsearch indexes and re-create them via index-set app. A nuclear option just for the development team."
