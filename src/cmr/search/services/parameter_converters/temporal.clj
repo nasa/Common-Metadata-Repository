@@ -27,8 +27,11 @@
 (defmethod p/parameter->condition :temporal
   [concept-type param value options]
   (if (sequential? value)
-    (qm/or-conds
-      (map #(p/parameter->condition concept-type param % options) value))
+    (if (contains? (set (keys (:temporal options))) :and)
+      (qm/and-conds
+        (map #(p/parameter->condition concept-type param % options) value))
+      (qm/or-conds
+        (map #(p/parameter->condition concept-type param % options) value)))
     (let [[start-date end-date start-day end-day] (map s/trim (s/split value #","))]
       (map->temporal-condition {:field param
                                 :start-date (h/string->datetime start-date)

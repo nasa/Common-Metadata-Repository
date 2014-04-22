@@ -45,7 +45,7 @@
            (map
              (fn [[param settings]]
                (map #(str "Option [" (name %) "] for param [" (name param) "] was not recognized.")
-                    (set/difference (set (keys settings)) (set [:ignore_case :pattern]))))
+                    (set/difference (set (keys settings)) (set [:ignore_case :pattern :and :or]))))
              options))
     []))
 
