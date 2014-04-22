@@ -24,7 +24,7 @@
              (< 2000 page-size-i)
              [(format "page_size %d is greater than 2000" page-size-i)]
 
-             :default
+             :else
              []))
       (catch Exception e ["page_size must be a number between 1 and 2000"]))))
 

@@ -26,13 +26,15 @@
                 :version :string
                 :temporal :temporal
                 :concept-id :string
-                :page_size :string}
+                :page_size :string
+                :page_num :string}
 
    :granule {:granule_ur :string
              :collection_concept_id :string
              :provider :collection-query
              :entry_title :collection-query
-             :page_size :string}})
+             :page_size :string
+             :page_num :string}})
 
 (defn- param-name->type
   "Returns the query condition type based on the given concept-type and param-name."
@@ -61,7 +63,7 @@
   (let [options (get params :options {})
         page-size (get params :page_size default-page-size)
         page-num (get params :page_num default-page-num)
-        params (dissoc params :options :page_size)]
+        params (dissoc params :options :page_size :page_num)]
     (if (empty? params)
       (qm/query concept-type page-size page-num) ;; matches everything
       ;; Convert params into conditions
