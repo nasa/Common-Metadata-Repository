@@ -56,6 +56,14 @@
   [generator]
   (gen/one-of [(gen/return nil) generator]))
 
+(defn nil-if-empty
+  "Creates a generator that takes another sequence generator. If the sequence produced is empty then
+  a nil value will be returned"
+  [gen]
+  (gen/fmap #(when (not (empty? %))
+               %)
+            gen))
+
 (defn model-gen
   "Creates a generator for models. Takes the constructor function for the model and generators
   for each argument."
