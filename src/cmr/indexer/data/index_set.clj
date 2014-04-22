@@ -118,19 +118,24 @@
 
 (defn get-concept-type-index-names
   "Fetch index names for each concept type from index-set app"
-  [index-set-id]
-  (let [fetched-index-set (get-index-set index-set-id)]
-    (into {} (map (fn [[k v]] [k (first (vals v))])
-                  (get-in fetched-index-set [:index-set :concepts])))))
+  ([]
+   (let [index-set-id (get-in index-set [:index-set :id])]
+     (get-concept-type-index-names index-set-id)))
+  ([index-set-id]
+   (let [fetched-index-set (get-index-set index-set-id)]
+     (into {} (map (fn [[k v]] [k (first (vals v))])
+                   (get-in fetched-index-set [:index-set :concepts]))))))
 
 
 (defn get-concept-mapping-types
   "Fetch mapping types for each concept type from index-set app"
-  [index-set-id]
-  (let [fetched-index-set (get-index-set index-set-id)]
-    {:collection (name (first (keys (get-in fetched-index-set [:index-set :collection :mapping]))))
-     :granule (name (first (keys (get-in fetched-index-set [:index-set :granule :mapping]))))}))
-
+  ([]
+   (let [index-set-id (get-in index-set [:index-set :id])]
+     (get-concept-mapping-types index-set-id)))
+  ([index-set-id]
+   (let [fetched-index-set (get-index-set index-set-id)]
+     {:collection (name (first (keys (get-in fetched-index-set [:index-set :collection :mapping]))))
+      :granule (name (first (keys (get-in fetched-index-set [:index-set :granule :mapping]))))})))
 
 
 

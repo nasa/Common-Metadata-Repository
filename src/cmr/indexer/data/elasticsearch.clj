@@ -44,10 +44,8 @@
 
   (start
     [this system]
-    (let [cache (-> system :cache)
-          elastic-config (cache/cache-lookup cache
-                                             :elastic-config
-                                             (constantly (idx-set/get-elastic-config)))]
+    (let [context {:system system}
+          elastic-config (cache/get-elastic-config context)]
       (connect-with-config elastic-config))
     (create-indexes)
     this)

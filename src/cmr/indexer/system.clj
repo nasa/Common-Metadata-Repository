@@ -5,7 +5,6 @@
   (:require [cmr.common.lifecycle :as lifecycle]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.system-trace.context :as context]
-            [cmr.indexer.config.elasticsearch-config :as es-config]
             [cmr.common.api.web-server :as web]
             [cmr.indexer.data.elasticsearch :as es]
             [cmr.indexer.data.cache :as cache]

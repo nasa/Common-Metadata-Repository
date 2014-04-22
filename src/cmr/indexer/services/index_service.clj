@@ -37,14 +37,8 @@
   (info (format "Indexing concept %s, revision-id %s" concept-id revision-id))
   (let [concept (meta-db/get-concept context concept-id revision-id)
         concept-type (concept-id->type concept-id)
-        cache (-> context :system :cache)
-        index-set-id (get-in idx-set/index-set [:index-set :id])
-        concept-indices (cache/cache-lookup cache
-                                            :concept-indices
-                                            (constantly (idx-set/get-concept-type-index-names index-set-id)))
-        concept-mapping-types (cache/cache-lookup cache
-                                                  :concept-mapping-types
-                                                  (constantly (idx-set/get-concept-mapping-types index-set-id)))
+        concept-indices (cache/get-concept-type-index-names context)
+        concept-mapping-types (cache/get-concept-mapping-types context)
         umm-concept (parse-concept concept)
         es-doc (concept->elastic-doc concept umm-concept)]
     (es/save-document-in-elastic
@@ -52,33 +46,27 @@
       (concept-indices concept-type)
       (concept-mapping-types concept-type) es-doc (Integer. revision-id) ignore-conflict)))
 
+
 (deftracefn delete-concept
   "Delete the concept with the given id"
   [context id revision-id ignore-conflict]
   (info (format "Deleting concept %s, revision-id %s" id revision-id))
   ;; Assuming ingest will pass enough info for deletion
   ;; We should avoid making calls to metadata db to get the necessary info if possible
-  (let [cache (-> context :system :cache)
-        elastic-config (cache/cache-lookup cache
-                                           :elastic-config
-                                           (constantly (idx-set/get-elastic-config)))
+  (let [elastic-config (cache/get-elastic-config context)
         concept-type (concept-id->type id)
-        index-set-id (get-in idx-set/index-set [:index-set :id])
-        concept-indices (cache/cache-lookup cache
-                                            :concept-indices
-                                            (constantly (idx-set/get-concept-type-index-names index-set-id)))
-        concept-mapping-types (cache/cache-lookup cache
-                                                  :concept-mapping-types
-                                                  (constantly (idx-set/get-concept-mapping-types index-set-id)))]
+        concept-indices (cache/get-concept-type-index-names context)
+        concept-mapping-types (cache/get-concept-mapping-types context)]
     (es/delete-document-in-elastic
       context elastic-config
       (concept-indices concept-type)
       (concept-mapping-types concept-type) id revision-id ignore-conflict)))
 
+
 (deftracefn reset-indexes
   "Delegate reset elastic indices operation to index-set app"
   [context]
-  (assoc-in (-> context :system) [:cache] (cache/create-cache))
+  (cache/reset-cache (-> context :system :cache))
   (es/reset-es-store))
 
 
