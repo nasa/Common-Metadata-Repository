@@ -68,18 +68,18 @@
   (testing "search by existing provider id."
     (let [references (search/find-granule-refs {:provider "CMR_PROV1"})]
       (is (= 3 (count references)))
-      (is (some #{"Granule1" "Granule2" "Granule3"}
-            (map #(:granule-ur %) references)))))
+      (is (is (= #{"Granule1" "Granule2" "Granule3"}
+            (set (map #(:granule-ur %) references)))))))
   (testing "search by provider id using wildcard *."
     (let [references (search/find-granule-refs {:provider "CMR_PRO*", "options[provider][pattern]" "true"})]
       (is (= 5 (count references)))
-      (is (some #{"Granule1" "Granule2" "Granule3" "Granule4" "Granule5"}
-            (map #(:granule-ur %) references)))))
+      (is (is (= #{"Granule1" "Granule2" "Granule3" "Granule4" "Granule5"}
+            (set (map #(:granule-ur %) references)))))))
   (testing "search by provider id using wildcard ?."
     (let [references (search/find-granule-refs {:provider "CMR_PROV?", "options[provider][pattern]" "true"})]
       (is (= 5 (count references)))
-      (is (some #{"Granule1" "Granule2" "Granule3" "Granule4" "Granule5"}
-            (map #(:granule-ur %) references)))))
+      (is (is (= #{"Granule1" "Granule2" "Granule3" "Granule4" "Granule5"}
+            (set (map #(:granule-ur %) references)))))))
   (testing "search by provider id case not match."
     (let [references (search/find-granule-refs {:provider "CMR_prov1"})]
       (is (= 0 (count references)))))
@@ -89,8 +89,8 @@
   (testing "search by provider id ignore case true."
     (let [references (search/find-granule-refs {:provider "CMR_prov1", "options[provider][ignore_case]" "true"})]
       (is (= 3 (count references)))
-      (is (some #{"Granule1" "Granule2" "Granule3"}
-            (map #(:granule-ur %) references))))))
+      (is (is (= #{"Granule1" "Granule2" "Granule3"}
+            (set (map #(:granule-ur %) references))))))))
 
 (deftest search-by-dataset-id
   (testing "search by non-existent dataset id."

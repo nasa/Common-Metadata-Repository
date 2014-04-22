@@ -59,28 +59,40 @@
     (let [references (search/find-collection-refs
                        {"temporal[]" "2010-12-12T12:00:00Z,"})]
       (is (= 7 (count references)))
-      (some #{"Dataset2" "Dataset3" "Dataset4" "Dataset5"
+      (is (= #{"Dataset2" "Dataset3" "Dataset4" "Dataset5"
               "Dataset6" "Dataset7" "Dataset8"}
-            (map #(:dataset-id %) references))))
+            (set (map #(:dataset-id %) references))))))
   (testing "search by temporal_end."
     (let [references (search/find-collection-refs
                        {"temporal[]" ",2010-12-12T12:00:00Z"})]
       (is (= 6 (count references)))
-      (some #{"Dataset1" "Dataset2" "Dataset3" "Dataset4"
-              "Dataset6" "Dataset7" "Dataset9"}
-            (map #(:dataset-id %) references))))
+      (is (= #{"Dataset1" "Dataset2" "Dataset3" "Dataset4"
+              "Dataset6" "Dataset7"}
+            (set (map #(:dataset-id %) references))))))
   (testing "search by temporal_range."
     (let [references (search/find-collection-refs
                        {"temporal[]" "2010-01-01T10:00:00Z,2010-01-10T12:00:00Z"})]
       (is (= 1 (count references)))
-      (some #{"Dataset1"}
-            (map #(:dataset-id %) references))))
+      (is (= #{"Dataset1"}
+            (set (map #(:dataset-id %) references))))))
   (testing "search by multiple temporal_range."
     (let [references (search/find-collection-refs
                        {"temporal[]" ["2010-01-01T10:00:00Z,2010-01-10T12:00:00Z" "2010-12-22T10:00:00Z,2010-12-30T12:00:00Z"]})]
       (is (= 4 (count references)))
-      (some #{"Dataset1" "Dataset4" "Dataset6" "Dataset7"}
-            (map #(:dataset-id %) references)))))
+      (is (=  #{"Dataset1" "Dataset4" "Dataset6" "Dataset7"}
+            (set (map #(:dataset-id %) references))))))
+  (testing "search by multiple temporal_range, options :or."
+    (let [references (search/find-collection-refs
+                       {"temporal[]" ["2010-01-01T10:00:00Z,2010-01-10T12:00:00Z" "2010-12-22T10:00:00Z,2010-12-30T12:00:00Z"]
+                        "options[temporal][or]" ""})]
+      (is (= 4 (count references)))
+      (is (= #{"Dataset1" "Dataset4" "Dataset6" "Dataset7"}
+            (set (map #(:dataset-id %) references))))))
+  (testing "search by multiple temporal_range, options :and."
+    (let [references (search/find-collection-refs
+                       {"temporal[]" ["2010-01-01T10:00:00Z,2010-01-10T12:00:00Z" "2010-12-22T10:00:00Z,2010-12-30T12:00:00Z"]
+                        "options[temporal][and]" ""})]
+      (is (= 0 (count references))))))
 
 ;; Just some symbolic invalid temporal testing, more complete test coverage is in unit tests
 (deftest search-temporal-error-scenarios
