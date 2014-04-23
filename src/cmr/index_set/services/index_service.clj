@@ -88,7 +88,7 @@
 (deftracefn get-elastic-config
   "Forward elastic config to index-set app clients."
   [context]
-  (es-config/config))
+  (get-in context [:system :index :config]))
 
 (defn index-set-id-validation
   "Verify id is a positive integer."
@@ -117,7 +117,7 @@
       (m/missing-idx-cfg-msg json-index-set-str))))
 
 (defn index-set-existence-check
-  "Check index-set existsence"
+  "Check index-set existence"
   [index-set]
   (let [index-set-id (get-in index-set [:index-set :id])
         {:keys [index-name mapping]} es-config/idx-cfg-for-index-sets
@@ -141,8 +141,8 @@
 (deftracefn index-requested-index-set
   "Index requested index-set along with generated elastic index names"
   [context index-set]
-  (let [ index-set-w-es-index-names (assoc-in index-set [:index-set :concepts]
-                                              (:concepts (prune-index-set (:index-set index-set))))
+  (let [index-set-w-es-index-names (assoc-in index-set [:index-set :concepts]
+                                             (:concepts (prune-index-set (:index-set index-set))))
         es-doc {:index-set-id (get-in index-set [:index-set :id])
                 :index-set-name (get-in index-set [:index-set :name])
                 :index-set-request (json/generate-string index-set-w-es-index-names)}
@@ -169,11 +169,13 @@
       (dorun (map #(es/create-index %) indices-w-config))
       (catch Exception e
         (dorun (map #(es/delete-index % es-cfg) index-names))
+        ;; FIXME - This message is created and then thrown away.
         (m/create-failure-msg "attempt to create indices of index-set failed" e)))
     (try
       (index-requested-index-set context index-set)
       (catch Exception e
         (dorun (map #(es/delete-index % es-cfg) index-names))
+        ;; FIXME - This message is created and then thrown away.
         (m/create-failure-msg "attempt to index index-set doc failed"  e)))))
 
 (deftracefn delete-index-set

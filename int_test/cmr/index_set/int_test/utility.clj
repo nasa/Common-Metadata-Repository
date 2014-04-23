@@ -6,7 +6,8 @@
             [clojure.java.io :as io]
             [clojure.walk :as walk]
             [clojure.data.codec.base64 :as b64]
-            [cheshire.core :as cheshire]))
+            [cheshire.core :as cheshire]
+            [cmr.index-set.config.elasticsearch-config :as config]))
 
 
 ;;; index-set app enpoint
@@ -23,9 +24,6 @@
   (format "%s/%s" index-set-root-url "reset"))
 
 (def cmr-concepts [:collection :granule])
-
-(def config-file
-  (io/resource "config/elasticsearch_config.json"))
 
 ;;; test data
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -98,31 +96,21 @@
 ;;; utility methods
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; app and int-tests are sharing same config resource which is not correct but using
-;; it anyhow for convenience purposes
-(defn es-config
-  "Return the configuration for elasticsearch"
-  []
-  (let [{:strs [host port password]} (cheshire/decode (slurp config-file))]
-    {:host host
-     :port port
-     :admin-token (str "Basic " (b64/encode (.getBytes password)))}))
-
-(def elastic_root (format "http://%s:%s" (:host (es-config)) (:port (es-config))))
-
-(defn elastic-flush-url
-  []
-  (str elastic_root "/_flush"))
+(def elastic-root (format "http://%s:%s" (:host (config/config)) (:port (config/config))))
 
 (defn flush-elastic
   []
-  (client/post (elastic-flush-url)))
+  (client/post (str elastic-root "/_flush")))
 
+;; FIXME - This is copy and pasted code from the service area. I'm not fixing this now due to
+;; time constraints. General note that we should never (with a few exceptions) copy and paste code
+;; to reuse it.
 (defn gen-valid-index-name
   "Join parts, lowercase letters and change '-' to '_'."
   [prefix-id suffix]
   (str/lower-case (str/replace (format "%s_%s" prefix-id suffix) #"-" "_")))
 
+;; FIXME - more copy and pasted code.
 (defn get-index-names
   "Given a index set build list of index names."
   [idx-set]
@@ -131,7 +119,7 @@
           suffix-index-name (get-in idx-set [:index-set concept :index-names])]
       (gen-valid-index-name prefix-id suffix-index-name))))
 
-(defn  submit-create-index-set-req
+(defn submit-create-index-set-req
   "submit a request to index-set app to create indices"
   [idx-set]
   (let [response (client/request
@@ -146,7 +134,7 @@
         errors-str (cheshire/generate-string (flatten (get body "errors")))]
     {:status status :errors-str errors-str :response response}))
 
-(defn  submit-delete-index-set-req
+(defn submit-delete-index-set-req
   "submit a request to index-set app to delete index-set"
   [id]
   (let [response (client/request
@@ -159,7 +147,7 @@
         errors-str (cheshire/generate-string (flatten (get body "errors")))]
     {:status status :errors-str errors-str :response response}))
 
-(defn  get-index-set
+(defn get-index-set
   "submit a request to index-set app to fetch an index-set assoc with an id"
   [id]
   (let [response (client/request
