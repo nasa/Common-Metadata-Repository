@@ -6,7 +6,7 @@
             [cmr.ingest.system :as ingest-system]
             [cmr.index-set.system :as index-set-system]
             [cmr.metadata-db.data.memory-db :as memory]
-            [cmr.indexer.data.elasticsearch :as es-index]
+            [cmr.index-set.data.elasticsearch :as es-index]
             [cmr.search.data.elastic-search-index :as es-search]
             [cmr.common.lifecycle :as lifecycle]
             [cmr.elastic-utils.embedded-elastic-server :as elastic-server]))
@@ -40,13 +40,14 @@
                               :db (memory/create-db))
 
 
-          ;; Indexer will use embedded elastic server
-          :indexer (assoc (indexer-system/create-system)
-                          :db (es-index/create-elasticsearch-store
-                                {:host "localhost"
-                                 :port in-memory-elastic-port
-                                 :admin-token "none"}))
-          :index-set (index-set-system/create-system)
+          :indexer (indexer-system/create-system)
+
+          ;; Index set and indexer will use the embedded elastic server
+          :index-set (assoc (index-set-system/create-system)
+                            :index (es-index/create-elasticsearch-store
+                                     {:host "localhost"
+                                      :port in-memory-elastic-port
+                                      :admin-token "none"}))
           :ingest (ingest-system/create-system)
 
           ;; Search will use the embedded elastic server
