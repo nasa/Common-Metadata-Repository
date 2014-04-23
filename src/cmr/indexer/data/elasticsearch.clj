@@ -44,17 +44,17 @@
     [this system]
     (let [context {:system system}
           elastic-config (idx-set/get-elastic-config context)]
-      (connect-with-config elastic-config))
-    (create-indexes)
-    this)
+      (connect-with-config elastic-config)
+      (create-indexes)
+      (assoc this :config elastic-config)))
 
   (stop [this system]
         this))
 
 (defn create-elasticsearch-store
   "Creates the Elasticsearch store."
-  [config]
-  (map->ESstore {:config config}))
+  []
+  (map->ESstore {}))
 
 (defn- try-elastic-operation
   "Attempt to perform the operation in Elasticsearch, handles exceptions.

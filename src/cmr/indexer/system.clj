@@ -19,7 +19,7 @@
   "Returns a new instance of the whole application."
   []
   {:log (log/create-logger)
-   :db (es/create-elasticsearch-store {})
+   :db (es/create-elasticsearch-store)
    :web (web/create-web-server 3004 routes/make-api)
    :cache (cache/create-cache)
    :zipkin (context/zipkin-config "Indexer" false)})
