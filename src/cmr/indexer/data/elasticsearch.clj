@@ -22,7 +22,7 @@
   []
   (let [index-set idx-set/index-set
         index-set-id (get-in index-set [:index-set :id])]
-    (when-not (idx-set/get index-set-id)
+    (when-not (idx-set/get-index-set index-set-id)
       (idx-set/create index-set))))
 
 (defn reset-es-store

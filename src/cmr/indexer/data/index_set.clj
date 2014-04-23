@@ -73,7 +73,7 @@
                          :mapping granule-mapping}}})
 
 
-(defn  get
+(defn get-index-set
   "Submit a request to index-set app to fetch an index-set assoc with an id"
   [id]
   (let [response (client/request
@@ -90,7 +90,7 @@
                                       Index set app reported status: %s, error: %s"
                                       id status (pr-str (flatten (:errors body))))))))
 
-(defn  fetch-elastic-config
+(defn fetch-elastic-config
   "Submit a request to index-set app to fetch an index-set assoc with an id"
   []
   (let [response (client/request
@@ -131,7 +131,7 @@
    (let [index-set-id (get-in index-set [:index-set :id])]
      (fetch-concept-type-index-names index-set-id)))
   ([index-set-id]
-   (let [fetched-index-set (get index-set-id)]
+   (let [fetched-index-set (get-index-set index-set-id)]
      (into {} (map (fn [[k v]] [k (first (vals v))])
                    (get-in fetched-index-set [:index-set :concepts]))))))
 
@@ -142,7 +142,7 @@
    (let [index-set-id (get-in index-set [:index-set :id])]
      (fetch-concept-mapping-types index-set-id)))
   ([index-set-id]
-   (let [fetched-index-set (get index-set-id)]
+   (let [fetched-index-set (get-index-set index-set-id)]
      {:collection (name (first (keys (get-in fetched-index-set [:index-set :collection :mapping]))))
       :granule (name (first (keys (get-in fetched-index-set [:index-set :granule :mapping]))))})))
 
