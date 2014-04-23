@@ -77,7 +77,6 @@
           (is (= 422 status))
           (is (re-matches #".*page_size must be a number between 1 and 2000.*" body)))))))
 
-;; TODO Implement this when paging is implemented in search.
 (deftest search-with-page-num
   (setup)
   (testing "Search with page num."
