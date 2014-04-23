@@ -8,6 +8,7 @@
             [cmr.common.lifecycle :as lifecycle]
             [cmr.search.models.results :as results]
             [cmr.search.data.query-to-elastic :as q2e]
+            [cmr.search.services.parameters :as p]
 
             ;; Query To Elastic implementations
             ;; Must be required here to be available in uberjar
@@ -50,19 +51,42 @@
   "Created to trace only the sending of the query off to elastic search."
   [context elastic-query concept-type page-size page-num]
   (let [{:keys [index-name type-name fields]} (concept-type->index-info concept-type)]
-    (if page-size
+    (cond
+      (and page-size page-num)
       (esd/search index-name
                   [type-name]
                   :query elastic-query
                   :version true
                   :size page-size
-                  :fields fields)
-      ;; unlimited results
+                  :fields fields
+                  :from page-num
+                  :sort [{:concept-id {:order "desc"}}])
+
+      page-size
       (esd/search index-name
                   [type-name]
                   :query elastic-query
                   :version true
-                  :fields fields))))
+                  :size page-size
+                  :fields fields
+                  :sort [{:concept-id {:order "desc"}}])
+
+      page-num
+      (esd/search index-name
+                  [type-name]
+                  :query elastic-query
+                  :version true
+                  :size p/default-page-size
+                  :fields fields
+                  :sort [{:concept-id {:order "desc"}}])
+
+      :else ;; unlimited results
+      (esd/search index-name
+                  [type-name]
+                  :query elastic-query
+                  :version true
+                  :fields fields
+                  :sort [{:concept-id {:order "desc"}}]))))
 
 (defn execute-query
   "Executes a query to find concepts. Returns concept id, native id, and revision id."
