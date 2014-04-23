@@ -4,6 +4,7 @@
             [cheshire.core :as cheshire]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.services.errors :as errors]
+            [cmr.indexer.data.cache :as cache]
             [cmr.system-trace.core :refer [deftracefn]]))
 
 ;;; index-set app enpoint
@@ -89,7 +90,7 @@
                                       Index set app reported status: %s, error: %s"
                                       id status (pr-str (flatten (:errors body))))))))
 
-(defn  get-elastic-config
+(defn  fetch-elastic-config
   "Submit a request to index-set app to fetch an index-set assoc with an id"
   []
   (let [response (client/request
@@ -124,26 +125,43 @@
                                       (cheshire/generate-string index-set)
                                       (:body response))))))
 
-(defn get-concept-type-index-names
+(defn fetch-concept-type-index-names
   "Fetch index names for each concept type from index-set app"
   ([]
    (let [index-set-id (get-in index-set [:index-set :id])]
-     (get-concept-type-index-names index-set-id)))
+     (fetch-concept-type-index-names index-set-id)))
   ([index-set-id]
    (let [fetched-index-set (get index-set-id)]
      (into {} (map (fn [[k v]] [k (first (vals v))])
                    (get-in fetched-index-set [:index-set :concepts]))))))
 
 
-(defn get-concept-mapping-types
+(defn fetch-concept-mapping-types
   "Fetch mapping types for each concept type from index-set app"
   ([]
    (let [index-set-id (get-in index-set [:index-set :id])]
-     (get-concept-mapping-types index-set-id)))
+     (fetch-concept-mapping-types index-set-id)))
   ([index-set-id]
    (let [fetched-index-set (get index-set-id)]
      {:collection (name (first (keys (get-in fetched-index-set [:index-set :collection :mapping]))))
       :granule (name (first (keys (get-in fetched-index-set [:index-set :granule :mapping]))))})))
 
+(defn get-elastic-config
+  "Fetch elastic config from the cache."
+  [context]
+  (let [cache-atom (-> context :system :cache)]
+    (cache/cache-lookup cache-atom :elastic-config #(fetch-elastic-config))))
+
+(defn get-concept-type-index-names
+  "Fetch index names associated with concepts."
+  [context]
+  (let [cache-atom (-> context :system :cache)]
+    (cache/cache-lookup cache-atom :concept-indices #(fetch-concept-type-index-names))))
+
+(defn get-concept-mapping-types
+  "Fetch mapping types associated with concepts."
+  [context]
+  (let [cache-atom (-> context :system :cache)]
+    (cache/cache-lookup cache-atom :concept-mapping-types #(fetch-concept-mapping-types))))
 
 
