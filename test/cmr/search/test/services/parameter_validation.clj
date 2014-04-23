@@ -1,6 +1,6 @@
-(ns cmr.search.test.services.parameters
+(ns cmr.search.test.services.parameter-validation
   (:require [clojure.test :refer :all]
-            [cmr.search.services.parameter_validation :as pv]))
+            [cmr.search.services.parameter-validation :as pv]))
 
 (def valid-params
   "Example valid parameters"
@@ -27,6 +27,62 @@
            (pv/unrecognized-params-settings-in-options-validation :collection
                                                                   {:entry_title "fdad"
                                                                    :options {:entry_title {:foo "true"}}})))))
+
+(deftest temporal-format-validation :collection-start-date-test
+  (testing "valid-start-date"
+    (is (empty? (pv/temporal-format-validation :collection {:temporal ["2014-04-05T00:00:00Z"]}))))
+  (testing "invalid-start-date"
+    (are [start-date]
+         (let [error (pv/temporal-format-validation :collection {:temporal [start-date]})]
+           (is (= 1 (count error)))
+           (re-find (re-pattern "temporal date is invalid:") (first error)))
+         "2014-04-05T00:00:00"
+         "2014-13-05T00:00:00Z"
+         "2014-04-00T00:00:00Z"
+         "2014-04-05T24:00:00Z"
+         "2014-04-05T00:60:00Z"
+         "2014-04-05T00:00:60Z")))
+
+(deftest temporal-format-validation :collection-end-date-test
+  (testing "valid-end-date"
+    (is (empty? (pv/temporal-format-validation :collection {:temporal [",2014-04-05T00:00:00Z"]}))))
+  (testing "invalid-end-date"
+    (are [end-date]
+         (let [error (pv/temporal-format-validation :collection {:temporal [end-date]})]
+           (is (= 1 (count error)))
+           (re-find (re-pattern "temporal date is invalid:") (first error)))
+         ",2014-04-05T00:00:00"
+         ",2014-13-05T00:00:00Z"
+         ",2014-04-00T00:00:00Z"
+         ",2014-04-05T24:00:00Z"
+         ",2014-04-05T00:60:00Z"
+         ",2014-04-05T00:00:60Z")))
+
+(deftest validate-temporal-start-day-test
+  (testing "valid-start-day"
+    (are [start-day] (empty? (pv/temporal-format-validation :collection {:temporal [(str "2014-04-05T18:45:51Z,," start-day)]}))
+         "1"
+         "366"
+         "10"))
+  (testing "invalid-start-day"
+    (are [start-day err-msg] (= [err-msg]
+                                (pv/temporal-format-validation :collection {:temporal [(str "2014-04-05T18:45:51Z,," start-day)]}))
+         "x" "temporal_start_day [x] must be an integer between 1 and 366"
+         "0" "temporal_start_day [0] must be an integer between 1 and 366"
+         "367" "temporal_start_day [367] must be an integer between 1 and 366")))
+
+(deftest validate-temporal-end-day-test
+  (testing "valid-end-day"
+    (are [end-day] (empty? (pv/temporal-format-validation :collection {:temporal [(str "2014-04-05T18:45:51Z,," end-day)]}))
+         "1"
+         "366"
+         "10"))
+  (testing "invalid-end-day"
+    (are [end-day err-msg] (= [err-msg]
+                              (pv/temporal-format-validation :collection {:temporal [(str "2013-04-05T18:45:51Z,2014-04-05T18:45:51Z,," end-day)]}))
+         "x" "temporal_end_day [x] must be an integer between 1 and 366"
+         "0" "temporal_end_day [0] must be an integer between 1 and 366"
+         "367" "temporal_end_day [367] must be an integer between 1 and 366")))
 
 (deftest validate-parameters-test
   (testing "parameters are returned when valid"

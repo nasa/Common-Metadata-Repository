@@ -3,12 +3,13 @@
   (:require [clojure.string :as s]
             [cmr.common.services.errors :as err]
             [cmr.search.models.query :as qm]
-            [cmr.search.services.parameters :as p]))
+            [cmr.search.services.parameters :as p]
+            [cmr.search.data.datetime-helper :as h]))
 
-(defn- value-or-nil
-  "Return argument string if it is not blank or nil if it is"
+(defn- string->int-value
+  "Return int value of the string value if it is not blank or nil if it is"
   [value]
-  (if (s/blank? value) nil value))
+  (when-not (s/blank? value) (Integer/parseInt value)))
 
 (defn map->temporal-condition
   "Returns temporal condition built with the given map with field, start-date, end-date, start-day and end-day"
@@ -30,7 +31,7 @@
       (map #(p/parameter->condition concept-type param % options) value))
     (let [[start-date end-date start-day end-day] (map s/trim (s/split value #","))]
       (map->temporal-condition {:field param
-                                :start-date (value-or-nil start-date)
-                                :end-date (value-or-nil end-date)
-                                :start-day (value-or-nil start-day)
-                                :end-day (value-or-nil end-day)}))))
+                                :start-date (h/string->datetime start-date)
+                                :end-date (h/string->datetime end-date)
+                                :start-day (string->int-value start-day)
+                                :end-day (string->int-value end-day)}))))

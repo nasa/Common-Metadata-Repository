@@ -16,14 +16,16 @@
             [cmr.search.data.elastic-results-to-query-results :as rc]
             [cmr.system-trace.core :refer [deftracefn]]))
 
+;; TODO - somehow search app to get this info from index-set app
+;; TODO - define proper index-set/indexer/search apps workflow w.r.t elastic indices
 (def concept-type->index-info
-  {:collection {:index-name "collections"
+  {:collection {:index-name  "1_collections" ;; "collections"
                 :type-name "collection"
                 :fields ["entry-title"
                          "provider-id"
                          "short-name"
                          "version-id"]}
-   :granule {:index-name "granules"
+   :granule {:index-name "1_granules" ;; "granules"
              :type-name "small_collections"
              :fields ["granule-ur"
                       "provider-id"]}})
