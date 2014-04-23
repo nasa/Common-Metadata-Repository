@@ -13,7 +13,7 @@
          [:options])))
 
 (defn page-size-validation
-  "Validates that the page-size (if present) is in the valid range."
+  "Validates that the page-size (if present) is a number in the valid range."
   [concept-type params]
   (if-let [page-size (:page_size params)]
     (try (let [page-size-i (Integer. page-size)]
@@ -26,7 +26,20 @@
 
              :else
              []))
-      (catch Exception e ["page_size must be a number between 1 and 2000"]))))
+      (catch NumberFormatException e ["page_size must be a number between 1 and 2000"]))
+    []))
+
+
+(defn page-num-validation
+  "Validates that the page-num (if present) is a number in the valid range."
+  [concept-type params]
+  (println (str "PARAMS: " params))
+  (if-let [page-num (:page_num params)]
+    (try (let [page-num-i (Integer. page-num)]
+           (if (> 0 page-num-i)
+             [(format "page_num %d is less than 0" page-num-i)]))
+      (catch NumberFormatException e ["page_num must be a number greater than or equal to 0"]))
+    []))
 
 (defn unrecognized-params-validation
   "Validates that no invalid parameters were supplied"
@@ -67,6 +80,7 @@
   "A list of the functions that can validate parameters. They all accept parameters as an argument
   and return a list of errors."
   [page-size-validation
+   page-num-validation
    unrecognized-params-validation
    unrecognized-params-in-options-validation
    options-only-for-string-conditions-validation
