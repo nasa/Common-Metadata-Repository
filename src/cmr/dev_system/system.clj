@@ -4,6 +4,7 @@
             [cmr.indexer.system :as indexer-system]
             [cmr.search.system :as search-system]
             [cmr.ingest.system :as ingest-system]
+            [cmr.index-set.system :as index-set-system]
             [cmr.metadata-db.data.memory-db :as memory]
             [cmr.indexer.data.elasticsearch :as es-index]
             [cmr.search.data.elastic-search-index :as es-search]
@@ -15,6 +16,8 @@
   "A map of application name to the start function"
   {:metadata-db {:start mdb-system/start
                  :stop mdb-system/stop}
+   :index-set {:start index-set-system/start
+               :stop index-set-system/stop}
    :indexer {:start indexer-system/start
              :stop indexer-system/stop}
    :ingest {:start ingest-system/start
@@ -43,7 +46,7 @@
                                 {:host "localhost"
                                  :port in-memory-elastic-port
                                  :admin-token "none"}))
-
+          :index-set (index-set-system/create-system)
           :ingest (ingest-system/create-system)
 
           ;; Search will use the embedded elastic server
@@ -59,6 +62,7 @@
   [type]
   {:apps {:metadata-db (mdb-system/create-system)
           :indexer (indexer-system/create-system)
+          :index-set (index-set-system/create-system)
           :ingest (ingest-system/create-system)
           :search (search-system/create-system)}
    :components {}})
