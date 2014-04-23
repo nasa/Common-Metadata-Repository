@@ -26,7 +26,8 @@
 
              :else
              []))
-      (catch Exception e ["page_size must be a number between 1 and 2000"]))))
+      (catch Exception e ["page_size must be a number between 1 and 2000"]))
+    []))
 
 (defn unrecognized-params-validation
   "Validates that no invalid parameters were supplied"
