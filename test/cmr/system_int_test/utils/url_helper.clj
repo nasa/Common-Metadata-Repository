@@ -32,27 +32,18 @@
   [provider-id]
   (format "http://localhost:%s/providers/%s" metadata-db-port provider-id))
 
-(defn collection-ingest-url
-  [provider-id native-id]
-  (format "http://localhost:%s/providers/%s/collections/%s"
+(defn ingest-url
+  [provider-id type native-id]
+  (format "http://localhost:%s/providers/%s/%ss/%s"
           ingest-port
           provider-id
+          (name type)
           native-id))
 
-(defn collection-search-url
-  [params]
-  (format "http://localhost:%s/collections?%s" search-port (codec/form-encode params)))
 
-(defn granule-ingest-url
-  [provider-id native-id]
-  (format "http://localhost:%s/providers/%s/granules/%s"
-          ingest-port
-          provider-id
-          native-id))
-
-(defn granule-search-url
-  [params]
-  (format "http://localhost:%s/granules?%s" search-port (codec/form-encode params)))
+(defn search-url
+  [type params]
+  (format "http://localhost:%s/%ss?%s" search-port (name type) (codec/form-encode params)))
 
 (defn elastic-flush-url
   []
