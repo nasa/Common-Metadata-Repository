@@ -6,8 +6,9 @@
             [clj-http.client :as client]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.services.errors :as errors]
-            [cmr.indexer.data.elasticsearch-properties :as es-prop]
+            [cmr.indexer.data.index-set :as idx-set]
             [cmr.system-trace.core :refer [deftracefn]]))
+
 
 (defn- connect-with-config
   "Connects to ES with the given config"
@@ -16,31 +17,18 @@
     (info (format "Connecting to single ES on %s %d" host port))
     (esr/connect! (str "http://" host ":" port))))
 
-(defn- create-indexes
+(defn create-indexes
   "Create elastic index for each index name"
   []
-  (doseq [{:keys [index-name setting mapping]} es-prop/indexes]
-    (when-not (esi/exists? index-name)
-      (let [response (esi/create index-name :settings setting :mappings mapping)]
-        (info "index creation attempt result:" response)))))
-
-(defn- delete-indexes
-  "Delete configured elastic indexes"
-  [{:keys [admin-token] :as es-config}]
-  (doseq [{:keys [index-name]} es-prop/indexes]
-    (when (esi/exists? index-name)
-      (let [response (client/delete (esr/index-url index-name)
-                                    {:headers {"Authorization" admin-token
-                                               "Confirm-delete-action" "true"}
-                                     :throw-exceptions false})
-            status (:status response)]
-        (if-not (some #{200 202 204} [status])
-          (errors/internal-error! (str "Index name: " index-name " delete elasticsearch index operation failed " response)))))))
+  (let [index-set idx-set/index-set
+        index-set-id (get-in index-set [:index-set :id])]
+    (when-not (idx-set/get index-set-id)
+      (idx-set/create index-set))))
 
 (defn reset-es-store
-  "Delete elasticsearch indexes and re-create them. A nuclear option just for the development team."
-  [context es-config]
-  (delete-indexes es-config)
+  "Delete elasticsearch indexes and re-create them via index-set app. A nuclear option just for the development team."
+  []
+  (idx-set/reset)
   (create-indexes))
 
 (defrecord ESstore
@@ -54,7 +42,9 @@
 
   (start
     [this system]
-    (connect-with-config (:config this))
+    (let [context {:system system}
+          elastic-config (idx-set/get-elastic-config context)]
+      (connect-with-config elastic-config))
     (create-indexes)
     this)
 

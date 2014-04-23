@@ -5,9 +5,9 @@
   (:require [cmr.common.lifecycle :as lifecycle]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.system-trace.context :as context]
-            [cmr.indexer.config.elasticsearch-config :as es-config]
             [cmr.common.api.web-server :as web]
             [cmr.indexer.data.elasticsearch :as es]
+            [cmr.indexer.data.cache :as cache]
             [cmr.indexer.api.routes :as routes]))
 
 (def
@@ -19,8 +19,9 @@
   "Returns a new instance of the whole application."
   []
   {:log (log/create-logger)
-   :db (es/create-elasticsearch-store (es-config/config))
+   :db (es/create-elasticsearch-store {})
    :web (web/create-web-server 3004 routes/make-api)
+   :cache (cache/create-cache)
    :zipkin (context/zipkin-config "Indexer" false)})
 
 (defn start

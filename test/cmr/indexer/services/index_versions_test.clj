@@ -6,11 +6,14 @@
             [clojurewerkz.elastisch.rest :as esr]
             [clojurewerkz.elastisch.rest.index :as esi]
             [clojurewerkz.elastisch.rest.document :as doc]
-            [cmr.indexer.config.elasticsearch-config :as conf]
             [cmr.elastic-utils.embedded-elastic-server :as elastic-server]
             [cmr.indexer.data.elasticsearch :as es]
-            [cmr.indexer.data.elasticsearch-properties :as es-prop]
+            [cmr.indexer.data.index-set :as idx-set]
+            [cmr.indexer.data.cache :as cache]
+            [cheshire.core :as cheshire]
+            [clojure.data.codec.base64 :as b64]
             [cmr.common.lifecycle :as lifecycle]))
+
 
 (defn- es-doc
   "Returns dummy elasticsearch doc for testing"
@@ -42,10 +45,12 @@
   (let [result (es/get-document {} "tests" "collection" id)]
     (is (nil? result))))
 
-(def test-config
-  "Configuration to use for elasticsearch during test run."
-  (assoc (conf/config) :port 9205))
-
+(defn test-config
+  "Return the configuration for elasticsearch"
+  []
+    {:host "localhost"
+     :port 9210
+     :admin-token (str "Basic " (b64/encode (.getBytes "password")))})
 
 (defn server-setup
   "Fixture that starts an instance of elastic in the JVM runs the tests and then shuts it down."
@@ -55,7 +60,7 @@
   ;; other tests that run after it. We keep track of the internal endpoint of the elastisch endpoint
   ;; and set it back after the tests have completed.
   (let [current-endpoint esr/*endpoint*
-        http-port (:port test-config)
+        http-port (:port (test-config))
         server (lifecycle/start (elastic-server/create-server http-port 9215) nil)]
     (esr/connect! (str "http://localhost:" http-port))
 
@@ -74,7 +79,7 @@
 (defn index-setup
   "Fixture that creates an index and drops it."
   [f]
-  (esi/create "tests" :settings es-prop/collection-setting :mappings es-prop/collection-mapping)
+  (esi/create "tests" :settings idx-set/collection-setting :mappings idx-set/collection-mapping)
   (try
     (f)
     (finally
@@ -94,11 +99,11 @@
 
 ;; TODO update this test with ignore-conflict true/false after the external_gte support is added
 (deftest save-with-equal-versions-test
-    (testing "Save with equal versions"
-      (es/save-document-in-elastic {} "tests" "collection" (es-doc) 0 true)
-      (assert-version "C1234-PROV1" 0)
-      (es/save-document-in-elastic {} "tests" "collection" (es-doc) 0 true)
-      (assert-version "C1234-PROV1" 0)))
+  (testing "Save with equal versions"
+    (es/save-document-in-elastic {} "tests" "collection" (es-doc) 0 true)
+    (assert-version "C1234-PROV1" 0)
+    (es/save-document-in-elastic {} "tests" "collection" (es-doc) 0 true)
+    (assert-version "C1234-PROV1" 0)))
 
 (deftest save-with-earlier-versions-test
   (testing "Save with earlier versions with ignore-conflict false"
@@ -120,9 +125,9 @@
 (deftest delete-with-increment-versions-test
   (testing "Delete with increment versions"
     (es/save-document-in-elastic {} "tests" "collection" (es-doc) 0 false)
-    (es/delete-document-in-elastic {} test-config "tests" "collection" "C1234-PROV1" "1" false)
+    (es/delete-document-in-elastic {} (test-config) "tests" "collection" "C1234-PROV1" "1" false)
     (assert-delete "C1234-PROV1")
-    (es/delete-document-in-elastic {} test-config "tests" "collection" "C1234-PROV1" "8" false)
+    (es/delete-document-in-elastic {} (test-config) "tests" "collection" "C1234-PROV1" "8" false)
     (assert-delete "C1234-PROV1")))
 
 ; TODO this test needs the new elasticsearch external_gte feature to pass
@@ -131,18 +136,18 @@
 #_(deftest delete-with-equal-versions-test
     (testing "Delete with equal versions"
       (es/save-document-in-elastic {} "tests" "collection" (es-doc) 0 false)
-      (es/delete-document-in-elastic {} test-config "tests" "collection" "C1234-PROV1" "0" false)
+      (es/delete-document-in-elastic {} (test-config) "tests" "collection" "C1234-PROV1" "0" false)
       (assert-delete "C1234-PROV1")))
 
 (deftest delete-with-earlier-versions-test
   (testing "Delete with earlier versions ignore-conflict false"
     (es/save-document-in-elastic {} "tests" "collection" (es-doc) 2 false)
     (try
-      (es/delete-document-in-elastic {} test-config "tests" "collection" "C1234-PROV1" "1" false)
+      (es/delete-document-in-elastic {} (test-config) "tests" "collection" "C1234-PROV1" "1" false)
       (catch java.lang.Exception e
         (is (re-find #"version conflict, current \[2\], provided \[1\]" (.getMessage e))))))
   (testing "Delete with earlier versions ignore-conflict true"
-      (es/save-document-in-elastic {} "tests" "collection" (es-doc) 2 true)
-      (es/delete-document-in-elastic {} test-config "tests" "collection" "C1234-PROV1" "1" true)
-      (assert-version "C1234-PROV1" 2)))
+    (es/save-document-in-elastic {} "tests" "collection" (es-doc) 2 true)
+    (es/delete-document-in-elastic {} (test-config) "tests" "collection" "C1234-PROV1" "1" true)
+    (assert-version "C1234-PROV1" 2)))
 
