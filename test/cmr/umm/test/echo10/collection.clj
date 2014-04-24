@@ -85,7 +85,21 @@
         <Value>12.3</Value>
       </AdditionalAttribute>
     </AdditionalAttributes>
-  </Collection>")
+     <Campaigns>
+      <Campaign>
+        <ShortName>ESI</ShortName>
+        <LongName>Environmental Sustainability Index</LongName>
+     </Campaign>
+      <Campaign>
+        <ShortName>EVI</ShortName>
+        <LongName>Environmental Vulnerability Index</LongName>
+     </Campaign>
+      <Campaign>
+        <ShortName>EPI</ShortName>
+        <LongName>Environmental Performance Index</LongName>
+     </Campaign>
+   </Campaigns>
+ </Collection>")
 
 (def valid-collection-xml
   "<Collection>
@@ -147,9 +161,20 @@
                         :data-type :float
                         :parameter-range-begin 0.1
                         :parameter-range-end 100.43
-                        :value 12.3})]})
+                        :value 12.3})]
+                    :projects
+                    [(umm-c/map->Project
+                       {:short-name "ESI"
+                        :long-name "Environmental Sustainability Index"})
+                     (umm-c/map->Project
+                       {:short-name "EVI"
+                        :long-name "Environmental Vulnerability Index"})
+                     (umm-c/map->Project
+                       {:short-name "EPI"
+                        :long-name "Environmental Performance Index"})]})
         actual (c/parse-collection all-fields-collection-xml)]
     (is (= expected actual))))
+
 
 (deftest validate-xml
   (testing "valid xml"
@@ -160,3 +185,4 @@
             "Line 5 - cvc-datatype-valid.1.2.1: 'XXXX-12-31T19:00:00-05:00' is not a valid value for 'dateTime'."
             "Line 5 - cvc-type.3.1.3: The value 'XXXX-12-31T19:00:00-05:00' of element 'LastUpdate' is not valid."]
            (c/validate-xml (s/replace valid-collection-xml "1999" "XXXX"))))))
+

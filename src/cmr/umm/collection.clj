@@ -50,6 +50,14 @@
    value
   ])
 
+(defrecord Project
+  [
+   ;; maps to Echo10 Collection/Campaigns/Campaign/ShortName
+   short-name
+
+   ;;  maps to Echo10 Collection/Campaigns/Campaign/LongName
+   long-name
+   ])
 
 (defrecord UmmCollection
   [
@@ -64,4 +72,7 @@
    temporal-coverage
 
    product-specific-attributes
+
+   ;; Records campaigns of ECHO10
+   projects
    ])
