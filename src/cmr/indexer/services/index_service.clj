@@ -25,7 +25,7 @@
 
 (defmulti concept->elastic-doc
   "Returns elastic json that can be used to insert into Elasticsearch for the given concept"
-  (fn [concept umm-concept]
+  (fn [context concept umm-concept]
     (concept-id->type (:concept-id concept))))
 
 (deftracefn index-concept
@@ -37,7 +37,7 @@
         concept-indices (idx-set/get-concept-type-index-names context)
         concept-mapping-types (idx-set/get-concept-mapping-types context)
         umm-concept (parse-concept concept)
-        es-doc (concept->elastic-doc concept umm-concept)]
+        es-doc (concept->elastic-doc context concept umm-concept)]
     (es/save-document-in-elastic
       context
       (concept-indices concept-type)

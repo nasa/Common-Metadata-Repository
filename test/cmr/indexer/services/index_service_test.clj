@@ -30,5 +30,5 @@
                   :version-id.lowercase "1"
                   :start-date "1996-02-24T22:20:41.000Z"
                   :end-date "1997-03-25T23:23:43.123Z"}
-        actual (svc/concept->elastic-doc concept umm-concept)]
+        actual (svc/concept->elastic-doc nil concept umm-concept)]
     (is (= expected actual))))

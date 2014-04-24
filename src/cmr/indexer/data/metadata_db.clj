@@ -14,16 +14,28 @@
    :port "3001"})
 
 (deftracefn get-concept
-  "Retrive the concept with the given concept and revision-id"
+  "Retrieve the concept with the given concept and revision-id"
   [context concept-id revision-id]
   (let [{:keys [host port]} (endpoint)
         response (client/get (format "http://%s:%s/concepts/%s/%s" host port concept-id revision-id)
                              {:accept :json
                               :throw-exceptions false
-                              :headers (ch/context->http-headers context)})
-        status (:status response)]
-    (if (= 200 status)
-      (walk/keywordize-keys (cheshire/decode (:body response)))
+                              :headers (ch/context->http-headers context)})]
+    (if (= 200 (:status response))
+      (cheshire/decode (:body response) true)
       (errors/internal-error!
         (str "Failed to retrieve concept " concept-id "/" revision-id " from metadata-db: " (:body response))))))
+
+(deftracefn get-latest-concept
+  "Retrieve the latest version of the concept"
+  [context concept-id]
+  (let [{:keys [host port]} (endpoint)
+        response (client/get (format "http://%s:%s/concepts/%s" host port concept-id)
+                             {:accept :json
+                              :throw-exceptions false
+                              :headers (ch/context->http-headers context)})]
+    (if (= 200 (:status response))
+      (cheshire/decode (:body response) true)
+      (errors/internal-error!
+        (str "Failed to retrieve concept " concept-id " from metadata-db: " (:body response))))))
 
