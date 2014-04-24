@@ -22,7 +22,8 @@
         entry-title "Dummy entry title"
         provider-id "PROV1"
         short-name "DummyShort"
-        version-id "1"]
+        version-id "1"
+        project-short-names " ESI EPI EVI"]
     {:concept-id concept-id
      :entry-title entry-title
      :entry-title.lowercase (s/lower-case entry-title)
@@ -31,7 +32,9 @@
      :short-name short-name
      :short-name.lowercase (s/lower-case short-name)
      :version-id version-id
-     :version-id.lowercase (s/lower-case version-id)}))
+     :version-id.lowercase (s/lower-case version-id)
+     :project project-short-names
+     :project.lowercase (s/lower-case project-short-names)}))
 
 (defn- assert-version
   "Assert the retrieved document for the given id is of the given version"
@@ -45,12 +48,11 @@
   (let [result (es/get-document {} "tests" "collection" id)]
     (is (nil? result))))
 
-(defn test-config
+(def test-config
   "Return the configuration for elasticsearch"
-  []
-    {:host "localhost"
-     :port 9210
-     :admin-token (str "Basic " (b64/encode (.getBytes "password")))})
+  {:host "localhost"
+   :port 9210
+   :admin-token (str "Basic " (b64/encode (.getBytes "password")))})
 
 (defn server-setup
   "Fixture that starts an instance of elastic in the JVM runs the tests and then shuts it down."
@@ -60,7 +62,7 @@
   ;; other tests that run after it. We keep track of the internal endpoint of the elastisch endpoint
   ;; and set it back after the tests have completed.
   (let [current-endpoint esr/*endpoint*
-        http-port (:port (test-config))
+        http-port (:port test-config)
         server (lifecycle/start (elastic-server/create-server http-port 9215) nil)]
     (esr/connect! (str "http://localhost:" http-port))
 
@@ -125,9 +127,9 @@
 (deftest delete-with-increment-versions-test
   (testing "Delete with increment versions"
     (es/save-document-in-elastic {} "tests" "collection" (es-doc) 0 false)
-    (es/delete-document-in-elastic {} (test-config) "tests" "collection" "C1234-PROV1" "1" false)
+    (es/delete-document-in-elastic {} test-config "tests" "collection" "C1234-PROV1" "1" false)
     (assert-delete "C1234-PROV1")
-    (es/delete-document-in-elastic {} (test-config) "tests" "collection" "C1234-PROV1" "8" false)
+    (es/delete-document-in-elastic {} test-config "tests" "collection" "C1234-PROV1" "8" false)
     (assert-delete "C1234-PROV1")))
 
 ; TODO this test needs the new elasticsearch external_gte feature to pass
@@ -136,18 +138,18 @@
 #_(deftest delete-with-equal-versions-test
     (testing "Delete with equal versions"
       (es/save-document-in-elastic {} "tests" "collection" (es-doc) 0 false)
-      (es/delete-document-in-elastic {} (test-config) "tests" "collection" "C1234-PROV1" "0" false)
+      (es/delete-document-in-elastic {} test-config "tests" "collection" "C1234-PROV1" "0" false)
       (assert-delete "C1234-PROV1")))
 
 (deftest delete-with-earlier-versions-test
   (testing "Delete with earlier versions ignore-conflict false"
     (es/save-document-in-elastic {} "tests" "collection" (es-doc) 2 false)
     (try
-      (es/delete-document-in-elastic {} (test-config) "tests" "collection" "C1234-PROV1" "1" false)
+      (es/delete-document-in-elastic {} test-config "tests" "collection" "C1234-PROV1" "1" false)
       (catch java.lang.Exception e
         (is (re-find #"version conflict, current \[2\], provided \[1\]" (.getMessage e))))))
   (testing "Delete with earlier versions ignore-conflict true"
     (es/save-document-in-elastic {} "tests" "collection" (es-doc) 2 true)
-    (es/delete-document-in-elastic {} (test-config) "tests" "collection" "C1234-PROV1" "1" true)
+    (es/delete-document-in-elastic {} test-config "tests" "collection" "C1234-PROV1" "1" true)
     (assert-version "C1234-PROV1" 2)))
 

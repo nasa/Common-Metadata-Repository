@@ -43,8 +43,11 @@
                              :short-name.lowercase  {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs"}
                              :version-id  {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}
                              :version-id.lowercase  {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs"}
-                             :start-date  {:type "date" :format "yyyy-MM-dd'T'HH:mm:ssZ||yyyy-MM-dd'T'HH:mm:ss.SSSZ"}
-                             :end-date    {:type "date" :format "yyyy-MM-dd'T'HH:mm:ssZ||yyyy-MM-dd'T'HH:mm:ss.SSSZ"}}}})
+                             :start-date {:type "date" :format "yyyy-MM-dd'T'HH:mm:ssZ||yyyy-MM-dd'T'HH:mm:ss.SSSZ"}
+                             :end-date   {:type "date" :format "yyyy-MM-dd'T'HH:mm:ssZ||yyyy-MM-dd'T'HH:mm:ss.SSSZ"}
+                             ;; list of campaign short-names of a collection are bundled and indexed as umm/project
+                             :project {:type "string" :index "analyzed" :omit_norms "true" :index_options "docs" :store "yes"}
+                             :project.lowercase {:type "string" :index "analyzed" :omit_norms "true" :index_options "docs" :store "yes"}}}})
 
 (def granule-setting {:index {:number_of_shards 2,
                               :number_of_replicas 1,

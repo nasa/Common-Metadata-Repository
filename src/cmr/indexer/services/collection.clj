@@ -15,7 +15,13 @@
   (let [{:keys [concept-id provider-id]} concept
         {{:keys [short-name version-id]} :product
          entry-title :entry-title
-         temporal-coverage :temporal-coverage} umm-concept
+         temporal-coverage :temporal-coverage
+         projects :projects} umm-concept
+        ;; each project short name in project-short-names string will be analyzed and indexed
+        project-short-names (reduce (fn [short-names sn]
+                                      (format "%s %s" short-names (:short-name sn)))
+                                    ""
+                                    projects)
         start-date (temporal/start-date temporal-coverage)
         end-date (temporal/end-date temporal-coverage)]
     {:concept-id concept-id
@@ -28,4 +34,7 @@
      :version-id version-id
      :version-id.lowercase (s/lower-case version-id)
      :start-date (when-not (nil? start-date) (f/unparse (f/formatters :date-time) start-date))
-     :end-date (when-not (nil? end-date) (f/unparse (f/formatters :date-time) end-date))}))
+     :end-date (when-not (nil? end-date) (f/unparse (f/formatters :date-time) end-date))
+     :project project-short-names
+     :project.lowercase (s/lower-case project-short-names)}))
+
