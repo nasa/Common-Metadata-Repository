@@ -76,7 +76,7 @@
   "Convert a temporal condition into a combination of simpler conditions so that it will be easier to convert into elastic json"
   [temporal]
   (let [{:keys [start-day end-day]} temporal]
-    (if (or (not (nil? start-day)) (not (nil? end-day)))
+    (if (or start-day end-day)
       (periodic-temporal->simple-conditions temporal)
       (intersect-temporal->simple-conditions temporal))))
 

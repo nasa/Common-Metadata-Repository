@@ -29,7 +29,8 @@
              :provider :collection-query
              :entry_title :collection-query
              :short_name :collection-query
-             :version :collection-query}})
+             :version :collection-query
+             :temporal :temporal}})
 
 (defn- param-name->type
   "Returns the query condition type based on the given concept-type and param-name."
