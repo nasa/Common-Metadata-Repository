@@ -42,10 +42,9 @@
                               :periodic-date-times periodic-date-times})))
 
 (defn generate-temporal
-  "Generates the temporal element of ECHO10 XML from a UMM Collection record."
-  [collection]
-  (let [{temporal :temporal-coverage} collection
-        {:keys [time-type date-type temporal-range-type precision-of-seconds
+  "Generates the temporal element of ECHO10 XML from a UMM Collection temporal record."
+  [temporal]
+  (let [{:keys [time-type date-type temporal-range-type precision-of-seconds
                 ends-at-present-flag range-date-times single-date-times periodic-date-times]} temporal]
     (x/element :Temporal {}
                (gu/optional-elem :TimeType time-type)

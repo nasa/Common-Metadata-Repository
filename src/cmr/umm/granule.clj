@@ -13,6 +13,12 @@
    version-id
    ])
 
+(defrecord GranuleTemporalCoverage
+  [
+   range-date-time
+   single-date-time
+   ])
+
 ;; A reference to a product specific attribute in the parent collection. The attribute reference may
 ;; contain a granule specific value that will override the value in the parent collection for this
 ;; granule. An attribute with the same name must exist in the parent collection.
@@ -29,6 +35,8 @@
 
    ;; granule parent
    collection-ref
+
+   temporal-coverage
 
    ;; reference to PSAs in the parent collection
    product-specific-attributes
