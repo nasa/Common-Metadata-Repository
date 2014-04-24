@@ -21,6 +21,6 @@
     [condition]
     (let [value-filter (value-condition->value-filter condition)
           attrib-name (:name condition)]
-      {:nested {:path "attribute"
+      {:nested {:path "attributes"
                 :filter {:and {:filters [{:term {:name attrib-name}}
                                          value-filter]}}}})))
