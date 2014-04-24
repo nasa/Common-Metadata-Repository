@@ -28,13 +28,7 @@
   (ext-gen/string-ascii 1 80))
 
 (def campaigns
-  (gen/fmap
-    (fn [[short-name long-name]]
-      (let [proj {:short-name short-name
-                  :long-name long-name}]
-      (c/map->Project proj)))
-    (gen/tuple campaign-short-names campaign-long-names)))
-
+  (ext-gen/model-gen c/->Project campaign-short-names (ext-gen/optional campaign-long-names)))
 
 (def collections
   (gen/fmap (fn [[entry-title product temporal-coverage psa campaigns]]
@@ -45,7 +39,7 @@
               products
               t/temporal-coverages
               (ext-gen/nil-if-empty (gen/vector psa/product-specific-attributes 0 10))
-              (ext-gen/nil-if-empty (gen/vector campaigns 1 4)))))
+              (ext-gen/nil-if-empty (gen/vector campaigns 0 4)))))
 
 ; Generator for basic collections that only have the bare minimal fields
 ;; DEPRECATED - this will go away in the future. Don't use it.

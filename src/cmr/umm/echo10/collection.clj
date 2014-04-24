@@ -64,15 +64,3 @@
   [xml]
   (v/validate-xml (io/resource "schema/echo10/Collection.xsd") xml))
 
-(comment
-  ;;;;;;;;;
-  (x/parse-str cmr.umm.test.echo10.collection/all-fields-collection-xml)
-  (parse-collection cmr.umm.test.echo10.collection/all-fields-collection-xml)
-  (validate-xml cmr.umm.test.echo10.collection/all-fields-collection-xml)
-
-  (cmr.umm.echo10.core/umm->echo10-xml (parse-collection cmr.umm.test.echo10.collection/all-fields-collection-xml))
-  (xml-elem->Product (x/parse-str cmr.umm.test.echo10.collection/all-fields-collection-xml))
-  (t/xml-elem->TemporalCoverage (x/parse-str cmr.umm.test.echo10.collection/all-fields-collection-xml))
-  (psa/xml-elem->ProductSpecificAttributes (x/parse-str cmr.umm.test.echo10.collection/all-fields-collection-xml))
-  ;;;;;;;;;;;;
-  )
