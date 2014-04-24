@@ -52,18 +52,17 @@
   "Created to trace only the sending of the query off to elastic search."
   [context elastic-query concept-type page-size]
   (let [{:keys [index-name type-name fields]} (concept-type->index-info concept-type)]
-    (if page-size
+    (if (= :unlimited page-size)
+      (esd/search index-name
+                  [type-name]
+                  :query elastic-query
+                  :version true
+                  :fields fields)
       (esd/search index-name
                   [type-name]
                   :query elastic-query
                   :version true
                   :size page-size
-                  :fields fields)
-      ;; unlimited results
-      (esd/search index-name
-                  [type-name]
-                  :query elastic-query
-                  :version true
                   :fields fields))))
 
 (defn execute-query

@@ -29,20 +29,20 @@
                                                                   {:entry_title "fdad"
                                                                    :options {:entry_title {:foo "true"}}}))))
   (testing "Page size less than one"
-    (is (= ["page_size 0 is less than 1"]
+    (is (= ["page_size must be a number between 1 and 2000"]
            (pv/page-size-validation :collection (assoc valid-params :page_size 0)))))
 
   (testing "Page size less than one"
-    (is (= ["page_size 0 is less than 1"]
+    (is (= ["page_size must be a number between 1 and 2000"]
            (pv/page-size-validation :collection (assoc valid-params :page_size 0)))))
   (testing "Search with large page size"
     (is (= []
            (pv/page-size-validation :collection (assoc valid-params :page_size 100)))))
   (testing "Negative page size"
-    (is (= ["page_size -1 is less than 1"]
+    (is (= ["page_size must be a number between 1 and 2000"]
            (pv/page-size-validation :collection (assoc valid-params :page_size -1)))))
   (testing "Page size too large."
-    (is (= ["page_size 2001 is greater than 2000"]
+    (is (= ["page_size must be a number between 1 and 2000"]
            (pv/page-size-validation :collection (assoc valid-params :page_size 2001)))))
   (testing "Non-numeric page size"
     (is (= ["page_size must be a number between 1 and 2000"]
