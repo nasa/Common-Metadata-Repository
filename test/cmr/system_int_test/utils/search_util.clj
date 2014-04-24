@@ -19,7 +19,7 @@
         (cheshire/decode true)
         :references)))
 
-(defn collection-concept
+#_(defn collection-concept
   "Creates a collection concept"
   [provider-id uniq-num]
   {:short-name (str "short" uniq-num)
