@@ -1,8 +1,8 @@
-(ns cmr.search.test.data.temporal-to-elastic-test
+(ns cmr.search.test.data.query-to-elastic-converters.temporal
   "Contains tests to verify current-end-date calculation."
   (:require [clojure.test :refer :all]
             [cmr.search.data.datetime-helper :as h]
-            [cmr.search.data.temporal-to-elastic :as t2e]))
+            [cmr.search.data.query-to-elastic-converters.temporal :as t2e]))
 
 (deftest current-end-date-test
   (are [expected current-year end-date start-day end-day end-year]

@@ -11,7 +11,8 @@
 
             ;; Query To Elastic implementations
             ;; Must be required here to be available in uberjar
-            [cmr.search.data.temporal-to-elastic]
+            [cmr.search.data.query-to-elastic-converters.temporal]
+            [cmr.search.data.query-to-elastic-converters.attribute]
 
             [cmr.search.data.elastic-results-to-query-results :as rc]
             [cmr.system-trace.core :refer [deftracefn]]))

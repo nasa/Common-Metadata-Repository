@@ -131,4 +131,6 @@
         (format
           "Found invalid value that should have been validated already. Values: %s"
           (pr-str values)))
-      conditions)))
+
+      ;; TODO we'll or conditions for now. We have to make this selectable later.
+      (qm/or-conds conditions))))
