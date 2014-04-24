@@ -9,31 +9,18 @@
 
 (def collection-count 25)
 
-(defn setup
-  "set up the fixtures for test"
+(defn create-collections
+  "Set up the fixtures for tests."
   []
-  (ingest/reset)
   (let [provider-id "PROV1"]
-    (ingest/create-provider provider-id)
     (doseq [seq-num (range 1 (inc collection-count))]
       (d2c/ingest provider-id (dc/collection {}))))
   (index/flush-elastic-index))
 
-(defn teardown
-  "tear down after the test"
-  []
-  (ingest/reset))
-
-(defn wrap-setup
-  [f]
-  (try
-    (f)
-    (finally (teardown))))
-
-(use-fixtures :each wrap-setup)
+(use-fixtures :each (ingest/reset-fixture "PROV1"))
 
 (deftest search-with-page-size
-  (setup)
+  (create-collections)
   (testing "Search with page_size."
     (let [references (search/find-refs :collection {:provider "PROV1"
                                                     :page_size 5})]
@@ -81,17 +68,9 @@
 
 (deftest search-with-page-num
   (let [provider-id "PROV1"
-        _ (ingest/create-provider provider-id)
-        col1 (d2c/ingest provider-id (dc/collection {}))
-        col2 (d2c/ingest provider-id (dc/collection {}))
-        col3 (d2c/ingest provider-id (dc/collection {}))
-        col4 (d2c/ingest provider-id (dc/collection {}))
-        col5 (d2c/ingest provider-id (dc/collection {}))
-        col6 (d2c/ingest provider-id (dc/collection {}))
-        col7 (d2c/ingest provider-id (dc/collection {}))
-        col8 (d2c/ingest provider-id (dc/collection {}))
-        col9 (d2c/ingest provider-id (dc/collection {}))
-        col10 (d2c/ingest provider-id (dc/collection {}))]
+        [col1 col2 col3 col4 col5 col6 col7 col8 col9 col10] (for [n (range 10)]
+                                                               (d2c/ingest provider-id
+                                                                           (dc/collection {})))]
     (index/flush-elastic-index)
     (testing "Search with page_num."
       (let [references (search/find-refs :collection {:provider "PROV1"
