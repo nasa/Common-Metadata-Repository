@@ -6,40 +6,18 @@
             [cheshire.core :as cheshire]
             [cmr.system-int-test.utils.url-helper :as url]))
 
-(defn find-collection-refs
-  "Returns the collection references that are found
-  by searching with the input params"
-  [params]
-  (let [url (str (url/collection-search-url params))
-        response (client/get url {:accept :json})
-        body (:body response)
-        result (cheshire/decode body)
-        references (result "references")]
-    (is (= 200 (:status response)))
-    (map (fn [x]
-           (let [{:strs [name concept-id revision-id]} x]
-             {:dataset-id name
-              :concept-id concept-id
-              :revision-id revision-id}))
-         references)))
 
-(defn find-granule-refs
-  "Returns the granule references that are found
-  by searching with the input params"
-  [params]
-  (let [url (str (url/granule-search-url params))
-        response (client/get url {:accept :json})
-        body (:body response)
-        result (cheshire/decode body)
-        references (result "references")]
+(defn find-refs
+  "Returns the references that are found by searching with the input params"
+  [concept-type params]
+  (let [response (client/get (url/search-url concept-type)
+                             {:accept :json
+                              :query-params params})]
     (is (= 200 (:status response)))
-    (map (fn [x]
-           (let [{:strs [name concept-id revision-id]} x]
-             {:granule-ur name
-              :concept-id concept-id
-              :revision-id revision-id}))
-         references)))
-
+    (-> response
+        :body
+        (cheshire/decode true)
+        :references)))
 
 (defn collection-concept
   "Creates a collection concept"

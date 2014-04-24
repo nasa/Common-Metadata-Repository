@@ -56,45 +56,57 @@
 
 (deftest search-by-temporal
   (testing "search by temporal_start."
-    (let [references (search/find-collection-refs
+    (let [references (search/find-refs :collection
                        {"temporal[]" "2010-12-12T12:00:00Z,"})]
-      (is (= 8 (count references)))
-      (some #{"Dataset2" "Dataset3" "Dataset4" "Dataset5"
-              "Dataset6" "Dataset7" "Dataset8" "Dataset10"}
-            (map #(:dataset-id %) references))))
+      (is (= 7 (count references)))
+      (is (= #{"Dataset2" "Dataset3" "Dataset4" "Dataset5"
+              "Dataset6" "Dataset7" "Dataset8"}
+            (set (map :name references))))))
   (testing "search by temporal_end."
-    (let [references (search/find-collection-refs
+    (let [references (search/find-refs :collection
                        {"temporal[]" ",2010-12-12T12:00:00Z"})]
       (is (= 6 (count references)))
-      (some #{"Dataset1" "Dataset2" "Dataset3" "Dataset4"
-              "Dataset6" "Dataset7" "Dataset9"}
-            (map #(:dataset-id %) references))))
+      (is (= #{"Dataset1" "Dataset2" "Dataset3" "Dataset4"
+              "Dataset6" "Dataset7"}
+            (set (map :name references))))))
   (testing "search by temporal_range."
-    (let [references (search/find-collection-refs
+    (let [references (search/find-refs :collection
                        {"temporal[]" "2010-01-01T10:00:00Z,2010-01-10T12:00:00Z"})]
       (is (= 1 (count references)))
-      (some #{"Dataset1"}
-            (map #(:dataset-id %) references))))
+      (is (= #{"Dataset1"}
+            (set (map :name references))))))
   (testing "search by multiple temporal_range."
-    (let [references (search/find-collection-refs
+    (let [references (search/find-refs :collection
                        {"temporal[]" ["2010-01-01T10:00:00Z,2010-01-10T12:00:00Z" "2010-12-22T10:00:00Z,2010-12-30T12:00:00Z"]})]
       (is (= 4 (count references)))
-      (some #{"Dataset1" "Dataset4" "Dataset6" "Dataset7"}
-            (map #(:dataset-id %) references)))))
+      (is (=  #{"Dataset1" "Dataset4" "Dataset6" "Dataset7"}
+            (set (map :name references))))))
+  (testing "search by multiple temporal_range, options :or."
+    (let [references (search/find-refs :collection
+                       {"temporal[]" ["2010-01-01T10:00:00Z,2010-01-10T12:00:00Z" "2010-12-22T10:00:00Z,2010-12-30T12:00:00Z"]
+                        "options[temporal][or]" ""})]
+      (is (= 4 (count references)))
+      (is (= #{"Dataset1" "Dataset4" "Dataset6" "Dataset7"}
+            (set (map :name references))))))
+  (testing "search by multiple temporal_range, options :and."
+    (let [references (search/find-refs :collection
+                       {"temporal[]" ["2010-01-01T10:00:00Z,2010-01-10T12:00:00Z" "2010-12-22T10:00:00Z,2010-12-30T12:00:00Z"]
+                        "options[temporal][and]" ""})]
+      (is (= 0 (count references))))))
 
 ;; Just some symbolic invalid temporal testing, more complete test coverage is in unit tests
 (deftest search-temporal-error-scenarios
   (testing "search by invalid temporal format."
     (try
-      (search/find-collection-refs {"temporal[]" "2010-12-12T12:00:00,"})
+      (search/find-refs :collection {"temporal[]" "2010-12-12T12:00:00,"})
       (catch clojure.lang.ExceptionInfo e
         (let [status (get-in (ex-data e) [:object :status])
               body (get-in (ex-data e) [:object :body])]
           (is (= 422 status))
-          (is (re-find #"temporal date is invalid:.*" body))))))
+          (is (re-find #"temporal datetime is invalid:.*" body))))))
   (testing "search by invalid temporal start-date after end-date."
     (try
-      (search/find-collection-refs {"temporal[]" "2011-01-01T10:00:00Z,2010-01-10T12:00:00Z"})
+      (search/find-refs :collection {"temporal[]" "2011-01-01T10:00:00Z,2010-01-10T12:00:00Z"})
       (catch clojure.lang.ExceptionInfo e
         (let [status (get-in (ex-data e) [:object :status])
               body (get-in (ex-data e) [:object :body])]

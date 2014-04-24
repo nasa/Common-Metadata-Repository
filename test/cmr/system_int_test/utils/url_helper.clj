@@ -1,7 +1,6 @@
 (ns ^{:doc "helper to provide the urls to various service endpoints"}
   cmr.system-int-test.utils.url-helper
-  (:require [ring.util.codec :as codec]
-            [clojure.string :as str]))
+  (:require [clojure.string :as str]))
 
 (defn config-value
   "Retrieves a configuration value which can be set as an environment variable on the command line
@@ -32,27 +31,17 @@
   [provider-id]
   (format "http://localhost:%s/providers/%s" metadata-db-port provider-id))
 
-(defn collection-ingest-url
-  [provider-id native-id]
-  (format "http://localhost:%s/providers/%s/collections/%s"
+(defn ingest-url
+  [provider-id type native-id]
+  (format "http://localhost:%s/providers/%s/%ss/%s"
           ingest-port
           provider-id
+          (name type)
           native-id))
 
-(defn collection-search-url
-  [params]
-  (format "http://localhost:%s/collections?%s" search-port (codec/form-encode params)))
-
-(defn granule-ingest-url
-  [provider-id native-id]
-  (format "http://localhost:%s/providers/%s/granules/%s"
-          ingest-port
-          provider-id
-          native-id))
-
-(defn granule-search-url
-  [params]
-  (format "http://localhost:%s/granules?%s" search-port (codec/form-encode params)))
+(defn search-url
+  [type]
+  (format "http://localhost:%s/%ss" search-port (name type)))
 
 (defn elastic-flush-url
   []
