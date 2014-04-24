@@ -52,6 +52,20 @@
 
 (use-fixtures :once wrap-setup)
 
+(deftest search-by-concept-id
+  (testing "Search by existing concept-id."
+    (let [references (search/find-collection-refs {:concept-id "C1000000000-CMR_PROV1"})]
+      (is (= 1 (count references)))))
+  (testing "Search by multiple concept-ids."
+    (let [references (search/find-collection-refs {:concept-id ["C1000000000-CMR_PROV1" "C1000000001-CMR_PROV1"]})]
+      (is (= 2 (count references)))))
+  (testing "Search for non-existent concept-id."
+    (let [references (search/find-collection-refs {:concept-id ["C2000000000-CMR_PROV1"]})]
+      (is (= 0 (count references)))))
+  (testing "Search for both existing and non-existing concept-id."
+    (let [references (search/find-collection-refs {:concept-id ["C1000000000-CMR_PROV1" "C1000000001-CMR_PROV1" "C2000000000-CMR_PROV1"]})]
+      (is (= 2 (count references))))))
+
 (deftest search-by-provider-id
   (testing "search by non-existent provider id."
     (let [references (search/find-collection-refs {:provider "NON_EXISTENT"})]

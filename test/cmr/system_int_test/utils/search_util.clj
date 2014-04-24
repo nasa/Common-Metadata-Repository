@@ -10,7 +10,7 @@
   "Returns the collection references that are found
   by searching with the input params"
   [params]
-  (let [url (str (url/collection-search-url params))
+  (let [url (str (url/search-url :collection params))
         response (client/get url {:accept :json})
         body (:body response)
         result (cheshire/decode body)
@@ -27,7 +27,7 @@
   "Returns the granule references that are found
   by searching with the input params"
   [params]
-  (let [url (str (url/granule-search-url params))
+  (let [url (str (url/search-url :granule params))
         response (client/get url {:accept :json})
         body (:body response)
         result (cheshire/decode body)
@@ -39,3 +39,11 @@
               :concept-id concept-id
               :revision-id revision-id}))
          references)))
+
+(defn collection-concept
+  "Creates a collection concept"
+  [provider-id uniq-num]
+  {:short-name (str "short" uniq-num)
+   :version-id (str "V" uniq-num)
+   :long-name (str "A minimal valid collection" uniq-num)
+   :entry-title (str "MinimalCollection" uniq-num "V1")})
