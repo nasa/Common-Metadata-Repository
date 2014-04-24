@@ -13,7 +13,8 @@
    :short_name :short-name
    :version :version-id
    :granule_ur :granule-ur
-   :collection_concept_id :collection-concept-id})
+   :collection_concept_id :collection-concept-id
+   :campaign :project-sn})
 
 (defn query-field->elastic-field
   "Returns the elastic field name for the equivalent query field name."
