@@ -40,7 +40,8 @@
   (if-let [page-num (:page_num params)]
     (try (let [page-num-i (Integer. page-num)]
            (if (> 1 page-num-i)
-             ["page_num must be a number greater than or equal to 1"]))
+             ["page_num must be a number greater than or equal to 1"]
+             []))
       (catch NumberFormatException e ["page_num must be a number greater than or equal to 1"]))
     []))
 
