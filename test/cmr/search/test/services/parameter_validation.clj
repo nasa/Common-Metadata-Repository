@@ -5,6 +5,7 @@
 (def valid-params
   "Example valid parameters"
   {:entry_title "foo"
+   :page_size 10
    :options {:entry_title {:ignore_case "true"}}})
 
 (deftest individual-parameter-validation-test
@@ -26,7 +27,27 @@
     (is (= ["Option [foo] for param [entry_title] was not recognized."]
            (pv/unrecognized-params-settings-in-options-validation :collection
                                                                   {:entry_title "fdad"
-                                                                   :options {:entry_title {:foo "true"}}})))))
+                                                                   :options {:entry_title {:foo "true"}}}))))
+  (testing "Page size less than one"
+    (is (= ["page_size must be a number between 1 and 2000"]
+           (pv/page-size-validation :collection (assoc valid-params :page_size 0)))))
+
+  (testing "Page size less than one"
+    (is (= ["page_size must be a number between 1 and 2000"]
+           (pv/page-size-validation :collection (assoc valid-params :page_size 0)))))
+  (testing "Search with large page size"
+    (is (= []
+           (pv/page-size-validation :collection (assoc valid-params :page_size 100)))))
+  (testing "Negative page size"
+    (is (= ["page_size must be a number between 1 and 2000"]
+           (pv/page-size-validation :collection (assoc valid-params :page_size -1)))))
+  (testing "Page size too large."
+    (is (= ["page_size must be a number between 1 and 2000"]
+           (pv/page-size-validation :collection (assoc valid-params :page_size 2001)))))
+  (testing "Non-numeric page size"
+    (is (= ["page_size must be a number between 1 and 2000"]
+           (pv/page-size-validation :collection (assoc valid-params :page_size "ABC"))))))
+
 
 (deftest temporal-format-validation :collection-start-date-test
   (testing "valid-start-date"
@@ -92,7 +113,6 @@
     (is (= {:granule_ur "Dummy"} (pv/validate-parameters :granule {:granule_ur "Dummy"})))
     (is (thrown? clojure.lang.ExceptionInfo (pv/validate-parameters :collection {:granule_ur "Dummy"}))))
   (testing "errors thrown when parameters are invalid."
-    ;; TODO Refactor this to use (is (thrown-with-msg?.
     (try
       (pv/validate-parameters :collection {:entry_title "fdad"
                                            :foo 1
@@ -103,3 +123,5 @@
                 :errors ["Parameter [foo] was not recognized."
                          "Parameter [bar] was not recognized."]}
                (ex-data e)))))))
+
+

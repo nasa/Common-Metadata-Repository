@@ -14,12 +14,33 @@
          (keys p/param-aliases)
          [:options])))
 
+(defn page-size-validation
+  "Validates that the page-size (if present) is in the valid range."
+  [concept-type params]
+  (if-let [page-size (:page_size params)]
+    (try
+      (let [page-size-i (Integer. page-size)]
+        (cond
+          (> 1 page-size-i)
+          ["page_size must be a number between 1 and 2000"]
+
+          (< 2000 page-size-i)
+          ["page_size must be a number between 1 and 2000"]
+
+          :else
+          []))
+      (catch Exception e
+        ["page_size must be a number between 1 and 2000"]))
+    []))
+
 (defn unrecognized-params-validation
   "Validates that no invalid parameters were supplied"
   [concept-type params]
-  (map #(str "Parameter [" (name % )"] was not recognized.")
-       (set/difference (set (keys params))
-                       (concept-type->valid-param-names concept-type))))
+  ;; this test does not apply to page_size or page_num
+  (let [params (dissoc params :page_size :page_num)]
+    (map #(str "Parameter [" (name % )"] was not recognized.")
+         (set/difference (set (keys params))
+                         (concept-type->valid-param-names concept-type)))))
 
 (defn unrecognized-params-in-options-validation
   "Validates that no invalid parameters names in the options were supplied"
@@ -90,7 +111,8 @@
 (def parameter-validations
   "A list of the functions that can validate parameters. They all accept parameters as an argument
   and return a list of errors."
-  [unrecognized-params-validation
+  [page-size-validation
+   unrecognized-params-validation
    unrecognized-params-in-options-validation
    options-only-for-string-conditions-validation
    unrecognized-params-settings-in-options-validation

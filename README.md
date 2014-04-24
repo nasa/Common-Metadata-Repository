@@ -12,6 +12,11 @@ Provides a public search API for concepts in the CMR.
 
 ## Example CURL requests
 
+### Common GET parameters
+```
+-page_size - number of results per page - default is 10, max is 2000
+-pretty - return formatted results
+
 
 ### Find all collections
 ```

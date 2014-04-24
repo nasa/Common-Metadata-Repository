@@ -47,6 +47,3 @@
       handler/site
       ring-json/wrap-json-body
       ring-json/wrap-json-response))
-
-
-

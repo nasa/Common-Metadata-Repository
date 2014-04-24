@@ -50,21 +50,27 @@
 
 (deftracefn send-query-to-elastic
   "Created to trace only the sending of the query off to elastic search."
-  [context elastic-query concept-type]
+  [context elastic-query concept-type page-size]
   (let [{:keys [index-name type-name fields]} (concept-type->index-info concept-type)]
-    (esd/search index-name
-                [type-name]
-                :query elastic-query
-                :version true
-                :size 10
-                :fields fields)))
-
+    (if (= :unlimited page-size)
+      (esd/search index-name
+                  [type-name]
+                  :query elastic-query
+                  :version true
+                  :fields fields)
+      (esd/search index-name
+                  [type-name]
+                  :query elastic-query
+                  :version true
+                  :size page-size
+                  :fields fields))))
 
 (defn execute-query
   "Executes a query to find concepts. Returns concept id, native id, and revision id."
   [context query]
   (let [{:keys [concept-type]} query
-        results (send-query-to-elastic context (q2e/query->elastic query) concept-type)]
+        page-size (:page-size query)
+        results (send-query-to-elastic context (q2e/query->elastic query) concept-type page-size)]
     (rc/elastic-results->query-results concept-type results)))
 
 (defn create-elastic-search-index

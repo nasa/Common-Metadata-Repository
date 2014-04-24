@@ -61,10 +61,12 @@
   [context query]
   (idx/execute-query context query))
 
+
 (deftracefn find-concepts-by-query
   "Executes a search for concepts using a query The concepts will be returned with
   concept id and native provider id."
   [context query]
+
   (->> query
        (validate-query context)
        (apply-acls context)

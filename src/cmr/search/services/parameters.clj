@@ -32,7 +32,7 @@
 (defn- param-name->type
   "Returns the query condition type based on the given concept-type and param-name."
   [concept-type param-name]
-  (get (get concept-param->type concept-type) param-name))
+  (get-in concept-param->type [concept-type param-name]))
 
 (defmulti parameter->condition
   "Converts a parameter into a condition"
@@ -54,12 +54,19 @@
   "Converts parameters into a query model."
   [concept-type params]
   (let [options (get params :options {})
-        params (dissoc params :options)]
+        page-size (get params :page_size qm/default-page-size)
+        page-num (get params :page_num qm/default-page-num)
+        params (dissoc params :options :page_size)]
     (if (empty? params)
-      (qm/query concept-type) ;; matches everything
+      (qm/query {:concept-type concept-type
+                 :page-size page-size
+                 :page-num page-num}) ;; matches everything
       ;; Convert params into conditions
       (let [conditions (map (fn [[param value]]
                               (parameter->condition concept-type param value options))
                             params)]
-        (qm/query concept-type (qm/and-conds conditions))))))
+        (qm/query {:concept-type concept-type
+                   :page-size page-size
+                   :page-num page-num
+                   :condition (qm/and-conds conditions)})))))
 
