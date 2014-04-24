@@ -14,7 +14,8 @@
             [cmr.search.data.temporal-to-elastic]
 
             [cmr.search.data.elastic-results-to-query-results :as rc]
-            [cmr.system-trace.core :refer [deftracefn]]))
+            [cmr.system-trace.core :refer [deftracefn]]
+            [cmr.common.services.errors :as e]))
 
 ;; TODO - somehow search app to get this info from index-set app
 ;; TODO - define proper index-set/indexer/search apps workflow w.r.t elastic indices
@@ -66,13 +67,17 @@
                   :size page-size
                   :fields fields))))
 
+
 (defn execute-query
   "Executes a query to find concepts. Returns concept id, native id, and revision id."
   [context query]
   (let [{:keys [concept-type]} query
         page-size (:page-size query)
-        results (send-query-to-elastic context (q2e/query->elastic query) concept-type page-size)]
-    (rc/elastic-results->query-results concept-type results)))
+        e-results (send-query-to-elastic context (q2e/query->elastic query) concept-type page-size)
+        results (rc/elastic-results->query-results concept-type e-results)]
+    (when (and (= :unlimited page-size) (> (:hits results) (count (:references results)))
+               (e/internal-error! "Failed to retrieve all hits.")))
+    results))
 
 (defn create-elastic-search-index
   "Creates a new instance of the elastic search index."
