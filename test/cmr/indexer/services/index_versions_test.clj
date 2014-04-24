@@ -23,7 +23,7 @@
         provider-id "PROV1"
         short-name "DummyShort"
         version-id "1"
-        project-short-names " ESI EPI EVI"]
+        project-short-names '("ESI" "EPI" "EVI")]
     {:concept-id concept-id
      :entry-title entry-title
      :entry-title.lowercase (s/lower-case entry-title)
@@ -33,8 +33,8 @@
      :short-name.lowercase (s/lower-case short-name)
      :version-id version-id
      :version-id.lowercase (s/lower-case version-id)
-     :project project-short-names
-     :project.lowercase (s/lower-case project-short-names)}))
+     :project-sn project-short-names
+     :project-sn.lowercase (map s/lower-case project-short-names)}))
 
 (defn- assert-version
   "Assert the retrieved document for the given id is of the given version"

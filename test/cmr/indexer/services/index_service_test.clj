@@ -14,11 +14,11 @@
         concept {:concept-id concept-id
                  :provider-id provider-id}
         projects '({:short-name "ESI"
-                        :long-name "Environmental Sustainability Index"}
-                       {:short-name "EVI"
-                        :long-name "Environmental Vulnerability Index"}
-                       {:short-name "EPI"
-                        :long-name "Environmental Performance Index"})
+                    :long-name "Environmental Sustainability Index"}
+                   {:short-name "EVI"
+                    :long-name "Environmental Vulnerability Index"}
+                   {:short-name "EPI"
+                    :long-name "Environmental Performance Index"})
         umm-concept {:entry-id "MINIMAL_1"
                      :entry-title dataset-id
                      :product {:short-name short-name
@@ -37,10 +37,9 @@
                   :version-id.lowercase "1"
                   :start-date "1996-02-24T22:20:41.000Z"
                   :end-date "1997-03-25T23:23:43.123Z"
-                  :project " ESI EVI EPI"
-                  :project.lowercase " esi evi epi"}
+                  :project-sn '("ESI" "EVI" "EPI")
+                  :project-sn.lowercase '("esi" "evi" "epi")}
         actual (svc/concept->elastic-doc concept umm-concept)]
     (is (= expected actual))))
-
 
 
