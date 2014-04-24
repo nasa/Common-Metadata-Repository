@@ -13,7 +13,8 @@
   cmr.search.models.query.Query
   (resolve-collection-query
     [query context]
-    (qm/map->Query {:page-size (:page-size query)
+    (qm/map->Query {
+                    :page-size (:page-size query)
                     :page-num (:page-num query)
                     :concept-type (:concept-type query)
                     :condition (resolve-collection-query (:condition query) context)}))
@@ -27,7 +28,8 @@
   cmr.search.models.query.CollectionQueryCondition
   (resolve-collection-query
     [{:keys [condition]} context]
-    (let [result (idx/execute-query context (qm/->Query :collection condition nil nil))
+    (let [result (idx/execute-query context
+                                    (qm/query {:concept-type :collection :condition condition :page-size :unlimited}))
           {:keys [references]} result
           collection-concept-ids (map :concept-id references)]
       (if (empty? collection-concept-ids)
@@ -38,4 +40,3 @@
   ;; catch all resolver
   java.lang.Object
   (resolve-collection-query [this context] this))
-

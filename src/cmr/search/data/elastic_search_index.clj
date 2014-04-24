@@ -15,16 +15,19 @@
             [cmr.search.data.temporal-to-elastic]
 
             [cmr.search.data.elastic-results-to-query-results :as rc]
-            [cmr.system-trace.core :refer [deftracefn]]))
+            [cmr.system-trace.core :refer [deftracefn]]
+            [cmr.common.services.errors :as e]))
 
+;; TODO - somehow search app to get this info from index-set app
+;; TODO - define proper index-set/indexer/search apps workflow w.r.t elastic indices
 (def concept-type->index-info
-  {:collection {:index-name "collections"
+  {:collection {:index-name  "1_collections" ;; "collections"
                 :type-name "collection"
                 :fields ["entry-title"
                          "provider-id"
                          "short-name"
                          "version-id"]}
-   :granule {:index-name "granules"
+   :granule {:index-name "1_granules" ;; "granules"
              :type-name "small_collections"
              :fields ["granule-ur"
                       "provider-id"]}})
@@ -51,49 +54,31 @@
   "Created to trace only the sending of the query off to elastic search."
   [context elastic-query concept-type page-size page-num]
   (let [{:keys [index-name type-name fields]} (concept-type->index-info concept-type)]
-    (cond
-      (and page-size page-num)
+    (if (= :unlimited page-size)
+      (esd/search index-name
+                  [type-name]
+                  :query elastic-query
+                  :version true
+                  :fields fields
+                  :size 10000) ;10,000 == "unlimited"
       (esd/search index-name
                   [type-name]
                   :query elastic-query
                   :version true
                   :size page-size
-                  :fields fields
-                  :from page-num
-                  :sort [{:concept-id {:order "desc"}}])
-
-      page-size
-      (esd/search index-name
-                  [type-name]
-                  :query elastic-query
-                  :version true
-                  :size page-size
-                  :fields fields
-                  :sort [{:concept-id {:order "desc"}}])
-
-      page-num
-      (esd/search index-name
-                  [type-name]
-                  :query elastic-query
-                  :version true
-                  :size p/default-page-size
-                  :fields fields
-                  :sort [{:concept-id {:order "desc"}}])
-
-      :else ;; unlimited results
-      (esd/search index-name
-                  [type-name]
-                  :query elastic-query
-                  :version true
-                  :fields fields
-                  :sort [{:concept-id {:order "desc"}}]))))
+                  :fields fields))))
 
 (defn execute-query
   "Executes a query to find concepts. Returns concept id, native id, and revision id."
   [context query]
-  (let [{:keys [concept-type page-size page-num]} query
-        results (send-query-to-elastic context (q2e/query->elastic query) concept-type page-size page-num)]
-    (rc/elastic-results->query-results concept-type results)))
+  (let [{:keys [concept-type]} query
+        page-size (:page-size query)
+        page-num (:page-num query)
+        e-results (send-query-to-elastic context (q2e/query->elastic query) concept-type page-size page-num)
+        results (rc/elastic-results->query-results concept-type e-results)]
+    (when (and (= :unlimited page-size) (> (:hits results) (count (:references results)))
+               (e/internal-error! "Failed to retrieve all hits.")))
+    results))
 
 (defn create-elastic-search-index
   "Creates a new instance of the elastic search index."

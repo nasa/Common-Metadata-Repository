@@ -2,6 +2,9 @@
   "Defines various query models and conditions."
   (:require [cmr.common.services.errors :as errors]))
 
+(def default-page-size 10)
+(def default-page-num 1)
+
 (defrecord Query
   [
    ;; The concept type that is being queried.
@@ -96,11 +99,15 @@
 
 (defn query
   "Constructs a query with the given type, page-size, page-num,
-  and root condition. If root condition is not provided it matches everything."
-  ([type page-size page-num]
-   (query type page-size page-num (->MatchAllCondition)))
-  ([type page-size page-num condition]
-   (->Query type condition page-size page-num )))
+  and root condition. If root condition is not provided it matches everything.
+  If page-size or page-num are not specified then they are given default values."
+  [params]
+  (let [{:keys [concept-type page-size page-num condition]} params
+        page-size (or page-size default-page-size)
+        page-num (or page-num default-page-num)
+        condition (or condition ->MatchAllCondition)]
+    (->Query concept-type condition page-size page-num)))
+
 
 (defn string-condition
   "Creates a string condition."

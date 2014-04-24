@@ -4,27 +4,17 @@
             [clj-time.core :as t]
             [clj-time.format :as f]
             [cmr.search.models.query :as qm]
-            [cmr.search.validators.validation :as v]))
-
-(defn- string->datetime
-  "Convert the given string (in format like 2014-04-05T18:45:51Z) to Joda datetime.
-  Returns nil for nil string, throws IllegalArgumentException for mal-formatted string.
-  This is more strict than the string->datetime function in terms of format validation."
-  [s]
-  (when s (f/parse (f/formatters :date-time-no-ms) s)))
+            [cmr.search.validators.validation :as v]
+            [cmr.search.data.datetime-helper :as h]))
 
 (defn- start-date-is-before-end-date
   "Validates start-date is before end-date"
   [date-range]
-  (try
-    (let [{:keys [start-date end-date]} date-range
-          start (string->datetime start-date)
-          end (string->datetime end-date)]
-      (if (and start end (t/after? start end))
-        [(format "start_date [%s] must be before end_date [%s]"start-date end-date)]
-        []))
-    (catch IllegalArgumentException e
-      [(format "temporal date is invalid: %s" e)])))
+  (let [{:keys [start-date end-date]} date-range]
+    (if (and start-date end-date (t/after? start-date end-date))
+      [(format "start_date [%s] must be before end_date [%s]"
+               (h/datetime->string start-date) (h/datetime->string end-date))]
+      [])))
 
 (extend-protocol v/Validator
   cmr.search.models.query.DateRangeCondition

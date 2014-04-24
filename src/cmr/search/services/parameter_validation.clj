@@ -2,6 +2,8 @@
   "Contains functions for validating query parameters"
   (:require [clojure.set :as set]
             [cmr.common.services.errors :as err]
+            [clojure.string :as s]
+            [clj-time.format :as f]
             [cmr.search.services.parameters :as p]))
 
 (defn- concept-type->valid-param-names
@@ -16,17 +18,19 @@
   "Validates that the page-size (if present) is a number in the valid range."
   [concept-type params]
   (if-let [page-size (:page_size params)]
-    (try (let [page-size-i (Integer. page-size)]
-           (cond
-             (> 1 page-size-i)
-             [(format "page_size %d is less than 1" page-size-i)]
+    (try
+      (let [page-size-i (Integer. page-size)]
+        (cond
+          (> 1 page-size-i)
+          ["page_size must be a number between 1 and 2000"]
 
-             (< 2000 page-size-i)
-             [(format "page_size %d is greater than 2000" page-size-i)]
+          (< 2000 page-size-i)
+          ["page_size must be a number between 1 and 2000"]
 
-             :else
-             []))
-      (catch NumberFormatException e ["page_size must be a number between 1 and 2000"]))
+          :else
+          []))
+      (catch NumberFormatException e
+        ["page_size must be a number between 1 and 2000"]))
     []))
 
 
@@ -44,9 +48,11 @@
 (defn unrecognized-params-validation
   "Validates that no invalid parameters were supplied"
   [concept-type params]
-  (map #(str "Parameter [" (name % )"] was not recognized.")
-       (set/difference (set (keys params))
-                       (concept-type->valid-param-names concept-type))))
+  ;; this test does not apply to page_size or page_num
+  (let [params (dissoc params :page_size :page_num)]
+    (map #(str "Parameter [" (name % )"] was not recognized.")
+         (set/difference (set (keys params))
+                         (concept-type->valid-param-names concept-type)))))
 
 (defn unrecognized-params-in-options-validation
   "Validates that no invalid parameters names in the options were supplied"
@@ -72,8 +78,48 @@
            (map
              (fn [[param settings]]
                (map #(str "Option [" (name %) "] for param [" (name param) "] was not recognized.")
-                    (set/difference (set (keys settings)) (set [:ignore_case :pattern]))))
+                    (set/difference (set (keys settings)) (set [:ignore_case :pattern :and :or]))))
              options))
+    []))
+
+(defn- validate-date-time
+  "Validates datetime string is in the given format"
+  [dt format-type]
+  (try
+    (when-not (s/blank? dt)
+      (f/parse (f/formatters format-type) dt))
+    []
+    (catch IllegalArgumentException e
+      [(format "temporal datetime is invalid: %s, should be in yyyy-MM-ddTHH:mm:ssZ format."
+               (.getMessage e))])))
+
+(defn- day-valid?
+  "Validates if the given day in temporal is an integer between 1 and 366 inclusive"
+  [day tag]
+  (if-not (s/blank? day)
+    (try
+      (let [num (Integer/parseInt day)]
+        (when (or (< num 1) (> num 366))
+          [(format "%s [%s] must be an integer between 1 and 366" tag day)]))
+      (catch NumberFormatException e
+        [(format "%s [%s] must be an integer between 1 and 366" tag day)]))
+    []))
+
+(defn temporal-format-validation
+  "Validates that temporal datetime parameter conforms to the :date-time-no-ms format,
+  start-day and end-day are integer between 1 and 366"
+  [concept-type params]
+  (if-let [temporal (:temporal params)]
+    (apply concat
+           (map
+             (fn [value]
+               (let [[start-date end-date start-day end-day] (map s/trim (s/split value #","))]
+                 (concat
+                   (validate-date-time start-date :date-time-no-ms)
+                   (validate-date-time end-date :date-time-no-ms)
+                   (day-valid? start-day "temporal_start_day")
+                   (day-valid? end-day "temporal_end_day"))))
+             temporal))
     []))
 
 (def parameter-validations
@@ -84,7 +130,8 @@
    unrecognized-params-validation
    unrecognized-params-in-options-validation
    options-only-for-string-conditions-validation
-   unrecognized-params-settings-in-options-validation])
+   unrecognized-params-settings-in-options-validation
+   temporal-format-validation])
 
 (defn validate-parameters
   "Validates parameters. Throws exceptions to send to the user. Returns parameters if validation
