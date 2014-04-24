@@ -5,6 +5,7 @@
             [cmr.search.data.temporal-to-elastic :as t2e]))
 
 (deftest current-end-date-test
+  "Test end-date is calculated correctly for current year during periodic date time conversion."
   (are [expected current-year end-date start-day end-day end-year]
        (= (h/string->datetime expected)
           (t2e/current-end-date
