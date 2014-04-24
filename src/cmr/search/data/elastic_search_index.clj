@@ -68,7 +68,7 @@
                   :version true
                   :sort [{:concept-id {:order :desc}}] ; using concept-id as default sort for now
                   :size page-size
-                  :from (* (dec (Integer. page-num)) (Integer. page-size))
+                  :from (* (dec page-num) page-size)
                   :fields fields))))
 
 (defn execute-query

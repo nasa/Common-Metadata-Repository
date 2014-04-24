@@ -38,11 +38,13 @@
   "Validates that the page-num (if present) is a number in the valid range."
   [concept-type params]
   (if-let [page-num (:page_num params)]
-    (try (let [page-num-i (Integer. page-num)]
-           (if (> 1 page-num-i)
-             ["page_num must be a number greater than or equal to 1"]
-             []))
-      (catch NumberFormatException e ["page_num must be a number greater than or equal to 1"]))
+    (try
+      (let [page-num-i (Integer. page-num)]
+        (if (> 1 page-num-i)
+          ["page_num must be a number greater than or equal to 1"]
+          []))
+      (catch NumberFormatException e
+        ["page_num must be a number greater than or equal to 1"]))
     []))
 
 (defn unrecognized-params-validation
