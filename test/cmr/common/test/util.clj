@@ -52,3 +52,8 @@
         (is (= {:type error-type
                 :errors errors}
                (ex-data e)))))))
+
+(deftest remove-nil-keys-test
+  (is (= {:a true :c "value" :d false}
+         (util/remove-nil-keys
+           {:a true :b nil :c "value" :d false}))))

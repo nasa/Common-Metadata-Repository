@@ -61,3 +61,9 @@
                 errors))
             []
             validation-fns)))
+
+(defn remove-nil-keys
+  "Removes keys mapping to nil values in a map.
+  From http://stackoverflow.com/questions/3937661/remove-nil-values-from-a-map"
+  [m]
+  (apply dissoc m (for [[k v] m :when (nil? v)] k)))
