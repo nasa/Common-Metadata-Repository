@@ -60,13 +60,13 @@
                   :query elastic-query
                   :version true
                   :fields fields
-                  :sort [{:concept-id {:order :desc}}]
+                  :sort [{:concept-id {:order :desc}}] ; using concept-id as default sort for now
                   :size 10000) ;10,000 == "unlimited"
       (esd/search index-name
                   [type-name]
                   :query elastic-query
                   :version true
-                  :sort [{:concept-id {:order :desc}}]
+                  :sort [{:concept-id {:order :desc}}] ; using concept-id as default sort for now
                   :size page-size
                   :from (* (dec (Integer. page-num)) (Integer. page-size))
                   :fields fields))))
