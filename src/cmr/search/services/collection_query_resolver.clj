@@ -40,4 +40,3 @@
   ;; catch all resolver
   java.lang.Object
   (resolve-collection-query [this context] this))
-
