@@ -21,15 +21,31 @@
 (def entry-titles
   (ext-gen/string-alpha-numeric 1 1030))
 
+(def campaign-short-names
+  (ext-gen/string-ascii 1 40))
+
+(def campaign-long-names
+  (ext-gen/string-ascii 1 80))
+
+(def campaigns
+  (gen/fmap
+    (fn [[short-name long-name]]
+      (let [proj {:short-name short-name
+                  :long-name long-name}]
+      (c/map->Project proj)))
+    (gen/tuple campaign-short-names campaign-long-names)))
+
+
 (def collections
-  (gen/fmap (fn [[entry-title product temporal-coverage psa]]
+  (gen/fmap (fn [[entry-title product temporal-coverage psa campaigns]]
               (let [entry-id (str (:short-name product) "_" (:version-id product))]
-                (c/->UmmCollection entry-id entry-title product temporal-coverage psa)))
+                (c/->UmmCollection entry-id entry-title product temporal-coverage psa campaigns)))
             (gen/tuple
               entry-titles
               products
               t/temporal-coverages
-              (ext-gen/nil-if-empty (gen/vector psa/product-specific-attributes 0 10)))))
+              (ext-gen/nil-if-empty (gen/vector psa/product-specific-attributes 0 10))
+              (ext-gen/nil-if-empty (gen/vector campaigns 1 4)))))
 
 ; Generator for basic collections that only have the bare minimal fields
 ;; DEPRECATED - this will go away in the future. Don't use it.

@@ -7,6 +7,7 @@
             [cmr.umm.xml-schema-validator :as v]
             [cmr.umm.echo10.collection.temporal :as t]
             [cmr.umm.echo10.collection.product-specific-attribute :as psa]
+            [cmr.umm.echo10.collection.campaign :as cmpgn]
             [cmr.umm.echo10.core])
   (:import cmr.umm.collection.UmmCollection))
 
@@ -26,7 +27,8 @@
        :entry-title (cx/string-at-path xml-struct [:DataSetId])
        :product product
        :temporal-coverage (t/xml-elem->TemporalCoverage xml-struct)
-       :product-specific-attributes (psa/xml-elem->ProductSpecificAttributes xml-struct)})))
+       :product-specific-attributes (psa/xml-elem->ProductSpecificAttributes xml-struct)
+       :projects (cmpgn/xml-elem->Campaigns xml-struct)})))
 
 (defn parse-collection
   "Parses ECHO10 XML into a UMM Collection record."
@@ -53,9 +55,24 @@
                    (x/element :Visible {} "true")
                    (t/generate-temporal collection)
                    (psa/generate-product-specific-attributes
-                     (:product-specific-attributes collection)))))))
+                     (:product-specific-attributes collection))
+                   (cmpgn/generate-campaigns
+                     (:projects collection)))))))
 
 (defn validate-xml
   "Validates the XML against the ECHO10 schema."
   [xml]
   (v/validate-xml (io/resource "schema/echo10/Collection.xsd") xml))
+
+(comment
+  ;;;;;;;;;
+  (x/parse-str cmr.umm.test.echo10.collection/all-fields-collection-xml)
+  (parse-collection cmr.umm.test.echo10.collection/all-fields-collection-xml)
+  (validate-xml cmr.umm.test.echo10.collection/all-fields-collection-xml)
+
+  (cmr.umm.echo10.core/umm->echo10-xml (parse-collection cmr.umm.test.echo10.collection/all-fields-collection-xml))
+  (xml-elem->Product (x/parse-str cmr.umm.test.echo10.collection/all-fields-collection-xml))
+  (t/xml-elem->TemporalCoverage (x/parse-str cmr.umm.test.echo10.collection/all-fields-collection-xml))
+  (psa/xml-elem->ProductSpecificAttributes (x/parse-str cmr.umm.test.echo10.collection/all-fields-collection-xml))
+  ;;;;;;;;;;;;
+  )
