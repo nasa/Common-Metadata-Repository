@@ -17,12 +17,22 @@
                                                           [(dg/psa "alpha" ["a" "b"])
                                                            (dg/psa "bravo" ["c" "b"])]}))
 
-)
+  (ingest/create-provider "PROV1")
+  (d/ingest "PROV1" (dc/collection {}))
 
+  (def psa1 (dc/psa "alpha" :string))
+  (def psa2 (dc/psa "bravo" :string))
+  (def psa3 (dc/psa "charlie" :string))
+  (def coll1 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2]})))
+  (def gran1 (d/ingest "PROV1" (dg/granule coll1 {:product-specific-attributes [(dg/psa "alpha" ["a" "b"])
+                                                                                 (dg/psa "bravo" ["c" "b"])]})))
+
+
+
+)
 
 ;; TODO I can create local helper functions later to make construction of data easier
 
-;; commented out while I develop a good api
 (deftest string-psas-search-test
   (let [psa1 (dc/psa "alpha" :string)
         psa2 (dc/psa "bravo" :string)
@@ -36,16 +46,13 @@
         coll2 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa2 psa3]}))
         gran3 (d/ingest "PROV1" (dg/granule coll2 {:product-specific-attributes [(dg/psa "bravo" ["a" "b"])]}))
         gran4 (d/ingest "PROV1" (dg/granule coll2 {:product-specific-attributes [(dg/psa "charlie" ["a"])]}))]
+    (index/flush-elastic-index)
 
-    (clojure.pprint/pprint [coll1 gran1 gran2 coll2 gran3 gran4])
+    (testing "search by value"
+      (is (d/refs-match?
+            [gran1]
+            (search/find-refs :granule {"attribute[]" "string,alpha,a"}))))))
 
-    )
 
-  )
-
-
-;; searching will be something like this
-#_(is (d/matches? [coll1 coll2]
-                  (d/search {:foo "5"})))
-
+;; TODO check that validation is working
 

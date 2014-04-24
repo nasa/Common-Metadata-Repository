@@ -10,6 +10,19 @@
   (:import cmr.umm.collection.UmmCollection
            cmr.umm.granule.UmmGranule))
 
+(defmulti item->native-id
+  "Returns the native id of an item"
+  (fn [item]
+    (type item)))
+
+(defmethod item->native-id UmmCollection
+  [ item]
+  (:entry-title item))
+
+(defmethod item->native-id UmmGranule
+  [item]
+  (:granule-ur item))
+
 (defmulti ingest-path
   "Returns the path to ingest the item"
   (fn [provider-id item]
@@ -17,22 +30,37 @@
 
 (defmethod ingest-path UmmCollection
   [provider-id item]
-  (url/ingest-url provider-id :collection (:entry-title item)))
+  (url/ingest-url provider-id :collection (item->native-id item)))
 
 (defmethod ingest-path UmmGranule
   [provider-id item]
-  (url/ingest-url provider-id :granule (:granule-ur item)))
+  (url/ingest-url provider-id :granule (item->native-id item)))
 
 (defn ingest
-  "Ingests the catalog item. Returns it with concept-id and revision-id set on it."
+  "Ingests the catalog item. Returns it with concept-id, revision-id, and provider-id set on it."
   [provider-id item]
   (let [ingest-url (ingest-path provider-id item)
         xml (echo10/umm->echo10-xml item)
         response (client/put ingest-url
                              {:content-type :echo10+xml
                               :body xml})]
-    (merge item (json/decode (:body response) true))))
+    (-> item
+        (merge (json/decode (:body response) true))
+        (assoc :provider-id provider-id))))
 
+
+(defn item->ref
+  "Converts an item into the expected reference"
+  [item]
+  (-> item
+      (select-keys [:concept-id :revision-id :provider-id])
+      (assoc :name (item->native-id item))))
+
+(defn refs-match?
+  "Returns true if the references match the expected items"
+  [items refs]
+  (= (set (map item->ref items))
+     (set refs)))
 
 (defmacro record-fields
   "Returns the set of fields in a record type as keywords. The record type passed in must be a java
