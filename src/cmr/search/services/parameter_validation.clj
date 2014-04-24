@@ -37,7 +37,6 @@
 (defn page-num-validation
   "Validates that the page-num (if present) is a number in the valid range."
   [concept-type params]
-  (println (str "PARAMS: " params))
   (if-let [page-num (:page_num params)]
     (try (let [page-num-i (Integer. page-num)]
            (if (> 1 page-num-i)
