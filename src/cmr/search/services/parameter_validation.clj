@@ -40,9 +40,9 @@
   (println (str "PARAMS: " params))
   (if-let [page-num (:page_num params)]
     (try (let [page-num-i (Integer. page-num)]
-           (if (> 0 page-num-i)
-             [(format "page_num %d is less than 0" page-num-i)]))
-      (catch NumberFormatException e ["page_num must be a number greater than or equal to 0"]))
+           (if (> 1 page-num-i)
+             ["page_num must be a number greater than or equal to 1"]))
+      (catch NumberFormatException e ["page_num must be a number greater than or equal to 1"]))
     []))
 
 (defn unrecognized-params-validation
