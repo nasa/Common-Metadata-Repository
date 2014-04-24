@@ -56,7 +56,7 @@
     (are [start-date]
          (let [error (pv/temporal-format-validation :collection {:temporal [start-date]})]
            (is (= 1 (count error)))
-           (re-find (re-pattern "temporal date is invalid:") (first error)))
+           (re-find (re-pattern "temporal datetime is invalid:") (first error)))
          "2014-04-05T00:00:00"
          "2014-13-05T00:00:00Z"
          "2014-04-00T00:00:00Z"
@@ -71,7 +71,7 @@
     (are [end-date]
          (let [error (pv/temporal-format-validation :collection {:temporal [end-date]})]
            (is (= 1 (count error)))
-           (re-find (re-pattern "temporal date is invalid:") (first error)))
+           (re-find (re-pattern "temporal datetime is invalid:") (first error)))
          ",2014-04-05T00:00:00"
          ",2014-13-05T00:00:00Z"
          ",2014-04-00T00:00:00Z"
@@ -81,26 +81,34 @@
 
 (deftest validate-temporal-start-day-test
   (testing "valid-start-day"
-    (are [start-day] (empty? (pv/temporal-format-validation :collection {:temporal [(str "2014-04-05T18:45:51Z,," start-day)]}))
+    (are [start-day] (empty? (pv/temporal-format-validation
+                               :collection
+                               {:temporal [(str "2014-04-05T18:45:51Z,," start-day)]}))
          "1"
          "366"
          "10"))
   (testing "invalid-start-day"
     (are [start-day err-msg] (= [err-msg]
-                                (pv/temporal-format-validation :collection {:temporal [(str "2014-04-05T18:45:51Z,," start-day)]}))
+                                (pv/temporal-format-validation
+                                  :collection
+                                  {:temporal [(str "2014-04-05T18:45:51Z,," start-day)]}))
          "x" "temporal_start_day [x] must be an integer between 1 and 366"
          "0" "temporal_start_day [0] must be an integer between 1 and 366"
          "367" "temporal_start_day [367] must be an integer between 1 and 366")))
 
 (deftest validate-temporal-end-day-test
   (testing "valid-end-day"
-    (are [end-day] (empty? (pv/temporal-format-validation :collection {:temporal [(str "2014-04-05T18:45:51Z,," end-day)]}))
+    (are [end-day] (empty? (pv/temporal-format-validation
+                             :collection
+                             {:temporal [(str "2014-04-05T18:45:51Z,," end-day)]}))
          "1"
          "366"
          "10"))
   (testing "invalid-end-day"
     (are [end-day err-msg] (= [err-msg]
-                              (pv/temporal-format-validation :collection {:temporal [(str "2013-04-05T18:45:51Z,2014-04-05T18:45:51Z,," end-day)]}))
+                              (pv/temporal-format-validation
+                                :collection
+                                {:temporal [(str "2013-04-05T18:45:51Z,2014-04-05T18:45:51Z,," end-day)]}))
          "x" "temporal_end_day [x] must be an integer between 1 and 366"
          "0" "temporal_end_day [0] must be an integer between 1 and 366"
          "367" "temporal_end_day [367] must be an integer between 1 and 366")))

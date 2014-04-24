@@ -53,9 +53,9 @@ curl -H "Accept: application/json" -i "http://localhost:3003/collections?entry_t
 curl -H "Accept: application/json" -i "http://localhost:3003/collections?entry_title\[\]=DatasetId%204&entry_title\[\]=DatasetId%205"
 ```
 
-### Find all collections with multiple temporal
+### Find all collections with multiple temporal, the temporal datetime has to be in yyyy-MM-ddTHH:mm:ssZ format.
 ```
-curl -H "Accept: application/json" -i "http://localhost:3003/collections?temporal[]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z,30,60&temporal[]=2000-01-01T10:00:00Z,,30&temporal[]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z"
+curl -H "Accept: application/json" -i "http://localhost:3003/collections?temporal\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z,30,60&temporal\[\]=2000-01-01T10:00:00Z,,30&temporal\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z"
 ```
 
 ### Find all granules
