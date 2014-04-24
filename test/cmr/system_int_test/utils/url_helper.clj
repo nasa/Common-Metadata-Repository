@@ -1,7 +1,6 @@
 (ns ^{:doc "helper to provide the urls to various service endpoints"}
   cmr.system-int-test.utils.url-helper
-  (:require [ring.util.codec :as codec]
-            [clojure.string :as str]))
+  (:require [clojure.string :as str]))
 
 (defn config-value
   "Retrieves a configuration value which can be set as an environment variable on the command line
@@ -40,10 +39,9 @@
           (name type)
           native-id))
 
-
 (defn search-url
-  [type params]
-  (format "http://localhost:%s/%ss?%s" search-port (name type) (codec/form-encode params)))
+  [type]
+  (format "http://localhost:%s/%ss" search-port (name type)))
 
 (defn elastic-flush-url
   []

@@ -89,60 +89,60 @@
 
 (deftest search-by-periodic-temporal
   (testing "search by both start-day and end-day."
-    (let [references (search/find-collection-refs
+    (let [references (search/find-refs :collection
                        {"temporal[]" "2000-02-15T00:00:00Z, 2002-03-15T00:00:00Z, 32, 90"
                         :page_size 100})]
       (is (= 8 (count references)))
       (is (= #{"Dataset2" "Dataset3" "Dataset6" "Dataset7"
               "Dataset10" "Dataset11" "Dataset16" "Dataset17"}
-            (set (map #(:dataset-id %) references))))))
+            (set (map :name references))))))
   (testing "search by end-day."
-    (let [references (search/find-collection-refs
+    (let [references (search/find-refs :collection
                        {"temporal[]" "2000-02-15T00:00:00Z, 2002-03-15T00:00:00Z, , 90"
                         :page_size 100})]
       (is (= 10 (count references)))
       (is (= #{"Dataset2" "Dataset3" "Dataset5" "Dataset6" "Dataset7"
               "Dataset9" "Dataset10" "Dataset11" "Dataset16" "Dataset17"}
-            (set (map #(:dataset-id %) references))))))
+            (set (map :name references))))))
   (testing "search by start-day."
-    (let [references (search/find-collection-refs
+    (let [references (search/find-refs :collection
                        {"temporal[]" "2000-02-15T00:00:00Z, 2002-03-15T00:00:00Z, 32,"
                         :page_size 100})]
       (is (= 11 (count references)))
       (is (= #{"Dataset2" "Dataset3" "Dataset4" "Dataset6" "Dataset7"
               "Dataset8" "Dataset10" "Dataset11" "Dataset16" "Dataset17" "Dataset19"}
-            (set (map #(:dataset-id %) references))))))
+            (set (map :name references))))))
   (testing "search by start-day without end_date."
-    (let [references (search/find-collection-refs
+    (let [references (search/find-refs :collection
                        {"temporal[]" ["2000-02-15T00:00:00Z, , 32"]
                         :page_size 100})]
       (is (= 15 (count references)))
       (is (= #{"Dataset2" "Dataset3" "Dataset4" "Dataset6" "Dataset7"
               "Dataset8" "Dataset10" "Dataset11" "Dataset12" "Dataset13"
               "Dataset15" "Dataset16" "Dataset17" "Dataset18" "Dataset19"}
-            (set (map #(:dataset-id %) references))))))
+            (set (map :name references))))))
   (testing "search by start-day/end-day with date crossing year boundary."
-    (let [references (search/find-collection-refs
+    (let [references (search/find-refs :collection
                        {"temporal[]" ["2000-04-03T00:00:00Z, 2002-01-02T00:00:00Z, 93, 2"]
                         :page_size 100})]
       (is (= 11 (count references)))
       (is (= #{"Dataset3" "Dataset4" "Dataset5" "Dataset6" "Dataset7" "Dataset8"
               "Dataset9" "Dataset10" "Dataset16" "Dataset17" "Dataset19"}
-            (set (map #(:dataset-id %) references))))))
+            (set (map :name references))))))
   (testing "search by multiple temporal."
-    (let [references (search/find-collection-refs
+    (let [references (search/find-refs :collection
                        {"temporal[]" ["1998-01-15T00:00:00Z, 1999-03-15T00:00:00Z, 60, 90"
                                       "2000-02-15T00:00:00Z, 2001-03-15T00:00:00Z, 40, 50"]
                         :page_size 100})]
       (is (= 5 (count references)))
       (is (= #{"Dataset2" "Dataset6" "Dataset14" "Dataset16" "Dataset17"}
-            (set (map #(:dataset-id %) references)))))))
+            (set (map :name references)))))))
 
 ;; Just some symbolic invalid temporal testing, more complete test coverage is in unit tests
 (deftest search-temporal-error-scenarios
   (testing "search with temporal_start_day and no temporal_start is invalid."
     (try
-      (search/find-collection-refs {"temporal[]" ", , 32"})
+      (search/find-refs :collection {"temporal[]" ", , 32"})
       (catch clojure.lang.ExceptionInfo e
         (let [status (get-in (ex-data e) [:object :status])
               body (get-in (ex-data e) [:object :body])]
@@ -150,7 +150,7 @@
           (is (re-find #"temporal_start_day must be accompanied by a temporal_start" body))))))
   (testing "search with temporal_end_day and no temporal_end is invalid."
     (try
-      (search/find-collection-refs {"temporal[]" ", , , 32"})
+      (search/find-refs :collection {"temporal[]" ", , , 32"})
       (catch clojure.lang.ExceptionInfo e
         (let [status (get-in (ex-data e) [:object :status])
               body (get-in (ex-data e) [:object :body])]

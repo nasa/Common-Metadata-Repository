@@ -33,16 +33,16 @@
 
 (deftest search-with-page-size
   (testing "Search with page size."
-    (let [references (search/find-collection-refs {:provider "PROV1"
+    (let [references (search/find-refs :collection {:provider "PROV1"
                                                    :page_size 5})]
       (is (= 5 (count references)))))
   (testing "Search with large page size."
-    (let [references (search/find-collection-refs {:provider "PROV1"
+    (let [references (search/find-refs :collection {:provider "PROV1"
                                                    :page_size 100})]
       (is (= collection-count (count references)))))
   (testing "Page size less than one."
     (try
-      (search/find-collection-refs {:provider "PROV1"
+      (search/find-refs :collection {:provider "PROV1"
                                     :page_size 0})
       (catch clojure.lang.ExceptionInfo e
         (let [status (get-in (ex-data e) [:object :status])
@@ -51,7 +51,7 @@
           (is (re-matches #".*page_size must be a number between 1 and 2000.*" body))))))
   (testing "Negative page size."
     (try
-      (search/find-collection-refs {:provider "PROV1"
+      (search/find-refs :collection {:provider "PROV1"
                                     :page_size -1})
       (catch clojure.lang.ExceptionInfo e
         (let [status (get-in (ex-data e) [:object :status])
@@ -60,7 +60,7 @@
           (is (re-matches #".*page_size must be a number between 1 and 2000.*" body))))))
   (testing "Page size too large."
     (try
-      (search/find-collection-refs {:provider "PROV1"
+      (search/find-refs :collection {:provider "PROV1"
                                     :page_size 2001})
       (catch clojure.lang.ExceptionInfo e
         (let [status (get-in (ex-data e) [:object :status])
@@ -69,7 +69,7 @@
           (is (re-matches #".*page_size must be a number between 1 and 2000.*" body))))))
   (testing "Non-numeric page size"
     (try
-      (search/find-collection-refs {:provider "PROV1"
+      (search/find-refs :collection {:provider "PROV1"
                                     :page_size "ABC"})
       (catch clojure.lang.ExceptionInfo e
         (let [status (get-in (ex-data e) [:object :status])
