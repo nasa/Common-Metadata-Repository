@@ -2,7 +2,11 @@
     "Contains functions for converting additional attribute search parameters to a query model"
   (:require [cmr.search.models.query :as qm]
             [cmr.search.services.parameters :as p]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [cmr.common.services.errors :as errors])
+  (:import [cmr.search.models.query
+            AttributeValueCondition
+            AttributeRangeCondition]))
 
 (defn empty->nil
   "Converts an empty string to nil"
@@ -27,7 +31,7 @@
   []
   "At least one of min or max must be provided for an additional attribute search.")
 
-(defn value->components
+(defn value->condition
   "Parses an additional attribute value into it's constituent parts"
   [value]
   (let [comma-escape "\\,"
@@ -41,17 +45,17 @@
     (case (count parts)
       3
       (let [[t n v] parts]
-        {:attribute-type t
-         :search-type :value
-         :name n
-         :value v})
+        (qm/map->AttributeValueCondition
+          {:type t
+           :name n
+           :value v}))
       4
       (let [[t n minv maxv] parts]
-        {:attribute-type t
-         :search-type :range
-         :name n
-         :min-value minv
-         :max-value maxv})
+        (qm/map->AttributeRangeCondition
+          {:type t
+           :name n
+           :min-value minv
+           :max-value maxv}))
 
       ;; else
       {:errors [(invalid-num-parts-msg)]})))
@@ -62,74 +66,69 @@
    ;; TODO add more parsers later
    :float #(Double/parseDouble %)})
 
-(defmulti parse-component-values
+(defmulti parse-condition-values
   "Parses the component type into their expected values"
-  (fn [components]
-    (:search-type components)))
+  (fn [condition]
+    (type condition)))
 
-(defmethod parse-component-values :range
-  [components]
-  (let [{:keys [attribute-type min-value max-value]} components]
+(defn parse-field
+  "Attempts to parse the given field and update the condition. If there are problems parsing an
+  errors attribute will be returned."
+  [condition field parser type]
+  (try
+    (update-in condition [field] parser)
+    (catch NumberFormatException e
+      (update-in condition [:errors] conj (invalid-value-msg type (get condition field))))))
+
+(defmethod parse-condition-values AttributeRangeCondition
+  [condition]
+  (let [{:keys [type min-value max-value]} condition]
     (if (or min-value max-value)
-      (let [parser (attribute-type->parser-fn attribute-type)]
-        (-> components
-            (update-in [:min-value] #(when % (parser %)))
-            (update-in [:max-value] #(when % (parser %)))))
+      (let [parser (attribute-type->parser-fn type)
+            parser #(when % (parser %))
+            condition (-> condition
+                          (parse-field :min-value parser type)
+                          (parse-field :max-value parser type))]
+        (if (:errors condition)
+          {:errors (:errors condition)}
+          condition))
       {:errors [(one-of-min-max-msg)]})))
 
-(defmethod parse-component-values :value
-  [components]
-  (let [{:keys [attribute-type value]} components]
-    (if (:value components)
-      (let [parser (attribute-type->parser-fn attribute-type)]
-        (try
-          (update-in components [:value] parser)
-          (catch NumberFormatException e
-            {:errors [(invalid-value-msg attribute-type value)]}))
-        )
-      {:errors [(invalid-value-msg attribute-type value)]})))
+(defmethod parse-condition-values AttributeValueCondition
+  [condition]
+  (let [{:keys [type value]} condition]
+    (if (:value condition)
+      (let [parser (attribute-type->parser-fn type)
+            condition (parse-field condition :value parser type)]
+        (if (:errors condition)
+          {:errors (:errors condition)}
+          condition))
+      {:errors [(invalid-value-msg type value)]})))
 
 (defn parse-component-type
   "Parses the type and it's values"
-  [components]
-  (if-let [type (some (set qm/attribute-types) [(keyword (:attribute-type components))])]
-    (parse-component-values (assoc components :attribute-type type))
-    {:errors [(invalid-type-msg (:attribute-type components))]}))
+  [condition]
+  (if-let [type (some (set qm/attribute-types) [(keyword (:type condition))])]
+    (parse-condition-values (assoc condition :type type))
+    {:errors [(invalid-type-msg (:type condition))]}))
 
 (defn parse-value
   "Parses an additional attribute value into it's constituent parts"
   [value]
-  (let [components (value->components value)]
-    (if (:errors components)
-      components
-      (parse-component-type components))))
-
-;; TODO see if we can do this earlier
-(defmulti attribute-components->condition
-  "TODO"
-  (fn [components]
-    (:search-type components)))
-
-(defmethod attribute-components->condition :value
-  [components]
-  (let [{:keys [attribute-type name value]} components]
-    (qm/->AttributeValueCondition attribute-type name value)))
-
-(defmethod attribute-components->condition :range
-  [components]
-  (let [{:keys [attribute-type name min-value max-value]} components]
-    (qm/->AttributeRangeCondition attribute-type name min-value max-value)))
-
+  (let [condition (value->condition value)]
+    (if (:errors condition)
+      condition
+      (parse-component-type condition))))
 
 ;; Converts parameter and values into collection query condition
 (defmethod p/parameter->condition :attribute
-  [concept-type param value options]
+  [concept-type param values options]
 
-  (->> value
-       (map parse-value)
-       (map attribute-components->condition))
-
-  ;;TODO only supporting granule for now
-
-  #_(qm/->CollectionQueryCondition (p/parameter->condition :collection param value options))
-)
+  (let [conditions (map parse-value values)
+        failed-conditions (seq (filter :errors conditions))]
+    (if failed-conditions
+      (errors/internal-error!
+        (format
+          "Found invalid value that should have been validated already. Values: %s"
+          (pr-str values)))
+      conditions)))
