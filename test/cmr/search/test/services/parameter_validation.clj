@@ -46,7 +46,16 @@
            (pv/page-size-validation :collection (assoc valid-params :page_size 2001)))))
   (testing "Non-numeric page size"
     (is (= ["page_size must be a number between 1 and 2000"]
-           (pv/page-size-validation :collection (assoc valid-params :page_size "ABC"))))))
+           (pv/page-size-validation :collection (assoc valid-params :page_size "ABC")))))
+  (testing "Valid page_num"
+    (is (= []
+           (pv/page-num-validation :collection (assoc valid-params :page_num 5)))))
+  (testing "Page num less than one"
+    (is (= ["page_num must be a number greater than or equal to 1"]
+           (pv/page-num-validation :collection (assoc valid-params :page_num 0)))))
+  (testing "Non-numeric page num"
+    (is (= ["page_num must be a number greater than or equal to 1"]
+           (pv/page-num-validation :collection (assoc valid-params :page_num "ABC"))))))
 
 
 (deftest temporal-format-validation :collection-start-date-test

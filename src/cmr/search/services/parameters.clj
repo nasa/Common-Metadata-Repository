@@ -56,9 +56,9 @@
   "Converts parameters into a query model."
   [concept-type params]
   (let [options (get params :options {})
-        page-size (get params :page_size qm/default-page-size)
-        page-num (get params :page_num qm/default-page-num)
-        params (dissoc params :options :page_size)]
+        page-size (Integer. (get params :page_size qm/default-page-size))
+        page-num (Integer. (get params :page_num qm/default-page-num))
+        params (dissoc params :options :page_size :page_num)]
     (if (empty? params)
       (qm/query {:concept-type concept-type
                  :page-size page-size
