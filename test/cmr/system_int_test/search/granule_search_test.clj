@@ -17,8 +17,8 @@
         gran2 (d/ingest "CMR_PROV1" (dg/granule coll1 {:granule-ur "Granule2"}))
         gran3 (d/ingest "CMR_PROV1" (dg/granule coll1 {:granule-ur "Granule3"}))
         gran4 (d/ingest "CMR_PROV2" (dg/granule coll2 {:granule-ur "Granule4"}))
-        gran5 (d/ingest "CMR_PROV2" (dg/granule coll2 {:granule-ur "Granule5"}))
-        _ (index/flush-elastic-index)]
+        gran5 (d/ingest "CMR_PROV2" (dg/granule coll2 {:granule-ur "Granule5"}))]
+    (index/flush-elastic-index)
     (testing "search by non-existent provider id."
       (let [references (search/find-refs :granule {:provider "NON_EXISTENT"})]
         (is (= 0 (count references)))))
@@ -58,8 +58,8 @@
         gran2 (d/ingest "CMR_PROV1" (dg/granule coll1 {:granule-ur "Granule2"}))
         gran3 (d/ingest "CMR_PROV1" (dg/granule coll2 {:granule-ur "Granule3"}))
         gran4 (d/ingest "CMR_PROV2" (dg/granule coll3 {:granule-ur "Granule4"}))
-        gran5 (d/ingest "CMR_PROV2" (dg/granule coll4 {:granule-ur "Granule5"}))
-        _ (index/flush-elastic-index)]
+        gran5 (d/ingest "CMR_PROV2" (dg/granule coll4 {:granule-ur "Granule5"}))]
+    (index/flush-elastic-index)
     (testing "search by non-existent dataset id."
       (let [references (search/find-refs :granule {:dataset_id "NON_EXISTENT"})]
         (is (= 0 (count references)))))
@@ -129,8 +129,8 @@
         gran4 (d/ingest "CMR_PROV2" (dg/granule coll2 {:granule-ur "Granule3"}))
         gran5 (d/ingest "CMR_PROV2" (dg/granule coll2 {:granule-ur "SampleUR1"}))
         gran5 (d/ingest "CMR_PROV2" (dg/granule coll2 {:granule-ur "SampleUR2"}))
-        gran5 (d/ingest "CMR_PROV2" (dg/granule coll2 {:granule-ur "sampleur3"}))
-        _ (index/flush-elastic-index)]
+        gran5 (d/ingest "CMR_PROV2" (dg/granule coll2 {:granule-ur "sampleur3"}))]
+    (index/flush-elastic-index)
     (testing "search by non-existent granule ur."
       (let [references (search/find-refs :granule {:granule_ur "NON_EXISTENT"})]
         (is (= 0 (count references)))))

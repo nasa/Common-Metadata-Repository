@@ -24,8 +24,8 @@
         gran4 (d/ingest "CMR_PROV2" (dg/granule coll4 {:granule-ur "Granule4"}))
         gran5 (d/ingest "CMR_PROV2" (dg/granule coll5 {:granule-ur "Granule5"}))
         gran6 (d/ingest "CMR_PROV2" (dg/granule coll6 {:granule-ur "Granule6"}))
-        gran7 (d/ingest "CMR_PROV2" (dg/granule coll7 {:granule-ur "Granule7"}))
-        _ (index/flush-elastic-index)]
+        gran7 (d/ingest "CMR_PROV2" (dg/granule coll7 {:granule-ur "Granule7"}))]
+    (index/flush-elastic-index)
     (testing "search by non-existent short name."
       (let [references (search/find-refs :granule {:short_name "NON_EXISTENT"})]
         (is (= 0 (count references)))))
@@ -39,7 +39,6 @@
     (testing "search by multiple short names."
       (let [references (search/find-refs :granule {"short_name[]" ["AnotherS", "AnotherT"]})
             granule-urs (map :name references)]
-        (is (= 2 (count references)))
         (is (= #{"Granule4" "Granule5"} (set granule-urs)))))
     (testing "search by short name across different providers."
       (let [references (search/find-refs :granule {:short_name "OneShort"})
@@ -83,8 +82,8 @@
         gran4 (d/ingest "CMR_PROV2" (dg/granule coll4 {:granule-ur "Granule4"}))
         gran5 (d/ingest "CMR_PROV2" (dg/granule coll5 {:granule-ur "Granule5"}))
         gran6 (d/ingest "CMR_PROV2" (dg/granule coll6 {:granule-ur "Granule6"}))
-        gran7 (d/ingest "CMR_PROV2" (dg/granule coll7 {:granule-ur "Granule7"}))
-        _ (index/flush-elastic-index)]
+        gran7 (d/ingest "CMR_PROV2" (dg/granule coll7 {:granule-ur "Granule7"}))]
+    (index/flush-elastic-index)
     (testing "search by non-existent version."
       (let [references (search/find-refs :granule {:version "NON_EXISTENT"})]
         (is (= 0 (count references)))))
