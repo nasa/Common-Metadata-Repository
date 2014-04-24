@@ -57,7 +57,8 @@
                   [type-name]
                   :query elastic-query
                   :version true
-                  :fields fields)
+                  :fields fields
+                  :size 10000) ;10,000 == "unlimited"
       (esd/search index-name
                   [type-name]
                   :query elastic-query

@@ -1,7 +1,8 @@
 (ns cmr.search.services.collection-query-resolver
   "Defines protocols and functions to resolve collection query conditions"
   (:require [cmr.search.models.query :as qm]
-            [cmr.search.data.elastic-search-index :as idx]))
+            [cmr.search.data.elastic-search-index :as idx]
+            [cmr.common.services.errors :as e]))
 
 (defprotocol ResolveCollectionQuery
   "Defines a function to resolve a collection query condition into conditions of collection-concept-ids."
@@ -30,8 +31,11 @@
     [{:keys [condition]} context]
     (let [result (idx/execute-query context
                                     (qm/query {:concept-type :collection :condition condition :page-size :unlimited}))
-          {:keys [references]} result
+          {:keys [hits references]} result
           collection-concept-ids (map :concept-id references)]
+      ;; we require ALL the collections
+      (when (> hits (count references))
+        (e/internal-error! "Failed to retreive all collections - need to increase :unlimited size."))
       (if (empty? collection-concept-ids)
         (qm/->MatchNoneCondition)
         (qm/or-conds
@@ -40,4 +44,3 @@
   ;; catch all resolver
   java.lang.Object
   (resolve-collection-query [this context] this))
-
