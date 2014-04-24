@@ -73,18 +73,18 @@
   (testing "search by existing provider id."
     (let [references (search/find-collection-refs {:provider "CMR_PROV1"})]
       (is (= 3 (count references)))
-      (is (some #{"MinimalCollectionV1" "OneCollectionV1" "AnotherCollectionV1"}
-                (map #(:dataset-id %) references)))))
+      (is (= #{"MinimalCollectionV1" "OneCollectionV1" "AnotherCollectionV1"}
+            (set (map #(:dataset-id %) references))))))
   (testing "search by provider id using wildcard *."
     (let [references (search/find-collection-refs {:provider "CMR_PRO*", "options[provider][pattern]" "true"})]
       (is (= 5 (count references)))
-      (is (some #{"MinimalCollectionV1" "OneCollectionV1" "AnotherCollectionV1" "OtherCollectionV1"}
-                (map #(:dataset-id %) references)))))
+      (is (= #{"MinimalCollectionV1" "OneCollectionV1" "AnotherCollectionV1" "OtherCollectionV1"}
+            (set (map #(:dataset-id %) references))))))
   (testing "search by provider id using wildcard ?."
     (let [references (search/find-collection-refs {:provider "CMR_PROV?", "options[provider][pattern]" "true"})]
       (is (= 5 (count references)))
-      (is (some #{"MinimalCollectionV1" "OneCollectionV1" "AnotherCollectionV1" "OtherCollectionV1"}
-                (map #(:dataset-id %) references)))))
+      (is (= #{"MinimalCollectionV1" "OneCollectionV1" "AnotherCollectionV1" "OtherCollectionV1"}
+            (set (map #(:dataset-id %) references))))))
   (testing "search by provider id case not match."
     (let [references (search/find-collection-refs {:provider "CMR_prov1"})]
       (is (= 0 (count references)))))
@@ -94,8 +94,8 @@
   (testing "search by provider id ignore case true."
     (let [references (search/find-collection-refs {:provider "CMR_prov1", "options[provider][ignore_case]" "true"})]
       (is (= 3 (count references)))
-      (is (some #{"MinimalCollectionV1" "OneCollectionV1" "AnotherCollectionV1"}
-                (map #(:dataset-id %) references))))))
+      (is (= #{"MinimalCollectionV1" "OneCollectionV1" "AnotherCollectionV1"}
+            (set (map #(:dataset-id %) references)))))))
 
 (deftest search-by-dataset-id
   (testing "search by non-existent dataset id."
