@@ -40,3 +40,10 @@
               :revision-id revision-id}))
          references)))
 
+(defn collection-concept
+  "Creates a collection concept"
+  [provider-id uniq-num]
+  {:short-name (str "short" uniq-num)
+   :version-id (str "V" uniq-num)
+   :long-name (str "A minimal valid collection" uniq-num)
+   :entry-title (str "MinimalCollection" uniq-num "V1")})
