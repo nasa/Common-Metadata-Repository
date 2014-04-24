@@ -27,7 +27,8 @@
    :granule {:granule_ur :string
              :collection_concept_id :string
              :provider :collection-query
-             :entry_title :collection-query}})
+             :entry_title :collection-query
+             :attribute :attribute}})
 
 (defn- param-name->type
   "Returns the query condition type based on the given concept-type and param-name."
