@@ -48,7 +48,7 @@
         (let [status (get-in (ex-data e) [:object :status])
               body (get-in (ex-data e) [:object :body])]
           (is (= 422 status))
-          (is (re-matches #".*page_size 0 is less than 1.*" body))))))
+          (is (re-matches #".*page_size must be a number between 1 and 2000.*" body))))))
   (testing "Negative page size."
     (try
       (search/find-collection-refs {:provider "PROV1"
@@ -57,7 +57,7 @@
         (let [status (get-in (ex-data e) [:object :status])
               body (get-in (ex-data e) [:object :body])]
           (is (= 422 status))
-          (is (re-matches #".*page_size -1 is less than 1.*" body))))))
+          (is (re-matches #".*page_size must be a number between 1 and 2000.*" body))))))
   (testing "Page size too large."
     (try
       (search/find-collection-refs {:provider "PROV1"
@@ -66,7 +66,7 @@
         (let [status (get-in (ex-data e) [:object :status])
               body (get-in (ex-data e) [:object :body])]
           (is (= 422 status))
-          (is (re-matches #".*page_size 2001 is greater than 2000.*" body))))))
+          (is (re-matches #".*page_size must be a number between 1 and 2000.*" body))))))
   (testing "Non-numeric page size"
     (try
       (search/find-collection-refs {:provider "PROV1"
@@ -77,10 +77,4 @@
           (is (= 422 status))
           (is (re-matches #".*page_size must be a number between 1 and 2000.*" body)))))))
 
-;; TODO Implement this when paging is implemented in search.
-#_(deftest search-with-page-num
-    (testing "Search with page num."
-      (let [references (search/find-collection-refs {:provider "PROV1"
-                                                     :page_size 5
-                                                     :page_num 1})]
-        (is (= 5 (count references))))))
+
