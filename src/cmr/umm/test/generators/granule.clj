@@ -3,6 +3,7 @@
   (:require [clojure.test.check.generators :as gen]
             [cmr.common.test.test-check-ext :as ext-gen :refer [optional]]
             [cmr.umm.test.generators.collection :as c]
+            [cmr.umm.test.generators.granule.temporal :as gt]
             [cmr.umm.test.generators.collection.product-specific-attribute :as psa]
             [cmr.umm.granule :as g]))
 
@@ -23,10 +24,11 @@
   (ext-gen/model-gen g/->ProductSpecificAttributeRef psa/names (gen/vector psa/string-values 1 3)))
 
 (def granules
-  (gen/fmap (fn [[granule-ur coll-ref psas]]
-              (g/->UmmGranule granule-ur coll-ref psas))
+  (gen/fmap (fn [[granule-ur coll-ref temporal-coverage psas]]
+              (g/->UmmGranule granule-ur coll-ref temporal-coverage psas))
             (gen/tuple granule-urs
                        coll-refs
+                       gt/temporal-coverage
                        (ext-gen/nil-if-empty (gen/vector product-specific-attribute-refs 0 5)))))
 
 ;; Generator that only returns collection ref with entry-title

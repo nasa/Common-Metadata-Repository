@@ -53,7 +53,7 @@
                    (x/element :Description {} "stubbed")
                    (x/element :Orderable {} "true")
                    (x/element :Visible {} "true")
-                   (t/generate-temporal collection)
+                   (t/generate-temporal (:temporal-coverage collection))
                    (psa/generate-product-specific-attributes
                      (:product-specific-attributes collection))
                    (cmpgn/generate-campaigns

@@ -4,7 +4,7 @@
             [clj-time.core :as t]
             [cmr.common.test.test-check-ext :as ext-gen]
             [cmr.umm.collection :as c]
-            [cmr.umm.temporal-coverage :as tc]))
+            [cmr.umm.collection.temporal-coverage :as tc]))
 
 ;; temporal attributes
 (def time-types

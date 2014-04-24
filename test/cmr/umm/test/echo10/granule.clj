@@ -10,9 +10,57 @@
             [clojure.test.check.generators :as gen]
             [clojure.string :as s]
             [cmr.umm.test.generators.granule :as gran-gen]
+            [cmr.common.date-time-parser :as p]
             [cmr.umm.echo10.granule :as g]
             [cmr.umm.echo10.core :as echo10]
+            [cmr.umm.collection :as umm-c]
             [cmr.umm.granule :as umm-g]))
+
+(defspec generate-granule-is-valid-xml-test 100
+  (for-all [granule gran-gen/granules]
+    (let [xml (echo10/umm->echo10-xml granule)]
+      (and
+        (> (count xml) 0)
+        (= 0 (count (g/validate-xml xml)))))))
+
+(defspec generate-and-parse-granule-test 100
+  (for-all [granule gran-gen/granules]
+    (let [xml (echo10/umm->echo10-xml granule)
+          parsed (g/parse-granule xml)]
+      (= parsed granule))))
+
+(def all-fields-granule-xml
+  "<Granule>
+  <GranuleUR>GranuleUR100</GranuleUR>
+  <InsertTime>2010-01-05T05:30:30.550-05:00</InsertTime>
+  <LastUpdate>2010-01-05T05:30:30.550-05:00</LastUpdate>
+  <Collection>
+    <DataSetId>R1_SCANSAR_FRAME</DataSetId>
+  </Collection>
+  <Orderable>true</Orderable>
+  <Temporal>
+      <RangeDateTime>
+        <BeginningDateTime>1996-02-24T22:20:41-05:00</BeginningDateTime>
+        <EndingDateTime>1997-03-24T22:20:41-05:00</EndingDateTime>
+      </RangeDateTime>
+      <SingleDateTime>2010-01-05T05:30:30.550-05:00</SingleDateTime>
+    </Temporal>
+  </Granule>")
+
+(deftest parse-granule-test
+  (let [expected (umm-g/map->UmmGranule
+                   {:granule-ur "GranuleUR100"
+                    :collection-ref (umm-g/map->CollectionRef
+                               {:entry-title "R1_SCANSAR_FRAME"})
+                    :temporal-coverage
+                    (umm-g/map->GranuleTemporalCoverage
+                      {:range-date-time
+                       (umm-c/map->RangeDateTime
+                          {:beginning-date-time (p/string->datetime "1996-02-24T22:20:41-05:00")
+                           :ending-date-time (p/string->datetime "1997-03-24T22:20:41-05:00")})
+                       :single-date-time (p/string->datetime "2010-01-05T05:30:30.550-05:00")})})
+        actual (g/parse-granule all-fields-granule-xml)]
+    (is (= expected actual))))
 
 (def valid-granule-xml-w-datasetid
   "<Granule>
@@ -38,19 +86,6 @@
   <RestrictionFlag>0.0</RestrictionFlag>
   <Orderable>true</Orderable>
   </Granule>")
-
-(defspec generate-granule-is-valid-xml-test 100
-  (for-all [granule gran-gen/granules]
-    (let [xml (echo10/umm->echo10-xml granule)]
-      (and
-        (> (count xml) 0)
-        (= 0 (count (g/validate-xml xml)))))))
-
-(defspec generate-and-parse-granule-test 100
-  (for-all [granule gran-gen/granules]
-    (let [xml (echo10/umm->echo10-xml granule)
-          parsed (g/parse-granule xml)]
-      (= parsed granule))))
 
 (deftest validate-xml
   (testing "valid xml1"

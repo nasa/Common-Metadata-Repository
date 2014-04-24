@@ -4,6 +4,7 @@
             [clojure.java.io :as io]
             [cmr.common.xml :as cx]
             [cmr.umm.granule :as g]
+            [cmr.umm.echo10.granule.temporal :as gt]
             [cmr.umm.echo10.granule.product-specific-attribute-ref :as psa]
             [cmr.umm.xml-schema-validator :as v]
             [cmr.umm.echo10.core])
@@ -24,6 +25,7 @@
   (let [coll-ref (xml-elem->CollectionRef xml-struct)]
     (g/map->UmmGranule {:granule-ur (cx/string-at-path xml-struct [:GranuleUR])
                         :collection-ref coll-ref
+                        :temporal-coverage (gt/xml-elem->TemporalCoverage xml-struct)
                         :product-specific-attributes (psa/xml-elem->ProductSpecificAttributeRefs xml-struct)})))
 
 (defn parse-granule
@@ -37,6 +39,7 @@
     [granule]
     (let [{{:keys [entry-title short-name version-id]} :collection-ref
            granule-ur :granule-ur
+           temporal-coverage :temporal-coverage
            psas :product-specific-attributes} granule]
       (x/emit-str
         (x/element :Granule {}
@@ -50,6 +53,7 @@
                                           (x/element :ShortName {} short-name)
                                           (x/element :VersionId {} version-id)))
                    (x/element :RestrictionFlag {} "0.0")
+                   (gt/generate-temporal (:temporal-coverage granule))
                    (psa/generate-product-specific-attribute-refs psas)
                    (x/element :Orderable {} "true"))))))
 

@@ -1,8 +1,8 @@
-(ns cmr.umm.test.temporal-coverage
+(ns cmr.umm.test.collection.temporal-coverage
   "Test construction of temporal coverage"
   (:require [clojure.test :refer :all]
             [cmr.umm.collection :as c]
-            [cmr.umm.temporal-coverage :as tc]
+            [cmr.umm.collection.temporal-coverage :as tc]
             [cmr.common.date-time-parser :as p]))
 
 (deftest validate-temporal-map
