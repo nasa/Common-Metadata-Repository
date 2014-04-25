@@ -1,6 +1,8 @@
 (ns cmr.system-int-test.search.granule-psa-search-test
   "Tests searching for granules by product specific attributes."
   (:require [clojure.test :refer :all]
+            [clj-time.core :as t]
+            [clj-time.format :as f]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.index-util :as index]
@@ -37,7 +39,9 @@
        "int,alpha,a,0" (am/invalid-value-msg :int "a")
        "int,alpha,0,b" (am/invalid-value-msg :int "b"))
 
-    (is (= {:status 422 :errors [(am/attributes-must-be-sequence-msg)]}
+  ; TODO datetime searches
+
+  (is (= {:status 422 :errors [(am/attributes-must-be-sequence-msg)]}
          (search/get-search-failure-data
            (search/find-refs :granule {"attribute" "string,alpha,a"})))))
 
@@ -159,6 +163,69 @@
 
            ;; only max range provided
            "int,bravo,,12" [gran1 gran2]))))
+
+(defn make-datetime
+  "Creates a datetime from a number added onto a base datetime"
+  [n]
+  (when n
+    (f/unparse (f/formatters :date-time)
+               (t/plus (t/date-time 2012 1 1 0 0 0)
+                       (t/days n)
+                       (t/hours n)))))
+
+
+(deftest datetime-psas-search-test
+  (let [psa1 (dc/psa "alpha" :datetime)
+        psa2 (dc/psa "bravo" :datetime)
+        psa3 (dc/psa "charlie" :datetime)
+        coll1 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2]}))
+        gran1 (d/ingest "PROV1" (dg/granule coll1 {:product-specific-attributes
+                                                   [(dg/psa "alpha"
+                                                            [(make-datetime 10) (make-datetime 123)])
+                                                    (dg/psa "bravo"
+                                                            [(make-datetime 0)])]}))
+        gran2 (d/ingest "PROV1" (dg/granule coll1 {:product-specific-attributes
+                                                   [(dg/psa "bravo"
+                                                            [(make-datetime 10) (make-datetime 123)])]}))
+
+        coll2 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2 psa3]}))
+        gran3 (d/ingest "PROV1" (dg/granule coll2 {:product-specific-attributes
+                                                   [(dg/psa "alpha"
+                                                            [(make-datetime 14)])
+                                                    (dg/psa "bravo"
+                                                            [(make-datetime 13) (make-datetime 123)])]}))
+        gran4 (d/ingest "PROV1" (dg/granule coll2 {:product-specific-attributes
+                                                   [(dg/psa "charlie"
+                                                            [(make-datetime 14)])]}))]
+    (index/flush-elastic-index)
+
+    (testing "search by value"
+      (are [v n items]
+           (d/refs-match?
+             items (search/find-refs :granule {"attribute[]" (str v (make-datetime n))}))
+           "datetime,bravo," 123 [gran2, gran3]
+           "datetime,alpha," 11 []
+           "datetime,bravo," 0 [gran1]))
+
+    (testing "search by range"
+      (are [v min-n max-n items]
+           (let [min-v (make-datetime min-n)
+                 max-v (make-datetime max-n)
+                 full-value (str v min-v "," max-v)]
+             (d/refs-match? items (search/find-refs :granule {"attribute[]" full-value})))
+
+           ;; inside range
+           "datetime,alpha," 9 11 [gran1]
+           ;; beginning edge of range
+           "datetime,alpha," 10 11 [gran1]
+           ;; ending edge of range
+           "datetime,alpha," 9 10 [gran1]
+
+           ;; only min range provided
+           "datetime,bravo," 120 nil [gran2 gran3]
+
+           ;; only max range provided
+           "datetime,bravo," nil 12 [gran1 gran2]))))
 
 
 
