@@ -47,8 +47,11 @@
 (defmethod parameter->condition :string
   [concept-type param value options]
   (if (sequential? value)
-    (qm/or-conds
-      (map #(parameter->condition concept-type param % options) value))
+    (if (= "true" (get-in options [param :and]))
+      (qm/and-conds
+        (map #(parameter->condition concept-type param % options) value))
+      (qm/or-conds
+        (map #(parameter->condition concept-type param % options) value)))
     (qm/map->StringCondition
       {:field param
        :value value
