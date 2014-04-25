@@ -55,7 +55,7 @@
     (testing "search by multiple temporal_range, options :or."
       (let [references (search/find-refs :granule
                                          {"temporal[]" ["2010-01-01T10:00:00Z,2010-01-10T12:00:00Z" "2009-02-22T10:00:00Z,2010-02-22T10:00:00Z"]
-                                          "options[temporal][or]" ""})]
+                                          "options[temporal][or]" "true"})]
         (is (d/refs-match? [gran1 gran2 gran6] references))))
     (testing "search by multiple temporal_range, options :and."
       (let [references (search/find-refs :granule
@@ -72,7 +72,7 @@
         (let [status (get-in (ex-data e) [:object :status])
               body (get-in (ex-data e) [:object :body])]
           (is (= 422 status))
-          (is (re-find #"temporal datetime is invalid:.*" body))))))
+          (is (re-find #"temporal datetime is invalid: Invalid format: .* is too short, should be in yyyy-MM-ddTHH:mm:ssZ format." body))))))
   (testing "search by invalid temporal start-date after end-date."
     (try
       (search/find-refs :granule {"temporal[]" "2011-01-01T10:00:00Z,2010-01-10T12:00:00Z"})
