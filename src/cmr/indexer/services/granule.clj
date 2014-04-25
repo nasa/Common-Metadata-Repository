@@ -45,9 +45,9 @@
   (let [{:keys [concept-id extra-fields provider-id]} concept
         {:keys [parent-collection-id]} extra-fields
         parent-collection (get-parent-collection context parent-collection-id)
-        {:keys [granule-ur temporal-coverage]} umm-granule
-        start-date (temporal/start-date :granule temporal-coverage)
-        end-date (temporal/end-date :granule temporal-coverage)]
+        {:keys [granule-ur temporal]} umm-granule
+        start-date (temporal/start-date :granule temporal)
+        end-date (temporal/end-date :granule temporal)]
     {:concept-id concept-id
      :collection-concept-id parent-collection-id
      :provider-id provider-id

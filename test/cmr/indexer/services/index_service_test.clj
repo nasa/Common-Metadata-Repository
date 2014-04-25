@@ -14,17 +14,17 @@
         concept {:concept-id concept-id
                  :provider-id provider-id}
         projects [{:short-name "ESI"
-                    :long-name "Environmental Sustainability Index"}
-                   {:short-name "EVI"
-                    :long-name "Environmental Vulnerability Index"}
-                   {:short-name "EPI"
-                    :long-name "Environmental Performance Index"}]
+                   :long-name "Environmental Sustainability Index"}
+                  {:short-name "EVI"
+                   :long-name "Environmental Vulnerability Index"}
+                  {:short-name "EPI"
+                   :long-name "Environmental Performance Index"}]
         umm-concept {:entry-id "MINIMAL_1"
                      :entry-title dataset-id
                      :product {:short-name short-name
                                :version-id version-id}
-                     :temporal-coverage {:range-date-times [{:beginning-date-time (t/date-time 1996 2 24 22 20 41)
-                                                             :ending-date-time (t/date-time 1997 3 25 23 23 43 123)}]}
+                     :temporal {:range-date-times [{:beginning-date-time (t/date-time 1996 2 24 22 20 41)
+                                                    :ending-date-time (t/date-time 1997 3 25 23 23 43 123)}]}
                      :projects projects}
         expected {:concept-id concept-id
                   :entry-title dataset-id

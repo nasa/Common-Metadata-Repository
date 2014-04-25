@@ -15,10 +15,10 @@
   (let [{:keys [concept-id provider-id]} concept
         {{:keys [short-name version-id]} :product
          entry-title :entry-title
-         temporal-coverage :temporal-coverage} umm-concept
-         project-short-names (map :short-name (:projects umm-concept))
-         start-date (temporal/start-date :collection temporal-coverage)
-         end-date (temporal/end-date :collection temporal-coverage)]
+         temporal :temporal} umm-concept
+        project-short-names (map :short-name (:projects umm-concept))
+        start-date (temporal/start-date :collection temporal)
+        end-date (temporal/end-date :collection temporal)]
     {:concept-id concept-id
      :entry-title entry-title
      :entry-title.lowercase (s/lower-case entry-title)

@@ -1,5 +1,5 @@
 (ns cmr.indexer.services.temporal
-  "Contains functions to convert UMM temporal-coverage structure to parts needed for indexing"
+  "Contains functions to convert UMM temporal structure to parts needed for indexing"
   (:require [clj-time.core :as t]
             [cmr.umm.collection :as c]))
 
@@ -17,10 +17,10 @@
     #(c/map->RangeDateTime {:beginning-date-time (:start-date %) :ending-date-time (:end-date %)})
     periodic-date-times))
 
-(defn- temporal-coverage->range-date-times
+(defn- temporal->range-date-times
   "Convert temporal coverage to a list of range date times"
-  [temporal-coverage]
-  (let [{:keys [range-date-times single-date-times periodic-date-times]} temporal-coverage]
+  [temporal]
+  (let [{:keys [range-date-times single-date-times periodic-date-times]} temporal]
     (concat range-date-times
             (single-date-times->range-date-times single-date-times)
             (periodic-date-times->range-date-times periodic-date-times))))
@@ -45,34 +45,34 @@
 
 (defmulti start-date
   "Returns start-date of the temporal coverage"
-  (fn [concept-type temporal-coverage]
+  (fn [concept-type temporal]
     concept-type))
 
 (defmulti end-date
   "Returns end-date of the temporal coverage"
-  (fn [concept-type temporal-coverage]
+  (fn [concept-type temporal]
     concept-type))
 
 (defmethod start-date :collection
-  [concept-type temporal-coverage]
-  (range-start-date (temporal-coverage->range-date-times temporal-coverage)))
+  [concept-type temporal]
+  (range-start-date (temporal->range-date-times temporal)))
 
 (defmethod end-date :collection
-  [concept-type temporal-coverage]
+  [concept-type temporal]
   ;; Return nil if ends-at-present-flag is true, otherwise returns the latest end_date_time of all the given range_date_times
-  (when-not (:ends-at-present-flag temporal-coverage)
-    (range-end-date (temporal-coverage->range-date-times temporal-coverage))))
+  (when-not (:ends-at-present-flag temporal)
+    (range-end-date (temporal->range-date-times temporal))))
 
 (defmethod start-date :granule
-  [concept-type temporal-coverage]
-  (let [{:keys [range-date-time single-date-time]} temporal-coverage]
+  [concept-type temporal]
+  (let [{:keys [range-date-time single-date-time]} temporal]
     (if single-date-time
       single-date-time
       (when range-date-time (:beginning-date-time range-date-time)))))
 
 (defmethod end-date :granule
-  [concept-type temporal-coverage]
-  (let [{:keys [range-date-time single-date-time]} temporal-coverage]
+  [concept-type temporal]
+  (let [{:keys [range-date-time single-date-time]} temporal]
     (if single-date-time
       single-date-time
       (when range-date-time (:ending-date-time range-date-time)))))
