@@ -14,12 +14,12 @@
       {:beginning-date-time (cx/datetime-at-path element [:BeginningDateTime])
        :ending-date-time (cx/datetime-at-path element [:EndingDateTime])})))
 
-(defn xml-elem->TemporalCoverage
-  "Returns a UMM TemporalCoverage from a parsed Granule Content XML structure"
+(defn xml-elem->Temporal
+  "Returns a UMM Temporal from a parsed Granule Content XML structure"
   [granule-element]
   (let [temporal-element (cx/element-at-path granule-element [:Temporal])
         range-date-time (xml-elem->RangeDateTime temporal-element)]
-    (g/map->GranuleTemporalCoverage
+    (g/map->GranuleTemporal
       {:range-date-time range-date-time
        :single-date-time (cx/datetime-at-path temporal-element [:SingleDateTime])})))
 

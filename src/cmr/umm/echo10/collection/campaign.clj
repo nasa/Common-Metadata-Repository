@@ -49,7 +49,7 @@
   (cx/elements-at-path
     (x/parse-str cmr.umm.test.echo10.collection/all-fields-collection-xml)
     [:Campaigns :Campaign])
-  (t/xml-elem->TemporalCoverage (x/parse-str cmr.umm.test.echo10.collection/all-fields-collection-xml))
+  (t/xml-elem->Temporal (x/parse-str cmr.umm.test.echo10.collection/all-fields-collection-xml))
   (psa/xml-elem->ProductSpecificAttributes (x/parse-str cmr.umm.test.echo10.collection/all-fields-collection-xml))
   ;;;;;;;;;;;;
   )

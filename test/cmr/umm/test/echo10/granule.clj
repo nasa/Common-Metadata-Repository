@@ -52,8 +52,8 @@
                    {:granule-ur "GranuleUR100"
                     :collection-ref (umm-g/map->CollectionRef
                                {:entry-title "R1_SCANSAR_FRAME"})
-                    :temporal-coverage
-                    (umm-g/map->GranuleTemporalCoverage
+                    :temporal
+                    (umm-g/map->GranuleTemporal
                       {:range-date-time
                        (umm-c/map->RangeDateTime
                           {:beginning-date-time (p/string->datetime "1996-02-24T22:20:41-05:00")

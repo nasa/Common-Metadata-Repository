@@ -122,8 +122,8 @@
                                {:short-name "MINIMAL"
                                 :long-name "A minimal valid collection"
                                 :version-id "1"})
-                    :temporal-coverage
-                    (umm-c/map->TemporalCoverage
+                    :temporal
+                    (umm-c/map->Temporal
                       {:time-type "Universal Time"
                        :date-type "Eastern Daylight"
                        :temporal-range-type "Long Range"

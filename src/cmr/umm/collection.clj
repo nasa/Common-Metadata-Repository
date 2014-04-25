@@ -25,7 +25,7 @@
    period-cycle-duration-value
    ])
 
-(defrecord TemporalCoverage
+(defrecord Temporal
   [
    time-type
    date-type
@@ -69,7 +69,7 @@
 
    product
 
-   temporal-coverage
+   temporal
 
    product-specific-attributes
 

@@ -26,13 +26,13 @@
                                     :period-cycle-duration-value (cx/long-at-path % [:PeriodCycleDurationValue])})
          elements)))
 
-(defn xml-elem->TemporalCoverage
-  "Returns a UMM TemporalCoverage from a parsed Collection Content XML structure"
+(defn xml-elem->Temporal
+  "Returns a UMM Temporal from a parsed Collection Content XML structure"
   [collection-element]
   (let [temporal-element (cx/element-at-path collection-element [:Temporal])
         range-date-times (xml-elem->RangeDateTimes temporal-element)
         periodic-date-times (xml-elem->PeriodicDateTimes temporal-element)]
-    (c/map->TemporalCoverage {:time-type (cx/string-at-path temporal-element [:TimeType])
+    (c/map->Temporal {:time-type (cx/string-at-path temporal-element [:TimeType])
                               :date-type (cx/string-at-path temporal-element [:DateType])
                               :temporal-range-type (cx/string-at-path temporal-element [:TemporalRangeType])
                               :precision-of-seconds (cx/long-at-path temporal-element [:PrecisionOfSeconds])

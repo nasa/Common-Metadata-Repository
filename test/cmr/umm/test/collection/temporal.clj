@@ -1,8 +1,8 @@
-(ns cmr.umm.test.collection.temporal-coverage
+(ns cmr.umm.test.collection.temporal
   "Test construction of temporal coverage"
   (:require [clojure.test :refer :all]
             [cmr.umm.collection :as c]
-            [cmr.umm.collection.temporal-coverage :as tc]
+            [cmr.umm.collection.temporal :as tc]
             [cmr.common.date-time-parser :as p]))
 
 (deftest validate-temporal-map
@@ -30,10 +30,10 @@
           #"Only one of range-date-times, single-date-times and periodic-date-times can be provided."
           (tc/validate-temporal-map {:single-date-times ["dummy"] :periodic-date-times ["dummy"]})))))
 
-(deftest temporal-coverage
+(deftest temporal
   (testing "construct temporal coverage with the correct default datetimes"
     (let [temporal-map {:time-type "Universal Time"
                         :range-date-times [(p/string->datetime "2010-01-05T05:30:30.550-05:00")]}
-          expected (c/map->TemporalCoverage
+          expected (c/map->Temporal
                      (merge {:single-date-times [] :periodic-date-times []} temporal-map))]
-      (is (= expected (tc/temporal-coverage temporal-map))))))
+      (is (= expected (tc/temporal temporal-map))))))

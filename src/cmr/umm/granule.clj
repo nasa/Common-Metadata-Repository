@@ -13,7 +13,7 @@
    version-id
    ])
 
-(defrecord GranuleTemporalCoverage
+(defrecord GranuleTemporal
   [
    range-date-time
    single-date-time
@@ -36,7 +36,7 @@
    ;; granule parent
    collection-ref
 
-   temporal-coverage
+   temporal
 
    ;; reference to PSAs in the parent collection
    product-specific-attributes

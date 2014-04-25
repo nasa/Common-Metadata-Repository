@@ -4,7 +4,7 @@
             [clj-time.core :as t]
             [cmr.common.test.test-check-ext :as ext-gen]
             [cmr.umm.collection :as c]
-            [cmr.umm.collection.temporal-coverage :as tc]))
+            [cmr.umm.collection.temporal :as tc]))
 
 ;; temporal attributes
 (def time-types
@@ -63,9 +63,9 @@
                     :period-cycle-duration-unit duration-units
                     :period-cycle-duration-value period-cycle-duration-values))))
 
-(def temporal-coverages-ranges
+(def temporals-ranges
   (ext-gen/model-gen
-    tc/temporal-coverage
+    tc/temporal
     (gen/hash-map :time-type time-types
                   :date-type date-types
                   :temporal-range-type temporal-range-types
@@ -73,9 +73,9 @@
                   :ends-at-present-flag ends-at-present-flag
                   :range-date-times (gen/vector range-date-times 1 3))))
 
-(def temporal-coverages-singles
+(def temporals-singles
   (ext-gen/model-gen
-    tc/temporal-coverage
+    tc/temporal
     (gen/hash-map :time-type time-types
                   :date-type date-types
                   :temporal-range-type temporal-range-types
@@ -83,9 +83,9 @@
                   :ends-at-present-flag ends-at-present-flag
                   :single-date-times (gen/vector ext-gen/date-time 1 3))))
 
-(def temporal-coverages-periodics
+(def temporals-periodics
   (ext-gen/model-gen
-    tc/temporal-coverage
+    tc/temporal
     (gen/hash-map :time-type time-types
                   :date-type date-types
                   :temporal-range-type temporal-range-types
@@ -93,8 +93,8 @@
                   :ends-at-present-flag ends-at-present-flag
                   :periodic-date-times (gen/vector periodic-date-times 1 3))))
 
-(def temporal-coverages
-  (gen/one-of [temporal-coverages-ranges
-               temporal-coverages-singles
-               temporal-coverages-periodics]))
+(def temporals
+  (gen/one-of [temporals-ranges
+               temporals-singles
+               temporals-periodics]))
 

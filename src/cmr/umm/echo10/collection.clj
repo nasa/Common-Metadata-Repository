@@ -26,7 +26,7 @@
       {:entry-id (str (:short-name product) "_" (:version-id product))
        :entry-title (cx/string-at-path xml-struct [:DataSetId])
        :product product
-       :temporal-coverage (t/xml-elem->TemporalCoverage xml-struct)
+       :temporal (t/xml-elem->Temporal xml-struct)
        :product-specific-attributes (psa/xml-elem->ProductSpecificAttributes xml-struct)
        :projects (cmpgn/xml-elem->Campaigns xml-struct)})))
 
@@ -53,7 +53,7 @@
                    (x/element :Description {} "stubbed")
                    (x/element :Orderable {} "true")
                    (x/element :Visible {} "true")
-                   (t/generate-temporal (:temporal-coverage collection))
+                   (t/generate-temporal (:temporal collection))
                    (psa/generate-product-specific-attributes
                      (:product-specific-attributes collection))
                    (cmpgn/generate-campaigns

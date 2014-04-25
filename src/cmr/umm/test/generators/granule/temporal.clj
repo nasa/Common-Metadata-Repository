@@ -4,26 +4,25 @@
             [clj-time.core :as t]
             [cmr.common.test.test-check-ext :as ext-gen]
             [cmr.umm.collection :as c]
-            [cmr.umm.granule.temporal-coverage :as tc]))
+            [cmr.umm.granule.temporal :as tc]))
 
 (def range-date-time
-  ;; FIXME - We should not be using sampling inside of a generator.
-  ;; the bind function is the way to accomplish this.
-  (let [begin (first (gen/sample ext-gen/date-time 1))
-        end (t/plus begin (t/days 1))]
-    (ext-gen/model-gen c/->RangeDateTime (gen/return begin) (ext-gen/optional (gen/return end)))))
+  (let [dates-gen (gen/fmap sort (gen/vector ext-gen/date-time 1 2))]
+    (gen/fmap (fn [[begin end]]
+                (c/->RangeDateTime begin end))
+              dates-gen)))
 
-(def temporal-coverage-range
+(def temporal-range
   (ext-gen/model-gen
-    tc/temporal-coverage
+    tc/temporal
     (gen/hash-map :range-date-time range-date-time)))
 
-(def temporal-coverage-single
+(def temporal-single
   (ext-gen/model-gen
-    tc/temporal-coverage
+    tc/temporal
     (gen/hash-map :single-date-time ext-gen/date-time)))
 
-(def temporal-coverage
-  (gen/one-of [temporal-coverage-range
-               temporal-coverage-single]))
+(def temporal
+  (gen/one-of [temporal-range
+               temporal-single]))
 

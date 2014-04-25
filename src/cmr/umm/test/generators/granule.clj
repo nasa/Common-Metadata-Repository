@@ -24,11 +24,11 @@
   (ext-gen/model-gen g/->ProductSpecificAttributeRef psa/names (gen/vector psa/string-values 1 3)))
 
 (def granules
-  (gen/fmap (fn [[granule-ur coll-ref temporal-coverage psas]]
-              (g/->UmmGranule granule-ur coll-ref temporal-coverage psas))
+  (gen/fmap (fn [[granule-ur coll-ref temporal psas]]
+              (g/->UmmGranule granule-ur coll-ref temporal psas))
             (gen/tuple granule-urs
                        coll-refs
-                       gt/temporal-coverage
+                       gt/temporal
                        (ext-gen/nil-if-empty (gen/vector product-specific-attribute-refs 0 5)))))
 
 ;; Generator that only returns collection ref with entry-title

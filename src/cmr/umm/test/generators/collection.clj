@@ -31,13 +31,13 @@
   (ext-gen/model-gen c/->Project campaign-short-names (ext-gen/optional campaign-long-names)))
 
 (def collections
-  (gen/fmap (fn [[entry-title product temporal-coverage psa campaigns]]
+  (gen/fmap (fn [[entry-title product temporal psa campaigns]]
               (let [entry-id (str (:short-name product) "_" (:version-id product))]
-                (c/->UmmCollection entry-id entry-title product temporal-coverage psa campaigns)))
+                (c/->UmmCollection entry-id entry-title product temporal psa campaigns)))
             (gen/tuple
               entry-titles
               products
-              t/temporal-coverages
+              t/temporals
               (ext-gen/nil-if-empty (gen/vector psa/product-specific-attributes 0 10))
               (ext-gen/nil-if-empty (gen/vector campaigns 0 4)))))
 
