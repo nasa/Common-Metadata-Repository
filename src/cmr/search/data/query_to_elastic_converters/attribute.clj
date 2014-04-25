@@ -12,8 +12,21 @@
     (:type condition)))
 
 (defmethod value-condition->value-filter :string
-  [{:keys [type name value]}]
+  [{:keys [value]}]
   {:term {:string-value value}})
+
+(defmulti range-condition->range-filter
+  "Converts an additional attribute range condition into the nested filter to use."
+  (fn [condition]
+    (:type condition)))
+
+(defmethod range-condition->range-filter :string
+  [{:keys [min-value max-value]}]
+  (let [r {:from (or min-value "")
+           :include_lower true
+           :include_upper true}
+        r (if max-value (assoc r :to max-value) r)]
+    {:range {:string-value r}}))
 
 (extend-protocol q2e/ConditionToElastic
   cmr.search.models.query.AttributeValueCondition
@@ -23,4 +36,16 @@
           attrib-name (:name condition)]
       {:nested {:path "attributes"
                 :filter {:and {:filters [{:term {:name attrib-name}}
-                                         value-filter]}}}})))
+                                         value-filter]}}}}))
+
+  cmr.search.models.query.AttributeRangeCondition
+  (condition->elastic
+    [condition]
+    (let [range-filter (range-condition->range-filter condition)
+          attrib-name (:name condition)]
+      {:nested {:path "attributes"
+                :filter {:and {:filters [{:term {:name attrib-name}}
+                                         range-filter]}}}}))
+
+
+  )
