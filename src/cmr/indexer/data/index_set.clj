@@ -37,6 +37,9 @@
 (def date-field-mapping
   {:type "date" :format "yyyy-MM-dd'T'HH:mm:ssZ||yyyy-MM-dd'T'HH:mm:ss.SSSZ"})
 
+(def float-field-mapping
+  {:type "float"})
+
 (defn stored
   "modifies a mapping to indicate that it should be stored"
   [field-mapping]
@@ -83,7 +86,8 @@
                                                  :dynamic "strict"
                                                  :properties
                                                  {:name string-field-mapping
-                                                  :string-value string-field-mapping}}}}})
+                                                  :string-value string-field-mapping
+                                                  :float-value float-field-mapping}}}}})
 
 (def index-set
   {:index-set {:name "cmr-base-index-set"
