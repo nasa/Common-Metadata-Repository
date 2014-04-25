@@ -3,7 +3,7 @@
   (:require [clojure.test :refer :all]
             [clj-http.client :as client]
             [clojure.string :as str]
-            [cheshire.core :as cheshire]
+            [cheshire.core :as json]
             [cmr.system-int-test.utils.url-helper :as url]))
 
 
@@ -16,5 +16,16 @@
     (is (= 200 (:status response)))
     (-> response
         :body
-        (cheshire/decode true)
+        (json/decode true)
         :references)))
+
+(defmacro get-search-failure-data
+  "Executes a search and returns error data that was caught.
+  Tests should verify the results this returns."
+  [& body]
+  `(try
+     ~@body
+     (catch clojure.lang.ExceptionInfo e#
+       (let [{{status# :status body# :body} :object} (ex-data e#)
+             errors# (:errors (json/decode body# true))]
+         {:status status# :errors errors#}))))

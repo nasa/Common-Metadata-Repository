@@ -6,32 +6,28 @@
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.granule :as dg]
-            [cmr.system-int-test.data2.core :as d]))
+            [cmr.system-int-test.data2.core :as d]
+            [cmr.search.services.parameter-converters.attribute :as am]))
 
 (use-fixtures :each (ingest/reset-fixture "PROV1"))
 
 (comment
-
-  (require '[cmr.umm.echo10.core :as echo10])
-  (echo10/umm->echo10-xml (dg/granule (dc/collection {}) {:product-specific-attributes
-                                                          [(dg/psa "alpha" ["a" "b"])
-                                                           (dg/psa "bravo" ["c" "b"])]}))
-
   (ingest/create-provider "PROV1")
-  (d/ingest "PROV1" (dc/collection {}))
-
-  (def psa1 (dc/psa "alpha" :string))
-  (def psa2 (dc/psa "bravo" :string))
-  (def psa3 (dc/psa "charlie" :string))
-  (def coll1 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2]})))
-  (def gran1 (d/ingest "PROV1" (dg/granule coll1 {:product-specific-attributes [(dg/psa "alpha" ["a" "b"])
-                                                                                 (dg/psa "bravo" ["c" "b"])]})))
-
-
-
 )
 
-;; TODO I can create local helper functions later to make construction of data easier
+
+(deftest invalid-psa-searches
+  ;; TODO test with "attribute" (missing [])
+  (are [v error]
+       (= {:status 422 :errors [error]}
+         (search/get-search-failure-data (search/find-refs :granule {"attribute[]" v})))
+       ",alpha,a" (am/invalid-type-msg "")
+       ",alpha,a,b" (am/invalid-type-msg "")
+       "string,,a" (am/invalid-name-msg "")
+       "string,,a,b" (am/invalid-name-msg "")
+       "string,alpha," (am/invalid-value-msg :string "")
+       "string,alpha" (am/invalid-num-parts-msg)))
+
 
 (deftest string-psas-search-test
   (let [psa1 (dc/psa "alpha" :string)
@@ -49,10 +45,11 @@
     (index/flush-elastic-index)
 
     (testing "search by value"
-      (is (d/refs-match?
-            [gran1]
-            (search/find-refs :granule {"attribute[]" "string,alpha,a"}))))))
+      (are [v items]
+           (d/refs-match? items (search/find-refs :granule {"attribute[]" v}))
+           "string,alpha,a" [gran1]
+           "string,alpha,c" []
+           "string,bravo,b" [gran1 gran3]))))
 
 
-;; TODO check that validation is working
 
