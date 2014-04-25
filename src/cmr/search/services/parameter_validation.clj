@@ -5,7 +5,8 @@
             [clojure.string :as s]
             [clj-time.format :as f]
             [cmr.search.services.parameters :as p]
-            [cmr.search.services.parameter-converters.attribute :as attrib]))
+            [cmr.search.services.parameter-converters.attribute :as attrib]
+            [cmr.search.services.messages.attribute-messages :as attrib-msg]))
 
 (defn- concept-type->valid-param-names
   "A set of the valid parameter names for the given concept-type."
@@ -123,7 +124,7 @@
   (if-let [attributes (:attribute params)]
     (if (sequential? attributes)
       (mapcat #(-> % attrib/parse-value :errors) attributes)
-      [(attrib/attributes-must-be-sequence-msg)])
+      [(attrib-msg/attributes-must-be-sequence-msg)])
     []))
 
 (def parameter-validations

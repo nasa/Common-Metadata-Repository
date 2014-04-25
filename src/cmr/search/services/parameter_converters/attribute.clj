@@ -3,6 +3,7 @@
   (:require [cmr.search.models.query :as qm]
             [cmr.search.services.parameters :as p]
             [clojure.string :as str]
+            [cmr.search.services.messages.attribute-messages :as msg]
             [cmr.common.services.errors :as errors])
   (:import [cmr.search.models.query
             AttributeValueCondition
@@ -14,33 +15,17 @@
   (when-not (empty? s)
     s))
 
-(defn invalid-num-parts-msg
-  []
-  (str "Invalid number of additional attribute parts. "
-       "Format is \"type,name,value\" or \"type,name,min,max\"."))
-
-(defn invalid-type-msg
-  [type]
-  (format "[%s] is an invalid type" (str type)))
-
-(defn invalid-value-msg
-  [type value]
-  (format "[%s] is an invalid value for type [%s]" (str value) (name type)))
-
-(defn invalid-name-msg
-  [n]
-  (format "[%s] is not a valid name for an attribute." (str n)))
-
-(defn one-of-min-max-msg
-  []
-  "At least one of min or max must be provided for an additional attribute search.")
-
-(defn attributes-must-be-sequence-msg
-  []
-  "'attribute' is not a valid parameter. You must use 'attribute[]'.")
 
 (defn value->condition
-  "Parses an additional attribute value into it's constituent parts"
+  "Parses an additional attribute value into it's constituent parts.
+  Values must be comma separated in one of the following two formats
+
+    * type,name,value
+      * Example: \"string,fav_color,blue\"
+    * type,name,min,max
+      * Example: \"float,cloud_cover_range,0,100\"
+      * Example: \"float,cloud_cover_range,,80\"  means must be less than 80 with no lower bounds
+      * Example: \"float,cloud_cover_range,10,\"  means must be greater than 10 with no upper bounds"
   [value]
   (let [comma-escape "\\,"
         comma-replace "%COMMA%" ; used to replace escaped commas during splitting
@@ -58,7 +43,7 @@
             {:type t
              :name n
              :value v})
-          {:errors [(invalid-name-msg n)]}))
+          {:errors [(msg/invalid-name-msg n)]}))
       4
       (let [[t n minv maxv] parts]
         (if n
@@ -67,10 +52,10 @@
              :name n
              :min-value minv
              :max-value maxv})
-          {:errors [(invalid-name-msg n)]}))
+          {:errors [(msg/invalid-name-msg n)]}))
 
       ;; else
-      {:errors [(invalid-num-parts-msg)]})))
+      {:errors [(msg/invalid-num-parts-msg)]})))
 
 (def attribute-type->parser-fn
   "A map of attribute types to functions that can parse a value"
@@ -90,7 +75,7 @@
   (try
     (update-in condition [field] parser)
     (catch NumberFormatException e
-      (update-in condition [:errors] conj (invalid-value-msg type (get condition field))))))
+      (update-in condition [:errors] conj (msg/invalid-value-msg type (get condition field))))))
 
 (defmethod parse-condition-values AttributeRangeCondition
   [condition]
@@ -104,7 +89,7 @@
         (if (:errors condition)
           {:errors (:errors condition)}
           condition))
-      {:errors [(one-of-min-max-msg)]})))
+      {:errors [(msg/one-of-min-max-msg)]})))
 
 (defmethod parse-condition-values AttributeValueCondition
   [condition]
@@ -115,14 +100,14 @@
         (if (:errors condition)
           {:errors (:errors condition)}
           condition))
-      {:errors [(invalid-value-msg type value)]})))
+      {:errors [(msg/invalid-value-msg type value)]})))
 
 (defn parse-component-type
   "Parses the type and it's values"
   [condition]
   (if-let [type (some (set qm/attribute-types) [(keyword (:type condition))])]
     (parse-condition-values (assoc condition :type type))
-    {:errors [(invalid-type-msg (:type condition))]}))
+    {:errors [(msg/invalid-type-msg (:type condition))]}))
 
 (defn parse-value
   "Parses an additional attribute value into it's constituent parts"

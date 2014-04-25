@@ -1,6 +1,7 @@
 (ns cmr.search.test.services.parameter-converters.attribute
   (require [clojure.test :refer :all]
            [cmr.search.services.parameter-converters.attribute :as a]
+           [cmr.search.services.messages.attribute-messages :as msg]
            [cmr.search.models.query :as qm]
            [cmr.search.services.parameters :as p]
            [cmr.common.util :as u]))
@@ -16,7 +17,7 @@
   (testing "failure cases"
 
     (testing "invalid number of parts"
-      (are [s] (= (expected-error a/invalid-num-parts-msg)
+      (are [s] (= (expected-error msg/invalid-num-parts-msg)
                   (a/parse-value s))
            "string"
            "string,alpha"
@@ -25,22 +26,22 @@
            "string,alpha,min,max,more,"))
 
     (testing "missing or invalid types"
-      (are [s type] (= (expected-error a/invalid-type-msg type)
+      (are [s type] (= (expected-error msg/invalid-type-msg type)
                   (a/parse-value s))
            ",alpha,0" ""
            "foo,alpha,0" "foo"
            "string , alpha,0" "string "))
 
     (testing "missing or invalid values"
-      (are [s type value] (= (expected-error a/invalid-value-msg type value)
+      (are [s type value] (= (expected-error msg/invalid-value-msg type value)
                   (a/parse-value s))
            "string,alpha," "string" ""
            "float,alpha," "float" ""
            "float,alpha,a" "float" "a"
            "float,alpha,a," "float" "a"
            "float,alpha,,a" "float" "a")
-      (is (= {:errors [(a/invalid-value-msg :float "b")
-                       (a/invalid-value-msg :float "a")]}
+      (is (= {:errors [(msg/invalid-value-msg :float "b")
+                       (msg/invalid-value-msg :float "a")]}
              (a/parse-value "float,alpha,a,b")))))
 
   (testing "strings"
