@@ -28,7 +28,10 @@
              :collection_concept_id :string
              :provider :collection-query
              :entry_title :collection-query
-             :attribute :attribute}})
+             :attribute :attribute
+             :short_name :collection-query
+             :version :collection-query
+             :temporal :temporal}})
 
 (defn- param-name->type
   "Returns the query condition type based on the given concept-type and param-name."
@@ -55,9 +58,9 @@
   "Converts parameters into a query model."
   [concept-type params]
   (let [options (get params :options {})
-        page-size (get params :page_size qm/default-page-size)
-        page-num (get params :page_num qm/default-page-num)
-        params (dissoc params :options :page_size)]
+        page-size (Integer. (get params :page_size qm/default-page-size))
+        page-num (Integer. (get params :page_num qm/default-page-num))
+        params (dissoc params :options :page_size :page_num)]
     (if (empty? params)
       (qm/query {:concept-type concept-type
                  :page-size page-size
