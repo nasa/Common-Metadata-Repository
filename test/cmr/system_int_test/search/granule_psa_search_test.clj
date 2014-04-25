@@ -17,7 +17,6 @@
 
 
 (deftest invalid-psa-searches
-  ;; TODO test with "attribute" (missing [])
   (are [v error]
        (= {:status 422 :errors [error]}
          (search/get-search-failure-data (search/find-refs :granule {"attribute[]" v})))
@@ -26,7 +25,11 @@
        "string,,a" (am/invalid-name-msg "")
        "string,,a,b" (am/invalid-name-msg "")
        "string,alpha," (am/invalid-value-msg :string "")
-       "string,alpha" (am/invalid-num-parts-msg)))
+       "string,alpha" (am/invalid-num-parts-msg))
+
+  (is (= {:status 422 :errors [(am/attributes-must-be-sequence-msg)]}
+         (search/get-search-failure-data
+           (search/find-refs :granule {"attribute" "string,alpha,a"})))))
 
 
 (deftest string-psas-search-test
