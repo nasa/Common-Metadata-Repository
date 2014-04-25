@@ -28,12 +28,16 @@
    :granule {:granule_ur :string
              :collection_concept_id :string
              :provider :collection-query
-             :entry_title :collection-query}})
+             :entry_title :collection-query
+             :attribute :attribute
+             :short_name :collection-query
+             :version :collection-query
+             :temporal :temporal}})
 
 (defn- param-name->type
   "Returns the query condition type based on the given concept-type and param-name."
   [concept-type param-name]
-  (get (get concept-param->type concept-type) param-name))
+  (get-in concept-param->type [concept-type param-name]))
 
 (defmulti parameter->condition
   "Converts a parameter into a condition"
@@ -55,12 +59,19 @@
   "Converts parameters into a query model."
   [concept-type params]
   (let [options (get params :options {})
-        params (dissoc params :options)]
+        page-size (Integer. (get params :page_size qm/default-page-size))
+        page-num (Integer. (get params :page_num qm/default-page-num))
+        params (dissoc params :options :page_size :page_num)]
     (if (empty? params)
-      (qm/query concept-type) ;; matches everything
+      (qm/query {:concept-type concept-type
+                 :page-size page-size
+                 :page-num page-num}) ;; matches everything
       ;; Convert params into conditions
       (let [conditions (map (fn [[param value]]
                               (parameter->condition concept-type param value options))
                             params)]
-        (qm/query concept-type (qm/and-conds conditions))))))
+        (qm/query {:concept-type concept-type
+                   :page-size page-size
+                   :page-num page-num
+                   :condition (qm/and-conds conditions)})))))
 
