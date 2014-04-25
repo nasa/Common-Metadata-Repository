@@ -11,7 +11,7 @@
   (collection/parse-collection (:metadata concept)))
 
 (defmethod idx/concept->elastic-doc :collection
-  [concept umm-concept]
+  [context concept umm-concept]
   (let [{:keys [concept-id provider-id]} concept
         {{:keys [short-name version-id]} :product
          entry-title :entry-title
