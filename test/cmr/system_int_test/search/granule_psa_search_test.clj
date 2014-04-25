@@ -32,7 +32,10 @@
        "string,alpha,b,b" (am/max-must-be-greater-than-min-msg "b" "b")
        "float,alpha,a" (am/invalid-value-msg :float "a")
        "float,alpha,a,0" (am/invalid-value-msg :float "a")
-       "float,alpha,0,b" (am/invalid-value-msg :float "b"))
+       "float,alpha,0,b" (am/invalid-value-msg :float "b")
+       "int,alpha,a" (am/invalid-value-msg :int "a")
+       "int,alpha,a,0" (am/invalid-value-msg :int "a")
+       "int,alpha,0,b" (am/invalid-value-msg :int "b"))
 
     (is (= {:status 422 :errors [(am/attributes-must-be-sequence-msg)]}
          (search/get-search-failure-data
@@ -52,6 +55,8 @@
         gran3 (d/ingest "PROV1" (dg/granule coll2 {:product-specific-attributes [(dg/psa "bravo" ["aa" "bf"])]}))
         gran4 (d/ingest "PROV1" (dg/granule coll2 {:product-specific-attributes [(dg/psa "charlie" ["az"])]}))]
     (index/flush-elastic-index)
+
+    ;; TODO add additional deftest for datetime_string date_string, and time_string that they're treated as strings.
 
     (testing "search by value"
       (are [v items]
@@ -114,7 +119,46 @@
            "float,bravo,120," [gran2 gran3]
 
            ;; only max range provided
-           "float,bravo,,13.6" [gran2]))))
+           "float,bravo,,13.6" [gran1 gran2]))))
+
+(deftest int-psas-search-test
+  (let [psa1 (dc/psa "alpha" :int)
+        psa2 (dc/psa "bravo" :int)
+        psa3 (dc/psa "charlie" :int)
+        coll1 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2]}))
+        gran1 (d/ingest "PROV1" (dg/granule coll1 {:product-specific-attributes [(dg/psa "alpha" [10 123])
+                                                                                 (dg/psa "bravo" [-12])]}))
+        gran2 (d/ingest "PROV1" (dg/granule coll1 {:product-specific-attributes [(dg/psa "bravo" [10 123])]}))
+
+        coll2 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2 psa3]}))
+        gran3 (d/ingest "PROV1" (dg/granule coll2 {:product-specific-attributes [(dg/psa "alpha" [14])
+                                                                                 (dg/psa "bravo" [13 123])]}))
+        gran4 (d/ingest "PROV1" (dg/granule coll2 {:product-specific-attributes [(dg/psa "charlie" [14])]}))]
+    (index/flush-elastic-index)
+
+    (testing "search by value"
+      (are [v items]
+           (d/refs-match? items (search/find-refs :granule {"attribute[]" v}))
+           "int,bravo,123" [gran2, gran3]
+           "int,alpha,11" []
+           "int,bravo,-12" [gran1]))
+
+    (testing "search by range"
+      (are [v items]
+           (d/refs-match? items (search/find-refs :granule {"attribute[]" v}))
+
+           ;; inside range
+           "int,alpha,9,11" [gran1]
+           ;; beginning edge of range
+           "int,alpha,10,11" [gran1]
+           ;; ending edge of range
+           "int,alpha,9,10" [gran1]
+
+           ;; only min range provided
+           "int,bravo,120," [gran2 gran3]
+
+           ;; only max range provided
+           "int,bravo,,12" [gran1 gran2]))))
 
 
 
