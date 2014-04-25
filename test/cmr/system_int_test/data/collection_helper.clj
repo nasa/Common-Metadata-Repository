@@ -34,11 +34,12 @@
   The date time values should be in UTC date time string format, e.g. 1986-10-14T04:03:27Z"
   [values]
   (let [{:keys [entry-title short-name version-id long-name
-                beginning-date-time ending-date-time]} values
+                beginning-date-time ending-date-time projects]} values
         temporal (temporal beginning-date-time ending-date-time)]
         (-> (first (gen/sample coll-gen/basic-collections 1))
             (fill-in-value :entry-title entry-title)
             (fill-in-product-value :short-name short-name)
             (fill-in-product-value :version-id version-id)
             (fill-in-product-value :long-name long-name)
-            (fill-in-value :temporal temporal))))
+            (fill-in-value :temporal temporal)
+            (fill-in-value :projects projects))))

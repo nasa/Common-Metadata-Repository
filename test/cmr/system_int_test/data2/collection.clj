@@ -15,7 +15,7 @@
   (product {:foo 4 :short-name "foo"})
 
   (type (first (cmr.umm.collection.ProductSpecificAttribute/getBasis)))
-
+(projects {:campaigns [{:short-name "xx" :long-name "lxx"} {:short-name "yy" :long-name "lyy"}]})
   )
 
 (defn psa
@@ -43,14 +43,23 @@
     (when (or begin end)
       (ct/temporal {:range-date-times [(c/->RangeDateTime begin end)]}))))
 
+
+(defn projects
+  "Map campaign to a project to return a project list"
+  [attribs]
+  (doall
+    (for [proj (:campaigns attribs)]
+      (c/map->Project proj))))
+
 (defn collection
   "Creates a collection"
   [attribs]
   (let [product (product attribs)
         temporal {:temporal (temporal attribs)}
+        projects {:projects (projects attribs)}
         minimal-coll {:entry-id (str (:short-name product) "_" (:version-id product))
                       :entry-title (str (:long-name product) " " (:version-id product))
                       :product product}
         attribs (select-keys attribs (d/record-fields UmmCollection))
-        attribs (merge minimal-coll temporal attribs)]
+        attribs (merge minimal-coll projects temporal attribs)]
     (c/map->UmmCollection attribs)))
