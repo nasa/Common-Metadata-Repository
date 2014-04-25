@@ -1,7 +1,9 @@
 (ns cmr.system-int-test.data2.collection
   "Contains data generators for example based testing in system integration tests."
   (:require [cmr.umm.collection :as c]
-            [cmr.system-int-test.data2.core :as d])
+            [cmr.system-int-test.data2.core :as d]
+            [cmr.common.date-time-parser :as p]
+            [cmr.umm.collection.temporal :as ct])
   (:import [cmr.umm.collection
             Product
             UmmCollection]))
@@ -32,13 +34,23 @@
                          :version-id (d/unique-str "V")}]
     (c/map->Product (merge minimal-product attribs))))
 
+(defn temporal
+  "Return a temporal with range date time of the given date times"
+  [attribs]
+  (let [{:keys [beginning-date-time ending-date-time]} attribs
+        begin (when beginning-date-time (p/string->datetime beginning-date-time))
+        end (when ending-date-time (p/string->datetime ending-date-time))]
+    (when (or begin end)
+      (ct/temporal {:range-date-times [(c/->RangeDateTime begin end)]}))))
+
 (defn collection
   "Creates a collection"
   [attribs]
   (let [product (product attribs)
+        temporal {:temporal (temporal attribs)}
         minimal-coll {:entry-id (str (:short-name product) "_" (:version-id product))
                       :entry-title (str (:long-name product) " " (:version-id product))
                       :product product}
         attribs (select-keys attribs (d/record-fields UmmCollection))
-        attribs (merge minimal-coll attribs)]
+        attribs (merge minimal-coll temporal attribs)]
     (c/map->UmmCollection attribs)))

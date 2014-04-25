@@ -19,9 +19,9 @@
                                :beginning-date-time provided-beginning-date-time
                                :ending-date-time provided-ending-date-time})
 
-        {:keys [entry-title product temporal-coverage]} actual
+        {:keys [entry-title product temporal]} actual
         {:keys [short-name long-name version-id]} product
-        {:keys [range-date-times]} temporal-coverage]
+        {:keys [range-date-times]} temporal]
 
     (is (= provided-entry-title entry-title))
     (is (= provided-short-name short-name))
