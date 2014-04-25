@@ -17,7 +17,7 @@
          entry-title :entry-title
          temporal-coverage :temporal-coverage} umm-concept
          ;; each project short name in project-short-names string will be analyzed and indexed
-         project-short-names (map :short-name (:projects umm-concept)))
+         project-short-names (map :short-name (:projects umm-concept))
          start-date (temporal/start-date :collection temporal-coverage)
          end-date (temporal/end-date :collection temporal-coverage)]
     {:concept-id concept-id
