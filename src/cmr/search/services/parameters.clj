@@ -28,6 +28,7 @@
              :collection_concept_id :string
              :provider :collection-query
              :entry_title :collection-query
+             :attribute :attribute
              :short_name :collection-query
              :version :collection-query
              :temporal :temporal}})

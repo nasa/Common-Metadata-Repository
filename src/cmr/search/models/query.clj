@@ -97,6 +97,25 @@
 (defrecord MatchNoneCondition
   [])
 
+(def attribute-types
+  "A list of valid additional attribute search types"
+  [:float :int :string :date :time :datetime])
+
+(defrecord AttributeValueCondition
+  [
+   type
+   name
+   value
+   ])
+
+(defrecord AttributeRangeCondition
+  [
+   type
+   name
+   min-value
+   max-value
+   ])
+
 (defn query
   "Constructs a query with the given type, page-size, page-num,
   and root condition. If root condition is not provided it matches everything.

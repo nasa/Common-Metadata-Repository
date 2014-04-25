@@ -19,6 +19,7 @@
             [cmr.search.services.parameters :as p]
             [cmr.search.services.parameter-converters.collection-query]
             [cmr.search.services.parameter-converters.temporal]
+            [cmr.search.services.parameter-converters.attribute]
 
             ;; Validation
             [cmr.search.validators.validation :as v]

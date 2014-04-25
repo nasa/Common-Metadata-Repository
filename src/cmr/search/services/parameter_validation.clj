@@ -4,7 +4,8 @@
             [cmr.common.services.errors :as err]
             [clojure.string :as s]
             [clj-time.format :as f]
-            [cmr.search.services.parameters :as p]))
+            [cmr.search.services.parameters :as p]
+            [cmr.search.services.parameter-converters.attribute :as attrib]))
 
 (defn- concept-type->valid-param-names
   "A set of the valid parameter names for the given concept-type."
@@ -65,13 +66,6 @@
                          (concept-type->valid-param-names concept-type)))
     []))
 
-(defn options-only-for-string-conditions-validation
-  "Validates that only string conditions support options"
-  [concept-type params]
-  ;; TODO once we have more conditions than string conditions add a validation that only
-  ;; string conditions support options.
-  [])
-
 (defn unrecognized-params-settings-in-options-validation
   "Validates that no invalid parameters names in the options were supplied"
   [concept-type params]
@@ -124,6 +118,12 @@
              temporal))
     []))
 
+(defn attribute-validation
+  [concept-type params]
+  (if-let [attributes (:attribute params)]
+    (mapcat #(-> % attrib/parse-value :errors) attributes)
+    []))
+
 (def parameter-validations
   "A list of the functions that can validate parameters. They all accept parameters as an argument
   and return a list of errors."
@@ -131,9 +131,9 @@
    page-num-validation
    unrecognized-params-validation
    unrecognized-params-in-options-validation
-   options-only-for-string-conditions-validation
    unrecognized-params-settings-in-options-validation
-   temporal-format-validation])
+   temporal-format-validation
+   attribute-validation])
 
 (defn validate-parameters
   "Validates parameters. Throws exceptions to send to the user. Returns parameters if validation

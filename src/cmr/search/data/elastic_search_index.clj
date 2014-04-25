@@ -12,7 +12,8 @@
 
             ;; Query To Elastic implementations
             ;; Must be required here to be available in uberjar
-            [cmr.search.data.temporal-to-elastic]
+            [cmr.search.data.query-to-elastic-converters.temporal]
+            [cmr.search.data.query-to-elastic-converters.attribute]
 
             [cmr.search.data.elastic-results-to-query-results :as rc]
             [cmr.system-trace.core :refer [deftracefn]]
@@ -21,14 +22,14 @@
 ;; TODO - somehow search app to get this info from index-set app
 ;; TODO - define proper index-set/indexer/search apps workflow w.r.t elastic indices
 (def concept-type->index-info
-  {:collection {:index-name  "1_collections" ;; "collections"
+  {:collection {:index-name  "1_collections"
                 :type-name "collection"
                 :fields ["entry-title"
                          "provider-id"
                          "short-name"
                          "version-id"]}
-   :granule {:index-name "1_granules" ;; "granules"
-             :type-name "small_collections"
+   :granule {:index-name "1_granules"
+             :type-name "granule"
              :fields ["granule-ur"
                       "provider-id"]}})
 

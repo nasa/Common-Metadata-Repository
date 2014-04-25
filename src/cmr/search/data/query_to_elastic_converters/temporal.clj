@@ -1,4 +1,4 @@
-(ns cmr.search.data.temporal-to-elastic
+(ns cmr.search.data.query-to-elastic-converters.temporal
   "Contains functions to map from a temporal condition to elastic search query"
   (:require [clj-time.core :as t]
             [cmr.search.data.query-to-elastic :as q]
