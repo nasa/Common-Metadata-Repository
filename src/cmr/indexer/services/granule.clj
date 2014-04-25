@@ -6,7 +6,8 @@
             [cmr.umm.echo10.granule :as granule]
             [cmr.indexer.data.metadata-db :as mdb]
             [cmr.common.services.errors :as errors]
-            [cmr.indexer.services.temporal :as temporal]))
+            [cmr.indexer.services.temporal :as temporal]
+            [cmr.umm.echo10.collection.product-specific-attribute :as coll-psa]))
 
 (defmethod idx/parse-concept :granule
   [concept]
@@ -23,7 +24,7 @@
   [type psa-ref]
   (let [field-name (str (name type) "-value")]
     {:name (:name psa-ref)
-     field-name (:values psa-ref)}))
+     field-name (map #(coll-psa/parse-value type %) (:values psa-ref))}))
 
 (defn psa-refs->elastic-docs
   "Converts the psa-refs into a list of elastic documents"

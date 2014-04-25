@@ -40,6 +40,9 @@
 (def float-field-mapping
   {:type "float"})
 
+(def int-field-mapping
+  {:type "integer"})
+
 (defn stored
   "modifies a mapping to indicate that it should be stored"
   [field-mapping]
@@ -87,7 +90,8 @@
                                                  :properties
                                                  {:name string-field-mapping
                                                   :string-value string-field-mapping
-                                                  :float-value float-field-mapping}}}}})
+                                                  :float-value float-field-mapping
+                                                  :int-value int-field-mapping}}}}})
 
 (def index-set
   {:index-set {:name "cmr-base-index-set"
