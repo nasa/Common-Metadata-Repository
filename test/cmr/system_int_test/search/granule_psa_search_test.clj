@@ -6,23 +6,29 @@
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.granule :as dg]
-            [cmr.system-int-test.data2.core :as d]))
+            [cmr.system-int-test.data2.core :as d]
+            [cmr.search.services.parameter-converters.attribute :as am]))
 
 (use-fixtures :each (ingest/reset-fixture "PROV1"))
 
 (comment
-
-  (require '[cmr.umm.echo10.core :as echo10])
-  (echo10/umm->echo10-xml (dg/granule (dc/collection {}) {:product-specific-attributes
-                                                          [(dg/psa "alpha" ["a" "b"])
-                                                           (dg/psa "bravo" ["c" "b"])]}))
-
+  (ingest/create-provider "PROV1")
 )
 
 
-;; TODO I can create local helper functions later to make construction of data easier
+(deftest invalid-psa-searches
+  ;; TODO test with "attribute" (missing [])
+  (are [v error]
+       (= {:status 422 :errors [error]}
+         (search/get-search-failure-data (search/find-refs :granule {"attribute[]" v})))
+       ",alpha,a" (am/invalid-type-msg "")
+       ",alpha,a,b" (am/invalid-type-msg "")
+       "string,,a" (am/invalid-name-msg "")
+       "string,,a,b" (am/invalid-name-msg "")
+       "string,alpha," (am/invalid-value-msg :string "")
+       "string,alpha" (am/invalid-num-parts-msg)))
 
-;; commented out while I develop a good api
+
 (deftest string-psas-search-test
   (let [psa1 (dc/psa "alpha" :string)
         psa2 (dc/psa "bravo" :string)
@@ -36,16 +42,14 @@
         coll2 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa2 psa3]}))
         gran3 (d/ingest "PROV1" (dg/granule coll2 {:product-specific-attributes [(dg/psa "bravo" ["a" "b"])]}))
         gran4 (d/ingest "PROV1" (dg/granule coll2 {:product-specific-attributes [(dg/psa "charlie" ["a"])]}))]
+    (index/flush-elastic-index)
 
-    (clojure.pprint/pprint [coll1 gran1 gran2 coll2 gran3 gran4])
+    (testing "search by value"
+      (are [v items]
+           (d/refs-match? items (search/find-refs :granule {"attribute[]" v}))
+           "string,alpha,a" [gran1]
+           "string,alpha,c" []
+           "string,bravo,b" [gran1 gran3]))))
 
-    )
-
-  )
-
-
-;; searching will be something like this
-#_(is (d/matches? [coll1 coll2]
-                  (d/search {:foo "5"})))
 
 
