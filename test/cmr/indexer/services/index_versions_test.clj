@@ -23,7 +23,7 @@
         provider-id "PROV1"
         short-name "DummyShort"
         version-id "1"
-        project-short-names '("ESI" "EPI" "EVI")]
+        project-short-names ["ESI" "EPI" "EVI"]]
     {:concept-id concept-id
      :entry-title entry-title
      :entry-title.lowercase (s/lower-case entry-title)
