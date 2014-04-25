@@ -15,6 +15,10 @@
   [{:keys [value]}]
   {:term {:string-value value}})
 
+(defmethod value-condition->value-filter :float
+  [{:keys [value]}]
+  {:term {:float-value value}})
+
 (defmulti range-condition->range-filter
   "Converts an additional attribute range condition into the nested filter to use."
   (fn [condition]
@@ -22,11 +26,16 @@
 
 (defmethod range-condition->range-filter :string
   [{:keys [min-value max-value]}]
-  (let [r {:from (or min-value "")
-           :include_lower true
-           :include_upper true}
-        r (if max-value (assoc r :to max-value) r)]
+  (let [r {:gte (or min-value "")}
+        r (if max-value (assoc r :lte max-value) r)]
     {:range {:string-value r}}))
+
+(defmethod range-condition->range-filter :float
+  [{:keys [min-value max-value]}]
+  (let [r {:gte (or min-value Float/MIN_VALUE)}
+        r (if max-value (assoc r :lte max-value) r)]
+    {:range {:float-value r
+             :execution "fielddata"}}))
 
 (extend-protocol q2e/ConditionToElastic
   cmr.search.models.query.AttributeValueCondition
