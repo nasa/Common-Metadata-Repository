@@ -11,13 +11,10 @@
   (fn [condition]
     (:type condition)))
 
-(defmethod value-condition->value-filter :string
-  [{:keys [value]}]
-  {:term {:string-value value}})
-
-(defmethod value-condition->value-filter :float
-  [{:keys [value]}]
-  {:term {:float-value value}})
+(defmethod value-condition->value-filter :default
+  [{:keys [type value]}]
+  (let [field-name (str (name type) "-value")]
+    {:term {field-name value}}))
 
 (defmulti range-condition->range-filter
   "Converts an additional attribute range condition into the nested filter to use."
@@ -32,9 +29,16 @@
 
 (defmethod range-condition->range-filter :float
   [{:keys [min-value max-value]}]
-  (let [r {:gte (or min-value Float/MIN_VALUE)}
+  (let [r {:gte (or min-value (* -1 Float/MAX_VALUE))}
         r (if max-value (assoc r :lte max-value) r)]
     {:range {:float-value r
+             :execution "fielddata"}}))
+
+(defmethod range-condition->range-filter :int
+  [{:keys [min-value max-value]}]
+  (let [r {:gte (or min-value Integer/MIN_VALUE)}
+        r (if max-value (assoc r :lte max-value) r)]
+    {:range {:int-value r
              :execution "fielddata"}}))
 
 (extend-protocol q2e/ConditionToElastic

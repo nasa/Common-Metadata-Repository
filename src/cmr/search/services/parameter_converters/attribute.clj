@@ -61,7 +61,8 @@
   "A map of attribute types to functions that can parse a value"
   {:string identity
    ;; TODO add more parsers later
-   :float #(Double/parseDouble %)})
+   :float #(Double/parseDouble %)
+   :int #(Integer/parseInt %)})
 
 (defmulti parse-condition-values
   "Parses the component type into their expected values"
