@@ -4,7 +4,7 @@
             [clojure.test.check.generators :as gen]
             [cmr.umm.collection :as c]
             [cmr.common.date-time-parser :as p]
-            [cmr.umm.temporal-coverage :as tc]))
+            [cmr.umm.collection.temporal-coverage :as tc]))
 
 (defn- fill-in-value
   "Fill the value if present in the given field of the collection, returns the collection"
