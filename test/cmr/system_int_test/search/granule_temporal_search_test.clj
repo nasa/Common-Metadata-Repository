@@ -39,41 +39,29 @@
     (testing "search by temporal_start."
       (let [references (search/find-refs :granule
                                          {"temporal[]" "2010-12-12T12:00:00Z,"})]
-        (is (= 7 (count references)))
-        (is (= #{"Granule2" "Granule3" "Granule4" "Granule5"
-                 "Granule6" "Granule7" "Granule8"}
-               (set (map :name references))))))
+        (is (d/refs-match? [gran2 gran3 gran4 gran5 gran6 gran7 gran8] references))))
     (testing "search by temporal_end."
       (let [references (search/find-refs :granule
                                          {"temporal[]" ",2010-12-12T12:00:00Z"})]
-        (is (= 6 (count references)))
-        (is (= #{"Granule1" "Granule2" "Granule3" "Granule4"
-                 "Granule6" "Granule7"}
-               (set (map :name references))))))
+        (is (d/refs-match? [gran1 gran2 gran3 gran4 gran6 gran7] references))))
     (testing "search by temporal_range."
       (let [references (search/find-refs :granule
                                          {"temporal[]" "2010-01-01T10:00:00Z,2010-01-10T12:00:00Z"})]
-        (is (= 1 (count references)))
-        (is (= #{"Granule1"}
-               (set (map :name references))))))
+        (is (d/refs-match? [gran1] references))))
     (testing "search by multiple temporal_range."
       (let [references (search/find-refs :granule
-                                         {"temporal[]" ["2010-01-01T10:00:00Z,2010-01-10T12:00:00Z" "2010-12-22T10:00:00Z,2010-12-30T12:00:00Z"]})]
-        (is (= 4 (count references)))
-        (is (=  #{"Granule1" "Granule4" "Granule6" "Granule7"}
-               (set (map :name references))))))
+                                         {"temporal[]" ["2010-01-01T10:00:00Z,2010-01-10T12:00:00Z" "2009-02-22T10:00:00Z,2010-02-22T10:00:00Z"]})]
+        (is (d/refs-match? [gran1 gran2 gran6] references))))
     (testing "search by multiple temporal_range, options :or."
       (let [references (search/find-refs :granule
-                                         {"temporal[]" ["2010-01-01T10:00:00Z,2010-01-10T12:00:00Z" "2010-12-22T10:00:00Z,2010-12-30T12:00:00Z"]
+                                         {"temporal[]" ["2010-01-01T10:00:00Z,2010-01-10T12:00:00Z" "2009-02-22T10:00:00Z,2010-02-22T10:00:00Z"]
                                           "options[temporal][or]" ""})]
-        (is (= 4 (count references)))
-        (is (= #{"Granule1" "Granule4" "Granule6" "Granule7"}
-               (set (map :name references))))))
+        (is (d/refs-match? [gran1 gran2 gran6] references))))
     (testing "search by multiple temporal_range, options :and."
       (let [references (search/find-refs :granule
-                                         {"temporal[]" ["2010-01-01T10:00:00Z,2010-01-10T12:00:00Z" "2010-12-22T10:00:00Z,2010-12-30T12:00:00Z"]
-                                          "options[temporal][and]" ""})]
-        (is (= 0 (count references)))))))
+                                         {"temporal[]" ["2010-01-01T10:00:00Z,2010-01-10T12:00:00Z" "2009-02-22T10:00:00Z,2010-02-22T10:00:00Z"]
+                                          "options[temporal][and]" "true"})]
+        (is (d/refs-match? [gran1] references))))))
 
 ;; Just some symbolic invalid temporal testing, more complete test coverage is in unit tests
 (deftest search-temporal-error-scenarios
