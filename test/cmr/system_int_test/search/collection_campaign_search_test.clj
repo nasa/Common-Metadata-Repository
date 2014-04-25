@@ -5,7 +5,6 @@
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.core :as d]))
 
 (use-fixtures :each (ingest/reset-fixture "CMR_PROV1" "CMR_PROV2"))
@@ -60,11 +59,11 @@
            2 {:campaign "EPI"}
            2 {:campaign "EpI", "options[campaign][ignore_case]" "true"}))
     (testing "search by unique campaign sn terms to get max collections"
-      (is (= 4 (count
-                 (search/find-refs :collection {"campaign[]" ["ESI" "EVI" "EPI" "Esi"]})))))
+       (is (d/refs-match? [coll3 coll4 coll5 coll6]
+                          (search/find-refs :collection {"campaign[]" ["ESI" "EVI" "EPI" "Esi"]}))))
     (testing "search by wild card to get max collections"
-      (is (= 4 (count
-                 (search/find-refs :collection {:campaign "E*", "options[campaign][pattern]" "true"})))))
+      (is (d/refs-match? [coll3 coll4 coll5 coll6]
+                         (search/find-refs :collection {:campaign "E*", "options[campaign][pattern]" "true"}))))
     (testing "search by campaign sn terms ORed"
       (are [expected campaign-kvs] (= expected (count (search/find-refs :collection campaign-kvs)))
            1 {"campaign[]" ["ESI" "EPI" "EVI"], "options[campaign][and]" "true"}
