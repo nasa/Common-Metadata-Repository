@@ -58,7 +58,9 @@
                              :version-id            (stored string-field-mapping)
                              :version-id.lowercase  string-field-mapping
                              :start-date            date-field-mapping
-                             :end-date              date-field-mapping}}})
+                             :end-date              date-field-mapping
+                             :project-sn string-field-mapping
+                             :project-sn.lowercase string-field-mapping}}})
 
 (def granule-setting {:index {:number_of_shards 2,
                               :number_of_replicas 1,
@@ -75,6 +77,8 @@
                                     :provider-id.lowercase string-field-mapping
                                     :granule-ur            (stored string-field-mapping)
                                     :granule-ur.lowercase  string-field-mapping
+                                    :start-date date-field-mapping
+                                    :end-date date-field-mapping
                                     :attributes {:type "nested"
                                                  :dynamic "strict"
                                                  :properties

@@ -43,14 +43,36 @@
        (sort t/after?)
        first))
 
-(defn start-date
-  "Returns the start-date of the given temporal coverage"
-  [temporal-coverage]
+(defmulti start-date
+  "Returns start-date of the temporal coverage"
+  (fn [concept-type temporal-coverage]
+    concept-type))
+
+(defmulti end-date
+  "Returns end-date of the temporal coverage"
+  (fn [concept-type temporal-coverage]
+    concept-type))
+
+(defmethod start-date :collection
+  [concept-type temporal-coverage]
   (range-start-date (temporal-coverage->range-date-times temporal-coverage)))
 
-(defn end-date
-  "Returns the end-date of the given temporal coverage"
-  [temporal-coverage]
+(defmethod end-date :collection
+  [concept-type temporal-coverage]
   ;; Return nil if ends-at-present-flag is true, otherwise returns the latest end_date_time of all the given range_date_times
   (when-not (:ends-at-present-flag temporal-coverage)
     (range-end-date (temporal-coverage->range-date-times temporal-coverage))))
+
+(defmethod start-date :granule
+  [concept-type temporal-coverage]
+  (let [{:keys [range-date-time single-date-time]} temporal-coverage]
+    (if single-date-time
+      single-date-time
+      (when range-date-time (:beginning-date-time range-date-time)))))
+
+(defmethod end-date :granule
+  [concept-type temporal-coverage]
+  (let [{:keys [range-date-time single-date-time]} temporal-coverage]
+    (if single-date-time
+      single-date-time
+      (when range-date-time (:ending-date-time range-date-time)))))

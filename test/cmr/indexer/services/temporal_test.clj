@@ -25,29 +25,29 @@
 (deftest start-date-test
   (testing "range date times only"
     (let [temporal (c/map->TemporalCoverage {:range-date-times [range1 range2]})]
-      (is (= dt1 (tm/start-date temporal)))))
+      (is (= dt1 (tm/start-date :collection temporal)))))
   (testing "single date times only"
     (let [temporal (c/map->TemporalCoverage {:single-date-times [dt2 dt3 dt4]})]
-      (is (= dt2 (tm/start-date temporal)))))
+      (is (= dt2 (tm/start-date :collection temporal)))))
   (testing "periodic date times only"
     (let [temporal (c/map->TemporalCoverage {:periodic-date-times [periodic1 periodic2]})]
-      (is (= dt1 (tm/start-date temporal)))))
+      (is (= dt1 (tm/start-date :collection temporal)))))
   ;; no need to test for mixed datetimes as only one of the three types of the datetimes will exist in a temporal coverage
   )
 
 (deftest end-date-test
   (testing "range date times without ends-at-present-flag"
     (let [temporal (c/map->TemporalCoverage {:range-date-times [range1 range2 range3]})]
-      (is (= dt4 (tm/end-date temporal)))))
+      (is (= dt4 (tm/end-date :collection temporal)))))
   (testing "range date times with ends-at-present-flag"
     (let [temporal (c/map->TemporalCoverage {:ends-at-present-flag true
                                              :range-date-times [range1 range2 range3]})]
-      (is (= nil (tm/end-date temporal)))))
+      (is (= nil (tm/end-date :collection temporal)))))
   (testing "single date times only"
     (let [temporal (c/map->TemporalCoverage {:single-date-times [dt2 dt3 dt4]})]
-      (is (= dt4 (tm/end-date temporal)))))
+      (is (= dt4 (tm/end-date :collection temporal)))))
   (testing "periodic date times only"
     (let [temporal (c/map->TemporalCoverage {:periodic-date-times [periodic1 periodic2]})]
-      (is (= dt4 (tm/end-date temporal)))))
+      (is (= dt4 (tm/end-date :collection temporal)))))
   ;; no need to test for mixed datetimes as only one of the three types of the datetimes will exist in a temporal coverage
   )

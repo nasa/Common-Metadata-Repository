@@ -1,10 +1,12 @@
 (ns cmr.indexer.services.granule
   "Contains functions to parse and convert granule concept"
   (:require [clojure.string :as s]
+            [clj-time.format :as f]
             [cmr.indexer.services.index-service :as idx]
             [cmr.umm.echo10.granule :as granule]
             [cmr.indexer.data.metadata-db :as mdb]
-            [cmr.common.services.errors :as errors]))
+            [cmr.common.services.errors :as errors]
+            [cmr.indexer.services.temporal :as temporal]))
 
 (defmethod idx/parse-concept :granule
   [concept]
@@ -15,12 +17,6 @@
   (let [concept (mdb/get-latest-concept context parent-collection-id)]
     ;; Concept id associated with parsed data to use in error messages.
     (assoc (idx/parse-concept concept) :concept-id parent-collection-id)))
-
-(comment
-  (get-parent-collection {} "C1000000000-PROV1")
-
-
-  )
 
 (defn psa-ref->elastic-doc
   "Converts a PSA ref into the correct elastic document"
@@ -48,16 +44,16 @@
   [context concept umm-granule]
   (let [{:keys [concept-id extra-fields provider-id]} concept
         {:keys [parent-collection-id]} extra-fields
-        {:keys [granule-ur]} umm-granule
-        parent-collection (get-parent-collection context parent-collection-id)]
+        parent-collection (get-parent-collection context parent-collection-id)
+        {:keys [granule-ur temporal-coverage]} umm-granule
+        start-date (temporal/start-date :granule temporal-coverage)
+        end-date (temporal/end-date :granule temporal-coverage)]
     {:concept-id concept-id
      :collection-concept-id parent-collection-id
      :provider-id provider-id
      :provider-id.lowercase (s/lower-case provider-id)
      :granule-ur granule-ur
      :granule-ur.lowercase (s/lower-case granule-ur)
-     :attributes (psa-refs->elastic-docs parent-collection umm-granule)}))
-
-
-
-
+     :attributes (psa-refs->elastic-docs parent-collection umm-granule)
+     :start-date (when start-date (f/unparse (f/formatters :date-time) start-date))
+     :end-date (when end-date (f/unparse (f/formatters :date-time) end-date))}))
