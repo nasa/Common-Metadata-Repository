@@ -1,5 +1,5 @@
 (ns cmr.search.services.parameter-converters.attribute
-    "Contains functions for converting additional attribute search parameters to a query model"
+  "Contains functions for converting additional attribute search parameters to a query model"
   (:require [cmr.search.models.query :as qm]
             [cmr.search.services.parameters :as p]
             [clojure.string :as str]
@@ -27,6 +27,10 @@
   [type value]
   (format "[%s] is an invalid value for type [%s]" (str value) (name type)))
 
+(defn invalid-name-msg
+  [n]
+  (format "[%s] is not a valid name for an attribute." (str n)))
+
 (defn one-of-min-max-msg
   []
   "At least one of min or max must be provided for an additional attribute search.")
@@ -45,17 +49,21 @@
     (case (count parts)
       3
       (let [[t n v] parts]
-        (qm/map->AttributeValueCondition
-          {:type t
-           :name n
-           :value v}))
+        (if n
+          (qm/map->AttributeValueCondition
+            {:type t
+             :name n
+             :value v})
+          {:errors [(invalid-name-msg n)]}))
       4
       (let [[t n minv maxv] parts]
-        (qm/map->AttributeRangeCondition
-          {:type t
-           :name n
-           :min-value minv
-           :max-value maxv}))
+        (if n
+          (qm/map->AttributeRangeCondition
+            {:type t
+             :name n
+             :min-value minv
+             :max-value maxv})
+          {:errors [(invalid-name-msg n)]}))
 
       ;; else
       {:errors [(invalid-num-parts-msg)]})))
