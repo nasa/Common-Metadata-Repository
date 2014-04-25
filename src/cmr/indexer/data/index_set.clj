@@ -29,40 +29,61 @@
                          {:number_of_shards 2,
                           :number_of_replicas 1,
                           :refresh_interval "1s"}})
+
+;; TODO verify that all these options are necessary
+(def string-field-mapping
+  {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "no"})
+
+(def date-field-mapping
+  {:type "date" :format "yyyy-MM-dd'T'HH:mm:ssZ||yyyy-MM-dd'T'HH:mm:ss.SSSZ"})
+
+(defn stored
+  "modifies a mapping to indicate that it should be stored"
+  [field-mapping]
+  (assoc field-mapping :store "yes"))
+
+
 (def collection-mapping
   {:collection {:dynamic "strict",
                 :_source {:enabled false},
                 :_all {:enabled false},
                 :_id   {:path "concept-id"},
-                :properties {:concept-id  {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}
-                             :entry-title {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}
-                             :entry-title.lowercase {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs"}
-                             :provider-id {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}
-                             :provider-id.lowercase {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs"}
-                             :short-name  {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}
-                             :short-name.lowercase  {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs"}
-                             :version-id  {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}
-                             :version-id.lowercase  {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs"}
-                             :start-date {:type "date" :format "yyyy-MM-dd'T'HH:mm:ssZ||yyyy-MM-dd'T'HH:mm:ss.SSSZ"}
-                             :end-date   {:type "date" :format "yyyy-MM-dd'T'HH:mm:ssZ||yyyy-MM-dd'T'HH:mm:ss.SSSZ"}
-                             ;; list of campaign short-names of a collection are bundled and indexed as umm/project
-                             :project-sn {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs"}
-                             :project-sn.lowercase {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs"}}}})
+                :properties {:concept-id            (stored string-field-mapping)
+                             :entry-title           (stored string-field-mapping)
+                             :entry-title.lowercase string-field-mapping
+                             :provider-id           (stored string-field-mapping)
+                             :provider-id.lowercase string-field-mapping
+                             :short-name            (stored string-field-mapping)
+                             :short-name.lowercase  string-field-mapping
+                             :version-id            (stored string-field-mapping)
+                             :version-id.lowercase  string-field-mapping
+                             :start-date            date-field-mapping
+                             :end-date              date-field-mapping
+                             :project-sn string-field-mapping
+                             :project-sn.lowercase string-field-mapping}}})
 
 (def granule-setting {:index {:number_of_shards 2,
                               :number_of_replicas 1,
                               :refresh_interval "1s"}})
 
-(def granule-mapping {:small_collections {:dynamic "strict",
-                                          :_source { "enabled" false},
-                                          :_all {"enabled" false},
-                                          :_id  {:path "concept-id"},
-                                          :properties {:concept-id  {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}
-                                                       :collection-concept-id {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}
-                                                       :provider-id {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}
-                                                       :provider-id.lowercase {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs"}
-                                                       :granule-ur  {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}
-                                                       :granule-ur.lowercase  {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs"}}}})
+(def granule-mapping {:granule
+                      {:dynamic "strict",
+                       :_source { "enabled" false},
+                       :_all {"enabled" false},
+                       :_id  {:path "concept-id"},
+                       :properties {:concept-id            (stored string-field-mapping)
+                                    :collection-concept-id (stored string-field-mapping)
+                                    :provider-id           (stored string-field-mapping)
+                                    :provider-id.lowercase string-field-mapping
+                                    :granule-ur            (stored string-field-mapping)
+                                    :granule-ur.lowercase  string-field-mapping
+                                    :start-date date-field-mapping
+                                    :end-date date-field-mapping
+                                    :attributes {:type "nested"
+                                                 :dynamic "strict"
+                                                 :properties
+                                                 {:name string-field-mapping
+                                                  :string-value string-field-mapping}}}}})
 
 (def index-set
   {:index-set {:name "cmr-base-index-set"

@@ -39,7 +39,7 @@
                   :end-date "1997-03-25T23:23:43.123Z"
                   :project-sn ["ESI" "EVI" "EPI"]
                   :project-sn.lowercase ["esi" "evi" "epi"]}
-        actual (svc/concept->elastic-doc concept umm-concept)]
+        actual (svc/concept->elastic-doc nil concept umm-concept)]
     (is (= expected actual))))
 
 
