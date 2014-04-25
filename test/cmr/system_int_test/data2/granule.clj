@@ -3,7 +3,6 @@
   (:require [cmr.umm.granule :as g]
             [cmr.umm.collection :as c]
             [cmr.umm.granule.temporal :as gt]
-            [cmr.umm.granule.temporal-coverage :as gt]
             [cmr.system-int-test.data2.core :as d]
             [cmr.common.date-time-parser :as p]))
 
