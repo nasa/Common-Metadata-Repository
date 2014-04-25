@@ -27,7 +27,7 @@
 (defmethod p/parameter->condition :temporal
   [concept-type param value options]
   (if (sequential? value)
-    (if (contains? (set (keys (:temporal options))) :and)
+    (if (= "true" (get-in options [:temporal :and]))
       (qm/and-conds
         (map #(p/parameter->condition concept-type param % options) value))
       (qm/or-conds
@@ -38,3 +38,4 @@
                                 :end-date (h/string->datetime end-date)
                                 :start-day (string->int-value start-day)
                                 :end-day (string->int-value end-day)}))))
+
