@@ -121,7 +121,9 @@
 (defn attribute-validation
   [concept-type params]
   (if-let [attributes (:attribute params)]
-    (mapcat #(-> % attrib/parse-value :errors) attributes)
+    (if (sequential? attributes)
+      (mapcat #(-> % attrib/parse-value :errors) attributes)
+      [(attrib/attributes-must-be-sequence-msg)])
     []))
 
 (def parameter-validations

@@ -35,6 +35,10 @@
   []
   "At least one of min or max must be provided for an additional attribute search.")
 
+(defn attributes-must-be-sequence-msg
+  []
+  "'attribute' is not a valid parameter. You must use 'attribute[]'.")
+
 (defn value->condition
   "Parses an additional attribute value into it's constituent parts"
   [value]

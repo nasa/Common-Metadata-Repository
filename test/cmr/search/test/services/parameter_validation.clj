@@ -1,6 +1,7 @@
 (ns cmr.search.test.services.parameter-validation
   (:require [clojure.test :refer :all]
-            [cmr.search.services.parameter-validation :as pv]))
+            [cmr.search.services.parameter-validation :as pv]
+            [cmr.search.services.parameter-converters.attribute :as attrib]))
 
 (def valid-params
   "Example valid parameters"
@@ -121,6 +122,10 @@
          "x" "temporal_end_day [x] must be an integer between 1 and 366"
          "0" "temporal_end_day [0] must be an integer between 1 and 366"
          "367" "temporal_end_day [367] must be an integer between 1 and 366")))
+
+(deftest validate-attributes-is-a-sequence
+  (is (= [(attrib/attributes-must-be-sequence-msg)]
+         (pv/attribute-validation :granule {:attribute "foo"}))))
 
 (deftest validate-parameters-test
   (testing "parameters are returned when valid"
