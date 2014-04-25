@@ -22,7 +22,8 @@
                 :short_name :string
                 :version :string
                 :temporal :temporal
-                :concept-id :string}
+                :concept-id :string
+                :campaign :string}
 
    :granule {:granule_ur :string
              :collection_concept_id :string
