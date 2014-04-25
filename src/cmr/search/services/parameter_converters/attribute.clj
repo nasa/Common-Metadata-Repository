@@ -3,6 +3,8 @@
   (:require [cmr.search.models.query :as qm]
             [cmr.search.services.parameters :as p]
             [clojure.string :as str]
+            [clj-time.core :as t]
+            [clj-time.format :as f]
             [cmr.search.services.messages.attribute-messages :as msg]
             [cmr.common.services.errors :as errors])
   (:import [cmr.search.models.query
@@ -62,7 +64,8 @@
   {:string identity
    ;; TODO add more parsers later
    :float #(Double/parseDouble %)
-   :int #(Integer/parseInt %)})
+   :int #(Integer/parseInt %)
+   :datetime #(f/parse (f/formatters :date-time) %)})
 
 (defmulti parse-condition-values
   "Parses the component type into their expected values"
