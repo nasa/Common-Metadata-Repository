@@ -7,7 +7,7 @@
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.core :as d]
-            [cmr.search.services.parameter-converters.attribute :as am]))
+            [cmr.search.services.messages.attribute-messages :as am]))
 
 (use-fixtures :each (ingest/reset-fixture "PROV1"))
 
@@ -26,9 +26,9 @@
        "string,,a,b" (am/invalid-name-msg "")
        "string,alpha," (am/invalid-value-msg :string "")
        "string,alpha" (am/invalid-num-parts-msg)
-       "string,alpha,," (am/one-of-min-max-msg))
-  ;; comment out this failing test temporarily to make build pass
-  ;"string,alpha,b,a" "")
+       "string,alpha,," (am/one-of-min-max-msg)
+       "string,alpha,b,a" (am/max-must-be-greater-than-min-msg "b" "a")
+       "string,alpha,b,b" (am/max-must-be-greater-than-min-msg "b" "b"))
 
 
   (is (= {:status 422 :errors [(am/attributes-must-be-sequence-msg)]}
