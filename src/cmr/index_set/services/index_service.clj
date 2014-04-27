@@ -169,13 +169,11 @@
       (dorun (map #(es/create-index %) indices-w-config))
       (catch Exception e
         (dorun (map #(es/delete-index % es-cfg) index-names))
-        ;; FIXME - This message is created and then thrown away.
         (m/create-failure-msg "attempt to create indices of index-set failed" e)))
     (try
       (index-requested-index-set context index-set)
       (catch Exception e
         (dorun (map #(es/delete-index % es-cfg) index-names))
-        ;; FIXME - This message is created and then thrown away.
         (m/create-failure-msg "attempt to index index-set doc failed"  e)))))
 
 (deftracefn delete-index-set
