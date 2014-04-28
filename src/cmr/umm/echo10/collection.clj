@@ -8,6 +8,7 @@
             [cmr.umm.echo10.collection.temporal :as t]
             [cmr.umm.echo10.collection.product-specific-attribute :as psa]
             [cmr.umm.echo10.collection.campaign :as cmpgn]
+            [cmr.umm.echo10.collection.org :as org]
             [cmr.umm.echo10.core])
   (:import cmr.umm.collection.UmmCollection))
 
@@ -28,7 +29,8 @@
        :product product
        :temporal (t/xml-elem->Temporal xml-struct)
        :product-specific-attributes (psa/xml-elem->ProductSpecificAttributes xml-struct)
-       :projects (cmpgn/xml-elem->Campaigns xml-struct)})))
+       :projects (cmpgn/xml-elem->Campaigns xml-struct)
+       :organizations (org/xml-elem->Organizations xml-struct)})))
 
 (defn parse-collection
   "Parses ECHO10 XML into a UMM Collection record."
@@ -53,6 +55,9 @@
                    (x/element :Description {} "stubbed")
                    (x/element :Orderable {} "true")
                    (x/element :Visible {} "true")
+                   ;; archive center to follow processing center
+                   (org/generate-processing-center (:organizations collection))
+                   (org/generate-archive-center (:organizations collection))
                    (t/generate-temporal (:temporal collection))
                    (psa/generate-product-specific-attributes
                      (:product-specific-attributes collection))
