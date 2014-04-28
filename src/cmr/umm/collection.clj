@@ -65,6 +65,16 @@
    name
    ])
 
+;; See CMR-202 issue description
+(defrecord Organization
+  [
+   ;; maps to Echo10 Collection/ArchiveCenter | Collection/ProcessingCenter element names
+   type
+
+   ;; maps to Echo10 Collection/ArchiveCenter | Collection/ProcessingCenter element values
+   short-name
+   ])
+
 (defrecord UmmCollection
   [
    ;; A combination of shortname and version id with an underscore.
@@ -83,4 +93,7 @@
    projects
 
    two-d-coordinate-systems
+
+   ;; Records Archive Center, Processing Center
+   organizations
    ])
