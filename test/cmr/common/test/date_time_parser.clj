@@ -2,43 +2,87 @@
   "Contains tests for date-time-parser"
   (:require [clojure.test :refer :all]
             [cmr.common.date-time-parser :as p]
-            [clj-time.core :as t]))
+            [cmr.common.services.messages :as msg]
+            [clj-time.core :as t])
+  (:import clojure.lang.ExceptionInfo))
 
-(deftest test-parse-valid-date-time
-  (testing "Parse valid date times with milliseconds"
-    (let [values ["1986-10-14T04:03:27.456Z"
-                  "1986-10-14T04:03:27.456"
-                  "1986-10-14T4:3:27.456"   ;; single digit is valid
-                  "1986-10-14T04:03:27.456-05:00"]
-          expected (t/date-time 1986 10 14 4 3 27 456)]
-      (doseq [value values]
-        (let [actual (p/string->datetime value)]
-          (is (= expected actual))))))
-  (testing "Parse valid date time without milliseconds"
-    (let [values ["1986-10-14T04:03:27Z"
-                  "1986-10-14T04:03:27"
-                  "1986-10-14T04:03:27-05:00"
-                  "1986-10-14T4:3:27"]
-          expected (t/date-time 1986 10 14 4 3 27 0)]
-      (doseq [value values]
-        (let [actual (p/string->datetime value)]
-          (is (= expected actual)))))))
+(deftest parse-datetime
+  (testing "valid datetimes"
+    (are [string date] (= date (p/parse-datetime string))
+         "1986-10-14T04:03:27.456Z" (t/date-time 1986 10 14 4 3 27 456)
+         "1986-10-14T04:03:27.45Z" (t/date-time 1986 10 14 4 3 27 450)
+         "1986-10-14T04:03:27.4Z" (t/date-time 1986 10 14 4 3 27 400)
+         "1986-10-14T04:03:27Z" (t/date-time 1986 10 14 4 3 27)
+         "1986-10-14T04:03:27.456" (t/date-time 1986 10 14 4 3 27 456)
+         "1986-10-14T04:03:27.45" (t/date-time 1986 10 14 4 3 27 450)
+         "1986-10-14T04:03:27.4" (t/date-time 1986 10 14 4 3 27 400)
+         "1986-10-14T04:03:27" (t/date-time 1986 10 14 4 3 27)
+         "1986-10-14T04:03:27-00:00" (t/date-time 1986 10 14 4 3 27)
+         "1986-10-14T04:03:27-01:00" (t/date-time 1986 10 14 5 3 27)
+         "1986-10-14T04:03:27.123-00:00" (t/date-time 1986 10 14 4 3 27 123)
+         "1986-10-14T04:03:27.12-00:00" (t/date-time 1986 10 14 4 3 27 120)
+         "1986-10-14T04:03:27.1-00:00" (t/date-time 1986 10 14 4 3 27 100)))
+  (testing "invalid datetimes"
+    (are [string]
+         (try
+           (p/parse-datetime string)
+           false
+           (catch ExceptionInfo e
+             (let [{:keys [type errors]} (ex-data e)]
+               (and (= type :invalid-data)
+                    (= 1 (count errors))
+                    (re-matches #".*is not a valid datetime.*" (first errors))))))
+         "foo"
+         "1986-10-14"
+         "1986-10-14T24:00:00")))
 
-(deftest test-parse-invalid-date-time
-  (testing "Parse invalid date times should throw exception"
-    (let [values ["invalid-date-time"
-                  "1998"
-                  "1986-10-14"           ;; just date is invalid
-                  "F1986-10-14T04:03:27"
-                  "-1986-10-14T04:03:27"
-                  "1986-10-14 04:03:27"  ;; missing separator is invalid
-                  "1986-10-14Q04:03:27"  ;; wrong separator is invalid
-                  "1986-10-14T04:03:"
-                  "1986-13-14T04:03:27"  ;; invalid month
-                  "1986-10-34T04:03:27"  ;; invalid day
-                  "1986-10-14T24:03:27"  ;; invalid hour
-                  "1986-10-14T04:61:27"  ;; invalid minute
-                  "1986-10-14T04:03:61"  ;; invalid second
-                  ]]
-      (doseq [value values]
-        (is (thrown? Exception (p/string->datetime value)))))))
+(deftest parse-date
+  (testing "valid date"
+    (is (= (t/date-time 1986 10 14)
+       (p/parse-date "1986-10-14"))))
+  (testing "invalid dates"
+    (are [string]
+         (try
+           (p/parse-date string)
+           false
+           (catch ExceptionInfo e
+             (let [{:keys [type errors]} (ex-data e)]
+               (and (= type :invalid-data)
+                    (= 1 (count errors))
+                    (re-matches #".*is not a valid date.*" (first errors))))))
+         "foo"
+         "1986-10-44"
+         "--")))
+
+
+(deftest parse-time
+  (testing "valid times"
+    (are [string date] (= date (p/parse-time string))
+         "04:03:27.456Z" (t/date-time 1970 1 1 4 3 27 456)
+         "04:03:27.45Z" (t/date-time 1970 1 1 4 3 27 450)
+         "04:03:27.4Z" (t/date-time 1970 1 1 4 3 27 400)
+         "04:03:27Z" (t/date-time 1970 1 1 4 3 27)
+         "04:03:27.456" (t/date-time 1970 1 1 4 3 27 456)
+         "04:03:27.45" (t/date-time 1970 1 1 4 3 27 450)
+         "04:03:27.4" (t/date-time 1970 1 1 4 3 27 400)
+         "04:03:27" (t/date-time 1970 1 1 4 3 27)
+         "04:03:27-00:00" (t/date-time 1970 1 1 4 3 27)
+         "04:03:27-01:00" (t/date-time 1970 1 1 5 3 27)
+         "04:03:27.123-00:00" (t/date-time 1970 1 1 4 3 27 123)
+         "04:03:27.12-00:00" (t/date-time 1970 1 1 4 3 27 120)
+         "04:03:27.1-00:00" (t/date-time 1970 1 1 4 3 27 100)))
+  (testing "invalid times"
+    (are [string]
+         (try
+           (p/parse-time string)
+           false
+           (catch ExceptionInfo e
+             (let [{:keys [type errors]} (ex-data e)]
+               (and (= type :invalid-data)
+                    (= 1 (count errors))
+                    (re-matches #".*is not a valid time.*" (first errors))))))
+         "foo"
+         "1986-10-14"
+         "24:00:00")))
+
+

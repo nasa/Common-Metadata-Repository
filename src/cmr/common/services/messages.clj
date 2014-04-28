@@ -8,3 +8,16 @@
   "Utility method that uses throw-service-error to generate a response with a specific status code
   and error message."
   (errors/throw-service-error error-type (apply msg-fn args)))
+
+(defn invalid-msg
+  "Creates a message saying that value does not conform to type."
+  ([type value]
+   (invalid-msg type value nil))
+  ([type value context]
+   (let [type-name (if (keyword? type)
+                     (name type)
+                     (str type))
+         context-str (if context
+                       (str " : " context)
+                       "")]
+     (format "[%s] is not a valid %s%s" (str value) type-name context-str))))
