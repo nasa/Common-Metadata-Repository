@@ -25,7 +25,9 @@
                                :version-id version-id}
                      :temporal {:range-date-times [{:beginning-date-time (t/date-time 1996 2 24 22 20 41)
                                                     :ending-date-time (t/date-time 1997 3 25 23 23 43 123)}]}
-                     :projects projects}
+                     :projects projects
+                     :two-d-coordinate-systems [{:name "FOO"}
+                                                {:name "Bar"}]}
         expected {:concept-id concept-id
                   :entry-title dataset-id
                   :entry-title.lowercase "a minimal valid collection v 1"
@@ -38,7 +40,9 @@
                   :start-date "1996-02-24T22:20:41.000Z"
                   :end-date "1997-03-25T23:23:43.123Z"
                   :project-sn ["ESI" "EVI" "EPI"]
-                  :project-sn.lowercase ["esi" "evi" "epi"]}
+                  :project-sn.lowercase ["esi" "evi" "epi"]
+                  :two-d-coord-name ["FOO" "Bar"]
+                  :two-d-coord-name.lowercase  ["foo" "bar"]}
         actual (svc/concept->elastic-doc nil concept umm-concept)]
     (is (= expected actual))))
 
