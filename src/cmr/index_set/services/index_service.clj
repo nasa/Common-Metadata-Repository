@@ -12,7 +12,7 @@
             [clojurewerkz.elastisch.rest.index :as esi]
             [cmr.index-set.config.elasticsearch-config :as es-config]
             [cmr.system-trace.core :refer [deftracefn]])
-  (import clojure.lang.ExceptionInfo))
+  (:import clojure.lang.ExceptionInfo))
 
 ;; configured list of cmr concepts
 (def cmr-concepts [:collection :granule])
