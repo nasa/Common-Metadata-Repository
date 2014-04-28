@@ -22,14 +22,13 @@
 
 (defn generate-product-specific-attribute-refs
   [psas]
-  (when (and psas (not (empty? psas)))
+  (when (not (empty? psas))
     (x/element
       :AdditionalAttributes {}
-      (for [psa psas]
-        (let [{:keys [name values]} psa]
-          (x/element :AdditionalAttribute {}
-                     (x/element :Name {} name)
-                     (x/element :Values {}
-                                (for [value values]
-                                  (x/element :Value {} value)))))))))
+      (for [{:keys [name values]} psas]
+        (x/element :AdditionalAttribute {}
+                   (x/element :Name {} name)
+                   (x/element :Values {}
+                              (for [value values]
+                                (x/element :Value {} value))))))))
 

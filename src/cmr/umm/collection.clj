@@ -59,6 +59,13 @@
    long-name
    ])
 
+
+(defrecord TwoDCoordinateSystem
+  [
+   ;; maps to Echo10 Collection/TwoDCoordinateSystems/TwoDCoordinateSystem/TwoDCoordinateSystemName
+   name
+   ])
+
 ;; See CMR-202 issue description
 (defrecord Organization
   [
@@ -85,6 +92,8 @@
 
    ;; Records campaigns of ECHO10
    projects
+
+   two-d-coordinate-systems
 
    ;; Records Archive Center, Processing Center
    organizations

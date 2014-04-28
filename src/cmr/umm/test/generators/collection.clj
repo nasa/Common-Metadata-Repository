@@ -30,6 +30,13 @@
 (def campaigns
   (ext-gen/model-gen c/->Project campaign-short-names (ext-gen/optional campaign-long-names)))
 
+
+(def two-d-names
+  (ext-gen/string-ascii 1 80))
+
+(def two-d-coordinate-systems
+  (ext-gen/model-gen c/->TwoDCoordinateSystem two-d-names))
+
 ;; For now these are the valid values
 (def org-types (gen/elements ["archive-center" "processing-center"]))
 
@@ -56,16 +63,17 @@
                                 (assoc-in (last  orgs) [:type] "archive-center")))))
 
 (def collections
-  (gen/fmap (fn [[entry-title product temporal psa campaigns orgs]]
+  (gen/fmap (fn [[entry-title product temporal psa campaigns two-ds orgs]]
               (let [entry-id (str (:short-name product) "_" (:version-id product))
                     adjusted-orgs (ordered-orgs orgs)]
-                (c/->UmmCollection entry-id entry-title product temporal psa campaigns adjusted-orgs)))
+                (c/->UmmCollection entry-id entry-title product temporal psa campaigns two-ds adjusted-orgs)))
             (gen/tuple
               entry-titles
               products
               t/temporals
               (ext-gen/nil-if-empty (gen/vector psa/product-specific-attributes 0 10))
               (ext-gen/nil-if-empty (gen/vector campaigns 0 4))
+              (ext-gen/nil-if-empty (gen/vector two-d-coordinate-systems 0 3))
               (ext-gen/nil-if-empty (gen/vector organizations 0 2)))))
 
 ; Generator for basic collections that only have the bare minimal fields

@@ -10,6 +10,23 @@
             [cmr.umm.echo10.core])
   (:import cmr.umm.granule.UmmGranule))
 
+(defn xml-elem->project-refs
+  "Parses an ECHO10 Campaigns element of a Granule XML document and returns the short names."
+  [granule-elem]
+  (seq (cx/strings-at-path
+                granule-elem
+                [:Campaigns :Campaign :ShortName])))
+
+(defn generate-project-refs
+  "Generates the Campaigns element of an ECHO10 XML from a UMM Granule project-refs entry."
+  [prefs]
+  (when (not (empty? prefs))
+    (x/element :Campaigns {}
+               (for [pref prefs]
+                 (x/element :Campaign {}
+                            (x/element :ShortName {} pref))))))
+
+
 (defn- xml-elem->CollectionRef
   "Returns a UMM ref element from a parsed Granule XML structure"
   [granule-content-node]
@@ -26,6 +43,7 @@
     (g/map->UmmGranule {:granule-ur (cx/string-at-path xml-struct [:GranuleUR])
                         :collection-ref coll-ref
                         :temporal (gt/xml-elem->Temporal xml-struct)
+                        :project-refs (xml-elem->project-refs xml-struct)
                         :product-specific-attributes (psa/xml-elem->ProductSpecificAttributeRefs xml-struct)})))
 
 (defn parse-granule
@@ -40,6 +58,7 @@
     (let [{{:keys [entry-title short-name version-id]} :collection-ref
            granule-ur :granule-ur
            temporal :temporal
+           prefs :project-refs
            psas :product-specific-attributes} granule]
       (x/emit-str
         (x/element :Granule {}
@@ -53,7 +72,8 @@
                                           (x/element :ShortName {} short-name)
                                           (x/element :VersionId {} version-id)))
                    (x/element :RestrictionFlag {} "0.0")
-                   (gt/generate-temporal (:temporal granule))
+                   (gt/generate-temporal temporal)
+                   (generate-project-refs prefs)
                    (psa/generate-product-specific-attribute-refs psas)
                    (x/element :Orderable {} "true"))))))
 
