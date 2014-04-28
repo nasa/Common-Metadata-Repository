@@ -66,7 +66,9 @@
                              :start-date            date-field-mapping
                              :end-date              date-field-mapping
                              :project-sn string-field-mapping
-                             :project-sn.lowercase string-field-mapping}}})
+                             :project-sn.lowercase string-field-mapping
+                             :two-d-coord-name string-field-mapping
+                             :two-d-coord-name.lowercase string-field-mapping}}})
 
 (def granule-setting {:index {:number_of_shards 2,
                               :number_of_replicas 1,
