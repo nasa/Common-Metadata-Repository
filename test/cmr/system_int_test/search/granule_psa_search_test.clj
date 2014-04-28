@@ -72,7 +72,6 @@
     (testing "search by range"
       (are [v items]
            (d/refs-match? items (search/find-refs :granule {"attribute[]" v}))
-
            ;; inside range
            "string,alpha,aa,ac" [gran1]
            ;; beginning edge of range

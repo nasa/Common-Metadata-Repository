@@ -47,9 +47,8 @@
 (defn projects
   "Map campaign to a project to return a project list"
   [attribs]
-  (doall
-    (for [proj (:campaigns attribs)]
-      (c/map->Project proj))))
+  (for [proj (:campaigns attribs)]
+    (c/map->Project proj)))
 
 (defn collection
   "Creates a collection"
