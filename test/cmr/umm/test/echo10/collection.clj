@@ -203,10 +203,10 @@
                     :organizations
                     [(umm-c/map->Organization
                        {:type "processing-center"
-                        :short-name "SEDAC PC"})
+                        :org-name "SEDAC PC"})
                      (umm-c/map->Organization
                        {:type "archive-center"
-                        :short-name "SEDAC AC"})]})
+                        :org-name "SEDAC AC"})]})
         actual (c/parse-collection all-fields-collection-xml)]
     (is (= expected actual))))
 
@@ -220,3 +220,14 @@
             "Line 5 - cvc-datatype-valid.1.2.1: 'XXXX-12-31T19:00:00-05:00' is not a valid value for 'dateTime'."
             "Line 5 - cvc-type.3.1.3: The value 'XXXX-12-31T19:00:00-05:00' of element 'LastUpdate' is not valid."]
            (c/validate-xml (s/replace valid-collection-xml "1999" "XXXX"))))))
+
+(comment
+  ;;;;;;;;;;;;;
+    (let [collection (last (gen/sample coll-gen/collections 1))
+          xml (echo10/umm->echo10-xml collection)
+          parsed (c/parse-collection xml)]
+      (println (= parsed collection))
+      (clojure.data/diff parsed collection))
+    ;;;;;;;;;;;;'
+    )
+

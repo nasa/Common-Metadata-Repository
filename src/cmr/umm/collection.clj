@@ -66,6 +66,8 @@
    name
    ])
 
+(def organization-types [:archive-center :processing-center])
+
 ;; See CMR-202 issue description
 (defrecord Organization
   [
@@ -73,7 +75,7 @@
    type
 
    ;; maps to Echo10 Collection/ArchiveCenter | Collection/ProcessingCenter element values
-   short-name
+   org-name
    ])
 
 (defrecord UmmCollection

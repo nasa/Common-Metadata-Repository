@@ -37,36 +37,24 @@
 (def two-d-coordinate-systems
   (ext-gen/model-gen c/->TwoDCoordinateSystem two-d-names))
 
-;; For now these are the valid values
-(def org-types (gen/elements ["archive-center" "processing-center"]))
-
-;; Generate a value from above domain
-(def org-type-gen
-  (gen/fmap (fn [[type]] type)
-            (gen/tuple org-types)))
-
-
-;; Simulated values of archive center and processing center names
-(def org-short-names
+(def org-names
   (ext-gen/string-ascii 1 80))
 
-(def organizations
-  (ext-gen/model-gen c/->Organization org-type-gen org-short-names))
+(def archive-center-org-type (gen/elements ["archive-center"]))
 
-(defn ordered-orgs
-  "Maintain processing and archive center elem order and ensure only one elem of each type is present"
-  [orgs]
-  (let [org-cnt (count orgs)]
-    (cond (= 0 org-cnt) []
-          (= 1 org-cnt) orgs
-          (= 2 org-cnt) (vector (assoc-in (first  orgs) [:type] "processing-center")
-                                (assoc-in (last  orgs) [:type] "archive-center")))))
+(def processing-center-org-type (gen/elements ["processing-center"]))
+
+(def archive-center-organizations
+  (ext-gen/model-gen c/->Organization archive-center-org-type org-names))
+
+(def processing-center-organizations
+  (ext-gen/model-gen c/->Organization processing-center-org-type org-names))
 
 (def collections
-  (gen/fmap (fn [[entry-title product temporal psa campaigns two-ds orgs]]
+  (gen/fmap (fn [[entry-title product temporal psa campaigns two-ds proc-org archive-org]]
               (let [entry-id (str (:short-name product) "_" (:version-id product))
-                    adjusted-orgs (ordered-orgs orgs)]
-                (c/->UmmCollection entry-id entry-title product temporal psa campaigns two-ds adjusted-orgs)))
+                    orgs [proc-org archive-org]]
+                (c/->UmmCollection entry-id entry-title product temporal psa campaigns two-ds (remove nil? orgs))))
             (gen/tuple
               entry-titles
               products
@@ -74,7 +62,8 @@
               (ext-gen/nil-if-empty (gen/vector psa/product-specific-attributes 0 10))
               (ext-gen/nil-if-empty (gen/vector campaigns 0 4))
               (ext-gen/nil-if-empty (gen/vector two-d-coordinate-systems 0 3))
-              (ext-gen/nil-if-empty (gen/vector organizations 0 2)))))
+              (ext-gen/optional processing-center-organizations)
+              (ext-gen/optional archive-center-organizations))))
 
 ; Generator for basic collections that only have the bare minimal fields
 ;; DEPRECATED - this will go away in the future. Don't use it.
