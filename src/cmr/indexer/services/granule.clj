@@ -32,6 +32,11 @@
   [type value]
   (f/unparse (f/formatters :date-time) value))
 
+(defmethod value->elastic-value :time
+  [type value]
+  ;; This relies on the fact that times are parsed into times on day 1970-01-01
+  (f/unparse (f/formatters :date-time) value))
+
 (defn psa-ref->elastic-doc
   "Converts a PSA ref into the correct elastic document"
   [type psa-ref]
