@@ -93,7 +93,8 @@
                                                   :float-value float-field-mapping
                                                   :int-value int-field-mapping
                                                   :datetime-value date-field-mapping
-                                                  :time-value date-field-mapping}}}}})
+                                                  :time-value date-field-mapping
+                                                  :date-value date-field-mapping}}}}})
 
 (def index-set
   {:index-set {:name "cmr-base-index-set"
