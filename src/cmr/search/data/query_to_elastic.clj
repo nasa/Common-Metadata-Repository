@@ -14,7 +14,8 @@
    :version :version-id
    :granule_ur :granule-ur
    :collection_concept_id :collection-concept-id
-   :campaign :project-sn})
+   :campaign :project-sn
+   :two_d_coordinate_system_name :two-d-coord-name})
 
 (defn query-field->elastic-field
   "Returns the elastic field name for the equivalent query field name."

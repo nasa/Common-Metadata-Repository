@@ -23,7 +23,8 @@
                 :version :string
                 :temporal :temporal
                 :concept-id :string
-                :campaign :string}
+                :campaign :string
+                :two_d_coordinate_system_name :string}
 
    :granule {:granule_ur :string
              :collection_concept_id :string
