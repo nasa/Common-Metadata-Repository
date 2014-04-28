@@ -10,11 +10,10 @@
 
 (defn xml-elem->TwoDCoordinateSystems
   [collection-element]
-  (let [two-ds (map xml-elem->TwoDCoordinateSystem
+  (seq (map xml-elem->TwoDCoordinateSystem
                     (cx/elements-at-path
                       collection-element
-                      [:TwoDCoordinateSystems :TwoDCoordinateSystem]))]
-    (when-not (empty? two-ds) two-ds)))
+                      [:TwoDCoordinateSystems :TwoDCoordinateSystem]))))
 
 (defn generate-two-ds
   [two-d-coordinate-systems]
