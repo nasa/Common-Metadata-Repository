@@ -29,7 +29,6 @@
           parsed (c/parse-collection xml)]
       (= parsed collection))))
 
-
 ;; This is a made-up include all fields collection xml sample for the parse collection test
 (def all-fields-collection-xml
   "<Collection>
@@ -85,7 +84,7 @@
         <Value>12.3</Value>
       </AdditionalAttribute>
     </AdditionalAttributes>
-     <Campaigns>
+    <Campaigns>
       <Campaign>
         <ShortName>ESI</ShortName>
         <LongName>Environmental Sustainability Index</LongName>
@@ -98,7 +97,31 @@
         <ShortName>EPI</ShortName>
         <LongName>Environmental Performance Index</LongName>
      </Campaign>
-   </Campaigns>
+    </Campaigns>
+    <TwoDCoordinateSystems>
+      <TwoDCoordinateSystem>
+        <TwoDCoordinateSystemName>name0</TwoDCoordinateSystemName>
+        <Coordinate1>
+          <MinimumValue>0</MinimumValue>
+          <MaximumValue>11</MaximumValue>
+        </Coordinate1>
+        <Coordinate2>
+          <MinimumValue>0</MinimumValue>
+          <MaximumValue>100</MaximumValue>
+        </Coordinate2>
+      </TwoDCoordinateSystem>
+      <TwoDCoordinateSystem>
+        <TwoDCoordinateSystemName>name1</TwoDCoordinateSystemName>
+        <Coordinate1>
+          <MinimumValue>1</MinimumValue>
+          <MaximumValue>12</MaximumValue>
+        </Coordinate1>
+        <Coordinate2>
+          <MinimumValue>-1</MinimumValue>
+          <MaximumValue>101</MaximumValue>
+        </Coordinate2>
+      </TwoDCoordinateSystem>
+    </TwoDCoordinateSystems>
  </Collection>")
 
 (def valid-collection-xml
@@ -171,7 +194,10 @@
                         :long-name "Environmental Vulnerability Index"})
                      (umm-c/map->Project
                        {:short-name "EPI"
-                        :long-name "Environmental Performance Index"})]})
+                        :long-name "Environmental Performance Index"})]
+                    :two-d-coordinate-systems
+                    [(umm-c/map->TwoDCoordinateSystem {:name "name0"})
+                     (umm-c/map->TwoDCoordinateSystem {:name "name1"})]})
         actual (c/parse-collection all-fields-collection-xml)]
     (is (= expected actual))))
 

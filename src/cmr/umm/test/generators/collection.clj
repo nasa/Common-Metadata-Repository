@@ -30,16 +30,23 @@
 (def campaigns
   (ext-gen/model-gen c/->Project campaign-short-names (ext-gen/optional campaign-long-names)))
 
+(def two-d-names
+  (ext-gen/string-ascii 1 80))
+
+(def two-d-coordinate-systems
+  (ext-gen/model-gen c/->TwoDCoordinateSystem two-d-names))
+
 (def collections
-  (gen/fmap (fn [[entry-title product temporal psa campaigns]]
+  (gen/fmap (fn [[entry-title product temporal psa campaigns two-ds]]
               (let [entry-id (str (:short-name product) "_" (:version-id product))]
-                (c/->UmmCollection entry-id entry-title product temporal psa campaigns)))
+                (c/->UmmCollection entry-id entry-title product temporal psa campaigns two-ds)))
             (gen/tuple
               entry-titles
               products
               t/temporals
               (ext-gen/nil-if-empty (gen/vector psa/product-specific-attributes 0 10))
-              (ext-gen/nil-if-empty (gen/vector campaigns 0 4)))))
+              (ext-gen/nil-if-empty (gen/vector campaigns 0 4))
+              (ext-gen/nil-if-empty (gen/vector two-d-coordinate-systems 0 3)))))
 
 ; Generator for basic collections that only have the bare minimal fields
 ;; DEPRECATED - this will go away in the future. Don't use it.
