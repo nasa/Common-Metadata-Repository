@@ -227,6 +227,65 @@
            ;; only max range provided
            "datetime,bravo," nil 12 [gran1 gran2]))))
 
+(defn make-time
+  "Creates a datetime from a number added onto a base datetime"
+  [n]
+  (when n
+    (format "01:%02d:00.0" n)))
+
+(deftest time-psas-search-test
+  (let [psa1 (dc/psa "alpha" :time)
+        psa2 (dc/psa "bravo" :time)
+        psa3 (dc/psa "charlie" :time)
+        coll1 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2]}))
+        gran1 (d/ingest "PROV1" (dg/granule coll1 {:product-specific-attributes
+                                                   [(dg/psa "alpha"
+                                                            [(make-time 10) (make-time 23)])
+                                                    (dg/psa "bravo"
+                                                            [(make-time 0)])]}))
+        gran2 (d/ingest "PROV1" (dg/granule coll1 {:product-specific-attributes
+                                                   [(dg/psa "bravo"
+                                                            [(make-time 10) (make-time 23)])]}))
+
+        coll2 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2 psa3]}))
+        gran3 (d/ingest "PROV1" (dg/granule coll2 {:product-specific-attributes
+                                                   [(dg/psa "alpha"
+                                                            [(make-time 14)])
+                                                    (dg/psa "bravo"
+                                                            [(make-time 13) (make-time 23)])]}))
+        gran4 (d/ingest "PROV1" (dg/granule coll2 {:product-specific-attributes
+                                                   [(dg/psa "charlie"
+                                                            [(make-time 14)])]}))]
+    (index/flush-elastic-index)
+
+    (testing "search by value"
+      (are [v n items]
+           (d/refs-match?
+             items (search/find-refs :granule {"attribute[]" (str v (make-time n))}))
+           "time,bravo," 23 [gran2, gran3]
+           "time,alpha," 11 []
+           "time,bravo," 0 [gran1]))
+
+    (testing "search by range"
+      (are [v min-n max-n items]
+           (let [min-v (make-time min-n)
+                 max-v (make-time max-n)
+                 full-value (str v min-v "," max-v)]
+             (d/refs-match? items (search/find-refs :granule {"attribute[]" full-value})))
+
+           ;; inside range
+           "time,alpha," 9 11 [gran1]
+           ;; beginning edge of range
+           "time,alpha," 10 11 [gran1]
+           ;; ending edge of range
+           "time,alpha," 9 10 [gran1]
+
+           ;; only min range provided
+           "time,bravo," 20 nil [gran2 gran3]
+
+           ;; only max range provided
+           "time,bravo," nil 12 [gran1 gran2]))))
+
 
 
 
