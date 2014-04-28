@@ -59,6 +59,12 @@
    long-name
    ])
 
+(defrecord TwoDCoordinateSystem
+  [
+   ;; maps to Echo10 Collection/TwoDCoordinateSystems/TwoDCoordinateSystem/TwoDCoordinateSystemName
+   name
+   ])
+
 (defrecord UmmCollection
   [
    ;; A combination of shortname and version id with an underscore.
@@ -75,4 +81,6 @@
 
    ;; Records campaigns of ECHO10
    projects
+
+   two-d-coordinate-systems
    ])
