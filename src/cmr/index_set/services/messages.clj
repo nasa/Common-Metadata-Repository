@@ -51,7 +51,7 @@
   [index-set]
   (format "invalid index-set: %s" index-set))
 
-(defn create-failure-msg
+(defn handle-elastic-exception
   "Expects context message and the cause. Context message to indicate create problems with index or doc."
   [context-msg e]
   (let [status (get-in (ex-data e) [:object :status])
