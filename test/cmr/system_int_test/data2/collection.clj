@@ -26,6 +26,12 @@
      :description "Generated"
      :data-type type}))
 
+(defn two-d
+  "Creates two-d-coordinate-system specific attribute"
+  [name]
+  (c/map->TwoDCoordinateSystem
+    {:name name}))
+
 (defn product
   [attribs]
   (let [attribs (select-keys attribs (d/record-fields Product))
