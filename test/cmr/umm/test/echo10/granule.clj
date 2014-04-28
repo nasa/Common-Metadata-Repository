@@ -65,9 +65,9 @@
                     (umm-g/map->GranuleTemporal
                       {:range-date-time
                        (umm-c/map->RangeDateTime
-                          {:beginning-date-time (p/string->datetime "1996-02-24T22:20:41-05:00")
-                           :ending-date-time (p/string->datetime "1997-03-24T22:20:41-05:00")})
-                       :single-date-time (p/string->datetime "2010-01-05T05:30:30.550-05:00")})})
+                          {:beginning-date-time (p/parse-datetime "1996-02-24T22:20:41-05:00")
+                           :ending-date-time (p/parse-datetime "1997-03-24T22:20:41-05:00")})
+                       :single-date-time (p/parse-datetime "2010-01-05T05:30:30.550-05:00")})})
         actual (g/parse-granule all-fields-granule-xml)]
     (is (= expected actual))))
 

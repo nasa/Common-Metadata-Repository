@@ -33,7 +33,7 @@
 (deftest temporal
   (testing "construct temporal coverage with the correct default datetimes"
     (let [temporal-map {:time-type "Universal Time"
-                        :range-date-times [(p/string->datetime "2010-01-05T05:30:30.550-05:00")]}
+                        :range-date-times [(p/parse-datetime "2010-01-05T05:30:30.550-05:00")]}
           expected (c/map->Temporal
                      (merge {:single-date-times [] :periodic-date-times []} temporal-map))]
       (is (= expected (tc/temporal temporal-map))))))

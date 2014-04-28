@@ -131,18 +131,18 @@
                        :ends-at-present-flag false
                        :range-date-times
                        [(umm-c/map->RangeDateTime
-                          {:beginning-date-time (p/string->datetime "1996-02-24T22:20:41-05:00")
-                           :ending-date-time (p/string->datetime "1997-03-24T22:20:41-05:00")})
+                          {:beginning-date-time (p/parse-datetime "1996-02-24T22:20:41-05:00")
+                           :ending-date-time (p/parse-datetime "1997-03-24T22:20:41-05:00")})
                         (umm-c/map->RangeDateTime
-                          {:beginning-date-time (p/string->datetime "1998-02-24T22:20:41-05:00")
-                           :ending-date-time (p/string->datetime "1999-03-24T22:20:41-05:00")})]
+                          {:beginning-date-time (p/parse-datetime "1998-02-24T22:20:41-05:00")
+                           :ending-date-time (p/parse-datetime "1999-03-24T22:20:41-05:00")})]
                        :single-date-times
-                       [(p/string->datetime "2010-01-05T05:30:30.550-05:00")]
+                       [(p/parse-datetime "2010-01-05T05:30:30.550-05:00")]
                        :periodic-date-times
                        [(umm-c/map->PeriodicDateTime
                           {:name "autumn, southwest"
-                           :start-date (p/string->datetime "1998-08-12T20:00:00-04:00")
-                           :end-date (p/string->datetime "1998-09-22T21:32:00-04:00")
+                           :start-date (p/parse-datetime "1998-08-12T20:00:00-04:00")
+                           :end-date (p/parse-datetime "1998-09-22T21:32:00-04:00")
                            :duration-unit "DAY"
                            :duration-value 3
                            :period-cycle-duration-unit "MONTH"
