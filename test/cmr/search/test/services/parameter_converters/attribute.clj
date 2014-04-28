@@ -1,5 +1,6 @@
 (ns cmr.search.test.services.parameter-converters.attribute
   (require [clojure.test :refer :all]
+           [clj-time.core :as t]
            [cmr.search.services.parameter-converters.attribute :as a]
            [cmr.search.services.messages.attribute-messages :as msg]
            [cmr.search.models.query :as qm]
@@ -27,22 +28,42 @@
 
     (testing "missing or invalid types"
       (are [s type] (= (expected-error msg/invalid-type-msg type)
-                  (a/parse-value s))
+                       (a/parse-value s))
            ",alpha,0" ""
            "foo,alpha,0" "foo"
            "string , alpha,0" "string "))
 
     (testing "missing or invalid values"
       (are [s type value] (= (expected-error msg/invalid-value-msg type value)
-                  (a/parse-value s))
+                             (a/parse-value s))
            "string,alpha," "string" ""
            "float,alpha," "float" ""
            "float,alpha,a" "float" "a"
            "float,alpha,a," "float" "a"
-           "float,alpha,,a" "float" "a")
+           "float,alpha,,a" "float" "a"
+           "datetime,alpha,a" :datetime "a")
       (is (= {:errors [(msg/invalid-value-msg :float "b")
                        (msg/invalid-value-msg :float "a")]}
              (a/parse-value "float,alpha,a,b")))))
+
+  (testing "dates"
+    (testing "datetimes"
+      (are [string value]
+           (= (qm/->AttributeValueCondition :datetime "alpha" value)
+              (a/parse-value string))
+           "datetime,alpha,2000-01-01T01:02:03.123Z" (t/date-time 2000 1 1 1 2 3 123)
+           "datetime,alpha,2000-01-01T01:02:03Z" (t/date-time 2000 1 1 1 2 3)
+           "datetime,alpha,2000-01-01T01:02:03" (t/date-time 2000 1 1 1 2 3)))
+    (testing "times"
+      (are [string value]
+           (= (qm/->AttributeValueCondition :time "alpha" value)
+              (a/parse-value string))
+           "time,alpha,01:02:03.123Z" (t/date-time 1970 1 1 1 2 3 123)
+           "time,alpha,01:02:03Z" (t/date-time 1970 1 1 1 2 3)
+           "time,alpha,01:02:03" (t/date-time 1970 1 1 1 2 3)))
+    (testing "dates"
+      (is (= (qm/->AttributeValueCondition :date "alpha" (t/date-time 2000 1 1))
+             (a/parse-value "date,alpha,2000-01-01")))))
 
   (testing "strings"
     (testing "single value"

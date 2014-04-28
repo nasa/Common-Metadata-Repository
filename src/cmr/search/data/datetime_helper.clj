@@ -11,10 +11,10 @@
   (-> (f/unparse (f/formatters :date-time-no-ms) tm)
       (s/replace #"Z" "-0000")))
 
-(defn string->datetime
+(defn parse-datetime
   "Convert the given string (in format like 2014-04-05T18:45:51Z) to Joda datetime.
   Returns nil for nil string, throws IllegalArgumentException for mal-formatted string.
-  This is more strict than the string->datetime function in terms of format validation."
+  This is more strict than the parse-datetime function in terms of format validation."
   [s]
   (when-not (s/blank? s) (f/parse (f/formatters :date-time-no-ms) s)))
 

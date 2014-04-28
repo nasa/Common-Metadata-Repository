@@ -7,10 +7,10 @@
 (deftest current-end-date-test
   "Test end-date is calculated correctly for current year during periodic date time conversion."
   (are [expected current-year end-date start-day end-day end-year]
-       (= (h/string->datetime expected)
+       (= (h/parse-datetime expected)
           (t2e/current-end-date
             current-year
-            (h/string->datetime end-date)
+            (h/parse-datetime end-date)
             start-day
             end-day
             end-year))

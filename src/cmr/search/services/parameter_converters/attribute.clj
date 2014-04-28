@@ -6,10 +6,12 @@
             [clj-time.core :as t]
             [clj-time.format :as f]
             [cmr.search.services.messages.attribute-messages :as msg]
-            [cmr.common.services.errors :as errors])
+            [cmr.common.services.errors :as errors]
+            [cmr.common.date-time-parser :as date-time-parser])
   (:import [cmr.search.models.query
             AttributeValueCondition
-            AttributeRangeCondition]))
+            AttributeRangeCondition]
+           clojure.lang.ExceptionInfo))
 
 (defn empty->nil
   "Converts an empty string to nil"
@@ -64,10 +66,9 @@
   {:string identity
    :float #(Double/parseDouble %)
    :int #(Integer/parseInt %)
-   :datetime #(f/parse (f/formatters :date-time) %)
-   ;; TODO when working on validation issue add support for hour minute second as well.
-   :time #(f/parse (f/formatters :hour-minute-second-ms) %)
-   :date #(f/parse (f/formatters :date) %)})
+   :datetime date-time-parser/parse-datetime
+   :time date-time-parser/parse-time
+   :date date-time-parser/parse-date})
 
 (defmulti parse-condition-values
   "Parses the component type into their expected values"
@@ -78,10 +79,14 @@
   "Attempts to parse the given field and update the condition. If there are problems parsing an
   errors attribute will be returned."
   [condition field parser type]
-  (try
-    (update-in condition [field] parser)
-    (catch NumberFormatException e
-      (update-in condition [:errors] conj (msg/invalid-value-msg type (get condition field))))))
+  (let [handle-exception #(update-in condition [:errors]
+                                     conj (msg/invalid-value-msg type (get condition field)))]
+    (try
+      (update-in condition [field] parser)
+      (catch NumberFormatException e
+        (handle-exception))
+      (catch ExceptionInfo e
+        (handle-exception)))))
 
 (defmethod parse-condition-values AttributeRangeCondition
   [condition]

@@ -34,8 +34,8 @@
         (map #(p/parameter->condition concept-type param % options) value)))
     (let [[start-date end-date start-day end-day] (map s/trim (s/split value #","))]
       (map->temporal-condition {:field param
-                                :start-date (h/string->datetime start-date)
-                                :end-date (h/string->datetime end-date)
+                                :start-date (h/parse-datetime start-date)
+                                :end-date (h/parse-datetime end-date)
                                 :start-day (string->int-value start-day)
                                 :end-day (string->int-value end-day)}))))
 
