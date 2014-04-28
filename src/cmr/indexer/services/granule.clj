@@ -70,7 +70,7 @@
   (let [{:keys [concept-id extra-fields provider-id]} concept
         {:keys [parent-collection-id]} extra-fields
         parent-collection (get-parent-collection context parent-collection-id)
-        {:keys [granule-ur temporal]} umm-granule
+        {:keys [granule-ur temporal project-refs]} umm-granule
         start-date (temporal/start-date :granule temporal)
         end-date (temporal/end-date :granule temporal)]
     {:concept-id concept-id
@@ -79,6 +79,7 @@
      :provider-id.lowercase (s/lower-case provider-id)
      :granule-ur granule-ur
      :granule-ur.lowercase (s/lower-case granule-ur)
+     :project-refs project-refs
      :attributes (psa-refs->elastic-docs parent-collection umm-granule)
      :start-date (when start-date (f/unparse (f/formatters :date-time) start-date))
      :end-date (when end-date (f/unparse (f/formatters :date-time) end-date))}))
