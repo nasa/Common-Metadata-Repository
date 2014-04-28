@@ -1,4 +1,4 @@
-(ns cmr.system-int-test.search.granule-psa-search-test
+ns cmr.system-int-test.search.granule-psa-search-test
   "Tests searching for granules by product specific attributes."
   (:require [clojure.test :refer :all]
             [clj-time.core :as t]
