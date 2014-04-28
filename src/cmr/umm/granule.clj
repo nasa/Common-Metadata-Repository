@@ -38,6 +38,9 @@
 
    temporal
 
+   ;; references to projects/campaigns
+   project-refs
+
    ;; reference to PSAs in the parent collection
    product-specific-attributes
    ])

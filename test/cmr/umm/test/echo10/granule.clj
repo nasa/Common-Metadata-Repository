@@ -45,6 +45,14 @@
       </RangeDateTime>
       <SingleDateTime>2010-01-05T05:30:30.550-05:00</SingleDateTime>
     </Temporal>
+  <Campaigns>
+    <Campaign>
+      <ShortName>Short Name-240</ShortName>
+    </Campaign>
+    <Campaign>
+      <ShortName>Short Name-241</ShortName>
+    </Campaign>
+  </Campaigns>
   </Granule>")
 
 (deftest parse-granule-test
@@ -52,6 +60,7 @@
                    {:granule-ur "GranuleUR100"
                     :collection-ref (umm-g/map->CollectionRef
                                {:entry-title "R1_SCANSAR_FRAME"})
+                    :project-refs ["Short Name-240" "Short Name-241"]
                     :temporal
                     (umm-g/map->GranuleTemporal
                       {:range-date-time
