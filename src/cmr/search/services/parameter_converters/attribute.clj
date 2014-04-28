@@ -66,7 +66,8 @@
    :int #(Integer/parseInt %)
    :datetime #(f/parse (f/formatters :date-time) %)
    ;; TODO when working on validation issue add support for hour minute second as well.
-   :time #(f/parse (f/formatters :hour-minute-second-ms) %)})
+   :time #(f/parse (f/formatters :hour-minute-second-ms) %)
+   :date #(f/parse (f/formatters :date) %)})
 
 (defmulti parse-condition-values
   "Parses the component type into their expected values"
