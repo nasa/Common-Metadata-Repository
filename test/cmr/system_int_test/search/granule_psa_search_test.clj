@@ -1,4 +1,4 @@
-ns cmr.system-int-test.search.granule-psa-search-test
+(ns cmr.system-int-test.search.granule-psa-search-test
   "Tests searching for granules by product specific attributes."
   (:require [clojure.test :refer :all]
             [clj-time.core :as t]
@@ -25,6 +25,7 @@ ns cmr.system-int-test.search.granule-psa-search-test
        ",alpha,a" (am/invalid-type-msg "")
        "foo,alpha,a" (am/invalid-type-msg "foo")
        ",alpha,a,b" (am/invalid-type-msg "")
+
        "string,,a" (am/invalid-name-msg "")
        "string,,a,b" (am/invalid-name-msg "")
        "string,alpha," (am/invalid-value-msg :string "")
@@ -32,14 +33,26 @@ ns cmr.system-int-test.search.granule-psa-search-test
        "string,alpha,," (am/one-of-min-max-msg)
        "string,alpha,b,a" (am/max-must-be-greater-than-min-msg "b" "a")
        "string,alpha,b,b" (am/max-must-be-greater-than-min-msg "b" "b")
+
        "float,alpha,a" (am/invalid-value-msg :float "a")
        "float,alpha,a,0" (am/invalid-value-msg :float "a")
        "float,alpha,0,b" (am/invalid-value-msg :float "b")
+
        "int,alpha,a" (am/invalid-value-msg :int "a")
        "int,alpha,a,0" (am/invalid-value-msg :int "a")
-       "int,alpha,0,b" (am/invalid-value-msg :int "b"))
+       "int,alpha,0,b" (am/invalid-value-msg :int "b")
 
-  ; TODO datetime searches
+       "datetime,alpha,a" (am/invalid-value-msg :datetime "a")
+       "datetime,alpha,a,2000-01-01T12:23:45" (am/invalid-value-msg :datetime "a")
+       "datetime,alpha,2000-01-01T12:23:45,b" (am/invalid-value-msg :datetime "b")
+
+       "time,alpha,a" (am/invalid-value-msg :time "a")
+       "time,alpha,a,12:23:45" (am/invalid-value-msg :time "a")
+       "time,alpha,12:23:45,b" (am/invalid-value-msg :time "b")
+
+       "date,alpha,a" (am/invalid-value-msg :date "a")
+       "date,alpha,a,2000-01-01" (am/invalid-value-msg :date "a")
+       "date,alpha,2000-01-01,b" (am/invalid-value-msg :date "b"))
 
   (is (= {:status 422 :errors [(am/attributes-must-be-sequence-msg)]}
          (search/get-search-failure-data

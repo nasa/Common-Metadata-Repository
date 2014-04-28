@@ -23,8 +23,8 @@
 (defn- temporal
   "Return a temporal with range date time of the given date times"
   [beginning-date-time ending-date-time]
-  (let [begin (when beginning-date-time (p/string->datetime beginning-date-time))
-        end (when ending-date-time (p/string->datetime ending-date-time))]
+  (let [begin (when beginning-date-time (p/parse-datetime beginning-date-time))
+        end (when ending-date-time (p/parse-datetime ending-date-time))]
     (when (or begin end)
       (ct/temporal {:range-date-times [(c/->RangeDateTime begin end)]}))))
 

@@ -28,5 +28,5 @@
     (is (= provided-long-name long-name))
     (is (= provided-version-id version-id))
     (is (= 1 (count range-date-times)))
-    (is (= (p/string->datetime provided-beginning-date-time) (:beginning-date-time (first range-date-times))))
-    (is (= (p/string->datetime provided-ending-date-time) (:ending-date-time (first range-date-times))))))
+    (is (= (p/parse-datetime provided-beginning-date-time) (:beginning-date-time (first range-date-times))))
+    (is (= (p/parse-datetime provided-ending-date-time) (:ending-date-time (first range-date-times))))))
