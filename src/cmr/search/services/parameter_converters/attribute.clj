@@ -62,10 +62,11 @@
 (def attribute-type->parser-fn
   "A map of attribute types to functions that can parse a value"
   {:string identity
-   ;; TODO add more parsers later
    :float #(Double/parseDouble %)
    :int #(Integer/parseInt %)
-   :datetime #(f/parse (f/formatters :date-time) %)})
+   :datetime #(f/parse (f/formatters :date-time) %)
+   ;; TODO when working on validation issue add support for hour minute second as well.
+   :time #(f/parse (f/formatters :hour-minute-second-ms) %)})
 
 (defmulti parse-condition-values
   "Parses the component type into their expected values"

@@ -13,14 +13,31 @@
   (fn [condition]
     (:type condition)))
 
+(defn type->field-name
+  "Converts the attribute type into the field name that will hold the value"
+  [type]
+  (str (name type) "-value"))
+
 (defmethod value-condition->value-filter :default
   [{:keys [type value]}]
-  (let [field-name (str (name type) "-value")]
-    {:term {field-name value}}))
+  {:term {(type->field-name type) value}})
+
+(defn- date-value-condition->value-filter
+  "Helper function for any date related attribute fields"
+  [{:keys [type value]}]
+  {:term {(type->field-name type) (h/utc-time->elastic-time value)}})
 
 (defmethod value-condition->value-filter :datetime
-  [{:keys [type value]}]
-  {:term {:datetime-value (h/utc-time->elastic-time value)}})
+  [condition]
+  (date-value-condition->value-filter condition))
+
+(defmethod value-condition->value-filter :time
+  [condition]
+  (date-value-condition->value-filter condition))
+
+(defmethod value-condition->value-filter :date
+  [condition]
+  (date-value-condition->value-filter condition))
 
 (defmulti range-condition->range-filter
   "Converts an additional attribute range condition into the nested filter to use."
@@ -47,16 +64,30 @@
     {:range {:int-value r
              :execution "fielddata"}}))
 
-(defmethod range-condition->range-filter :datetime
-  [{:keys [min-value max-value]}]
+(defn date-range-condition->range-filter
+  "Helper for converting date range attribute conditions into filters"
+  [{:keys [type min-value max-value]}]
   (let [r {:gte (if min-value
                   (h/utc-time->elastic-time min-value)
                   h/earliest-echo-start-date)}
         r (if max-value
             (assoc r :lte (h/utc-time->elastic-time max-value))
             r)]
-    {:range {:datetime-value r
+    {:range {(type->field-name type) r
              :execution "fielddata"}}))
+
+(defmethod range-condition->range-filter :datetime
+  [condition]
+  (date-range-condition->range-filter condition))
+
+(defmethod range-condition->range-filter :time
+  [condition]
+  (date-range-condition->range-filter condition))
+
+(defmethod range-condition->range-filter :date
+  [condition]
+  (date-range-condition->range-filter condition))
+
 
 (extend-protocol q2e/ConditionToElastic
   cmr.search.models.query.AttributeValueCondition
