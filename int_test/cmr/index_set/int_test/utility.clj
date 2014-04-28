@@ -102,23 +102,6 @@
   []
   (client/post (str elastic-root "/_flush")))
 
-;; FIXME - This is copy and pasted code from the service area. I'm not fixing this now due to
-;; time constraints. General note that we should never (with a few exceptions) copy and paste code
-;; to reuse it.
-(defn gen-valid-index-name
-  "Join parts, lowercase letters and change '-' to '_'."
-  [prefix-id suffix]
-  (str/lower-case (str/replace (format "%s_%s" prefix-id suffix) #"-" "_")))
-
-;; FIXME - more copy and pasted code.
-(defn get-index-names
-  "Given a index set build list of index names."
-  [idx-set]
-  (let [prefix-id (get-in idx-set [:index-set :id])]
-    (for [concept cmr-concepts
-          suffix-index-name (get-in idx-set [:index-set concept :index-names])]
-      (gen-valid-index-name prefix-id suffix-index-name))))
-
 (defn submit-create-index-set-req
   "submit a request to index-set app to create indices"
   [idx-set]

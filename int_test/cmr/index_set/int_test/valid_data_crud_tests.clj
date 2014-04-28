@@ -5,6 +5,7 @@
             [cheshire.core :as cheshire]
             [clojure.walk :as walk]
             [clojurewerkz.elastisch.rest.index :as esi]
+            [cmr.index-set.services.index-service :as svc]
             [cmr.index-set.int-test.utility :as util]))
 
 ;;; fixtures
@@ -34,7 +35,7 @@
     (let [index-set util/sample-index-set
           index-set-id (get-in index-set [:index-set :id])
           _ (util/flush-elastic)
-          index-names (util/get-index-names index-set)]
+          index-names (svc/get-index-names index-set)]
       (for [idx-name index-names]
         (is (esi/exists? idx-name)))))
   (testing "index-set doc existence"
@@ -54,7 +55,7 @@
                             (assoc-in [:index-set :collection :index-names] (vec (list suffix-idx-name)))
                             (assoc-in [:index-set :id] 77))
           index-set-id (get-in mod-index-set [:index-set :id])
-          expected-idx-name (util/gen-valid-index-name index-set-id suffix-idx-name)
+          expected-idx-name (svc/gen-valid-index-name index-set-id suffix-idx-name)
           {:keys [status]} (util/submit-create-index-set-req mod-index-set)
           _ (util/flush-elastic)
           body (-> (util/get-index-set index-set-id) :response :body)
@@ -73,7 +74,7 @@
           mod-index-set (-> index-set
                             (assoc-in [:index-set :collection :index-names] (vec (list suffix-idx-name))))
           index-set-id (get-in mod-index-set [:index-set :id])
-          expected-idx-name (util/gen-valid-index-name index-set-id suffix-idx-name)
+          expected-idx-name (svc/gen-valid-index-name index-set-id suffix-idx-name)
           {:keys [status]} (util/submit-create-index-set-req mod-index-set)]
       (is (= 201 status))
       (is (esi/exists? expected-idx-name))))
@@ -81,7 +82,7 @@
     (let [index-set util/sample-index-set
           index-set-id (get-in index-set [:index-set :id])
           suffix-idx-name "C99-Collections"
-          expected-idx-name (util/gen-valid-index-name index-set-id suffix-idx-name)
+          expected-idx-name (svc/gen-valid-index-name index-set-id suffix-idx-name)
           {:keys [status]} (util/submit-delete-index-set-req index-set-id)]
       (is (= 200 status))
       (is (not (esi/exists? expected-idx-name))))))

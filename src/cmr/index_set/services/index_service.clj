@@ -11,7 +11,8 @@
             [cheshire.core :as cheshire]
             [clojurewerkz.elastisch.rest.index :as esi]
             [cmr.index-set.config.elasticsearch-config :as es-config]
-            [cmr.system-trace.core :refer [deftracefn]]))
+            [cmr.system-trace.core :refer [deftracefn]])
+  (import clojure.lang.ExceptionInfo))
 
 ;; configured list of cmr concepts
 (def cmr-concepts [:collection :granule])
@@ -167,16 +168,14 @@
     ;; rollback index-set creation if index creation fails
     (try
       (dorun (map #(es/create-index %) indices-w-config))
-      (catch Exception e
+      (catch ExceptionInfo e
         (dorun (map #(es/delete-index % es-cfg) index-names))
-        ;; FIXME - This message is created and then thrown away.
-        (m/create-failure-msg "attempt to create indices of index-set failed" e)))
+        (m/handle-elastic-exception "attempt to create indices of index-set failed" e)))
     (try
       (index-requested-index-set context index-set)
-      (catch Exception e
+      (catch ExceptionInfo e
         (dorun (map #(es/delete-index % es-cfg) index-names))
-        ;; FIXME - This message is created and then thrown away.
-        (m/create-failure-msg "attempt to index index-set doc failed"  e)))))
+        (m/handle-elastic-exception "attempt to index index-set doc failed"  e)))))
 
 (deftracefn delete-index-set
   "Delete all indices having 'id_' as the prefix in the elastic, followed by index-set doc delete"
