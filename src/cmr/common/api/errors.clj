@@ -27,6 +27,6 @@
             (do
               (error e)
               internal-error-ring-response))))
-      (catch Exception e
+      (catch Throwable e
         (error e)
         internal-error-ring-response))))
