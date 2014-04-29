@@ -19,6 +19,8 @@
                    :long-name "Environmental Vulnerability Index"}
                   {:short-name "EPI"
                    :long-name "Environmental Performance Index"}]
+        orgs [{:type "processing-center" :org-name "SEDAC PC"}
+              {:type "archive-center" :org-name "SEDAC AC"}]
         umm-concept {:entry-id "MINIMAL_1"
                      :entry-title dataset-id
                      :product {:short-name short-name
@@ -27,7 +29,8 @@
                                                     :ending-date-time (t/date-time 1997 3 25 23 23 43 123)}]}
                      :projects projects
                      :two-d-coordinate-systems [{:name "FOO"}
-                                                {:name "Bar"}]}
+                                                {:name "Bar"}]
+                     :organizations orgs}
         expected {:concept-id concept-id
                   :entry-title dataset-id
                   :entry-title.lowercase "a minimal valid collection v 1"
@@ -42,9 +45,10 @@
                   :project-sn ["ESI" "EVI" "EPI"]
                   :project-sn.lowercase ["esi" "evi" "epi"]
                   :attributes []
+                  :archive-center "SEDAC AC"
+                  :archive-center.lowercase "sedac ac"
                   :two-d-coord-name ["FOO" "Bar"]
                   :two-d-coord-name.lowercase  ["foo" "bar"]}
         actual (svc/concept->elastic-doc nil concept umm-concept)]
     (is (= expected actual))))
-
 
