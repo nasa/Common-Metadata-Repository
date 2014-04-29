@@ -24,6 +24,7 @@
                 :temporal :temporal
                 :concept-id :string
                 :campaign :string
+                :archive-center :string
                 :two_d_coordinate_system_name :string}
 
    :granule {:granule_ur :string
