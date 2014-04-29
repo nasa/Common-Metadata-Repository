@@ -59,15 +59,22 @@
   (for [proj (:campaigns attribs)]
     (c/map->Project proj)))
 
+(defn orgs
+  "Return archive/ processing centers"
+  [attribs]
+  (for [org (:organizations attribs)]
+    (c/map->Organization org)))
+
 (defn collection
   "Creates a collection"
   [attribs]
   (let [product (product attribs)
         temporal {:temporal (temporal attribs)}
         projects {:projects (projects attribs)}
+        orgs {:organizations (orgs attribs)}
         minimal-coll {:entry-id (str (:short-name product) "_" (:version-id product))
                       :entry-title (str (:long-name product) " " (:version-id product))
                       :product product}
         attribs (select-keys attribs (d/record-fields UmmCollection))
-        attribs (merge minimal-coll projects temporal attribs)]
+        attribs (merge minimal-coll projects orgs temporal attribs)]
     (c/map->UmmCollection attribs)))
