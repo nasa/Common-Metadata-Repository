@@ -11,23 +11,14 @@
 
 (deftest search-by-campaign-short-names
   (let [coll1 (d/ingest "CMR_PROV1" (dc/collection {}))
-        coll2 (d/ingest "CMR_PROV1" (dc/collection {:projects (dc/projects [])}))
-        coll3 (d/ingest "CMR_PROV1" (dc/collection {:projects (dc/projects [{:short-name "ESI"
-                                                                             :long-name "Environmental Sustainability Index"}])}))
-        coll4 (d/ingest "CMR_PROV2" (dc/collection {:projects (dc/projects [{:short-name "ESI"
-                                                                             :long-name "Environmental Sustainability Index"}
-                                                                            {:short-name "Esi"
-                                                                             :long-name "Environmental Sustainability Index"}])}))
-        coll5 (d/ingest "CMR_PROV2" (dc/collection {:projects (dc/projects [{:short-name "EVI"
-                                                                             :long-name "Environmental Vulnerability Index"}
-                                                                            {:short-name "EPI"
-                                                                             :long-name "Environmental Performance Index"}])}))
-        coll6 (d/ingest "CMR_PROV2" (dc/collection {:projects (dc/projects [{:short-name "ESI"
-                                                                             :long-name "Environmental Sustainability Index"}
-                                                                            {:short-name "EVI"
-                                                                             :long-name "Environmental Vulnerability Index"}
-                                                                            {:short-name "EPI"
-                                                                             :long-name "Environmental Performance Index"}])}))]
+        coll2 (d/ingest "CMR_PROV1" (dc/collection {:projects []}))
+        coll3 (d/ingest "CMR_PROV1" (dc/collection {:projects [(dc/project "ESI" "ln")]}))
+
+        coll4 (d/ingest "CMR_PROV2" (dc/collection {:projects [(dc/project "ESI" "ln")  (dc/project "Esi" "ln")]}))
+        coll5 (d/ingest "CMR_PROV2" (dc/collection {:projects [(dc/project "EVI" "ln") (dc/project "EPI" "ln")]}))
+        coll6 (d/ingest "CMR_PROV2" (dc/collection {:projects [(dc/project "ESI" "ln")
+                                                               (dc/project "EVI" "ln")
+                                                               (dc/project "EPI" "ln")]}))]
 
     (index/flush-elastic-index)
 

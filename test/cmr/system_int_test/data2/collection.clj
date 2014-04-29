@@ -52,18 +52,20 @@
     (when (or begin end)
       (ct/temporal {:range-date-times [(c/->RangeDateTime begin end)]}))))
 
+(defn project
+  "Return a project based on campaign attribs"
+  [campaign-sn campaign-ln]
+  (c/map->Project
+    {:short-name campaign-sn
+     :long-name campaign-ln}))
 
-(defn projects
-  "Map campaign to a project to return a project list"
-  [attribs]
-  (for [proj attribs]
-    (c/map->Project proj)))
+(defn org
+  "Return  archive/ processing center"
+  [type center-name]
+  (c/map->Organization
+    {:type (keyword type)
+     :org-name center-name}))
 
-(defn orgs
-  "Return archive/ processing centers"
-  [attribs]
-  (for [org attribs]
-    (c/map->Organization org)))
 
 (defn collection
   "Creates a collection"
@@ -76,3 +78,4 @@
         attribs (select-keys attribs (d/record-fields UmmCollection))
         attribs (merge minimal-coll temporal attribs)]
     (c/map->UmmCollection attribs)))
+
