@@ -87,6 +87,8 @@
                                     :granule-ur.lowercase  string-field-mapping
                                     :start-date date-field-mapping
                                     :end-date date-field-mapping
+                                    :project-refs string-field-mapping
+                                    :project-refs.lowercase string-field-mapping
                                     :attributes {:type "nested"
                                                  :dynamic "strict"
                                                  :properties
