@@ -86,10 +86,12 @@
 
 (deftest parameter->condition-test
   (testing "single value condition"
-    (is (= (qm/->AttributeValueCondition :string "alpha" "a")
-           (p/parameter->condition :granule :attribute ["string,alpha,a"] {}))))
+    (let [expected-cond (qm/->AttributeValueCondition :string "alpha" "a")]
+      (is (= (qm/or-conds [expected-cond (qm/->CollectionQueryCondition expected-cond)])
+             (p/parameter->condition :granule :attribute ["string,alpha,a"] {})))))
   (testing "single range condition"
-    (is (= (qm/->AttributeRangeCondition :string "alpha" "a" "b")
-           (p/parameter->condition :granule :attribute ["string,alpha,a,b"] {})))))
+    (let [expected-cond (qm/->AttributeRangeCondition :string "alpha" "a" "b")]
+      (is (= (qm/or-conds [expected-cond (qm/->CollectionQueryCondition expected-cond)])
+             (p/parameter->condition :granule :attribute ["string,alpha,a,b"] {}))))))
 
 ;; TODO Add test for multiple
