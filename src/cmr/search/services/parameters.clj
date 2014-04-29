@@ -25,6 +25,7 @@
                 :temporal :temporal
                 :concept-id :string
                 :project :string
+                :archive-center :string
                 :two_d_coordinate_system_name :string}
 
    :granule {:granule_ur :string

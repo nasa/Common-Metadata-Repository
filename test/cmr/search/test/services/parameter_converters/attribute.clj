@@ -86,10 +86,28 @@
 
 (deftest parameter->condition-test
   (testing "single value condition"
-    (is (= (qm/->AttributeValueCondition :string "alpha" "a")
-           (p/parameter->condition :granule :attribute ["string,alpha,a"] {}))))
+    (let [expected-cond (qm/->AttributeValueCondition :string "alpha" "a")]
+      (is (= (qm/or-conds [expected-cond (qm/->CollectionQueryCondition expected-cond)])
+             (p/parameter->condition :granule :attribute ["string,alpha,a"] {})))))
   (testing "single range condition"
-    (is (= (qm/->AttributeRangeCondition :string "alpha" "a" "b")
-           (p/parameter->condition :granule :attribute ["string,alpha,a,b"] {})))))
-
-;; TODO Add test for multiple
+    (let [expected-cond (qm/->AttributeRangeCondition :string "alpha" "a" "b")]
+      (is (= (qm/or-conds [expected-cond (qm/->CollectionQueryCondition expected-cond)])
+             (p/parameter->condition :granule :attribute ["string,alpha,a,b"] {})))))
+  (testing "multiple conditions"
+    (testing "and conditions"
+      (let [strings ["string,alpha,a" "string,alpha,a,b"]
+            expected-cond (qm/and-conds [(qm/->AttributeValueCondition :string "alpha" "a")
+                                         (qm/->AttributeRangeCondition :string "alpha" "a" "b")])
+            expected-cond (qm/or-conds [expected-cond (qm/->CollectionQueryCondition expected-cond)])]
+        (is (= expected-cond
+               (p/parameter->condition :granule :attribute strings {:attribute {:or "false"}})))
+        (is (= expected-cond
+               (p/parameter->condition :granule :attribute strings {}))
+            "Multiple attributes should default to AND.")))
+    (testing "or conditions"
+      (let [strings ["string,alpha,a" "string,alpha,a,b"]
+            expected-cond (qm/or-conds [(qm/->AttributeValueCondition :string "alpha" "a")
+                                         (qm/->AttributeRangeCondition :string "alpha" "a" "b")])
+            expected-cond (qm/or-conds [expected-cond (qm/->CollectionQueryCondition expected-cond)])]
+        (is (= expected-cond
+               (p/parameter->condition :granule :attribute strings {:attribute {:or "true"}})))))))

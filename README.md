@@ -51,27 +51,37 @@ Provides a public search API for concepts in the CMR.
 #### Find granules by additional attribute
 
 Find an attribute attribute with name "PERCENTAGE" of type float with value 25.5
+
     curl "http://localhost:3003/granules?attribute\[\]=float,PERCENTAGE,25.5"
 
 Find an attribute attribute with name "PERCENTAGE" of type float in range 25.5 - 30.
+
     curl "http://localhost:3003/granules?attribute\[\]=float,PERCENTAGE,25.5,30"
 
 Find an attribute attribute with name "PERCENTAGE" of type float with min value 25.5.
+
     curl "http://localhost:3003/granules?attribute\[\]=float,PERCENTAGE,25.5,"
 
 Find an attribute attribute with name "PERCENTAGE" of type float with max value 30.
+
     curl "http://localhost:3003/granules?attribute\[\]=float,PERCENTAGE,,30"
 
 Find an additional attribute with name "X,Y,Z" with value 7.
+
     curl "http://localhost:3003/granules?attribute\[\]=float,X\,Y\,Z,7"
 
 Find an additional attribute with name "X\Y\Z" with value 7.
+
     curl "http://localhost:3003/granules?attribute\[\]=float,X\Y\Z,7"
+
+Multiple attributes can be provided. The default is for granules to match all the attribute parameters. This can be changed by specifying `or` option with `option[attribute][or]=true`.
+
 
 
 ### Find as XML
 TODO implement support for retrieving in XML.
 Also make sure enough information is returned that Catalog-REST can work.
+
     curl -H "Accept: application/xml" -i "http://localhost:3003/collections"
 
 

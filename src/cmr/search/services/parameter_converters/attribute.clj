@@ -131,14 +131,23 @@
 ;; Converts parameter and values into collection query condition
 (defmethod p/parameter->condition :attribute
   [concept-type param values options]
-
   (let [conditions (map parse-value values)
-        failed-conditions (seq (filter :errors conditions))]
-    (if failed-conditions
-      (errors/internal-error!
-        (format
-          "Found invalid value that should have been validated already. Values: %s"
-          (pr-str values)))
+        failed-conditions (seq (filter :errors conditions))
+        _ (when failed-conditions
+                           (errors/internal-error!
+                             (format
+                               "Found invalid value that should have been validated already. Values: %s"
+                               (pr-str values))))
+        operator (if (= "true" (get-in options [:attribute :or]))
+                   :or
+                   :and)
+        attrib-condition (qm/group-conds operator conditions)]
 
-      ;; TODO we'll or conditions for now. We have to make this selectable later.
-      (qm/or-conds conditions))))
+    (if (= :granule concept-type)
+      ;; Granule attribute queries will inherit values from their parent collections.
+      (qm/or-conds [attrib-condition (qm/->CollectionQueryCondition attrib-condition)])
+      attrib-condition)))
+
+
+
+
