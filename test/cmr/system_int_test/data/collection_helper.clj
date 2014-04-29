@@ -36,9 +36,9 @@
   (let [{:keys [entry-title short-name version-id long-name
                 beginning-date-time ending-date-time projects organizations]} values
         temporal (temporal beginning-date-time ending-date-time)]
-        (-> (first (gen/sample coll-gen/basic-collections 1))
-            (fill-in-value :entry-title entry-title)
-            (fill-in-product-value :short-name short-name)
-            (fill-in-product-value :version-id version-id)
-            (fill-in-product-value :long-name long-name)
-            (fill-in-value :temporal temporal))))
+    (-> (first (gen/sample coll-gen/basic-collections 1))
+        (fill-in-value :entry-title entry-title)
+        (fill-in-product-value :short-name short-name)
+        (fill-in-product-value :version-id version-id)
+        (fill-in-product-value :long-name long-name)
+        (fill-in-value :temporal temporal))))

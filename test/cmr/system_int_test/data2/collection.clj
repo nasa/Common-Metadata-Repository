@@ -15,7 +15,7 @@
   (product {:foo 4 :short-name "foo"})
 
   (type (first (cmr.umm.collection.ProductSpecificAttribute/getBasis)))
-(projects {:campaigns [{:short-name "xx" :long-name "lxx"} {:short-name "yy" :long-name "lyy"}]})
+  (projects {:campaigns [{:short-name "xx" :long-name "lxx"} {:short-name "yy" :long-name "lyy"}]})
   )
 
 (defn psa

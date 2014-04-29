@@ -13,21 +13,21 @@
   (let [coll1 (d/ingest "CMR_PROV1" (dc/collection {}))
         coll2 (d/ingest "CMR_PROV1" (dc/collection {:projects (dc/projects [])}))
         coll3 (d/ingest "CMR_PROV1" (dc/collection {:projects (dc/projects [{:short-name "ESI"
-                                                                 :long-name "Environmental Sustainability Index"}])}))
+                                                                             :long-name "Environmental Sustainability Index"}])}))
         coll4 (d/ingest "CMR_PROV2" (dc/collection {:projects (dc/projects [{:short-name "ESI"
-                                                                 :long-name "Environmental Sustainability Index"}
-                                                                {:short-name "Esi"
-                                                                 :long-name "Environmental Sustainability Index"}])}))
+                                                                             :long-name "Environmental Sustainability Index"}
+                                                                            {:short-name "Esi"
+                                                                             :long-name "Environmental Sustainability Index"}])}))
         coll5 (d/ingest "CMR_PROV2" (dc/collection {:projects (dc/projects [{:short-name "EVI"
-                                                                 :long-name "Environmental Vulnerability Index"}
-                                                                {:short-name "EPI"
-                                                                 :long-name "Environmental Performance Index"}])}))
+                                                                             :long-name "Environmental Vulnerability Index"}
+                                                                            {:short-name "EPI"
+                                                                             :long-name "Environmental Performance Index"}])}))
         coll6 (d/ingest "CMR_PROV2" (dc/collection {:projects (dc/projects [{:short-name "ESI"
-                                                                 :long-name "Environmental Sustainability Index"}
-                                                                {:short-name "EVI"
-                                                                 :long-name "Environmental Vulnerability Index"}
-                                                                {:short-name "EPI"
-                                                                 :long-name "Environmental Performance Index"}])}))]
+                                                                             :long-name "Environmental Sustainability Index"}
+                                                                            {:short-name "EVI"
+                                                                             :long-name "Environmental Vulnerability Index"}
+                                                                            {:short-name "EPI"
+                                                                             :long-name "Environmental Performance Index"}])}))]
 
     (index/flush-elastic-index)
 
