@@ -14,13 +14,13 @@
         concept {:concept-id concept-id
                  :provider-id provider-id}
         projects [{:short-name "ESI"
-                   :long-name "Environmental Sustainability Index"}
+                   :long-name "dummy"}
                   {:short-name "EVI"
-                   :long-name "Environmental Vulnerability Index"}
+                   :long-name "dummy"}
                   {:short-name "EPI"
-                   :long-name "Environmental Performance Index"}]
-        orgs [{:type "processing-center" :org-name "SEDAC PC"}
-              {:type "archive-center" :org-name "SEDAC AC"}]
+                   :long-name "dummy"}]
+        orgs [{:type :processing-center :org-name "SEDAC PC"}
+              {:type :archive-center :org-name "SEDAC AC"}]
         umm-concept {:entry-id "MINIMAL_1"
                      :entry-title dataset-id
                      :product {:short-name short-name
@@ -44,8 +44,8 @@
                   :end-date "1997-03-25T23:23:43.123Z"
                   :project-sn ["ESI" "EVI" "EPI"]
                   :project-sn.lowercase ["esi" "evi" "epi"]
-                  :archive-center "SEDAC AC"
-                  :archive-center.lowercase "sedac ac"
+                  :archive-center ["SEDAC AC"]
+                  :archive-center.lowercase ["sedac ac"]
                   :two-d-coord-name ["FOO" "Bar"]
                   :two-d-coord-name.lowercase  ["foo" "bar"]}
         actual (svc/concept->elastic-doc nil concept umm-concept)]

@@ -21,26 +21,24 @@
         orgs (:organizations umm-concept)
         archive-center-val (remove nil? (for [org orgs]
                                           (let [{:keys [type org-name]} org]
-                                            (when (= "archive-center" type) org-name))))
+                                            (when (= :archive-center type) org-name))))
         start-date (temporal/start-date :collection temporal)
         end-date (temporal/end-date :collection temporal)]
-    (merge
-      {:concept-id concept-id
-       :entry-title entry-title
-       :entry-title.lowercase (s/lower-case entry-title)
-       :provider-id provider-id
-       :provider-id.lowercase (s/lower-case provider-id)
-       :short-name short-name
-       :short-name.lowercase (s/lower-case short-name)
-       :version-id version-id
-       :version-id.lowercase (s/lower-case version-id)
-       :project-sn project-short-names
-       :project-sn.lowercase  (map s/lower-case project-short-names)
-       :two-d-coord-name two-d-coord-names
-       :two-d-coord-name.lowercase  (map s/lower-case two-d-coord-names)
-       :start-date (when start-date (f/unparse (f/formatters :date-time) start-date))
-       :end-date (when end-date (f/unparse (f/formatters :date-time) end-date))}
-      (when-not (empty? archive-center-val)
-        {:archive-center (first archive-center-val)
-         :archive-center.lowercase (s/lower-case (first archive-center-val))}))))
+    {:concept-id concept-id
+     :entry-title entry-title
+     :entry-title.lowercase (s/lower-case entry-title)
+     :provider-id provider-id
+     :provider-id.lowercase (s/lower-case provider-id)
+     :short-name short-name
+     :short-name.lowercase (s/lower-case short-name)
+     :version-id version-id
+     :version-id.lowercase (s/lower-case version-id)
+     :project-sn project-short-names
+     :project-sn.lowercase  (map s/lower-case project-short-names)
+     :two-d-coord-name two-d-coord-names
+     :two-d-coord-name.lowercase  (map s/lower-case two-d-coord-names)
+     :start-date (when start-date (f/unparse (f/formatters :date-time) start-date))
+     :end-date (when end-date (f/unparse (f/formatters :date-time) end-date))
+     :archive-center archive-center-val
+     :archive-center.lowercase (map s/lower-case archive-center-val)}))
 
