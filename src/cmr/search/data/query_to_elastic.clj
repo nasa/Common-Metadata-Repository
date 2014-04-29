@@ -12,17 +12,13 @@
                 :provider :provider-id
                 :short_name :short-name
                 :version :version-id
-                :granule_ur :granule-ur
-                :collection_concept_id :collection-concept-id
                 :project :project-sn
                 :two_d_coordinate_system_name :two-d-coord-name}
    :granule {:entry_title :entry-title
              :provider :provider-id
-             :short_name :short-name
-             :version :version-id
              :granule_ur :granule-ur
              :collection_concept_id :collection-concept-id
-             :project :project-ref}})
+             :project :project-refs}})
 
 (defn query-field->elastic-field
   "Returns the elastic field name for the equivalent query field name."
