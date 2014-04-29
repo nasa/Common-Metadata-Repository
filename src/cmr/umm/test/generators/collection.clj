@@ -41,10 +41,10 @@
   (ext-gen/string-ascii 1 80))
 
 (def archive-center-organizations
-  (ext-gen/model-gen c/->Organization (gen/return "archive-center") org-names))
+  (ext-gen/model-gen c/->Organization (gen/return :archive-center) org-names))
 
 (def processing-center-organizations
-  (ext-gen/model-gen c/->Organization (gen/return "processing-center") org-names))
+  (ext-gen/model-gen c/->Organization (gen/return :processing-center) org-names))
 
 (def collections
   (gen/fmap (fn [[entry-title product temporal psa campaigns two-ds proc-org archive-org]]
