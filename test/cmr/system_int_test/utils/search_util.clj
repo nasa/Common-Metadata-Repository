@@ -4,6 +4,7 @@
             [clj-http.client :as client]
             [clojure.string :as str]
             [cheshire.core :as json]
+            [cmr.common.concepts :as cs]
             [cmr.system-int-test.utils.url-helper :as url]))
 
 
@@ -18,6 +19,13 @@
         :body
         (json/decode true)
         :references)))
+
+(defn retrieve-concept-metadata-by-id
+  "Returns the concept metadata by searching metadata-db using the given cmr concept id"
+  [concept-id]
+  (let [concept-type (cs/concept-prefix->concept-type (subs concept-id 0 1))]
+    (client/get (url/retrieve-concept-url concept-type concept-id)
+                {:throw-exceptions false})))
 
 (defmacro get-search-failure-data
   "Executes a search and returns error data that was caught.

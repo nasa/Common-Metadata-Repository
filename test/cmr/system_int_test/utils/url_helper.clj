@@ -43,6 +43,10 @@
   [type]
   (format "http://localhost:%s/%ss" search-port (name type)))
 
+(defn retrieve-concept-url
+  [type concept-id]
+  (format "%s/%s" (search-url type) concept-id))
+
 (defn elastic-flush-url
   []
   (str elastic_root "/_flush"))
