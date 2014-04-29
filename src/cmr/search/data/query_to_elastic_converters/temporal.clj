@@ -87,4 +87,4 @@
     [concept-type temporal]
     (q/condition->elastic
       concept-type
-      (temporal->simple-conditions concept-type temporal))))
+      (temporal->simple-conditions temporal))))

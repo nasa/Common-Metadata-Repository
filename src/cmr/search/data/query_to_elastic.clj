@@ -27,12 +27,12 @@
 (defn query-field->elastic-field
   "Returns the elastic field name for the equivalent query field name."
   [concept-type field]
-  (get field-mappings field field))
+  (get-in field-mappings [concept-type field] field))
 
 (defprotocol ConditionToElastic
   "Defines a function to map from a query to elastic search query"
   (condition->elastic
-    [concept-type condition]
+    [condition concept-type]
     "Converts a query model condition into the equivalent elastic search filter"))
 
 (defn query->elastic
@@ -40,19 +40,19 @@
   [query]
   (let [{:keys [concept-type condition]} query]
     {:filtered {:query (q/match-all)
-                :filter (condition->elastic concept-type condition)}}))
+                :filter (condition->elastic condition concept-type)}}))
 
 (extend-protocol ConditionToElastic
   cmr.search.models.query.ConditionGroup
   (condition->elastic
     [concept-type {:keys [operation conditions]}]
     ;; TODO Performance Improvement: We should order the conditions within and/ors.
-    {operation {:filters (map (apply condition->elastic concept-type) conditions)}})
+    {operation {:filters (map #(condition->elastic % concept-type) conditions)}})
 
   cmr.search.models.query.StringCondition
   (condition->elastic
-    [concept-type {:keys [field value case-sensitive? pattern?]}]
-    (let [field (query-field->elastic-field concept-type field)
+    [{:keys [field value case-sensitive? pattern?]} concept-type]
+    (let [field (query-field->elastic-field field concept-type)
           field (if case-sensitive? field (str (name field) ".lowercase"))
           value (if case-sensitive? value (s/lower-case value))]
       (if pattern?
@@ -61,17 +61,17 @@
 
   cmr.search.models.query.ExistCondition
   (condition->elastic
-    [_ {:keys [field]}]
+    [{:keys [field]} _]
     {:exists {:field field}})
 
   cmr.search.models.query.MissingCondition
   (condition->elastic
-    [_ {:keys [field]}]
+    [{:keys [field]} _]
     {:missing {:field field}})
 
   cmr.search.models.query.DateRangeCondition
   (condition->elastic
-    [_ {:keys [field start-date end-date]}]
+    [{:keys [field start-date end-date]} _]
     (let [from-value (if start-date (h/utc-time->elastic-time start-date) h/earliest-echo-start-date)
           value {:from from-value}
           value (if end-date (assoc value :to (h/utc-time->elastic-time end-date)) value)]
