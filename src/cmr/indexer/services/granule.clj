@@ -80,6 +80,7 @@
      :granule-ur granule-ur
      :granule-ur.lowercase (s/lower-case granule-ur)
      :project-refs project-refs
+     :project-refs.lowercase (map s/lower-case project-refs)
      :attributes (psa-refs->elastic-docs parent-collection umm-granule)
      :start-date (when start-date (f/unparse (f/formatters :date-time) start-date))
      :end-date (when end-date (f/unparse (f/formatters :date-time) end-date))}))
