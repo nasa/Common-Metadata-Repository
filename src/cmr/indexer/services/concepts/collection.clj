@@ -4,7 +4,7 @@
             [clj-time.format :as f]
             [cmr.indexer.services.index-service :as idx]
             [cmr.umm.echo10.collection :as collection]
-            [cmr.indexer.services.temporal :as temporal]))
+            [cmr.indexer.services.concepts.temporal :as temporal]))
 
 (defmethod idx/parse-concept :collection
   [concept]

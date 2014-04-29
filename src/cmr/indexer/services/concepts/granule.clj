@@ -5,7 +5,7 @@
             [cmr.indexer.services.index-service :as idx]
             [cmr.umm.echo10.granule :as granule]
             [cmr.indexer.data.metadata-db :as mdb]
-            [cmr.indexer.services.temporal :as temporal]
+            [cmr.indexer.services.concepts.temporal :as temporal]
             [cmr.indexer.services.concepts.granule.attribute :as attrib]))
 
 (defmethod idx/parse-concept :granule
