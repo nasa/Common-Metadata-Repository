@@ -26,7 +26,7 @@
 
 (defn query-field->elastic-field
   "Returns the elastic field name for the equivalent query field name."
-  [concept-type field]
+  [field concept-type]
   (get-in field-mappings [concept-type field] field))
 
 (defprotocol ConditionToElastic
