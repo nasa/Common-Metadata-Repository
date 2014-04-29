@@ -15,7 +15,6 @@
    :granule_ur :granule-ur
    :collection_concept_id :collection-concept-id
    :campaign :project-sn
-   :archive-center :archive-center
    :two_d_coordinate_system_name :two-d-coord-name})
 
 (defn query-field->elastic-field
