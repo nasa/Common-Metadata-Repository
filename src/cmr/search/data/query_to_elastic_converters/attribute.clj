@@ -92,7 +92,7 @@
 (extend-protocol q2e/ConditionToElastic
   cmr.search.models.query.AttributeValueCondition
   (condition->elastic
-    [condition]
+    [concept-type condition]
     (let [value-filter (value-condition->value-filter condition)
           attrib-name (:name condition)]
       {:nested {:path "attributes"
@@ -101,7 +101,7 @@
 
   cmr.search.models.query.AttributeRangeCondition
   (condition->elastic
-    [condition]
+    [concept-type condition]
     (let [range-filter (range-condition->range-filter condition)
           attrib-name (:name condition)]
       {:nested {:path "attributes"

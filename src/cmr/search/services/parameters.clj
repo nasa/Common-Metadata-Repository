@@ -5,7 +5,8 @@
 
 (def param-aliases
   "A map of non UMM parameter names to their UMM fields."
-  {:dataset_id :entry_title})
+  {:dataset_id :entry_title
+   :campaign :project})
 
 (defn replace-parameter-aliases
   "Replaces aliases of parameter names"
@@ -23,7 +24,7 @@
                 :version :string
                 :temporal :temporal
                 :concept-id :string
-                :campaign :string
+                :project :string
                 :two_d_coordinate_system_name :string}
 
    :granule {:granule_ur :string
@@ -33,7 +34,8 @@
              :attribute :attribute
              :short_name :collection-query
              :version :collection-query
-             :temporal :temporal}})
+             :temporal :temporal
+             :project :string}})
 
 (defn- param-name->type
   "Returns the query condition type based on the given concept-type and param-name."

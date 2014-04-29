@@ -8,43 +8,51 @@
 (def field-mappings
   "A map of fields in the query to the field name in elastic. Field names are excluded from this
   map if the query field name matches the field name in elastic search."
-  {:entry_title :entry-title
-   :provider :provider-id
-   :short_name :short-name
-   :version :version-id
-   :granule_ur :granule-ur
-   :collection_concept_id :collection-concept-id
-   :campaign :project-sn
-   :two_d_coordinate_system_name :two-d-coord-name})
+  {:collection {:entry_title :entry-title
+                :provider :provider-id
+                :short_name :short-name
+                :version :version-id
+                :granule_ur :granule-ur
+                :collection_concept_id :collection-concept-id
+                :project :project-sn
+                :two_d_coordinate_system_name :two-d-coord-name}
+   :granule {:entry_title :entry-title
+             :provider :provider-id
+             :short_name :short-name
+             :version :version-id
+             :granule_ur :granule-ur
+             :collection_concept_id :collection-concept-id
+             :project :project-ref}})
 
 (defn query-field->elastic-field
   "Returns the elastic field name for the equivalent query field name."
-  [field]
+  [concept-type field]
   (get field-mappings field field))
 
 (defprotocol ConditionToElastic
   "Defines a function to map from a query to elastic search query"
   (condition->elastic
-    [c]
+    [concept-type condition]
     "Converts a query model condition into the equivalent elastic search filter"))
 
 (defn query->elastic
   "Converts a query model into an elastic search query"
   [query]
-  {:filtered {:query (q/match-all)
-              :filter (condition->elastic (:condition query))}})
+  (let [{:keys [concept-type condition]} query]
+    {:filtered {:query (q/match-all)
+                :filter (condition->elastic concept-type condition)}}))
 
 (extend-protocol ConditionToElastic
   cmr.search.models.query.ConditionGroup
   (condition->elastic
-    [{:keys [operation conditions]}]
+    [concept-type {:keys [operation conditions]}]
     ;; TODO Performance Improvement: We should order the conditions within and/ors.
-    {operation {:filters (map condition->elastic conditions)}})
+    {operation {:filters (map (apply condition->elastic concept-type) conditions)}})
 
   cmr.search.models.query.StringCondition
   (condition->elastic
-    [{:keys [field value case-sensitive? pattern?]}]
-    (let [field (query-field->elastic-field field)
+    [concept-type {:keys [field value case-sensitive? pattern?]}]
+    (let [field (query-field->elastic-field concept-type field)
           field (if case-sensitive? field (str (name field) ".lowercase"))
           value (if case-sensitive? value (s/lower-case value))]
       (if pattern?
@@ -53,17 +61,17 @@
 
   cmr.search.models.query.ExistCondition
   (condition->elastic
-    [{:keys [field]}]
+    [_ {:keys [field]}]
     {:exists {:field field}})
 
   cmr.search.models.query.MissingCondition
   (condition->elastic
-    [{:keys [field]}]
+    [_ {:keys [field]}]
     {:missing {:field field}})
 
   cmr.search.models.query.DateRangeCondition
   (condition->elastic
-    [{:keys [field start-date end-date]}]
+    [_ {:keys [field start-date end-date]}]
     (let [from-value (if start-date (h/utc-time->elastic-time start-date) h/earliest-echo-start-date)
           value {:from from-value}
           value (if end-date (assoc value :to (h/utc-time->elastic-time end-date)) value)]
@@ -71,10 +79,10 @@
 
   cmr.search.models.query.MatchAllCondition
   (condition->elastic
-    [_]
+    [_ _]
     {:match_all {}})
 
   cmr.search.models.query.MatchNoneCondition
   (condition->elastic
-    [_]
+    [_ _]
     {:term {:match_none "none"}}))
