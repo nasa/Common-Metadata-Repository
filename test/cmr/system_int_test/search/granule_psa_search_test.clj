@@ -109,6 +109,23 @@
            ;; tests by value inheritance
            "string,charlie,foo" [gran3 gran4]))
 
+    (testing "searching with multiple attribute conditions"
+      (are [v items operation]
+           (d/refs-match?
+             items
+             (search/find-refs
+               :granule
+               (merge
+                 {"attribute[]" v}
+                 (when operation
+                   {"options[attribute][or]" (= operation :or)}))))
+
+           ["string,alpha,ab" "string,bravo,,bc"] [gran1 gran2 gran3] :or
+           ["string,alpha,ab" "string,bravo,,bc"] [] :and
+           ["string,alpha,ab" "string,bravo,bc,"] [gran1] :and
+           ; and is the default
+           ["string,alpha,ab" "string,bravo,,bc"] [] nil ))
+
     (testing "search by range"
       (are [v items]
            (d/refs-match? items (search/find-refs :granule {"attribute[]" v}))
