@@ -27,20 +27,20 @@
       (let [references (search/find-refs :collection
                                          {"two_d_coordinate_system_name[]" "one CALIPSO"})]
         (is (d/refs-match? [coll1] references))))
-    #_(testing "search by two d coordinate system name - multiple values."
+    (testing "search by two d coordinate system name - multiple values."
       (let [references (search/find-refs :collection
                                          {"two_d_coordinate_system_name[]" ["one CALIPSO" "three Bravo"]})]
         (is (d/refs-match? [coll1 coll4] references))))
-    #_(testing "search by two d coordinate system name - wildcards."
+    (testing "search by two d coordinate system name - wildcards."
       (let [references (search/find-refs :collection
                                          {"two_d_coordinate_system_name[]" "three *"
                                           "options[two_d_coordinate_system_name][pattern]" "true"})]
         (is (d/refs-match? [coll3 coll4] references))))
-    #_(testing "search by two d coordinate system name - no match."
+    (testing "search by two d coordinate system name - no match."
       (let [references (search/find-refs :collection
                                          {"two_d_coordinate_system_name[]" "NO MATCH"})]
         (is (d/refs-match? [] references))))
-    #_(testing "search by two d coordinate system name - multiple in collection."
+    (testing "search by two d coordinate system name - multiple in collection."
       (let [references (search/find-refs :collection
                                          {"two_d_coordinate_system_name[]" "two CALIPSO"})]
         (is (d/refs-match? [coll2 coll5] references))))))
