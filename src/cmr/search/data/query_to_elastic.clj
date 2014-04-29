@@ -45,7 +45,7 @@
 (extend-protocol ConditionToElastic
   cmr.search.models.query.ConditionGroup
   (condition->elastic
-    [concept-type {:keys [operation conditions]}]
+    [{:keys [operation conditions]} concept-type]
     ;; TODO Performance Improvement: We should order the conditions within and/ors.
     {operation {:filters (map #(condition->elastic % concept-type) conditions)}})
 
