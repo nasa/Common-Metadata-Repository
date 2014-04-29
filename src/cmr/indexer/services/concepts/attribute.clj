@@ -1,4 +1,4 @@
-(ns cmr.indexer.services.concepts.granule.attribute
+(ns cmr.indexer.services.concepts.attribute
   "Contains functions for converting attributes into a elastic documents"
   (:require [clj-time.format :as f]
             [cmr.umm.echo10.collection.product-specific-attribute :as coll-psa]
@@ -15,15 +15,21 @@
 
 (defmethod value->elastic-value :datetime
   [type value]
+  ;; clj-time treats nil values as *now*. Adding explicit checks here to avoid weird errors.
+  (when-not value (errors/internal-error! "Value is null"))
   (f/unparse (f/formatters :date-time) value))
 
 (defmethod value->elastic-value :time
   [type value]
+  ;; clj-time treats nil values as *now*. Adding explicit checks here to avoid weird errors.
+  (when-not value (errors/internal-error! "Value is null"))
   ;; This relies on the fact that times are parsed into times on day 1970-01-01
   (f/unparse (f/formatters :date-time) value))
 
 (defmethod value->elastic-value :date
   [type value]
+  ;; clj-time treats nil values as *now*. Adding explicit checks here to avoid weird errors.
+  (when-not value (errors/internal-error! "Value is null"))
   (f/unparse (f/formatters :date-time) value))
 
 (def type->field-name
@@ -40,7 +46,7 @@
    :float "float-value"})
 
 (defn psa-ref->elastic-doc
-  "Converts a PSA ref into the correct elastic document"
+  "Converts a PSA ref into the portion going in an elastic document"
   [type psa-ref]
   (let [field-name (type->field-name type)]
     {:name (:name psa-ref)
@@ -61,3 +67,20 @@
                                                (:concept-id collection))))
              (psa-ref->elastic-doc type psa-ref)))
          (:product-specific-attributes granule))))
+
+(defn psa->elastic-doc
+  "Converts a PSA into the portion going in an elastic document"
+  [psa]
+  (let [{:keys [name data-type value]} psa
+        field-name (type->field-name data-type)]
+    {:name name
+     field-name (value->elastic-value data-type value)}))
+
+(defn psas->elastic-docs
+  "Converts the psa into a list of elastic documents"
+  [collection]
+  (map psa->elastic-doc
+       (filter :value ; only index those with a value
+               (:product-specific-attributes collection))))
+
+
