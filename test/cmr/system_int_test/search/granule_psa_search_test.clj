@@ -58,11 +58,38 @@
          (search/get-search-failure-data
            (search/find-refs :granule {"attribute" "string,alpha,a"})))))
 
+;; These are for boolean, datetime_string, time_string, and date_string attribute types which are all indexed and searchable as strings.
+(deftest indexed-as-string-psas-search-test
+  (let [psa1 (dc/psa "bool" :boolean)
+        psa2 (dc/psa "dts" :datetime-string)
+        psa3 (dc/psa "ts" :time-string)
+        psa4 (dc/psa "ds" :date-string)
+        coll (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2 psa3 psa4]}))
+        gran1 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes [(dg/psa "bool" [true])]}))
+        gran2 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes [(dg/psa "bool" [false])]}))
+
+        gran3 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes [(dg/psa "dts" ["2012-01-01T01:02:03Z"])]}))
+        gran4 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes [(dg/psa "dts" ["2012-01-02T01:02:03Z"])]}))
+
+        gran5 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes [(dg/psa "ts" ["01:02:03Z"])]}))
+        gran6 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes [(dg/psa "ts" ["01:02:04Z"])]}))
+
+        gran7 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes [(dg/psa "ds" ["2012-01-01"])]}))
+        gran8 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes [(dg/psa "ds" ["2012-01-02"])]}))]
+    (index/flush-elastic-index)
+    (are [v items]
+         (d/refs-match? items (search/find-refs :granule {"attribute[]" v}))
+         "string,bool,true" [gran1]
+         "string,bool,false" [gran2]
+
+         "string,dts,2012-01-01T01:02:03Z" [gran3]
+         "string,ts,01:02:03Z" [gran5]
+         "string,ds,2012-01-01" [gran7])))
 
 (deftest string-psas-search-test
   (let [psa1 (dc/psa "alpha" :string)
         psa2 (dc/psa "bravo" :string)
-        psa3 (dc/psa "charlie" :string)
+        psa3 (dc/psa "charlie" :string "foo")
         coll1 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2]}))
         gran1 (d/ingest "PROV1" (dg/granule coll1 {:product-specific-attributes [(dg/psa "alpha" ["ab" "bc"])
                                                                                  (dg/psa "bravo" ["cd" "bf"])]}))
@@ -72,15 +99,15 @@
         gran3 (d/ingest "PROV1" (dg/granule coll2 {:product-specific-attributes [(dg/psa "bravo" ["aa" "bf"])]}))
         gran4 (d/ingest "PROV1" (dg/granule coll2 {:product-specific-attributes [(dg/psa "charlie" ["az"])]}))]
     (index/flush-elastic-index)
-
-    ;; TODO add additional deftest for datetime_string date_string, and time_string that they're treated as strings.
-
     (testing "search by value"
       (are [v items]
            (d/refs-match? items (search/find-refs :granule {"attribute[]" v}))
            "string,alpha,ab" [gran1]
            "string,alpha,c" []
-           "string,bravo,bf" [gran1 gran3]))
+           "string,bravo,bf" [gran1 gran3]
+
+           ;; tests by value inheritance
+           "string,charlie,foo" [gran3 gran4]))
 
     (testing "search by range"
       (are [v items]
@@ -97,12 +124,15 @@
            "string,bravo,bc," [gran1 gran3]
 
            ;; only max range provided
-           "string,bravo,,bc" [gran2 gran3]))))
+           "string,bravo,,bc" [gran2 gran3]
+
+           ;; Range value inheritance
+           "string,charlie,foa,foz" [gran3 gran4]))))
 
 (deftest float-psas-search-test
   (let [psa1 (dc/psa "alpha" :float)
         psa2 (dc/psa "bravo" :float)
-        psa3 (dc/psa "charlie" :float)
+        psa3 (dc/psa "charlie" :float 45)
         coll1 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2]}))
         gran1 (d/ingest "PROV1" (dg/granule coll1 {:product-specific-attributes [(dg/psa "alpha" [10.5 123])
                                                                                  (dg/psa "bravo" [-12])]}))
@@ -119,7 +149,8 @@
            (d/refs-match? items (search/find-refs :granule {"attribute[]" v}))
            "float,bravo,123" [gran2, gran3]
            "float,alpha,10" []
-           "float,bravo,-12" [gran1]))
+           "float,bravo,-12" [gran1]
+           "float,charlie,45" [gran3 gran4]))
 
     (testing "search by range"
       (are [v items]
@@ -136,12 +167,13 @@
            "float,bravo,120," [gran2 gran3]
 
            ;; only max range provided
-           "float,bravo,,13.6" [gran1 gran2]))))
+           "float,bravo,,13.6" [gran1 gran2]
+           "float,charlie,44,45.1" [gran3 gran4]))))
 
 (deftest int-psas-search-test
   (let [psa1 (dc/psa "alpha" :int)
         psa2 (dc/psa "bravo" :int)
-        psa3 (dc/psa "charlie" :int)
+        psa3 (dc/psa "charlie" :int 45)
         coll1 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2]}))
         gran1 (d/ingest "PROV1" (dg/granule coll1 {:product-specific-attributes [(dg/psa "alpha" [10 123])
                                                                                  (dg/psa "bravo" [-12])]}))
@@ -158,7 +190,9 @@
            (d/refs-match? items (search/find-refs :granule {"attribute[]" v}))
            "int,bravo,123" [gran2, gran3]
            "int,alpha,11" []
-           "int,bravo,-12" [gran1]))
+           "int,bravo,-12" [gran1]
+           ;; inherited from collection
+           "int,charlie,45" [gran3 gran4]))
 
     (testing "search by range"
       (are [v items]
@@ -175,22 +209,29 @@
            "int,bravo,120," [gran2 gran3]
 
            ;; only max range provided
-           "int,bravo,,12" [gran1 gran2]))))
+           "int,bravo,,12" [gran1 gran2]
+
+           ;; range inheritance
+           "int,charlie,44,46" [gran3,gran4]))))
 
 (defn make-datetime
   "Creates a datetime from a number added onto a base datetime"
-  [n]
-  (when n
-    (f/unparse (f/formatters :date-time)
-               (t/plus (t/date-time 2012 1 1 0 0 0)
-                       (t/days n)
-                       (t/hours n)))))
+  ([n]
+   (make-datetime n true))
+  ([n to-string?]
+   (when n
+     (let [date (t/plus (t/date-time 2012 1 1 0 0 0)
+                        (t/days n)
+                        (t/hours n))]
+       (if to-string?
+         (f/unparse (f/formatters :date-time) date)
+         date)))))
 
 
 (deftest datetime-psas-search-test
   (let [psa1 (dc/psa "alpha" :datetime)
         psa2 (dc/psa "bravo" :datetime)
-        psa3 (dc/psa "charlie" :datetime)
+        psa3 (dc/psa "charlie" :datetime (make-datetime 45 false))
         coll1 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2]}))
         gran1 (d/ingest "PROV1" (dg/granule coll1 {:product-specific-attributes
                                                    [(dg/psa "alpha"
@@ -218,7 +259,8 @@
              items (search/find-refs :granule {"attribute[]" (str v (make-datetime n))}))
            "datetime,bravo," 123 [gran2, gran3]
            "datetime,alpha," 11 []
-           "datetime,bravo," 0 [gran1]))
+           "datetime,bravo," 0 [gran1]
+           "datetime,charlie," 45 [gran3 gran4]))
 
     (testing "search by range"
       (are [v min-n max-n items]
@@ -238,18 +280,27 @@
            "datetime,bravo," 120 nil [gran2 gran3]
 
            ;; only max range provided
-           "datetime,bravo," nil 12 [gran1 gran2]))))
+           "datetime,bravo," nil 12 [gran1 gran2]
+
+           "datetime,charlie," 44 45 [gran3 gran4]))))
 
 (defn make-time
   "Creates a datetime from a number added onto a base datetime"
-  [n]
-  (when n
-    (format "01:%02d:00.0" n)))
+  ([n]
+   (make-time n true))
+  ([n to-string?]
+   (when n
+     (let [date (t/plus (t/date-time 1970 1 1 0 0 0)
+                        (t/minutes n)
+                        (t/seconds n))]
+       (if to-string?
+         (f/unparse (f/formatters :hour-minute-second) date)
+         date)))))
 
 (deftest time-psas-search-test
   (let [psa1 (dc/psa "alpha" :time)
         psa2 (dc/psa "bravo" :time)
-        psa3 (dc/psa "charlie" :time)
+        psa3 (dc/psa "charlie" :time (make-time 45 false))
         coll1 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2]}))
         gran1 (d/ingest "PROV1" (dg/granule coll1 {:product-specific-attributes
                                                    [(dg/psa "alpha"
@@ -277,7 +328,8 @@
              items (search/find-refs :granule {"attribute[]" (str v (make-time n))}))
            "time,bravo," 23 [gran2, gran3]
            "time,alpha," 11 []
-           "time,bravo," 0 [gran1]))
+           "time,bravo," 0 [gran1]
+           "time,charlie," 45 [gran3 gran4]))
 
     (testing "search by range"
       (are [v min-n max-n items]
@@ -297,20 +349,26 @@
            "time,bravo," 20 nil [gran2 gran3]
 
            ;; only max range provided
-           "time,bravo," nil 12 [gran1 gran2]))))
+           "time,bravo," nil 12 [gran1 gran2]
+
+           "time,charlie," 44 45 [gran3 gran4]))))
 
 (defn make-date
   "Creates a datetime from a number added onto a base datetime"
-  [n]
-  (when n
-    (f/unparse (f/formatters :date)
-               (t/plus (t/date-time 2012 1 1 0 0 0)
-                       (t/days n)))))
+  ([n]
+   (make-date n true))
+  ([n to-string?]
+   (when n
+     (let [date (t/plus (t/date-time 2012 1 1 0 0 0)
+                        (t/days n))]
+       (if to-string?
+         (f/unparse (f/formatters :date) date)
+         date)))))
 
 (deftest date-psas-search-test
   (let [psa1 (dc/psa "alpha" :date)
         psa2 (dc/psa "bravo" :date)
-        psa3 (dc/psa "charlie" :date)
+        psa3 (dc/psa "charlie" :date (make-date 45 false))
         coll1 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2]}))
         gran1 (d/ingest "PROV1" (dg/granule coll1 {:product-specific-attributes
                                                    [(dg/psa "alpha"
@@ -338,7 +396,8 @@
              items (search/find-refs :granule {"attribute[]" (str v (make-date n))}))
            "date,bravo," 23 [gran2, gran3]
            "date,alpha," 11 []
-           "date,bravo," 0 [gran1]))
+           "date,bravo," 0 [gran1]
+           "date,charlie," 45 [gran3 gran4]))
 
     (testing "search by range"
       (are [v min-n max-n items]
@@ -358,7 +417,9 @@
            "date,bravo," 20 nil [gran2 gran3]
 
            ;; only max range provided
-           "date,bravo," nil 12 [gran1 gran2]))))
+           "date,bravo," nil 12 [gran1 gran2]
+
+           "date,charlie," 44 45 [gran3 gran4]))))
 
 
 

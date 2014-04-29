@@ -20,11 +20,14 @@
 
 (defn psa
   "Creates product specific attribute"
-  [name type]
-  (c/map->ProductSpecificAttribute
-    {:name name
-     :description "Generated"
-     :data-type type}))
+  ([name type]
+   (psa name type nil))
+  ([name type value]
+   (c/map->ProductSpecificAttribute
+     {:name name
+      :description "Generated"
+      :data-type type
+      :value value})))
 
 (defn two-d
   "Creates two-d-coordinate-system specific attribute"
