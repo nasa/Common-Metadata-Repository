@@ -19,7 +19,7 @@
 
 (use-fixtures :each (ingest/reset-fixture "PROV1"))
 
-(deftest search-with-page-size
+#_(deftest search-with-page-size
   (create-collections)
   (testing "Search with page_size."
     (let [references (search/find-refs :collection {:provider "PROV1"
@@ -78,7 +78,7 @@
                                                       :page_num 2})]
         (is (= (map :short-name [col5 col4 col3 col2 col1])
                (map :short-name references)))))
-    (testing "page_num less than one."
+    #_(testing "page_num less than one."
       (try
         (search/find-refs :collection {:provider "PROV1"
                                        :page_size 5
@@ -88,7 +88,7 @@
                 body (get-in (ex-data e) [:object :body])]
             (is (= 422 status))
             (is (re-matches #".*page_num must be a number greater than or equal to 1.*" body))))))
-    (testing "Non-numeric page_num."
+    #_(testing "Non-numeric page_num."
       (try
         (search/find-refs :collection {:provider "PROV1"
                                        :page_size 5
