@@ -16,11 +16,11 @@
         coll4 (d/ingest "CMR_PROV1" (dc/collection {:organizations (dc/orgs [{:type "archive-center" :org-name "Larc"}])}))
 
         coll5 (d/ingest "CMR_PROV2" (dc/collection {:organizations (dc/orgs [{:type "archive-center" :org-name "SEDAC AC"}
-                                                                {:type "processing-center" :org-name "SEDAC PC"}])}))
+                                                                             {:type "processing-center" :org-name "SEDAC PC"}])}))
         coll6 (d/ingest "CMR_PROV2" (dc/collection {:organizations (dc/orgs [{:type "archive-center" :org-name "Larc"}])}))
 
         coll7 (d/ingest "CMR_PROV2" (dc/collection {:organizations (dc/orgs [{:type "archive-center" :org-name "Sedac AC"}
-                                                                {:type "processing-center" :org-name "Sedac"}])}))]
+                                                                             {:type "processing-center" :org-name "Sedac"}])}))]
 
     (index/flush-elastic-index)
 
