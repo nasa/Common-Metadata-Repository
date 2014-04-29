@@ -59,10 +59,23 @@
    long-name
    ])
 
+
 (defrecord TwoDCoordinateSystem
   [
    ;; maps to Echo10 Collection/TwoDCoordinateSystems/TwoDCoordinateSystem/TwoDCoordinateSystemName
    name
+   ])
+
+(def organization-types [:archive-center :processing-center])
+
+;; See CMR-202 issue description
+(defrecord Organization
+  [
+   ;; maps to Echo10 Collection/ArchiveCenter | Collection/ProcessingCenter element names
+   type
+
+   ;; maps to Echo10 Collection/ArchiveCenter | Collection/ProcessingCenter element values
+   org-name
    ])
 
 (defrecord UmmCollection
@@ -83,4 +96,7 @@
    projects
 
    two-d-coordinate-systems
+
+   ;; Records Archive Center, Processing Center
+   organizations
    ])

@@ -30,23 +30,40 @@
 (def campaigns
   (ext-gen/model-gen c/->Project campaign-short-names (ext-gen/optional campaign-long-names)))
 
+
 (def two-d-names
   (ext-gen/string-ascii 1 80))
 
 (def two-d-coordinate-systems
   (ext-gen/model-gen c/->TwoDCoordinateSystem two-d-names))
 
+(def org-names
+  (ext-gen/string-ascii 1 80))
+
+(def archive-center-org-type (gen/elements ["archive-center"]))
+
+(def processing-center-org-type (gen/elements ["processing-center"]))
+
+(def archive-center-organizations
+  (ext-gen/model-gen c/->Organization archive-center-org-type org-names))
+
+(def processing-center-organizations
+  (ext-gen/model-gen c/->Organization processing-center-org-type org-names))
+
 (def collections
-  (gen/fmap (fn [[entry-title product temporal psa campaigns two-ds]]
-              (let [entry-id (str (:short-name product) "_" (:version-id product))]
-                (c/->UmmCollection entry-id entry-title product temporal psa campaigns two-ds)))
+  (gen/fmap (fn [[entry-title product temporal psa campaigns two-ds proc-org archive-org]]
+              (let [entry-id (str (:short-name product) "_" (:version-id product))
+                    orgs [proc-org archive-org]]
+                (c/->UmmCollection entry-id entry-title product temporal psa campaigns two-ds (remove nil? orgs))))
             (gen/tuple
               entry-titles
               products
               t/temporals
               (ext-gen/nil-if-empty (gen/vector psa/product-specific-attributes 0 10))
               (ext-gen/nil-if-empty (gen/vector campaigns 0 4))
-              (ext-gen/nil-if-empty (gen/vector two-d-coordinate-systems 0 3)))))
+              (ext-gen/nil-if-empty (gen/vector two-d-coordinate-systems 0 3))
+              (ext-gen/optional processing-center-organizations)
+              (ext-gen/optional archive-center-organizations))))
 
 ; Generator for basic collections that only have the bare minimal fields
 ;; DEPRECATED - this will go away in the future. Don't use it.
@@ -58,4 +75,16 @@
                    :entry-title entry-title
                    :product product})))
             (gen/tuple entry-titles products)))
+
+
+(comment
+  ;;;;;;;;;;;;
+  (clojure.repl/dir clojure.test.check.generators)
+  (ordered-orgs (last (gen/sample  (gen/vector organizations 0 2) 1)))
+
+  (gen/sample collections 1)
+  ;;;;;;;;;;;;
+  )
+
+
 
