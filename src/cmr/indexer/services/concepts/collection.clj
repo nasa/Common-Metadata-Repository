@@ -1,4 +1,4 @@
-(ns cmr.indexer.services.collection
+(ns cmr.indexer.services.concepts.collection
   "Contains functions to parse and convert collection concept"
   (:require [clojure.string :as s]
             [clj-time.format :as f]

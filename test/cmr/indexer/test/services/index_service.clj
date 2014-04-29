@@ -1,9 +1,9 @@
-(ns ^{:doc "Integration test for elasticsearch data service"}
-  cmr.indexer.services.index-service-test
+(ns cmr.indexer.test.services.index-service
+  "Integration test for elasticsearch data service"
   (:require [clojure.test :refer :all]
             [clj-time.core :as t]
             [cmr.indexer.services.index-service :as svc]
-            [cmr.indexer.services.collection]))
+            [cmr.indexer.services.concepts.collection]))
 
 (deftest concept->elastic-doc-test
   (let [short-name "MINIMAL"
