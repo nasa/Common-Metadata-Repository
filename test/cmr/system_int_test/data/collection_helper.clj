@@ -41,6 +41,4 @@
             (fill-in-product-value :short-name short-name)
             (fill-in-product-value :version-id version-id)
             (fill-in-product-value :long-name long-name)
-            (fill-in-value :temporal temporal)
-            (fill-in-value :projects projects)
-            (fill-in-value :organizations organizations))))
+            (fill-in-value :temporal temporal))))
