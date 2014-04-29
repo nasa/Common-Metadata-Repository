@@ -106,6 +106,27 @@ Impacts to Ingest
       }
      }
 
+
+### Setting up the database
+1. Create the user by executing the create_user.clj file from the project
+directory
+
+```
+    lein exec ./support/create_user.clj
+```
+
+2. Run the migration scripts
+
+```
+  lein migrate
+```
+
+You can use `lein migrate -version version` to restore the database to
+a given version. `lein migrate -version 0` will clean the datbase
+completely.
+
+You can remove the user by executing `lein exec ./support/drop_user.clj`.
+
 General Workflow
 
 Update Flow
