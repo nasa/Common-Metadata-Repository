@@ -7,7 +7,8 @@
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.services.errors :as errors]
             [cmr.indexer.data.index-set :as idx-set]
-            [cmr.system-trace.core :refer [deftracefn]]))
+            [cmr.system-trace.core :refer [deftracefn]]
+            [cheshire.core :as json]))
 
 
 (defn- connect-with-config
@@ -60,12 +61,12 @@
   "Attempt to perform the operation in Elasticsearch, handles exceptions.
   f is the operation function to Call
   es-index is the elasticsearch index name
-  es-mapping is the elasticsearch mapping
+  es-type is the elasticsearch mapping
   es-doc is the elasticsearch document to be passed on to elasticsearch
   revision-id is the version of the document in elasticsearch"
-  [f es-index es-mapping es-doc revision-id]
+  [f es-index es-type es-doc revision-id]
   (try
-    (f es-index es-mapping (:concept-id es-doc) es-doc :version revision-id :version_type "external")
+    (f es-index es-type (:concept-id es-doc) es-doc :version revision-id :version_type "external")
     (catch clojure.lang.ExceptionInfo e
       (let [err-msg (get-in (ex-data e) [:object :body])
             msg (str "Call to Elasticsearch caught exception " err-msg)]
@@ -73,8 +74,8 @@
 
 (deftracefn save-document-in-elastic
   "Save the document in Elasticsearch, raise error if failed."
-  [context es-index es-mapping es-doc revision-id ignore-conflict]
-  (let [result (try-elastic-operation doc/put es-index es-mapping es-doc revision-id)]
+  [context es-index es-type es-doc revision-id ignore-conflict]
+  (let [result (try-elastic-operation doc/put es-index es-type es-doc revision-id)]
     (if (:error result)
       (if (= 409 (:status result))
         (if ignore-conflict
@@ -84,18 +85,18 @@
 
 (deftracefn get-document
   "Get the document from Elasticsearch, raise error if failed."
-  [context es-index es-mapping id]
-  (doc/get es-index es-mapping id))
+  [context es-index es-type id]
+  (doc/get es-index es-type id))
 
-(deftracefn delete-document-in-elastic
+(deftracefn delete-document
   "Delete the document from Elasticsearch, raise error if failed."
-  [context es-config es-index es-mapping id revision-id ignore-conflict]
+  [context es-config es-index es-type id revision-id ignore-conflict]
   ;; Cannot use elastisch for deletion as we require special headers on delete
-  #_(let [result (try-elastic-operation doc/delete es-index es-mapping id)]
+  #_(let [result (try-elastic-operation doc/delete es-index es-type id)]
       (if (not (:ok result))
         (errors/internal-error! (str "Delete from Elasticsearch failed " (str result)))))
   (let [{:keys [host port admin-token]} es-config
-        delete-url (format "http://%s:%s/%s/%s/%s?version=%s&version_type=external" host port es-index es-mapping id revision-id)
+        delete-url (format "http://%s:%s/%s/%s/%s?version=%s&version_type=external" host port es-index es-type id revision-id)
         response (client/delete delete-url
                                 {:headers {"Authorization" admin-token
                                            "Confirm-delete-action" "true"}
@@ -107,6 +108,16 @@
           (info (str "Ignore conflict: " (str response)))
           (errors/throw-service-error :conflict (str "Delete from Elasticsearch failed " (str response))))
         (errors/internal-error! (str "Delete from Elasticsearch failed " (str response)))))))
+
+(deftracefn delete-by-query
+  "Delete document that match the given query"
+  [context es-config es-index es-type query]
+  (let [{:keys [host port admin-token]} es-config
+        delete-url (format "http://%s:%s/%s/%s/_query" host port es-index es-type)]
+    (client/delete delete-url
+                   {:headers {"Authorization" admin-token
+                              "Confirm-delete-action" "true"}
+                    :body (json/generate-string {:query query})})))
 
 
 

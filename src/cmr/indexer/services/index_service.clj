@@ -54,10 +54,17 @@
         concept-type (concept-id->type id)
         concept-indices (idx-set/get-concept-type-index-names context)
         concept-mapping-types (idx-set/get-concept-mapping-types context)]
-    (es/delete-document-in-elastic
+    (es/delete-document
       context elastic-config
       (concept-indices concept-type)
-      (concept-mapping-types concept-type) id revision-id ignore-conflict)))
+      (concept-mapping-types concept-type) id revision-id ignore-conflict)
+    (when (= :collection concept-type)
+      (es/delete-by-query
+        context
+        elastic-config
+        (concept-indices :granule)
+        (concept-mapping-types :granule)
+        {:term {:collection-concept-id id}}))))
 
 
 (deftracefn reset-indexes

@@ -127,9 +127,9 @@
 (deftest delete-with-increment-versions-test
   (testing "Delete with increment versions"
     (es/save-document-in-elastic {} "tests" "collection" (es-doc) 0 false)
-    (es/delete-document-in-elastic {} test-config "tests" "collection" "C1234-PROV1" "1" false)
+    (es/delete-document {} test-config "tests" "collection" "C1234-PROV1" "1" false)
     (assert-delete "C1234-PROV1")
-    (es/delete-document-in-elastic {} test-config "tests" "collection" "C1234-PROV1" "8" false)
+    (es/delete-document {} test-config "tests" "collection" "C1234-PROV1" "8" false)
     (assert-delete "C1234-PROV1")))
 
 ; TODO this test needs the new elasticsearch external_gte feature to pass
@@ -138,18 +138,18 @@
 #_(deftest delete-with-equal-versions-test
     (testing "Delete with equal versions"
       (es/save-document-in-elastic {} "tests" "collection" (es-doc) 0 false)
-      (es/delete-document-in-elastic {} test-config "tests" "collection" "C1234-PROV1" "0" false)
+      (es/delete-document {} test-config "tests" "collection" "C1234-PROV1" "0" false)
       (assert-delete "C1234-PROV1")))
 
 (deftest delete-with-earlier-versions-test
   (testing "Delete with earlier versions ignore-conflict false"
     (es/save-document-in-elastic {} "tests" "collection" (es-doc) 2 false)
     (try
-      (es/delete-document-in-elastic {} test-config "tests" "collection" "C1234-PROV1" "1" false)
+      (es/delete-document {} test-config "tests" "collection" "C1234-PROV1" "1" false)
       (catch java.lang.Exception e
         (is (re-find #"version conflict, current \[2\], provided \[1\]" (.getMessage e))))))
   (testing "Delete with earlier versions ignore-conflict true"
     (es/save-document-in-elastic {} "tests" "collection" (es-doc) 2 true)
-    (es/delete-document-in-elastic {} test-config "tests" "collection" "C1234-PROV1" "1" true)
+    (es/delete-document {} test-config "tests" "collection" "C1234-PROV1" "1" true)
     (assert-version "C1234-PROV1" 2)))
 
