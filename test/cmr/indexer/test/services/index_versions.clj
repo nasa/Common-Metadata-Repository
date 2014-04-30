@@ -1,5 +1,5 @@
-(ns ^{:doc "Integration test for index versions during save and delete in elasticsearch"}
-  cmr.indexer.services.index-versions-test
+(ns cmr.indexer.test.services.index-versions
+  "Integration test for index versions during save and delete in elasticsearch"
   (:require [clojure.test :refer :all]
             [clojure.string :as s]
             [taoensso.timbre :as timbre]

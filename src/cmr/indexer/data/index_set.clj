@@ -48,6 +48,19 @@
   [field-mapping]
   (assoc field-mapping :store "yes"))
 
+(def attributes-field-mapping
+  "Defines mappings for attributes."
+  {:type "nested"
+   :dynamic "strict"
+   :properties
+   {:name string-field-mapping
+    :string-value string-field-mapping
+    :float-value float-field-mapping
+    :int-value int-field-mapping
+    :datetime-value date-field-mapping
+    :time-value date-field-mapping
+    :date-value date-field-mapping}})
+
 
 (def collection-mapping
   {:collection {:dynamic "strict",
@@ -70,7 +83,8 @@
                              :archive-center        string-field-mapping
                              :archive-center.lowercase string-field-mapping
                              :two-d-coord-name string-field-mapping
-                             :two-d-coord-name.lowercase string-field-mapping}}})
+                             :two-d-coord-name.lowercase string-field-mapping
+                             :attributes attributes-field-mapping}}})
 
 (def granule-setting {:index {:number_of_shards 2,
                               :number_of_replicas 1,
@@ -89,16 +103,9 @@
                                     :granule-ur.lowercase  string-field-mapping
                                     :start-date date-field-mapping
                                     :end-date date-field-mapping
-                                    :attributes {:type "nested"
-                                                 :dynamic "strict"
-                                                 :properties
-                                                 {:name string-field-mapping
-                                                  :string-value string-field-mapping
-                                                  :float-value float-field-mapping
-                                                  :int-value int-field-mapping
-                                                  :datetime-value date-field-mapping
-                                                  :time-value date-field-mapping
-                                                  :date-value date-field-mapping}}}}})
+                                    :project-refs string-field-mapping
+                                    :project-refs.lowercase string-field-mapping
+                                    :attributes attributes-field-mapping}}})
 
 (def index-set
   {:index-set {:name "cmr-base-index-set"

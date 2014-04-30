@@ -1,4 +1,4 @@
-(ns cmr.indexer.services.temporal
+(ns cmr.indexer.services.concepts.temporal
   "Contains functions to convert UMM temporal structure to parts needed for indexing"
   (:require [clj-time.core :as t]
             [cmr.umm.collection :as c]))

@@ -1,5 +1,5 @@
-(ns ^{:doc "Integration test for metadata db service"}
-  cmr.indexer.data.metadata-db-test
+(ns cmr.indexer.test.data.metadata-db
+  "Integration test for metadata db service"
   (:require [clojure.test :refer :all]
             [cmr.indexer.data.metadata-db :as svc]))
 

@@ -1,9 +1,9 @@
-(ns cmr.indexer.services.temporal-test
+(ns cmr.indexer.test.services.concepts.temporal
   "Tests for temporal to start-date/end-date conversion"
   (:require [clojure.test :refer :all]
             [cmr.umm.collection :as c]
             [clj-time.core :as t]
-            [cmr.indexer.services.temporal :as tm]))
+            [cmr.indexer.services.concepts.temporal :as tm]))
 
 (def dt1 (t/date-time 2001 10 15 4 3 27 1))
 (def dt2 (t/date-time 2002 10 15 4 3 27 2))
