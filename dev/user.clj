@@ -19,7 +19,10 @@
 (defn start
   "Starts the current development system."
   []
-  (let [s (system/create-system)]
+  (let [s (system/create-system)
+        ;; uncomment to test the memory db
+        ; s (assoc s :db (memory/create-db))
+        ]
     (alter-var-root #'system
                     (constantly
                       (system/start s))))
