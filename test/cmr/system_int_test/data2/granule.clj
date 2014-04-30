@@ -22,11 +22,19 @@
     (when (or begin end)
       (gt/temporal {:range-date-time (c/->RangeDateTime begin end)}))))
 
+(defn data-granule
+  "Returns a data-granule with the given attributes"
+  [attribs]
+  (let [{:keys [producer-gran-id]} attribs]
+    (when producer-gran-id
+      (g/map->DataGranule {:producer-gran-id producer-gran-id}))))
+
 (defn granule
   "Creates a granule"
   [collection attribs]
   (let [coll-ref (g/collection-ref (:entry-title collection))
         minimal-gran {:granule-ur (d/unique-str "ur")
                       :collection-ref coll-ref}
+        data-granule {:data-granule (data-granule attribs)}
         temporal {:temporal (temporal attribs)}]
-    (g/map->UmmGranule (merge minimal-gran temporal attribs))))
+    (g/map->UmmGranule (merge minimal-gran data-granule temporal attribs))))
