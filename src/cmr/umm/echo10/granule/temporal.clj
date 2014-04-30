@@ -17,25 +17,26 @@
 (defn xml-elem->Temporal
   "Returns a UMM Temporal from a parsed Granule Content XML structure"
   [granule-element]
-  (let [temporal-element (cx/element-at-path granule-element [:Temporal])
-        range-date-time (xml-elem->RangeDateTime temporal-element)]
-    (g/map->GranuleTemporal
-      {:range-date-time range-date-time
-       :single-date-time (cx/datetime-at-path temporal-element [:SingleDateTime])})))
+  (when-let [temporal-element (cx/element-at-path granule-element [:Temporal])]
+    (let [range-date-time (xml-elem->RangeDateTime temporal-element)]
+      (g/map->GranuleTemporal
+        {:range-date-time range-date-time
+         :single-date-time (cx/datetime-at-path temporal-element [:SingleDateTime])}))))
 
 (defn generate-temporal
   "Generates the temporal element of ECHO10 XML from a UMM Granule temporal record."
   [temporal]
-  (let [{:keys [range-date-time single-date-time]} temporal]
-    (x/element :Temporal {}
-               (when range-date-time
-                 (let [{:keys [beginning-date-time ending-date-time]} range-date-time]
-                   (x/element :RangeDateTime {}
-                              (when beginning-date-time
-                                (x/element :BeginningDateTime {} (str beginning-date-time)))
-                              (when ending-date-time
-                                (x/element :EndingDateTime {} (str ending-date-time))))))
+  (when temporal
+    (let [{:keys [range-date-time single-date-time]} temporal]
+      (x/element :Temporal {}
+                 (when range-date-time
+                   (let [{:keys [beginning-date-time ending-date-time]} range-date-time]
+                     (x/element :RangeDateTime {}
+                                (when beginning-date-time
+                                  (x/element :BeginningDateTime {} (str beginning-date-time)))
+                                (when ending-date-time
+                                  (x/element :EndingDateTime {} (str ending-date-time))))))
 
-               (when single-date-time
-                 (x/element :SingleDateTime {} (str single-date-time))))))
+                 (when single-date-time
+                   (x/element :SingleDateTime {} (str single-date-time)))))))
 
