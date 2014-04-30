@@ -46,6 +46,7 @@
                   :project-sn.lowercase ["esi" "evi" "epi"]
                   :archive-center ["SEDAC AC"]
                   :archive-center.lowercase ["sedac ac"]
+                  :attributes []
                   :two-d-coord-name ["FOO" "Bar"]
                   :two-d-coord-name.lowercase  ["foo" "bar"]}
         actual (svc/concept->elastic-doc nil concept umm-concept)]
