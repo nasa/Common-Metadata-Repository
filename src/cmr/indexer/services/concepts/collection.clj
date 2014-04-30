@@ -38,6 +38,7 @@
      :project-sn.lowercase  (map s/lower-case project-short-names)
      :two-d-coord-name two-d-coord-names
      :two-d-coord-name.lowercase  (map s/lower-case two-d-coord-names)
+     :attributes (attrib/psas->elastic-docs umm-concept)
      :start-date (when start-date (f/unparse (f/formatters :date-time) start-date))
      :end-date (when end-date (f/unparse (f/formatters :date-time) end-date))
      :archive-center archive-center-val
