@@ -20,7 +20,7 @@
         (json/decode true)
         :references)))
 
-(defn retrieve-concept-metadata-by-id
+(defn get-concept-by-concept-id
   "Returns the concept metadata by searching metadata-db using the given cmr concept id"
   [concept-id]
   (let [concept-type (cs/concept-prefix->concept-type (subs concept-id 0 1))]
