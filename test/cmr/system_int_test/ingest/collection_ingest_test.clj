@@ -100,9 +100,9 @@
     (is (not (ingest/concept-exists-in-mdb? (:concept-id gran2) (:revision-id gran2)))
         "Granules in the collection should be deleted")
 
-    (is (empty? (search/find-refs :collection {"concept-id" (:concept-id coll1)})))
-    (is (empty? (search/find-refs :granule {"concept-id" (:concept-id gran1)})))
-    (is (empty? (search/find-refs :granule {"concept-id" (:concept-id gran2)})))
+    (is (empty? (:refs (search/find-refs :collection {"concept-id" (:concept-id coll1)}))))
+    (is (empty? (:refs (search/find-refs :granule {"concept-id" (:concept-id gran1)}))))
+    (is (empty? (:refs (search/find-refs :granule {"concept-id" (:concept-id gran2)}))))
 
 
     (is (ingest/concept-exists-in-mdb? (:concept-id coll2) (:revision-id coll2)))

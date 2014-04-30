@@ -22,13 +22,13 @@
 (deftest search-with-page-size
   (create-collections)
   (testing "Search with page_size."
-    (let [references (search/find-refs :collection {:provider "PROV1"
+    (let [{:keys [refs]} (search/find-refs :collection {:provider "PROV1"
                                                     :page_size 5})]
-      (is (= 5 (count references)))))
+      (is (= 5 (count refs)))))
   (testing "Search with large page_size."
-    (let [references (search/find-refs :collection {:provider "PROV1"
+    (let [{:keys [refs]} (search/find-refs :collection {:provider "PROV1"
                                                     :page_size 100})]
-      (is (= collection-count (count references)))))
+      (is (= collection-count (count refs)))))
   (testing "page_size less than one."
     (try
       (search/find-refs :collection {:provider "PROV1"
@@ -73,11 +73,11 @@
                                                                            (dc/collection {})))]
     (index/flush-elastic-index)
     (testing "Search with page_num."
-      (let [references (search/find-refs :collection {:provider "PROV1"
+      (let [{:keys [refs]} (search/find-refs :collection {:provider "PROV1"
                                                       :page_size 5
                                                       :page_num 2})]
         (is (= (map :short-name [col5 col4 col3 col2 col1])
-               (map :short-name references)))))
+               (map :short-name refs)))))
     (testing "page_num less than one."
       (try
         (search/find-refs :collection {:provider "PROV1"

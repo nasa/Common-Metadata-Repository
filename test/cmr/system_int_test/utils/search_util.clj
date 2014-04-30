@@ -13,12 +13,14 @@
   [concept-type params]
   (let [response (client/get (url/search-url concept-type)
                              {:accept :json
-                              :query-params params})]
-    (is (= 200 (:status response)))
-    (-> response
-        :body
-        (json/decode true)
-        :references)))
+                              :query-params params})
+        _ (is (= 200 (:status response)))
+        references (-> response
+                       :body
+                       (json/decode true)
+                       :references)]
+    {:hits 0
+     :refs references}))
 
 (defn get-concept-by-concept-id
   "Returns the concept metadata by searching metadata-db using the given cmr concept id"

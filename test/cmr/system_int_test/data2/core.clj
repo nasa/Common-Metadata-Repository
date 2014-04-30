@@ -70,9 +70,9 @@
 
 (defn refs-match?
   "Returns true if the references match the expected items"
-  [items refs]
+  [items search-result]
   (= (set (map item->ref items))
-     (set refs)))
+     (set (:refs search-result))))
 
 (defmacro record-fields
   "Returns the set of fields in a record type as keywords. The record type passed in must be a java
