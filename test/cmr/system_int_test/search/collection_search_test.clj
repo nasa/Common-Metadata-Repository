@@ -2,8 +2,11 @@
   cmr.system-int-test.search.collection-search-test
   (:require [clojure.test :refer :all]
             [cmr.system-int-test.utils.ingest-util :as ingest]
+            [cmr.system-int-test.utils.old-ingest-util :as old-ingest]
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.index-util :as index]))
+
+;; TODO this test uses an older style that we should update
 
 (def provider-collections
   {"CMR_PROV1" [{:short-name "MINIMAL"
@@ -27,6 +30,8 @@
                  :version-id "r2"
                  :long-name "Other valid collection"
                  :entry-title "OtherCollectionV1"}]})
+
+
 (defn setup
   "set up the fixtures for test"
   []
@@ -35,7 +40,7 @@
     (ingest/create-provider provider-id))
   (doseq [[provider-id collections] provider-collections
           collection collections]
-    (ingest/update-collection provider-id collection))
+    (old-ingest/update-collection provider-id collection))
   (index/flush-elastic-index))
 
 (defn teardown
