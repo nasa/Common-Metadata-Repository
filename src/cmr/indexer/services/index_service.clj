@@ -3,7 +3,7 @@
   (:require [clojure.string :as s]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.services.errors :as errors]
-            [cmr.indexer.data.metadata-db :as meta-db]
+            [cmr.transmit.metadata-db :as meta-db]
             [cmr.indexer.data.elasticsearch :as es]
             [cmr.umm.echo10.collection :as collection]
             [cmr.umm.echo10.granule :as granule]
