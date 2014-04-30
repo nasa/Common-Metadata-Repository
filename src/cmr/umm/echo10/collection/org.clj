@@ -50,8 +50,8 @@
     [:ArchiveCenter])
 
   (xml-elem->Organizations (x/parse-str cmr.umm.test.echo10.collection/all-fields-collection-xml))
-  (let [orgs (vector (c/map->Organization {:type "archive-center" :org-name "ac se"})
-                     (c/map->Organization {:type "processing-center" :org-name "pro se"}))
+  (let [orgs (vector (c/map->Organization {:type :archive-center :org-name "ac se"})
+                     (c/map->Organization {:type :processing-center :org-name "pro se"}))
         arctr (generate-archive-center orgs)
         prctr (generate-processing-center orgs)]
     (vector arctr prctr))
