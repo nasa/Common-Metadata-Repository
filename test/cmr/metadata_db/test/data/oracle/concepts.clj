@@ -42,6 +42,7 @@
                   :metadata (mock-blob "<foo>")
                   :format "xml"
                   :revision_id 2
+                  :revision-date nil
                   :deleted 0
                   :short_name "short"
                   :version_id "v1"
@@ -53,6 +54,7 @@
               :metadata "<foo>"
               :format "xml"
               :revision-id 2
+              :revision-date nil
               :deleted false
               :extra-fields {:short-name "short"
                              :version-id "v1"
@@ -73,6 +75,7 @@
               :metadata "<foo>"
               :format "xml"
               :revision-id 2
+              :revision-date nil
               :deleted false
               :extra-fields {:parent-collection-id "C5-PROV1"}}
              (c/db-result->concept-map :granule "PROV1" result))))))
