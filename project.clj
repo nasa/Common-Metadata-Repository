@@ -12,7 +12,6 @@
                  [clj-http "0.9.0"]
                  [org.clojure/test.check "0.5.7"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
-                 [nasa-cmr/cmr-umm-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-system-trace-lib "0.1.0-SNAPSHOT"]]
 
   :plugins [[lein-test-out "0.3.1"]]

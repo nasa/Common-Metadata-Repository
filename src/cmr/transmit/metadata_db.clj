@@ -7,16 +7,15 @@
             [cmr.system-trace.http :as ch]
             [cmr.system-trace.core :refer [deftracefn]]))
 
-(defn endpoint
-  "Returns the host and port of metadata db"
-  []
+;; Defines the host and port of metadata db
+(def endpoint
   {:host "localhost"
    :port "3001"})
 
 (deftracefn get-concept
   "Retrieve the concept with the given concept and revision-id"
   [context concept-id revision-id]
-  (let [{:keys [host port]} (endpoint)
+  (let [{:keys [host port]} endpoint
         response (client/get (format "http://%s:%s/concepts/%s/%s" host port concept-id revision-id)
                              {:accept :json
                               :throw-exceptions false
@@ -30,7 +29,7 @@
 (deftracefn get-latest-concept
   "Retrieve the latest version of the concept"
   [context concept-id]
-  (let [{:keys [host port]} (endpoint)
+  (let [{:keys [host port]} endpoint
         response (client/get (format "http://%s:%s/concepts/%s" host port concept-id)
                              {:accept :json
                               :throw-exceptions false
