@@ -4,7 +4,11 @@
   (:require [clojure.test :refer :all]
             [clj-http.client :as client]
             [cheshire.core :as cheshire]
+            [clj-time.core :as t]
+            [clj-time.format :as f]
+            [clj-time.local :as l]
             [cmr.metadata-db.int-test.utility :as util]))
+
 
 ;;; fixtures
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -15,9 +19,12 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (deftest save-collection-test
   (let [concept (util/collection-concept "PROV1" 1)
-        {:keys [status revision-id concept-id]} (util/save-concept concept)]
+        {:keys [status revision-id concept-id]} (util/save-concept concept)
+        revision-date (util/get-concept-rev-date-by-id-and-revision concept-id revision-id)
+        today (f/unparse util/custom-ISO8601-DT-formatter (l/local-now))]
     (is (= 201 status))
     (is (= revision-id 0))
+    (is (re-find (re-pattern (str today)) revision-date)) ;; verify yyyy-MM-dd part
     (is (util/verify-concept-was-saved (assoc concept :revision-id revision-id :concept-id concept-id)))))
 
 (deftest save-granule-test
@@ -102,3 +109,4 @@
           body (cheshire/parse-string (:body response))
           errors (get body "errors")]
       (is (= 400 status))))
+

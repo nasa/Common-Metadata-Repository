@@ -61,6 +61,7 @@
                   metadata
                   format
                   revision_id
+                  revision_date
                   deleted]} result]
       {:concept-type concept-type
        :native-id native_id
@@ -69,6 +70,7 @@
        :metadata (blob->string metadata)
        :format format
        :revision-id (int revision_id)
+       :revision-date revision_date
        :deleted (not= (int deleted) 0)})))
 
 (defmethod concept->insert-args :default

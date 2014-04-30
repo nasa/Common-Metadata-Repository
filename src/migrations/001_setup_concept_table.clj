@@ -14,6 +14,7 @@
                               metadata VARCHAR(4000) NOT NULL,
                               format VARCHAR(255) NOT NULL,
                               revision_id INTEGER DEFAULT 0 NOT NULL,
+                              revision_date VARCHAR(30) DEFAULT TO_CHAR(SYSDATE, 'YYYY-MM-DD hh:mm:ss') NOT NULL,
                               deleted INTEGER DEFAULT 0 NOT NULL,
                               CONSTRAINT unique_concept_revision
                               UNIQUE (concept_type, provider_id, native_id, revision_id)
@@ -28,3 +29,4 @@
   []
   (println "migrations.001-setup-concept-table down...")
   (j/db-do-commands config/db "DROP TABLE METADATA_DB.concept"))
+

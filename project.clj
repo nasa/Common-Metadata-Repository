@@ -11,6 +11,7 @@
                  [org.clojure/tools.reader "0.8.3"]
                  [org.clojure/tools.cli "0.3.1"]
                  [org.clojure/java.jdbc "0.3.3"]
+                 [clj-time "0.7.0"]
                  [sqlingvo "0.5.16"]
                  [drift "1.5.2"]
                  [com.oracle/ojdbc6 "11.2.0.3"]

@@ -4,6 +4,9 @@
             [clj-http.client :as client]
             [cheshire.core :as cheshire]
             [clojure.walk :as walk]
+            [clj-time.core :as t]
+            [clj-time.format :as f]
+            [clj-time.local :as l]
             [inflections.core :as inf]))
 
 ;;; Enpoints for services - change this for tcp-mon
@@ -16,6 +19,10 @@
 (def reset-url (str "http://localhost:" port "/reset"))
 
 (def providers-url (str "http://localhost:" port "/providers"))
+
+;; format of revision-date in oracle "yyyy-MM-dd hh:mm:ss"
+(def custom-ISO8601-DT-formatter (f/formatter "yyyy-MM-dd"))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; utility methods
@@ -51,12 +58,19 @@
       (assoc granule :concept-id (first concept-id))
       granule)))
 
+
+(defn- dissoc-revision-date
+  "Remove revision-date association with concept"
+  [parsed-concepts]
+  (map #(dissoc % "revision-date") parsed-concepts))
+
 (defn- parse-concept
   "Parses a concept from a JSON response"
   [response]
   (-> response
       :body
       cheshire/parse-string
+      (dissoc "revision-date")
       walk/keywordize-keys
       (update-in [:concept-type] keyword)))
 
@@ -74,6 +88,7 @@
   (->> response
        :body
        cheshire/parse-string
+       dissoc-revision-date
        (map walk/keywordize-keys)
        (map #(update-in % [:concept-type] (fn [v] (when v (keyword v)))))))
 
@@ -99,6 +114,18 @@
     (if (= status 200)
       {:status status :concept (parse-concept response)}
       {:status status})))
+
+(defn get-concept-rev-date-by-id-and-revision
+  "Make a GET to retrieve a concept revision id by concept-id and revision."
+  [concept-id revision-id]
+  (let [response (client/get (str concepts-url concept-id "/" revision-id)
+                             {:accept :json
+                              :throw-exceptions false})]
+    (-> response
+        :body
+        (cheshire/parse-string true)
+        :revision-date)))
+
 
 (defn get-concept-by-id
   "Make a GET to retrieve a concept by concept-id."
@@ -183,7 +210,7 @@
   [concept]
   (let [{:keys [concept-id revision-id]} concept
         stored-concept (:concept (get-concept-by-id-and-revision concept-id revision-id))]
-    (= concept stored-concept)))
+    (= concept (dissoc stored-concept :revision-date))))
 
 (defn create-and-save-collection
   "Creates, saves, and returns a concept with its data from metadata-db"
@@ -273,3 +300,4 @@
       (doseq [pid provider-ids] (save-provider pid))
       (f)
       (finally (reset-database)))))
+
