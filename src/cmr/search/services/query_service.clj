@@ -29,6 +29,7 @@
 
             [cmr.search.services.parameter-validation :as pv]
             [cmr.search.services.collection-query-resolver :as r]
+            [cmr.transmit.metadata-db :as meta-db]
             [cmr.system-trace.core :refer [deftracefn]]
             [cmr.common.services.errors :as err]))
 
@@ -86,3 +87,8 @@
        (pv/validate-parameters concept-type)
        (p/parameters->query concept-type)
        (find-concepts-by-query context)))
+
+(deftracefn find-concept-by-id
+  "Executes a search to metadata-db and returns the concept with the given cmr-concept-id."
+  [context concept-id]
+  (meta-db/get-latest-concept context concept-id))
