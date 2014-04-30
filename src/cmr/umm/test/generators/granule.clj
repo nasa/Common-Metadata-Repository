@@ -5,6 +5,7 @@
             [cmr.umm.test.generators.collection :as c]
             [cmr.umm.test.generators.granule.temporal :as gt]
             [cmr.umm.test.generators.collection.product-specific-attribute :as psa]
+            [cmr.umm.test.generators.granule.orbit-calculated-spatial-domain :as ocsd]
             [cmr.umm.granule :as g]))
 
 ;;; granule related
@@ -27,11 +28,12 @@
   (ext-gen/model-gen g/->ProductSpecificAttributeRef psa/names (gen/vector psa/string-values 1 3)))
 
 (def granules
-  (gen/fmap (fn [[granule-ur coll-ref temporal prefs psas]]
-              (g/->UmmGranule granule-ur coll-ref temporal prefs psas))
+  (gen/fmap (fn [[granule-ur coll-ref temporal ocsds prefs psas]]
+              (g/->UmmGranule granule-ur coll-ref temporal ocsds prefs psas))
             (gen/tuple granule-urs
                        coll-refs
                        gt/temporal
+                       (ext-gen/nil-if-empty (gen/vector ocsd/orbit-calculated-spatial-domains 0 5))
                        (ext-gen/nil-if-empty proj-refs)
                        (ext-gen/nil-if-empty (gen/vector product-specific-attribute-refs 0 5)))))
 

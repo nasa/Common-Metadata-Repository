@@ -6,6 +6,7 @@
             [cmr.umm.granule :as g]
             [cmr.umm.echo10.granule.temporal :as gt]
             [cmr.umm.echo10.granule.product-specific-attribute-ref :as psa]
+            [cmr.umm.echo10.granule.orbit-calculated-spatial-domain :as ocsd]
             [cmr.umm.xml-schema-validator :as v]
             [cmr.umm.echo10.core])
   (:import cmr.umm.granule.UmmGranule))
@@ -43,6 +44,7 @@
     (g/map->UmmGranule {:granule-ur (cx/string-at-path xml-struct [:GranuleUR])
                         :collection-ref coll-ref
                         :temporal (gt/xml-elem->Temporal xml-struct)
+                        :orbit-calculated-spatial-domains (ocsd/xml-elem->orbit-calculated-spatial-domains xml-struct)
                         :project-refs (xml-elem->project-refs xml-struct)
                         :product-specific-attributes (psa/xml-elem->ProductSpecificAttributeRefs xml-struct)})))
 
@@ -58,6 +60,7 @@
     (let [{{:keys [entry-title short-name version-id]} :collection-ref
            granule-ur :granule-ur
            temporal :temporal
+           ocsds :orbit-calculated-spatial-domains
            prefs :project-refs
            psas :product-specific-attributes} granule]
       (x/emit-str
@@ -73,6 +76,7 @@
                                           (x/element :VersionId {} version-id)))
                    (x/element :RestrictionFlag {} "0.0")
                    (gt/generate-temporal temporal)
+                   (ocsd/generate-orbit-calculated-spatial-domains ocsds)
                    (generate-project-refs prefs)
                    (psa/generate-product-specific-attribute-refs psas)
                    (x/element :Orderable {} "true"))))))

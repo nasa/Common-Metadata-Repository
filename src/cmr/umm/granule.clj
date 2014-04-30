@@ -19,6 +19,17 @@
    single-date-time
    ])
 
+(defrecord OrbitCalculatedSpatialDomain
+  [
+   orbital-model-name
+   orbit-number
+   start-orbit-number
+   stop-orbit-number
+   equator-crossing-longitude
+   equator-crossing-date-time
+
+   ])
+
 ;; A reference to a product specific attribute in the parent collection. The attribute reference may
 ;; contain a granule specific value that will override the value in the parent collection for this
 ;; granule. An attribute with the same name must exist in the parent collection.
@@ -37,6 +48,8 @@
    collection-ref
 
    temporal
+
+   orbit-calculated-spatial-domains
 
    ;; references to projects/campaigns
    project-refs
