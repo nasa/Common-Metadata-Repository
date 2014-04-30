@@ -124,7 +124,7 @@
   (let [{:keys [concept-type page-size page-num condition]} params
         page-size (or page-size default-page-size)
         page-num (or page-num default-page-num)
-        condition (or condition ->MatchAllCondition)]
+        condition (or condition (->MatchAllCondition))]
     (->Query concept-type condition page-size page-num)))
 
 
