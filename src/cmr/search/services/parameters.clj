@@ -36,7 +36,8 @@
              :short_name :collection-query
              :version :collection-query
              :temporal :temporal
-             :project :string}})
+             :project :string
+             :concept-id :string}})
 
 (defn- param-name->type
   "Returns the query condition type based on the given concept-type and param-name."
