@@ -38,7 +38,7 @@
               (g/->UmmGranule granule-ur coll-ref data-granule temporal prefs psas))
             (gen/tuple granule-urs
                        coll-refs
-                       data-granules
+                       (ext-gen/optional data-granules)
                        gt/temporal
                        (ext-gen/nil-if-empty proj-refs)
                        (ext-gen/nil-if-empty (gen/vector product-specific-attribute-refs 0 5)))))
