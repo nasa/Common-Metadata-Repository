@@ -48,6 +48,9 @@ Provides a public search API for concepts in the CMR.
 #### Find all granules with a granule-ur
     curl -H "Accept: application/json" -i "http://localhost:3003/granules?granule_ur\[\]=DummyGranuleUR"
 
+#### Find all granules with a producer granule id
+    curl -H "Accept: application/json" -i "http://localhost:3003/granules?producer_granule_id\[\]=DummyID"
+
 #### Find granules by additional attribute
 
 Find an attribute attribute with name "PERCENTAGE" of type float with value 25.5

@@ -30,6 +30,7 @@
 
    :granule {:granule_ur :string
              :collection_concept_id :string
+             :producer_granule_id :string
              :provider :collection-query
              :entry_title :collection-query
              :attribute :attribute
