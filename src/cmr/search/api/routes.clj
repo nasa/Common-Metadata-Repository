@@ -48,7 +48,7 @@
     (context "/granules" []
       (GET "/" {params :params headers :headers context :request-context}
         (find-references context :granule params headers)))
-    (context "/granules/:cmr-concept-id" [cmr-concept-id]
+    (context "/concepts/:cmr-concept-id" [cmr-concept-id]
       (GET "/" {headers :headers context :request-context}
         (find-by-cmr-concept-id context cmr-concept-id headers)))
     (route/not-found "Not Found")))

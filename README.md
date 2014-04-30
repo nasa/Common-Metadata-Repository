@@ -76,8 +76,8 @@ Find an additional attribute with name "X\Y\Z" with value 7.
 
 Multiple attributes can be provided. The default is for granules to match all the attribute parameters. This can be changed by specifying `or` option with `option[attribute][or]=true`.
 
-### Retrieve granule with a given cmr-concept-id
-    curl -i "http://localhost:3003/granules/G100000-PROV1"
+### Retrieve concept with a given cmr-concept-id
+    curl -i "http://localhost:3003/concepts/G100000-PROV1"
 
 
 ### Find as XML
