@@ -18,7 +18,7 @@
     (type item)))
 
 (defmethod item->native-id UmmCollection
-  [ item]
+  [item]
   (:entry-title item))
 
 (defmethod item->native-id UmmGranule
@@ -31,22 +31,30 @@
     (type item)))
 
 (defmethod item->concept-type UmmCollection
-   [item]
-   :collection)
+  [item]
+  :collection)
 
 (defmethod item->concept-type UmmGranule
-   [item]
-   :granule)
+  [item]
+  :granule)
+
+(defn item->concept
+  "Converts an UMM item to a concept map. Expects provider-id to be in the item"
+  [item]
+  (merge {:concept-type (item->concept-type item)
+          :provider-id (:provider-id item)
+          :native-id (item->native-id item)
+          :metadata (echo10/umm->echo10-xml item)
+          :content-type "application/echo10+xml"}
+         (when (:concept-id item)
+           {:concept-id (:concept-id item)})
+         (when (:revision-id item)
+           {:revision-id (:revision-id item)})))
 
 (defn ingest
   "Ingests the catalog item. Returns it with concept-id, revision-id, and provider-id set on it."
   [provider-id item]
-  (let [concept {:concept-type (item->concept-type item)
-                 :provider-id provider-id
-                 :native-id (item->native-id item)
-                 :metadata (echo10/umm->echo10-xml item)
-                 :content-type "application/echo10+xml"}
-        response (ingest/ingest-concept concept)]
+  (let [response (ingest/ingest-concept (item->concept (assoc item :provider-id provider-id)))]
     (is (= 200 (:status response)))
     (assoc item
            :provider-id provider-id

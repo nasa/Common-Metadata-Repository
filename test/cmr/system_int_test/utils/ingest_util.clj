@@ -2,7 +2,7 @@
   (:require [clojure.test :refer :all]
             [clj-http.client :as client]
             [clojure.string :as str]
-            [cheshire.core :as cheshire]
+            [cheshire.core :as json]
             [cmr.system-int-test.data.collection-helper :as ch]
             [cmr.system-int-test.data.granule-helper :as gh]
             [cmr.umm.echo10.collection :as c]
@@ -39,7 +39,7 @@
                     :headers headers
                     :accept :json
                     :throw-exceptions false})
-        body (cheshire/decode (:body response) true)]
+        body (json/decode (:body response) true)]
     (assoc body :status (:status response))))
 
 (defn delete-concept
@@ -50,16 +50,24 @@
                     :url (url/ingest-url provider-id concept-type native-id)
                     :accept :json
                     :throw-exceptions false})
-        body (cheshire/decode (:body response) true)]
+        body (json/decode (:body response) true)]
     (assoc body :status (:status response))))
+
+(defn get-concept
+  ([concept-id]
+   (get-concept concept-id nil))
+  ([concept-id revision-id]
+   (let [response (client/get (url/mdb-concept-url concept-id revision-id)
+                              {:accept :json
+                               :throw-exceptions false})]
+     (is (some #{200 404} [(:status response)]))
+     (when (= (:status response) 200)
+       (json/decode (:body response) true)))))
 
 (defn concept-exists-in-mdb?
   "Check concept in mdb with the given concept and revision-id"
   [concept-id revision-id]
-  (let [response (client/get (url/mdb-concept-url concept-id revision-id)
-                             {:accept :json
-                              :throw-exceptions false})]
-    (= 200 (:status response))))
+  (not (nil? (get-concept concept-id revision-id))))
 
 (defn reset
   "Resets the database and the elastic indexes"

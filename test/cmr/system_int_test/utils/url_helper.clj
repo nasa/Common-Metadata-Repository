@@ -53,8 +53,12 @@
 
 (defn mdb-concept-url
   "URL to concept in mdb."
-  [concept-id revision-id]
-  (format "http://localhost:%s/concepts/%s/%s" metadata-db-port concept-id revision-id))
+  ([concept-id]
+   (mdb-concept-url concept-id nil))
+  ([concept-id revision-id]
+   (if revision-id
+     (format "http://localhost:%s/concepts/%s/%s" metadata-db-port concept-id revision-id)
+     (format "http://localhost:%s/concepts/%s" metadata-db-port concept-id))))
 
 (defn mdb-reset-url
   "Force delete all concepts from mdb."

@@ -69,13 +69,15 @@
 
 (defn collection
   "Creates a collection"
-  [attribs]
-  (let [product (product attribs)
-        temporal {:temporal (temporal attribs)}
-        minimal-coll {:entry-id (str (:short-name product) "_" (:version-id product))
-                      :entry-title (str (:long-name product) " " (:version-id product))
-                      :product product}
-        attribs (select-keys attribs (d/record-fields UmmCollection))
-        attribs (merge minimal-coll temporal attribs)]
-    (c/map->UmmCollection attribs)))
+  ([]
+   (collection {}))
+  ([attribs]
+   (let [product (product attribs)
+         temporal {:temporal (temporal attribs)}
+         minimal-coll {:entry-id (str (:short-name product) "_" (:version-id product))
+                       :entry-title (str (:long-name product) " " (:version-id product))
+                       :product product}
+         attribs (select-keys attribs (d/record-fields UmmCollection))
+         attribs (merge minimal-coll temporal attribs)]
+     (c/map->UmmCollection attribs))))
 

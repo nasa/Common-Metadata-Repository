@@ -24,9 +24,11 @@
 
 (defn granule
   "Creates a granule"
-  [collection attribs]
-  (let [coll-ref (g/collection-ref (:entry-title collection))
-        minimal-gran {:granule-ur (d/unique-str "ur")
-                      :collection-ref coll-ref}
-        temporal {:temporal (temporal attribs)}]
-    (g/map->UmmGranule (merge minimal-gran temporal attribs))))
+  ([collection]
+   (granule collection {}))
+  ([collection attribs]
+   (let [coll-ref (g/collection-ref (:entry-title collection))
+         minimal-gran {:granule-ur (d/unique-str "ur")
+                       :collection-ref coll-ref}
+         temporal {:temporal (temporal attribs)}]
+     (g/map->UmmGranule (merge minimal-gran temporal attribs)))))
