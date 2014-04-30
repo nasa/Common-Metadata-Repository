@@ -30,7 +30,7 @@
      :headers {"Content-Type" (sr/format->mime-type result-format)}
      :body (sr/search-results->response results result-format pretty?)}))
 
-(defn- find-by-cmr-concept-id
+(defn- find-concept-by-cmr-concept-id
   "Invokes query service to find concept metadata by cmr concept id and returns the response"
   [context concept-id headers]
   ;; TODO headers argument is reserved for ACL validation
@@ -50,7 +50,7 @@
         (find-references context :granule params headers)))
     (context "/concepts/:cmr-concept-id" [cmr-concept-id]
       (GET "/" {headers :headers context :request-context}
-        (find-by-cmr-concept-id context cmr-concept-id headers)))
+        (find-concept-by-cmr-concept-id context cmr-concept-id headers)))
     (route/not-found "Not Found")))
 
 (defn make-api [system]
