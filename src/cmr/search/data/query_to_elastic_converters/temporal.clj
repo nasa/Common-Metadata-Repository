@@ -84,6 +84,6 @@
 (extend-protocol q/ConditionToElastic
   cmr.search.models.query.TemporalCondition
   (condition->elastic
-    [temporal]
+    [temporal concept-type]
     (q/condition->elastic
-      (temporal->simple-conditions temporal))))
+      (temporal->simple-conditions temporal) concept-type)))
