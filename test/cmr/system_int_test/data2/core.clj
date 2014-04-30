@@ -2,8 +2,10 @@
   "Contains helper functions for data generation and ingest for example based testing in system
   integration tests."
   (:require [cmr.umm.echo10.collection :as umm-c]
+            [clojure.test :refer [is]]
             [cmr.umm.echo10.granule :as umm-g]
             [cmr.umm.echo10.core :as echo10]
+            [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.url-helper :as url]
             [clj-http.client :as client]
             [cheshire.core :as json])
@@ -23,31 +25,33 @@
   [item]
   (:granule-ur item))
 
-(defmulti ingest-path
+(defmulti item->concept-type
   "Returns the path to ingest the item"
-  (fn [provider-id item]
+  (fn [item]
     (type item)))
 
-(defmethod ingest-path UmmCollection
-  [provider-id item]
-  (url/ingest-url provider-id :collection (item->native-id item)))
+(defmethod item->concept-type UmmCollection
+   [item]
+   :collection)
 
-(defmethod ingest-path UmmGranule
-  [provider-id item]
-  (url/ingest-url provider-id :granule (item->native-id item)))
+(defmethod item->concept-type UmmGranule
+   [item]
+   :granule)
 
 (defn ingest
   "Ingests the catalog item. Returns it with concept-id, revision-id, and provider-id set on it."
   [provider-id item]
-  (let [ingest-url (ingest-path provider-id item)
-        xml (echo10/umm->echo10-xml item)
-        response (client/put ingest-url
-                             {:content-type :echo10+xml
-                              :body xml})]
-    (-> item
-        (merge (json/decode (:body response) true))
-        (assoc :provider-id provider-id))))
-
+  (let [concept {:concept-type (item->concept-type item)
+                 :provider-id provider-id
+                 :native-id (item->native-id item)
+                 :metadata (echo10/umm->echo10-xml item)
+                 :content-type "application/echo10+xml"}
+        response (ingest/ingest-concept concept)]
+    (is (= 200 (:status response)))
+    (assoc item
+           :provider-id provider-id
+           :concept-id (:concept-id response)
+           :revision-id (:revision-id response))))
 
 (defn item->ref
   "Converts an item into the expected reference"

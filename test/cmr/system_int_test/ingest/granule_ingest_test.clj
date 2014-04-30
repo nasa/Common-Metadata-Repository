@@ -7,31 +7,32 @@
             [clj-http.client :as client]
             [cheshire.core :as cheshire]
             [clojure.string :as string]
-            [cmr.system-int-test.utils.ingest-util :as util]))
+            [cmr.system-int-test.utils.ingest-util :as ingest]
+            [cmr.system-int-test.utils.old-ingest-util :as old-ingest]
+            ))
 
-;;;; tests
-;;; ensure metadata, indexer and ingest apps are accessable on ports 3001, 3004 and 3002 resp;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(use-fixtures :each (ingest/reset-fixture "PROV1"))
 
 ;;; Verify a new granule is ingested successfully.
 (deftest granule-ingest-test
   (testing "ingest of a new granule"
-    (let [collection (util/collection-concept "PROV1" 5)
-          _ (util/ingest-collection collection)
-          granule (util/granule-concept "PROV1" "C1000000000-PROV1" 5)
-          {:keys [concept-id revision-id]} (util/ingest-granule granule)]
-      (is (util/concept-exists-in-mdb? concept-id revision-id))
+    (let [collection (old-ingest/collection-concept "PROV1" 5)
+          _ (ingest/ingest-concept collection)
+          granule (old-ingest/granule-concept "PROV1" "C1000000000-PROV1" 5)
+          {:keys [concept-id revision-id]} (ingest/ingest-concept granule)]
+      (is (ingest/concept-exists-in-mdb? concept-id revision-id))
       (is (= 0 revision-id)))))
 
 ; Verify a new granule with concept-id is ingested successfully.
 (deftest granule-w-concept-id-ingest-test
   (testing "ingest of a new granule with concept-id present"
-    (let [collection (util/collection-concept "PROV1" 5)
-          _ (util/ingest-collection collection)
-          granule (util/granule-concept "PROV1" "C1000000000-PROV1" 5 "G1-PROV1")
+    (let [collection (old-ingest/collection-concept "PROV1" 5)
+          _ (ingest/ingest-concept collection)
+          granule (old-ingest/granule-concept "PROV1" "C1000000000-PROV1" 5 "G1-PROV1")
           supplied-concept-id (:concept-id granule)
-          {:keys [concept-id revision-id]} (util/ingest-granule granule)]
-      (is (util/concept-exists-in-mdb? concept-id revision-id))
+          {:keys [concept-id revision-id]} (ingest/ingest-concept granule)]
+      (is (ingest/concept-exists-in-mdb? concept-id revision-id))
       (is (= supplied-concept-id concept-id))
       (is (= 0 revision-id)))))
 
@@ -39,85 +40,78 @@
 ;;; revision id is 1 greater on each subsequent ingest
 (deftest repeat-same-granule-ingest-test
   (testing "ingest same granule n times ..."
-    (let [collection (util/collection-concept "PROV1" 5)
-          _ (util/ingest-collection collection)
+    (let [collection (old-ingest/collection-concept "PROV1" 5)
+          _ (ingest/ingest-concept collection)
           n 4
-          granule (util/granule-concept "PROV1" "C1000000000-PROV1" 5 "G1-PROV1")
-          created-granules (take n (repeatedly n #(util/ingest-granule granule)))]
+          granule (old-ingest/granule-concept "PROV1" "C1000000000-PROV1" 5 "G1-PROV1")
+          created-granules (take n (repeatedly n #(ingest/ingest-concept granule)))]
       (is (apply = (map :concept-id created-granules)))
       (is (= (range 0 n) (map :revision-id created-granules))))))
 
 ;;; Verify ingest behaves properly if empty body is presented in the request.
 (deftest empty-granule-ingest-test
-  (let [collection (util/collection-concept "PROV1" 5)
-        _ (util/ingest-collection collection)
-        granule-with-empty-body  (assoc (util/granule-concept "PROV1" "C1000000000-PROV1" 5 "G1-PROV1") :metadata "")
-        {:keys [status errors-str]} (util/ingest-granule granule-with-empty-body)]
+  (let [collection (old-ingest/collection-concept "PROV1" 5)
+        _ (ingest/ingest-concept collection)
+        granule-with-empty-body  (assoc (old-ingest/granule-concept "PROV1" "C1000000000-PROV1" 5 "G1-PROV1") :metadata "")
+        {:keys [status errors]} (ingest/ingest-concept granule-with-empty-body)]
     (is (= 400 status))
-    (is (re-find #"Invalid XML file." errors-str))))
+    (is (re-find #"Invalid XML file." (first errors)))))
 
 ;;; Verify non-existent granule deletion results in not found / 404 error.
 (deftest delete-non-existent-granule-test
-  (let [granule (util/granule-concept "PROV1" "C1000000000-PROV1" 5 "G1-PROV1")
+  (let [granule (old-ingest/granule-concept "PROV1" "C1000000000-PROV1" 5 "G1-PROV1")
         fake-provider-id (str (:provider-id granule) (:native-id granule))
         non-existent-granule (assoc granule :provider-id fake-provider-id)
-        {:keys [status]} (util/delete-concept non-existent-granule)]
+        {:keys [status]} (ingest/delete-concept non-existent-granule)]
     (is (= 404 status))))
 
 ;;; Verify existing granule can be deleted and operation results in revision id 1 greater than
 ;;; max revision id of the granule prior to the delete
 (deftest delete-granule-test
-  (let [collection (util/collection-concept "PROV1" 5)
-        _ (util/ingest-collection collection)
-        granule (util/granule-concept "PROV1" "C1000000000-PROV1" 5 "G1-PROV1")
-        ingest-result (util/ingest-granule granule)
-        delete-result (util/delete-concept granule)
+  (let [collection (old-ingest/collection-concept "PROV1" 5)
+        _ (ingest/ingest-concept collection)
+        granule (old-ingest/granule-concept "PROV1" "C1000000000-PROV1" 5 "G1-PROV1")
+        ingest-result (ingest/ingest-concept granule)
+        delete-result (ingest/delete-concept granule)
         ingest-revision-id (:revision-id ingest-result)
         delete-revision-id (:revision-id delete-result)]
     (is (= 1 (- delete-revision-id ingest-revision-id)))))
 
 ;;; Verify ingest behaves properly if request is missing content type.
 (deftest missing-content-type-ingest-test
-  (let [collection (util/collection-concept "PROV1" 5)
-        _ (util/ingest-collection collection)
-        granule-with-no-content-type  (assoc (util/granule-concept "PROV1" "C1000000000-PROV1" 5 "G1-PROV1") :content-type "")
-        {:keys [status errors-str]} (util/ingest-granule granule-with-no-content-type)]
+  (let [collection (old-ingest/collection-concept "PROV1" 5)
+        _ (ingest/ingest-concept collection)
+        granule-with-no-content-type  (assoc (old-ingest/granule-concept "PROV1" "C1000000000-PROV1" 5 "G1-PROV1") :content-type "")
+        {:keys [status errors]} (ingest/ingest-concept granule-with-no-content-type)]
     (is (= 400 status))
-    (is (re-find #"Invalid content-type" errors-str))))
+    (is (re-find #"Invalid content-type" (first errors)))))
 
 ;;; Verify ingest behaves properly if request contains invalid  content type.
 (deftest invalid-content-type-ingest-test
-  (let [collection (util/collection-concept "PROV1" 5)
-        _ (util/ingest-collection collection)
-        granule-with-no-content-type (assoc (util/granule-concept "PROV1" "C1000000000-PROV1" 5 "G1-PROV1") :content-type "blah")
-        {:keys [status errors-str]} (util/ingest-granule granule-with-no-content-type)]
+  (let [collection (old-ingest/collection-concept "PROV1" 5)
+        _ (ingest/ingest-concept collection)
+        granule-with-no-content-type (assoc (old-ingest/granule-concept "PROV1" "C1000000000-PROV1" 5 "G1-PROV1") :content-type "blah")
+        {:keys [status errors]} (ingest/ingest-concept granule-with-no-content-type)]
     (is (= 400 status))
-    (is (re-find #"Invalid content-type" errors-str))))
+    (is (re-find #"Invalid content-type" (first errors)))))
 
 ;;; Verify deleting same granule twice is not an error if ignore conflict is true.
 (deftest delete-same-granule-twice-test
-  (let [collection (util/collection-concept "PROV1" 5)
-        _ (util/ingest-collection collection)
-        granule (util/granule-concept "PROV1" nil 5 "G1-PROV1")
-        ingest-result (util/ingest-granule granule)
-        delete1-result (util/delete-concept granule)
-        delete2-result (util/delete-concept granule)]
+  (let [collection (old-ingest/collection-concept "PROV1" 5)
+        _ (ingest/ingest-concept collection)
+        granule (old-ingest/granule-concept "PROV1" nil 5 "G1-PROV1")
+        ingest-result (ingest/ingest-concept granule)
+        delete1-result (ingest/delete-concept granule)
+        delete2-result (ingest/delete-concept granule)]
     (is (= 200 (:status ingest-result)))
     (is (= 200 (:status delete1-result)))
     (is (= 200 (:status delete2-result)))))
 
 ;;; Verify that attempts to ingest a granule whose parent does not exist result in a 404
 (deftest ingest-orphan-granule-test
-  (let [granule (util/granule-concept "PROV1" "C1000000000-PROV1" 5 "G1-PROV1")
-        {:keys [status]} (util/ingest-granule granule)]
+  (let [granule (old-ingest/granule-concept "PROV1" "C1000000000-PROV1" 5 "G1-PROV1")
+        {:keys [status]} (ingest/ingest-concept granule)]
     (is (= 404 status))
-    (is (not (util/concept-exists-in-mdb? "G1-PROV1" 0)))))
-
-
-;;; Fixtures
-
-(use-fixtures :each (util/reset-fixture "PROV1"))
-
-
+    (is (not (ingest/concept-exists-in-mdb? "G1-PROV1" 0)))))
 
 
