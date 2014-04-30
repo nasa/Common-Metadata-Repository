@@ -5,10 +5,13 @@
             [cmr.system-int-test.utils.index-util :as index]
             [ring.util.io :as io]
             [clj-http.client :as client]
-            [cheshire.core :as cheshire]
             [clojure.string :as string]
             [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.old-ingest-util :as old-ingest]))
+            [cmr.system-int-test.utils.old-ingest-util :as old-ingest]
+            [cmr.system-int-test.data2.collection :as dc]
+            [cmr.system-int-test.data2.granule :as dg]
+            [cmr.system-int-test.data2.core :as d]
+            [cmr.system-int-test.utils.search-util :as search]))
 
 
 (use-fixtures :each (ingest/reset-fixture "PROV1"))
@@ -62,13 +65,56 @@
 
 ;; Verify existing concept can be deleted and operation results in revision id 1 greater than
 ;; max revision id of the concept prior to the delete
-(deftest delete-collection-test
+(deftest delete-collection-test-old
   (let [concept (old-ingest/distinct-concept "PROV1" 3)
         ingest-result (ingest/ingest-concept concept)
         delete-result (ingest/delete-concept concept)
         ingest-revision-id (:revision-id ingest-result)
         delete-revision-id (:revision-id delete-result)]
     (is (= 1 (- delete-revision-id ingest-revision-id)))))
+
+(comment
+
+  (ingest/reset)
+  (ingest/create-provider "PROV1")
+  (def coll1 (d/ingest "PROV1" (dc/collection)))
+  (ingest/delete-concept coll1)
+
+)
+
+(deftest delete-collection-test
+  (let [coll1 (d/ingest "PROV1" (dc/collection))
+        gran1 (d/ingest "PROV1" (dg/granule coll1))
+        gran2 (d/ingest "PROV1" (dg/granule coll1))
+        coll2 (d/ingest "PROV1" (dc/collection))
+        gran3 (d/ingest "PROV1" (dg/granule coll2))]
+    (index/flush-elastic-index)
+
+    ;; delete collection
+    (is (= 200 (:status (ingest/delete-concept (d/item->concept coll1)))))
+    (index/flush-elastic-index)
+
+    (is (:deleted (ingest/get-concept (:concept-id coll1))) "The collection should be deleted")
+    (is (not (ingest/concept-exists-in-mdb? (:concept-id gran1) (:revision-id gran1)))
+        "Granules in the collection should be deleted")
+    (is (not (ingest/concept-exists-in-mdb? (:concept-id gran2) (:revision-id gran2)))
+        "Granules in the collection should be deleted")
+
+    (is (empty? (search/find-refs :collection {"concept-id" (:concept-id coll1)})))
+    (is (empty? (search/find-refs :granule {"concept-id" (:concept-id gran1)})))
+    (is (empty? (search/find-refs :granule {"concept-id" (:concept-id gran2)})))
+
+
+    (is (ingest/concept-exists-in-mdb? (:concept-id coll2) (:revision-id coll2)))
+    (is (ingest/concept-exists-in-mdb? (:concept-id gran3) (:revision-id gran3)))
+
+    (is (d/refs-match?
+          [coll2]
+          (search/find-refs :collection {"concept-id" (:concept-id coll2)})))
+    (is (d/refs-match?
+          [gran3]
+          (search/find-refs :granule {"concept-id" (:concept-id gran3)})))))
+
 
 ;; Verify ingest behaves properly if request is missing content type.
 (deftest missing-content-type-ingest-test
