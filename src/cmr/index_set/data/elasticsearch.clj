@@ -115,7 +115,7 @@
             msg (str "Call to Elasticsearch caught exception " err-msg)]
         (throw (Exception. msg))))))
 
-(deftracefn delete-document-in-elastic
+(deftracefn delete-document
   "Delete the document from elastic, raise error on failure."
   [context es-cfg index-name mapping-type id]
   (let [{:keys [host port admin-token]} es-cfg

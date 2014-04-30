@@ -185,7 +185,7 @@
         {:keys [index-name mapping]} es-config/idx-cfg-for-index-sets
         idx-mapping-type (first (keys mapping))]
     (dorun (map #(es/delete-index % es-cfg) index-names))
-    (es/delete-document-in-elastic context es-cfg index-name idx-mapping-type index-set-id)))
+    (es/delete-document context es-cfg index-name idx-mapping-type index-set-id)))
 
 (deftracefn reset
   "Put elastic in a clean state after deleting indices associated with index-sets and index-set docs."
