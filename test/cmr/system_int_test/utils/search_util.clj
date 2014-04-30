@@ -15,12 +15,11 @@
                              {:accept :json
                               :query-params params})
         _ (is (= 200 (:status response)))
-        references (-> response
-                       :body
-                       (json/decode true)
-                       :references)]
-    {:hits 0
-     :refs references}))
+        result (json/decode (:body response) true)]
+    (-> result
+        ;; Rename references to refs
+        (assoc :refs (:references result))
+        (dissoc :references))))
 
 (defn get-concept-by-concept-id
   "Returns the concept metadata by searching metadata-db using the given cmr concept id"

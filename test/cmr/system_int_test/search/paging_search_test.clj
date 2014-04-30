@@ -7,32 +7,33 @@
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.core :as d2c]))
 
-(def collection-count 25)
+(def prov1-collection-count 10)
+(def prov2-collection-count 15)
+
+(def collection-count (+ prov2-collection-count prov1-collection-count))
 
 (defn create-collections
   "Set up the fixtures for tests."
   []
-  (let [provider-id "PROV1"]
-    (doseq [seq-num (range 1 (inc collection-count))]
-      (d2c/ingest provider-id (dc/collection {}))))
+  (dotimes [n prov1-collection-count]
+    (d2c/ingest "PROV1" (dc/collection)))
+  (dotimes [n prov2-collection-count]
+    (d2c/ingest "PROV2" (dc/collection)))
   (index/flush-elastic-index))
 
-(use-fixtures :each (ingest/reset-fixture "PROV1"))
+(use-fixtures :each (ingest/reset-fixture "PROV1" "PROV2"))
 
 (deftest search-with-page-size
   (create-collections)
   (testing "Search with page_size."
-    (let [{:keys [refs]} (search/find-refs :collection {:provider "PROV1"
-                                                    :page_size 5})]
+    (let [{:keys [refs]} (search/find-refs :collection {:page_size 5})]
       (is (= 5 (count refs)))))
   (testing "Search with large page_size."
-    (let [{:keys [refs]} (search/find-refs :collection {:provider "PROV1"
-                                                    :page_size 100})]
+    (let [{:keys [refs]} (search/find-refs :collection {:page_size 100})]
       (is (= collection-count (count refs)))))
   (testing "page_size less than one."
     (try
-      (search/find-refs :collection {:provider "PROV1"
-                                     :page_size 0})
+      (search/find-refs :collection {:page_size 0})
       (catch clojure.lang.ExceptionInfo e
         (let [status (get-in (ex-data e) [:object :status])
               body (get-in (ex-data e) [:object :body])]
@@ -40,8 +41,7 @@
           (is (re-matches #".*page_size must be a number between 1 and 2000.*" body))))))
   (testing "Negative page_size."
     (try
-      (search/find-refs :collection {:provider "PROV1"
-                                     :page_size -1})
+      (search/find-refs :collection {:page_size -1})
       (catch clojure.lang.ExceptionInfo e
         (let [status (get-in (ex-data e) [:object :status])
               body (get-in (ex-data e) [:object :body])]
@@ -49,8 +49,7 @@
           (is (re-matches #".*page_size must be a number between 1 and 2000.*" body))))))
   (testing "page_size too large."
     (try
-      (search/find-refs :collection {:provider "PROV1"
-                                     :page_size 2001})
+      (search/find-refs :collection {:page_size 2001})
       (catch clojure.lang.ExceptionInfo e
         (let [status (get-in (ex-data e) [:object :status])
               body (get-in (ex-data e) [:object :body])]
@@ -58,13 +57,21 @@
           (is (re-matches #".*page_size must be a number between 1 and 2000.*" body))))))
   (testing "Non-numeric page_size"
     (try
-      (search/find-refs :collection {:provider "PROV1"
-                                     :page_size "ABC"})
+      (search/find-refs :collection {:page_size "ABC"})
       (catch clojure.lang.ExceptionInfo e
         (let [status (get-in (ex-data e) [:object :status])
               body (get-in (ex-data e) [:object :body])]
           (is (= 422 status))
           (is (re-matches #".*page_size must be a number between 1 and 2000.*" body)))))))
+
+(deftest search-for-hits
+  (create-collections)
+  (are [hits params]
+       (= hits (:hits (search/find-refs :collection params)))
+       collection-count {}
+       0 {:provider "NONE"}
+       prov1-collection-count {:provider "PROV1"}
+       prov2-collection-count {:provider "PROV2"}))
 
 (deftest search-with-page-num
   (let [provider-id "PROV1"
