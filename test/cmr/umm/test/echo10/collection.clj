@@ -202,10 +202,10 @@
                      (umm-c/map->TwoDCoordinateSystem {:name "name1"})]
                     :organizations
                     [(umm-c/map->Organization
-                       {:type "processing-center"
+                       {:type :processing-center
                         :org-name "SEDAC PC"})
                      (umm-c/map->Organization
-                       {:type "archive-center"
+                       {:type :archive-center
                         :org-name "SEDAC AC"})]})
         actual (c/parse-collection all-fields-collection-xml)]
     (is (= expected actual))))

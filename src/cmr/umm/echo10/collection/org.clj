@@ -12,9 +12,9 @@
         processing-ctr (cx/string-at-path collection-element [:ProcessingCenter])]
     (concat
       (when processing-ctr
-        [(c/map->Organization {:type "processing-center" :org-name processing-ctr})])
+        [(c/map->Organization {:type :processing-center :org-name processing-ctr})])
       (when archive-ctr
-        [(c/map->Organization {:type "archive-center" :org-name archive-ctr})]))))
+        [(c/map->Organization {:type :archive-center :org-name archive-ctr})]))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Generators
@@ -33,12 +33,12 @@
 (defn generate-archive-center
   "Return archive center ignoring other type of organization like processing center"
   [orgs]
-  (generate-center "archive-center" orgs))
+  (generate-center :archive-center orgs))
 
 (defn generate-processing-center
   "Return processing center ignoring other type of organization like archive center"
   [orgs]
-  (generate-center "processing-center" orgs))
+  (generate-center :processing-center orgs))
 
 (comment
   ;;;;;;;;;
@@ -50,8 +50,8 @@
     [:ArchiveCenter])
 
   (xml-elem->Organizations (x/parse-str cmr.umm.test.echo10.collection/all-fields-collection-xml))
-  (let [orgs (vector (c/map->Organization {:type "archive-center" :org-name "ac se"})
-                     (c/map->Organization {:type "processing-center" :org-name "pro se"}))
+  (let [orgs (vector (c/map->Organization {:type :archive-center :org-name "ac se"})
+                     (c/map->Organization {:type :processing-center :org-name "pro se"}))
         arctr (generate-archive-center orgs)
         prctr (generate-processing-center orgs)]
     (vector arctr prctr))
