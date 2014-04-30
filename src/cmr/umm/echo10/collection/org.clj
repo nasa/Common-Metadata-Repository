@@ -10,11 +10,11 @@
   [collection-element]
   (let [archive-ctr (cx/string-at-path collection-element [:ArchiveCenter])
         processing-ctr (cx/string-at-path collection-element [:ProcessingCenter])]
-    (concat
-      (when processing-ctr
-        [(c/map->Organization {:type :processing-center :org-name processing-ctr})])
-      (when archive-ctr
-        [(c/map->Organization {:type :archive-center :org-name archive-ctr})]))))
+    (seq (concat
+           (when processing-ctr
+             [(c/map->Organization {:type :processing-center :org-name processing-ctr})])
+           (when archive-ctr
+             [(c/map->Organization {:type :archive-center :org-name archive-ctr})])))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Generators

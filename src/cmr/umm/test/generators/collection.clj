@@ -49,8 +49,9 @@
 (def collections
   (gen/fmap (fn [[entry-title product temporal psa campaigns two-ds proc-org archive-org]]
               (let [entry-id (str (:short-name product) "_" (:version-id product))
-                    orgs [proc-org archive-org]]
-                (c/->UmmCollection entry-id entry-title product temporal psa campaigns two-ds (remove nil? orgs))))
+                    orgs (remove nil? [proc-org archive-org])
+                    orgs (if (empty? orgs) nil orgs)]
+                (c/->UmmCollection entry-id entry-title product temporal psa campaigns two-ds orgs)))
             (gen/tuple
               entry-titles
               products
