@@ -15,25 +15,41 @@
 
 (use-fixtures :each (util/reset-database-fixture "PROV1"))
 
+
 ;;; tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (deftest save-collection-test
   (let [concept (util/collection-concept "PROV1" 1)
         {:keys [status revision-id concept-id]} (util/save-concept concept)
+        offset-in-hrs -8
         revision-date (util/get-concept-rev-date-by-id-and-revision concept-id revision-id)
-        today (f/unparse util/custom-ISO8601-DT-formatter (l/local-now))]
+        local-rev-date (util/revision-date->local revision-date offset-in-hrs)
+        now (util/now)
+        diff-in-min (t/in-minutes (t/interval now local-rev-date))]
     (is (= 201 status))
     (is (= revision-id 0))
-    (is (re-find (re-pattern (str today)) revision-date)) ;; verify yyyy-MM-dd part
+    (is (> 500  diff-in-min))
     (is (util/verify-concept-was-saved (assoc concept :revision-id revision-id :concept-id concept-id)))))
+
+(comment
+  now == "#<DateTime 2014-04-30T23:30:31.772-04:00>"
+  local-rev-date == "#<DateTime 2014-04-30T23:30:24.000-08:00>"
+  ;; diff-in-min == "239" ??
+  )
 
 (deftest save-granule-test
   (let [collection (util/collection-concept "PROV1" 1)
         parent-collection-id (:concept-id (util/save-concept collection))
         granule (util/granule-concept "PROV1" parent-collection-id 1)
-        {:keys [status revision-id concept-id]} (util/save-concept granule)]
+        {:keys [status revision-id concept-id]} (util/save-concept granule)
+        offset-in-hrs -8
+        revision-date (util/get-concept-rev-date-by-id-and-revision concept-id revision-id)
+        local-rev-date (util/revision-date->local revision-date offset-in-hrs)
+        now (util/now)
+        diff-in-min (t/in-minutes (t/interval now local-rev-date))]
     (is (= 201 status))
     (is (= revision-id 0))
+    (is (> 500  diff-in-min))
     (is (util/verify-concept-was-saved (assoc granule :revision-id revision-id :concept-id concept-id)))))
 
 (deftest save-concept-test-with-proper-revision-id-test
@@ -88,9 +104,9 @@
 (deftest save-granule-with-nil-required-field
   (testing "nil parent-collection-id"
     (let [granule (util/granule-concept "PROV1" nil 1)
-        {:keys [status revision-id concept-id]} (util/save-concept granule)]
-    (is (= 422 status))
-    (is (not (util/verify-concept-was-saved (assoc granule :revision-id revision-id :concept-id concept-id)))))))
+          {:keys [status revision-id concept-id]} (util/save-concept granule)]
+      (is (= 422 status))
+      (is (not (util/verify-concept-was-saved (assoc granule :revision-id revision-id :concept-id concept-id)))))))
 
 ;;; TODO - add test for saving concept with concept-type, provider-id, and native-id
 ;;; of existing concept but with different concept-id to be sure it fails.

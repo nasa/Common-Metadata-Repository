@@ -11,6 +11,8 @@
             [cmr.metadata-db.data.oracle.sql-utils :as su]
             [cmr.metadata-db.services.util :as util]
             [cmr.metadata-db.services.provider-service :as provider-service]
+            [clj-time.format :as f]
+            [clj-time.coerce :as cr]
             [cmr.common.concepts :as cc])
   (:import cmr.metadata_db.data.oracle.core.OracleStore
            java.util.zip.GZIPInputStream
@@ -43,6 +45,16 @@
     (.finish gzip)
     (.toByteArray output)))
 
+(defn oracle-sql-date->string
+  "Format date to yyyy-MM-ddThh:mm:ss.sssZ"
+  [revision-date]
+  (when revision-date
+    (->> revision-date
+         (.dateValue)
+         cr/from-sql-date
+         (f/unparse (f/formatters :date-time)))))
+
+
 (defmulti db-result->concept-map
   "Translate concept result returned from db into a concept map"
   (fn [concept-type provider-id result]
@@ -70,7 +82,7 @@
        :metadata (blob->string metadata)
        :format format
        :revision-id (int revision_id)
-       :revision-date revision_date
+       :revision-date (oracle-sql-date->string revision_date)
        :deleted (not= (int deleted) 0)})))
 
 (defmethod concept->insert-args :default
@@ -116,8 +128,8 @@
     (let [table (tables/get-table-name provider-id concept-type)]
       (:concept_id
         (su/find-one db (select [:concept-id]
-                          (from table)
-                          (where `(= :native-id ~native-id)))))))
+                                (from table)
+                                (where `(= :native-id ~native-id)))))))
 
   (get-concept-by-provider-id-native-id-concept-type
     [db concept]
@@ -126,14 +138,14 @@
           stmt (if revision-id
                  ;; find specific revision
                  (select '[*]
-                   (from table)
-                   (where `(and (= :native-id ~native-id)
-                                (= :revision-id ~revision-id))))
+                         (from table)
+                         (where `(and (= :native-id ~native-id)
+                                      (= :revision-id ~revision-id))))
                  ;; find latest
                  (select '[*]
-                   (from table)
-                   (where `(= :native-id ~native-id))
-                   (order-by (desc :revision-id))))]
+                         (from table)
+                         (where `(= :native-id ~native-id))
+                         (order-by (desc :revision-id))))]
       (db-result->concept-map concept-type provider-id
                               (su/find-one db stmt))))
 
@@ -142,17 +154,17 @@
      (let [table (tables/get-table-name provider-id concept-type)]
        (db-result->concept-map concept-type provider-id
                                (su/find-one db (select '[*]
-                                                 (from table)
-                                                 (where `(= :concept-id ~concept-id))
-                                                 (order-by (desc :revision-id)))))))
+                                                       (from table)
+                                                       (where `(= :concept-id ~concept-id))
+                                                       (order-by (desc :revision-id)))))))
     ([db concept-type provider-id concept-id revision-id]
      (if revision-id
        (let [table (tables/get-table-name provider-id concept-type)]
          (db-result->concept-map concept-type provider-id
                                  (su/find-one db (select '[*]
-                                                   (from table)
-                                                   (where `(and (= :concept-id ~concept-id)
-                                                                (= :revision-id ~revision-id)))))))
+                                                         (from table)
+                                                         (where `(and (= :concept-id ~concept-id)
+                                                                      (= :revision-id ~revision-id)))))))
        (c/get-concept db concept-type provider-id concept-id))))
 
   (get-concepts
@@ -167,10 +179,10 @@
              (concat concept-id-revision-id-tuples [:transaction false]))
       (let [table (tables/get-table-name provider-id concept-type)
             stmt (su/build (select [:c.*]
-                             (from (as (keyword table) :c)
-                                   (as :get-concepts-work-area :t))
-                             (where `(and (= :c.concept-id :t.concept-id)
-                                          (= :c.revision-id :t.revision-id)))))]
+                                   (from (as (keyword table) :c)
+                                         (as :get-concepts-work-area :t))
+                                   (where `(and (= :c.concept-id :t.concept-id)
+                                                (= :c.revision-id :t.revision-id)))))]
         (map (partial db-result->concept-map concept-type provider-id)
              (j/query conn stmt)))))
 
@@ -180,8 +192,8 @@
           params (dissoc params :concept-type :provider-id)
           table (tables/get-table-name provider-id concept-type)
           stmt (su/build (select [:*]
-                           (from table)
-                           (where (find-params->sql-clause params))))]
+                                 (from table)
+                                 (where (find-params->sql-clause params))))]
       (map (partial db-result->concept-map concept-type provider-id)
            (j/query db stmt))))
 
@@ -210,8 +222,8 @@
     [this concept-type provider-id concept-id revision-id]
     (let [table (tables/get-table-name provider-id concept-type)
           stmt (su/build (delete table
-                           (where `(and (= :concept-id ~concept-id)
-                                        (= :revision-id ~revision-id)))))]
+                                 (where `(and (= :concept-id ~concept-id)
+                                              (= :revision-id ~revision-id)))))]
       (j/execute! this stmt)))
 
   (reset
@@ -223,7 +235,4 @@
                                    START WITH %d
                                    INCREMENT BY 1
                                    CACHE 20" INITIAL_CONCEPT_NUM))))
-
-
-
 
