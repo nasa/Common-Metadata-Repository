@@ -26,11 +26,19 @@
 (def product-specific-attribute-refs
   (ext-gen/model-gen g/->ProductSpecificAttributeRef psa/names (gen/vector psa/string-values 1 3)))
 
+(def data-granules
+  (ext-gen/model-gen
+    g/map->DataGranule
+    (gen/hash-map :producer-gran-id (ext-gen/optional (ext-gen/string-ascii 1 128))
+                  :day-night (gen/elements ["DAY" "NIGHT" "BOTH" "UNSPECIFIED"])
+                  :production-date-time ext-gen/date-time)))
+
 (def granules
-  (gen/fmap (fn [[granule-ur coll-ref temporal prefs psas]]
-              (g/->UmmGranule granule-ur coll-ref temporal prefs psas))
+  (gen/fmap (fn [[granule-ur coll-ref data-granule temporal prefs psas]]
+              (g/->UmmGranule granule-ur coll-ref data-granule temporal prefs psas))
             (gen/tuple granule-urs
                        coll-refs
+                       (ext-gen/optional data-granules)
                        gt/temporal
                        (ext-gen/nil-if-empty proj-refs)
                        (ext-gen/nil-if-empty (gen/vector product-specific-attribute-refs 0 5)))))

@@ -13,6 +13,18 @@
    version-id
    ])
 
+(defrecord DataGranule
+  [
+   ;; maps to  Granule/DataGranule/ProducerGranuleID in echo granule schema
+   producer-gran-id
+
+   ;; maps to Granule/DataGranule/DayNight
+   day-night
+
+   ;; maps to Granule/DataGranule/ProductionDateTime
+   production-date-time
+   ])
+
 (defrecord GranuleTemporal
   [
    range-date-time
@@ -35,6 +47,8 @@
 
    ;; granule parent
    collection-ref
+
+   data-granule
 
    temporal
 

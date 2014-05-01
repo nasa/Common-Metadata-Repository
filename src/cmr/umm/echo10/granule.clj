@@ -14,8 +14,8 @@
   "Parses an ECHO10 Campaigns element of a Granule XML document and returns the short names."
   [granule-elem]
   (seq (cx/strings-at-path
-                granule-elem
-                [:Campaigns :Campaign :ShortName])))
+         granule-elem
+         [:Campaigns :Campaign :ShortName])))
 
 (defn generate-project-refs
   "Generates the Campaigns element of an ECHO10 XML from a UMM Granule project-refs entry."
@@ -26,6 +26,15 @@
                  (x/element :Campaign {}
                             (x/element :ShortName {} pref))))))
 
+(defn generate-data-granule
+  "Generates the DataGranule element of an ECHO10 XML from a UMM Granule data-granule entry."
+  [data-granule]
+  (when data-granule
+    (x/element :DataGranule {}
+               (when-let [producer-gran-id (:producer-gran-id data-granule)]
+                 (x/element :ProducerGranuleId {} producer-gran-id))
+               (x/element :DayNightFlag {} (:day-night data-granule))
+               (x/element :ProductionDateTime {} (str (:production-date-time data-granule))))))
 
 (defn- xml-elem->CollectionRef
   "Returns a UMM ref element from a parsed Granule XML structure"
@@ -36,12 +45,24 @@
           version-id (cx/string-at-path granule-content-node [:Collection :VersionId])]
       (g/collection-ref short-name version-id))))
 
+(defn- xml-elem->DataGranule
+  "Returns a UMM data-granaule element from a parsed Granule XML structure"
+  [granule-content-node]
+  (let [producer-gran-id (cx/string-at-path granule-content-node [:DataGranule :ProducerGranuleId])
+        day-night (cx/string-at-path granule-content-node [:DataGranule :DayNightFlag])
+        production-date-time (cx/datetime-at-path granule-content-node [:DataGranule :ProductionDateTime])]
+    (when (or producer-gran-id day-night production-date-time)
+      (g/map->DataGranule {:producer-gran-id producer-gran-id
+                           :day-night day-night
+                           :production-date-time production-date-time}))))
+
 (defn- xml-elem->Granule
   "Returns a UMM Product from a parsed Granule XML structure"
   [xml-struct]
   (let [coll-ref (xml-elem->CollectionRef xml-struct)]
     (g/map->UmmGranule {:granule-ur (cx/string-at-path xml-struct [:GranuleUR])
                         :collection-ref coll-ref
+                        :data-granule (xml-elem->DataGranule xml-struct)
                         :temporal (gt/xml-elem->Temporal xml-struct)
                         :project-refs (xml-elem->project-refs xml-struct)
                         :product-specific-attributes (psa/xml-elem->ProductSpecificAttributeRefs xml-struct)})))
@@ -57,6 +78,7 @@
     [granule]
     (let [{{:keys [entry-title short-name version-id]} :collection-ref
            granule-ur :granule-ur
+           data-granule :data-granule
            temporal :temporal
            prefs :project-refs
            psas :product-specific-attributes} granule]
@@ -72,6 +94,7 @@
                                           (x/element :ShortName {} short-name)
                                           (x/element :VersionId {} version-id)))
                    (x/element :RestrictionFlag {} "0.0")
+                   (generate-data-granule data-granule)
                    (gt/generate-temporal temporal)
                    (generate-project-refs prefs)
                    (psa/generate-product-specific-attribute-refs psas)
