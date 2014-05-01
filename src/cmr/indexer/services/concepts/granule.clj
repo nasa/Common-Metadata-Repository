@@ -6,7 +6,8 @@
             [cmr.umm.echo10.granule :as granule]
             [cmr.transmit.metadata-db :as mdb]
             [cmr.indexer.services.concepts.temporal :as temporal]
-            [cmr.indexer.services.concepts.attribute :as attrib]))
+            [cmr.indexer.services.concepts.attribute :as attrib]
+            [cmr.indexer.services.concepts.orbit-calculated-spatial-domain :as ocsd]))
 
 (defmethod idx/parse-concept :granule
   [concept]
@@ -37,6 +38,7 @@
      :producer-gran-id.lowercase (when producer-gran-id (s/lower-case producer-gran-id))
      :project-refs project-refs
      :project-refs.lowercase (map s/lower-case project-refs)
+     :orbit-calculated-spatial-domains (ocsd/ocsds->elastic-docs umm-granule)
      :attributes (attrib/psa-refs->elastic-docs parent-collection umm-granule)
      :start-date (when start-date (f/unparse (f/formatters :date-time) start-date))
      :end-date (when end-date (f/unparse (f/formatters :date-time) end-date))}))

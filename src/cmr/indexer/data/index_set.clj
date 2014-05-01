@@ -61,6 +61,14 @@
     :time-value date-field-mapping
     :date-value date-field-mapping}})
 
+(def orbit-calculated-spatial-domain-mapping
+  {:type "nested"
+   :dynamic "strict"
+   :properties {:orbit-number float-field-mapping
+                :start-orbit-number float-field-mapping
+                :stop-orbit-number float-field-mapping
+                :equator-crossing-longitude float-field-mapping
+                :equator-crossing-date-time date-field-mapping}})
 
 (def collection-mapping
   {:collection {:dynamic "strict",
@@ -105,6 +113,7 @@
                                     :producer-gran-id.lowercase string-field-mapping
                                     :start-date date-field-mapping
                                     :end-date date-field-mapping
+                                    :orbit-calculated-spatial-domains orbit-calculated-spatial-domain-mapping
                                     :project-refs string-field-mapping
                                     :project-refs.lowercase string-field-mapping
                                     :attributes attributes-field-mapping}}})
