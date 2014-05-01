@@ -27,15 +27,24 @@
 (def product-specific-attribute-refs
   (ext-gen/model-gen g/->ProductSpecificAttributeRef psa/names (gen/vector psa/string-values 1 3)))
 
+(def data-granules
+  (ext-gen/model-gen
+    g/map->DataGranule
+    (gen/hash-map :producer-gran-id (ext-gen/optional (ext-gen/string-ascii 1 128))
+                  :day-night (gen/elements ["DAY" "NIGHT" "BOTH" "UNSPECIFIED"])
+                  :production-date-time ext-gen/date-time)))
+
 (def granules
-  (gen/fmap (fn [[granule-ur coll-ref temporal ocsds prefs psas]]
-              (g/->UmmGranule granule-ur coll-ref temporal ocsds prefs psas))
-            (gen/tuple granule-urs
-                       coll-refs
-                       gt/temporal
-                       (ext-gen/nil-if-empty (gen/vector ocsd/orbit-calculated-spatial-domains 0 5))
-                       (ext-gen/nil-if-empty proj-refs)
-                       (ext-gen/nil-if-empty (gen/vector product-specific-attribute-refs 0 5)))))
+  (ext-gen/model-gen
+    g/map->UmmGranule
+    (gen/hash-map
+      :granule-ur granule-urs
+      :collection-ref coll-refs
+      :data-granule (ext-gen/optional data-granules)
+      :temporal gt/temporal
+      :orbit-calculated-spatial-domains (ext-gen/nil-if-empty (gen/vector ocsd/orbit-calculated-spatial-domains 0 5))
+      :project-refs (ext-gen/nil-if-empty proj-refs)
+      :product-specific-attributes (ext-gen/nil-if-empty (gen/vector product-specific-attribute-refs 0 5)))))
 
 ;; Generator that only returns collection ref with entry-title
 ;; DEPRECATED - this will go away in the future. Don't use it.
