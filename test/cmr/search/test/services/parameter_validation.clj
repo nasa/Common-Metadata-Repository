@@ -5,9 +5,9 @@
 
 (def valid-params
   "Example valid parameters"
-  {:entry_title "foo"
-   :page_size 10
-   :options {:entry_title {:ignore_case "true"}}})
+  {:entry-title "foo"
+   :page-size 10
+   :options {:entry-title {:ignore-case "true"}}})
 
 (deftest individual-parameter-validation-test
   (testing "unrecognized parameters"
@@ -15,48 +15,48 @@
     (is (= ["Parameter [foo] was not recognized."
             "Parameter [bar] was not recognized."]
            (pv/unrecognized-params-validation :collection
-                                              {:entry_title "fdad"
+                                              {:entry-title "fdad"
                                                :foo 1
                                                :bar 2}))))
   (testing "invalid options param names"
     (is (= [] (pv/unrecognized-params-in-options-validation :collection valid-params)))
     (is (= ["Parameter [foo] with option was not recognized."]
            (pv/unrecognized-params-in-options-validation :collection
-                                                         {:entry_title "fdad"
-                                                          :options {:foo {:ignore_case "true"}}}))))
+                                                         {:entry-title "fdad"
+                                                          :options {:foo {:ignore-case "true"}}}))))
   (testing "invalid options param args"
     (is (= ["Option [foo] for param [entry_title] was not recognized."]
            (pv/unrecognized-params-settings-in-options-validation :collection
-                                                                  {:entry_title "fdad"
-                                                                   :options {:entry_title {:foo "true"}}}))))
+                                                                  {:entry-title "fdad"
+                                                                   :options {:entry-title {:foo "true"}}}))))
   (testing "Page size less than one"
     (is (= ["page_size must be a number between 1 and 2000"]
-           (pv/page-size-validation :collection (assoc valid-params :page_size 0)))))
+           (pv/page-size-validation :collection (assoc valid-params :page-size 0)))))
 
   (testing "Page size less than one"
     (is (= ["page_size must be a number between 1 and 2000"]
-           (pv/page-size-validation :collection (assoc valid-params :page_size 0)))))
+           (pv/page-size-validation :collection (assoc valid-params :page-size 0)))))
   (testing "Search with large page size"
     (is (= []
-           (pv/page-size-validation :collection (assoc valid-params :page_size 100)))))
+           (pv/page-size-validation :collection (assoc valid-params :page-size 100)))))
   (testing "Negative page size"
     (is (= ["page_size must be a number between 1 and 2000"]
-           (pv/page-size-validation :collection (assoc valid-params :page_size -1)))))
+           (pv/page-size-validation :collection (assoc valid-params :page-size -1)))))
   (testing "Page size too large."
     (is (= ["page_size must be a number between 1 and 2000"]
-           (pv/page-size-validation :collection (assoc valid-params :page_size 2001)))))
+           (pv/page-size-validation :collection (assoc valid-params :page-size 2001)))))
   (testing "Non-numeric page size"
     (is (= ["page_size must be a number between 1 and 2000"]
-           (pv/page-size-validation :collection (assoc valid-params :page_size "ABC")))))
+           (pv/page-size-validation :collection (assoc valid-params :page-size "ABC")))))
   (testing "Valid page_num"
     (is (= []
-           (pv/page-num-validation :collection (assoc valid-params :page_num 5)))))
+           (pv/page-num-validation :collection (assoc valid-params :page-num 5)))))
   (testing "Page num less than one"
     (is (= ["page_num must be a number greater than or equal to 1"]
-           (pv/page-num-validation :collection (assoc valid-params :page_num 0)))))
+           (pv/page-num-validation :collection (assoc valid-params :page-num 0)))))
   (testing "Non-numeric page num"
     (is (= ["page_num must be a number greater than or equal to 1"]
-           (pv/page-num-validation :collection (assoc valid-params :page_num "ABC"))))))
+           (pv/page-num-validation :collection (assoc valid-params :page-num "ABC"))))))
 
 
 (deftest temporal-format-validation :collection-start-date-test
@@ -132,11 +132,11 @@
     (is (= valid-params (pv/validate-parameters :collection valid-params)))
     (is (= valid-params (pv/validate-parameters :granule valid-params))))
   (testing "parameters are validated according to concept-type"
-    (is (= {:granule_ur "Dummy"} (pv/validate-parameters :granule {:granule_ur "Dummy"})))
-    (is (thrown? clojure.lang.ExceptionInfo (pv/validate-parameters :collection {:granule_ur "Dummy"}))))
+    (is (= {:granule-ur "Dummy"} (pv/validate-parameters :granule {:granule-ur "Dummy"})))
+    (is (thrown? clojure.lang.ExceptionInfo (pv/validate-parameters :collection {:granule-ur "Dummy"}))))
   (testing "errors thrown when parameters are invalid."
     (try
-      (pv/validate-parameters :collection {:entry_title "fdad"
+      (pv/validate-parameters :collection {:entry-title "fdad"
                                            :foo 1
                                            :bar 2})
       (is false "An error should have been thrown.")

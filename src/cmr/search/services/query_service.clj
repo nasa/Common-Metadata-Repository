@@ -31,7 +31,8 @@
             [cmr.search.services.collection-query-resolver :as r]
             [cmr.transmit.metadata-db :as meta-db]
             [cmr.system-trace.core :refer [deftracefn]]
-            [cmr.common.services.errors :as err]))
+            [cmr.common.services.errors :as err]
+            [cmr.common.util :as u]))
 
 (deftracefn validate-query
   "Validates a query model. Throws an exception to return to user with errors.
@@ -82,11 +83,17 @@
   concept id and native provider id."
   [context concept-type params]
 
-  (->> params
-       p/replace-parameter-aliases
-       (pv/validate-parameters concept-type)
-       (p/parameters->query concept-type)
-       (find-concepts-by-query context)))
+  (let [params (-> params
+                   u/map-keys->kebab-case
+                   (update-in [:options] u/map-keys->kebab-case)
+                   (update-in [:options] #(when % (into {} (map (fn [[k v]]
+                                                                  [k (u/map-keys->kebab-case v)])
+                                                                %)))))]
+    (->> params
+         p/replace-parameter-aliases
+         (pv/validate-parameters concept-type)
+         (p/parameters->query concept-type)
+         (find-concepts-by-query context))))
 
 (deftracefn find-concept-by-id
   "Executes a search to metadata-db and returns the concept with the given cmr-concept-id."

@@ -1,11 +1,12 @@
 (ns cmr.search.services.parameters
   "Contains functions for parsing and converting query parameters to query conditions"
   (:require [clojure.set :as set]
-            [cmr.search.models.query :as qm]))
+            [cmr.search.models.query :as qm]
+            [cmr.common.util :as u]))
 
 (def param-aliases
   "A map of non UMM parameter names to their UMM fields."
-  {:dataset_id :entry_title
+  {:dataset-id :entry-title
    :campaign :project})
 
 (defn replace-parameter-aliases
@@ -18,24 +19,23 @@
 
 (def concept-param->type
   "A mapping of param names to query condition types based on concept-type"
-  {:collection {:entry_title :string
+  {:collection {:entry-title :string
                 :provider :string
-                :short_name :string
+                :short-name :string
                 :version :string
                 :temporal :temporal
                 :concept-id :string
                 :project :string
                 :archive-center :string
-                :two_d_coordinate_system_name :string}
-
-   :granule {:granule_ur :string
-             :collection_concept_id :string
-             :producer_granule_id :string
-             :readable_granule_name :readable-granule-name
+                :two-d-coordinate-system-name :string}
+   :granule {:granule-ur :string
+             :collection-concept-id :string
+             :producer-granule-id :string
+             :readable-granule-name :readable-granule-name
              :provider :collection-query
-             :entry_title :collection-query
+             :entry-title :collection-query
              :attribute :attribute
-             :short_name :collection-query
+             :short-name :collection-query
              :version :collection-query
              :temporal :temporal
              :project :string
@@ -62,7 +62,7 @@
     (qm/map->StringCondition
       {:field param
        :value value
-       :case-sensitive? (not= "true" (get-in options [param :ignore_case]))
+       :case-sensitive? (not= "true" (get-in options [param :ignore-case]))
        :pattern? (= "true" (get-in options [param :pattern]))})))
 
 (defmethod parameter->condition :readable-granule-name
@@ -75,23 +75,23 @@
         (map #(parameter->condition concept-type param % options) value)))
     (qm/or-conds
       [(qm/map->StringCondition
-         {:field :granule_ur
+         {:field :granule-ur
           :value value
-          :case-sensitive? (not= "true" (get-in options [param :ignore_case]))
+          :case-sensitive? (not= "true" (get-in options [param :ignore-case]))
           :pattern? (= "true" (get-in options [param :pattern]))})
        (qm/map->StringCondition
-         {:field :producer_granule_id
+         {:field :producer-granule-id
           :value value
-          :case-sensitive? (not= "true" (get-in options [param :ignore_case]))
+          :case-sensitive? (not= "true" (get-in options [param :ignore-case]))
           :pattern? (= "true" (get-in options [param :pattern]))})])))
 
 (defn parameters->query
   "Converts parameters into a query model."
   [concept-type params]
-  (let [options (get params :options {})
-        page-size (Integer. (get params :page_size qm/default-page-size))
-        page-num (Integer. (get params :page_num qm/default-page-num))
-        params (dissoc params :options :page_size :page_num)]
+  (let [options (u/map-keys->kebab-case (get params :options {}))
+        page-size (Integer. (get params :page-size qm/default-page-size))
+        page-num (Integer. (get params :page-num qm/default-page-num))
+        params (dissoc params :options :page-size :page-num)]
     (if (empty? params)
       (qm/query {:concept-type concept-type
                  :page-size page-size

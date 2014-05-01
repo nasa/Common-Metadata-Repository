@@ -8,17 +8,12 @@
 (def field-mappings
   "A map of fields in the query to the field name in elastic. Field names are excluded from this
   map if the query field name matches the field name in elastic search."
-  {:collection {:entry_title :entry-title
-                :provider :provider-id
-                :short_name :short-name
+  {:collection {:provider :provider-id
                 :version :version-id
                 :project :project-sn
-                :two_d_coordinate_system_name :two-d-coord-name}
-   :granule {:entry_title :entry-title
-             :provider :provider-id
-             :granule_ur :granule-ur
-             :producer_granule_id :producer-gran-id
-             :collection_concept_id :collection-concept-id
+                :two-d-coordinate-system-name :two-d-coord-name}
+   :granule {:provider :provider-id
+             :producer-granule-id :producer-gran-id
              :project :project-refs}})
 
 (defn query-field->elastic-field
