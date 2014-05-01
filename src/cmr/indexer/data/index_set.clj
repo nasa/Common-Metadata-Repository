@@ -101,6 +101,8 @@
                                     :provider-id.lowercase string-field-mapping
                                     :granule-ur            (stored string-field-mapping)
                                     :granule-ur.lowercase  string-field-mapping
+                                    :producer-gran-id string-field-mapping
+                                    :producer-gran-id.lowercase string-field-mapping
                                     :start-date date-field-mapping
                                     :end-date date-field-mapping
                                     :project-refs string-field-mapping
