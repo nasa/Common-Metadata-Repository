@@ -1,7 +1,8 @@
 (ns cmr.common.util
   "Utility functions that might be useful throughout the CMR."
   (:require [cmr.common.log :refer (debug info warn error)]
-            [cmr.common.services.errors :as errors]))
+            [cmr.common.services.errors :as errors]
+            [camel-snake-kebab :as csk]))
 
 (defn sequence->fn
   [vals]
@@ -67,3 +68,27 @@
   From http://stackoverflow.com/questions/3937661/remove-nil-values-from-a-map"
   [m]
   (apply dissoc m (for [[k v] m :when (nil? v)] k)))
+
+
+(defn map-keys [f m]
+  "Maps f over the keys in map m and updates all keys with the result of f.
+  This is a recommended function from the Camel Snake Kebab library."
+  (when m
+    (letfn [(mapper [[k v]]
+                    [(f k)
+                     (if (map? v)
+                       (map-keys f v)
+                       v)])]
+      (into {} (map mapper m)))))
+
+(defn map-keys->snake_case
+  "Converts map keys to snake_case."
+  [m]
+  (map-keys csk/->snake_case_keyword m))
+
+(defn map-keys->kebab-case
+  "Converts map keys to kebab-case"
+  [m]
+  (map-keys csk/->kebab-case-keyword m))
+
+
