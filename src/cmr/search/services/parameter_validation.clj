@@ -7,7 +7,9 @@
             [cmr.search.services.parameters :as p]
             [cmr.search.services.parameter-converters.attribute :as attrib]
             [cmr.search.services.messages.attribute-messages :as attrib-msg]
-            [camel-snake-kebab :as csk]))
+            [camel-snake-kebab :as csk]
+            [cmr.search.services.messages.orbit-number-messages :as on-msg]))
+
 
 (defn- concept-type->valid-param-names
   "A set of the valid parameter names for the given concept-type."
@@ -140,6 +142,31 @@
           [(format "Parameter %s must take value of true of false, but was %s" key value)]))
       bool-params)))
 
+(defn orbit-number-str->orbit-number-map
+  "Convert an orbit-number string to a map with exact or range values."
+  [ons]
+  (if-let[[_ start stop] (re-find #"^(.*),(.*)$" ons)]
+    {:start-orbit-number (Float. start)
+     :stop-orbit-number (Float. stop)}
+    {:orbit-number (Float. ons)}))
+
+(defn orbit-number-validation
+  "Validates that the orbital number is either a single number or a range in the format
+  start,stop where start <= stop."
+  [concept-type params]
+  (if-let [orbit-number (:orbit-number params)]
+    (try
+      (let [{:keys [orbit-number
+                    start-orbit-number
+                    stop-orbit-number]} (orbit-number-str->orbit-number-map orbit-number)]
+        (if (and start-orbit-number (> start-orbit-number stop-orbit-number))
+          [(on-msg/invalid-orbit-number-msg)]
+          []))
+      (catch Exception e
+        [(on-msg/invalid-orbit-number-msg)]))
+    []))
+
+
 (def parameter-validations
   "A list of the functions that can validate parameters. They all accept parameters as an argument
   and return a list of errors."
@@ -151,6 +178,8 @@
    temporal-format-validation
    attribute-validation
    boolean-value-validation])
+   orbit-number-validation
+   attribute-validation])
 
 (defn validate-parameters
   "Validates parameters. Throws exceptions to send to the user. Returns parameters if validation

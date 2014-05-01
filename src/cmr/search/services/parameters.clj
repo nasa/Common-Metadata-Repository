@@ -40,6 +40,7 @@
              :entry-title :collection-query
              :attribute :attribute
              :short-name :collection-query
+             :orbit-number :orbit-number
              :version :collection-query
              :temporal :temporal
              :project :string
