@@ -30,6 +30,8 @@
 
    :granule {:granule_ur :string
              :collection_concept_id :string
+             :producer_granule_id :string
+             :readable_granule_name :readable-granule-name
              :provider :collection-query
              :entry_title :collection-query
              :attribute :attribute
@@ -62,6 +64,26 @@
        :value value
        :case-sensitive? (not= "true" (get-in options [param :ignore_case]))
        :pattern? (= "true" (get-in options [param :pattern]))})))
+
+(defmethod parameter->condition :readable-granule-name
+  [concept-type param value options]
+  (if (sequential? value)
+    (if (= "true" (get-in options [param :and]))
+      (qm/and-conds
+        (map #(parameter->condition concept-type param % options) value))
+      (qm/or-conds
+        (map #(parameter->condition concept-type param % options) value)))
+    (qm/or-conds
+      [(qm/map->StringCondition
+         {:field :granule_ur
+          :value value
+          :case-sensitive? (not= "true" (get-in options [param :ignore_case]))
+          :pattern? (= "true" (get-in options [param :pattern]))})
+       (qm/map->StringCondition
+         {:field :producer_granule_id
+          :value value
+          :case-sensitive? (not= "true" (get-in options [param :ignore_case]))
+          :pattern? (= "true" (get-in options [param :pattern]))})])))
 
 (defn parameters->query
   "Converts parameters into a query model."

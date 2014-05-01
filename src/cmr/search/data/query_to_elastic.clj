@@ -17,6 +17,7 @@
    :granule {:entry_title :entry-title
              :provider :provider-id
              :granule_ur :granule-ur
+             :producer_granule_id :producer-gran-id
              :collection_concept_id :collection-concept-id
              :project :project-refs}})
 
