@@ -6,7 +6,6 @@
 (defn ocsd->elastic-doc
   "Converts a OCSD into the portion going in an elastic document"
   [ocsd]
-  (try
   (let [{:keys [orbital-model-name
                 orbit-number
                 start-orbit-number
@@ -17,10 +16,7 @@
      :start-orbit-number start-orbit-number
      :stop-orbit-number stop-orbit-number
      :equator-crossing-longitude equator-crossing-date-time
-     :equator-crossing-date-time equator-crossing-date-time})
-  (catch Throwable e
-    (println e)
-    (.printStackTrace e))))
+     :equator-crossing-date-time equator-crossing-date-time}))
 
 (defn ocsds->elastic-docs
   "Converts the ocsds into a list of elastic documents"
