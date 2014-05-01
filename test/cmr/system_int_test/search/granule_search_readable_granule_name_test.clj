@@ -25,52 +25,52 @@
                                                        :producer-gran-id "Granule2"}))]
     (index/flush-elastic-index)
     (testing "search by non-existent readable granule name."
-      (let [references (search/find-refs :granule {:readable_granule_name "NON_EXISTENT"})]
+      (let [references (search/find-refs :granule {:readable-granule-name "NON_EXISTENT"})]
         (is (d/refs-match? [] references))))
     (testing "search by existing readable granule name matching granule-ur."
-      (let [references (search/find-refs :granule {:readable_granule_name "Granule1"})]
+      (let [references (search/find-refs :granule {:readable-granule-name "Granule1"})]
         (is (d/refs-match? [gran1] references))))
     (testing "search by existing readable granule name matching producer-granule-id"
-      (let [references (search/find-refs :granule {:readable_granule_name "SpecialTwo"})]
+      (let [references (search/find-refs :granule {:readable-granule-name "SpecialTwo"})]
         (is (d/refs-match? [gran2] references))))
     (testing "search by multiple readable granule names."
-      (let [references (search/find-refs :granule {"readable_granule_name[]" ["Granule1", "Granule2"]})]
+      (let [references (search/find-refs :granule {"readable-granule-name[]" ["Granule1", "Granule2"]})]
         (is (d/refs-match? [gran1 gran2 gran5] references))))
     (testing "search by readable granule name using wildcard *."
       (let [references (search/find-refs :granule
-                                         {:readable_granule_name "Gran*"
-                                          "options[readable_granule_name][pattern]" "true"})]
+                                         {:readable-granule-name "Gran*"
+                                          "options[readable-granule-name][pattern]" "true"})]
         (is (d/refs-match? [gran1 gran2 gran4 gran5] references))))
     (testing "search by readable granule name using wildcard ?."
       (let [references (search/find-refs :granule
-                                         {:readable_granule_name "Granule?"
-                                          "options[readable_granule_name][pattern]" "true"})]
+                                         {:readable-granule-name "Granule?"
+                                          "options[readable-granule-name][pattern]" "true"})]
         (is (d/refs-match? [gran1 gran2 gran5] references))))
     (testing "search by readable granule name case not match."
-      (let [references (search/find-refs :granule {:readable_granule_name "granule1"})]
+      (let [references (search/find-refs :granule {:readable-granule-name "granule1"})]
         (is (d/refs-match? [] references))))
     (testing "search by readable granule name ignore case false."
       (let [references (search/find-refs :granule
-                                         {:readable_granule_name "granule1"
-                                          "options[readable_granule_name][ignore_case]" "false"})]
+                                         {:readable-granule-name "granule1"
+                                          "options[readable-granule-name][ignore-case]" "false"})]
         (is (d/refs-match? [] references))))
     (testing "search by readable granule name ignore case true."
       (let [references (search/find-refs :granule
-                                         {:readable_granule_name "granule1"
-                                          "options[readable_granule_name][ignore_case]" "true"})]
+                                         {:readable-granule-name "granule1"
+                                          "options[readable-granule-name][ignore-case]" "true"})]
         (is (d/refs-match? [gran1] references))))
     (testing "search by readable granule name default options."
       (let [references (search/find-refs :granule
-                                         {:readable_granule_name ["Granule2", "SuperSpecial"]})]
+                                         {:readable-granule-name ["Granule2", "SuperSpecial"]})]
         (is (d/refs-match? [gran2 gran4 gran5] references))))
     (testing "search by readable granule name options :or."
       (let [references (search/find-refs :granule
-                                         {:readable_granule_name ["Granule2", "SuperSpecial"]
-                                          "options[readable_granule_name][or]" "true"})]
+                                         {:readable-granule-name ["Granule2", "SuperSpecial"]
+                                          "options[readable-granule-name][or]" "true"})]
         (is (d/refs-match? [gran2 gran4 gran5] references))))
     (testing "search by readable granule name options :and."
       (let [references (search/find-refs :granule
-                                         {:readable_granule_name ["Granule2", "SuperSpecial"]
-                                          "options[readable_granule_name][and]" "true"})]
+                                         {:readable-granule-name ["Granule2", "SuperSpecial"]
+                                          "options[readable-granule-name][and]" "true"})]
         (is (d/refs-match? [gran5] references))))))
 

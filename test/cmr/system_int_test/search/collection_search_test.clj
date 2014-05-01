@@ -59,16 +59,16 @@
 
 (deftest search-by-concept-id
   (testing "Search by existing concept-id."
-    (let [{:keys [refs]} (search/find-refs :collection {:concept-id "C1000000000-CMR_PROV1"})]
+    (let [{:keys [refs]} (search/find-refs :collection {:concept_id "C1000000000-CMR_PROV1"})]
       (is (= 1 (count refs)))))
   (testing "Search by multiple concept-ids."
-    (let [{:keys [refs]} (search/find-refs :collection {:concept-id ["C1000000000-CMR_PROV1" "C1000000001-CMR_PROV1"]})]
+    (let [{:keys [refs]} (search/find-refs :collection {:concept_id ["C1000000000-CMR_PROV1" "C1000000001-CMR_PROV1"]})]
       (is (= 2 (count refs)))))
   (testing "Search for non-existent concept-id."
-    (let [{:keys [refs]} (search/find-refs :collection {:concept-id ["C2000000000-CMR_PROV1"]})]
+    (let [{:keys [refs]} (search/find-refs :collection {:concept_id ["C2000000000-CMR_PROV1"]})]
       (is (= 0 (count refs)))))
   (testing "Search for both existing and non-existing concept-id."
-    (let [{:keys [refs]} (search/find-refs :collection {:concept-id ["C1000000000-CMR_PROV1" "C1000000001-CMR_PROV1" "C2000000000-CMR_PROV1"]})]
+    (let [{:keys [refs]} (search/find-refs :collection {:concept_id ["C1000000000-CMR_PROV1" "C1000000001-CMR_PROV1" "C2000000000-CMR_PROV1"]})]
       (is (= 2 (count refs))))))
 
 (deftest search-by-provider-id
@@ -94,10 +94,10 @@
     (let [{:keys [refs]} (search/find-refs :collection {:provider "CMR_prov1"})]
       (is (= 0 (count refs)))))
   (testing "search by provider id ignore case false"
-    (let [{:keys [refs]} (search/find-refs :collection {:provider "CMR_prov1", "options[provider][ignore_case]" "false"})]
+    (let [{:keys [refs]} (search/find-refs :collection {:provider "CMR_prov1", "options[provider][ignore-case]" "false"})]
       (is (= 0 (count refs)))))
   (testing "search by provider id ignore case true."
-    (let [{:keys [refs]} (search/find-refs :collection {:provider "CMR_prov1", "options[provider][ignore_case]" "true"})]
+    (let [{:keys [refs]} (search/find-refs :collection {:provider "CMR_prov1", "options[provider][ignore-case]" "true"})]
       (is (= 3 (count refs)))
       (is (= #{"MinimalCollectionV1" "OneCollectionV1" "AnotherCollectionV1"}
             (set (map :name refs)))))))
@@ -132,10 +132,10 @@
     (let [{:keys [refs]} (search/find-refs :collection {:dataset_id "minimalCollectionV1"})]
       (is (= 0 (count refs)))))
   (testing "search by dataset id ignore case false."
-    (let [{:keys [refs]} (search/find-refs :collection {:dataset_id "minimalCollectionV1", "options[dataset_id][ignore_case]" "false"})]
+    (let [{:keys [refs]} (search/find-refs :collection {:dataset_id "minimalCollectionV1", "options[dataset_id][ignore-case]" "false"})]
       (is (= 0 (count refs)))))
   (testing "search by dataset id ignore case true."
-    (let [{:keys [refs]} (search/find-refs :collection {:dataset_id "minimalCollectionV1", "options[dataset_id][ignore_case]" "true"})]
+    (let [{:keys [refs]} (search/find-refs :collection {:dataset_id "minimalCollectionV1", "options[dataset_id][ignore-case]" "true"})]
       (is (= 1 (count refs)))
       (let [{dataset-id :name} (first refs)]
         (is (= "MinimalCollectionV1" dataset-id))))))
@@ -170,10 +170,10 @@
     (let [{:keys [refs]} (search/find-refs :collection {:short_name "minimal"})]
       (is (= 0 (count refs)))))
   (testing "search by short name ignore case false."
-    (let [{:keys [refs]} (search/find-refs :collection {:short_name "minimal", "options[short_name][ignore_case]" "false"})]
+    (let [{:keys [refs]} (search/find-refs :collection {:short_name "minimal", "options[short_name][ignore-case]" "false"})]
       (is (= 0 (count refs)))))
   (testing "search by short name ignore case true."
-    (let [{:keys [refs]} (search/find-refs :collection {:short_name "minimal", "options[short_name][ignore_case]" "true"})]
+    (let [{:keys [refs]} (search/find-refs :collection {:short_name "minimal", "options[short_name][ignore-case]" "true"})]
       (is (= 1 (count refs)))
       (let [{dataset-id :name} (first refs)]
         (is (= "MinimalCollectionV1" dataset-id))))))
@@ -215,28 +215,24 @@
     (let [{:keys [refs]} (search/find-refs :collection {:version "R1"})]
       (is (= 0 (count refs)))))
   (testing "search by version ignore case false."
-    (let [{:keys [refs]} (search/find-refs :collection {:version "R1", "options[version][ignore_case]" "false"})]
+    (let [{:keys [refs]} (search/find-refs :collection {:version "R1", "options[version][ignore-case]" "false"})]
       (is (= 0 (count refs)))))
   (testing "search by version ignore case true."
-    (let [{:keys [refs]} (search/find-refs :collection {:version "R1", "options[version][ignore_case]" "true"})]
+    (let [{:keys [refs]} (search/find-refs :collection {:version "R1", "options[version][ignore-case]" "true"})]
       (is (= 1 (count refs)))
       (let [{dataset-id :name} (first refs)]
         (is (= "AnotherCollectionV1" dataset-id))))))
 
 (deftest search-error-scenarios
   (testing "search by un-supported parameter."
-    (try
-      (search/find-refs :collection {:unsupported "dummy"})
-      (catch clojure.lang.ExceptionInfo e
-        (let [status (get-in (ex-data e) [:object :status])
-              body (get-in (ex-data e) [:object :body])]
-          (is (= 422 status))
-          (is (re-matches #".*Parameter \[unsupported\] was not recognized.*" body))))))
+    (let [{:keys [status errors]} (search/find-refs :collection {:unsupported "dummy"})]
+      (is (= 422 status))
+      (is (re-matches #".*Parameter \[unsupported\] was not recognized.*" (first errors)))))
   (testing "search by un-supported options."
-    (try
-      (search/find-refs :collection {:dataset_id "MinimalCollectionV1", "options[dataset_id][unsupported]" "true"})
-      (catch clojure.lang.ExceptionInfo e
-        (let [status (get-in (ex-data e) [:object :status])
-              body (get-in (ex-data e) [:object :body])]
-          (is (= 422 status))
-          (is (re-matches #".*Option \[unsupported\] for param \[entry_title\] was not recognized.*" body)))))))
+    (let [{:keys [status errors]} (search/find-refs
+                                    :collection
+                                    {:dataset_id "MinimalCollectionV1"
+                                     "options[dataset_id][unsupported]" "true"})]
+      (is (= 422 status))
+      (is (re-matches #".*Option \[unsupported\] for param \[entry_title\] was not recognized.*"
+                      (first errors))))))

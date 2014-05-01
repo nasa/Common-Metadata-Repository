@@ -10,6 +10,13 @@
 
 (use-fixtures :each (ingest/reset-fixture "CMR_PROV1" "CMR_PROV2" "CMR_T_PROV"))
 
+(comment
+  (ingest/reset)
+  (doseq [p ["CMR_PROV1" "CMR_PROV2" "CMR_T_PROV"]]
+    (ingest/create-provider p))
+
+  )
+
 (deftest search-by-provider-id
   (let [coll1 (d/ingest "CMR_PROV1" (dc/collection {}))
         coll2 (d/ingest "CMR_PROV2" (dc/collection {}))
@@ -41,10 +48,10 @@
       (let [{:keys [refs]} (search/find-refs :granule {:provider "CMR_prov1"})]
         (is (= 0 (count refs)))))
     (testing "search by provider id ignore case false"
-      (let [{:keys [refs]} (search/find-refs :granule {:provider "CMR_prov1", "options[provider][ignore_case]" "false"})]
+      (let [{:keys [refs]} (search/find-refs :granule {:provider "CMR_prov1", "options[provider][ignore-case]" "false"})]
         (is (= 0 (count refs)))))
     (testing "search by provider id ignore case true."
-      (let [{:keys [refs]} (search/find-refs :granule {:provider "CMR_prov1", "options[provider][ignore_case]" "true"})]
+      (let [{:keys [refs]} (search/find-refs :granule {:provider "CMR_prov1", "options[provider][ignore-case]" "true"})]
         (is (= 3 (count refs)))
         (is (is (= #{"Granule1" "Granule2" "Granule3"}
                    (set (map :name refs)))))))))
@@ -61,38 +68,38 @@
         gran5 (d/ingest "CMR_PROV2" (dg/granule coll4 {:granule-ur "Granule5"}))]
     (index/flush-elastic-index)
     (testing "search by non-existent dataset id."
-      (let [{:keys [refs]} (search/find-refs :granule {:dataset_id "NON_EXISTENT"})]
+      (let [{:keys [refs]} (search/find-refs :granule {:dataset-id "NON_EXISTENT"})]
         (is (= 0 (count refs)))))
     (testing "search by existing dataset id."
-      (let [{:keys [refs]} (search/find-refs :granule {:dataset_id "AnotherCollectionV1"})]
+      (let [{:keys [refs]} (search/find-refs :granule {:dataset-id "AnotherCollectionV1"})]
         (is (= 1 (count refs)))
         (let [ref (first refs)
               {:keys [name concept-id location]} ref]
           (is (= "Granule3" name))
           (is (re-matches #"G[0-9]+-CMR_PROV1" concept-id)))))
     (testing "search by multiple dataset ids."
-      (let [{:keys [refs]} (search/find-refs :granule {"dataset_id[]" ["AnotherCollectionV1", "OtherCollectionV1"]})
+      (let [{:keys [refs]} (search/find-refs :granule {"dataset-id[]" ["AnotherCollectionV1", "OtherCollectionV1"]})
             granule-urs (map :name refs)]
         (is (= 2 (count refs)))
         (is (= #{"Granule3" "Granule5"} (set granule-urs)))))
     (testing "search by dataset id across different providers."
-      (let [{:keys [refs]} (search/find-refs :granule {:dataset_id "OneCollectionV1"})
+      (let [{:keys [refs]} (search/find-refs :granule {:dataset-id "OneCollectionV1"})
             granule-urs (map :name refs)]
         (is (= 3 (count refs)))
         (is (= #{"Granule1" "Granule2" "Granule4"} (set granule-urs)))))
     (testing "search by dataset id using wildcard *."
-      (let [{:keys [refs]} (search/find-refs :granule {:dataset_id "O*", "options[dataset_id][pattern]" "true"})
+      (let [{:keys [refs]} (search/find-refs :granule {:dataset-id "O*", "options[dataset-id][pattern]" "true"})
             granule-urs (map :name refs)]
         (is (= 4 (count refs)))
         (is (= #{"Granule1" "Granule2" "Granule4" "Granule5"} (set granule-urs)))))
     (testing "search by dataset id case not match."
-      (let [{:keys [refs]} (search/find-refs :granule {:dataset_id "anotherCollectionV1"})]
+      (let [{:keys [refs]} (search/find-refs :granule {:dataset-id "anotherCollectionV1"})]
         (is (= 0 (count refs)))))
     (testing "search by dataset id ignore case false."
-      (let [{:keys [refs]} (search/find-refs :granule {:dataset_id "anotherCollectionV1", "options[dataset_id][ignore_case]" "false"})]
+      (let [{:keys [refs]} (search/find-refs :granule {:dataset-id "anotherCollectionV1", "options[dataset-id][ignore-case]" "false"})]
         (is (= 0 (count refs)))))
     (testing "search by dataset id ignore case true."
-      (let [{:keys [refs]} (search/find-refs :granule {:dataset_id "anotherCollectionV1", "options[dataset_id][ignore_case]" "true"})]
+      (let [{:keys [refs]} (search/find-refs :granule {:dataset-id "anotherCollectionV1", "options[dataset-id][ignore-case]" "true"})]
         (is (= 1 (count refs)))
         (let [{granule-ur :name} (first refs)]
           (is (= "Granule3" granule-ur)))))))
@@ -132,49 +139,49 @@
         gran5 (d/ingest "CMR_PROV2" (dg/granule coll2 {:granule-ur "sampleur3"}))]
     (index/flush-elastic-index)
     (testing "search by non-existent granule ur."
-      (let [{:keys [refs]} (search/find-refs :granule {:granule_ur "NON_EXISTENT"})]
+      (let [{:keys [refs]} (search/find-refs :granule {:granule-ur "NON_EXISTENT"})]
         (is (= 0 (count refs)))))
     (testing "search by existing granule ur."
-      (let [{:keys [refs]} (search/find-refs :granule {:granule_ur "Granule1"})]
+      (let [{:keys [refs]} (search/find-refs :granule {:granule-ur "Granule1"})]
         (is (= 1 (count refs)))
         (let [ref (first refs)
               {:keys [name concept-id location]} ref]
           (is (= "Granule1" name))
           (is (re-matches #"G[0-9]+-CMR_PROV1" concept-id)))))
     (testing "search by multiple granule urs."
-      (let [{:keys [refs]} (search/find-refs :granule {"granule_ur[]" ["Granule1", "Granule2"]})
+      (let [{:keys [refs]} (search/find-refs :granule {"granule-ur[]" ["Granule1", "Granule2"]})
             granule-urs (map :name refs)]
         (is (= 2 (count refs)))
         (is (= #{"Granule1" "Granule2"} (set granule-urs)))))
     (testing "search by granule ur across different providers."
-      (let [{:keys [refs]} (search/find-refs :granule {:granule_ur "Granule3"})
+      (let [{:keys [refs]} (search/find-refs :granule {:granule-ur "Granule3"})
             granule-urs (map :name refs)]
         (is (= 2 (count refs)))
         (is (= #{"Granule3"} (set granule-urs)))))
     (testing "search by granule ur using wildcard *."
       (let [{:keys [refs]} (search/find-refs :granule
-                                         {:granule_ur "S*" "options[granule_ur][pattern]" "true"})
+                                         {:granule-ur "S*" "options[granule-ur][pattern]" "true"})
             granule-urs (map :name refs)]
         (is (= 2 (count refs)))
         (is (= #{"SampleUR1" "SampleUR2"} (set granule-urs)))))
     (testing "search by granule ur case not match."
-      (let [{:keys [refs]} (search/find-refs :granule {:granule_ur "sampleUR1"})]
+      (let [{:keys [refs]} (search/find-refs :granule {:granule-ur "sampleUR1"})]
         (is (= 0 (count refs)))))
     (testing "search by granule ur ignore case false."
       (let [{:keys [refs]} (search/find-refs :granule
-                                         {:granule_ur "sampleUR1" "options[granule_ur][ignore_case]" "false"})]
+                                         {:granule-ur "sampleUR1" "options[granule-ur][ignore-case]" "false"})]
         (is (= 0 (count refs)))))
     (testing "search by granule ur ignore case true."
       (let [{:keys [refs]} (search/find-refs :granule
-                                         {:granule_ur "sampleUR1" "options[granule_ur][ignore_case]" "true"})]
+                                         {:granule-ur "sampleUR1" "options[granule-ur][ignore-case]" "true"})]
         (is (= 1 (count refs)))
         (let [{granule-ur :name} (first refs)]
           (is (= "SampleUR1" granule-ur)))))
     (testing "search by granule ur using wildcard and ignore case true."
       (let [{:keys [refs]} (search/find-refs :granule
-                                         {:granule_ur "sampleUR?"
-                                          "options[granule_ur][pattern]" "true"
-                                          "options[granule_ur][ignore_case]" "true"})]
+                                         {:granule-ur "sampleUR?"
+                                          "options[granule-ur][pattern]" "true"
+                                          "options[granule-ur][ignore-case]" "true"})]
         (is (= 3 (count refs)))
         (is (= #{"SampleUR1" "SampleUR2" "sampleur3"}
                (set (map :name refs))))))))

@@ -47,11 +47,11 @@
     (testing "search by producer granule id ignore case false."
       (let [references (search/find-refs :granule
                                          {:producer_granule_id "granule1"
-                                          "options[producer_granule_id][ignore_case]" "false"})]
+                                          "options[producer_granule_id][ignore-case]" "false"})]
         (is (d/refs-match? [] references))))
     (testing "search by producer granule id ignore case true."
       (let [references (search/find-refs :granule
                                          {:producer_granule_id "granule1"
-                                          "options[producer_granule_id][ignore_case]" "true"})]
+                                          "options[producer_granule_id][ignore-case]" "true"})]
         (is (d/refs-match? [gran1] references))))))
 
