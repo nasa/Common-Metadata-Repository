@@ -5,6 +5,7 @@
             [cmr.umm.test.generators.collection :as c]
             [cmr.umm.test.generators.granule.temporal :as gt]
             [cmr.umm.test.generators.collection.product-specific-attribute :as psa]
+            [cmr.umm.test.generators.granule.orbit-calculated-spatial-domain :as ocsd]
             [cmr.umm.granule :as g]))
 
 ;;; granule related
@@ -34,14 +35,16 @@
                   :production-date-time ext-gen/date-time)))
 
 (def granules
-  (gen/fmap (fn [[granule-ur coll-ref data-granule temporal prefs psas]]
-              (g/->UmmGranule granule-ur coll-ref data-granule temporal prefs psas))
-            (gen/tuple granule-urs
-                       coll-refs
-                       (ext-gen/optional data-granules)
-                       gt/temporal
-                       (ext-gen/nil-if-empty proj-refs)
-                       (ext-gen/nil-if-empty (gen/vector product-specific-attribute-refs 0 5)))))
+  (ext-gen/model-gen
+    g/map->UmmGranule
+    (gen/hash-map
+      :granule-ur granule-urs
+      :collection-ref coll-refs
+      :data-granule (ext-gen/optional data-granules)
+      :temporal gt/temporal
+      :orbit-calculated-spatial-domains (ext-gen/nil-if-empty (gen/vector ocsd/orbit-calculated-spatial-domains 0 5))
+      :project-refs (ext-gen/nil-if-empty proj-refs)
+      :product-specific-attributes (ext-gen/nil-if-empty (gen/vector product-specific-attribute-refs 0 5)))))
 
 ;; Generator that only returns collection ref with entry-title
 ;; DEPRECATED - this will go away in the future. Don't use it.

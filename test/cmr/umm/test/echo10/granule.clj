@@ -16,6 +16,10 @@
             [cmr.umm.collection :as umm-c]
             [cmr.umm.granule :as umm-g]))
 
+(comment
+(gen/sample gran-gen/granules)
+)
+
 (defspec generate-granule-is-valid-xml-test 100
   (for-all [granule gran-gen/granules]
     (let [xml (echo10/umm->echo10-xml granule)]
@@ -48,6 +52,24 @@
       </RangeDateTime>
       <SingleDateTime>2010-01-05T05:30:30.550-05:00</SingleDateTime>
     </Temporal>
+  <OrbitCalculatedSpatialDomains>
+    <OrbitCalculatedSpatialDomain>
+      <OrbitalModelName>OrbitalModelName</OrbitalModelName>
+      <OrbitNumber>0</OrbitNumber>
+      <StartOrbitNumber>0.0</StartOrbitNumber>
+      <StopOrbitNumber>0.0</StopOrbitNumber>
+      <EquatorCrossingLongitude>0.0</EquatorCrossingLongitude>
+      <EquatorCrossingDateTime>2010-01-05T05:30:30Z</EquatorCrossingDateTime>
+    </OrbitCalculatedSpatialDomain>
+    <OrbitCalculatedSpatialDomain>
+      <OrbitalModelName>OrbitalModelName</OrbitalModelName>
+      <OrbitNumber>0</OrbitNumber>
+      <StartOrbitNumber>0.0</StartOrbitNumber>
+      <StopOrbitNumber>0.0</StopOrbitNumber>
+      <EquatorCrossingLongitude>0.0</EquatorCrossingLongitude>
+      <EquatorCrossingDateTime>2010-01-05T05:30:30Z</EquatorCrossingDateTime>
+    </OrbitCalculatedSpatialDomain>
+  </OrbitCalculatedSpatialDomains>
   <Campaigns>
     <Campaign>
       <ShortName>Short Name-240</ShortName>
@@ -72,7 +94,21 @@
                        (umm-c/map->RangeDateTime
                          {:beginning-date-time (p/parse-datetime "1996-02-24T22:20:41-05:00")
                           :ending-date-time (p/parse-datetime "1997-03-24T22:20:41-05:00")})
-                       :single-date-time (p/parse-datetime "2010-01-05T05:30:30.550-05:00")})})
+                       :single-date-time (p/parse-datetime "2010-01-05T05:30:30.550-05:00")})
+                    :orbit-calculated-spatial-domains [(umm-g/map->OrbitCalculatedSpatialDomain
+                                                          {:orbital-model-name "OrbitalModelName"
+                                                           :orbit-number 0
+                                                           :start-orbit-number 0.0
+                                                           :stop-orbit-number 0.0
+                                                           :equator-crossing-longitude 0.0
+                                                           :equator-crossing-date-time (p/parse-datetime "2010-01-05T05:30:30Z")})
+                                                       (umm-g/map->OrbitCalculatedSpatialDomain
+                                                          {:orbital-model-name "OrbitalModelName"
+                                                           :orbit-number 0
+                                                           :start-orbit-number 0.0
+                                                           :stop-orbit-number 0.0
+                                                           :equator-crossing-longitude 0.0
+                                                           :equator-crossing-date-time (p/parse-datetime "2010-01-05T05:30:30Z")})]})
         actual (g/parse-granule all-fields-granule-xml)]
     (is (= expected actual))))
 
