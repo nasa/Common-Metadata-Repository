@@ -13,7 +13,7 @@
 
 (defmethod idx/concept->elastic-doc :collection
   [context concept umm-concept]
-  (let [{:keys [concept-id provider-id]} concept
+  (let [{:keys [concept-id provider-id revision-date]} concept
         {{:keys [short-name version-id]} :product
          entry-title :entry-title
          temporal :temporal} umm-concept
@@ -34,6 +34,7 @@
      :short-name.lowercase (s/lower-case short-name)
      :version-id version-id
      :version-id.lowercase (s/lower-case version-id)
+     :revision-date revision-date
      :project-sn project-short-names
      :project-sn.lowercase  (map s/lower-case project-short-names)
      :two-d-coord-name two-d-coord-names
