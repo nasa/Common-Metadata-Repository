@@ -13,9 +13,7 @@
                 stop-orbit-number
                 equator-crossing-longitude
                 equator-crossing-date-time]} ocsd]
-    {:orbital-model-name orbital-model-name
-     :orbital-model-name.lowercase (when orbital-model-name (s/lower-case orbital-model-name))
-     :orbit-number orbit-number
+    {:orbit-number orbit-number
      :start-orbit-number start-orbit-number
      :stop-orbit-number stop-orbit-number
      :equator-crossing-longitude equator-crossing-date-time
