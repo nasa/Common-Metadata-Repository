@@ -66,7 +66,7 @@
    :dynamic "strict"
    :properties {:orbital-model-name string-field-mapping
                 :orbital-model-name.lowercase string-field-mapping
-                :orbit-number int-field-mapping
+                :orbit-number float-field-mapping
                 :start-orbit-number float-field-mapping
                 :stop-orbit-number float-field-mapping
                 :equator-crossing-longitude float-field-mapping
