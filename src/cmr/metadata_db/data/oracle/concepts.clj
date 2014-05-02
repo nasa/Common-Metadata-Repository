@@ -57,6 +57,11 @@
           sql2joda-time (f/parse dt-formatter date-part)]
       (f/unparse (f/formatters :date-time) sql2joda-time))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Multi methods for concept types to implement
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
 (defmulti db-result->concept-map
   "Translate concept result returned from db into a concept map"
   (fn [concept-type provider-id result]
@@ -66,6 +71,15 @@
   "Converts a concept into the insert arguments"
   (fn [concept]
     (:concept-type concept)))
+
+(defmulti after-save
+  "This is a handler for concept types to add save specific behavior after the save of a concept has
+  been completed. It will be called after a concept has been saved within the transaction."
+  (fn [db concept]
+    (:concept-type concept)))
+
+
+;; Multimethod defaults
 
 (defmethod db-result->concept-map :default
   [concept-type provider-id result]
@@ -99,6 +113,12 @@
                 deleted]} concept]
     [["native_id" "concept_id" "metadata" "format" "revision_id" "deleted"]
      [native-id concept-id (string->gzip-bytes metadata) format revision-id deleted]]))
+
+(defmethod after-save :default
+  [db concept]
+  ;; Does nothing
+  nil)
+
 
 (defn find-params->sql-clause
   "Converts a parameter map for finding concept types into a sql clause for inclusion in a query."
@@ -203,9 +223,14 @@
   (save-concept
     [db concept]
     (try
-      (let [{:keys [concept-type provider-id]} concept
-            table (tables/get-table-name provider-id concept-type)]
-        (apply j/insert! db table (concept->insert-args concept)))
+      (j/with-db-transaction
+        [conn db]
+        (let [{:keys [concept-type provider-id]} concept
+              table (tables/get-table-name provider-id concept-type)]
+          (apply j/insert! conn table (concept->insert-args concept))
+          (after-save conn concept)
+
+          nil))
       (catch Exception e
         (let [error-message (.getMessage e)
               error-code (cond
@@ -227,6 +252,15 @@
                                  (where `(and (= :concept-id ~concept-id)
                                               (= :revision-id ~revision-id)))))]
       (j/execute! this stmt)))
+
+  (force-delete-by-params
+    [db params]
+    (let [{:keys [concept-type provider-id]} params
+          params (dissoc params :concept-type :provider-id)
+          table (tables/get-table-name provider-id concept-type)
+          stmt (su/build (delete table
+                           (where (find-params->sql-clause params))))]
+      (j/execute! db stmt)))
 
   (reset
     [this]

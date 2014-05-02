@@ -5,7 +5,8 @@
             [cmr.common.log :refer (debug info warn error)]
             [clojure.java.jdbc :as j]
             [sqlingvo.core :refer [select from where with order-by desc delete as]]
-            [cmr.metadata-db.data.oracle.sql-utils :as su]))
+            [cmr.metadata-db.data.oracle.sql-utils :as su]
+            [cmr.metadata-db.data.concepts :as concepts]))
 
 (defmethod c/db-result->concept-map :collection
   [concept-type provider-id result]
@@ -22,4 +23,11 @@
     [(concat cols ["short_name" "version_id" "entry_title"])
      (concat values [short-name version-id entry-title])]))
 
-
+(defmethod c/after-save :collection
+  [db coll]
+  (when (:deleted coll)
+    ;; Cascade deletion to real deletes of granules
+    (concepts/force-delete-by-params db
+                                     {:concept-type :granule
+                                      :provider-id (:provider-id coll)
+                                      :parent-collection-id (:concept-id coll)})))

@@ -6,6 +6,19 @@
             [cmr.common.lifecycle :as lifecycle]
             [cmr.metadata-db.data.oracle.concepts]))
 
+
+
+(defn after-save
+  "Handler for save calls. It will be passed the list of concepts and the concept that was just
+  saved. It should manipulate anything required and return the new list of concepts."
+  [concepts concept]
+  (if (and (= :collection (:concept-type concept))
+           (:deleted concept))
+    (filter #(not= (:concept-id concept) (get-in % [:extra-fields :parent-collection-id]))
+            concepts)
+    concepts))
+
+
 (defrecord MemoryDB
   [concepts-atom
    next-id-atom
@@ -103,7 +116,9 @@
               (concepts/get-concept this concept-type provider-id concept-id revision-id))
         {:error :revision-id-conflict}
         (do
-          (swap! concepts-atom conj concept)
+          (swap! concepts-atom (fn [concepts]
+                                 (after-save (conj concepts concept)
+                                             concept)))
           nil))))
 
   (force-delete

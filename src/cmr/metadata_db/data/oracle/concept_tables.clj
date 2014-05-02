@@ -83,6 +83,9 @@
                                  table-name
                                  table-name
                                  table-name
+                                 table-name))
+    (j/db-do-commands db (format "CREATE INDEX %s_pcid ON %s(parent_collection_id) TABLESPACE users"
+                                 table-name
                                  table-name))))
 
 (defn create-provider-concept-tables
