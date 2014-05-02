@@ -6,7 +6,8 @@
             [clj-time.format :as f]
             [cmr.search.services.parameters :as p]
             [cmr.search.services.parameter-converters.attribute :as attrib]
-            [cmr.search.services.messages.attribute-messages :as attrib-msg]))
+            [cmr.search.services.messages.attribute-messages :as attrib-msg]
+            [camel-snake-kebab :as csk]))
 
 (defn- concept-type->valid-param-names
   "A set of the valid parameter names for the given concept-type."
@@ -19,7 +20,7 @@
 (defn page-size-validation
   "Validates that the page-size (if present) is a number in the valid range."
   [concept-type params]
-  (if-let [page-size (:page_size params)]
+  (if-let [page-size (:page-size params)]
     (try
       (let [page-size-i (Integer. page-size)]
         (cond
@@ -39,7 +40,7 @@
 (defn page-num-validation
   "Validates that the page-num (if present) is a number in the valid range."
   [concept-type params]
-  (if-let [page-num (:page_num params)]
+  (if-let [page-num (:page-num params)]
     (try
       (let [page-num-i (Integer. page-num)]
         (if (> 1 page-num-i)
@@ -53,16 +54,17 @@
   "Validates that no invalid parameters were supplied"
   [concept-type params]
   ;; this test does not apply to page_size or page_num
-  (let [params (dissoc params :page_size :page_num)]
-    (map #(str "Parameter [" (name % )"] was not recognized.")
+  (let [params (dissoc params :page-size :page-num)]
+    (map #(str "Parameter [" (csk/->snake_case_string % )"] was not recognized.")
          (set/difference (set (keys params))
                          (concept-type->valid-param-names concept-type)))))
+
 
 (defn unrecognized-params-in-options-validation
   "Validates that no invalid parameters names in the options were supplied"
   [concept-type params]
   (if-let [options (:options params)]
-    (map #(str "Parameter [" (name %)"] with option was not recognized.")
+    (map #(str "Parameter [" (csk/->snake_case_string %)"] with option was not recognized.")
          (set/difference (set (keys options))
                          (concept-type->valid-param-names concept-type)))
     []))
@@ -74,8 +76,9 @@
     (apply concat
            (map
              (fn [[param settings]]
-               (map #(str "Option [" (name %) "] for param [" (name param) "] was not recognized.")
-                    (set/difference (set (keys settings)) (set [:ignore_case :pattern :and :or]))))
+               (map #(str "Option [" (csk/->snake_case_string %)
+                          "] for param [" (csk/->snake_case_string param) "] was not recognized.")
+                    (set/difference (set (keys settings)) (set [:ignore-case :pattern :and :or]))))
              options))
     []))
 

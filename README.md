@@ -2,51 +2,88 @@
 
 Provides a public search API for concepts in the CMR.
 
-## TODO
-
-  * Draw informal design for this application
-  * Test against indexed collections as indexed by catalog-rest
-    * This will be a way to make it work before other components are complete.
-    * Use curl requests to send searches.
-
-
 ## Example CURL requests
 
-### Common GET parameters
+### Common GET parameters/headers
+
+#### Parameters
 
  * page_size - number of results per page - default is 10, max is 2000
  * pretty - return formatted results
 
+#### Headers
 
-### Find all collections
-    curl -H "Accept: application/json" -i "http://localhost:3003/collections"
+  * Accept - specifies the format to return references in. Default is json.
+    * `curl -H "Accept: application/xml" -i "http://localhost:3003/collections"`
 
-### Find all collections with a bad parameter
-    curl -H "Accept: application/json" -i "http://localhost:3003/collections?foo=5"
+### Search for Collections
 
-### Find all collections with an entry title
-    curl -H "Accept: application/json" -i "http://localhost:3003/collections?entry_title\[\]=DatasetId%204"
+#### Find all collections
 
-### Find all collections with a dataset id (alias for entry title)
-    curl -H "Accept: application/json" -i "http://localhost:3003/collections?dataset_id\[\]=DatasetId%204"
+    curl "http://localhost:3003/collections"
 
-### Find all collections with a entry title case insensitively
-    curl -H "Accept: application/json" -i "http://localhost:3003/collections?entry_title\[\]=datasetId%204&options\[entry_title\]\[ignore_case\]=true"
+#### Find collections by concept id
 
-### Find all collections with a entry title pattern
-    curl -H "Accept: application/json" -i "http://localhost:3003/collections?entry_title\[\]=DatasetId*&options\[entry_title\]\[pattern\]=true"
+A CMR concept id is in the format `<concept-type-prefix> <unique-number> "-" <provider-id>`
 
-### Find all collections with multiple dataset ids
-    curl -H "Accept: application/json" -i "http://localhost:3003/collections?entry_title\[\]=DatasetId%204&entry_title\[\]=DatasetId%205"
+  * `concept-type-prefix` is a single capital letter prefix indicating the concept type. "C" is used for collections
+  * `unique-number` is a single number assigned by the CMR during ingest.
+  * `provider-id` is the short name for the provider. i.e. "LPDAAC_ECS"
 
-### Find all collections with multiple temporal, the temporal datetime has to be in yyyy-MM-ddTHH:mm:ssZ format.
-    curl -H "Accept: application/json" -i "http://localhost:3003/collections?temporal\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z,30,60&temporal\[\]=2000-01-01T10:00:00Z,,30&temporal\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z"
+Example: `C123456-LPDAAC_ECS`
 
-### Find all granules
-    curl -H "Accept: application/json" -i "http://localhost:3003/granules"
+    curl "http://localhost:3003/collections?concept_id\[\]=C123456-LPDAAC_ECS"
 
-#### Find all granules with a granule-ur
-    curl -H "Accept: application/json" -i "http://localhost:3003/granules?granule_ur\[\]=DummyGranuleUR"
+#### Find collections by entry title
+
+One entry title
+
+    curl "http://localhost:3003/collections?entry_title\[\]=DatasetId%204"
+
+a dataset id (alias for entry title)
+
+    curl "http://localhost:3003/collections?dataset_id\[\]=DatasetId%204"
+
+with multiple dataset ids
+
+    curl "http://localhost:3003/collections?entry_title\[\]=DatasetId%204&entry_title\[\]=DatasetId%205"
+
+with a entry title case insensitively
+
+    curl "http://localhost:3003/collections?entry_title\[\]=datasetId%204&options\[entry_title\]\[ignore_case\]=true"
+
+with a entry title pattern
+
+    curl "http://localhost:3003/collections?entry_title\[\]=DatasetId*&options\[entry_title\]\[pattern\]=true"
+
+#### Find collections by archive center
+
+    curl "http://localhost:3003/collections?archive_center\[\]=LARC"
+
+
+#### Find collections with multiple temporal
+
+The temporal datetime has to be in yyyy-MM-ddTHH:mm:ssZ format.
+
+    curl "http://localhost:3003/collections?temporal\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z,30,60&temporal\[\]=2000-01-01T10:00:00Z,,30&temporal\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z"
+
+### Search for Granules
+
+#### Find all granules
+
+    curl "http://localhost:3003/granules"
+
+#### Find granules with a granule-ur
+
+    curl "http://localhost:3003/granules?granule_ur\[\]=DummyGranuleUR"
+
+#### Find granules with a producer granule id
+
+    curl "http://localhost:3003/granules?producer_granule_id\[\]=DummyID"
+
+#### Find granules matching either granule ur or producer granule id
+
+    curl "http://localhost:3003/granules?readable_granule_name\[\]=DummyID"
 
 #### Find granules by additional attribute
 
@@ -78,14 +115,6 @@ Multiple attributes can be provided. The default is for granules to match all th
 
 ### Retrieve concept with a given cmr-concept-id
     curl -i "http://localhost:3003/concepts/G100000-PROV1"
-
-
-### Find as XML
-TODO implement support for retrieving in XML.
-Also make sure enough information is returned that Catalog-REST can work.
-
-    curl -H "Accept: application/xml" -i "http://localhost:3003/collections"
-
 
 ## Search Flow
 

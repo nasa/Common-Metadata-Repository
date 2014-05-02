@@ -5,32 +5,32 @@
 
 (deftest replace-parameter-aliases-test
   (testing "with options"
-    (is (= {:entry_title "foo"
-            :options {:entry_title {:ignore_case "true"}}}
+    (is (= {:entry-title "foo"
+            :options {:entry-title {:ignore-case "true"}}}
            (p/replace-parameter-aliases
-             {:dataset_id "foo"
-              :options {:dataset_id {:ignore_case "true"}}}))))
+             {:dataset-id "foo"
+              :options {:dataset-id {:ignore-case "true"}}}))))
   (testing "with no options"
-    (is (= {:entry_title "foo" :options nil}
-           (p/replace-parameter-aliases {:dataset_id "foo"})))))
+    (is (= {:entry-title "foo" :options nil}
+           (p/replace-parameter-aliases {:dataset-id "foo"})))))
 
 (deftest parameter->condition-test
   (testing "String conditions"
     (testing "with one value"
-      (is (= (q/string-condition :entry_title "bar")
-             (p/parameter->condition :collection :entry_title "bar" nil))))
+      (is (= (q/string-condition :entry-title "bar")
+             (p/parameter->condition :collection :entry-title "bar" nil))))
     (testing "with multiple values"
-      (is (= (q/or-conds [(q/string-condition :entry_title "foo")
-                          (q/string-condition :entry_title "bar")])
-             (p/parameter->condition :collection :entry_title ["foo" "bar"] nil))))
+      (is (= (q/or-conds [(q/string-condition :entry-title "foo")
+                          (q/string-condition :entry-title "bar")])
+             (p/parameter->condition :collection :entry-title ["foo" "bar"] nil))))
     (testing "case-insensitive"
-      (is (= (q/string-condition :entry_title "bar" false false)
-             (p/parameter->condition :collection :entry_title "bar" {:entry_title {:ignore_case "true"}}))))
+      (is (= (q/string-condition :entry-title "bar" false false)
+             (p/parameter->condition :collection :entry-title "bar" {:entry-title {:ignore-case "true"}}))))
     (testing "pattern"
-      (is (= (q/string-condition :entry_title "bar*" true false)
-             (p/parameter->condition :collection :entry_title "bar*" {})))
-      (is (= (q/string-condition :entry_title "bar*" true true)
-             (p/parameter->condition :collection :entry_title "bar*" {:entry_title {:pattern "true"}}))))))
+      (is (= (q/string-condition :entry-title "bar*" true false)
+             (p/parameter->condition :collection :entry-title "bar*" {})))
+      (is (= (q/string-condition :entry-title "bar*" true true)
+             (p/parameter->condition :collection :entry-title "bar*" {:entry-title {:pattern "true"}}))))))
 
 (deftest parameters->query-test
   (testing "Empty parameters"
@@ -38,17 +38,17 @@
            (p/parameters->query :collection {}))))
   (testing "option map aliases are corrected"
     (is (= (q/query {:concept-type :collection
-                     :condition (q/string-condition :entry_title "foo" false false)})
-           (p/parameters->query :collection {:entry_title ["foo"]
-                                             :options {:entry_title {:ignore_case "true"}}}))))
+                     :condition (q/string-condition :entry-title "foo" false false)})
+           (p/parameters->query :collection {:entry-title ["foo"]
+                                             :options {:entry-title {:ignore-case "true"}}}))))
   (testing "with one condition"
     (is (= (q/query {:concept-type :collection
-                     :condition (q/string-condition :entry_title "foo")})
-           (p/parameters->query :collection {:entry_title ["foo"]}))))
+                     :condition (q/string-condition :entry-title "foo")})
+           (p/parameters->query :collection {:entry-title ["foo"]}))))
   (testing "with multiple conditions"
     (is (= (q/query {:concept-type :collection
-                     :condition (q/and-conds [(q/string-condition :entry_title "foo")
+                     :condition (q/and-conds [(q/string-condition :entry-title "foo")
                                               (q/string-condition :provider "bar")])})
-           (p/parameters->query :collection {:entry_title ["foo"] :provider "bar"})))))
+           (p/parameters->query :collection {:entry-title ["foo"] :provider "bar"})))))
 
 
