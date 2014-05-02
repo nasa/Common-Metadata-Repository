@@ -11,6 +11,7 @@
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.core :as d]
+            [clj-time.core :as t]
             [cmr.system-int-test.utils.search-util :as search]))
 
 
@@ -24,8 +25,12 @@
 (deftest collection-ingest-test
   (testing "ingest of a new concept"
     (let [concept (old-ingest/distinct-concept "PROV1" 0)
-          {:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
+          {:keys [concept-id revision-id]} (ingest/ingest-concept concept)
+          {:keys [revision-date]} (ingest/get-concept concept-id revision-id)
+          wait-threshold-in-secs 180
+          ets (ingest/elapsed-time-in-secs revision-date)]
       (is (ingest/concept-exists-in-mdb? concept-id revision-id))
+      (is (> wait-threshold-in-secs ets))
       (is (= revision-id 0)))))
 
 ;; Verify a new concept with concept-id is ingested successfully.
@@ -47,6 +52,16 @@
           created-concepts (take n (repeatedly n #(ingest/ingest-concept concept)))]
       (is (apply = (map :concept-id created-concepts)))
       (is (= (range 0 n) (map :revision-id created-concepts))))))
+
+;; Ingest same concept N times and verify revision dates follow arrow of time
+(deftest verify-rev-dates-on-repeat-collection-ingest-test
+  (testing "ingest same concept n times to verify revision dates ..."
+    (let [n 4
+          concept (old-ingest/distinct-concept "PROV1" 1)
+          created-concepts (take n (repeatedly n #(ingest/ingest-concept concept)))]
+      (is (apply >= (map (fn [{:keys [concept-id revision-id]}]
+                           (let [{:keys [revision-date]} (ingest/get-concept concept-id revision-id)]
+                             (ingest/elapsed-time-in-secs revision-date)))  created-concepts))))))
 
 ;; Verify ingest behaves properly if empty body is presented in the request.
 (deftest empty-collection-ingest-test
@@ -79,7 +94,7 @@
   (ingest/create-provider "PROV1")
   (def coll1 (d/ingest "PROV1" (dc/collection)))
   (ingest/delete-concept coll1)
-
+(get-in user/system [:apps :metadata-db :db])
 )
 
 (deftest delete-collection-test
