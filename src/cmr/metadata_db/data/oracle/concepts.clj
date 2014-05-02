@@ -45,15 +45,17 @@
     (.finish gzip)
     (.toByteArray output)))
 
+
 (defn oracle-sql-date->string
   "Format date to yyyy-MM-ddThh:mm:ss.sssZ"
-  [revision-date]
-  (when revision-date
-    (->> revision-date
-         (.dateValue)
-         cr/from-sql-date
-         (f/unparse (f/formatters :date-time)))))
-
+  [revision-date-str]
+  (when-not (empty? revision-date-str)
+    (let [extract-template "yyyy-MM-dd HH:mm:ss.SSS"
+          len (count extract-template)
+          date-part (subs revision-date-str 0 len)
+          dt-formatter (f/formatter extract-template)
+          sql2joda-time (f/parse dt-formatter date-part)]
+      (f/unparse (f/formatters :date-time) sql2joda-time))))
 
 (defmulti db-result->concept-map
   "Translate concept result returned from db into a concept map"
@@ -82,7 +84,7 @@
        :metadata (blob->string metadata)
        :format format
        :revision-id (int revision_id)
-       :revision-date (oracle-sql-date->string revision_date)
+       :revision-date (oracle-sql-date->string (str revision_date))
        :deleted (not= (int deleted) 0)})))
 
 (defmethod concept->insert-args :default

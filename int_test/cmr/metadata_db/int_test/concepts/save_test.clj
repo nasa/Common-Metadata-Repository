@@ -21,47 +21,43 @@
 (deftest save-collection-test
   (let [concept (util/collection-concept "PROV1" 1)
         {:keys [status revision-id concept-id]} (util/save-concept concept)
-        offset-in-hrs -8
         revision-date (util/get-concept-rev-date-by-id-and-revision concept-id revision-id)
-        local-rev-date (util/revision-date->local revision-date offset-in-hrs)
-        now (util/now)
-        diff-in-min (t/in-minutes (t/interval now local-rev-date))]
+        utc-now (f/parse (f/formatters :date-time) (str (t/now)))
+        ;; direct use of t/now in t/interval computation not allowed
+        diff-in-min (t/in-minutes (t/interval revision-date utc-now))
+        wait-threshold-in-mins 5]
     (is (= 201 status))
     (is (= revision-id 0))
-    (is (> 500  diff-in-min))
+    (is (> wait-threshold-in-mins diff-in-min))
     (is (util/verify-concept-was-saved (assoc concept :revision-id revision-id :concept-id concept-id)))))
-
-(comment
-  now == "#<DateTime 2014-04-30T23:30:31.772-04:00>"
-  local-rev-date == "#<DateTime 2014-04-30T23:30:24.000-08:00>"
-  ;; diff-in-min == "239" ??
-  )
 
 (deftest save-granule-test
   (let [collection (util/collection-concept "PROV1" 1)
         parent-collection-id (:concept-id (util/save-concept collection))
         granule (util/granule-concept "PROV1" parent-collection-id 1)
         {:keys [status revision-id concept-id]} (util/save-concept granule)
-        offset-in-hrs -8
         revision-date (util/get-concept-rev-date-by-id-and-revision concept-id revision-id)
-        local-rev-date (util/revision-date->local revision-date offset-in-hrs)
-        now (util/now)
-        diff-in-min (t/in-minutes (t/interval now local-rev-date))]
+        utc-now (f/parse (f/formatters :date-time) (str (t/now)))
+        diff-in-min (t/in-minutes (t/interval revision-date utc-now))
+        wait-threshold-in-mins 5]
     (is (= 201 status))
     (is (= revision-id 0))
-    (is (> 500  diff-in-min))
+    (is (> wait-threshold-in-mins diff-in-min))
     (is (util/verify-concept-was-saved (assoc granule :revision-id revision-id :concept-id concept-id)))))
 
 (deftest save-concept-test-with-proper-revision-id-test
   (let [concept (util/collection-concept "PROV1" 1)]
     ;; save the concept once
     (let [{:keys [revision-id concept-id]} (util/save-concept concept)
-          new-revision-id (inc revision-id)]
+          new-revision-id (inc revision-id)
+          revision-date-0 (util/get-concept-rev-date-by-id-and-revision concept-id revision-id)]
       ;; save it again with a valid revision-id
       (let [updated-concept (assoc concept :revision-id new-revision-id :concept-id concept-id)
-            {:keys [status revision-id]} (util/save-concept updated-concept)]
+            {:keys [status revision-id]} (util/save-concept updated-concept)
+            revision-date-1 (util/get-concept-rev-date-by-id-and-revision concept-id revision-id)]
         (is (= 201 status))
         (is (= revision-id new-revision-id))
+        (is (t/after? revision-date-1 revision-date-0))
         (is (util/verify-concept-was-saved updated-concept))))))
 
 (deftest save-concept-with-bad-revision-test

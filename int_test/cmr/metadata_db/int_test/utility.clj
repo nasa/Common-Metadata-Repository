@@ -129,7 +129,7 @@
       {:status status})))
 
 (defn get-concept-rev-date-by-id-and-revision
-  "Make a GET to retrieve a concept revision id by concept-id and revision."
+  "Fet concept by concept-id and revision and return its revision date (org.joda.time.DateTime)"
   [concept-id revision-id]
   (let [response (client/get (str concepts-url concept-id "/" revision-id)
                              {:accept :json
@@ -139,8 +139,6 @@
                  :body
                  (cheshire/parse-string true)
                  :revision-date))))
-
-
 
 (defn get-concept-by-id
   "Make a GET to retrieve a concept by concept-id."
