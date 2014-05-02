@@ -119,6 +119,24 @@
              temporal))
     []))
 
+;; mimics temporal
+(defn revision-date-format-validation
+  "Validates that temporal datetime parameter conforms to the :date-time-no-ms format,
+  start-day and end-day are integer between 1 and 366"
+  [concept-type params]
+  (if-let [revision-date (:revision-date params)]
+    (apply concat
+           (map
+             (fn [value]
+               (let [[start-date end-date start-day end-day] (map s/trim (s/split value #","))]
+                 (concat
+                   (validate-date-time start-date :date-time-no-ms)
+                   (validate-date-time end-date :date-time-no-ms)
+                   (day-valid? start-day "temporal_start_day")
+                   (day-valid? end-day "temporal_end_day"))))
+             revision-date))
+    []))
+
 (defn attribute-validation
   [concept-type params]
   (if-let [attributes (:attribute params)]
@@ -136,6 +154,7 @@
    unrecognized-params-in-options-validation
    unrecognized-params-settings-in-options-validation
    temporal-format-validation
+   revision-date-format-validation
    attribute-validation])
 
 (defn validate-parameters

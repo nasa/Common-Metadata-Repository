@@ -69,7 +69,6 @@
   "Executes a search for concepts using a query The concepts will be returned with
   concept id and native provider id."
   [context query]
-
   (->> query
        (validate-query context)
        (apply-acls context)
@@ -81,7 +80,6 @@
   "Executes a search for concepts using the given parameters. The concepts will be returned with
   concept id and native provider id."
   [context concept-type params]
-
   (->> params
        p/replace-parameter-aliases
        (pv/validate-parameters concept-type)
