@@ -16,63 +16,39 @@
   (let [coll1 (d/ingest "CMR_PROV1" (dc/collection {}))
         gran1 (d/ingest "CMR_PROV1"
                         (dg/granule coll1
-                                    {:granule-ur "Granule1"
-                                     :orbit-calculated-spatial-domains [ {:orbital-model-name "OrbitalModelName"
-                                                                          :orbit-number  1
+                                    {:orbit-calculated-spatial-domains [ {:orbit-number  1
                                                                           :start-orbit-number 1.0
                                                                           :stop-orbit-number 1.0
-                                                                          :equator-crossing-longitude 0
                                                                           :equator-crossing-date-time "2011-02-01T12:00:00Z"}]}))
         gran2 (d/ingest "CMR_PROV1"
                         (dg/granule coll1
-                                    {:granule-ur "Granule2"
-                                     :orbit-calculated-spatial-domains [{:orbital-model-name "OrbitalModelName"
-                                                                         :orbit-number  1
-                                                                         :start-orbit-number nil
-                                                                         :stop-orbit-number nil
-                                                                         :equator-crossing-longitude 0
+                                    {:orbit-calculated-spatial-domains [{:orbit-number  1
                                                                          :equator-crossing-date-time "2011-02-01T12:00:00Z"}]}))
         gran3 (d/ingest "CMR_PROV1"
                         (dg/granule coll1
-                                    {:granule-ur "Granule3"
-                                     :orbit-calculated-spatial-domains [{:orbital-model-name "OrbitalModelName"
-                                                                         :orbit-number  nil
-                                                                         :start-orbit-number 1.0
+                                    {:orbit-calculated-spatial-domains [{:start-orbit-number 1.0
                                                                          :stop-orbit-number 1.0
-                                                                         :equator-crossing-longitude 0
                                                                          :equator-crossing-date-time "2011-02-01T12:00:00Z"}]}))
         gran4 (d/ingest "CMR_PROV1"
                         (dg/granule coll1
-                                    {:granule-ur "Granule4"
-                                     :orbit-calculated-spatial-domains [{:orbital-model-name "OrbitalModelName"
-                                                                         :orbit-number  2
+                                    {:orbit-calculated-spatial-domains [{:orbit-number  2
                                                                          :start-orbit-number 2.0
                                                                          :stop-orbit-number 3.0
-                                                                         :equator-crossing-longitude 0
                                                                          :equator-crossing-date-time "2011-02-01T12:00:00Z"}]}))
         gran5 (d/ingest "CMR_PROV1"
                         (dg/granule coll1
-                                    {:granule-ur "Granule5"
-                                     :orbit-calculated-spatial-domains [{:orbital-model-name "OrbitalModelName"
-                                                                         :orbit-number  nil
-                                                                         :start-orbit-number 2.0
-                                                                         :stop-orbit-number 3.0
+                                    {:orbit-calculated-spatial-domains [{:start-orbit-number 2.7
+                                                                         :stop-orbit-number 3.5
                                                                          :equator-crossing-longitude 0
                                                                          :equator-crossing-date-time "2011-02-01T12:00:00Z"}]}))
         gran6 (d/ingest "CMR_PROV1"
                         (dg/granule coll1
-                                    {:granule-ur "Granule6"
-                                     :orbit-calculated-spatial-domains [{:orbital-model-name "OrbitalModelName"
-                                                                         :orbit-number  nil
-                                                                         :start-orbit-number 4.0
+                                    {:orbit-calculated-spatial-domains [{:start-orbit-number 4.0
                                                                          :stop-orbit-number 5.0
-                                                                         :equator-crossing-longitude 0
                                                                          :equator-crossing-date-time "2011-02-01T12:00:00Z"}]}))
         gran7 (d/ingest "CMR_PROV1"
                         (dg/granule coll1
-                                    {:granule-ur "Granule6"
-                                     :orbit-calculated-spatial-domains [{:orbital-model-name "OrbitalModelName"
-                                                                         :orbit-number  nil
+                                    {:orbit-calculated-spatial-domains [{:orbital-model-name "OrbitalModelName"
                                                                          :start-orbit-number 7.0
                                                                          :stop-orbit-number 10.0
                                                                          :equator-crossing-longitude 0
@@ -80,24 +56,25 @@
     (index/flush-elastic-index)
 
     (testing "search by exact orbit number"
-      (let [references (search/find-refs :granule
-                                         {:orbit-number 1})]
+      (let [references (search/find-refs :granule {:orbit-number 1})]
         (is (d/refs-match? [gran1 gran2 gran3] references))))
     (testing "search by orbit number range"
-      (let [references (search/find-refs :granule
-                                         {:orbit-number "1,2"})]
-        (is (d/refs-match? [gran1, gran2, gran3, gran4, gran5] references))))
+      (let [references (search/find-refs :granule {:orbit-number "1,2"})]
+        (is (d/refs-match? [gran1, gran2, gran3, gran4] references))))
+    (testing "search by orbit number range with rational numbers"
+      (let [references (search/find-refs :granule {:orbit-number "2,2.8"})]
+        (is (d/refs-match? [gran4, gran5] references))))
+    (testing "search by orbit number range with min and max rational numbers"
+      (let [references (search/find-refs :granule {:orbit-number "4.5,7.7"})]
+        (is (d/refs-match? [gran6 gran7] references))))
     (testing "search by orbit number range inside"
-      (let [references (search/find-refs :granule
-                                         {:orbit-number "8,9"})]
+      (let [references (search/find-refs :granule {:orbit-number "8,9"})]
         (is (d/refs-match? [gran7] references))))
     (testing "search by unused orbit number returns nothing"
-      (let [references (search/find-refs :granule
-                                         {:orbit-number "15"})]
+      (let [references (search/find-refs :granule {:orbit-number "15"})]
         (is (d/refs-match? [] references))))
     (testing "search by unused orbit number range returns nothing"
-      (let [references (search/find-refs :granule
-                                         {:orbit-number "17,18"})]
+      (let [references (search/find-refs :granule {:orbit-number "17,18"})]
         (is (d/refs-match? [] references))))
     (testing "invalid orbit number range"
       (let [{:keys [status errors]} (search/find-refs :granule {:orbit-number "2,1"})]
