@@ -67,7 +67,8 @@
                         :temporal (gt/xml-elem->Temporal xml-struct)
                         :orbit-calculated-spatial-domains (ocsd/xml-elem->orbit-calculated-spatial-domains xml-struct)
                         :project-refs (xml-elem->project-refs xml-struct)
-                        :product-specific-attributes (psa/xml-elem->ProductSpecificAttributeRefs xml-struct)})))
+                        :product-specific-attributes (psa/xml-elem->ProductSpecificAttributeRefs xml-struct)
+                        :cloud-cover (cx/double-at-path xml-struct [:CloudCover])})))
 
 (defn parse-granule
   "Parses ECHO10 XML into a UMM Granule record."
@@ -84,7 +85,8 @@
            temporal :temporal
            ocsds :orbit-calculated-spatial-domains
            prefs :project-refs
-           psas :product-specific-attributes} granule]
+           psas :product-specific-attributes
+           cloud-cover :cloud-cover} granule]
       (x/emit-str
         (x/element :Granule {}
                    (x/element :GranuleUR {} granule-ur)
@@ -102,7 +104,9 @@
                    (ocsd/generate-orbit-calculated-spatial-domains ocsds)
                    (generate-project-refs prefs)
                    (psa/generate-product-specific-attribute-refs psas)
-                   (x/element :Orderable {} "true"))))))
+                   (x/element :Orderable {} "true")
+                   (when cloud-cover
+                     (x/element :CloudCover {} cloud-cover)))))))
 
 (defn validate-xml
   "Validates the XML against the Granule ECHO10 schema."

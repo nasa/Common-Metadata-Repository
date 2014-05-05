@@ -27,6 +27,11 @@
 (def product-specific-attribute-refs
   (ext-gen/model-gen g/->ProductSpecificAttributeRef psa/names (gen/vector psa/string-values 1 3)))
 
+
+(def cloud-cover-vals
+  (ext-gen/optional (ext-gen/choose-double 0.0 100.0)))
+
+
 (def data-granules
   (ext-gen/model-gen
     g/map->DataGranule
@@ -44,7 +49,9 @@
       :temporal gt/temporal
       :orbit-calculated-spatial-domains (ext-gen/nil-if-empty (gen/vector ocsd/orbit-calculated-spatial-domains 0 5))
       :project-refs (ext-gen/nil-if-empty proj-refs)
-      :product-specific-attributes (ext-gen/nil-if-empty (gen/vector product-specific-attribute-refs 0 5)))))
+      :product-specific-attributes (ext-gen/nil-if-empty (gen/vector product-specific-attribute-refs 0 5))
+      ;; TODO - cloud-cover needs to be optional - merge function not working. Empty CloudCover fails validation.
+      :cloud-cover (gen/frequency [[7 (ext-gen/choose-double 0.0 100.0)] [3 (ext-gen/choose-double 0.0 1.0)]]))))
 
 ;; Generator that only returns collection ref with entry-title
 ;; DEPRECATED - this will go away in the future. Don't use it.

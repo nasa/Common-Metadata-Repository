@@ -78,6 +78,7 @@
       <ShortName>Short Name-241</ShortName>
     </Campaign>
   </Campaigns>
+  <CloudCover>0.8</CloudCover>
   </Granule>")
 
 (deftest parse-granule-test
@@ -108,9 +109,12 @@
                                                            :start-orbit-number 0.0
                                                            :stop-orbit-number 0.0
                                                            :equator-crossing-longitude 0.0
-                                                           :equator-crossing-date-time (p/parse-datetime "2010-01-05T05:30:30Z")})]})
+                                                           :equator-crossing-date-time (p/parse-datetime "2010-01-05T05:30:30Z")})]
+                    :cloud-cover 0.8})
         actual (g/parse-granule all-fields-granule-xml)]
     (is (= expected actual))))
+
+
 
 (def valid-granule-xml-w-datasetid
   "<Granule>
@@ -137,6 +141,7 @@
   <Orderable>true</Orderable>
   </Granule>")
 
+
 (deftest validate-xml
   (testing "valid xml1"
     (is (= 0 (count (g/validate-xml valid-granule-xml-w-datasetid)))))
@@ -148,3 +153,4 @@
             "Line 4 - cvc-datatype-valid.1.2.1: 'XXXX-01-05T05:30:30.550-05:00' is not a valid value for 'dateTime'."
             "Line 4 - cvc-type.3.1.3: The value 'XXXX-01-05T05:30:30.550-05:00' of element 'LastUpdate' is not valid."]
            (g/validate-xml (s/replace valid-granule-xml-w-sn-ver "2010" "XXXX"))))))
+
