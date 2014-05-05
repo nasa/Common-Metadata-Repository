@@ -7,8 +7,7 @@
 (def param-aliases
   "A map of non UMM parameter names to their UMM fields."
   {:dataset-id :entry-title
-   :campaign :project
-   :updated-since :revision-date})
+   :campaign :project})
 
 (defn replace-parameter-aliases
   "Replaces aliases of parameter names"
@@ -24,7 +23,7 @@
                 :provider :string
                 :short-name :string
                 :version :string
-                :revision-date :temporal
+                :updated-since :temporal
                 :temporal :temporal
                 :concept-id :string
                 :project :string
@@ -39,7 +38,7 @@
              :attribute :attribute
              :short-name :collection-query
              :version :collection-query
-             :revision-date :temporal
+             :updated-since :temporal
              :temporal :temporal
              :project :string
              :concept-id :string}})

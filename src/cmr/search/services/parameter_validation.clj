@@ -127,7 +127,7 @@
   "Validates that temporal datetime parameter conforms to the :date-time-no-ms format,
   start-day and end-day are integer between 1 and 366"
   [concept-type params]
-  (if-let [revision-date (:revision-date params)]
+  (if-let [updated-since (:updated-since params)]
     (apply concat
            (map
              (fn [value]
@@ -137,7 +137,7 @@
                    (validate-date-time end-date :date-time-no-ms)
                    (day-valid? start-day "temporal_start_day")
                    (day-valid? end-day "temporal_end_day"))))
-             revision-date))
+             updated-since))
     []))
 
 (defn attribute-validation

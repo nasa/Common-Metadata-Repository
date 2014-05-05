@@ -81,14 +81,6 @@
   "Executes a search for concepts using the given parameters. The concepts will be returned with
   concept id and native provider id."
   [context concept-type params]
-;; <<<<<<< HEAD
- ;;  (->> params
-  ;;     p/replace-parameter-aliases
-   ;;    (pv/validate-parameters concept-type)
- ;;      (p/parameters->query concept-type)
- ;;      (find-concepts-by-query context)))
-;; =======
-
   (let [params (-> params
                    u/map-keys->kebab-case
                    (update-in [:options] u/map-keys->kebab-case)
@@ -100,7 +92,6 @@
          (pv/validate-parameters concept-type)
          (p/parameters->query concept-type)
          (find-concepts-by-query context))))
-;; >>>>>>> FETCH_HEAD
 
 (deftracefn find-concept-by-id
   "Executes a search to metadata-db and returns the concept with the given cmr-concept-id."

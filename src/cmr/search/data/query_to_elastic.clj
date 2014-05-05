@@ -11,9 +11,11 @@
   {:collection {:provider :provider-id
                 :version :version-id
                 :project :project-sn
+                :updated-since :revision-date
                 :two-d-coordinate-system-name :two-d-coord-name}
    :granule {:provider :provider-id
              :producer-granule-id :producer-gran-id
+             :updated-since :revision-date
              :project :project-refs}})
 
 (defn query-field->elastic-field
