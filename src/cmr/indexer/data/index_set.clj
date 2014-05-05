@@ -86,6 +86,7 @@
                              :short-name.lowercase  string-field-mapping
                              :version-id            (stored string-field-mapping)
                              :version-id.lowercase  string-field-mapping
+                             :revision-date         date-field-mapping
                              :start-date            date-field-mapping
                              :end-date              date-field-mapping
                              :project-sn            string-field-mapping
@@ -118,6 +119,7 @@
                                     :orbit-calculated-spatial-domains orbit-calculated-spatial-domain-mapping
                                     :project-refs string-field-mapping
                                     :project-refs.lowercase string-field-mapping
+                                    :revision-date         date-field-mapping
                                     :attributes attributes-field-mapping}}})
 
 (def index-set

@@ -25,6 +25,7 @@
                      :entry-title dataset-id
                      :product {:short-name short-name
                                :version-id version-id}
+                     :revision-date  nil
                      :temporal {:range-date-times [{:beginning-date-time (t/date-time 1996 2 24 22 20 41)
                                                     :ending-date-time (t/date-time 1997 3 25 23 23 43 123)}]}
                      :projects projects
@@ -42,6 +43,7 @@
                   :short-name.lowercase "minimal"
                   :version-id version-id
                   :version-id.lowercase "1"
+                  :revision-date  nil
                   :start-date "1996-02-24T22:20:41.000Z"
                   :end-date "1997-03-25T23:23:43.123Z"
                   :project-sn ["ESI" "EVI" "EPI"]

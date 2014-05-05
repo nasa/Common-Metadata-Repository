@@ -16,12 +16,11 @@
 (defn- get-parent-collection
   [context parent-collection-id]
   (let [concept (mdb/get-latest-concept context parent-collection-id)]
-    ;; Concept id associated with parsed data to use in error messages.
     (assoc (idx/parse-concept concept) :concept-id parent-collection-id)))
 
 (defmethod idx/concept->elastic-doc :granule
   [context concept umm-granule]
-  (let [{:keys [concept-id extra-fields provider-id]} concept
+  (let [{:keys [concept-id extra-fields provider-id revision-date]} concept
         {:keys [parent-collection-id]} extra-fields
         parent-collection (get-parent-collection context parent-collection-id)
         {:keys [granule-ur data-granule temporal project-refs]} umm-granule
@@ -40,5 +39,6 @@
      :project-refs.lowercase (map s/lower-case project-refs)
      :orbit-calculated-spatial-domains (ocsd/ocsds->elastic-docs umm-granule)
      :attributes (attrib/psa-refs->elastic-docs parent-collection umm-granule)
+     :revision-date revision-date
      :start-date (when start-date (f/unparse (f/formatters :date-time) start-date))
      :end-date (when end-date (f/unparse (f/formatters :date-time) end-date))}))
