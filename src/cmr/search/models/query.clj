@@ -44,6 +44,15 @@
    pattern?
    ])
 
+(defrecord BooleanCondition
+  [
+   ;; The field being searched.
+   field
+
+   ;; The boolean value to match
+   value
+   ])
+
 ;; ExistCondition represents the specified field must have value, i.e. filed is not null
 (defrecord ExistCondition
   [
