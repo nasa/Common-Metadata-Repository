@@ -147,7 +147,12 @@
 
            ;; Ignore case
            [c1-p1 c1-p2] "S1_v1" {:ignore-case true}
-           [] "S1_v1" {:ignore-case false}))
+           [] "S1_v1" {:ignore-case false})
+
+      (is (d/refs-match?
+            [c1-p1 c1-p2]
+            (search/find-refs :collection {:dif-entry-id "S1_V1"}))
+          "dif_entry_id should be an alias for entry id"))
 
     (testing "Entry title"
       (are [items v options]
