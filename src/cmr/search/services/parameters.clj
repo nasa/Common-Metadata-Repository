@@ -20,6 +20,7 @@
 (def concept-param->type
   "A mapping of param names to query condition types based on concept-type"
   {:collection {:entry-title :string
+                :entry-id :string
                 :provider :string
                 :short-name :string
                 :version :string
