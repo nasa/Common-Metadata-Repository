@@ -122,6 +122,33 @@
            [c1-p1 c1-p2] "v1" {:ignore-case true}
            [] "v1" {:ignore-case false}))
 
+    (testing "entry id"
+      (are [items ids options]
+           (let [params (merge {:entry-id ids}
+                               (when options
+                                 {"options[entry-id]" options}))]
+             (d/refs-match? items (search/find-refs :collection params)))
+
+           [c1-p1 c1-p2] "S1_V1" {}
+           [] "S44_V44" {}
+           ;; Multiple values
+           [c1-p1 c1-p2 c2-p1 c2-p2] ["S1_V1" "S2_V2"] {}
+           [c1-p1 c1-p2] ["S1_V1" "S44_V44"] {}
+           [c1-p1 c1-p2 c2-p1 c2-p2] ["S1_V1" "S2_V2"] {:and false}
+           [] ["S1_V1" "S2_V2"] {:and true}
+
+           ;; Wildcards
+           all-colls "S*_V*" {:pattern true}
+           [] "S*_V*" {:pattern false}
+           [] "S*_V*" {}
+           [c1-p1 c1-p2] "*1" {:pattern true}
+           [c1-p1 c1-p2] "S1_?1" {:pattern true}
+           [] "*Q*" {:pattern true}
+
+           ;; Ignore case
+           [c1-p1 c1-p2] "S1_v1" {:ignore-case true}
+           [] "S1_v1" {:ignore-case false}))
+
     (testing "Entry title"
       (are [items v options]
            (let [params (merge {:entry-title v}
