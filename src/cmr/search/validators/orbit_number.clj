@@ -9,11 +9,7 @@
 (extend-protocol v/Validator
   cmr.search.models.query.OrbitNumberRangeCondition
   (validate
-    [{:keys [start-orbit-number-range-condition
-             orbit-number-range-condition
-             stop-orbit-number-range-condition]}]
-    (-> []
-        (into (v/validate start-orbit-number-range-condition))
-        (into (v/validate orbit-number-range-condition))
-        (into (v/validate stop-orbit-number-range-condition))
-        (distinct))))
+    [{:keys [min-value max-value]}]
+    (let [numeric-range-condition (qm/map->NumericRangeCondition {:min-value min-value
+                                                                  :max-value max-value})]
+      (v/validate numeric-range-condition))))
