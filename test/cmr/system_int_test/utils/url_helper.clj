@@ -21,7 +21,7 @@
 
 (def indexer-port (config-value :indexer-port 3004))
 
-(def search-port (config-value :search-port 3003))
+(def search-port (config-value :search-port 3013))
 
 (def elastic_root (format "http://localhost:%s" elastic-port))
 
