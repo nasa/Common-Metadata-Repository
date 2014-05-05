@@ -185,3 +185,34 @@
         (is (= 3 (count refs)))
         (is (= #{"SampleUR1" "SampleUR2" "sampleur3"}
                (set (map :name refs))))))))
+
+
+(deftest search-by-cloud-cover
+  (let [coll1 (d/ingest "CMR_PROV1" (dc/collection {}))
+        coll2 (d/ingest "CMR_PROV2" (dc/collection {}))
+        gran1 (d/ingest "CMR_PROV1" (dg/granule coll1 {:cloud-cover 0.8}))
+        gran2 (d/ingest "CMR_PROV1" (dg/granule coll1 {:cloud-cover 30.0}))
+        gran3 (d/ingest "CMR_PROV1" (dg/granule coll1 {:cloud-cover 120}))
+        gran4 (d/ingest "CMR_PROV2" (dg/granule coll2 {:cloud-cover -60.0}))
+        gran5 (d/ingest "CMR_PROV2" (dg/granule coll2 {:cloud-cover 0.0}))
+        gran6 (d/ingest "CMR_PROV2" (dg/granule coll2 {:granule-ur "sampleur3"}))]
+    (index/flush-elastic-index)
+    (testing "search granules with lower bound cloud-cover value"
+      (are [cc-search items] (d/refs-match? items (search/find-refs :granule cc-search))
+           {"cloud_cover[min]" 0.2} [gran1 gran2 gran3]))
+    (testing "search granules with upper bound cloud-cover value"
+      (are [cc-search items] (d/refs-match? items (search/find-refs :granule cc-search))
+           {"cloud_cover[max]" 0.7} [gran4 gran5]))
+    (testing "search by cloud-cover range values that would not cover all granules in store"
+      (are [cc-search items] (d/refs-match? items (search/find-refs :granule cc-search))
+           {"cloud_cover[min]" -70.0 "cloud_cover[max]" 31.0} [gran1 gran2 gran4 gran5]))
+    (testing "search by cloud-cover range values that would not cover all granules in store"
+      (are [cc-search items] (d/refs-match? items (search/find-refs :granule cc-search))
+           {"cloud_cover[min]" -70.0 "cloud_cover[max]" 120.0} [gran1 gran2 gran3 gran4 gran5]))
+    (testing "search by cloud-cover with min value greater than max value"
+      (let [{:keys [status errors]} (search/find-refs :granule {"cloud_cover[min]" 30 "cloud_cover[max]" 0})]
+        (is (= 422 status))
+        (is (re-find #"cloud_cover max value must greater than cloud_cover min value" (first errors)))))))
+
+
+
