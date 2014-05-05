@@ -142,3 +142,25 @@
 (def date-time
   "A generator that will return a Joda DateTime between 1970-01-01T00:00:00.000Z and 2114-01-01T00:00:00.000Z"
   (gen/fmap c/from-long (gen/choose 0 4544208000000)))
+
+(def http-schemes
+  "Some URL schemes."
+  (gen/elements ["ftp" "http" "https" "file"]))
+
+(def domain-exts
+  "Some url domain extenstions."
+  (gen/elements ["com" "org" "gov"]))
+
+(def file-exts
+  "Some file extensions."
+  (gen/elements ["jpg" "png" "gif" "tiff" "txt"]))
+
+(def file-url-string
+  "A generator that will create a simple URL string for a file resource."
+  (gen/fmap (fn [[scheme domain domain-ext file-name-base file-ext]]
+              (str scheme "://" domain "." domain-ext "/" file-name-base "." file-ext))
+            (gen/tuple http-schemes
+                       (gen/not-empty gen/string-alpha-numeric)
+                       domain-exts
+                       (gen/not-empty gen/string-alpha-numeric)
+                       file-exts)))
