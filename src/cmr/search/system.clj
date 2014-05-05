@@ -17,7 +17,7 @@
   "Returns a new instance of the whole application."
   []
   {:log (log/create-logger)
-   :search-index (idx/create-elastic-search-index "localhost" 9210)
+   :search-index (idx/create-elastic-search-index "localhost" 9220)
    :web (web/create-web-server 3003 routes/make-api)
    :zipkin (context/zipkin-config "Search" false)})
 

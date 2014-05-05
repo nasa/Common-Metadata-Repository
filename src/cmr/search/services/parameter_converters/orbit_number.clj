@@ -13,7 +13,7 @@
 (defn orbit-number-str->orbit-number-map
   "Convert an orbit-number string to a map with exact or range values."
   [ons]
-  (if-let[[_ start stop] (re-find #"^(.*),(.*)$" ons)]
+  (if-let [[_ ^java.lang.String start ^java.lang.String stop] (re-find #"^(.*),(.*)$" ons)]
     {:min-orbit-number (Double. start)
      :max-orbit-number (Double. stop)}
     {:orbit-number (Double. ons)}))
@@ -21,19 +21,8 @@
 (defn map->orbit-number-range-condition
   "Build an orbit number condition with a numeric range."
   [values]
-  (let [{:keys [min-orbit-number max-orbit-number]} values
-        start-range-condition (qm/map->NumericRangeCondition {:field :start-orbit-number
-                                                              :min-value min-orbit-number
-                                                              :max-value max-orbit-number})
-        orbit-number-range-condition (qm/map->NumericRangeCondition {:field :orbit-number
-                                                                     :min-value min-orbit-number
-                                                                     :max-value max-orbit-number})
-        stop-range-condition (qm/map->NumericRangeCondition {:field :stop-orbit-number
-                                                             :min-value min-orbit-number
-                                                             :max-value max-orbit-number})]
-    (qm/map->OrbitNumberRangeCondition {:start-orbit-number-range-condition start-range-condition
-                                        :orbit-number-range-condition orbit-number-range-condition
-                                        :stop-orbit-number-range-condition stop-range-condition})))
+  (let [{:keys [min-orbit-number max-orbit-number]} values]
+    (qm/map->OrbitNumberRangeCondition {:min-value min-orbit-number :max-value max-orbit-number})))
 
 
 ;; Converts orbit-number paramter into a query condition

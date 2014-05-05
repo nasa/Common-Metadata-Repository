@@ -11,29 +11,45 @@
   cmr.search.models.query.OrbitNumberValueCondition
   (condition->elastic
     [condition concept-type]
-    (let [orbit-number (:orbit-number condition)]
+    (let [orbit-number (:orbit-number condition)
+          term-condition (qm/map->NumericValueCondition {:field :orbit-number :value orbit-number})
+          start-range-cond (qm/map->NumericRangeCondition {:field :start-orbit-number
+                                                           :max-value orbit-number})
+          stop-range-cond (qm/map->NumericRangeCondition {:field :stop-orbit-number
+                                                          :min-value orbit-number})
+          and-clause (qm/and-conds [start-range-cond stop-range-cond])
+          or-clause (qm/or-conds [term-condition and-clause])]
       {:nested {:path "orbit-calculated-spatial-domains"
-                :filter {:or [{:term { :orbit-number orbit-number}}
-                              {:and [{:range {:start-orbit-number {:lte orbit-number}
-                                              :execution "fielddata"}}
-                                     {:range {:stop-orbit-number {:gte orbit-number}
-                                              :execution "fielddata"}}]}]}}}))
+                :filter (q2e/condition->elastic or-clause concept-type)}}))
+
 
   cmr.search.models.query.OrbitNumberRangeCondition
   (condition->elastic
     [condition concept-type]
-    (let [{:keys [start-orbit-number-range-condition
-                  orbit-number-range-condition
-                  stop-orbit-number-range-condition]} condition
-          {:keys [min-value max-value]} orbit-number-range-condition]
+    (let [{:keys [min-value max-value]} condition
+          start-orbit-number-range-cond (qm/map->NumericRangeCondition {:field :start-orbit-number
+                                                                        :min-value min-value
+                                                                        :max-value max-value})
+          orbit-number-range-cond (qm/map->NumericRangeCondition {:field :orbit-number
+                                                                  :min-value min-value
+                                                                  :max-value max-value})
+          stop-orbit-number-range-cond (qm/map->NumericRangeCondition {:field :stop-orbit-number
+                                                                       :min-value min-value
+                                                                       :max-value max-value})
+          min-inside-start-cond (qm/map->NumericRangeCondition {:field :start-orbit-number
+                                                                :max-value min-value})
+          min-inside-stop-cond (qm/map->NumericRangeCondition {:field :stop-orbit-number
+                                                               :min-value min-value})
+          min-and-clause (qm/and-conds [min-inside-start-cond min-inside-stop-cond])
+          max-inside-start-cond (qm/map->NumericRangeCondition {:field :start-orbit-number
+                                                                :max-value max-value})
+          max-inside-stop-cond (qm/map->NumericRangeCondition {:field :stop-orbit-number
+                                                               :min-value max-value})
+          max-and-clause (qm/and-conds [max-inside-start-cond max-inside-stop-cond])
+          or-clause (qm/or-conds [start-orbit-number-range-cond
+                                  orbit-number-range-cond
+                                  stop-orbit-number-range-cond
+                                  min-and-clause
+                                  max-and-clause])]
       {:nested {:path "orbit-calculated-spatial-domains"
-                :filter {:or [(q2e/condition->elastic start-orbit-number-range-condition
-                                                      concept-type)
-                              (q2e/condition->elastic orbit-number-range-condition
-                                                      concept-type)
-                              (q2e/condition->elastic stop-orbit-number-range-condition
-                                                      concept-type)
-                              {:and [{:range {:start-orbit-number {:lte min-value}
-                                              :execution "fielddata"}}
-                                     {:range {:stop-orbit-number {:gte max-value}
-                                              :execution "fielddata"}}]}]}}})))
+                :filter (q2e/condition->elastic or-clause concept-type)}})))

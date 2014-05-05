@@ -3,7 +3,9 @@
   (:require [clojurewerkz.elastisch.query :as q]
             [clojure.string :as s]
             [cmr.search.models.query :as qm]
-            [cmr.search.data.datetime-helper :as h]))
+            [cmr.search.data.datetime-helper :as h]
+            [cmr.common.services.errors :as errors]
+            [cmr.search.data.messages :as m]))
 
 (def field-mappings
   "A map of fields in the query to the field name in elastic. Field names are excluded from this
@@ -61,11 +63,29 @@
     [{:keys [field]} _]
     {:missing {:field field}})
 
+  cmr.search.models.query.NumericValueCondition
+  (condition->elastic
+    [{:keys [field value]} _]
+    {:term {field value}})
+
   cmr.search.models.query.NumericRangeCondition
   (condition->elastic
     [{:keys [field min-value max-value]} _]
-    {:range {field {:gte min-value :lte max-value}
-             :execution "fielddata"}})
+    (cond
+      (and min-value max-value)
+      {:range {field {:gte min-value :lte max-value}
+               :execution "fielddata"}}
+
+      min-value
+      {:range {field {:gte min-value}
+               :execution "fielddata"}}
+
+      max-value
+      {:range {field {:lte max-value}
+               :execution "fielddata"}}
+
+      :else
+      (errors/internal-error! (m/nil-min-max-msg))))
 
   cmr.search.models.query.DateRangeCondition
   (condition->elastic

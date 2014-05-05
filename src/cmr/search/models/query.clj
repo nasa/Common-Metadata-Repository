@@ -70,6 +70,15 @@
    end-date
    ])
 
+(defrecord NumericValueCondition
+  [
+   ;; The field being searched
+   field
+
+   ;; The value to match.
+   value
+   ])
+
 (defrecord NumericRangeCondition
   [
    ;; The field being searched.
@@ -104,9 +113,8 @@
 
 (defrecord OrbitNumberRangeCondition
   [
-   start-orbit-number-range-condition
-   orbit-number-range-condition
-   stop-orbit-number-range-condition
+   min-value
+   max-value
    ])
 
 (defrecord CollectionQueryCondition

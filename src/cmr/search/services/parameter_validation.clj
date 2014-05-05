@@ -145,7 +145,7 @@
         (if (and start-orbit-number (> start-orbit-number stop-orbit-number))
           [(on-msg/invalid-orbit-number-msg)]
           []))
-      (catch Exception e
+      (catch NumberFormatException e
         [(on-msg/invalid-orbit-number-msg)]))
     []))
 
