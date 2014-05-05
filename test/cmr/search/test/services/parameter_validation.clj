@@ -72,10 +72,7 @@
            (pv/orbit-number-validation :granule (assoc valid-params :orbit-number "A,10")))))
   (testing "Non-numeric stop-orbit-number"
     (is (= [(on-msg/invalid-orbit-number-msg)]
-           (pv/orbit-number-validation :granule (assoc valid-params :orbit-number "10,A")))))
-  (testing "Start orbit-number greater than stop orbit-number"
-    (is (= [(on-msg/invalid-orbit-number-msg)]
-           (pv/orbit-number-validation :granule (assoc valid-params :orbit-number "10,1"))))))
+           (pv/orbit-number-validation :granule (assoc valid-params :orbit-number "10,A"))))))
 
 (deftest temporal-format-validation :collection-start-date-test
   (testing "valid-start-date"
