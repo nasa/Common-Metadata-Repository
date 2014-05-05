@@ -122,6 +122,21 @@
              temporal))
     []))
 
+(defn cloud-cover-validation
+  "Validates cloud cover values are numeric and min value less than equal to max value"
+  [concept-type params]
+  (let [{:keys [min max]} (:cloud-cover params)]
+    (cond
+      (and min (not (number? (read-string min))))
+      ["cloud_cover min value must be a number"]
+      (and max (not (number? (read-string max))))
+      ["cloud_cover max value must be a number"]
+      (and min max (> (read-string min) (read-string max)))
+      ["cloud_cover max value must greater than cloud_cover min value"]
+      :else
+      [])))
+
+
 (defn attribute-validation
   [concept-type params]
   (if-let [attributes (:attribute params)]
@@ -139,6 +154,7 @@
    unrecognized-params-in-options-validation
    unrecognized-params-settings-in-options-validation
    temporal-format-validation
+   cloud-cover-validation
    attribute-validation])
 
 (defn validate-parameters

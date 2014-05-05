@@ -7,7 +7,9 @@
 (def param-aliases
   "A map of non UMM parameter names to their UMM fields."
   {:dataset-id :entry-title
-   :campaign :project})
+   :campaign :project
+   :cloud_cover[min] :cloud-cover-min
+   :cloud_cover[max] :cloud-cover-max})
 
 (defn replace-parameter-aliases
   "Replaces aliases of parameter names"
@@ -39,6 +41,7 @@
              :version :collection-query
              :temporal :temporal
              :project :string
+             :cloud-cover :num-range
              :concept-id :string}})
 
 (defn- param-name->type
@@ -84,6 +87,36 @@
           :value value
           :case-sensitive? (not= "true" (get-in options [param :ignore-case]))
           :pattern? (= "true" (get-in options [param :pattern]))})])))
+
+
+; Converts cloud cover params and values into query condition
+#_(defmethod parameter->condition :num-range
+  [concept-type param value options]
+  (if (sequential? value)
+    (if (= "true" (get-in options [:temporal :and]))
+      (qm/and-conds
+        (map #(parameter->condition concept-type param % options) value))
+      (qm/or-conds
+        (map #(parameter->condition concept-type param % options) value)))
+    (let [{:keys [min max]} value]
+      (qm/map->NumericRangeCondition {:field param
+                                      :min (if min min 0.0)
+                                      :max (if max max 100.0)}))))
+
+(defmethod parameter->condition :num-range
+  [concept-type param value options]
+  (if (sequential? value)
+    (if (= "true" (get-in options [:temporal :and]))
+      (qm/and-conds
+        (map #(parameter->condition concept-type param % options) value))
+      (qm/or-conds
+        (map #(parameter->condition concept-type param % options) value)))
+    (let [{:keys [min max]} value]
+      (qm/map->NumericRangeCondition (merge
+                                       {:field param}
+                                       (when min {:min min})
+                                       (when max {:min max}))))))
+
 
 (defn parameters->query
   "Converts parameters into a query model."

@@ -44,6 +44,19 @@
    pattern?
    ])
 
+(defrecord NumericRangeCondition
+  [
+   ;; The field being searched.
+   field
+
+   ;; Minimum value of the search parameter
+   min
+
+   ;; Maximum value of the search parameter
+   max
+   ])
+
+
 ;; ExistCondition represents the specified field must have value, i.e. filed is not null
 (defrecord ExistCondition
   [

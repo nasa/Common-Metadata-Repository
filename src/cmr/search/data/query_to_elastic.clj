@@ -69,6 +69,11 @@
           value (if end-date (assoc value :to (h/utc-time->elastic-time end-date)) value)]
       {:range { field value }}))
 
+  cmr.search.models.query.NumericRangeCondition
+  (condition->elastic
+    [{:keys [field min max]} _]
+      {:range {field {:gte min :lte max}}})
+
   cmr.search.models.query.MatchAllCondition
   (condition->elastic
     [_ _]
