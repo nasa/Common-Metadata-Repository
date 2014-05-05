@@ -51,6 +51,14 @@
    values
   ])
 
+(defrecord RelatedURL
+  [
+   type
+   sub-type
+   url
+   description
+  ])
+
 (defrecord UmmGranule
   [
    ;; maps to Granule/GranuleUR in echo granule schema
@@ -67,6 +75,9 @@
 
    ;; references to projects/campaigns
    project-refs
+
+   ;; references to onlineResources and onlineAccessURLs
+   related-urls
 
    ;; reference to PSAs in the parent collection
    product-specific-attributes

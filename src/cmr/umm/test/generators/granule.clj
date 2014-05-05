@@ -27,6 +27,14 @@
 (def product-specific-attribute-refs
   (ext-gen/model-gen g/->ProductSpecificAttributeRef psa/names (gen/vector psa/string-values 1 3)))
 
+(def related-url
+  (ext-gen/model-gen
+    g/map->RelatedURL
+    ;; we only test OnlineAccessURL here for simplification purpose
+    (gen/hash-map :type (gen/return "GET DATA")
+                  :url ext-gen/file-url-string
+                  :description (ext-gen/string-ascii 1 80))))
+
 (def data-granules
   (ext-gen/model-gen
     g/map->DataGranule
@@ -44,6 +52,7 @@
       :temporal gt/temporal
       :orbit-calculated-spatial-domains (ext-gen/nil-if-empty (gen/vector ocsd/orbit-calculated-spatial-domains 0 5))
       :project-refs (ext-gen/nil-if-empty proj-refs)
+      :related-urls (ext-gen/nil-if-empty (gen/vector related-url 0 5))
       :product-specific-attributes (ext-gen/nil-if-empty (gen/vector product-specific-attribute-refs 0 5)))))
 
 ;; Generator that only returns collection ref with entry-title
