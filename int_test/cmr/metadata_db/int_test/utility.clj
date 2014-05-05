@@ -21,22 +21,6 @@
 
 (def providers-url (str "http://localhost:" port "/providers"))
 
-;; format of revision-date in oracle "yyyy-MM-dd hh:mm:ss"
-(def custom-ISO8601-DT-formatter (f/formatter "yyyy-MM-dd"))
-
-
-;; TODO - find proper method to get local time in UTC
-(defn now
-  "Return date using default timezone"
-  []
-  (t/to-time-zone (t/now) (t/default-time-zone)))
-
-;; TODO - find a method to avoid offsets
-(defn revision-date->local
-  "Use offset in hours to put UTC date in default time zone"
-  [revision-date offset]
-  (t/to-time-zone revision-date (t/time-zone-for-offset offset)))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; utility methods
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
