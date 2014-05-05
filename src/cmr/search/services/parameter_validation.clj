@@ -7,8 +7,9 @@
             [cmr.search.services.parameters :as p]
             [cmr.search.services.parameter-converters.attribute :as attrib]
             [cmr.search.services.messages.attribute-messages :as attrib-msg]
-            [camel-snake-kebab :as csk]
-            [cmr.search.services.messages.orbit-number-messages :as on-msg]))
+            [cmr.search.services.parameter-converters.orbit-number :as on]
+            [cmr.search.services.messages.orbit-number-messages :as on-msg]
+            [camel-snake-kebab :as csk]))
 
 
 (defn- concept-type->valid-param-names
@@ -158,7 +159,7 @@
     (try
       (let [{:keys [orbit-number
                     start-orbit-number
-                    stop-orbit-number]} (orbit-number-str->orbit-number-map orbit-number)]
+                    stop-orbit-number]} (on/orbit-number-str->orbit-number-map orbit-number)]
         (if (and start-orbit-number (> start-orbit-number stop-orbit-number))
           [(on-msg/invalid-orbit-number-msg)]
           []))

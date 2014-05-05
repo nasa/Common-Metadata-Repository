@@ -67,6 +67,12 @@
     [{:keys [field]} _]
     {:missing {:field field}})
 
+  cmr.search.models.query.NumericRangeCondition
+  (condition->elastic
+    [{:keys [field min-value max-value]} _]
+    {:range {field {:gte min-value :lte max-value}
+             :execution "fielddata"}})
+
   cmr.search.models.query.DateRangeCondition
   (condition->elastic
     [{:keys [field start-date end-date]} _]
