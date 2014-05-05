@@ -64,16 +64,16 @@
   (testing "Valid orbit_number range"
     (is (= []
            (pv/orbit-number-validation :granule (assoc valid-params :orbit-number "1,2")))))
-  (testing "Non-numeric single orbit_number"
+  (testing "Non-numeric single orbit-number"
     (is (= [(on-msg/invalid-orbit-number-msg)]
            (pv/orbit-number-validation :granlue (assoc valid-params :orbit-number "A")))))
-  (testing "Non-numeric start_orbit_number"
+  (testing "Non-numeric start-orbit-number"
     (is (= [(on-msg/invalid-orbit-number-msg)]
            (pv/orbit-number-validation :granule (assoc valid-params :orbit-number "A,10")))))
-  (testing "Non-numeric stop_orbit_number"
+  (testing "Non-numeric stop-orbit-number"
     (is (= [(on-msg/invalid-orbit-number-msg)]
            (pv/orbit-number-validation :granule (assoc valid-params :orbit-number "10,A")))))
-  (testing "Start order-number greater than stop order-number"
+  (testing "Start orbit-number greater than stop orbit-number"
     (is (= [(on-msg/invalid-orbit-number-msg)]
            (pv/orbit-number-validation :granule (assoc valid-params :orbit-number "10,1"))))))
 

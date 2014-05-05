@@ -70,6 +70,18 @@
    end-date
    ])
 
+(defrecord NumericRangeCondition
+  [
+   ;; The field being searched.
+   field
+
+   ;; The minimum value (inclusive)
+   min-value
+
+   ;; Them maximum value (inclusive)
+   max-value
+   ])
+
 (defrecord TemporalCondition
   [
    ;; The field being searched.
@@ -83,6 +95,18 @@
 
    ;; The end-day value
    end-day
+   ])
+
+(defrecord OrbitNumberValueCondition
+  [
+   value
+   ])
+
+(defrecord OrbitNumberRangeCondition
+  [
+   start-orbit-number-range-condition
+   orbit-number-range-condition
+   stop-orbit-number-range-condition
    ])
 
 (defrecord CollectionQueryCondition
