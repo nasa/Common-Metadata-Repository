@@ -7,6 +7,7 @@
 (def param-aliases
   "A map of non UMM parameter names to their UMM fields."
   {:dataset-id :entry-title
+   :dif-entry-id :entry-id
    :campaign :project})
 
 (defn replace-parameter-aliases
