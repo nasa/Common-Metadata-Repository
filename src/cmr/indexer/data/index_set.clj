@@ -43,6 +43,9 @@
 (def int-field-mapping
   {:type "integer"})
 
+(def bool-field-mapping
+  {:type "boolean"})
+
 (defn stored
   "modifies a mapping to indicate that it should be stored"
   [field-mapping]
@@ -120,6 +123,7 @@
                                     :project-refs string-field-mapping
                                     :project-refs.lowercase string-field-mapping
                                     :revision-date         date-field-mapping
+                                    :downloadable bool-field-mapping
                                     :attributes attributes-field-mapping}}})
 
 (def index-set
