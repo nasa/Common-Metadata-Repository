@@ -1,9 +1,15 @@
 (ns cmr.metadata-db.test.data.oracle.concepts
   (:require [clojure.test :refer :all]
-            [cmr.metadata-db.data.oracle.concepts :as c])
+            [cmr.metadata-db.data.oracle.concepts :as c]
+            [cmr.metadata-db.data.oracle.core :as oracle]
+            [clojure.java.jdbc :as j]
+            [clj-time.format :as f]
+            [clj-time.coerce :as cr]
+            [clj-time.core :as t])
   (:import javax.sql.rowset.serial.SerialBlob
            java.util.zip.GZIPInputStream
-           java.io.ByteArrayInputStream))
+           java.io.ByteArrayInputStream
+           oracle.sql.TIMESTAMPTZ))
 
 (defn mock-blob
   "Create a mock blob"
@@ -36,46 +42,55 @@
 
 
 (deftest db-result->concept-map-test
-  (testing "collection results"
-    (let [result {:native_id "foo"
-                  :concept_id "C5-PROV1"
-                  :metadata (mock-blob "<foo>")
+  (j/with-db-transaction
+    [db (oracle/create-db oracle/db-spec)]
+    (let [revision-time (t/date-time 1986 10 14 4 3 27 456)
+          oracle-timestamp (TIMESTAMPTZ. ^java.sql.Connection (c/db->oracle-conn db)
+                                         ^java.sql.Timestamp (cr/to-sql-time revision-time))]
+      (testing "collection results"
+        (let [result {:native_id "foo"
+                      :concept_id "C5-PROV1"
+                      :metadata (mock-blob "<foo>")
+                      :format "xml"
+                      :revision_id 2
+                      :revision_date oracle-timestamp
+                      :deleted 0
+                      :short_name "short"
+                      :version_id "v1"
+                      :entry_title "entry"}]
+          (is (= {:concept-type :collection
+                  :native-id "foo"
+                  :concept-id "C5-PROV1"
+                  :provider-id "PROV1"
+                  :metadata "<foo>"
                   :format "xml"
-                  :revision_id 2
-                  :deleted 0
-                  :short_name "short"
-                  :version_id "v1"
-                  :entry_title "entry"}]
-      (is (= {:concept-type :collection
-              :native-id "foo"
-              :concept-id "C5-PROV1"
-              :provider-id "PROV1"
-              :metadata "<foo>"
-              :format "xml"
-              :revision-id 2
-              :deleted false
-              :extra-fields {:short-name "short"
-                             :version-id "v1"
-                             :entry-title "entry"}}
-             (c/db-result->concept-map :collection "PROV1" result)))))
-  (testing "granule results"
-    (let [result {:native_id "foo"
-                  :concept_id "G7-PROV1"
-                  :metadata (mock-blob "<foo>")
+                  :revision-id 2
+                  :revision-date "1986-10-14T04:03:27.456Z"
+                  :deleted false
+                  :extra-fields {:short-name "short"
+                                 :version-id "v1"
+                                 :entry-title "entry"}}
+                 (c/db-result->concept-map :collection db "PROV1" result)))))
+      (testing "granule results"
+        (let [result {:native_id "foo"
+                      :concept_id "G7-PROV1"
+                      :metadata (mock-blob "<foo>")
+                      :format "xml"
+                      :revision_date oracle-timestamp
+                      :revision_id 2
+                      :deleted 0
+                      :parent_collection_id "C5-PROV1"}]
+          (is (= {:concept-type :granule
+                  :native-id "foo"
+                  :concept-id "G7-PROV1"
+                  :provider-id "PROV1"
+                  :metadata "<foo>"
                   :format "xml"
-                  :revision_id 2
-                  :deleted 0
-                  :parent_collection_id "C5-PROV1"}]
-      (is (= {:concept-type :granule
-              :native-id "foo"
-              :concept-id "G7-PROV1"
-              :provider-id "PROV1"
-              :metadata "<foo>"
-              :format "xml"
-              :revision-id 2
-              :deleted false
-              :extra-fields {:parent-collection-id "C5-PROV1"}}
-             (c/db-result->concept-map :granule "PROV1" result))))))
+                  :revision-id 2
+                  :revision-date "1986-10-14T04:03:27.456Z"
+                  :deleted false
+                  :extra-fields {:parent-collection-id "C5-PROV1"}}
+                 (c/db-result->concept-map :granule db "PROV1" result))))))))
 
 
 (deftest concept->insert-args-test

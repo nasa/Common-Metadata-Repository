@@ -30,6 +30,7 @@
                                  metadata BLOB NOT NULL,
                                  format VARCHAR(255) NOT NULL,
                                  revision_id INTEGER DEFAULT 0 NOT NULL,
+                                 revision_date TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP NOT NULL,
                                  deleted INTEGER DEFAULT 0 NOT NULL,
                                  short_name VARCHAR(85) NOT NULL,
                                  version_id VARCHAR(80) NOT NULL,
@@ -66,6 +67,7 @@
                                  metadata BLOB NOT NULL,
                                  format VARCHAR(255) NOT NULL,
                                  revision_id INTEGER DEFAULT 0 NOT NULL,
+                                 revision_date TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP NOT NULL,
                                  deleted INTEGER DEFAULT 0 NOT NULL,
                                  CONSTRAINT %s_con_rev
                                  UNIQUE (native_id, revision_id)

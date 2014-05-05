@@ -4,12 +4,21 @@
   (:require [clojure.test :refer :all]
             [clj-http.client :as client]
             [cheshire.core :as cheshire]
+            [clj-time.core :as t]
+            [clj-time.format :as f]
+            [clj-time.local :as l]
             [cmr.metadata-db.int-test.utility :as util]))
+
 
 ;;; fixtures
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (use-fixtures :each (util/reset-database-fixture "PROV1"))
+
+(defn recently-updated?
+  "Returns true if a concept was recently updated."
+  [response]
+  (t/after? (get-in response [:concept :revision-date]) (t/plus (t/now) (t/minutes -2))))
 
 ;;; tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -18,6 +27,7 @@
         {:keys [status revision-id concept-id]} (util/save-concept concept)]
     (is (= 201 status))
     (is (= revision-id 0))
+    (is (recently-updated? (util/get-concept-by-id-and-revision concept-id revision-id)))
     (is (util/verify-concept-was-saved (assoc concept :revision-id revision-id :concept-id concept-id)))))
 
 (deftest save-granule-test
@@ -27,18 +37,24 @@
         {:keys [status revision-id concept-id]} (util/save-concept granule)]
     (is (= 201 status))
     (is (= revision-id 0))
+    (is (recently-updated? (util/get-concept-by-id-and-revision concept-id revision-id)))
     (is (util/verify-concept-was-saved (assoc granule :revision-id revision-id :concept-id concept-id)))))
 
 (deftest save-concept-test-with-proper-revision-id-test
   (let [concept (util/collection-concept "PROV1" 1)]
     ;; save the concept once
     (let [{:keys [revision-id concept-id]} (util/save-concept concept)
-          new-revision-id (inc revision-id)]
+          new-revision-id (inc revision-id)
+          revision-date-0 (get-in (util/get-concept-by-id-and-revision concept-id revision-id)
+                                  [:concept :revision-date])]
       ;; save it again with a valid revision-id
       (let [updated-concept (assoc concept :revision-id new-revision-id :concept-id concept-id)
-            {:keys [status revision-id]} (util/save-concept updated-concept)]
+            {:keys [status revision-id]} (util/save-concept updated-concept)
+            revision-date-1 (get-in (util/get-concept-by-id-and-revision concept-id revision-id)
+                                    [:concept :revision-date])]
         (is (= 201 status))
         (is (= revision-id new-revision-id))
+        (is (t/after? revision-date-1 revision-date-0))
         (is (util/verify-concept-was-saved updated-concept))))))
 
 (deftest save-concept-with-bad-revision-test
@@ -81,9 +97,9 @@
 (deftest save-granule-with-nil-required-field
   (testing "nil parent-collection-id"
     (let [granule (util/granule-concept "PROV1" nil 1)
-        {:keys [status revision-id concept-id]} (util/save-concept granule)]
-    (is (= 422 status))
-    (is (not (util/verify-concept-was-saved (assoc granule :revision-id revision-id :concept-id concept-id)))))))
+          {:keys [status revision-id concept-id]} (util/save-concept granule)]
+      (is (= 422 status))
+      (is (not (util/verify-concept-was-saved (assoc granule :revision-id revision-id :concept-id concept-id)))))))
 
 ;;; TODO - add test for saving concept with concept-type, provider-id, and native-id
 ;;; of existing concept but with different concept-id to be sure it fails.
@@ -102,3 +118,4 @@
           body (cheshire/parse-string (:body response))
           errors (get body "errors")]
       (is (= 400 status))))
+

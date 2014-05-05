@@ -9,8 +9,8 @@
             [cmr.metadata-db.data.concepts :as concepts]))
 
 (defmethod c/db-result->concept-map :collection
-  [concept-type provider-id result]
-  (some-> (c/db-result->concept-map :default provider-id result)
+  [concept-type db provider-id result]
+  (some-> (c/db-result->concept-map :default db provider-id result)
           (assoc :concept-type :collection)
           (assoc-in [:extra-fields :short-name] (:short_name result))
           (assoc-in [:extra-fields :version-id] (:version_id result))

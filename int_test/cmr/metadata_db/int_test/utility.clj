@@ -4,6 +4,10 @@
             [clj-http.client :as client]
             [cheshire.core :as cheshire]
             [clojure.walk :as walk]
+            [clj-time.core :as t]
+            [clj-time.format :as f]
+            [clj-time.local :as l]
+            [clj-time.coerce :as cr]
             [inflections.core :as inf]))
 
 ;;; Enpoints for services - change this for tcp-mon
@@ -51,31 +55,30 @@
       (assoc granule :concept-id (first concept-id))
       granule)))
 
+
 (defn- parse-concept
   "Parses a concept from a JSON response"
   [response]
   (-> response
       :body
-      cheshire/parse-string
-      walk/keywordize-keys
+      (cheshire/decode true)
+      (update-in [:revision-date] (partial f/parse (f/formatters :date-time)))
       (update-in [:concept-type] keyword)))
 
 (defn- parse-errors
   "Parses an error response from a JSON response"
   [response]
-  (->> response
+  (-> response
        :body
-       cheshire/parse-string
-       walk/keywordize-keys))
+       (cheshire/decode true)))
 
 (defn- parse-concepts
   "Parses multiple concept from a JSON response"
   [response]
-  (->> response
-       :body
-       cheshire/parse-string
-       (map walk/keywordize-keys)
-       (map #(update-in % [:concept-type] (fn [v] (when v (keyword v)))))))
+  (map #(-> %
+            (update-in [:revision-date] (partial f/parse (f/formatters :date-time)))
+            (update-in [:concept-type] keyword))
+       (cheshire/decode (:body response) true)))
 
 
 (defn get-concept-id
@@ -183,10 +186,10 @@
   [concept]
   (let [{:keys [concept-id revision-id]} concept
         stored-concept (:concept (get-concept-by-id-and-revision concept-id revision-id))]
-    (= concept stored-concept)))
+    (= concept (dissoc stored-concept :revision-date))))
 
 (defn create-and-save-collection
-  "Creates, saves, and returns a concept with its data from metadata-db"
+  "Creates, saves, and returns a concept with its data from metadata-db. "
   ([provider-id uniq-num]
    (create-and-save-collection provider-id uniq-num 1))
   ([provider-id uniq-num num-revisions]
@@ -273,3 +276,4 @@
       (doseq [pid provider-ids] (save-provider pid))
       (f)
       (finally (reset-database)))))
+
