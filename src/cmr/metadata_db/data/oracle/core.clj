@@ -44,6 +44,7 @@
                (.setPassword (:password spec))
                ;; expire excess connections after 30 minutes of inactivity:
                (.setMaxIdleTimeExcessConnections (* 30 60))
+               ; (.setConnectionCustomizerClassName "cmr.metadata_db.data.oracle.ConnectionCustomizer")
                ;; expire connections after 3 hours of inactivity:
                (.setMaxIdleTime (* 3 60 60)))]
     {:datasource cpds}))

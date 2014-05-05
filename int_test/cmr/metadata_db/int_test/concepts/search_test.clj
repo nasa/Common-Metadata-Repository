@@ -10,6 +10,11 @@
 
 (use-fixtures :each (util/reset-database-fixture "PROV1" "PROV2"))
 
+(defn concepts-for-comparison
+  "Removes revision-date from concepts so they can be compared."
+  [concepts]
+  (map #(dissoc % :revision-date) concepts))
+
 (deftest search-by-concept-revision-id-tuples
   (let [coll1 (util/create-and-save-collection "PROV1" 1 3)
         coll2 (util/create-and-save-collection "PROV1" 2 3)
@@ -23,7 +28,7 @@
                                         (assoc item :revision-id revision))
                                       item-revision-tuples)]
            (and (= 200 status)
-                (= expected-concepts concepts)))
+                (= expected-concepts (concepts-for-comparison concepts))))
          ; one collection
          [[coll1 0]]
          ;; two collections
@@ -54,11 +59,12 @@
         [et1 et2 et3] (map #(get-in % [:extra-fields :entry-title]) colls)]
     (testing "find by provider-id, short-name, version id"
       (testing "find one"
-        (is (= {:status 200
-                :concepts [coll1]}
-               (util/find-concepts :collection {:provider-id "PROV1"
-                                                :short-name short1
-                                                :version-id vid1}))))
+        (is (= [coll1]
+               (-> (util/find-concepts :collection {:provider-id "PROV1"
+                                                    :short-name short1
+                                                    :version-id vid1})
+                   :concepts
+                   concepts-for-comparison))))
       (testing "find none"
         (are [provider-id sn vid] (= {:status 200 :concepts []}
                                      (util/find-concepts
@@ -71,15 +77,16 @@
              "PROVNONE" short1 vid1)))
     (testing "find by provider-id, entry-title"
       (testing "find one"
-        (is (= {:status 200
-                :concepts [coll2]}
-               (util/find-concepts :collection {:provider-id "PROV1"
-                                                :entry-title et2}))))
+        (is (= [coll2]
+               (-> (util/find-concepts :collection {:provider-id "PROV1"
+                                                    :entry-title et2})
+                   :concepts
+                   concepts-for-comparison))))
       (testing "find none"
         (are [provider-id et] (= {:status 200 :concepts []}
-                                     (util/find-concepts
-                                       :collection
-                                       {:provider-id provider-id :entry-title et}))
+                                 (util/find-concepts
+                                   :collection
+                                   {:provider-id provider-id :entry-title et}))
              "PROV1" "none"
              "PROV2" et1
              ;; Searching with an unknown provider id should just find nothing

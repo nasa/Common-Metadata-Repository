@@ -72,38 +72,29 @@
       granule)))
 
 
-(defn- dissoc-revision-date
-  "Remove revision-date association with concept"
-  [parsed-concepts]
-  (map #(dissoc % "revision-date") parsed-concepts))
-
 (defn- parse-concept
   "Parses a concept from a JSON response"
   [response]
   (-> response
       :body
-      cheshire/parse-string
-      (dissoc "revision-date")
-      walk/keywordize-keys
+      (cheshire/decode true)
+      (update-in [:revision-date] (partial f/parse (f/formatters :date-time)))
       (update-in [:concept-type] keyword)))
 
 (defn- parse-errors
   "Parses an error response from a JSON response"
   [response]
-  (->> response
+  (-> response
        :body
-       cheshire/parse-string
-       walk/keywordize-keys))
+       (cheshire/decode true)))
 
 (defn- parse-concepts
   "Parses multiple concept from a JSON response"
   [response]
-  (->> response
-       :body
-       cheshire/parse-string
-       dissoc-revision-date
-       (map walk/keywordize-keys)
-       (map #(update-in % [:concept-type] (fn [v] (when v (keyword v)))))))
+  (map #(-> %
+            (update-in [:revision-date] (partial f/parse (f/formatters :date-time)))
+            (update-in [:concept-type] keyword))
+       (cheshire/decode (:body response) true)))
 
 
 (defn get-concept-id
@@ -127,18 +118,6 @@
     (if (= status 200)
       {:status status :concept (parse-concept response)}
       {:status status})))
-
-(defn get-concept-rev-date-by-id-and-revision
-  "Fet concept by concept-id and revision and return its revision date (org.joda.time.DateTime)"
-  [concept-id revision-id]
-  (let [response (client/get (str concepts-url concept-id "/" revision-id)
-                             {:accept :json
-                              :throw-exceptions false})]
-    (f/parse (f/formatters :date-time)
-             (-> response
-                 :body
-                 (cheshire/parse-string true)
-                 :revision-date))))
 
 (defn get-concept-by-id
   "Make a GET to retrieve a concept by concept-id."
@@ -226,7 +205,7 @@
     (= concept (dissoc stored-concept :revision-date))))
 
 (defn create-and-save-collection
-  "Creates, saves, and returns a concept with its data from metadata-db"
+  "Creates, saves, and returns a concept with its data from metadata-db. "
   ([provider-id uniq-num]
    (create-and-save-collection provider-id uniq-num 1))
   ([provider-id uniq-num num-revisions]

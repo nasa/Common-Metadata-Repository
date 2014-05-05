@@ -8,8 +8,8 @@
             [cmr.metadata-db.data.oracle.sql-utils :as su]))
 
 (defmethod c/db-result->concept-map :granule
-  [concept-type provider-id result]
-  (some-> (c/db-result->concept-map :default provider-id result)
+  [concept-type db provider-id result]
+  (some-> (c/db-result->concept-map :default db provider-id result)
           (assoc :concept-type :granule)
           (assoc-in [:extra-fields :parent-collection-id] (:parent_collection_id result))))
 
