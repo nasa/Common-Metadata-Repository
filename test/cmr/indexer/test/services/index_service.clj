@@ -32,6 +32,8 @@
                                                 {:name "Bar"}]
                      :organizations orgs}
         expected {:concept-id concept-id
+                  :entry-id "MINIMAL_1"
+                  :entry-id.lowercase "minimal_1"
                   :entry-title dataset-id
                   :entry-title.lowercase "a minimal valid collection v 1"
                   :provider-id provider-id

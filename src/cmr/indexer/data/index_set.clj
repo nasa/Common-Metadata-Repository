@@ -76,6 +76,8 @@
                 :_all {:enabled false},
                 :_id   {:path "concept-id"},
                 :properties {:concept-id            (stored string-field-mapping)
+                             :entry-id           (stored string-field-mapping)
+                             :entry-id.lowercase string-field-mapping
                              :entry-title           (stored string-field-mapping)
                              :entry-title.lowercase string-field-mapping
                              :provider-id           (stored string-field-mapping)

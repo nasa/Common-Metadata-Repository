@@ -15,6 +15,7 @@
   [context concept umm-concept]
   (let [{:keys [concept-id provider-id]} concept
         {{:keys [short-name version-id]} :product
+         entry-id :entry-id
          entry-title :entry-title
          temporal :temporal} umm-concept
         project-short-names (map :short-name (:projects umm-concept))
@@ -26,6 +27,8 @@
         start-date (temporal/start-date :collection temporal)
         end-date (temporal/end-date :collection temporal)]
     {:concept-id concept-id
+     :entry-id entry-id
+     :entry-id.lowercase (s/lower-case entry-id)
      :entry-title entry-title
      :entry-title.lowercase (s/lower-case entry-title)
      :provider-id provider-id
