@@ -1,6 +1,6 @@
 (ns cmr.common.services.messages
   "This namespace provides functions to generate messages used for error reporting, logging, etc.
-   Messages used in more than one project should be placed here."
+  Messages used in more than one project should be placed here."
   (:require [clojure.string :as str]
             [cmr.common.services.errors :as errors]))
 
@@ -21,3 +21,10 @@
                        (str " : " context)
                        "")]
      (format "[%s] is not a valid %s%s" (str value) type-name context-str))))
+
+(defn invalid-numeric-range-msg
+  "Creates a message saying the range string does not have the right format."
+  [input-str]
+  (format "%s is not of the form 'value', 'min-value,max-value', 'min-value,', or ',max-value'
+          where value, min-value, and max-value are optional numeric values."
+          input-str))
