@@ -3,13 +3,14 @@
   (:require [clojure.set :as set]
             [cmr.common.services.errors :as err]
             [clojure.string :as s]
-            [clj-time.format :as f]
+            [cmr.common.date-time-parser :as parser]
             [cmr.search.services.parameters :as p]
             [cmr.search.services.parameter-converters.attribute :as attrib]
             [cmr.search.services.messages.attribute-messages :as attrib-msg]
             [cmr.search.services.parameter-converters.orbit-number :as on]
             [cmr.search.services.messages.orbit-number-messages :as on-msg]
-            [camel-snake-kebab :as csk]))
+            [camel-snake-kebab :as csk])
+  (:import clojure.lang.ExceptionInfo))
 
 (defn- concept-type->valid-param-names
   "A set of the valid parameter names for the given concept-type."
@@ -84,14 +85,13 @@
 
 (defn- validate-date-time
   "Validates datetime string is in the given format"
-  [dt format-type]
+  [dt]
   (try
     (when-not (s/blank? dt)
-      (f/parse (f/formatters format-type) dt))
+      (parser/parse-datetime dt))
     []
-    (catch IllegalArgumentException e
-      [(format "temporal datetime is invalid: %s, should be in yyyy-MM-ddTHH:mm:ssZ format."
-               (.getMessage e))])))
+    (catch ExceptionInfo e
+      [(format "temporal datetime is invalid: %s." (first (:errors (ex-data e))))])))
 
 (defn- day-valid?
   "Validates if the given day in temporal is an integer between 1 and 366 inclusive"
@@ -115,8 +115,8 @@
              (fn [value]
                (let [[start-date end-date start-day end-day] (map s/trim (s/split value #","))]
                  (concat
-                   (validate-date-time start-date :date-time-no-ms)
-                   (validate-date-time end-date :date-time-no-ms)
+                   (validate-date-time start-date)
+                   (validate-date-time end-date)
                    (day-valid? start-day "temporal_start_day")
                    (day-valid? end-day "temporal_end_day"))))
              temporal))

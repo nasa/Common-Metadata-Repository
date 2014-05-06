@@ -76,13 +76,15 @@
 
 (deftest temporal-format-validation :collection-start-date-test
   (testing "valid-start-date"
-    (is (empty? (pv/temporal-format-validation :collection {:temporal ["2014-04-05T00:00:00Z"]}))))
+    (is (empty? (pv/temporal-format-validation :collection {:temporal ["2014-04-05T00:00:00Z"]})))
+    (is (empty? (pv/temporal-format-validation :collection {:temporal ["2014-04-05T00:00:00"]})))
+    (is (empty? (pv/temporal-format-validation :collection {:temporal ["2014-04-05T00:00:00.123Z"]})))
+    (is (empty? (pv/temporal-format-validation :collection {:temporal ["2014-04-05T00:00:00.123"]}))))
   (testing "invalid-start-date"
     (are [start-date]
          (let [error (pv/temporal-format-validation :collection {:temporal [start-date]})]
            (is (= 1 (count error)))
            (re-find (re-pattern "temporal datetime is invalid:") (first error)))
-         "2014-04-05T00:00:00"
          "2014-13-05T00:00:00Z"
          "2014-04-00T00:00:00Z"
          "2014-04-05T24:00:00Z"
@@ -91,13 +93,15 @@
 
 (deftest temporal-format-validation :collection-end-date-test
   (testing "valid-end-date"
-    (is (empty? (pv/temporal-format-validation :collection {:temporal [",2014-04-05T00:00:00Z"]}))))
+    (is (empty? (pv/temporal-format-validation :collection {:temporal [",2014-04-05T00:00:00Z"]})))
+    (is (empty? (pv/temporal-format-validation :collection {:temporal [",2014-04-05T00:00:00"]})))
+    (is (empty? (pv/temporal-format-validation :collection {:temporal [",2014-04-05T00:00:00.123Z"]})))
+    (is (empty? (pv/temporal-format-validation :collection {:temporal [",2014-04-05T00:00:00.123"]}))))
   (testing "invalid-end-date"
     (are [end-date]
          (let [error (pv/temporal-format-validation :collection {:temporal [end-date]})]
            (is (= 1 (count error)))
            (re-find (re-pattern "temporal datetime is invalid:") (first error)))
-         ",2014-04-05T00:00:00"
          ",2014-13-05T00:00:00Z"
          ",2014-04-00T00:00:00Z"
          ",2014-04-05T24:00:00Z"
