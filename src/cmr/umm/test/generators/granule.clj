@@ -28,9 +28,6 @@
   (ext-gen/model-gen g/->ProductSpecificAttributeRef psa/names (gen/vector psa/string-values 1 3)))
 
 
-(def cloud-cover-vals
-  (ext-gen/optional (ext-gen/choose-double 0.0 100.0)))
-
 
 (def data-granules
   (ext-gen/model-gen

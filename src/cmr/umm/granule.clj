@@ -72,7 +72,6 @@
    product-specific-attributes
 
    ;; maps to Granule/CloudCover in echo granule schema
-   ;; TODO - per Granule.xsd it not clear how a specific attrib is selected to set cloud-cover value
    cloud-cover
    ])
 
