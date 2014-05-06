@@ -17,7 +17,7 @@
 
   )
 
-#_(deftest search-by-provider-id
+(deftest search-by-provider-id
   (let [coll1 (d/ingest "CMR_PROV1" (dc/collection {}))
         coll2 (d/ingest "CMR_PROV2" (dc/collection {}))
         gran1 (d/ingest "CMR_PROV1" (dg/granule coll1 {:granule-ur "Granule1"}))
@@ -56,7 +56,7 @@
         (is (is (= #{"Granule1" "Granule2" "Granule3"}
                    (set (map :name refs)))))))))
 
-#_(deftest search-by-dataset-id
+(deftest search-by-dataset-id
   (let [coll1 (d/ingest "CMR_PROV1" (dc/collection {:entry-title "OneCollectionV1"}))
         coll2 (d/ingest "CMR_PROV1" (dc/collection {:entry-title "AnotherCollectionV1"}))
         coll3 (d/ingest "CMR_PROV2" (dc/collection {:entry-title "OneCollectionV1"}))
@@ -127,7 +127,7 @@
                  {:entry-title "TestCollection"
                   :granule-ur "sampleur3"}]})
 
-#_(deftest search-by-granule-ur
+(deftest search-by-granule-ur
   (let [coll1 (d/ingest "CMR_PROV1" (dc/collection {}))
         coll2 (d/ingest "CMR_PROV2" (dc/collection {}))
         gran1 (d/ingest "CMR_PROV1" (dg/granule coll1 {:granule-ur "Granule1"}))
@@ -186,7 +186,7 @@
         (is (= #{"SampleUR1" "SampleUR2" "sampleur3"}
                (set (map :name refs))))))))
 
-
+(deftest search-by-cloud-cover
   (let [coll1 (d/ingest "CMR_PROV1" (dc/collection {}))
         coll2 (d/ingest "CMR_PROV2" (dc/collection {}))
         gran1 (d/ingest "CMR_PROV1" (dg/granule coll1 {:cloud-cover 0.8}))
