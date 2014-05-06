@@ -17,7 +17,7 @@
 
   )
 
-(deftest search-by-provider-id
+#_(deftest search-by-provider-id
   (let [coll1 (d/ingest "CMR_PROV1" (dc/collection {}))
         coll2 (d/ingest "CMR_PROV2" (dc/collection {}))
         gran1 (d/ingest "CMR_PROV1" (dg/granule coll1 {:granule-ur "Granule1"}))
@@ -56,7 +56,7 @@
         (is (is (= #{"Granule1" "Granule2" "Granule3"}
                    (set (map :name refs)))))))))
 
-(deftest search-by-dataset-id
+#_(deftest search-by-dataset-id
   (let [coll1 (d/ingest "CMR_PROV1" (dc/collection {:entry-title "OneCollectionV1"}))
         coll2 (d/ingest "CMR_PROV1" (dc/collection {:entry-title "AnotherCollectionV1"}))
         coll3 (d/ingest "CMR_PROV2" (dc/collection {:entry-title "OneCollectionV1"}))
@@ -127,7 +127,7 @@
                  {:entry-title "TestCollection"
                   :granule-ur "sampleur3"}]})
 
-(deftest search-by-granule-ur
+#_(deftest search-by-granule-ur
   (let [coll1 (d/ingest "CMR_PROV1" (dc/collection {}))
         coll2 (d/ingest "CMR_PROV2" (dc/collection {}))
         gran1 (d/ingest "CMR_PROV1" (dg/granule coll1 {:granule-ur "Granule1"}))
@@ -187,7 +187,6 @@
                (set (map :name refs))))))))
 
 
-(deftest search-by-cloud-cover
   (let [coll1 (d/ingest "CMR_PROV1" (dc/collection {}))
         coll2 (d/ingest "CMR_PROV2" (dc/collection {}))
         gran1 (d/ingest "CMR_PROV1" (dg/granule coll1 {:cloud-cover 0.8}))
@@ -199,20 +198,23 @@
     (index/flush-elastic-index)
     (testing "search granules with lower bound cloud-cover value"
       (are [cc-search items] (d/refs-match? items (search/find-refs :granule cc-search))
-           {"cloud_cover[min]" 0.2} [gran1 gran2 gran3]))
+           {"cloud_cover" "0.2,"} [gran1 gran2 gran3]))
     (testing "search granules with upper bound cloud-cover value"
       (are [cc-search items] (d/refs-match? items (search/find-refs :granule cc-search))
-           {"cloud_cover[max]" 0.7} [gran4 gran5]))
+           {"cloud_cover" ",0.7"} [gran4 gran5]))
     (testing "search by cloud-cover range values that would not cover all granules in store"
       (are [cc-search items] (d/refs-match? items (search/find-refs :granule cc-search))
-           {"cloud_cover[min]" -70.0 "cloud_cover[max]" 31.0} [gran1 gran2 gran4 gran5]))
+           {"cloud_cover" "-70.0,31.0"} [gran1 gran2 gran4 gran5]))
     (testing "search by cloud-cover range values that would not cover all granules in store"
       (are [cc-search items] (d/refs-match? items (search/find-refs :granule cc-search))
-           {"cloud_cover[min]" -70.0 "cloud_cover[max]" 120.0} [gran1 gran2 gran3 gran4 gran5]))
+           {"cloud_cover" "-70.0,120.0"} [gran1 gran2 gran3 gran4 gran5]))
     (testing "search by cloud-cover with min value greater than max value"
-      (let [{:keys [status errors]} (search/find-refs :granule {"cloud_cover[min]" 30 "cloud_cover[max]" 0})]
+      (let [{:keys [status errors]} (search/find-refs :granule {"cloud_cover" "30,0"})
+            err (first errors)]
         (is (= 422 status))
-        (is (re-find #"cloud_cover max value must greater than cloud_cover min value" (first errors)))))))
+        (is (re-find #"The maximum value" err))
+        (is (re-find #"must be greater than or equal to the minimum value" err))))))
+
 
 
 
