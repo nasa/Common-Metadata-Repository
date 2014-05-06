@@ -23,10 +23,11 @@
   (let [{:keys [concept-id extra-fields provider-id revision-date]} concept
         {:keys [parent-collection-id]} extra-fields
         parent-collection (get-parent-collection context parent-collection-id)
-        {:keys [granule-ur data-granule temporal project-refs]} umm-granule
+        {:keys [granule-ur data-granule temporal project-refs related-urls]} umm-granule
         producer-gran-id (:producer-gran-id data-granule)
         start-date (temporal/start-date :granule temporal)
-        end-date (temporal/end-date :granule temporal)]
+        end-date (temporal/end-date :granule temporal)
+        downloadable (not (empty? (filter #(= "GET DATA" (:type %)) related-urls)))]
     {:concept-id concept-id
      :collection-concept-id parent-collection-id
      :provider-id provider-id
@@ -40,5 +41,6 @@
      :orbit-calculated-spatial-domains (ocsd/ocsds->elastic-docs umm-granule)
      :attributes (attrib/psa-refs->elastic-docs parent-collection umm-granule)
      :revision-date revision-date
+     :downloadable downloadable
      :start-date (when start-date (f/unparse (f/formatters :date-time) start-date))
      :end-date (when end-date (f/unparse (f/formatters :date-time) end-date))}))
