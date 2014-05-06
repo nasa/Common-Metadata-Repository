@@ -35,7 +35,7 @@
                   :day-night (gen/elements ["DAY" "NIGHT" "BOTH" "UNSPECIFIED"])
                   :production-date-time ext-gen/date-time)))
 
-(def cloud-cover-elems
+(def cloud-cover-values
   (ext-gen/optional  (gen/frequency [[7 (ext-gen/choose-double 0.0 100.0)] [3 (ext-gen/choose-double 0.0 1.0)]])))
 
 (def granules
@@ -49,7 +49,7 @@
       :orbit-calculated-spatial-domains (ext-gen/nil-if-empty (gen/vector ocsd/orbit-calculated-spatial-domains 0 5))
       :project-refs (ext-gen/nil-if-empty proj-refs)
       :product-specific-attributes (ext-gen/nil-if-empty (gen/vector product-specific-attribute-refs 0 5))
-      :cloud-cover cloud-cover-elems)))
+      :cloud-cover cloud-cover-values)))
 
 ;; Generator that only returns collection ref with entry-title
 ;; DEPRECATED - this will go away in the future. Don't use it.
