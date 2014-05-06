@@ -1,6 +1,7 @@
 (ns cmr.search.services.parameters
   "Contains functions for parsing and converting query parameters to query conditions"
   (:require [clojure.set :as set]
+            [cmr.common.services.errors :as errors]
             [cmr.search.models.query :as qm]
             [cmr.common.util :as u]))
 
@@ -74,7 +75,7 @@
   (if (or (= "true" value) (= "false" value))
     (qm/map->BooleanCondition {:field param
                                :value (= "true" value)})
-    (qm/->MatchAllCondition)))
+    (errors/internal-error! (format "Boolean condition for %s has invalid value of [%s]" param value))))
 
 (defmethod parameter->condition :readable-granule-name
   [concept-type param value options]

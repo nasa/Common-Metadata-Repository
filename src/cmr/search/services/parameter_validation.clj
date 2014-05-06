@@ -130,6 +130,16 @@
       [(attrib-msg/attributes-must-be-sequence-msg)])
     []))
 
+(defn boolean-value-validation
+  [concept-type params]
+  (let [bool-params (select-keys params [:downloadable])]
+    (mapcat
+      (fn [[key value]]
+        (if (or (= "true" value) (= "false" value))
+          []
+          [(format "Parameter %s must take value of true of false, but was %s" key value)]))
+      bool-params)))
+
 (def parameter-validations
   "A list of the functions that can validate parameters. They all accept parameters as an argument
   and return a list of errors."
@@ -139,7 +149,8 @@
    unrecognized-params-in-options-validation
    unrecognized-params-settings-in-options-validation
    temporal-format-validation
-   attribute-validation])
+   attribute-validation
+   boolean-value-validation])
 
 (defn validate-parameters
   "Validates parameters. Throws exceptions to send to the user. Returns parameters if validation
