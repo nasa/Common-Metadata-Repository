@@ -1,4 +1,4 @@
-(ns cmr.common.date-time-parser
+(ns cmr.common.parameter-parser
   "Contains helper functions to parse parameter strings."
   (:require [cmr.common.services.errors :as errors]
             [cmr.common.services.messages :as msg]))
