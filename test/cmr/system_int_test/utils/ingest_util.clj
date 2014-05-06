@@ -77,34 +77,6 @@
   (client/post (url/mdb-reset-url))
   (client/post (url/indexer-reset-url)))
 
-;; time related
-;;;;;;;;;;;;;;;;;;;;
-(defn get-joda-date-time
-  "Return joda data time given date-time-tz string - yyyy-MM-ddTHH:mm:ss.SSSZ"
-  [tz]
-  (f/parse (f/formatters :date-time) tz))
-
-
-(defn get-tz-date-time-str
-  "Return date-time-tz string - yyyy-MM-ddTHH:mm:ss.SSSZ given joda data time"
-  [jt]
-  (f/unparse (f/formatters :date-time) jt))
-
-(defn elapsed-time-in-secs
-  "Return time diff in seconds between joda times.
-  In one arg case return diff between now and t0
-  Note: t/now cannot participate directly in t/interval computation"
-  ([t0]
-   (if (string? t0) (elapsed-time-in-secs (-> t0 get-joda-date-time))
-     (elapsed-time-in-secs t0 (-> (t/now) get-tz-date-time-str get-joda-date-time))))
-  ([t0 t1]
-   (cond (string? t0)
-         (elapsed-time-in-secs (-> t0 get-joda-date-time) t1)
-         (string? t1)
-         (elapsed-time-in-secs t0 (-> t1 get-joda-date-time))
-         :else
-         (t/in-seconds (t/interval t0 t1)))))
-
 
 ;;; fixture - each test to call this fixture
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -120,13 +92,3 @@
       (f)
       (finally
         (reset)))))
-
-(comment
-  ;;;;;;;;;
-
-  (elapsed-time-in-secs "2014-05-02T07:24:13.799Z")
-  (elapsed-time-in-secs (org.joda.time.DateTime. 1399015453788))
-  (apply t/before? '((org.joda.time.DateTime. 1399015453788) (org.joda.time.DateTime. 1399015453788)))
-
-  ;;;;;;;;;;
-  )

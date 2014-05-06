@@ -20,12 +20,8 @@
     (let [collection (old-ingest/collection-concept "PROV1" 5)
           _ (ingest/ingest-concept collection)
           granule (old-ingest/granule-concept "PROV1" "C1000000000-PROV1" 5)
-          {:keys [concept-id revision-id]} (ingest/ingest-concept granule)
-          {:keys [revision-date]} (ingest/get-concept concept-id revision-id)
-          wait-threshold-in-secs 180
-          ets (ingest/elapsed-time-in-secs revision-date)]
+          {:keys [concept-id revision-id]} (ingest/ingest-concept granule)]
       (is (ingest/concept-exists-in-mdb? concept-id revision-id))
-      (is (> wait-threshold-in-secs ets))
       (is (= 0 revision-id)))))
 
 ; Verify a new granule with concept-id is ingested successfully.
@@ -51,20 +47,6 @@
           created-granules (take n (repeatedly n #(ingest/ingest-concept granule)))]
       (is (apply = (map :concept-id created-granules)))
       (is (= (range 0 n) (map :revision-id created-granules))))))
-
-
-;; Ingest same granule N times and verify and verify revision dates follow arrow of time
-(deftest verify-rev-dates-ingest-test
-  (testing "ingest same granule n times to verify revision dates ..."
-    (let [collection (old-ingest/collection-concept "PROV1" 5)
-          _ (ingest/ingest-concept collection)
-          n 4
-          granule (old-ingest/granule-concept "PROV1" "C1000000000-PROV1" 5 "G1-PROV1")
-          created-granules (take n (repeatedly n #(ingest/ingest-concept granule)))]
-      (is (apply >= (map (fn [{:keys [concept-id revision-id]}]
-                           (let [{:keys [revision-date]} (ingest/get-concept concept-id revision-id)]
-                             (ingest/elapsed-time-in-secs revision-date)))  created-granules))))))
-
 
 ;;; Verify ingest behaves properly if empty body is presented in the request.
 (deftest empty-granule-ingest-test
