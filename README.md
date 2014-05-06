@@ -123,6 +123,16 @@ Find an additional attribute with name "X\Y\Z" with value 7.
 
 Multiple attributes can be provided. The default is for granules to match all the attribute parameters. This can be changed by specifying `or` option with `option[attribute][or]=true`.
 
+### Find granules by orbit number
+
+  Find granules with an orbit number of 10
+
+    curl "http://localhost:3003/granules?orbit_number=10"
+
+  Find granules with an orbit number in a range of 0.5 to 1.5
+
+    curl "http://localhost:3003/granules?orbit_number=0.5,1.5"
+
 ### Retrieve concept with a given cmr-concept-id
     curl -i "http://localhost:3003/concepts/G100000-PROV1"
 
