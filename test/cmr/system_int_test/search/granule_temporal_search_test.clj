@@ -77,3 +77,4 @@
     (let [{:keys [status errors]} (search/find-refs :granule {"temporal[]" "2011-01-01T10:00:00Z,2010-01-10T12:00:00Z"})]
       (is (= 422 status))
       (is (re-find #"start_date \[2011-01-01T10:00:00Z\] must be before end_date \[2010-01-10T12:00:00Z\]" (first errors))))))
+
