@@ -12,3 +12,5 @@ CMR_ELASTIC_PORT=9206 lein test-out
 
 cd ../cmr-dev-system
 ./support/stop.sh
+
+lein clean
