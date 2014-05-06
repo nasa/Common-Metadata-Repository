@@ -28,13 +28,15 @@
   (ext-gen/model-gen g/->ProductSpecificAttributeRef psa/names (gen/vector psa/string-values 1 3)))
 
 
-
 (def data-granules
   (ext-gen/model-gen
     g/map->DataGranule
     (gen/hash-map :producer-gran-id (ext-gen/optional (ext-gen/string-ascii 1 128))
                   :day-night (gen/elements ["DAY" "NIGHT" "BOTH" "UNSPECIFIED"])
                   :production-date-time ext-gen/date-time)))
+
+(def cloud-cover-elems
+  (ext-gen/optional  (gen/frequency [[7 (ext-gen/choose-double 0.0 100.0)] [3 (ext-gen/choose-double 0.0 1.0)]])))
 
 (def granules
   (ext-gen/model-gen
@@ -47,8 +49,7 @@
       :orbit-calculated-spatial-domains (ext-gen/nil-if-empty (gen/vector ocsd/orbit-calculated-spatial-domains 0 5))
       :project-refs (ext-gen/nil-if-empty proj-refs)
       :product-specific-attributes (ext-gen/nil-if-empty (gen/vector product-specific-attribute-refs 0 5))
-      ;; TODO - cloud-cover needs to be optional - merge function not working. Empty CloudCover fails validation.
-      :cloud-cover (gen/frequency [[7 (ext-gen/choose-double 0.0 100.0)] [3 (ext-gen/choose-double 0.0 1.0)]]))))
+      :cloud-cover cloud-cover-elems)))
 
 ;; Generator that only returns collection ref with entry-title
 ;; DEPRECATED - this will go away in the future. Don't use it.
