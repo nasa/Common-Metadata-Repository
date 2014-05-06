@@ -2,14 +2,14 @@
   "Contains functions for parsing and converting query parameters to query conditions"
   (:require [clojure.set :as set]
             [cmr.search.models.query :as qm]
+            [clojure.string :as s]
             [cmr.common.util :as u]))
 
 (def param-aliases
   "A map of non UMM parameter names to their UMM fields."
   {:dataset-id :entry-title
-   :campaign :project
-   :cloud_cover[min] :cloud-cover-min
-   :cloud_cover[max] :cloud-cover-max})
+   :dif-entry-id :entry-id
+   :campaign :project})
 
 (defn replace-parameter-aliases
   "Replaces aliases of parameter names"
@@ -22,6 +22,7 @@
 (def concept-param->type
   "A mapping of param names to query condition types based on concept-type"
   {:collection {:entry-title :string
+                :entry-id :string
                 :provider :string
                 :short-name :string
                 :version :string
@@ -38,6 +39,7 @@
              :entry-title :collection-query
              :attribute :attribute
              :short-name :collection-query
+             :orbit-number :orbit-number
              :version :collection-query
              :temporal :temporal
              :project :string
@@ -89,20 +91,6 @@
           :pattern? (= "true" (get-in options [param :pattern]))})])))
 
 
-; Converts cloud cover params and values into query condition
-#_(defmethod parameter->condition :num-range
-  [concept-type param value options]
-  (if (sequential? value)
-    (if (= "true" (get-in options [:temporal :and]))
-      (qm/and-conds
-        (map #(parameter->condition concept-type param % options) value))
-      (qm/or-conds
-        (map #(parameter->condition concept-type param % options) value)))
-    (let [{:keys [min max]} value]
-      (qm/map->NumericRangeCondition {:field param
-                                      :min (if min min 0.0)
-                                      :max (if max max 100.0)}))))
-
 (defmethod parameter->condition :num-range
   [concept-type param value options]
   (if (sequential? value)
@@ -111,11 +99,7 @@
         (map #(parameter->condition concept-type param % options) value))
       (qm/or-conds
         (map #(parameter->condition concept-type param % options) value)))
-    (let [{:keys [min max]} value]
-      (qm/map->NumericRangeCondition (merge
-                                       {:field param}
-                                       (when min {:min min})
-                                       (when max {:min max}))))))
+    (qm/numeric-range-condition param value)))
 
 
 (defn parameters->query

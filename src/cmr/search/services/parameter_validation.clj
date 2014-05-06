@@ -4,10 +4,14 @@
             [cmr.common.services.errors :as err]
             [clojure.string :as s]
             [clj-time.format :as f]
+            [clojure.string :as s]
             [cmr.search.services.parameters :as p]
             [cmr.search.services.parameter-converters.attribute :as attrib]
             [cmr.search.services.messages.attribute-messages :as attrib-msg]
+            [cmr.search.services.parameter-converters.orbit-number :as on]
+            [cmr.search.services.messages.orbit-number-messages :as on-msg]
             [camel-snake-kebab :as csk]))
+
 
 (defn- concept-type->valid-param-names
   "A set of the valid parameter names for the given concept-type."
@@ -125,16 +129,19 @@
 (defn cloud-cover-validation
   "Validates cloud cover values are numeric and min value less than equal to max value"
   [concept-type params]
-  (let [{:keys [min max]} (:cloud-cover params)]
-    (cond
-      (and min (not (number? (read-string min))))
-      ["cloud_cover min value must be a number"]
-      (and max (not (number? (read-string max))))
-      ["cloud_cover max value must be a number"]
-      (and min max (> (read-string min) (read-string max)))
-      ["cloud_cover max value must greater than cloud_cover min value"]
-      :else
-      [])))
+  (if-let [cloud-cover (:cloud-cover params)]
+    (let [[^java.lang.String min-value ^java.lang.String max-value] (s/split cloud-cover #",")]
+      (cond
+        (and min-value (> 0 (count min-value)) (not (number? (read-string min-value))))
+        ["cloud_cover min value must be a number"]
+        (and max-value (> 0 (count max-value)) (not (number? (read-string max-value))))
+        ["cloud_cover max value must be a number"]
+        (and min-value max-value (> 0 (count min-value)) (> 0 (count max-value))
+             (> (read-string min-value) (read-string max-value)))
+        ["cloud_cover max value must greater than cloud_cover min value"]
+        :else
+        []))
+    []))
 
 
 (defn attribute-validation
@@ -145,6 +152,23 @@
       [(attrib-msg/attributes-must-be-sequence-msg)])
     []))
 
+(defn orbit-number-validation
+  "Validates that the orbital number is either a single number or a range in the format
+  start,stop where start <= stop."
+  [concept-type params]
+  (if-let [orbit-number (:orbit-number params)]
+    (try
+      (let [{:keys [orbit-number
+                    start-orbit-number
+                    stop-orbit-number]} (on/orbit-number-str->orbit-number-map orbit-number)]
+        (if (and start-orbit-number (> start-orbit-number stop-orbit-number))
+          [(on-msg/invalid-orbit-number-msg)]
+          []))
+      (catch NumberFormatException e
+        [(on-msg/invalid-orbit-number-msg)]))
+    []))
+
+
 (def parameter-validations
   "A list of the functions that can validate parameters. They all accept parameters as an argument
   and return a list of errors."
@@ -154,6 +178,7 @@
    unrecognized-params-in-options-validation
    unrecognized-params-settings-in-options-validation
    temporal-format-validation
+   orbit-number-validation
    cloud-cover-validation
    attribute-validation])
 

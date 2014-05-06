@@ -26,6 +26,7 @@
             [cmr.search.validators.temporal]
             [cmr.search.validators.date-range]
             [cmr.search.validators.attribute]
+            [cmr.search.validators.numeric-range]
 
             [cmr.search.services.parameter-validation :as pv]
             [cmr.search.services.collection-query-resolver :as r]

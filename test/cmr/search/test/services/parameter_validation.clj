@@ -1,7 +1,8 @@
 (ns cmr.search.test.services.parameter-validation
   (:require [clojure.test :refer :all]
             [cmr.search.services.parameter-validation :as pv]
-            [cmr.search.services.messages.attribute-messages :as attrib-msg]))
+            [cmr.search.services.messages.attribute-messages :as attrib-msg]
+            [cmr.search.services.messages.orbit-number-messages :as on-msg]))
 
 (def valid-params
   "Example valid parameters"
@@ -56,8 +57,22 @@
            (pv/page-num-validation :collection (assoc valid-params :page-num 0)))))
   (testing "Non-numeric page num"
     (is (= ["page_num must be a number greater than or equal to 1"]
-           (pv/page-num-validation :collection (assoc valid-params :page-num "ABC"))))))
-
+           (pv/page-num-validation :collection (assoc valid-params :page-num "ABC")))))
+  (testing "Valid exact orbit_number"
+    (is (= []
+           (pv/orbit-number-validation :granule (assoc valid-params :orbit-number "10")))))
+  (testing "Valid orbit_number range"
+    (is (= []
+           (pv/orbit-number-validation :granule (assoc valid-params :orbit-number "1,2")))))
+  (testing "Non-numeric single orbit-number"
+    (is (= [(on-msg/invalid-orbit-number-msg)]
+           (pv/orbit-number-validation :granlue (assoc valid-params :orbit-number "A")))))
+  (testing "Non-numeric start-orbit-number"
+    (is (= [(on-msg/invalid-orbit-number-msg)]
+           (pv/orbit-number-validation :granule (assoc valid-params :orbit-number "A,10")))))
+  (testing "Non-numeric stop-orbit-number"
+    (is (= [(on-msg/invalid-orbit-number-msg)]
+           (pv/orbit-number-validation :granule (assoc valid-params :orbit-number "10,A"))))))
 
 (deftest temporal-format-validation :collection-start-date-test
   (testing "valid-start-date"
