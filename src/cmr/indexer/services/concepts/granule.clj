@@ -4,6 +4,7 @@
             [clj-time.format :as f]
             [cmr.indexer.services.index-service :as idx]
             [cmr.umm.echo10.granule :as granule]
+            [cmr.umm.echo10.related-url :as ru]
             [cmr.transmit.metadata-db :as mdb]
             [cmr.indexer.services.concepts.temporal :as temporal]
             [cmr.indexer.services.concepts.attribute :as attrib]
@@ -27,7 +28,7 @@
         producer-gran-id (:producer-gran-id data-granule)
         start-date (temporal/start-date :granule temporal)
         end-date (temporal/end-date :granule temporal)
-        downloadable (not (empty? (filter #(= "GET DATA" (:type %)) related-urls)))]
+        downloadable (not (empty? (filter ru/downloadable-url? related-urls)))]
     {:concept-id concept-id
      :collection-concept-id parent-collection-id
      :provider-id provider-id
