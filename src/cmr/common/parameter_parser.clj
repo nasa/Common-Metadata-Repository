@@ -10,10 +10,12 @@
   '{:value value, :min-value min-value, :max-value max-value}'."
   [param-str]
   (try
-    (if-let [[_ ^java.lang.String start ^java.lang.String stop] (re-find #"^(.*),(.*)$" param-str)]
-      {:min-value (when (not (empty? start)) (Double. start))
-       :max-value (when (not (empty? stop)) (Double. stop))}
-      {:value (Double. ons)})
+    (let [value-map (if-let [[_ ^java.lang.String start ^java.lang.String stop] (re-find #"^(.*),(.*)$"
+                                                                                         param-str)]
+                      {:min-value (when (not (empty? start)) (Double. start))
+                       :max-value (when (not (empty? stop)) (Double. stop))}
+                      {:value (Double. param-str)})]
+      (into {} (filter second value-map))) ; remove nil values
     (catch NumberFormatException e
       (msg/data-error :invalid-data msg/invalid-numeric-range-msg param-str))))
 
@@ -24,7 +26,7 @@
   (try
     (let [range-map (numeric-range-parameter->map range-str)]
       (if (empty? (filter second range-map))
-        [(msg/invalid-numeric-range-msg param-str)]
+        [(msg/invalid-numeric-range-msg range-str)]
         []))
     (catch clojure.lang.ExceptionInfo e
-      [(msg/invalid-numeric-range-msg param-str)])))
+      [(msg/invalid-numeric-range-msg range-str)])))
