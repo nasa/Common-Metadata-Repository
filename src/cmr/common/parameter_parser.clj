@@ -10,7 +10,7 @@
   '{:value value, :min-value min-value, :max-value max-value}'."
   [param-str]
   (try
-    (if-let [[_ ^java.lang.String start ^java.lang.String stop] (re-find #"^(.*),(.*)$" ons)]
+    (if-let [[_ ^java.lang.String start ^java.lang.String stop] (re-find #"^(.*),(.*)$" param-str)]
       {:min-value (when (not (empty? start)) (Double. start))
        :max-value (when (not (empty? stop)) (Double. stop))}
       {:value (Double. ons)})
