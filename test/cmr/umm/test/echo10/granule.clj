@@ -78,6 +78,26 @@
       <ShortName>Short Name-241</ShortName>
     </Campaign>
   </Campaigns>
+  <OnlineAccessURLs>
+    <OnlineAccessURL>
+      <URL>http://ghrc.nsstc.nasa.gov/hydro/details.pl?ds=dc8capac</URL>
+    </OnlineAccessURL>
+  </OnlineAccessURLs>
+  <OnlineResources>
+    <OnlineResource>
+      <URL>http://camex.nsstc.nasa.gov/camex3/</URL>
+      <Type>DATA ACCESS</Type>
+    </OnlineResource>
+    <OnlineResource>
+      <URL>http://ghrc.nsstc.nasa.gov/uso/ds_docs/camex3/dc8capac/dc8capac_dataset.html</URL>
+      <Type>Guide</Type>
+    </OnlineResource>
+    <OnlineResource>
+      <URL>ftp://camex.nsstc.nasa.gov/camex3/dc8capac/browse/</URL>
+      <Description>Some description.</Description>
+      <Type>Browse</Type>
+    </OnlineResource>
+  </OnlineResources>
   <CloudCover>0.8</CloudCover>
   </Granule>")
 
@@ -89,6 +109,7 @@
                     :data-granule (umm-g/map->DataGranule
                                     {:producer-gran-id "0000000.0000001.hdf"})
                     :project-refs ["Short Name-240" "Short Name-241"]
+                    :cloud-cover 0.8
                     :temporal
                     (umm-g/map->GranuleTemporal
                       {:range-date-time
@@ -97,23 +118,35 @@
                           :ending-date-time (p/parse-datetime "1997-03-24T22:20:41-05:00")})
                        :single-date-time (p/parse-datetime "2010-01-05T05:30:30.550-05:00")})
                     :orbit-calculated-spatial-domains [(umm-g/map->OrbitCalculatedSpatialDomain
-                                                          {:orbital-model-name "OrbitalModelName"
-                                                           :orbit-number 0
-                                                           :start-orbit-number 0.0
-                                                           :stop-orbit-number 0.0
-                                                           :equator-crossing-longitude 0.0
-                                                           :equator-crossing-date-time (p/parse-datetime "2010-01-05T05:30:30Z")})
+                                                         {:orbital-model-name "OrbitalModelName"
+                                                          :orbit-number 0
+                                                          :start-orbit-number 0.0
+                                                          :stop-orbit-number 0.0
+                                                          :equator-crossing-longitude 0.0
+                                                          :equator-crossing-date-time (p/parse-datetime "2010-01-05T05:30:30Z")})
                                                        (umm-g/map->OrbitCalculatedSpatialDomain
-                                                          {:orbital-model-name "OrbitalModelName"
-                                                           :orbit-number 0
-                                                           :start-orbit-number 0.0
-                                                           :stop-orbit-number 0.0
-                                                           :equator-crossing-longitude 0.0
-                                                           :equator-crossing-date-time (p/parse-datetime "2010-01-05T05:30:30Z")})]
-                    :cloud-cover 0.8})
+                                                         {:orbital-model-name "OrbitalModelName"
+                                                          :orbit-number 0
+                                                          :start-orbit-number 0.0
+                                                          :stop-orbit-number 0.0
+                                                          :equator-crossing-longitude 0.0
+                                                          :equator-crossing-date-time (p/parse-datetime "2010-01-05T05:30:30Z")})]
+                    :related-urls [(umm-g/map->RelatedURL
+                                     {:type "GET DATA"
+                                      :url "http://ghrc.nsstc.nasa.gov/hydro/details.pl?ds=dc8capac"})
+                                   (umm-g/map->RelatedURL
+                                     {:type "GET DATA"
+                                      :url "http://camex.nsstc.nasa.gov/camex3/"})
+                                   (umm-g/map->RelatedURL
+                                     {:type "VIEW RELATED INFORMATION"
+                                      :sub-type "USER'S GUIDE"
+                                      :url "http://ghrc.nsstc.nasa.gov/uso/ds_docs/camex3/dc8capac/dc8capac_dataset.html"})
+                                   (umm-g/map->RelatedURL
+                                     {:type "GET RELATED VISUALIZATION"
+                                      :url "ftp://camex.nsstc.nasa.gov/camex3/dc8capac/browse/"
+                                      :description "Some description."})]})
         actual (g/parse-granule all-fields-granule-xml)]
     (is (= expected actual))))
-
 
 
 (def valid-granule-xml-w-datasetid

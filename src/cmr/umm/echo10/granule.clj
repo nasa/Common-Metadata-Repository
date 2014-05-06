@@ -5,6 +5,7 @@
             [cmr.common.xml :as cx]
             [cmr.umm.granule :as g]
             [cmr.umm.echo10.granule.temporal :as gt]
+            [cmr.umm.echo10.related-url :as ru]
             [cmr.umm.echo10.granule.product-specific-attribute-ref :as psa]
             [cmr.umm.echo10.granule.orbit-calculated-spatial-domain :as ocsd]
             [cmr.umm.xml-schema-validator :as v]
@@ -67,8 +68,9 @@
                         :temporal (gt/xml-elem->Temporal xml-struct)
                         :orbit-calculated-spatial-domains (ocsd/xml-elem->orbit-calculated-spatial-domains xml-struct)
                         :project-refs (xml-elem->project-refs xml-struct)
-                        :product-specific-attributes (psa/xml-elem->ProductSpecificAttributeRefs xml-struct)
-                        :cloud-cover (cx/double-at-path xml-struct [:CloudCover])})))
+                        :cloud-cover (cx/double-at-path xml-struct [:CloudCover])
+                        :related-urls (ru/xml-elem->related-urls xml-struct)
+                        :product-specific-attributes (psa/xml-elem->ProductSpecificAttributeRefs xml-struct)})))
 
 (defn parse-granule
   "Parses ECHO10 XML into a UMM Granule record."
@@ -85,8 +87,9 @@
            temporal :temporal
            ocsds :orbit-calculated-spatial-domains
            prefs :project-refs
-           psas :product-specific-attributes
-           cloud-cover :cloud-cover} granule]
+           cloud-cover :cloud-cover
+           related-urls :related-urls
+           psas :product-specific-attributes} granule]
       (x/emit-str
         (x/element :Granule {}
                    (x/element :GranuleUR {} granule-ur)
@@ -104,6 +107,8 @@
                    (ocsd/generate-orbit-calculated-spatial-domains ocsds)
                    (generate-project-refs prefs)
                    (psa/generate-product-specific-attribute-refs psas)
+                   (ru/generate-access-urls related-urls)
+                   (ru/generate-resource-urls related-urls)
                    (x/element :Orderable {} "true")
                    (when cloud-cover
                      (x/element :CloudCover {} cloud-cover)))))))
