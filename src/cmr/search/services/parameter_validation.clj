@@ -11,7 +11,6 @@
             [cmr.search.services.messages.orbit-number-messages :as on-msg]
             [camel-snake-kebab :as csk]))
 
-
 (defn- concept-type->valid-param-names
   "A set of the valid parameter names for the given concept-type."
   [concept-type]
@@ -39,7 +38,6 @@
         ["page_size must be a number between 1 and 2000"]))
     []))
 
-
 (defn page-num-validation
   "Validates that the page-num (if present) is a number in the valid range."
   [concept-type params]
@@ -61,7 +59,6 @@
     (map #(str "Parameter [" (csk/->snake_case_string % )"] was not recognized.")
          (set/difference (set (keys params))
                          (concept-type->valid-param-names concept-type)))))
-
 
 (defn unrecognized-params-in-options-validation
   "Validates that no invalid parameters names in the options were supplied"
@@ -133,24 +130,6 @@
       [(attrib-msg/attributes-must-be-sequence-msg)])
     []))
 
-(defn boolean-value-validation
-  [concept-type params]
-  (let [bool-params (select-keys params [:downloadable])]
-    (mapcat
-      (fn [[key value]]
-        (if (or (= "true" value) (= "false" value))
-          []
-          [(format "Parameter %s must take value of true of false, but was %s" key value)]))
-      bool-params)))
-
-(defn orbit-number-str->orbit-number-map
-  "Convert an orbit-number string to a map with exact or range values."
-  [ons]
-  (if-let[[_ start stop] (re-find #"^(.*),(.*)$" ons)]
-    {:start-orbit-number (Float. start)
-     :stop-orbit-number (Float. stop)}
-    {:orbit-number (Float. ons)}))
-
 (defn orbit-number-validation
   "Validates that the orbital number is either a single number or a range in the format
   start,stop where start <= stop."
@@ -166,7 +145,6 @@
       (catch NumberFormatException e
         [(on-msg/invalid-orbit-number-msg)]))
     []))
-
 
 (defn boolean-value-validation
   [concept-type params]
@@ -187,10 +165,9 @@
    unrecognized-params-in-options-validation
    unrecognized-params-settings-in-options-validation
    temporal-format-validation
+   orbit-number-validation
    attribute-validation
    boolean-value-validation])
-   orbit-number-validation
-   attribute-validation])
 
 (defn validate-parameters
   "Validates parameters. Throws exceptions to send to the user. Returns parameters if validation
