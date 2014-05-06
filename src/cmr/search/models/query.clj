@@ -1,6 +1,7 @@
 (ns cmr.search.models.query
   "Defines various query models and conditions."
-  (:require [cmr.common.services.errors :as errors]))
+  (:require [cmr.common.services.errors :as errors]
+            [clojure.string :as s]))
 
 (def default-page-size 10)
 (def default-page-num 1)
@@ -43,6 +44,7 @@
    ;; Indicates if the search contains pattern matching expressions. Defaults to false.
    pattern?
    ])
+
 
 ;; ExistCondition represents the specified field must have value, i.e. filed is not null
 (defrecord ExistCondition
@@ -184,4 +186,19 @@
   "Combines conditions in an OR condition."
   [conditions]
   (group-conds :or conditions))
+
+(defn numeric-range-condition
+  "Creates a numeric range condition."
+  [field value]
+  (let [[^java.lang.String min-value ^java.lang.String max-value] (s/split value #",")
+        min-value (if (and min-value (< 0 (count min-value)) (number? (read-string min-value)))
+                    (Double. min-value)
+                    nil)
+        max-value (if (and max-value (< 0 (count max-value)) (number? (read-string max-value)))
+                    (Double. max-value)
+                    nil)]
+    (->NumericRangeCondition field min-value max-value)))
+
+
+
 

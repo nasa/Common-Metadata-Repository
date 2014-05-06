@@ -4,6 +4,7 @@
             [cmr.common.services.errors :as err]
             [clojure.string :as s]
             [clj-time.format :as f]
+            [clojure.string :as s]
             [cmr.search.services.parameters :as p]
             [cmr.search.services.parameter-converters.attribute :as attrib]
             [cmr.search.services.messages.attribute-messages :as attrib-msg]
@@ -125,6 +126,22 @@
              temporal))
     []))
 
+(defn cloud-cover-validation
+  "Validates cloud cover values are numeric and min value less than equal to max value"
+  [concept-type params]
+  (let [[^java.lang.String min-value ^java.lang.String max-value] (s/split (:cloud-cover params) #",")]
+    (cond
+      (and min-value (> 0 (count min-value)) (not (number? (read-string min-value))))
+      ["cloud_cover min value must be a number"]
+      (and max-value (> 0 (count max-value)) (not (number? (read-string max-value))))
+      ["cloud_cover max value must be a number"]
+      (and min-value max-value (> 0 (count min-value)) (> 0 (count max-value))
+           (> (read-string min-value) (read-string max-value)))
+      ["cloud_cover max value must greater than cloud_cover min value"]
+      :else
+      [])))
+
+
 (defn attribute-validation
   [concept-type params]
   (if-let [attributes (:attribute params)]
@@ -160,6 +177,7 @@
    unrecognized-params-settings-in-options-validation
    temporal-format-validation
    orbit-number-validation
+   cloud-cover-validation
    attribute-validation])
 
 (defn validate-parameters

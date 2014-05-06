@@ -2,6 +2,7 @@
   "Contains functions for parsing and converting query parameters to query conditions"
   (:require [clojure.set :as set]
             [cmr.search.models.query :as qm]
+            [clojure.string :as s]
             [cmr.common.util :as u]))
 
 (def param-aliases
@@ -42,6 +43,7 @@
              :version :collection-query
              :temporal :temporal
              :project :string
+             :cloud-cover :num-range
              :concept-id :string}})
 
 (defn- param-name->type
@@ -87,6 +89,34 @@
           :value value
           :case-sensitive? (not= "true" (get-in options [param :ignore-case]))
           :pattern? (= "true" (get-in options [param :pattern]))})])))
+
+
+; Converts cloud cover params and values into query condition
+#_(defmethod parameter->condition :num-range
+  [concept-type param value options]
+  (if (sequential? value)
+    (if (= "true" (get-in options [:temporal :and]))
+      (qm/and-conds
+        (map #(parameter->condition concept-type param % options) value))
+      (qm/or-conds
+        (map #(parameter->condition concept-type param % options) value)))
+    (let [{:keys [min-value max-value]} value]
+      (qm/map->NumericRangeCondition (merge
+                                       {:field param}
+                                       (when min-value {:min min-value})
+                                       (when max-value {:min max-value}))))))
+
+
+(defmethod parameter->condition :num-range
+  [concept-type param value options]
+  (if (sequential? value)
+    (if (= "true" (get-in options [:temporal :and]))
+      (qm/and-conds
+        (map #(parameter->condition concept-type param % options) value))
+      (qm/or-conds
+        (map #(parameter->condition concept-type param % options) value)))
+    (qm/numeric-range-condition param value)))
+
 
 (defn parameters->query
   "Converts parameters into a query model."
