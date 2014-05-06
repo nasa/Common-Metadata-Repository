@@ -71,6 +71,14 @@
           value (if end-date (assoc value :to (h/utc-time->elastic-time end-date)) value)]
       {:range { field value }}))
 
+  cmr.search.models.query.UpdateDateTimeCondition
+  (condition->elastic
+    [{:keys [field date-time-value]} concept-type]
+    (let [field (query-field->elastic-field field concept-type)
+          dt (h/parse-datetime date-time-value)
+          value {:from (h/utc-time->elastic-time dt)}]
+      {:range { field value}}))
+
   cmr.search.models.query.MatchAllCondition
   (condition->elastic
     [_ _]

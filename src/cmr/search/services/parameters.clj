@@ -23,7 +23,7 @@
                 :provider :string
                 :short-name :string
                 :version :string
-                :updated-since :temporal
+                :updated-since :update-date-time
                 :temporal :temporal
                 :concept-id :string
                 :project :string
@@ -38,7 +38,7 @@
              :attribute :attribute
              :short-name :collection-query
              :version :collection-query
-             :updated-since :temporal
+             :updated-since :update-date-time
              :temporal :temporal
              :project :string
              :concept-id :string}})
@@ -66,6 +66,20 @@
        :value value
        :case-sensitive? (not= "true" (get-in options [param :ignore-case]))
        :pattern? (= "true" (get-in options [param :pattern]))})))
+
+
+(defmethod parameter->condition :update-date-time
+  [concept-type param value options]
+  (if (sequential? value)
+    (if (= "true" (get-in options [param :and]))
+      (qm/and-conds
+        (map #(parameter->condition concept-type param % options) value))
+      (qm/or-conds
+        (map #(parameter->condition concept-type param % options) value)))
+    (qm/map->UpdateDateTimeCondition
+      {:field param
+       :date-time-value value})))
+
 
 (defmethod parameter->condition :readable-granule-name
   [concept-type param value options]

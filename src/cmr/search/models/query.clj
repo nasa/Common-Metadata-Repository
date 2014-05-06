@@ -85,6 +85,16 @@
    end-day
    ])
 
+(defrecord UpdateDateTimeCondition
+  [
+   ;; The field being searched.
+   field
+
+   ;; Search concepts updated since this point
+   date-time-value
+   ])
+
+
 (defrecord CollectionQueryCondition
   [
    ;; The condition to find collections
