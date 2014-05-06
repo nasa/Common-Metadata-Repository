@@ -7,7 +7,10 @@
             [cmr.search.services.parameters :as p]
             [cmr.search.services.parameter-converters.attribute :as attrib]
             [cmr.search.services.messages.attribute-messages :as attrib-msg]
+            [cmr.search.services.parameter-converters.orbit-number :as on]
+            [cmr.search.services.messages.orbit-number-messages :as on-msg]
             [camel-snake-kebab :as csk]))
+
 
 (defn- concept-type->valid-param-names
   "A set of the valid parameter names for the given concept-type."
@@ -137,6 +140,23 @@
       [(attrib-msg/attributes-must-be-sequence-msg)])
     []))
 
+(defn orbit-number-validation
+  "Validates that the orbital number is either a single number or a range in the format
+  start,stop where start <= stop."
+  [concept-type params]
+  (if-let [orbit-number (:orbit-number params)]
+    (try
+      (let [{:keys [orbit-number
+                    start-orbit-number
+                    stop-orbit-number]} (on/orbit-number-str->orbit-number-map orbit-number)]
+        (if (and start-orbit-number (> start-orbit-number stop-orbit-number))
+          [(on-msg/invalid-orbit-number-msg)]
+          []))
+      (catch NumberFormatException e
+        [(on-msg/invalid-orbit-number-msg)]))
+    []))
+
+
 (def parameter-validations
   "A list of the functions that can validate parameters. They all accept parameters as an argument
   and return a list of errors."
@@ -147,6 +167,7 @@
    unrecognized-params-settings-in-options-validation
    temporal-format-validation
    date-time-mark-validation
+   orbit-number-validation
    attribute-validation])
 
 (defn validate-parameters

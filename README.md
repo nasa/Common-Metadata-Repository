@@ -56,6 +56,16 @@ with a entry title pattern
 
     curl "http://localhost:3003/collections?entry_title\[\]=DatasetId*&options\[entry_title\]\[pattern\]=true"
 
+#### Find collections by entry id
+
+One entry id
+
+    curl "http://localhost:3003/collections?entry_id\[\]=SHORT_V5"
+
+One dif\_entry\_id (alias for entry id)
+
+    curl "http://localhost:3003/collections?dif_entry_id\[\]=SHORT_V5"
+
 #### Find collections by archive center
 
     curl "http://localhost:3003/collections?archive_center\[\]=LARC"
@@ -112,6 +122,16 @@ Find an additional attribute with name "X\Y\Z" with value 7.
     curl "http://localhost:3003/granules?attribute\[\]=float,X\Y\Z,7"
 
 Multiple attributes can be provided. The default is for granules to match all the attribute parameters. This can be changed by specifying `or` option with `option[attribute][or]=true`.
+
+### Find granules by orbit number
+
+  Find granules with an orbit number of 10
+
+    curl "http://localhost:3003/granules?orbit_number=10"
+
+  Find granules with an orbit number in a range of 0.5 to 1.5
+
+    curl "http://localhost:3003/granules?orbit_number=0.5,1.5"
 
 ### Retrieve concept with a given cmr-concept-id
     curl -i "http://localhost:3003/concepts/G100000-PROV1"

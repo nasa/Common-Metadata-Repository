@@ -7,6 +7,7 @@
 (def param-aliases
   "A map of non UMM parameter names to their UMM fields."
   {:dataset-id :entry-title
+   :dif-entry-id :entry-id
    :campaign :project})
 
 (defn replace-parameter-aliases
@@ -20,6 +21,7 @@
 (def concept-param->type
   "A mapping of param names to query condition types based on concept-type"
   {:collection {:entry-title :string
+                :entry-id :string
                 :provider :string
                 :short-name :string
                 :version :string
@@ -37,6 +39,7 @@
              :entry-title :collection-query
              :attribute :attribute
              :short-name :collection-query
+             :orbit-number :orbit-number
              :version :collection-query
              :updated-since :update-date-time
              :temporal :temporal
