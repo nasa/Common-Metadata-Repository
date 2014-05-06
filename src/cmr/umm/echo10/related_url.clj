@@ -7,6 +7,8 @@
             [cmr.umm.granule :as g]))
 
 (def resource-type->related-url-types
+  "A mapping of ECHO10 OnlineResource's type to UMM RelatedURL's type and sub-type.
+  This came from a list provided by Katie on ECHO10 collections, more may need to be added for granules."
   {"STATIC URL" ["GET DATA"]
    "GUIDE" ["VIEW RELATED INFORMATION" "USER'S GUIDE"]
    "HOMEPAGE" ["VIEW PROJECT HOME PAGE"]
@@ -96,10 +98,15 @@
   (seq (concat (xml-elem->online-access-urls granule-content-node)
                (xml-elem->online-resource-urls granule-content-node))))
 
+(defn downloadable-url?
+  "Returns true if the related-url is downloadable"
+  [related-url]
+  (= "GET DATA" (:type related-url)))
+
 (defn generate-access-urls
   "Generates the OnlineAccessURLs element of an ECHO10 XML from a UMM Granule related urls entry."
   [related-urls]
-  (let [downloadable-urls (filter #(= "GET DATA" (:type %)) related-urls)]
+  (let [downloadable-urls (filter downloadable-url? related-urls)]
     (when-not (empty? downloadable-urls)
       (x/element
         :OnlineAccessURLs {}
@@ -112,7 +119,7 @@
 (defn generate-resource-urls
   "Generates the OnlineResources element of an ECHO10 XML from a UMM Granule related urls entry."
   [related-urls]
-  (let [undownloadable-urls (filter #(not= "GET DATA" (:type %)) related-urls)]
+  (let [undownloadable-urls (filter (complement downloadable-url?) related-urls)]
     (when-not (empty? undownloadable-urls)
       (x/element
         :OnlineResources {}
