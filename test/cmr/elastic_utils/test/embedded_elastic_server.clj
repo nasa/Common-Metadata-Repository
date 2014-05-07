@@ -18,16 +18,16 @@
   "Port chosen to avoid conflicts"
   9334)
 
-(defn connect-to-server!
+(defn connect-to-server
   "Uses elastisch to connect to a local elasticsearch server."
   [server]
-  (es/connect-to-local-node! (:node server)))
+  (es/connect-to-local-node (:node server)))
 
 (defn start-and-connect
   []
   (let [server (l/start (s/create-server http-port transport-port) nil)]
-    (connect-to-server! server)
-    server))
+    {:conn (connect-to-server server)
+     :server server}))
 
 
 (def simple-index-name
@@ -43,29 +43,25 @@
                   :index "not_analyzed"
                   :store "true"}}}})
 
-(defmacro with-connected-server
-  "A macro for starting a server, connecting to it, executing a body, and then stopping the server."
-  [& body]
-  `(let [server# (start-and-connect)]
-     (try
-       ~@body
-       (finally
-         (l/stop server# nil)))))
-
-
 (deftest test-embedded-server
   (testing "connect to server"
     (let [s (s/create-server http-port transport-port)
           s (l/start s nil)]
       (try
-        (connect-to-server! s)
+        (connect-to-server s)
         (finally
           (l/stop s nil)))))
   (testing "Data available on port"
-    (with-connected-server
-      (is (= 200 (:status (client/get (format "http://localhost:%d" http-port)))))))
+    (let [{:keys [conn server]} (start-and-connect)]
+      (try
+        (is (= 200 (:status (client/get (format "http://localhost:%d" http-port)))))
+        (finally
+          (l/stop server nil)))))
   (testing "create index"
-    (with-connected-server
-      (esi/create simple-index-name :settings {"index" {"number_of_shards" 1}}
-                  :mappings simple-mapping-properties)
-      (esi/delete simple-index-name))))
+    (let [{:keys [conn server]} (start-and-connect)]
+      (try
+        (esi/create conn simple-index-name :settings {"index" {"number_of_shards" 1}}
+                    :mappings simple-mapping-properties)
+        (esi/delete conn simple-index-name)
+        (finally
+          (l/stop server nil))))))

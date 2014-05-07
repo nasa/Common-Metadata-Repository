@@ -3,8 +3,8 @@
   :url "http://example.com/FIXME"
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
-                 [org.elasticsearch/elasticsearch "1.0.1" :exclusions [commons-codec]]
-                 [clojurewerkz/elastisch "2.0.0-beta2"]
+                 [org.elasticsearch/elasticsearch "1.1.1" :exclusions [commons-codec]]
+                 [clojurewerkz/elastisch "2.0.0-rc1"]
 
                  ;; Log4j needed to configure logging in elasticsearch.
                  ;; Version set to match elastic search numbers. Look in elasticsearch pom.xml
