@@ -20,11 +20,14 @@
 
 (defn- orbit-number-param-map->condition
   [on-map]
-  (let [numeric-map (into {} (for [[k v] on-map] [k (Double. v)]))
-        {:keys [value]} numeric-map]
-    (if value
-      (qm/map->OrbitNumberValueCondition numeric-map)
-      (qm/map->OrbitNumberRangeCondition numeric-map))))
+  (try
+    (let [numeric-map (into {} (for [[k v] on-map] [k (Double. v)]))
+          {:keys [value]} numeric-map]
+      (if value
+        (qm/map->OrbitNumberValueCondition numeric-map)
+        (qm/map->OrbitNumberRangeCondition numeric-map)))
+    (catch NumberFormatException e
+      (errors/internal-error! msg/non-numeric-orbit-number-parameter))))
 
 
 ;; Converts orbit-number parameter into a query condition

@@ -135,22 +135,17 @@
     []))
 
 (defn- validate-orbit-number-map
-  "Validates an oribt-number parameter in the form orbit_number[value] or
-  orbit_number[minValue]/orbit_number[maxValue]."
+  "Validates an oribt-number parameter in the form of a map."
   [orbit-number-map]
   (let [{:keys [value min-value max-value]} orbit-number-map]
-    (println (str "on-map = " orbit-number-map))
-    (println (str "value = " value))
     (try
-      (if (cond
-            value
-            (Double. value)
-
-            min-value
-            (Double. min-value)
-
-            max-value
-            (Double. max-value))
+      (when value
+        (Double. value))
+      (when min-value
+        (Double. min-value))
+      (when max-value
+        (Double. max-value))
+      (if (or value min-value max-value)
         []
         [(on-msg/invalid-orbit-number-msg)])
       (catch NumberFormatException e
