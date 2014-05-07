@@ -4,7 +4,7 @@
             [cmr.common.services.errors :as err]
             [cmr.common.parameter-parser :as parser]
             [clojure.string :as s]
-            [cmr.common.date-time-parser :as parser]
+            [cmr.common.date-time-parser :as dt-parser]
             [cmr.search.services.parameters :as p]
             [cmr.search.services.parameter-converters.attribute :as attrib]
             [cmr.search.services.messages.attribute-messages :as attrib-msg]
@@ -90,7 +90,7 @@
   [dt]
   (try
     (when-not (s/blank? dt)
-      (parser/parse-datetime dt))
+      (dt-parser/parse-datetime dt))
     []
     (catch ExceptionInfo e
       [(format "temporal datetime is invalid: %s." (first (:errors (ex-data e))))])))
