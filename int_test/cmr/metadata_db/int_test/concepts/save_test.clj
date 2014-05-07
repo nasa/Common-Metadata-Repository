@@ -60,6 +60,21 @@
     (is (= 409 status))
     (is (nil? retrieved-revision))))
 
+(deftest save-concept-with-low-revision-test
+  (let [concept (util/collection-concept "PROV1" 1)
+        {:keys [concept-id]} (util/save-concept concept)
+        concept-with-bad-revision (assoc concept :concept-id concept-id :revision-id 0)
+        {:keys [status]} (util/save-concept concept-with-bad-revision)
+        {:keys [retrieved-concept]} (util/get-concept-by-id (:concept-id concept))
+        retrieved-revision (:revision-id retrieved-concept)]
+    (is (= 409 status))
+    (is (nil? retrieved-revision))))
+
+(deftest save-concept-with-revision-id-0
+  (let [concept-with-bad-revision (assoc (util/collection-concept "PROV1" 1) :revision-id 0)
+        {:keys [status]} (util/save-concept concept-with-bad-revision)]
+    (is (= 409 status))))
+
 (deftest save-concept-with-missing-required-parameter
   (let [concept (util/collection-concept "PROV1" 1)]
     (are [field] (let [{:keys [status errors]} (util/save-concept (dissoc concept field))]
@@ -77,6 +92,13 @@
     (let [{:keys [status revision-id]} (util/save-concept concept)]
       (is (= 201 status))
       (is (= revision-id 3)))))
+
+(deftest save-concept-after-delete-invalid-revision-id
+  (let [concept (util/collection-concept "PROV1" 1)
+        {:keys [concept-id]} (util/save-concept concept)]
+    (is (= 200 (:status (util/delete-concept concept-id))))
+    (let [{:keys [status revision-id]} (util/save-concept (assoc concept :revision-id 0))]
+      (is (= 409 status)))))
 
 (deftest save-granule-with-concept-id
   (let [collection (util/collection-concept "PROV1" 1)
