@@ -30,23 +30,23 @@
            (and (= 200 status)
                 (= expected-concepts (concepts-for-comparison concepts))))
          ; one collection
-         [[coll1 0]]
+         [[coll1 1]]
          ;; two collections
-         [[coll1 1] [coll2 0]]
+         [[coll1 2] [coll2 1]]
          ;; multiple versions of same collection
-         [[coll1 1] [coll1 0]]
+         [[coll1 2] [coll1 1]]
          ; granules and collections
-         [[gran1 1] [gran1 0] [gran2 1] [coll3 2] [coll1 1]])))
+         [[gran1 2] [gran1 1] [gran2 2] [coll3 3] [coll1 2]])))
 
 (deftest get-concepts-with-one-invalid-revision-id-test
   (let [coll1 (util/create-and-save-collection "PROV1" 1)
-        tuples [[(:concept-id coll1) 0]
-                [(:concept-id coll1) 1]
-                ["C2-PROV1" 0] ]
+        tuples [[(:concept-id coll1) 1]
+                [(:concept-id coll1) 2]
+                ["C2-PROV1" 1] ]
         {:keys [status errors]} (util/get-concepts tuples)]
     (is (= 404 status ))
-    (is (= #{(msg/concept-with-concept-id-and-rev-id-does-not-exist (:concept-id coll1) 1)
-             (msg/concept-with-concept-id-and-rev-id-does-not-exist "C2-PROV1" 0)}
+    (is (= #{(msg/concept-with-concept-id-and-rev-id-does-not-exist (:concept-id coll1) 2)
+             (msg/concept-with-concept-id-and-rev-id-does-not-exist "C2-PROV1" 1)}
            (set errors)))))
 
 (deftest find-collections
