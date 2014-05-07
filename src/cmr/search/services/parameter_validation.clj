@@ -139,6 +139,8 @@
              temporal))
     []))
 
+(some #{:a :b} {:a "A" :c "C"})
+
 (defn attribute-validation
   [concept-type params]
   (if-let [attributes (:attribute params)]
@@ -147,15 +149,41 @@
       [(attrib-msg/attributes-must-be-sequence-msg)])
     []))
 
+(defn- validate-orbit-number-map
+  "Validates an oribt-number parameter in the form of a map."
+  [orbit-number-map]
+  (let [{:keys [value min-value max-value]} orbit-number-map]
+    (try
+      (when value
+        (Double. value))
+      (when min-value
+        (Double. min-value))
+      (when max-value
+        (Double. max-value))
+      (if (or value min-value max-value)
+        []
+        [(on-msg/invalid-orbit-number-msg)])
+      (catch NumberFormatException e
+        [(on-msg/invalid-orbit-number-msg)]))))
+
+(defn- validate-orbit-number-string
+  "Validates an oribt-number parameter in the form orbit_number=value or
+  orbit_number=min,max."
+  [orbit-number-param]
+  (let [errors (parser/numeric-range-string-validator orbit-number-param)]
+    (if-not (empty? errors)
+      (concat [(on-msg/invalid-orbit-number-msg)] errors)
+      [])))
+
 (defn orbit-number-validation
   "Validates that the orbital number is either a single number or a range in the format
-  start,stop."
+  start,stop, or in the catlog-rest style orbit_number[value], orbit_number[minValue],
+  orbit_number[maxValue]."
   [concept-type params]
-  (if-let [orbit-number-str (:orbit-number params)]
-    (let [errors (parser/numeric-range-string-validator orbit-number-str)]
-      (if-not (empty? errors)
-        (concat [(on-msg/invalid-orbit-number-msg)] errors)
-        []))
+  (if-let [orbit-number-param (:orbit-number params)]
+    (if (string? orbit-number-param)
+      (validate-orbit-number-string orbit-number-param)
+      (validate-orbit-number-map orbit-number-param))
     []))
 
 (defn boolean-value-validation
