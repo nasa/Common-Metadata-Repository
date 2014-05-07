@@ -38,6 +38,8 @@
   [
    host
    port
+   ;; The connection to elastic
+   conn
    ]
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -46,25 +48,31 @@
   (start
     [this system]
     (let [{:keys [host port]} this]
-      (esr/connect! (str "http://" host ":" port)))
-    this)
+      (assoc this :conn (esr/connect (str "http://" host ":" port)))))
 
   (stop [this system]
         this))
 
+(defn context->conn
+  [context]
+  (get-in context [:system :search-index :conn]))
+
 (deftracefn send-query-to-elastic
   "Created to trace only the sending of the query off to elastic search."
   [context elastic-query concept-type page-size page-num]
-  (let [{:keys [index-name type-name fields]} (concept-type->index-info concept-type)]
+  (let [{:keys [index-name type-name fields]} (concept-type->index-info concept-type)
+        conn (context->conn context)]
     (if (= :unlimited page-size)
-      (esd/search index-name
+      (esd/search conn
+                  index-name
                   [type-name]
                   :query elastic-query
                   :version true
                   :fields fields
                   :sort [{:concept-id {:order :desc}}] ; using concept-id as default sort for now
                   :size 10000) ;10,000 == "unlimited"
-      (esd/search index-name
+      (esd/search conn
+                  index-name
                   [type-name]
                   :query elastic-query
                   :version true
@@ -88,4 +96,4 @@
 (defn create-elastic-search-index
   "Creates a new instance of the elastic search index."
   [host port]
-  (->ElasticSearchIndex host port))
+  (->ElasticSearchIndex host port nil))
