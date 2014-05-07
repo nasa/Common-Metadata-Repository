@@ -31,6 +31,7 @@
                 :updated-since :updated-since
                 :temporal :temporal
                 :concept-id :string
+                :platform :string
                 :project :string
                 :archive-center :string
                 :two-d-coordinate-system-name :string}
@@ -111,17 +112,37 @@
           :case-sensitive? (not= "true" (get-in options [param :ignore-case]))
           :pattern? (= "true" (get-in options [param :pattern]))})])))
 
+(defn parse-sort-key
+  "Parses the sort key param and returns a sequence of maps with fields and order.
+  Returns nil if no sort key was specified."
+  [sort-key]
+  (when sort-key
+    (if (sequential? sort-key)
+      (mapcat parse-sort-key sort-key)
+      (let [[_ dir-char field] (re-find #"([\-+])?(.*)" sort-key)
+            direction (case dir-char
+                        "-" :desc
+                        "+" :asc
+                        :asc)
+            field (keyword field)]
+        [{:order direction
+          :field (or (param-aliases field)
+                     field)}]))))
+
 (defn parameters->query
   "Converts parameters into a query model."
   [concept-type params]
   (let [options (u/map-keys->kebab-case (get params :options {}))
         page-size (Integer. (get params :page-size qm/default-page-size))
         page-num (Integer. (get params :page-num qm/default-page-num))
-        params (dissoc params :options :page-size :page-num)]
+        sort-keys (parse-sort-key (:sort-key params))
+        params (dissoc params :options :page-size :page-num :sort-key)]
     (if (empty? params)
+      ;; matches everything
       (qm/query {:concept-type concept-type
                  :page-size page-size
-                 :page-num page-num}) ;; matches everything
+                 :page-num page-num
+                 :sort-keys sort-keys})
       ;; Convert params into conditions
       (let [conditions (map (fn [[param value]]
                               (parameter->condition concept-type param value options))
@@ -129,5 +150,6 @@
         (qm/query {:concept-type concept-type
                    :page-size page-size
                    :page-num page-num
-                   :condition (qm/and-conds conditions)})))))
+                   :condition (qm/and-conds conditions)
+                   :sort-keys sort-keys})))))
 

@@ -10,6 +10,7 @@
             [cmr.search.services.messages.attribute-messages :as attrib-msg]
             [cmr.search.services.parameter-converters.orbit-number :as on]
             [cmr.search.services.messages.orbit-number-messages :as on-msg]
+            [cmr.search.services.messages.common-messages :as msg]
             [camel-snake-kebab :as csk])
   (:import clojure.lang.ExceptionInfo))
 
@@ -54,11 +55,25 @@
         ["page_num must be a number greater than or equal to 1"]))
     []))
 
+(defn sort-key-validation
+  "Validates the sort-key parameter if present"
+  [concept-type params]
+  (if-let [sort-key (:sort-key params)]
+    (let [sort-keys (if (sequential? sort-key) sort-key [sort-key])]
+      (mapcat (fn [sort-key]
+                (let [[_ field] (re-find #"[\-+]?(.*)" sort-key)
+                      valid-params (concept-type->valid-param-names concept-type)]
+                  (when-not (valid-params (keyword field))
+                    [(msg/invalid-sort-key field concept-type)])))
+              sort-keys))
+    []))
+
+
 (defn unrecognized-params-validation
   "Validates that no invalid parameters were supplied"
   [concept-type params]
   ;; this test does not apply to page_size or page_num
-  (let [params (dissoc params :page-size :page-num)]
+  (let [params (dissoc params :page-size :page-num :sort-key)]
     (map #(str "Parameter [" (csk/->snake_case_string % )"] was not recognized.")
          (set/difference (set (keys params))
                          (concept-type->valid-param-names concept-type)))))
@@ -142,15 +157,41 @@
       [(attrib-msg/attributes-must-be-sequence-msg)])
     []))
 
+(defn- validate-orbit-number-map
+  "Validates an oribt-number parameter in the form of a map."
+  [orbit-number-map]
+  (let [{:keys [value min-value max-value]} orbit-number-map]
+    (try
+      (when value
+        (Double. value))
+      (when min-value
+        (Double. min-value))
+      (when max-value
+        (Double. max-value))
+      (if (or value min-value max-value)
+        []
+        [(on-msg/invalid-orbit-number-msg)])
+      (catch NumberFormatException e
+        [(on-msg/invalid-orbit-number-msg)]))))
+
+(defn- validate-orbit-number-string
+  "Validates an oribt-number parameter in the form orbit_number=value or
+  orbit_number=min,max."
+  [orbit-number-param]
+  (let [errors (parser/numeric-range-string-validator orbit-number-param)]
+    (if-not (empty? errors)
+      (concat [(on-msg/invalid-orbit-number-msg)] errors)
+      [])))
+
 (defn orbit-number-validation
   "Validates that the orbital number is either a single number or a range in the format
-  start,stop."
+  start,stop, or in the catlog-rest style orbit_number[value], orbit_number[minValue],
+  orbit_number[maxValue]."
   [concept-type params]
-  (if-let [orbit-number-str (:orbit-number params)]
-    (let [errors (parser/numeric-range-string-validator orbit-number-str)]
-      (if-not (empty? errors)
-        (concat [(on-msg/invalid-orbit-number-msg)] errors)
-        []))
+  (if-let [orbit-number-param (:orbit-number params)]
+    (if (string? orbit-number-param)
+      (validate-orbit-number-string orbit-number-param)
+      (validate-orbit-number-map orbit-number-param))
     []))
 
 (defn boolean-value-validation
@@ -168,6 +209,7 @@
   and return a list of errors."
   [page-size-validation
    page-num-validation
+   sort-key-validation
    unrecognized-params-validation
    unrecognized-params-in-options-validation
    unrecognized-params-settings-in-options-validation

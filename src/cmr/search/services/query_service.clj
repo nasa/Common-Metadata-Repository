@@ -35,7 +35,8 @@
             [cmr.transmit.metadata-db :as meta-db]
             [cmr.system-trace.core :refer [deftracefn]]
             [cmr.common.services.errors :as err]
-            [cmr.common.util :as u]))
+            [cmr.common.util :as u]
+            [camel-snake-kebab :as csk]))
 
 (deftracefn validate-query
   "Validates a query model. Throws an exception to return to user with errors.
@@ -89,7 +90,10 @@
                    (update-in [:options] u/map-keys->kebab-case)
                    (update-in [:options] #(when % (into {} (map (fn [[k v]]
                                                                   [k (u/map-keys->kebab-case v)])
-                                                                %)))))]
+                                                                %))))
+                   (update-in [:sort-key] #(when % (if (sequential? %)
+                                                     (map csk/->kebab-case % )
+                                                     (csk/->kebab-case %)))))]
     (->> params
          p/replace-parameter-aliases
          (pv/validate-parameters concept-type)

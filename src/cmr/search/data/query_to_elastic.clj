@@ -14,7 +14,9 @@
                 :version :version-id
                 :project :project-sn
                 :updated-since :revision-date
-                :two-d-coordinate-system-name :two-d-coord-name}
+                :two-d-coordinate-system-name :two-d-coord-name
+                :platform :platform-sn}
+
    :granule {:provider :provider-id
              :producer-granule-id :producer-gran-id
              :updated-since :revision-date
@@ -37,6 +39,21 @@
   (let [{:keys [concept-type condition]} query]
     {:filtered {:query (q/match-all)
                 :filter (condition->elastic condition concept-type)}}))
+
+(def sort-key-field->elastic-field
+  "Submaps by concept type of the sort key fields given by the user to the exact elastic sort field to use."
+  {:collection {:entry-title "entry-title.lowercase"}
+   ;; TODO update this later
+   :granule {:provider-id "provider-id.lowercase"}})
+
+(defn query->sort-params
+  "Converts a query into the elastic parameters for sorting results"
+  [query]
+  (let [{:keys [concept-type sort-keys]} query]
+    (map (fn [{:keys [order field]}]
+           {(get-in sort-key-field->elastic-field [concept-type field])
+            {:order order}})
+         sort-keys)))
 
 (extend-protocol ConditionToElastic
   cmr.search.models.query.ConditionGroup
