@@ -92,6 +92,8 @@
                              :revision-date         date-field-mapping
                              :start-date            date-field-mapping
                              :end-date              date-field-mapping
+                             :platform-sn           string-field-mapping
+                             :platform-sn.lowercase string-field-mapping
                              :project-sn            string-field-mapping
                              :project-sn.lowercase  string-field-mapping
                              :archive-center        string-field-mapping
