@@ -12,8 +12,6 @@
 
 (use-fixtures :each (ingest/reset-fixture "CMR_PROV1" "CMR_PROV2"))
 
-#_(search/find-refs :collection {"updated_since[]" "2014-05-07T14:30:33Z,2014-05-07T14:30:34Z"})
-
 (deftest search-colls-by-revision-date
   (let [chkpt1-tz (f/unparse (f/formatters :date-time-no-ms) (t/now))
         coll1 (d/ingest "CMR_PROV1" (dc/collection {}))
@@ -29,7 +27,7 @@
 
         chkpt3-tz (f/unparse (f/formatters :date-time-no-ms) (t/now))]
     (index/flush-elastic-index)
-    (testing "search for collections ingested into system after chkpt1 - as single value str"
+    (testing "search for collections ingested into system after chkpt1 - single value str"
       (let [references (search/find-refs :collection {"updated_since" chkpt1-tz})]
         (is (d/refs-match? [coll1 coll2 coll3 coll4 coll5 coll6] references))))
     (testing "search for collections ingested into system after chkpt1"
@@ -50,11 +48,7 @@
       (let [{:keys [status errors]} (search/find-refs :collection {"updated_since[]" (format "%s,%s" chkpt1-tz chkpt2-tz)})
             err (first errors)]
         (is (= 422 status))
-        (is (re-find #"datetime is invalid:.*" err))))
-
-    ))
-
-
+        (is (re-find #"datetime is invalid:.*" err))))))
 
 
 (deftest search-grans-by-revision-date
@@ -68,9 +62,22 @@
         gran4 (d/ingest "CMR_PROV1" (dg/granule coll1 {}))]
     (index/flush-elastic-index)
 
+    (testing "search for granules ingested into system after chkpt1 - single value str"
+      (let [references (search/find-refs :granule {"updated_since" chkpt1-tz})]
+        (is (d/refs-match? [gran1 gran2 gran3 gran4] references))))
     (testing "search for granules ingested into system after chkpt1"
       (let [references (search/find-refs :granule {"updated_since[]" chkpt1-tz})]
         (is (d/refs-match? [gran1 gran2 gran3 gran4] references))))
     (testing "search for granules ingested into system after chkpt2"
       (let [references (search/find-refs :granule {"updated_since[]" chkpt2-tz})]
-        (is (d/refs-match? [gran4] references))))))
+        (is (d/refs-match? [gran4] references))))
+    (testing "search for collections ingested into system with invalid open ended datetime"
+      (let [{:keys [status errors]} (search/find-refs :granule {"updated_since" (format "%s," chkpt1-tz)})
+            err (first errors)]
+        (is (= 422 status))
+        (is (re-find #"datetime is invalid:.*" err))))
+    (testing "search for collections ingested into system with invalid inputs - duration chkpt1 and chkpt2"
+      (let [{:keys [status errors]} (search/find-refs :granule {"updated_since[]" (format "%s,%s" chkpt1-tz chkpt2-tz)})
+            err (first errors)]
+        (is (= 422 status))
+        (is (re-find #"datetime is invalid:.*" err))))))
