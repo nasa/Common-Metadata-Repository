@@ -139,8 +139,6 @@
              temporal))
     []))
 
-(some #{:a :b} {:a "A" :c "C"})
-
 (defn attribute-validation
   [concept-type params]
   (if-let [attributes (:attribute params)]
