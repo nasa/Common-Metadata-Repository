@@ -29,6 +29,7 @@
                 :version :string
                 :temporal :temporal
                 :concept-id :string
+                :platform :string
                 :project :string
                 :archive-center :string
                 :two-d-coordinate-system-name :string}
