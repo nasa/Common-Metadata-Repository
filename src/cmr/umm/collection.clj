@@ -50,6 +50,13 @@
    value
   ])
 
+(defrecord Platform
+  [
+   short-name
+   long-name
+   type
+  ])
+
 (defrecord Project
   [
    ;; maps to Echo10 Collection/Campaigns/Campaign/ShortName
@@ -89,6 +96,8 @@
    product
 
    temporal
+
+   platforms
 
    product-specific-attributes
 

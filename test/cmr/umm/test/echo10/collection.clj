@@ -86,6 +86,18 @@
         <Value>12.3</Value>
       </AdditionalAttribute>
     </AdditionalAttributes>
+    <Platforms>
+    <Platform>
+      <ShortName>RADARSAT-1</ShortName>
+      <LongName>RADARSAT-LONG-1</LongName>
+      <Type>Spacecraft</Type>
+    </Platform>
+    <Platform>
+      <ShortName>RADARSAT-2</ShortName>
+      <LongName>RADARSAT-LONG-2</LongName>
+      <Type>Spacecraft-2</Type>
+    </Platform>
+  </Platforms>
     <Campaigns>
       <Campaign>
         <ShortName>ESI</ShortName>
@@ -187,6 +199,15 @@
                         :parameter-range-begin 0.1
                         :parameter-range-end 100.43
                         :value 12.3})]
+                    :platforms
+                    [(umm-c/map->Platform
+                       {:short-name "RADARSAT-1"
+                        :long-name "RADARSAT-LONG-1"
+                        :type "Spacecraft"})
+                     (umm-c/map->Platform
+                       {:short-name "RADARSAT-2"
+                        :long-name "RADARSAT-LONG-2"
+                        :type "Spacecraft-2"})]
                     :projects
                     [(umm-c/map->Project
                        {:short-name "ESI"

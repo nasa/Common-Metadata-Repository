@@ -21,6 +21,18 @@
 (def entry-titles
   (ext-gen/string-alpha-numeric 1 1030))
 
+(def platform-short-names
+  (ext-gen/string-ascii 1 80))
+
+(def platform-long-names
+  (ext-gen/string-ascii 1 1024))
+
+(def platform-types
+  (ext-gen/string-ascii 1 80))
+
+(def platforms
+  (ext-gen/model-gen c/->Platform platform-short-names platform-long-names platform-types))
+
 (def campaign-short-names
   (ext-gen/string-ascii 1 40))
 
@@ -47,15 +59,16 @@
   (ext-gen/model-gen c/->Organization (gen/return :processing-center) org-names))
 
 (def collections
-  (gen/fmap (fn [[entry-title product temporal psa campaigns two-ds proc-org archive-org]]
+  (gen/fmap (fn [[entry-title product temporal platforms psa campaigns two-ds proc-org archive-org]]
               (let [entry-id (str (:short-name product) "_" (:version-id product))
                     orgs (remove nil? [proc-org archive-org])
                     orgs (if (empty? orgs) nil orgs)]
-                (c/->UmmCollection entry-id entry-title product temporal psa campaigns two-ds orgs)))
+                (c/->UmmCollection entry-id entry-title product temporal platforms psa campaigns two-ds orgs)))
             (gen/tuple
               entry-titles
               products
               t/temporals
+              (ext-gen/nil-if-empty (gen/vector platforms 0 4))
               (ext-gen/nil-if-empty (gen/vector psa/product-specific-attributes 0 10))
               (ext-gen/nil-if-empty (gen/vector campaigns 0 4))
               (ext-gen/nil-if-empty (gen/vector two-d-coordinate-systems 0 3))
