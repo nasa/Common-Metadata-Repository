@@ -8,6 +8,8 @@
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.url-helper :as url]
             [clj-http.client :as client]
+            [clj-time.core :as t]
+            [clj-time.format :as f]
             [cheshire.core :as json])
   (:import cmr.umm.collection.UmmCollection
            cmr.umm.granule.UmmGranule))
@@ -74,6 +76,12 @@
   (= (set (map item->ref items))
      (set (:refs search-result))))
 
+(defn refs-match-order?
+  "Returns true if the references match the expected items in the order specified"
+  [items search-result]
+  (is (= (map item->ref items)
+     (:refs search-result))))
+
 (defmacro record-fields
   "Returns the set of fields in a record type as keywords. The record type passed in must be a java
   class. Uses the getBasis function on record classes which returns a list of symbols of the fields of
@@ -100,3 +108,41 @@
    (unique-str "string"))
   ([prefix]
    (str prefix (unique-num))))
+
+(defn make-datetime
+  "Creates a datetime from a number added onto a base datetime"
+  ([n]
+   (make-datetime n true))
+  ([n to-string?]
+   (when n
+     (let [date (t/plus (t/date-time 2012 1 1 0 0 0)
+                        (t/days n)
+                        (t/hours n))]
+       (if to-string?
+         (f/unparse (f/formatters :date-time) date)
+         date)))))
+
+(defn make-time
+  "Creates a time from a number added onto a base datetime"
+  ([n]
+   (make-time n true))
+  ([n to-string?]
+   (when n
+     (let [date (t/plus (t/date-time 1970 1 1 0 0 0)
+                        (t/minutes n)
+                        (t/seconds n))]
+       (if to-string?
+         (f/unparse (f/formatters :hour-minute-second) date)
+         date)))))
+
+(defn make-date
+  "Creates a date from a number added onto a base datetime"
+  ([n]
+   (make-date n true))
+  ([n to-string?]
+   (when n
+     (let [date (t/plus (t/date-time 2012 1 1 0 0 0)
+                        (t/days n))]
+       (if to-string?
+         (f/unparse (f/formatters :date) date)
+         date)))))
