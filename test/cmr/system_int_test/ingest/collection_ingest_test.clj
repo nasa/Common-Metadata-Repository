@@ -11,6 +11,7 @@
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.core :as d]
+            [clj-time.core :as t]
             [cmr.system-int-test.utils.search-util :as search]))
 
 
@@ -48,6 +49,7 @@
       (is (apply = (map :concept-id created-concepts)))
       (is (= (range 1 (inc n)) (map :revision-id created-concepts))))))
 
+
 ;; Verify ingest behaves properly if empty body is presented in the request.
 (deftest empty-collection-ingest-test
   (let [concept-with-empty-body  (assoc (old-ingest/distinct-concept "PROV1" 2) :metadata "")
@@ -79,7 +81,7 @@
   (ingest/create-provider "PROV1")
   (def coll1 (d/ingest "PROV1" (dc/collection)))
   (ingest/delete-concept coll1)
-
+(get-in user/system [:apps :metadata-db :db])
 )
 
 (deftest delete-collection-test
