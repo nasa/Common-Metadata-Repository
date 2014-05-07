@@ -66,9 +66,9 @@
 ;; Just some symbolic invalid temporal testing, more complete test coverage is in unit tests
 (deftest search-temporal-error-scenarios
   (testing "search by invalid temporal format."
-    (let [{:keys [status errors]} (search/find-refs :granule {"temporal[]" "2010-12-12T12:00:00,"})]
+    (let [{:keys [status errors]} (search/find-refs :granule {"temporal[]" "2010-12-12T12:00:,"})]
       (is (= 422 status))
-      (is (re-find #"temporal datetime is invalid: Invalid format: .* is too short, should be in yyyy-MM-ddTHH:mm:ssZ format." (first errors)))))
+      (is (re-find #"temporal datetime is invalid: .*" (first errors)))))
   (testing "search by invalid temporal start-date after end-date."
     (let [{:keys [status errors]} (search/find-refs :granule {"temporal[]" "2011-01-01T10:00:00Z,2010-01-10T12:00:00Z"})]
       (is (= 422 status))
