@@ -16,7 +16,7 @@
   [config]
   (let [{:keys [host port]} config]
     (info (format "Connecting to single ES on %s %d" host port))
-    (esr/connect! (str "http://" host ":" port))))
+    (esr/connect (str "http://" host ":" port))))
 
 (defn create-indexes
   "Create elastic index for each index name"
@@ -36,6 +36,9 @@
   [
    ;; configuration of host, port and admin-token for elasticsearch
    config
+
+   ;; The connection to elasticsearch
+   conn
    ]
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -44,10 +47,13 @@
   (start
     [this system]
     (let [context {:system system}
-          elastic-config (idx-set/get-elastic-config context)]
-      (connect-with-config elastic-config)
+          elastic-config (idx-set/get-elastic-config context)
+          conn (connect-with-config elastic-config)
+          this (assoc this :conn conn)]
       (create-indexes)
-      (assoc this :config elastic-config)))
+      (assoc this
+             :config elastic-config
+             :conn conn)))
 
   (stop [this system]
         this))
@@ -60,13 +66,14 @@
 (defn- try-elastic-operation
   "Attempt to perform the operation in Elasticsearch, handles exceptions.
   f is the operation function to Call
+  conn is the elastisch connection
   es-index is the elasticsearch index name
   es-type is the elasticsearch mapping
   es-doc is the elasticsearch document to be passed on to elasticsearch
   revision-id is the version of the document in elasticsearch"
-  [f es-index es-type es-doc revision-id]
+  [f conn es-index es-type es-doc revision-id]
   (try
-    (f es-index es-type (:concept-id es-doc) es-doc :version revision-id :version_type "external")
+    (f conn es-index es-type (:concept-id es-doc) es-doc :version revision-id :version_type "external")
     (catch clojure.lang.ExceptionInfo e
       (let [err-msg (get-in (ex-data e) [:object :body])
             msg (str "Call to Elasticsearch caught exception " err-msg)]
@@ -75,7 +82,8 @@
 (deftracefn save-document-in-elastic
   "Save the document in Elasticsearch, raise error if failed."
   [context es-index es-type es-doc revision-id ignore-conflict]
-  (let [result (try-elastic-operation doc/put es-index es-type es-doc revision-id)]
+  (let [conn (get-in context [:system :db :conn])
+        result (try-elastic-operation doc/put conn es-index es-type es-doc revision-id)]
     (if (:error result)
       (if (= 409 (:status result))
         (if ignore-conflict
@@ -86,7 +94,7 @@
 (deftracefn get-document
   "Get the document from Elasticsearch, raise error if failed."
   [context es-index es-type id]
-  (doc/get es-index es-type id))
+  (doc/get (get-in context [:system :db :conn]) es-index es-type id))
 
 (deftracefn delete-document
   "Delete the document from Elasticsearch, raise error if failed."
@@ -96,7 +104,7 @@
       (if (not (:ok result))
         (errors/internal-error! (str "Delete from Elasticsearch failed " (str result)))))
   (let [{:keys [host port admin-token]} es-config
-        delete-url (format "http://%s:%s/%s/%s/%s?version=%s&version_type=external" host port es-index es-type id revision-id)
+        delete-url (format "http://%s:%s/%s/%s/%s?version=%s&version_type=external_gte" host port es-index es-type id revision-id)
         response (client/delete delete-url
                                 {:headers {"Authorization" admin-token
                                            "Confirm-delete-action" "true"}
