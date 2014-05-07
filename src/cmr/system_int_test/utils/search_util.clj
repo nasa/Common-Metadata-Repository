@@ -24,7 +24,6 @@
                  (str/replace "_]" "]")))))
        clojure.walk/keywordize-keys))
 
-
 (deftest params->snake_case-test
   (is (= {(keyword "archive_center[]") ["SEDAC AC" "Larc" "Sedac AC"],
           (keyword "options[archive_center][and]") "false"

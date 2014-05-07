@@ -94,4 +94,18 @@
     (testing "non-numeric orbit-number in range"
       (let [{:keys [status errors]} (search/find-refs :granule {:orbit-number "1,X"})]
         (is (= 422 status))
-        (is (= errors [(on-m/invalid-orbit-number-msg) (cm/invalid-numeric-range-msg "1,X")]))))))
+        (is (= errors [(on-m/invalid-orbit-number-msg) (cm/invalid-numeric-range-msg "1,X")]))))
+    (testing "catalog-rest-style-orbit-number"
+      (let [references (search/find-refs :granule {"orbit-number[value]" "1"})]
+        (is (d/refs-match? [gran1 gran2 gran3] references))))
+    (testing "catalog-rest-style-orbit-number full range"
+      (let [references (search/find-refs :granule {"orbit-number[minValue]" "1"
+                                                   "orbit-number[maxValue]" "2"})]
+        (is (d/refs-match? [gran1 gran2 gran3 gran4] references))))
+    (testing "catalog-rest-style-orbit-number min range"
+      (let [references (search/find-refs :granule {"orbit-number[minValue]" "3.5"})]
+        (is (d/refs-match? [gran5 gran6 gran7] references))))
+    (testing "catalog-rest-style-orbit-number max range"
+      (let [references (search/find-refs :granule {"orbit-number[maxValue]" "1"})]
+        (is (d/refs-match? [gran1 gran2 gran3] references))))))
+
