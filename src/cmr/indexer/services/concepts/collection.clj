@@ -18,6 +18,7 @@
          entry-id :entry-id
          entry-title :entry-title
          temporal :temporal} umm-concept
+        platform-short-names (map :short-name (:platforms umm-concept))
         project-short-names (map :short-name (:projects umm-concept))
         two-d-coord-names (map :name (:two-d-coordinate-systems umm-concept))
         orgs (:organizations umm-concept)
@@ -38,6 +39,8 @@
      :version-id version-id
      :version-id.lowercase (s/lower-case version-id)
      :revision-date revision-date
+     :platform-sn platform-short-names
+     :platform-sn.lowercase  (map s/lower-case platform-short-names)
      :project-sn project-short-names
      :project-sn.lowercase  (map s/lower-case project-short-names)
      :two-d-coord-name two-d-coord-names
