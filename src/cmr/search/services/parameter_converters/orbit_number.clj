@@ -11,10 +11,25 @@
             OrbitNumberRangeCondition]
            clojure.lang.ExceptionInfo))
 
-;; Converts orbit-number parameter into a query condition
-(defmethod p/parameter->condition :orbit-number
-  [concept-type param values options]
-  (let [{:keys [value] :as on-map} (parser/numeric-range-parameter->map values)]
+(defn- orbit-number-param-str->condition
+  [param-str]
+  (let [{:keys [value] :as on-map} (parser/numeric-range-parameter->map param-str)]
     (if value
       (qm/map->OrbitNumberValueCondition on-map)
       (qm/map->OrbitNumberRangeCondition on-map))))
+
+(defn- orbit-number-param-map->condition
+  [on-map]
+  (let [numeric-map (into {} (for [[k v] on-map] [k (Double. v)]))
+        {:keys [value]} numeric-map]
+    (if value
+      (qm/map->OrbitNumberValueCondition numeric-map)
+      (qm/map->OrbitNumberRangeCondition numeric-map))))
+
+
+;; Converts orbit-number parameter into a query condition
+(defmethod p/parameter->condition :orbit-number
+  [concept-type param values options]
+  (if (string? values)
+    (orbit-number-param-str->condition values)
+    (orbit-number-param-map->condition values)))
