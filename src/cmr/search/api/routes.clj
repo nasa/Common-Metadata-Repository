@@ -21,7 +21,6 @@
 (defn- find-references
   "Invokes query service to find references and returns the response"
   [context concept-type params headers]
-  (println "params:" params)
   (let [result-format (get-search-results-format headers)
         pretty? (= (get params :pretty) "true")
         _ (info (format "Search for %ss in format [%s] with params [%s]" (name concept-type) result-format params))

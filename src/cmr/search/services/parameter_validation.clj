@@ -125,17 +125,13 @@
     []))
 
 (defn updated-since-validation
-  "Validates updated-since parameter conforms to yyyy-MM-ddThh:mm:ss.SSSZ or yyyy-MM-ddThh:mm:ssZ format"
+  "Validates updated-since parameter conforms to formats in data-time-parser NS"
   [concept-type params]
   (if-let [param-value (:updated-since params)]
     (if (and (sequential? (:updated-since params)) (> (count (:updated-since params)) 1))
       [(format "search not allowed with multiple updated_since values s%: " (:updated-since params))]
-      (let [updated-since-val (if (sequential? param-value) (first param-value) param-value)
-            results (map #(validate-date-time updated-since-val %) [:date-time-no-ms :date-time])]
-        (if (some #{[]} results)
-          []
-          [(format "%s Or %s" (first results) (second results))])))
-          ;; (vec results))))
+      (let [updated-since-val (if (sequential? param-value) (first param-value) param-value)]
+        (validate-date-time updated-since-val)))
     []))
 
 (defn attribute-validation
