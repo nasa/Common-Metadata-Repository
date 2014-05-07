@@ -55,6 +55,7 @@
 (deftracefn send-query-to-elastic
   "Created to trace only the sending of the query off to elastic search."
   [context elastic-query concept-type page-size page-num]
+  (println "es qry: " elastic-query)
   (let [{:keys [index-name type-name fields]} (concept-type->index-info concept-type)]
     (if (= :unlimited page-size)
       (esd/search index-name

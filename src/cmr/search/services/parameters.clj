@@ -2,6 +2,7 @@
   "Contains functions for parsing and converting query parameters to query conditions"
   (:require [clojure.set :as set]
             [cmr.search.models.query :as qm]
+            [clj-time.format :as f]
             [cmr.common.util :as u]))
 
 (def param-aliases
@@ -25,7 +26,7 @@
                 :provider :string
                 :short-name :string
                 :version :string
-                :updated-since :update-date-time
+                :updated-since :updated-since
                 :temporal :temporal
                 :concept-id :string
                 :project :string
@@ -41,7 +42,7 @@
              :short-name :collection-query
              :orbit-number :orbit-number
              :version :collection-query
-             :updated-since :update-date-time
+             :updated-since :updated-since
              :temporal :temporal
              :project :string
              :concept-id :string}})
@@ -70,19 +71,13 @@
        :case-sensitive? (not= "true" (get-in options [param :ignore-case]))
        :pattern? (= "true" (get-in options [param :pattern]))})))
 
-
-(defmethod parameter->condition :update-date-time
+(defmethod parameter->condition :updated-since
   [concept-type param value options]
-  (if (sequential? value)
-    (if (= "true" (get-in options [param :and]))
-      (qm/and-conds
-        (map #(parameter->condition concept-type param % options) value))
-      (qm/or-conds
-        (map #(parameter->condition concept-type param % options) value)))
-    (qm/map->UpdateDateTimeCondition
-      {:field param
-       :date-time-value value})))
-
+  (qm/map->DateRangeCondition
+    {:field param
+     :start-date (f/parse (f/formatters :date-time-no-ms)
+                          (if (sequential? value) (first value) value))
+     :end-date nil}))
 
 (defmethod parameter->condition :readable-granule-name
   [concept-type param value options]

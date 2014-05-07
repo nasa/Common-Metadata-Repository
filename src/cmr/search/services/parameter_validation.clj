@@ -125,11 +125,18 @@
              temporal))
     []))
 
-(defn date-time-mark-validation
-  "Validates a given datetime parameter conforms to the :date-time-no-ms format"
+(defn updated-since-validation
+  "Validates updated-since parameter conforms to yyyy-MM-ddThh:mm:ss.SSSZ or yyyy-MM-ddThh:mm:ssZ format"
   [concept-type params]
-  (if-let [updated-since (first (:updated-since params))]
-    (validate-date-time updated-since :date-time-no-ms)
+  (if-let [param-value (:updated-since params)]
+    (if (and (sequential? (:updated-since params)) (> (count (:updated-since params)) 1))
+      [(format "search not allowed with multiple updated_since values s%: " (:updated-since params))]
+      (let [updated-since-val (if (sequential? param-value) (first param-value) param-value)
+            results (map #(validate-date-time updated-since-val %) [:date-time-no-ms :date-time])]
+        (if (some #{[]} results)
+          []
+          [(format "%s Or %s" (first results) (second results))])))
+          ;; (vec results))))
     []))
 
 (defn attribute-validation
@@ -166,7 +173,7 @@
    unrecognized-params-in-options-validation
    unrecognized-params-settings-in-options-validation
    temporal-format-validation
-   date-time-mark-validation
+   updated-since-validation
    orbit-number-validation
    attribute-validation])
 
