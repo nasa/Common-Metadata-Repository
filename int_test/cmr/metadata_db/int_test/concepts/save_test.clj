@@ -21,7 +21,7 @@
   (let [concept (util/collection-concept "PROV1" 1)
         {:keys [status revision-id concept-id]} (util/save-concept concept)]
     (is (= 201 status))
-    (is (= revision-id 0))
+    (is (= revision-id 1))
     (is (util/verify-concept-was-saved (assoc concept :revision-id revision-id :concept-id concept-id)))))
 
 (deftest save-granule-test
@@ -30,7 +30,7 @@
         granule (util/granule-concept "PROV1" parent-collection-id 1)
         {:keys [status revision-id concept-id]} (util/save-concept granule)]
     (is (= 201 status))
-    (is (= revision-id 0))
+    (is (= revision-id 1))
     (is (util/verify-concept-was-saved (assoc granule :revision-id revision-id :concept-id concept-id)))))
 
 (deftest save-concept-test-with-proper-revision-id-test
@@ -53,7 +53,7 @@
 (deftest save-concept-with-bad-revision-test
   (let [concept (util/collection-concept "PROV1" 1)
         {:keys [concept-id]} (util/save-concept concept)
-        concept-with-bad-revision (assoc concept :concept-id concept-id :revision-id 2)
+        concept-with-bad-revision (assoc concept :concept-id concept-id :revision-id 3)
         {:keys [status]} (util/save-concept concept-with-bad-revision)
         {:keys [retrieved-concept]} (util/get-concept-by-id (:concept-id concept))
         retrieved-revision (:revision-id retrieved-concept)]
@@ -76,7 +76,7 @@
     (is (= 200 (:status (util/delete-concept concept-id))))
     (let [{:keys [status revision-id]} (util/save-concept concept)]
       (is (= 201 status))
-      (is (= revision-id 2)))))
+      (is (= revision-id 3)))))
 
 (deftest save-granule-with-concept-id
   (let [collection (util/collection-concept "PROV1" 1)
@@ -84,7 +84,7 @@
         granule (util/granule-concept "PROV1" parent-collection-id 1 "G10-PROV1")
         {:keys [status revision-id concept-id]} (util/save-concept granule)]
     (is (= 201 status))
-    (is (= revision-id 0))
+    (is (= revision-id 1))
     (is (util/verify-concept-was-saved (assoc granule :revision-id revision-id :concept-id concept-id)))))
 
 (deftest save-granule-with-nil-required-field

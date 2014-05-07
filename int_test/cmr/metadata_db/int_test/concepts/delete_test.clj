@@ -20,11 +20,11 @@
         gran3 (util/create-and-save-granule "PROV1" (:concept-id coll2) 1)
         {:keys [status revision-id]} (util/delete-concept (:concept-id coll1))]
     (is (= status 200))
-    (is (= revision-id 3))
+    (is (= revision-id 4))
 
     ;; Verify granule was deleted
-    (is (= {:status 404} (util/get-concept-by-id-and-revision (:concept-id gran1) 0)))
     (is (= {:status 404} (util/get-concept-by-id-and-revision (:concept-id gran1) 1)))
+    (is (= {:status 404} (util/get-concept-by-id-and-revision (:concept-id gran1) 2)))
 
     ;; Other data left in database
     (is (util/verify-concept-was-saved coll2))
@@ -32,9 +32,9 @@
 
 (deftest delete-collection-with-valid-revision-test
   (let [coll1 (util/create-and-save-collection "PROV1" 1 3)
-        {:keys [status revision-id]} (util/delete-concept (:concept-id coll1) 3)]
+        {:keys [status revision-id]} (util/delete-concept (:concept-id coll1) 4)]
     (is (= status 200))
-    (is (= revision-id 3))))
+    (is (= revision-id 4))))
 
 (deftest delete-granule-test
   (let [parent-coll-id (:concept-id (util/create-and-save-collection "PROV1" 1))
@@ -42,20 +42,20 @@
         gran2 (util/create-and-save-granule "PROV1" parent-coll-id 2)
         {:keys [status revision-id]} (util/delete-concept (:concept-id gran1))]
     (is (= status 200))
-    (is (= revision-id 3))
+    (is (= revision-id 4))
     ;; Other data left in database
     (is (util/verify-concept-was-saved gran2))))
 
 (deftest delete-granule-with-valid-revision-test
   (let [parent-coll-id (:concept-id (util/create-and-save-collection "PROV1" 1))
         gran1 (util/create-and-save-granule "PROV1" parent-coll-id 1 3)
-        {:keys [status revision-id]} (util/delete-concept (:concept-id gran1) 3)]
+        {:keys [status revision-id]} (util/delete-concept (:concept-id gran1) 4)]
     (is (= status 200))
-    (is (= revision-id 3))))
+    (is (= revision-id 4))))
 
 (deftest delete-concept-with-invalid-revision
   (let [coll1 (util/create-and-save-collection "PROV1" 1)
-        {:keys [status]} (util/delete-concept (:concept-id coll1) 2)]
+        {:keys [status]} (util/delete-concept (:concept-id coll1) 3)]
     (is (= status 409))))
 
 (deftest fail-to-delete-missing-concept

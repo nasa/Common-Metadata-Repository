@@ -48,7 +48,7 @@
   (testing "latest version"
     (let [{:keys [status concept]} (util/get-concept-by-id "C1000000000-PROV1")]
       (is (= 200 status))
-      (is (= 2 (:revision-id concept))))))
+      (is (= 3 (:revision-id concept))))))
 
 (deftest get-non-existant-concept-test
   (testing "Non existant collection id"
@@ -58,9 +58,9 @@
 
 (deftest get-concept-with-version-test
   "Get a concept by concept-id and version-id."
-  (let [{:keys [status concept]} (util/get-concept-by-id-and-revision "C1000000000-PROV1" 1)]
+  (let [{:keys [status concept]} (util/get-concept-by-id-and-revision "C1000000000-PROV1" 3)]
     (is (= status 200))
-    (is (= (:revision-id concept) 1))))
+    (is (= (:revision-id concept) 3))))
 
 (deftest get-concept-invalid-concept-id-or-revision-test
   "Expect a status 4XX if we try to get a concept that doesn't exist or use an improper concept-id."

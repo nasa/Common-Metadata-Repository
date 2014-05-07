@@ -52,7 +52,7 @@
           previous-revision (first previous-revision)
           existing-revision-id (:revision-id (or previous-revision
                                                  (c/get-concept db concept-type provider-id concept-id)))
-          revision-id (if existing-revision-id (inc existing-revision-id) 0)]
+          revision-id (if existing-revision-id (inc existing-revision-id) 1)]
       (assoc concept :revision-id revision-id))))
 
 (defn check-concept-revision-id
@@ -83,11 +83,11 @@
                            revision-id)))
 
        revision-id
-       ;; only revision-id provided so it should be zero (no concept-id has been assigned yet)
-       (when-not (= revision-id 0)
+       ;; only revision-id provided so it should be 1 (no concept-id has been assigned yet)
+       (when-not (= revision-id 1)
          (cmsg/data-error :conflict
                          msg/invalid-revision-id
-                         0
+                         1
                          revision-id))
 
        ;; just concept-id or neither provided - do nothing
