@@ -79,8 +79,8 @@
 (defn refs-match-order?
   "Returns true if the references match the expected items in the order specified"
   [items search-result]
-  (is (= (map item->ref items)
-     (:refs search-result))))
+  (= (map item->ref items)
+     (:refs search-result)))
 
 (defmacro record-fields
   "Returns the set of fields in a record type as keywords. The record type passed in must be a java
