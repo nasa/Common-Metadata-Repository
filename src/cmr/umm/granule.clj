@@ -81,6 +81,9 @@
 
    ;; reference to PSAs in the parent collection
    product-specific-attributes
+
+   ;; maps to Granule/CloudCover in echo granule schema
+   cloud-cover
    ])
 
 (defn collection-ref

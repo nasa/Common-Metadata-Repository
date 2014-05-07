@@ -42,6 +42,9 @@
                   :day-night (gen/elements ["DAY" "NIGHT" "BOTH" "UNSPECIFIED"])
                   :production-date-time ext-gen/date-time)))
 
+(def cloud-cover-values
+  (ext-gen/optional  (gen/frequency [[7 (ext-gen/choose-double 0.0 100.0)] [3 (ext-gen/choose-double 0.0 1.0)]])))
+
 (def granules
   (ext-gen/model-gen
     g/map->UmmGranule
@@ -52,6 +55,7 @@
       :temporal gt/temporal
       :orbit-calculated-spatial-domains (ext-gen/nil-if-empty (gen/vector ocsd/orbit-calculated-spatial-domains 0 5))
       :project-refs (ext-gen/nil-if-empty proj-refs)
+      :cloud-cover cloud-cover-values
       :related-urls (ext-gen/nil-if-empty (gen/vector related-url 0 5))
       :product-specific-attributes (ext-gen/nil-if-empty (gen/vector product-specific-attribute-refs 0 5)))))
 

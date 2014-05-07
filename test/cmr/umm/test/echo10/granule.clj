@@ -98,6 +98,7 @@
       <Type>Browse</Type>
     </OnlineResource>
   </OnlineResources>
+  <CloudCover>0.8</CloudCover>
   </Granule>")
 
 (deftest parse-granule-test
@@ -108,6 +109,7 @@
                     :data-granule (umm-g/map->DataGranule
                                     {:producer-gran-id "0000000.0000001.hdf"})
                     :project-refs ["Short Name-240" "Short Name-241"]
+                    :cloud-cover 0.8
                     :temporal
                     (umm-g/map->GranuleTemporal
                       {:range-date-time
@@ -146,6 +148,7 @@
         actual (g/parse-granule all-fields-granule-xml)]
     (is (= expected actual))))
 
+
 (def valid-granule-xml-w-datasetid
   "<Granule>
   <GranuleUR>Q2011143115400.L1A_SCI</GranuleUR>
@@ -171,6 +174,7 @@
   <Orderable>true</Orderable>
   </Granule>")
 
+
 (deftest validate-xml
   (testing "valid xml1"
     (is (= 0 (count (g/validate-xml valid-granule-xml-w-datasetid)))))
@@ -182,3 +186,4 @@
             "Line 4 - cvc-datatype-valid.1.2.1: 'XXXX-01-05T05:30:30.550-05:00' is not a valid value for 'dateTime'."
             "Line 4 - cvc-type.3.1.3: The value 'XXXX-01-05T05:30:30.550-05:00' of element 'LastUpdate' is not valid."]
            (g/validate-xml (s/replace valid-granule-xml-w-sn-ver "2010" "XXXX"))))))
+
