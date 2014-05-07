@@ -2,15 +2,17 @@
   "Contains functions for validating query parameters"
   (:require [clojure.set :as set]
             [cmr.common.services.errors :as err]
+            [cmr.common.parameter-parser :as parser]
             [clojure.string :as s]
-            [clj-time.format :as f]
-            [clojure.string :as s]
+            [cmr.common.date-time-parser :as dt-parser]
             [cmr.search.services.parameters :as p]
             [cmr.search.services.parameter-converters.attribute :as attrib]
             [cmr.search.services.messages.attribute-messages :as attrib-msg]
             [cmr.search.services.parameter-converters.orbit-number :as on]
             [cmr.search.services.messages.orbit-number-messages :as on-msg]
-            [camel-snake-kebab :as csk]))
+            [cmr.search.services.messages.common-messages :as msg]
+            [camel-snake-kebab :as csk])
+  (:import clojure.lang.ExceptionInfo))
 
 
 (defn- concept-type->valid-param-names
@@ -40,7 +42,6 @@
         ["page_size must be a number between 1 and 2000"]))
     []))
 
-
 (defn page-num-validation
   "Validates that the page-num (if present) is a number in the valid range."
   [concept-type params]
@@ -54,15 +55,28 @@
         ["page_num must be a number greater than or equal to 1"]))
     []))
 
+(defn sort-key-validation
+  "Validates the sort-key parameter if present"
+  [concept-type params]
+  (if-let [sort-key (:sort-key params)]
+    (let [sort-keys (if (sequential? sort-key) sort-key [sort-key])]
+      (mapcat (fn [sort-key]
+                (let [[_ field] (re-find #"[\-+]?(.*)" sort-key)
+                      valid-params (concept-type->valid-param-names concept-type)]
+                  (when-not (valid-params (keyword field))
+                    [(msg/invalid-sort-key field concept-type)])))
+              sort-keys))
+    []))
+
+
 (defn unrecognized-params-validation
   "Validates that no invalid parameters were supplied"
   [concept-type params]
   ;; this test does not apply to page_size or page_num
-  (let [params (dissoc params :page-size :page-num)]
+  (let [params (dissoc params :page-size :page-num :sort-key)]
     (map #(str "Parameter [" (csk/->snake_case_string % )"] was not recognized.")
          (set/difference (set (keys params))
                          (concept-type->valid-param-names concept-type)))))
-
 
 (defn unrecognized-params-in-options-validation
   "Validates that no invalid parameters names in the options were supplied"
@@ -88,14 +102,13 @@
 
 (defn- validate-date-time
   "Validates datetime string is in the given format"
-  [dt format-type]
+  [dt]
   (try
     (when-not (s/blank? dt)
-      (f/parse (f/formatters format-type) dt))
+      (dt-parser/parse-datetime dt))
     []
-    (catch IllegalArgumentException e
-      [(format "temporal datetime is invalid: %s, should be in yyyy-MM-ddTHH:mm:ssZ format."
-               (.getMessage e))])))
+    (catch ExceptionInfo e
+      [(format "temporal datetime is invalid: %s." (first (:errors (ex-data e))))])))
 
 (defn- day-valid?
   "Validates if the given day in temporal is an integer between 1 and 366 inclusive"
@@ -119,8 +132,8 @@
              (fn [value]
                (let [[start-date end-date start-day end-day] (map s/trim (s/split value #","))]
                  (concat
-                   (validate-date-time start-date :date-time-no-ms)
-                   (validate-date-time end-date :date-time-no-ms)
+                   (validate-date-time start-date)
+                   (validate-date-time end-date)
                    (day-valid? start-day "temporal_start_day")
                    (day-valid? end-day "temporal_end_day"))))
              temporal))
@@ -152,35 +165,68 @@
       [(attrib-msg/attributes-must-be-sequence-msg)])
     []))
 
+(defn- validate-orbit-number-map
+  "Validates an oribt-number parameter in the form of a map."
+  [orbit-number-map]
+  (let [{:keys [value min-value max-value]} orbit-number-map]
+    (try
+      (when value
+        (Double. value))
+      (when min-value
+        (Double. min-value))
+      (when max-value
+        (Double. max-value))
+      (if (or value min-value max-value)
+        []
+        [(on-msg/invalid-orbit-number-msg)])
+      (catch NumberFormatException e
+        [(on-msg/invalid-orbit-number-msg)]))))
+
+(defn- validate-orbit-number-string
+  "Validates an oribt-number parameter in the form orbit_number=value or
+  orbit_number=min,max."
+  [orbit-number-param]
+  (let [errors (parser/numeric-range-string-validator orbit-number-param)]
+    (if-not (empty? errors)
+      (concat [(on-msg/invalid-orbit-number-msg)] errors)
+      [])))
+
 (defn orbit-number-validation
   "Validates that the orbital number is either a single number or a range in the format
-  start,stop where start <= stop."
+  start,stop, or in the catlog-rest style orbit_number[value], orbit_number[minValue],
+  orbit_number[maxValue]."
   [concept-type params]
-  (if-let [orbit-number (:orbit-number params)]
-    (try
-      (let [{:keys [orbit-number
-                    start-orbit-number
-                    stop-orbit-number]} (on/orbit-number-str->orbit-number-map orbit-number)]
-        (if (and start-orbit-number (> start-orbit-number stop-orbit-number))
-          [(on-msg/invalid-orbit-number-msg)]
-          []))
-      (catch NumberFormatException e
-        [(on-msg/invalid-orbit-number-msg)]))
+  (if-let [orbit-number-param (:orbit-number params)]
+    (if (string? orbit-number-param)
+      (validate-orbit-number-string orbit-number-param)
+      (validate-orbit-number-map orbit-number-param))
     []))
 
+(defn boolean-value-validation
+  [concept-type params]
+  (let [bool-params (select-keys params [:downloadable])]
+    (mapcat
+      (fn [[key value]]
+        (if (or (= "true" value) (= "false" value))
+          []
+          [(format "Parameter %s must take value of true of false, but was %s" key value)]))
+      bool-params)))
 
 (def parameter-validations
   "A list of the functions that can validate parameters. They all accept parameters as an argument
   and return a list of errors."
   [page-size-validation
    page-num-validation
+   sort-key-validation
    unrecognized-params-validation
    unrecognized-params-in-options-validation
    unrecognized-params-settings-in-options-validation
    temporal-format-validation
    orbit-number-validation
    cloud-cover-validation
-   attribute-validation])
+   attribute-validation
+   boolean-value-validation])
+
 
 (defn validate-parameters
   "Validates parameters. Throws exceptions to send to the user. Returns parameters if validation

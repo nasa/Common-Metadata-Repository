@@ -47,8 +47,35 @@
            (p/parameters->query :collection {:entry-title ["foo"]}))))
   (testing "with multiple conditions"
     (is (= (q/query {:concept-type :collection
-                     :condition (q/and-conds [(q/string-condition :entry-title "foo")
-                                              (q/string-condition :provider "bar")])})
+                     :condition (q/and-conds [(q/string-condition :provider "bar")
+                                              (q/string-condition :entry-title "foo")])})
            (p/parameters->query :collection {:entry-title ["foo"] :provider "bar"})))))
+
+(deftest parse-sort-key-test
+  (testing "no sort key"
+    (is (= nil (p/parse-sort-key nil))))
+  (testing "single field default order"
+    (is (= [{:field :entry-title
+             :order :asc}]
+           (p/parse-sort-key "entry-title"))))
+  (testing "single field with alias"
+    (is (= [{:field :entry-title
+             :order :asc}]
+           (p/parse-sort-key "dataset-id"))))
+  (testing "single field default ascending"
+    (is (= [{:field :entry-title
+             :order :asc}]
+           (p/parse-sort-key "+entry-title"))))
+  (testing "single field descending"
+    (is (= [{:field :entry-title
+             :order :desc}]
+           (p/parse-sort-key "-entry-title"))))
+  (testing "multiple fields"
+    (is (= [{:field :short-name
+             :order :asc}
+            {:field :entry-title
+             :order :desc}]
+           (p/parse-sort-key ["short-name" "-entry-title"])))))
+
 
 

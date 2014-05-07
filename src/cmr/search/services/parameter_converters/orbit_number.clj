@@ -4,31 +4,35 @@
             [cmr.search.services.parameters :as p]
             [clojure.string :as str]
             [cmr.search.services.messages.orbit-number-messages :as msg]
-            [cmr.common.services.errors :as errors])
+            [cmr.common.services.errors :as errors]
+            [cmr.common.parameter-parser :as parser])
   (:import [cmr.search.models.query
             OrbitNumberValueCondition
             OrbitNumberRangeCondition]
            clojure.lang.ExceptionInfo))
 
-(defn orbit-number-str->orbit-number-map
-  "Convert an orbit-number string to a map with exact or range values."
-  [ons]
-  (if-let [[_ ^java.lang.String start ^java.lang.String stop] (re-find #"^(.*),(.*)$" ons)]
-    {:min-orbit-number (Double. start)
-     :max-orbit-number (Double. stop)}
-    {:orbit-number (Double. ons)}))
+(defn- orbit-number-param-str->condition
+  [param-str]
+  (let [{:keys [value] :as on-map} (parser/numeric-range-parameter->map param-str)]
+    (if value
+      (qm/map->OrbitNumberValueCondition on-map)
+      (qm/map->OrbitNumberRangeCondition on-map))))
 
-(defn map->orbit-number-range-condition
-  "Build an orbit number condition with a numeric range."
-  [values]
-  (let [{:keys [min-orbit-number max-orbit-number]} values]
-    (qm/map->OrbitNumberRangeCondition {:min-value min-orbit-number :max-value max-orbit-number})))
+(defn- orbit-number-param-map->condition
+  [on-map]
+  (try
+    (let [numeric-map (into {} (for [[k v] on-map] [k (Double. v)]))
+          {:keys [value]} numeric-map]
+      (if value
+        (qm/map->OrbitNumberValueCondition numeric-map)
+        (qm/map->OrbitNumberRangeCondition numeric-map)))
+    (catch NumberFormatException e
+      (errors/internal-error! msg/non-numeric-orbit-number-parameter))))
 
 
-;; Converts orbit-number paramter into a query condition
+;; Converts orbit-number parameter into a query condition
 (defmethod p/parameter->condition :orbit-number
   [concept-type param values options]
-  (let [{:keys [orbit-number] :as on-map} (orbit-number-str->orbit-number-map values)]
-    (if orbit-number
-      (qm/map->OrbitNumberValueCondition on-map)
-      (map->orbit-number-range-condition on-map))))
+  (if (string? values)
+    (orbit-number-param-str->condition values)
+    (orbit-number-param-map->condition values)))

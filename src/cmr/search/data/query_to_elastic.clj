@@ -13,7 +13,8 @@
   {:collection {:provider :provider-id
                 :version :version-id
                 :project :project-sn
-                :two-d-coordinate-system-name :two-d-coord-name}
+                :two-d-coordinate-system-name :two-d-coord-name
+                :platform :platform-sn}
    :granule {:provider :provider-id
              :producer-granule-id :producer-gran-id
              :project :project-refs}})
@@ -36,12 +37,33 @@
     {:filtered {:query (q/match-all)
                 :filter (condition->elastic condition concept-type)}}))
 
+(def sort-key-field->elastic-field
+  "Submaps by concept type of the sort key fields given by the user to the exact elastic sort field to use."
+  {:collection {:entry-title "entry-title.lowercase"}
+   ;; TODO update this later
+   :granule {:provider-id "provider-id.lowercase"}})
+
+(defn query->sort-params
+  "Converts a query into the elastic parameters for sorting results"
+  [query]
+  (let [{:keys [concept-type sort-keys]} query]
+    (map (fn [{:keys [order field]}]
+           {(get-in sort-key-field->elastic-field [concept-type field])
+            {:order order}})
+         sort-keys)))
+
 (extend-protocol ConditionToElastic
   cmr.search.models.query.ConditionGroup
   (condition->elastic
     [{:keys [operation conditions]} concept-type]
     ;; TODO Performance Improvement: We should order the conditions within and/ors.
     {operation {:filters (map #(condition->elastic % concept-type) conditions)}})
+
+  cmr.search.models.query.NestedCondition
+  (condition->elastic
+    [{:keys [path condition]} concept-type]
+    {:nested {:path path
+              :filter (condition->elastic condition concept-type)}})
 
   cmr.search.models.query.StringCondition
   (condition->elastic
@@ -52,6 +74,12 @@
       (if pattern?
         {:query {:wildcard {field value}}}
         {:term {field value}})))
+
+  cmr.search.models.query.BooleanCondition
+  (condition->elastic
+    [{:keys [field value]} concept-type]
+    (let [field (query-field->elastic-field field concept-type)]
+      {:term {field value}}))
 
   cmr.search.models.query.ExistCondition
   (condition->elastic

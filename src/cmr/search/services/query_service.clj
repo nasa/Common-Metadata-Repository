@@ -20,6 +20,7 @@
             [cmr.search.services.parameter-converters.collection-query]
             [cmr.search.services.parameter-converters.temporal]
             [cmr.search.services.parameter-converters.attribute]
+            [cmr.search.services.parameter-converters.orbit-number]
 
             ;; Validation
             [cmr.search.validators.validation :as v]
@@ -27,13 +28,15 @@
             [cmr.search.validators.date-range]
             [cmr.search.validators.attribute]
             [cmr.search.validators.numeric-range]
+            [cmr.search.validators.orbit-number]
 
             [cmr.search.services.parameter-validation :as pv]
             [cmr.search.services.collection-query-resolver :as r]
             [cmr.transmit.metadata-db :as meta-db]
             [cmr.system-trace.core :refer [deftracefn]]
             [cmr.common.services.errors :as err]
-            [cmr.common.util :as u]))
+            [cmr.common.util :as u]
+            [camel-snake-kebab :as csk]))
 
 (deftracefn validate-query
   "Validates a query model. Throws an exception to return to user with errors.
@@ -71,7 +74,6 @@
   "Executes a search for concepts using a query The concepts will be returned with
   concept id and native provider id."
   [context query]
-
   (->> query
        (validate-query context)
        (apply-acls context)
@@ -89,7 +91,10 @@
                    (update-in [:options] u/map-keys->kebab-case)
                    (update-in [:options] #(when % (into {} (map (fn [[k v]]
                                                                   [k (u/map-keys->kebab-case v)])
-                                                                %)))))]
+                                                                %))))
+                   (update-in [:sort-key] #(when % (if (sequential? %)
+                                                     (map csk/->kebab-case % )
+                                                     (csk/->kebab-case %)))))]
     (->> params
          p/replace-parameter-aliases
          (pv/validate-parameters concept-type)

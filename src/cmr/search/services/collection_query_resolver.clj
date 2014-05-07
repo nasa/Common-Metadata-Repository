@@ -13,11 +13,7 @@
   cmr.search.models.query.Query
   (resolve-collection-query
     [query context]
-    (qm/map->Query {
-                    :page-size (:page-size query)
-                    :page-num (:page-num query)
-                    :concept-type (:concept-type query)
-                    :condition (resolve-collection-query (:condition query) context)}))
+    (update-in query [:condition] #(resolve-collection-query % context)))
 
   cmr.search.models.query.ConditionGroup
   (resolve-collection-query
@@ -29,7 +25,9 @@
   (resolve-collection-query
     [{:keys [condition]} context]
     (let [result (idx/execute-query context
-                                    (qm/query {:concept-type :collection :condition condition :page-size :unlimited}))
+                                    (qm/query {:concept-type :collection
+                                               :condition condition
+                                               :page-size :unlimited}))
           {:keys [references]} result
           collection-concept-ids (map :concept-id references)]
       (if (empty? collection-concept-ids)

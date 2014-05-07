@@ -1,6 +1,7 @@
 (ns cmr.search.services.parameters
   "Contains functions for parsing and converting query parameters to query conditions"
   (:require [clojure.set :as set]
+            [cmr.common.services.errors :as errors]
             [cmr.search.models.query :as qm]
             [clojure.string :as s]
             [cmr.common.util :as u]))
@@ -9,7 +10,8 @@
   "A map of non UMM parameter names to their UMM fields."
   {:dataset-id :entry-title
    :dif-entry-id :entry-id
-   :campaign :project})
+   :campaign :project
+   :online-only :downloadable})
 
 (defn replace-parameter-aliases
   "Replaces aliases of parameter names"
@@ -28,6 +30,7 @@
                 :version :string
                 :temporal :temporal
                 :concept-id :string
+                :platform :string
                 :project :string
                 :archive-center :string
                 :two-d-coordinate-system-name :string}
@@ -44,7 +47,9 @@
              :temporal :temporal
              :project :string
              :cloud-cover :num-range
-             :concept-id :string}})
+             :concept-id :string
+             :downloadable :boolean}})
+
 
 (defn- param-name->type
   "Returns the query condition type based on the given concept-type and param-name."
@@ -69,6 +74,13 @@
        :value value
        :case-sensitive? (not= "true" (get-in options [param :ignore-case]))
        :pattern? (= "true" (get-in options [param :pattern]))})))
+
+(defmethod parameter->condition :boolean
+  [concept-type param value options]
+  (if (or (= "true" value) (= "false" value))
+    (qm/map->BooleanCondition {:field param
+                               :value (= "true" value)})
+    (errors/internal-error! (format "Boolean condition for %s has invalid value of [%s]" param value))))
 
 (defmethod parameter->condition :readable-granule-name
   [concept-type param value options]
@@ -101,6 +113,22 @@
         (map #(parameter->condition concept-type param % options) value)))
     (qm/numeric-range-condition param value)))
 
+(defn parse-sort-key
+  "Parses the sort key param and returns a sequence of maps with fields and order.
+  Returns nil if no sort key was specified."
+  [sort-key]
+  (when sort-key
+    (if (sequential? sort-key)
+      (mapcat parse-sort-key sort-key)
+      (let [[_ dir-char field] (re-find #"([\-+])?(.*)" sort-key)
+            direction (case dir-char
+                        "-" :desc
+                        "+" :asc
+                        :asc)
+            field (keyword field)]
+        [{:order direction
+          :field (or (param-aliases field)
+                     field)}]))))
 
 (defn parameters->query
   "Converts parameters into a query model."
@@ -108,11 +136,14 @@
   (let [options (u/map-keys->kebab-case (get params :options {}))
         page-size (Integer. (get params :page-size qm/default-page-size))
         page-num (Integer. (get params :page-num qm/default-page-num))
-        params (dissoc params :options :page-size :page-num)]
+        sort-keys (parse-sort-key (:sort-key params))
+        params (dissoc params :options :page-size :page-num :sort-key)]
     (if (empty? params)
+      ;; matches everything
       (qm/query {:concept-type concept-type
                  :page-size page-size
-                 :page-num page-num}) ;; matches everything
+                 :page-num page-num
+                 :sort-keys sort-keys})
       ;; Convert params into conditions
       (let [conditions (map (fn [[param value]]
                               (parameter->condition concept-type param value options))
@@ -120,5 +151,6 @@
         (qm/query {:concept-type concept-type
                    :page-size page-size
                    :page-num page-num
-                   :condition (qm/and-conds conditions)})))))
+                   :condition (qm/and-conds conditions)
+                   :sort-keys sort-keys})))))
 
