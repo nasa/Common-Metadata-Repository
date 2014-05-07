@@ -7,6 +7,7 @@
             [cmr.umm.xml-schema-validator :as v]
             [cmr.umm.echo10.collection.temporal :as t]
             [cmr.umm.echo10.collection.product-specific-attribute :as psa]
+            [cmr.umm.echo10.collection.platform :as platform]
             [cmr.umm.echo10.collection.campaign :as cmpgn]
             [cmr.umm.echo10.collection.two-d-coordinate-system :as two-d]
             [cmr.umm.echo10.collection.org :as org]
@@ -29,6 +30,7 @@
        :entry-title (cx/string-at-path xml-struct [:DataSetId])
        :product product
        :temporal (t/xml-elem->Temporal xml-struct)
+       :platforms (platform/xml-elem->Platforms xml-struct)
        :product-specific-attributes (psa/xml-elem->ProductSpecificAttributes xml-struct)
        :projects (cmpgn/xml-elem->Campaigns xml-struct)
        :two-d-coordinate-systems (two-d/xml-elem->TwoDCoordinateSystems xml-struct)
@@ -61,6 +63,7 @@
                    (org/generate-processing-center (:organizations collection))
                    (org/generate-archive-center (:organizations collection))
                    (t/generate-temporal (:temporal collection))
+                   (platform/generate-platforms (:platforms collection))
                    (psa/generate-product-specific-attributes
                      (:product-specific-attributes collection))
                    (cmpgn/generate-campaigns (:projects collection))
