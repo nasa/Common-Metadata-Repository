@@ -7,8 +7,8 @@
             [clojure.walk :as walk]
             [clojure.data.codec.base64 :as b64]
             [cheshire.core :as cheshire]
-            [cmr.index-set.config.elasticsearch-config :as config]))
-
+            [cmr.index-set.config.elasticsearch-config :as config]
+            [clojurewerkz.elastisch.rest :as esr]))
 
 ;;; index-set app enpoint
 (def port 3005)
@@ -174,6 +174,18 @@
   (apply concat
          (for [concept cmr-concepts idx-set index-sets]
            (vals (get-in idx-set [:concepts concept])))))
+
+
+(def elastic-connection (atom nil))
+
+(defn reset-fixture [f]
+  (reset)
+  (reset! elastic-connection (esr/connect elastic-root))
+  (f)
+  (reset))
+
+
+
 
 ;;; comment stuff
 ;;;;;;;;;;;;;;;;;;;;;;;;;;

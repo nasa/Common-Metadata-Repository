@@ -4,22 +4,11 @@
             [clj-http.client :as client]
             [cheshire.core :as cheshire]
             [clojure.walk :as walk]
-            [clojurewerkz.elastisch.rest.index :as esi]
             [cmr.index-set.int-test.utility :as util]))
 
 ;;; fixtures
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defn setup [] (util/flush-elastic))
-(defn teardown []
-  (util/reset)
-  (util/flush-elastic))
-
-(defn each-fixture [f]
-  (setup)
-  (f)
-  (teardown))
-
-(use-fixtures :each each-fixture)
+(use-fixtures :each util/reset-fixture)
 
 ;;; tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

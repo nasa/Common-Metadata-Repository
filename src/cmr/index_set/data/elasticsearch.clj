@@ -16,15 +16,15 @@
   [config]
   (let [{:keys [host port]} config]
     (info (format "Connecting to single ES on %s %d" host port))
-    (esr/connect! (str "http://" host ":" port))))
+    (esr/connect (str "http://" host ":" port))))
 
 (defn create-index
   "Create elastic index"
-  [idx-w-config]
+  [{:keys [conn]} idx-w-config]
   (let [{:keys [index-name settings mapping]} idx-w-config]
-    (when-not (esi/exists? index-name)
+    (when-not (esi/exists? conn index-name)
       (try
-        (esi/create index-name :settings settings :mappings mapping)
+        (esi/create conn index-name :settings settings :mappings mapping)
         (catch Exception e
           (let [body (cheshire/decode (get-in (ex-data e) [:object :body]) true)
                 error (:error body)]
@@ -33,16 +33,16 @@
 
 (defn index-set-exists?
   "Check index-set existence in elastic."
-  [index-name idx-mapping-type index-set-id]
-  (when (esi/exists? index-name)
+  [{:keys [conn]} index-name idx-mapping-type index-set-id]
+  (when (esi/exists? conn index-name)
     ;; result will be nil if doc doeesn't exist
-    (doc/get index-name idx-mapping-type (str index-set-id) "fields" "index-set-id,index-set-name,index-set-request")))
+    (doc/get conn index-name idx-mapping-type (str index-set-id) "fields" "index-set-id,index-set-name,index-set-request")))
 
 (defn get-index-set
   "Fetch index-set associated with an id."
-  [index-name idx-mapping-type index-set-id]
-  (when (esi/exists? index-name)
-    (let [result (doc/get index-name idx-mapping-type (str index-set-id) "fields" "index-set-id,index-set-name,index-set-request")
+  [{:keys [conn]} index-name idx-mapping-type index-set-id]
+  (when (esi/exists? conn index-name)
+    (let [result (doc/get conn index-name idx-mapping-type (str index-set-id) "fields" "index-set-id,index-set-name,index-set-request")
           index-set-json-str (get-in result [:fields :index-set-request])]
       (when-not result
         (errors/throw-service-error :not-found
@@ -51,25 +51,25 @@
 
 (defn get-index-set-ids
   "Fetch ids of all index-sets in elastic."
-  [index-name idx-mapping-type]
-  (when (esi/exists? index-name)
-    (let [result (doc/search index-name idx-mapping-type "fields" "index-set-id")]
+  [{:keys [conn]} index-name idx-mapping-type]
+  (when (esi/exists? conn index-name)
+    (let [result (doc/search conn index-name idx-mapping-type "fields" "index-set-id")]
       (map #(-> % :fields :index-set-id) (get-in result [:hits :hits])))))
 
 
 (defn get-index-sets
   "Fetch all index-sets in elastic."
-  [index-name idx-mapping-type]
-  (when (esi/exists? index-name)
-    (let [result (doc/search index-name idx-mapping-type "fields" "index-set-request")]
+  [{:keys [conn]} index-name idx-mapping-type]
+  (when (esi/exists? conn index-name)
+    (let [result (doc/search conn index-name idx-mapping-type "fields" "index-set-request")]
       (map (comp #(cheshire/decode (first % ) true) :index-set-request :fields) (get-in result [:hits :hits])))))
 
 (defn delete-index
   "Delete given elastic index"
-  [index-name es-cfg]
-  (when (esi/exists? index-name)
-    (let [admin-token (:admin-token es-cfg)
-          response (client/delete (esr/index-url index-name)
+  [{:keys [conn config]} index-name]
+  (when (esi/exists? conn index-name)
+    (let [admin-token (:admin-token config)
+          response (client/delete (esr/index-url conn index-name)
                                   {:headers {"Authorization" admin-token
                                              "Confirm-delete-action" "true"}
                                    :throw-exceptions false})
@@ -81,6 +81,9 @@
   [
    ;; configuration of host, port and admin-token for elasticsearch
    config
+
+   ;; The connection to elasticsearch
+   conn
    ]
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -88,9 +91,10 @@
 
   (start
     [this system]
-    (connect-with-config (:config this))
-    (create-index es-config/idx-cfg-for-index-sets)
-    this)
+    (let [conn (connect-with-config (:config this))
+          this (assoc this :conn conn)]
+      (create-index this es-config/idx-cfg-for-index-sets)
+      this))
 
   (stop [this system]
         this))
@@ -104,7 +108,8 @@
   "Save the document in Elasticsearch, raise error on failure."
   [context es-index es-mapping-type doc-id es-doc]
   (try
-    (let [result (doc/put es-index es-mapping-type doc-id es-doc)
+    (let [conn (get-in context [:system :index :conn])
+          result (doc/put conn es-index es-mapping-type doc-id es-doc)
           {:keys [error status]} result]
       (when (:error result)
         ;; service layer to rollback index-set create  progress on error
@@ -117,8 +122,8 @@
 
 (deftracefn delete-document
   "Delete the document from elastic, raise error on failure."
-  [context es-cfg index-name mapping-type id]
-  (let [{:keys [host port admin-token]} es-cfg
+  [context index-name mapping-type id]
+  (let [{:keys [host port admin-token]} (get-in context [:system :index :config])
         delete-doc-url (format "http://%s:%s/%s/%s/%s" host port index-name mapping-type id)
         result (client/delete delete-doc-url
                               {:headers {"Authorization" admin-token

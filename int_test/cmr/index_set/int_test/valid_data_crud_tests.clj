@@ -8,17 +8,12 @@
             [cmr.index-set.services.index-service :as svc]
             [cmr.index-set.int-test.utility :as util]))
 
+
+
 ;;; fixtures
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defn setup [] (util/flush-elastic))
-(defn teardown [] (util/reset))
 
-(defn each-fixture [f]
-  (setup)
-  (f)
-  (teardown))
-
-(use-fixtures :each each-fixture)
+(use-fixtures :each util/reset-fixture)
 
 ;;; tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -37,7 +32,7 @@
           _ (util/flush-elastic)
           index-names (svc/get-index-names index-set)]
       (for [idx-name index-names]
-        (is (esi/exists? idx-name)))))
+        (is (esi/exists? @util/elastic-connection idx-name)))))
   (testing "index-set doc existence"
     (let [index-set util/sample-index-set
           index-set-id (get-in index-set [:index-set :id])
@@ -77,7 +72,7 @@
           expected-idx-name (svc/gen-valid-index-name index-set-id suffix-idx-name)
           {:keys [status]} (util/submit-create-index-set-req mod-index-set)]
       (is (= 201 status))
-      (is (esi/exists? expected-idx-name))))
+      (is (esi/exists? @util/elastic-connection expected-idx-name))))
   (testing "delete index-set"
     (let [index-set util/sample-index-set
           index-set-id (get-in index-set [:index-set :id])
@@ -85,7 +80,7 @@
           expected-idx-name (svc/gen-valid-index-name index-set-id suffix-idx-name)
           {:keys [status]} (util/submit-delete-index-set-req index-set-id)]
       (is (= 200 status))
-      (is (not (esi/exists? expected-idx-name))))))
+      (is (not (esi/exists? @util/elastic-connection expected-idx-name))))))
 
 ;; Verify get index-sets fetches all index-sets in elastic.
 ;; Create 2 index-sets with different ids but with same number of concepts and indices associated
@@ -107,7 +102,7 @@
           body (-> (util/get-index-sets) :response :body (cheshire.core/decode true))
           actual-es-indices (util/list-es-indices body)]
       (for [es-idx-name actual-es-indices]
-        (is (esi/exists? es-idx-name)))
+        (is (esi/exists? @util/elastic-connection es-idx-name)))
       (is (= expected-idx-cnt (count actual-es-indices))))))
 
 
