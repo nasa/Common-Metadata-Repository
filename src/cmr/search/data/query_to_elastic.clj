@@ -13,7 +13,8 @@
   {:collection {:provider :provider-id
                 :version :version-id
                 :project :project-sn
-                :two-d-coordinate-system-name :two-d-coord-name}
+                :two-d-coordinate-system-name :two-d-coord-name
+                :platform :platform-sn}
    :granule {:provider :provider-id
              :producer-granule-id :producer-gran-id
              :project :project-refs}})
