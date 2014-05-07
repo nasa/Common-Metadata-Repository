@@ -13,6 +13,12 @@
         concept-id "C1234-PROV1"
         concept {:concept-id concept-id
                  :provider-id provider-id}
+        platforms [{:short-name "PLATFORM ONE"
+                    :long-name "dummy"
+                    :type "Dummy"}
+                   {:short-name "PLATFORM TWO"
+                    :long-name "dummy"
+                    :type "Dummy"}]
         projects [{:short-name "ESI"
                    :long-name "dummy"}
                   {:short-name "EVI"
@@ -28,6 +34,7 @@
                      :revision-date  nil
                      :temporal {:range-date-times [{:beginning-date-time (t/date-time 1996 2 24 22 20 41)
                                                     :ending-date-time (t/date-time 1997 3 25 23 23 43 123)}]}
+                     :platforms platforms
                      :projects projects
                      :two-d-coordinate-systems [{:name "FOO"}
                                                 {:name "Bar"}]
@@ -46,6 +53,8 @@
                   :revision-date  nil
                   :start-date "1996-02-24T22:20:41.000Z"
                   :end-date "1997-03-25T23:23:43.123Z"
+                  :platform-sn ["PLATFORM ONE" "PLATFORM TWO"]
+                  :platform-sn.lowercase ["platform one" "platform two"]
                   :project-sn ["ESI" "EVI" "EPI"]
                   :project-sn.lowercase ["esi" "evi" "epi"]
                   :archive-center ["SEDAC AC"]
