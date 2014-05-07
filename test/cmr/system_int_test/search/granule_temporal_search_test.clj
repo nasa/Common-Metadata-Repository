@@ -48,6 +48,10 @@
       (let [references (search/find-refs :granule
                                          {"temporal[]" "2010-01-01T10:00:00Z,2010-01-10T12:00:00Z"})]
         (is (d/refs-match? [gran1] references))))
+    (testing "search by temporal_range with alternative datetime format."
+      (let [references (search/find-refs :granule
+                                         {"temporal[]" "2010-01-01T10:00:00,2010-01-10T12:00:00.123Z"})]
+        (is (d/refs-match? [gran1] references))))
     (testing "search by multiple temporal_range."
       (let [references (search/find-refs :granule
                                          {"temporal[]" ["2010-01-01T10:00:00Z,2010-01-10T12:00:00Z" "2009-02-22T10:00:00Z,2010-02-22T10:00:00Z"]})]
@@ -66,10 +70,11 @@
 ;; Just some symbolic invalid temporal testing, more complete test coverage is in unit tests
 (deftest search-temporal-error-scenarios
   (testing "search by invalid temporal format."
-    (let [{:keys [status errors]} (search/find-refs :granule {"temporal[]" "2010-12-12T12:00:,"})]
+    (let [{:keys [status errors]} (search/find-refs :granule {"temporal[]" "2010-13-12T12:00:00,"})]
       (is (= 422 status))
-      (is (re-find #"temporal datetime is invalid: .*" (first errors)))))
+      (is (re-find #"temporal datetime is invalid: \[2010-13-12T12:00:00\] is not a valid datetime" (first errors)))))
   (testing "search by invalid temporal start-date after end-date."
     (let [{:keys [status errors]} (search/find-refs :granule {"temporal[]" "2011-01-01T10:00:00Z,2010-01-10T12:00:00Z"})]
       (is (= 422 status))
       (is (re-find #"start_date \[2011-01-01T10:00:00Z\] must be before end_date \[2010-01-10T12:00:00Z\]" (first errors))))))
+
