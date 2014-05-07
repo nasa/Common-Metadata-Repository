@@ -59,6 +59,12 @@
         {:query {:wildcard {field value}}}
         {:term {field value}})))
 
+  cmr.search.models.query.BooleanCondition
+  (condition->elastic
+    [{:keys [field value]} concept-type]
+    (let [field (query-field->elastic-field field concept-type)]
+      {:term {field value}}))
+
   cmr.search.models.query.ExistCondition
   (condition->elastic
     [{:keys [field]} _]

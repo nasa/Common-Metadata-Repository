@@ -1,13 +1,16 @@
 (ns cmr.search.services.parameters
   "Contains functions for parsing and converting query parameters to query conditions"
   (:require [clojure.set :as set]
+            [cmr.common.services.errors :as errors]
             [cmr.search.models.query :as qm]
             [cmr.common.util :as u]))
 
 (def param-aliases
   "A map of non UMM parameter names to their UMM fields."
   {:dataset-id :entry-title
-   :campaign :project})
+   :dif-entry-id :entry-id
+   :campaign :project
+   :online-only :downloadable})
 
 (defn replace-parameter-aliases
   "Replaces aliases of parameter names"
@@ -20,6 +23,7 @@
 (def concept-param->type
   "A mapping of param names to query condition types based on concept-type"
   {:collection {:entry-title :string
+                :entry-id :string
                 :provider :string
                 :short-name :string
                 :version :string
@@ -40,7 +44,8 @@
              :version :collection-query
              :temporal :temporal
              :project :string
-             :concept-id :string}})
+             :concept-id :string
+             :downloadable :boolean}})
 
 (defn- param-name->type
   "Returns the query condition type based on the given concept-type and param-name."
@@ -65,6 +70,13 @@
        :value value
        :case-sensitive? (not= "true" (get-in options [param :ignore-case]))
        :pattern? (= "true" (get-in options [param :pattern]))})))
+
+(defmethod parameter->condition :boolean
+  [concept-type param value options]
+  (if (or (= "true" value) (= "false" value))
+    (qm/map->BooleanCondition {:field param
+                               :value (= "true" value)})
+    (errors/internal-error! (format "Boolean condition for %s has invalid value of [%s]" param value))))
 
 (defmethod parameter->condition :readable-granule-name
   [concept-type param value options]

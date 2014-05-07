@@ -56,6 +56,16 @@ with a entry title pattern
 
     curl "http://localhost:3003/collections?entry_title\[\]=DatasetId*&options\[entry_title\]\[pattern\]=true"
 
+#### Find collections by entry id
+
+One entry id
+
+    curl "http://localhost:3003/collections?entry_id\[\]=SHORT_V5"
+
+One dif\_entry\_id (alias for entry id)
+
+    curl "http://localhost:3003/collections?dif_entry_id\[\]=SHORT_V5"
+
 #### Find collections by archive center
 
     curl "http://localhost:3003/collections?archive_center\[\]=LARC"
@@ -84,6 +94,14 @@ The temporal datetime has to be in yyyy-MM-ddTHH:mm:ssZ format.
 #### Find granules matching either granule ur or producer granule id
 
     curl "http://localhost:3003/granules?readable_granule_name\[\]=DummyID"
+
+#### Find granules by online_only
+
+    curl "http://localhost:3003/granules?online_only=true"
+
+#### Find granules by downloadable
+
+    curl "http://localhost:3003/granules?downloadable=true"
 
 #### Find granules by additional attribute
 

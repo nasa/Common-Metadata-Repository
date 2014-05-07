@@ -20,12 +20,15 @@
             [cmr.search.services.parameter-converters.collection-query]
             [cmr.search.services.parameter-converters.temporal]
             [cmr.search.services.parameter-converters.attribute]
+            [cmr.search.services.parameter-converters.orbit-number]
 
             ;; Validation
             [cmr.search.validators.validation :as v]
             [cmr.search.validators.temporal]
             [cmr.search.validators.date-range]
             [cmr.search.validators.attribute]
+            [cmr.search.validators.numeric-range]
+            [cmr.search.validators.orbit-number]
 
             [cmr.search.services.parameter-validation :as pv]
             [cmr.search.services.collection-query-resolver :as r]

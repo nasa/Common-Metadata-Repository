@@ -47,8 +47,8 @@
            (p/parameters->query :collection {:entry-title ["foo"]}))))
   (testing "with multiple conditions"
     (is (= (q/query {:concept-type :collection
-                     :condition (q/and-conds [(q/string-condition :entry-title "foo")
-                                              (q/string-condition :provider "bar")])})
+                     :condition (q/and-conds [(q/string-condition :provider "bar")
+                                              (q/string-condition :entry-title "foo")])})
            (p/parameters->query :collection {:entry-title ["foo"] :provider "bar"})))))
 
 
