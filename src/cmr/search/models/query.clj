@@ -18,6 +18,9 @@
 
    ;; the desired page in the result set - starting at zero
    page-num
+
+   ;; A sequence of maps with :order and :field for sorting
+   sort-keys
    ])
 
 (defrecord ConditionGroup
@@ -166,22 +169,32 @@
    max-value
    ])
 
+(def default-sort-keys
+  "The default sort keys by concept type."
+  {:collection [{:field :entry-title
+                 :order :asc}]
+
+   ;; TODO update granule later. It's actually default to provider-id and start-date
+   :granule [{:field :provider-id
+              :order :asc}]})
+
 (defn query
   "Constructs a query with the given type, page-size, page-num,
   and root condition. If root condition is not provided it matches everything.
   If page-size or page-num are not specified then they are given default values."
   [params]
-  (let [{:keys [concept-type page-size page-num condition]} params
+  (let [{:keys [concept-type page-size page-num condition sort-keys]} params
         page-size (or page-size default-page-size)
         page-num (or page-num default-page-num)
-        condition (or condition (->MatchAllCondition))]
-    (->Query concept-type condition page-size page-num)))
+        condition (or condition (->MatchAllCondition))
+        sort-keys (or sort-keys (default-sort-keys concept-type))]
+    (->Query concept-type condition page-size page-num sort-keys)))
 
 (defn numeric-range
   [field min max]
   (map->NumericRangeCondition {:field field
-                                  :min-value min
-                                  :max-value max}))
+                               :min-value min
+                               :max-value max}))
 
 (defn string-condition
   "Creates a string condition."

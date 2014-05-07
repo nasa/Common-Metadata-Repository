@@ -3,7 +3,8 @@
             [cmr.search.services.parameter-validation :as pv]
             [cmr.search.services.messages.attribute-messages :as attrib-msg]
             [cmr.search.services.messages.orbit-number-messages :as on-msg]
-            [cmr.common.services.messages :as com-msg]))
+            [cmr.common.services.messages :as com-msg]
+            [cmr.search.services.messages.common-messages :as msg]))
 
 (def valid-params
   "Example valid parameters"
@@ -31,10 +32,11 @@
            (pv/unrecognized-params-settings-in-options-validation :collection
                                                                   {:entry-title "fdad"
                                                                    :options {:entry-title {:foo "true"}}}))))
+
+  ;; Page Size
   (testing "Page size less than one"
     (is (= ["page_size must be a number between 1 and 2000"]
            (pv/page-size-validation :collection (assoc valid-params :page-size 0)))))
-
   (testing "Page size less than one"
     (is (= ["page_size must be a number between 1 and 2000"]
            (pv/page-size-validation :collection (assoc valid-params :page-size 0)))))
@@ -50,6 +52,8 @@
   (testing "Non-numeric page size"
     (is (= ["page_size must be a number between 1 and 2000"]
            (pv/page-size-validation :collection (assoc valid-params :page-size "ABC")))))
+
+  ;; Page Num
   (testing "Valid page_num"
     (is (= []
            (pv/page-num-validation :collection (assoc valid-params :page-num 5)))))
@@ -59,6 +63,26 @@
   (testing "Non-numeric page num"
     (is (= ["page_num must be a number greater than or equal to 1"]
            (pv/page-num-validation :collection (assoc valid-params :page-num "ABC")))))
+
+  ;; Sort Key
+  (testing "sort key"
+    (are [sort-key type errors]
+         (= errors
+            (pv/sort-key-validation type {:sort-key sort-key}))
+
+         nil :collection []
+         "entry-title" :collection []
+         ["entry-title" "temporal"] :collection []
+         ["+entry-title" "-temporal"] :collection []
+         "foo" :collection [(msg/invalid-sort-key "foo" :collection)]
+         ["foo" "-bar" "+chew"] :collection [(msg/invalid-sort-key "foo" :collection)
+                                             (msg/invalid-sort-key "bar" :collection)
+                                             (msg/invalid-sort-key "chew" :collection)]
+         ["foo" "-bar" "+chew"] :granule [(msg/invalid-sort-key "foo" :granule)
+                                          (msg/invalid-sort-key "bar" :granule)
+                                          (msg/invalid-sort-key "chew" :granule)]))
+
+  ;; Orbit Number
   (testing "Valid exact orbit_number"
     (is (= []
            (pv/orbit-number-validation :granule (assoc valid-params :orbit-number "10")))))

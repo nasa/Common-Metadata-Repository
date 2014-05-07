@@ -59,8 +59,11 @@
 
 (deftracefn send-query-to-elastic
   "Created to trace only the sending of the query off to elastic search."
-  [context elastic-query concept-type page-size page-num]
-  (let [{:keys [index-name type-name fields]} (concept-type->index-info concept-type)
+  [context query page-size page-num]
+  (let [concept-type (:concept-type query)
+        elastic-query (q2e/query->elastic query)
+        sort-params (q2e/query->sort-params query)
+        {:keys [index-name type-name fields]} (concept-type->index-info concept-type)
         conn (context->conn context)]
     (if (= :unlimited page-size)
       (esd/search conn
@@ -69,14 +72,14 @@
                   :query elastic-query
                   :version true
                   :fields fields
-                  :sort [{:concept-id {:order :desc}}] ; using concept-id as default sort for now
+                  :sort sort-params
                   :size 10000) ;10,000 == "unlimited"
       (esd/search conn
                   index-name
                   [type-name]
                   :query elastic-query
                   :version true
-                  :sort [{:concept-id {:order :desc}}] ; using concept-id as default sort for now
+                  :sort sort-params
                   :size page-size
                   :from (* (dec page-num) page-size)
                   :fields fields))))
@@ -84,11 +87,10 @@
 (defn execute-query
   "Executes a query to find concepts. Returns concept id, native id, and revision id."
   [context query]
-  (let [{:keys [concept-type]} query
-        page-size (:page-size query)
+  (let [page-size (:page-size query)
         page-num (:page-num query)
-        e-results (send-query-to-elastic context (q2e/query->elastic query) concept-type page-size page-num)
-        results (rc/elastic-results->query-results concept-type e-results)]
+        e-results (send-query-to-elastic context query page-size page-num)
+        results (rc/elastic-results->query-results (:concept-type query) e-results)]
     (when (and (= :unlimited page-size) (> (:hits results) (count (:references results)))
                (e/internal-error! "Failed to retrieve all hits.")))
     results))
