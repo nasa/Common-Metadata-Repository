@@ -1,7 +1,7 @@
 (defproject nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"
   :description "A library containing utilities for dealing with Elasticsearch."
   :url "http://example.com/FIXME"
-  :dependencies [[org.clojure/clojure "1.5.1"]
+  :dependencies [[org.clojure/clojure "1.6.0"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [org.elasticsearch/elasticsearch "1.0.1" :exclusions [commons-codec]]
                  [clojurewerkz/elastisch "2.0.0-beta2"]
