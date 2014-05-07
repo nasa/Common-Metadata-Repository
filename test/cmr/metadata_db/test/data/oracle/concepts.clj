@@ -36,8 +36,8 @@
     (is (= `(= :a 5)
            (c/find-params->sql-clause {:a 5}))))
   (testing "converting multiple parameters"
-    (is (= `(and (= :a 5)
-                 (= :b "bravo"))
+    (is (= `(and (= :b "bravo")
+                 (= :a 5))
            (c/find-params->sql-clause {:a 5 :b "bravo"})))))
 
 

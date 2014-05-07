@@ -16,9 +16,16 @@
 (use-fixtures :each (util/reset-database-fixture "PROV1"))
 
 (defn recently-updated?
-  "Returns true if a concept was recently updated."
+  "Returns true if a concept was recently updated.
+  Note this will fail if the current time in oracle falls behind due to NTP issues"
   [response]
-  (t/after? (get-in response [:concept :revision-date]) (t/plus (t/now) (t/minutes -2))))
+  (let [within-time (t/plus (t/now) (t/minutes -5))
+        revised-time (get-in response [:concept :revision-date])
+        passed (t/after? revised-time within-time)]
+
+    (when-not passed
+      (println "within-time" (str within-time) "revised-time" (str revised-time)))
+    passed))
 
 ;;; tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
