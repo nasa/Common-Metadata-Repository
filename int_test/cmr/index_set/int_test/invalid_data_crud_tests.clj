@@ -10,7 +10,9 @@
 ;;; fixtures
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn setup [] (util/flush-elastic))
-(defn teardown [] (util/reset))
+(defn teardown []
+  (util/reset)
+  (util/flush-elastic))
 
 (defn each-fixture [f]
   (setup)
@@ -29,11 +31,13 @@
           {:keys [status errors-str]} (util/submit-create-index-set-req (assoc-in index-set [:index-set :id] "AA"))]
       (is (= 422 status))
       (is (re-find #"id: AA not a positive integer" errors-str)))))
-
 ;; Verify missing index-set name results in 422
 (deftest no-name-index-set-test
   (testing "missing index-set name"
-    (let [no-name-index-set (first (walk/postwalk #(if (map? %) (dissoc % :name) %) (list util/sample-index-set)))
+    (let [no-name-index-set (first (walk/postwalk #(if (map? %)
+                                                     (dissoc % :name)
+                                                     %)
+                                                  (list util/sample-index-set)))
           {:keys [status errors-str]} (util/submit-create-index-set-req no-name-index-set)]
       (is (= 422 status))
       (is (re-find #"missing id or name in index-set" errors-str)))))

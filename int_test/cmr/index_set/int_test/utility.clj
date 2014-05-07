@@ -162,10 +162,10 @@
   (let [result (client/request
                  {:method :post
                   :url (format "%s/%s" index-set-root-url "reset")
-                  :accept :json
-                  :throw-exceptions false})
+                  :accept :json})
         status (:status result)
         {:keys [status errors-str response]} result]
+    (flush-elastic)
     {:status status :errors-str errors-str :response response}))
 
 (defn list-es-indices
