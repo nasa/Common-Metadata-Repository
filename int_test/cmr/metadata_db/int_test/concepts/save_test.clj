@@ -15,18 +15,6 @@
 
 (use-fixtures :each (util/reset-database-fixture "PROV1"))
 
-(defn recently-updated?
-  "Returns true if a concept was recently updated.
-  Note this will fail if the current time in oracle falls behind due to NTP issues"
-  [response]
-  (let [within-time (t/plus (t/now) (t/minutes -5))
-        revised-time (get-in response [:concept :revision-date])
-        passed (t/after? revised-time within-time)]
-
-    (when-not passed
-      (println "within-time" (str within-time) "revised-time" (str revised-time)))
-    passed))
-
 ;;; tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (deftest save-collection-test
@@ -34,7 +22,6 @@
         {:keys [status revision-id concept-id]} (util/save-concept concept)]
     (is (= 201 status))
     (is (= revision-id 0))
-    (is (recently-updated? (util/get-concept-by-id-and-revision concept-id revision-id)))
     (is (util/verify-concept-was-saved (assoc concept :revision-id revision-id :concept-id concept-id)))))
 
 (deftest save-granule-test
@@ -44,7 +31,6 @@
         {:keys [status revision-id concept-id]} (util/save-concept granule)]
     (is (= 201 status))
     (is (= revision-id 0))
-    (is (recently-updated? (util/get-concept-by-id-and-revision concept-id revision-id)))
     (is (util/verify-concept-was-saved (assoc granule :revision-id revision-id :concept-id concept-id)))))
 
 (deftest save-concept-test-with-proper-revision-id-test
