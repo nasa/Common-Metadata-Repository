@@ -8,7 +8,8 @@
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.core :as d]
             [cmr.search.validators.messages :as m]
-            [cmr.search.services.messages.orbit-number-messages :as on-m]))
+            [cmr.search.services.messages.orbit-number-messages :as on-m]
+            [cmr.common.services.messages :as cm]))
 
 (use-fixtures :each (ingest/reset-fixture "CMR_PROV1"))
 
@@ -56,7 +57,7 @@
     (index/flush-elastic-index)
 
     (testing "search by exact orbit number"
-      (let [references (search/find-refs :granule {:orbit-number 1})]
+      (let [references (search/find-refs :granule {:orbit-number "1"})]
         (is (d/refs-match? [gran1 gran2 gran3] references))))
     (testing "search by orbit number range"
       (let [references (search/find-refs :granule {:orbit-number "1,2"})]
@@ -76,19 +77,21 @@
     (testing "search by unused orbit number range returns nothing"
       (let [references (search/find-refs :granule {:orbit-number "17,18"})]
         (is (d/refs-match? [] references))))
+    (testing "search by min value"
+      (let [references (search/find-refs :granule {:orbit-number "3.5,"})]
+        (is (d/refs-match? [gran5 gran6 gran7] references))))
+    (testing "search by max value"
+      (let [references (search/find-refs :granule {:orbit-number ",1"})]
+        (is (d/refs-match? [gran1 gran2 gran3] references))))
     (testing "invalid orbit number range"
       (let [{:keys [status errors]} (search/find-refs :granule {:orbit-number "2,1"})]
         (is (= 422 status))
         (is (= errors [(m/min-value-greater-than-max 2.0 1.0)]))))
-    (testing "incomplete range"
-      (let [{:keys [status errors]} (search/find-refs :granule {:orbit-number "1,"})]
-        (is (= 422 status))
-        (is (= errors [(on-m/invalid-orbit-number-msg)]))))
     (testing "non-numeric orbit-number"
       (let [{:keys [status errors]} (search/find-refs :granule {:orbit-number "ABC"})]
         (is (= 422 status))
-        (is (= errors [(on-m/invalid-orbit-number-msg)]))))
+        (is (= errors [(on-m/invalid-orbit-number-msg) (cm/invalid-numeric-range-msg "ABC")]))))
     (testing "non-numeric orbit-number in range"
       (let [{:keys [status errors]} (search/find-refs :granule {:orbit-number "1,X"})]
         (is (= 422 status))
-        (is (= errors [(on-m/invalid-orbit-number-msg)]))))))
+        (is (= errors [(on-m/invalid-orbit-number-msg) (cm/invalid-numeric-range-msg "1,X")]))))))
