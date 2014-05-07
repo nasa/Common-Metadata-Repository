@@ -139,6 +139,16 @@
              temporal))
     []))
 
+(defn updated-since-validation
+  "Validates updated-since parameter conforms to formats in data-time-parser NS"
+  [concept-type params]
+  (if-let [param-value (:updated-since params)]
+    (if (and (sequential? (:updated-since params)) (> (count (:updated-since params)) 1))
+      [(format "search not allowed with multiple updated_since values s%: " (:updated-since params))]
+      (let [updated-since-val (if (sequential? param-value) (first param-value) param-value)]
+        (validate-date-time updated-since-val)))
+    []))
+
 (defn attribute-validation
   [concept-type params]
   (if-let [attributes (:attribute params)]
@@ -204,6 +214,7 @@
    unrecognized-params-in-options-validation
    unrecognized-params-settings-in-options-validation
    temporal-format-validation
+   updated-since-validation
    orbit-number-validation
    attribute-validation
    boolean-value-validation])

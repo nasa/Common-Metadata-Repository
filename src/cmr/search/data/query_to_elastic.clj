@@ -13,10 +13,13 @@
   {:collection {:provider :provider-id
                 :version :version-id
                 :project :project-sn
+                :updated-since :revision-date
                 :two-d-coordinate-system-name :two-d-coord-name
                 :platform :platform-sn}
+
    :granule {:provider :provider-id
              :producer-granule-id :producer-gran-id
+             :updated-since :revision-date
              :project :project-refs}})
 
 (defn query-field->elastic-field
@@ -117,11 +120,13 @@
 
   cmr.search.models.query.DateRangeCondition
   (condition->elastic
-    [{:keys [field start-date end-date]} _]
-    (let [from-value (if start-date (h/utc-time->elastic-time start-date) h/earliest-echo-start-date)
+    [{:keys [field start-date end-date]} concept-type]
+    (let [field (query-field->elastic-field field concept-type)
+          from-value (if start-date (h/utc-time->elastic-time start-date) h/earliest-echo-start-date)
           value {:from from-value}
           value (if end-date (assoc value :to (h/utc-time->elastic-time end-date)) value)]
       {:range { field value }}))
+
 
   cmr.search.models.query.MatchAllCondition
   (condition->elastic

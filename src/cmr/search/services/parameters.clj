@@ -3,6 +3,7 @@
   (:require [clojure.set :as set]
             [cmr.common.services.errors :as errors]
             [cmr.search.models.query :as qm]
+            [clj-time.format :as f]
             [cmr.common.util :as u]))
 
 (def param-aliases
@@ -27,6 +28,7 @@
                 :provider :string
                 :short-name :string
                 :version :string
+                :updated-since :updated-since
                 :temporal :temporal
                 :concept-id :string
                 :platform :string
@@ -43,6 +45,7 @@
              :short-name :collection-query
              :orbit-number :orbit-number
              :version :collection-query
+             :updated-since :updated-since
              :temporal :temporal
              :project :string
              :concept-id :string
@@ -72,12 +75,22 @@
        :case-sensitive? (not= "true" (get-in options [param :ignore-case]))
        :pattern? (= "true" (get-in options [param :pattern]))})))
 
+
+(defmethod parameter->condition :updated-since
+  [concept-type param value options]
+  (qm/map->DateRangeCondition
+    {:field param
+     :start-date (f/parse (f/formatters :date-time-no-ms)
+                          (if (sequential? value) (first value) value))
+     :end-date nil}))
+
 (defmethod parameter->condition :boolean
   [concept-type param value options]
   (if (or (= "true" value) (= "false" value))
     (qm/map->BooleanCondition {:field param
                                :value (= "true" value)})
     (errors/internal-error! (format "Boolean condition for %s has invalid value of [%s]" param value))))
+
 
 (defmethod parameter->condition :readable-granule-name
   [concept-type param value options]
