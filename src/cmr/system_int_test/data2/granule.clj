@@ -29,6 +29,11 @@
     (when producer-gran-id
       (g/map->DataGranule {:producer-gran-id producer-gran-id}))))
 
+(defn related-url
+  "Creates related url for online_only test"
+  [type]
+  (g/->RelatedURL type nil (d/unique-str "http://example.com/file") (d/unique-str "description")))
+
 (defn granule
   "Creates a granule"
   ([collection]

@@ -52,6 +52,14 @@
     (when (or begin end)
       (ct/temporal {:range-date-times [(c/->RangeDateTime begin end)]}))))
 
+(defn platform
+  "Return a platform based on platform short-name"
+  [platform-sn]
+   (c/map->Platform
+     {:short-name platform-sn
+      :long-name (d/unique-str "long-name")
+      :type (d/unique-str "Type")}))
+
 (defn project
   "Return a project based on campaign attribs"
   [campaign-sn campaign-ln]

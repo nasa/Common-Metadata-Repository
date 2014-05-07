@@ -22,7 +22,7 @@
           granule (old-ingest/granule-concept "PROV1" "C1000000000-PROV1" 5)
           {:keys [concept-id revision-id]} (ingest/ingest-concept granule)]
       (is (ingest/concept-exists-in-mdb? concept-id revision-id))
-      (is (= 0 revision-id)))))
+      (is (= 1 revision-id)))))
 
 ; Verify a new granule with concept-id is ingested successfully.
 (deftest granule-w-concept-id-ingest-test
@@ -34,7 +34,7 @@
           {:keys [concept-id revision-id]} (ingest/ingest-concept granule)]
       (is (ingest/concept-exists-in-mdb? concept-id revision-id))
       (is (= supplied-concept-id concept-id))
-      (is (= 0 revision-id)))))
+      (is (= 1 revision-id)))))
 
 ;;; Ingest same granule N times and verify same concept-id is returned and
 ;;; revision id is 1 greater on each subsequent ingest
@@ -46,7 +46,7 @@
           granule (old-ingest/granule-concept "PROV1" "C1000000000-PROV1" 5 "G1-PROV1")
           created-granules (take n (repeatedly n #(ingest/ingest-concept granule)))]
       (is (apply = (map :concept-id created-granules)))
-      (is (= (range 0 n) (map :revision-id created-granules))))))
+      (is (= (range 1 (inc n)) (map :revision-id created-granules))))))
 
 ;;; Verify ingest behaves properly if empty body is presented in the request.
 (deftest empty-granule-ingest-test
