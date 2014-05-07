@@ -11,16 +11,15 @@
 
 (defn- min-is-lte-max
   "Validates min is less than or equal to max."
-  [numeric-range]
-  (let [{:keys [min-value max-value]} numeric-range]
-    (if (and min-value max-value (> min-value max-value))
-      [(m/min-value-greater-than-max min-value max-value)]
-      [])))
+  [{:keys [min-value max-value]}]
+  (if (and min-value max-value (> min-value max-value))
+    [(m/min-value-greater-than-max min-value max-value)]
+    []))
 
 (defn- min-max-not-both-nil
   "Validates that at least one of min/max are not nil."
-  [numeric-range]
-  (if (or min max)
+  [{:keys [min-value max-value]}]
+  (if (or min-value max-value)
     []
     [(sdm/nil-min-max-msg)]))
 
@@ -28,4 +27,4 @@
   cmr.search.models.query.NumericRangeCondition
   (validate
     [numeric-range]
-    (into (min-max-not-both-nil numeric-range) (min-is-lte-max numeric-range))))
+    (concat (min-max-not-both-nil numeric-range) (min-is-lte-max numeric-range))))

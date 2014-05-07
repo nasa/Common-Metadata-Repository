@@ -2,6 +2,7 @@
   "Contains functions for validating query parameters"
   (:require [clojure.set :as set]
             [cmr.common.services.errors :as err]
+            [cmr.common.parameter-parser :as parser]
             [clojure.string :as s]
             [clj-time.format :as f]
             [cmr.search.services.parameters :as p]
@@ -135,20 +136,14 @@
 
 (defn orbit-number-validation
   "Validates that the orbital number is either a single number or a range in the format
-  start,stop where start <= stop."
+  start,stop."
   [concept-type params]
-  (if-let [orbit-number (:orbit-number params)]
-    (try
-      (let [{:keys [orbit-number
-                    start-orbit-number
-                    stop-orbit-number]} (on/orbit-number-str->orbit-number-map orbit-number)]
-        (if (and start-orbit-number (> start-orbit-number stop-orbit-number))
-          [(on-msg/invalid-orbit-number-msg)]
-          []))
-      (catch NumberFormatException e
-        [(on-msg/invalid-orbit-number-msg)]))
+  (if-let [orbit-number-str (:orbit-number params)]
+    (let [errors (parser/numeric-range-string-validator orbit-number-str)]
+      (if-not (empty? errors)
+        (concat [(on-msg/invalid-orbit-number-msg)] errors)
+        []))
     []))
-
 
 (def parameter-validations
   "A list of the functions that can validate parameters. They all accept parameters as an argument
