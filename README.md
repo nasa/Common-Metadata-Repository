@@ -95,6 +95,14 @@ The temporal datetime has to be in yyyy-MM-ddTHH:mm:ssZ format.
 
     curl "http://localhost:3003/granules?readable_granule_name\[\]=DummyID"
 
+#### Find granules by online_only
+
+    curl "http://localhost:3003/granules?online_only=true"
+
+#### Find granules by downloadable
+
+    curl "http://localhost:3003/granules?downloadable=true"
+
 #### Find granules by additional attribute
 
 Find an attribute attribute with name "PERCENTAGE" of type float with value 25.5
