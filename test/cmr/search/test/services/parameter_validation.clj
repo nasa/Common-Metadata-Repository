@@ -72,8 +72,8 @@
 
          nil :collection []
          "entry-title" :collection []
-         ["entry-title" "temporal"] :collection []
-         ["+entry-title" "-temporal"] :collection []
+         ["entry-title" "start-date"] :collection []
+         ["+entry-title" "-start-date"] :collection []
          "foo" :collection [(msg/invalid-sort-key "foo" :collection)]
          ["foo" "-bar" "+chew"] :collection [(msg/invalid-sort-key "foo" :collection)
                                              (msg/invalid-sort-key "bar" :collection)
