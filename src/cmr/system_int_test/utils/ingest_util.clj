@@ -8,7 +8,8 @@
             [cmr.umm.echo10.collection :as c]
             [cmr.umm.echo10.granule :as g]
             [cmr.umm.echo10.core :as echo10]
-            [cmr.system-int-test.utils.url-helper :as url]))
+            [cmr.system-int-test.utils.url-helper :as url]
+            [cmr.system-int-test.utils.index-util :as index]))
 
 (defn create-provider
   "Create the provider with the given provider id"
@@ -73,7 +74,9 @@
   "Resets the database and the elastic indexes"
   []
   (client/post (url/mdb-reset-url))
-  (client/post (url/indexer-reset-url)))
+  (client/post (url/indexer-reset-url))
+  (index/flush-elastic-index))
+
 
 
 ;;; fixture - each test to call this fixture

@@ -70,7 +70,7 @@
 (def base-concept-attribs
   {:short-name "SN-Sedac88"
    :version-id "Ver88"
-   :entry-title "ABC"
+   :entry-title "ABCDEF"
    :long-name "LongName Sedac88"
    :dataset-id "LarcDatasetId88"})
 
