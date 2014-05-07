@@ -55,6 +55,12 @@
         ["page_num must be a number greater than or equal to 1"]))
     []))
 
+(def concept-type->valid-sort-keys
+  "A map of concept type to sets of valid sort keys"
+  {:collection #{:entry-title :dataset-id :start-date :end-date}
+   ;; TODO add more for granules
+   :granule #{}})
+
 (defn sort-key-validation
   "Validates the sort-key parameter if present"
   [concept-type params]
@@ -62,7 +68,7 @@
     (let [sort-keys (if (sequential? sort-key) sort-key [sort-key])]
       (mapcat (fn [sort-key]
                 (let [[_ field] (re-find #"[\-+]?(.*)" sort-key)
-                      valid-params (concept-type->valid-param-names concept-type)]
+                      valid-params (concept-type->valid-sort-keys concept-type)]
                   (when-not (valid-params (keyword field))
                     [(msg/invalid-sort-key field concept-type)])))
               sort-keys))
