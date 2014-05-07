@@ -27,7 +27,7 @@
     (let [concept (old-ingest/distinct-concept "PROV1" 0)
           {:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
       (is (ingest/concept-exists-in-mdb? concept-id revision-id))
-      (is (= revision-id 0)))))
+      (is (= 1 revision-id)))))
 
 ;; Verify a new concept with concept-id is ingested successfully.
 (deftest collection-w-concept-id-ingest-test
@@ -37,7 +37,7 @@
           {:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
       (is (ingest/concept-exists-in-mdb? concept-id revision-id))
       (is (= supplied-concept-id concept-id))
-      (is (= revision-id 0)))))
+      (is (= 1 revision-id)))))
 
 ;; Ingest same concept N times and verify same concept-id is returned and
 ;; revision id is 1 greater on each subsequent ingest
@@ -47,7 +47,7 @@
           concept (old-ingest/distinct-concept "PROV1" 1)
           created-concepts (take n (repeatedly n #(ingest/ingest-concept concept)))]
       (is (apply = (map :concept-id created-concepts)))
-      (is (= (range 0 n) (map :revision-id created-concepts))))))
+      (is (= (range 1 (inc n)) (map :revision-id created-concepts))))))
 
 
 ;; Verify ingest behaves properly if empty body is presented in the request.

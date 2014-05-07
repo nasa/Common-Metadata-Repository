@@ -35,9 +35,9 @@
            {"campaign[]" ["ESI", "ESI"]} [coll3 coll4 coll6]))
     (testing "case sensitivity ..."
       (are [campaign-kvs items] (d/refs-match? items (search/find-refs :collection campaign-kvs))
-           {:campaign "EpI", "options[campaign][ignore_case]" "false"} []
+           {:campaign "EpI", "options[campaign][ignore-case]" "false"} []
            {:campaign "EPI"} [coll5 coll6]
-           {:campaign "EpI", "options[campaign][ignore_case]" "true"} [coll5 coll6]))
+           {:campaign "EpI", "options[campaign][ignore-case]" "true"} [coll5 coll6]))
     (testing "search by unique campaign sn terms to get max collections"
       (is (d/refs-match? [coll3 coll4 coll5 coll6]
                          (search/find-refs :collection {"campaign[]" ["ESI" "EVI" "EPI" "Esi"]}))))

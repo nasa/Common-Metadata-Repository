@@ -9,8 +9,8 @@
   ;; Once data.xml 0.0.8 is officially released, we should remove this repository
   :repositories [["snapshots" "https://oss.sonatype.org/content/repositories/snapshots/"]]
 
-  :dependencies [[org.clojure/clojure "1.5.1"]
-                 [clj-http "0.9.0"]
+  :dependencies [[org.clojure/clojure "1.6.0"]
+                 [clj-http "0.9.1"]
                  [org.clojure/data.xml "0.0.8-SNAPSHOT"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [nasa-cmr/cmr-umm-lib "0.1.0-SNAPSHOT"]
@@ -20,7 +20,7 @@
 
                  ; include ring-core to support encoding of params
                  [ring/ring-core "1.2.2"]
-                 [cheshire "5.2.0"]]
+                 [cheshire "5.3.1"]]
   :plugins [[lein-test-out "0.3.1"]]
 
   :profiles

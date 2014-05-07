@@ -33,8 +33,8 @@
            "BLAH" []))
     (testing "case sensitivity ..."
       (are [kvs items] (d/refs-match? items (search/find-refs :collection kvs))
-           {:archive-center "Sedac AC", "options[archive-center][ignore_case]" "false"} [coll7]
-           {:archive-center "sedac ac", "options[archive-center][ignore_case]" "true"} [coll5 coll7]))
+           {:archive-center "Sedac AC", "options[archive-center][ignore-case]" "false"} [coll7]
+           {:archive-center "sedac ac", "options[archive-center][ignore-case]" "true"} [coll5 coll7]))
     (testing "search using wild cards"
       (is (d/refs-match? [coll5 coll7]
                          (search/find-refs :collection {:archive-center "S*", "options[archive-center][pattern]" "true"}))))

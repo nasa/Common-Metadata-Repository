@@ -27,20 +27,6 @@
   [field-values]
   (echo10/umm->echo10-xml (gh/granule field-values)))
 
-(defn update-collection
-  "Update collection (given or the default one) through CMR metadata API.
-  TODO Returns cmr-collection id eventually"
-  ([provider-id]
-   (update-collection provider-id {}))
-  ([provider-id collection]
-   (let [full-collection (merge default-collection collection)
-         collection-xml (collection-xml full-collection)
-         response (client/put (url/ingest-url provider-id :collection (:entry-title full-collection))
-                              {:content-type :echo10+xml
-                               :body collection-xml
-                               :throw-exceptions false})]
-     (is (some #{201 200} [(:status response)])))))
-
 (defn update-granule
   "Update granule (given or the default one) through CMR metadata API.
   TODO Returns cmr-granule id eventually"
@@ -84,7 +70,7 @@
 (def base-concept-attribs
   {:short-name "SN-Sedac88"
    :version-id "Ver88"
-   :entry-title "ABC"
+   :entry-title "ABCDEF"
    :long-name "LongName Sedac88"
    :dataset-id "LarcDatasetId88"})
 

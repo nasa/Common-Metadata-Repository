@@ -58,12 +58,12 @@
     (testing "search by short name ignore case false."
       (let [{:keys [refs]} (search/find-refs :granule
                                              {:short_name "onlyShort"
-                                              "options[short_name][ignore_case]" "false"})]
+                                              "options[short_name][ignore-case]" "false"})]
         (is (= 0 (count refs)))))
     (testing "search by short name ignore case true."
       (let [{:keys [refs]} (search/find-refs :granule
                                              {:short_name "onlyShort"
-                                              "options[short_name][ignore_case]" "true"})]
+                                              "options[short_name][ignore-case]" "true"})]
         (is (= 1 (count refs)))
         (let [{granule-ur :name} (first refs)]
           (is (= "Granule2" granule-ur)))))))
@@ -124,12 +124,12 @@
     (testing "search by version ignore case false."
       (let [{:keys [refs]} (search/find-refs :granule
                                              {:version "r3"
-                                              "options[version][ignore_case]" "false"})]
+                                              "options[version][ignore-case]" "false"})]
         (is (= 0 (count refs)))))
     (testing "search by version ignore case true."
       (let [{:keys [refs]} (search/find-refs :granule
                                              {:version "r3"
-                                              "options[version][ignore_case]" "true"})]
+                                              "options[version][ignore-case]" "true"})]
         (is (= 1 (count refs)))
         (let [{granule-ur :name} (first refs)]
           (is (= "Granule4" granule-ur)))))))
