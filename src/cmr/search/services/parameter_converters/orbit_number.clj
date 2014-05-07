@@ -11,25 +11,10 @@
             OrbitNumberRangeCondition]
            clojure.lang.ExceptionInfo))
 
-(defn orbit-number-str->orbit-number-map
-  "Convert an orbit-number string to a map with exact or range values."
-  [ons]
-  (if-let [[_ ^java.lang.String start ^java.lang.String stop] (re-find #"^(.*),(.*)$" ons)]
-    {:min-orbit-number (when (not (empty? start)) (Double. start))
-     :max-orbit-number (when (not (empty? stop)) (Double. stop))}
-    {:orbit-number (Double. ons)}))
-
-(defn map->orbit-number-range-condition
-  "Build an orbit number condition with a numeric range."
-  [values]
-  (let [{:keys [min-orbit-number max-orbit-number]} values]
-    (qm/map->OrbitNumberRangeCondition {:min-value min-orbit-number :max-value max-orbit-number})))
-
-
 ;; Converts orbit-number parameter into a query condition
 (defmethod p/parameter->condition :orbit-number
   [concept-type param values options]
-  (let [{:keys [orbit-number] :as on-map} (orbit-number-str->orbit-number-map values)]
-    (if orbit-number
+  (let [{:keys [value] :as on-map} (parser/numeric-range-parameter->map values)]
+    (if value
       (qm/map->OrbitNumberValueCondition on-map)
-      (map->orbit-number-range-condition on-map))))
+      (qm/map->OrbitNumberRangeCondition on-map))))

@@ -46,7 +46,7 @@
   cmr.search.models.query.OrbitNumberValueCondition
   (condition->elastic
     [condition concept-type]
-    (let [orbit-number (:orbit-number condition)
+    (let [orbit-number (:value condition)
           term-condition (qm/map->NumericValueCondition {:field :orbit-number :value orbit-number})
           start-range-cond (qm/numeric-range :start-orbit-number nil orbit-number)
           stop-range-cond (qm/numeric-range :stop-orbit-number orbit-number nil)
