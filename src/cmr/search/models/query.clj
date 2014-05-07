@@ -29,6 +29,15 @@
    conditions
    ])
 
+(defrecord NestedCondition
+  [
+   ;; The path for the nested query
+   path
+
+   ;; The nested condition
+   condition
+   ])
+
 (defrecord StringCondition
   [
    ;; The field being searched.
@@ -42,6 +51,15 @@
 
    ;; Indicates if the search contains pattern matching expressions. Defaults to false.
    pattern?
+   ])
+
+(defrecord BooleanCondition
+  [
+   ;; The field being searched.
+   field
+
+   ;; The boolean value to match
+   value
    ])
 
 ;; ExistCondition represents the specified field must have value, i.e. filed is not null
@@ -168,6 +186,11 @@
         condition (or condition (->MatchAllCondition))]
     (->Query concept-type condition page-size page-num)))
 
+(defn numeric-range
+  [field min max]
+  (map->NumericRangeCondition {:field field
+                                  :min-value min
+                                  :max-value max}))
 
 (defn string-condition
   "Creates a string condition."
@@ -175,6 +198,11 @@
    (string-condition field value true false))
   ([field value case-sensitive? pattern?]
    (->StringCondition field value case-sensitive? pattern?)))
+
+(defn nested-condition
+  "Creates a nested condition."
+  [path condition]
+  (->NestedCondition path condition))
 
 (defn group-conds
   "Combines the conditions together in the specified type of group."

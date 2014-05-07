@@ -2,7 +2,8 @@
   (:require [clojure.test :refer :all]
             [cmr.search.services.parameter-validation :as pv]
             [cmr.search.services.messages.attribute-messages :as attrib-msg]
-            [cmr.search.services.messages.orbit-number-messages :as on-msg]))
+            [cmr.search.services.messages.orbit-number-messages :as on-msg]
+            [cmr.common.services.messages :as com-msg]))
 
 (def valid-params
   "Example valid parameters"
@@ -13,12 +14,12 @@
 (deftest individual-parameter-validation-test
   (testing "unrecognized parameters"
     (is (= [] (pv/unrecognized-params-validation :collection valid-params)))
-    (is (= ["Parameter [foo] was not recognized."
-            "Parameter [bar] was not recognized."]
-           (pv/unrecognized-params-validation :collection
-                                              {:entry-title "fdad"
-                                               :foo 1
-                                               :bar 2}))))
+    (is (= #{"Parameter [foo] was not recognized."
+             "Parameter [bar] was not recognized."}
+           (set (pv/unrecognized-params-validation :collection
+                                                   {:entry-title "fdad"
+                                                    :foo 1
+                                                    :bar 2})))))
   (testing "invalid options param names"
     (is (= [] (pv/unrecognized-params-in-options-validation :collection valid-params)))
     (is (= ["Parameter [foo] with option was not recognized."]
@@ -65,24 +66,26 @@
     (is (= []
            (pv/orbit-number-validation :granule (assoc valid-params :orbit-number "1,2")))))
   (testing "Non-numeric single orbit-number"
-    (is (= [(on-msg/invalid-orbit-number-msg)]
+    (is (= [(on-msg/invalid-orbit-number-msg) (com-msg/invalid-numeric-range-msg "A")]
            (pv/orbit-number-validation :granlue (assoc valid-params :orbit-number "A")))))
   (testing "Non-numeric start-orbit-number"
-    (is (= [(on-msg/invalid-orbit-number-msg)]
+    (is (= [(on-msg/invalid-orbit-number-msg) (com-msg/invalid-numeric-range-msg "A,10")]
            (pv/orbit-number-validation :granule (assoc valid-params :orbit-number "A,10")))))
   (testing "Non-numeric stop-orbit-number"
-    (is (= [(on-msg/invalid-orbit-number-msg)]
+    (is (= [(on-msg/invalid-orbit-number-msg) (com-msg/invalid-numeric-range-msg "10,A")]
            (pv/orbit-number-validation :granule (assoc valid-params :orbit-number "10,A"))))))
 
 (deftest temporal-format-validation :collection-start-date-test
   (testing "valid-start-date"
-    (is (empty? (pv/temporal-format-validation :collection {:temporal ["2014-04-05T00:00:00Z"]}))))
+    (is (empty? (pv/temporal-format-validation :collection {:temporal ["2014-04-05T00:00:00Z"]})))
+    (is (empty? (pv/temporal-format-validation :collection {:temporal ["2014-04-05T00:00:00"]})))
+    (is (empty? (pv/temporal-format-validation :collection {:temporal ["2014-04-05T00:00:00.123Z"]})))
+    (is (empty? (pv/temporal-format-validation :collection {:temporal ["2014-04-05T00:00:00.123"]}))))
   (testing "invalid-start-date"
     (are [start-date]
          (let [error (pv/temporal-format-validation :collection {:temporal [start-date]})]
            (is (= 1 (count error)))
            (re-find (re-pattern "temporal datetime is invalid:") (first error)))
-         "2014-04-05T00:00:00"
          "2014-13-05T00:00:00Z"
          "2014-04-00T00:00:00Z"
          "2014-04-05T24:00:00Z"
@@ -91,13 +94,15 @@
 
 (deftest temporal-format-validation :collection-end-date-test
   (testing "valid-end-date"
-    (is (empty? (pv/temporal-format-validation :collection {:temporal [",2014-04-05T00:00:00Z"]}))))
+    (is (empty? (pv/temporal-format-validation :collection {:temporal [",2014-04-05T00:00:00Z"]})))
+    (is (empty? (pv/temporal-format-validation :collection {:temporal [",2014-04-05T00:00:00"]})))
+    (is (empty? (pv/temporal-format-validation :collection {:temporal [",2014-04-05T00:00:00.123Z"]})))
+    (is (empty? (pv/temporal-format-validation :collection {:temporal [",2014-04-05T00:00:00.123"]}))))
   (testing "invalid-end-date"
     (are [end-date]
          (let [error (pv/temporal-format-validation :collection {:temporal [end-date]})]
            (is (= 1 (count error)))
            (re-find (re-pattern "temporal datetime is invalid:") (first error)))
-         ",2014-04-05T00:00:00"
          ",2014-13-05T00:00:00Z"
          ",2014-04-00T00:00:00Z"
          ",2014-04-05T24:00:00Z"
@@ -157,8 +162,8 @@
       (is false "An error should have been thrown.")
       (catch clojure.lang.ExceptionInfo e
         (is (= {:type :invalid-data
-                :errors ["Parameter [foo] was not recognized."
-                         "Parameter [bar] was not recognized."]}
-               (ex-data e)))))))
+                :errors #{"Parameter [foo] was not recognized."
+                         "Parameter [bar] was not recognized."}}
+               (update-in (ex-data e) [:errors] set)))))))
 
 

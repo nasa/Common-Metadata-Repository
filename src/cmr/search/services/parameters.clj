@@ -1,6 +1,7 @@
 (ns cmr.search.services.parameters
   "Contains functions for parsing and converting query parameters to query conditions"
   (:require [clojure.set :as set]
+            [cmr.common.services.errors :as errors]
             [cmr.search.models.query :as qm]
             [clj-time.format :as f]
             [cmr.common.util :as u]))
@@ -9,7 +10,8 @@
   "A map of non UMM parameter names to their UMM fields."
   {:dataset-id :entry-title
    :dif-entry-id :entry-id
-   :campaign :project})
+   :campaign :project
+   :online-only :downloadable})
 
 (defn replace-parameter-aliases
   "Replaces aliases of parameter names"
@@ -45,7 +47,8 @@
              :updated-since :updated-since
              :temporal :temporal
              :project :string
-             :concept-id :string}})
+             :concept-id :string
+             :downloadable :boolean}})
 
 (defn- param-name->type
   "Returns the query condition type based on the given concept-type and param-name."
@@ -71,6 +74,7 @@
        :case-sensitive? (not= "true" (get-in options [param :ignore-case]))
        :pattern? (= "true" (get-in options [param :pattern]))})))
 
+
 (defmethod parameter->condition :updated-since
   [concept-type param value options]
   (qm/map->DateRangeCondition
@@ -78,6 +82,14 @@
      :start-date (f/parse (f/formatters :date-time-no-ms)
                           (if (sequential? value) (first value) value))
      :end-date nil}))
+
+(defmethod parameter->condition :boolean
+  [concept-type param value options]
+  (if (or (= "true" value) (= "false" value))
+    (qm/map->BooleanCondition {:field param
+                               :value (= "true" value)})
+    (errors/internal-error! (format "Boolean condition for %s has invalid value of [%s]" param value))))
+
 
 (defmethod parameter->condition :readable-granule-name
   [concept-type param value options]

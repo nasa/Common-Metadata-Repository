@@ -1,16 +1,16 @@
 (defproject nasa-cmr/cmr-search-app "0.1.0-SNAPSHOT"
   :description "Provides a public search API for concepts in the CMR."
   :url "***REMOVED***projects/CMR/repos/cmr-search-app/browse"
-  :dependencies [[org.clojure/clojure "1.5.1"]
+  :dependencies [[org.clojure/clojure "1.6.0"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-system-trace-lib "0.1.0-SNAPSHOT"]
                  [compojure "1.1.6"]
                  [ring/ring-core "1.2.2"]
-                 [ring/ring-json "0.3.0"]
-                 [org.clojure/tools.reader "0.8.3"]
+                 [ring/ring-json "0.3.1"]
+                 [org.clojure/tools.reader "0.8.4"]
                  [org.clojure/tools.cli "0.3.1"]
-                 [clojurewerkz/elastisch "2.0.0-beta1" :exclusions [commons-codec]]
+                 [clojurewerkz/elastisch "2.0.0-rc1" :exclusions [commons-codec]]
                  [com.novemberain/pantomime "2.1.0"]
                  [org.clojure/data.xml "0.0.7"]]
   :plugins [[lein-test-out "0.3.1"]]

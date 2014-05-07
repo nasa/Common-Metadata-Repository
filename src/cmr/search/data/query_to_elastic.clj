@@ -45,6 +45,12 @@
     ;; TODO Performance Improvement: We should order the conditions within and/ors.
     {operation {:filters (map #(condition->elastic % concept-type) conditions)}})
 
+  cmr.search.models.query.NestedCondition
+  (condition->elastic
+    [{:keys [path condition]} concept-type]
+    {:nested {:path path
+              :filter (condition->elastic condition concept-type)}})
+
   cmr.search.models.query.StringCondition
   (condition->elastic
     [{:keys [field value case-sensitive? pattern?]} concept-type]
@@ -54,6 +60,12 @@
       (if pattern?
         {:query {:wildcard {field value}}}
         {:term {field value}})))
+
+  cmr.search.models.query.BooleanCondition
+  (condition->elastic
+    [{:keys [field value]} concept-type]
+    (let [field (query-field->elastic-field field concept-type)]
+      {:term {field value}}))
 
   cmr.search.models.query.ExistCondition
   (condition->elastic

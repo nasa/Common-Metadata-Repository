@@ -2,14 +2,16 @@
   "Contains functions for validating query parameters"
   (:require [clojure.set :as set]
             [cmr.common.services.errors :as err]
+            [cmr.common.parameter-parser :as parser]
             [clojure.string :as s]
-            [clj-time.format :as f]
+            [cmr.common.date-time-parser :as dt-parser]
             [cmr.search.services.parameters :as p]
             [cmr.search.services.parameter-converters.attribute :as attrib]
             [cmr.search.services.messages.attribute-messages :as attrib-msg]
             [cmr.search.services.parameter-converters.orbit-number :as on]
             [cmr.search.services.messages.orbit-number-messages :as on-msg]
-            [camel-snake-kebab :as csk]))
+            [camel-snake-kebab :as csk])
+  (:import clojure.lang.ExceptionInfo))
 
 
 (defn- concept-type->valid-param-names
@@ -39,7 +41,6 @@
         ["page_size must be a number between 1 and 2000"]))
     []))
 
-
 (defn page-num-validation
   "Validates that the page-num (if present) is a number in the valid range."
   [concept-type params]
@@ -61,7 +62,6 @@
     (map #(str "Parameter [" (csk/->snake_case_string % )"] was not recognized.")
          (set/difference (set (keys params))
                          (concept-type->valid-param-names concept-type)))))
-
 
 (defn unrecognized-params-in-options-validation
   "Validates that no invalid parameters names in the options were supplied"
@@ -87,14 +87,13 @@
 
 (defn- validate-date-time
   "Validates datetime string is in the given format"
-  [dt format-type]
+  [dt]
   (try
     (when-not (s/blank? dt)
-      (f/parse (f/formatters format-type) dt))
+      (dt-parser/parse-datetime dt))
     []
-    (catch IllegalArgumentException e
-      [(format "temporal datetime is invalid: %s, should be in yyyy-MM-ddTHH:mm:ssZ format."
-               (.getMessage e))])))
+    (catch ExceptionInfo e
+      [(format "temporal datetime is invalid: %s." (first (:errors (ex-data e))))])))
 
 (defn- day-valid?
   "Validates if the given day in temporal is an integer between 1 and 366 inclusive"
@@ -118,8 +117,8 @@
              (fn [value]
                (let [[start-date end-date start-day end-day] (map s/trim (s/split value #","))]
                  (concat
-                   (validate-date-time start-date :date-time-no-ms)
-                   (validate-date-time end-date :date-time-no-ms)
+                   (validate-date-time start-date)
+                   (validate-date-time end-date)
                    (day-valid? start-day "temporal_start_day")
                    (day-valid? end-day "temporal_end_day"))))
              temporal))
@@ -149,20 +148,24 @@
 
 (defn orbit-number-validation
   "Validates that the orbital number is either a single number or a range in the format
-  start,stop where start <= stop."
+  start,stop."
   [concept-type params]
-  (if-let [orbit-number (:orbit-number params)]
-    (try
-      (let [{:keys [orbit-number
-                    start-orbit-number
-                    stop-orbit-number]} (on/orbit-number-str->orbit-number-map orbit-number)]
-        (if (and start-orbit-number (> start-orbit-number stop-orbit-number))
-          [(on-msg/invalid-orbit-number-msg)]
-          []))
-      (catch NumberFormatException e
-        [(on-msg/invalid-orbit-number-msg)]))
+  (if-let [orbit-number-str (:orbit-number params)]
+    (let [errors (parser/numeric-range-string-validator orbit-number-str)]
+      (if-not (empty? errors)
+        (concat [(on-msg/invalid-orbit-number-msg)] errors)
+        []))
     []))
 
+(defn boolean-value-validation
+  [concept-type params]
+  (let [bool-params (select-keys params [:downloadable])]
+    (mapcat
+      (fn [[key value]]
+        (if (or (= "true" value) (= "false" value))
+          []
+          [(format "Parameter %s must take value of true of false, but was %s" key value)]))
+      bool-params)))
 
 (def parameter-validations
   "A list of the functions that can validate parameters. They all accept parameters as an argument
@@ -175,7 +178,8 @@
    temporal-format-validation
    updated-since-validation
    orbit-number-validation
-   attribute-validation])
+   attribute-validation
+   boolean-value-validation])
 
 (defn validate-parameters
   "Validates parameters. Throws exceptions to send to the user. Returns parameters if validation
