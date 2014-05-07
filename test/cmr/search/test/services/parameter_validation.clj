@@ -13,12 +13,12 @@
 (deftest individual-parameter-validation-test
   (testing "unrecognized parameters"
     (is (= [] (pv/unrecognized-params-validation :collection valid-params)))
-    (is (= ["Parameter [foo] was not recognized."
-            "Parameter [bar] was not recognized."]
-           (pv/unrecognized-params-validation :collection
-                                              {:entry-title "fdad"
-                                               :foo 1
-                                               :bar 2}))))
+    (is (= #{"Parameter [foo] was not recognized."
+             "Parameter [bar] was not recognized."}
+           (set (pv/unrecognized-params-validation :collection
+                                                   {:entry-title "fdad"
+                                                    :foo 1
+                                                    :bar 2})))))
   (testing "invalid options param names"
     (is (= [] (pv/unrecognized-params-in-options-validation :collection valid-params)))
     (is (= ["Parameter [foo] with option was not recognized."]
@@ -157,8 +157,8 @@
       (is false "An error should have been thrown.")
       (catch clojure.lang.ExceptionInfo e
         (is (= {:type :invalid-data
-                :errors ["Parameter [foo] was not recognized."
-                         "Parameter [bar] was not recognized."]}
-               (ex-data e)))))))
+                :errors #{"Parameter [foo] was not recognized."
+                         "Parameter [bar] was not recognized."}}
+               (update-in (ex-data e) [:errors] set)))))))
 
 
