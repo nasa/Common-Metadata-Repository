@@ -142,6 +142,7 @@
         (concat [(on-msg/invalid-orbit-number-msg)] errors)
         []))
     []))
+
 (defn boolean-value-validation
   [concept-type params]
   (let [bool-params (select-keys params [:downloadable])]

@@ -2,7 +2,8 @@
   (:require [clojure.test :refer :all]
             [cmr.search.services.parameter-validation :as pv]
             [cmr.search.services.messages.attribute-messages :as attrib-msg]
-            [cmr.search.services.messages.orbit-number-messages :as on-msg]))
+            [cmr.search.services.messages.orbit-number-messages :as on-msg]
+            [cmr.common.services.messages :as com-msg]))
 
 (def valid-params
   "Example valid parameters"
@@ -65,13 +66,13 @@
     (is (= []
            (pv/orbit-number-validation :granule (assoc valid-params :orbit-number "1,2")))))
   (testing "Non-numeric single orbit-number"
-    (is (= [(on-msg/invalid-orbit-number-msg)]
+    (is (= [(on-msg/invalid-orbit-number-msg) (com-msg/invalid-numeric-range-msg "A")]
            (pv/orbit-number-validation :granlue (assoc valid-params :orbit-number "A")))))
   (testing "Non-numeric start-orbit-number"
-    (is (= [(on-msg/invalid-orbit-number-msg)]
+    (is (= [(on-msg/invalid-orbit-number-msg) (com-msg/invalid-numeric-range-msg "A,10")]
            (pv/orbit-number-validation :granule (assoc valid-params :orbit-number "A,10")))))
   (testing "Non-numeric stop-orbit-number"
-    (is (= [(on-msg/invalid-orbit-number-msg)]
+    (is (= [(on-msg/invalid-orbit-number-msg) (com-msg/invalid-numeric-range-msg "10,A")]
            (pv/orbit-number-validation :granule (assoc valid-params :orbit-number "10,A"))))))
 
 (deftest temporal-format-validation :collection-start-date-test
