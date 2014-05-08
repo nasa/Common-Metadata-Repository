@@ -58,7 +58,7 @@
 (def concept-type->valid-sort-keys
   "A map of concept type to sets of valid sort keys"
   {:collection #{:entry-title :dataset-id :start-date :end-date}
-   :granule #{:start-date :end-date}})
+   :granule #{:start-date :end-date :entry-title :dataset-id :short-name}})
 
 (defn sort-key-validation
   "Validates the sort-key parameter if present"
@@ -69,7 +69,7 @@
                 (let [[_ field] (re-find #"[\-+]?(.*)" sort-key)
                       valid-params (concept-type->valid-sort-keys concept-type)]
                   (when-not (valid-params (keyword field))
-                    [(msg/invalid-sort-key field concept-type)])))
+                    [(msg/invalid-sort-key (csk/->snake_case_string field ) concept-type)])))
               sort-keys))
     []))
 
