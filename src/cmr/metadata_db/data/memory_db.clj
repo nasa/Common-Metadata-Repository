@@ -4,6 +4,8 @@
             [cmr.metadata-db.data.providers :as providers]
             [cmr.common.concepts :as cc]
             [cmr.common.lifecycle :as lifecycle]
+            [clj-time.core :as t]
+            [clj-time.format :as f]
             [cmr.metadata-db.data.oracle.concepts]))
 
 
@@ -111,7 +113,8 @@
     [this concept]
     {:pre [(:revision-id concept)]}
 
-    (let [{:keys [concept-type provider-id concept-id revision-id]} concept]
+    (let [{:keys [concept-type provider-id concept-id revision-id]} concept
+          concept (assoc concept :revision-date (f/unparse (f/formatters :date-time) (t/now)))]
       (if (or (nil? revision-id)
               (concepts/get-concept this concept-type provider-id concept-id revision-id))
         {:error :revision-id-conflict}
