@@ -53,7 +53,7 @@
   ;; and set it back after the tests have completed.
   (let [current-endpoint esr/*endpoint*
         http-port (:port test-config)
-        server (lifecycle/start (elastic-server/create-server http-port 9215) nil)]
+        server (lifecycle/start (elastic-server/create-server http-port 9215 "es_data/indexer_test") nil)]
     (reset! context {:system {:db {:conn (esr/connect (str "http://localhost:" http-port))}}})
 
     ;; Disables standard out logging during testing because it breaks the JUnit parser in bamboo.
