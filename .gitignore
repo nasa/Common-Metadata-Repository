@@ -10,4 +10,4 @@ pom.xml.asc
 /config
 /log
 /.nrepl-port
-/data
+/es_data

@@ -64,7 +64,8 @@
                            "localhost" in-memory-elastic-port-for-connection))}
    :components {:elastic-server (elastic-server/create-server
                                   in-memory-elastic-port
-                                  (+ in-memory-elastic-port 10))}})
+                                  (+ in-memory-elastic-port 10)
+                                  "es_data/dev_system")}})
 
 (defmethod create-system :external-dbs
   [type]
