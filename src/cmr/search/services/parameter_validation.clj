@@ -11,7 +11,7 @@
             [cmr.search.services.parameter-converters.orbit-number :as on]
             [cmr.search.services.messages.orbit-number-messages :as on-msg]
             [cmr.search.services.messages.common-messages :as msg]
-            [cmr.common.util :as cutil]
+            [cmr.common.parameter-parser :as pp]
             [camel-snake-kebab :as csk])
   (:import clojure.lang.ExceptionInfo))
 
@@ -148,23 +148,12 @@
 
 
 (defn cloud-cover-validation
-  "Validates cloud cover values are numeric and min value less than equal to max value"
+  "Validates cloud cover range values are numeric"
   [concept-type params]
   (if-let [cloud-cover (:cloud-cover params)]
-    (let [[^java.lang.String min-value ^java.lang.String max-value] (s/split cloud-cover #",")]
-      (cond
-        (false? (cutil/numeric-val? min-value))
-        ["cloud_cover min value must be a number"]
-        (false? (cutil/numeric-val? max-value))
-        ["cloud_cover max value must be a number"]
-        (and (true? (cutil/numeric-val? min-value))
-             (true? (cutil/numeric-val? max-value))
-             (> (read-string min-value) (read-string max-value)))
-        ["cloud_cover max value must greater than cloud_cover min value"]
-        (and (nil? (cutil/numeric-val? min-value))
-             (nil? (cutil/numeric-val? max-value)))
-        ["missing cloud_cover values - need to supply [min | max | min and max] value(s)"]
-        :else
+    (let [errors (pp/numeric-range-string-validation cloud-cover)]
+      (if-not (empty? errors)
+        errors
         []))
     []))
 
@@ -207,7 +196,7 @@
   "Validates an oribt-number parameter in the form orbit_number=value or
   orbit_number=min,max."
   [orbit-number-param]
-  (let [errors (parser/numeric-range-string-validator orbit-number-param)]
+  (let [errors (parser/numeric-range-string-validation orbit-number-param)]
     (if-not (empty? errors)
       (concat [(on-msg/invalid-orbit-number-msg)] errors)
       [])))
