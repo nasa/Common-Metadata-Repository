@@ -64,7 +64,7 @@
      {:short-name platform-sn
       :long-name (d/unique-str "long-name")
       :type (d/unique-str "Type")}))
-  ([platform-sn instruments]
+  ([platform-sn & instruments]
    (c/map->Platform
      {:short-name platform-sn
       :long-name (d/unique-str "long-name")
