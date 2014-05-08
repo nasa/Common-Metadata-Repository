@@ -94,6 +94,8 @@
                              :end-date              date-field-mapping
                              :platform-sn           string-field-mapping
                              :platform-sn.lowercase string-field-mapping
+                             :instrument-sn           string-field-mapping
+                             :instrument-sn.lowercase string-field-mapping
                              :project-sn            string-field-mapping
                              :project-sn.lowercase  string-field-mapping
                              :archive-center        string-field-mapping

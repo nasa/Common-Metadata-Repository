@@ -15,10 +15,13 @@
                  :provider-id provider-id}
         platforms [{:short-name "PLATFORM ONE"
                     :long-name "dummy"
-                    :type "Dummy"}
+                    :type "Dummy"
+                    :instruments [{:short-name "SAR"}
+                                  {:short-name "MAR"}]}
                    {:short-name "PLATFORM TWO"
                     :long-name "dummy"
-                    :type "Dummy"}]
+                    :type "Dummy"
+                    :instruments [{:short-name "DAR"}]}]
         projects [{:short-name "ESI"
                    :long-name "dummy"}
                   {:short-name "EVI"
@@ -55,6 +58,8 @@
                   :end-date "1997-03-25T23:23:43.123Z"
                   :platform-sn ["PLATFORM ONE" "PLATFORM TWO"]
                   :platform-sn.lowercase ["platform one" "platform two"]
+                  :instrument-sn ["SAR" "MAR" "DAR"]
+                  :instrument-sn.lowercase ["sar" "mar" "dar"]
                   :project-sn ["ESI" "EVI" "EPI"]
                   :project-sn.lowercase ["esi" "evi" "epi"]
                   :archive-center ["SEDAC AC"]
