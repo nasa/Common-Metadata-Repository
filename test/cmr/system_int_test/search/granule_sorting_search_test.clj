@@ -42,10 +42,11 @@
          "readable_granule_name" [g1 g5 g4 g3 g2]
          "-readable_granule_name" (reverse [g1 g5 g4 g3 g2]))))
 
-(deftest granule-size-sorting-test
+(deftest granule-numeric-sorting-test
   (let [coll (d/ingest "PROV1" (dc/collection {}))
-        make-gran (fn [size]
-                    (d/ingest "PROV1" (dg/granule coll {:size size})))
+        make-gran (fn [number]
+                    (d/ingest "PROV1" (dg/granule coll {:size number
+                                                        :cloud-cover number})))
         g1 (make-gran 20)
         g2 (make-gran 30)
         g3 (make-gran 10)
@@ -57,7 +58,9 @@
                               (search/find-refs :granule {:page-size 20
                                                           :sort-key sort-key}))
          "data_size" [g3 g1 g5 g2 g4]
-         "-data_size" [g2 g5 g1 g3 g4])))
+         "-data_size" [g2 g5 g1 g3 g4]
+         "cloud_cover" [g3 g1 g5 g2 g4]
+         "-cloud_cover" [g2 g5 g1 g3 g4])))
 
 
 (deftest coll-identifier-sorting-test
