@@ -25,7 +25,7 @@
         {:keys [parent-collection-id]} extra-fields
         parent-collection (get-parent-collection context parent-collection-id)
         {:keys [granule-ur data-granule temporal project-refs related-urls]} umm-granule
-        producer-gran-id (:producer-gran-id data-granule)
+        {:keys [size producer-gran-id]} data-granule
         start-date (temporal/start-date :granule temporal)
         end-date (temporal/end-date :granule temporal)
         downloadable (not (empty? (filter ru/downloadable-url? related-urls)))]
@@ -48,6 +48,7 @@
 
      :project-refs project-refs
      :project-refs.lowercase (map s/lower-case project-refs)
+     :size size
      :orbit-calculated-spatial-domains (ocsd/ocsds->elastic-docs umm-granule)
      :attributes (attrib/psa-refs->elastic-docs parent-collection umm-granule)
      :revision-date revision-date
