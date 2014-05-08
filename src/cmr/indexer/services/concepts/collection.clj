@@ -20,7 +20,7 @@
          temporal :temporal} umm-concept
         platforms (:platforms umm-concept)
         platform-short-names (map :short-name platforms)
-        instruments (flatten (map :instruments platforms))
+        instruments (mapcat :instruments platforms)
         instrument-short-names (remove nil? (map :short-name instruments))
         project-short-names (map :short-name (:projects umm-concept))
         two-d-coord-names (map :name (:two-d-coordinate-systems umm-concept))
