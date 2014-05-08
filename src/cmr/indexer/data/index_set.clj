@@ -117,6 +117,7 @@
                                     ;; Collection fields added strictly for sorting granule results
                                     :entry-title.lowercase string-field-mapping
                                     :short-name.lowercase  string-field-mapping
+                                    :version-id.lowercase  string-field-mapping
 
                                     :provider-id           (stored string-field-mapping)
                                     :provider-id.lowercase string-field-mapping
