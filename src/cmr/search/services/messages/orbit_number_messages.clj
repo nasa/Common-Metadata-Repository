@@ -8,3 +8,7 @@
 (defn non-numeric-orbit-number-parameter
   []
   "orbit_number must be a number.")
+
+(defn non-numeric-equator-crossing-longitude-parameter
+  []
+  "longitude must be a number between -180.0 and 180.0.")
