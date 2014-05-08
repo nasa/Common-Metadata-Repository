@@ -49,7 +49,10 @@
    :granule {:provider :provider-id.lowercase
              :entry-title :entry-title.lowercase
              :short-name :short-name.lowercase
-             :version :version-id.lowercase}})
+             :version :version-id.lowercase
+             :granule-ur :granule-ur.lowercase
+             :producer-granule-id :producer-gran-id.lowercase
+             :readable-granule-name :readable-granule-name-sort}})
 
 (defn query->sort-params
   "Converts a query into the elastic parameters for sorting results"
