@@ -13,14 +13,10 @@
 
 (use-fixtures :each (ingest/reset-fixture "PROV1" "PROV2"))
 
-;; TODO add provider as a sortable key and document in the readme
-
 (deftest invalid-sort-key-test
   (is (= {:status 422
           :errors [(msg/invalid-sort-key "foo" :granule)]}
          (search/find-refs :granule {:sort-key "foo"}))))
-
-;; TODO add version to this
 
 (deftest coll-identifier-sorting-test
   (let [make-gran (fn [provider entry-title short-name version]
@@ -48,7 +44,14 @@
          "dataset_id" [g1 g5 g2 g6 g3 g7 g4 g8]
          "-dataset_id" (reverse [g1 g5 g2 g6 g3 g7 g4 g8])
          "short_name" [g8 g4 g7 g3 g6 g2 g5 g1]
-         "-short_name" (reverse [g8 g4 g7 g3 g6 g2 g5 g1]))))
+         "-short_name" (reverse [g8 g4 g7 g3 g6 g2 g5 g1])
+         "version" [g1 g5 g2 g6 g3 g7 g4 g8]
+         "-version" (reverse [g1 g5 g2 g6 g3 g7 g4 g8])
+
+         ;; Multiple keys and provider
+         ["provider" "version"] [g1 g2 g3 g4 g5 g6 g7 g8]
+         ["provider" "-version"] [g4 g3 g2 g1 g8 g7 g6 g5]
+         ["-provider" "version"] [g5 g6 g7 g8 g1 g2 g3 g4])))
 
 
 (deftest temporal-sorting-test
@@ -97,25 +100,3 @@
                                                           :sort-key sort-key}))
            "end_date" [g5 g1 g12 g2 g6 g7 g3 g4 g8 g9 g10 g11]
            "-end_date" [g8 g4 g3 g7 g6 g2 g12 g1 g5 g9 g10 g11]))))
-
-#_(deftest multiple-sort-key-test
-  (let [c1 (make-coll "PROV1" "et10" 10 nil)
-        c2 (make-coll "PROV1" "et20" 10 nil)
-        c3 (make-coll "PROV1" "et30" 10 nil)
-        c4 (make-coll "PROV1" "et40" 10 nil)
-
-        c5 (make-coll "PROV2" "et10" 20 nil)
-        c6 (make-coll "PROV2" "et20" 20 nil)
-        c7 (make-coll "PROV2" "et30" 20 nil)
-        c8 (make-coll "PROV2" "et40" 20 nil)]
-    (index/flush-elastic-index)
-
-    (are [sort-key items] (d/refs-match-order?
-                            items
-                            (search/find-refs :granule {:page-size 20
-                                                        :sort-key sort-key}))
-         ["entry_title" "start_date"] [c1 c5 c2 c6 c3 c7 c4 c8]
-         ["entry_title" "-start_date"] [c5 c1 c6 c2 c7 c3 c8 c4]
-         ["start_date" "entry_title"] [c1 c2 c3 c4 c5 c6 c7 c8]
-         ["start_date" "-entry_title"] [c4 c3 c2 c1 c8 c7 c6 c5]
-         ["-start_date" "entry_title"] [c5 c6 c7 c8 c1 c2 c3 c4])))

@@ -101,4 +101,8 @@
          ["entry_title" "-start_date"] [c5 c1 c6 c2 c7 c3 c8 c4]
          ["start_date" "entry_title"] [c1 c2 c3 c4 c5 c6 c7 c8]
          ["start_date" "-entry_title"] [c4 c3 c2 c1 c8 c7 c6 c5]
-         ["-start_date" "entry_title"] [c5 c6 c7 c8 c1 c2 c3 c4])))
+         ["-start_date" "entry_title"] [c5 c6 c7 c8 c1 c2 c3 c4]
+
+         ;; Tests provider sorting for collections
+         ["provider" "-entry_title"] [c4 c3 c2 c1 c8 c7 c6 c5]
+         ["-provider" "-entry_title"] [c8 c7 c6 c5 c4 c3 c2 c1])))
