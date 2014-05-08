@@ -50,11 +50,17 @@
    value
   ])
 
+(defrecord Instrument
+  [
+   short-name
+  ])
+
 (defrecord Platform
   [
    short-name
    long-name
    type
+   instruments
   ])
 
 (defrecord Project

@@ -21,6 +21,12 @@
 (def entry-titles
   (ext-gen/string-alpha-numeric 1 1030))
 
+(def instrument-short-names
+  (ext-gen/string-ascii 1 80))
+
+(def instruments
+  (ext-gen/model-gen c/->Instrument instrument-short-names))
+
 (def platform-short-names
   (ext-gen/string-ascii 1 80))
 
@@ -31,7 +37,11 @@
   (ext-gen/string-ascii 1 80))
 
 (def platforms
-  (ext-gen/model-gen c/->Platform platform-short-names platform-long-names platform-types))
+  (ext-gen/model-gen c/->Platform
+                     platform-short-names
+                     platform-long-names
+                     platform-types
+                     (ext-gen/nil-if-empty (gen/vector instruments 0 4))))
 
 (def campaign-short-names
   (ext-gen/string-ascii 1 40))

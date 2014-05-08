@@ -91,6 +91,14 @@
       <ShortName>RADARSAT-1</ShortName>
       <LongName>RADARSAT-LONG-1</LongName>
       <Type>Spacecraft</Type>
+      <Instruments>
+        <Instrument>
+          <ShortName>SAR</ShortName>
+        </Instrument>
+        <Instrument>
+          <ShortName>MAR</ShortName>
+        </Instrument>
+      </Instruments>
     </Platform>
     <Platform>
       <ShortName>RADARSAT-2</ShortName>
@@ -203,11 +211,14 @@
                     [(umm-c/map->Platform
                        {:short-name "RADARSAT-1"
                         :long-name "RADARSAT-LONG-1"
-                        :type "Spacecraft"})
+                        :type "Spacecraft"
+                        :instruments [(umm-c/->Instrument "SAR")
+                                      (umm-c/->Instrument "MAR")]})
                      (umm-c/map->Platform
                        {:short-name "RADARSAT-2"
                         :long-name "RADARSAT-LONG-2"
-                        :type "Spacecraft-2"})]
+                        :type "Spacecraft-2"
+                        :instruments nil})]
                     :projects
                     [(umm-c/map->Project
                        {:short-name "ESI"
