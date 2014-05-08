@@ -235,7 +235,8 @@
   (if-let [equator_crossing_longitude (:equator-crossing-longitude params)]
     (if (string? equator_crossing_longitude)
       (validate-numeric-range-string-param equator_crossing_longitude nil)
-      (validate-numeric-range-map equator_crossing_longitude nil))))
+      (validate-numeric-range-map equator_crossing_longitude
+                                  on-msg/non-numeric-equator-crossing-longitude-parameter))))
 
 
 (defn boolean-value-validation

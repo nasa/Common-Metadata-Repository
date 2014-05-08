@@ -2,7 +2,6 @@
   "Contains functions for validating equator-crossing-longitude conditions"
   (:require [clojure.set]
             [cmr.search.models.query :as qm]
-            [cmr.search.services.messages.orbit-number-messages :as on-msg]
             [cmr.search.validators.validation :as v]
             [cmr.search.validators.messages :as m]))
 
