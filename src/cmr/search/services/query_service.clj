@@ -85,7 +85,6 @@
   "Executes a search for concepts using the given parameters. The concepts will be returned with
   concept id and native provider id."
   [context concept-type params]
-
   (let [params (-> params
                    u/map-keys->kebab-case
                    (update-in [:options] u/map-keys->kebab-case)

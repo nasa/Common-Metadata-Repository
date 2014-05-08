@@ -56,6 +56,12 @@
         ["page_num must be a number greater than or equal to 1"]))
     []))
 
+(def concept-type->valid-sort-keys
+  "A map of concept type to sets of valid sort keys"
+  {:collection #{:entry-title :dataset-id :start-date :end-date}
+   ;; TODO add more for granules
+   :granule #{}})
+
 (defn sort-key-validation
   "Validates the sort-key parameter if present"
   [concept-type params]
@@ -63,7 +69,7 @@
     (let [sort-keys (if (sequential? sort-key) sort-key [sort-key])]
       (mapcat (fn [sort-key]
                 (let [[_ field] (re-find #"[\-+]?(.*)" sort-key)
-                      valid-params (concept-type->valid-param-names concept-type)]
+                      valid-params (concept-type->valid-sort-keys concept-type)]
                   (when-not (valid-params (keyword field))
                     [(msg/invalid-sort-key field concept-type)])))
               sort-keys))
@@ -162,6 +168,15 @@
         []))
     []))
 
+(defn updated-since-validation
+  "Validates updated-since parameter conforms to formats in data-time-parser NS"
+  [concept-type params]
+  (if-let [param-value (:updated-since params)]
+    (if (and (sequential? (:updated-since params)) (> (count (:updated-since params)) 1))
+      [(format "search not allowed with multiple updated_since values s%: " (:updated-since params))]
+      (let [updated-since-val (if (sequential? param-value) (first param-value) param-value)]
+        (validate-date-time updated-since-val)))
+    []))
 
 (defn attribute-validation
   [concept-type params]
@@ -228,6 +243,7 @@
    unrecognized-params-in-options-validation
    unrecognized-params-settings-in-options-validation
    temporal-format-validation
+   updated-since-validation
    orbit-number-validation
    cloud-cover-validation
    attribute-validation
