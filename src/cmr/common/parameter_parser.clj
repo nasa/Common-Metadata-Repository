@@ -19,7 +19,7 @@
     (catch NumberFormatException e
       (msg/data-error :invalid-data msg/invalid-numeric-range-msg param-str))))
 
-(defn numeric-range-string-validator
+(defn numeric-range-string-validation
   "Vaidates that a numeric range string is of the format 'value' or 'min-value,max-value'
   where min-value/max-value are optional (but at least one must be present)."
   [range-str]

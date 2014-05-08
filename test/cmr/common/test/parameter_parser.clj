@@ -32,7 +32,7 @@
 
 (deftest validate-numeric-range
   (testing "valid ranges"
-    (are [range-str errors] (= errors (p/numeric-range-string-validator range-str))
+    (are [range-str errors] (= errors (p/numeric-range-string-validation range-str))
          "1" []
          "-1" []
          "1,2" []
@@ -40,7 +40,7 @@
          ",3" []
          "0.5,2" []))
   (testing "invalid ranges"
-    (are [range-str errors] (= errors (p/numeric-range-string-validator range-str))
+    (are [range-str errors] (= errors (p/numeric-range-string-validation range-str))
          "A" [(msg/invalid-numeric-range-msg range-str)]
          "A,10" [(msg/invalid-numeric-range-msg range-str)]
          "1,B" [(msg/invalid-numeric-range-msg range-str)]
