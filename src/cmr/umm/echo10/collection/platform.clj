@@ -18,12 +18,10 @@
 
 (defn xml-elem->Platforms
   [collection-element]
-  (let [platforms (map xml-elem->Platform
-                       (cx/elements-at-path
-                         collection-element
-                         [:Platforms :Platform]))]
-    (when-not (empty? platforms)
-      platforms)))
+  (seq (map xml-elem->Platform
+            (cx/elements-at-path
+              collection-element
+              [:Platforms :Platform]))))
 
 (defn generate-platforms
   [platforms]

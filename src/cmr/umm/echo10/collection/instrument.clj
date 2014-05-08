@@ -10,12 +10,10 @@
 
 (defn xml-elem->Instruments
   [platform-element]
-  (let [instruments (map xml-elem->Instrument
-                         (cx/elements-at-path
-                           platform-element
-                           [:Instruments :Instrument]))]
-    (when-not (empty? instruments)
-      instruments)))
+  (seq (map xml-elem->Instrument
+            (cx/elements-at-path
+              platform-element
+              [:Instruments :Instrument]))))
 
 (defn generate-instruments
   [instruments]
