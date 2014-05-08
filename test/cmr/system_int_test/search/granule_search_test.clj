@@ -212,9 +212,25 @@
       (let [{:keys [status errors]} (search/find-refs :granule {"cloud_cover" "30,0"})
             err (first errors)]
         (is (= 422 status))
-        (is (re-find #"The maximum value" err))
-        (is (re-find #"must be greater than or equal to the minimum value" err))))))
-
-
-
+        (is (re-find #"cloud_cover max value must greater than cloud_cover min value" err))))
+    (testing "search by cloud-cover with non numeric str"
+      (let [{:keys [status errors]} (search/find-refs :granule {"cloud_cover" "c9c,"})
+            err (first errors)]
+        (is (= 422 status))
+        (is (re-find #"cloud_cover min value must be a number" err))))
+    (testing "search by cloud-cover with non numeric str"
+      (let [{:keys [status errors]} (search/find-refs :granule {"cloud_cover" ","})
+            err (first errors)]
+        (is (= 422 status))
+        (is (re-find #"missing cloud_cover values" err))))
+    (testing "search by cloud-cover with non numeric str"
+      (let [{:keys [status errors]} (search/find-refs :granule {"cloud_cover" ""})
+            err (first errors)]
+        (is (= 422 status))
+        (is (re-find #"missing cloud_cover values" err))))
+    (testing "search by cloud-cover with invalid range"
+      (let [{:keys [status errors]} (search/find-refs :granule {"cloud_cover" "30,c9c"})
+            err (first errors)]
+        (is (= 422 status))
+        (is (re-find #"cloud_cover max value must be a number" err))))))
 
