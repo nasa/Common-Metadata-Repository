@@ -12,20 +12,24 @@
 
 (use-fixtures :each (ingest/reset-fixture "CMR_PROV1" "CMR_PROV2"))
 
+(defn now-time-str
+  []
+  (f/unparse (f/formatters :date-time) (t/now)))
+
 (deftest search-colls-by-revision-date
-  (let [chkpt1-tz (f/unparse (f/formatters :date-time-no-ms) (t/now))
+  (let [chkpt1-tz (now-time-str)
+        _ (Thread/sleep 500)
         coll1 (d/ingest "CMR_PROV1" (dc/collection {}))
         coll2 (d/ingest "CMR_PROV1" (dc/collection {}))
         coll3 (d/ingest "CMR_PROV1" (dc/collection {}))
         coll4 (d/ingest "CMR_PROV1" (dc/collection {}))
         _ (Thread/sleep 1000)
-
-        chkpt2-tz (f/unparse (f/formatters :date-time-no-ms) (t/now))
+        chkpt2-tz (now-time-str)
+        _ (Thread/sleep 500)
         coll5 (d/ingest "CMR_PROV1" (dc/collection {}))
         coll6 (d/ingest "CMR_PROV2" (dc/collection {}))
         _ (Thread/sleep 1000)
-
-        chkpt3-tz (f/unparse (f/formatters :date-time-no-ms) (t/now))]
+        chkpt3-tz (now-time-str)]
     (index/flush-elastic-index)
     (testing "search for collections ingested into system after chkpt1 - single value str"
       (let [references (search/find-refs :collection {"updated_since" chkpt1-tz})]
@@ -52,13 +56,15 @@
 
 
 (deftest search-grans-by-revision-date
-  (let [chkpt1-tz (f/unparse (f/formatters :date-time-no-ms) (t/now))
+  (let [chkpt1-tz (now-time-str)
+        _ (Thread/sleep 500)
         coll1 (d/ingest "CMR_PROV1" (dc/collection {}))
         gran1 (d/ingest "CMR_PROV1" (dg/granule coll1 {}))
         gran2 (d/ingest "CMR_PROV1" (dg/granule coll1 {}))
         gran3 (d/ingest "CMR_PROV1" (dg/granule coll1 {}))
         _ (Thread/sleep 1000)
-        chkpt2-tz (f/unparse (f/formatters :date-time-no-ms) (t/now))
+        chkpt2-tz (now-time-str)
+        _ (Thread/sleep 500)
         gran4 (d/ingest "CMR_PROV1" (dg/granule coll1 {}))]
     (index/flush-elastic-index)
 
