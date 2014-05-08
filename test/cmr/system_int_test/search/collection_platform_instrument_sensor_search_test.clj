@@ -1,4 +1,4 @@
-(ns cmr.system-int-test.search.collection-platform-search-test
+(ns cmr.system-int-test.search.collection-platform-instrument-sensor-search-test
   "Integration test for CMR collection search by platform, instrument and sensor short-names"
   (:require [clojure.test :refer :all]
             [cmr.system-int-test.utils.ingest-util :as ingest]
