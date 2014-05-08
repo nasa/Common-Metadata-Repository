@@ -3,7 +3,7 @@
   (:require [clojure.set :as set]
             [cmr.common.services.errors :as errors]
             [cmr.search.models.query :as qm]
-            [clj-time.format :as f]
+            [cmr.common.date-time-parser :as dt-parser]
             [cmr.common.util :as u]))
 
 (def param-aliases
@@ -80,8 +80,8 @@
   [concept-type param value options]
   (qm/map->DateRangeCondition
     {:field param
-     :start-date (f/parse (f/formatters :date-time-no-ms)
-                          (if (sequential? value) (first value) value))
+     :start-date (dt-parser/parse-datetime
+                   (if (sequential? value) (first value) value))
      :end-date nil}))
 
 (defmethod parameter->condition :boolean
