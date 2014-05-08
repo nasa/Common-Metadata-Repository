@@ -31,6 +31,8 @@
         downloadable (not (empty? (filter ru/downloadable-url? related-urls)))]
     {:concept-id concept-id
      :collection-concept-id parent-collection-id
+     :entry-title.lowercase (s/lower-case (:entry-title parent-collection))
+     :short-name.lowercase (s/lower-case (get-in parent-collection [:product :short-name]))
      :provider-id provider-id
      :provider-id.lowercase (s/lower-case provider-id)
      :granule-ur granule-ur

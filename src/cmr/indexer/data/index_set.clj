@@ -113,6 +113,11 @@
                        :_id  {:path "concept-id"},
                        :properties {:concept-id            (stored string-field-mapping)
                                     :collection-concept-id (stored string-field-mapping)
+
+                                    ;; Collection fields added strictly for sorting granule results
+                                    :entry-title.lowercase string-field-mapping
+                                    :short-name.lowercase  string-field-mapping
+
                                     :provider-id           (stored string-field-mapping)
                                     :provider-id.lowercase string-field-mapping
                                     :granule-ur            (stored string-field-mapping)
