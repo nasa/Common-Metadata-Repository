@@ -15,7 +15,8 @@
                 :project :project-sn
                 :updated-since :revision-date
                 :two-d-coordinate-system-name :two-d-coord-name
-                :platform :platform-sn}
+                :platform :platform-sn
+                :instrument :instrument-sn}
 
    :granule {:provider :provider-id
              :producer-granule-id :producer-gran-id
@@ -43,8 +44,16 @@
 (def sort-key-field->elastic-field
   "Submaps by concept type of the sort key fields given by the user to the exact elastic sort field to use.
   If a sort key is not in this map it means that it can be used directly with elastic."
-  {:collection {:entry-title "entry-title.lowercase"}
-   :granule {:provider-id "provider-id.lowercase"}})
+  {:collection {:entry-title :entry-title.lowercase
+                :provider :provider-id.lowercase}
+   :granule {:provider :provider-id.lowercase
+             :entry-title :entry-title.lowercase
+             :short-name :short-name.lowercase
+             :version :version-id.lowercase
+             :granule-ur :granule-ur.lowercase
+             :producer-granule-id :producer-gran-id.lowercase
+             :readable-granule-name :readable-granule-name-sort
+             :data-size :size}})
 
 (defn query->sort-params
   "Converts a query into the elastic parameters for sorting results"

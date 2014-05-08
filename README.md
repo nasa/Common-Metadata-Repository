@@ -77,6 +77,25 @@ The temporal datetime has to be in yyyy-MM-ddTHH:mm:ssZ format.
 
     curl "http://localhost:3003/collections?temporal\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z,30,60&temporal\[\]=2000-01-01T10:00:00Z,,30&temporal\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z"
 
+#### Sorting Collection Results
+
+Collection results are sorted by ascending entry title by default. One or more sort keys can be specified using the `sort_key[]` parameter. The order used impacts searching. Fields can be prepended with a `-` to sort in descending order. Ascending order is the default but `+` can be used to explicitly request ascending.
+
+##### Valid Collection Sort Keys
+
+  * entry_title
+  * dataset_id - alias for entry_title
+  * start_date
+  * end_date
+  * platform
+  * instrument
+  * sensor
+  * provider
+
+Example of sorting by start_date in descending order: (Most recent data first)
+
+    curl "http://localhost:3003/collections?sort_key\[\]=-start_date
+
 ### Search for Granules
 
 #### Find all granules
@@ -140,6 +159,41 @@ Multiple attributes can be provided. The default is for granules to match all th
   Find granules with an orbit number in a range of 0.5 to 1.5
 
     curl "http://localhost:3003/granules?orbit_number=0.5,1.5"
+
+#### Sorting Granule Results
+
+Granule results are sorted by ascending provider and start date by default. One or more sort keys can be specified using the `sort_key[]` parameter. The order used impacts searching. Fields can be prepended with a `-` to sort in descending order. Ascending order is the default but `+` can be used to explicitly request ascending.
+
+##### Valid Granule Sort Keys
+
+  * entry_title
+  * dataset_id - alias for entry_title
+  * data_size
+  * end_date
+  * granule_ur
+  * producer_granule_id
+  * provider
+  * readable_granule_name - this sorts on a combination of producer_granule_id and granule_ur. If a producer_granule_id is present, that value is used. Otherwise, the granule_ur is used.
+  * short_name
+  * start_date
+  * version
+
+##### Future Granule Sort Keys
+Not yet implemented
+
+  * browse_only
+  * campaign
+  * cloud_cover
+  * day_night_flag
+  * instrument
+  * online_only
+  * platform
+  * sensor
+
+Example of sorting by start_date in descending order: (Most recent data first)
+
+    curl "http://localhost:3003/granules/sort_key\[\]=-start_date
+
 
 ### Retrieve concept with a given cmr-concept-id
     curl -i "http://localhost:3003/concepts/G100000-PROV1"

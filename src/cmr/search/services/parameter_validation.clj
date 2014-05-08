@@ -11,6 +11,7 @@
             [cmr.search.services.parameter-converters.orbit-number :as on]
             [cmr.search.services.messages.orbit-number-messages :as on-msg]
             [cmr.search.services.messages.common-messages :as msg]
+            [cmr.common.parameter-parser :as pp]
             [camel-snake-kebab :as csk])
   (:import clojure.lang.ExceptionInfo))
 
@@ -57,8 +58,23 @@
 
 (def concept-type->valid-sort-keys
   "A map of concept type to sets of valid sort keys"
-  {:collection #{:entry-title :dataset-id :start-date :end-date}
-   :granule #{:start-date :end-date}})
+  {:collection #{:entry-title
+                 :dataset-id
+                 :start-date
+                 :end-date
+                 :provider}
+   :granule #{:granule-ur
+              :producer-granule-id
+              :readable-granule-name
+              :start-date
+              :end-date
+              :entry-title
+              :dataset-id
+              :short-name
+              :version
+              :provider
+              :data-size
+              :cloud-cover}})
 
 (defn sort-key-validation
   "Validates the sort-key parameter if present"
@@ -69,7 +85,7 @@
                 (let [[_ field] (re-find #"[\-+]?(.*)" sort-key)
                       valid-params (concept-type->valid-sort-keys concept-type)]
                   (when-not (valid-params (keyword field))
-                    [(msg/invalid-sort-key field concept-type)])))
+                    [(msg/invalid-sort-key (csk/->snake_case_string field ) concept-type)])))
               sort-keys))
     []))
 
@@ -144,6 +160,17 @@
              temporal))
     []))
 
+
+(defn cloud-cover-validation
+  "Validates cloud cover range values are numeric"
+  [concept-type params]
+  (if-let [cloud-cover (:cloud-cover params)]
+    (let [errors (pp/numeric-range-string-validation cloud-cover)]
+      (if-not (empty? errors)
+        errors
+        []))
+    []))
+
 (defn updated-since-validation
   "Validates updated-since parameter conforms to formats in data-time-parser NS"
   [concept-type params]
@@ -184,7 +211,7 @@
   "Validates a numeric parameter in the form parameter=value or
   parameter=min,max, appending the message argument to the error array on failure."
   [param error-message-fn & args]
-  (let [errors (parser/numeric-range-string-validator param)]
+  (let [errors (parser/numeric-range-string-validation param)]
     (if-not (empty? errors)
       (if error-message-fn
         (concat [(apply error-message-fn args)] errors)
@@ -234,8 +261,10 @@
    updated-since-validation
    orbit-number-validation
    equator_crossing_longitude-validation
+   cloud-cover-validation
    attribute-validation
    boolean-value-validation])
+
 
 (defn validate-parameters
   "Validates parameters. Throws exceptions to send to the user. Returns parameters if validation

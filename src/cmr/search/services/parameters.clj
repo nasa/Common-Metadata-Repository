@@ -32,6 +32,7 @@
                 :temporal :temporal
                 :concept-id :string
                 :platform :string
+                :instrument :string
                 :project :string
                 :archive-center :string
                 :two-d-coordinate-system-name :string}
@@ -49,8 +50,10 @@
              :updated-since :updated-since
              :temporal :temporal
              :project :string
+             :cloud-cover :num-range
              :concept-id :string
              :downloadable :boolean}})
+
 
 (defn- param-name->type
   "Returns the query condition type based on the given concept-type and param-name."
@@ -112,6 +115,11 @@
           :value value
           :case-sensitive? (not= "true" (get-in options [param :ignore-case]))
           :pattern? (= "true" (get-in options [param :pattern]))})])))
+
+
+(defmethod parameter->condition :num-range
+  [concept-type param value options]
+  (qm/numeric-range-condition param value))
 
 (defn parse-sort-key
   "Parses the sort key param and returns a sequence of maps with fields and order.
