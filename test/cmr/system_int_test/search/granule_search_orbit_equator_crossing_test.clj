@@ -69,4 +69,8 @@
         (is (d/refs-match? [gran3 gran4] references))))
     (testing "catalog-rest-style-orbit-number max range"
       (let [references (search/find-refs :granule {"equator-crossing-longitude[maxValue]" "95.5"})]
-        (is (d/refs-match? [gran1 gran2 gran5 gran6 gran7 gran8] references))))))
+        (is (d/refs-match? [gran1 gran2 gran5 gran6 gran7 gran8] references))))
+    (testing "non-numeric value in catalog rest style range"
+      (let [{:keys [status errors]} (search/find-refs :granule {"equator-crossing-longitude[maxValue]" "1,X"})]
+        (is (= 422 status))
+        (is (= errors [(on-m/non-numeric-equator-crossing-longitude-parameter)]))))))
