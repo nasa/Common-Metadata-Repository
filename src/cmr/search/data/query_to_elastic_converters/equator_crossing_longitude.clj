@@ -1,8 +1,6 @@
 (ns cmr.search.data.query-to-elastic-converters.equator-crossing-longitude
   "Defines protocols and functions to map from a query model to elastic search query"
-  (:require [clojurewerkz.elastisch.query :as q]
-            [clojure.string :as s]
-            [cmr.search.data.query-to-elastic :as q2e]
+  (:require [cmr.search.data.query-to-elastic :as q2e]
             [cmr.search.models.query :as qm]
             [cmr.common.services.errors :as errors]
             [cmr.search.data.messages :as m]))
@@ -10,7 +8,8 @@
 
 
 (defn- equator-crossing-longitude-condition-both
-  "Creates a grouped condition from an EquatorCrossingLongitudeCondition with both min-value and max.'"
+  "Creates a grouped condition from an EquatorCrossingLongitudeCondition with both min-value and
+  max-value.'"
   [min-value max-value]
   (if (>= max-value min-value)
     (qm/numeric-range :equator-crossing-longitude min-value max-value)
