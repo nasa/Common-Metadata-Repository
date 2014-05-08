@@ -6,6 +6,8 @@
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.granule :as dg]
+            [cmr.common.services.messages :as msg]
+            [cmr.search.validators.messages :as vmsg]
             [cmr.system-int-test.data2.core :as d]))
 
 (use-fixtures :each (ingest/reset-fixture "CMR_PROV1" "CMR_PROV2" "CMR_T_PROV"))
@@ -185,3 +187,66 @@
         (is (= 3 (count refs)))
         (is (= #{"SampleUR1" "SampleUR2" "sampleur3"}
                (set (map :name refs))))))))
+
+(deftest search-by-cloud-cover
+  (let [coll1 (d/ingest "CMR_PROV1" (dc/collection {}))
+        coll2 (d/ingest "CMR_PROV2" (dc/collection {}))
+        gran1 (d/ingest "CMR_PROV1" (dg/granule coll1 {:cloud-cover 0.8}))
+        gran2 (d/ingest "CMR_PROV1" (dg/granule coll1 {:cloud-cover 30.0}))
+        gran3 (d/ingest "CMR_PROV1" (dg/granule coll1 {:cloud-cover 120}))
+        gran4 (d/ingest "CMR_PROV2" (dg/granule coll2 {:cloud-cover -60.0}))
+        gran5 (d/ingest "CMR_PROV2" (dg/granule coll2 {:cloud-cover 0.0}))
+        gran6 (d/ingest "CMR_PROV2" (dg/granule coll2 {:granule-ur "sampleur3"}))]
+    (index/flush-elastic-index)
+    (testing "search granules with lower bound cloud-cover value"
+      (are [cc-search items] (d/refs-match? items (search/find-refs :granule cc-search))
+           {"cloud_cover" "0.2,"} [gran1 gran2 gran3]))
+    (testing "search granules with upper bound cloud-cover value"
+      (are [cc-search items] (d/refs-match? items (search/find-refs :granule cc-search))
+           {"cloud_cover" ",0.7"} [gran4 gran5]))
+    (testing "search by cloud-cover range values that would not cover all granules in store"
+      (are [cc-search items] (d/refs-match? items (search/find-refs :granule cc-search))
+           {"cloud_cover" "-70.0,31.0"} [gran1 gran2 gran4 gran5]))
+    (testing "search by cloud-cover range values that would not cover all granules in store"
+      (are [cc-search items] (d/refs-match? items (search/find-refs :granule cc-search))
+           {"cloud_cover" "-70.0,120.0"} [gran1 gran2 gran3 gran4 gran5]))
+    (testing "search by cloud-cover with min value greater than max value"
+      (let [min-value 30.0
+            max-value 0.0
+            num-range (format "%s,%s" min-value max-value)
+            {:keys [status errors]} (search/find-refs :granule {"cloud_cover" num-range})
+            error (first errors)]
+        (is (= 422 status))
+        (is (= error (vmsg/min-value-greater-than-max  min-value max-value)))))
+    (testing "search by cloud-cover with non numeric str"
+      (let [num-range "c9c,"
+            {:keys [status errors]} (search/find-refs :granule {"cloud_cover" num-range})
+            error (first errors)]
+        (is (= 422 status))
+        (is (= error (msg/invalid-numeric-range-msg num-range)))))
+    (testing "search by cloud-cover with non numeric str"
+      (let [num-range ",99c"
+            {:keys [status errors]} (search/find-refs :granule {"cloud_cover" num-range})
+            error (first errors)]
+        (is (= 422 status))
+        (is (= error (msg/invalid-numeric-range-msg num-range)))))
+    (testing "search by cloud-cover with non numeric str"
+      (let [num-range ","
+            {:keys [status errors]} (search/find-refs :granule {"cloud_cover" num-range})
+            error (first errors)]
+        (is (= 422 status))
+        (is (= error (msg/invalid-numeric-range-msg num-range)))))
+    (testing "search by cloud-cover with non numeric str"
+      (let [num-range ""
+            {:keys [status errors]} (search/find-refs :granule {"cloud_cover" num-range})
+            error (first errors)]
+        (is (= 422 status))
+        (is (= error (msg/invalid-numeric-range-msg num-range)))))
+    (testing "search by cloud-cover with invalid range"
+      (let [num-range "30,c9c"
+            {:keys [status errors]} (search/find-refs :granule {"cloud_cover" num-range})
+            error (first errors)]
+        (is (= 422 status))
+        (is (= error (msg/invalid-numeric-range-msg num-range)))))))
+
+
