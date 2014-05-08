@@ -212,41 +212,35 @@
            {"cloud_cover" "-70.0,120.0"} [gran1 gran2 gran3 gran4 gran5]))
     (testing "search by cloud-cover with min value greater than max value"
       (let [min-value 30.0
-            max-value 0.0
-            num-range (format "%s,%s" min-value max-value)
-            {:keys [status errors]} (search/find-refs :granule {"cloud_cover" num-range})
-            error (first errors)]
-        (is (= 422 status))
-        (is (= error (vmsg/min-value-greater-than-max  min-value max-value)))))
-    (testing "search by cloud-cover with non numeric str"
-      (let [num-range "c9c,"
-            {:keys [status errors]} (search/find-refs :granule {"cloud_cover" num-range})
-            error (first errors)]
-        (is (= 422 status))
-        (is (= error (msg/invalid-numeric-range-msg num-range)))))
-    (testing "search by cloud-cover with non numeric str"
-      (let [num-range ",99c"
-            {:keys [status errors]} (search/find-refs :granule {"cloud_cover" num-range})
-            error (first errors)]
-        (is (= 422 status))
-        (is (= error (msg/invalid-numeric-range-msg num-range)))))
-    (testing "search by cloud-cover with non numeric str"
-      (let [num-range ","
-            {:keys [status errors]} (search/find-refs :granule {"cloud_cover" num-range})
-            error (first errors)]
-        (is (= 422 status))
-        (is (= error (msg/invalid-numeric-range-msg num-range)))))
-    (testing "search by cloud-cover with non numeric str"
-      (let [num-range ""
-            {:keys [status errors]} (search/find-refs :granule {"cloud_cover" num-range})
-            error (first errors)]
-        (is (= 422 status))
-        (is (= error (msg/invalid-numeric-range-msg num-range)))))
+            max-value 0.0]
+        (is (= {:status 422
+                :errors [(vmsg/min-value-greater-than-max min-value max-value)]}
+               (search/find-refs :granule {"cloud_cover" (format "%s,%s" min-value max-value)})))))
+    (testing "search by cloud-cover with non numeric str 'c9c,'"
+      (let [num-range "c9c,"]
+        (is (= {:status 422
+                :errors [(msg/invalid-numeric-range-msg num-range)]}
+               (search/find-refs :granule {"cloud_cover" num-range})))))
+    (testing "search by cloud-cover with non numeric str ',99c'"
+      (let [num-range ",99c"]
+        (is (= {:status 422
+                :errors [(msg/invalid-numeric-range-msg num-range)]}
+               (search/find-refs :granule {"cloud_cover" num-range})))))
+    (testing "search by cloud-cover with non numeric str ','"
+      (let [num-range ","]
+        (is (= {:status 422
+                :errors [(msg/invalid-numeric-range-msg num-range)]}
+               (search/find-refs :granule {"cloud_cover" num-range})))))
+    (testing "search by cloud-cover with empty str"
+      (let [num-range ""]
+        (is (= {:status 422
+                :errors [(msg/invalid-numeric-range-msg num-range)]}
+               (search/find-refs :granule {"cloud_cover" num-range})))))
     (testing "search by cloud-cover with invalid range"
-      (let [num-range "30,c9c"
-            {:keys [status errors]} (search/find-refs :granule {"cloud_cover" num-range})
-            error (first errors)]
-        (is (= 422 status))
-        (is (= error (msg/invalid-numeric-range-msg num-range)))))))
+      (let [num-range "30,c9c"]
+        (is (= {:status 422
+                :errors [(msg/invalid-numeric-range-msg num-range)]}
+               (search/find-refs :granule {"cloud_cover" num-range})))))))
+
 
 
