@@ -91,4 +91,25 @@
   [m]
   (map-keys csk/->kebab-case-keyword m))
 
+;; TODO - remove these comments after review
+;; See: http://rosettacode.org/wiki/Determine_if_a_string_is_numeric#Clojure
+;; Selected this function to avoid usage of try/catch block
+;; Changed function name from numeric? to numeric-val? to avoid confusion with number?
+;; This works with any sequence of characters, not just Strings, e.g.:
+;; (numeric-val? [\1 \2 \3])  ;; yields logical true
+;; (numeric-val? "c9")  ;; yields logical false
+;; (numeric-val? ""), (numeric-val? nil) ;; yields nil
+;; (numeric-val? "12.4e05") ;; yields false
+;; (numeric-val? "-2.02") ;; yeilds true
+(defn numeric-val? [s]
+  "Returns true if supplied value is a number, false if value is alphanumeric and
+  nil for empty string and nil values"
+  (if-let [s (seq s)]
+    (let [s (if (= (first s) \-) (next s) s)
+          s (drop-while #(Character/isDigit %) s)
+          s (if (= (first s) \.) (next s) s)
+          s (drop-while #(Character/isDigit %) s)]
+      (empty? s))))
+
+
 
