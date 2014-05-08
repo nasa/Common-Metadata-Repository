@@ -20,6 +20,7 @@
           {:keys [status errors-str]} (util/submit-create-index-set-req (assoc-in index-set [:index-set :id] "AA"))]
       (is (= 422 status))
       (is (re-find #"id: AA not a positive integer" errors-str)))))
+
 ;; Verify missing index-set name results in 422
 (deftest no-name-index-set-test
   (testing "missing index-set name"

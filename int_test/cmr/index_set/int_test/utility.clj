@@ -96,11 +96,13 @@
 ;;; utility methods
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def elastic-root (format "http://%s:%s" (:host (config/config)) (:port (config/config))))
+(defn elastic-root
+  []
+  (format "http://%s:%s" (:host (config/config)) (:port (config/config))))
 
 (defn flush-elastic
   []
-  (client/post (str elastic-root "/_flush")))
+  (client/post (str (elastic-root) "/_flush")))
 
 (defn submit-create-index-set-req
   "submit a request to index-set app to create indices"
@@ -159,6 +161,7 @@
 (defn reset
   "test deletion of indices and index-sets"
   []
+  (flush-elastic)
   (let [result (client/request
                  {:method :post
                   :url (format "%s/%s" index-set-root-url "reset")
@@ -180,7 +183,7 @@
 
 (defn reset-fixture [f]
   (reset)
-  (reset! elastic-connection (esr/connect elastic-root))
+  (reset! elastic-connection (esr/connect (elastic-root)))
   (f)
   (reset))
 
