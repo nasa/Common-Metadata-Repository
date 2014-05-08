@@ -42,6 +42,10 @@
      :granule-ur.lowercase (s/lower-case granule-ur)
      :producer-gran-id producer-gran-id
      :producer-gran-id.lowercase (when producer-gran-id (s/lower-case producer-gran-id))
+
+     ;; Provides sorting on a combination of producer granule id and granule ur
+     :readable-granule-name-sort (s/lower-case (or producer-gran-id granule-ur))
+
      :project-refs project-refs
      :project-refs.lowercase (map s/lower-case project-refs)
      :orbit-calculated-spatial-domains (ocsd/ocsds->elastic-docs umm-granule)

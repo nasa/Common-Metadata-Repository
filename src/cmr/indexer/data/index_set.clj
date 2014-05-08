@@ -108,33 +108,43 @@
                               :number_of_replicas 1,
                               :refresh_interval "1s"}})
 
-(def granule-mapping {:granule
-                      {:dynamic "strict",
-                       :_source { "enabled" false},
-                       :_all {"enabled" false},
-                       :_id  {:path "concept-id"},
-                       :properties {:concept-id            (stored string-field-mapping)
-                                    :collection-concept-id (stored string-field-mapping)
+(def granule-mapping
+  {:granule
+   {:dynamic "strict",
+    :_source { "enabled" false},
+    :_all {"enabled" false},
+    :_id  {:path "concept-id"},
+    :properties {:concept-id            (stored string-field-mapping)
+                 :collection-concept-id (stored string-field-mapping)
 
-                                    ;; Collection fields added strictly for sorting granule results
-                                    :entry-title.lowercase string-field-mapping
-                                    :short-name.lowercase  string-field-mapping
-                                    :version-id.lowercase  string-field-mapping
+                 ;; Collection fields added strictly for sorting granule results
+                 :entry-title.lowercase string-field-mapping
+                 :short-name.lowercase  string-field-mapping
+                 :version-id.lowercase  string-field-mapping
 
-                                    :provider-id           (stored string-field-mapping)
-                                    :provider-id.lowercase string-field-mapping
-                                    :granule-ur            (stored string-field-mapping)
-                                    :granule-ur.lowercase  string-field-mapping
-                                    :producer-gran-id string-field-mapping
-                                    :producer-gran-id.lowercase string-field-mapping
-                                    :start-date date-field-mapping
-                                    :end-date date-field-mapping
-                                    :orbit-calculated-spatial-domains orbit-calculated-spatial-domain-mapping
-                                    :project-refs string-field-mapping
-                                    :project-refs.lowercase string-field-mapping
-                                    :revision-date         date-field-mapping
-                                    :downloadable bool-field-mapping
-                                    :attributes attributes-field-mapping}}})
+                 :provider-id           (stored string-field-mapping)
+                 :provider-id.lowercase string-field-mapping
+
+                 :granule-ur            (stored string-field-mapping)
+                 :granule-ur.lowercase  string-field-mapping
+                 :producer-gran-id string-field-mapping
+                 :producer-gran-id.lowercase string-field-mapping
+
+                 ;; We need to sort by a combination of producer granule and granule ur
+                 ;; It should use producer granule id if present otherwise the granule ur is used
+                 ;; The producer granule id will be put in this field if present otherwise it
+                 ;; will default to granule-ur. This avoids the solution Catalog REST uses which is
+                 ;; to use a sort script which is (most likely) much slower.
+                 :readable-granule-name-sort string-field-mapping
+
+                 :start-date date-field-mapping
+                 :end-date date-field-mapping
+                 :orbit-calculated-spatial-domains orbit-calculated-spatial-domain-mapping
+                 :project-refs string-field-mapping
+                 :project-refs.lowercase string-field-mapping
+                 :revision-date         date-field-mapping
+                 :downloadable bool-field-mapping
+                 :attributes attributes-field-mapping}}})
 
 (def index-set
   {:index-set {:name "cmr-base-index-set"
