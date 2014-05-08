@@ -32,6 +32,7 @@
                 :temporal :temporal
                 :concept-id :string
                 :platform :string
+                :instrument :string
                 :project :string
                 :archive-center :string
                 :two-d-coordinate-system-name :string}
