@@ -229,7 +229,7 @@
       (validate-numeric-range-map orbit-number-param on-msg/invalid-orbit-number-msg))
     []))
 
-(defn equator_crossing_longitude-validation
+(defn equator-crossing-longitude-validation
   "Validates that the equator_crossing_longitude parameter is a valid range string."
   [concept-type params]
   (if-let [equator_crossing_longitude (:equator-crossing-longitude params)]
@@ -261,7 +261,7 @@
    temporal-format-validation
    updated-since-validation
    orbit-number-validation
-   equator_crossing_longitude-validation
+   equator-crossing-longitude-validation
    cloud-cover-validation
    attribute-validation
    boolean-value-validation])
