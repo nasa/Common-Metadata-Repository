@@ -15,8 +15,8 @@
 
 (deftest invalid-sort-key-test
   (is (= {:status 422
-          :errors [(msg/invalid-sort-key "foo" :granule)]}
-         (search/find-refs :granule {:sort-key "foo"}))))
+          :errors [(msg/invalid-sort-key "foo_bar" :granule)]}
+         (search/find-refs :granule {:sort-key "foo_bar"}))))
 
 (deftest granule-identifier-sorting-test
   (let [coll (d/ingest "PROV1" (dc/collection {}))
@@ -41,6 +41,23 @@
 
          "readable_granule_name" [g1 g5 g4 g3 g2]
          "-readable_granule_name" (reverse [g1 g5 g4 g3 g2]))))
+
+(deftest granule-size-sorting-test
+  (let [coll (d/ingest "PROV1" (dc/collection {}))
+        make-gran (fn [size]
+                    (d/ingest "PROV1" (dg/granule coll {:size size})))
+        g1 (make-gran 20)
+        g2 (make-gran 30)
+        g3 (make-gran 10)
+        g4 (make-gran nil)
+        g5 (make-gran 25)]
+    (index/flush-elastic-index)
+    (are [sort-key items]
+         (d/refs-match-order? items
+                              (search/find-refs :granule {:page-size 20
+                                                          :sort-key sort-key}))
+         "data_size" [g3 g1 g5 g2 g4]
+         "-data_size" [g2 g5 g1 g3 g4])))
 
 
 (deftest coll-identifier-sorting-test

@@ -25,9 +25,10 @@
 (defn data-granule
   "Returns a data-granule with the given attributes"
   [attribs]
-  (let [{:keys [producer-gran-id]} attribs]
-    (when producer-gran-id
-      (g/map->DataGranule {:producer-gran-id producer-gran-id}))))
+  (let [{:keys [producer-gran-id size]} attribs]
+    (when (or size producer-gran-id)
+      (g/map->DataGranule {:producer-gran-id producer-gran-id
+                           :size size}))))
 
 (defn related-url
   "Creates related url for online_only test"
