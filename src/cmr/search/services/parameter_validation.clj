@@ -11,6 +11,7 @@
             [cmr.search.services.parameter-converters.orbit-number :as on]
             [cmr.search.services.messages.orbit-number-messages :as on-msg]
             [cmr.search.services.messages.common-messages :as msg]
+            [cmr.common.util :as cutil]
             [camel-snake-kebab :as csk])
   (:import clojure.lang.ExceptionInfo))
 
@@ -139,19 +140,24 @@
              temporal))
     []))
 
+
 (defn cloud-cover-validation
   "Validates cloud cover values are numeric and min value less than equal to max value"
   [concept-type params]
   (if-let [cloud-cover (:cloud-cover params)]
     (let [[^java.lang.String min-value ^java.lang.String max-value] (s/split cloud-cover #",")]
       (cond
-        (and min-value (> 0 (count min-value)) (not (number? (read-string min-value))))
+        (false? (cutil/numeric-val? min-value))
         ["cloud_cover min value must be a number"]
-        (and max-value (> 0 (count max-value)) (not (number? (read-string max-value))))
+        (false? (cutil/numeric-val? max-value))
         ["cloud_cover max value must be a number"]
-        (and min-value max-value (> 0 (count min-value)) (> 0 (count max-value))
+        (and (true? (cutil/numeric-val? min-value))
+             (true? (cutil/numeric-val? max-value))
              (> (read-string min-value) (read-string max-value)))
         ["cloud_cover max value must greater than cloud_cover min value"]
+        (and (nil? (cutil/numeric-val? min-value))
+             (nil? (cutil/numeric-val? max-value)))
+        ["missing cloud_cover values - need to supply [min | max | min and max] value(s)"]
         :else
         []))
     []))

@@ -105,13 +105,7 @@
 
 (defmethod parameter->condition :num-range
   [concept-type param value options]
-  (if (sequential? value)
-    (if (= "true" (get-in options [:temporal :and]))
-      (qm/and-conds
-        (map #(parameter->condition concept-type param % options) value))
-      (qm/or-conds
-        (map #(parameter->condition concept-type param % options) value)))
-    (qm/numeric-range-condition param value)))
+  (qm/numeric-range-condition param value))
 
 (defn parse-sort-key
   "Parses the sort key param and returns a sequence of maps with fields and order.

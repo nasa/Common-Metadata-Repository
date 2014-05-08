@@ -1,6 +1,7 @@
 (ns cmr.search.models.query
   "Defines various query models and conditions."
   (:require [cmr.common.services.errors :as errors]
+            [cmr.common.util :as cutil]
             [clojure.string :as s]))
 
 (def default-page-size 10)
@@ -231,14 +232,6 @@
   "Creates a numeric range condition."
   [field value]
   (let [[^java.lang.String min-value ^java.lang.String max-value] (s/split value #",")
-        min-value (if (and min-value (< 0 (count min-value)) (number? (read-string min-value)))
-                    (Double. min-value)
-                    nil)
-        max-value (if (and max-value (< 0 (count max-value)) (number? (read-string max-value)))
-                    (Double. max-value)
-                    nil)]
+        min-value (if (cutil/numeric-val? min-value) (Double. min-value) nil)
+        max-value (if (cutil/numeric-val? max-value) (Double. max-value) nil)]
     (->NumericRangeCondition field min-value max-value)))
-
-
-
-
