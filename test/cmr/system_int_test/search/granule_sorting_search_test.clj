@@ -18,6 +18,31 @@
           :errors [(msg/invalid-sort-key "foo" :granule)]}
          (search/find-refs :granule {:sort-key "foo"}))))
 
+(deftest granule-identifier-sorting-test
+  (let [coll (d/ingest "PROV1" (dc/collection {}))
+        make-gran (fn [granule-ur producer-gran-id]
+                    (d/ingest "PROV1" (dg/granule coll {:granule-ur granule-ur
+                                                        :producer-gran-id producer-gran-id})))
+        g1 (make-gran "gur10" nil)
+        g2 (make-gran "gur20" "pg50")
+        g3 (make-gran "gur30" "pg40")
+        g4 (make-gran "gur40" "pg30")
+        g5 (make-gran "gur50" nil)]
+    (index/flush-elastic-index)
+    (are [sort-key items]
+         (d/refs-match-order? items
+                              (search/find-refs :granule {:page-size 20
+                                                          :sort-key sort-key}))
+         "granule_ur" [g1 g2 g3 g4 g5]
+         "-granule_ur" (reverse [g1 g2 g3 g4 g5])
+
+         "producer_granule_id" [g4 g3 g2 g1 g5]
+         "-producer_granule_id" [g2 g3 g4 g1 g5]
+
+         "readable_granule_name" [g1 g5 g4 g3 g2]
+         "-readable_granule_name" (reverse [g1 g5 g4 g3 g2]))))
+
+
 (deftest coll-identifier-sorting-test
   (let [make-gran (fn [provider entry-title short-name version]
                     (let [coll (d/ingest provider
