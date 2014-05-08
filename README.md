@@ -168,8 +168,12 @@ Granule results are sorted by ascending provider and start date by default. One 
 
   * entry_title
   * dataset_id - alias for entry_title
+  * data_size
   * end_date
+  * granule_ur
+  * producer_granule_id
   * provider
+  * readable_granule_name - this sorts on a combination of producer_granule_id and granule_ur. If a producer_granule_id is present, that value is used. Otherwise, the granule_ur is used.
   * short_name
   * start_date
   * version
@@ -180,14 +184,10 @@ Not yet implemented
   * browse_only
   * campaign
   * cloud_cover
-  * data_size
   * day_night_flag
-  * granule_ur
   * instrument
   * online_only
   * platform
-  * producer_granule_id
-  * readable_granule_name - this sorts on a combination of producer_granule_id and granule_ur. If a producer_granule_id is present, that value is used. Otherwise, the granule_ur is used.
   * sensor
 
 Example of sorting by start_date in descending order: (Most recent data first)

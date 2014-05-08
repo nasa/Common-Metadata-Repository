@@ -52,7 +52,8 @@
              :version :version-id.lowercase
              :granule-ur :granule-ur.lowercase
              :producer-granule-id :producer-gran-id.lowercase
-             :readable-granule-name :readable-granule-name-sort}})
+             :readable-granule-name :readable-granule-name-sort
+             :data-size :size}})
 
 (defn query->sort-params
   "Converts a query into the elastic parameters for sorting results"

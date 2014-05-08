@@ -72,7 +72,8 @@
               :dataset-id
               :short-name
               :version
-              :provider}})
+              :provider
+              :data-size}})
 
 (defn sort-key-validation
   "Validates the sort-key parameter if present"
