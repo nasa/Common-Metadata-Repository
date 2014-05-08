@@ -73,7 +73,8 @@
               :short-name
               :version
               :provider
-              :data-size}})
+              :data-size
+              :cloud-cover}})
 
 (defn sort-key-validation
   "Validates the sort-key parameter if present"
