@@ -15,7 +15,7 @@
 (defn create-provider
   "Create the provider with the given provider id"
   [provider-id]
-  (client/post url/create-provider-url
+  (client/post (url/create-provider-url)
                {:body (format "{\"provider-id\": \"%s\"}" provider-id)
                 :content-type :json}))
 
