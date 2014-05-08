@@ -174,8 +174,9 @@
   {:collection [{:field :entry-title
                  :order :asc}]
 
-   ;; TODO update granule later. It's actually default to provider-id and start-date
    :granule [{:field :provider-id
+              :order :asc}
+             {:field :start-date
               :order :asc}]})
 
 (defn query

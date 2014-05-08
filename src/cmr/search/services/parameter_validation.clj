@@ -58,8 +58,7 @@
 (def concept-type->valid-sort-keys
   "A map of concept type to sets of valid sort keys"
   {:collection #{:entry-title :dataset-id :start-date :end-date}
-   ;; TODO add more for granules
-   :granule #{}})
+   :granule #{:start-date :end-date}})
 
 (defn sort-key-validation
   "Validates the sort-key parameter if present"
