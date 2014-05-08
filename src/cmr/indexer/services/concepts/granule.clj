@@ -24,7 +24,7 @@
   (let [{:keys [concept-id extra-fields provider-id revision-date]} concept
         {:keys [parent-collection-id]} extra-fields
         parent-collection (get-parent-collection context parent-collection-id)
-        {:keys [granule-ur data-granule temporal project-refs related-urls]} umm-granule
+        {:keys [granule-ur data-granule temporal project-refs related-urls cloud-cover]} umm-granule
         {:keys [size producer-gran-id]} data-granule
         start-date (temporal/start-date :granule temporal)
         end-date (temporal/end-date :granule temporal)
@@ -49,6 +49,7 @@
      :project-refs project-refs
      :project-refs.lowercase (map s/lower-case project-refs)
      :size size
+     :cloud-cover cloud-cover
      :orbit-calculated-spatial-domains (ocsd/ocsds->elastic-docs umm-granule)
      :attributes (attrib/psa-refs->elastic-docs parent-collection umm-granule)
      :revision-date revision-date

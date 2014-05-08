@@ -140,6 +140,7 @@
                  :start-date date-field-mapping
                  :end-date date-field-mapping
                  :size float-field-mapping
+                 :cloud-cover float-field-mapping
                  :orbit-calculated-spatial-domains orbit-calculated-spatial-domain-mapping
                  :project-refs string-field-mapping
                  :project-refs.lowercase string-field-mapping
