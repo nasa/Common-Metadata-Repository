@@ -43,10 +43,12 @@
 (def sort-key-field->elastic-field
   "Submaps by concept type of the sort key fields given by the user to the exact elastic sort field to use.
   If a sort key is not in this map it means that it can be used directly with elastic."
-  {:collection {:entry-title "entry-title.lowercase"}
-   :granule {:provider-id "provider-id.lowercase"
-             :entry-title "entry-title.lowercase"
-             :short-name "short-name.lowercase"}})
+  {:collection {:entry-title :entry-title.lowercase
+                :provider :provider-id.lowercase}
+   :granule {:provider :provider-id.lowercase
+             :entry-title :entry-title.lowercase
+             :short-name :short-name.lowercase
+             :version :version-id.lowercase}})
 
 (defn query->sort-params
   "Converts a query into the elastic parameters for sorting results"

@@ -90,6 +90,7 @@ Collection results are sorted by ascending entry title by default. One or more s
   * platform
   * instrument
   * sensor
+  * provider
 
 Example of sorting by start_date in descending order: (Most recent data first)
 
@@ -168,8 +169,10 @@ Granule results are sorted by ascending provider and start date by default. One 
   * entry_title
   * dataset_id - alias for entry_title
   * end_date
+  * provider
   * short_name
   * start_date
+  * version
 
 ##### Future Granule Sort Keys
 Not yet implemented
@@ -186,7 +189,6 @@ Not yet implemented
   * producer_granule_id
   * readable_granule_name - this sorts on a combination of producer_granule_id and granule_ur. If a producer_granule_id is present, that value is used. Otherwise, the granule_ur is used.
   * sensor
-  * version
 
 Example of sorting by start_date in descending order: (Most recent data first)
 
