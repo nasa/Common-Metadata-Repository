@@ -6,6 +6,7 @@
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.granule :as dg]
+            [cmr.common.services.messages :as msg]
             [cmr.system-int-test.data2.core :as d]))
 
 (use-fixtures :each (ingest/reset-fixture "CMR_PROV1" "CMR_PROV2" "CMR_T_PROV"))
@@ -209,28 +210,39 @@
       (are [cc-search items] (d/refs-match? items (search/find-refs :granule cc-search))
            {"cloud_cover" "-70.0,120.0"} [gran1 gran2 gran3 gran4 gran5]))
     (testing "search by cloud-cover with min value greater than max value"
-      (let [{:keys [status errors]} (search/find-refs :granule {"cloud_cover" "30,0"})
+      (let [num-range "30,0"
+            {:keys [status errors]} (search/find-refs :granule {"cloud_cover" num-range})
             err (first errors)]
         (is (= 422 status))
-        (is (re-find #"cloud_cover max value must greater than cloud_cover min value" err))))
+        (msg/invalid-numeric-range-msg num-range)))
     (testing "search by cloud-cover with non numeric str"
-      (let [{:keys [status errors]} (search/find-refs :granule {"cloud_cover" "c9c,"})
+      (let [num-range "c9c,"
+            {:keys [status errors]} (search/find-refs :granule {"cloud_cover" num-range})
             err (first errors)]
         (is (= 422 status))
-        (is (re-find #"cloud_cover min value must be a number" err))))
+        (msg/invalid-numeric-range-msg num-range)))
     (testing "search by cloud-cover with non numeric str"
-      (let [{:keys [status errors]} (search/find-refs :granule {"cloud_cover" ","})
+      (let [num-range ",99c"
+            {:keys [status errors]} (search/find-refs :granule {"cloud_cover" num-range})
             err (first errors)]
         (is (= 422 status))
-        (is (re-find #"missing cloud_cover values" err))))
+        (msg/invalid-numeric-range-msg num-range)))
     (testing "search by cloud-cover with non numeric str"
-      (let [{:keys [status errors]} (search/find-refs :granule {"cloud_cover" ""})
+      (let [num-range ","
+            {:keys [status errors]} (search/find-refs :granule {"cloud_cover" num-range})
             err (first errors)]
         (is (= 422 status))
-        (is (re-find #"missing cloud_cover values" err))))
+        (msg/invalid-numeric-range-msg num-range)))
+    (testing "search by cloud-cover with non numeric str"
+      (let [num-range ""
+            {:keys [status errors]} (search/find-refs :granule {"cloud_cover" num-range})
+            err (first errors)]
+        (is (= 422 status))
+        (msg/invalid-numeric-range-msg num-range)))
     (testing "search by cloud-cover with invalid range"
-      (let [{:keys [status errors]} (search/find-refs :granule {"cloud_cover" "30,c9c"})
+      (let [num-range "30,c9c"
+            {:keys [status errors]} (search/find-refs :granule {"cloud_cover" num-range})
             err (first errors)]
         (is (= 422 status))
-        (is (re-find #"cloud_cover max value must be a number" err))))))
+        (msg/invalid-numeric-range-msg num-range)))))
 
