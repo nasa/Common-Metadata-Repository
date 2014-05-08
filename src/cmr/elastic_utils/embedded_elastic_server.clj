@@ -15,12 +15,12 @@
 
 (defn- create-settings
   "Creates an Elastic Search Immutable Settings"
-  [{:keys [http-port transport-port]}]
+  [{:keys [http-port transport-port data-dir]}]
   (.. (ImmutableSettings/settingsBuilder)
       (put "node.name" "embedded-elastic")
+      (put "path.data" data-dir)
       (put "http.port" (str http-port))
       (put "transport.tcp.port" (str transport-port))
-
       (put "index.store.type" "memory")
       build))
 
@@ -46,6 +46,7 @@
   [
    http-port
    transport-port
+   data-dir
    node
   ]
 
@@ -65,9 +66,9 @@
 
 (defn create-server
   ([]
-   (create-server 9200 9300))
-  ([http-port transport-port]
-   (->ElasticServer http-port transport-port nil)))
+   (create-server 9200 9300 "data"))
+  ([http-port transport-port data-dir]
+   (->ElasticServer http-port transport-port data-dir nil)))
 
 
 (comment

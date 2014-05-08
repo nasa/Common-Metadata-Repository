@@ -25,7 +25,7 @@
 
 (defn start-and-connect
   []
-  (let [server (l/start (s/create-server http-port transport-port) nil)]
+  (let [server (l/start (s/create-server http-port transport-port "es_data/elastic_utils") nil)]
     {:conn (connect-to-server server)
      :server server}))
 
@@ -45,7 +45,7 @@
 
 (deftest test-embedded-server
   (testing "connect to server"
-    (let [s (s/create-server http-port transport-port)
+    (let [s (s/create-server http-port transport-port "es_data/elastic_utils")
           s (l/start s nil)]
       (try
         (connect-to-server s)
