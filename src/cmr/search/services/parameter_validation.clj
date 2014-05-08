@@ -11,6 +11,7 @@
             [cmr.search.services.parameter-converters.orbit-number :as on]
             [cmr.search.services.messages.orbit-number-messages :as on-msg]
             [cmr.search.services.messages.common-messages :as msg]
+            [cmr.common.parameter-parser :as pp]
             [camel-snake-kebab :as csk])
   (:import clojure.lang.ExceptionInfo))
 
@@ -157,6 +158,17 @@
              temporal))
     []))
 
+
+(defn cloud-cover-validation
+  "Validates cloud cover range values are numeric"
+  [concept-type params]
+  (if-let [cloud-cover (:cloud-cover params)]
+    (let [errors (pp/numeric-range-string-validation cloud-cover)]
+      (if-not (empty? errors)
+        errors
+        []))
+    []))
+
 (defn updated-since-validation
   "Validates updated-since parameter conforms to formats in data-time-parser NS"
   [concept-type params]
@@ -196,7 +208,7 @@
   "Validates an oribt-number parameter in the form orbit_number=value or
   orbit_number=min,max."
   [orbit-number-param]
-  (let [errors (parser/numeric-range-string-validator orbit-number-param)]
+  (let [errors (parser/numeric-range-string-validation orbit-number-param)]
     (if-not (empty? errors)
       (concat [(on-msg/invalid-orbit-number-msg)] errors)
       [])))
@@ -234,8 +246,10 @@
    temporal-format-validation
    updated-since-validation
    orbit-number-validation
+   cloud-cover-validation
    attribute-validation
    boolean-value-validation])
+
 
 (defn validate-parameters
   "Validates parameters. Throws exceptions to send to the user. Returns parameters if validation
