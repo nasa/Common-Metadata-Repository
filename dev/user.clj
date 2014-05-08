@@ -4,7 +4,8 @@
             [cmr.dev-system.system :as system]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.dev.util :as d]
-            [cmr.system-int-test.data2.core :as data])
+            [cmr.system-int-test.data2.core :as data]
+            [cmr.common.config :as config])
   (:use [clojure.test :only [run-all-tests]]
         [clojure.repl]
         [alex-and-georges.debug-repl]))
@@ -15,9 +16,10 @@
 (defn start
   "Starts the current development system."
   []
+  (config/reset-config-values)
   (data/reset-uniques)
 
-  (let [s (system/create-system :external-dbs #_:in-memory)]
+  (let [s (system/create-system #_:external-dbs :in-memory)]
     (alter-var-root #'system
                     (constantly
                       (system/start s))))
