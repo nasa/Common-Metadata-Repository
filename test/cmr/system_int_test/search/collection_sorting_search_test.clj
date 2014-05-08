@@ -22,8 +22,8 @@
 
 (deftest invalid-sort-key-test
   (is (= {:status 422
-          :errors [(msg/invalid-sort-key "foo" :collection)]}
-         (search/find-refs :collection {:sort-key "foo"}))))
+          :errors [(msg/invalid-sort-key "foo_bar" :collection)]}
+         (search/find-refs :collection {:sort-key "foo_bar"}))))
 
 (deftest sorting-test
   (let [c1 (make-coll "PROV1" "et99" 10 20)

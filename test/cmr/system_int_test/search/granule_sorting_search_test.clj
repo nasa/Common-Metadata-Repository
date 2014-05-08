@@ -13,12 +13,45 @@
 
 (use-fixtures :each (ingest/reset-fixture "PROV1" "PROV2"))
 
+;; TODO add provider as a sortable key and document in the readme
+
 (deftest invalid-sort-key-test
   (is (= {:status 422
           :errors [(msg/invalid-sort-key "foo" :granule)]}
          (search/find-refs :granule {:sort-key "foo"}))))
 
-(deftest sorting-test
+;; TODO add version to this
+
+(deftest coll-identifier-sorting-test
+  (let [make-gran (fn [provider entry-title short-name version]
+                    (let [coll (d/ingest provider
+                                         (dc/collection {:entry-title entry-title
+                                                         :short-name short-name
+                                                         :version-id version}))]
+                      (d/ingest provider (dg/granule coll {}))))
+        g1 (make-gran "PROV1" "et10" "SN45" "v10")
+        g2 (make-gran "PROV1" "et20" "sn35" "v20")
+        g3 (make-gran "PROV1" "et30" "sn25" "v30")
+        g4 (make-gran "PROV1" "et40" "sn15" "v40")
+        g5 (make-gran "PROV2" "et15" "sn40" "v15")
+        g6 (make-gran "PROV2" "et25" "sn30" "v25")
+        g7 (make-gran "PROV2" "et35" "sn20" "v35")
+        g8 (make-gran "PROV2" "ET45" "sn10" "v45")]
+    (index/flush-elastic-index)
+
+    (are [sort-key items]
+         (d/refs-match-order? items
+                              (search/find-refs :granule {:page-size 20
+                                                          :sort-key sort-key}))
+         "entry_title" [g1 g5 g2 g6 g3 g7 g4 g8]
+         "-entry_title" (reverse [g1 g5 g2 g6 g3 g7 g4 g8])
+         "dataset_id" [g1 g5 g2 g6 g3 g7 g4 g8]
+         "-dataset_id" (reverse [g1 g5 g2 g6 g3 g7 g4 g8])
+         "short_name" [g8 g4 g7 g3 g6 g2 g5 g1]
+         "-short_name" (reverse [g8 g4 g7 g3 g6 g2 g5 g1]))))
+
+
+(deftest temporal-sorting-test
   (let [make-coll (fn [provider begin end]
                     (d/ingest provider
                               (dc/collection {:beginning-date-time (d/make-datetime begin)
