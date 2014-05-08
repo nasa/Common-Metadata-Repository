@@ -23,6 +23,9 @@
 
    ;; maps to Granule/DataGranule/ProductionDateTime
    production-date-time
+
+   ;; maps to Granule/DataGranule/SizeMBDataGranule
+   size
    ])
 
 (defrecord GranuleTemporal

@@ -32,11 +32,17 @@
   "Generates the DataGranule element of an ECHO10 XML from a UMM Granule data-granule entry."
   [data-granule]
   (when data-granule
-    (x/element :DataGranule {}
-               (when-let [producer-gran-id (:producer-gran-id data-granule)]
-                 (x/element :ProducerGranuleId {} producer-gran-id))
-               (x/element :DayNightFlag {} (:day-night data-granule))
-               (x/element :ProductionDateTime {} (str (:production-date-time data-granule))))))
+    (let [{:keys [producer-gran-id
+                  day-night
+                  production-date-time
+                  size]} data-granule]
+      (x/element :DataGranule {}
+                 (when size
+                   (x/element :SizeMBDataGranule {} size))
+                 (when producer-gran-id
+                   (x/element :ProducerGranuleId {} producer-gran-id))
+                 (x/element :DayNightFlag {} day-night)
+                 (x/element :ProductionDateTime {} (str production-date-time))))))
 
 (defn- xml-elem->CollectionRef
   "Returns a UMM ref element from a parsed Granule XML structure"
@@ -48,13 +54,16 @@
       (g/collection-ref short-name version-id))))
 
 (defn- xml-elem->DataGranule
-  "Returns a UMM data-granaule element from a parsed Granule XML structure"
+  "Returns a UMM data-granule element from a parsed Granule XML structure"
   [granule-content-node]
-  (let [producer-gran-id (cx/string-at-path granule-content-node [:DataGranule :ProducerGranuleId])
-        day-night (cx/string-at-path granule-content-node [:DataGranule :DayNightFlag])
-        production-date-time (cx/datetime-at-path granule-content-node [:DataGranule :ProductionDateTime])]
-    (when (or producer-gran-id day-night production-date-time)
-      (g/map->DataGranule {:producer-gran-id producer-gran-id
+  (let [data-gran-node (cx/element-at-path granule-content-node [:DataGranule])
+        size (cx/double-at-path data-gran-node [:SizeMBDataGranule])
+        producer-gran-id (cx/string-at-path data-gran-node [:ProducerGranuleId])
+        day-night (cx/string-at-path data-gran-node [:DayNightFlag])
+        production-date-time (cx/datetime-at-path data-gran-node [:ProductionDateTime])]
+    (when (or size producer-gran-id day-night production-date-time)
+      (g/map->DataGranule {:size size
+                           :producer-gran-id producer-gran-id
                            :day-night day-night
                            :production-date-time production-date-time}))))
 
