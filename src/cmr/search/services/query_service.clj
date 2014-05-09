@@ -21,6 +21,7 @@
             [cmr.search.services.parameter-converters.temporal]
             [cmr.search.services.parameter-converters.attribute]
             [cmr.search.services.parameter-converters.orbit-number]
+            [cmr.search.services.parameter-converters.equator-crossing-longitude]
 
             ;; Validation
             [cmr.search.validators.validation :as v]
