@@ -66,7 +66,7 @@ One dif\_entry\_id (alias for entry id)
 
     curl "http://localhost:3003/collections?dif_entry_id\[\]=SHORT_V5"
 
-#### Find collections by archive center
+#### Find collections by archive center, supports pattern and ignore_case
 
   Find collections matching 'archive_center' param value
     curl "http://localhost:3003/collections?archive_center\[\]=LARC"
@@ -76,22 +76,13 @@ One dif\_entry\_id (alias for entry id)
 
      curl "http://localhost:3003/collections?archive_center\[\]=Larc&archive_center\[\]=SEDAC"
 
-  Find collections matching 'archive_center' param value pattern
-
-     curl "http://localhost:3003/collections?archive_center\[\]=S*&options\[archive_center\]\[pattern\]=true"
-
-  Find collections matching 'archive_center' param value ignoring case
-
-     curl "http://localhost:3003/collections?archive_center\[\]=sedac+AC&options\[archive_center\]\[ignore-case\]=true"
-
-
 #### Find collections with multiple temporal
 
 The temporal datetime has to be in yyyy-MM-ddTHH:mm:ssZ format.
 
     curl "http://localhost:3003/collections?temporal\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z,30,60&temporal\[\]=2000-01-01T10:00:00Z,,30&temporal\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z"
 
-### Find collections by campaign param. Note: 'campaign' maps to 'project' in UMM
+### Find collections by campaign param, supports pattern, ignore_case and option :and. Note: 'campaign' maps to 'project' in UMM
 
   Find collections matching 'campaign' param value
 
@@ -105,21 +96,13 @@ The temporal datetime has to be in yyyy-MM-ddTHH:mm:ssZ format.
 
      curl "http://localhost:3003/collections?campaign\[\]=ESI&campaign\[\]=EVI&campaign\[\]=EPI&options\[campaign\]\[and\]=true"
 
-  Find collections matching 'campaign' param value pattern
-
-     curl "http://localhost:3003/collections?campaign\[\]=E*&options\[campaign\]\[pattern\]=true"
-
-  Find collections matching 'campaign' param value ignoring case
-
-     curl "http://localhost:3003/collections?campaign\[\]=EpI&options\[campaign\]\[ignore-case\]=true"
-
 ### Find collections by updated_since param
 
   Find collections which have revision date starting at or after 'updated_since' param value
 
      curl "http://localhost:3003/collections?updated_since=2014-05-08T20:06:38.331Z"
 
-### Find collections by processing_level_id param
+### Find collections by processing_level_id param, supports pattern and ignore_case
 
   Find collections matching 'processing_level_id' param value
 
@@ -129,15 +112,7 @@ The temporal datetime has to be in yyyy-MM-ddTHH:mm:ssZ format.
 
      curl "http://localhost:3003/collections?processing_level_id\[\]=1B&processing_level_id\[\]=2B"
 
-  Find collections matching 'processing_level_id' param value pattern
-
-     curl "http://localhost:3003/collections?processing_level_id\[\]=*B&options\[processing_level_id\]\[pattern\]=true"
-
-  Find collections matching 'processing_level_id' param value ignoring case
-
-     curl "http://localhost:3003/collections?processing_level_id\[\]=1b&options\[processing_level_id\]\[ignore-case\]=true"
-
-### Find collections by platform param
+### Find collections by platform param, supports pattern, ignore_case and option :and
 
   Find collections matching 'platform' param value
 
@@ -147,15 +122,7 @@ The temporal datetime has to be in yyyy-MM-ddTHH:mm:ssZ format.
 
      curl "http://localhost:3003/collections?platform\[\]=1B&platform\[\]=2B"
 
-  Find collections matching 'platform' param value pattern
-
-     curl "http://localhost:3003/collections?platform\[\]=*B&options\[platform\]\[pattern\]=true"
-
-  Find collections matching 'platform' param value ignoring case
-
-     curl "http://localhost:3003/collections?platform\[\]=1b&options\[platform\]\[ignore-case\]=true"
-
-### Find collections by instrument param
+### Find collections by instrument param, supports pattern, ignore_case and option :and
 
   Find collections matching 'instrument' param value
 
@@ -165,15 +132,7 @@ The temporal datetime has to be in yyyy-MM-ddTHH:mm:ssZ format.
 
      curl "http://localhost:3003/collections?instrument\[\]=1B&instrument\[\]=2B"
 
-  Find collections matching 'instrument' param value pattern
-
-     curl "http://localhost:3003/collections?instrument\[\]=*B&options\[instrument\]\[pattern\]=true"
-
-  Find collections matching 'instrument' param value ignoring case
-
-     curl "http://localhost:3003/collections?instrument\[\]=1b&options\[instrument\]\[ignore-case\]=true"
-
-### Find collections by sensor param
+### Find collections by sensor param, supports pattern, ignore_case and option :and
 
   Find collections matching 'sensor' param value
 
@@ -182,14 +141,6 @@ The temporal datetime has to be in yyyy-MM-ddTHH:mm:ssZ format.
   Find collections matching any of the 'sensor' param values
 
      curl "http://localhost:3003/collections?sensor\[\]=1B&sensor\[\]=2B"
-
-  Find collections matching 'sensor' param value pattern
-
-     curl "http://localhost:3003/collections?sensor\[\]=*B&options\[sensor\]\[pattern\]=true"
-
-  Find collections matching 'sensor' param value ignoring case
-
-     curl "http://localhost:3003/collections?sensor\[\]=1b&options\[sensor\]\[ignore-case\]=true"
 
 #### Sorting Collection Results
 
@@ -294,15 +245,15 @@ Multiple attributes can be provided. The default is for granules to match all th
 
      curl "http://localhost:3003/granules?cloud_cover=-70.0,120.0"
 
-### Find collections by platform param
+### Find collections by platform param, supports pattern, ignore_case and option :and
 
      curl "http://localhost:3003/granules?platform\[\]=1B"
 
-### Find collections by instrument param
+### Find collections by instrument param, supports pattern, ignore_case and option :and
 
      curl "http://localhost:3003/granules?instrument\[\]=1B"
 
-### Find collections by sensor param
+### Find collections by sensor param, supports pattern, ignore_case and option :and
 
      curl "http://localhost:3003/granules?sensor\[\]=1B"
 
