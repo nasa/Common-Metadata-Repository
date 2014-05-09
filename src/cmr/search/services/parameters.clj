@@ -29,6 +29,7 @@
                 :short-name :string
                 :version :string
                 :updated-since :updated-since
+                :processing-level-id :string
                 :temporal :temporal
                 :concept-id :string
                 :platform :string
