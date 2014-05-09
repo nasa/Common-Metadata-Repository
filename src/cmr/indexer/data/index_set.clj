@@ -90,6 +90,8 @@
                              :version-id            (stored string-field-mapping)
                              :version-id.lowercase  string-field-mapping
                              :revision-date         date-field-mapping
+                             :processing-level-id    string-field-mapping
+                             :processing-level-id.lowercase  string-field-mapping
                              :start-date            date-field-mapping
                              :end-date              date-field-mapping
                              :platform-sn           string-field-mapping
