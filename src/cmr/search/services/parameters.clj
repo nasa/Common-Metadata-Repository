@@ -51,6 +51,9 @@
              :version :collection-query
              :updated-since :updated-since
              :temporal :temporal
+             :platform :string
+             :instrument :string
+             :sensor :string
              :project :string
              :cloud-cover :num-range
              :concept-id :string

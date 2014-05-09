@@ -22,6 +22,9 @@
    :granule {:provider :provider-id
              :producer-granule-id :producer-gran-id
              :updated-since :revision-date
+             :platform :platform-sn
+             :instrument :instrument-sn
+             :sensor :sensor-sn
              :project :project-refs}})
 
 (defn query-field->elastic-field
