@@ -12,6 +12,7 @@
 
 (deftest search-by-platform-short-names
   (let [p0 (dc/platform "platform_Inherit")
+        p01 (dc/platform "platform_ONE")
         p1 (dc/platform "platform_Sn A")
         p2 (dc/platform "platform_Sn a")
         p3 (dc/platform "platform_SnA")
@@ -20,14 +21,16 @@
         pr2 (dg/platform-ref "platform_Sn a")
         pr3 (dg/platform-ref "platform_SnA")
         pr4 (dg/platform-ref "platform_Snx")
+        pr5 (dg/platform-ref "platform_ONE")
         coll1 (d/ingest "CMR_PROV1" (dc/collection {:platforms [p1 p2 p3 p4]}))
-        coll2 (d/ingest "CMR_PROV1" (dc/collection {:platforms [p0]}))
+        coll2 (d/ingest "CMR_PROV1" (dc/collection {:platforms [p0 p01]}))
         gran1 (d/ingest "CMR_PROV1" (dg/granule coll1 {:platform-refs [pr1]}))
         gran2 (d/ingest "CMR_PROV1" (dg/granule coll1 {:platform-refs [pr1 pr2]}))
         gran3 (d/ingest "CMR_PROV1" (dg/granule coll1 {:platform-refs [pr2]}))
         gran4 (d/ingest "CMR_PROV1" (dg/granule coll1 {:platform-refs [pr3]}))
         gran5 (d/ingest "CMR_PROV1" (dg/granule coll1 {:platform-refs [pr4]}))
-        gran6 (d/ingest "CMR_PROV1" (dg/granule coll2 {}))]
+        gran6 (d/ingest "CMR_PROV1" (dg/granule coll2 {}))
+        gran7 (d/ingest "CMR_PROV1" (dg/granule coll2 {:platform-refs [pr5]}))]
 
     (index/flush-elastic-index)
 
@@ -69,16 +72,19 @@
 
 (deftest search-by-instrument-short-names
   (let [i0 (dc/instrument "instrument_Inherit")
-        p0 (dc/platform "collection_platform" i0)
+        i01 (dc/instrument "instrument_ONE")
+        p0 (dc/platform "collection_platform" i0 i01)
         i1 (dg/instrument-ref "instrument_Sn A")
         i2 (dg/instrument-ref "instrument_Sn a")
         i3 (dg/instrument-ref "instrument_SnA")
         i4 (dg/instrument-ref "instrument_Snx")
+        i5 (dg/instrument-ref "instrument_ONE")
         pr1 (dg/platform-ref "platform_1" i1)
         pr2 (dg/platform-ref "platform_2" i2)
         pr3 (dg/platform-ref "platform_3" i3)
         pr4 (dg/platform-ref "platform_4" i4)
         pr5 (dg/platform-ref "platform_5" i1 i2)
+        pr6 (dg/platform-ref "platform_6" i5)
         coll1 (d/ingest "CMR_PROV1" (dc/collection {}))
         coll2 (d/ingest "CMR_PROV1" (dc/collection {:platforms [p0]}))
         gran1 (d/ingest "CMR_PROV1" (dg/granule coll1 {:platform-refs [pr1]}))
@@ -87,7 +93,8 @@
         gran4 (d/ingest "CMR_PROV1" (dg/granule coll1 {:platform-refs [pr3]}))
         gran5 (d/ingest "CMR_PROV1" (dg/granule coll1 {:platform-refs [pr4]}))
         gran6 (d/ingest "CMR_PROV1" (dg/granule coll1 {:platform-refs [pr5]}))
-        gran7 (d/ingest "CMR_PROV1" (dg/granule coll2 {}))]
+        gran7 (d/ingest "CMR_PROV1" (dg/granule coll2 {}))
+        gran8 (d/ingest "CMR_PROV1" (dg/granule coll2 {:platform-refs [pr6]}))]
 
     (index/flush-elastic-index)
 
@@ -129,23 +136,27 @@
 
 (deftest search-by-sensor-short-names
   (let [s0 (dc/sensor "sensor_Inherit")
-        i0 (dc/instrument "collection_instrument" s0)
+        s01 (dc/sensor "sensor_ONE")
+        i0 (dc/instrument "collection_instrument" s0 s01)
         p0 (dc/platform "collection_platform" i0)
         s1 (dg/sensor-ref "sensor_Sn A")
         s2 (dg/sensor-ref "sensor_Sn a")
         s3 (dg/sensor-ref "sensor_SnA")
         s4 (dg/sensor-ref "sensor_Snx")
+        s5 (dg/sensor-ref "sensor_ONE")
         i1 (dg/instrument-ref "instrument_1" s1)
         i2 (dg/instrument-ref "instrument_2" s2)
         i3 (dg/instrument-ref "instrument_3" s3)
         i4 (dg/instrument-ref "instrument_4" s4)
         i5 (dg/instrument-ref "instrument_5" s1 s2)
+        i6 (dg/instrument-ref "instrument_6" s5)
         p1 (dg/platform-ref "platform_1" i1)
         p2 (dg/platform-ref "platform_2" i2)
         p3 (dg/platform-ref "platform_3" i3)
         p4 (dg/platform-ref "platform_4" i4)
         p5 (dg/platform-ref "platform_5" i5)
         p6 (dg/platform-ref "platform_6" i1 i2)
+        p7 (dg/platform-ref "platform_7" i6)
         coll1 (d/ingest "CMR_PROV1" (dc/collection {}))
         coll2 (d/ingest "CMR_PROV1" (dc/collection {:platforms [p0]}))
         gran1 (d/ingest "CMR_PROV1" (dg/granule coll1 {:platform-refs [p1]}))
@@ -155,7 +166,8 @@
         gran5 (d/ingest "CMR_PROV1" (dg/granule coll1 {:platform-refs [p4]}))
         gran6 (d/ingest "CMR_PROV1" (dg/granule coll1 {:platform-refs [p5]}))
         gran7 (d/ingest "CMR_PROV1" (dg/granule coll1 {:platform-refs [p6]}))
-        gran8 (d/ingest "CMR_PROV1" (dg/granule coll2 {}))]
+        gran8 (d/ingest "CMR_PROV1" (dg/granule coll2 {}))
+        gran9 (d/ingest "CMR_PROV1" (dg/granule coll2 {:platform-refs [p7]}))]
 
     (index/flush-elastic-index)
 
