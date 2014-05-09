@@ -79,20 +79,28 @@
 (def processing-center-organizations
   (ext-gen/model-gen c/->Organization (gen/return :processing-center) org-names))
 
+(def granule-spatial-representations
+  (gen/elements c/granule-spatial-representations))
+
+(def spatial-coverages
+  (ext-gen/model-gen c/->SpatialCoverage granule-spatial-representations))
+
 (def collections
-  (gen/fmap (fn [[entry-title product temporal platforms psa campaigns two-ds proc-org archive-org]]
-              (let [entry-id (str (:short-name product) "_" (:version-id product))
-                    orgs (remove nil? [proc-org archive-org])
-                    orgs (if (empty? orgs) nil orgs)]
-                (c/->UmmCollection entry-id entry-title product temporal platforms psa campaigns two-ds orgs)))
+  (gen/fmap (fn [[attribs proc-org archive-org]]
+              (let [product (:product attribs)]
+                (c/map->UmmCollection (assoc attribs
+                                             :entry-id (str (:short-name product) "_" (:version-id product))
+                                             :organizations (seq (remove nil? [proc-org archive-org]))))))
             (gen/tuple
-              entry-titles
-              products
-              t/temporals
-              (ext-gen/nil-if-empty (gen/vector platforms 0 4))
-              (ext-gen/nil-if-empty (gen/vector psa/product-specific-attributes 0 10))
-              (ext-gen/nil-if-empty (gen/vector campaigns 0 4))
-              (ext-gen/nil-if-empty (gen/vector two-d-coordinate-systems 0 3))
+              (gen/hash-map
+                :entry-title entry-titles
+                :product products
+                :temporal t/temporals
+                :platforms (ext-gen/nil-if-empty (gen/vector platforms 0 4))
+                :product-specific-attributes (ext-gen/nil-if-empty (gen/vector psa/product-specific-attributes 0 10))
+                :projects (ext-gen/nil-if-empty (gen/vector campaigns 0 4))
+                :two-d-coordinate-systems (ext-gen/nil-if-empty (gen/vector two-d-coordinate-systems 0 3))
+                :spatial-coverage (ext-gen/optional spatial-coverages))
               (ext-gen/optional processing-center-organizations)
               (ext-gen/optional archive-center-organizations))))
 

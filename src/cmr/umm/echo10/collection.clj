@@ -11,7 +11,8 @@
             [cmr.umm.echo10.collection.campaign :as cmpgn]
             [cmr.umm.echo10.collection.two-d-coordinate-system :as two-d]
             [cmr.umm.echo10.collection.org :as org]
-            [cmr.umm.echo10.core])
+            [cmr.umm.echo10.core]
+            [camel-snake-kebab :as csk])
   (:import cmr.umm.collection.UmmCollection))
 
 (defn- xml-elem->Product
@@ -21,6 +22,14 @@
                    :long-name (cx/string-at-path collection-content [:LongName])
                    :version-id (cx/string-at-path collection-content [:VersionId])
                    :processing-level-id (cx/string-at-path collection-content [:ProcessingLevelId])}))
+
+(defn- xml-elem->SpatialCoverage
+  "Returns a UMM Product from a parsed Collection XML structure"
+  [xml-struct]
+  (if-let [spatial-elem (cx/element-at-path xml-struct [:Spatial])]
+    (let [gsr (csk/->kebab-case-keyword (cx/string-at-path spatial-elem [:GranuleSpatialRepresentation]))]
+      (c/map->SpatialCoverage
+        {:granule-spatial-representation gsr}))))
 
 (defn- xml-elem->Collection
   "Returns a UMM Product from a parsed Collection XML structure"
@@ -35,7 +44,16 @@
        :product-specific-attributes (psa/xml-elem->ProductSpecificAttributes xml-struct)
        :projects (cmpgn/xml-elem->Campaigns xml-struct)
        :two-d-coordinate-systems (two-d/xml-elem->TwoDCoordinateSystems xml-struct)
+       :spatial-coverage (xml-elem->SpatialCoverage xml-struct)
        :organizations (org/xml-elem->Organizations xml-struct)})))
+
+(defn generate-spatial
+  "Generates the Spatial element from spatial coverage"
+  [spatial-coverage]
+  (when spatial-coverage
+    (let [gsr (csk/->SNAKE_CASE_STRING (:granule-spatial-representation spatial-coverage))]
+      (x/element :Spatial {}
+                 (x/element :GranuleSpatialRepresentation {} gsr)))))
 
 (defn parse-collection
   "Parses ECHO10 XML into a UMM Collection record."
@@ -70,7 +88,8 @@
                    (psa/generate-product-specific-attributes
                      (:product-specific-attributes collection))
                    (cmpgn/generate-campaigns (:projects collection))
-                   (two-d/generate-two-ds (:two-d-coordinate-systems collection)))))))
+                   (two-d/generate-two-ds (:two-d-coordinate-systems collection))
+                   (generate-spatial (:spatial-coverage collection)))))))
 
 (defn validate-xml
   "Validates the XML against the ECHO10 schema."

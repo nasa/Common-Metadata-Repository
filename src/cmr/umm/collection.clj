@@ -98,6 +98,15 @@
    org-name
    ])
 
+(def granule-spatial-representations
+  [:cartesian :geodetic :orbit :no-spatial])
+
+(defrecord SpatialCoverage
+  [
+   ;; indicates the type of spatial representation for granules in the collection. (:orbit, :geodetic, etc.)
+   granule-spatial-representation
+   ])
+
 (defrecord UmmCollection
   [
    ;; A combination of shortname and version id with an underscore.
@@ -121,4 +130,6 @@
 
    ;; Records Archive Center, Processing Center
    organizations
+
+   spatial-coverage
    ])
