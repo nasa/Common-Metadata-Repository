@@ -71,36 +71,49 @@
 (defprotocol ApproximateEquivalency
   "Determines if two objects are approximately equal. This is useful for finding expected values
   when doing floating point math that may result in rounding errors."
-  (approx= [expected n] "Returns true if n is within a small delta of expected."))
+  (approx=
+    [expected n]
+    [expected n delta]
+    "Returns true if n is within a small delta of expected."))
 
 (defn double-approx=
   "Determines if two double values are approximately equal. Created to avoid reflection."
-  [^double expected ^double n]
-  (< (abs (- n expected)) DELTA))
+  ([^double expected ^double n]
+   (double-approx= expected n DELTA))
+  ([^double expected ^double n ^double delta]
+   (<= (abs (- n expected)) delta)))
 
 
 (extend-protocol ApproximateEquivalency
   Number
   (approx=
-    [expected n]
-    (double-approx= expected n))
+    ([expected n]
+     (double-approx= expected n))
+    ([expected n delta]
+     (double-approx= expected n delta)))
 
   clojure.lang.IPersistentMap
   (approx=
-    [expected actual]
-    (when (contains? (ancestors (class actual)) clojure.lang.IPersistentMap)
-      (and
-        (= (set (keys expected)) (set (keys actual)))
-        (every?
-          #(approx= (% expected) (% actual))
-          (keys expected)))))
+    ([expected actual]
+     (approx= expected actual DELTA))
+    ([expected actual delta]
+     (when (contains? (ancestors (class actual)) clojure.lang.IPersistentMap)
+       (and
+         (= (set (keys expected)) (set (keys actual)))
+         (every?
+           #(approx= (% expected) (% actual) delta)
+           (keys expected))))))
 
   ;; Not supporting equivalency with sets due to the complexity.
   ; clojure.lang.IPersistentSet
 
   clojure.lang.Sequential
   (approx=
-    [expected actual]
-    (when (contains? (ancestors (class actual)) clojure.lang.Sequential)
-      (every? (partial apply approx=) (map vector expected actual)))))
+    ([expected actual]
+     (approx= expected actual DELTA))
+    ([expected actual delta]
+     (when (contains? (ancestors (class actual)) clojure.lang.Sequential)
+       (every? (fn [[e v]]
+                 (approx= e v delta))
+               (map vector expected actual))))))
 

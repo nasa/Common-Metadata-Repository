@@ -42,7 +42,6 @@
           ^double d2 dvalue2]
       (math-values-close? (Math/atan2 d1 d2) (atan2 d1 d2)))))
 
-
 ;; Negative numbers must be tested separately as the rules for rounding negative numbers in Java
 ;; math are apparently different than if you are outputing formatted text.
 ;; (Math/round -1.5) -> -1
@@ -77,6 +76,11 @@
         (within-range? r (* -2 PI) (* 2 PI))))))
 
 (deftest approx-equal-test
+  (testing "changing the delta"
+    (is (approx= 0.0001 0.0002 0.0001))
+    (is (approx= 0.0001 0.0002 0.001))
+    (is (not (approx= 0.0001 0.00021 0.0001)))
+    (is (approx= 0.0001 0.00021 0.001)))
   (testing "vector and lazy sequence"
     (let [items [1 2 3.0000001]]
       (is (approx= items (map identity items)))

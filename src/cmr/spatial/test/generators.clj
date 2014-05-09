@@ -1,7 +1,12 @@
 (ns cmr.spatial.test.generators
   (:require [clojure.test.check.generators :as gen]
             [cmr.common.test.test-check-ext :as ext-gen :refer [optional]]
-            [cmr.spatial.point :as p]))
+            [cmr.spatial.point :as p]
+            [cmr.spatial.vector :as v]))
+
+(def vectors
+  (let [vector-num (ext-gen/choose-double -10 10)]
+    (ext-gen/model-gen v/new-vector vector-num vector-num vector-num)))
 
 (def lons
   (ext-gen/choose-double -180 180))
