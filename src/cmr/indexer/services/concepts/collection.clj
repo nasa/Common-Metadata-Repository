@@ -22,6 +22,8 @@
         platform-short-names (map :short-name platforms)
         instruments (mapcat :instruments platforms)
         instrument-short-names (remove nil? (map :short-name instruments))
+        sensors (mapcat :sensors instruments)
+        sensor-short-names (remove nil? (map :short-name sensors))
         project-short-names (map :short-name (:projects umm-concept))
         two-d-coord-names (map :name (:two-d-coordinate-systems umm-concept))
         orgs (:organizations umm-concept)
@@ -48,6 +50,8 @@
      :platform-sn.lowercase  (map s/lower-case platform-short-names)
      :instrument-sn instrument-short-names
      :instrument-sn.lowercase  (map s/lower-case instrument-short-names)
+     :sensor-sn sensor-short-names
+     :sensor-sn.lowercase  (map s/lower-case sensor-short-names)
      :project-sn project-short-names
      :project-sn.lowercase  (map s/lower-case project-short-names)
      :two-d-coord-name two-d-coord-names
