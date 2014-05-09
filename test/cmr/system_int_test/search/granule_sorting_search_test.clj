@@ -42,6 +42,28 @@
          "readable_granule_name" [g1 g5 g4 g3 g2]
          "-readable_granule_name" (reverse [g1 g5 g4 g3 g2]))))
 
+(deftest granule-campaign-sorting-test
+  (let [coll (d/ingest "PROV1" (dc/collection {}))
+        make-gran (fn [& campaigns]
+                    (d/ingest "PROV1" (dg/granule coll {:project-refs campaigns})))
+        g1 (make-gran "c10" "c41")
+        g2 (make-gran "c20" "c51")
+        g3 (make-gran "c30")
+        g4 (make-gran "c40")
+        g5 (make-gran "c50")]
+    (index/flush-elastic-index)
+    (are [sort-key items]
+         (d/refs-match-order? items
+                              (search/find-refs :granule {:page-size 20
+                                                          :sort-key sort-key}))
+
+         ;; Descending sorts by the min value of a multi value fields
+         "campaign" [g1 g2 g3 g4 g5]
+         ;; Descending sorts by the max value of a multi value fields
+         "-campaign" [g2 g5 g1 g4 g3]
+         "project" [g1 g2 g3 g4 g5]
+         "-project" [g2 g5 g1 g4 g3])))
+
 (deftest granule-numeric-sorting-test
   (let [coll (d/ingest "PROV1" (dc/collection {}))
         make-gran (fn [number]

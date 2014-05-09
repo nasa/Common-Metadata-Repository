@@ -71,12 +71,13 @@
       :type (d/unique-str "Type")
       :instruments instruments})))
 
-(defn project
-  "Return a project based on campaign attribs"
-  [campaign-sn campaign-ln]
-  (c/map->Project
-    {:short-name campaign-sn
-     :long-name campaign-ln}))
+(defn projects
+  "Return a sequence of projects with the given short names"
+  [& short-names]
+  (map #(c/map->Project
+          {:short-name %
+           :long-name (d/unique-str "long-name")})
+       short-names))
 
 (defn org
   "Return  archive/ processing center"

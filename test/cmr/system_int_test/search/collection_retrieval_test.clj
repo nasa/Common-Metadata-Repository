@@ -12,11 +12,11 @@
 
 (deftest retrieve-collection-by-cmr-concept-id
   (let [coll1 (d/ingest "CMR_PROV1" (dc/collection {:entry-title "Dataset1"
-                                                    :projects [(dc/project "ESI_1" "ln_1")]}))
+                                                    :projects (dc/projects "ESI_1")}))
         coll1 (d/ingest "CMR_PROV1" (dc/collection {:entry-title "Dataset1"
-                                                    :projects [(dc/project "ESI_2" "ln_2")]}))
+                                                    :projects (dc/projects "ESI_2")}))
         umm-coll (dc/collection {:entry-title "Dataset1"
-                                 :projects [(dc/project "ESI_3" "ln_3")]})
+                                 :projects (dc/projects "ESI_3")})
         coll1 (d/ingest "CMR_PROV1" umm-coll)
         coll2 (d/ingest "CMR_PROV1" (dc/collection {:entry-title "Dataset2"}))]
     (index/flush-elastic-index)
