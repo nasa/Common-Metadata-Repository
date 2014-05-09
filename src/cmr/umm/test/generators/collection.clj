@@ -15,8 +15,11 @@
 (def long-names
   (ext-gen/string-alpha-numeric 1 1024))
 
+(def processing-level-ids
+  (ext-gen/string-alpha-numeric 1 80))
+
 (def products
-  (ext-gen/model-gen c/->Product short-names long-names version-ids))
+  (ext-gen/model-gen c/->Product short-names long-names version-ids (ext-gen/optional processing-level-ids)))
 
 (def entry-titles
   (ext-gen/string-alpha-numeric 1 1030))

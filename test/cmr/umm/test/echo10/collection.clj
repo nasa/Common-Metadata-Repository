@@ -42,6 +42,7 @@
     <Orderable>true</Orderable>
     <Visible>true</Visible>
     <ProcessingCenter>SEDAC PC</ProcessingCenter>
+    <ProcessingLevelId>1B</ProcessingLevelId>
     <ArchiveCenter>SEDAC AC</ArchiveCenter>
     <Temporal>
       <TimeType>Universal Time</TimeType>
@@ -166,7 +167,8 @@
                     :product (umm-c/map->Product
                                {:short-name "MINIMAL"
                                 :long-name "A minimal valid collection"
-                                :version-id "1"})
+                                :version-id "1"
+                                :processing-level-id "1B"})
                     :temporal
                     (umm-c/map->Temporal
                       {:time-type "Universal Time"
