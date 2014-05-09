@@ -58,6 +58,9 @@
              :producer-granule-id :producer-gran-id.lowercase
              :readable-granule-name :readable-granule-name-sort
              :data-size :size
+             :platform :platform-sn.lowercase
+             :instrument :instrument-sn.lowercase
+             :sensor :sensor-sn.lowercase
              :project :project-refs.lowercase}})
 
 (defn query->sort-params
