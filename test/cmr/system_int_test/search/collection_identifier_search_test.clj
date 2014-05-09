@@ -201,20 +201,11 @@
 
 ;; Create 2 collection sets of which only 1 set has processing-level-id
 (deftest processing-level-search-test
-  (let [[c1-p1 c2-p1 c3-p1 c4-p1] (for [p ["PROV1"]
-                                        n (range 1 5)]
-                                    (d/ingest p (dc/collection
-                                                  {:short-name (str "S" n)
-                                                   :version-id (str "V" n)
-                                                   :entry-title (str "ET" n)})))
+  (let [[c1-p1 c2-p1 c3-p1 c4-p1] (for [n (range 1 5)]
+                                    (d/ingest "PROV1" (dc/collection {})))
         ;; include preocessing level id
-        [c1-p2 c2-p2 c3-p2 c4-p2] (for [p ["PROV2"]
-                                        n (range 1 5)]
-                                    (d/ingest p (dc/collection
-                                                  {:short-name (str "S" n)
-                                                   :version-id (str "V" n)
-                                                   :entry-title (str "ET" n)
-                                                   :processing-level-id (str n "B")})))
+        [c1-p2 c2-p2 c3-p2 c4-p2] (for [n (range 1 5)]
+                                    (d/ingest "PROV2" (dc/collection {:processing-level-id (str n "B")})))
         all-prov2-colls [c1-p2 c2-p2 c3-p2 c4-p2]]
     (index/flush-elastic-index)
     (testing "processing level search"
