@@ -74,7 +74,9 @@
               :version
               :provider
               :data-size
-              :cloud-cover}})
+              :cloud-cover
+              :campaign
+              :project}})
 
 (defn sort-key-validation
   "Validates the sort-key parameter if present"

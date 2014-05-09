@@ -166,12 +166,14 @@ Granule results are sorted by ascending provider and start date by default. One 
 
 ##### Valid Granule Sort Keys
 
+  * campaign - alias for project
   * entry_title
   * dataset_id - alias for entry_title
   * data_size
   * end_date
   * granule_ur
   * producer_granule_id
+  * project
   * provider
   * readable_granule_name - this sorts on a combination of producer_granule_id and granule_ur. If a producer_granule_id is present, that value is used. Otherwise, the granule_ur is used.
   * short_name
@@ -182,7 +184,6 @@ Granule results are sorted by ascending provider and start date by default. One 
 Not yet implemented
 
   * browse_only
-  * campaign
   * cloud_cover
   * day_night_flag
   * instrument
