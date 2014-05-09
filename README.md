@@ -68,7 +68,21 @@ One dif\_entry\_id (alias for entry id)
 
 #### Find collections by archive center
 
+  Find collections matching 'archive_center' param value
     curl "http://localhost:3003/collections?archive_center\[\]=LARC"
+    curl "http://localhost:3003/collections?archive_center=Sedac+AC"
+
+  Find collections matching any of the 'archive_center' param values
+
+     curl "http://localhost:3003/collections?archive_center\[\]=Larc&archive_center\[\]=SEDAC"
+
+  Find collections matching 'archive_center' param value pattern
+
+     curl "http://localhost:3003/collections?archive_center\[\]=S*&options\[archive_center\]\[pattern\]=true"
+
+  Find collections matching 'archive_center' param value ignoring case
+
+     curl "http://localhost:3003/collections?archive_center\[\]=sedac+AC&options\[archive_center\]\[ignore-case\]=true"
 
 
 #### Find collections with multiple temporal
@@ -76,6 +90,53 @@ One dif\_entry\_id (alias for entry id)
 The temporal datetime has to be in yyyy-MM-ddTHH:mm:ssZ format.
 
     curl "http://localhost:3003/collections?temporal\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z,30,60&temporal\[\]=2000-01-01T10:00:00Z,,30&temporal\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z"
+
+### Find collections by campaign param
+
+  Find collections matching 'campaign' param value
+
+     curl "http://localhost:3003/collections?campaign\[\]=ESI"
+
+  Find collections matching any of the 'campaign' param values
+
+     curl "http://localhost:3003/collections?campaign\[\]=ESI&campaign\[\]=EVI&campaign\[\]=EPI"
+
+  Find collections that match all of the 'campaign' param values
+
+     curl "http://localhost:3003/collections?campaign\[\]=ESI&campaign\[\]=EVI&campaign\[\]=EPI&options\[campaign\]\[and\]=true"
+
+  Find collections matching 'campaign' param value pattern
+
+     curl "http://localhost:3003/collections?campaign\[\]=E*&options\[campaign\]\[pattern\]=true"
+
+  Find collections matching 'campaign' param value ignoring case
+
+     curl "http://localhost:3003/collections?campaign\[\]=EpI&options\[campaign\]\[ignore-case\]=true"
+
+### Find collections by updated_since param
+
+  Find collections which have revision date starting at or after 'updated_since' param value
+
+     curl "http://localhost:3003/collections?updated_since=2014-05-08T20:06:38.331Z"
+
+### Find collections by processing_level_id param
+
+  Find collections matching 'processing_level_id' param value
+
+     curl "http://localhost:3003/collections?processing_level_id\[\]=1B"
+
+  Find collections matching any of the 'processing_level_id' param values
+
+     curl "http://localhost:3003/collections?processing_level_id\[\]=1B&processing_level_id\[\]=2B"
+
+  Find collections matching 'processing_level_id' param value pattern
+
+     curl "http://localhost:3003/collections?processing_level_id\[\]=*B&options\[processing_level_id\]\[pattern\]=true"
+
+  Find collections matching 'processing_level_id' param value ignoring case
+
+     curl "http://localhost:3003/collections?processing_level_id\[\]=1b&options\[processing_level_id\]\[ignore-case\]=true"
+
 
 #### Sorting Collection Results
 
@@ -159,6 +220,27 @@ Multiple attributes can be provided. The default is for granules to match all th
   Find granules with an orbit number in a range of 0.5 to 1.5
 
     curl "http://localhost:3003/granules?orbit_number=0.5,1.5"
+
+### Find granules by updated_since param
+
+  Find granules which have revision date starting at or after 'updated_since' param value
+
+     curl "http://localhost:3003/granules?updated_since=2014-05-08T20:12:35Z"
+
+### Find granules by cloud_cover param
+
+  Find granules with just the min cloud cover value set to 0.2
+
+     curl "http://localhost:3003/granules?cloud_cover=0.2,"
+
+  Find granules with just the max cloud cover value set to 30
+
+     curl "http://localhost:3003/granules?cloud_cover=,30"
+
+  Find granules with cloud cover numeric range set to min: -70.0 max: 120.0
+
+     curl "http://localhost:3003/granules?cloud_cover=-70.0,120.0"
+
 
 #### Sorting Granule Results
 
