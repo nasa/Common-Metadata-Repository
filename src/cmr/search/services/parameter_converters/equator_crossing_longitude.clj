@@ -15,7 +15,7 @@
     (let [{:keys [value] :as on-map} (parser/numeric-range-parameter->map param-str)]
       (qm/map->EquatorCrossingLongitudeCondition on-map))
     (catch ExceptionInfo e
-      (errors/internal-error! msg/non-numeric-value-failed-validation))))
+      (errors/internal-error! (msg/non-numeric-value-failed-validation) e))))
 
 (defn- equator-crossing-longitude-param-map->condition
   [eql-map]
@@ -24,7 +24,7 @@
           {:keys [value]} numeric-map]
       (qm/map->EquatorCrossingLongitudeCondition numeric-map))
     (catch NumberFormatException e
-      (errors/internal-error! msg/non-numeric-value-failed-validation))))
+      (errors/internal-error! (msg/non-numeric-value-failed-validation) e))))
 
 
 ;; Converts orbit-number parameter into a query condition

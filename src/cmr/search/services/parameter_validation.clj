@@ -2,6 +2,7 @@
   "Contains functions for validating query parameters"
   (:require [clojure.set :as set]
             [cmr.common.services.errors :as err]
+            [cmr.common.services.messages :as c-msg]
             [cmr.common.parameter-parser :as parser]
             [clojure.string :as s]
             [cmr.common.date-time-parser :as dt-parser]
@@ -11,7 +12,6 @@
             [cmr.search.services.parameter-converters.orbit-number :as on]
             [cmr.search.services.messages.orbit-number-messages :as on-msg]
             [cmr.search.services.messages.common-messages :as msg]
-            [cmr.common.parameter-parser :as pp]
             [camel-snake-kebab :as csk])
   (:import clojure.lang.ExceptionInfo))
 
@@ -161,16 +161,6 @@
     []))
 
 
-(defn cloud-cover-validation
-  "Validates cloud cover range values are numeric"
-  [concept-type params]
-  (if-let [cloud-cover (:cloud-cover params)]
-    (let [errors (pp/numeric-range-string-validation cloud-cover)]
-      (if-not (empty? errors)
-        errors
-        []))
-    []))
-
 (defn updated-since-validation
   "Validates updated-since parameter conforms to formats in data-time-parser NS"
   [concept-type params]
@@ -203,7 +193,9 @@
         (Double. max-value))
       (if (or value min-value max-value)
         []
-        [(apply error-message-fn args)])
+        (if error-message-fn
+          [(apply error-message-fn args)]
+          [(c-msg/invalid-numeric-range-msg)]))
       (catch NumberFormatException e
         [(apply error-message-fn args)]))))
 
@@ -217,6 +209,15 @@
         (concat [(apply error-message-fn args)] errors)
         errors)
       [])))
+
+(defn cloud-cover-validation
+  "Validates cloud cover range values are numeric"
+  [concept-type params]
+  (if-let [cloud-cover (:cloud-cover params)]
+    (if (string? cloud-cover)
+      (validate-numeric-range-string-param cloud-cover nil)
+      (validate-numeric-range-map cloud-cover nil))
+    []))
 
 (defn orbit-number-validation
   "Validates that the orbital number is either a single number or a range in the format
@@ -236,8 +237,8 @@
     (if (string? equator_crossing_longitude)
       (validate-numeric-range-string-param equator_crossing_longitude nil)
       (validate-numeric-range-map equator_crossing_longitude
-                                  on-msg/non-numeric-equator-crossing-longitude-parameter))))
-
+                                  on-msg/non-numeric-equator-crossing-longitude-parameter))
+    []))
 
 (defn boolean-value-validation
   [concept-type params]

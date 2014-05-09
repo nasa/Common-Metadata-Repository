@@ -35,7 +35,7 @@
   (condition->elastic
     [condition concept-type]
     (let [{:keys [min-value max-value]} condition
-          group-condtion (cond
+          group-condition (cond
                            (and min-value max-value)
                            (equator-crossing-longitude-condition-both min-value max-value)
 
@@ -47,5 +47,5 @@
 
                            :else
                            (errors/internal-error! (m/nil-min-max-msg)))
-          nested-condition (qm/nested-condition :orbit-calculated-spatial-domains group-condtion)]
+          nested-condition (qm/nested-condition :orbit-calculated-spatial-domains group-condition)]
       (q2e/condition->elastic nested-condition concept-type))))

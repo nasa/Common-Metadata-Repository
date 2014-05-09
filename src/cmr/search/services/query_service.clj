@@ -29,6 +29,7 @@
             [cmr.search.validators.attribute]
             [cmr.search.validators.numeric-range]
             [cmr.search.validators.orbit-number]
+            [cmr.search.validators.equator-crossing-longitude]
 
             [cmr.search.services.parameter-validation :as pv]
             [cmr.search.services.collection-query-resolver :as r]

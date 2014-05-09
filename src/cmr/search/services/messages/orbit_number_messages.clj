@@ -15,4 +15,4 @@
 
 (defn non-numeric-value-failed-validation
   []
-  "Non-numeric valuue failed validation. This should have been rejected by parameter validation.")
+  "Non-numeric value failed validation. This should have been rejected by parameter validation.")

@@ -3,7 +3,7 @@
   (:require [clojure.set]
             [cmr.search.models.query :as qm]
             [cmr.search.validators.validation :as v]
-            [cmr.search.validators.messages :as m]))
+            [cmr.search.validators.numeric-range :as nm]))
 
 
 (extend-protocol v/Validator
@@ -12,6 +12,4 @@
     [{:keys [min-value max-value]}]
     (let [numeric-range-condition (qm/map->NumericRangeCondition {:min-value min-value
                                                                   :max-value max-value})]
-      (let [errors (v/validate numeric-range-condition)]
-        ;; remove the min/max error if present since it does not apply for this parameter
-        (remove #(= % (m/min-value-greater-than-max min-value max-value)) errors)))))
+      (nm/min-max-not-both-nil numeric-range-condition))))
