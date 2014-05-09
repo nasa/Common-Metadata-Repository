@@ -141,6 +141,12 @@
                  ;; to use a sort script which is (most likely) much slower.
                  :readable-granule-name-sort string-field-mapping
 
+                 :platform-sn           string-field-mapping
+                 :platform-sn.lowercase string-field-mapping
+                 :instrument-sn         string-field-mapping
+                 :instrument-sn.lowercase string-field-mapping
+                 :sensor-sn             string-field-mapping
+                 :sensor-sn.lowercase   string-field-mapping
                  :start-date date-field-mapping
                  :end-date date-field-mapping
                  :size float-field-mapping

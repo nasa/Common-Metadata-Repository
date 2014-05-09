@@ -24,8 +24,13 @@
   (let [{:keys [concept-id extra-fields provider-id revision-date]} concept
         {:keys [parent-collection-id]} extra-fields
         parent-collection (get-parent-collection context parent-collection-id)
-        {:keys [granule-ur data-granule temporal project-refs related-urls cloud-cover]} umm-granule
+        {:keys [granule-ur data-granule temporal platform-refs project-refs related-urls cloud-cover]} umm-granule
         {:keys [size producer-gran-id]} data-granule
+        platform-short-names (map :short-name platform-refs)
+        instrument-refs (mapcat :instrument-refs platform-refs)
+        instrument-short-names (remove nil? (map :short-name instrument-refs))
+        sensor-refs (mapcat :sensor-refs instrument-refs)
+        sensor-short-names (remove nil? (map :short-name sensor-refs))
         start-date (temporal/start-date :granule temporal)
         end-date (temporal/end-date :granule temporal)
         downloadable (not (empty? (filter ru/downloadable-url? related-urls)))]
@@ -46,6 +51,12 @@
      ;; Provides sorting on a combination of producer granule id and granule ur
      :readable-granule-name-sort (s/lower-case (or producer-gran-id granule-ur))
 
+     :platform-sn platform-short-names
+     :platform-sn.lowercase  (map s/lower-case platform-short-names)
+     :instrument-sn instrument-short-names
+     :instrument-sn.lowercase  (map s/lower-case instrument-short-names)
+     :sensor-sn sensor-short-names
+     :sensor-sn.lowercase  (map s/lower-case sensor-short-names)
      :project-refs project-refs
      :project-refs.lowercase (map s/lower-case project-refs)
      :size size
