@@ -24,11 +24,19 @@
 (def entry-titles
   (ext-gen/string-alpha-numeric 1 1030))
 
+(def sensor-short-names
+  (ext-gen/string-ascii 1 80))
+
+(def sensors
+  (ext-gen/model-gen c/->Sensor sensor-short-names))
+
 (def instrument-short-names
   (ext-gen/string-ascii 1 80))
 
 (def instruments
-  (ext-gen/model-gen c/->Instrument instrument-short-names))
+  (ext-gen/model-gen c/->Instrument
+                     instrument-short-names
+                     (ext-gen/nil-if-empty (gen/vector sensors 0 4))))
 
 (def platform-short-names
   (ext-gen/string-ascii 1 80))

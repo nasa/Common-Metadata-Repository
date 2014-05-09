@@ -51,9 +51,15 @@
    value
   ])
 
+(defrecord Sensor
+  [
+   short-name
+  ])
+
 (defrecord Instrument
   [
    short-name
+   sensors
   ])
 
 (defrecord Platform
