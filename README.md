@@ -276,6 +276,9 @@ Granule results are sorted by ascending provider and start date by default. One 
   * short_name
   * start_date
   * version
+  * platform
+  * instrument
+  * sensor
 
 ##### Future Granule Sort Keys
 Not yet implemented
@@ -283,10 +286,7 @@ Not yet implemented
   * browse_only
   * cloud_cover
   * day_night_flag
-  * instrument
   * online_only
-  * platform
-  * sensor
 
 Example of sorting by start_date in descending order: (Most recent data first)
 
