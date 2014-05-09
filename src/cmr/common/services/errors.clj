@@ -21,7 +21,7 @@
 
 (defn internal-error!
   "Throws an Exception with the given message and error, if given, to indicate an internal error in the system."
-  ([msg]
+  ([^String msg]
    (throw (Exception. msg)))
-  ([msg cause]
+  ([^String msg ^Throwable cause]
    (throw (Exception. msg cause))))

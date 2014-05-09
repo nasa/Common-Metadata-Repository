@@ -12,7 +12,7 @@
         (println "Error touch" file)
         (.printStackTrace e))))
   nil)
-  
+
 
 (defn touch-user-clj
   "Touches dev/user.clj to help avoid cases where file changes are not caught by
@@ -25,9 +25,9 @@
   [dir]
   (let [d (io/file dir)
         files (seq (.listFiles d))]
-    (dorun (map #(-> % str touch-file) (filter #(not (.isDirectory %)) files)))))
+    (dorun (map #(-> % str touch-file) (filter #(not (.isDirectory ^java.io.File %)) files)))))
 
-(comment 
+(comment
 (touch-files-in-dir ".")
 
 )
