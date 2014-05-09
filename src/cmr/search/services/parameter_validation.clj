@@ -181,7 +181,11 @@
       [(attrib-msg/attributes-must-be-sequence-msg)])
     []))
 
-(defn- validate-numeric-range-map
+;; This method is for processing legacy numeric ranges in the form of
+;; param_nam[value], param_name[minValue], and param_name[maxValue].
+;; It simply validates that the provided values are numbers and that
+;; at least one is present.
+(defn- validate-legacy-numeric-range-param
   "Validates a numeric parameter in the form of a map, appending the message argument
   to the error array on failure."
   [param-map error-message-fn & args]
@@ -201,7 +205,7 @@
       (catch NumberFormatException e
         [(apply error-message-fn args)]))))
 
-(defn- validate-numeric-range-string-param
+(defn- validate-numeric-range-param
   "Validates a numeric parameter in the form parameter=value or
   parameter=min,max, appending the message argument to the error array on failure."
   [param error-message-fn & args]
@@ -217,8 +221,8 @@
   [concept-type params]
   (if-let [cloud-cover (:cloud-cover params)]
     (if (string? cloud-cover)
-      (validate-numeric-range-string-param cloud-cover nil)
-      (validate-numeric-range-map cloud-cover nil))
+      (validate-numeric-range-param cloud-cover nil)
+      (validate-legacy-numeric-range-param cloud-cover nil))
     []))
 
 (defn orbit-number-validation
@@ -228,8 +232,8 @@
   [concept-type params]
   (if-let [orbit-number-param (:orbit-number params)]
     (if (string? orbit-number-param)
-      (validate-numeric-range-string-param orbit-number-param on-msg/invalid-orbit-number-msg)
-      (validate-numeric-range-map orbit-number-param on-msg/invalid-orbit-number-msg))
+      (validate-numeric-range-param orbit-number-param on-msg/invalid-orbit-number-msg)
+      (validate-legacy-numeric-range-param orbit-number-param on-msg/invalid-orbit-number-msg))
     []))
 
 (defn equator-crossing-longitude-validation
@@ -237,8 +241,8 @@
   [concept-type params]
   (if-let [equator_crossing_longitude (:equator-crossing-longitude params)]
     (if (string? equator_crossing_longitude)
-      (validate-numeric-range-string-param equator_crossing_longitude nil)
-      (validate-numeric-range-map equator_crossing_longitude
+      (validate-numeric-range-param equator_crossing_longitude nil)
+      (validate-legacy-numeric-range-param equator_crossing_longitude
                                   on-msg/non-numeric-equator-crossing-longitude-parameter))
     []))
 
