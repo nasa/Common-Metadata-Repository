@@ -199,4 +199,49 @@
                :collection
                {:entry-title "dummy" "options[entry-title][unsupported]" "unsupported"}))))))
 
+;; Create 2 collection sets of which only 1 set has processing-level-id
+(deftest processing-level-search-test
+  (let [[c1-p1 c2-p1 c3-p1 c4-p1] (for [p ["PROV1"]
+                                        n (range 1 5)]
+                                    (d/ingest p (dc/collection
+                                                  {:short-name (str "S" n)
+                                                   :version-id (str "V" n)
+                                                   :entry-title (str "ET" n)})))
+        ;; include preocessing level id
+        [c1-p2 c2-p2 c3-p2 c4-p2] (for [p ["PROV2"]
+                                        n (range 1 5)]
+                                    (d/ingest p (dc/collection
+                                                  {:short-name (str "S" n)
+                                                   :version-id (str "V" n)
+                                                   :entry-title (str "ET" n)
+                                                   :processing-level-id (str n "B")})))
+        all-prov2-colls [c1-p2 c2-p2 c3-p2 c4-p2]]
+    (index/flush-elastic-index)
+    (testing "processing level search"
+      (are [items id options]
+           (let [params (merge {:processing-level-id id}
+                               (when options
+                                 {"options[processing-level-id]" options}))]
+             (d/refs-match? items (search/find-refs :collection params)))
+
+           [c1-p2] "1B" {}
+           [] "1C" {}
+           ;; Multiple values
+           [c1-p2 c2-p2 c3-p2] ["1B" "2B" "3B"] {}
+           [c4-p2] ["4B" "4C"] {}
+           [c1-p2 c2-p2 c3-p2] ["1B" "2B" "3B"] {:and false}
+           [] ["B1" "B2"] {:and true}
+
+           ;; Wildcards
+           all-prov2-colls "*B" {:pattern true}
+           [] "B*" {:pattern false}
+           [] "B*" {}
+           all-prov2-colls "?B" {:pattern true}
+           [] "*Q*" {:pattern true}
+
+           ;; Ignore case
+           [c2-p2] "2b" {:ignore-case true}
+           [] "2b" {:ignore-case false}))))
+
+
 
