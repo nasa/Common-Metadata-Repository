@@ -93,9 +93,13 @@
 
    orbit-calculated-spatial-domains
 
+<<<<<<< HEAD
+   ;; A sequence of short names of projects (aka campaigns) reference parent short names
+=======
    platform-refs
 
-   ;; A sequence of short names of projects (aka campaigns) reference parent short names
+   ;; references to projects/campaigns
+>>>>>>> Added platform-refs, instrument-refs and sensor-refs to UMM granule model.
    project-refs
 
    ;; references to onlineResources and onlineAccessURLs

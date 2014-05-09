@@ -5,6 +5,7 @@
             [cmr.common.xml :as cx]
             [cmr.umm.granule :as g]
             [cmr.umm.echo10.granule.temporal :as gt]
+            [cmr.umm.echo10.granule.platform-ref :as p-ref]
             [cmr.umm.echo10.related-url :as ru]
             [cmr.umm.echo10.granule.product-specific-attribute-ref :as psa]
             [cmr.umm.echo10.granule.orbit-calculated-spatial-domain :as ocsd]
@@ -76,6 +77,7 @@
                         :data-granule (xml-elem->DataGranule xml-struct)
                         :temporal (gt/xml-elem->Temporal xml-struct)
                         :orbit-calculated-spatial-domains (ocsd/xml-elem->orbit-calculated-spatial-domains xml-struct)
+                        :platform-refs (p-ref/xml-elem->PlatformRefs xml-struct)
                         :project-refs (xml-elem->project-refs xml-struct)
                         :cloud-cover (cx/double-at-path xml-struct [:CloudCover])
                         :related-urls (ru/xml-elem->related-urls xml-struct)
@@ -95,6 +97,7 @@
            data-granule :data-granule
            temporal :temporal
            ocsds :orbit-calculated-spatial-domains
+           platform-refs :platform-refs
            prefs :project-refs
            cloud-cover :cloud-cover
            related-urls :related-urls
@@ -114,6 +117,7 @@
                    (generate-data-granule data-granule)
                    (gt/generate-temporal temporal)
                    (ocsd/generate-orbit-calculated-spatial-domains ocsds)
+                   (p-ref/generate-platform-refs platform-refs)
                    (generate-project-refs prefs)
                    (psa/generate-product-specific-attribute-refs psas)
                    (ru/generate-access-urls related-urls)

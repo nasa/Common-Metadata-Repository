@@ -35,70 +35,94 @@
 
 (def all-fields-granule-xml
   "<Granule>
-  <GranuleUR>GranuleUR100</GranuleUR>
-  <InsertTime>2010-01-05T05:30:30.550-05:00</InsertTime>
-  <LastUpdate>2010-01-05T05:30:30.550-05:00</LastUpdate>
-  <Collection>
-    <DataSetId>R1_SCANSAR_FRAME</DataSetId>
-  </Collection>
-  <DataGranule>
-    <ProducerGranuleId>0000000.0000001.hdf</ProducerGranuleId>
-  </DataGranule>
-  <Orderable>true</Orderable>
-  <Temporal>
+    <GranuleUR>GranuleUR100</GranuleUR>
+    <InsertTime>2010-01-05T05:30:30.550-05:00</InsertTime>
+    <LastUpdate>2010-01-05T05:30:30.550-05:00</LastUpdate>
+    <Collection>
+      <DataSetId>R1_SCANSAR_FRAME</DataSetId>
+    </Collection>
+    <DataGranule>
+      <ProducerGranuleId>0000000.0000001.hdf</ProducerGranuleId>
+    </DataGranule>
+    <Orderable>true</Orderable>
+    <Temporal>
       <RangeDateTime>
         <BeginningDateTime>1996-02-24T22:20:41-05:00</BeginningDateTime>
         <EndingDateTime>1997-03-24T22:20:41-05:00</EndingDateTime>
       </RangeDateTime>
       <SingleDateTime>2010-01-05T05:30:30.550-05:00</SingleDateTime>
     </Temporal>
-  <OrbitCalculatedSpatialDomains>
-    <OrbitCalculatedSpatialDomain>
-      <OrbitalModelName>OrbitalModelName</OrbitalModelName>
-      <OrbitNumber>0</OrbitNumber>
-      <StartOrbitNumber>0.0</StartOrbitNumber>
-      <StopOrbitNumber>0.0</StopOrbitNumber>
-      <EquatorCrossingLongitude>0.0</EquatorCrossingLongitude>
-      <EquatorCrossingDateTime>2010-01-05T05:30:30Z</EquatorCrossingDateTime>
-    </OrbitCalculatedSpatialDomain>
-    <OrbitCalculatedSpatialDomain>
-      <OrbitalModelName>OrbitalModelName</OrbitalModelName>
-      <OrbitNumber>0</OrbitNumber>
-      <StartOrbitNumber>0.0</StartOrbitNumber>
-      <StopOrbitNumber>0.0</StopOrbitNumber>
-      <EquatorCrossingLongitude>0.0</EquatorCrossingLongitude>
-      <EquatorCrossingDateTime>2010-01-05T05:30:30Z</EquatorCrossingDateTime>
-    </OrbitCalculatedSpatialDomain>
-  </OrbitCalculatedSpatialDomains>
-  <Campaigns>
-    <Campaign>
-      <ShortName>Short Name-240</ShortName>
-    </Campaign>
-    <Campaign>
-      <ShortName>Short Name-241</ShortName>
-    </Campaign>
-  </Campaigns>
-  <OnlineAccessURLs>
-    <OnlineAccessURL>
-      <URL>http://ghrc.nsstc.nasa.gov/hydro/details.pl?ds=dc8capac</URL>
-    </OnlineAccessURL>
-  </OnlineAccessURLs>
-  <OnlineResources>
-    <OnlineResource>
-      <URL>http://camex.nsstc.nasa.gov/camex3/</URL>
-      <Type>DATA ACCESS</Type>
-    </OnlineResource>
-    <OnlineResource>
-      <URL>http://ghrc.nsstc.nasa.gov/uso/ds_docs/camex3/dc8capac/dc8capac_dataset.html</URL>
-      <Type>Guide</Type>
-    </OnlineResource>
-    <OnlineResource>
-      <URL>ftp://camex.nsstc.nasa.gov/camex3/dc8capac/browse/</URL>
-      <Description>Some description.</Description>
-      <Type>Browse</Type>
-    </OnlineResource>
-  </OnlineResources>
-  <CloudCover>0.8</CloudCover>
+    <Platforms>
+      <Platform>
+        <ShortName>RADARSAT-1</ShortName>
+        <Instruments>
+          <Instrument>
+            <ShortName>SAR</ShortName>
+            <Sensors>
+              <Sensor>
+                <ShortName>SNA</ShortName>
+              </Sensor>
+              <Sensor>
+                <ShortName>SNB</ShortName>
+              </Sensor>
+            </Sensors>
+          </Instrument>
+          <Instrument>
+            <ShortName>MAR</ShortName>
+          </Instrument>
+        </Instruments>
+      </Platform>
+      <Platform>
+        <ShortName>RADARSAT-2</ShortName>
+      </Platform>
+    </Platforms>
+    <OrbitCalculatedSpatialDomains>
+      <OrbitCalculatedSpatialDomain>
+        <OrbitalModelName>OrbitalModelName</OrbitalModelName>
+        <OrbitNumber>0</OrbitNumber>
+        <StartOrbitNumber>0.0</StartOrbitNumber>
+        <StopOrbitNumber>0.0</StopOrbitNumber>
+        <EquatorCrossingLongitude>0.0</EquatorCrossingLongitude>
+        <EquatorCrossingDateTime>2010-01-05T05:30:30Z</EquatorCrossingDateTime>
+      </OrbitCalculatedSpatialDomain>
+      <OrbitCalculatedSpatialDomain>
+        <OrbitalModelName>OrbitalModelName</OrbitalModelName>
+        <OrbitNumber>0</OrbitNumber>
+        <StartOrbitNumber>0.0</StartOrbitNumber>
+        <StopOrbitNumber>0.0</StopOrbitNumber>
+        <EquatorCrossingLongitude>0.0</EquatorCrossingLongitude>
+        <EquatorCrossingDateTime>2010-01-05T05:30:30Z</EquatorCrossingDateTime>
+      </OrbitCalculatedSpatialDomain>
+    </OrbitCalculatedSpatialDomains>
+    <Campaigns>
+      <Campaign>
+        <ShortName>Short Name-240</ShortName>
+      </Campaign>
+      <Campaign>
+        <ShortName>Short Name-241</ShortName>
+      </Campaign>
+    </Campaigns>
+    <OnlineAccessURLs>
+      <OnlineAccessURL>
+        <URL>http://ghrc.nsstc.nasa.gov/hydro/details.pl?ds=dc8capac</URL>
+      </OnlineAccessURL>
+    </OnlineAccessURLs>
+    <OnlineResources>
+      <OnlineResource>
+        <URL>http://camex.nsstc.nasa.gov/camex3/</URL>
+        <Type>DATA ACCESS</Type>
+      </OnlineResource>
+      <OnlineResource>
+        <URL>http://ghrc.nsstc.nasa.gov/uso/ds_docs/camex3/dc8capac/dc8capac_dataset.html</URL>
+        <Type>Guide</Type>
+      </OnlineResource>
+      <OnlineResource>
+        <URL>ftp://camex.nsstc.nasa.gov/camex3/dc8capac/browse/</URL>
+        <Description>Some description.</Description>
+        <Type>Browse</Type>
+      </OnlineResource>
+    </OnlineResources>
+    <CloudCover>0.8</CloudCover>
   </Granule>")
 
 (deftest parse-granule-test
@@ -117,6 +141,17 @@
                          {:beginning-date-time (p/parse-datetime "1996-02-24T22:20:41-05:00")
                           :ending-date-time (p/parse-datetime "1997-03-24T22:20:41-05:00")})
                        :single-date-time (p/parse-datetime "2010-01-05T05:30:30.550-05:00")})
+                    :platform-refs
+                    [(umm-g/map->PlatformRef
+                       {:short-name "RADARSAT-1"
+                        :instrument-refs [(umm-g/->InstrumentRef
+                                        "SAR"
+                                        [(umm-g/->SensorRef "SNA")
+                                         (umm-g/->SensorRef "SNB")])
+                                      (umm-g/->InstrumentRef "MAR" nil)]})
+                     (umm-g/map->PlatformRef
+                       {:short-name "RADARSAT-2"
+                        :instrument-refs nil})]
                     :orbit-calculated-spatial-domains [(umm-g/map->OrbitCalculatedSpatialDomain
                                                          {:orbital-model-name "OrbitalModelName"
                                                           :orbit-number 0

@@ -74,8 +74,12 @@
       :data-granule (ext-gen/optional data-granules)
       :temporal gt/temporal
       :orbit-calculated-spatial-domains (ext-gen/nil-if-empty (gen/vector ocsd/orbit-calculated-spatial-domains 0 5))
-      :platform-refs (ext-gen/nil-if-empty (gen/vector platform-refs 0 4))
+<<<<<<< HEAD
       :project-refs (ext-gen/nil-if-empty (gen/vector (ext-gen/string-ascii 1 80) 0 3))
+=======
+      :platform-refs (ext-gen/nil-if-empty (gen/vector platform-refs 0 4))
+      :project-refs (ext-gen/nil-if-empty proj-refs)
+>>>>>>> Added platform-refs, instrument-refs and sensor-refs to UMM granule model.
       :cloud-cover cloud-cover-values
       :related-urls (ext-gen/nil-if-empty (gen/vector related-url 0 5))
       :product-specific-attributes (ext-gen/nil-if-empty (gen/vector product-specific-attribute-refs 0 5)))))
