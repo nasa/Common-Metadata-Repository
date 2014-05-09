@@ -46,6 +46,7 @@
              :attribute :attribute
              :short-name :collection-query
              :orbit-number :orbit-number
+             :equator-crossing-longitude :equator-crossing-longitude
              :version :collection-query
              :updated-since :updated-since
              :temporal :temporal

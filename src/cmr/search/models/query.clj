@@ -140,6 +140,12 @@
    max-value
    ])
 
+(defrecord EquatorCrossingLongitudeCondition
+  [
+   min-value
+   max-value
+   ])
+
 (defrecord CollectionQueryCondition
   [
    ;; The condition to find collections

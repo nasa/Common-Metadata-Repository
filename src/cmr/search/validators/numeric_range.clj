@@ -9,14 +9,14 @@
             [cmr.search.validators.messages :as m]
             [cmr.search.data.messages :as sdm]))
 
-(defn- min-is-lte-max
+(defn min-is-lte-max
   "Validates min is less than or equal to max."
   [{:keys [min-value max-value]}]
   (if (and min-value max-value (> min-value max-value))
     [(m/min-value-greater-than-max min-value max-value)]
     []))
 
-(defn- min-max-not-both-nil
+(defn min-max-not-both-nil
   "Validates that at least one of min/max are not nil."
   [{:keys [min-value max-value]}]
   (if (or min-value max-value)

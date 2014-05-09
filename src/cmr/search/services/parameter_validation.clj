@@ -2,6 +2,7 @@
   "Contains functions for validating query parameters"
   (:require [clojure.set :as set]
             [cmr.common.services.errors :as err]
+            [cmr.common.services.messages :as c-msg]
             [cmr.common.parameter-parser :as parser]
             [clojure.string :as s]
             [cmr.common.date-time-parser :as dt-parser]
@@ -11,7 +12,6 @@
             [cmr.search.services.parameter-converters.orbit-number :as on]
             [cmr.search.services.messages.orbit-number-messages :as on-msg]
             [cmr.search.services.messages.common-messages :as msg]
-            [cmr.common.parameter-parser :as pp]
             [camel-snake-kebab :as csk])
   (:import clojure.lang.ExceptionInfo))
 
@@ -163,16 +163,6 @@
     []))
 
 
-(defn cloud-cover-validation
-  "Validates cloud cover range values are numeric"
-  [concept-type params]
-  (if-let [cloud-cover (:cloud-cover params)]
-    (let [errors (pp/numeric-range-string-validation cloud-cover)]
-      (if-not (empty? errors)
-        errors
-        []))
-    []))
-
 (defn updated-since-validation
   "Validates updated-since parameter conforms to formats in data-time-parser NS"
   [concept-type params]
@@ -191,10 +181,11 @@
       [(attrib-msg/attributes-must-be-sequence-msg)])
     []))
 
-(defn- validate-orbit-number-map
-  "Validates an oribt-number parameter in the form of a map."
-  [orbit-number-map]
-  (let [{:keys [value min-value max-value]} orbit-number-map]
+(defn- validate-numeric-range-map
+  "Validates a numeric parameter in the form of a map, appending the message argument
+  to the error array on failure."
+  [param-map error-message-fn & args]
+  (let [{:keys [value min-value max-value]} param-map]
     (try
       (when value
         (Double. value))
@@ -204,18 +195,31 @@
         (Double. max-value))
       (if (or value min-value max-value)
         []
-        [(on-msg/invalid-orbit-number-msg)])
+        (if error-message-fn
+          [(apply error-message-fn args)]
+          [(c-msg/invalid-numeric-range-msg)]))
       (catch NumberFormatException e
-        [(on-msg/invalid-orbit-number-msg)]))))
+        [(apply error-message-fn args)]))))
 
-(defn- validate-orbit-number-string
-  "Validates an oribt-number parameter in the form orbit_number=value or
-  orbit_number=min,max."
-  [orbit-number-param]
-  (let [errors (parser/numeric-range-string-validation orbit-number-param)]
+(defn- validate-numeric-range-string-param
+  "Validates a numeric parameter in the form parameter=value or
+  parameter=min,max, appending the message argument to the error array on failure."
+  [param error-message-fn & args]
+  (let [errors (parser/numeric-range-string-validation param)]
     (if-not (empty? errors)
-      (concat [(on-msg/invalid-orbit-number-msg)] errors)
+      (if error-message-fn
+        (concat [(apply error-message-fn args)] errors)
+        errors)
       [])))
+
+(defn cloud-cover-validation
+  "Validates cloud cover range values are numeric"
+  [concept-type params]
+  (if-let [cloud-cover (:cloud-cover params)]
+    (if (string? cloud-cover)
+      (validate-numeric-range-string-param cloud-cover nil)
+      (validate-numeric-range-map cloud-cover nil))
+    []))
 
 (defn orbit-number-validation
   "Validates that the orbital number is either a single number or a range in the format
@@ -224,8 +228,18 @@
   [concept-type params]
   (if-let [orbit-number-param (:orbit-number params)]
     (if (string? orbit-number-param)
-      (validate-orbit-number-string orbit-number-param)
-      (validate-orbit-number-map orbit-number-param))
+      (validate-numeric-range-string-param orbit-number-param on-msg/invalid-orbit-number-msg)
+      (validate-numeric-range-map orbit-number-param on-msg/invalid-orbit-number-msg))
+    []))
+
+(defn equator-crossing-longitude-validation
+  "Validates that the equator_crossing_longitude parameter is a valid range string."
+  [concept-type params]
+  (if-let [equator_crossing_longitude (:equator-crossing-longitude params)]
+    (if (string? equator_crossing_longitude)
+      (validate-numeric-range-string-param equator_crossing_longitude nil)
+      (validate-numeric-range-map equator_crossing_longitude
+                                  on-msg/non-numeric-equator-crossing-longitude-parameter))
     []))
 
 (defn boolean-value-validation
@@ -250,6 +264,7 @@
    temporal-format-validation
    updated-since-validation
    orbit-number-validation
+   equator-crossing-longitude-validation
    cloud-cover-validation
    attribute-validation
    boolean-value-validation])

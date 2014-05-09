@@ -97,7 +97,18 @@
            (pv/orbit-number-validation :granule (assoc valid-params :orbit-number "A,10")))))
   (testing "Non-numeric stop-orbit-number"
     (is (= [(on-msg/invalid-orbit-number-msg) (com-msg/invalid-numeric-range-msg "10,A")]
-           (pv/orbit-number-validation :granule (assoc valid-params :orbit-number "10,A"))))))
+           (pv/orbit-number-validation :granule (assoc valid-params :orbit-number "10,A")))))
+
+  ;; Equator Crossing Longitude
+  (testing "Valid equator-crossing-longitude range"
+    (is (= []
+           (pv/equator-crossing-longitude-validation :granule (assoc valid-params :equator-crossing-longitude "10,120")))))
+  (testing "Non-numeric equator-crossing-longitude"
+    (is (= [(com-msg/invalid-numeric-range-msg "A,10")]
+           (pv/equator-crossing-longitude-validation :granule (assoc valid-params :equator-crossing-longitude "A,10")))))
+  (testing "Non-numeric equator-crossing-longitude"
+    (is (= [(com-msg/invalid-numeric-range-msg "10,A")]
+           (pv/equator-crossing-longitude-validation :granule (assoc valid-params :equator-crossing-longitude "10,A"))))))
 
 (deftest temporal-format-validation :collection-start-date-test
   (testing "valid-start-date"
