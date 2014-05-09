@@ -167,3 +167,75 @@
                                                           :sort-key sort-key}))
            "end_date" [g5 g1 g12 g2 g6 g7 g3 g4 g8 g9 g10 g11]
            "-end_date" [g8 g4 g3 g7 g6 g2 g12 g1 g5 g9 g10 g11]))))
+
+(deftest granule-platform-sorting-test
+  (let [coll (d/ingest "PROV1" (dc/collection {}))
+        make-gran (fn [& platforms]
+                    (d/ingest "PROV1"
+                              (dg/granule coll
+                                          {:platform-refs (map dg/platform-ref platforms)})))
+        g1 (make-gran "c10" "c41")
+        g2 (make-gran "c20" "c51")
+        g3 (make-gran "c30")
+        g4 (make-gran "c40")
+        g5 (make-gran "c50")]
+    (index/flush-elastic-index)
+    (are [sort-key items]
+         (d/refs-match-order? items
+                              (search/find-refs :granule {:page-size 20
+                                                          :sort-key sort-key}))
+
+         ;; Descending sorts by the min value of a multi value fields
+         "platform" [g1 g2 g3 g4 g5]
+         ;; Descending sorts by the max value of a multi value fields
+         "-platform" [g2 g5 g1 g4 g3])))
+
+(deftest granule-instrument-sorting-test
+  (let [coll (d/ingest "PROV1" (dc/collection {}))
+        make-gran (fn [& instruments]
+                    (d/ingest "PROV1"
+                              (dg/granule
+                                coll
+                                {:platform-refs [(apply dg/platform-ref (d/unique-str "platform")
+                                                        (map dg/instrument-ref instruments))]})))
+        g1 (make-gran "c10" "c41")
+        g2 (make-gran "c20" "c51")
+        g3 (make-gran "c30")
+        g4 (make-gran "c40")
+        g5 (make-gran "c50")]
+    (index/flush-elastic-index)
+    (are [sort-key items]
+         (d/refs-match-order? items
+                              (search/find-refs :granule {:page-size 20
+                                                          :sort-key sort-key}))
+
+         ;; Descending sorts by the min value of a multi value fields
+         "instrument" [g1 g2 g3 g4 g5]
+         ;; Descending sorts by the max value of a multi value fields
+         "-instrument" [g2 g5 g1 g4 g3])))
+
+(deftest granule-sensor-sorting-test
+  (let [coll (d/ingest "PROV1" (dc/collection {}))
+        make-gran (fn [& sensors]
+                    (d/ingest "PROV1"
+                              (dg/granule
+                                coll
+                                {:platform-refs [(dg/platform-ref
+                                                   (d/unique-str "platform")
+                                                   (apply dg/instrument-ref (d/unique-str "instrument")
+                                                          (map dg/sensor-ref sensors)))]})))
+        g1 (make-gran "c10" "c41")
+        g2 (make-gran "c20" "c51")
+        g3 (make-gran "c30")
+        g4 (make-gran "c40")
+        g5 (make-gran "c50")]
+    (index/flush-elastic-index)
+    (are [sort-key items]
+         (d/refs-match-order? items
+                              (search/find-refs :granule {:page-size 20
+                                                          :sort-key sort-key}))
+
+         ;; Descending sorts by the min value of a multi value fields
+         "sensor" [g1 g2 g3 g4 g5]
+         ;; Descending sorts by the max value of a multi value fields
+         "-sensor" [g2 g5 g1 g4 g3])))
