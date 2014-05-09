@@ -174,6 +174,7 @@
     (testing "search by sensor, single value"
       (are [sensor-sn items] (d/refs-match? items (search/find-refs :granule {:sensor sensor-sn}))
            "sensor_Sn A" [gran1 gran2 gran6 gran7]
+           "sensor_SnA" [gran4]
            "BLAH" []))
     (testing "search by sensor, multiple values"
       (is (d/refs-match? [gran1 gran2 gran4 gran6 gran7]
