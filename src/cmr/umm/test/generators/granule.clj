@@ -21,9 +21,6 @@
 (def coll-refs
   (gen/one-of [coll-refs-w-entry-title coll-refs-w-short-name-version]))
 
-(def proj-refs
-  (gen/vector (ext-gen/string-ascii 1 80)))
-
 (def product-specific-attribute-refs
   (ext-gen/model-gen g/->ProductSpecificAttributeRef psa/names (gen/vector psa/string-values 1 3)))
 
@@ -55,7 +52,7 @@
       :data-granule (ext-gen/optional data-granules)
       :temporal gt/temporal
       :orbit-calculated-spatial-domains (ext-gen/nil-if-empty (gen/vector ocsd/orbit-calculated-spatial-domains 0 5))
-      :project-refs (ext-gen/nil-if-empty proj-refs)
+      :project-refs (ext-gen/nil-if-empty (gen/vector (ext-gen/string-ascii 1 80) 0 3))
       :cloud-cover cloud-cover-values
       :related-urls (ext-gen/nil-if-empty (gen/vector related-url 0 5))
       :product-specific-attributes (ext-gen/nil-if-empty (gen/vector product-specific-attribute-refs 0 5)))))

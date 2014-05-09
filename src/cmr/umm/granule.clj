@@ -76,7 +76,7 @@
 
    orbit-calculated-spatial-domains
 
-   ;; references to projects/campaigns
+   ;; A sequence of short names of projects (aka campaigns) reference parent short names
    project-refs
 
    ;; references to onlineResources and onlineAccessURLs
