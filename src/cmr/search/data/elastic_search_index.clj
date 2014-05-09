@@ -15,6 +15,7 @@
             [cmr.search.data.query-to-elastic-converters.temporal]
             [cmr.search.data.query-to-elastic-converters.attribute]
             [cmr.search.data.query-to-elastic-converters.orbit-number]
+            [cmr.search.data.query-to-elastic-converters.equator-crossing-longitude]
 
             [cmr.search.data.elastic-results-to-query-results :as rc]
             [cmr.system-trace.core :refer [deftracefn]]
