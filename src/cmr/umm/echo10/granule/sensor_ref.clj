@@ -1,0 +1,25 @@
+(ns cmr.umm.echo10.granule.sensor-ref
+  (:require [clojure.data.xml :as x]
+            [cmr.common.xml :as cx]
+            [cmr.umm.granule :as g]))
+
+(defn xml-elem->SensorRef
+  [sensor-ref-elem]
+  (let [short-name (cx/string-at-path sensor-ref-elem [:ShortName])]
+    (g/->SensorRef short-name)))
+
+(defn xml-elem->SensorRefs
+  [instrument-element]
+  (seq (map xml-elem->SensorRef
+            (cx/elements-at-path
+              instrument-element
+              [:Sensors :Sensor]))))
+
+(defn generate-sensor-refs
+  [sensor-refs]
+  (when-not (empty? sensor-refs)
+    (x/element
+      :Sensors {}
+      (for [sensor-ref sensor-refs]
+        (x/element :Sensor {}
+                   (x/element :ShortName {} (:short-name sensor-ref)))))))

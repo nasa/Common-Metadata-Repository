@@ -43,6 +43,28 @@
 (def cloud-cover-values
   (ext-gen/optional  (gen/frequency [[7 (ext-gen/choose-double 0.0 100.0)] [3 (ext-gen/choose-double 0.0 1.0)]])))
 
+(def sensor-ref-short-names
+  (ext-gen/string-ascii 1 80))
+
+(def sensor-refs
+  (ext-gen/model-gen g/->SensorRef sensor-ref-short-names))
+
+(def instrument-ref-short-names
+  (ext-gen/string-ascii 1 80))
+
+(def instrument-refs
+  (ext-gen/model-gen g/->InstrumentRef
+                     instrument-ref-short-names
+                     (ext-gen/nil-if-empty (gen/vector sensor-refs 0 4))))
+
+(def platform-ref-short-names
+  (ext-gen/string-ascii 1 80))
+
+(def platform-refs
+  (ext-gen/model-gen g/->PlatformRef
+                     platform-ref-short-names
+                     (ext-gen/nil-if-empty (gen/vector instrument-refs 0 4))))
+
 (def granules
   (ext-gen/model-gen
     g/map->UmmGranule
@@ -52,6 +74,7 @@
       :data-granule (ext-gen/optional data-granules)
       :temporal gt/temporal
       :orbit-calculated-spatial-domains (ext-gen/nil-if-empty (gen/vector ocsd/orbit-calculated-spatial-domains 0 5))
+      :platform-refs (ext-gen/nil-if-empty (gen/vector platform-refs 0 4))
       :project-refs (ext-gen/nil-if-empty (gen/vector (ext-gen/string-ascii 1 80) 0 3))
       :cloud-cover cloud-cover-values
       :related-urls (ext-gen/nil-if-empty (gen/vector related-url 0 5))

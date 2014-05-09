@@ -88,25 +88,33 @@
       </AdditionalAttribute>
     </AdditionalAttributes>
     <Platforms>
-    <Platform>
-      <ShortName>RADARSAT-1</ShortName>
-      <LongName>RADARSAT-LONG-1</LongName>
-      <Type>Spacecraft</Type>
-      <Instruments>
-        <Instrument>
-          <ShortName>SAR</ShortName>
-        </Instrument>
-        <Instrument>
-          <ShortName>MAR</ShortName>
-        </Instrument>
-      </Instruments>
-    </Platform>
-    <Platform>
-      <ShortName>RADARSAT-2</ShortName>
-      <LongName>RADARSAT-LONG-2</LongName>
-      <Type>Spacecraft-2</Type>
-    </Platform>
-  </Platforms>
+      <Platform>
+        <ShortName>RADARSAT-1</ShortName>
+        <LongName>RADARSAT-LONG-1</LongName>
+        <Type>Spacecraft</Type>
+        <Instruments>
+          <Instrument>
+            <ShortName>SAR</ShortName>
+            <Sensors>
+              <Sensor>
+                <ShortName>SNA</ShortName>
+              </Sensor>
+              <Sensor>
+                <ShortName>SNB</ShortName>
+              </Sensor>
+            </Sensors>
+          </Instrument>
+          <Instrument>
+            <ShortName>MAR</ShortName>
+          </Instrument>
+        </Instruments>
+      </Platform>
+      <Platform>
+        <ShortName>RADARSAT-2</ShortName>
+        <LongName>RADARSAT-LONG-2</LongName>
+        <Type>Spacecraft-2</Type>
+      </Platform>
+    </Platforms>
     <Campaigns>
       <Campaign>
         <ShortName>ESI</ShortName>
@@ -214,8 +222,11 @@
                        {:short-name "RADARSAT-1"
                         :long-name "RADARSAT-LONG-1"
                         :type "Spacecraft"
-                        :instruments [(umm-c/->Instrument "SAR")
-                                      (umm-c/->Instrument "MAR")]})
+                        :instruments [(umm-c/->Instrument
+                                        "SAR"
+                                        [(umm-c/->Sensor "SNA")
+                                         (umm-c/->Sensor "SNB")])
+                                      (umm-c/->Instrument "MAR" nil)]})
                      (umm-c/map->Platform
                        {:short-name "RADARSAT-2"
                         :long-name "RADARSAT-LONG-2"

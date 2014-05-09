@@ -62,6 +62,23 @@
    description
   ])
 
+(defrecord SensorRef
+  [
+   short-name
+  ])
+
+(defrecord InstrumentRef
+  [
+   short-name
+   sensor-refs
+  ])
+
+(defrecord PlatformRef
+  [
+   short-name
+   instrument-refs
+  ])
+
 (defrecord UmmGranule
   [
    ;; maps to Granule/GranuleUR in echo granule schema
@@ -75,6 +92,8 @@
    temporal
 
    orbit-calculated-spatial-domains
+
+   platform-refs
 
    ;; A sequence of short names of projects (aka campaigns) reference parent short names
    project-refs
