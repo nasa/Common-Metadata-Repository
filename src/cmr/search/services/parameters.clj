@@ -34,6 +34,7 @@
                 :concept-id :string
                 :platform :string
                 :instrument :string
+                :sensor :string
                 :project :string
                 :archive-center :string
                 :two-d-coordinate-system-name :string}
@@ -50,6 +51,9 @@
              :version :collection-query
              :updated-since :updated-since
              :temporal :temporal
+             :platform :string
+             :instrument :string
+             :sensor :string
              :project :string
              :cloud-cover :num-range
              :concept-id :string

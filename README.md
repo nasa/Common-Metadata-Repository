@@ -137,6 +137,59 @@ The temporal datetime has to be in yyyy-MM-ddTHH:mm:ssZ format.
 
      curl "http://localhost:3003/collections?processing_level_id\[\]=1b&options\[processing_level_id\]\[ignore-case\]=true"
 
+### Find collections by platform param
+
+  Find collections matching 'platform' param value
+
+     curl "http://localhost:3003/collections?platform\[\]=1B"
+
+  Find collections matching any of the 'platform' param values
+
+     curl "http://localhost:3003/collections?platform\[\]=1B&platform\[\]=2B"
+
+  Find collections matching 'platform' param value pattern
+
+     curl "http://localhost:3003/collections?platform\[\]=*B&options\[platform\]\[pattern\]=true"
+
+  Find collections matching 'platform' param value ignoring case
+
+     curl "http://localhost:3003/collections?platform\[\]=1b&options\[platform\]\[ignore-case\]=true"
+
+### Find collections by instrument param
+
+  Find collections matching 'instrument' param value
+
+     curl "http://localhost:3003/collections?instrument\[\]=1B"
+
+  Find collections matching any of the 'instrument' param values
+
+     curl "http://localhost:3003/collections?instrument\[\]=1B&instrument\[\]=2B"
+
+  Find collections matching 'instrument' param value pattern
+
+     curl "http://localhost:3003/collections?instrument\[\]=*B&options\[instrument\]\[pattern\]=true"
+
+  Find collections matching 'instrument' param value ignoring case
+
+     curl "http://localhost:3003/collections?instrument\[\]=1b&options\[instrument\]\[ignore-case\]=true"
+
+### Find collections by sensor param
+
+  Find collections matching 'sensor' param value
+
+     curl "http://localhost:3003/collections?sensor\[\]=1B"
+
+  Find collections matching any of the 'sensor' param values
+
+     curl "http://localhost:3003/collections?sensor\[\]=1B&sensor\[\]=2B"
+
+  Find collections matching 'sensor' param value pattern
+
+     curl "http://localhost:3003/collections?sensor\[\]=*B&options\[sensor\]\[pattern\]=true"
+
+  Find collections matching 'sensor' param value ignoring case
+
+     curl "http://localhost:3003/collections?sensor\[\]=1b&options\[sensor\]\[ignore-case\]=true"
 
 #### Sorting Collection Results
 
@@ -241,6 +294,17 @@ Multiple attributes can be provided. The default is for granules to match all th
 
      curl "http://localhost:3003/granules?cloud_cover=-70.0,120.0"
 
+### Find collections by platform param
+
+     curl "http://localhost:3003/granules?platform\[\]=1B"
+
+### Find collections by instrument param
+
+     curl "http://localhost:3003/granules?instrument\[\]=1B"
+
+### Find collections by sensor param
+
+     curl "http://localhost:3003/granules?sensor\[\]=1B"
 
 #### Sorting Granule Results
 
