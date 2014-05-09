@@ -32,6 +32,13 @@
             [cmr.search.validators.orbit-number]
             [cmr.search.validators.equator-crossing-longitude]
 
+            ;; Query To Elastic implementations
+            ;; Must be required here to be available in uberjar
+            [cmr.search.data.query-to-elastic-converters.temporal]
+            [cmr.search.data.query-to-elastic-converters.attribute]
+            [cmr.search.data.query-to-elastic-converters.orbit-number]
+            [cmr.search.data.query-to-elastic-converters.equator-crossing-longitude]
+
             [cmr.search.services.parameter-validation :as pv]
             [cmr.search.services.collection-query-resolver :as r]
             [cmr.transmit.metadata-db :as meta-db]

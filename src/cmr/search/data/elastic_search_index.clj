@@ -10,13 +10,6 @@
             [cmr.search.data.query-to-elastic :as q2e]
             [cmr.search.services.parameters :as p]
 
-            ;; Query To Elastic implementations
-            ;; Must be required here to be available in uberjar
-            [cmr.search.data.query-to-elastic-converters.temporal]
-            [cmr.search.data.query-to-elastic-converters.attribute]
-            [cmr.search.data.query-to-elastic-converters.orbit-number]
-            [cmr.search.data.query-to-elastic-converters.equator-crossing-longitude]
-
             [cmr.search.data.elastic-results-to-query-results :as rc]
             [cmr.system-trace.core :refer [deftracefn]]
             [cmr.common.services.errors :as e]))
