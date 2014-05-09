@@ -52,10 +52,20 @@
     (when (or begin end)
       (ct/temporal {:range-date-times [(c/->RangeDateTime begin end)]}))))
 
+(defn sensor
+  "Return an sensor based on sensor short-name"
+  [sensor-sn]
+  (c/->Sensor sensor-sn))
+
 (defn instrument
-  "Return an instrument based on instrument short-name"
-  [instrument-sn]
-  (c/->Instrument instrument-sn))
+  "Return an instrument based on instrument attribs"
+  ([instrument-sn]
+   (c/map->Instrument
+     {:short-name instrument-sn}))
+  ([instrument-sn & sensors]
+   (c/map->Instrument
+     {:short-name instrument-sn
+      :sensors sensors})))
 
 (defn platform
   "Return a platform based on platform attribs"
