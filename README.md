@@ -91,7 +91,7 @@ The temporal datetime has to be in yyyy-MM-ddTHH:mm:ssZ format.
 
     curl "http://localhost:3003/collections?temporal\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z,30,60&temporal\[\]=2000-01-01T10:00:00Z,,30&temporal\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z"
 
-### Find collections by campaign param
+### Find collections by campaign param. Note: 'campaign' maps to 'project' in UMM
 
   Find collections matching 'campaign' param value
 
