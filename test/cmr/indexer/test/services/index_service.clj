@@ -17,12 +17,15 @@
         platforms [{:short-name "PLATFORM ONE"
                     :long-name "dummy"
                     :type "Dummy"
-                    :instruments [{:short-name "SAR"}
+                    :instruments [{:short-name "SAR"
+                                   :sensors [{:short-name "DAR"}
+                                             {:short-name "TAR"}]}
                                   {:short-name "MAR"}]}
                    {:short-name "PLATFORM TWO"
                     :long-name "dummy"
                     :type "Dummy"
-                    :instruments [{:short-name "DAR"}]}]
+                    :instruments [{:short-name "DAR"
+                                   :sensors [{:short-name "WAR"}]}]}]
         projects [{:short-name "ESI"
                    :long-name "dummy"}
                   {:short-name "EVI"
@@ -64,6 +67,8 @@
                   :platform-sn.lowercase ["platform one" "platform two"]
                   :instrument-sn ["SAR" "MAR" "DAR"]
                   :instrument-sn.lowercase ["sar" "mar" "dar"]
+                  :sensor-sn ["DAR" "TAR" "WAR"]
+                  :sensor-sn.lowercase ["dar" "tar" "war"]
                   :project-sn ["ESI" "EVI" "EPI"]
                   :project-sn.lowercase ["esi" "evi" "epi"]
                   :archive-center ["SEDAC AC"]

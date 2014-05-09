@@ -98,6 +98,8 @@
                              :platform-sn.lowercase string-field-mapping
                              :instrument-sn           string-field-mapping
                              :instrument-sn.lowercase string-field-mapping
+                             :sensor-sn             string-field-mapping
+                             :sensor-sn.lowercase   string-field-mapping
                              :project-sn            string-field-mapping
                              :project-sn.lowercase  string-field-mapping
                              :archive-center        string-field-mapping
