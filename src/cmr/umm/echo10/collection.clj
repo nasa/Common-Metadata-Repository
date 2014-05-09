@@ -19,7 +19,8 @@
   [collection-content]
   (c/map->Product {:short-name (cx/string-at-path collection-content [:ShortName])
                    :long-name (cx/string-at-path collection-content [:LongName])
-                   :version-id (cx/string-at-path collection-content [:VersionId])}))
+                   :version-id (cx/string-at-path collection-content [:VersionId])
+                   :processing-level-id (cx/string-at-path collection-content [:ProcessingLevelId])}))
 
 (defn- xml-elem->Collection
   "Returns a UMM Product from a parsed Collection XML structure"
@@ -45,7 +46,7 @@
   UmmCollection
   (umm->echo10-xml
     [collection]
-    (let [{{:keys [short-name long-name version-id]} :product
+    (let [{{:keys [short-name long-name version-id processing-level-id]} :product
            dataset-id :entry-title} collection]
       (x/emit-str
         (x/element :Collection {}
@@ -61,6 +62,8 @@
                    (x/element :Visible {} "true")
                    ;; archive center to follow processing center
                    (org/generate-processing-center (:organizations collection))
+                   (when processing-level-id
+                     (x/element :ProcessingLevelId {} processing-level-id))
                    (org/generate-archive-center (:organizations collection))
                    (t/generate-temporal (:temporal collection))
                    (platform/generate-platforms (:platforms collection))

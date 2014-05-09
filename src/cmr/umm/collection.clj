@@ -6,6 +6,7 @@
    short-name
    long-name
    version-id
+   processing-level-id
    ])
 
 (defrecord RangeDateTime
