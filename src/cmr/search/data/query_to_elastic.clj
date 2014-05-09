@@ -16,7 +16,8 @@
                 :updated-since :revision-date
                 :two-d-coordinate-system-name :two-d-coord-name
                 :platform :platform-sn
-                :instrument :instrument-sn}
+                :instrument :instrument-sn
+                :sensor :sensor-sn}
 
    :granule {:provider :provider-id
              :producer-granule-id :producer-gran-id

@@ -34,6 +34,7 @@
                 :concept-id :string
                 :platform :string
                 :instrument :string
+                :sensor :string
                 :project :string
                 :archive-center :string
                 :two-d-coordinate-system-name :string}
