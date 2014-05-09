@@ -86,7 +86,8 @@
        :pattern? (= "true" (get-in options [param :pattern]))})))
 
 ;; Construct an inheritance query condition for granules.
-;; This query needs to respect the inheritance of its dataset's corresponding fields.
+;; This will find granules which either have explicitly specified a value
+;; or have not specified any value for the field and inherit it from their parent collection.
 (defmethod parameter->condition :inheritance
   [concept-type param value options]
   (let [field-condition (parameter->condition :collection param value options)]
