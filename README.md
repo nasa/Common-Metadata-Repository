@@ -225,6 +225,24 @@ Multiple attributes can be provided. The default is for granules to match all th
 
     curl "http://localhost:3003/granules?orbit_number=0.5,1.5"
 
+### Find granules by orbit equator crossing longitude
+
+  Find granules with an orbit equator crossing longitude in the range of 0 to 10
+
+    curl "http://localhost:3003/granules?:equator+crossing_longitude=0,10
+
+  Find granules with an equator crossing longitude in the range from 170 to -170
+  (across the antimeridian)
+
+    curl "http://localhost:3003/granules?:equator+crossing_longitude=170,-170
+
+### Find granules by orbit equator crossing date
+
+  Find granules with an orbit equator crossing date in the range of
+  2000-01-01T10:00:00Z to 2010-03-10T12:00:00Z
+
+    curl "http://localhost:3003/granules?:equator+crossing_date=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z
+
 ### Find granules by updated_since param
 
   Find granules which have revision date starting at or after 'updated_since' param value
