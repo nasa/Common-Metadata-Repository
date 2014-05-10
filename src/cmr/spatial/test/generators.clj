@@ -4,7 +4,7 @@
             [cmr.spatial.point :as p]
             [cmr.spatial.vector :as v]
             [cmr.spatial.mbr :as mbr]
-            ))
+            [cmr.spatial.arc :as a]))
 
 (def vectors
   (let [vector-num (ext-gen/choose-double -10 10)]
@@ -35,7 +35,7 @@
     ;; Use latitudes to pick a middle latitude
     (gen/such-that (fn [lat]
                      (and (> lat -90) (< lat 90)))
-                     lats)
+                   lats)
     (fn [middle-lat]
       ;; Generate a tuple of latitudes around middle
       (gen/tuple
@@ -49,3 +49,15 @@
     (fn [[[south north] west east]]
       (mbr/mbr west north east south))
     (gen/tuple lat-ranges lons lons)))
+
+(def arcs
+  (gen/fmap (fn [[p1 p2]] (a/arc p1 p2))
+            (gen/bind
+              points
+              (fn [p]
+                (gen/tuple (gen/return p)
+                           (gen/such-that
+                             (fn [p2]
+                               (and (not= p p2)
+                                    (not (p/antipodal? p p2))))
+                             points))))))
