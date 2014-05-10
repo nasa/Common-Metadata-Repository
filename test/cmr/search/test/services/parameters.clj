@@ -77,5 +77,19 @@
              :order :desc}]
            (p/parse-sort-key ["short-name" "-entry-title"])))))
 
+(deftest handle-legacy-condtions
+  (testing "legacy equator date crossing"
+    (are [params params-with-legacy] (= params (p/process-legacy-multi-params-conditions :granule params-with-legacy))
+         {:equator-crossing-date "2000-04-15T12:00:00Z,2000-04-15T12:01:00Z"} {:equator-crossing-start-date "2000-04-15T12:00:00Z"
+                                                                               :equator-crossing-end-date "2000-04-15T12:01:00Z"}
+         {:equator-crossing-date "2000-04-15T12:00:00Z,"} {:equator-crossing-start-date "2000-04-15T12:00:00Z"}
+         {:equator-crossing-date ",2000-04-15T12:01:00Z"} {:equator-crossing-end-date "2000-04-15T12:01:00Z"}))
+  (testing "legacy range conditions"
+    (are [params params-with-legacy] (= params (p/process-legacy-multi-params-conditions :granule params-with-legacy))
+         {:some-param "ABC,XYZ"} {:some-param {:min-value "ABC" :max-value "XYZ"}}
+         {:some-param "ABC,"} {:some-param {:min-value "ABC"}}
+         {:some-param ",XYZ"} {:some-param {:max-value "XYZ"}}
+         {:some-param "ABC"} {:some-param {:value "ABC"}})))
+
 
 

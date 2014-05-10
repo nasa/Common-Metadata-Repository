@@ -105,6 +105,7 @@
                                                      (csk/->kebab-case %)))))]
     (->> params
          p/replace-parameter-aliases
+         (p/process-legacy-multi-params-conditions concept-type)
          (pv/validate-parameters concept-type)
          (p/parameters->query concept-type)
          (find-concepts-by-query context))))

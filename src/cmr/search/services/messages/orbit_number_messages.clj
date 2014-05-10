@@ -16,3 +16,7 @@
 (defn non-numeric-value-failed-validation
   []
   "Non-numeric value failed validation. This should have been rejected by parameter validation.")
+
+(defn date-time-range-failed-validation
+  []
+  "Date time range failed validation. This should have been rejected by parameter validation.")

@@ -48,6 +48,7 @@
              :short-name :collection-query
              :orbit-number :orbit-number
              :equator-crossing-longitude :equator-crossing-longitude
+             :equator-crossing-date :equator-crossing-date
              :version :collection-query
              :updated-since :updated-since
              :temporal :temporal
@@ -142,6 +143,48 @@
         [{:order direction
           :field (or (param-aliases field)
                      field)}]))))
+
+;; Changes lagacy map range condtions in the param[minValue]/param[maxValue] format
+;; to the cmr format: min,max.
+(defn- proces-legacy-range-maps
+  [concept-type params]
+  (reduce-kv (fn [memo k v]
+               ;; look for parameters in the map form
+               (if (map? v)
+                 (let [{:keys [value min-value max-value]} v]
+                   (if (or value min-value max-value)
+                     ;; convert the map into a comma separated string
+                     (if value
+                       (assoc memo k value)
+                       (assoc memo k (str min-value "," max-value)))
+                     memo))
+                 memo))
+             params
+             params))
+
+
+(defn- process-equator-crossing-date
+  [concept-type params]
+  (let [{:keys [equator-crossing-start-date equator-crossing-end-date]} params]
+    (if (or equator-crossing-start-date equator-crossing-end-date)
+      (-> params
+          (dissoc :equator-crossing-start-date :equator-crossing-end-date)
+          (assoc :equator-crossing-date (str equator-crossing-start-date
+                                             ","
+                                             equator-crossing-end-date)))
+      params)))
+
+;; Add others to this list as needed - note that order is important here
+(def legacy-multi-params-condition-funcs
+  [process-equator-crossing-date
+   proces-legacy-range-maps])
+
+(defn process-legacy-multi-params-conditions
+  "Handle conditions that use a legacy range style of using two parameters to specify a range."
+  [concept-type params]
+  (reduce #(%2 concept-type %1)
+          params
+          legacy-multi-params-condition-funcs))
 
 (defn parameters->query
   "Converts parameters into a query model."
