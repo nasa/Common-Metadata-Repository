@@ -5,6 +5,7 @@
             [cmr.search.models.query :as qm]
             [cmr.search.data.datetime-helper :as h]
             [cmr.common.services.errors :as errors]
+            [cmr.common.concepts :as cc]
             [cmr.search.data.messages :as m]))
 
 (def field-mappings
@@ -27,10 +28,18 @@
              :sensor :sensor-sn
              :project :project-refs}})
 
+(def granule-parent-es-field :collection-concept-id)
+
 (defn query-field->elastic-field
   "Returns the elastic field name for the equivalent query field name."
-  [field concept-type]
-  (get-in field-mappings [concept-type field] field))
+  ([field concept-type]
+   (get-in field-mappings [concept-type field] field))
+  ([field concept-type value]
+   (if (and (= :granule concept-type)
+            (= :concept-id field)
+            (= :collection (-> value cc/parse-concept-id  :concept-type)))
+     (query-field->elastic-field granule-parent-es-field concept-type)
+     (query-field->elastic-field field concept-type))))
 
 (defprotocol ConditionToElastic
   "Defines a function to map from a query to elastic search query"
@@ -85,7 +94,8 @@
   cmr.search.models.query.StringCondition
   (condition->elastic
     [{:keys [field value case-sensitive? pattern?]} concept-type]
-    (let [field (query-field->elastic-field field concept-type)
+    (let [field (query-field->elastic-field field concept-type value)
+          ;; field (query-field->value-based-elastic-field field concept-type value)
           field (if case-sensitive? field (str (name field) ".lowercase"))
           value (if case-sensitive? value (s/lower-case value))]
       (if pattern?

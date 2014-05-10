@@ -11,7 +11,9 @@
   {:dataset-id :entry-title
    :dif-entry-id :entry-id
    :campaign :project
-   :online-only :downloadable})
+   :online-only :downloadable
+   :echo-collection-id :concept-id
+   :echo-granule-id :concept-id})
 
 (defn replace-parameter-aliases
   "Replaces aliases of parameter names"
