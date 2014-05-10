@@ -76,9 +76,6 @@
               :data-size
               :cloud-cover
               :campaign
-              :platform
-              :instrument
-              :sensor
               :project}})
 
 (defn sort-key-validation
@@ -253,9 +250,8 @@
   "Validates that the equator_crossing_date parameter is a valid date range string."
   [concept-type params]
   (if-let [equator-crossing-date (:equator-crossing-date params)]
-    (do (println "validating date-time-range")
     (parser/date-time-range-string-validation equator-crossing-date))
-    []))
+  [])
 
 (defn boolean-value-validation
   [concept-type params]
