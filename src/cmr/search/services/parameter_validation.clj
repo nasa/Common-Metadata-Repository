@@ -250,8 +250,8 @@
   "Validates that the equator_crossing_date parameter is a valid date range string."
   [concept-type params]
   (if-let [equator-crossing-date (:equator-crossing-date params)]
-    (parser/date-time-range-string-validation equator-crossing-date))
-  [])
+    (parser/date-time-range-string-validation equator-crossing-date)
+    []))
 
 (defn boolean-value-validation
   [concept-type params]
