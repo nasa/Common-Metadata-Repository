@@ -2,7 +2,9 @@
   (:require [clojure.test.check.generators :as gen]
             [cmr.common.test.test-check-ext :as ext-gen :refer [optional]]
             [cmr.spatial.point :as p]
-            [cmr.spatial.vector :as v]))
+            [cmr.spatial.vector :as v]
+            [cmr.spatial.mbr :as mbr]
+            ))
 
 (def vectors
   (let [vector-num (ext-gen/choose-double -10 10)]
@@ -26,3 +28,24 @@
                        (= num (count point-set)))
                      (every? #(not (point-set (p/antipodal %))) points)))
                  (apply gen/tuple (repeat num points))))
+
+(def lat-ranges
+  "Tuples containing a latitude range from low to high"
+  (gen/bind
+    ;; Use latitudes to pick a middle latitude
+    (gen/such-that (fn [lat]
+                     (and (> lat -90) (< lat 90)))
+                     lats)
+    (fn [middle-lat]
+      ;; Generate a tuple of latitudes around middle
+      (gen/tuple
+        ;; Pick southern latitude somewhere between -90 and just below middle lat
+        (ext-gen/choose-double -90 (- middle-lat 0.0001))
+        ;; Pick northern lat from middle lat to 90
+        (ext-gen/choose-double middle-lat 90)))))
+
+(def mbrs
+  (gen/fmap
+    (fn [[[south north] west east]]
+      (mbr/mbr west north east south))
+    (gen/tuple lat-ranges lons lons)))
