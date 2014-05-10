@@ -76,6 +76,9 @@
               :data-size
               :cloud-cover
               :campaign
+              :platform
+              :instrument
+              :sensor
               :project}})
 
 (defn sort-key-validation

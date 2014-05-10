@@ -3,6 +3,7 @@
   (:require [clojure.set :as set]
             [cmr.common.services.errors :as errors]
             [cmr.search.models.query :as qm]
+            [cmr.search.data.query-to-elastic :as q2e]
             [cmr.common.date-time-parser :as dt-parser]
             [cmr.common.util :as u]))
 
@@ -52,9 +53,9 @@
              :version :collection-query
              :updated-since :updated-since
              :temporal :temporal
-             :platform :string
-             :instrument :string
-             :sensor :string
+             :platform :inheritance
+             :instrument :inheritance
+             :sensor :inheritance
              :project :string
              :cloud-cover :num-range
              :concept-id :string
@@ -85,6 +86,17 @@
        :case-sensitive? (not= "true" (get-in options [param :ignore-case]))
        :pattern? (= "true" (get-in options [param :pattern]))})))
 
+;; Construct an inheritance query condition for granules.
+;; This will find granules which either have explicitly specified a value
+;; or have not specified any value for the field and inherit it from their parent collection.
+(defmethod parameter->condition :inheritance
+  [concept-type param value options]
+  (let [field-condition (parameter->condition :collection param value options)]
+    (qm/or-conds
+      [field-condition
+       (qm/and-conds
+         [(qm/->CollectionQueryCondition field-condition)
+          (qm/map->MissingCondition {:field (q2e/query-field->elastic-field param concept-type)})])])))
 
 (defmethod parameter->condition :updated-since
   [concept-type param value options]
