@@ -107,3 +107,62 @@
                          (search/find-refs :collection {"instrument[]" ["instrument_Sn a" "instrument_Sn A"]
                                                         "options[instrument][and]" "true"}))))))
 
+(deftest search-by-sensor-short-names
+  (let [s1 (dc/sensor "sensor_Sn A")
+        s2 (dc/sensor "sensor_Sn a")
+        s3 (dc/sensor "sensor_SnA")
+        s4 (dc/sensor "sensor_Snx")
+        i1 (dc/instrument "instrument_1" s1)
+        i2 (dc/instrument "instrument_2" s2)
+        i3 (dc/instrument "instrument_3" s3)
+        i4 (dc/instrument "instrument_4" s4)
+        i5 (dc/instrument "instrument_5" s1 s2)
+        p1 (dc/platform "platform_1" i1)
+        p2 (dc/platform "platform_2" i2)
+        p3 (dc/platform "platform_3" i3)
+        p4 (dc/platform "platform_4" i4)
+        p5 (dc/platform "platform_5" i5)
+        p6 (dc/platform "platform_6" i1 i2)
+        coll1 (d/ingest "CMR_PROV1" (dc/collection {:platforms [p1]}))
+        coll2 (d/ingest "CMR_PROV1" (dc/collection {:platforms [p1 p2]}))
+        coll3 (d/ingest "CMR_PROV1" (dc/collection {:platforms [p2]}))
+        coll4 (d/ingest "CMR_PROV2" (dc/collection {:platforms [p3]}))
+        coll5 (d/ingest "CMR_PROV2" (dc/collection {:platforms [p4]}))
+        coll6 (d/ingest "CMR_PROV2" (dc/collection {:platforms [p5]}))
+        coll7 (d/ingest "CMR_PROV2" (dc/collection {:platforms [p6]}))
+        coll8 (d/ingest "CMR_PROV2" (dc/collection {}))]
+
+    (index/flush-elastic-index)
+
+    (testing "search by sensor, single value"
+      (are [sensor-sn items] (d/refs-match? items (search/find-refs :collection {:sensor sensor-sn}))
+           "sensor_Sn A" [coll1 coll2 coll6 coll7]
+           "BLAH" []))
+    (testing "search by sensor, multiple values"
+      (is (d/refs-match? [coll1 coll2 coll4 coll6 coll7]
+                         (search/find-refs :collection {"sensor[]" ["sensor_SnA" "sensor_Sn A"]}))))
+    (testing "search by sensor, ignore case true"
+      (is (d/refs-match? [coll1 coll2 coll3 coll6 coll7]
+                         (search/find-refs :collection {"sensor[]" ["sensor_Sn A"]
+                                                        "options[sensor][ignore-case]" "true"}))))
+    (testing "search by sensor, ignore case false"
+      (is (d/refs-match? [coll1 coll2 coll6 coll7]
+                         (search/find-refs :collection {"sensor[]" ["sensor_Sn A"]
+                                                        "options[sensor][ignore-case]" "false"}))))
+    (testing "search by sensor, wildcard *"
+      (is (d/refs-match? [coll1 coll2 coll3 coll6 coll7]
+                         (search/find-refs :collection {"sensor[]" ["sensor_Sn *"]
+                                                        "options[sensor][pattern]" "true"}))))
+    (testing "search by sensor, wildcard ?"
+      (is (d/refs-match? [coll4 coll5]
+                         (search/find-refs :collection {"sensor[]" ["sensor_Sn?"]
+                                                        "options[sensor][pattern]" "true"}))))
+    (testing "search by sensor, options :or."
+      (is (d/refs-match? [coll1 coll2 coll3 coll6 coll7]
+                         (search/find-refs :collection {"sensor[]" ["sensor_Sn a" "sensor_Sn A"]
+                                                        "options[sensor][or]" "true"}))))
+    (testing "search by sensor, options :and."
+      (is (d/refs-match? [coll2 coll6 coll7]
+                         (search/find-refs :collection {"sensor[]" ["sensor_Sn a" "sensor_Sn A"]
+                                                        "options[sensor][and]" "true"}))))))
+
