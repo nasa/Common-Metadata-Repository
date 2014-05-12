@@ -31,18 +31,23 @@
         g4 (make-gran "2011-02-02T12:00:10Z")
         g5 (make-gran "2011-02-02T12:01:00Z")
         g6 (make-gran "2011-02-03T12:10:00Z")
-        g7 (make-gran "2011-02-07T12:01:00Z")]
+        g7 (make-gran "2011-02-07T12:01:00Z")
+        g8 (make-gran "2011-02-07T12:01:00.100Z")
+        g9 (make-gran "2011-02-08T12:00:00-04:00")]
     (index/flush-elastic-index)
-    (are [date-range items]
-         (d/refs-match? items (search/find-refs :granule {:equator-crossing-date date-range}))
-         "2011-02-01T12:00:00Z,2011-02-02T12:00:01Z" [g1 g2 g3]
-         "2011-02-03T12:00:00Z," [g6 g7]
-         ",2011-02-02T12:00:10Z" [g1 g2 g3 g4])
-    ;; catalog-rest style
-    (are [start-date end-date items]
-         (d/refs-match? items (search/find-refs :granule {:equator-crossing-start-date start-date
-                                                          :equator-crossing-end-date end-date}))
-         "2011-02-01T12:00:00Z" "2011-02-02T12:00:01Z" [g1 g2 g3]
-         "2011-02-03T12:00:00Z" nil [g6 g7]
-         nil "2011-02-02T12:00:10Z" [g1 g2 g3 g4])))
+    (testing "equator-crossing-date"
+      (are [date-range items]
+           (d/refs-match? items (search/find-refs :granule {:equator-crossing-date date-range}))
+           "2011-02-01T12:00:00Z,2011-02-02T12:00:01Z" [g1 g2 g3]
+           "2011-02-03T12:00:00Z," [g6 g7 g8 g9]
+           ",2011-02-02T12:00:10Z" [g1 g2 g3 g4]
+           "2011-02-08T12:00:00-03:00," [g9]
+           "2011-02-07T12:01:00.090Z,2011-02-07T12:01:00.110Z" [g8]))
+    (testing "catalog-rest style"
+      (are [start-date end-date items]
+           (d/refs-match? items (search/find-refs :granule {:equator-crossing-start-date start-date
+                                                            :equator-crossing-end-date end-date}))
+           "2011-02-01T12:00:00Z" "2011-02-02T12:00:01Z" [g1 g2 g3]
+           "2011-02-03T12:00:00Z" nil [g6 g7 g8 g9]
+           nil "2011-02-02T12:00:10Z" [g1 g2 g3 g4]))))
 
