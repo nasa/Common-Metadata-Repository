@@ -22,6 +22,7 @@
             [cmr.search.services.parameter-converters.attribute]
             [cmr.search.services.parameter-converters.orbit-number]
             [cmr.search.services.parameter-converters.equator-crossing-longitude]
+            [cmr.search.services.parameter-converters.equator-crossing-date]
 
             ;; Validation
             [cmr.search.validators.validation :as v]
@@ -31,6 +32,7 @@
             [cmr.search.validators.numeric-range]
             [cmr.search.validators.orbit-number]
             [cmr.search.validators.equator-crossing-longitude]
+            [cmr.search.validators.equator-crossing-date]
 
             ;; Query To Elastic implementations
             ;; Must be required here to be available in uberjar
@@ -38,6 +40,7 @@
             [cmr.search.data.query-to-elastic-converters.attribute]
             [cmr.search.data.query-to-elastic-converters.orbit-number]
             [cmr.search.data.query-to-elastic-converters.equator-crossing-longitude]
+            [cmr.search.data.query-to-elastic-converters.equator-crossing-date]
 
             [cmr.search.services.parameter-validation :as pv]
             [cmr.search.services.collection-query-resolver :as r]
@@ -105,6 +108,7 @@
                                                      (csk/->kebab-case %)))))]
     (->> params
          p/replace-parameter-aliases
+         (p/process-legacy-multi-params-conditions concept-type)
          (pv/validate-parameters concept-type)
          (p/parameters->query concept-type)
          (find-concepts-by-query context))))
