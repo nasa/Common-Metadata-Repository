@@ -1,5 +1,11 @@
 (ns cmr.common.test.util
   (:require [clojure.test :refer :all]
+            ; [clojure.test.check.clojure-test :refer [defspec]]
+            ;; Temporarily included to use the fixed defspec. Remove once issue is fixed.
+            [cmr.common.test.test-check-ext :as gen-ext :refer [defspec]]
+
+            [clojure.test.check.properties :refer [for-all]]
+            [clojure.test.check.generators :as gen]
             [cmr.common.util :as util]))
 
 (deftest test-sequence->fn
@@ -57,3 +63,11 @@
   (is (= {:a true :c "value" :d false}
          (util/remove-nil-keys
            {:a true :b nil :c "value" :d false}))))
+
+(defspec map-n-spec 100
+  (for-all [n gen/s-pos-int
+            step gen/s-pos-int
+            items (gen/vector gen/int)]
+    ;; Verifies map-n is equivalent to partition
+    (= (util/map-n vector n step items)
+       (partition n step items))))

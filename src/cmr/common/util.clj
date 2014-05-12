@@ -91,6 +91,20 @@
   [m]
   (map-keys csk/->kebab-case-keyword m))
 
+(defn map-n
+  "Calls f with every step count elements from items. Equivalent to (map f (partition n step items))
+  but faster."
+  ([f n items]
+   (map-n f n n items))
+  ([f ^long n ^long step items]
+   (let [items (vec items)
+         size (count items)]
+     (loop [index 0 results (transient [])]
+       (let [subvec-end (+ index n)]
+         (if (or (>= index size) (> subvec-end size))
+           (persistent! results)
+           (let [sub (subvec items index subvec-end)]
+             (recur (+ index step) (conj! results (apply f sub))))))))))
 
 
 
