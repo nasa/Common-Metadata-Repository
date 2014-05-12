@@ -5,7 +5,8 @@
             [primitive-math]
             [cmr.spatial.mbr :as mbr]
             [cmr.spatial.conversion :as c]
-            [cmr.spatial.arc :as a])
+            [cmr.spatial.arc :as a]
+            [cmr.spatial.derived :as d])
   (:import cmr.spatial.arc.Arc))
 (primitive-math/use-primitive-operators)
 
@@ -39,7 +40,6 @@
    ;; outside a ring. We generate multiple external points so that we have a backup if one external
    ;; point is antipodal to a point we're checking is inside a ring.
    external-points
-
    ])
 
 (defn covers-point?
@@ -172,61 +172,105 @@
         courses (conj courses (first courses))]
     (rotation-direction courses)))
 
-(defn ring [points]
-  (let [arcs (a/points->arcs points)
-        course-rotation-direction (arcs->course-rotation-direction arcs)
-        ;; The net rotation direction of the longitudes of the ring around the earth if looking
-        ;; down on the north pole
-        lon-rotation-direction (->> points (map :lon) rotation-direction)
+(defn ring
+  "Creates a new ring with the given points. If the other fields of a ring are needed. The
+  calculate-derived function should be used to populate it."
+  [points]
+  (->Ring points nil nil nil nil nil nil))
 
-        contains-north-pole (or (some p/is-north-pole? points)
-                                (some a/crosses-north-pole? arcs)
-                                (= :clockwise course-rotation-direction)
-                                (and (= :none course-rotation-direction)
-                                     (= :counter-clockwise lon-rotation-direction)))
+(defn ring->arcs
+  "Determines the arcs from the points in the ring."
+  [^Ring ring]
+  (or (.arcs ring)
+      (a/points->arcs (.points ring))))
 
-        contains-south-pole (or (some p/is-south-pole? points)
-                                (some a/crosses-south-pole? arcs)
-                                (= :clockwise course-rotation-direction)
-                                (and (= :none course-rotation-direction)
-                                     (= :clockwise lon-rotation-direction)))
+(defn ring->pole-containment
+  "Returns the ring with north and south pole containment determined"
+  [^Ring ring]
+  (if (:course-rotation-direction ring)
+    ring
+    (let [arcs (ring->arcs ring)
+          points (.points ring)
+          course-rotation-direction (arcs->course-rotation-direction arcs)
+          ;; The net rotation direction of the longitudes of the ring around the earth if looking
+          ;; down on the north pole
+          lon-rotation-direction (->> points (map :lon) rotation-direction)
 
-        ;; find the minimum bounding rectangle for the ring
-        br (->> arcs (mapcat a/mbrs) (reduce mbr/union))
-        br (if contains-north-pole
-             (mbr/mbr -180.0 90.0 180.0 (:south br))
-             br)
-        br (if contains-south-pole
-             (mbr/mbr -180.0 (:north br) 180.0 -90.0)
-             br)
+          contains-north-pole (or (some p/is-north-pole? points)
+                                  (some a/crosses-north-pole? arcs)
+                                  (= :clockwise course-rotation-direction)
+                                  (and (= :none course-rotation-direction)
+                                       (= :counter-clockwise lon-rotation-direction)))
 
-        ;; Finds two points that are not within the ring.
-        external-points (cond
-                          (and contains-north-pole contains-south-pole)
-                          ;; Cannot determine external points of a ring which contains both north and south poles
-                          []
+          contains-south-pole (or (some p/is-south-pole? points)
+                                  (some a/crosses-south-pole? arcs)
+                                  (= :clockwise course-rotation-direction)
+                                  (and (= :none course-rotation-direction)
+                                       (= :clockwise lon-rotation-direction)))]
+      (assoc ring
+             :course-rotation-direction course-rotation-direction
+             :contains-north-pole contains-north-pole
+             :contains-south-pole contains-south-pole))))
 
-                          contains-north-pole
-                          ;; We can use the south pole and some other point outside the bounding
-                          ;; rectangle. Find a point between the southern end of the bounding
-                          ;; rectangle and -90. Simplified version of algorithm to find middle
-                          ;; between -90 and south: -90 + (south - -90)/2
-                          (let [middle-lat (- (/ ^double (:south br) 2.0) 45.0)]
-                            [(p/point 0.0 -90.0) (p/point 0 middle-lat)])
+(defn ring->mbr
+  "Determines the mbr from the points in the ring."
+  [^Ring ring]
+  (or (.mbr ring)
+      (let [arcs (ring->arcs ring)
+            {:keys [contains-north-pole contains-south-pole]} (ring->pole-containment ring)
+            br (->> arcs (mapcat a/mbrs) (reduce mbr/union))
+            br (if contains-north-pole
+                 (mbr/mbr -180.0 90.0 180.0 (:south br))
+                 br)]
+        (if contains-south-pole
+          (mbr/mbr -180.0 (:north br) 180.0 -90.0)
+          br))))
 
-                          contains-south-pole
-                          ;; We can use the north pole and some other point outside the bounding
-                          ;; rectangle. Find a point between the northern end of the bounding
-                          ;; rectangle and 90. Simplified version of algorithm to find middle
-                          ;; between 90 and north: (90 - north)/2 + north
-                          (let [middle-lat (+ (/ ^double (:north br) 2.0) 45.0)]
-                            [(p/point 0.0 90.0) (p/point 0.0 middle-lat)])
+(defn ring->external-points
+  "Determines external points that are not in the ring."
+  [^Ring ring]
+  (let [br (ring->mbr ring)
+        {:keys [contains-north-pole contains-south-pole]} (ring->pole-containment ring)]
+    (cond
+      (and contains-north-pole contains-south-pole)
+      ;; Cannot determine external points of a ring which contains both north and south poles
+      ;; This is an additional feature which could be added at a later time.
+      []
 
-                          :else
-                          ;; We know neither pole is in the ring so we'll use them
-                          [(p/point 0 -90) (p/point 0 90)])]
-    (->Ring points arcs course-rotation-direction contains-north-pole contains-south-pole
-            br external-points)))
+      contains-north-pole
+      ;; We can use the south pole and some other point outside the bounding
+      ;; rectangle. Find a point between the southern end of the bounding
+      ;; rectangle and -90. Simplified version of algorithm to find middle
+      ;; between -90 and south: -90 + (south - -90)/2
+      (let [middle-lat (- (/ ^double (:south br) 2.0) 45.0)]
+        [(p/point 0.0 -90.0) (p/point 0 middle-lat)])
+
+      contains-south-pole
+      ;; We can use the north pole and some other point outside the bounding
+      ;; rectangle. Find a point between the northern end of the bounding
+      ;; rectangle and 90. Simplified version of algorithm to find middle
+      ;; between 90 and north: (90 - north)/2 + north
+      (let [middle-lat (+ (/ ^double (:north br) 2.0) 45.0)]
+        [(p/point 0.0 90.0) (p/point 0.0 middle-lat)])
+
+      :else
+      ;; We know neither pole is in the ring so we'll use them
+      [(p/point 0 -90) (p/point 0 90)])))
+
+
+(extend-protocol d/DerivedCalculator
+  cmr.spatial.ring.Ring
+  (calculate-derived
+    [^Ring ring]
+    (if (.arcs ring)
+      ring
+
+      (as-> ring ring
+            (assoc ring :arcs (ring->arcs ring))
+            (ring->pole-containment ring)
+            (assoc ring :mbr (ring->mbr ring))
+            (assoc ring :external-points (ring->external-points ring))))))
+
 
 (defn ords->ring
   "Takes all arguments as coordinates for points, lon1, lat1, lon2, lat2, and creates a ring."

@@ -13,6 +13,7 @@
             [cmr.spatial.point :as p]
             [cmr.spatial.mbr :as m]
             [cmr.spatial.ring :as r]
+            [cmr.spatial.derived :as d]
             [cmr.spatial.test.generators :as sgen]))
 
 ;; TODO Need to finish this spec
@@ -43,7 +44,8 @@
           :let [north-pole (if (nil? north-pole) false north-pole)
                 south-pole (if (nil? south-pole) false south-pole)]]
     (testing (str "Ring Example " ring-name)
-      (let [ring (apply r/ords->ring ords)]
+      (let [ring (apply r/ords->ring ords)
+            ring (d/calculate-derived ring)]
         (is (= bounds (:mbr ring)))
 
         (is (= north-pole (:contains-north-pole ring)))
@@ -53,7 +55,9 @@
             (is (r/covers-point? ring point) (str "Ring should cover point " point)))
 
         (doseq [point (apply p/ords->points external-points)]
-            (is (not (r/covers-point? ring point)) (str "Ring should not cover point " point)))))))
+            (is (not (r/covers-point? ring point)) (str "Ring should not cover point " point)))
+
+        (is (r/intersects-ring? ring ring) "Ring should intersect itself")))))
 
 
 (def ring-examples
