@@ -28,7 +28,9 @@
              :sensor :sensor-sn
              :project :project-refs}})
 
-(def granule-parent-es-field :collection-concept-id)
+(def granule-parent-es-field
+  "The granule elastic field that contains its parent collection CMR concept id."
+  :collection-concept-id)
 
 (defn query-field->elastic-field
   "Returns the elastic field name for the equivalent query field name."
@@ -95,7 +97,6 @@
   (condition->elastic
     [{:keys [field value case-sensitive? pattern?]} concept-type]
     (let [field (query-field->elastic-field field concept-type value)
-          ;; field (query-field->value-based-elastic-field field concept-type value)
           field (if case-sensitive? field (str (name field) ".lowercase"))
           value (if case-sensitive? value (s/lower-case value))]
       (if pattern?

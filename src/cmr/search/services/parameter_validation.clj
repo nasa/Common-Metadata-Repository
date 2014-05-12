@@ -15,6 +15,13 @@
             [camel-snake-kebab :as csk])
   (:import clojure.lang.ExceptionInfo))
 
+(def case-sensitive-params
+  "Parameters which do not allow option with ingnore_case set to true."
+  (set #{:concept-id :echo-collection-id :echo-granule-id}))
+
+(def params-that-disallow-pattern-search-option
+  "Parameters which do not allow pattern search option."
+  (set #{:concept-id :echo-collection-id :echo-granule-id}))
 
 (defn- concept-type->valid-param-names
   "A set of the valid parameter names for the given concept-type."
@@ -122,6 +129,36 @@
                     (set/difference (set (keys settings)) (set [:ignore-case :pattern :and :or]))))
              options))
     []))
+
+
+(defn option-case-sensitive-params-validation
+  "Validates ignore case option setting is not set to true for identified params."
+  [concept-type params]
+  (if-let [options (:options params)]
+    (apply concat
+           (map
+             (fn [[param settings]]
+               (if (and (contains? case-sensitive-params param)
+                        (= "true" (:ignore-case settings)))
+               [(c-msg/invalid-ignore-case-opt-setting-msg case-sensitive-params)]
+               []))
+             options))
+    []))
+
+(defn option-pattern-params-validation
+  "Validates pattern option setting is not set to true for identified params."
+  [concept-type params]
+  (if-let [options (:options params)]
+    (apply concat
+           (map
+             (fn [[param settings]]
+               (if (and (contains? params-that-disallow-pattern-search-option param)
+                        (= "true" (:pattern settings)))
+               [(c-msg/invalid-pattern-opt-setting-msg params-that-disallow-pattern-search-option)]
+               []))
+             options))
+    []))
+
 
 (defn- validate-date-time
   "Validates datetime string is in the given format"
@@ -265,6 +302,8 @@
    unrecognized-params-validation
    unrecognized-params-in-options-validation
    unrecognized-params-settings-in-options-validation
+   option-case-sensitive-params-validation
+   option-pattern-params-validation
    temporal-format-validation
    updated-since-validation
    orbit-number-validation
