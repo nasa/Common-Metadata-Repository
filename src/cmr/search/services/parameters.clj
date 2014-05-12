@@ -23,6 +23,7 @@
                 :sensor :string
                 :project :string
                 :archive-center :string
+                :spatial-keyword :string
                 :two-d-coordinate-system-name :string}
    :granule {:granule-ur :string
              :collection-concept-id :string
