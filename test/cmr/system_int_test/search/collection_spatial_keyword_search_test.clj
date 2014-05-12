@@ -1,0 +1,62 @@
+(ns cmr.system-int-test.search.collection-spatial-keyword-search-test
+  "Integration test for CMR collection search by spatial keyword terms"
+  (:require [clojure.test :refer :all]
+            [cmr.system-int-test.utils.ingest-util :as ingest]
+            [cmr.system-int-test.utils.search-util :as search]
+            [cmr.system-int-test.utils.index-util :as index]
+            [cmr.system-int-test.data2.collection :as dc]
+            [cmr.system-int-test.data2.core :as d]))
+
+(use-fixtures :each (ingest/reset-fixture "CMR_PROV1" "CMR_PROV2"))
+
+(deftest search-by-spatial-keywords
+  (let [coll1 (d/ingest "CMR_PROV1" (dc/collection {}))
+        coll2 (d/ingest "CMR_PROV1" (dc/collection {:spatial-keywords []}))
+        coll3 (d/ingest "CMR_PROV1" (dc/collection {:spatial-keywords ["DC"]}))
+
+        coll4 (d/ingest "CMR_PROV2" (dc/collection {:spatial-keywords ["DC" "LA"]}))
+        coll5 (d/ingest "CMR_PROV2" (dc/collection {:spatial-keywords ["Detroit"]}))
+        coll6 (d/ingest "CMR_PROV2" (dc/collection {:spatial-keywords ["LL"]}))
+        coll7 (d/ingest "CMR_PROV2" (dc/collection {:spatial-keywords ["detroit"]}))]
+
+    (index/flush-elastic-index)
+
+    (testing "search by spatial keywords."
+      (are [spatial-keyword items] (d/refs-match? items (search/find-refs :collection {:spatial-keyword spatial-keyword}))
+           "DC" [coll3 coll4]
+           "LL" [coll6]
+           "LA" [coll4]
+           ["LL" "Detroit"] [coll5 coll6]
+           "BLAH" []))
+    (testing "search by spatial keywords using wildcard *."
+      (is (d/refs-match? [coll3 coll4 coll5]
+                         (search/find-refs :collection
+                                           {:spatial-keyword "D*"
+                                            "options[spatial-keyword][pattern]" "true"}))))
+    (testing "search by spatial keywords using wildcard ?."
+      (is (d/refs-match? [coll4 coll6]
+                         (search/find-refs :collection
+                                           {:spatial-keyword "L?"
+                                            "options[spatial-keyword][pattern]" "true"}))))
+    (testing "search by spatial keywords case not match."
+      (is (d/refs-match? [coll7]
+                         (search/find-refs :collection
+                                           {:spatial-keyword "detroit"}))))
+    (testing "search by spatial keywords ignore case false."
+      (is (d/refs-match? [coll7]
+                         (search/find-refs :collection
+                                           {:spatial-keyword "detroit"
+                                            "options[spatial-keyword][ignore-case]" "false"}))))
+    (testing "search by spatial keywords ignore case true."
+      (is (d/refs-match? [coll5 coll7]
+                         (search/find-refs :collection
+                                           {:spatial-keyword "detroit"
+                                            "options[spatial-keyword][ignore-case]" "true"}))))
+    (testing "search by spatial keywords, options :or."
+      (is (d/refs-match? [coll3 coll4]
+                         (search/find-refs :collection {"spatial-keyword[]" ["DC" "LA"]
+                                                        "options[spatial-keyword][or]" "true"}))))
+    (testing "search by spatial keywords, options :and."
+      (is (d/refs-match? [coll4]
+                         (search/find-refs :collection {"spatial-keyword[]" ["DC" "LA"]
+                                                        "options[spatial-keyword][and]" "true"}))))))

@@ -65,7 +65,7 @@
            "-entry_title"
            "-dataset_id"))
 
-     (testing "temporal start date"
+    (testing "temporal start date"
       (are [sort-key items] (d/refs-match-order?
                               items
                               (search/find-refs :collection {:page-size 20
@@ -106,3 +106,70 @@
          ;; Tests provider sorting for collections
          ["provider" "-entry_title"] [c4 c3 c2 c1 c8 c7 c6 c5]
          ["-provider" "-entry_title"] [c8 c7 c6 c5 c4 c3 c2 c1])))
+
+(deftest collection-platform-sorting-test
+  (let [make-collection (fn [& platforms]
+                          (d/ingest "PROV1"
+                                    (dc/collection
+                                      {:platforms (map dc/platform platforms)})))
+        c1 (make-collection "c10" "c41")
+        c2 (make-collection "c20" "c51")
+        c3 (make-collection "c30")
+        c4 (make-collection "c40")
+        c5 (make-collection "c50")]
+    (index/flush-elastic-index)
+    (are [sort-key items]
+         (d/refs-match-order? items
+                              (search/find-refs :collection {:page-size 20
+                                                             :sort-key sort-key}))
+
+         ;; Descending sorts by the min value of a multi value fields
+         "platform" [c1 c2 c3 c4 c5]
+         ;; Descending sorts by the max value of a multi value fields
+         "-platform" [c2 c5 c1 c4 c3])))
+
+(deftest collection-instrument-sorting-test
+  (let [make-collection (fn [& instruments]
+                          (d/ingest "PROV1"
+                                    (dc/collection
+                                      {:platforms [(apply dc/platform (d/unique-str "platform")
+                                                          (map dc/instrument instruments))]})))
+        c1 (make-collection "c10" "c41")
+        c2 (make-collection "c20" "c51")
+        c3 (make-collection "c30")
+        c4 (make-collection "c40")
+        c5 (make-collection "c50")]
+    (index/flush-elastic-index)
+    (are [sort-key items]
+         (d/refs-match-order? items
+                              (search/find-refs :collection {:page-size 20
+                                                             :sort-key sort-key}))
+
+         ;; Descending sorts by the min value of a multi value fields
+         "instrument" [c1 c2 c3 c4 c5]
+         ;; Descending sorts by the max value of a multi value fields
+         "-instrument" [c2 c5 c1 c4 c3])))
+
+(deftest collection-sensor-sorting-test
+  (let [make-collection (fn [& sensors]
+                          (d/ingest "PROV1"
+                                    (dc/collection
+                                      {:platforms [(dc/platform
+                                                     (d/unique-str "platform")
+                                                     (apply dc/instrument (d/unique-str "instrument")
+                                                            (map dc/sensor sensors)))]})))
+        c1 (make-collection "c10" "c41")
+        c2 (make-collection "c20" "c51")
+        c3 (make-collection "c30")
+        c4 (make-collection "c40")
+        c5 (make-collection "c50")]
+    (index/flush-elastic-index)
+    (are [sort-key items]
+         (d/refs-match-order? items
+                              (search/find-refs :collection {:page-size 20
+                                                             :sort-key sort-key}))
+
+         ;; Descending sorts by the min value of a multi value fields
+         "sensor" [c1 c2 c3 c4 c5]
+         ;; Descending sorts by the max value of a multi value fields
+         "-sensor" [c2 c5 c1 c4 c3])))
