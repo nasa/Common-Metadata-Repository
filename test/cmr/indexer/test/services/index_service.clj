@@ -46,6 +46,7 @@
                      :projects projects
                      :two-d-coordinate-systems [{:name "FOO"}
                                                 {:name "Bar"}]
+                     :spatial-keywords ["New York" "Washington DC"]
                      :organizations orgs}
         expected {:concept-id concept-id
                   :entry-id "MINIMAL_1"
@@ -73,6 +74,8 @@
                   :project-sn.lowercase ["esi" "evi" "epi"]
                   :archive-center ["SEDAC AC"]
                   :archive-center.lowercase ["sedac ac"]
+                  :spatial-keyword ["New York" "Washington DC"]
+                  :spatial-keyword.lowercase ["new york" "washington dc"]
                   :attributes []
                   :two-d-coord-name ["FOO" "Bar"]
                   :two-d-coord-name.lowercase  ["foo" "bar"]}
