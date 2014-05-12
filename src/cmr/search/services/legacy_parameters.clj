@@ -7,6 +7,8 @@
   {:dataset-id :entry-title
    :dif-entry-id :entry-id
    :campaign :project
+   :echo-collection-id :concept-id
+   :echo-granule-id :concept-id
    :online-only :downloadable})
 
 (defn replace-parameter-aliases
