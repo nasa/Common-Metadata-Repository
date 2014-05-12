@@ -1,6 +1,8 @@
 (ns cmr.system-int-test.search.collection-identifier-search-test
   "Tests searching for collections using basic collection identifiers"
   (:require [clojure.test :refer :all]
+            [clojure.string :as s]
+            [cmr.common.services.messages :as msg]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.index-util :as index]
@@ -234,5 +236,60 @@
            [c2-p2] "2b" {:ignore-case true}
            [] "2b" {:ignore-case false}))))
 
+;; Find collections by echo_collection_id and concept_id params
+(deftest echo-coll-id-search-test
+  (let [[c1-p1 c2-p1 c3-p1 c4-p1
+         c1-p2 c2-p2 c3-p2 c4-p2] (for [p ["PROV1" "PROV2"]
+                                        n (range 1 5)]
+                                    (d/ingest p (dc/collection {})))
+        c1-p1-cid (get-in c1-p1 [:concept-id])
+        c2-p1-cid (get-in c2-p1 [:concept-id])
+        c3-p2-cid (get-in c3-p2 [:concept-id])
+        c4-p2-cid (get-in c4-p2 [:concept-id])
+        dummy-cid "D1000000004-PROV2"
+        all-prov1-colls [c1-p1 c2-p1 c3-p1 c4-p1]
+        all-prov2-colls [c1-p2 c2-p2 c3-p2 c4-p2]
+        all-colls (concat all-prov1-colls all-prov2-colls)]
+    (index/flush-elastic-index)
+    (testing "echo collection id search"
+      (are [items cid options]
+           (let [params (merge {:echo_collection_id cid}
+                               (when options
+                                 {"options[echo_collection_id]" options}))]
+             (d/refs-match? items (search/find-refs :collection params)))
+
+           [c1-p1] c1-p1-cid {}
+           [c3-p2] c3-p2-cid {}
+           [] dummy-cid {}
+           ;; Multiple values
+           [c1-p1 c2-p1 c3-p2 c4-p2] [c1-p1-cid c2-p1-cid c3-p2-cid c4-p2-cid dummy-cid] {}
+           [c1-p1 c3-p2] [c1-p1-cid  c3-p2-cid] {:and false}
+           [] [c1-p1-cid  c3-p2-cid] {:and true}))
+    (testing "echo collection id search - disallow ignore case"
+      (is (= {:status 422
+              :errors [(msg/invalid-ignore-case-opt-setting-msg #{:concept-id :echo-collection-id :echo-granule-id})]}
+             (search/find-refs :granule {:echo_collection_id c2-p1-cid "options[echo_collection_id]" {:ignore_case true}}))))
+    (testing "Search with wildcards in echo_collection_id param not supported."
+      (is (= {:status 422
+              :errors [(msg/invalid-pattern-opt-setting-msg #{:concept-id :echo-collection-id :echo-granule-id})]}
+             (search/find-refs :granule {:echo_collection_id "C*" "options[echo_collection_id]" {:pattern true}}))))
+    (testing "concept id search"
+      ;; skipping some test conditions because concept_id search is similar in behavior to above echo_collection_id search
+      (are [items cid options]
+           (let [params (merge {:concept_id cid}
+                               (when options
+                                 {"options[concept_id]" options}))]
+             (d/refs-match? items (search/find-refs :collection params)))
+
+           [c1-p1] c1-p1-cid {}
+           [c3-p2] c3-p2-cid {}
+           [] dummy-cid {}
+           ;; Multiple values
+           [c1-p1 c2-p1 c3-p2 c4-p2] [c1-p1-cid c2-p1-cid c3-p2-cid c4-p2-cid dummy-cid] {}
+           [] [c1-p1-cid  c3-p2-cid] {:and true}))
+    (testing "Search with wildcards in concep_id param not supported."
+      (is (= {:status 422
+              :errors [(msg/invalid-pattern-opt-setting-msg #{:concept-id :echo-collection-id :echo-granule-id})]}
+             (search/find-refs :granule {:concept_id "C*" "options[concept_id]" {:pattern true}}))))))
 
 
