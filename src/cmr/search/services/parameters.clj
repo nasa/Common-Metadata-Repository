@@ -1,26 +1,11 @@
 (ns cmr.search.services.parameters
   "Contains functions for parsing and converting query parameters to query conditions"
-  (:require [clojure.set :as set]
-            [cmr.common.services.errors :as errors]
+  (:require [cmr.common.services.errors :as errors]
             [cmr.search.models.query :as qm]
             [cmr.search.data.query-to-elastic :as q2e]
             [cmr.common.date-time-parser :as dt-parser]
-            [cmr.common.util :as u]))
-
-(def param-aliases
-  "A map of non UMM parameter names to their UMM fields."
-  {:dataset-id :entry-title
-   :dif-entry-id :entry-id
-   :campaign :project
-   :online-only :downloadable})
-
-(defn replace-parameter-aliases
-  "Replaces aliases of parameter names"
-  [params]
-  (-> params
-      (set/rename-keys param-aliases)
-      (update-in [:options]
-                 #(when % (set/rename-keys % param-aliases)))))
+            [cmr.common.util :as u]
+            [cmr.search.services.legacy-parameters :as lp]))
 
 (def concept-param->type
   "A mapping of param names to query condition types based on concept-type"
@@ -60,7 +45,6 @@
              :cloud-cover :num-range
              :concept-id :string
              :downloadable :boolean}})
-
 
 (defn- param-name->type
   "Returns the query condition type based on the given concept-type and param-name."
@@ -153,50 +137,8 @@
                         :asc)
             field (keyword field)]
         [{:order direction
-          :field (or (param-aliases field)
+          :field (or (lp/param-aliases field)
                      field)}]))))
-
-;; Changes lagacy map range condtions in the param[minValue]/param[maxValue] format
-;; to the cmr format: min,max.
-(defn- proces-legacy-range-maps
-  [concept-type params]
-  (reduce-kv (fn [memo k v]
-               ;; look for parameters in the map form
-               (if (map? v)
-                 (let [{:keys [value min-value max-value]} v]
-                   (if (or value min-value max-value)
-                     ;; convert the map into a comma separated string
-                     (if value
-                       (assoc memo k value)
-                       (assoc memo k (str min-value "," max-value)))
-                     memo))
-                 memo))
-             params
-             params))
-
-
-(defn- process-equator-crossing-date
-  [concept-type params]
-  (let [{:keys [equator-crossing-start-date equator-crossing-end-date]} params]
-    (if (or equator-crossing-start-date equator-crossing-end-date)
-      (-> params
-          (dissoc :equator-crossing-start-date :equator-crossing-end-date)
-          (assoc :equator-crossing-date (str equator-crossing-start-date
-                                             ","
-                                             equator-crossing-end-date)))
-      params)))
-
-;; Add others to this list as needed - note that order is important here
-(def legacy-multi-params-condition-funcs
-  [process-equator-crossing-date
-   proces-legacy-range-maps])
-
-(defn process-legacy-multi-params-conditions
-  "Handle conditions that use a legacy range style of using two parameters to specify a range."
-  [concept-type params]
-  (reduce #(%2 concept-type %1)
-          params
-          legacy-multi-params-condition-funcs))
 
 (defn parameters->query
   "Converts parameters into a query model."
