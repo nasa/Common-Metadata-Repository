@@ -62,7 +62,10 @@
                  :dataset-id
                  :start-date
                  :end-date
-                 :provider}
+                 :provider
+                 :platform
+                 :instrument
+                 :sensor}
    :granule #{:granule-ur
               :producer-granule-id
               :readable-granule-name
