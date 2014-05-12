@@ -1,27 +1,11 @@
 (ns cmr.search.services.parameters
   "Contains functions for parsing and converting query parameters to query conditions"
-  (:require [clojure.set :as set]
-            [cmr.common.services.errors :as errors]
+  (:require [cmr.common.services.errors :as errors]
             [cmr.search.models.query :as qm]
+            [cmr.search.data.query-to-elastic :as q2e]
             [cmr.common.date-time-parser :as dt-parser]
-            [cmr.common.util :as u]))
-
-(def param-aliases
-  "A map of non UMM parameter names to their UMM fields."
-  {:dataset-id :entry-title
-   :dif-entry-id :entry-id
-   :campaign :project
-   :online-only :downloadable
-   :echo-collection-id :concept-id
-   :echo-granule-id :concept-id})
-
-(defn replace-parameter-aliases
-  "Replaces aliases of parameter names"
-  [params]
-  (-> params
-      (set/rename-keys param-aliases)
-      (update-in [:options]
-                 #(when % (set/rename-keys % param-aliases)))))
+            [cmr.common.util :as u]
+            [cmr.search.services.legacy-parameters :as lp]))
 
 (def concept-param->type
   "A mapping of param names to query condition types based on concept-type"
@@ -39,6 +23,7 @@
                 :sensor :string
                 :project :string
                 :archive-center :string
+                :spatial-keyword :string
                 :two-d-coordinate-system-name :string}
    :granule {:granule-ur :string
              :collection-concept-id :string
@@ -50,17 +35,17 @@
              :short-name :collection-query
              :orbit-number :orbit-number
              :equator-crossing-longitude :equator-crossing-longitude
+             :equator-crossing-date :equator-crossing-date
              :version :collection-query
              :updated-since :updated-since
              :temporal :temporal
-             :platform :string
-             :instrument :string
-             :sensor :string
+             :platform :inheritance
+             :instrument :inheritance
+             :sensor :inheritance
              :project :string
              :cloud-cover :num-range
              :concept-id :string
              :downloadable :boolean}})
-
 
 (defn- param-name->type
   "Returns the query condition type based on the given concept-type and param-name."
@@ -86,6 +71,17 @@
        :case-sensitive? (not= "true" (get-in options [param :ignore-case]))
        :pattern? (= "true" (get-in options [param :pattern]))})))
 
+;; Construct an inheritance query condition for granules.
+;; This will find granules which either have explicitly specified a value
+;; or have not specified any value for the field and inherit it from their parent collection.
+(defmethod parameter->condition :inheritance
+  [concept-type param value options]
+  (let [field-condition (parameter->condition :collection param value options)]
+    (qm/or-conds
+      [field-condition
+       (qm/and-conds
+         [(qm/->CollectionQueryCondition field-condition)
+          (qm/map->MissingCondition {:field (q2e/query-field->elastic-field param concept-type)})])])))
 
 (defmethod parameter->condition :updated-since
   [concept-type param value options]
@@ -142,7 +138,7 @@
                         :asc)
             field (keyword field)]
         [{:order direction
-          :field (or (param-aliases field)
+          :field (or (lp/param-aliases field)
                      field)}]))))
 
 (defn parameters->query

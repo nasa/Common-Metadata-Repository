@@ -7,6 +7,7 @@
             [clojure.string :as s]
             [cmr.common.date-time-parser :as dt-parser]
             [cmr.search.services.parameters :as p]
+            [cmr.search.services.legacy-parameters :as lp]
             [cmr.search.services.parameter-converters.attribute :as attrib]
             [cmr.search.services.messages.attribute-messages :as attrib-msg]
             [cmr.search.services.parameter-converters.orbit-number :as on]
@@ -28,7 +29,7 @@
   [concept-type]
   (set (concat
          (keys (get p/concept-param->type concept-type))
-         (keys p/param-aliases)
+         (keys lp/param-aliases)
          [:options])))
 
 (defn page-size-validation
@@ -69,7 +70,10 @@
                  :dataset-id
                  :start-date
                  :end-date
-                 :provider}
+                 :provider
+                 :platform
+                 :instrument
+                 :sensor}
    :granule #{:granule-ur
               :producer-granule-id
               :readable-granule-name
@@ -83,6 +87,9 @@
               :data-size
               :cloud-cover
               :campaign
+              :platform
+              :instrument
+              :sensor
               :project}})
 
 (defn sort-key-validation
@@ -274,13 +281,20 @@
     []))
 
 (defn equator-crossing-longitude-validation
-  "Validates that the equator_crossing_longitude parameter is a valid range string."
+  "Validates that the equator-crossing-longitude parameter is a valid range string."
   [concept-type params]
-  (if-let [equator_crossing_longitude (:equator-crossing-longitude params)]
-    (if (string? equator_crossing_longitude)
-      (validate-numeric-range-param equator_crossing_longitude nil)
-      (validate-legacy-numeric-range-param equator_crossing_longitude
-                                  on-msg/non-numeric-equator-crossing-longitude-parameter))
+  (if-let [equator-crossing-longitude (:equator-crossing-longitude params)]
+    (if (string? equator-crossing-longitude)
+      (validate-numeric-range-param equator-crossing-longitude nil)
+      (validate-legacy-numeric-range-param equator-crossing-longitude
+                                           on-msg/non-numeric-equator-crossing-longitude-parameter))
+    []))
+
+(defn equator-crossing-date-validation
+  "Validates that the equator_crossing_date parameter is a valid date range string."
+  [concept-type params]
+  (if-let [equator-crossing-date (:equator-crossing-date params)]
+    (parser/date-time-range-string-validation equator-crossing-date)
     []))
 
 (defn boolean-value-validation
@@ -308,6 +322,7 @@
    updated-since-validation
    orbit-number-validation
    equator-crossing-longitude-validation
+   equator-crossing-date-validation
    cloud-cover-validation
    attribute-validation
    boolean-value-validation])

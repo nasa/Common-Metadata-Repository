@@ -146,6 +146,12 @@
    max-value
    ])
 
+(defrecord EquatorCrossingDateCondition
+  [
+   start-date
+   end-date
+   ])
+
 (defrecord CollectionQueryCondition
   [
    ;; The condition to find collections
@@ -211,6 +217,13 @@
    (string-condition field value true false))
   ([field value case-sensitive? pattern?]
    (->StringCondition field value case-sensitive? pattern?)))
+
+(defn date-range-condition
+  "Creates a date range condtion."
+  [field start stop]
+  (map->DateRangeCondition {:field field
+                           :start-date start
+                           :end-date stop}))
 
 (defn nested-condition
   "Creates a nested condition."

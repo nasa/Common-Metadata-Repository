@@ -1,18 +1,19 @@
 (ns cmr.search.test.services.parameters
   (:require [clojure.test :refer :all]
             [cmr.search.services.parameters :as p]
-            [cmr.search.models.query :as q]))
+            [cmr.search.models.query :as q]
+            [cmr.search.services.legacy-parameters :as lp]))
 
 (deftest replace-parameter-aliases-test
   (testing "with options"
     (is (= {:entry-title "foo"
             :options {:entry-title {:ignore-case "true"}}}
-           (p/replace-parameter-aliases
+           (lp/replace-parameter-aliases
              {:dataset-id "foo"
               :options {:dataset-id {:ignore-case "true"}}}))))
   (testing "with no options"
     (is (= {:entry-title "foo" :options nil}
-           (p/replace-parameter-aliases {:dataset-id "foo"})))))
+           (lp/replace-parameter-aliases {:dataset-id "foo"})))))
 
 (deftest parameter->condition-test
   (testing "String conditions"
@@ -76,6 +77,20 @@
             {:field :entry-title
              :order :desc}]
            (p/parse-sort-key ["short-name" "-entry-title"])))))
+
+(deftest handle-legacy-condtions
+  (testing "legacy equator date crossing"
+    (are [params params-with-legacy] (= params (lp/process-legacy-multi-params-conditions :granule params-with-legacy))
+         {:equator-crossing-date "2000-04-15T12:00:00Z,2000-04-15T12:01:00Z"} {:equator-crossing-start-date "2000-04-15T12:00:00Z"
+                                                                               :equator-crossing-end-date "2000-04-15T12:01:00Z"}
+         {:equator-crossing-date "2000-04-15T12:00:00Z,"} {:equator-crossing-start-date "2000-04-15T12:00:00Z"}
+         {:equator-crossing-date ",2000-04-15T12:01:00Z"} {:equator-crossing-end-date "2000-04-15T12:01:00Z"}))
+  (testing "legacy range conditions"
+    (are [params params-with-legacy] (= params (lp/process-legacy-multi-params-conditions :granule params-with-legacy))
+         {:some-param "ABC,XYZ"} {:some-param {:min-value "ABC" :max-value "XYZ"}}
+         {:some-param "ABC,"} {:some-param {:min-value "ABC"}}
+         {:some-param ",XYZ"} {:some-param {:max-value "XYZ"}}
+         {:some-param "ABC"} {:some-param {:value "ABC"}})))
 
 
 
