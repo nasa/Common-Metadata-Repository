@@ -110,8 +110,8 @@
 (defn print-point
   "Prints the point in a way that it can be read in by the clojure reader."
   [^Point p ^java.io.Writer writer]
-  (.write writer (str (apply list (into ['cmr.spatial.point/point]
-                                        [(.lon p) (.lat p)])))))
+  (.write writer (str "#=" (apply list (into ['cmr.spatial.point.Point.]
+                                             [(.lon p) (.lat p) (.lon_rad p) (.lat_rad p)])))))
 
 ;; These define Clojure built in multimethods for point so it can be printed easily
 (defmethod print-method Point [p writer]

@@ -57,8 +57,7 @@
 
 
 (def ring-examples
-  {
-   :touching-eq {:ords [0,0 4,0 6,5 2,5 0,0]
+  {:touching-eq {:ords [0,0 4,0 6,5 2,5 0,0]
                  :bounds (m/mbr 0 5.0030322578503075 6 0)
                  :internal-points [3,0.001 0.36,0.19 2.23,4.84 2,2]
                  :external-points [4.4,0.34 2.03,-0.27 0.37,1.83 3.55,5.05]}

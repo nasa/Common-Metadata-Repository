@@ -172,8 +172,6 @@
         courses (conj courses (first courses))]
     (rotation-direction courses)))
 
-cons
-
 (defn ring [points]
   (let [arcs (a/points->arcs points)
         course-rotation-direction (arcs->course-rotation-direction arcs)

@@ -67,7 +67,7 @@
 ;; Checks that a point when written to a string can be read and evaluated to become the same point.
 (defspec point-write-and-read 100
   (for-all [p sgen/points]
-    (= p (eval (read-string (pr-str p))))))
+    (= p (read-string (pr-str p)))))
 
 ;; Tests that when associating a new subvalue to a point it stays consistent.
 (defspec point-assoc 100
@@ -116,7 +116,8 @@
     (is (not (p/antipodal? (p/point 45 26) (p/point -136 -25))))))
 
 
-(deftest point-assertions
+;; Commenting out this test as we don't want assertions enabled everywhere.
+#_(deftest point-assertions
   (testing "longitude and latitude are validated"
     (are [lon lat] (thrown? AssertionError (p/point lon lat))
          -181 0

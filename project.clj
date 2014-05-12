@@ -1,4 +1,4 @@
-(defproject cmr-spatial-lib "0.1.0-SNAPSHOT"
+(defproject nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"
   :description "A spatial library for the CMR."
   :url "***REMOVED***projects/CMR/repos/cmr-spatial-lib/browse"
 
