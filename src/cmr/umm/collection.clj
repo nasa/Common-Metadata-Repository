@@ -117,6 +117,8 @@
 
    product
 
+   spatial-keywords
+
    temporal
 
    platforms
