@@ -34,6 +34,13 @@ Example: `C123456-LPDAAC_ECS`
 
     curl "http://localhost:3003/collections?concept_id\[\]=C123456-LPDAAC_ECS"
 
+#### Find collections by echo collection id
+
+  Find a collection matching a echo collection id. Note more than one echo collection id may be supplied.
+
+     curl "http://localhost:3003/collections?echo_collection_id\[\]=C1000000001-CMR_PROV2"
+
+
 #### Find collections by entry title
 
 One entry title
@@ -256,6 +263,26 @@ Multiple attributes can be provided. The default is for granules to match all th
 ### Find collections by sensor param, supports pattern, ignore_case and option :and
 
      curl "http://localhost:3003/granules?sensor\[\]=1B"
+
+### Find granules by echo granule id, echo collection id and concept ids.
+    Note: more than one may be supplied
+
+  Find granule by concept id
+
+    curl "http://localhost:3003/granules?concept_id\[\]=G1000000002-CMR_PROV1"
+
+  Find granule by echo granule id
+
+    curl "http://localhost:3003/granules?echo_granule_id\[\]=G1000000002-CMR_PROV1"
+
+  Find granules by echo collection id
+
+    curl "http://localhost:3003/granules?echo_collection_id\[\]=C1000000001-CMR_PROV2"
+
+  Find granules by parent concept id
+
+    curl "http://localhost:3003/granules?concept_id\[\]=C1000000001-CMR_PROV2"
+
 
 #### Sorting Granule Results
 
