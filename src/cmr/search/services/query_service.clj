@@ -42,6 +42,7 @@
             [cmr.search.data.query-to-elastic-converters.equator-crossing-longitude]
             [cmr.search.data.query-to-elastic-converters.equator-crossing-date]
 
+            [cmr.search.services.legacy-parameters :as lp]
             [cmr.search.services.parameter-validation :as pv]
             [cmr.search.services.collection-query-resolver :as r]
             [cmr.transmit.metadata-db :as meta-db]
@@ -107,8 +108,8 @@
                                                      (map csk/->kebab-case % )
                                                      (csk/->kebab-case %)))))]
     (->> params
-         p/replace-parameter-aliases
-         (p/process-legacy-multi-params-conditions concept-type)
+         lp/replace-parameter-aliases
+         (lp/process-legacy-multi-params-conditions concept-type)
          (pv/validate-parameters concept-type)
          (p/parameters->query concept-type)
          (find-concepts-by-query context))))

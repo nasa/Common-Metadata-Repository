@@ -7,6 +7,7 @@
             [clojure.string :as s]
             [cmr.common.date-time-parser :as dt-parser]
             [cmr.search.services.parameters :as p]
+            [cmr.search.services.legacy-parameters :as lp]
             [cmr.search.services.parameter-converters.attribute :as attrib]
             [cmr.search.services.messages.attribute-messages :as attrib-msg]
             [cmr.search.services.parameter-converters.orbit-number :as on]
@@ -21,7 +22,7 @@
   [concept-type]
   (set (concat
          (keys (get p/concept-param->type concept-type))
-         (keys p/param-aliases)
+         (keys lp/param-aliases)
          [:options])))
 
 (defn page-size-validation
