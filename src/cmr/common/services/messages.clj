@@ -28,3 +28,15 @@
   (format "%s is not of the form 'value', 'min-value,max-value', 'min-value,', or ',max-value'
           where value, min-value, and max-value are optional numeric values."
           input-str))
+
+(defn invalid-ignore-case-opt-setting-msg
+  "Creates a message saying which parameters would not allow ignore case option setting."
+  [params-set]
+  (let [params (reduce (fn [params param] (conj params param)) '() (seq params-set))]
+    (format "Ignore case option setting disallowed on these parameters: %s" params)))
+
+(defn invalid-pattern-opt-setting-msg
+  "Creates a message saying which parameters would not allow pattern option setting."
+  [params-set]
+  (let [params (reduce (fn [params param] (conj params param)) '() (seq params-set))]
+    (format "Pattern option setting disallowed on these parameters: %s" params)))
