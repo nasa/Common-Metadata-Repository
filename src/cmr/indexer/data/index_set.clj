@@ -104,6 +104,8 @@
                              :project-sn.lowercase  string-field-mapping
                              :archive-center        string-field-mapping
                              :archive-center.lowercase string-field-mapping
+                             :spatial-keyword        string-field-mapping
+                             :spatial-keyword.lowercase string-field-mapping
                              :two-d-coord-name string-field-mapping
                              :two-d-coord-name.lowercase string-field-mapping
                              :attributes attributes-field-mapping}}})

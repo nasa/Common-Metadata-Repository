@@ -26,6 +26,7 @@
         sensor-short-names (remove nil? (map :short-name sensors))
         project-short-names (map :short-name (:projects umm-concept))
         two-d-coord-names (map :name (:two-d-coordinate-systems umm-concept))
+        spatial-keywords (:spatial-keywords umm-concept)
         orgs (:organizations umm-concept)
         archive-center-val (remove nil? (for [org orgs]
                                           (let [{:keys [type org-name]} org]
@@ -56,6 +57,8 @@
      :project-sn.lowercase  (map s/lower-case project-short-names)
      :two-d-coord-name two-d-coord-names
      :two-d-coord-name.lowercase  (map s/lower-case two-d-coord-names)
+     :spatial-keyword spatial-keywords
+     :spatial-keyword.lowercase  (map s/lower-case spatial-keywords)
      :attributes (attrib/psas->elastic-docs umm-concept)
      :start-date (when start-date (f/unparse (f/formatters :date-time) start-date))
      :end-date (when end-date (f/unparse (f/formatters :date-time) end-date))
