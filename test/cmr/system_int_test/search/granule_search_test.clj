@@ -163,7 +163,7 @@
         (is (= #{"Granule3"} (set granule-urs)))))
     (testing "search by granule ur using wildcard *."
       (let [{:keys [refs]} (search/find-refs :granule
-                                         {:granule-ur "S*" "options[granule-ur][pattern]" "true"})
+                                             {:granule-ur "S*" "options[granule-ur][pattern]" "true"})
             granule-urs (map :name refs)]
         (is (= 2 (count refs)))
         (is (= #{"SampleUR1" "SampleUR2"} (set granule-urs)))))
@@ -172,19 +172,19 @@
         (is (= 0 (count refs)))))
     (testing "search by granule ur ignore case false."
       (let [{:keys [refs]} (search/find-refs :granule
-                                         {:granule-ur "sampleUR1" "options[granule-ur][ignore-case]" "false"})]
+                                             {:granule-ur "sampleUR1" "options[granule-ur][ignore-case]" "false"})]
         (is (= 0 (count refs)))))
     (testing "search by granule ur ignore case true."
       (let [{:keys [refs]} (search/find-refs :granule
-                                         {:granule-ur "sampleUR1" "options[granule-ur][ignore-case]" "true"})]
+                                             {:granule-ur "sampleUR1" "options[granule-ur][ignore-case]" "true"})]
         (is (= 1 (count refs)))
         (let [{granule-ur :name} (first refs)]
           (is (= "SampleUR1" granule-ur)))))
     (testing "search by granule ur using wildcard and ignore case true."
       (let [{:keys [refs]} (search/find-refs :granule
-                                         {:granule-ur "sampleUR?"
-                                          "options[granule-ur][pattern]" "true"
-                                          "options[granule-ur][ignore-case]" "true"})]
+                                             {:granule-ur "sampleUR?"
+                                              "options[granule-ur][pattern]" "true"
+                                              "options[granule-ur][ignore-case]" "true"})]
         (is (= 3 (count refs)))
         (is (= #{"SampleUR1" "SampleUR2" "sampleur3"}
                (set (map :name refs))))))))
@@ -243,7 +243,6 @@
                 :errors [(msg/invalid-numeric-range-msg num-range)]}
                (search/find-refs :granule {"cloud_cover" num-range})))))))
 
-;; (d/ingest "CMR_PROV1" (dg/granule coll1 {:cloud-cover 0.8}))
 
 ;; Find granules by echo_granule_id, echo_collection_id and concept_id params
 (deftest echo-granule-id-search-test
@@ -277,13 +276,14 @@
            [gran1 gran2 gran3 gran4 gran5] [gran1-cid gran2-cid gran3-cid gran4-cid gran5-cid] {}
            [gran1 gran5] [gran1-cid gran5-cid] {:and false}
            [] [gran1-cid gran5-cid] {:and true}
-
-           ;; Ignore case
-           [] (s/lower-case gran1-cid) {:ignore-case true}
            [] (s/lower-case gran1-cid) {:ignore-case false}))
+    (testing "echo granule id search - disallow ignore case"
+      (is (= {:status 422
+              :errors [(msg/invalid-ignore-case-opt-setting-msg #{:concept-id :echo-collection-id :echo-granule-id})]}
+             (search/find-refs :granule {:echo_granule_id gran1-cid "options[echo_granule_id]" {:ignore_case true}}))))
     (testing "Search with wildcards in echo_granule_id param not supported."
-      (is (= {:status 400
-              :errors ["Concept-id [G*] is not valid."]}
+      (is (= {:status 422
+              :errors [(msg/invalid-pattern-opt-setting-msg #{:concept-id :echo-collection-id :echo-granule-id})]}
              (search/find-refs :granule {:echo_granule_id "G*" "options[echo_granule_id]" {:pattern true}}))))
     (testing "search granules by echo collection id"
       (are [items cid options]
@@ -317,6 +317,6 @@
            [gran1 gran2 gran3 gran4 gran5] [gran1-cid gran2-cid gran3-cid gran4-cid gran5-cid] {}
            [] [gran1-cid gran5-cid] {:and true}))
     (testing "Search with wildcards in concept_id param not supported."
-      (is (= {:status 400
-              :errors ["Concept-id [G*] is not valid."]}
+      (is (= {:status 422
+              :errors [(msg/invalid-pattern-opt-setting-msg #{:concept-id :echo-collection-id :echo-granule-id})]}
              (search/find-refs :granule {:concept_id "G*" "options[concept_id]" {:pattern true}}))))))
