@@ -39,6 +39,7 @@
       {:entry-id (str (:short-name product) "_" (:version-id product))
        :entry-title (cx/string-at-path xml-struct [:DataSetId])
        :product product
+       :spatial-keywords (seq (cx/strings-at-path xml-struct [:SpatialKeywords :Keyword]))
        :temporal (t/xml-elem->Temporal xml-struct)
        :platforms (platform/xml-elem->Platforms xml-struct)
        :product-specific-attributes (psa/xml-elem->ProductSpecificAttributes xml-struct)
@@ -65,7 +66,9 @@
   (umm->echo10-xml
     [collection]
     (let [{{:keys [short-name long-name version-id processing-level-id]} :product
-           dataset-id :entry-title} collection]
+           dataset-id :entry-title
+           :keys [organizations spatial-keywords temporal platforms product-specific-attributes
+                  projects two-d-coordinate-systems spatial-coverage]} collection]
       (x/emit-str
         (x/element :Collection {}
                    (x/element :ShortName {} short-name)
@@ -79,17 +82,20 @@
                    (x/element :Orderable {} "true")
                    (x/element :Visible {} "true")
                    ;; archive center to follow processing center
-                   (org/generate-processing-center (:organizations collection))
+                   (org/generate-processing-center organizations)
                    (when processing-level-id
                      (x/element :ProcessingLevelId {} processing-level-id))
-                   (org/generate-archive-center (:organizations collection))
-                   (t/generate-temporal (:temporal collection))
-                   (platform/generate-platforms (:platforms collection))
-                   (psa/generate-product-specific-attributes
-                     (:product-specific-attributes collection))
-                   (cmpgn/generate-campaigns (:projects collection))
-                   (two-d/generate-two-ds (:two-d-coordinate-systems collection))
-                   (generate-spatial (:spatial-coverage collection)))))))
+                   (org/generate-archive-center organizations)
+                   (when spatial-keywords
+                     (x/element :SpatialKeywords {}
+                                (for [spatial-keyword spatial-keywords]
+                                  (x/element :Keyword {} spatial-keyword))))
+                   (t/generate-temporal temporal)
+                   (platform/generate-platforms platforms)
+                   (psa/generate-product-specific-attributes product-specific-attributes)
+                   (cmpgn/generate-campaigns projects)
+                   (two-d/generate-two-ds two-d-coordinate-systems)
+                   (generate-spatial spatial-coverage))))))
 
 (defn validate-xml
   "Validates the XML against the ECHO10 schema."

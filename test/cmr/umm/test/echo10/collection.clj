@@ -44,6 +44,11 @@
     <ProcessingCenter>SEDAC PC</ProcessingCenter>
     <ProcessingLevelId>1B</ProcessingLevelId>
     <ArchiveCenter>SEDAC AC</ArchiveCenter>
+    <SpatialKeywords>
+      <Keyword>Word-2</Keyword>
+      <Keyword>Word-1</Keyword>
+      <Keyword>Word-0</Keyword>
+    </SpatialKeywords>
     <Temporal>
       <TimeType>Universal Time</TimeType>
       <DateType>Eastern Daylight</DateType>
@@ -177,6 +182,7 @@
                                 :long-name "A minimal valid collection"
                                 :version-id "1"
                                 :processing-level-id "1B"})
+                    :spatial-keywords ["Word-2" "Word-1" "Word-0"]
                     :temporal
                     (umm-c/map->Temporal
                       {:time-type "Universal Time"

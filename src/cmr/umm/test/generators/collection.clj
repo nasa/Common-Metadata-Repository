@@ -96,6 +96,7 @@
                 :entry-title entry-titles
                 :product products
                 :temporal t/temporals
+                :spatial-keywords (ext-gen/nil-if-empty (gen/vector (ext-gen/string-ascii 1 80) 0 4))
                 :platforms (ext-gen/nil-if-empty (gen/vector platforms 0 4))
                 :product-specific-attributes (ext-gen/nil-if-empty (gen/vector psa/product-specific-attributes 0 10))
                 :projects (ext-gen/nil-if-empty (gen/vector campaigns 0 4))
