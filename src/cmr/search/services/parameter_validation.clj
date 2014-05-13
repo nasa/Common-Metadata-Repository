@@ -25,7 +25,7 @@
   (set #{:concept-id :echo-collection-id :echo-granule-id}))
 
 (def exclude-params
-  "Set of exclude parameters."
+  "Lists parameters which can be used to exclude items from results."
   (set #{:echo-granule-id :concept-id}))
 
 (defn- concept-type->valid-param-names
@@ -308,7 +308,7 @@
     (let [param (first (keys exclude-kv))]
       (if (contains? exclude-params param)
         []
-        [(c-msg/invalid-exclude-param-msg param exclude-params)]))
+        [(c-msg/invalid-exclude-param-msg param)]))
     []))
 
 (defn boolean-value-validation

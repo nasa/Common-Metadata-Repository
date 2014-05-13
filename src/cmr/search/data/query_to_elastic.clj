@@ -91,12 +91,6 @@
   (condition->elastic
     [{:keys [operation conditions]} concept-type]
     ;; TODO Performance Improvement: We should order the conditions within and/ors.
-    ;; TODO - Exclude conditions should trail all other conditions - club this ordering with above perf task
-    ;; ie., Ok - curl "http://localhost:3003/granules?exclude\[echo_granule_id\]\[\]=G1000000006-CMR_PROV2&cloud_cover=-70,120"
-    ;; Ok - curl "http://localhost:3003/granules?echo_granule_id\[\]=G1000000002-CMR_PROV1&echo_granule_id\[\]=G1000000003-CMR_PROV1&echo_granule_id\[\]=G1000000006-CMR_PROV2&exclude\[echo_granule_id\]\[\]=G1000000006-CMR_PROV2"
-    ;; Ok -curl "http://localhost:3003/granules?exclude\[echo_granule_id\]\[\]=G1000000006-CMR_PROV2&echo_granule_id\[\]=G1000000002-CMR_PROV1&echo_granule_id\[\]=G1000000003-CMR_PROV1&echo_granule_id\[\]=G1000000006-CMR_PROV2"
-    ;; Not Ok - curl "http://localhost:3003/granules?cloud_cover=-70,120&exclude\[echo_granule_id\]\[\]=G1000000006-CMR_PROV2"
-    ;;
     {operation {:filters (map #(condition->elastic % concept-type) conditions)}})
 
   cmr.search.models.query.NestedCondition
@@ -121,11 +115,10 @@
     (let [field (query-field->elastic-field field concept-type)]
       {:term {field value}}))
 
-  cmr.search.models.query.NixCondition
+  cmr.search.models.query.NegatedCondition
   (condition->elastic
-    [{:keys [str-conds]} concept-type]
-    (let [exclude-terms (map #(hash-map :not (condition->elastic % concept-type)) str-conds)]
-      exclude-terms))
+    [{:keys [condition]} concept-type]
+    (hash-map :not (condition->elastic condition concept-type)))
 
   cmr.search.models.query.ExistCondition
   (condition->elastic

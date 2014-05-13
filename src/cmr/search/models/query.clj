@@ -58,10 +58,10 @@
    pattern?
    ])
 
-(defrecord NixCondition
+(defrecord NegatedCondition
   [
-   ;; exclude string conditions
-   str-conds
+   ;; condition to exclude
+   condition
    ])
 
 (defrecord BooleanCondition
