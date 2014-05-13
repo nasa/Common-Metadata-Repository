@@ -189,6 +189,23 @@
         (is (= #{"SampleUR1" "SampleUR2" "sampleur3"}
                (set (map :name refs))))))))
 
+(defn- make-catalog-rest-style-query
+  "Make a cloud-cover query in the catalog-reset style."
+  [min max]
+  (cond
+    (and min max)
+    {"cloud-cover[min]" min "cloud-cover[max]" max}
+
+    min
+    {"cloud-cover[min]" min}
+
+    max
+    {"cloud-cover[max]" max}
+
+    :else
+    (throw (Exception. "Tests must specify either max or min cloud-cover."))))
+
+
 (deftest search-by-cloud-cover
   (let [coll1 (d/ingest "CMR_PROV1" (dc/collection {}))
         coll2 (d/ingest "CMR_PROV2" (dc/collection {}))
@@ -241,7 +258,13 @@
       (let [num-range "30,c9c"]
         (is (= {:status 422
                 :errors [(msg/invalid-numeric-range-msg num-range)]}
-               (search/find-refs :granule {"cloud_cover" num-range})))))))
+               (search/find-refs :granule {"cloud_cover" num-range})))))
+    (testing "catalog-rest style"
+      (are [min max items]
+           (d/refs-match? items (search/find-refs :granule (make-catalog-rest-style-query min max)))
+           0.2 nil [gran1 gran2 gran3]
+           nil 0.7 [gran4 gran5]
+           -70.0 31.0 [gran1 gran2 gran4 gran5]))))
 
 ;; covers all of the conditions in search-by-cloud-cover test
 (deftest search-by-legacy-cloud-cover
