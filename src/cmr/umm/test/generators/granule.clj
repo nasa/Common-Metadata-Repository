@@ -6,7 +6,8 @@
             [cmr.umm.test.generators.granule.temporal :as gt]
             [cmr.umm.test.generators.collection.product-specific-attribute :as psa]
             [cmr.umm.test.generators.granule.orbit-calculated-spatial-domain :as ocsd]
-            [cmr.umm.granule :as g]))
+            [cmr.umm.granule :as g]
+            [cmr.umm.test.generators.spatial :as spatial-gen]))
 
 ;;; granule related
 (def granule-urs
@@ -65,6 +66,9 @@
                      platform-ref-short-names
                      (ext-gen/nil-if-empty (gen/vector instrument-refs 0 4))))
 
+(def spatial-coverages
+  (ext-gen/model-gen g/->SpatialCoverage (gen/vector spatial-gen/geometries 1 5)))
+
 (def granules
   (ext-gen/model-gen
     g/map->UmmGranule
@@ -78,6 +82,7 @@
       :project-refs (ext-gen/nil-if-empty (gen/vector (ext-gen/string-ascii 1 80) 0 3))
       :cloud-cover cloud-cover-values
       :related-urls (ext-gen/nil-if-empty (gen/vector related-url 0 5))
+      :spatial-coverage (ext-gen/optional spatial-coverages)
       :product-specific-attributes (ext-gen/nil-if-empty (gen/vector product-specific-attribute-refs 0 5)))))
 
 ;; Generator that only returns collection ref with entry-title

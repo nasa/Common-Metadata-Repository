@@ -4,6 +4,7 @@
             [clojure.java.io :as io]
             [cmr.common.xml :as cx]
             [cmr.umm.granule :as g]
+            [cmr.umm.echo10.spatial :as s]
             [cmr.umm.echo10.granule.temporal :as gt]
             [cmr.umm.echo10.granule.platform-ref :as p-ref]
             [cmr.umm.echo10.related-url :as ru]
@@ -68,6 +69,18 @@
                            :day-night day-night
                            :production-date-time production-date-time}))))
 
+(defn- xml-elem->SpatialCoverage
+  [granule-content-node]
+  (when-let [geom-elem (cx/element-at-path granule-content-node [:Spatial :HorizontalSpatialDomain :Geometry])]
+    (g/->SpatialCoverage (s/geometry-element->geometries geom-elem))))
+
+(defn generate-spatial
+  [spatial-coverage]
+  (when spatial-coverage
+    (x/element :Spatial {}
+               (x/element :HorizontalSpatialDomain {}
+                          (s/generate-geometry-xml (:geometry spatial-coverage))))))
+
 (defn- xml-elem->Granule
   "Returns a UMM Product from a parsed Granule XML structure"
   [xml-struct]
@@ -81,6 +94,7 @@
                         :project-refs (xml-elem->project-refs xml-struct)
                         :cloud-cover (cx/double-at-path xml-struct [:CloudCover])
                         :related-urls (ru/xml-elem->related-urls xml-struct)
+                        :spatial-coverage (xml-elem->SpatialCoverage xml-struct)
                         :product-specific-attributes (psa/xml-elem->ProductSpecificAttributeRefs xml-struct)})))
 
 (defn parse-granule
@@ -91,40 +105,45 @@
 (extend-protocol cmr.umm.echo10.core/UmmToEcho10Xml
   UmmGranule
   (umm->echo10-xml
-    [granule]
-    (let [{{:keys [entry-title short-name version-id]} :collection-ref
-           granule-ur :granule-ur
-           data-granule :data-granule
-           temporal :temporal
-           ocsds :orbit-calculated-spatial-domains
-           platform-refs :platform-refs
-           prefs :project-refs
-           cloud-cover :cloud-cover
-           related-urls :related-urls
-           psas :product-specific-attributes} granule]
-      (x/emit-str
-        (x/element :Granule {}
-                   (x/element :GranuleUR {} granule-ur)
-                   (x/element :InsertTime {} "2012-12-31T19:00:00Z")
-                   (x/element :LastUpdate {} "2013-11-30T19:00:00Z")
-                   (cond (not (nil? entry-title))
-                         (x/element :Collection {}
-                                    (x/element :DataSetId {} entry-title))
-                         :else (x/element :Collection {}
-                                          (x/element :ShortName {} short-name)
-                                          (x/element :VersionId {} version-id)))
-                   (x/element :RestrictionFlag {} "0.0")
-                   (generate-data-granule data-granule)
-                   (gt/generate-temporal temporal)
-                   (ocsd/generate-orbit-calculated-spatial-domains ocsds)
-                   (p-ref/generate-platform-refs platform-refs)
-                   (generate-project-refs prefs)
-                   (psa/generate-product-specific-attribute-refs psas)
-                   (ru/generate-access-urls related-urls)
-                   (ru/generate-resource-urls related-urls)
-                   (x/element :Orderable {} "true")
-                   (when cloud-cover
-                     (x/element :CloudCover {} cloud-cover)))))))
+    ([granule]
+     (cmr.umm.echo10.core/umm->echo10-xml granule false))
+    ([granule indent?]
+     (let [{{:keys [entry-title short-name version-id]} :collection-ref
+            granule-ur :granule-ur
+            data-granule :data-granule
+            temporal :temporal
+            ocsds :orbit-calculated-spatial-domains
+            platform-refs :platform-refs
+            prefs :project-refs
+            cloud-cover :cloud-cover
+            related-urls :related-urls
+            psas :product-specific-attributes
+            spatial :spatial-coverage} granule
+           emit-fn (if indent? x/indent-str x/emit-str)]
+       (emit-fn
+         (x/element :Granule {}
+                    (x/element :GranuleUR {} granule-ur)
+                    (x/element :InsertTime {} "2012-12-31T19:00:00Z")
+                    (x/element :LastUpdate {} "2013-11-30T19:00:00Z")
+                    (cond (not (nil? entry-title))
+                          (x/element :Collection {}
+                                     (x/element :DataSetId {} entry-title))
+                          :else (x/element :Collection {}
+                                           (x/element :ShortName {} short-name)
+                                           (x/element :VersionId {} version-id)))
+                    (x/element :RestrictionFlag {} "0.0")
+                    (generate-data-granule data-granule)
+                    (gt/generate-temporal temporal)
+                    (generate-spatial spatial)
+                    (ocsd/generate-orbit-calculated-spatial-domains ocsds)
+                    (p-ref/generate-platform-refs platform-refs)
+                    (generate-project-refs prefs)
+                    (psa/generate-product-specific-attribute-refs psas)
+                    (ru/generate-access-urls related-urls)
+                    (ru/generate-resource-urls related-urls)
+                    (x/element :Orderable {} "true")
+                    (when cloud-cover
+                      (x/element :CloudCover {} cloud-cover))))))))
 
 (defn validate-xml
   "Validates the XML against the Granule ECHO10 schema."

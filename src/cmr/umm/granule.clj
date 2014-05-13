@@ -79,6 +79,12 @@
    instrument-refs
   ])
 
+(defrecord SpatialCoverage
+  [
+   ;; A sequence of spatial points, bounding rectangles, polygons, and lines
+   geometry
+   ])
+
 (defrecord UmmGranule
   [
    ;; maps to Granule/GranuleUR in echo granule schema
@@ -90,6 +96,8 @@
    data-granule
 
    temporal
+
+   spatial-coverage
 
    orbit-calculated-spatial-domains
 

@@ -64,12 +64,15 @@
 (extend-protocol cmr.umm.echo10.core/UmmToEcho10Xml
   UmmCollection
   (umm->echo10-xml
-    [collection]
+    ([collection]
+     (cmr.umm.echo10.core/umm->echo10-xml collection false))
+    ([collection indent?]
     (let [{{:keys [short-name long-name version-id processing-level-id]} :product
            dataset-id :entry-title
            :keys [organizations spatial-keywords temporal platforms product-specific-attributes
-                  projects two-d-coordinate-systems spatial-coverage]} collection]
-      (x/emit-str
+                  projects two-d-coordinate-systems spatial-coverage]} collection
+           emit-fn (if indent? x/indent-str x/emit-str)]
+      (emit-fn
         (x/element :Collection {}
                    (x/element :ShortName {} short-name)
                    (x/element :VersionId {} version-id)
@@ -95,7 +98,7 @@
                    (psa/generate-product-specific-attributes product-specific-attributes)
                    (cmpgn/generate-campaigns projects)
                    (two-d/generate-two-ds two-d-coordinate-systems)
-                   (generate-spatial spatial-coverage))))))
+                   (generate-spatial spatial-coverage)))))))
 
 (defn validate-xml
   "Validates the XML against the ECHO10 schema."
