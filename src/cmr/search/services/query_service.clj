@@ -34,10 +34,13 @@
             [cmr.search.validators.equator-crossing-longitude]
             [cmr.search.validators.equator-crossing-date]
 
+            ;; Complex to simple converters
+            [cmr.search.data.complex-to-simple-converters.attribute]
+            [cmr.search.data.complex-to-simple-converters.orbit]
+
             ;; Query To Elastic implementations
             ;; Must be required here to be available in uberjar
             [cmr.search.data.query-to-elastic-converters.temporal]
-            [cmr.search.data.query-to-elastic-converters.attribute]
 
             [cmr.search.services.legacy-parameters :as lp]
             [cmr.search.services.parameter-validation :as pv]
@@ -74,6 +77,12 @@
   [context query]
   (idx/execute-query context query))
 
+(deftracefn simplify-query
+  "Simplifies the query to increase performance."
+  [context query]
+  ;; TODO - do something useful here.
+  query)
+
 
 (deftracefn find-concepts-by-query
   "Executes a search for concepts using a query The concepts will be returned with
@@ -82,8 +91,9 @@
   (->> query
        (validate-query context)
        (apply-acls context)
+       c2s/reduce-query
        (resolve-collection-query context)
-       c2s/simplify-query
+       (simplify-query context)
        (execute-query context)))
 
 (deftracefn find-concepts-by-parameters

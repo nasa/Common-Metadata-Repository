@@ -4,27 +4,32 @@
 (defprotocol ComplexQueryToSimple
   "Defines a function to convert a complex / high level query/condition into simpler ones that
   can be optimized more easily."
-  (simplify-query
+  (reduce-query
     [query]
     "Converts a high-level query condition into a simpler form."))
 
 
 (extend-protocol ComplexQueryToSimple
   cmr.search.models.query.Query
-  (simplify-query
+  (reduce-query
     [query]
-    (update-in query [:condition] #(simplify-query %)))
+    (update-in query [:condition] #(reduce-query %)))
 
   cmr.search.models.query.ConditionGroup
-  (simplify-query
+  (reduce-query
     [condition]
     (update-in condition [:conditions] (fn [cond]
-                                         (map #(simplify-query %) cond))))
+                                         (map #(reduce-query %) cond))))
 
+
+  cmr.search.models.query.CollectionQueryCondition
+  (reduce-query
+    [condition]
+    (update-in condition [:condition] reduce-query))
 
   ;; catch all
   java.lang.Object
-  (simplify-query
+  (reduce-query
     [this]
     ;; do nothing
     this))

@@ -1,8 +1,7 @@
 (ns cmr.search.data.complex-to-simple-converters.attribute
-  "Defines functions that implement the simplify-query methods of the ComplexQueryToSimple
+  "Defines functions that implement the reduce-query methods of the ComplexQueryToSimple
   protocol for product specific attribute search fields."
-  (:require [clojurewerkz.elastisch.query :as q]
-            [clojure.string :as s]
+  (:require [clojure.string :as s]
             [clj-time.core :as t]
             [clj-time.format :as f]
             [cmr.search.data.complex-to-simple :as c2s]
@@ -76,7 +75,7 @@
 
 (extend-protocol c2s/ComplexQueryToSimple
   cmr.search.models.query.AttributeValueCondition
-  (c2s/simplify-query
+  (c2s/reduce-query
     [condition]
     (let [value-filter (value-condition->value-filter condition)
           attrib-name (:name condition)
@@ -85,7 +84,7 @@
       (qm/nested-condition :attributes and-cond)))
 
   cmr.search.models.query.AttributeRangeCondition
-  (c2s/simplify-query
+  (c2s/reduce-query
     [condition]
     (let [range-filter (range-condition->range-filter condition)
           attrib-name (:name condition)
