@@ -242,7 +242,7 @@
                 :errors [(msg/invalid-numeric-range-msg num-range)]}
                (search/find-refs :granule {"cloud_cover" num-range})))))))
 
-;; exclude granules by echo_granule_id or concept_id params
+;; exclude granules by echo_granule_id or concept_id (including parent concept_id) params
 (deftest exclude-granules-by-echo-granule-n-concept-ids
   (let [coll1 (d/ingest "CMR_PROV1" (dc/collection {}))
         coll2 (d/ingest "CMR_PROV2" (dc/collection {}))
@@ -250,6 +250,8 @@
         gran2 (d/ingest "CMR_PROV1" (dg/granule coll1 {:cloud-cover 30.0}))
         gran3 (d/ingest "CMR_PROV1" (dg/granule coll1 {:cloud-cover 120}))
         gran4 (d/ingest "CMR_PROV2" (dg/granule coll2 {:cloud-cover -60.0}))
+        coll1-cid (get-in coll1 [:concept-id])
+        coll2-cid (get-in coll2 [:concept-id])
         gran1-cid (get-in gran1 [:concept-id])
         gran2-cid (get-in gran2 [:concept-id])
         gran3-cid (get-in gran3 [:concept-id])
@@ -271,10 +273,12 @@
     (testing "fetch granules by echo granule ids to exclude multiple granules from the set by concept_id"
       (are [srch-params items] (d/refs-match? items (search/find-refs :granule srch-params))
            {:exclude {:concept_id [gran1-cid gran2-cid]}, :echo_granule_id [gran1-cid gran2-cid gran3-cid]} [gran3]))
+    (testing "fetch granules by echo granule ids to exclude multiple granules from the set by parent concept_id"
+      (are [srch-params items] (d/refs-match? items (search/find-refs :granule srch-params))
+           {:exclude {:concept_id [coll1-cid]}, :echo_granule_id [gran1-cid gran2-cid gran3-cid gran4-cid]} [gran4]))
     (testing "fetch granules by echo granule ids to exclude a granule by invalid exclude param - dataset_id"
       (let [srch-params {:exclude {:dataset-id [gran2-cid]}, :echo_granule_id [gran1-cid gran2-cid gran3-cid]}]
         (is (= {:status 422
-                :errors [(msg/invalid-exclude-param-msg :dataset-id #{:echo-granule-id :concept-id})]}
+                :errors [(msg/invalid-exclude-param-msg :dataset-id)]}
                (search/find-refs :granule srch-params)))))))
-
 
