@@ -2,8 +2,6 @@
   "Defines functions that implement the reduce-query methods of the ComplexQueryToSimple
   protocol for product specific attribute search fields."
   (:require [clojure.string :as s]
-            [clj-time.core :as t]
-            [clj-time.format :as f]
             [cmr.search.data.complex-to-simple :as c2s]
             [cmr.search.models.query :as qm]
             [cmr.search.data.datetime-helper :as h]))
