@@ -1,5 +1,7 @@
 (ns cmr.search.data.complex-to-simple-converters.temporal
-  "Contains functions to map from a temporal condition to elastic search query"
+  "Defines functions that implement the reduce-query method of the ComplexQueryToSimple
+  protocol for Temporal conditions."
+
   (:require [clj-time.core :as t]
             [cmr.search.models.query :as qm]
             [cmr.search.services.parameter-converters.temporal :as temporal]

@@ -1,5 +1,5 @@
 (ns cmr.search.data.complex-to-simple-converters.attribute
-  "Defines functions that implement the reduce-query methods of the ComplexQueryToSimple
+  "Defines functions that implement the reduce-query method of the ComplexQueryToSimple
   protocol for product specific attribute search fields."
   (:require [clojure.string :as s]
             [cmr.search.data.complex-to-simple :as c2s]
