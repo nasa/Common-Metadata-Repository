@@ -39,10 +39,6 @@
             [cmr.search.data.complex-to-simple-converters.orbit]
             [cmr.search.data.complex-to-simple-converters.temporal]
 
-            ;; Query To Elastic implementations
-            ;; Must be required here to be available in uberjar
-
-
             [cmr.search.services.legacy-parameters :as lp]
             [cmr.search.services.parameter-validation :as pv]
             [cmr.search.services.collection-query-resolver :as r]
