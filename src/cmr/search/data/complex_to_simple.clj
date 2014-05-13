@@ -13,7 +13,6 @@
   cmr.search.models.query.Query
   (simplify-query
     [query]
-    (println "SIMPLIFY")
     (update-in query [:condition] #(simplify-query %)))
 
   cmr.search.models.query.ConditionGroup

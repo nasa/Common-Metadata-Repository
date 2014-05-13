@@ -1,4 +1,6 @@
 (ns cmr.search.data.complex-to-simple-converters.orbit
+  "Defines functions that implement the simplify-query methods of the ComplexQueryToSimple
+  protocol for orbit related search fields."
   (:require [cmr.search.models.query :as qm]
             [cmr.search.data.complex-to-simple :as c2s]
             [cmr.common.services.errors :as errors]
