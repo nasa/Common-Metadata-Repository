@@ -5,6 +5,8 @@
 
 cd ../cmr-common-lib
 lein do clean, install, clean
+cd ../cmr-spatial-lib
+lein do clean, install, clean
 cd ../cmr-umm-lib
 lein do clean, install, clean
 cd ../cmr-system-trace-lib
