@@ -243,6 +243,59 @@
                 :errors [(msg/invalid-numeric-range-msg num-range)]}
                (search/find-refs :granule {"cloud_cover" num-range})))))))
 
+;; covers all of the conditions in search-by-cloud-cover test
+(deftest search-by-legacy-cloud-cover
+  (let [coll1 (d/ingest "CMR_PROV1" (dc/collection {}))
+        coll2 (d/ingest "CMR_PROV2" (dc/collection {}))
+        gran1 (d/ingest "CMR_PROV1" (dg/granule coll1 {:cloud-cover 0.8}))
+        gran2 (d/ingest "CMR_PROV1" (dg/granule coll1 {:cloud-cover 30.0}))
+        gran3 (d/ingest "CMR_PROV1" (dg/granule coll1 {:cloud-cover 120}))
+        gran4 (d/ingest "CMR_PROV2" (dg/granule coll2 {:cloud-cover -60.0}))
+        gran5 (d/ingest "CMR_PROV2" (dg/granule coll2 {:cloud-cover 0.0}))
+        gran6 (d/ingest "CMR_PROV2" (dg/granule coll2 {:granule-ur "sampleur3"}))]
+    (index/flush-elastic-index)
+    (testing "search granules with lower bound cloud-cover value"
+      (are [cc-search items] (d/refs-match? items (search/find-refs :granule cc-search))
+           {"cloud_cover[min]" "0.2"} [gran1 gran2 gran3]))
+    (testing "search granules with upper bound cloud-cover value"
+      (are [cc-search items] (d/refs-match? items (search/find-refs :granule cc-search))
+           {"cloud_cover[max]" "0.7"} [gran4 gran5]))
+    (testing "search by cloud-cover range values that would not cover all granules in store"
+      (are [cc-search items] (d/refs-match? items (search/find-refs :granule cc-search))
+           {"cloud_cover[min]" "-70.0",  "cloud_cover[max]" "31.0"} [gran1 gran2 gran4 gran5]))
+    (testing "search by cloud-cover range values that would not cover all granules in store"
+      (are [cc-search items] (d/refs-match? items (search/find-refs :granule cc-search))
+           {"cloud_cover[min]" "-70.0",  "cloud_cover[max]" "120.0"} [gran1 gran2 gran3 gran4 gran5]))
+    (testing "search by cloud-cover with min value greater than max value"
+      (let [min-value 30.0
+            max-value 0.0]
+        (is (= {:status 422
+                :errors [(vmsg/min-value-greater-than-max min-value max-value)]}
+               (search/find-refs :granule {"cloud_cover[min]" min-value  "cloud_cover[max]" max-value})))))
+    (testing "search by cloud-cover with non numeric strs 'c9c' '' "
+      (let [num-range-p1 "c9c"
+            num-range-p2 ""]
+        (is (= {:status 422
+                :errors [(msg/invalid-numeric-range-msg (format "%s,%s" num-range-p1 num-range-p2))]}
+               (search/find-refs :granule {"cloud_cover[min]" num-range-p1  "cloud_cover[max]" num-range-p2})))))
+    (testing "search by cloud-cover with non numeric strs  '' '99c'"
+      (let [num-range-p1 ""
+            num-range-p2 "99c"]
+        (is (= {:status 422
+                :errors [(msg/invalid-numeric-range-msg (format "%s,%s" num-range-p1 num-range-p2))]}
+               (search/find-refs :granule {"cloud_cover[min]" num-range-p1  "cloud_cover[max]" num-range-p2})))))
+    (testing "search by cloud-cover with empty strs '' ''"
+      (let [num-range-p1 ""
+            num-range-p2 ""]
+        (is (= {:status 422
+                :errors [(msg/invalid-numeric-range-msg (format "%s,%s" num-range-p1 num-range-p2))]}
+               (search/find-refs :granule {"cloud_cover[min]" num-range-p1  "cloud_cover[max]" num-range-p2})))))
+    (testing "search by cloud-cover with invalid range values"
+      (let [num-range-p1 "30"
+            num-range-p2 "c9c"]
+        (is (= {:status 422
+                :errors [(msg/invalid-numeric-range-msg (format "%s,%s" num-range-p1 num-range-p2))]}
+               (search/find-refs :granule {"cloud_cover[min]" num-range-p1  "cloud_cover[max]" num-range-p2})))))))
 
 ;; Find granules by echo_granule_id, echo_collection_id and concept_id params
 (deftest echo-granule-id-search-test
