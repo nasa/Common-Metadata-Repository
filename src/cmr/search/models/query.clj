@@ -58,6 +58,12 @@
    pattern?
    ])
 
+(defrecord NixCondition
+  [
+   ;; exclude string conditions
+   str-conds
+   ])
+
 (defrecord BooleanCondition
   [
    ;; The field being searched.

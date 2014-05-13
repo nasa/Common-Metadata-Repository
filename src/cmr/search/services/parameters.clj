@@ -45,6 +45,7 @@
              :project :string
              :cloud-cover :num-range
              :concept-id :string
+             :exclude :exclude
              :downloadable :boolean}})
 
 (defn- param-name->type
@@ -82,6 +83,18 @@
        (qm/and-conds
          [(qm/->CollectionQueryCondition field-condition)
           (qm/map->MissingCondition {:field (q2e/query-field->elastic-field param concept-type)})])])))
+
+
+(defmethod parameter->condition :exclude
+  [concept-type param value options]
+  (let [k (first (keys value))
+        ;; exclude-param ((first (keys value)) lp/param-aliases)
+        exclude-param (if (= :concept-id k)
+                        k
+                        (k lp/param-aliases))
+        exclude-vals (vals value)]
+    (qm/map->NixCondition
+      {:str-conds (map #(parameter->condition concept-type exclude-param % options) exclude-vals)})))
 
 (defmethod parameter->condition :updated-since
   [concept-type param value options]
