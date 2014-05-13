@@ -1,6 +1,7 @@
 (ns ^{:doc "Integration test for CMR granule search"}
   cmr.system-int-test.search.granule-search-test
   (:require [clojure.test :refer :all]
+            [clojure.string :as s]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.index-util :as index]
@@ -162,7 +163,7 @@
         (is (= #{"Granule3"} (set granule-urs)))))
     (testing "search by granule ur using wildcard *."
       (let [{:keys [refs]} (search/find-refs :granule
-                                         {:granule-ur "S*" "options[granule-ur][pattern]" "true"})
+                                             {:granule-ur "S*" "options[granule-ur][pattern]" "true"})
             granule-urs (map :name refs)]
         (is (= 2 (count refs)))
         (is (= #{"SampleUR1" "SampleUR2"} (set granule-urs)))))
@@ -171,19 +172,19 @@
         (is (= 0 (count refs)))))
     (testing "search by granule ur ignore case false."
       (let [{:keys [refs]} (search/find-refs :granule
-                                         {:granule-ur "sampleUR1" "options[granule-ur][ignore-case]" "false"})]
+                                             {:granule-ur "sampleUR1" "options[granule-ur][ignore-case]" "false"})]
         (is (= 0 (count refs)))))
     (testing "search by granule ur ignore case true."
       (let [{:keys [refs]} (search/find-refs :granule
-                                         {:granule-ur "sampleUR1" "options[granule-ur][ignore-case]" "true"})]
+                                             {:granule-ur "sampleUR1" "options[granule-ur][ignore-case]" "true"})]
         (is (= 1 (count refs)))
         (let [{granule-ur :name} (first refs)]
           (is (= "SampleUR1" granule-ur)))))
     (testing "search by granule ur using wildcard and ignore case true."
       (let [{:keys [refs]} (search/find-refs :granule
-                                         {:granule-ur "sampleUR?"
-                                          "options[granule-ur][pattern]" "true"
-                                          "options[granule-ur][ignore-case]" "true"})]
+                                             {:granule-ur "sampleUR?"
+                                              "options[granule-ur][pattern]" "true"
+                                              "options[granule-ur][ignore-case]" "true"})]
         (is (= 3 (count refs)))
         (is (= #{"SampleUR1" "SampleUR2" "sampleur3"}
                (set (map :name refs))))))))
@@ -255,8 +256,7 @@
         gran1-cid (get-in gran1 [:concept-id])
         gran2-cid (get-in gran2 [:concept-id])
         gran3-cid (get-in gran3 [:concept-id])
-        gran4-cid (get-in gran4 [:concept-id])
-        dummy-cid "D1000000004-PROV2"]
+        gran4-cid (get-in gran4 [:concept-id])]
     (index/flush-elastic-index)
     (testing "fetch all granules with cloud-cover attrib"
       (are [cc-search items] (d/refs-match? items (search/find-refs :granule cc-search))
@@ -282,3 +282,78 @@
                 :errors [(msg/invalid-exclude-param-msg :dataset-id)]}
                (search/find-refs :granule srch-params)))))))
 
+;; Find granules by echo_granule_id, echo_collection_id and concept_id params
+(deftest echo-granule-id-search-test
+  (let [coll1 (d/ingest "CMR_PROV1" (dc/collection))
+        coll2 (d/ingest "CMR_PROV2" (dc/collection))
+        gran1 (d/ingest "CMR_PROV1" (dg/granule coll1))
+        gran2 (d/ingest "CMR_PROV1" (dg/granule coll1))
+        gran3 (d/ingest "CMR_PROV1" (dg/granule coll1))
+        gran4 (d/ingest "CMR_PROV2" (dg/granule coll2))
+        gran5 (d/ingest "CMR_PROV2" (dg/granule coll2))
+        coll1-cid (get-in coll1 [:concept-id])
+        coll2-cid (get-in coll2 [:concept-id])
+        gran1-cid (get-in gran1 [:concept-id])
+        gran2-cid (get-in gran2 [:concept-id])
+        gran3-cid (get-in gran3 [:concept-id])
+        gran4-cid (get-in gran4 [:concept-id])
+        gran5-cid (get-in gran5 [:concept-id])
+        dummy-cid "D1000000004-PROV2"]
+    (index/flush-elastic-index)
+    (testing "echo granule id search"
+      (are [items cid options]
+           (let [params (merge {:echo_granule_id cid}
+                               (when options
+                                 {"options[echo_granule_id]" options}))]
+             (d/refs-match? items (search/find-refs :granule params)))
+
+           [gran1] gran1-cid {}
+           [gran5] gran5-cid {}
+           [] dummy-cid {}
+           ;; Multiple values
+           [gran1 gran2 gran3 gran4 gran5] [gran1-cid gran2-cid gran3-cid gran4-cid gran5-cid] {}
+           [gran1 gran5] [gran1-cid gran5-cid] {:and false}
+           [] [gran1-cid gran5-cid] {:and true}
+           [] (s/lower-case gran1-cid) {:ignore-case false}))
+    (testing "echo granule id search - disallow ignore case"
+      (is (= {:status 422
+              :errors [(msg/invalid-ignore-case-opt-setting-msg #{:concept-id :echo-collection-id :echo-granule-id})]}
+             (search/find-refs :granule {:echo_granule_id gran1-cid "options[echo_granule_id]" {:ignore_case true}}))))
+    (testing "Search with wildcards in echo_granule_id param not supported."
+      (is (= {:status 422
+              :errors [(msg/invalid-pattern-opt-setting-msg #{:concept-id :echo-collection-id :echo-granule-id})]}
+             (search/find-refs :granule {:echo_granule_id "G*" "options[echo_granule_id]" {:pattern true}}))))
+    (testing "search granules by echo collection id"
+      (are [items cid options]
+           (let [params (merge {:echo_collection_id cid}
+                               (when options
+                                 {"options[echo_collection_id]" options}))]
+             (d/refs-match? items (search/find-refs :granule params)))
+
+           [gran1 gran2 gran3] coll1-cid {}
+           [gran4 gran5] coll2-cid {}))
+    (testing "search granules by parent concept id"
+      (are [items cid options]
+           (let [params (merge {:concept_id cid}
+                               (when options
+                                 {"options[concept_id]" options}))]
+             (d/refs-match? items (search/find-refs :granule params)))
+
+           [gran1 gran2 gran3] coll1-cid {}
+           [gran4 gran5] coll2-cid {}))
+    (testing "search granules by concept id"
+      (are [items cid options]
+           (let [params (merge {:concept_id cid}
+                               (when options
+                                 {"options[concept_id]" options}))]
+             (d/refs-match? items (search/find-refs :granule params)))
+           [gran1] gran1-cid {}
+           [gran5] gran5-cid {}
+           [] dummy-cid {}
+           ;; Multiple values
+           [gran1 gran2 gran3 gran4 gran5] [gran1-cid gran2-cid gran3-cid gran4-cid gran5-cid] {}
+           [] [gran1-cid gran5-cid] {:and true}))
+    (testing "Search with wildcards in concept_id param not supported."
+      (is (= {:status 422
+              :errors [(msg/invalid-pattern-opt-setting-msg #{:concept-id :echo-collection-id :echo-granule-id})]}
+             (search/find-refs :granule {:concept_id "G*" "options[concept_id]" {:pattern true}}))))))
