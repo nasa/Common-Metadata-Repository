@@ -1,9 +1,9 @@
-(ns cmr.search.data.query-to-elastic-converters.temporal
+(ns cmr.search.data.complex-to-simple-converters.temporal
   "Contains functions to map from a temporal condition to elastic search query"
   (:require [clj-time.core :as t]
-            [cmr.search.data.query-to-elastic :as q]
             [cmr.search.models.query :as qm]
-            [cmr.search.services.parameter-converters.temporal :as temporal]))
+            [cmr.search.services.parameter-converters.temporal :as temporal]
+            [cmr.search.data.complex-to-simple :as c2s]))
 
 (defn- intersect-temporal->simple-conditions
   "Convert a temporal condition with INTERSECT mask into a combination of simpler conditions
@@ -80,10 +80,9 @@
       (periodic-temporal->simple-conditions temporal)
       (intersect-temporal->simple-conditions temporal))))
 
-;; Convert a temporal condition to elastic json
-(extend-protocol q/ConditionToElastic
+;; Reduce a Temporal condition to simpler conditions
+(extend-protocol c2s/ComplexQueryToSimple
   cmr.search.models.query.TemporalCondition
-  (condition->elastic
-    [temporal concept-type]
-    (q/condition->elastic
-      (temporal->simple-conditions temporal) concept-type)))
+  (c2s/reduce-query
+    [condition]
+    (temporal->simple-conditions condition)))
