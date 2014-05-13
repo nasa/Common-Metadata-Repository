@@ -47,3 +47,9 @@
   [params-set]
   (let [params (reduce (fn [params param] (conj params param)) '() (seq params-set))]
     (format "Pattern option setting disallowed on these parameters: %s" params)))
+
+(defn invalid-exclude-param-msg
+  "Creates a message saying supplied parameter is not in exclude params set."
+  [supplied-param params-set]
+  (let [params (reduce (fn [params param] (conj params param)) '() (seq params-set))]
+    (format "Parameter %s not in exclude params set: %s" supplied-param params)))
