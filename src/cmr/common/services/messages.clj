@@ -50,6 +50,5 @@
 
 (defn invalid-exclude-param-msg
   "Creates a message saying supplied parameter is not in exclude params set."
-  [supplied-param params-set]
-  (let [params (reduce (fn [params param] (conj params param)) '() (seq params-set))]
-    (format "Parameter %s not in exclude params set: %s" supplied-param params)))
+  [param]
+  (format "Parameter [%s] can not be used with exclude." param))
