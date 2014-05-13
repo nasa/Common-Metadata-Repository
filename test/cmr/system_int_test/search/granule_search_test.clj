@@ -242,5 +242,39 @@
                 :errors [(msg/invalid-numeric-range-msg num-range)]}
                (search/find-refs :granule {"cloud_cover" num-range})))))))
 
+;; exclude granules by echo_granule_id or concept_id params
+(deftest exclude-granules-by-echo-granule-n-concept-ids
+  (let [coll1 (d/ingest "CMR_PROV1" (dc/collection {}))
+        coll2 (d/ingest "CMR_PROV2" (dc/collection {}))
+        gran1 (d/ingest "CMR_PROV1" (dg/granule coll1 {:cloud-cover 0.8}))
+        gran2 (d/ingest "CMR_PROV1" (dg/granule coll1 {:cloud-cover 30.0}))
+        gran3 (d/ingest "CMR_PROV1" (dg/granule coll1 {:cloud-cover 120}))
+        gran4 (d/ingest "CMR_PROV2" (dg/granule coll2 {:cloud-cover -60.0}))
+        gran1-cid (get-in gran1 [:concept-id])
+        gran2-cid (get-in gran2 [:concept-id])
+        gran3-cid (get-in gran3 [:concept-id])
+        gran4-cid (get-in gran4 [:concept-id])
+        dummy-cid "D1000000004-PROV2"]
+    (index/flush-elastic-index)
+    (testing "fetch all granules with cloud-cover attrib"
+      (are [cc-search items] (d/refs-match? items (search/find-refs :granule cc-search))
+           {"cloud_cover" "-70,120"} [gran1 gran2 gran3 gran4]))
+    (testing "fetch all granules with cloud-cover attrib to exclude a single granule from the set"
+      (are [cc-search items] (d/refs-match? items (search/find-refs :granule cc-search))
+           {:exclude {:echo_granule_id [gran1-cid]}, :cloud_cover "-70,120"} [gran2 gran3 gran4]))
+    (testing "fetch all granules with cloud-cover attrib to exclude multiple granules from the set"
+      (are [cc-search items] (d/refs-match? items (search/find-refs :granule cc-search))
+           {:exclude {:echo_granule_id [gran1-cid gran2-cid]}, :cloud_cover "-70,120"} [gran3 gran4]))
+    (testing "fetch granules by echo granule ids to exclude multiple granules from the set"
+      (are [srch-params items] (d/refs-match? items (search/find-refs :granule srch-params))
+           {:exclude {:echo_granule_id [gran1-cid gran2-cid]}, :echo_granule_id [gran1-cid gran2-cid gran3-cid]} [gran3]))
+    (testing "fetch granules by echo granule ids to exclude multiple granules from the set by concept_id"
+      (are [srch-params items] (d/refs-match? items (search/find-refs :granule srch-params))
+           {:exclude {:concept_id [gran1-cid gran2-cid]}, :echo_granule_id [gran1-cid gran2-cid gran3-cid]} [gran3]))
+    (testing "fetch granules by echo granule ids to exclude a granule by invalid exclude param - dataset_id"
+      (let [srch-params {:exclude {:dataset-id [gran2-cid]}, :echo_granule_id [gran1-cid gran2-cid gran3-cid]}]
+        (is (= {:status 422
+                :errors [(msg/invalid-exclude-param-msg :dataset-id #{:echo-granule-id :concept-id})]}
+               (search/find-refs :granule srch-params)))))))
 
 
