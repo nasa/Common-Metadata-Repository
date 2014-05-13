@@ -38,13 +38,11 @@
             ;; Must be required here to be available in uberjar
             [cmr.search.data.query-to-elastic-converters.temporal]
             [cmr.search.data.query-to-elastic-converters.attribute]
-            [cmr.search.data.query-to-elastic-converters.orbit-number]
-            [cmr.search.data.query-to-elastic-converters.equator-crossing-longitude]
-            [cmr.search.data.query-to-elastic-converters.equator-crossing-date]
 
             [cmr.search.services.legacy-parameters :as lp]
             [cmr.search.services.parameter-validation :as pv]
             [cmr.search.services.collection-query-resolver :as r]
+            [cmr.search.data.complex-to-simple :as c2s]
             [cmr.transmit.metadata-db :as meta-db]
             [cmr.system-trace.core :refer [deftracefn]]
             [cmr.common.services.errors :as err]
@@ -71,12 +69,6 @@
   [context query]
   (r/resolve-collection-query query context))
 
-(deftracefn simplify-query
-  "Simplifies the query."
-  [context query]
-  ;; TODO query simplification
-  query)
-
 (deftracefn execute-query
   "Executes a query returning results as concept id, native provider id, and revision id."
   [context query]
@@ -91,7 +83,7 @@
        (validate-query context)
        (apply-acls context)
        (resolve-collection-query context)
-       (simplify-query context)
+       c2s/simplify-query
        (execute-query context)))
 
 (deftracefn find-concepts-by-parameters
