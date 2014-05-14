@@ -15,6 +15,8 @@ cd ../cmr-elastic-utils-lib
 lein do clean, install, clean
 cd ../cmr-transmit-lib
 lein do clean, install, clean
+cd ../cmr-es-spatial-plugin
+lein do clean, install, clean
 cd ../cmr-ingest-app
 lein do clean, install, clean
 cd ../cmr-search-app
