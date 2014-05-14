@@ -55,6 +55,10 @@
       (g/map->DataGranule {:producer-gran-id producer-gran-id
                            :size size}))))
 
+(defn spatial
+  [& geometries]
+  (g/->SpatialCoverage geometries))
+
 (defn related-url
   "Creates related url for online_only test"
   [type]

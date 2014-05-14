@@ -96,6 +96,9 @@
     {:type (keyword type)
      :org-name center-name}))
 
+(defn spatial
+  [gsr]
+  (c/->SpatialCoverage gsr))
 
 (defn collection
   "Creates a collection"
@@ -107,7 +110,7 @@
          minimal-coll {:entry-id (str (:short-name product) "_" (:version-id product))
                        :entry-title (str (:long-name product) " " (:version-id product))
                        :product product}
-         attribs (select-keys attribs (d/record-fields UmmCollection))
+         attribs (select-keys attribs (concat (d/record-fields UmmCollection) [:concept-id :revision-id]))
          attribs (merge minimal-coll temporal attribs)]
      (c/map->UmmCollection attribs))))
 
