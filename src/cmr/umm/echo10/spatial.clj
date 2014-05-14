@@ -6,8 +6,8 @@
             [cmr.spatial.mbr :as mbr]
             [cmr.spatial.line :as l]
             [cmr.spatial.polygon :as poly]
-            [cmr.spatial.ring :as r])
-  (:import java.text.DecimalFormat))
+            [cmr.spatial.ring :as r]
+            [cmr.common.util :as util]))
 
 (defmulti parse-geometry
   "Parses a geometry element based on the tag of the element."
@@ -61,27 +61,22 @@
   (x/element :Geometry {}
              (map shape-to-xml geometries)))
 
-(defn double->string
-  "Converts a double to string without using exponential notation or loss of accuracy."
-  [d]
-  (.format (DecimalFormat. "#.#####################") d))
-
 (extend-protocol ShapeToXml
   cmr.spatial.point.Point
   (shape-to-xml
     [{:keys [lon lat]}]
     (x/element :Point {}
-               (x/element :PointLongitude {} (double->string lon))
-               (x/element :PointLatitude {} (double->string lat))))
+               (x/element :PointLongitude {} (util/double->string lon))
+               (x/element :PointLatitude {} (util/double->string lat))))
 
   cmr.spatial.mbr.Mbr
   (shape-to-xml
     [{:keys [west north east south]}]
     (x/element :BoundingRectangle {}
-               (x/element :WestBoundingCoordinate {} (double->string west))
-               (x/element :NorthBoundingCoordinate {} (double->string north))
-               (x/element :EastBoundingCoordinate {} (double->string east))
-               (x/element :SouthBoundingCoordinate {} (double->string south))))
+               (x/element :WestBoundingCoordinate {} (util/double->string west))
+               (x/element :NorthBoundingCoordinate {} (util/double->string north))
+               (x/element :EastBoundingCoordinate {} (util/double->string east))
+               (x/element :SouthBoundingCoordinate {} (util/double->string south))))
 
   cmr.spatial.line.Line
   (shape-to-xml
