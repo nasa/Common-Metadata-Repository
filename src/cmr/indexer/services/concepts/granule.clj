@@ -23,12 +23,13 @@
 
 (defn spatial->elastic
   [parent-collection granule]
-  (let [gsr (get-in parent-collection [:spatial-coverage :granule-spatial-representation])]
-    (if (= gsr :geodetic)
-      (spatial/spatial->elastic-docs gsr granule)
-      (errors/internal-error!
-        (format "Only geodetic is supported for granule spatial representation not [%s]"
-                gsr)))))
+  (when (get-in granule [:spatial-coverage :geometries])
+    (let [gsr (get-in parent-collection [:spatial-coverage :granule-spatial-representation])]
+      (if (= gsr :geodetic)
+        (spatial/spatial->elastic-docs gsr granule)
+        (errors/internal-error!
+          (format "Only geodetic is supported for granule spatial representation not [%s]"
+                  gsr))))))
 
 
 (defmethod idx/concept->elastic-doc :granule
