@@ -22,6 +22,9 @@
       (put "http.port" (str http-port))
       (put "transport.tcp.port" (str transport-port))
       (put "index.store.type" "memory")
+      ;; Disable dynamic scripting to prevent attacks on developer machines
+      ;; See http://bouk.co/blog/elasticsearch-rce/
+      (put "script.disable_dynamic" "true")
       build))
 
 (defn- build-node
