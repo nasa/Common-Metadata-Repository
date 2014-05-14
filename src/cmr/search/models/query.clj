@@ -93,6 +93,16 @@
    end-date
    ])
 
+
+(defrecord TermCondition
+  [
+   ;; The field being searched
+   field
+
+   ;; The value to match.
+   value
+   ])
+
 (defrecord NumericValueCondition
   [
    ;; The field being searched
@@ -112,6 +122,18 @@
 
    ;; Them maximum value (inclusive)
    max-value
+   ])
+
+(defrecord RangeCondition
+  [
+   ;; The field being searched
+   field
+
+   ;; The start value for the range
+   start-value
+
+   ;; The end value for the range
+   end-value
    ])
 
 (defrecord TemporalCondition
@@ -222,8 +244,18 @@
   "Creates a date range condtion."
   [field start stop]
   (map->DateRangeCondition {:field field
-                           :start-date start
-                           :end-date stop}))
+                            :start-date start
+                            :end-date stop}))
+
+(defn range-condition
+  "Create a range condition."
+  [field start stop]
+  (map->RangeCondition {:field field :start-value start :end-value stop}))
+
+(defn term-condition
+  "Creates a term condition."
+  [field value]
+  (->TermCondition field value))
 
 (defn nested-condition
   "Creates a nested condition."

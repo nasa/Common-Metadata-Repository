@@ -328,7 +328,6 @@
    attribute-validation
    boolean-value-validation])
 
-
 (defn validate-parameters
   "Validates parameters. Throws exceptions to send to the user. Returns parameters if validation
   was successful so it can be chained with other calls."

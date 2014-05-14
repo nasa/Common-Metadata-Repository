@@ -1,13 +1,10 @@
-(ns cmr.search.data.query-to-elastic-converters.orbit-number
-  "Defines protocols and functions to map from a query model to elastic search query"
-  (:require [clojurewerkz.elastisch.query :as q]
-            [clojure.string :as s]
-            [cmr.search.data.query-to-elastic :as q2e]
-            [cmr.search.models.query :as qm]
+(ns cmr.search.data.complex-to-simple-converters.orbit
+  "Defines functions that implement the reduce-query method of the ComplexQueryToSimple
+  protocol for orbit related search fields."
+  (:require [cmr.search.models.query :as qm]
+            [cmr.search.data.complex-to-simple :as c2s]
             [cmr.common.services.errors :as errors]
             [cmr.search.data.messages :as m]))
-
-
 
 (defn- orbit-number-range-condition-both
   "Creates a grouped condition from an OrbitNumberRangeCondition with both min-value and max.'"
@@ -42,23 +39,46 @@
         orbit-number-range-cond (qm/numeric-range :orbit-number nil max-value)]
     (qm/or-conds [start-orbit-number-range-cond orbit-number-range-cond])))
 
-(extend-protocol q2e/ConditionToElastic
+(defn- equator-crossing-longitude-condition-both
+  "Creates a grouped condition from an EquatorCrossingLongitudeCondition with both min-value and
+  max-value.'"
+  [min-value max-value]
+  (if (>= max-value min-value)
+    (qm/numeric-range :equator-crossing-longitude min-value max-value)
+
+    ;; If the lower bound is higher than the upper bound then we need to construct two ranges
+    ;; to allow us to cross the 180/-180 boundary)
+    (let [lower-query (qm/numeric-range :equator-crossing-longitude min-value 180.0)
+          upper-query (qm/numeric-range :equator-crossing-longitude -180.0 max-value)]
+      (qm/or-conds [lower-query upper-query]))))
+
+(defn- equator-crossing-longitude-condition-min
+  "Creates a grouped condition with just the min-value specified."
+  [min-value]
+  (qm/numeric-range :equator-crossing-longitude min-value nil))
+
+(defn- equator-crossing-longitude-condition-max
+  "Creates a grouped condition with just the max specified."
+  [max-value]
+  (qm/numeric-range :equator-crossing-longitude nil max-value))
+
+
+(extend-protocol c2s/ComplexQueryToSimple
   cmr.search.models.query.OrbitNumberValueCondition
-  (condition->elastic
-    [condition concept-type]
+  (c2s/reduce-query
+    [condition]
     (let [orbit-number (:value condition)
           term-condition (qm/map->NumericValueCondition {:field :orbit-number :value orbit-number})
           start-range-cond (qm/numeric-range :start-orbit-number nil orbit-number)
           stop-range-cond (qm/numeric-range :stop-orbit-number orbit-number nil)
           and-clause (qm/and-conds [start-range-cond stop-range-cond])
-          or-clause (qm/or-conds [term-condition and-clause])
-          nested-condition (qm/nested-condition :orbit-calculated-spatial-domains or-clause)]
-      (q2e/condition->elastic nested-condition concept-type)))
+          or-clause (qm/or-conds [term-condition and-clause])]
+      (qm/nested-condition :orbit-calculated-spatial-domains or-clause)))
 
 
   cmr.search.models.query.OrbitNumberRangeCondition
-  (condition->elastic
-    [condition concept-type]
+  (c2s/reduce-query
+    [condition]
     (let [{:keys [min-value max-value]} condition
           group-condtion (cond
                            (and min-value max-value)
@@ -71,6 +91,30 @@
                            (orbit-number-range-condition-max max-value)
 
                            :else
-                           (errors/internal-error! (m/nil-min-max-msg)))
-          nested-condition (qm/nested-condition :orbit-calculated-spatial-domains group-condtion)]
-      (q2e/condition->elastic nested-condition concept-type))))
+                           (errors/internal-error! (m/nil-min-max-msg)))]
+      (qm/nested-condition :orbit-calculated-spatial-domains group-condtion)))
+
+  cmr.search.models.query.EquatorCrossingLongitudeCondition
+  (c2s/reduce-query
+    [condition]
+    (let [{:keys [min-value max-value]} condition
+          group-condition (cond
+                            (and min-value max-value)
+                            (equator-crossing-longitude-condition-both min-value max-value)
+
+                            min-value
+                            (equator-crossing-longitude-condition-min min-value)
+
+                            max-value
+                            (equator-crossing-longitude-condition-max max-value)
+
+                            :else
+                            (errors/internal-error! (m/nil-min-max-msg)))]
+      (qm/nested-condition :orbit-calculated-spatial-domains group-condition)))
+
+  cmr.search.models.query.EquatorCrossingDateCondition
+  (c2s/reduce-query
+    [condition]
+    (let [{:keys [start-date end-date]} condition
+          range-cond (qm/date-range-condition :equator-crossing-date-time start-date end-date)]
+      (qm/nested-condition :orbit-calculated-spatial-domains range-cond))))
