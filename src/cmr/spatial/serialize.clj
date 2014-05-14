@@ -3,7 +3,8 @@
   (:require [cmr.common.services.errors :as errors]
             [cmr.spatial.ring :as r]
             [cmr.spatial.math :refer :all]
-            [cmr.spatial.polygon :as poly]))
+            [cmr.spatial.polygon :as poly]
+            [cmr.spatial.lr-binary-search :as lr]))
 
 
 ;; Some thoughts about how to store the elasticsearch data in a way that preserves space and accuracy.
@@ -53,19 +54,43 @@
   [v]
   (double (/ v multiplication-factor)))
 
-(defprotocol ShapeStoredOrdinatesConversion
+(defprotocol SerializeConversions
   (shape->stored-ords
     [shape]
-    "Converts a spatial shape into the ordinates to ordinates to store in the search index"))
+    "Converts a spatial shape into the ordinates to ordinates to store in the search index")
+  (shape->mbr
+    [shape]
+    "Converts a spatial shape into it's minimum bounding rectangle")
+  (shape->lr
+    [shape]
+    "Determins the largest interior rectangle of a shape"))
 
-(extend-protocol ShapeStoredOrdinatesConversion
+(extend-protocol SerializeConversions
+
   cmr.spatial.polygon.Polygon
+
   (shape->stored-ords
     [{:keys [rings]}]
     ;; only supports single ring polygons for now
     (when (> (count rings) 1)
       (errors/internal-error! "shape->stored-ords only supports polygons with a single ring. TODO add support"))
-    (map ordinate->stored (r/ring->ords (first rings)))))
+    (map ordinate->stored (r/ring->ords (first rings))))
+
+  (shape->mbr
+    [{:keys [mbr]}]
+    mbr)
+
+  (shape->lr
+    [{:keys [rings]}]
+    ;; TODO this does not yet take into account holes
+    (when (> (count rings) 1)
+      (errors/internal-error! "Finding LR of polygon with holes is not supported yet."))
+    (if-let [lr (lr/find-lr (first rings))]
+      lr
+      (errors/internal-error!
+        (format "Unable to find lr of ring [%s]. The current LR algorithm is limited and needs to be improved."
+                (pr-str (first rings)))))))
+
 
 (defmulti stored-ords->shape
   "Converts a type and stored ordinates into a spatial shape"
