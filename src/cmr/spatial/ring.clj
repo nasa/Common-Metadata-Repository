@@ -16,6 +16,8 @@
    ;; must match the first point.
    points
 
+   ;; Derived fields
+
    ;; The arcs of the ring
    arcs
 

@@ -6,6 +6,7 @@
             [cmr.spatial.vector :as v]
             [cmr.spatial.mbr :as mbr]
             [cmr.spatial.ring :as r]
+            [cmr.spatial.polygon :as poly]
             [cmr.spatial.line :as l]
             [cmr.spatial.arc :as a]))
 
@@ -67,6 +68,28 @@
 
 (def lines
   (ext-gen/model-gen l/line (gen/bind (gen/choose 2 20) non-antipodal-points)))
+
+
+(def rings
+  "Generates rings that are not valid but could be used for testing where validity is not important"
+  (gen/fmap
+    (fn [points]
+      (r/ring (concat points [(first points)])))
+    (gen/bind (gen/choose 3 10) non-antipodal-points)))
+
+(def polygons
+  "Generates polygons that are not valid but could be used for testing where validity is not important"
+  (ext-gen/model-gen poly/polygon (gen/vector rings 1 4)))
+
+(def polygons-without-holes
+  "Generates polygons with only an outer ring. The polygons will not be valid."
+  (ext-gen/model-gen poly/polygon (gen/tuple rings)))
+
+
+(def geometries
+  "A generator returning individual points, bounding rectangles, lines, and polygons.
+  The spatial areas generated will not necessarily be valid."
+  (gen/one-of [points mbrs lines polygons]))
 
 
 ;; TODO to properly test rings code it would be ideal if we could generate random rings and validate things related to them
