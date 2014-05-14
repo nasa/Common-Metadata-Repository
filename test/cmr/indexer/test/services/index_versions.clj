@@ -10,7 +10,6 @@
             [cmr.indexer.data.elasticsearch :as es]
             [cmr.indexer.data.index-set :as idx-set]
             [cmr.indexer.data.cache :as cache]
-            [cheshire.core :as cheshire]
             [clojure.data.codec.base64 :as b64]
             [cmr.common.lifecycle :as lifecycle]))
 
@@ -48,11 +47,7 @@
   "Fixture that starts an instance of elastic in the JVM runs the tests and then shuts it down."
   [f]
 
-  ;; When this test runs as part of dev-systems all tests it changes the global endpoint and breaks
-  ;; other tests that run after it. We keep track of the internal endpoint of the elastisch endpoint
-  ;; and set it back after the tests have completed.
-  (let [current-endpoint esr/*endpoint*
-        http-port (:port test-config)
+  (let [http-port (:port test-config)
         server (lifecycle/start (elastic-server/create-server http-port 9215 "es_data/indexer_test") nil)]
     (reset! context {:system {:db {:conn (esr/connect (str "http://localhost:" http-port))}}})
 
