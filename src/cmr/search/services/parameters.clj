@@ -86,14 +86,11 @@
 
 (defmethod parameter->condition :exclude
   [concept-type param value options]
-  (let [k (first (keys value))
-        exclude-param (if (= :concept-id k)
-                        k
-                        (k lp/param-aliases))
-        exclude-vals (vals value)]
+  (let [kv (dissoc (lp/replace-parameter-aliases value) :options)
+        exclude-param (first (keys kv))
+        exclude-val (first (vals kv))]
     (qm/map->NegatedCondition
-      {:condition (parameter->condition concept-type exclude-param exclude-vals options)})))
-
+      {:condition (parameter->condition concept-type exclude-param exclude-val options)})))
 
 (defmethod parameter->condition :updated-since
   [concept-type param value options]

@@ -118,7 +118,7 @@
   cmr.search.models.query.NegatedCondition
   (condition->elastic
     [{:keys [condition]} concept-type]
-    (hash-map :not (condition->elastic condition concept-type)))
+    {:not (condition->elastic condition concept-type)})
 
   cmr.search.models.query.ExistCondition
   (condition->elastic
