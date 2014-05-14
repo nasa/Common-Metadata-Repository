@@ -2,8 +2,12 @@
   (:require [cmr.common.lifecycle :as lifecycle]
             [clj-http.client :as client]
             [cheshire.core :as cheshire]
+            [clojure.string :as s]
+            [cmr.common.config :as config]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.services.errors :as errors]
+            [cmr.common.concepts :as cs]
+            [cmr.transmit.metadata-db :as meta-db]
             [cmr.indexer.data.cache :as cache]
             [cmr.system-trace.core :refer [deftracefn]]))
 
@@ -184,16 +188,21 @@
                  ;; A list of nested spatial shapes
                  :geometries spatial-shape-mapping}}})
 
-(def index-set
-  {:index-set {:name "cmr-base-index-set"
-               :id 1
-               :create-reason "indexer app requires this index set"
-               :collection {:index-names ["collections"]
-                            :settings collection-setting
-                            :mapping collection-mapping}
-               :granule {:index-names ["granules"]
-                         :settings granule-setting
-                         :mapping granule-mapping}}})
+(def separate-coll-index-value (config/config-value-fn :separate-coll-index ""))
+
+(defn index-set
+  "Returns the index-set configuration based on CMR_SEPARATE_COLL_INDEX environment variable"
+  []
+  (let [granule-indices (remove empty? (conj (s/split (separate-coll-index-value) #",") "small_collections"))]
+    {:index-set {:name "cmr-base-index-set"
+                 :id 1
+                 :create-reason "indexer app requires this index set"
+                 :collection {:index-names ["collections"]
+                              :settings collection-setting
+                              :mapping collection-mapping}
+                 :granule {:index-names granule-indices
+                           :settings granule-setting
+                           :mapping granule-mapping}}}))
 
 
 (defn get-index-set
@@ -251,18 +260,17 @@
 (defn fetch-concept-type-index-names
   "Fetch index names for each concept type from index-set app"
   ([]
-   (let [index-set-id (get-in index-set [:index-set :id])]
+   (let [index-set-id (get-in (index-set) [:index-set :id])]
      (fetch-concept-type-index-names index-set-id)))
   ([index-set-id]
    (let [fetched-index-set (get-index-set index-set-id)]
-     (into {} (map (fn [[k v]] [k (first (vals v))])
-                   (get-in fetched-index-set [:index-set :concepts]))))))
+     (get-in fetched-index-set [:index-set :concepts]))))
 
 
 (defn fetch-concept-mapping-types
   "Fetch mapping types for each concept type from index-set app"
   ([]
-   (let [index-set-id (get-in index-set [:index-set :id])]
+   (let [index-set-id (get-in (index-set) [:index-set :id])]
      (fetch-concept-mapping-types index-set-id)))
   ([index-set-id]
    (let [fetched-index-set (get-index-set index-set-id)]
@@ -280,6 +288,26 @@
   [context]
   (let [cache-atom (-> context :system :cache)]
     (cache/cache-lookup cache-atom :concept-indices #(fetch-concept-type-index-names))))
+
+(defn get-concept-index-name
+  "Return the concept index name for the given concept id"
+  ([context concept-id revision-id]
+   (let [concept-type (cs/concept-id->type concept-id)
+         concept (when (= :granule concept-type) (meta-db/get-concept context concept-id revision-id))]
+     (get-concept-index-name context concept-id revision-id concept)))
+  ([context concept-id revision-id concept]
+   (let [concept-type (cs/concept-id->type concept-id)
+         indexes ((get-concept-type-index-names context) concept-type)]
+     (if (= :collection concept-type)
+       (indexes :collections)
+       (let [coll-concept-id (:parent-collection-id (:extra-fields concept))]
+         (get indexes (keyword coll-concept-id) (:small_collections indexes)))))))
+
+(defn get-index-name-for-granule-delete
+  "Return the concept index name for granule delete based on the input collection concept id"
+  [context coll-concept-id]
+  (let [indexes ((get-concept-type-index-names context) :granule)]
+    (get indexes (keyword coll-concept-id) (:small_collections indexes))))
 
 (defn get-concept-mapping-types
   "Fetch mapping types associated with concepts."

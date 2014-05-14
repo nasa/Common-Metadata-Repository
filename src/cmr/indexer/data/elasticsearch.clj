@@ -21,7 +21,7 @@
 (defn create-indexes
   "Create elastic index for each index name"
   []
-  (let [index-set idx-set/index-set
+  (let [index-set (idx-set/index-set)
         index-set-id (get-in index-set [:index-set :id])]
     (when-not (idx-set/get-index-set index-set-id)
       (idx-set/create index-set))))
