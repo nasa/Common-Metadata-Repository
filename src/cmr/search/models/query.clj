@@ -67,6 +67,22 @@
    value
    ])
 
+(defrecord SpatialCondition
+  [
+   ;; One of cmr.spatial polygon, line, point, or mbr
+   shape
+   ])
+
+;; Allows execution of a custom native search script
+(defrecord ScriptCondition
+  [
+   ;; name of the script
+   script
+
+   ;; Parameter map of names to values
+   params
+   ])
+
 ;; ExistCondition represents the specified field must have value, i.e. filed is not null
 (defrecord ExistCondition
   [

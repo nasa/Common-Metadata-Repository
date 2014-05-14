@@ -45,7 +45,8 @@
              :project :string
              :cloud-cover :num-range
              :concept-id :string
-             :downloadable :boolean}})
+             :downloadable :boolean
+             :polygon :polygon}})
 
 (defn- param-name->type
   "Returns the query condition type based on the given concept-type and param-name."

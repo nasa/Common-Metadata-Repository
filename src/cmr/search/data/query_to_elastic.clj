@@ -135,6 +135,13 @@
     (let [field (query-field->elastic-field field concept-type)]
       {:term {field value}}))
 
+  cmr.search.models.query.ScriptCondition
+  (condition->elastic
+    [{:keys [name params]} concept-type]
+    {:script {:script name
+              :params params
+              :lang "native"}})
+
   cmr.search.models.query.ExistCondition
   (condition->elastic
     [{:keys [field]} _]

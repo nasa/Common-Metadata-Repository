@@ -232,6 +232,14 @@ Find an additional attribute with name "X\Y\Z" with value 7.
 
 Multiple attributes can be provided. The default is for granules to match all the attribute parameters. This can be changed by specifying `or` option with `option[attribute][or]=true`.
 
+### Find granules by Spatial
+
+#### Polygon
+
+Polygon points are provided in clockwise order. The last point should match the first point to close the polygon. The values are listed comma separated in longitude latitude order, i.e. lon1,lat1,lon2,lat2,...
+
+    curl "http://localhost:3003/granules?polygon=10,10,10,20,30,20,30,10,10,10"
+
 ### Find granules by orbit number
 
   Find granules with an orbit number of 10

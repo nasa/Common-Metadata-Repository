@@ -23,6 +23,7 @@
             [cmr.search.services.parameter-converters.orbit-number]
             [cmr.search.services.parameter-converters.equator-crossing-longitude]
             [cmr.search.services.parameter-converters.equator-crossing-date]
+            [cmr.search.services.parameter-converters.spatial]
 
             ;; Validation
             [cmr.search.validators.validation :as v]
@@ -38,6 +39,7 @@
             [cmr.search.data.complex-to-simple-converters.attribute]
             [cmr.search.data.complex-to-simple-converters.orbit]
             [cmr.search.data.complex-to-simple-converters.temporal]
+            [cmr.search.data.complex-to-simple-converters.spatial]
 
             [cmr.search.services.legacy-parameters :as lp]
             [cmr.search.services.parameter-validation :as pv]
