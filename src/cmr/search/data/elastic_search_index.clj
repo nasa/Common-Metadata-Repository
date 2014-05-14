@@ -23,7 +23,7 @@
                          "provider-id"
                          "short-name"
                          "version-id"]}
-   :granule {:index-name "1_granules"
+   :granule {:index-name "_all"
              :type-name "granule"
              :fields ["granule-ur"
                       "provider-id"]}})
