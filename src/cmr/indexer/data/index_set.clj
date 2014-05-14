@@ -37,8 +37,8 @@
 (def date-field-mapping
   {:type "date" :format "yyyy-MM-dd'T'HH:mm:ssZ||yyyy-MM-dd'T'HH:mm:ss.SSSZ"})
 
-(def float-field-mapping
-  {:type "float"})
+(def double-field-mapping
+  {:type "double"})
 
 (def int-field-mapping
   {:type "integer"})
@@ -58,7 +58,7 @@
    :properties
    {:name string-field-mapping
     :string-value string-field-mapping
-    :float-value float-field-mapping
+    :float-value double-field-mapping
     :int-value int-field-mapping
     :datetime-value date-field-mapping
     :time-value date-field-mapping
@@ -67,11 +67,32 @@
 (def orbit-calculated-spatial-domain-mapping
   {:type "nested"
    :dynamic "strict"
-   :properties {:orbit-number float-field-mapping
-                :start-orbit-number float-field-mapping
-                :stop-orbit-number float-field-mapping
-                :equator-crossing-longitude float-field-mapping
+   :properties {:orbit-number double-field-mapping
+                :start-orbit-number double-field-mapping
+                :stop-orbit-number double-field-mapping
+                :equator-crossing-longitude double-field-mapping
                 :equator-crossing-date-time date-field-mapping}})
+
+(def spatial-shape-mapping
+  "Defines the mapping for a single spatial shape. Each shape is represented by a minimum bounding
+  rectangle, largest interior rectangle, and spatial ordinates."
+  {:type "nested"
+   :dynamic "strict"
+   :properties {:mbr-west double-field-mapping
+                :mbr-north double-field-mapping
+                :mbr-east double-field-mapping
+                :mbr-south double-field-mapping
+                :mbr-crosses-antimeridian bool-field-mapping
+
+                :lr-west double-field-mapping
+                :lr-north double-field-mapping
+                :lr-east double-field-mapping
+                :lr-south double-field-mapping
+                :lr-crosses-antimeridian bool-field-mapping
+
+                ;; Ordinates represent a single ringed polygon. In future we will add
+                ;; support for other shapes.
+                :ords (stored int-field-mapping)}})
 
 (def collection-mapping
   {:collection {:dynamic "strict",
@@ -151,14 +172,17 @@
                  :sensor-sn.lowercase   string-field-mapping
                  :start-date date-field-mapping
                  :end-date date-field-mapping
-                 :size float-field-mapping
-                 :cloud-cover float-field-mapping
+                 :size double-field-mapping
+                 :cloud-cover double-field-mapping
                  :orbit-calculated-spatial-domains orbit-calculated-spatial-domain-mapping
                  :project-refs string-field-mapping
                  :project-refs.lowercase string-field-mapping
                  :revision-date         date-field-mapping
                  :downloadable bool-field-mapping
-                 :attributes attributes-field-mapping}}})
+                 :attributes attributes-field-mapping
+
+                 ;; A list of nested spatial shapes
+                 :geometries spatial-shape-mapping}}})
 
 (def index-set
   {:index-set {:name "cmr-base-index-set"

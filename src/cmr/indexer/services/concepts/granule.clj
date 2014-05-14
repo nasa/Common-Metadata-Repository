@@ -6,9 +6,11 @@
             [cmr.umm.echo10.granule :as granule]
             [cmr.umm.echo10.related-url :as ru]
             [cmr.transmit.metadata-db :as mdb]
+            [cmr.common.services.errors :as errors]
             [cmr.indexer.services.concepts.temporal :as temporal]
             [cmr.indexer.services.concepts.attribute :as attrib]
-            [cmr.indexer.services.concepts.orbit-calculated-spatial-domain :as ocsd]))
+            [cmr.indexer.services.concepts.orbit-calculated-spatial-domain :as ocsd]
+            [cmr.indexer.services.concepts.spatial :as spatial]))
 
 (defmethod idx/parse-concept :granule
   [concept]
@@ -18,6 +20,16 @@
   [context parent-collection-id]
   (let [concept (mdb/get-latest-concept context parent-collection-id)]
     (assoc (idx/parse-concept concept) :concept-id parent-collection-id)))
+
+(defn spatial->elastic
+  [parent-collection granule]
+  (let [gsr (get-in parent-collection [:spatial-coverage :granule-spatial-representation])]
+    (if (= gsr :geodetic)
+      (spatial/spatial->elastic-docs gsr granule)
+      (errors/internal-error!
+        (format "Only geodetic is supported for granule spatial representation not [%s]"
+                gsr)))))
+
 
 (defmethod idx/concept->elastic-doc :granule
   [context concept umm-granule]
@@ -66,4 +78,5 @@
      :revision-date revision-date
      :downloadable downloadable
      :start-date (when start-date (f/unparse (f/formatters :date-time) start-date))
-     :end-date (when end-date (f/unparse (f/formatters :date-time) end-date))}))
+     :end-date (when end-date (f/unparse (f/formatters :date-time) end-date))
+     :geometries (spatial->elastic parent-collection umm-granule)}))
