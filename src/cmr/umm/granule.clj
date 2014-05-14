@@ -82,7 +82,7 @@
 (defrecord SpatialCoverage
   [
    ;; A sequence of spatial points, bounding rectangles, polygons, and lines
-   geometry
+   geometries
    ])
 
 (defrecord UmmGranule

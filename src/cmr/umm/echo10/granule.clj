@@ -79,7 +79,7 @@
   (when spatial-coverage
     (x/element :Spatial {}
                (x/element :HorizontalSpatialDomain {}
-                          (s/generate-geometry-xml (:geometry spatial-coverage))))))
+                          (s/generate-geometry-xml (:geometries spatial-coverage))))))
 
 (defn- xml-elem->Granule
   "Returns a UMM Product from a parsed Granule XML structure"
