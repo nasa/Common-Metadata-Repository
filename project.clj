@@ -17,7 +17,8 @@
                  [log4j/log4j "1.2.17"]
                  [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"]]
 
-  :plugins [[lein-shell "0.3.0"]]
+  :plugins [[lein-shell "0.3.0"]
+            [lein-test-out "0.3.1"]]
 
   :aot [cmr.es-spatial-plugin.SpatialScript
         cmr.es-spatial-plugin.SpatialScriptFactory
@@ -60,6 +61,6 @@
                            ;; IP address is hard coded for now
                            "shell" "../cmr-vms/elastic_aws/install_plugin.sh" "54.193.23.62" ~plugin-zip-name "spatialsearch-plugin"]
             "install-workload" ["do"
-                           "package,"
-                           "shell" "install_plugin_into_workload.sh" ~plugin-zip-name "spatialsearch-plugin"]
+                                "package,"
+                                "shell" "install_plugin_into_workload.sh" ~plugin-zip-name "spatialsearch-plugin"]
             })
