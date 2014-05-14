@@ -1,7 +1,10 @@
 (ns cmr.common.dev.util
   "This contains utility functions for development"
   (:require [clojure.java.shell :as sh]
-            [clojure.java.io :as io]))
+            [clojure.java.io :as io])
+  (:import java.awt.datatransfer.StringSelection
+           java.awt.datatransfer.Clipboard
+           java.awt.Toolkit))
 
 (defn touch-file
   [file]
@@ -31,3 +34,9 @@
 (touch-files-in-dir ".")
 
 )
+
+(defn copy-to-clipboard
+  "Copies the string into the clipboard"
+  [s]
+  (let [clipboard (.getSystemClipboard (Toolkit/getDefaultToolkit))]
+    (.setContents clipboard (StringSelection. s) nil)))

@@ -2,7 +2,8 @@
   "Utility functions that might be useful throughout the CMR."
   (:require [cmr.common.log :refer (debug info warn error)]
             [cmr.common.services.errors :as errors]
-            [camel-snake-kebab :as csk]))
+            [camel-snake-kebab :as csk])
+  (:import java.text.DecimalFormat))
 
 (defn sequence->fn
   [vals]
@@ -107,4 +108,7 @@
              (recur (+ index step) (conj! results (apply f sub))))))))))
 
 
-
+(defn double->string
+  "Converts a double to string without using exponential notation or loss of accuracy."
+  [d]
+  (.format (DecimalFormat. "#.#####################") d))
