@@ -150,17 +150,12 @@
     [{:keys [field value]} _]
     {:term {field value}})
 
-  cmr.search.models.query.TermCondition
-  (condition->elastic
-    [{:keys [field value]} _]
-    {:term {field value}})
-
   cmr.search.models.query.NumericRangeCondition
   (condition->elastic
     [{:keys [field min-value max-value]} _]
     (range-condition->elastic field min-value max-value "fielddata"))
 
-  cmr.search.models.query.RangeCondition
+  cmr.search.models.query.StringRangeCondition
   (condition->elastic
     [{:keys [field start-value end-value]} _]
      (range-condition->elastic field start-value end-value "index"))
@@ -174,6 +169,10 @@
           value (if end-date (assoc value :to (h/utc-time->elastic-time end-date)) value)]
       {:range { field value }}))
 
+  cmr.search.models.query.DateValueCondition
+  (condition->elastic
+    [{:keys [field value]} _]
+    {:term {field (h/utc-time->elastic-time value)}})
 
   cmr.search.models.query.MatchAllCondition
   (condition->elastic

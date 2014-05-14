@@ -81,6 +81,15 @@
    field
    ])
 
+(defrecord DateValueCondition
+  [
+   ;; The field being searched
+   field
+
+   ;; The date value
+   value
+   ])
+
 (defrecord DateRangeCondition
   [
    ;; The field being searched.
@@ -91,16 +100,6 @@
 
    ;; The end-date value
    end-date
-   ])
-
-
-(defrecord TermCondition
-  [
-   ;; The field being searched
-   field
-
-   ;; The value to match.
-   value
    ])
 
 (defrecord NumericValueCondition
@@ -124,7 +123,7 @@
    max-value
    ])
 
-(defrecord RangeCondition
+(defrecord StringRangeCondition
   [
    ;; The field being searched
    field
@@ -227,7 +226,12 @@
         sort-keys (or sort-keys (default-sort-keys concept-type))]
     (->Query concept-type condition page-size page-num sort-keys)))
 
-(defn numeric-range
+(defn numeric-value-condition
+  "Creates a NumericValueCondition"
+  [field value]
+  (map->NumericValueCondition {:field field :value value}))
+
+(defn numeric-range-condition
   [field min max]
   (map->NumericRangeCondition {:field field
                                :min-value min
@@ -240,22 +244,21 @@
   ([field value case-sensitive? pattern?]
    (->StringCondition field value case-sensitive? pattern?)))
 
+(defn string-range-condition
+  "Create a string range condition."
+  [field start stop]
+  (map->StringRangeCondition {:field field :start-value start :end-value stop}))
+
 (defn date-range-condition
-  "Creates a date range condtion."
+  "Creates a DateRangeCondition."
   [field start stop]
   (map->DateRangeCondition {:field field
                             :start-date start
                             :end-date stop}))
-
-(defn range-condition
-  "Create a range condition."
-  [field start stop]
-  (map->RangeCondition {:field field :start-value start :end-value stop}))
-
-(defn term-condition
-  "Creates a term condition."
+(defn date-value-condition
+  "Creates a DateValueCondtion."
   [field value]
-  (->TermCondition field value))
+  (->DateValueCondition field value))
 
 (defn nested-condition
   "Creates a nested condition."
@@ -280,7 +283,7 @@
   [conditions]
   (group-conds :or conditions))
 
-(defn numeric-range-condition
+(defn numeric-range-str->condition
   "Creates a numeric range condition."
   [field value]
   (let [{:keys [min-value max-value]} (pp/numeric-range-parameter->map value)]

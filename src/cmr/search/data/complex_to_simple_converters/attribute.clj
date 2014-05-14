@@ -18,12 +18,24 @@
 
 (defmethod value-condition->value-filter :default
   [{:keys [type value]}]
-  (qm/term-condition (type->field-name type) value))
+  (qm/string-condition (type->field-name type) value))
+
+(defmethod value-condition->value-filter :float
+  [{:keys [type value]}]
+  (qm/numeric-value-condition (type->field-name type) value))
+
+(defmethod value-condition->value-filter :int
+  [{:keys [type value]}]
+  (qm/numeric-value-condition (type->field-name type) value))
+
+(defmethod value-condition->value-filter :string
+  [{:keys [type value]}]
+  (qm/string-condition (type->field-name type) value))
 
 (defn- date-value-condition->value-filter
   "Helper function for any date related attribute fields"
   [{:keys [type value]}]
-  (qm/term-condition (type->field-name type) (h/utc-time->elastic-time value)))
+  (qm/date-value-condition (type->field-name type) value))
 
 (defmethod value-condition->value-filter :datetime
   [condition]
@@ -44,20 +56,21 @@
 
 (defmethod range-condition->range-filter :string
   [{:keys [min-value max-value]}]
-  (qm/range-condition :string-value min-value max-value))
+  (qm/string-range-condition :string-value min-value max-value))
 
 (defmethod range-condition->range-filter :float
   [{:keys [min-value max-value]}]
-  (qm/numeric-range :float-value min-value max-value))
+  (qm/numeric-range-condition :float-value min-value max-value))
 
 (defmethod range-condition->range-filter :int
   [{:keys [min-value max-value]}]
-  (qm/numeric-range :int-value min-value max-value))
+  (qm/numeric-range-condition :int-value min-value max-value))
 
 (defn date-range-condition->range-filter
   "Helper for converting date range attribute conditions into filters"
   [{:keys [type min-value max-value]}]
   (qm/date-range-condition (type->field-name type) min-value max-value))
+
 (defmethod range-condition->range-filter :datetime
   [condition]
   (date-range-condition->range-filter condition))
@@ -77,8 +90,8 @@
     [condition]
     (let [value-filter (value-condition->value-filter condition)
           attrib-name (:name condition)
-          term-cond (qm/map->NumericValueCondition {:field :name :value attrib-name})
-          and-cond (qm/and-conds [term-cond value-filter])]
+          name-cond (qm/map->NumericValueCondition {:field :name :value attrib-name})
+          and-cond (qm/and-conds [name-cond value-filter])]
       (qm/nested-condition :attributes and-cond)))
 
   cmr.search.models.query.AttributeRangeCondition
@@ -86,6 +99,6 @@
     [condition]
     (let [range-filter (range-condition->range-filter condition)
           attrib-name (:name condition)
-          term-cond (qm/map->NumericValueCondition {:field :name :value attrib-name})
-          and-cond (qm/and-conds [term-cond range-filter])]
+          name-cond (qm/map->NumericValueCondition {:field :name :value attrib-name})
+          and-cond (qm/and-conds [name-cond range-filter])]
       (qm/nested-condition :attributes and-cond))))
