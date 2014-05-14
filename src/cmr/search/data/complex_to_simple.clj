@@ -13,13 +13,12 @@
   cmr.search.models.query.Query
   (reduce-query
     [query]
-    (update-in query [:condition] #(reduce-query %)))
+    (update-in query [:condition] reduce-query))
 
   cmr.search.models.query.ConditionGroup
   (reduce-query
     [condition]
-    (update-in condition [:conditions] (fn [cond]
-                                         (map #(reduce-query %) cond))))
+    (update-in condition [:conditions] (partial map reduce-query)))
 
 
   cmr.search.models.query.CollectionQueryCondition

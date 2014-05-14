@@ -122,7 +122,7 @@
 
 (defmethod parameter->condition :num-range
   [concept-type param value options]
-  (qm/numeric-range-condition param value))
+  (qm/numeric-range-str->condition param value))
 
 (defn parse-sort-key
   "Parses the sort key param and returns a sequence of maps with fields and order.
