@@ -31,8 +31,9 @@
           true
           false)
         (catch Throwable t
-           (.error logger (s/join "\n" (map #(.toString ^String %) (.getStackTrace t))) nil)
-           (.info logger (pr-str ords) nil)
-           (.info logger (pr-str polygon) nil)
-           (throw t))))
+          (.printStackTrace t)
+          (.error logger (s/join "\n" (map #(.toString ^String %) (.getStackTrace t))) nil)
+          (.info logger (pr-str ords) nil)
+          (.info logger (pr-str polygon) nil)
+          (throw t))))
     false))

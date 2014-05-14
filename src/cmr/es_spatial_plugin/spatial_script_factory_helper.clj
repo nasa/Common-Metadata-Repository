@@ -4,7 +4,8 @@
   (:require [clojure.string]
             [cmr.spatial.ring :as ring]
             [cmr.spatial.point :as point]
-            [cmr.spatial.derived :as d])
+            [cmr.spatial.derived :as d]
+            [cmr.spatial.serialize :as srl])
   (:import cmr.es_spatial_plugin.SpatialScript
            org.elasticsearch.common.xcontent.support.XContentMapValues
            org.elasticsearch.ElasticsearchIllegalArgumentException))
@@ -32,21 +33,26 @@
 (defn- ords-str->intersects-fn
   "Chooses which intersection function to use. Eventually it will support more than one"
   [ords-str]
-  (let [ords (map #(Double. ^String %) (clojure.string/split ords-str #","))]
-    (let [ring (apply ring/ords->ring ords)
-          ring (d/calculate-derived ring)]
+  (let [ords (map #(Integer. ^String %) (clojure.string/split ords-str #","))
+        ;; Hard coded to polygon for now.
+        shape (srl/stored-ords->shape :polygon ords)
+        ring (-> shape :rings first d/calculate-derived)]
 
-      ;; The function is hardcoded to assume polygon for now
-      (fn [polygon]
-        (ring/intersects-ring? ring (-> polygon
-                                        :rings
-                                        first
-                                        d/calculate-derived))))))
+    ;; The function is hardcoded to assume polygon for now
+    (fn [polygon]
+      (ring/intersects-ring? ring (-> polygon
+                                      :rings
+                                      first
+                                      d/calculate-derived)))))
 
 (defn new-script [logger script-params]
-  (let [{:keys [ords] :as params} (extract-params script-params)
-        intersects-fn (ords-str->intersects-fn ords)]
-    (assert-required-parameters params)
-    (SpatialScript. ^Object intersects-fn logger)))
+  (try
+    (let [{:keys [ords] :as params} (extract-params script-params)
+          intersects-fn (ords-str->intersects-fn ords)]
+      (assert-required-parameters params)
+      (SpatialScript. ^Object intersects-fn logger))
+    (catch Throwable e
+      (.printStackTrace e)
+      (throw e))))
 
 
