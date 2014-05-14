@@ -297,17 +297,17 @@
      (get-concept-index-name context concept-id revision-id concept)))
   ([context concept-id revision-id concept]
    (let [concept-type (cs/concept-id->type concept-id)
-         indexes ((get-concept-type-index-names context) concept-type)]
+         indexes (get (get-concept-type-index-names context) concept-type)]
      (if (= :collection concept-type)
-       (indexes :collections)
+       (get indexes :collections)
        (let [coll-concept-id (:parent-collection-id (:extra-fields concept))]
-         (get indexes (keyword coll-concept-id) (:small_collections indexes)))))))
+         (get indexes (keyword coll-concept-id) (get indexes :small_collections)))))))
 
 (defn get-index-name-for-granule-delete
   "Return the concept index name for granule delete based on the input collection concept id"
   [context coll-concept-id]
-  (let [indexes ((get-concept-type-index-names context) :granule)]
-    (get indexes (keyword coll-concept-id) (:small_collections indexes))))
+  (let [indexes (get (get-concept-type-index-names context) :granule)]
+    (get indexes (keyword coll-concept-id) (get indexes :small_collections))))
 
 (defn get-concept-mapping-types
   "Fetch mapping types associated with concepts."
