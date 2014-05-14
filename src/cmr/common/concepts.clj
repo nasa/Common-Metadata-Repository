@@ -59,3 +59,8 @@
   [{:keys [concept-type sequence-number provider-id]}]
   (let [prefix (concept-type->concept-prefix concept-type)]
     (format "%s%d-%s" prefix sequence-number provider-id)))
+
+(defn concept-id->type
+  "Returns concept type for the given concept-id"
+  [concept-id]
+  (concept-prefix->concept-type (subs concept-id 0 1)))
