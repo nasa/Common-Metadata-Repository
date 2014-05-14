@@ -1,14 +1,7 @@
 # cmr-es-spatial-plugin
 
-A Clojure library designed to ... well, that part is up to you.
-
-## Usage
-
-FIXME
+A Elastic Search plugin that enables spatial search entirely within elastic.
 
 ## License
 
-Copyright © 2013 FIXME
-
-Distributed under the Eclipse Public License either version 1.0 or (at
-your option) any later version.
+Copyright © 2014 NASA

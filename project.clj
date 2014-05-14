@@ -6,24 +6,20 @@
 (def plugin-zip-name
   (str "target/cmr-es-spatial-plugin-" version ".zip"))
 
-(defproject cmr-es-spatial-plugin version
-  :description "FIXME: write description"
-  :url "http://example.com/FIXME"
-  :license {:name "Eclipse Public License"
-            :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [[org.clojure/clojure "1.5.1"]
+(defproject nasa-cmr/cmr-es-spatial-plugin version
+  :description "A Elastic Search plugin that enables spatial search entirely within elastic."
+  :url "***REMOVED***projects/CMR/repos/cmr-es-spatial-plugin/browse"
+  :dependencies [[org.clojure/clojure "1.6.0"]
                  [org.clojure/tools.logging "0.2.6"]
-                 [org.elasticsearch/elasticsearch "0.90.7"]
+                 [org.elasticsearch/elasticsearch "1.1.1"]
 
                  ;; Version set to match elastic search numbers. Look in elasticsearch pom.xml
                  [log4j/log4j "1.2.17"]
-                 [nasa-cmr/cmr-spatial "0.1.0-SNAPSHOT"]]
+                 [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"]]
 
   :plugins [[lein-shell "0.3.0"]]
 
-  :aot [cmr.es-spatial-plugin.StringMatchScript
-        cmr.es-spatial-plugin.StringMatchScriptFactory
-        cmr.es-spatial-plugin.SpatialScript
+  :aot [cmr.es-spatial-plugin.SpatialScript
         cmr.es-spatial-plugin.SpatialScriptFactory
         cmr.es-spatial-plugin.SpatialSearchPlugin]
 
@@ -32,11 +28,10 @@
                 *assert* false}
 
   :profiles
-  {:dev {:dependencies [[nasa-cmr/cmr-common "0.1.0-SNAPSHOT"]
-                        [clojurewerkz/elastisch "1.3.0-rc2"]
+  {:dev {:dependencies [[nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
+                        [nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]
                         [org.clojure/tools.namespace "0.2.4"]
-                        [org.clojars.gjahad/debug-repl "0.3.3"]
-                        [reiddraper/simple-check "0.5.3"]]
+                        [org.clojars.gjahad/debug-repl "0.3.3"]]
 
          ;; The ^replace is done to disable the tiered compilation for accurate benchmarks
          ;; See https://github.com/technomancy/leiningen/wiki/Faster

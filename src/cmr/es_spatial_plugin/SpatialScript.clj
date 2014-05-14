@@ -1,5 +1,4 @@
 (ns cmr.es-spatial-plugin.SpatialScript
-  (:require [cmr.es-spatial-plugin.spatial-script-helper])
   (:gen-class :extends org.elasticsearch.script.AbstractSearchScript
               :constructors {[Object org.elasticsearch.common.logging.ESLogger] []}
               :init init
@@ -26,7 +25,7 @@
   (var-get (find-var sym)))
 
 (defn -run [^SpatialScript this]
-  (let [intersects? cmr.es-spatial-plugin.spatial-script-helper/doc-intersects?
-        ;intersects? (lookup 'cmr.es-spatial-plugin.spatial-script-helper/doc-intersects?)
+  (let [;intersects? cmr.es-spatial-plugin.spatial-script-helper/doc-intersects?
+        intersects? (lookup 'cmr.es-spatial-plugin.spatial-script-helper/doc-intersects?)
         ]
     (intersects? (logger this) (.getFields this) (intersects-fn this))))

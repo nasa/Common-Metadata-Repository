@@ -1,5 +1,4 @@
 (ns cmr.es-spatial-plugin.SpatialScriptFactory
-  (:require [cmr.es-spatial-plugin.spatial-script-factory-helper])
   (:import org.elasticsearch.common.logging.Loggers
            org.elasticsearch.common.settings.Settings)
   (:gen-class
@@ -16,9 +15,15 @@
     [[settings] {:logger logger}]))
 
 (defn -newScript [^SpatialScriptFactory this script-params]
-  (let [new-script cmr.es-spatial-plugin.spatial-script-factory-helper/new-script
+  ;; Done here to avoid AOP problems during development
+  ;; TODO it may make more sense to move this to the SpatialSearchPlugin class where it would only
+  ;; run once in elastic lifetime instead of on every search.
+  (require 'cmr.es-spatial-plugin.spatial-script-helper)
+  (require 'cmr.es-spatial-plugin.spatial-script-factory-helper)
+
+  (let [;;new-script cmr.es-spatial-plugin.spatial-script-factory-helper/new-script
         ;; TODO this is temporarily using a dynamic lookup
-        ;new-script (var-get (find-var 'cmr.es-spatial-plugin.spatial-script-factory-helper/new-script))
+        new-script (var-get (find-var 'cmr.es-spatial-plugin.spatial-script-factory-helper/new-script))
         ]
     (new-script (:logger (.data this)) script-params)))
 
