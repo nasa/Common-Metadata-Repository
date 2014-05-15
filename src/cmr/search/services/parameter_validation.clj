@@ -199,16 +199,19 @@
   start-day and end-day are integer between 1 and 366"
   [concept-type params]
   (if-let [temporal (:temporal params)]
-    (apply concat
-           (map
-             (fn [value]
-               (let [[start-date end-date start-day end-day] (map s/trim (s/split value #","))]
-                 (concat
-                   (validate-date-time start-date)
-                   (validate-date-time end-date)
-                   (day-valid? start-day "temporal_start_day")
-                   (day-valid? end-day "temporal_end_day"))))
-             temporal))
+    (let [temporal (if (sequential? temporal)
+                     temporal
+                     (vector temporal))]
+      (apply concat
+             (map
+               (fn [value]
+                 (let [[start-date end-date start-day end-day] (map s/trim (s/split value #","))]
+                   (concat
+                     (validate-date-time start-date)
+                     (validate-date-time end-date)
+                     (day-valid? start-day "temporal_start_day")
+                     (day-valid? end-day "temporal_end_day"))))
+               temporal)))
     []))
 
 
