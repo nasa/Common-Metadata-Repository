@@ -50,7 +50,5 @@
 
 (defn invalid-exclude-param-msg
   "Creates a message saying supplied parameter(s) are not in exclude params set."
-  ([]
-   (format "Some or all of the supplied parameters can not be used with exclude."))
-  ([param]
-   (format "Parameter [%s] can not be used with exclude." param)))
+  [params-set]
+  (format "Parameter(s) [%s] can not be used with exclude." (str/join ", " (map name params-set))))
