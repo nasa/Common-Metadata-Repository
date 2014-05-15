@@ -267,6 +267,53 @@
            -70.0 31.0 [gran1 gran2 gran4 gran5]))))
 
 
+;; exclude granules by echo_granule_id or concept_id (including parent concept_id) params
+(deftest exclude-granules-by-echo-granule-n-concept-ids
+  (let [coll1 (d/ingest "CMR_PROV1" (dc/collection {}))
+        coll2 (d/ingest "CMR_PROV2" (dc/collection {}))
+        gran1 (d/ingest "CMR_PROV1" (dg/granule coll1 {:cloud-cover 0.8}))
+        gran2 (d/ingest "CMR_PROV1" (dg/granule coll1 {:cloud-cover 30.0}))
+        gran3 (d/ingest "CMR_PROV1" (dg/granule coll1 {:cloud-cover 120}))
+        gran4 (d/ingest "CMR_PROV2" (dg/granule coll2 {:cloud-cover -60.0}))
+        coll1-cid (get-in coll1 [:concept-id])
+        coll2-cid (get-in coll2 [:concept-id])
+        gran1-cid (get-in gran1 [:concept-id])
+        gran2-cid (get-in gran2 [:concept-id])
+        gran3-cid (get-in gran3 [:concept-id])
+        gran4-cid (get-in gran4 [:concept-id])]
+    (index/flush-elastic-index)
+    (testing "fetch all granules with cloud-cover attrib"
+      (are [cc-search items] (d/refs-match? items (search/find-refs :granule cc-search))
+           {"cloud_cover" "-70,120"} [gran1 gran2 gran3 gran4]))
+    (testing "fetch all granules with cloud-cover attrib to exclude a single granule from the set"
+      (are [cc-search items] (d/refs-match? items (search/find-refs :granule cc-search))
+           {:exclude {:echo_granule_id [gran1-cid]}, :cloud_cover "-70,120"} [gran2 gran3 gran4]))
+    (testing "fetch all granules with cloud-cover attrib to exclude multiple granules from the set"
+      (are [cc-search items] (d/refs-match? items (search/find-refs :granule cc-search))
+           {:exclude {:echo_granule_id [gran1-cid gran2-cid]}, :cloud_cover "-70,120"} [gran3 gran4]))
+    (testing "fetch granules by echo granule ids to exclude multiple granules from the set"
+      (are [srch-params items] (d/refs-match? items (search/find-refs :granule srch-params))
+           {:exclude {:echo_granule_id [gran1-cid gran2-cid]}, :echo_granule_id [gran1-cid gran2-cid gran3-cid]} [gran3]))
+    (testing "fetch granules by echo granule ids to exclude multiple granules from the set by concept_id"
+      (are [srch-params items] (d/refs-match? items (search/find-refs :granule srch-params))
+           {:exclude {:concept_id [gran1-cid gran2-cid]}, :echo_granule_id [gran1-cid gran2-cid gran3-cid]} [gran3]))
+    (testing "fetch granules by echo granule ids to exclude multiple granules from the set by parent concept_id"
+      (are [srch-params items] (d/refs-match? items (search/find-refs :granule srch-params))
+           {:exclude {:concept_id [coll1-cid]}, :echo_granule_id [gran1-cid gran2-cid gran3-cid gran4-cid]} [gran4]
+           {:exclude {:echo_collection_id [coll1-cid]}, :echo_granule_id [gran1-cid gran2-cid gran3-cid gran4-cid]} [gran4]
+           {:exclude {:echo_collection_id [coll1-cid] :concept_id [coll1-cid]},
+            :echo_granule_id [gran1-cid gran2-cid gran3-cid gran4-cid]} [gran4]))
+    (testing "fetch granules by echo granule ids to exclude a granule by invalid exclude param - dataset_id"
+      ;; dataset-id aliases to entry-title - there is no easy way to recover original search param on error
+      (let [srch1 {:exclude {:dataset-id [gran2-cid]}, :echo_granule_id [gran1-cid gran2-cid gran3-cid]}
+            srch2 {:exclude {:dataset-id [gran2-cid] :concept-id [gran1-cid]}, :echo_granule_id [gran1-cid gran2-cid]}]
+        (is (= {:status 422
+                :errors [(msg/invalid-exclude-param-msg #{:entry-title})]}
+               (search/find-refs :granule srch1)))
+        (is (= {:status 422
+                :errors [(msg/invalid-exclude-param-msg #{:entry-title})]}
+               (search/find-refs :granule srch2)))))))
+
 ;; Find granules by echo_granule_id, echo_collection_id and concept_id params
 (deftest echo-granule-id-search-test
   (let [coll1 (d/ingest "CMR_PROV1" (dc/collection))
@@ -332,7 +379,6 @@
                                (when options
                                  {"options[concept_id]" options}))]
              (d/refs-match? items (search/find-refs :granule params)))
-
            [gran1] gran1-cid {}
            [gran5] gran5-cid {}
            [] dummy-cid {}
