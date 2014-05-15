@@ -16,7 +16,7 @@
   [params]
   (if (map? (:exclude params))
     (update-in params [:exclude]
-               #(when % (set/rename-keys % param-aliases)))
+               #(set/rename-keys % param-aliases))
     params))
 
 
