@@ -71,3 +71,11 @@
     ;; Verifies map-n is equivalent to partition
     (= (util/map-n vector n step items)
        (partition n step items))))
+
+(defspec double->string-test 1000
+  (for-all [d (gen/fmap double gen/ratio)]
+    (let [^String double-str (util/double->string d)
+          parsed (Double. double-str)]
+      ;; Check it should contain an exponent and it doesn't lose precision.
+      (and (not (re-find #"[eE]" double-str))
+           (= parsed d)))))
