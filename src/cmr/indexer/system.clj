@@ -7,7 +7,7 @@
             [cmr.system-trace.context :as context]
             [cmr.common.api.web-server :as web]
             [cmr.indexer.data.elasticsearch :as es]
-            [cmr.indexer.data.cache :as cache]
+            [cmr.common.cache :as cache]
             [cmr.indexer.api.routes :as routes]))
 
 (def

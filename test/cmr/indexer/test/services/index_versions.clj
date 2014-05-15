@@ -9,7 +9,7 @@
             [cmr.elastic-utils.embedded-elastic-server :as elastic-server]
             [cmr.indexer.data.elasticsearch :as es]
             [cmr.indexer.data.index-set :as idx-set]
-            [cmr.indexer.data.cache :as cache]
+            [cmr.common.cache :as cache]
             [clojure.data.codec.base64 :as b64]
             [cmr.common.lifecycle :as lifecycle]))
 
