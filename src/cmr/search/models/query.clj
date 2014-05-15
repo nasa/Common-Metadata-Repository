@@ -58,6 +58,12 @@
    pattern?
    ])
 
+(defrecord NegatedCondition
+  [
+   ;; condition to exclude
+   condition
+   ])
+
 (defrecord BooleanCondition
   [
    ;; The field being searched.

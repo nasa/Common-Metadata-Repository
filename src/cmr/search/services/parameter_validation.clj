@@ -25,6 +25,10 @@
   "Parameters which do not allow pattern search option."
   (set #{:concept-id :echo-collection-id :echo-granule-id}))
 
+(def exclude-params
+  "Lists parameters which can be used to exclude items from results."
+  (set #{:echo-granule-id :concept-id}))
+
 (defn- concept-type->valid-param-names
   "A set of the valid parameter names for the given concept-type."
   [concept-type]
@@ -298,6 +302,16 @@
     (parser/date-time-range-string-validation equator-crossing-date)
     []))
 
+(defn exclude-validation
+  "Validates that the key(s) supplied in 'exclude' param value are in exclude-params set"
+  [concept-type params]
+  (if-let [exclude-kv (:exclude params)]
+    (let [invalid-exclude-params (set/difference (set (keys exclude-kv)) exclude-params)]
+      (if (empty? invalid-exclude-params)
+        []
+        [(c-msg/invalid-exclude-param-msg invalid-exclude-params)]))
+    []))
+
 (defn boolean-value-validation
   [concept-type params]
   (let [bool-params (select-keys params [:downloadable])]
@@ -326,6 +340,7 @@
    equator-crossing-date-validation
    cloud-cover-validation
    attribute-validation
+   exclude-validation
    boolean-value-validation])
 
 (defn validate-parameters

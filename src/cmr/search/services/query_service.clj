@@ -115,6 +115,7 @@
          (p/parameters->query concept-type)
          (find-concepts-by-query context))))
 
+
 (deftracefn find-concept-by-id
   "Executes a search to metadata-db and returns the concept with the given cmr-concept-id."
   [context concept-id]

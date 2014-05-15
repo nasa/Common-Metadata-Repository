@@ -45,6 +45,7 @@
              :project :string
              :cloud-cover :num-range
              :concept-id :string
+             :exclude :exclude
              :downloadable :boolean
              :polygon :polygon}})
 
@@ -83,6 +84,15 @@
        (qm/and-conds
          [(qm/->CollectionQueryCondition field-condition)
           (qm/map->MissingCondition {:field (q2e/query-field->elastic-field param concept-type)})])])))
+
+;; or-conds --> "not (CondA and CondB)" == "(not CondA) or (not CondB)"
+(defmethod parameter->condition :exclude
+  [concept-type param value options]
+  (qm/or-conds
+    (map (fn [[exclude-param exclude-val]]
+           (qm/map->NegatedCondition
+             {:condition (parameter->condition concept-type exclude-param exclude-val options)}))
+         value)))
 
 (defmethod parameter->condition :updated-since
   [concept-type param value options]
