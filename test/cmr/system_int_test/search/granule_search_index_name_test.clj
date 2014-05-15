@@ -36,11 +36,13 @@
         coll2 (d/ingest "SEP_PROV1" (dc/collection {:short-name "ShortTwo"
                                                     :concept-id "C2-SEP_PROV1"}))
         coll3 (d/ingest "SEP_PROV1" (dc/collection {}))
+        coll4 (d/ingest "SEP_PROV1" (dc/collection {:short-name "ShortThree"}))
         gran1 (d/ingest "SEP_PROV1" (dg/granule coll1 {:granule-ur "Granule1"}))
         gran2 (d/ingest "SEP_PROV1" (dg/granule coll1 {:granule-ur "Granule2"}))
         gran3 (d/ingest "SEP_PROV1" (dg/granule coll1 {:granule-ur "Granule3"}))
         gran4 (d/ingest "SEP_PROV1" (dg/granule coll2 {:granule-ur "Granule4"}))
-        gran5 (d/ingest "SEP_PROV1" (dg/granule coll3 {:granule-ur "Granule5"}))]
+        gran5 (d/ingest "SEP_PROV1" (dg/granule coll3 {:granule-ur "Granule5"}))
+        gran6 (d/ingest "SEP_PROV1" (dg/granule coll4 {:granule-ur "Granule6"}))]
 
     (index/flush-elastic-index)
 
@@ -48,8 +50,17 @@
       (is (d/refs-match?
             [gran1 gran4]
             (search/find-refs :granule {"granule-ur[]" ["Granule1" "Granule4"]}))))
+    (testing "search for granules in separate collection index with collection identifier."
+      (is (d/refs-match?
+            [gran1]
+            (search/find-refs :granule {:short-name "ShortOne"
+                                        "granule-ur[]" ["Granule1" "Granule4"]}))))
     (testing "search for granules in small_collections index."
       (is (d/refs-match?
             [gran5]
-            (search/find-refs :granule {:granule-ur "Granule5"}))))))
+            (search/find-refs :granule {:granule-ur "Granule5"}))))
+    (testing "search for granules in small_collections index with collection identifier."
+      (is (d/refs-match?
+            [gran6]
+            (search/find-refs :granule {:short-name "ShortThree"}))))))
 

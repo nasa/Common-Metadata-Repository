@@ -37,6 +37,11 @@
   [type]
   (format "http://localhost:%s/%ss" (search-port) (name type)))
 
+(defn search-reset-url
+  "Clear cache in search app. Only development team to use this functionality."
+  []
+  (format "http://localhost:%s/reset" (search-port)))
+
 (defn retrieve-concept-url
   [type concept-id]
   (format "http://localhost:%s/concepts/%s" (search-port) concept-id))
