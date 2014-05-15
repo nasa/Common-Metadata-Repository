@@ -11,13 +11,20 @@
    :echo-granule-id :concept-id
    :online-only :downloadable})
 
+
 (defn replace-parameter-aliases
   "Replaces aliases of parameter names"
   [params]
   (-> params
       (set/rename-keys param-aliases)
       (update-in [:options]
-                 #(when % (set/rename-keys % param-aliases)))))
+                 #(when % (set/rename-keys % param-aliases)))
+      ;; handle aliases iff exclude params are present
+      ((fn [params]
+         (if (map? (:exclude params))
+           (update-in params [:exclude]
+                      #(when % (set/rename-keys % param-aliases)))
+           params)))))
 
 (defn- process-legacy-range-maps
   "Changes legacy map range conditions in the param[minValue]/param[maxValue] format

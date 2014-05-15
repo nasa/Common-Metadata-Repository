@@ -84,13 +84,13 @@
          [(qm/->CollectionQueryCondition field-condition)
           (qm/map->MissingCondition {:field (q2e/query-field->elastic-field param concept-type)})])])))
 
+;; or-conds --> "not (CondA and CondB)" == "(not CondA) or (not CondB)"
 (defmethod parameter->condition :exclude
   [concept-type param value options]
-  (let [kv (dissoc (lp/replace-parameter-aliases value) :options)
-        exclude-param (first (keys kv))
-        exclude-val (first (vals kv))]
-    (qm/map->NegatedCondition
-      {:condition (parameter->condition concept-type exclude-param exclude-val options)})))
+  (qm/or-conds
+    (map (fn [[exclude-param exclude-val]]
+           (qm/map->NegatedCondition
+             {:condition (parameter->condition concept-type exclude-param exclude-val options)})) value)))
 
 (defmethod parameter->condition :updated-since
   [concept-type param value options]

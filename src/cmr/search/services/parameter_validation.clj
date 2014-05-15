@@ -301,14 +301,18 @@
     (parser/date-time-range-string-validation equator-crossing-date)
     []))
 
+
 (defn exclude-validation
-  "Validates that the key supplied in 'exclude' param value is in exclude-params set"
+  "Validates that the key(s) supplied in 'exclude' param value are in exclude-params set"
   [concept-type params]
   (if-let [exclude-kv (:exclude params)]
-    (let [param (first (keys exclude-kv))]
-      (if (contains? exclude-params param)
+    (let [ex-params (keys exclude-kv)
+          valid-ex-params? (every? true? (map #(contains? exclude-params %) ex-params))]
+      (if valid-ex-params?
         []
-        [(c-msg/invalid-exclude-param-msg param)]))
+        (if (= 1 (count ex-params))
+          [(c-msg/invalid-exclude-param-msg (first ex-params))]
+          [(c-msg/invalid-exclude-param-msg)])))
     []))
 
 (defn boolean-value-validation
