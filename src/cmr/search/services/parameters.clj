@@ -91,7 +91,8 @@
   (qm/or-conds
     (map (fn [[exclude-param exclude-val]]
            (qm/map->NegatedCondition
-             {:condition (parameter->condition concept-type exclude-param exclude-val options)})) value)))
+             {:condition (parameter->condition concept-type exclude-param exclude-val options)}))
+         value)))
 
 (defmethod parameter->condition :updated-since
   [concept-type param value options]
