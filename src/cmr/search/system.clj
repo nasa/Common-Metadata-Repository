@@ -2,6 +2,7 @@
   (:require [cmr.common.lifecycle :as lifecycle]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.api.web-server :as web]
+            [cmr.common.cache :as cache]
             [cmr.search.api.routes :as routes]
             [cmr.search.data.elastic-search-index :as idx]
             [cmr.system-trace.context :as context]))
@@ -19,6 +20,7 @@
   {:log (log/create-logger)
    :search-index (idx/create-elastic-search-index "localhost" 9210)
    :web (web/create-web-server 3003 routes/make-api)
+   :cache (cache/create-cache)
    :zipkin (context/zipkin-config "Search" false)})
 
 (defn start
