@@ -49,6 +49,8 @@
     (format "Pattern option setting disallowed on these parameters: %s" params)))
 
 (defn invalid-exclude-param-msg
-  "Creates a message saying supplied parameter is not in exclude params set."
-  [param]
-  (format "Parameter [%s] can not be used with exclude." param))
+  "Creates a message saying supplied parameter(s) are not in exclude params set."
+  ([]
+   (format "Some or all of the supplied parameters can not be used with exclude."))
+  ([param]
+   (format "Parameter [%s] can not be used with exclude." param)))
