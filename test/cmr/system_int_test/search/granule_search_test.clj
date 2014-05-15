@@ -266,6 +266,7 @@
            nil 0.7 [gran4 gran5]
            -70.0 31.0 [gran1 gran2 gran4 gran5]))))
 
+
 ;; exclude granules by echo_granule_id or concept_id (including parent concept_id) params
 (deftest exclude-granules-by-echo-granule-n-concept-ids
   (let [coll1 (d/ingest "CMR_PROV1" (dc/collection {}))
@@ -307,10 +308,10 @@
       (let [srch1 {:exclude {:dataset-id [gran2-cid]}, :echo_granule_id [gran1-cid gran2-cid gran3-cid]}
             srch2 {:exclude {:dataset-id [gran2-cid] :concept-id [gran1-cid]}, :echo_granule_id [gran1-cid gran2-cid]}]
         (is (= {:status 422
-                :errors [(msg/invalid-exclude-param-msg :entry-title)]}
+                :errors [(msg/invalid-exclude-param-msg #{:entry-title})]}
                (search/find-refs :granule srch1)))
         (is (= {:status 422
-                :errors [(msg/invalid-exclude-param-msg)]}
+                :errors [(msg/invalid-exclude-param-msg #{:entry-title})]}
                (search/find-refs :granule srch2)))))))
 
 ;; Find granules by echo_granule_id, echo_collection_id and concept_id params
