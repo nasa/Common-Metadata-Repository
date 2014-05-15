@@ -2,7 +2,6 @@
   "A system level cache based on clojure.core.cache library.
   Follows basic usage pattern as given in - https://github.com/clojure/core.cache/wiki/Using"
   (:require [cmr.common.log :as log :refer (debug info warn error)]
-            [cmr.system-trace.context :as context]
             [clojure.core.cache :as cc]))
 
 
