@@ -1,10 +1,8 @@
-(ns cmr.search.data.query-to-elastic-converters.attribute
-  "Defines protocols and functions to map from a query model to elastic search query"
-  (:require [clojurewerkz.elastisch.query :as q]
-            [clojure.string :as s]
-            [clj-time.core :as t]
-            [clj-time.format :as f]
-            [cmr.search.data.query-to-elastic :as q2e]
+(ns cmr.search.data.complex-to-simple-converters.attribute
+  "Defines functions that implement the reduce-query method of the ComplexQueryToSimple
+  protocol for product specific attribute search fields."
+  (:require [clojure.string :as s]
+            [cmr.search.data.complex-to-simple :as c2s]
             [cmr.search.models.query :as qm]
             [cmr.search.data.datetime-helper :as h]))
 
@@ -20,12 +18,24 @@
 
 (defmethod value-condition->value-filter :default
   [{:keys [type value]}]
-  {:term {(type->field-name type) value}})
+  (qm/string-condition (type->field-name type) value))
+
+(defmethod value-condition->value-filter :float
+  [{:keys [type value]}]
+  (qm/numeric-value-condition (type->field-name type) value))
+
+(defmethod value-condition->value-filter :int
+  [{:keys [type value]}]
+  (qm/numeric-value-condition (type->field-name type) value))
+
+(defmethod value-condition->value-filter :string
+  [{:keys [type value]}]
+  (qm/string-condition (type->field-name type) value))
 
 (defn- date-value-condition->value-filter
   "Helper function for any date related attribute fields"
   [{:keys [type value]}]
-  {:term {(type->field-name type) (h/utc-time->elastic-time value)}})
+  (qm/date-value-condition (type->field-name type) value))
 
 (defmethod value-condition->value-filter :datetime
   [condition]
@@ -46,35 +56,20 @@
 
 (defmethod range-condition->range-filter :string
   [{:keys [min-value max-value]}]
-  (let [r {:gte (or min-value "")}
-        r (if max-value (assoc r :lte max-value) r)]
-    {:range {:string-value r}}))
+  (qm/string-range-condition :string-value min-value max-value))
 
 (defmethod range-condition->range-filter :float
   [{:keys [min-value max-value]}]
-  (let [r {:gte (or min-value (* -1 Float/MAX_VALUE))}
-        r (if max-value (assoc r :lte max-value) r)]
-    {:range {:float-value r
-             :execution "fielddata"}}))
+  (qm/numeric-range-condition :float-value min-value max-value))
 
 (defmethod range-condition->range-filter :int
   [{:keys [min-value max-value]}]
-  (let [r {:gte (or min-value Integer/MIN_VALUE)}
-        r (if max-value (assoc r :lte max-value) r)]
-    {:range {:int-value r
-             :execution "fielddata"}}))
+  (qm/numeric-range-condition :int-value min-value max-value))
 
 (defn date-range-condition->range-filter
   "Helper for converting date range attribute conditions into filters"
   [{:keys [type min-value max-value]}]
-  (let [r {:gte (if min-value
-                  (h/utc-time->elastic-time min-value)
-                  h/earliest-echo-start-date)}
-        r (if max-value
-            (assoc r :lte (h/utc-time->elastic-time max-value))
-            r)]
-    {:range {(type->field-name type) r
-             :execution "fielddata"}}))
+  (qm/date-range-condition (type->field-name type) min-value max-value))
 
 (defmethod range-condition->range-filter :datetime
   [condition]
@@ -89,24 +84,21 @@
   (date-range-condition->range-filter condition))
 
 
-(extend-protocol q2e/ConditionToElastic
+(extend-protocol c2s/ComplexQueryToSimple
   cmr.search.models.query.AttributeValueCondition
-  (condition->elastic
-    [condition concept-type]
+  (c2s/reduce-query
+    [condition]
     (let [value-filter (value-condition->value-filter condition)
-          attrib-name (:name condition)]
-      {:nested {:path "attributes"
-                :filter {:and {:filters [{:term {:name attrib-name}}
-                                         value-filter]}}}}))
+          attrib-name (:name condition)
+          name-cond (qm/map->NumericValueCondition {:field :name :value attrib-name})
+          and-cond (qm/and-conds [name-cond value-filter])]
+      (qm/nested-condition :attributes and-cond)))
 
   cmr.search.models.query.AttributeRangeCondition
-  (condition->elastic
-    [condition concept-type]
+  (c2s/reduce-query
+    [condition]
     (let [range-filter (range-condition->range-filter condition)
-          attrib-name (:name condition)]
-      {:nested {:path "attributes"
-                :filter {:and {:filters [{:term {:name attrib-name}}
-                                         range-filter]}}}}))
-
-
-  )
+          attrib-name (:name condition)
+          name-cond (qm/map->NumericValueCondition {:field :name :value attrib-name})
+          and-cond (qm/and-conds [name-cond range-filter])]
+      (qm/nested-condition :attributes and-cond))))

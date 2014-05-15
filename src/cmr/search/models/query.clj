@@ -73,6 +73,22 @@
    value
    ])
 
+(defrecord SpatialCondition
+  [
+   ;; One of cmr.spatial polygon, line, point, or mbr
+   shape
+   ])
+
+;; Allows execution of a custom native search script
+(defrecord ScriptCondition
+  [
+   ;; name of the script
+   script
+
+   ;; Parameter map of names to values
+   params
+   ])
+
 ;; ExistCondition represents the specified field must have value, i.e. filed is not null
 (defrecord ExistCondition
   [
@@ -85,6 +101,15 @@
   [
    ;; The field being searched.
    field
+   ])
+
+(defrecord DateValueCondition
+  [
+   ;; The field being searched
+   field
+
+   ;; The date value
+   value
    ])
 
 (defrecord DateRangeCondition
@@ -118,6 +143,18 @@
 
    ;; Them maximum value (inclusive)
    max-value
+   ])
+
+(defrecord StringRangeCondition
+  [
+   ;; The field being searched
+   field
+
+   ;; The start value for the range
+   start-value
+
+   ;; The end value for the range
+   end-value
    ])
 
 (defrecord TemporalCondition
@@ -211,7 +248,12 @@
         sort-keys (or sort-keys (default-sort-keys concept-type))]
     (->Query concept-type condition page-size page-num sort-keys)))
 
-(defn numeric-range
+(defn numeric-value-condition
+  "Creates a NumericValueCondition"
+  [field value]
+  (map->NumericValueCondition {:field field :value value}))
+
+(defn numeric-range-condition
   [field min max]
   (map->NumericRangeCondition {:field field
                                :min-value min
@@ -224,12 +266,21 @@
   ([field value case-sensitive? pattern?]
    (->StringCondition field value case-sensitive? pattern?)))
 
+(defn string-range-condition
+  "Create a string range condition."
+  [field start stop]
+  (map->StringRangeCondition {:field field :start-value start :end-value stop}))
+
 (defn date-range-condition
-  "Creates a date range condtion."
+  "Creates a DateRangeCondition."
   [field start stop]
   (map->DateRangeCondition {:field field
-                           :start-date start
-                           :end-date stop}))
+                            :start-date start
+                            :end-date stop}))
+(defn date-value-condition
+  "Creates a DateValueCondtion."
+  [field value]
+  (->DateValueCondition field value))
 
 (defn nested-condition
   "Creates a nested condition."
@@ -254,7 +305,7 @@
   [conditions]
   (group-conds :or conditions))
 
-(defn numeric-range-condition
+(defn numeric-range-str->condition
   "Creates a numeric range condition."
   [field value]
   (let [{:keys [min-value max-value]} (pp/numeric-range-parameter->map value)]

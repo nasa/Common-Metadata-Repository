@@ -2,7 +2,7 @@
   "Contains tests to verify current-end-date calculation."
   (:require [clojure.test :refer :all]
             [cmr.common.date-time-parser :as parser]
-            [cmr.search.data.query-to-elastic-converters.temporal :as t2e]))
+            [cmr.search.data.complex-to-simple-converters.temporal :as t2e]))
 
 (deftest current-end-date-test
   "Test end-date is calculated correctly for current year during periodic date time conversion."

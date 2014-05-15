@@ -13,6 +13,7 @@
             [cmr.search.services.parameter-converters.orbit-number :as on]
             [cmr.search.services.messages.orbit-number-messages :as on-msg]
             [cmr.search.services.messages.common-messages :as msg]
+            [cmr.search.data.messages :as d-msg]
             [camel-snake-kebab :as csk])
   (:import clojure.lang.ExceptionInfo))
 
@@ -249,7 +250,7 @@
         []
         (if error-message-fn
           [(apply error-message-fn args)]
-          [(c-msg/invalid-numeric-range-msg)]))
+          [(d-msg/nil-min-max-msg)]))
       (catch NumberFormatException e
         [(apply error-message-fn args)]))))
 
@@ -345,7 +346,6 @@
    attribute-validation
    exclude-validation
    boolean-value-validation])
-
 
 (defn validate-parameters
   "Validates parameters. Throws exceptions to send to the user. Returns parameters if validation

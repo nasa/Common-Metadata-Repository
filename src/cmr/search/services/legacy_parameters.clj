@@ -33,12 +33,20 @@
   (reduce-kv (fn [memo k v]
                ;; look for parameters in the map form
                (if (map? v)
-                 (let [{:keys [value min-value max-value]} v]
-                   (if (or value min-value max-value)
+                 (let [{:keys [value min-value max-value min max]} v]
+                   (cond
+                     (or min-value max-value)
                      ;; convert the map into a comma separated string
-                     (if value
-                       (assoc memo k value)
-                       (assoc memo k (str min-value "," max-value)))
+                     (assoc memo k (str min-value "," max-value))
+
+                     (or min max)
+                     ;; convert the map into a comma separated string
+                     (assoc memo k (str min "," max))
+
+                     value
+                     (assoc memo k value)
+
+                     :else ;; do nothing
                      memo))
                  memo))
              params

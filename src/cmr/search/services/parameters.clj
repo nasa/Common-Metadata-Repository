@@ -46,7 +46,8 @@
              :cloud-cover :num-range
              :concept-id :string
              :exclude :exclude
-             :downloadable :boolean}})
+             :downloadable :boolean
+             :polygon :polygon}})
 
 (defn- param-name->type
   "Returns the query condition type based on the given concept-type and param-name."
@@ -131,7 +132,7 @@
 
 (defmethod parameter->condition :num-range
   [concept-type param value options]
-  (qm/numeric-range-condition param value))
+  (qm/numeric-range-str->condition param value))
 
 (defn parse-sort-key
   "Parses the sort key param and returns a sequence of maps with fields and order.

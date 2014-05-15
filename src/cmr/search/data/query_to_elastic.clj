@@ -86,6 +86,26 @@
             {:order order}})
          sort-keys)))
 
+(defn- range-condition->elastic
+    "Convert a range condition to an elastic search condition. Execution
+    should either by 'fielddata' or 'index'."
+    [field min-value max-value execution]
+    (cond
+      (and min-value max-value)
+      {:range {field {:gte min-value :lte max-value}
+               :execution execution}}
+
+      min-value
+      {:range {field {:gte min-value}
+               :execution execution}}
+
+      max-value
+      {:range {field {:lte max-value}
+               :execution execution}}
+
+      :else
+      (errors/internal-error! (m/nil-min-max-msg))))
+
 (extend-protocol ConditionToElastic
   cmr.search.models.query.ConditionGroup
   (condition->elastic
@@ -120,6 +140,13 @@
     [{:keys [condition]} concept-type]
     {:not (condition->elastic condition concept-type)})
 
+  cmr.search.models.query.ScriptCondition
+  (condition->elastic
+    [{:keys [name params]} concept-type]
+    {:script {:script name
+              :params params
+              :lang "native"}})
+
   cmr.search.models.query.ExistCondition
   (condition->elastic
     [{:keys [field]} _]
@@ -138,21 +165,12 @@
   cmr.search.models.query.NumericRangeCondition
   (condition->elastic
     [{:keys [field min-value max-value]} _]
-    (cond
-      (and min-value max-value)
-      {:range {field {:gte min-value :lte max-value}
-               :execution "fielddata"}}
+    (range-condition->elastic field min-value max-value "fielddata"))
 
-      min-value
-      {:range {field {:gte min-value}
-               :execution "fielddata"}}
-
-      max-value
-      {:range {field {:lte max-value}
-               :execution "fielddata"}}
-
-      :else
-      (errors/internal-error! (m/nil-min-max-msg))))
+  cmr.search.models.query.StringRangeCondition
+  (condition->elastic
+    [{:keys [field start-value end-value]} _]
+     (range-condition->elastic field start-value end-value "index"))
 
   cmr.search.models.query.DateRangeCondition
   (condition->elastic
@@ -163,6 +181,10 @@
           value (if end-date (assoc value :to (h/utc-time->elastic-time end-date)) value)]
       {:range { field value }}))
 
+  cmr.search.models.query.DateValueCondition
+  (condition->elastic
+    [{:keys [field value]} _]
+    {:term {field (h/utc-time->elastic-time value)}})
 
   cmr.search.models.query.MatchAllCondition
   (condition->elastic

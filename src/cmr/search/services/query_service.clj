@@ -23,6 +23,7 @@
             [cmr.search.services.parameter-converters.orbit-number]
             [cmr.search.services.parameter-converters.equator-crossing-longitude]
             [cmr.search.services.parameter-converters.equator-crossing-date]
+            [cmr.search.services.parameter-converters.spatial]
 
             ;; Validation
             [cmr.search.validators.validation :as v]
@@ -34,17 +35,16 @@
             [cmr.search.validators.equator-crossing-longitude]
             [cmr.search.validators.equator-crossing-date]
 
-            ;; Query To Elastic implementations
-            ;; Must be required here to be available in uberjar
-            [cmr.search.data.query-to-elastic-converters.temporal]
-            [cmr.search.data.query-to-elastic-converters.attribute]
-            [cmr.search.data.query-to-elastic-converters.orbit-number]
-            [cmr.search.data.query-to-elastic-converters.equator-crossing-longitude]
-            [cmr.search.data.query-to-elastic-converters.equator-crossing-date]
+            ;; Complex to simple converters
+            [cmr.search.data.complex-to-simple-converters.attribute]
+            [cmr.search.data.complex-to-simple-converters.orbit]
+            [cmr.search.data.complex-to-simple-converters.temporal]
+            [cmr.search.data.complex-to-simple-converters.spatial]
 
             [cmr.search.services.legacy-parameters :as lp]
             [cmr.search.services.parameter-validation :as pv]
             [cmr.search.services.collection-query-resolver :as r]
+            [cmr.search.data.complex-to-simple :as c2s]
             [cmr.transmit.metadata-db :as meta-db]
             [cmr.system-trace.core :refer [deftracefn]]
             [cmr.common.services.errors :as err]
@@ -71,16 +71,16 @@
   [context query]
   (r/resolve-collection-query query context))
 
-(deftracefn simplify-query
-  "Simplifies the query."
-  [context query]
-  ;; TODO query simplification
-  query)
-
 (deftracefn execute-query
   "Executes a query returning results as concept id, native provider id, and revision id."
   [context query]
   (idx/execute-query context query))
+
+(deftracefn simplify-query
+  "Simplifies the query to increase performance."
+  [context query]
+  ;; TODO - do something useful here.
+  query)
 
 
 (deftracefn find-concepts-by-query
@@ -90,6 +90,7 @@
   (->> query
        (validate-query context)
        (apply-acls context)
+       c2s/reduce-query
        (resolve-collection-query context)
        (simplify-query context)
        (execute-query context)))
