@@ -38,7 +38,7 @@
         {:keys [parent-collection-id]} extra-fields
         parent-collection (get-parent-collection context parent-collection-id)
         {:keys [granule-ur data-granule temporal platform-refs project-refs related-urls cloud-cover]} umm-granule
-        {:keys [size producer-gran-id]} data-granule
+        {:keys [size producer-gran-id day-night]} data-granule
         platform-short-names (map :short-name platform-refs)
         instrument-refs (mapcat :instrument-refs platform-refs)
         instrument-short-names (remove nil? (map :short-name instrument-refs))
@@ -60,6 +60,8 @@
      :granule-ur.lowercase (s/lower-case granule-ur)
      :producer-gran-id producer-gran-id
      :producer-gran-id.lowercase (when producer-gran-id (s/lower-case producer-gran-id))
+     :day-night day-night
+     :day-night.lowercase (when day-night (s/lower-case day-night))
 
      ;; Provides sorting on a combination of producer granule id and granule ur
      :readable-granule-name-sort (s/lower-case (or producer-gran-id granule-ur))
