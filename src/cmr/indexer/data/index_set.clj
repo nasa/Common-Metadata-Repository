@@ -8,26 +8,17 @@
             [cmr.common.services.errors :as errors]
             [cmr.common.concepts :as cs]
             [cmr.transmit.metadata-db :as meta-db]
-            [cmr.indexer.data.cache :as cache]
+            [cmr.transmit.index-set :as index-set]
+            [cmr.common.cache :as cache]
             [cmr.system-trace.core :refer [deftracefn]]))
-
-;;; index-set app enpoint
-(def index-set-app-port 3005)
-
-(def index-set-root-url
-  (format "%s:%s"  "http://localhost" index-set-app-port))
-
-;; url applicable to create, get and delete index-sets
-(def index-set-url
-  (format "%s/%s" index-set-root-url "index-sets"))
 
 ;; url applicable to create, get and delete index-sets
 (def index-set-es-cfg-url
-  (format "%s/%s" index-set-root-url "elastic-config"))
+  (format "%s/%s" index-set/index-set-root-url "elastic-config"))
 
 ;; reset indices for dev purposes
 (def index-set-reset-url
-  (format "%s/%s" index-set-root-url "reset"))
+  (format "%s/%s" index-set/index-set-root-url "reset"))
 
 (def collection-setting {:index
                          {:number_of_shards 2,
@@ -206,24 +197,6 @@
                            :settings granule-setting
                            :mapping granule-mapping}}}))
 
-
-(defn get-index-set
-  "Submit a request to index-set app to fetch an index-set assoc with an id"
-  [id]
-  (let [response (client/request
-                   {:method :get
-                    :url (format "%s/%s" index-set-url (str id))
-                    :accept :json
-                    :throw-exceptions false})
-        status (:status response)
-        body (cheshire/decode (:body response) true)]
-    (case status
-      404 nil
-      200 body
-      (errors/internal-error! (format "Unexpected error fetching index-set with id: %s,
-                                      Index set app reported status: %s, error: %s"
-                                      id status (pr-str (flatten (:errors body))))))))
-
 (defn fetch-elastic-config
   "Submit a request to index-set app to fetch an index-set assoc with an id"
   []
@@ -248,7 +221,7 @@
   [index-set]
   (let [response (client/request
                    {:method :post
-                    :url index-set-url
+                    :url index-set/index-set-url
                     :body (cheshire/generate-string index-set)
                     :content-type :json
                     :accept :json
@@ -265,9 +238,8 @@
    (let [index-set-id (get-in (index-set) [:index-set :id])]
      (fetch-concept-type-index-names index-set-id)))
   ([index-set-id]
-   (let [fetched-index-set (get-index-set index-set-id)]
+   (let [fetched-index-set (index-set/get-index-set index-set-id)]
      (get-in fetched-index-set [:index-set :concepts]))))
-
 
 (defn fetch-concept-mapping-types
   "Fetch mapping types for each concept type from index-set app"
@@ -275,7 +247,7 @@
    (let [index-set-id (get-in (index-set) [:index-set :id])]
      (fetch-concept-mapping-types index-set-id)))
   ([index-set-id]
-   (let [fetched-index-set (get-index-set index-set-id)]
+   (let [fetched-index-set (index-set/get-index-set index-set-id)]
      {:collection (name (first (keys (get-in fetched-index-set [:index-set :collection :mapping]))))
       :granule (name (first (keys (get-in fetched-index-set [:index-set :granule :mapping]))))})))
 

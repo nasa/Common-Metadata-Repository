@@ -10,7 +10,7 @@
             [cmr.umm.echo10.granule :as granule]
             [cheshire.core :as cheshire]
             [cmr.indexer.data.index-set :as idx-set]
-            [cmr.indexer.data.cache :as cache]
+            [cmr.common.cache :as cache]
             [cmr.system-trace.core :refer [deftracefn]]))
 
 (defmulti parse-concept

@@ -6,6 +6,7 @@
             [clj-http.client :as client]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.services.errors :as errors]
+            [cmr.transmit.index-set :as index-set]
             [cmr.indexer.data.index-set :as idx-set]
             [cmr.system-trace.core :refer [deftracefn]]
             [cheshire.core :as json]))
@@ -23,7 +24,7 @@
   []
   (let [index-set (idx-set/index-set)
         index-set-id (get-in index-set [:index-set :id])]
-    (when-not (idx-set/get-index-set index-set-id)
+    (when-not (index-set/get-index-set index-set-id)
       (idx-set/create index-set))))
 
 (defn reset-es-store
