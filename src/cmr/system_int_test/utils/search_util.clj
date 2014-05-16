@@ -10,7 +10,6 @@
             [camel-snake-kebab :as csk]
             [clojure.walk]))
 
-
 (defn params->snake_case
   "Converts search parameters to snake_case"
   [params]
@@ -43,6 +42,19 @@
        (let [{{status# :status body# :body} :object} (ex-data e#)
              errors# (:errors (json/decode body# true))]
          {:status status# :errors errors#}))))
+
+(defn find-refs-with-embedded-params
+  "Returns the references that are found by searching with a given param string."
+  [concept-type params]
+  (get-search-failure-data
+    (let [response (client/get (str (url/search-url concept-type) "?" params)
+                               {:accept :json})
+          _ (is (= 200 (:status response)))
+          result (json/decode (:body response) true)]
+      (-> result
+          ;; Rename references to refs
+          (assoc :refs (:references result))
+          (dissoc :references)))))
 
 (defn find-refs
   "Returns the references that are found by searching with the input params"
