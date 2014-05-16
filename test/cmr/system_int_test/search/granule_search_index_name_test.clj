@@ -55,10 +55,14 @@
             [gran1]
             (search/find-refs :granule {:short-name "ShortOne"
                                         "granule-ur[]" ["Granule1" "Granule4"]}))))
-    (testing "search for granules in multiple collection index with collection identifier."
+    (testing "search for granules in multiple collection indexes with collection identifier."
       (is (d/refs-match?
             [gran1 gran2 gran3 gran4]
             (search/find-refs :granule {"short-name[]" ["ShortOne" "ShortTwo"]}))))
+    (testing "search for granules in multiple collection indexes with collection identifier and small_collections."
+      (is (d/refs-match?
+            [gran4 gran6]
+            (search/find-refs :granule {"short-name[]" ["ShortTwo" "ShortThree"]}))))
     (testing "search for granules in small_collections index."
       (is (d/refs-match?
             [gran5]
