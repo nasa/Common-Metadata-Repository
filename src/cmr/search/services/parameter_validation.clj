@@ -201,7 +201,7 @@
   (if-let [temporal (:temporal params)]
     (let [temporal (if (sequential? temporal)
                      temporal
-                     (vector temporal))]
+                     [temporal])]
       (mapcat
         (fn [value]
           (let [[start-date end-date start-day end-day] (map s/trim (s/split value #","))]
