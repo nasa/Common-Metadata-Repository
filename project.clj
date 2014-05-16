@@ -23,15 +23,17 @@
   :global-vars {*warn-on-reflection* true
                 *assert* false}
 
+  ;; This is the minimum that must be AOT'd for running in an embeded elastic. AOT :all for installing
+  ;; in an elastic vm.
+  :aot [cmr.es-spatial-plugin.SpatialScript
+        cmr.es-spatial-plugin.SpatialScriptFactory
+        cmr.es-spatial-plugin.SpatialSearchPlugin]
+
   :profiles
   {:dev {:dependencies [[nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                         [nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]
                         [org.clojure/tools.namespace "0.2.4"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]]
-
-         :aot [cmr.es-spatial-plugin.SpatialScript
-               cmr.es-spatial-plugin.SpatialScriptFactory
-               cmr.es-spatial-plugin.SpatialSearchPlugin]
 
          ;; The ^replace is done to disable the tiered compilation for accurate benchmarks
          ;; See https://github.com/technomancy/leiningen/wiki/Faster
