@@ -28,6 +28,7 @@
    :granule {:granule-ur :string
              :collection-concept-id :string
              :producer-granule-id :string
+             :day-night :string
              :readable-granule-name :readable-granule-name
              :provider :collection-query
              :entry-title :collection-query
