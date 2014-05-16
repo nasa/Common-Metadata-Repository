@@ -49,7 +49,7 @@
   [context query]
   (let [coll-concept-ids (ex/extract-collection-concept-ids query context)]
     (if (empty? coll-concept-ids)
-      "_all"
+      (format "%d_c*,%d_small_collections" index-set-id index-set-id)
       (s/join "," (collection-concept-ids->index-names context coll-concept-ids)))))
 
 (defn concept-type->index-info
