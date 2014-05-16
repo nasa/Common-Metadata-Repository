@@ -43,6 +43,7 @@
     </Collection>
     <DataGranule>
       <ProducerGranuleId>0000000.0000001.hdf</ProducerGranuleId>
+      <DayNightFlag>NIGHT</DayNightFlag>
     </DataGranule>
     <Orderable>true</Orderable>
     <Temporal>
@@ -131,7 +132,8 @@
                     :collection-ref (umm-g/map->CollectionRef
                                       {:entry-title "R1_SCANSAR_FRAME"})
                     :data-granule (umm-g/map->DataGranule
-                                    {:producer-gran-id "0000000.0000001.hdf"})
+                                    {:producer-gran-id "0000000.0000001.hdf"
+                                     :day-night "NIGHT"})
                     :project-refs ["Short Name-240" "Short Name-241"]
                     :cloud-cover 0.8
                     :temporal
