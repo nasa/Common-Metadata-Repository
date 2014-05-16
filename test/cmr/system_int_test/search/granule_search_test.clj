@@ -297,12 +297,6 @@
     (testing "fetch granules by echo granule ids to exclude multiple granules from the set by concept_id"
       (are [srch-params items] (d/refs-match? items (search/find-refs :granule srch-params))
            {:exclude {:concept_id [gran1-cid gran2-cid]}, :echo_granule_id [gran1-cid gran2-cid gran3-cid]} [gran3]))
-    (testing "fetch granules by echo granule ids to exclude multiple granules from the set by parent concept_id"
-      (are [srch-params items] (d/refs-match? items (search/find-refs :granule srch-params))
-           {:exclude {:concept_id [coll1-cid]}, :echo_granule_id [gran1-cid gran2-cid gran3-cid gran4-cid]} [gran4]
-           {:exclude {:echo_collection_id [coll1-cid]}, :echo_granule_id [gran1-cid gran2-cid gran3-cid gran4-cid]} [gran4]
-           {:exclude {:echo_collection_id [coll1-cid] :concept_id [coll1-cid]},
-            :echo_granule_id [gran1-cid gran2-cid gran3-cid gran4-cid]} [gran4]))
     (testing "fetch granules by echo granule ids to exclude a granule by invalid exclude param - dataset_id"
       ;; dataset-id aliases to entry-title - there is no easy way to recover original search param on error
       (let [srch1 {:exclude {:dataset-id [gran2-cid]}, :echo_granule_id [gran1-cid gran2-cid gran3-cid]}
