@@ -5,7 +5,8 @@
             [cmr.spatial.ring :as ring]
             [cmr.spatial.point :as point]
             [cmr.spatial.derived :as d]
-            [cmr.spatial.serialize :as srl])
+            [cmr.spatial.serialize :as srl]
+            [cmr.es-spatial-plugin.SpatialScript])
   (:import cmr.es_spatial_plugin.SpatialScript
            org.elasticsearch.common.xcontent.support.XContentMapValues
            org.elasticsearch.ElasticsearchIllegalArgumentException))

@@ -20,11 +20,6 @@
   :plugins [[lein-shell "0.3.0"]
             [lein-test-out "0.3.1"]]
 
-  :aot [cmr.es-spatial-plugin.SpatialScript
-        cmr.es-spatial-plugin.SpatialScriptFactory
-        cmr.es-spatial-plugin.SpatialSearchPlugin]
-
-
   :global-vars {*warn-on-reflection* true
                 *assert* false}
 
@@ -33,6 +28,10 @@
                         [nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]
                         [org.clojure/tools.namespace "0.2.4"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]]
+
+         :aot [cmr.es-spatial-plugin.SpatialScript
+               cmr.es-spatial-plugin.SpatialScriptFactory
+               cmr.es-spatial-plugin.SpatialSearchPlugin]
 
          ;; The ^replace is done to disable the tiered compilation for accurate benchmarks
          ;; See https://github.com/technomancy/leiningen/wiki/Faster
@@ -43,7 +42,8 @@
                               "-Dcom.sun.management.jmxremote.ssl=false"
                               "-Dcom.sun.management.jmxremote.authenticate=false"
                               "-Dcom.sun.management.jmxremote.port=1098"]
-         :source-paths ["src" "dev"]}}
+         :source-paths ["src" "dev"]}
+   :uberjar {:aot :all}}
 
   :aliases {;; Packages the spatial search plugin
             "package" ["do"
@@ -54,7 +54,8 @@
             ;; Packages and installs the plugin into the local elastic search vm
             "install-local" ["do"
                              "package,"
-                             "shell" "../cmr-vms/elastic_local/install_plugin.sh" ~plugin-zip-name "spatialsearch-plugin"]
+                             "shell" "../cmr-vms/elastic_local/install_plugin.sh" ~plugin-zip-name "spatialsearch-plugin"
+                             "clean"]
 
             "install-aws" ["do"
                            "package,"

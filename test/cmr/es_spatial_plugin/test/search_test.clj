@@ -23,7 +23,8 @@
     (try
       (f)
       (finally
-        (lifecycle/stop server nil)))))
+        (lifecycle/stop server nil)
+        (timbre/set-config! [:appenders :standard-out :enabled?] true)))))
 
 (use-fixtures :once run-server-fixture)
 
