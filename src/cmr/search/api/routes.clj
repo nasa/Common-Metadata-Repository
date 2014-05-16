@@ -9,7 +9,8 @@
             [cmr.common.api.errors :as errors]
             [cmr.search.services.query-service :as query-svc]
             [cmr.system-trace.http :as http-trace]
-            [cmr.search.api.search-results :as sr]))
+            [cmr.search.api.search-results :as sr]
+            [cmr.search.services.legacy-parameters :as lp]))
 
 (defn- get-search-results-format
   "Returns the requested search results format parsed from headers"
@@ -20,11 +21,12 @@
 
 (defn- find-references
   "Invokes query service to find references and returns the response"
-  [context concept-type params headers]
+  [context concept-type params headers query-string]
   (let [result-format (get-search-results-format headers)
         pretty? (= (get params :pretty) "true")
         _ (info (format "Search for %ss in format [%s] with params [%s]" (name concept-type) result-format params))
         params (dissoc params :pretty)
+        params (lp/process-legacy-psa params query-string)
         results (query-svc/find-concepts-by-parameters context concept-type params)]
     {:status 200
      :headers {"Content-Type" (sr/format->mime-type result-format)}
@@ -43,11 +45,11 @@
 (defn- build-routes [system]
   (routes
     (context "/collections" []
-      (GET "/" {params :params headers :headers context :request-context}
-        (find-references context :collection params headers)))
+      (GET "/" {params :params headers :headers context :request-context query-string :query-string}
+        (find-references context :collection params headers query-string)))
     (context "/granules" []
-      (GET "/" {params :params headers :headers context :request-context}
-        (find-references context :granule params headers)))
+      (GET "/" {params :params headers :headers context :request-context query-string :query-string}
+        (find-references context :granule params headers query-string)))
     (context "/concepts/:cmr-concept-id" [cmr-concept-id]
       (GET "/" {headers :headers context :request-context}
         (find-concept-by-cmr-concept-id context cmr-concept-id headers)))

@@ -1,6 +1,9 @@
 (ns cmr.search.services.legacy-parameters
   "Contains functions for tranforming legacy parameters to the CMR format."
-  (:require [clojure.set :as set]))
+  (:require [clojure.set :as set]
+            [clojure.string :as s]
+            [ring.util.codec :as rc]
+            [cmr.common.services.messages :as msg]))
 
 (def param-aliases
   "A map of non UMM parameter names to their UMM fields."
@@ -18,6 +21,59 @@
       (set/rename-keys param-aliases)
       (update-in [:options]
                  #(when % (set/rename-keys % param-aliases)))))
+
+
+(defn- attr-map->cmr-param
+  "Create an attribute string from a map of attribute key/values."
+  [{:keys [name type value minValue maxValue]}]
+  (let [base (str type "," name ",")]
+    (if value
+      (str base value)
+      (str base minValue "," maxValue))))
+
+(defn- legacy-psa-param->tuple
+  "Convert a legacy attribute url parameter to a tuple"
+  [param]
+  (let [[_ key value] (re-find #"attribute\[\]\[(.*?)\]=(.*)" param)]
+    (when key [(keyword key) value])))
+
+(defn- start-of-new-set?
+  [item]
+  (= :name (first item)))
+
+(defn- checked-merge
+  "Merge a tuple into a map only if the key does not already exist. Throws an
+  exception if it does."
+  [map tuple]
+  (if (get map (first tuple))
+    (msg/data-error :invalid-data #(str "duplicate parameter: " %) tuple)
+    (merge map tuple)))
+
+
+(defn- group-legacy-psa-tuples
+  "Take a list of tuples created from a legacy query string and group them together as attributes"
+  [big-list]
+  (reduce (fn [results item]
+            (if (start-of-new-set? item)
+              ;; Put current set on results and start a new current set
+              (conj results (merge {} item))
+              ;; Update the current set (last set on results)
+              (update-in results [(dec (count results))] checked-merge item)))
+          []
+          big-list))
+
+(defn process-legacy-psa
+  "Process legacy product specific attributes by parsing the query string and updating params
+  with attributes matching the new cmr csv style"
+  [params query-string]
+  (let [query-string (rc/url-decode query-string)
+        param-strings (s/split query-string #"&")
+        param-tuples (keep legacy-psa-param->tuple param-strings)
+        param-maps (group-legacy-psa-tuples param-tuples)
+        psa (map attr-map->cmr-param param-maps)]
+    (if-not (empty? psa)
+      (assoc params :attribute psa)
+      params)))
 
 (defn- process-legacy-range-maps
   "Changes legacy map range conditions in the param[minValue]/param[maxValue] format
@@ -44,7 +100,6 @@
                  memo))
              params
              params))
-
 
 (defn- process-equator-crossing-date
   "Legacy format for granule equator crossing date is to specify two separate parameters:
