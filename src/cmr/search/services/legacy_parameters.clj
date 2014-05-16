@@ -4,7 +4,7 @@
             [clojure.string :as s]
             [ring.util.codec :as rc]
             [cmr.common.services.messages :as msg]
-            [cmr.search.services.messages.common-messages :as c-msg]))
+            [cmr.search.services.messages.attribute-messages :as a-msg]))
 
 (def param-aliases
   "A map of non UMM parameter names to their UMM fields."
@@ -47,7 +47,7 @@
   exception if it does."
   [map tuple]
   (if (get map (first tuple))
-    (msg/data-error :invalid-data c-msg/duplicate-parameter tuple)
+    (msg/data-error :invalid-data a-msg/duplicate-parameter-msg tuple)
     (merge map tuple)))
 
 

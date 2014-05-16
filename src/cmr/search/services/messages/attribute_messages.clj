@@ -29,3 +29,8 @@
 (defn attributes-must-be-sequence-msg
   []
   "'attribute' is not a valid parameter. You must use 'attribute[]'.")
+
+(defn duplicate-parameter-msg
+  [parameter]
+  (let [[param value] parameter]
+    (format "Duplicate parameter [%s => %s] is not allowed." (name param) value)))
