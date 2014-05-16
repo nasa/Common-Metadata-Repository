@@ -43,9 +43,9 @@
                                          {:producer-granule-id "Granule?"
                                           "options[producer-granule-id][pattern]" "true"})]
         (is (d/refs-match? [gran1 gran2] references))))
-    (testing "search by producer granule id case not match."
+    (testing "search by producer granule id default is ignore case true."
       (let [references (search/find-refs :granule {:producer-granule-id "granule1"})]
-        (is (d/refs-match? [] references))))
+        (is (d/refs-match? [gran1] references))))
     (testing "search by producer granule id ignore case false."
       (let [references (search/find-refs :granule
                                          {:producer-granule-id "granule1"
