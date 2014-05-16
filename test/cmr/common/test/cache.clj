@@ -12,6 +12,7 @@
 (deftest cache-test
   (testing "cache hit, miss and reset"
     (let [cache-atom (c/create-cache)]
+      (reset! counter 0)
       (is (= 1 (c/cache-lookup cache-atom "key" increment-counter)))
       ;; look up again will not call the increment-counter function
       (is (= 1 (c/cache-lookup cache-atom "key" increment-counter)))
