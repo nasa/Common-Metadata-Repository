@@ -27,7 +27,7 @@
 
 (def exclude-params
   "Lists parameters which can be used to exclude items from results."
-  (set #{:echo-granule-id :concept-id}))
+  (set #{:concept-id}))
 
 (defn- concept-type->valid-param-names
   "A set of the valid parameter names for the given concept-type."
@@ -152,8 +152,8 @@
              (fn [[param settings]]
                (if (and (contains? case-sensitive-params param)
                         (= "true" (:ignore-case settings)))
-               [(c-msg/invalid-ignore-case-opt-setting-msg case-sensitive-params)]
-               []))
+                 [(c-msg/invalid-ignore-case-opt-setting-msg case-sensitive-params)]
+                 []))
              options))
     []))
 
@@ -166,8 +166,8 @@
              (fn [[param settings]]
                (if (and (contains? params-that-disallow-pattern-search-option param)
                         (= "true" (:pattern settings)))
-               [(c-msg/invalid-pattern-opt-setting-msg params-that-disallow-pattern-search-option)]
-               []))
+                 [(c-msg/invalid-pattern-opt-setting-msg params-that-disallow-pattern-search-option)]
+                 []))
              options))
     []))
 
@@ -308,7 +308,10 @@
   (if-let [exclude-kv (:exclude params)]
     (let [invalid-exclude-params (set/difference (set (keys exclude-kv)) exclude-params)]
       (if (empty? invalid-exclude-params)
-        []
+        (let [exclude-values (flatten (vals exclude-kv))]
+          (if (some #(.startsWith % "C") exclude-values)
+            [(str "Exclude collection is not supported, " exclude-kv)]
+            []))
         [(c-msg/invalid-exclude-param-msg invalid-exclude-params)]))
     []))
 
