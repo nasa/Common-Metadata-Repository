@@ -85,22 +85,12 @@
                                           :page_size 100})]
         (is (d/refs-match?
               [gran2 gran3 gran5 gran6 gran7 gran9 gran10 gran11 gran16 gran17] references))))
-    (testing "search by end-day - testing singular temporal."
-      (let [extent "2000-02-15T00:00:00Z, 2002-03-15T00:00:00Z, , 90"
-            references (search/find-refs :granule {"temporal[]" extent :page_size 100})
-            references1 (search/find-refs :granule {"temporal" extent :page_size 100})]
-        (is (= references references1))))
     (testing "search by start-day."
       (let [references (search/find-refs :granule
                                          {"temporal[]" "2000-02-15T00:00:00Z, 2002-03-15T00:00:00Z, 32,"
                                           :page_size 100})]
         (is (d/refs-match?
               [gran2 gran3 gran4 gran6 gran7 gran8 gran10 gran11 gran16 gran17 gran19] references))))
-    (testing "search by start-day - testing singular temporal."
-      (let [extent "2000-02-15T00:00:00Z, 2002-03-15T00:00:00Z, 32,"
-            references (search/find-refs :granule {"temporal[]" extent :page_size 100})
-            references1 (search/find-refs :granule {"temporal" extent :page_size 100})]
-        (is (= references references1))))
     (testing "search by start-day without end_date."
       (let [references (search/find-refs :granule
                                          {"temporal[]" ["2000-02-15T00:00:00Z, , 32"]
@@ -108,34 +98,18 @@
         (is (d/refs-match?
               [gran2 gran3 gran4 gran6 gran7 gran8 gran10 gran11 gran12 gran13 gran15 gran16 gran17 gran18 gran19]
               references))))
-    (testing "search by start-day without end_date - testing singular temporal."
-      (let [extent "2000-02-15T00:00:00Z, , 32"
-            references (search/find-refs :granule {"temporal[]" [extent] :page_size 100})
-            references1 (search/find-refs :granule {"temporal" extent :page_size 100})]
-        (is (= references references1))))
     (testing "search by start-day/end-day with date crossing year boundary."
       (let [references (search/find-refs :granule
                                          {"temporal[]" ["2000-04-03T00:00:00Z, 2002-01-02T00:00:00Z, 93, 2"]
                                           :page_size 100})]
         (is (d/refs-match?
               [gran3 gran4 gran5 gran6 gran7 gran8 gran9 gran10 gran16 gran17 gran19] references))))
-    (testing "search by start-day/end-day with date crossing year boundary - testing singular temporal."
-      (let [extent "2000-04-03T00:00:00Z, 2002-01-02T00:00:00Z, 93, 2"
-            references (search/find-refs :granule {"temporal[]" [extent] :page_size 100})
-            references1 (search/find-refs :granule {"temporal" extent :page_size 100})]
-        (is (= references references1))))
     (testing "search by multiple temporal."
       (let [references (search/find-refs :granule
                                          {"temporal[]" ["1998-01-15T00:00:00Z, 1999-03-15T00:00:00Z, 60, 90"
                                                         "2000-02-15T00:00:00Z, 2001-03-15T00:00:00Z, 40, 50"]
                                           :page_size 100})]
-        (is (d/refs-match? [gran2 gran6 gran14 gran16 gran17] references))))
-    (testing "search by multiple temporal - testing singular temporal."
-      (let [extent1 "1998-01-15T00:00:00Z, 1999-03-15T00:00:00Z, 60, 90"
-            extent2 "2000-02-15T00:00:00Z, 2001-03-15T00:00:00Z, 40, 50"
-            references (search/find-refs :granule {"temporal[]" [extent1 extent2] :page_size 100})
-            references1 (search/find-refs :granule {"temporal" [extent1 extent2] :page_size 100})]
-        (is (= references references1))))))
+        (is (d/refs-match? [gran2 gran6 gran14 gran16 gran17] references))))))
 
 
 ;; Just some symbolic invalid temporal testing, more complete test coverage is in unit tests
