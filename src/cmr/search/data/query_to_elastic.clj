@@ -106,6 +106,11 @@
       :else
       (errors/internal-error! (m/nil-min-max-msg))))
 
+(defn- case-sensitive-field?
+  "Return true if the given field is a case-sensitive field"
+  [field]
+  (some #{:concept-id :collection-concept-id "string-value"} [field]))
+
 (extend-protocol ConditionToElastic
   cmr.search.models.query.ConditionGroup
   (condition->elastic
@@ -123,8 +128,8 @@
   (condition->elastic
     [{:keys [field value case-sensitive? pattern?]} concept-type]
     (let [field (query-field->elastic-field field concept-type value)
-          field (if case-sensitive? field (str (name field) ".lowercase"))
-          value (if case-sensitive? value (s/lower-case value))]
+          field (if (or case-sensitive? (case-sensitive-field? field)) field (str (name field) ".lowercase"))
+          value (if (or case-sensitive? (case-sensitive-field? field)) value (s/lower-case value))]
       (if pattern?
         {:query {:wildcard {field value}}}
         {:term {field value}})))

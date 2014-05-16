@@ -71,7 +71,7 @@
     (qm/map->StringCondition
       {:field param
        :value value
-       :case-sensitive? (not= "true" (get-in options [param :ignore-case]))
+       :case-sensitive? (= "false" (get-in options [param :ignore-case]))
        :pattern? (= "true" (get-in options [param :pattern]))})))
 
 ;; Construct an inheritance query condition for granules.
@@ -123,12 +123,12 @@
       [(qm/map->StringCondition
          {:field :granule-ur
           :value value
-          :case-sensitive? (not= "true" (get-in options [param :ignore-case]))
+          :case-sensitive? (= "false" (get-in options [param :ignore-case]))
           :pattern? (= "true" (get-in options [param :pattern]))})
        (qm/map->StringCondition
          {:field :producer-granule-id
           :value value
-          :case-sensitive? (not= "true" (get-in options [param :ignore-case]))
+          :case-sensitive? (= "false" (get-in options [param :ignore-case]))
           :pattern? (= "true" (get-in options [param :pattern]))})])))
 
 
