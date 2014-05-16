@@ -57,7 +57,8 @@
     (try
       (f)
       (finally
-        (lifecycle/stop server nil)))))
+        (lifecycle/stop server nil)
+        (timbre/set-config! [:appenders :standard-out :enabled?] true)))))
 
 ;; Run once for the whole test suite
 (use-fixtures :once server-setup)
