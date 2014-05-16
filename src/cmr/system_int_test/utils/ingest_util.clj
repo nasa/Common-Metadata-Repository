@@ -19,6 +19,13 @@
                {:body (format "{\"provider-id\": \"%s\"}" provider-id)
                 :content-type :json}))
 
+(defn get-providers
+  []
+  (-> (client/get (url/create-provider-url))
+      :body
+      (json/decode true)
+      :providers))
+
 (defn delete-provider
   "Delete the provider with the matching provider-id from the CMR metadata repo."
   [provider-id]
@@ -76,6 +83,7 @@
   []
   (client/post (url/mdb-reset-url))
   (client/post (url/indexer-reset-url))
+  (client/post (url/search-reset-url))
   (index/flush-elastic-index))
 
 
