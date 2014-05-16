@@ -28,9 +28,9 @@
       (is (= (q/string-condition :entry-title "bar" false false)
              (p/parameter->condition :collection :entry-title "bar" {:entry-title {:ignore-case "true"}}))))
     (testing "pattern"
-      (is (= (q/string-condition :entry-title "bar*" true false)
+      (is (= (q/string-condition :entry-title "bar*" false false)
              (p/parameter->condition :collection :entry-title "bar*" {})))
-      (is (= (q/string-condition :entry-title "bar*" true true)
+      (is (= (q/string-condition :entry-title "bar*" false true)
              (p/parameter->condition :collection :entry-title "bar*" {:entry-title {:pattern "true"}}))))))
 
 (deftest parameters->query-test
