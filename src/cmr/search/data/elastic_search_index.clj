@@ -4,29 +4,69 @@
             [clojurewerkz.elastisch.rest.document :as esd]
             [clojurewerkz.elastisch.query :as q]
             [clojurewerkz.elastisch.rest.response :as esrsp]
+            [clojure.string :as s]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.lifecycle :as lifecycle]
+            [cmr.common.cache :as cache]
+            [cmr.transmit.index-set :as index-set]
             [cmr.search.models.results :as results]
             [cmr.search.data.query-to-elastic :as q2e]
             [cmr.search.services.parameters :as p]
-
+            [cmr.search.services.collection-concept-id-extractor :as ex]
             [cmr.search.data.elastic-results-to-query-results :as rc]
             [cmr.system-trace.core :refer [deftracefn]]
             [cmr.common.services.errors :as e]))
 
-;; TODO - somehow search app to get this info from index-set app
-;; TODO - define proper index-set/indexer/search apps workflow w.r.t elastic indices
-(def concept-type->index-info
-  {:collection {:index-name  "1_collections"
-                :type-name "collection"
-                :fields ["entry-title"
-                         "provider-id"
-                         "short-name"
-                         "version-id"]}
-   :granule {:index-name "_all"
-             :type-name "granule"
-             :fields ["granule-ur"
-                      "provider-id"]}})
+;; id of the index-set that CMR is using, hard code for now
+(def index-set-id 1)
+
+(defn- fetch-concept-type-index-names
+  "Fetch index names for each concept type from index-set app"
+  []
+  (let [fetched-index-set (index-set/get-index-set index-set-id)]
+    (get-in fetched-index-set [:index-set :concepts])))
+
+(defn- get-granule-index-names
+  "Fetch index names associated with concepts."
+  [context]
+  (let [cache-atom (-> context :system :cache)
+        index-names (cache/cache-lookup cache-atom :concept-indices #(fetch-concept-type-index-names))]
+    (get index-names :granule)))
+
+(defn- collection-concept-id->index-name
+  "Return the granule index name for the input collection concept id"
+  [indexes coll-concept-id]
+  (get indexes (keyword coll-concept-id) (get indexes :small_collections)))
+
+(defn- collection-concept-ids->index-names
+  "Return the granule index names for the input collection concept ids"
+  [context coll-concept-ids]
+  (let [indexes (get-granule-index-names context)]
+    (distinct (map #(collection-concept-id->index-name indexes %) coll-concept-ids))))
+
+(defn- get-granule-indexes
+  "Returns the granule indexes that should be searched based on the input query"
+  [context query]
+  (let [coll-concept-ids (ex/extract-collection-concept-ids query context)]
+    (if (empty? coll-concept-ids)
+      (format "%d_c*,%d_small_collections" index-set-id index-set-id)
+      (s/join "," (collection-concept-ids->index-names context coll-concept-ids)))))
+
+(defn concept-type->index-info
+  "Returns index info based on input concept type. For granule concept type, it will walks through
+  the query and figures out only the relevant granule index names and return those."
+  [context concept-type query]
+  (if (= :collection concept-type)
+    {:index-name  "1_collections"
+     :type-name "collection"
+     :fields ["entry-title"
+              "provider-id"
+              "short-name"
+              "version-id"]}
+    {:index-name (get-granule-indexes context query)
+     :type-name "granule"
+     :fields ["granule-ur"
+              "provider-id"]}))
 
 (defrecord ElasticSearchIndex
   [
@@ -57,7 +97,7 @@
   (let [concept-type (:concept-type query)
         elastic-query (q2e/query->elastic query)
         sort-params (q2e/query->sort-params query)
-        {:keys [index-name type-name fields]} (concept-type->index-info concept-type)
+        {:keys [index-name type-name fields]} (concept-type->index-info context concept-type query)
         conn (context->conn context)]
     (if (= :unlimited page-size)
       (esd/search conn

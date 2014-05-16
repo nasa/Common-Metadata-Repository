@@ -198,7 +198,20 @@
       (catch clojure.lang.ExceptionInfo e
         (is (= {:type :invalid-data
                 :errors #{"Parameter [foo] was not recognized."
-                         "Parameter [bar] was not recognized."}}
+                          "Parameter [bar] was not recognized."}}
                (update-in (ex-data e) [:errors] set)))))))
 
-
+(deftest exclude-validation-test
+  (testing "concept-id is a valid key to exclude"
+    (is (= [] (pv/exclude-validation :granule {:exclude {:concept-id "G1-PROV1"}})))
+    (is (= [] (pv/exclude-validation :granule {:exclude {:concept-id "G1-CPROV1"}}))))
+  (testing "after parameter replacement, anything other than concept-id is not a valid key to exclude"
+    (is (= ["Parameter(s) [echo-collection-id] can not be used with exclude."]
+           (pv/exclude-validation :granule {:exclude {:echo-collection-id "G1-PROV1"}})))
+    (is (= ["Parameter(s) [echo-granule-id] can not be used with exclude."]
+           (pv/exclude-validation :granule {:exclude {:echo-granule-id "G1-PROV1"}})))
+    (is (= ["Parameter(s) [dummy] can not be used with exclude."]
+           (pv/exclude-validation :granule {:exclude {:dummy "G1-PROV1"}}))))
+  (testing "collection-concept-id is an invalid value to exclude"
+    (is (= ["Exclude collection is not supported, {:concept-id \"C1-PROV1\"}"]
+           (pv/exclude-validation :granule {:exclude {:concept-id "C1-PROV1"}})))))

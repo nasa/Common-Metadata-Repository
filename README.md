@@ -374,6 +374,9 @@ Example of sorting by start_date in descending order: (Most recent data first)
 ### Retrieve concept with a given cmr-concept-id
     curl -i "http://localhost:3003/concepts/G100000-PROV1"
 
+### Reset cache
+curl -i -XPOST -H "Content-Type: application/json" http://localhost:3003/reset
+
 ## Search Flow
 
 ### Stage 1: Convert to query model

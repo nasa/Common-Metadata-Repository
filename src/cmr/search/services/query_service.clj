@@ -49,6 +49,7 @@
             [cmr.system-trace.core :refer [deftracefn]]
             [cmr.common.services.errors :as err]
             [cmr.common.util :as u]
+            [cmr.common.cache :as cache]
             [camel-snake-kebab :as csk]))
 
 (deftracefn validate-query
@@ -120,3 +121,8 @@
   "Executes a search to metadata-db and returns the concept with the given cmr-concept-id."
   [context concept-id]
   (meta-db/get-latest-concept context concept-id))
+
+(deftracefn reset
+  "Clear the cache for search app"
+  [context]
+  (cache/reset-cache (-> context :system :cache)))
