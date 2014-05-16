@@ -4,3 +4,7 @@
 (defn invalid-sort-key
   [sort-key type]
   (format "The sort key [%s] is not a valid field for sorting %ss." sort-key (name type)))
+
+(defn duplicate-parameter
+  [parameter]
+  (format "Duplicate parameter [%s] is not allowed." parameter))
