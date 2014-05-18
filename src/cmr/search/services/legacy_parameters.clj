@@ -1,6 +1,7 @@
 (ns cmr.search.services.legacy-parameters
   "Contains functions for tranforming legacy parameters to the CMR format."
-  (:require [clojure.set :as set]))
+  (:require [clojure.set :as set]
+            [clojure.walk :as w]))
 
 (def param-aliases
   "A map of non UMM parameter names to their UMM fields."
@@ -11,24 +12,33 @@
    :echo-granule-id :concept-id
    :online-only :downloadable})
 
-(defn- replace-exclude-param-aliases
-  "Convert non UMM parameter names to their UMM fields iff exclude params are present"
-  [params]
-  (if (map? (:exclude params))
-    (update-in params [:exclude]
-               #(set/rename-keys % param-aliases))
-    params))
 
+(defn- arrange-param-values [params]
+  "Collapse multiple items of a value entry into a vector.
+  Leave an item as is if value entry is a single item."
+  (let [arrange-fn (partial #(if (vector? %)
+                               (apply vector (flatten %))
+                               %))]
+    (reduce #(assoc %1 %2 (arrange-fn (%1 %2))) params (keys params))))
+
+(defn rename-keys-with [m kmap merge-fn]
+  "Convert and merge non UMM parameter names to their UMM fields."
+  (let [rename-subset (select-keys m (keys kmap))
+        renamed-subsets (map (fn [[k v]]
+                               (set/rename-keys {k v} kmap))
+                             (seq rename-subset))
+        merged-renamed-subset (apply merge-with merge-fn renamed-subsets)
+        m-without-renamed (apply dissoc m (keys kmap))]
+    (arrange-param-values  (merge-with merge-fn m-without-renamed merged-renamed-subset))))
 
 (defn replace-parameter-aliases
-  "Replaces aliases of parameter names"
+  "Walk the request params tree to replace aliases of parameter names."
   [params]
-  (-> params
-      (set/rename-keys param-aliases)
-      (update-in [:options]
-                 #(when % (set/rename-keys % param-aliases)))
-      replace-exclude-param-aliases))
-
+  (let [merge-fn vector]
+    (w/postwalk #(if (map? %)
+                   (rename-keys-with % param-aliases merge-fn)
+                   %)
+                params)))
 
 (defn- process-legacy-range-maps
   "Changes legacy map range conditions in the param[minValue]/param[maxValue] format
@@ -85,3 +95,21 @@
   (reduce #(%2 concept-type %1)
           params
           legacy-multi-params-condition-funcs))
+
+
+(comment
+  ;;;;;;;;;;
+  (let [params {:exclude {:concept-id ["G1000000006-CMR_PROV2"],
+                          :echo-granule-id ["G1000000006-CMR_PROV2"]
+                          :echo-collection-id "C1000000002-CMR_PROV2"},
+                :echo-granule-id ["G1000000002-CMR_PROV1" "G1000000003-CMR_PROV1"
+                                  "G1000000004-CMR_PROV1" "G1000000005-CMR_PROV2" "G1000000006-CMR_PROV2"]}]
+    (replace-parameter-aliases params))
+
+
+  (rename-keys-with {:foo [1 2] :bar [3 4] :k1 8 :k2 "d"}  {:bar :foo :k1 :foo :k2 :foo} vector)
+  ;;;;;;;;;;;;;;;;;
+  )
+
+
+

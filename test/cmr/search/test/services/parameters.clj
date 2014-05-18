@@ -12,8 +12,36 @@
              {:dataset-id "foo"
               :options {:dataset-id {:ignore-case "true"}}}))))
   (testing "with no options"
-    (is (= {:entry-title "foo" :options nil}
-           (lp/replace-parameter-aliases {:dataset-id "foo"})))))
+    (is (= {:entry-title "foo"}
+           (lp/replace-parameter-aliases {:dataset-id "foo"}))))
+  (testing "mock multiples params aliasing to same key"
+    (let [params {:foo [1 2] :bar [3 4] :k1 8 :k2 "d"}
+          param-aliases {:bar :foo :k1 :foo :k2 :foo}
+          merge-fn vector
+          expected {:foo [1 2 "d" 8 3 4]}]
+      (is (= expected
+             (lp/rename-keys-with params param-aliases merge-fn)))))
+  (testing "with multiples params aliasing to same key"
+    (let [params {:dataset-id "foo"
+                  :echo-granule-id ["G1000000002-CMR_PROV1" "G1000000003-CMR_PROV1" "G1000000004-CMR_PROV1"
+                                    "G1000000005-CMR_PROV2" "G1000000006-CMR_PROV2"],
+                  :updated-since ["2014-05-16T15:09:37.829Z"],
+                  :campaign "E*",
+                  :options {:dataset-id {:ignore-case "true"} :campaign {:pattern "true"}}
+                  :exclude {:concept-id ["G1000000006-CMR_PROV2"],
+                            :echo-granule-id ["G1000000006-CMR_PROV2"]
+                            :echo-collection-id "C1000000002-CMR_PROV2"}}
+          expected {:entry-title "foo",
+                    :concept-id ["G1000000002-CMR_PROV1" "G1000000003-CMR_PROV1" "G1000000004-CMR_PROV1"
+                                 "G1000000005-CMR_PROV2" "G1000000006-CMR_PROV2"],
+                    :updated-since ["2014-05-16T15:09:37.829Z"],
+                    :project "E*",
+                    :options {:entry-title {:ignore-case "true"} :project {:pattern "true"}}
+                    :exclude
+                    {:concept-id ["G1000000006-CMR_PROV2" "C1000000002-CMR_PROV2" "G1000000006-CMR_PROV2"]}}]
+      (is (= expected
+             (lp/replace-parameter-aliases params))))))
+
 
 (deftest parameter->condition-test
   (testing "String conditions"
