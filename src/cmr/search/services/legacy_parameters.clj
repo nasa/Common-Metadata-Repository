@@ -38,10 +38,6 @@
   (let [[_ key value] (re-find #"attribute\[\]\[(.*?)\]=(.*)" param)]
     (when key [(keyword key) value])))
 
-(defn- start-of-new-set?
-  [item]
-  (= :name (first item)))
-
 (defn- checked-merge
   "Merge a tuple into a map only if the key does not already exist. Throws an
   exception if it does."
@@ -55,7 +51,7 @@
   "Take a list of tuples created from a legacy query string and group them together as attributes"
   [big-list]
   (reduce (fn [results item]
-            (if (start-of-new-set? item)
+            (if (= :name (first item))
               ;; Put current set on results and start a new current set
               (conj results (merge {} item))
               ;; Update the current set (last set on results)

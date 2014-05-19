@@ -53,6 +53,11 @@
     (context "/concepts/:cmr-concept-id" [cmr-concept-id]
       (GET "/" {headers :headers context :request-context}
         (find-concept-by-cmr-concept-id context cmr-concept-id headers)))
+
+    ;; reset operation available just for development purposes
+    ;; clear the cache for search app
+    (POST "/reset" {:keys [request-context]}
+      (r/created (query-svc/reset request-context)))
     (route/not-found "Not Found")))
 
 (defn make-api [system]
