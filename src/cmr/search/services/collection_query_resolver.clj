@@ -33,7 +33,7 @@
       (if (empty? collection-concept-ids)
         (qm/->MatchNoneCondition)
         (qm/or-conds
-          (map #(qm/string-condition :collection-concept-id %) collection-concept-ids)))))
+          (map #(qm/string-condition :collection-concept-id % true false) collection-concept-ids)))))
 
   ;; catch all resolver
   java.lang.Object
