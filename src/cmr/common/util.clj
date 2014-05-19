@@ -2,7 +2,8 @@
   "Utility functions that might be useful throughout the CMR."
   (:require [cmr.common.log :refer (debug info warn error)]
             [cmr.common.services.errors :as errors]
-            [camel-snake-kebab :as csk])
+            [camel-snake-kebab :as csk]
+            [clojure.set :as set])
   (:import java.text.DecimalFormat))
 
 (defn sequence->fn
@@ -112,3 +113,19 @@
   "Converts a double to string without using exponential notation or loss of accuracy."
   [d]
   (.format (DecimalFormat. "#.#####################") d))
+
+(defn merger
+  "Merge value entries of same keys."
+  [v1 v2]
+  (let [make-seq #(if (sequential? %) % [%])]
+    (concat (make-seq v1) (make-seq v2))))
+
+(defn rename-keys-with [m kmap merge-fn]
+  "Returns the map with the keys in kmap renamed to the vals in kmap. And values of map merged per merge-fn."
+  (let [rename-subset (select-keys m (keys kmap))
+        renamed-subsets  (map (fn [[k v]]
+                                (set/rename-keys {k v} kmap))
+                              rename-subset)
+        m-without-renamed (apply dissoc m (keys kmap))]
+    (reduce #(merge-with merge-fn %1 %2) m-without-renamed renamed-subsets)))
+
