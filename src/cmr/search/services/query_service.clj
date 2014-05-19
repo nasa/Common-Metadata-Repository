@@ -23,6 +23,7 @@
             [cmr.search.services.parameter-converters.orbit-number]
             [cmr.search.services.parameter-converters.equator-crossing-longitude]
             [cmr.search.services.parameter-converters.equator-crossing-date]
+            [cmr.search.services.parameter-converters.spatial]
 
             ;; Validation
             [cmr.search.validators.validation :as v]
@@ -38,6 +39,7 @@
             [cmr.search.data.complex-to-simple-converters.attribute]
             [cmr.search.data.complex-to-simple-converters.orbit]
             [cmr.search.data.complex-to-simple-converters.temporal]
+            [cmr.search.data.complex-to-simple-converters.spatial]
 
             [cmr.search.services.legacy-parameters :as lp]
             [cmr.search.services.parameter-validation :as pv]
@@ -47,6 +49,7 @@
             [cmr.system-trace.core :refer [deftracefn]]
             [cmr.common.services.errors :as err]
             [cmr.common.util :as u]
+            [cmr.common.cache :as cache]
             [camel-snake-kebab :as csk]))
 
 (deftracefn validate-query
@@ -112,6 +115,7 @@
          (pv/validate-parameters concept-type)
          (p/parameters->query concept-type)
          (find-concepts-by-query context))))
+
 
 (deftracefn find-concept-by-id
   "Executes a search to metadata-db and returns the concept with the given cmr-concept-id."

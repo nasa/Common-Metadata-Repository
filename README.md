@@ -232,6 +232,14 @@ Find an additional attribute with name "X\Y\Z" with value 7.
 
 Multiple attributes can be provided. The default is for granules to match all the attribute parameters. This can be changed by specifying `or` option with `option[attribute][or]=true`.
 
+### Find granules by Spatial
+
+#### Polygon
+
+Polygon points are provided in clockwise order. The last point should match the first point to close the polygon. The values are listed comma separated in longitude latitude order, i.e. lon1,lat1,lon2,lat2,...
+
+    curl "http://localhost:3003/granules?polygon=10,10,10,20,30,20,30,10,10,10"
+
 ### Find granules by orbit number
 
   Find granules with an orbit number of 10
@@ -311,6 +319,21 @@ Multiple attributes can be provided. The default is for granules to match all th
 
     curl "http://localhost:3003/granules?concept_id\[\]=C1000000001-CMR_PROV2"
 
+### Exclude granules from elastic results by echo granule id and concept ids. Note: more than one id may be supplied in exclude param
+
+Exclude granule by echo granule id
+
+   curl "http://localhost:3003/granules?echo_granule_id\[\]=G1000000002-CMR_PROV1&echo_granule_id\[\]=G1000000003-CMR_PROV1&echo_granule_id\[\]=G1000000006-CMR_PROV2&exclude\[echo_granule_id\]\[\]=G1000000006-CMR_PROV2"
+
+   curl "http://localhost:3003/granules?exclude\[echo_granule_id\]\[\]=G1000000006-CMR_PROV2&cloud_cover=-70,120"
+
+Exclude granule by concept id
+
+   curl "http://localhost:3003/granules?echo_granule_id\[\]=G1000000002-CMR_PROV1&echo_granule_id\[\]=G1000000003-CMR_PROV1&echo_granule_id\[\]=G1000000006-CMR_PROV2&exclude\[concept_id\]\[\]=G1000000006-CMR_PROV2"
+
+Exclude granule by parent concept id
+
+   curl "http://localhost:3003/granules?echo_granule_id\[\]=G1000000002-CMR_PROV1&echo_granule_id\[\]=G1000000003-CMR_PROV1&echo_granule_id\[\]=G1000000006-CMR_PROV2&exclude\[concept_id\]\[\]=C1000000001-CMR_PROV2"
 
 #### Sorting Granule Results
 
@@ -350,6 +373,9 @@ Example of sorting by start_date in descending order: (Most recent data first)
 
 ### Retrieve concept with a given cmr-concept-id
     curl -i "http://localhost:3003/concepts/G100000-PROV1"
+
+### Reset cache
+curl -i -XPOST -H "Content-Type: application/json" http://localhost:3003/reset
 
 ## Search Flow
 

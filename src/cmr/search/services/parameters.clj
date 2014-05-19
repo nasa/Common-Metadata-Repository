@@ -28,6 +28,7 @@
    :granule {:granule-ur :string
              :collection-concept-id :string
              :producer-granule-id :string
+             :day-night :string
              :readable-granule-name :readable-granule-name
              :provider :collection-query
              :entry-title :collection-query
@@ -45,7 +46,9 @@
              :project :string
              :cloud-cover :num-range
              :concept-id :string
-             :downloadable :boolean}})
+             :exclude :exclude
+             :downloadable :boolean
+             :polygon :polygon}})
 
 (defn- param-name->type
   "Returns the query condition type based on the given concept-type and param-name."
@@ -82,6 +85,15 @@
        (qm/and-conds
          [(qm/->CollectionQueryCondition field-condition)
           (qm/map->MissingCondition {:field (q2e/query-field->elastic-field param concept-type)})])])))
+
+;; or-conds --> "not (CondA and CondB)" == "(not CondA) or (not CondB)"
+(defmethod parameter->condition :exclude
+  [concept-type param value options]
+  (qm/or-conds
+    (map (fn [[exclude-param exclude-val]]
+           (qm/map->NegatedCondition
+             {:condition (parameter->condition concept-type exclude-param exclude-val options)}))
+         value)))
 
 (defmethod parameter->condition :updated-since
   [concept-type param value options]
