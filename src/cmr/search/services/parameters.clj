@@ -50,6 +50,21 @@
              :downloadable :boolean
              :polygon :polygon}})
 
+(defn- case-sensitive-field?
+  "Return true if the given field is a case-sensitive field"
+  [field]
+  (some #{:concept-id :collection-concept-id "string-value"} [field]))
+
+(defn- string-condition-with-options
+  "Returns a string condition with the given field, value and options"
+  [field value options options-field]
+  (let [case-sensitive (= "false" (get-in options [options-field :ignore-case]))
+        case-sensitive (if (case-sensitive-field? field) true case-sensitive)]
+    (qm/string-condition field
+                         value
+                         case-sensitive
+                         (= "true" (get-in options [options-field :pattern])))))
+
 (defn- param-name->type
   "Returns the query condition type based on the given concept-type and param-name."
   [concept-type param-name]
@@ -68,11 +83,7 @@
         (map #(parameter->condition concept-type param % options) value))
       (qm/or-conds
         (map #(parameter->condition concept-type param % options) value)))
-    (qm/map->StringCondition
-      {:field param
-       :value value
-       :case-sensitive? (= "false" (get-in options [param :ignore-case]))
-       :pattern? (= "true" (get-in options [param :pattern]))})))
+    (string-condition-with-options param value options param)))
 
 ;; Construct an inheritance query condition for granules.
 ;; This will find granules which either have explicitly specified a value
@@ -120,16 +131,8 @@
       (qm/or-conds
         (map #(parameter->condition concept-type param % options) value)))
     (qm/or-conds
-      [(qm/map->StringCondition
-         {:field :granule-ur
-          :value value
-          :case-sensitive? (= "false" (get-in options [param :ignore-case]))
-          :pattern? (= "true" (get-in options [param :pattern]))})
-       (qm/map->StringCondition
-         {:field :producer-granule-id
-          :value value
-          :case-sensitive? (= "false" (get-in options [param :ignore-case]))
-          :pattern? (= "true" (get-in options [param :pattern]))})])))
+      [(string-condition-with-options :granule-ur value options :readable-granule-name)
+       (string-condition-with-options :producer-granule-id value options :readable-granule-name)])))
 
 
 (defmethod parameter->condition :num-range
