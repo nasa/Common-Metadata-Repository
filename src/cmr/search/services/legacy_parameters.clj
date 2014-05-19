@@ -1,6 +1,6 @@
 (ns cmr.search.services.legacy-parameters
   "Contains functions for tranforming legacy parameters to the CMR format."
-  (:require [clojure.set :as set]
+  (:require [cmr.common.util :as cu]
             [clojure.walk :as w]))
 
 (def param-aliases
@@ -13,32 +13,13 @@
    :online-only :downloadable})
 
 
-(defn- arrange-param-values [params]
-  "Collapse multiple items of a value entry into a vector.
-  Leave an item as is if value entry is a single item."
-  (let [arrange-fn (partial #(if (vector? %)
-                               (apply vector (flatten %))
-                               %))]
-    (reduce #(assoc %1 %2 (arrange-fn (%1 %2))) params (keys params))))
-
-(defn rename-keys-with [m kmap merge-fn]
-  "Convert and merge non UMM parameter names to their UMM fields."
-  (let [rename-subset (select-keys m (keys kmap))
-        renamed-subsets (map (fn [[k v]]
-                               (set/rename-keys {k v} kmap))
-                             (seq rename-subset))
-        merged-renamed-subset (apply merge-with merge-fn renamed-subsets)
-        m-without-renamed (apply dissoc m (keys kmap))]
-    (arrange-param-values  (merge-with merge-fn m-without-renamed merged-renamed-subset))))
-
 (defn replace-parameter-aliases
   "Walk the request params tree to replace aliases of parameter names."
   [params]
-  (let [merge-fn vector]
-    (w/postwalk #(if (map? %)
-                   (rename-keys-with % param-aliases merge-fn)
-                   %)
-                params)))
+  (w/postwalk #(if (map? %)
+                 (cu/rename-keys-with % param-aliases cu/merger)
+                 %)
+              params))
 
 (defn- process-legacy-range-maps
   "Changes legacy map range conditions in the param[minValue]/param[maxValue] format
@@ -99,15 +80,21 @@
 
 (comment
   ;;;;;;;;;;
-  (let [params {:exclude {:concept-id ["G1000000006-CMR_PROV2"],
+  (let [params {:exclude {:concept-id ["G10000000099-CMR_PROV2"],
                           :echo-granule-id ["G1000000006-CMR_PROV2"]
                           :echo-collection-id "C1000000002-CMR_PROV2"},
                 :echo-granule-id ["G1000000002-CMR_PROV1" "G1000000003-CMR_PROV1"
                                   "G1000000004-CMR_PROV1" "G1000000005-CMR_PROV2" "G1000000006-CMR_PROV2"]}]
-    (replace-parameter-aliases params))
+    (replace-parameter-aliases params)
+    )
 
 
-  (rename-keys-with {:foo [1 2] :bar [3 4] :k1 8 :k2 "d"}  {:bar :foo :k1 :foo :k2 :foo} vector)
+      (rename-keys-with {:foo [1 2]
+                       :bar [3 4]
+                       :k1 [8]
+                       :k2 "d"}  {:bar :foo
+                                  :k1 :foo
+                                  :k2 :foo} merger)
   ;;;;;;;;;;;;;;;;;
   )
 

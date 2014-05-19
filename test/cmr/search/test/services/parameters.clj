@@ -14,13 +14,6 @@
   (testing "with no options"
     (is (= {:entry-title "foo"}
            (lp/replace-parameter-aliases {:dataset-id "foo"}))))
-  (testing "mock multiples params aliasing to same key"
-    (let [params {:foo [1 2] :bar [3 4] :k1 8 :k2 "d"}
-          param-aliases {:bar :foo :k1 :foo :k2 :foo}
-          merge-fn vector
-          expected {:foo [1 2 "d" 8 3 4]}]
-      (is (= expected
-             (lp/rename-keys-with params param-aliases merge-fn)))))
   (testing "with multiples params aliasing to same key"
     (let [params {:dataset-id "foo"
                   :echo-granule-id ["G1000000002-CMR_PROV1" "G1000000003-CMR_PROV1" "G1000000004-CMR_PROV1"
