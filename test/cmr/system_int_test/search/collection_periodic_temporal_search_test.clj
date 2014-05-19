@@ -53,6 +53,11 @@
                                          {"temporal[]" "2000-02-15T00:00:00Z, 2002-03-15T00:00:00Z, 32, 90"
                                           :page_size 100})]
         (is (d/refs-match? [coll2 coll3 coll6 coll7 coll10 coll11 coll16 coll17] references))))
+    (testing "search by both start-day and end-day - testing singular temporal."
+      (let [extent "2000-02-15T00:00:00Z, 2002-03-15T00:00:00Z, 32, 90"
+            references (search/find-refs :collection {"temporal[]" extent :page_size 100})
+            references1 (search/find-refs :collection {"temporal" extent :page_size 100})]
+        (is (= references references1))))
     (testing "search by end-day."
       (let [references (search/find-refs :collection
                                          {"temporal[]" "2000-02-15T00:00:00Z, 2002-03-15T00:00:00Z, , 90"

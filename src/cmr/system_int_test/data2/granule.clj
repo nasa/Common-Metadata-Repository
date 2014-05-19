@@ -50,10 +50,15 @@
 (defn data-granule
   "Returns a data-granule with the given attributes"
   [attribs]
-  (let [{:keys [producer-gran-id size]} attribs]
-    (when (or size producer-gran-id)
+  (let [{:keys [producer-gran-id day-night size]} attribs]
+    (when (or size producer-gran-id day-night)
       (g/map->DataGranule {:producer-gran-id producer-gran-id
+                           :day-night day-night
                            :size size}))))
+
+(defn spatial
+  [& geometries]
+  (g/->SpatialCoverage geometries))
 
 (defn related-url
   "Creates related url for online_only test"
