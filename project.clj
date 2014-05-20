@@ -4,7 +4,7 @@
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [com.taoensso/timbre "3.2.0"]
                  [ring/ring-jetty-adapter "1.2.2"]
-                 [org.clojure/test.check "0.5.7"]
+                 [org.clojure/test.check "0.5.8"]
                  [org.clojure/data.xml "0.0.7"]
                  [camel-snake-kebab "0.1.5"]
                  [org.clojure/core.cache "0.6.3"]

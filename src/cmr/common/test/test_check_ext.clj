@@ -3,48 +3,64 @@
             [clojure.string :as s]
             [clj-time.coerce :as c]
             [clojure.test.check.clojure-test]
-            [clojure.test])
+            [clojure.test.check]
+            [clojure.test]
+            [clojure.pprint])
   (:import java.util.Random))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; The following two functions were copy and pasted from the clojure test.check library to fix a small
 ;; issue relating to the printing out of failed specs.
 ;; See http://dev.clojure.org/jira/browse/TCHECK-18
-;; This defspec can be used until the test.check issue is fixed and released.
+;; I have also changed the argument just after name, options, to be a map of options that can be passed in.
+
+(def ^:dynamic  *default-test-count* 100)
 
 (defn- assert-check
-  [{:keys [result] :as m}]
+  [{:keys [result shrunk fail] :as m} {:keys [printer-fn]}]
   (println (pr-str m))
+
+  (when printer-fn
+    (when fail
+      (printer-fn :first-fail (first fail)))
+    (when (:smallest shrunk)
+      (printer-fn :shrunken (first (:smallest shrunk)))))
+
   (if (instance? Throwable result)
     (throw result)
     (clojure.test/is result)))
 
 (defmacro defspec
   "Defines a new clojure.test test var that uses `quick-check` to verify
-  [property] with the given [args] (should be a sequence of generators),
-  [default-times] times by default.  You can call the function defined as [name]
+  [property] with the given [args] (should be a sequence of generators).
+  You can call the function defined as [name]
   with no arguments to trigger this test directly (i.e.  without starting a
   wider clojure.test run), or with a single argument that will override
-  [default-times]."
-  ([name property]
-   `(defspec ~name ~clojure.test.check.clojure-test/*default-test-count* ~property))
+  times set in options.
 
-  ([name default-times property]
-   `(do
-      ;; consider my shame for introducing a cyclical dependency like this...
-      ;; Don't think we'll know what the solution is until clojure.test.check
-      ;; integration with another test framework is attempted.
-      (require 'clojure.test.check)
-      (defn ~(vary-meta name assoc
-                        ::defspec true
-                        :test `#(#'cmr.common.test.test-check-ext/assert-check (assoc (~name) :test-var (str '~name))))
-        ([] (~name ~default-times))
-        ([times# & {:keys [seed# max-size#] :as quick-check-opts#}]
+  Valid options:
+  * times: The number of times to run the test.
+  * printer-fn: A function that will be called with the first failure and the shrunken failure to
+  print out extra information. It should take "
+  ([name property]
+   `(defspec ~name {:times ~*default-test-count*} ~property))
+
+  ([name options property]
+   (let [options (if (number? options)
+                   {:times options}
+                   options)
+         {:keys [times]} options]
+     `(do
+        (defn ~(vary-meta name assoc
+                          ::defspec true
+                          :test `#(#'cmr.common.test.test-check-ext/assert-check (assoc (~name) :test-var (str '~name)) ~options))
+          ([] (~name ~times))
+          ([times# & {:keys [seed# max-size#] :as quick-check-opts#}]
            (apply
              clojure.test.check/quick-check
              times#
              (vary-meta ~property assoc :name (str '~property))
-             (flatten (seq quick-check-opts#))))))))
+             (flatten (seq quick-check-opts#)))))))))
 
 
 ;; End of copy and pasted section
@@ -90,35 +106,19 @@
                   (if (< i (count constants))
                     (gen/return (nth constants i))
                     then-gen))))
-
-(defn- double-halfs
-  [n]
-  (take-while #(> (Math/abs (double %)) 0.0001) (iterate #(/ % 2.0) n)))
-
-(defn- shrink-double
-  [dbl]
-  (map (partial - dbl) (double-halfs dbl)))
-
-(defn- double-rose-tree
-  [value]
-  [value (map double-rose-tree (shrink-double value))])
-
-(defn- rand-double-range
-  [^Random rnd lower upper]
-  (let [diff (Math/abs (double (- upper lower)))]
-    (if (zero? diff)
-      lower
-      (+ (* diff (.nextDouble rnd)) lower))))
-
 (defn choose-double
-  "Creates a generator that returns double values between lower and upper inclusive."
-  [lower upper]
-  (gen/make-gen
-    (fn [^Random rnd _size]
-      (let [value (rand-double-range rnd lower upper)]
-        (gen/rose-filter
-          #(and (>= % lower) (<= % upper))
-          [value (map double-rose-tree (shrink-double value))])))))
+  "Creates a generator that returns values between lower and upper inclusive. Min and max values must
+  integers and the must be separated by more than 2."
+  [minv maxv]
+  {:pre [(< minv maxv)
+         (> (Math/abs (double (- maxv minv))) 2)
+         (= (int maxv) maxv)
+         (= (int minv) minv)]}
+  (gen/fmap (fn [[i denominator]]
+              ;; Adds an integer to a fractional component. The fractional component should shrink to 0
+              (+ i (/ 1.0 denominator)))
+            (gen/tuple (gen/choose (inc minv) (dec maxv))
+                       (gen/such-that (complement zero?) gen/int))))
 
 (defn- not-whitespace
   "Takes a string generator and returns a new string generator that will not contain only whitespace"
