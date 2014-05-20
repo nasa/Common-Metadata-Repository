@@ -39,10 +39,10 @@
     (gen/hash-map :producer-gran-id (ext-gen/optional (ext-gen/string-ascii 1 128))
                   :day-night (gen/elements ["DAY" "NIGHT" "BOTH" "UNSPECIFIED"])
                   :production-date-time ext-gen/date-time
-                  :size (ext-gen/choose-double 0.0 1024.0))))
+                  :size (ext-gen/choose-double 0 1024))))
 
 (def cloud-cover-values
-  (ext-gen/optional  (gen/frequency [[7 (ext-gen/choose-double 0.0 100.0)] [3 (ext-gen/choose-double 0.0 1.0)]])))
+  (gen/fmap double gen/ratio))
 
 (def sensor-ref-short-names
   (ext-gen/string-ascii 1 80))
@@ -80,7 +80,7 @@
       :orbit-calculated-spatial-domains (ext-gen/nil-if-empty (gen/vector ocsd/orbit-calculated-spatial-domains 0 5))
       :platform-refs (ext-gen/nil-if-empty (gen/vector platform-refs 0 4))
       :project-refs (ext-gen/nil-if-empty (gen/vector (ext-gen/string-ascii 1 80) 0 3))
-      :cloud-cover cloud-cover-values
+      :cloud-cover (ext-gen/optional cloud-cover-values)
       :related-urls (ext-gen/nil-if-empty (gen/vector related-url 0 5))
       :spatial-coverage (ext-gen/optional spatial-coverages)
       :product-specific-attributes (ext-gen/nil-if-empty (gen/vector product-specific-attribute-refs 0 5)))))

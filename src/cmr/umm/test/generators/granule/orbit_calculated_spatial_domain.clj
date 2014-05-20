@@ -6,7 +6,7 @@
             [cmr.umm.granule :as g]))
 
 (def longitude
-  (ext-gen/choose-double -180.0 180.0))
+  (ext-gen/choose-double -180 180))
 
 (def orbital-model-name
   (ext-gen/string-ascii 1 80))
