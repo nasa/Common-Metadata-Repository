@@ -19,7 +19,7 @@
         gran4 (d/ingest "CMR_PROV2" (dg/granule coll2 {:producer-gran-id "SpecialOne"}))
         gran5 (d/ingest "CMR_PROV2" (dg/granule coll2 {:producer-gran-id "Granule15"}))]
 
-    (index/flush-elastic-index)
+    (index/refresh-elastic-index)
 
     (testing "search by non-existent producer granule id."
       (let [references (search/find-refs :granule {:producer-granule-id "NON_EXISTENT"})]

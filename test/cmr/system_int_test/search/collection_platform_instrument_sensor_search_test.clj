@@ -25,7 +25,7 @@
         coll7 (d/ingest "CMR_PROV2" (dc/collection {:platforms [p6]}))
         coll8 (d/ingest "CMR_PROV2" (dc/collection {}))]
 
-    (index/flush-elastic-index)
+    (index/refresh-elastic-index)
 
     (testing "search by platform, single value"
       (are [platform-sn items] (d/refs-match? items (search/find-refs :collection {:platform platform-sn}))
@@ -84,7 +84,7 @@
         coll8 (d/ingest "CMR_PROV2" (dc/collection {:platforms [p7]}))
         coll9 (d/ingest "CMR_PROV2" (dc/collection {}))]
 
-    (index/flush-elastic-index)
+    (index/refresh-elastic-index)
 
     (testing "search by instrument, single value"
       (are [instrument-sn items] (d/refs-match? items (search/find-refs :collection {:instrument instrument-sn}))
@@ -152,7 +152,7 @@
         coll9 (d/ingest "CMR_PROV2" (dc/collection {:platforms [p8]}))
         coll10 (d/ingest "CMR_PROV2" (dc/collection {}))]
 
-    (index/flush-elastic-index)
+    (index/refresh-elastic-index)
 
     (testing "search by sensor, single value"
       (are [sensor-sn items] (d/refs-match? items (search/find-refs :collection {:sensor sensor-sn}))

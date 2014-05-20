@@ -22,7 +22,7 @@
         gran5 (d/ingest "CMR_PROV1" (dg/granule coll {:related-urls [ru1 ru2]}))
         gran6 (d/ingest "CMR_PROV1" (dg/granule coll {}))]
 
-    (index/flush-elastic-index)
+    (index/refresh-elastic-index)
 
     (testing "search by downloadable true."
       (let [references (search/find-refs :granule {:downloadable true})]
@@ -46,7 +46,7 @@
         gran5 (d/ingest "CMR_PROV1" (dg/granule coll {:related-urls [ru1 ru2]}))
         gran6 (d/ingest "CMR_PROV1" (dg/granule coll {}))]
 
-    (index/flush-elastic-index)
+    (index/refresh-elastic-index)
 
     (testing "search by online only true."
       (let [references (search/find-refs :granule {:online-only true})]

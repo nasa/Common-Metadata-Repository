@@ -30,7 +30,7 @@
         coll6 (d/ingest "CMR_PROV2" (dc/collection {}))
         _ (Thread/sleep 1000)
         chkpt3-tz (now-time-str)]
-    (index/flush-elastic-index)
+    (index/refresh-elastic-index)
     (testing "search for collections ingested into system after chkpt1 - single value str"
       (let [references (search/find-refs :collection {"updated_since" chkpt1-tz})]
         (is (d/refs-match? [coll1 coll2 coll3 coll4 coll5 coll6] references))))
@@ -66,7 +66,7 @@
         chkpt2-tz (now-time-str)
         _ (Thread/sleep 500)
         gran4 (d/ingest "CMR_PROV1" (dg/granule coll1 {}))]
-    (index/flush-elastic-index)
+    (index/refresh-elastic-index)
 
     (testing "search for granules ingested into system after chkpt1 - single value str"
       (let [references (search/find-refs :granule {"updated_since" chkpt1-tz})]

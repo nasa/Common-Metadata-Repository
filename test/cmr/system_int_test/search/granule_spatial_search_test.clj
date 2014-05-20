@@ -82,7 +82,7 @@
         gran6 (make-gran polygon-north-pole)
         gran7 (make-gran polygon-south-pole)
         gran8 (make-gran polygon-antimeridian)]
-    (index/flush-elastic-index)
+    (index/refresh-elastic-index)
     (is (d/refs-match?
           [gran1]
           (search/find-refs :granule {:polygon (search-poly 10 10, 30 10, 30 20, 10 20)})))))

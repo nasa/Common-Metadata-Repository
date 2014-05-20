@@ -41,7 +41,7 @@
         gran5 (d/ingest "SEP_PROV1" (dg/granule coll3 {:granule-ur "Granule5"}))
         gran6 (d/ingest "SEP_PROV1" (dg/granule coll4 {:granule-ur "Granule6"}))]
 
-    (index/flush-elastic-index)
+    (index/refresh-elastic-index)
 
     (testing "search for granules in separate collection index."
       (is (d/refs-match?

@@ -75,7 +75,7 @@
 
         gran7 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes [(dg/psa "ds" ["2012-01-01"])]}))
         gran8 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes [(dg/psa "ds" ["2012-01-02"])]}))]
-    (index/flush-elastic-index)
+    (index/refresh-elastic-index)
     (are [v items]
          (d/refs-match? items (search/find-refs :granule {"attribute[]" v}))
          "string,bool,true" [gran1]
@@ -97,7 +97,7 @@
         coll2 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa2 psa3]}))
         gran3 (d/ingest "PROV1" (dg/granule coll2 {:product-specific-attributes [(dg/psa "bravo" ["aa" "bf"])]}))
         gran4 (d/ingest "PROV1" (dg/granule coll2 {:product-specific-attributes [(dg/psa "charlie" ["az"])]}))]
-    (index/flush-elastic-index)
+    (index/refresh-elastic-index)
     (testing "search by value"
       (are [v items]
            (d/refs-match? items (search/find-refs :granule {"attribute[]" v}))
@@ -158,7 +158,7 @@
         gran3 (d/ingest "PROV1" (dg/granule coll2 {:product-specific-attributes [(dg/psa "alpha" [14])
                                                                                  (dg/psa "bravo" [13.7 123])]}))
         gran4 (d/ingest "PROV1" (dg/granule coll2 {:product-specific-attributes [(dg/psa "charlie" [14])]}))]
-    (index/flush-elastic-index)
+    (index/refresh-elastic-index)
 
     (testing "search by value"
       (are [v items]
@@ -199,7 +199,7 @@
         gran3 (d/ingest "PROV1" (dg/granule coll2 {:product-specific-attributes [(dg/psa "alpha" [14])
                                                                                  (dg/psa "bravo" [13 123])]}))
         gran4 (d/ingest "PROV1" (dg/granule coll2 {:product-specific-attributes [(dg/psa "charlie" [14])]}))]
-    (index/flush-elastic-index)
+    (index/refresh-elastic-index)
 
     (testing "search by value"
       (are [v items]
@@ -253,7 +253,7 @@
         gran4 (d/ingest "PROV1" (dg/granule coll2 {:product-specific-attributes
                                                    [(dg/psa "charlie"
                                                             [(d/make-datetime 14)])]}))]
-    (index/flush-elastic-index)
+    (index/refresh-elastic-index)
 
     (testing "search by value"
       (are [v n items]
@@ -309,7 +309,7 @@
         gran4 (d/ingest "PROV1" (dg/granule coll2 {:product-specific-attributes
                                                    [(dg/psa "charlie"
                                                             [(d/make-time 14)])]}))]
-    (index/flush-elastic-index)
+    (index/refresh-elastic-index)
 
     (testing "search by value"
       (are [v n items]
@@ -365,7 +365,7 @@
         gran4 (d/ingest "PROV1" (dg/granule coll2 {:product-specific-attributes
                                                    [(dg/psa "charlie"
                                                             [(d/make-date 14)])]}))]
-    (index/flush-elastic-index)
+    (index/refresh-elastic-index)
 
     (testing "search by value"
       (are [v n items]

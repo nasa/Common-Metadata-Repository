@@ -22,7 +22,7 @@
         coll7 (d/ingest "CMR_PROV2" (dc/collection {:organizations [(dc/org :archive-center "Sedac AC")
                                                                     (dc/org :processing-center "Sedac")]}))]
 
-    (index/flush-elastic-index)
+    (index/refresh-elastic-index)
 
     (testing "search coll by archive center"
       (are [org-name items] (d/refs-match? items (search/find-refs :collection {:archive-center org-name}))

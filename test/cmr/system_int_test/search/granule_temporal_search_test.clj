@@ -34,7 +34,7 @@
         gran8 (d/ingest "CMR_PROV1" (dg/granule coll1 {:granule-ur "Granule8"
                                                        :beginning-date-time "2011-12-13T12:00:00Z"}))
         gran9 (d/ingest "CMR_PROV1" (dg/granule coll1 {:granule-ur "Granule9"}))]
-    (index/flush-elastic-index)
+    (index/refresh-elastic-index)
 
     (testing "search by temporal_start."
       (let [references (search/find-refs :granule

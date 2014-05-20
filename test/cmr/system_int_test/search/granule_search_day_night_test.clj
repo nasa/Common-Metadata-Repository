@@ -24,7 +24,7 @@
         gran8 (d/ingest "CMR_PROV2" (dg/granule coll2 {:day-night "BOTH"}))
         gran9 (d/ingest "CMR_PROV2" (dg/granule coll2 {:day-night "BOTH"}))
         gran10 (d/ingest "CMR_PROV2" (dg/granule coll2 {:day-night "UNSPECIFIED"}))]
-    (index/flush-elastic-index)
+    (index/refresh-elastic-index)
     (testing "search by invalid day-night flag."
       (let [refs (search/find-refs :granule {:day-night "FAKE"})]
         (is (d/refs-match? [] refs))))

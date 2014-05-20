@@ -84,7 +84,7 @@
   (client/post (url/mdb-reset-url))
   (client/post (url/indexer-reset-url))
   (client/post (url/search-reset-url))
-  (index/flush-elastic-index))
+  (index/refresh-elastic-index))
 
 
 

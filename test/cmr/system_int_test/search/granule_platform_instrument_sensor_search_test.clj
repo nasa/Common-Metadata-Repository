@@ -38,7 +38,7 @@
         gran8 (d/ingest "CMR_PROV1" (dg/granule coll2 {:platform-refs [pr6]}))
         gran9 (d/ingest "CMR_PROV1" (dg/granule coll2 {:platform-refs [pr7]}))]
 
-    (index/flush-elastic-index)
+    (index/refresh-elastic-index)
 
     (testing "search by platform, single value"
       (are [platform-sn items] (d/refs-match? items (search/find-refs :granule {:platform platform-sn}))
@@ -109,7 +109,7 @@
         gran9 (d/ingest "CMR_PROV1" (dg/granule coll2 {:platform-refs [pr7]}))
         gran10 (d/ingest "CMR_PROV1" (dg/granule coll2 {:platform-refs [pr8]}))]
 
-    (index/flush-elastic-index)
+    (index/refresh-elastic-index)
 
     (testing "search by instrument, single value"
       (are [instrument-sn items] (d/refs-match? items (search/find-refs :granule {:instrument instrument-sn}))
@@ -191,7 +191,7 @@
         gran10 (d/ingest "CMR_PROV1" (dg/granule coll2 {:platform-refs [p8]}))
         gran11 (d/ingest "CMR_PROV1" (dg/granule coll2 {:platform-refs [p9]}))]
 
-    (index/flush-elastic-index)
+    (index/refresh-elastic-index)
 
     (testing "search by sensor, single value"
       (are [sensor-sn items] (d/refs-match? items (search/find-refs :granule {:sensor sensor-sn}))

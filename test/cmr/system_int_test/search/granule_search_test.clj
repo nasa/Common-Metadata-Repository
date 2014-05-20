@@ -28,7 +28,7 @@
         gran3 (d/ingest "CMR_PROV1" (dg/granule coll1 {:granule-ur "Granule3"}))
         gran4 (d/ingest "CMR_PROV2" (dg/granule coll2 {:granule-ur "Granule4"}))
         gran5 (d/ingest "CMR_PROV2" (dg/granule coll2 {:granule-ur "Granule5"}))]
-    (index/flush-elastic-index)
+    (index/refresh-elastic-index)
     (testing "search by non-existent provider id."
       (is (d/refs-match?
             []
@@ -72,7 +72,7 @@
         gran3 (d/ingest "CMR_PROV1" (dg/granule coll2 {:granule-ur "Granule3"}))
         gran4 (d/ingest "CMR_PROV2" (dg/granule coll3 {:granule-ur "Granule4"}))
         gran5 (d/ingest "CMR_PROV2" (dg/granule coll4 {:granule-ur "Granule5"}))]
-    (index/flush-elastic-index)
+    (index/refresh-elastic-index)
     (testing "search by non-existent dataset id."
       (is (d/refs-match?
             []
@@ -145,7 +145,7 @@
         gran5 (d/ingest "CMR_PROV2" (dg/granule coll2 {:granule-ur "SampleUR1"}))
         gran6 (d/ingest "CMR_PROV2" (dg/granule coll2 {:granule-ur "SampleUR2"}))
         gran7 (d/ingest "CMR_PROV2" (dg/granule coll2 {:granule-ur "sampleur3"}))]
-    (index/flush-elastic-index)
+    (index/refresh-elastic-index)
     (testing "search by non-existent granule ur."
       (is (d/refs-match?
             []
@@ -217,7 +217,7 @@
         gran4 (d/ingest "CMR_PROV2" (dg/granule coll2 {:cloud-cover -60.0}))
         gran5 (d/ingest "CMR_PROV2" (dg/granule coll2 {:cloud-cover 0.0}))
         gran6 (d/ingest "CMR_PROV2" (dg/granule coll2 {:granule-ur "sampleur3"}))]
-    (index/flush-elastic-index)
+    (index/refresh-elastic-index)
     (testing "search granules with lower bound cloud-cover value"
       (are [cc-search items] (d/refs-match? items (search/find-refs :granule cc-search))
            {"cloud_cover" "0.2,"} [gran1 gran2 gran3]))
@@ -283,7 +283,7 @@
         gran2-cid (get-in gran2 [:concept-id])
         gran3-cid (get-in gran3 [:concept-id])
         gran4-cid (get-in gran4 [:concept-id])]
-    (index/flush-elastic-index)
+    (index/refresh-elastic-index)
     (testing "fetch all granules with cloud-cover attrib"
       (are [cc-search items] (d/refs-match? items (search/find-refs :granule cc-search))
            {"cloud_cover" "-70,120"} [gran1 gran2 gran3 gran4]))
@@ -327,7 +327,7 @@
         gran4-cid (get-in gran4 [:concept-id])
         gran5-cid (get-in gran5 [:concept-id])
         dummy-cid "D1000000004-PROV2"]
-    (index/flush-elastic-index)
+    (index/refresh-elastic-index)
     (testing "echo granule id search"
       (are [items cid options]
            (let [params (merge {:echo_granule_id cid}

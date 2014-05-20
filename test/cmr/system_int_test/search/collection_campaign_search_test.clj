@@ -18,7 +18,7 @@
         coll5 (d/ingest "CMR_PROV2" (dc/collection {:projects (dc/projects "EVI" "EPI")}))
         coll6 (d/ingest "CMR_PROV2" (dc/collection {:projects (dc/projects "ESI" "EVI" "EPI")}))]
 
-    (index/flush-elastic-index)
+    (index/refresh-elastic-index)
 
     (testing "search by single campaign term."
       (are [campaign-sn items] (d/refs-match? items (search/find-refs :collection {:campaign campaign-sn}))

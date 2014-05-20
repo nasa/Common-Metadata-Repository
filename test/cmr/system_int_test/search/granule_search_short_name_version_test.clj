@@ -25,7 +25,7 @@
         gran5 (d/ingest "CMR_PROV2" (dg/granule coll5 {:granule-ur "Granule5"}))
         gran6 (d/ingest "CMR_PROV2" (dg/granule coll6 {:granule-ur "Granule6"}))
         gran7 (d/ingest "CMR_PROV2" (dg/granule coll7 {:granule-ur "Granule7"}))]
-    (index/flush-elastic-index)
+    (index/refresh-elastic-index)
     (testing "search by non-existent short name."
       (is (d/refs-match?
             []
@@ -80,7 +80,7 @@
         gran5 (d/ingest "CMR_PROV2" (dg/granule coll5 {:granule-ur "Granule5"}))
         gran6 (d/ingest "CMR_PROV2" (dg/granule coll6 {:granule-ur "Granule6"}))
         gran7 (d/ingest "CMR_PROV2" (dg/granule coll7 {:granule-ur "Granule7"}))]
-    (index/flush-elastic-index)
+    (index/refresh-elastic-index)
     (testing "search by non-existent version."
       (is (d/refs-match?
             []

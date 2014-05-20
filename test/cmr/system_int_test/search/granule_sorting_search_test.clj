@@ -28,7 +28,7 @@
         g3 (make-gran "gur30" "pg40")
         g4 (make-gran "gur40" "pg30")
         g5 (make-gran "gur50" nil)]
-    (index/flush-elastic-index)
+    (index/refresh-elastic-index)
     (are [sort-key items]
          (d/refs-match-order? items
                               (search/find-refs :granule {:page-size 20
@@ -51,7 +51,7 @@
         g3 (make-gran "c30")
         g4 (make-gran "c40")
         g5 (make-gran "c50")]
-    (index/flush-elastic-index)
+    (index/refresh-elastic-index)
     (are [sort-key items]
          (d/refs-match-order? items
                               (search/find-refs :granule {:page-size 20
@@ -74,7 +74,7 @@
         g3 (make-gran 10)
         g4 (make-gran nil)
         g5 (make-gran 25)]
-    (index/flush-elastic-index)
+    (index/refresh-elastic-index)
     (are [sort-key items]
          (d/refs-match-order? items
                               (search/find-refs :granule {:page-size 20
@@ -100,7 +100,7 @@
         g6 (make-gran "PROV2" "et25" "sn30" "v25")
         g7 (make-gran "PROV2" "et35" "sn20" "v35")
         g8 (make-gran "PROV2" "ET45" "sn10" "v45")]
-    (index/flush-elastic-index)
+    (index/refresh-elastic-index)
 
     (are [sort-key items]
          (d/refs-match-order? items
@@ -145,7 +145,7 @@
         g10 (make-gran c2 nil nil)
         g11 (make-gran c1 12 nil)
         g12 (make-gran c2 nil 22)]
-    (index/flush-elastic-index)
+    (index/refresh-elastic-index)
 
     (testing "default sorting is by provider id and start date"
       (is (d/refs-match-order?
@@ -179,7 +179,7 @@
         g3 (make-gran "c30")
         g4 (make-gran "c40")
         g5 (make-gran "c50")]
-    (index/flush-elastic-index)
+    (index/refresh-elastic-index)
     (are [sort-key items]
          (d/refs-match-order? items
                               (search/find-refs :granule {:page-size 20
@@ -203,7 +203,7 @@
         g3 (make-gran "c30")
         g4 (make-gran "c40")
         g5 (make-gran "c50")]
-    (index/flush-elastic-index)
+    (index/refresh-elastic-index)
     (are [sort-key items]
          (d/refs-match-order? items
                               (search/find-refs :granule {:page-size 20
@@ -229,7 +229,7 @@
         g3 (make-gran "c30")
         g4 (make-gran "c40")
         g5 (make-gran "c50")]
-    (index/flush-elastic-index)
+    (index/refresh-elastic-index)
     (are [sort-key items]
          (d/refs-match-order? items
                               (search/find-refs :granule {:page-size 20
