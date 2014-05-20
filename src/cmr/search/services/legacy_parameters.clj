@@ -105,6 +105,8 @@
   "Process legacy product specific attributes by parsing the query string and updating params
   with attributes matching the new cmr csv style"
   [params query-string]
+  (println params)
+  (println query-string)
   (psa-pre-validation params)
   (let [param-strings (map rc/url-decode (s/split query-string #"&"))
         param-tuples (keep legacy-psa-param->tuple param-strings)
