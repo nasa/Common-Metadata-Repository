@@ -25,7 +25,7 @@
            "ESI" [coll3 coll4 coll6]
            "EVI" [coll5 coll6]
            "EPI" [coll5 coll6]
-           "Esi" [coll4]
+           "Esi" [coll3 coll4 coll6]
            "BLAH" []))
     (testing "search using redundant campaign sn terms."
       (are [campaign-kv items] (d/refs-match? items (search/find-refs :collection campaign-kv))

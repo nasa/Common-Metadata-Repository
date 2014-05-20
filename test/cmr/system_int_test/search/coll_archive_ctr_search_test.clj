@@ -27,9 +27,9 @@
     (testing "search coll by archive center"
       (are [org-name items] (d/refs-match? items (search/find-refs :collection {:archive-center org-name}))
            "Larc" [coll4 coll6]
-           "SEDAC AC" [coll5]
+           "SEDAC AC" [coll5 coll7]
            "SEDAC PC" []
-           "Sedac AC" [coll7]
+           "Sedac AC" [coll5 coll7]
            "BLAH" []))
     (testing "case sensitivity ..."
       (are [kvs items] (d/refs-match? items (search/find-refs :collection kvs))
