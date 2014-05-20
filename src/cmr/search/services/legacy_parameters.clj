@@ -34,9 +34,10 @@
                  #(when % (set/rename-keys % param-aliases)))
       replace-exclude-param-aliases))
 
-(defn- check-for-legacy-and-cmr-params
+(defn- psa-pre-validation
   "Check to see if the client has specified BOTH legacy format psa parameters and the current csv
-  format, which is an error."
+  format, which is an error. Also check to make sure that cmr style uses 'attribute[]=' and not
+  'attribute='."
   [params]
   (if-let [attributes (:attribute params)]
     (if (vector? attributes)
@@ -104,7 +105,7 @@
   "Process legacy product specific attributes by parsing the query string and updating params
   with attributes matching the new cmr csv style"
   [params query-string]
-  (check-for-legacy-and-cmr-params params)
+  (psa-pre-validation params)
   (let [param-strings (map rc/url-decode (s/split query-string #"&"))
         param-tuples (keep legacy-psa-param->tuple param-strings)
         param-maps (group-legacy-psa-tuples param-tuples)

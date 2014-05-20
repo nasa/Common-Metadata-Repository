@@ -6,7 +6,8 @@
             [ring.util.codec :as rc]
             [cmr.search.services.messages.attribute-messages :as a-msg]
             [cmr.common.test.test-check-ext :as tc :refer [defspec]]
-            [clojure.string :as s])
+            [clojure.string :as s]
+            [cmr.metadata-db.test.util :as tu])
   (import clojure.lang.ExceptionInfo))
 
 
@@ -68,8 +69,11 @@
 
 ;; Test for mixed parameters
 (deftest mixed-paramter-types
-  (is (thrown-with-msg? ExceptionInfo (a-msg/mixed-legacy-and-cmr-style-parameters-msg)
-                           (lp/process-legacy-psa {:attribute ["string,abc,xyz"]}
+  (is (thrown-with-msg? ExceptionInfo (tu/message->regex (a-msg/mixed-legacy-and-cmr-style-parameters-msg))
+                           (lp/process-legacy-psa {:attribute ["string,abc,xyz"
+                                                               {:name "PDQ"}
+                                                               {:type "string"}
+                                                               {:value "ABC"}]}
                                                   (legacy-psa-map->legacy-psa-query
                                                     {:name "PDQ" :type "string" :value "ABC"})))))
 
