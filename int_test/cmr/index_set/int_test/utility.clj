@@ -100,10 +100,6 @@
   []
   (format "http://%s:%s" (:host (config/config)) (:port (config/config))))
 
-(defn flush-elastic
-  []
-  (client/post (str (elastic-root) "/_flush")))
-
 (defn submit-create-index-set-req
   "submit a request to index-set app to create indices"
   [idx-set]
@@ -161,14 +157,12 @@
 (defn reset
   "test deletion of indices and index-sets"
   []
-  (flush-elastic)
   (let [result (client/request
                  {:method :post
                   :url (format "%s/%s" index-set-root-url "reset")
                   :accept :json})
         status (:status result)
         {:keys [status errors-str response]} result]
-    (flush-elastic)
     {:status status :errors-str errors-str :response response}))
 
 (defn list-es-indices

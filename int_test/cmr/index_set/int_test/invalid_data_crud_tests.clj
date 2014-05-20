@@ -49,7 +49,6 @@
       (is (= 201 status))))
 
   (testing "get existent index-set"
-    (util/flush-elastic)
     (let [{:keys [status errors-str]} (util/get-index-set (get-in util/sample-index-set [:index-set :id]))]
       (is (= 200 status))))
 

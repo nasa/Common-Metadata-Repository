@@ -110,6 +110,7 @@
   (try
     (let [conn (get-in context [:system :index :conn])
           result (doc/put conn es-index es-mapping-type doc-id es-doc)
+          _ (esi/refresh conn es-index)
           {:keys [error status]} result]
       (when (:error result)
         ;; service layer to rollback index-set create  progress on error
@@ -124,7 +125,7 @@
   "Delete the document from elastic, raise error on failure."
   [context index-name mapping-type id]
   (let [{:keys [host port admin-token]} (get-in context [:system :index :config])
-        delete-doc-url (format "http://%s:%s/%s/%s/%s" host port index-name mapping-type id)
+        delete-doc-url (format "http://%s:%s/%s/%s/%s?refresh=true" host port index-name mapping-type id)
         result (client/delete delete-doc-url
                               {:headers {"Authorization" admin-token
                                          "Confirm-delete-action" "true"}

@@ -29,7 +29,6 @@
   (testing "indices existence"
     (let [index-set util/sample-index-set
           index-set-id (get-in index-set [:index-set :id])
-          _ (util/flush-elastic)
           index-names (svc/get-index-names index-set)]
       (for [idx-name index-names]
         (is (esi/exists? @util/elastic-connection idx-name)))))
@@ -52,7 +51,6 @@
           index-set-id (get-in mod-index-set [:index-set :id])
           expected-idx-name (svc/gen-valid-index-name index-set-id suffix-idx-name)
           {:keys [status]} (util/submit-create-index-set-req mod-index-set)
-          _ (util/flush-elastic)
           body (-> (util/get-index-set index-set-id) :response :body)
           fetched-index-set (cheshire.core/decode body true)
           actual-idx-name (get-in fetched-index-set [:index-set :concepts :collection (keyword suffix-idx-name)])]
@@ -98,7 +96,6 @@
                               0
                               util/cmr-concepts)
           expected-idx-cnt (* 2 indices-cnt)
-          _ (util/flush-elastic)
           body (-> (util/get-index-sets) :response :body (cheshire.core/decode true))
           actual-es-indices (util/list-es-indices body)]
       (for [es-idx-name actual-es-indices]
