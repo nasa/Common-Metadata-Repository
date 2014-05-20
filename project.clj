@@ -16,7 +16,9 @@
                  ;; to detect when this library has been updated.
                  [jafama/jafama "2.1"]
                  [pjstadig/assertions "0.1.0"]
-                 [primitive-math "0.1.3"]]
+                 [primitive-math "0.1.3"]
+                 ;; Added for combinations function
+                 [org.clojure/math.combinatorics "0.0.7"]]
 
 
   :plugins [[lein-test-out "0.3.1"]]
@@ -38,10 +40,7 @@
 
   :profiles
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.4"]
-                        [org.clojars.gjahad/debug-repl "0.3.3"]
-
-                        ;; Added for combinations function
-                        [org.clojure/math.combinatorics "0.0.7"]]
+                        [org.clojars.gjahad/debug-repl "0.3.3"]]
 
          :source-paths ["src" "dev" "test"]}})
 
