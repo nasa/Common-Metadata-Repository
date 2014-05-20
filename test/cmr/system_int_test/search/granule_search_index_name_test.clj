@@ -13,9 +13,6 @@
 (defn set-config-then-reset-fixture
   [f]
   (try
-    ;; flush the elastic index so that the updated index-set doc will be available
-    (index/flush-elastic-index)
-
     ;; This set up the environment variable that configures which collection will
     ;; have its own granule index. This is only for working in the REPL.
     ;; When this test is run in CI the set variable will not influence the cmr-search-app
