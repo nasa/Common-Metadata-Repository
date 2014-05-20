@@ -6,7 +6,6 @@
   :repositories [["releases" "http://devrepo1.dev.echo.nasa.gov/data/dist/projects/echo/mavenrepo/"]]
 
   :dependencies [[org.clojure/clojure "1.6.0"]
-                 [org.clojure/test.check "0.5.7"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
 
                  ; Fast math library for atan2, acos, asin
@@ -39,7 +38,10 @@
 
   :profiles
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.4"]
-                        [org.clojars.gjahad/debug-repl "0.3.3"]]
+                        [org.clojars.gjahad/debug-repl "0.3.3"]
+
+                        ;; Added for combinations function
+                        [org.clojure/math.combinatorics "0.0.7"]]
 
          :source-paths ["src" "dev" "test"]}})
 

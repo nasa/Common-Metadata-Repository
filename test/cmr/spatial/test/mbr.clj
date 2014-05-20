@@ -56,6 +56,13 @@
     (is (= (p/point 0 0)
            (m/center-point (m/mbr -180 90 180 -90))))))
 
+(defspec external-points-spec 100
+  (for-all [mbr (gen/such-that (complement m/whole-world?) sgen/mbrs)]
+    (let [external-points (m/external-points mbr)]
+      (and (>= (count external-points) 3)
+           (every? (complement (partial m/covers-point? mbr))
+                   external-points)))))
+
 (defspec covers-point-spec 100
   (for-all [mbr sgen/mbrs]
     (let [{w :west n :north e :east s :south} mbr

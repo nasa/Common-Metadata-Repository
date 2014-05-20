@@ -57,8 +57,10 @@
       true ; The point is actually one of the rings points
       ;; otherwise we'll do the real intersection algorithm
       (let [antipodal-point (p/antipodal point)
-            ;; Find an external point to use. We can't use an external point that is antipodal to the given point.
-            external-point (first (filter #(not= % antipodal-point) (:external-points ring)))
+            ;; Find an external point to use. We can't use an external point that is antipodal to the given point or equal to the point.
+            external-point (first (filter #(and (not= % antipodal-point)
+                                                (not= % point))
+                                          (:external-points ring)))
             ;; Create the test arc
             crossing-arc (a/arc point external-point)
             ;; Find all the points the arc passes through
@@ -233,32 +235,11 @@
   [^Ring ring]
   (let [br (ring->mbr ring)
         {:keys [contains-north-pole contains-south-pole]} (ring->pole-containment ring)]
-    (cond
-      (and contains-north-pole contains-south-pole)
+    (if (and contains-north-pole contains-south-pole)
       ;; Cannot determine external points of a ring which contains both north and south poles
       ;; This is an additional feature which could be added at a later time.
       []
-
-      contains-north-pole
-      ;; We can use the south pole and some other point outside the bounding
-      ;; rectangle. Find a point between the southern end of the bounding
-      ;; rectangle and -90. Simplified version of algorithm to find middle
-      ;; between -90 and south: -90 + (south - -90)/2
-      (let [middle-lat (- (/ ^double (:south br) 2.0) 45.0)]
-        [(p/point 0.0 -90.0) (p/point 0 middle-lat)])
-
-      contains-south-pole
-      ;; We can use the north pole and some other point outside the bounding
-      ;; rectangle. Find a point between the northern end of the bounding
-      ;; rectangle and 90. Simplified version of algorithm to find middle
-      ;; between 90 and north: (90 - north)/2 + north
-      (let [middle-lat (+ (/ ^double (:north br) 2.0) 45.0)]
-        [(p/point 0.0 90.0) (p/point 0.0 middle-lat)])
-
-      :else
-      ;; We know neither pole is in the ring so we'll use them
-      [(p/point 0 -90) (p/point 0 90)])))
-
+      (mbr/external-points br))))
 
 (extend-protocol d/DerivedCalculator
   cmr.spatial.ring.Ring

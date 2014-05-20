@@ -1,7 +1,9 @@
 (ns cmr.spatial.mbr
   (:require [cmr.spatial.math :refer :all]
             [primitive-math]
-            [cmr.spatial.point :as p])
+            [cmr.spatial.point :as p]
+            [cmr.common.services.errors :as errors]
+            [pjstadig.assertions :as pj])
   (:import cmr.spatial.point.Point))
 
 (primitive-math/use-primitive-operators)
@@ -87,6 +89,77 @@
       [(mbr west north 180.0 south)
        (mbr -180.0 north east south)])
     [m]))
+
+(def whole-world
+  "an mbr that covers the whole world"
+  (mbr -180 90 180 -90))
+
+(defn whole-world?
+  "Returns true if an mbr covers the whole world"
+  [mbr]
+  (= mbr whole-world))
+
+(def whole-world-square-degrees
+  "The number of square degrees in the world"
+  ^double (* 360.0 180.0))
+
+(defn percent-covering-world
+  "Returns percentage in square lat lons that the MBR covers the world"
+  ^double [^Mbr mbr]
+  (let [w (.west mbr)
+        n (.north mbr)
+        e (.east mbr)
+        s (.south mbr)
+        lat-size (- n s)
+        lon-size (if (crosses-antimeridian? mbr)
+                   (+ (- 180.0 w) (- e -180.0))
+                   (- e w))
+        square-degrees (* lat-size lon-size)]
+    (* 100.0 (/ square-degrees ^double whole-world-square-degrees))))
+
+(defn external-points
+  "Returns 3 points that are external to the mbr."
+  [^Mbr mbr]
+  (pj/assert (not (whole-world? mbr)))
+  (let [w (.west mbr)
+        n (.north mbr)
+        e (.east mbr)
+        s (.south mbr)
+        ;; Finds three points within the area indicated
+        points-in-area (fn [w n e s]
+                         ; w n e s should define an area not crossing antimeridian
+                         ;; Find mid lon of range then find mid lon on left and right
+                         ;; use mid lat for all three points
+                         (let [mid-lon (mid w e)
+                               right-lon (mid w mid-lon)
+                               left-lon (mid mid-lon e)
+                               mid-lat (mid n s)]
+                           [(p/point left-lon mid-lat)
+                            (p/point mid-lon mid-lat)
+                            (p/point right-lon mid-lat)]))
+        crosses-antimeridian (crosses-antimeridian? mbr)
+
+        ;; Find the biggest area around the MBR to use to find external points
+        north-dist (- 90.0 n)
+        south-dist (- s -90.0)
+        west-dist (if crosses-antimeridian 0.0 (- w -180.0))
+        east-dist (if crosses-antimeridian 0.0 (- 180.0 e))
+        biggest-dist (max north-dist south-dist west-dist east-dist)]
+
+    (cond
+      (= biggest-dist north-dist) (points-in-area -180.0 90.0 180.0 n)
+      (= biggest-dist south-dist) (points-in-area -180.0 s 180.0 -90.0)
+      (and (not crosses-antimeridian)
+           (= biggest-dist west-dist)) (points-in-area -180.0 90.0 w -90.0)
+      (and (not crosses-antimeridian)
+           (= biggest-dist east-dist)) (points-in-area e 90.0 180.0 -90.0)
+      (crosses-antimeridian? mbr) (points-in-area e 90.0 w -90.0)
+      :else (errors/internal-error!
+              (str
+                "Logic error: One of the other distances should have been largest it "
+                "should have crossed the antimeridian: "
+                (pr-str mbr))))))
+
 
 (defn union [^Mbr m1 ^Mbr m2]
   (let [;; lon range union

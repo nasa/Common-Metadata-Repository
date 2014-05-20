@@ -34,7 +34,6 @@
 
   )
 
-
 (declare ring-examples)
 
 (deftest ring-examples-test

@@ -96,7 +96,8 @@
 
 (defspec antipodal-lon-spec 100
   (for-all [lon sgen/lons]
-    (let [opposite-lon (antipodal-lon lon)]
+    (let [lon 76.85714285714286
+          opposite-lon (antipodal-lon lon)]
       (and (within-range? opposite-lon -180 180)
-           (== (+ (abs opposite-lon) (abs lon)) 180.0)))))
+           (approx= (+ (abs opposite-lon) (abs lon)) 180.0)))))
 

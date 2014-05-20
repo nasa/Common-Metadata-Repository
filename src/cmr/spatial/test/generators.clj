@@ -2,13 +2,17 @@
   (:require [clojure.test.check.generators :as gen]
             [cmr.common.test.test-check-ext :as ext-gen :refer [optional]]
             [pjstadig.assertions :as pj]
+            [primitive-math]
             [cmr.spatial.point :as p]
             [cmr.spatial.vector :as v]
             [cmr.spatial.mbr :as mbr]
             [cmr.spatial.ring :as r]
             [cmr.spatial.polygon :as poly]
             [cmr.spatial.line :as l]
-            [cmr.spatial.arc :as a]))
+            [cmr.spatial.arc :as a]
+            [cmr.spatial.derived :as d]))
+
+(primitive-math/use-primitive-operators)
 
 (def vectors
   (let [vector-num (ext-gen/choose-double -10 10)]
@@ -21,32 +25,20 @@
   (ext-gen/choose-double -90 90))
 
 (def points
-  (ext-gen/return-then [(p/point 0 0)]
-                       (ext-gen/model-gen p/point lons lats)))
+  (ext-gen/model-gen p/point lons lats))
 
 (defn non-antipodal-points [num]
   "A tuple of two points that aren't equal or antipodal to one another"
   (gen/such-that (fn [points]
                    (let [point-set (set points)]
                      (and
-                       (= num (count point-set)))
-                     (every? #(not (point-set (p/antipodal %))) points)))
+                       (= num (count point-set))
+                       (every? #(not (point-set (p/antipodal %))) points))))
                  (apply gen/tuple (repeat num points))))
 
 (def lat-ranges
   "Tuples containing a latitude range from low to high"
-  (gen/bind
-    ;; Use latitudes to pick a middle latitude
-    (gen/such-that (fn [lat]
-                     (and (> lat -90) (< lat 90)))
-                   lats)
-    (fn [middle-lat]
-      ;; Generate a tuple of latitudes around middle
-      (gen/tuple
-        ;; Pick southern latitude somewhere between -90 and just below middle lat
-        (ext-gen/choose-double -90 (- middle-lat 0.0001))
-        ;; Pick northern lat from middle lat to 90
-        (ext-gen/choose-double middle-lat 90)))))
+  (gen/fmap sort (gen/tuple lats lats)))
 
 (def mbrs
   (gen/fmap
@@ -90,6 +82,39 @@
   "A generator returning individual points, bounding rectangles, lines, and polygons.
   The spatial areas generated will not necessarily be valid."
   (gen/one-of [points mbrs lines polygons]))
+
+(def rings-3-point
+  "Generator for 3 point rings"
+  (gen/such-that (fn [{:keys [mbr]}]
+                   ;; limit it to rings with MBRs covering less than 90% of the world
+                   ;; TODO this should be a requirement of the CMR spatial validation.
+                   (< (mbr/percent-covering-world mbr) 99.999))
+                 (gen/fmap (fn [points]
+                             (let [points (concat points [(first points)])
+                                   ring (d/calculate-derived (r/ring points))]
+                               (if (and (:contains-south-pole ring)
+                                        (:contains-north-pole ring))
+                                 (d/calculate-derived (r/ring (reverse points)))
+                                 ring)))
+                           (non-antipodal-points 3))))
+
+
+#_(defn add-point-to-ring
+  "Tries to add the point to the ring. If it can't returns nil"
+  [ring point]
+  ;; TODO test if point is already in the ring. If it is then return nil
+  (loop [ring ring pos 1]
+    (let [new-ring (insert-point-at ring point pos)
+          new-ring (d/calculate-derived new-ring)]
+      )))
+
+
+(def rings-with-more-points
+  (gen/fmap
+    (fn [[ring new-points]]
+      )
+    (gen/tuple rings-3-point (non-antipodal-points 3))))
+
 
 
 ;; TODO to properly test rings code it would be ideal if we could generate random rings and validate things related to them
