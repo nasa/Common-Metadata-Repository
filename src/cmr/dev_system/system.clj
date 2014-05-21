@@ -9,6 +9,7 @@
             [cmr.index-set.data.elasticsearch :as es-index]
             [cmr.search.data.elastic-search-index :as es-search]
             [cmr.common.lifecycle :as lifecycle]
+            [cmr.spatial.dev.viz-helper :as viz-helper]
             [cmr.elastic-utils.embedded-elastic-server :as elastic-server]
             [cmr.common.config :as config]))
 
@@ -65,7 +66,8 @@
    :components {:elastic-server (elastic-server/create-server
                                   in-memory-elastic-port
                                   (+ in-memory-elastic-port 10)
-                                  "es_data/dev_system")}})
+                                  "es_data/dev_system")
+                :vdd-server (viz-helper/create-viz-server)}})
 
 (defmethod create-system :external-dbs
   [type]
@@ -74,7 +76,7 @@
           :index-set (index-set-system/create-system)
           :ingest (ingest-system/create-system)
           :search (search-system/create-system)}
-   :components {}})
+   :components {:vdd-server (viz-helper/create-viz-server)}})
 
 (defn- stop-components
   [system]

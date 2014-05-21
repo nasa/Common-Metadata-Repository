@@ -5,7 +5,9 @@
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.dev.util :as d]
             [cmr.system-int-test.data2.core :as data]
-            [cmr.common.config :as config])
+            [cmr.common.config :as config]
+            [earth.driver :as earth-viz]
+            [vdd-core.core :as vdd])
   (:use [clojure.test :only [run-all-tests]]
         [clojure.repl]
         [alex-and-georges.debug-repl]))
@@ -37,5 +39,12 @@
   (stop)
   ; Refreshes all of the code and then restarts the system
   (refresh :after 'user/start))
+
+
+(defn reload-coffeescript []
+  (do
+    (println "Compiling coffeescript")
+    (println (earth-viz/compile-coffeescript (get-in system [:components :vdd-server :config])))
+    (vdd/data->viz {:cmd :reload})))
 
 (info "Custom dev-system user.clj loaded.")
