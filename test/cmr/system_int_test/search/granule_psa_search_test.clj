@@ -38,8 +38,6 @@
       :else ; min-value is really value
       (conj tuples ["attribute[][value]" min-value]))))
 
-(csv->tuples "string,name,value2")
-
 (deftest invalid-psa-searches
   (are [v error]
        (= {:status 422 :errors [error]}
