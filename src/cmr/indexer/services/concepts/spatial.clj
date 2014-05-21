@@ -23,18 +23,27 @@
      (with-prefix :crosses-antimeridian) (mbr/crosses-antimeridian? mbr)}))
 
 
-(defn shape->elastic-doc
-  "Converts a spatial shape into the nested elastic attributes"
-  [shape coordinate-system]
+(defn shapes->elastic-doc
+  "Converts a spatial shapes into the nested elastic attributes"
+  [shapes coordinate-system]
   ;; ignores coordinate system for now
-  (let [shape (d/calculate-derived shape)]
-    (merge {:ords (srl/shape->stored-ords shape)}
-           (mbr->elastic-attribs "mbr" (srl/shape->mbr shape))
-           (mbr->elastic-attribs "lr" (srl/shape->lr shape)))))
+  (let [shapes (map d/calculate-derived shapes)
+        ords-info-map (srl/shapes->ords-info-map shapes)
+        lrs (map srl/shape->lr shapes)
+        ;; union mbrs to get one covering the whole area
+        mbr (reduce mbr/union (map srl/shape->mbr shapes))
+        ;; Choose the largest lr
+        lr (->> lrs
+                (sort-by mbr/percent-covering-world)
+                reverse
+                first)]
+    (merge ords-info-map
+           (mbr->elastic-attribs "mbr" mbr)
+           (mbr->elastic-attribs "lr" lr))))
 
 
 (defn spatial->elastic-docs
   "Converts the spatial area of the given catalog item to the elastic documents"
   [coordinate-system catalog-item]
   (when-let [geometries (get-in catalog-item [:spatial-coverage :geometries])]
-    (map #(shape->elastic-doc % coordinate-system) geometries)))
+    (shapes->elastic-doc geometries coordinate-system)))

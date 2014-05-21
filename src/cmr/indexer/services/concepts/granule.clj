@@ -47,39 +47,39 @@
         start-date (temporal/start-date :granule temporal)
         end-date (temporal/end-date :granule temporal)
         downloadable (not (empty? (filter ru/downloadable-url? related-urls)))]
-    {:concept-id concept-id
-     :collection-concept-id parent-collection-id
+    (merge {:concept-id concept-id
+            :collection-concept-id parent-collection-id
 
-     :entry-title.lowercase (s/lower-case (:entry-title parent-collection))
-     :short-name.lowercase (s/lower-case (get-in parent-collection [:product :short-name]))
-     :version-id.lowercase (s/lower-case (get-in parent-collection [:product :version-id]))
+            :entry-title.lowercase (s/lower-case (:entry-title parent-collection))
+            :short-name.lowercase (s/lower-case (get-in parent-collection [:product :short-name]))
+            :version-id.lowercase (s/lower-case (get-in parent-collection [:product :version-id]))
 
-     :provider-id provider-id
-     :provider-id.lowercase (s/lower-case provider-id)
-     :granule-ur granule-ur
-     :granule-ur.lowercase (s/lower-case granule-ur)
-     :producer-gran-id producer-gran-id
-     :producer-gran-id.lowercase (when producer-gran-id (s/lower-case producer-gran-id))
-     :day-night day-night
-     :day-night.lowercase (when day-night (s/lower-case day-night))
+            :provider-id provider-id
+            :provider-id.lowercase (s/lower-case provider-id)
+            :granule-ur granule-ur
+            :granule-ur.lowercase (s/lower-case granule-ur)
+            :producer-gran-id producer-gran-id
+            :producer-gran-id.lowercase (when producer-gran-id (s/lower-case producer-gran-id))
+            :day-night day-night
+            :day-night.lowercase (when day-night (s/lower-case day-night))
 
-     ;; Provides sorting on a combination of producer granule id and granule ur
-     :readable-granule-name-sort (s/lower-case (or producer-gran-id granule-ur))
+            ;; Provides sorting on a combination of producer granule id and granule ur
+            :readable-granule-name-sort (s/lower-case (or producer-gran-id granule-ur))
 
-     :platform-sn platform-short-names
-     :platform-sn.lowercase  (map s/lower-case platform-short-names)
-     :instrument-sn instrument-short-names
-     :instrument-sn.lowercase  (map s/lower-case instrument-short-names)
-     :sensor-sn sensor-short-names
-     :sensor-sn.lowercase  (map s/lower-case sensor-short-names)
-     :project-refs project-refs
-     :project-refs.lowercase (map s/lower-case project-refs)
-     :size size
-     :cloud-cover cloud-cover
-     :orbit-calculated-spatial-domains (ocsd/ocsds->elastic-docs umm-granule)
-     :attributes (attrib/psa-refs->elastic-docs parent-collection umm-granule)
-     :revision-date revision-date
-     :downloadable downloadable
-     :start-date (when start-date (f/unparse (f/formatters :date-time) start-date))
-     :end-date (when end-date (f/unparse (f/formatters :date-time) end-date))
-     :geometries (spatial->elastic parent-collection umm-granule)}))
+            :platform-sn platform-short-names
+            :platform-sn.lowercase  (map s/lower-case platform-short-names)
+            :instrument-sn instrument-short-names
+            :instrument-sn.lowercase  (map s/lower-case instrument-short-names)
+            :sensor-sn sensor-short-names
+            :sensor-sn.lowercase  (map s/lower-case sensor-short-names)
+            :project-refs project-refs
+            :project-refs.lowercase (map s/lower-case project-refs)
+            :size size
+            :cloud-cover cloud-cover
+            :orbit-calculated-spatial-domains (ocsd/ocsds->elastic-docs umm-granule)
+            :attributes (attrib/psa-refs->elastic-docs parent-collection umm-granule)
+            :revision-date revision-date
+            :downloadable downloadable
+            :start-date (when start-date (f/unparse (f/formatters :date-time) start-date))
+            :end-date (when end-date (f/unparse (f/formatters :date-time) end-date))}
+           (spatial->elastic parent-collection umm-granule))))

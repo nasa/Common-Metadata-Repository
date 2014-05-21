@@ -73,21 +73,7 @@
   rectangle, largest interior rectangle, and spatial ordinates."
   {:type "nested"
    :dynamic "strict"
-   :properties {:mbr-west double-field-mapping
-                :mbr-north double-field-mapping
-                :mbr-east double-field-mapping
-                :mbr-south double-field-mapping
-                :mbr-crosses-antimeridian bool-field-mapping
-
-                :lr-west double-field-mapping
-                :lr-north double-field-mapping
-                :lr-east double-field-mapping
-                :lr-south double-field-mapping
-                :lr-crosses-antimeridian bool-field-mapping
-
-                ;; Ordinates represent a single ringed polygon. In future we will add
-                ;; support for other shapes.
-                :ords (stored int-field-mapping)}})
+   :properties {}})
 
 (def collection-mapping
   {:collection {:dynamic "strict",
@@ -178,8 +164,29 @@
                  :downloadable bool-field-mapping
                  :attributes attributes-field-mapping
 
-                 ;; A list of nested spatial shapes
-                 :geometries spatial-shape-mapping}}})
+                 ;; Spatial coverage fields
+
+                 ;; Minimum Bounding Rectangle Fields
+                 ;; If a granule has multiple shapes then the MBR will cover all of the shapes
+                 :mbr-west double-field-mapping
+                 :mbr-north double-field-mapping
+                 :mbr-east double-field-mapping
+                 :mbr-south double-field-mapping
+                 :mbr-crosses-antimeridian bool-field-mapping
+
+                 ;; Largest Interior Rectangle Fields
+                 ;; If a granule has multiple shapes then the LR will be the largest in one of the shapes
+                 :lr-west double-field-mapping
+                 :lr-north double-field-mapping
+                 :lr-east double-field-mapping
+                 :lr-south double-field-mapping
+                 :lr-crosses-antimeridian bool-field-mapping
+
+                 ;; ords-info contains tuples of shapes stored in ords
+                 ;; Each tuple contains the shape type and the number of ordinates
+                 :ords-info (stored int-field-mapping)
+                 ;; ords contains longitude latitude pairs (ordinates) of all the shapes
+                 :ords (stored int-field-mapping)}}})
 
 (def separate-coll-index-value (config/config-value-fn :separate-coll-index ""))
 
