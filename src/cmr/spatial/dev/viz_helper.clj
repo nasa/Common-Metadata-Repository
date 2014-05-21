@@ -3,6 +3,7 @@
             [vdd-core.core :as vdd]
             [cmr.common.lifecycle :as lifecycle]
             [cmr.spatial.point :as p]
+            [cmr.spatial.polygon :as poly]
             [cmr.spatial.mbr :as m]
             [cmr.spatial.ring :as r]
             [clojure.string :as s]
