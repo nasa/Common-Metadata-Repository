@@ -79,9 +79,6 @@
   (is (= {:status 422 :errors [(am/attributes-must-be-sequence-msg)]}
          (search/find-refs :granule {"attribute" "string,alpha,a"}))))
 
-  ; (is (= {:status 422 :errors [(am/duplicate-parameter-msg [:value "2"])]}
-  ;        (search/find-refs :granule "attribute[][name]=a&attribute[][type]=string&attribute[][value]=1&attribute[][value]=2"))))
-
 ;; These are for boolean, datetime_string, time_string, and date_string attribute types which are all indexed and searchable as strings.
 (deftest indexed-as-string-psas-search-test
   (let [psa1 (dc/psa "bool" :boolean)
