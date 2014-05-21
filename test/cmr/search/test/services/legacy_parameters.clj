@@ -32,10 +32,6 @@
           nil
           psa-maps))
 
-(legacy-psa-maps->legacy-psa-query [{:name "name1" :value "value1" :type "string"}
-                                    {:name "name2" :minValue "min" :type "string"}])
-
-
 (defn- legacy-psa-maps->cmr-psa-query
   "Converts a vector of maps of psa fields into a string with several attributes as comma-separated
   values"
@@ -69,10 +65,6 @@
           cmr-psa-query (legacy-psa-maps->cmr-psa-query legacy-psa)
           result (lp/process-legacy-psa {:page-size 10} legacy-query)]
       (= {:page-size 10 :attribute cmr-psa-query} result))))
-
-(lp/process-legacy-psa {} (legacy-psa-maps->legacy-psa-query [{:name "A,B" :type "string" :value nil :minValue "B,C" :maxValue "D,E"}]))
-
-(legacy-psa-maps->cmr-psa-query [{:name "A,B" :type "string" :value nil :minValue "B,C" :maxValue "D,E"}])
 
 ;; Test for specific cases
 (deftest handle-legacy-psa

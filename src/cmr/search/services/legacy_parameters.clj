@@ -24,7 +24,6 @@
                #(set/rename-keys % param-aliases))
     params))
 
-
 (defn replace-parameter-aliases
   "Replaces aliases of parameter names"
   [params]
