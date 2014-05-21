@@ -67,7 +67,8 @@
                                   in-memory-elastic-port
                                   (+ in-memory-elastic-port 10)
                                   "es_data/dev_system")
-                :vdd-server (viz-helper/create-viz-server)}})
+                ; :vdd-server (viz-helper/create-viz-server)
+                }})
 
 (defmethod create-system :external-dbs
   [type]
@@ -76,7 +77,9 @@
           :index-set (index-set-system/create-system)
           :ingest (ingest-system/create-system)
           :search (search-system/create-system)}
-   :components {:vdd-server (viz-helper/create-viz-server)}})
+   :components {
+                ;:vdd-server (viz-helper/create-viz-server)
+                }})
 
 (defn- stop-components
   [system]
