@@ -8,7 +8,7 @@
             [cmr.system-int-test.utils.url-helper :as url]
             [cmr.common.util :as u]
             [camel-snake-kebab :as csk]
-            [clojure.walk]]))
+            [clojure.walk]))
 
 (defn params->snake_case
   "Converts search parameters to snake_case"
