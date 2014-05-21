@@ -10,7 +10,7 @@
             [cmr.metadata-db.data.concepts :as c]
             [cmr.metadata-db.data.memory-db :as memory]
             [cmr.metadata-db.services.messages :as messages]
-            [cmr.metadata-db.test.util :as tu])
+            [cmr.common.dev.util :as du])
   (import clojure.lang.ExceptionInfo))
 
 
@@ -68,7 +68,7 @@
         (cs/validate-concept-revision-id (memory/create-db [example-concept]) concept previous-concept)))
     (testing "invalid concept revision-id"
       (let [concept (assoc previous-concept :revision-id 3)]
-        (is (thrown-with-msg? ExceptionInfo (tu/message->regex (messages/invalid-revision-id 2 3))
+        (is (thrown-with-msg? ExceptionInfo (du/message->regex (messages/invalid-revision-id 2 3))
                               (cs/validate-concept-revision-id (memory/create-db [example-concept]) concept previous-concept)))))
     (testing "missing concept-id no revision-id"
       (let [concept (dissoc previous-concept :concept-id)]
@@ -78,7 +78,7 @@
         (cs/validate-concept-revision-id (memory/create-db [example-concept]) concept previous-concept)))
     (testing "missing concept-id invalid revision-id"
       (let [concept (-> previous-concept (dissoc :concept-id) (assoc :revision-id 2))]
-        (is (thrown-with-msg? ExceptionInfo (tu/message->regex (messages/invalid-revision-id 1 2))
+        (is (thrown-with-msg? ExceptionInfo (du/message->regex (messages/invalid-revision-id 1 2))
                               (cs/validate-concept-revision-id (memory/create-db [example-concept]) concept previous-concept)))))))
 
 
@@ -93,7 +93,7 @@
           result (cs/try-to-save db (assoc example-concept :revision-id 2) 2)]
       (is (= (:revision-id result) 2))))
   (testing "invalid with low revision-id"
-    (is (thrown-with-msg? ExceptionInfo (tu/message->regex (messages/invalid-revision-id-unknown-expected 1))
+    (is (thrown-with-msg? ExceptionInfo (du/message->regex (messages/invalid-revision-id-unknown-expected 1))
                           (cs/try-to-save (memory/create-db [example-concept]) (assoc example-concept :revision-id 1) 1)))))
 
 
