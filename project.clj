@@ -25,5 +25,6 @@
 
   :profiles
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.4"]
-                        [org.clojars.gjahad/debug-repl "0.3.3"]]
+                        [org.clojars.gjahad/debug-repl "0.3.3"]
+                        [nasa-cmr/cmr-vdd-spatial-viz "0.1.0-SNAPSHOT"]]
          :source-paths ["src" "dev"]}})

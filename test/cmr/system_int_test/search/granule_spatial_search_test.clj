@@ -12,23 +12,11 @@
             [cmr.spatial.derived :as derived]
             [cmr.spatial.codec]
             [clojure.string :as str]
+            [cmr.spatial.dev.viz-helper :as viz-helper]
+            [cmr.spatial.serialize :as srl]
             [cmr.common.dev.util :as dev-util]))
 
 (use-fixtures :each (ingest/reset-fixture "PROV1"))
-
-(comment
-
-  (do
-    (ingest/reset)
-    (ingest/create-provider "PROV1"))
-
-  (def coll (d/ingest "PROV1" (dc/collection {:spatial-coverage (dc/spatial :geodetic)})))
-  (def make-gran (fn [& polygons]
-                   (d/ingest "PROV1" (dg/granule coll {:spatial-coverage (apply dg/spatial polygons)}))))
-  (def gran1 (make-gran polygon-ne polygon-se))
-
-
-  )
 
 
 (defn polygon
@@ -63,6 +51,41 @@
     (dev-util/copy-to-clipboard polygon-str)
     (println "Copied to clipboard:" polygon-str)))
 
+(def spatial-viz-enabled
+  "Set this to true to debug test failures with the spatial visualization."
+  false)
+
+(defn display-indexed-granules
+  "Displays the spatial areas of granules on the map."
+  [granules]
+  (let [geometries (mapcat (comp :geometries :spatial-coverage) granules)
+        geometries (map derived/calculate-derived geometries)
+        geometries (mapcat (fn [g]
+                             [g
+                              (srl/shape->mbr g)
+                              (srl/shape->lr g)])
+                           geometries)]
+        (viz-helper/add-geometries geometries)))
+
+(defn display-search-area
+  "Displays a spatial search area on the map"
+  [geometry]
+  (let [geometry (derived/calculate-derived geometry)]
+    (viz-helper/add-geometries [geometry
+                                (srl/shape->mbr geometry)
+                                (srl/shape->lr geometry)])))
+
+(comment
+  (viz-helper/add-geometries [(polygon 20,10, 30,20, 10,20)])
+
+  (derived/calculate-derived (r/ords->ring 20,10, 30,20, 10,20, 20, 10))
+
+  (do
+    (ingest/reset)
+    (ingest/create-provider "PROV1"))
+
+)
+
 (deftest spatial-search-test
   (let [polygon-ne (polygon 20 10, 30 20, 10 20)
         polygon-se (polygon 30 -20, 20 -10, 10 -20)
@@ -72,17 +95,30 @@
         polygon-north-pole (polygon 45, 80, 135, 80, -135, 80, -45, 80)
         polygon-south-pole (polygon -45 -80, -135 -80, 135 -80, 45 -80)
         polygon-antimeridian (polygon 135 -10, -135 -10, -135 10, 135 10)
+        polygon-near-sp (polygon 168.1075,-78.0047, 170.1569,-78.4112, 172.019,-78.0002, 169.9779,-77.6071)
         coll (d/ingest "PROV1" (dc/collection {:spatial-coverage (dc/spatial :geodetic)}))
         make-gran (fn [& polygons]
                     (d/ingest "PROV1" (dg/granule coll {:spatial-coverage (apply dg/spatial polygons)})))
         gran1 (make-gran polygon-ne polygon-se)
         gran2 (make-gran polygon-sw)
         gran3 (make-gran polygon-nw)
+        gran4 (make-gran polygon-ne)
         gran11 (make-gran polygon-half-earth)
         gran6 (make-gran polygon-north-pole)
         gran7 (make-gran polygon-south-pole)
-        gran8 (make-gran polygon-antimeridian)]
+        gran8 (make-gran polygon-antimeridian)
+        gran9 (make-gran polygon-near-sp)]
     (index/refresh-elastic-index)
-    (is (d/refs-match?
-          [gran1]
-          (search/find-refs :granule {:polygon (search-poly 10 10, 30 10, 30 20, 10 20)})))))
+    (are [ords items]
+         (let [matches? (d/refs-match? items (search/find-refs :granule {:polygon (apply search-poly ords) }))]
+           (when (and (not matches?) spatial-viz-enabled)
+             (println "Displaying failed granules and search area")
+             (viz-helper/clear-geometries)
+             (display-indexed-granules items)
+             (display-search-area (apply polygon ords)))
+           matches?)
+         [10 10, 30 10, 30 20, 10 20] [gran1 gran4]
+         [173.34,-77.17, 171.41,-77.08, 170.64,-78.08, 173.71,-78.05] [gran9]
+         )
+
+    ))
