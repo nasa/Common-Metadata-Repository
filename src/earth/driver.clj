@@ -54,9 +54,6 @@
   (vdd/data->viz {:cmd :clear-geometries}))
 
 
-;; TODO consider making the coffeescript stuff part of the vdd-core framework or some kind of add on.
-;; We would need a way to hook into the vdd-core events.
-
 (defn- coffeescript-files
   "Finds all the coffeescript files in subdirectories"
   [path]

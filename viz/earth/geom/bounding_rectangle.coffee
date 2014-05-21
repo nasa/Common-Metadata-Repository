@@ -1,4 +1,5 @@
 class window.BoundingRectangle extends Module
+  @include GoogleEarthEventEmitter
 
   # A very light blue that is very transparent
   @DEFAULT_COLOR = '55CEB0A5'
