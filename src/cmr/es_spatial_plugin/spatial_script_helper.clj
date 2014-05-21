@@ -8,10 +8,10 @@
            org.elasticsearch.search.lookup.FieldLookup
            org.elasticsearch.common.logging.ESLogger))
 
-(defn- get-ords-in-fields
-  "Gets the ordinates from a fields lookup."
-  [^FieldsLookup lookup]
-  (let [^FieldLookup field-lookup (.get lookup "ords")]
+
+(defn- get-from-fields
+  [^FieldsLookup lookup key]
+  (let [^FieldLookup field-lookup (.get lookup key)]
     (.getValues field-lookup)))
 
 (defn doc-intersects?
@@ -23,17 +23,18 @@
   ;; Let's say that the first arc in the ring would result in an intersection with the original ring
   ;; We would only have to create one arc in that case. We wouldn't have to calculate the great
   ;; circle for any of the other arcs
-  (if-let [ords (get-ords-in-fields lookup)]
-    ;; Hardcoded the type to polygon for now
-    (let [polygon (srl/stored-ords->shape :polygon ords)]
+
+  (if-let [ords-info (get-from-fields lookup "ords-info")]
+    (let [ords (get-from-fields lookup "ords")
+          shapes (srl/ords-info->shapes ords-info ords)]
       (try
-        (if (intersects-fn polygon)
+        (if (some intersects-fn shapes)
           true
           false)
         (catch Throwable t
           (.printStackTrace t)
-          (.error logger (s/join "\n" (map #(.toString ^String %) (.getStackTrace t))) nil)
+          (.error logger (s/join "\n" (map #(.toString ^Object %) (.getStackTrace t))) nil)
+          (.info logger (pr-str ords-info) nil)
           (.info logger (pr-str ords) nil)
-          (.info logger (pr-str polygon) nil)
           (throw t))))
     false))

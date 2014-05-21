@@ -47,7 +47,10 @@
   {type-name {:dynamic "strict",
               :_source {:enabled false},
               :_all {:enabled false},
-              :properties {:ords {:type "integer" :store "yes"}}}})
+              :properties {;; stores the actual ordinates (lon, lat)
+                           :ords {:type "integer" :store "yes"}
+                           ;; contains information about where each spatial type starts and stops
+                           :ords-info {:type "integer" :store "yes"}}}})
 
 (defn recreate-index
   "Creates the index deleting it first if it already exists."
@@ -63,7 +66,7 @@
 (defn index-spatial
   "Indexes the shape and then returns it."
   [conn shape-name shape]
-  (let [elastic-doc {:ords (srl/shape->stored-ords shape)}
+  (let [elastic-doc (srl/shapes->ords-info-map [shape])
         result (esd/put conn index-name type-name (name shape-name) elastic-doc)]
     (is (:created result)))
   (esi/flush conn)
@@ -71,8 +74,9 @@
 
 (defn search-spatial
   [conn shape]
-  (let [elastic-filter {:script {:script "spatial"
-                                 :params {:ords (str/join "," (srl/shape->stored-ords shape))}
+  (let [{:keys [type ords]} (srl/shape->stored-ords shape)
+        elastic-filter {:script {:script "spatial"
+                                 :params {:ords (str/join "," ords)}
                                  :lang "native"}}
         result (esd/search conn index-name [type-name] :filter elastic-filter)]
     (set (map (comp keyword :_id) (get-in result [:hits :hits])))))
