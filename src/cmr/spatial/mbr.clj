@@ -2,6 +2,7 @@
   (:require [cmr.spatial.math :refer :all]
             [primitive-math]
             [cmr.spatial.point :as p]
+            [cmr.spatial.derived :as d]
             [cmr.common.services.errors :as errors]
             [pjstadig.assertions :as pj])
   (:import cmr.spatial.point.Point))
@@ -218,3 +219,9 @@
         n (max (.north m1) (.north m2))
         s (min (.south m1) (.south m2))]
     (mbr w n e s)))
+
+(extend-protocol d/DerivedCalculator
+  cmr.spatial.mbr.Mbr
+  (calculate-derived
+    ^Mbr [^Mbr mbr]
+    mbr))

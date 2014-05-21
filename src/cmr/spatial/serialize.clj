@@ -1,10 +1,22 @@
 (ns cmr.spatial.serialize
-  "Contains functions for serializing ordinates for storage in an index"
+  "Contains functions for serializing ordinates for storage in an index.
+
+  This converts shapes into two sets of fields containing integers. The fields are:
+
+  * ords - A list of 'ordinates' which is a sequence containing longitude latitude pairs flattened.
+    * i.e. lon1, lat1, lon2, lat2, lon3, lat3 ...
+    * All of the ordinates from all of the shapes for a given granule will be stored in the same
+      ordinates list concatenated together.
+  * ords-info - A list of pairs (flattened) of integers that contain type and size. Each pair
+    represents one shape in the ords list.
+    * type - an integer representing the spatial type (polygon, mbr, etc)
+    * size - the number of ordinates in the ords list this shape uses."
   (:require [cmr.common.services.errors :as errors]
             [cmr.spatial.ring :as r]
             [cmr.spatial.math :refer :all]
             [cmr.spatial.polygon :as poly]
-            [cmr.spatial.lr-binary-search :as lr]))
+            [cmr.spatial.lr-binary-search :as lr]
+            [clojure.set :as set]))
 
 
 ;; Some thoughts about how to store the elasticsearch data in a way that preserves space and accuracy.
@@ -74,7 +86,11 @@
     ;; only supports single ring polygons for now
     (when (> (count rings) 1)
       (errors/internal-error! "shape->stored-ords only supports polygons with a single ring. TODO add support"))
-    (map ordinate->stored (r/ring->ords (first rings))))
+
+    ;; TODO reduce size of stored rings and polygons by dropping the duplicate last two ordinates of a ring
+
+    {:type :polygon
+     :ords (map ordinate->stored (r/ring->ords (first rings)))})
 
   (shape->mbr
     [{:keys [mbr]}]
@@ -100,3 +116,40 @@
 (defmethod stored-ords->shape :polygon
   [type ords]
   (poly/polygon [(apply r/ords->ring (map stored->ordinate ords))]))
+
+(def shape-type->integer
+  "Converts a shape type into an integer for storage"
+  {:polygon 1})
+
+(def integer->shape-type
+  "Map of shape type integers to the equivalent keyword type"
+  (set/map-invert shape-type->integer))
+
+(defn shapes->ords-info-map
+  "Converts a sequence of shapes into a map contains the ordinate values and ordinate info"
+  [shapes]
+  (let [;; Convert each shape into a map of types and ordinates
+        infos (map shape->stored-ords shapes)]
+
+    {;; Create the ords-info sequence which is a sequence of types followed by the number of ordinates in the shape
+     :ords-info (mapcat (fn [{:keys [type ords]}]
+                            [(shape-type->integer type) (count ords)])
+                          infos)
+        ;; Create a combined sequence of all the shape ordinates
+     :ords (mapcat :ords infos)}))
+
+(defn ords-info->shapes
+  "Converts the ords-info data and ordinates into a sequence of shapes"
+  [ords-info ords]
+  (loop [ords-info-pairs (partition 2 ords-info) ords ords shapes []]
+    (if (empty? ords-info-pairs)
+      shapes
+      (let [[int-type size] (first ords-info-pairs)
+            type (integer->shape-type int-type)
+            shape-ords (take size ords)
+            shape (stored-ords->shape type shape-ords)]
+        (recur (rest ords-info-pairs)
+               (drop size ords)
+               (conj shapes shape))))))
+
+
