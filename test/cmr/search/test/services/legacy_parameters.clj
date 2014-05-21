@@ -7,7 +7,7 @@
             [cmr.search.services.messages.attribute-messages :as a-msg]
             [cmr.common.test.test-check-ext :as tc :refer [defspec]]
             [clojure.string :as s]
-            [cmr.metadata-db.test.util :as tu])
+            [cmr.common.dev.util :as cu])
   (import clojure.lang.ExceptionInfo))
 
 
@@ -59,7 +59,7 @@
 
 
 ;; Tests that all generated legacy-psa attribute stings can be converted to cmr format.
-(defspec legacy-psa->cmr-test 1
+(defspec legacy-psa->cmr-test 100
   (for-all [legacy-psa (such-that not-empty (gen/vector legacy-psa-maps))]
     (let [legacy-query (legacy-psa-maps->legacy-psa-query legacy-psa)
           cmr-psa-query (legacy-psa-maps->cmr-psa-query legacy-psa)
@@ -78,7 +78,7 @@
 
 ;; Test for mixed parameters
 (deftest mixed-paramter-types
-  (is (thrown-with-msg? ExceptionInfo (tu/message->regex (a-msg/mixed-legacy-and-cmr-style-parameters-msg))
+  (is (thrown-with-msg? ExceptionInfo (cu/message->regex (a-msg/mixed-legacy-and-cmr-style-parameters-msg))
                         (lp/process-legacy-psa {:attribute ["string,abc,xyz"
                                                             {:name "PDQ"}
                                                             {:type "string"}
