@@ -10,7 +10,6 @@
             [camel-snake-kebab :as csk]
             [clojure.walk]))
 
-
 (defn params->snake_case
   "Converts search parameters to snake_case"
   [params]
@@ -46,12 +45,17 @@
 
 (defn find-refs
   "Returns the references that are found by searching with the input params"
-  [concept-type params]
+  [concept-type params & no-snake-kebab]
+  ;; no-snake-kebab needed for legacy psa which use camel case minValue/maxValue
   (get-search-failure-data
-    (let [params (u/map-keys csk/->snake_case_keyword params)
+    (let [params (if no-snake-kebab
+                   params
+                   (u/map-keys csk/->snake_case_keyword params))
           response (client/get (url/search-url concept-type)
                                {:accept :json
-                                :query-params (params->snake_case params)})
+                                :query-params (if no-snake-kebab
+                                                params
+                                               (params->snake_case params))})
           _ (is (= 200 (:status response)))
           result (json/decode (:body response) true)]
       (-> result

@@ -3,13 +3,15 @@
   (:require [clojure.test :refer :all]
             [clj-time.core :as t]
             [clj-time.format :as f]
+            [clojure.string :as s]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.core :as d]
-            [cmr.search.services.messages.attribute-messages :as am]))
+            [cmr.search.services.messages.attribute-messages :as am]
+            [clj-http.client :as client]))
 
 (use-fixtures :each (ingest/reset-fixture "PROV1"))
 
@@ -17,6 +19,24 @@
   (ingest/create-provider "PROV1")
   )
 
+(defn- csv->tuples
+  "Convert a comma-separated-value string into a set of tuples to be use with find-refs."
+  [csv]
+  (let [[type name min-value max-value] (s/split csv #"," -1)
+        tuples [["attribute[][name]" name]
+                ["attribute[][type]" type]]]
+    (cond
+      (and (not (empty? max-value)) (not (empty? min-value)))
+      (into tuples [["attribute[][minValue]" min-value]
+                    ["attribute[][maxValue]" max-value]])
+      (not (empty? max-value))
+      (conj tuples ["attribute[][maxValue]" max-value])
+
+      max-value ;; max-value is empty but not nil
+      (conj tuples ["attribute[][minValue]" min-value])
+
+      :else ; min-value is really value
+      (conj tuples ["attribute[][value]" min-value]))))
 
 (deftest invalid-psa-searches
   (are [v error]
@@ -108,6 +128,22 @@
            ;; tests by value inheritance
            "string,charlie,foo" [gran3 gran4]))
 
+    (testing "search by value catalog-rest style"
+      (are [v items]
+           (d/refs-match? items (search/find-refs :granule (csv->tuples v)))
+           "string,alpha,ab" [gran1]
+           "string,alpha,c" []
+           "string,alpha,c" []
+           "string,bravo,bf" [gran1 gran3]
+
+           ;; tests by value inheritance
+           "string,charlie,foo" [gran3 gran4]))
+
+    (client/generate-query-string [["attribute[][name]" "alpha"]
+                                   ["attribute[][type]" "string"]
+                                   ["attribute[][value]" "aa"]
+                                   ["attribute[][maxValue]" "ab"]])
+
     (testing "searching with multiple attribute conditions"
       (are [v items operation]
            (d/refs-match?
@@ -124,6 +160,27 @@
            ["string,alpha,ab" "string,bravo,bc,"] [gran1] :and
            ; and is the default
            ["string,alpha,ab" "string,bravo,,bc"] [] nil ))
+    (testing "searching with multiple attribute conditions catalog-rest style"
+      (are [v items operation]
+           (let [query (mapcat csv->tuples v)
+                 query (if operation
+                         (merge query ["options[attribute][or]" (= operation :or)])
+                         query)]
+             (println "QUERY")
+             (println query)
+             (println (client/generate-query-string query))
+             (d/refs-match?
+               items
+               (search/find-refs
+                 :granule
+                 query
+                 true)))
+
+           ["string,alpha,ab" "string,bravo,,bc"] [gran1 gran2 gran3] :or
+           ["string,alpha,ab" "string,bravo,,bc"] [] :and
+           ["string,alpha,ab" "string,bravo,bc,"] [gran1] :and
+           ; and is the default
+           ["string,alpha,ab" "string,bravo,,bc"] [] nil ))
 
     (testing "search by range"
       (are [v items]
@@ -133,6 +190,26 @@
            "string,alpha,aa,ac" [gran1]
            ;; beginning edge of range
            "string,alpha,ab,ac" [gran1]
+           ;; ending edge of range
+           "string,alpha,aa,ab" [gran1]
+
+           ;; only min range provided
+           "string,bravo,bc," [gran1 gran3]
+
+           ;; only max range provided
+           "string,bravo,,bc" [gran2 gran3]
+
+           ;; Range value inheritance
+           "string,charlie,foa,foz" [gran3 gran4]))
+
+    (testing "search by range catalog-rest style"
+      (are [v items]
+           (d/refs-match? items (search/find-refs :granule (csv->tuples v) true))
+
+           ;; inside range
+           "string,alpha,aa,ac"  [gran1]
+           ;; beginning edge of range
+           "string,alpha,ab,ac"[gran1]
            ;; ending edge of range
            "string,alpha,aa,ab" [gran1]
 
@@ -168,9 +245,34 @@
            "float,bravo,-12" [gran1]
            "float,charlie,45" [gran3 gran4]))
 
+    (testing "search by value legacy parameters"
+      (are [v items]
+           (d/refs-match? items (search/find-refs :granule (csv->tuples v)))
+           "float,bravo,123" [gran2, gran3]
+           "float,alpha,10" []
+           "float,bravo,-12" [gran1]
+           "float,charlie,45" [gran3 gran4]))
+
     (testing "search by range"
       (are [v items]
            (d/refs-match? items (search/find-refs :granule {"attribute[]" v}))
+
+           ;; inside range
+           "float,alpha,10.2,11" [gran1]
+           ;; beginning edge of range
+           "float,alpha,10.5,10.6" [gran1]
+           ;; ending edge of range
+           "float,alpha,10,10.5" [gran1]
+
+           ;; only min range provided
+           "float,bravo,120," [gran2 gran3]
+
+           ;; only max range provided
+           "float,bravo,,13.6" [gran1 gran2]
+           "float,charlie,44,45.1" [gran3 gran4]))
+    (testing "search by range legacy parameters"
+      (are [v items]
+           (d/refs-match? items (search/find-refs :granule (csv->tuples v) true))
 
            ;; inside range
            "float,alpha,10.2,11" [gran1]
@@ -210,9 +312,37 @@
            ;; inherited from collection
            "int,charlie,45" [gran3 gran4]))
 
+    (testing "search by value legacy parameters"
+      (are [v items]
+           (d/refs-match? items (search/find-refs :granule (csv->tuples v)))
+           "int,bravo,123" [gran2, gran3]
+           "int,alpha,11" []
+           "int,bravo,-12" [gran1]
+           ;; inherited from collection
+           "int,charlie,45" [gran3 gran4]))
+
     (testing "search by range"
       (are [v items]
            (d/refs-match? items (search/find-refs :granule {"attribute[]" v}))
+
+           ;; inside range
+           "int,alpha,9,11" [gran1]
+           ;; beginning edge of range
+           "int,alpha,10,11" [gran1]
+           ;; ending edge of range
+           "int,alpha,9,10" [gran1]
+
+           ;; only min range provided
+           "int,bravo,120," [gran2 gran3]
+
+           ;; only max range provided
+           "int,bravo,,12" [gran1 gran2]
+
+           ;; range inheritance
+           "int,charlie,44,46" [gran3,gran4]))
+    (testing "search by range legacy parameters"
+      (are [v items]
+           (d/refs-match? items (search/find-refs :granule (csv->tuples v) true))
 
            ;; inside range
            "int,alpha,9,11" [gran1]
@@ -264,12 +394,43 @@
            "datetime,bravo," 0 [gran1]
            "datetime,charlie," 45 [gran3 gran4]))
 
+    (testing "search by value legacy parameters"
+      (are [v n items]
+           (d/refs-match? items
+                          (search/find-refs :granule (csv->tuples (str v (d/make-datetime n)))))
+           "datetime,bravo," 123 [gran2, gran3]
+           "datetime,alpha," 11 []
+           "datetime,bravo," 0 [gran1]
+           "datetime,charlie," 45 [gran3 gran4]))
+
     (testing "search by range"
       (are [v min-n max-n items]
            (let [min-v (d/make-datetime min-n)
                  max-v (d/make-datetime max-n)
                  full-value (str v min-v "," max-v)]
              (d/refs-match? items (search/find-refs :granule {"attribute[]" full-value})))
+
+           ;; inside range
+           "datetime,alpha," 9 11 [gran1]
+           ;; beginning edge of range
+           "datetime,alpha," 10 11 [gran1]
+           ;; ending edge of range
+           "datetime,alpha," 9 10 [gran1]
+
+           ;; only min range provided
+           "datetime,bravo," 120 nil [gran2 gran3]
+
+           ;; only max range provided
+           "datetime,bravo," nil 12 [gran1 gran2]
+
+           "datetime,charlie," 44 45 [gran3 gran4]))
+
+    (testing "search by range legacy parameters"
+      (are [v min-n max-n items]
+           (let [min-v (d/make-datetime min-n)
+                 max-v (d/make-datetime max-n)
+                 full-value (str v min-v "," max-v)]
+             (d/refs-match? items (search/find-refs :granule (csv->tuples full-value) true)))
 
            ;; inside range
            "datetime,alpha," 9 11 [gran1]
@@ -320,12 +481,43 @@
            "time,bravo," 0 [gran1]
            "time,charlie," 45 [gran3 gran4]))
 
+    (testing "search by value legacy parameters"
+      (are [v n items]
+           (d/refs-match? items
+                          (search/find-refs :granule (csv->tuples (str v (d/make-time n)))))
+           "time,bravo," 23 [gran2, gran3]
+           "time,alpha," 11 []
+           "time,bravo," 0 [gran1]
+           "time,charlie," 45 [gran3 gran4]))
+
     (testing "search by range"
       (are [v min-n max-n items]
            (let [min-v (d/make-time min-n)
                  max-v (d/make-time max-n)
                  full-value (str v min-v "," max-v)]
              (d/refs-match? items (search/find-refs :granule {"attribute[]" full-value})))
+
+           ;; inside range
+           "time,alpha," 9 11 [gran1]
+           ;; beginning edge of range
+           "time,alpha," 10 11 [gran1]
+           ;; ending edge of range
+           "time,alpha," 9 10 [gran1]
+
+           ;; only min range provided
+           "time,bravo," 20 nil [gran2 gran3]
+
+           ;; only max range provided
+           "time,bravo," nil 12 [gran1 gran2]
+
+           "time,charlie," 44 45 [gran3 gran4]))
+
+    (testing "search by range legacy parameters"
+      (are [v min-n max-n items]
+           (let [min-v (d/make-time min-n)
+                 max-v (d/make-time max-n)
+                 full-value (str v min-v "," max-v)]
+             (d/refs-match? items (search/find-refs :granule (csv->tuples full-value) true)))
 
            ;; inside range
            "time,alpha," 9 11 [gran1]
@@ -376,12 +568,43 @@
            "date,bravo," 0 [gran1]
            "date,charlie," 45 [gran3 gran4]))
 
+    (testing "search by value legacy parameters"
+      (are [v n items]
+           (d/refs-match? items
+                          (search/find-refs :granule (csv->tuples (str v (d/make-date n)))))
+           "date,bravo," 23 [gran2, gran3]
+           "date,alpha," 11 []
+           "date,bravo," 0 [gran1]
+           "date,charlie," 45 [gran3 gran4]))
+
     (testing "search by range"
       (are [v min-n max-n items]
            (let [min-v (d/make-date min-n)
                  max-v (d/make-date max-n)
                  full-value (str v min-v "," max-v)]
              (d/refs-match? items (search/find-refs :granule {"attribute[]" full-value})))
+
+           ;; inside range
+           "date,alpha," 9 11 [gran1]
+           ;; beginning edge of range
+           "date,alpha," 10 11 [gran1]
+           ;; ending edge of range
+           "date,alpha," 9 10 [gran1]
+
+           ;; only min range provided
+           "date,bravo," 20 nil [gran2 gran3]
+
+           ;; only max range provided
+           "date,bravo," nil 12 [gran1 gran2]
+
+           "date,charlie," 44 45 [gran3 gran4]))
+
+    (testing "search by range legacy parameters"
+      (are [v min-n max-n items]
+           (let [min-v (d/make-date min-n)
+                 max-v (d/make-date max-n)
+                 full-value (str v min-v "," max-v)]
+             (d/refs-match? items (search/find-refs :granule (csv->tuples full-value) true)))
 
            ;; inside range
            "date,alpha," 9 11 [gran1]
