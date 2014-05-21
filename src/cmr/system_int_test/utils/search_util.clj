@@ -8,7 +8,7 @@
             [cmr.system-int-test.utils.url-helper :as url]
             [cmr.common.util :as u]
             [camel-snake-kebab :as csk]
-            [clojure.walk]))
+            [clojure.walk]]))
 
 (defn params->snake_case
   "Converts search parameters to snake_case"
@@ -43,27 +43,19 @@
              errors# (:errors (json/decode body# true))]
          {:status status# :errors errors#}))))
 
-(defn find-refs-with-embedded-params
-  "Returns the references that are found by searching with a given param string."
-  [concept-type params]
-  (get-search-failure-data
-    (let [response (client/get (str (url/search-url concept-type) "?" params)
-                               {:accept :json})
-          _ (is (= 200 (:status response)))
-          result (json/decode (:body response) true)]
-      (-> result
-          ;; Rename references to refs
-          (assoc :refs (:references result))
-          (dissoc :references)))))
-
 (defn find-refs
   "Returns the references that are found by searching with the input params"
-  [concept-type params]
+  [concept-type params & no-snake-kebab]
+  ;; no-snake-kebab needed for legacy psa which use camel case minValue/maxValue
   (get-search-failure-data
-    (let [params (u/map-keys csk/->snake_case_keyword params)
+    (let [params (if no-snake-kebab
+                   params
+                   (u/map-keys csk/->snake_case_keyword params))
           response (client/get (url/search-url concept-type)
                                {:accept :json
-                                :query-params (params->snake_case params)})
+                                :query-params (if no-snake-kebab
+                                                params
+                                               (params->snake_case params))})
           _ (is (= 200 (:status response)))
           result (json/decode (:body response) true)]
       (-> result

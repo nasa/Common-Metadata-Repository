@@ -11,7 +11,7 @@
 
 (def indexer-port (config/config-value-fn :indexer-port 3004))
 
-(def search-port (config/config-value-fn :search-port 3003))
+(def search-port (config/config-value-fn :search-port 3013))
 
 (defn elastic-root
   []
