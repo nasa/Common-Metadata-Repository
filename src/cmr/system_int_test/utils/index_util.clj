@@ -5,7 +5,7 @@
             [clojure.string :as str]
             [cmr.system-int-test.utils.url-helper :as url]))
 
-(defn flush-elastic-index
+(defn refresh-elastic-index
   []
-  (client/post (url/elastic-flush-url)))
+  (client/post (url/elastic-refresh-url)))
 

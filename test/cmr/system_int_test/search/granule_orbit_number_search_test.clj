@@ -54,7 +54,7 @@
                                                                          :stop-orbit-number 10.0
                                                                          :equator-crossing-longitude 0
                                                                          :equator-crossing-date-time "2011-02-01T12:00:00Z"}]}))]
-    (index/flush-elastic-index)
+    (index/refresh-elastic-index)
 
     (testing "search by exact orbit number"
       (let [references (search/find-refs :granule {:orbit-number "1"})]

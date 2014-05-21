@@ -28,7 +28,7 @@
         all-prov1-colls [c1-p1 c2-p1 c3-p1 c4-p1]
         all-prov2-colls [c1-p2 c2-p2 c3-p2 c4-p2]
         all-colls (concat all-prov1-colls all-prov2-colls)]
-    (index/flush-elastic-index)
+    (index/refresh-elastic-index)
 
     (testing "concept id"
       (are [items ids]
@@ -209,7 +209,7 @@
         [c1-p2 c2-p2 c3-p2 c4-p2] (for [n (range 1 5)]
                                     (d/ingest "PROV2" (dc/collection {:processing-level-id (str n "B")})))
         all-prov2-colls [c1-p2 c2-p2 c3-p2 c4-p2]]
-    (index/flush-elastic-index)
+    (index/refresh-elastic-index)
     (testing "processing level search"
       (are [items id options]
            (let [params (merge {:processing-level-id id}
@@ -250,7 +250,7 @@
         all-prov1-colls [c1-p1 c2-p1 c3-p1 c4-p1]
         all-prov2-colls [c1-p2 c2-p2 c3-p2 c4-p2]
         all-colls (concat all-prov1-colls all-prov2-colls)]
-    (index/flush-elastic-index)
+    (index/refresh-elastic-index)
     (testing "echo collection id search"
       (are [items cid options]
            (let [params (merge {:echo_collection_id cid}

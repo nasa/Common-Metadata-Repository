@@ -21,7 +21,7 @@
         coll4 (d/ingest "CMR_PROV1" (dc/collection {:two-d-coordinate-systems [two-d4]}))
         coll5 (d/ingest "CMR_PROV1" (dc/collection {:two-d-coordinate-systems [two-d2 two-d5]}))
         coll6 (d/ingest "CMR_PROV1" (dc/collection {}))]
-    (index/flush-elastic-index)
+    (index/refresh-elastic-index)
 
     (testing "search by by two d coordinate system name - single value."
       (let [references (search/find-refs :collection

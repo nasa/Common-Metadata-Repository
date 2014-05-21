@@ -34,7 +34,7 @@
         g7 (make-gran "2011-02-07T12:01:00Z")
         g8 (make-gran "2011-02-07T12:01:00.100Z")
         g9 (make-gran "2011-02-08T12:00:00-04:00")]
-    (index/flush-elastic-index)
+    (index/refresh-elastic-index)
     (testing "equator-crossing-date"
       (are [date-range items]
            (d/refs-match? items (search/find-refs :granule {:equator-crossing-date date-range}))

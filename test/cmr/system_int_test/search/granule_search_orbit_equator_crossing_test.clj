@@ -39,7 +39,7 @@
         gran8 (d/ingest "CMR_PROV1"
                         (dg/granule coll1
                                     {:orbit-calculated-spatial-domains [{:equator-crossing-longitude -180}]}))]
-    (index/flush-elastic-index)
+    (index/refresh-elastic-index)
 
     (testing "search by unused crossing range returns nothing"
       (let [references (search/find-refs :granule {:equator-crossing-longitude "10,20"})]

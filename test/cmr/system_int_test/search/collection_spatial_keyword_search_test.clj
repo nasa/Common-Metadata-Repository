@@ -19,17 +19,18 @@
         coll6 (d/ingest "CMR_PROV2" (dc/collection {:spatial-keywords ["LL"]}))
         coll7 (d/ingest "CMR_PROV2" (dc/collection {:spatial-keywords ["detroit"]}))]
 
-    (index/flush-elastic-index)
+    (index/refresh-elastic-index)
 
     (testing "search by spatial keywords."
       (are [spatial-keyword items] (d/refs-match? items (search/find-refs :collection {:spatial-keyword spatial-keyword}))
            "DC" [coll3 coll4]
            "LL" [coll6]
            "LA" [coll4]
-           ["LL" "Detroit"] [coll5 coll6]
+           ["Detroit"] [coll5 coll7]
+           ["LL" "Detroit"] [coll5 coll6 coll7]
            "BLAH" []))
     (testing "search by spatial keywords using wildcard *."
-      (is (d/refs-match? [coll3 coll4 coll5]
+      (is (d/refs-match? [coll3 coll4 coll5 coll7]
                          (search/find-refs :collection
                                            {:spatial-keyword "D*"
                                             "options[spatial-keyword][pattern]" "true"}))))
@@ -38,8 +39,8 @@
                          (search/find-refs :collection
                                            {:spatial-keyword "L?"
                                             "options[spatial-keyword][pattern]" "true"}))))
-    (testing "search by spatial keywords case not match."
-      (is (d/refs-match? [coll7]
+    (testing "search by spatial keywords case default is ignore case true."
+      (is (d/refs-match? [coll5 coll7]
                          (search/find-refs :collection
                                            {:spatial-keyword "detroit"}))))
     (testing "search by spatial keywords ignore case false."

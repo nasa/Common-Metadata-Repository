@@ -41,7 +41,7 @@
         c11 (make-coll "PROV1" "et96" 12 nil)
         c12 (make-coll "PROV2" "et86" nil 22)
         all-colls [c1 c2 c3 c4 c5 c6 c7 c8 c9 c10 c11 c12]]
-    (index/flush-elastic-index)
+    (index/refresh-elastic-index)
 
     (testing "default sorting"
       (is (d/refs-match-order?
@@ -91,7 +91,7 @@
         c6 (make-coll "PROV2" "et20" 20 nil)
         c7 (make-coll "PROV2" "et30" 20 nil)
         c8 (make-coll "PROV2" "et40" 20 nil)]
-    (index/flush-elastic-index)
+    (index/refresh-elastic-index)
 
     (are [sort-key items] (d/refs-match-order?
                             items
@@ -117,7 +117,7 @@
         c3 (make-collection "c30")
         c4 (make-collection "c40")
         c5 (make-collection "c50")]
-    (index/flush-elastic-index)
+    (index/refresh-elastic-index)
     (are [sort-key items]
          (d/refs-match-order? items
                               (search/find-refs :collection {:page-size 20
@@ -139,7 +139,7 @@
         c3 (make-collection "c30")
         c4 (make-collection "c40")
         c5 (make-collection "c50")]
-    (index/flush-elastic-index)
+    (index/refresh-elastic-index)
     (are [sort-key items]
          (d/refs-match-order? items
                               (search/find-refs :collection {:page-size 20
@@ -163,7 +163,7 @@
         c3 (make-collection "c30")
         c4 (make-collection "c40")
         c5 (make-collection "c50")]
-    (index/flush-elastic-index)
+    (index/refresh-elastic-index)
     (are [sort-key items]
          (d/refs-match-order? items
                               (search/find-refs :collection {:page-size 20

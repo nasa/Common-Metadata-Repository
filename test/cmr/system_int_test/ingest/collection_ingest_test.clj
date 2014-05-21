@@ -90,11 +90,11 @@
         gran2 (d/ingest "PROV1" (dg/granule coll1))
         coll2 (d/ingest "PROV1" (dc/collection))
         gran3 (d/ingest "PROV1" (dg/granule coll2))]
-    (index/flush-elastic-index)
+    (index/refresh-elastic-index)
 
     ;; delete collection
     (is (= 200 (:status (ingest/delete-concept (d/item->concept coll1)))))
-    (index/flush-elastic-index)
+    (index/refresh-elastic-index)
 
     (is (:deleted (ingest/get-concept (:concept-id coll1))) "The collection should be deleted")
     (is (not (ingest/concept-exists-in-mdb? (:concept-id gran1) (:revision-id gran1)))

@@ -24,13 +24,13 @@
         gran8 (d/ingest "CMR_PROV2" (dg/granule coll2 {:day-night "BOTH"}))
         gran9 (d/ingest "CMR_PROV2" (dg/granule coll2 {:day-night "BOTH"}))
         gran10 (d/ingest "CMR_PROV2" (dg/granule coll2 {:day-night "UNSPECIFIED"}))]
-    (index/flush-elastic-index)
+    (index/refresh-elastic-index)
     (testing "search by invalid day-night flag."
       (let [refs (search/find-refs :granule {:day-night "FAKE"})]
         (is (d/refs-match? [] refs))))
-    (testing "search by day-night does not ignore case."
+    (testing "search by day-night default is ignore case true."
       (let [refs (search/find-refs :granule {:day-night "nIgHt"})]
-        (is (d/refs-match? [] refs))))
+        (is (d/refs-match? [gran2] refs))))
     (testing "search by day-night does not ignore case when specifying ignore case false."
       (let [refs (search/find-refs :granule {:day-night "nIgHt"
                                              "options[day-night][ignore-case]" "false"})]

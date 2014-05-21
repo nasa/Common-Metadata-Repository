@@ -18,14 +18,14 @@
         coll5 (d/ingest "CMR_PROV2" (dc/collection {:projects (dc/projects "EVI" "EPI")}))
         coll6 (d/ingest "CMR_PROV2" (dc/collection {:projects (dc/projects "ESI" "EVI" "EPI")}))]
 
-    (index/flush-elastic-index)
+    (index/refresh-elastic-index)
 
     (testing "search by single campaign term."
       (are [campaign-sn items] (d/refs-match? items (search/find-refs :collection {:campaign campaign-sn}))
            "ESI" [coll3 coll4 coll6]
            "EVI" [coll5 coll6]
            "EPI" [coll5 coll6]
-           "Esi" [coll4]
+           "Esi" [coll3 coll4 coll6]
            "BLAH" []))
     (testing "search using redundant campaign sn terms."
       (are [campaign-kv items] (d/refs-match? items (search/find-refs :collection campaign-kv))

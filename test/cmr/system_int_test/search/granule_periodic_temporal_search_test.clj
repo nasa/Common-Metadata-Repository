@@ -67,7 +67,7 @@
                                                         :beginning-date-time "2001-11-15T12:00:00Z"
                                                         :ending-date-time "2001-12-15T12:00:00Z"}))
         gran20 (d/ingest "CMR_PROV1" (dg/granule coll1 {:granule-ur "Granule20"}))]
-    (index/flush-elastic-index)
+    (index/refresh-elastic-index)
 
     (testing "search by both start-day and end-day."
       (let [references (search/find-refs :granule

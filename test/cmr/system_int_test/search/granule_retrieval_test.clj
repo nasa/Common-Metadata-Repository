@@ -20,7 +20,7 @@
         umm-gran (dg/granule coll1 {:granule-ur "Granule1"
                                     :project-refs ["XYZ"]})
         gran1 (d/ingest "CMR_PROV1" umm-gran)]
-    (index/flush-elastic-index)
+    (index/refresh-elastic-index)
     (testing "retrieval by granule cmr-concept-id returns the latest revision."
       (let [response (search/get-concept-by-concept-id (:concept-id gran1))
             parsed-granule (g/parse-granule (:body response))]

@@ -32,7 +32,7 @@
         coll8 (d/ingest "CMR_PROV2" (dc/collection {:entry-title "Dataset8"
                                                     :beginning-date-time "2011-12-13T12:00:00Z"}))
         coll9 (d/ingest "CMR_PROV2" (dc/collection {:entry-title "Dataset9"}))]
-    (index/flush-elastic-index)
+    (index/refresh-elastic-index)
 
     (testing "search by temporal_start."
       (let [references (search/find-refs :collection

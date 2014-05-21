@@ -19,7 +19,7 @@
                                  :projects (dc/projects "ESI_3")})
         coll1 (d/ingest "CMR_PROV1" umm-coll)
         coll2 (d/ingest "CMR_PROV1" (dc/collection {:entry-title "Dataset2"}))]
-    (index/flush-elastic-index)
+    (index/refresh-elastic-index)
     (testing "retrieval by collection cmr-concept-id returns the latest revision."
       (let [response (search/get-concept-by-concept-id (:concept-id coll1))
             parsed-collection (c/parse-collection (:body response))]

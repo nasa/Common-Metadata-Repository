@@ -23,7 +23,7 @@
                                                        :producer-gran-id "SuperSpecial"}))
         gran5 (d/ingest "CMR_PROV1" (dg/granule coll2 {:granule-ur "SuperSpecial"
                                                        :producer-gran-id "Granule2"}))]
-    (index/flush-elastic-index)
+    (index/refresh-elastic-index)
     (testing "search by non-existent readable granule name."
       (let [references (search/find-refs :granule {:readable-granule-name "NON_EXISTENT"})]
         (is (d/refs-match? [] references))))
@@ -46,9 +46,9 @@
                                          {:readable-granule-name "Granule?"
                                           "options[readable-granule-name][pattern]" "true"})]
         (is (d/refs-match? [gran1 gran2 gran5] references))))
-    (testing "search by readable granule name case not match."
+    (testing "search by readable granule name default is ignore case true."
       (let [references (search/find-refs :granule {:readable-granule-name "granule1"})]
-        (is (d/refs-match? [] references))))
+        (is (d/refs-match? [gran1] references))))
     (testing "search by readable granule name ignore case false."
       (let [references (search/find-refs :granule
                                          {:readable-granule-name "granule1"

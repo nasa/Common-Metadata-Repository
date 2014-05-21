@@ -46,9 +46,9 @@
   [type concept-id]
   (format "http://localhost:%s/concepts/%s" (search-port) concept-id))
 
-(defn elastic-flush-url
+(defn elastic-refresh-url
   []
-  (str (elastic-root) "/_flush"))
+  (str (elastic-root) "/_refresh"))
 
 (defn mdb-concept-url
   "URL to concept in mdb."
