@@ -43,7 +43,7 @@
 
 (deftest db-result->concept-map-test
   (j/with-db-transaction
-    [db (oracle/create-db oracle/db-spec)]
+    [db (oracle/create-db (oracle/db-spec))]
     (let [revision-time (t/date-time 1986 10 14 4 3 27 456)
           oracle-timestamp (TIMESTAMPTZ. ^java.sql.Connection (c/db->oracle-conn db)
                                          ^java.sql.Timestamp (cr/to-sql-time revision-time))]

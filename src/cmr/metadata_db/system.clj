@@ -20,7 +20,7 @@
 (defn create-system
   "Returns a new instance of the whole application."
   []
-  {:db (oracle/create-db oracle/db-spec)
+  {:db (oracle/create-db (oracle/db-spec))
    :log (log/create-logger)
    :web (web/create-web-server 3001 routes/make-api)
    :zipkin (context/zipkin-config "Metadata DB" false)})
@@ -35,7 +35,8 @@
                                             #(lifecycle/start % system)))
                                this
                                component-order)]
-    (info "System started")
+    (oracle/test-db-connection! (:db started-system))
+    (info "Metadata DB started")
     started-system))
 
 
@@ -49,5 +50,5 @@
                                             #(lifecycle/stop % system)))
                                this
                                (reverse component-order))]
-    (info "System stopped")
+    (info "Metadata DB stopped")
     stopped-system))
