@@ -9,6 +9,13 @@
    processing-level-id
    ])
 
+(defrecord DataProviderTimestamps
+  [
+   insert-time
+   update-time
+   delete-time
+   ])
+
 (defrecord RangeDateTime
   [
    beginning-date-time
@@ -116,6 +123,8 @@
    entry-title
 
    product
+
+   data-provider-timestamps
 
    spatial-keywords
 

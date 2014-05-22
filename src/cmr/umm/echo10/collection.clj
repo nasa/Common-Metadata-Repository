@@ -23,6 +23,13 @@
                    :version-id (cx/string-at-path collection-content [:VersionId])
                    :processing-level-id (cx/string-at-path collection-content [:ProcessingLevelId])}))
 
+(defn- xml-elem->DataProviderTimestamps
+  "Returns a UMM DataProviderTimestamps from a parsed Collection Content XML structure"
+  [collection-content]
+  (c/map->DataProviderTimestamps {:insert-time (cx/datetime-at-path collection-content [:InsertTime])
+                                  :update-time (cx/datetime-at-path collection-content [:LastUpdate])
+                                  :delete-time (cx/datetime-at-path collection-content [:DeleteTime])}))
+
 (defn- xml-elem->SpatialCoverage
   "Returns a UMM Product from a parsed Collection XML structure"
   [xml-struct]
@@ -34,11 +41,13 @@
 (defn- xml-elem->Collection
   "Returns a UMM Product from a parsed Collection XML structure"
   [xml-struct]
-  (let [product (xml-elem->Product xml-struct)]
+  (let [product (xml-elem->Product xml-struct)
+        data-provider-timestamps (xml-elem->DataProviderTimestamps xml-struct)]
     (c/map->UmmCollection
       {:entry-id (str (:short-name product) "_" (:version-id product))
        :entry-title (cx/string-at-path xml-struct [:DataSetId])
        :product product
+       :data-provider-timestamps data-provider-timestamps
        :spatial-keywords (seq (cx/strings-at-path xml-struct [:SpatialKeywords :Keyword]))
        :temporal (t/xml-elem->Temporal xml-struct)
        :platforms (platform/xml-elem->Platforms xml-struct)
@@ -67,38 +76,40 @@
     ([collection]
      (cmr.umm.echo10.core/umm->echo10-xml collection false))
     ([collection indent?]
-    (let [{{:keys [short-name long-name version-id processing-level-id]} :product
-           dataset-id :entry-title
-           :keys [organizations spatial-keywords temporal platforms product-specific-attributes
-                  projects two-d-coordinate-systems spatial-coverage]} collection
+     (let [{{:keys [short-name long-name version-id processing-level-id]} :product
+            dataset-id :entry-title
+            {:keys [insert-time update-time delete-time]} :data-provider-timestamps
+            :keys [organizations spatial-keywords temporal platforms product-specific-attributes
+                   projects two-d-coordinate-systems spatial-coverage]} collection
            emit-fn (if indent? x/indent-str x/emit-str)]
-      (emit-fn
-        (x/element :Collection {}
-                   (x/element :ShortName {} short-name)
-                   (x/element :VersionId {} version-id)
-                   ;; required fields that are not implemented yet are stubbed out.
-                   (x/element :InsertTime {} "1999-12-31T19:00:00Z")
-                   (x/element :LastUpdate {} "1999-12-31T19:00:00Z")
-                   (x/element :LongName {} long-name)
-                   (x/element :DataSetId {} dataset-id)
-                   (x/element :Description {} "stubbed")
-                   (x/element :Orderable {} "true")
-                   (x/element :Visible {} "true")
-                   ;; archive center to follow processing center
-                   (org/generate-processing-center organizations)
-                   (when processing-level-id
-                     (x/element :ProcessingLevelId {} processing-level-id))
-                   (org/generate-archive-center organizations)
-                   (when spatial-keywords
-                     (x/element :SpatialKeywords {}
-                                (for [spatial-keyword spatial-keywords]
-                                  (x/element :Keyword {} spatial-keyword))))
-                   (t/generate-temporal temporal)
-                   (platform/generate-platforms platforms)
-                   (psa/generate-product-specific-attributes product-specific-attributes)
-                   (cmpgn/generate-campaigns projects)
-                   (two-d/generate-two-ds two-d-coordinate-systems)
-                   (generate-spatial spatial-coverage)))))))
+       (emit-fn
+         (x/element :Collection {}
+                    (x/element :ShortName {} short-name)
+                    (x/element :VersionId {} version-id)
+                    (x/element :InsertTime {} (str insert-time))
+                    (x/element :LastUpdate {} (str update-time))
+                    (when delete-time
+                      (x/element :DeleteTime {} (str delete-time)))
+                    (x/element :LongName {} long-name)
+                    (x/element :DataSetId {} dataset-id)
+                    (x/element :Description {} "stubbed")
+                    (x/element :Orderable {} "true")
+                    (x/element :Visible {} "true")
+                    ;; archive center to follow processing center
+                    (org/generate-processing-center organizations)
+                    (when processing-level-id
+                      (x/element :ProcessingLevelId {} processing-level-id))
+                    (org/generate-archive-center organizations)
+                    (when spatial-keywords
+                      (x/element :SpatialKeywords {}
+                                 (for [spatial-keyword spatial-keywords]
+                                   (x/element :Keyword {} spatial-keyword))))
+                    (t/generate-temporal temporal)
+                    (platform/generate-platforms platforms)
+                    (psa/generate-product-specific-attributes product-specific-attributes)
+                    (cmpgn/generate-campaigns projects)
+                    (two-d/generate-two-ds two-d-coordinate-systems)
+                    (generate-spatial spatial-coverage)))))))
 
 (defn validate-xml
   "Validates the XML against the ECHO10 schema."
