@@ -1,7 +1,8 @@
 (ns cmr.common.dev.util
   "This contains utility functions for development"
   (:require [clojure.java.shell :as sh]
-            [clojure.java.io :as io])
+            [clojure.java.io :as io]
+            [clojure.string :as str])
   (:import java.awt.datatransfer.StringSelection
            java.awt.datatransfer.Clipboard
            java.awt.Toolkit))
@@ -40,3 +41,12 @@
   [s]
   (let [clipboard (.getSystemClipboard (Toolkit/getDefaultToolkit))]
     (.setContents clipboard (StringSelection. s) nil)))
+
+(defn message->regex
+  "Converts an expected message into the a regular expression that matches the exact string.
+  Handles escaping special regex characters"
+  [msg]
+  (-> msg
+      (str/replace #"\[" "\\\\[")
+      (str/replace #"\]" "\\\\]")
+      re-pattern))
