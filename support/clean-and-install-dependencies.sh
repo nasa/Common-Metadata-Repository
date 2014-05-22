@@ -19,6 +19,9 @@ lein do clean, install, clean
 cd ../cmr-system-trace-lib
 lein do clean, install, clean
 
+cd ../cmr-oracle-lib
+lein do clean, install, clean
+
 cd ../cmr-elastic-utils-lib
 lein do clean, install, clean
 
