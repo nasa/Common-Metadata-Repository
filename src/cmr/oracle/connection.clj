@@ -2,7 +2,8 @@
  "Contains a record definition that implements the ConcpetStore and Lifecycle protocols
   backed by an Oracle database."
   (:require [cmr.common.lifecycle :as lifecycle]
-            [cmr.common.log :refer (debug info warn error)])
+            [cmr.common.log :refer (debug info warn error)]
+            [clojure.java.jdbc :as j])
   (:import com.mchange.v2.c3p0.ComboPooledDataSource))
 
 ;;; Constants
@@ -13,12 +14,15 @@
 (def db-port (get (System/getenv) "MDB_DB_PORT" "1521"))
 (def db-sid (get (System/getenv) "MDB_DB_SID" "orcl"))
 
-(def db-spec
-  {:classname "oracle.jdbc.driver.OracleDriver"
-   :subprotocol "oracle"
-   :subname (format "thin:@%s:%s:%s" db-host db-port db-sid)
-   :user db-username
-   :password db-password})
+(defn db-spec
+  ([]
+   (db-spec db-username db-password))
+  ([user password]
+   {:classname "oracle.jdbc.driver.OracleDriver"
+    :subprotocol "oracle"
+    :subname (format "thin:@%s:%s:%s" db-host db-port db-sid)
+    :user user
+    :password password}))
 
 
 (defrecord OracleStore [db]
@@ -52,3 +56,10 @@
   "Creates and returns the database connection pool."
   [db-spec]
   (map->OracleStore (pool db-spec)))
+
+(defn test-db-connection!
+  "Tests the database connection. Throws an exception if unable to execute some sql."
+  [oracle-store]
+  (when-not (= [{:a 1M}]
+               (j/query oracle-store "select 1 a from dual"))
+    (throw (Exception. "Could not select data from database."))))
