@@ -41,10 +41,10 @@
          "0.5,2" []))
   (testing "invalid ranges"
     (are [range-str errors] (= errors (p/numeric-range-string-validation range-str))
-         "A" [(msg/invalid-numeric-range-msg range-str)]
-         "A,10" [(msg/invalid-numeric-range-msg range-str)]
-         "1,B" [(msg/invalid-numeric-range-msg range-str)]
-         "C," [(msg/invalid-numeric-range-msg range-str)]
-         ",D" [(msg/invalid-numeric-range-msg range-str)]
+         "A" [(msg/invalid-msg java.lang.Double "A")]
+         "A,10" [(msg/invalid-msg java.lang.Double "A")]
+         "1,B" [(msg/invalid-msg java.lang.Double "B")]
+         "C," [(msg/invalid-msg java.lang.Double "C")]
+         ",D" [(msg/invalid-msg java.lang.Double "D")]
          "," [(msg/invalid-numeric-range-msg range-str)])))
 

@@ -25,15 +25,15 @@
 (defn invalid-numeric-range-msg
   "Creates a message saying the range string does not have the right format."
   [input-str]
-  (format "%s is not of the form 'value', 'min-value,max-value', 'min-value,', or ',max-value'
-          where value, min-value, and max-value are optional numeric values."
+  (format (str "[%s] is not of the form 'value', 'min-value,max-value', 'min-value,', or ',max-value'"
+               " where value, min-value, and max-value are optional numeric values.")
           input-str))
 
 (defn invalid-date-range-msg
   "Creates a message saying the range string does not have the right format."
   [input-str]
-  (format "%s is not of the form 'value', 'min-value,max-value', 'min-value,', or ',max-value'
-          where value, min-value, and max-value are optional date-time values."
+  (format (str "[%s] is not of the form 'value', 'min-value,max-value', 'min-value,', or ',max-value'"
+               " where value, min-value, and max-value are optional date-time values.")
           input-str))
 
 (defn invalid-ignore-case-opt-setting-msg
@@ -52,3 +52,8 @@
   "Creates a message saying supplied parameter(s) are not in exclude params set."
   [params-set]
   (format "Parameter(s) [%s] can not be used with exclude." (str/join ", " (map name params-set))))
+
+(defn invalid-date-msg
+  "Creates a message saying the supplied parameter is not a valid date."
+  [param]
+  (format "[%s] is not a valid date." param))
