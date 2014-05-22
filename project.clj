@@ -37,13 +37,13 @@
 
          ;; The ^replace is done to disable the tiered compilation for accurate benchmarks
          ;; See https://github.com/technomancy/leiningen/wiki/Faster
-         :jvm-opts ^:replace [;; important to allow logging to standard out
-                              "-Des.foreground=true"
-                              ;; Use the following to enable JMX profiling with visualvm
-                              "-Dcom.sun.management.jmxremote"
-                              "-Dcom.sun.management.jmxremote.ssl=false"
-                              "-Dcom.sun.management.jmxremote.authenticate=false"
-                              "-Dcom.sun.management.jmxremote.port=1098"]
+         ; :jvm-opts ^:replace [;; important to allow logging to standard out
+         ;                      "-Des.foreground=true"
+         ;                      ;; Use the following to enable JMX profiling with visualvm
+         ;                      "-Dcom.sun.management.jmxremote"
+         ;                      "-Dcom.sun.management.jmxremote.ssl=false"
+         ;                      "-Dcom.sun.management.jmxremote.authenticate=false"
+         ;                      "-Dcom.sun.management.jmxremote.port=1098"]
          :source-paths ["src" "dev"]}
    :uberjar {:aot :all}}
 
