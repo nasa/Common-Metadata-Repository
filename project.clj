@@ -37,13 +37,13 @@
   ;; The ^replace is done to disable the tiered compilation for accurate benchmarks
   ;; See https://github.com/technomancy/leiningen/wiki/Faster
   ;; Use the following to enable JMX profiling with visualvm
-  :jvm-opts ^:replace ["-server"
-                       ;; Uncomment this to enable assertions. Turn off during performance tests.
-                       "-ea"
-                       "-Dcom.sun.management.jmxremote"
-                       "-Dcom.sun.management.jmxremote.ssl=false"
-                       "-Dcom.sun.management.jmxremote.authenticate=false"
-                       "-Dcom.sun.management.jmxremote.port=1098"]
+  ; :jvm-opts ^:replace ["-server"
+  ;                      ;; Uncomment this to enable assertions. Turn off during performance tests.
+  ;                      "-ea"
+  ;                      "-Dcom.sun.management.jmxremote"
+  ;                      "-Dcom.sun.management.jmxremote.ssl=false"
+  ;                      "-Dcom.sun.management.jmxremote.authenticate=false"
+  ;                      "-Dcom.sun.management.jmxremote.port=1098"]
 
   ; :jvm-opts ^:replace ["-server"]
 
