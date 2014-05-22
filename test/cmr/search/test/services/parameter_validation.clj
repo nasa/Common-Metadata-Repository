@@ -90,13 +90,13 @@
     (is (= []
            (pv/orbit-number-validation :granule (assoc valid-params :orbit-number "1,2")))))
   (testing "Non-numeric single orbit-number"
-    (is (= [(on-msg/invalid-orbit-number-msg) (com-msg/invalid-numeric-range-msg "A")]
+    (is (= [(on-msg/invalid-orbit-number-msg) (com-msg/invalid-msg java.lang.Double "A")]
            (pv/orbit-number-validation :granlue (assoc valid-params :orbit-number "A")))))
   (testing "Non-numeric start-orbit-number"
-    (is (= [(on-msg/invalid-orbit-number-msg) (com-msg/invalid-numeric-range-msg "A,10")]
+    (is (= [(on-msg/invalid-orbit-number-msg) (com-msg/invalid-msg java.lang.Double "A")]
            (pv/orbit-number-validation :granule (assoc valid-params :orbit-number "A,10")))))
   (testing "Non-numeric stop-orbit-number"
-    (is (= [(on-msg/invalid-orbit-number-msg) (com-msg/invalid-numeric-range-msg "10,A")]
+    (is (= [(on-msg/invalid-orbit-number-msg) (com-msg/invalid-msg java.lang.Double "A")]
            (pv/orbit-number-validation :granule (assoc valid-params :orbit-number "10,A")))))
 
   ;; Equator Crossing Longitude
@@ -104,10 +104,10 @@
     (is (= []
            (pv/equator-crossing-longitude-validation :granule (assoc valid-params :equator-crossing-longitude "10,120")))))
   (testing "Non-numeric equator-crossing-longitude"
-    (is (= [(com-msg/invalid-numeric-range-msg "A,10")]
+    (is (= [(com-msg/invalid-msg java.lang.Double "A")]
            (pv/equator-crossing-longitude-validation :granule (assoc valid-params :equator-crossing-longitude "A,10")))))
   (testing "Non-numeric equator-crossing-longitude"
-    (is (= [(com-msg/invalid-numeric-range-msg "10,A")]
+    (is (= [(com-msg/invalid-msg java.lang.Double "A")]
            (pv/equator-crossing-longitude-validation :granule (assoc valid-params :equator-crossing-longitude "10,A"))))))
 
 (deftest temporal-format-validation :collection-start-date-test
