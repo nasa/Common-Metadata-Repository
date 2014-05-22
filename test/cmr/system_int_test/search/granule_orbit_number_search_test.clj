@@ -90,11 +90,11 @@
     (testing "non-numeric orbit-number"
       (let [{:keys [status errors]} (search/find-refs :granule {:orbit-number "ABC"})]
         (is (= 422 status))
-        (is (= errors [(on-m/invalid-orbit-number-msg) (cm/invalid-numeric-range-msg "ABC")]))))
+        (is (= errors [(on-m/invalid-orbit-number-msg) (cm/invalid-msg java.lang.Double "ABC")]))))
     (testing "non-numeric orbit-number in range"
       (let [{:keys [status errors]} (search/find-refs :granule {:orbit-number "1,X"})]
         (is (= 422 status))
-        (is (= errors [(on-m/invalid-orbit-number-msg) (cm/invalid-numeric-range-msg "1,X")]))))
+        (is (= errors [(on-m/invalid-orbit-number-msg) (cm/invalid-msg java.lang.Double "X")]))))
     (testing "catalog-rest-style-orbit-number"
       (let [references (search/find-refs :granule {"orbit-number[value]" "1"})]
         (is (d/refs-match? [gran1 gran2 gran3] references))))
