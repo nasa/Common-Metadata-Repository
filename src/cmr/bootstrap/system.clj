@@ -6,19 +6,21 @@
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.bootstrap.api.routes :as routes]
             [cmr.common.api.web-server :as web]
+            [cmr.oracle.connection :as oracle]
             [cmr.system-trace.context :as context]))
 
-(def DEFAULT_PORT 3000)
+(def DEFAULT_PORT 3006)
 
 (def
   ^{:doc "Defines the order to start the components."
     :private true}
-  component-order [:log :web])
+  component-order [:log :db :web])
 
 (defn create-system
   "Returns a new instance of the whole application."
   []
   {:log (log/create-logger)
+   :db (oracle/create-db oracle/db-spec)
    :web (web/create-web-server DEFAULT_PORT routes/make-api)
    :zipkin (context/zipkin-config "bootstrap" false)})
 
