@@ -25,12 +25,21 @@
     :password password}))
 
 
+(defn test-db-connection!
+  "Tests the database connection. Throws an exception if unable to execute some sql."
+  [oracle-store]
+  (when-not (= [{:a 1M}]
+               (j/query oracle-store "select 1 a from dual"))
+    (throw (Exception. "Could not select data from database."))))
+
+
 (defrecord OracleStore [db]
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   lifecycle/Lifecycle
 
   (start [this system]
+         (test-db-connection! this)
          this)
 
   (stop [this system]
@@ -56,10 +65,3 @@
   "Creates and returns the database connection pool."
   [db-spec]
   (map->OracleStore (pool db-spec)))
-
-(defn test-db-connection!
-  "Tests the database connection. Throws an exception if unable to execute some sql."
-  [oracle-store]
-  (when-not (= [{:a 1M}]
-               (j/query oracle-store "select 1 a from dual"))
-    (throw (Exception. "Could not select data from database."))))
