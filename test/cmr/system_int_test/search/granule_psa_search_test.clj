@@ -166,9 +166,6 @@
                  query (if operation
                          (merge query ["options[attribute][or]" (= operation :or)])
                          query)]
-             (println "QUERY")
-             (println query)
-             (println (client/generate-query-string query))
              (d/refs-match?
                items
                (search/find-refs
