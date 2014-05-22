@@ -15,7 +15,7 @@
             [clj-time.coerce :as cr]
             [clj-time.core :as t]
             [cmr.common.concepts :as cc])
-  (:import cmr.metadata_db.data.oracle.core.OracleStore
+  (:import cmr.oracle.connection.OracleStore
            java.util.zip.GZIPInputStream
            java.util.zip.GZIPOutputStream
            java.io.ByteArrayOutputStream

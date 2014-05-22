@@ -7,7 +7,7 @@
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.api.web-server :as web]
             [cmr.system-trace.context :as context]
-            [cmr.metadata-db.data.oracle.core :as oracle]
+            [cmr.oracle.connection :as oracle]
             [cmr.metadata-db.api.routes :as routes]))
 
 ;; Design based on http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts

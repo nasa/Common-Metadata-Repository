@@ -2,7 +2,7 @@
   "Provides the configuration for Drift migrations."
   (:require [drift.builder :refer [incremental-migration-number-generator]]
             [clojure.java.jdbc :as j]
-            [cmr.metadata-db.data.oracle.core :as oracle]))
+            [cmr.oracle.connection :as oracle]))
 
 ; (def db-username (get (System/getenv) "MDB_DB_USERNAME" "METADATA_DB"))
 ; (def db-password (get (System/getenv) "MDB_DB_PASSWORD" "METADATA_DB"))

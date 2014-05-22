@@ -6,7 +6,7 @@
             [clojure.string :as string]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.api.web-server :as web]
-            [cmr.metadata-db.data.oracle.core :as oracle]
+            [cmr.oracle.connection :as oracle]
             [cmr.metadata-db.api.routes :as routes])
   (:gen-class))
 

@@ -1,7 +1,7 @@
 (ns cmr.metadata-db.test.data.oracle.concepts
   (:require [clojure.test :refer :all]
             [cmr.metadata-db.data.oracle.concepts :as c]
-            [cmr.metadata-db.data.oracle.core :as oracle]
+            [cmr.oracle.connection :as oracle]
             [clojure.java.jdbc :as j]
             [clj-time.format :as f]
             [clj-time.coerce :as cr]

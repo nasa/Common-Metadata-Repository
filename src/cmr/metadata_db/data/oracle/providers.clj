@@ -7,7 +7,7 @@
             [clojure.java.jdbc :as j]
             [cmr.metadata-db.data.providers :as p]
             [cmr.metadata-db.data.oracle.concept-tables :as ct])
-  (:import cmr.metadata_db.data.oracle.core.OracleStore))
+  (:import cmr.oracle.connection.OracleStore))
 
 (defn dbresult->provider-list
   "Convert the sequence of maps coming from the database into a sequence of strings"
