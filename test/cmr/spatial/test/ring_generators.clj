@@ -53,6 +53,10 @@
   [{:keys [points mbr]}]
   (every? (partial mbr/covers-point? mbr) points))
 
+(defn no-self-intersections
+  [ring]
+  (empty? (r/self-intersections ring)))
+
 (defmacro vars-map
   "Takes a list of vars and creates a map that uses the keyword version of the var name to the var value"
   [var-syms]
@@ -68,7 +72,8 @@
              more-than-one-external-point
              external-points-are-not-in-ring
              external-points-are-not-in-mbr
-             mbr-contains-all-points]))
+             mbr-contains-all-points
+             no-self-intersections]))
 
 (defn test-ring
   "Runs the ring through the ring tests. Returns a list of of the tests that failed for the ring"
@@ -103,6 +108,11 @@
 ;; Verifies that the three point rings have some fundamental things correct
 (defspec rings-3-point-test {:times 1000 :printer-fn print-failure}
   (for-all [ring sgen/rings-3-point]
+    (let [failed-tests (test-ring ring)]
+      (empty? failed-tests))))
+
+(defspec rings-generator-test {:times 1000 :printer-fn print-failure}
+  (for-all [ring sgen/rings]
     (let [failed-tests (test-ring ring)]
       (empty? failed-tests))))
 

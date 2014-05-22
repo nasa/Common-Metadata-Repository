@@ -45,7 +45,7 @@
 (def ^:const COVERS_TOLERANCE
   "Tolerance used for the covers method. Longitudes and latitudes technically outside the bounding rectangle
   but within this tolerance will be considered covered by the bounding rectangle"
-  0.0001)
+  0.000001)
 
 (defn covers-lon? [^Mbr mbr ^double v]
   (let [west (.west mbr) east (.east mbr)

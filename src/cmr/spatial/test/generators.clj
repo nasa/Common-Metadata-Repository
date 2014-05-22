@@ -1,5 +1,6 @@
 (ns cmr.spatial.test.generators
   (:require [clojure.test.check.generators :as gen]
+            [clojure.string :as str]
             [cmr.common.test.test-check-ext :as ext-gen :refer [optional]]
             [pjstadig.assertions :as pj]
             [primitive-math]
@@ -61,8 +62,7 @@
 (def lines
   (ext-gen/model-gen l/line (gen/bind (gen/choose 2 20) non-antipodal-points)))
 
-
-(def rings
+(def rings-invalid
   "Generates rings that are not valid but could be used for testing where validity is not important"
   (gen/fmap
     (fn [points]
@@ -71,114 +71,76 @@
 
 (def polygons
   "Generates polygons that are not valid but could be used for testing where validity is not important"
-  (ext-gen/model-gen poly/polygon (gen/vector rings 1 4)))
+  (ext-gen/model-gen poly/polygon (gen/vector rings-invalid 1 4)))
 
 (def polygons-without-holes
   "Generates polygons with only an outer ring. The polygons will not be valid."
-  (ext-gen/model-gen poly/polygon (gen/tuple rings)))
-
+  (ext-gen/model-gen poly/polygon (gen/tuple rings-invalid)))
 
 (def geometries
   "A generator returning individual points, bounding rectangles, lines, and polygons.
   The spatial areas generated will not necessarily be valid."
   (gen/one-of [points mbrs lines polygons]))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Ring generation functions
+
+(defn reverse-if-both-poles
+  "Takes a ring and reverses it if it contains both poles"
+  [ring]
+  (let [ring (d/calculate-derived ring)]
+    (if (and (:contains-south-pole ring)
+             (:contains-north-pole ring))
+      (d/calculate-derived (r/ring (reverse (:points ring))))
+      ring)))
+
+(defn insert-point-at
+  "Inserts a point at the specified location in the ring."
+  [ring point n]
+  (let [points (drop-last (:points ring))
+        front (take n points)
+        tail (drop n points)
+        points (concat front [point] tail)]
+    (r/ring (concat points [(first points)]))))
+
+(defn add-point-to-ring
+  "Tries to add the point to the ring. If it can't returns nil"
+  [ring point]
+  (let [points (:points ring)]
+    ;; Only use this point if it's not already in the ring
+    (when-not (some (partial = point) points)
+      (loop [pos 1]
+        (if (= pos (count points))
+          ;; We couldn't find a spot to add the point. Return nil
+          nil
+          (let [new-ring (insert-point-at ring point pos)
+                new-ring (d/calculate-derived new-ring)
+                self-intersections (r/self-intersections new-ring)]
+            (if (empty? self-intersections)
+              new-ring
+              (recur (inc pos)))))))))
+
 (def rings-3-point
-  "Generator for 3 point rings"
+  "Generator for 3 point rings. This is used as a base for which to add additional points"
   (gen/such-that (fn [{:keys [mbr]}]
-                   ;; limit it to rings with MBRs covering less than 90% of the world
+                   ;; Limit it to rings with MBRs covering less than 99% of the world
+                   ;; The reason I'm doing this is because if the whole world is covered except very close
+                   ;; to a pole then the MBR of the ring will consider the pole covered.
                    ;; TODO this should be a requirement of the CMR spatial validation.
                    (< (mbr/percent-covering-world mbr) 99.999))
                  (gen/fmap (fn [points]
-                             (let [points (concat points [(first points)])
-                                   ring (d/calculate-derived (r/ring points))]
-                               (if (and (:contains-south-pole ring)
-                                        (:contains-north-pole ring))
-                                 (d/calculate-derived (r/ring (reverse points)))
-                                 ring)))
+                             (let [points (concat points [(first points)])]
+                               (reverse-if-both-poles (r/ring points))))
                            (non-antipodal-points 3))))
 
-
-#_(defn add-point-to-ring
-  "Tries to add the point to the ring. If it can't returns nil"
-  [ring point]
-  ;; TODO test if point is already in the ring. If it is then return nil
-  (loop [ring ring pos 1]
-    (let [new-ring (insert-point-at ring point pos)
-          new-ring (d/calculate-derived new-ring)]
-      )))
-
-
-(def rings-with-more-points
+(def rings
+  "Generator for rings of 3 to 6 points"
   (gen/fmap
     (fn [[ring new-points]]
-      )
+      (reduce (fn [ring point]
+                (if-let [new-ring (add-point-to-ring ring point)]
+                  (reverse-if-both-poles new-ring)
+                  ring))
+              ring
+              new-points))
     (gen/tuple rings-3-point (non-antipodal-points 3))))
-
-
-
-;; TODO to properly test rings code it would be ideal if we could generate random rings and validate things related to them
-;; Waiting until we add ring validation as this will make this process easier.
-
-; (defn insert-point-at
-;   [ring point n]
-;   (let [points (:points ring)
-;         front (take n points)
-;         tail (drop n points)]
-;     (r/ring (conj front point tail))))
-
-; (defn self-intersections
-;   "Returns a list of ring self intersections"
-;   [ring]
-;   (let [arcs (:arcs ring)]
-
-;     ))
-
-; (defn ring-valid?
-;   [ring]
-;   (let [{:keys [points arcs contains-north-pole contains-south-pole]} ring]
-;     (and
-;       ;; no duplicate points
-;       (= (count (distict points)) (count points))
-;       ;; contains 1 or fewer poles
-;       (not (and contains-north-pole contains-south-pole))
-;       ;; starts and ends with same point
-;       (= (first points) (last points))
-;       ;; doesn't cross itself
-
-;       )))
-
-
-; (defn add-point-to-ring
-;   [ring uniq-points]
-
-
-
-;   )
-
-
-; (def create-ring
-;   "Takes an infinite sequence of points and returns a new ring with the number of points given."
-;   [points-seq num-points]
-;   (pj/assert (> num-points >= 3))
-;   (let [uniq-points (distinct points-seq)
-;         first-three (take 3 uniq-points)
-;         ;; Ring must be closed
-;         points-to-add (concat first-three [(first first-three)])
-;         ring (r/ring points-to-add)
-;         ;; Make sure the ring only contains a single pole
-;         ring (if (and (:contains-north-pole ring)
-;                       (:contains-south-pole ring))
-;                (r/ring (reverse points-to-add))
-;                ring)]
-;     (loop [ring ring uniq-points (drop 3 uniq-points) points-left (- num-points 3)]
-;       (if (points-left <= 0)
-;         ring
-;         (let [[ring uniq-points] (add-point-to-ring ring uniq-points)]
-;           (recur ring uniq-points (dec num-points)))))
-
-
-; (def rings
-;   )
-
-

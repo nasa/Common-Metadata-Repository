@@ -64,11 +64,6 @@
     (is (not= (p/point 0 1) "foo"))
     (is (not (.equals ^Point (p/point 0 1) "foo")))))
 
-;; Checks that a point when written to a string can be read and evaluated to become the same point.
-(defspec point-write-and-read 100
-  (for-all [p sgen/points]
-    (= p (read-string (pr-str p)))))
-
 ;; Tests that when associating a new subvalue to a point it stays consistent.
 (defspec point-assoc 100
   (for-all [p sgen/points
@@ -128,6 +123,25 @@
     (are [lon lat lon-rad lat-rad] (thrown? AssertionError (p/point lon lat lon-rad lat-rad))
          0 0 (radians 0.3) (radians 0)
          0 0 (radians 0) (radians 1))))
+
+(deftest point-approx=
+  (testing "on antimeridian"
+    (is (approx= (p/point 180 0.0)
+                 (p/point -180 0)))
+    (is (not (approx= (p/point -180 10)
+                      (p/point -180 0)))))
+  (testing "on north pole"
+    (is (approx= (p/point 1 90)
+                 (p/point 0 90)))
+    (is (not (approx= (p/point 0 89.99)
+                      (p/point 0 90))))
+    (is (not (approx= (p/point 0 -90)
+                      (p/point 0 90)))))
+  (testing "on south pole"
+    (is (approx= (p/point 1 -90)
+                 (p/point 0 -90)))
+    (is (not (approx= (p/point 0 -89.99)
+                      (p/point 0 -90))))))
 
 
 (defn- crosses-at-most-180? [l1 l2]

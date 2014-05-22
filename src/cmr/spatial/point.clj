@@ -108,10 +108,10 @@
       :else not-found)))
 
 (defn print-point
-  "Prints the point in a way that it can be read in by the clojure reader."
+  "Prints the point in a way that it can be copy and pasted for testing"
   [^Point p ^java.io.Writer writer]
-  (.write writer (str "#=" (apply list (into ['cmr.spatial.point.Point.]
-                                             [(.lon p) (.lat p) (.lon_rad p) (.lat_rad p)])))))
+  (.write writer (str (apply list (into ['cmr.spatial.point/point]
+                                        [(.lon p) (.lat p)])))))
 
 ;; These define Clojure built in multimethods for point so it can be printed easily
 (defmethod print-method Point [p writer]
@@ -128,9 +128,9 @@
 (defn point
   "Creates a new point from longitude and latitude and optionally pre-computed radian values of lon
   and lat."
-  ([lon lat]
+  (^Point [lon lat]
    (point lon lat (radians lon) (radians lat)))
-  ([lon lat lon-rad lat-rad]
+  (^Point [lon lat lon-rad lat-rad]
    (pj/assert (within-range? lon -180.0 180.0))
    (pj/assert (within-range? lat -90.0 90.0))
    (pj/assert (double-approx= (radians lon) lon-rad))
@@ -229,10 +229,10 @@
   From: http://williams.best.vwh.net/avform.htm#Dist"
   [^Point p1 ^Point p2]
   (pj/assert (not (antipodal? p1 p2)))
-  (let [lon1 (.lon-rad p1)
-        lat1 (.lat-rad p1)
-        lon2 (.lon-rad p2)
-        lat2 (.lat-rad p2)
+  (let [lon1 (.lon_rad p1)
+        lat1 (.lat_rad p1)
+        lon2 (.lon_rad p2)
+        lat2 (.lat_rad p2)
         sin-sq (fn [^double v1 ^double v2]
                  (sq (sin (/ (- v1 v2) 2.0))))
         ^double part1 (sin-sq lat1 lat2)
@@ -269,10 +269,10 @@
 
       :else
       (let [d (angular-distance p1 p2)
-            lon1 (.lon-rad p1)
-            lat1 (.lat-rad p1)
-            lon2 (.lon-rad p2)
-            lat2 (.lat-rad p2)
+            lon1 (.lon_rad p1)
+            lat1 (.lat_rad p1)
+            lon2 (.lon_rad p2)
+            lat2 (.lat_rad p2)
             part1 (- (sin lat2) (* (sin lat1) (cos d)))
             part2 (* (sin d) (cos lat1))
             part3 (/ part1 part2)
@@ -291,4 +291,23 @@
           (>= (sin (- lon2 lon1)) 0.0) (- 360.0 angle)
           (= angle 360.0) 0.0
           :else angle)))))
+
+(extend-protocol ApproximateEquivalency
+  Point
+  (approx=
+    ([expected n]
+     (approx= expected n DELTA))
+    ([p1 p2 delta]
+     (let [{lon1 :lon lat1 :lat} p1
+           {lon2 :lon lat2 :lat} p2
+           np? #(approx= % 90.0 delta)
+           sp? #(approx= % -90.0 delta)
+           am? #(approx= (abs %) 180.0 delta)]
+       (and (approx= lat1 lat2 delta)
+            (or (approx= lon1 lon2 delta)
+                (and (am? lon1) (am? lon2))
+                (and (np? lat1) (np? lat2))
+                (and (sp? lat1) (sp? lat2))))))))
+
+
 

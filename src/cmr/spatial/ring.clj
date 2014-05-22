@@ -6,7 +6,8 @@
             [cmr.spatial.mbr :as mbr]
             [cmr.spatial.conversion :as c]
             [cmr.spatial.arc :as a]
-            [cmr.spatial.derived :as d])
+            [cmr.spatial.derived :as d]
+            [clojure.math.combinatorics :as combo])
   (:import cmr.spatial.arc.Arc))
 (primitive-math/use-primitive-operators)
 
@@ -88,6 +89,28 @@
 
     ;; Are any of the points in ring 1 inside ring 2?
     (some #(covers-point? r2 %) (:points r1))))
+
+(defn self-intersections
+  "Returns the rings self intersections"
+  [ring]
+  (let [ring (d/calculate-derived ring)
+        arcs (:arcs ring)
+        ;; Finds the indexes of the arcs in the list to test intersecting together.
+        ;; Works by finding all combinations and rejecting the arcs would be sequential.
+        ;; (The first and second arc naturally touch on a shared point for instance.)
+        arc-test-indices (filter (fn [[^int n1 ^int n2]]
+                                   (not (or ; Reject sequential indexes
+                                            (= n1 (dec n2))
+                                            ;; Reject the last arc combined with first arc.
+                                            (and
+                                              (= n1 0)
+                                              (= n2 (dec (count arcs)))))))
+                                 (combo/combinations (range (count arcs)) 2))]
+    (mapcat (fn [[n1 n2]]
+              (let [a1 (nth arcs n1)
+                    a2 (nth arcs n2)]
+                (a/intersections a1 a2)))
+            arc-test-indices)))
 
 
 (comment

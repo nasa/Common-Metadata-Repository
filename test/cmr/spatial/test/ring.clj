@@ -1,10 +1,6 @@
 (ns cmr.spatial.test.ring
   (:require [clojure.test :refer :all]
-            [clojure.edn :as edn]
-            ; [clojure.test.check.clojure-test :refer [defspec]]
-            ;; Temporarily included to use the fixed defspec. Remove once issue is fixed.
             [cmr.common.test.test-check-ext :refer [defspec]]
-
             [clojure.test.check.properties :refer [for-all]]
             [clojure.test.check.generators :as gen]
 
