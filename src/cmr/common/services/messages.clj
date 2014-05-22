@@ -52,8 +52,3 @@
   "Creates a message saying supplied parameter(s) are not in exclude params set."
   [params-set]
   (format "Parameter(s) [%s] can not be used with exclude." (str/join ", " (map name params-set))))
-
-(defn invalid-date-msg
-  "Creates a message saying the supplied parameter is not a valid date."
-  [param]
-  (format "[%s] is not a valid date." param))
