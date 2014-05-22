@@ -13,7 +13,7 @@
             [cmr.spatial.serialize :as srl]
             [clojure.string :as str]))
 
-(def elastic-port 9214)
+(def elastic-port 9215)
 
 (defn run-server-fixture
   [f]
