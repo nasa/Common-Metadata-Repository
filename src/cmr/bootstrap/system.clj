@@ -20,7 +20,7 @@
   "Returns a new instance of the whole application."
   []
   {:log (log/create-logger)
-   :db (oracle/create-db oracle/db-spec)
+   :db (oracle/create-db (oracle/db-spec))
    :web (web/create-web-server DEFAULT_PORT routes/make-api)
    :zipkin (context/zipkin-config "bootstrap" false)})
 
@@ -34,7 +34,8 @@
                                             #(lifecycle/start % system)))
                                this
                                component-order)]
-    (info "bootstrap System started")
+    (oracle/test-db-connection! (:db started-system))
+    (info "Bootstrap System started")
     started-system))
 
 
