@@ -59,7 +59,7 @@
     (testing "non-numeric value in range"
       (let [{:keys [status errors]} (search/find-refs :granule {:equator-crossing-longitude "1,X"})]
         (is (= 422 status))
-        (is (= errors [(cm/invalid-numeric-range-msg "1,X")]))))
+        (is (= errors [(cm/invalid-msg java.lang.Double "X")]))))
     (testing "catalog-rest-style-equator-crossing-longitude full range"
       (let [references (search/find-refs :granule {"equator-crossing-longitude[minValue]" "10"
                                                    "equator-crossing-longitude[maxValue]" "150"})]
@@ -73,4 +73,4 @@
     (testing "non-numeric value in catalog rest style range"
       (let [{:keys [status errors]} (search/find-refs :granule {"equator-crossing-longitude[maxValue]" "X"})]
         (is (= 422 status))
-        (is (= errors [(cm/invalid-numeric-range-msg ",X")]))))))
+        (is (= errors [(cm/invalid-msg java.lang.Double "X")]))))))

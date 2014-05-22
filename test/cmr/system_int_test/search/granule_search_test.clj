@@ -239,12 +239,12 @@
     (testing "search by cloud-cover with non numeric str 'c9c,'"
       (let [num-range "c9c,"]
         (is (= {:status 422
-                :errors [(msg/invalid-numeric-range-msg num-range)]}
+                :errors [(msg/invalid-msg java.lang.Double "c9c")]}
                (search/find-refs :granule {"cloud_cover" num-range})))))
     (testing "search by cloud-cover with non numeric str ',99c'"
       (let [num-range ",99c"]
         (is (= {:status 422
-                :errors [(msg/invalid-numeric-range-msg num-range)]}
+                :errors [(msg/invalid-msg java.lang.Double "99c")]}
                (search/find-refs :granule {"cloud_cover" num-range})))))
     (testing "search by cloud-cover with non numeric str ','"
       (let [num-range ","]
@@ -254,12 +254,12 @@
     (testing "search by cloud-cover with empty str"
       (let [num-range ""]
         (is (= {:status 422
-                :errors [(msg/invalid-numeric-range-msg num-range)]}
+                :errors [(msg/invalid-msg java.lang.Double "")]}
                (search/find-refs :granule {"cloud_cover" num-range})))))
     (testing "search by cloud-cover with invalid range"
       (let [num-range "30,c9c"]
         (is (= {:status 422
-                :errors [(msg/invalid-numeric-range-msg num-range)]}
+                :errors [(msg/invalid-msg java.lang.Double "c9c")]}
                (search/find-refs :granule {"cloud_cover" num-range})))))
     (testing "catalog-rest style"
       (are [min max items]
