@@ -4,19 +4,6 @@
             [clojure.java.jdbc :as j]
             [cmr.oracle.connection :as oracle]))
 
-; (def db-username (get (System/getenv) "MDB_DB_USERNAME" "METADATA_DB"))
-; (def db-password (get (System/getenv) "MDB_DB_PASSWORD" "METADATA_DB"))
-; (def db-host (get (System/getenv) "MDB_DB_HOST" "localhost"))
-; (def db-port (get (System/getenv) "MDB_DB_PORT" "1521"))
-; (def db-sid (get (System/getenv) "MDB_DB_SID" "orcl"))
-
-
-; (def db {:classname "oracle.jdbc.driver.OracleDriver"
-;          :subprotocol "oracle"
-;          :subname (format "thin:@%s:%s:%s" db-host db-port db-sid)
-;          :user db-username
-         ; :password db-password})
-
 (def db (oracle/create-db (oracle/db-spec)))
 
 (defn- maybe-create-schema-table

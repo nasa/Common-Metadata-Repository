@@ -35,7 +35,6 @@
                                             #(lifecycle/start % system)))
                                this
                                component-order)]
-    (oracle/test-db-connection! (:db started-system))
     (info "Metadata DB started")
     started-system))
 
