@@ -44,7 +44,7 @@
   ([]
    (sys-dba-conn "oracle"))
   ([password]
-   (conn/db-spec "sys as sydba" password)))
+   (conn/db-spec "sys as sysdba" password)))
 
 (defn create-user
   "Creates the given user in the database."
