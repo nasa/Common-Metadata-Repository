@@ -16,12 +16,16 @@
                  [sqlingvo "0.5.17"]
                  [drift "1.5.2"]
                  [inflections "0.9.7"]]
+
   ;; Need the maven repo for Oracle jars that aren't available in public maven repos.
   :repositories [["releases" "http://devrepo1.dev.echo.nasa.gov/data/dist/projects/echo/mavenrepo/"]]
+
   :plugins [[lein-test-out "0.3.1"]
             [drift "1.5.2"]
             [lein-exec "0.3.2"]]
+
   :repl-options {:init-ns user}
+
   :profiles
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.4"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]

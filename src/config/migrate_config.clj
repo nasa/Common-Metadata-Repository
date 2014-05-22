@@ -17,7 +17,7 @@
 ;          :user db-username
          ; :password db-password})
 
-(def db (oracle/create-db oracle/db-spec))
+(def db (oracle/create-db (oracle/db-spec)))
 
 (defn- maybe-create-schema-table
   "Creates the schema table if it doesn't already exist."
