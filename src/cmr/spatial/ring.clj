@@ -90,6 +90,12 @@
     ;; Are any of the points in ring 1 inside ring 2?
     (some #(covers-point? r2 %) (:points r1))))
 
+(defn covers-br? [ring br]
+  "Returns true if the ring covers the br"
+  (let [{^double n :north ^double s :south ^double e :east ^double w :west} br
+        corner-points (p/ords->points w,n e,n e,s w,s)]
+    (every? (partial covers-point? ring) corner-points)))
+
 (defn self-intersections
   "Returns the rings self intersections"
   [ring]

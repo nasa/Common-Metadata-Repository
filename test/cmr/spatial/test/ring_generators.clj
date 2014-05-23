@@ -85,7 +85,6 @@
           []
           ring-tests))
 
-
 (defn print-failure
   [type ring]
   (println "--------------------------------------------------------------------")
@@ -94,16 +93,8 @@
     (catch Throwable e
       ;; ignore
       (println type "Ring failed with exception")))
+  (sgen/print-failed-ring type ring))
 
-  ;; Print out the ring in a way that it can be easily copied to the test.
-  (println (pr-str (concat '(r/ring)
-                           [(vec (map
-                                   #(list 'p/point (:lon %) (:lat %))
-                                   (:points ring)))])))
-
-  (println (str "http://testbed.echo.nasa.gov/spatial-viz/ring_self_intersection?test_point_ordinates=2,2"
-                "&ring_ordinates="
-                (str/join "," (r/ring->ords ring)))))
 
 ;; Verifies that the three point rings have some fundamental things correct
 (defspec rings-3-point-test {:times 1000 :printer-fn print-failure}

@@ -21,9 +21,18 @@
      (p/point 1 1)
      (p/point 2 2)])
 
+  (add-geometries
+    [(assoc (r/ring [(p/point 1.0 1.0)
+                     (p/point 1.0 4.0)
+                     (p/point -1.0 1.0)
+                     (p/point -2.0 1.0)
+                     (p/point -1.0 0.0)
+                     (p/point 1.0 1.0)])
+            :draggable true)])
+
   (clear-geometries)
 
-)
+  )
 
 ;; Allows starting and stopping the visualization server.
 (defrecord VizServer [config server]
@@ -67,8 +76,9 @@
   Ring
   (cmr-spatial->viz-geoms
     [ring]
-    (let [{:keys [points mbr display-options]} ring]
-      [{:type :ring
+    (let [{:keys [points mbr display-options draggable]} ring
+          type (if draggable :draggable-ring :ring)]
+      [{:type type
         :ords (p/points->ords points)
         :displayOptions display-options}]))
 

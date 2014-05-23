@@ -6,22 +6,11 @@
             [primitive-math]
             [cmr.spatial.mbr :as m]
             [cmr.spatial.conversion :as c]
-            [cmr.spatial.arc :as a]))
+            [cmr.common.services.errors :as errors]
+            [cmr.spatial.arc :as a]
+            [cmr.spatial.derived :as d]
+            [cmr.common.util :as util]))
 (primitive-math/use-primitive-operators)
-
-;; TODO This code is stolen prototype code. The algorithm is weak and needs to be improved.
-;; It also needs testing. This is being used in place to stub out most of the spatial code. We
-;; should add this as a future issue to work
-
-(defn initial-lr [ring]
-  (let [mbr (:mbr ring)
-        center (m/center-point mbr)
-        {clon :lon clat :lat} center
-        {^double n :north ^double s :south ^double e :east ^double w :west} mbr]
-    (m/mbr (mid-lon w clon)
-           (mid n clat)
-           (mid-lon clon e)
-           (mid s clat))))
 
 (defn mid-br
   "Returns an mbr midway between inner and outer mbrs"
@@ -33,38 +22,47 @@
            (mid-lon ei eo)
            (mid si so))))
 
-(defn mbr-in-ring? [ring mbr]
-  (let [{^double n :north ^double s :south ^double e :east ^double w :west} mbr
-        corner-points (p/ords->points w,n e,n e,s w,s)]
-    (every? #(r/covers-point? ring %) corner-points)))
-
-(defn- can-stop-searching? [current-mbr outer-mbr ^long depth]
-  (let [^double cn (:north current-mbr)
-        ^double on (:north outer-mbr)]
-  (or (> depth 20)
-      (< (- on cn) 0.001))))
-
 (defn find-lr [ring]
-  (let [{clon :lon clat :lat} (m/center-point (:mbr ring))]
-    (loop [inner-mbr (m/mbr clon clat clon clat)
-           outer-mbr (:mbr ring)
-           current-mbr (mid-br inner-mbr outer-mbr)
-           depth 0]
-      (if (mbr-in-ring? ring current-mbr)
-        ;; possibly stop or grow
-        (if (can-stop-searching? current-mbr outer-mbr depth)
-          current-mbr
-          (let [new-current (mid-br current-mbr outer-mbr)]
-            (recur current-mbr outer-mbr new-current (inc depth))))
-        (if (> depth 50)
-          (if (mbr-in-ring? ring inner-mbr)
-            inner-mbr
-            nil)
-          (let [new-current (mid-br inner-mbr current-mbr)] ;; shrink current-mbr
-            (recur inner-mbr current-mbr new-current (inc depth))))))))
+  (let [ring (d/calculate-derived ring)
+        {clon :lon clat :lat} (m/center-point (:mbr ring))
+        minv (m/mbr clon clat clon clat)
+        maxv (:mbr ring)]
+    (util/binary-search
+      minv maxv mid-br
+      (fn [current-br inner-br outer-br ^long depth]
+        (let [current-in-ring (r/covers-br? ring current-br)]
+          (if (> depth 50)
+            ;; Exceeded the recursion depth. Take our best choice
+            (if current-in-ring current-br inner-br)
+            (if current-in-ring :less-than :greater-than)))))))
 
 
 (comment
+
+(defn- can-stop-searching? [current-br outer-br ^long depth]
+  (let [^double cn (:north current-br)
+        ^double on (:north outer-br)]
+  (or (> depth 20)
+      (< (- on cn) 0.001))))
+
+(defn find-lr-orig [ring]
+  (let [{clon :lon clat :lat} (m/center-point (:mbr ring))]
+    (loop [inner-br (m/mbr clon clat clon clat)
+           outer-br (:mbr ring)
+           current-br (mid-br inner-br outer-br)
+           depth 0]
+      (if (r/covers-br? ring current-br)
+        ;; possibly stop or grow
+        (if (can-stop-searching? current-br outer-br depth)
+          current-br
+          (let [new-current (mid-br current-br outer-br)]
+            (recur current-br outer-br new-current (inc depth))))
+        (if (> depth 50)
+          (if (r/covers-br? ring inner-br)
+            inner-br
+            nil)
+          (let [new-current (mid-br inner-br current-br)] ;; shrink current-br
+            (recur inner-br current-br new-current (inc depth))))))))
 
     (defn find-and-display-lr [ring]
       (let [lr (find-lr ring)]

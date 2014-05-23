@@ -3,6 +3,7 @@
             [primitive-math]
             [clojure.pprint]
             [pjstadig.assertions :as pj]
+            [cmr.spatial.derived :as d]
             [cmr.common.util :as util]))
 
 (primitive-math/use-primitive-operators)
@@ -310,4 +311,9 @@
                 (and (sp? lat1) (sp? lat2))))))))
 
 
+(extend-protocol d/DerivedCalculator
+  cmr.spatial.point.Point
+  (calculate-derived
+    ^Point [^Point point]
+    point))
 
