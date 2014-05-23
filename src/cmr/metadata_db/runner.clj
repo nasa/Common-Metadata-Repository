@@ -6,7 +6,7 @@
             [clojure.string :as string]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.api.web-server :as web]
-            [cmr.oracle.connection :as oracle]
+            [cmr.metadata-db.oracle :as mo]
             [cmr.metadata-db.api.routes :as routes])
   (:gen-class))
 
@@ -26,7 +26,7 @@
   "Starts the App."
   [& args]
   (let [{:keys [port db]} (parse-args args)
-        db (oracle/create-db oracle/db-spec)
+        db (mo/get-db)
         web-server (web/create-web-server port routes/make-api)
         system (assoc (system/create-system) :db db :web web-server)
         system (system/start system)]

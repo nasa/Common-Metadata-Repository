@@ -45,9 +45,9 @@
              concept))
 
 (defn nil-extra-fields-validation
-  "Validates that none of the extra fields are nil."
+  "Validates that none of the extra fields are nil except delete-time."
   [concept]
-  (nil-fields-validation (:extra-fields concept)))
+  (nil-fields-validation (dissoc (:extra-fields concept) :delete-time)))
 
 (defn concept-id-validation
   [concept]

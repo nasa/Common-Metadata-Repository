@@ -7,8 +7,9 @@
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.api.web-server :as web]
             [cmr.system-trace.context :as context]
-            [cmr.oracle.connection :as oracle]
-            [cmr.metadata-db.api.routes :as routes]))
+            [cmr.metadata-db.oracle :as mo]
+            [cmr.metadata-db.api.routes :as routes]
+            [cmr.metadata-db.services.jobs :as jobs]))
 
 ;; Design based on http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts
 
@@ -20,7 +21,7 @@
 (defn create-system
   "Returns a new instance of the whole application."
   []
-  {:db (oracle/create-db (oracle/db-spec))
+  {:db (mo/get-db)
    :log (log/create-logger)
    :web (web/create-web-server 3001 routes/make-api)
    :zipkin (context/zipkin-config "Metadata DB" false)})
@@ -35,6 +36,7 @@
                                             #(lifecycle/start % system)))
                                this
                                component-order)]
+    (jobs/start)
     (info "Metadata DB started")
     started-system))
 

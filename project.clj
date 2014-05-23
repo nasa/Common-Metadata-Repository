@@ -15,7 +15,10 @@
                  [clj-time "0.7.0"]
                  [sqlingvo "0.5.17"]
                  [drift "1.5.2"]
-                 [inflections "0.9.7"]]
+                 [com.oracle/ojdbc6 "11.2.0.3"]
+                 [com.mchange/c3p0 "0.9.2.1"]
+                 [inflections "0.9.7"]
+                 [clojurewerkz/quartzite "1.2.0"]]
 
   ;; Need the maven repo for Oracle jars that aren't available in public maven repos.
   :repositories [["releases" "http://devrepo1.dev.echo.nasa.gov/data/dist/projects/echo/mavenrepo/"]]
