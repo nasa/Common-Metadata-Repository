@@ -79,3 +79,17 @@
       ;; Check it should contain an exponent and it doesn't lose precision.
       (and (not (re-find #"[eE]" double-str))
            (= parsed d)))))
+
+(deftest binary-search-test
+  (testing "along number line for integer"
+    (let [range-size 100
+          find-value 23
+          matches-fn (fn [^long v minv maxv ^long depth]
+                       (if (> depth range-size)
+                         (throw (Exception. (format "Depth [%d] exceeded max [%d]" depth range-size)))
+                         (cond
+                           (< v find-value) :less-than
+                           (> v find-value) :greater-than
+                           :else v)))
+          middle-fn #(int (/ (+ ^long %1 ^long %2) 2))]
+      (is (= find-value (util/binary-search 0 range-size middle-fn matches-fn))))))
