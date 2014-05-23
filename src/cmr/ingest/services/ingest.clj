@@ -68,13 +68,13 @@
           :else (let [concept (add-extra-fields context concept)
                       time-to-compare (t/plus (t/now) (t/minutes 1))
                       delete-time (get-in concept [:extra-fields :delete-time])
-                      delete-time (if delete-time (p/parse-datetime delete-time) time-to-compare)]
-                  (if (t/after? time-to-compare delete-time)
+                      delete-time (if delete-time (p/parse-datetime delete-time) nil)]
+                  (if (and delete-time (t/after? time-to-compare delete-time))
                     (serv-errors/throw-service-error
                       :bad-request
                       (format "DeleteTime %s is before the current time." (str delete-time)))
                     (let [{:keys [concept-id revision-id]} (mdb/save-concept context concept)
-                          ttl (t/in-millis (t/interval (t/now) delete-time))]
+                          ttl (when delete-time (t/in-millis (t/interval (t/now) delete-time)))]
                       (indexer/index-concept context concept-id revision-id ttl)
                       {:concept-id concept-id, :revision-id revision-id}))))))
 
