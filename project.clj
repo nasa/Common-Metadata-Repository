@@ -2,14 +2,17 @@
   :description "Bootstrap is a CMR application that can bootstrap the CMR with data from Catalog REST."
   :url "***REMOVED***projects/CMR/repos/cmr-bootstrap-app/browse"
   :dependencies [[org.clojure/clojure "1.6.0"]
+                 [clj-http "0.9.1"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [nasa-cmr/cmr-oracle-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-system-trace-lib "0.1.0-SNAPSHOT"]
+                 [nasa-cmr/cmr-metadata-db-app "0.1.0-SNAPSHOT"]
                  [compojure "1.1.6"]
                  [ring/ring-core "1.2.2"]
                  [ring/ring-json "0.3.1"]
                  [org.clojure/tools.reader "0.8.4"]
-                 [org.clojure/tools.cli "0.3.1"]]
+                 [org.clojure/tools.cli "0.3.1"]
+                 [sqlingvo "0.5.17"]]
   :plugins [[lein-test-out "0.3.1"]]
   :repl-options {:init-ns user}
   :profiles
