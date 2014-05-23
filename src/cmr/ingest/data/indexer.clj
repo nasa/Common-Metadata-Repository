@@ -13,9 +13,10 @@
 
 (deftracefn index-concept
   "Forward newly created concept for indexer app consumption."
-  [context concept-id revision-id]
+  [context concept-id revision-id ttl]
   (let [indexer-url (context->indexer-url context)
         concept-attribs {:concept-id concept-id, :revision-id revision-id}
+        concept-attribs (if (> ttl 0) (merge concept-attribs {:ttl ttl}) concept-attribs)
         response (client/post indexer-url {:body (cheshire/generate-string concept-attribs)
                                            :content-type :json
                                            :throw-exceptions false
