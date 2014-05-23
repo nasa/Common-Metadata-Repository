@@ -25,8 +25,8 @@
 
 (deftracefn index-concept
   "Index the given concept and revision-id"
-  [context concept-id revision-id ignore-conflict]
-  (info (format "Indexing concept %s, revision-id %s" concept-id revision-id))
+  [context concept-id revision-id ttl ignore-conflict]
+  (info (format "Indexing concept %s, revision-id %s, ttl %d" concept-id revision-id ttl))
   (let [concept-type (cs/concept-id->type concept-id)
         concept-mapping-types (idx-set/get-concept-mapping-types context)
         concept (meta-db/get-concept context concept-id revision-id)
@@ -36,7 +36,7 @@
     (es/save-document-in-elastic
       context
       concept-index
-      (concept-mapping-types concept-type) es-doc (Integer. revision-id) ignore-conflict)))
+      (concept-mapping-types concept-type) es-doc (Integer. revision-id) ttl ignore-conflict)))
 
 
 (deftracefn delete-concept
