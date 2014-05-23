@@ -101,8 +101,12 @@ class window.Map extends Module
       geom = switch g.type
                 when "point"
                   new Point(g.lon, g.lat, label:g.label, balloonContents:g.balloon)
+                when "draggable-point"
+                  new Point(g.lon, g.lat, label:g.label, balloonContents:g.balloon)
                 when "ring"
                   Ring.fromOrdinates(g.ords, g.displayOptions)
+                when "draggable-ring"
+                  DraggableRing.fromOrdinates(g.ords, g.displayOptions, window.vddSession)
                 when "bounding-rectangle"
                   new BoundingRectangle(g.west, g.north, g.east, g.south)
                 else throw "Unexpected geometry type: #{g.type}"

@@ -1,6 +1,3 @@
-# This represents the vdd websocket session.
-session = null
-
 # Handles receiving visualization data through WAMP.
 onVizData = (topic, command)->
   console.log("visualization data received", command)
@@ -17,8 +14,5 @@ onVizData = (topic, command)->
     else throw "Unknown command: #{command.cmd}"
 
 # Connect using the WAMP protocol and register callback for visualization data
-session = vdd_core.connection.connect(onVizData)
-
-
-
+window.vddSession = vdd_core.connection.connect(onVizData)
 
