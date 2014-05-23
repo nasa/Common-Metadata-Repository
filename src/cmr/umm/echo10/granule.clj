@@ -4,6 +4,7 @@
             [clojure.java.io :as io]
             [cmr.common.xml :as cx]
             [cmr.umm.granule :as g]
+            [cmr.umm.echo10.collection :as c]
             [cmr.umm.echo10.spatial :as s]
             [cmr.umm.echo10.granule.temporal :as gt]
             [cmr.umm.echo10.granule.platform-ref :as p-ref]
@@ -84,8 +85,10 @@
 (defn- xml-elem->Granule
   "Returns a UMM Product from a parsed Granule XML structure"
   [xml-struct]
-  (let [coll-ref (xml-elem->CollectionRef xml-struct)]
+  (let [coll-ref (xml-elem->CollectionRef xml-struct)
+        data-provider-timestamps (c/xml-elem->DataProviderTimestamps xml-struct)]
     (g/map->UmmGranule {:granule-ur (cx/string-at-path xml-struct [:GranuleUR])
+                        :data-provider-timestamps data-provider-timestamps
                         :collection-ref coll-ref
                         :data-granule (xml-elem->DataGranule xml-struct)
                         :temporal (gt/xml-elem->Temporal xml-struct)
@@ -109,6 +112,7 @@
      (cmr.umm.echo10.core/umm->echo10-xml granule false))
     ([granule indent?]
      (let [{{:keys [entry-title short-name version-id]} :collection-ref
+            {:keys [insert-time update-time delete-time]} :data-provider-timestamps
             granule-ur :granule-ur
             data-granule :data-granule
             temporal :temporal
@@ -123,8 +127,10 @@
        (emit-fn
          (x/element :Granule {}
                     (x/element :GranuleUR {} granule-ur)
-                    (x/element :InsertTime {} "2012-12-31T19:00:00Z")
-                    (x/element :LastUpdate {} "2013-11-30T19:00:00Z")
+                    (x/element :InsertTime {} (str insert-time))
+                    (x/element :LastUpdate {} (str update-time))
+                    (when delete-time
+                      (x/element :DeleteTime {} (str delete-time)))
                     (cond (not (nil? entry-title))
                           (x/element :Collection {}
                                      (x/element :DataSetId {} entry-title))

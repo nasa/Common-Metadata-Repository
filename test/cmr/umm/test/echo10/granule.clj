@@ -36,8 +36,9 @@
 (def all-fields-granule-xml
   "<Granule>
     <GranuleUR>GranuleUR100</GranuleUR>
-    <InsertTime>2010-01-05T05:30:30.550-05:00</InsertTime>
-    <LastUpdate>2010-01-05T05:30:30.550-05:00</LastUpdate>
+    <InsertTime>1999-12-30T19:00:00-05:00</InsertTime>
+    <LastUpdate>1999-12-31T19:00:00-05:00</LastUpdate>
+    <DeleteTime>2000-12-31T19:00:00-05:00</DeleteTime>
     <Collection>
       <DataSetId>R1_SCANSAR_FRAME</DataSetId>
     </Collection>
@@ -129,6 +130,10 @@
 (deftest parse-granule-test
   (let [expected (umm-g/map->UmmGranule
                    {:granule-ur "GranuleUR100"
+                    :data-provider-timestamps (umm-c/map->DataProviderTimestamps
+                                                {:insert-time (p/parse-datetime "1999-12-30T19:00:00-05:00")
+                                                 :update-time (p/parse-datetime "1999-12-31T19:00:00-05:00")
+                                                 :delete-time (p/parse-datetime "2000-12-31T19:00:00-05:00")})
                     :collection-ref (umm-g/map->CollectionRef
                                       {:entry-title "R1_SCANSAR_FRAME"})
                     :data-granule (umm-g/map->DataGranule

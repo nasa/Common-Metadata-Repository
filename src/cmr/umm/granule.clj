@@ -90,6 +90,8 @@
    ;; maps to Granule/GranuleUR in echo granule schema
    granule-ur
 
+   data-provider-timestamps
+
    ;; granule parent
    collection-ref
 

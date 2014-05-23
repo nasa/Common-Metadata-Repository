@@ -23,7 +23,7 @@
                    :version-id (cx/string-at-path collection-content [:VersionId])
                    :processing-level-id (cx/string-at-path collection-content [:ProcessingLevelId])}))
 
-(defn- xml-elem->DataProviderTimestamps
+(defn xml-elem->DataProviderTimestamps
   "Returns a UMM DataProviderTimestamps from a parsed Collection Content XML structure"
   [collection-content]
   (c/map->DataProviderTimestamps {:insert-time (cx/datetime-at-path collection-content [:InsertTime])
