@@ -6,6 +6,7 @@
             [cmr.umm.collection.temporal :as ct])
   (:import [cmr.umm.collection
             Product
+            DataProviderTimestamps
             UmmCollection]))
 
 
@@ -42,6 +43,14 @@
                          :long-name (d/unique-str "long-name")
                          :version-id (d/unique-str "V")}]
     (c/map->Product (merge minimal-product attribs))))
+
+(defn data-provider-timestamps
+  [attribs]
+  (let [attribs (select-keys attribs (d/record-fields DataProviderTimestamps))
+        attribs (into {} (for [[k v] attribs] [k (p/parse-datetime v)]))
+        minimal-timestamps {:insert-time (d/make-datetime 10 false)
+                            :update-time (d/make-datetime 18 false)}]
+    (c/map->DataProviderTimestamps (merge minimal-timestamps attribs))))
 
 (defn temporal
   "Return a temporal with range date time of the given date times"
@@ -106,10 +115,12 @@
    (collection {}))
   ([attribs]
    (let [product (product attribs)
+         data-provider-timestamps (data-provider-timestamps attribs)
          temporal {:temporal (temporal attribs)}
          minimal-coll {:entry-id (str (:short-name product) "_" (:version-id product))
                        :entry-title (str (:long-name product) " " (:version-id product))
-                       :product product}
+                       :product product
+                       :data-provider-timestamps data-provider-timestamps}
          attribs (select-keys attribs (concat (d/record-fields UmmCollection) [:concept-id :revision-id]))
          attribs (merge minimal-coll temporal attribs)]
      (c/map->UmmCollection attribs))))
