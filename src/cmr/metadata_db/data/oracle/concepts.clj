@@ -14,7 +14,8 @@
             [clj-time.format :as f]
             [clj-time.coerce :as cr]
             [clj-time.core :as t]
-            [cmr.common.concepts :as cc])
+            [cmr.common.concepts :as cc]
+            [cmr.oracle.connection])
   (:import cmr.oracle.connection.OracleStore
            java.util.zip.GZIPInputStream
            java.util.zip.GZIPOutputStream

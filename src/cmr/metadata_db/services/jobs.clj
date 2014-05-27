@@ -11,6 +11,7 @@
             [cmr.metadata-db.data.oracle.concepts :as concepts]
             [cmr.metadata-db.data.oracle.concept-tables :as tables]
             [cmr.metadata-db.services.concept-service :as srv]
+            [cmr.metadata-db.data.oracle.providers]
             [clojure.java.jdbc :as j]
             [sqlingvo.core :as s :refer [select from where with order-by desc delete as]]
             [cmr.metadata-db.data.oracle.sql-utils :as su]))
@@ -44,10 +45,13 @@
 (defjob ExpiredConceptCleanupJob
   [ctx]
   (info "Excuting expired concepts cleanup.")
-  (let [db (mo/get-db)]
-    (doseq [provider (provider-db/get-providers db)]
-      (delete-expired-concepts db provider :collection)
-      (delete-expired-concepts db provider :granule)))
+  (try
+    (let [db (mo/get-db)]
+      (doseq [provider (provider-db/get-providers db)]
+        (delete-expired-concepts db provider :collection)
+        (delete-expired-concepts db provider :granule)))
+    (catch Throwable e
+      (error e "ExpiredConceptCleanupJob caught Exception.")))
   (info "Finished expired concepts cleanup."))
 
 (defn start

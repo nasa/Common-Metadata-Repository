@@ -18,6 +18,7 @@
                  [com.oracle/ojdbc6 "11.2.0.3"]
                  [com.mchange/c3p0 "0.9.2.1"]
                  [inflections "0.9.7"]
+                 [org.quartz-scheduler/quartz-oracle "2.1.7"]
                  [clojurewerkz/quartzite "1.2.0"]]
 
   ;; Need the maven repo for Oracle jars that aren't available in public maven repos.
