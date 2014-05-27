@@ -126,3 +126,20 @@
         m-without-renamed (apply dissoc m (keys kmap))]
     (reduce #(merge-with merge-fn %1 %2) m-without-renamed renamed-subsets)))
 
+
+(defn binary-search
+  "Does a binary search between minv and maxv searching for an acceptable value. middle-fn should
+  be a function taking two values and finding the midpoint. matches-fn should be a function taking a
+  value along with the current recursion depth. matches-fn should return a keyword of :less-than,
+  :greater-than, or :matches to indicate if the current value is an acceptable response."
+  [minv maxv middle-fn matches-fn]
+  (loop [minv minv
+         maxv maxv
+         depth 0]
+    (let [current (middle-fn minv maxv)
+          matches-result (matches-fn current minv maxv depth)]
+      (case matches-result
+        :less-than (recur current maxv (inc depth))
+        :greater-than (recur minv current (inc depth))
+        matches-result))))
+
