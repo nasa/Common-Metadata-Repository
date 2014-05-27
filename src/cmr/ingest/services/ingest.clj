@@ -73,9 +73,8 @@
                     (serv-errors/throw-service-error
                       :bad-request
                       (format "DeleteTime %s is before the current time." (str delete-time)))
-                    (let [{:keys [concept-id revision-id]} (mdb/save-concept context concept)
-                          ttl (when delete-time (t/in-millis (t/interval (t/now) delete-time)))]
-                      (indexer/index-concept context concept-id revision-id ttl)
+                    (let [{:keys [concept-id revision-id]} (mdb/save-concept context concept)]
+                      (indexer/index-concept context concept-id revision-id)
                       {:concept-id concept-id, :revision-id revision-id}))))))
 
 (deftracefn delete-concept
