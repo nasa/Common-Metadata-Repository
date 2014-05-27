@@ -114,14 +114,11 @@
   [d]
   (.format (DecimalFormat. "#.#####################") d))
 
-(defn merger
-  "Merge value entries of same keys."
-  [v1 v2]
-  (let [make-seq #(if (sequential? %) % [%])]
-    (concat (make-seq v1) (make-seq v2))))
 
 (defn rename-keys-with [m kmap merge-fn]
-  "Returns the map with the keys in kmap renamed to the vals in kmap. And values of map merged per merge-fn."
+  "Returns the map with the keys in kmap renamed to the vals in kmap. Values of renamed keys for which
+  there is already existing value will be merged using the merge-fn. merge-fn will be called with
+  the original keys value and the renamed keys value."
   (let [rename-subset (select-keys m (keys kmap))
         renamed-subsets  (map (fn [[k v]]
                                 (set/rename-keys {k v} kmap))
