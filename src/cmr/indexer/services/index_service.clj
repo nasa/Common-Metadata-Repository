@@ -1,6 +1,7 @@
 (ns cmr.indexer.services.index-service
   "Provide functions to index concept"
   (:require [clojure.string :as s]
+            [clj-time.core :as t]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.services.errors :as errors]
             [cmr.common.concepts :as cs]
@@ -25,12 +26,14 @@
 
 (deftracefn index-concept
   "Index the given concept and revision-id"
-  [context concept-id revision-id ttl ignore-conflict]
-  (info (format "Indexing concept %s, revision-id %s, ttl %d" concept-id revision-id ttl))
+  [context concept-id revision-id ignore-conflict]
+  (info (format "Indexing concept %s, revision-id %s" concept-id revision-id))
   (let [concept-type (cs/concept-id->type concept-id)
         concept-mapping-types (idx-set/get-concept-mapping-types context)
         concept (meta-db/get-concept context concept-id revision-id)
         umm-concept (parse-concept concept)
+        delete-time (get-in umm-concept [:data-provider-timestamps :delete-time])
+        ttl (when delete-time (t/in-millis (t/interval (t/now) delete-time)))
         concept-index (idx-set/get-concept-index-name context concept-id revision-id concept)
         es-doc (concept->elastic-doc context concept umm-concept)]
     (es/save-document-in-elastic

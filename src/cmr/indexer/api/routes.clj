@@ -29,9 +29,9 @@
   (routes
 
     (POST "/" {body :body request-context :request-context params :params}
-      (let [{:keys [concept-id revision-id ttl]} (walk/keywordize-keys body)
+      (let [{:keys [concept-id revision-id]} (walk/keywordize-keys body)
             ignore-conflict (ignore-conflict? params)]
-        (r/created (index-svc/index-concept request-context concept-id revision-id ttl ignore-conflict))))
+        (r/created (index-svc/index-concept request-context concept-id revision-id ignore-conflict))))
 
     ;; reset operation available just for development purposes
     ;; delete configured elastic indexes and create them back
