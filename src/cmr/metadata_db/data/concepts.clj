@@ -49,7 +49,12 @@
 
   (reset
     [db]
-    "Resets concept related data back to an initial fresh state. WARNING: For dev use only."))
+    "Resets concept related data back to an initial fresh state. WARNING: For dev use only.")
+
+  (get-expired-concepts
+    [db provider concept-type]
+    "Returns concepts that have a delete-time before now and have not been deleted
+    for the given provider and concept-type."))
 
 
 

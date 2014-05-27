@@ -8,4 +8,4 @@
   []
   (if @db-atom
     @db-atom
-    (swap! db-atom (constantly (oracle/create-db (oracle/db-spec))))))
+    (reset! db-atom (oracle/create-db (oracle/db-spec)))))

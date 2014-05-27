@@ -278,3 +278,14 @@
                       concept-type
                       provider-id
                       native-id))))
+
+(defn delete-expired-concepts
+  "Delete concepts that have not been deleted and have a delete-time before now"
+  [db provider concept-type]
+  (let [expired-concepts (c/get-expired-concepts db provider concept-type)]
+    (when-not (empty? expired-concepts)
+      (info "Deleting expired" (name concept-type) "concepts: " (map :concept-id expired-concepts)))
+    (doseq [coll expired-concepts]
+      (let [revision-id (inc (:revision-id coll))
+            tombstone (merge coll {:revision-id revision-id :deleted true})]
+        (try-to-save db tombstone revision-id)))))
