@@ -64,6 +64,63 @@
          (util/remove-nil-keys
            {:a true :b nil :c "value" :d false}))))
 
+
+(deftest rename-keys-with-test
+  (testing "basic rename key tests"
+    (let [params {:k [1 2]}
+          param-aliases {:k :replaced-k}
+          merge-fn concat
+          expected {:replaced-k [1 2]}]
+      (is (= expected
+             (util/rename-keys-with params param-aliases merge-fn))))
+    (let [params {:foo 2 :bar 4}
+          param-aliases {:bar :foo}
+          merge-fn +
+          expected {:foo 6}]
+      (is (= expected
+             (util/rename-keys-with params param-aliases merge-fn))))
+    (let [params {:foo 5}
+          param-aliases {:bar :foo}
+          merge-fn +]
+      (is (= params
+             (util/rename-keys-with params param-aliases merge-fn))))
+    (let [params {:foo [1 2] :bar [3 4]}
+          param-aliases {:bar :foo}
+          merge-fn concat
+          expected {:foo [1 2 3 4]}]
+      (is (= expected
+             (util/rename-keys-with params param-aliases merge-fn))))
+    (let [params {:foo [1 2] :bar [3 4]}
+          param-aliases {:bar :foo :x :foo}
+          merge-fn concat
+          expected {:foo [1 2 3 4]}]
+      (is (= expected
+             (util/rename-keys-with params param-aliases merge-fn)))))
+  (testing "multiples keys aliasing to same key tests"
+    (let [params {:foo 2 :bar 4 :k1 8 :k3 16}
+          param-aliases {:bar :foo :k1 :foo :k2 :foo}
+          merge-fn +
+          expected {:foo 14 :k3 16}]
+      (is (= expected
+             (util/rename-keys-with params param-aliases merge-fn))))
+    (let [params {:foo [1 2] :bar [3 4] :k1 8 :k2 "d"}
+          param-aliases {:bar :foo :k1 :foo :k2 :foo}
+          merge-fn #(concat (if (sequential? %1) %1 [%1])
+                            (if (sequential? %2) %2 [%2]))
+          expected {:foo [1 2 "d" 8 3 4]}]
+      (is (= expected
+             (util/rename-keys-with params param-aliases merge-fn))))
+    (let [params {:concept-id ["G9000000009-CMR_PROV2"],
+                  :echo-granule-id ["G1000000006-CMR_PROV2"]
+                  :echo-collection-id "C1000000002-CMR_PROV2"}
+          param-aliases {:echo-granule-id :concept-id :echo-collection-id :concept-id :dummy-key :replace-key}
+          merge-fn #(concat (if (sequential? %1) %1 [%1])
+                            (if (sequential? %2) %2 [%2]))
+          expected {:concept-id ["G9000000009-CMR_PROV2" "C1000000002-CMR_PROV2" "G1000000006-CMR_PROV2"]}]
+      (is (= expected
+             (util/rename-keys-with params param-aliases merge-fn))))))
+
+
 (defspec map-n-spec 100
   (for-all [n gen/s-pos-int
             step gen/s-pos-int

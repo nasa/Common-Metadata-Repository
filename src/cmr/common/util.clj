@@ -2,7 +2,8 @@
   "Utility functions that might be useful throughout the CMR."
   (:require [cmr.common.log :refer (debug info warn error)]
             [cmr.common.services.errors :as errors]
-            [camel-snake-kebab :as csk])
+            [camel-snake-kebab :as csk]
+            [clojure.set :as set])
   (:import java.text.DecimalFormat))
 
 (defn sequence->fn
@@ -113,6 +114,19 @@
   [d]
   (.format (DecimalFormat. "#.#####################") d))
 
+
+(defn rename-keys-with [m kmap merge-fn]
+  "Returns the map with the keys in kmap renamed to the vals in kmap. Values of renamed keys for which
+  there is already existing value will be merged using the merge-fn. merge-fn will be called with
+  the original keys value and the renamed keys value."
+  (let [rename-subset (select-keys m (keys kmap))
+        renamed-subsets  (map (fn [[k v]]
+                                (set/rename-keys {k v} kmap))
+                              rename-subset)
+        m-without-renamed (apply dissoc m (keys kmap))]
+    (reduce #(merge-with merge-fn %1 %2) m-without-renamed renamed-subsets)))
+
+
 (defn binary-search
   "Does a binary search between minv and maxv searching for an acceptable value. middle-fn should
   be a function taking two values and finding the midpoint. matches-fn should be a function taking a
@@ -128,3 +142,4 @@
         :less-than (recur current maxv (inc depth))
         :greater-than (recur minv current (inc depth))
         matches-result))))
+
