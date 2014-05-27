@@ -262,7 +262,7 @@
 (defn string-condition
   "Creates a string condition."
   ([field value]
-   (string-condition field value true false))
+   (string-condition field value false false))
   ([field value case-sensitive? pattern?]
    (->StringCondition field value case-sensitive? pattern?)))
 

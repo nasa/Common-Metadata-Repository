@@ -11,7 +11,7 @@
 (defn- shape->script-cond
   [shape]
   (qm/map->ScriptCondition {:name "spatial"
-                            :params {:ords (str/join "," (srl/shape->stored-ords shape))}}))
+                            :params {:ords (str/join "," (:ords (srl/shape->stored-ords shape)))}}))
 
 (defn- br->cond
   [prefix {:keys [west north east south] :as br}]
@@ -56,6 +56,4 @@
           mbr-cond (br->cond "mbr" (srl/shape->mbr shape))
           lr-cond (br->cond "lr" (srl/shape->lr shape))
           spatial-script (shape->script-cond shape)]
-      (qm/nested-condition
-        :geometries
-        (qm/and-conds [mbr-cond (qm/or-conds [lr-cond spatial-script])])))))
+      (qm/and-conds [mbr-cond (qm/or-conds [lr-cond spatial-script])]))))

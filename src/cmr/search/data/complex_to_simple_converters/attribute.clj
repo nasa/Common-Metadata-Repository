@@ -30,7 +30,8 @@
 
 (defmethod value-condition->value-filter :string
   [{:keys [type value]}]
-  (qm/string-condition (type->field-name type) value))
+  ;; We don't support case insensitive or pattern search on additional attribute string condition
+  (qm/string-condition (type->field-name type) value true false))
 
 (defn- date-value-condition->value-filter
   "Helper function for any date related attribute fields"

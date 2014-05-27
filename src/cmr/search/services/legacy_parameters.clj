@@ -1,7 +1,13 @@
 (ns cmr.search.services.legacy-parameters
   "Contains functions for tranforming legacy parameters to the CMR format."
-  (:require [cmr.common.util :as cu]
-            [clojure.walk :as w]))
+  (:require [clojure.set :as set]
+            [clojure.string :as s]
+            [ring.util.codec :as rc]
+            [cmr.common.util :as cu]
+            [clojure.walk :as w]
+            [cmr.common.services.messages :as msg]
+            [cmr.search.services.messages.attribute-messages :as a-msg]
+            [cmr.common.services.errors :as errors]))
 
 (def param-aliases
   "A map of non UMM parameter names to their UMM fields."
@@ -25,6 +31,86 @@
                  (cu/rename-keys-with % param-aliases merger)
                  %)
               params))
+
+(defn- psa-pre-validation
+  "Check to see if the client has specified BOTH legacy format psa parameters and the current csv
+  format, which is an error. Also check to make sure that cmr style uses 'attribute[]=' and not
+  'attribute='."
+  [params]
+  (if-let [attributes (:attribute params)]
+    (if (vector? attributes)
+      (reduce (fn [memo x]
+                (cond
+                  (or (and (string? x) (= :legacy-style memo))
+                      (and (map? x) (= :cmr-style memo)))
+                  (msg/data-error :invalid-data a-msg/mixed-legacy-and-cmr-style-parameters-msg)
+
+                  (string? x)
+                  :cmr-style
+
+                  (map? x)
+                  :legacy-style
+
+                  :else
+                  (errors/internal-error! (a-msg/expected-map-or-str-parameter-msg x))))
+              nil
+              attributes)
+      (msg/data-error :invalid-data a-msg/attributes-must-be-sequence-msg))))
+
+(defn- escape-commas
+  "Escape commas in an attribute parameter field"
+  [value]
+  (when value (s/replace value "," "\\,")))
+
+(defn- attr-map->cmr-param
+  "Create an attribute string from a map of attribute key/values."
+  [{:keys [name type value minValue maxValue]}]
+  (let [[name type value minValue maxValue] (map escape-commas [name type value minValue maxValue])
+        base (str type "," name ",")]
+    (if value
+      (str base value)
+      (str base minValue "," maxValue))))
+
+(defn- legacy-psa-param->tuple
+  "Convert a legacy attribute url parameter to a tuple"
+  [param]
+  (let [[_ key value] (re-find #"(?s)attribute\[\]\[(.*?)\]=(.*)" param)]
+    (when key [(keyword key) value])))
+
+(defn- checked-merge
+  "Merge a tuple into a map only if the key does not already exist. Throws an
+  exception if it does. This allows us to catch client errors where they try to specify
+  the same attribute field twice, e.g., &attribute[][name]=a&attribute[name]=b."
+  [map tuple]
+  (if (get map (first tuple))
+    (msg/data-error :invalid-data a-msg/duplicate-parameter-msg tuple)
+    (merge map tuple)))
+
+
+(defn- group-legacy-psa-tuples
+  "Take a list of tuples created from a legacy query string and group them together as attributes"
+  [big-list]
+  (reduce (fn [results item]
+            (if (= :name (first item))
+              ;; Put current set on results and start a new current set
+              (conj results (merge {} item))
+              ;; Update the current set (last set on results)
+              (update-in results [(dec (count results))] checked-merge item)))
+          []
+          big-list))
+
+(defn process-legacy-psa
+  "Process legacy product specific attributes by parsing the query string and updating params
+  with attributes matching the new cmr csv style"
+  [params query-string]
+  (psa-pre-validation params)
+  (let [param-strings (map rc/url-decode (s/split query-string #"&"))
+        param-tuples (keep legacy-psa-param->tuple param-strings)
+        param-maps (group-legacy-psa-tuples param-tuples)
+        psa (map attr-map->cmr-param param-maps)]
+    (if-not (empty? psa)
+      (assoc params :attribute psa)
+      params)))
 
 (defn- process-legacy-range-maps
   "Changes legacy map range conditions in the param[minValue]/param[maxValue] format
@@ -51,7 +137,6 @@
                  memo))
              params
              params))
-
 
 (defn- process-equator-crossing-date
   "Legacy format for granule equator crossing date is to specify two separate parameters:
@@ -93,13 +178,6 @@
     (replace-parameter-aliases params)
     )
 
-
-      (rename-keys-with {:foo [1 2]
-                       :bar [3 4]
-                       :k1 [8]
-                       :k2 "d"}  {:bar :foo
-                                  :k1 :foo
-                                  :k2 :foo} merger)
   ;;;;;;;;;;;;;;;;;
   )
 
