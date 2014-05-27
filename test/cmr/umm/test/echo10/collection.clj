@@ -34,8 +34,9 @@
   "<Collection>
     <ShortName>MINIMAL</ShortName>
     <VersionId>1</VersionId>
-    <InsertTime>1999-12-31T19:00:00-05:00</InsertTime>
+    <InsertTime>1999-12-30T19:00:00-05:00</InsertTime>
     <LastUpdate>1999-12-31T19:00:00-05:00</LastUpdate>
+    <DeleteTime>2000-12-31T19:00:00-05:00</DeleteTime>
     <LongName>A minimal valid collection</LongName>
     <DataSetId>A minimal valid collection V 1</DataSetId>
     <Description>A minimal valid collection</Description>
@@ -182,6 +183,10 @@
                                 :long-name "A minimal valid collection"
                                 :version-id "1"
                                 :processing-level-id "1B"})
+                    :data-provider-timestamps (umm-c/map->DataProviderTimestamps
+                                                {:insert-time (p/parse-datetime "1999-12-30T19:00:00-05:00")
+                                                 :update-time (p/parse-datetime "1999-12-31T19:00:00-05:00")
+                                                 :delete-time (p/parse-datetime "2000-12-31T19:00:00-05:00")})
                     :spatial-keywords ["Word-2" "Word-1" "Word-0"]
                     :temporal
                     (umm-c/map->Temporal

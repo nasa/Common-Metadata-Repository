@@ -74,6 +74,7 @@
     g/map->UmmGranule
     (gen/hash-map
       :granule-ur granule-urs
+      :data-provider-timestamps c/data-provider-timestamps
       :collection-ref coll-refs
       :data-granule (ext-gen/optional data-granules)
       :temporal gt/temporal

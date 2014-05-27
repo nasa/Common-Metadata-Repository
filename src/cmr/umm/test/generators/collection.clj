@@ -21,6 +21,9 @@
 (def products
   (ext-gen/model-gen c/->Product short-names long-names version-ids (ext-gen/optional processing-level-ids)))
 
+(def data-provider-timestamps
+  (ext-gen/model-gen c/->DataProviderTimestamps ext-gen/date-time ext-gen/date-time (ext-gen/optional ext-gen/date-time)))
+
 (def entry-titles
   (ext-gen/string-alpha-numeric 1 1030))
 
@@ -95,6 +98,7 @@
               (gen/hash-map
                 :entry-title entry-titles
                 :product products
+                :data-provider-timestamps data-provider-timestamps
                 :temporal t/temporals
                 :spatial-keywords (ext-gen/nil-if-empty (gen/vector (ext-gen/string-ascii 1 80) 0 4))
                 :platforms (ext-gen/nil-if-empty (gen/vector platforms 0 4))
