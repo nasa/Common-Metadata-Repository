@@ -57,6 +57,14 @@
     (is (= status 400))
     (is (re-find #"Invalid XML file." (first errors)))))
 
+;; Verify old DeleteTime concept results in 400 error.
+(deftest old-delete-time-collection-ingest-test
+  (let [coll (dc/collection {:delete-time "2000-01-01T12:00:00Z"})
+        {:keys [status errors]} (ingest/ingest-concept
+                                  (d/item->concept (assoc coll :provider-id "PROV1")))]
+    (is (= status 400))
+    (is (re-find #"DeleteTime 2000-01-01T12:00:00.000Z is before the current time." (first errors)))))
+
 ;; Verify non-existent concept deletion results in not found / 404 error.
 (deftest delete-non-existent-collection-test
   (let [concept (old-ingest/distinct-concept "PROV1" 3)

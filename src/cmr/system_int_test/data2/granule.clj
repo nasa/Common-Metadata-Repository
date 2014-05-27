@@ -4,6 +4,7 @@
             [cmr.umm.collection :as c]
             [cmr.umm.granule.temporal :as gt]
             [cmr.system-int-test.data2.core :as d]
+            [cmr.system-int-test.data2.collection :as dc]
             [cmr.common.date-time-parser :as p]))
 
 (defn psa
@@ -70,10 +71,11 @@
   ([collection]
    (granule collection {}))
   ([collection attribs]
-   (let [coll-ref (g/collection-ref (:entry-title collection))
+   (let [timestamps {:data-provider-timestamps (dc/data-provider-timestamps attribs)}
+         coll-ref (g/collection-ref (:entry-title collection))
          minimal-gran {:granule-ur (d/unique-str "ur")
                        :collection-ref coll-ref}
          data-granule {:data-granule (data-granule attribs)}
          temporal {:temporal (temporal attribs)}]
-     (g/map->UmmGranule (merge minimal-gran data-granule temporal attribs)))))
+     (g/map->UmmGranule (merge minimal-gran timestamps data-granule temporal attribs)))))
 
