@@ -12,12 +12,17 @@
    :echo-granule-id :concept-id
    :online-only :downloadable})
 
+(defn merger
+  "Make a sequence from supplied values."
+  [v1 v2]
+  (let [make-seq #(if (sequential? %) % [%])]
+    (concat (make-seq v1) (make-seq v2))))
 
 (defn replace-parameter-aliases
   "Walk the request params tree to replace aliases of parameter names."
   [params]
   (w/postwalk #(if (map? %)
-                 (cu/rename-keys-with % param-aliases cu/merger)
+                 (cu/rename-keys-with % param-aliases merger)
                  %)
               params))
 
