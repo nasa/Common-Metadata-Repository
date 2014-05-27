@@ -3,6 +3,8 @@
   (:require [clojure.set :as set]
             [clojure.string :as s]
             [ring.util.codec :as rc]
+            [cmr.common.util :as cu]
+            [clojure.walk :as w]
             [cmr.common.services.messages :as msg]
             [cmr.search.services.messages.attribute-messages :as a-msg]
             [cmr.common.services.errors :as errors]))
@@ -16,22 +18,19 @@
    :echo-granule-id :concept-id
    :online-only :downloadable})
 
-(defn- replace-exclude-param-aliases
-  "Convert non UMM parameter names to their UMM fields iff exclude params are present"
-  [params]
-  (if (map? (:exclude params))
-    (update-in params [:exclude]
-               #(set/rename-keys % param-aliases))
-    params))
+(defn merger
+  "Make a sequence from supplied values."
+  [v1 v2]
+  (let [make-seq #(if (sequential? %) % [%])]
+    (concat (make-seq v1) (make-seq v2))))
 
 (defn replace-parameter-aliases
-  "Replaces aliases of parameter names"
+  "Walk the request params tree to replace aliases of parameter names."
   [params]
-  (-> params
-      (set/rename-keys param-aliases)
-      (update-in [:options]
-                 #(when % (set/rename-keys % param-aliases)))
-      replace-exclude-param-aliases))
+  (w/postwalk #(if (map? %)
+                 (cu/rename-keys-with % param-aliases merger)
+                 %)
+              params))
 
 (defn- psa-pre-validation
   "Check to see if the client has specified BOTH legacy format psa parameters and the current csv
@@ -167,3 +166,20 @@
   (reduce #(%2 concept-type %1)
           params
           legacy-multi-params-condition-funcs))
+
+
+(comment
+  ;;;;;;;;;;
+  (let [params {:exclude {:concept-id ["G10000000099-CMR_PROV2"],
+                          :echo-granule-id ["G1000000006-CMR_PROV2"]
+                          :echo-collection-id "C1000000002-CMR_PROV2"},
+                :echo-granule-id ["G1000000002-CMR_PROV1" "G1000000003-CMR_PROV1"
+                                  "G1000000004-CMR_PROV1" "G1000000005-CMR_PROV2" "G1000000006-CMR_PROV2"]}]
+    (replace-parameter-aliases params)
+    )
+
+  ;;;;;;;;;;;;;;;;;
+  )
+
+
+
