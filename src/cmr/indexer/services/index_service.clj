@@ -35,7 +35,7 @@
         ttl (when delete-time (t/in-millis (t/interval (t/now) delete-time)))
         concept-index (idx-set/get-concept-index-name context concept-id revision-id concept)
         es-doc (concept->elastic-doc context concept umm-concept)]
-    (if-not (and ttl (<= ttl 0))
+    (when-not (and ttl (<= ttl 0))
       (es/save-document-in-elastic
         context
         concept-index
