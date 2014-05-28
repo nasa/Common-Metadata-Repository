@@ -39,7 +39,8 @@
    :deleted false
    :extra-fields {:short-name (str "short" uniq-num)
                   :version-id (str "V" uniq-num)
-                  :entry-title (str "dataset" uniq-num)}})
+                  :entry-title (str "dataset" uniq-num)
+                  :delete-time nil}})
 
 (defn granule-concept
   "Creates a granule concept"
@@ -50,7 +51,8 @@
                  :metadata (str "xml here " uniq-num)
                  :format "echo10"
                  :deleted false
-                 :extra-fields {:parent-collection-id parent-collection-id}}]
+                 :extra-fields {:parent-collection-id parent-collection-id
+                                :delete-time nil}}]
     (if concept-id
       (assoc granule :concept-id (first concept-id))
       granule)))

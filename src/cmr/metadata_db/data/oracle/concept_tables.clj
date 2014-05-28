@@ -35,6 +35,7 @@
                                  short_name VARCHAR(85) NOT NULL,
                                  version_id VARCHAR(80) NOT NULL,
                                  entry_title VARCHAR(1030) NOT NULL,
+                                 delete_time TIMESTAMP WITH TIME ZONE,
                                  CONSTRAINT %s_con_rev
                                  UNIQUE (native_id, revision_id)
                                  USING INDEX (create unique index %s_ucr_i on
@@ -69,6 +70,7 @@
                                  revision_id INTEGER DEFAULT 1 NOT NULL,
                                  revision_date TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP NOT NULL,
                                  deleted INTEGER DEFAULT 0 NOT NULL,
+                                 delete_time TIMESTAMP WITH TIME ZONE,
                                  CONSTRAINT %s_con_rev
                                  UNIQUE (native_id, revision_id)
                                  USING INDEX (create unique index %s_ucr_i on

@@ -2,6 +2,8 @@
   (:require [clojure.test :refer :all]
             [cmr.metadata-db.data.oracle.concepts :as c]
             [cmr.oracle.connection :as oracle]
+            [cmr.metadata-db.data.oracle.concepts.collection]
+            [cmr.metadata-db.data.oracle.concepts.granule]
             [clojure.java.jdbc :as j]
             [clj-time.format :as f]
             [clj-time.coerce :as cr]
@@ -57,7 +59,8 @@
                       :deleted 0
                       :short_name "short"
                       :version_id "v1"
-                      :entry_title "entry"}]
+                      :entry_title "entry"
+                      :delete_time oracle-timestamp}]
           (is (= {:concept-type :collection
                   :native-id "foo"
                   :concept-id "C5-PROV1"
@@ -69,7 +72,8 @@
                   :deleted false
                   :extra-fields {:short-name "short"
                                  :version-id "v1"
-                                 :entry-title "entry"}}
+                                 :entry-title "entry"
+                                 :delete-time "1986-10-14T04:03:27.456Z"}}
                  (c/db-result->concept-map :collection db "PROV1" result)))))
       (testing "granule results"
         (let [result {:native_id "foo"
@@ -79,7 +83,8 @@
                       :revision_date oracle-timestamp
                       :revision_id 2
                       :deleted 0
-                      :parent_collection_id "C5-PROV1"}]
+                      :parent_collection_id "C5-PROV1"
+                      :delete_time oracle-timestamp}]
           (is (= {:concept-type :granule
                   :native-id "foo"
                   :concept-id "G7-PROV1"
@@ -89,13 +94,16 @@
                   :revision-id 2
                   :revision-date "1986-10-14T04:03:27.456Z"
                   :deleted false
-                  :extra-fields {:parent-collection-id "C5-PROV1"}}
+                  :extra-fields {:parent-collection-id "C5-PROV1"
+                                 :delete-time "1986-10-14T04:03:27.456Z"}}
                  (c/db-result->concept-map :granule db "PROV1" result))))))))
 
 
 (deftest concept->insert-args-test
   (testing "collection insert-args"
-    (let [concept {:concept-type :collection
+    (let [revision-time (t/date-time 1986 10 14 4 3 27 456)
+          sql-timestamp (cr/to-sql-time revision-time)
+          concept {:concept-type :collection
                    :native-id "foo"
                    :concept-id "C5-PROV1"
                    :provider-id "PROV1"
@@ -105,13 +113,16 @@
                    :deleted false
                    :extra-fields {:short-name "short"
                                   :version-id "v1"
-                                  :entry-title "entry"}}]
+                                  :entry-title "entry"
+                                  :delete-time "1986-10-14T04:03:27.456Z"}}]
       (is (= [["native_id" "concept_id" "metadata" "format" "revision_id" "deleted"
-               "short_name" "version_id" "entry_title"]
-              ["foo" "C5-PROV1" "<foo>" "xml" 2 false "short" "v1" "entry"]]
+               "short_name" "version_id" "entry_title" "delete_time"]
+              ["foo" "C5-PROV1" "<foo>" "xml" 2 false "short" "v1" "entry" sql-timestamp]]
              (fix-result (c/concept->insert-args concept))))))
   (testing "granule insert-args"
-    (let [concept {:concept-type :granule
+    (let [revision-time (t/date-time 1986 10 14 4 3 27 456)
+          sql-timestamp (cr/to-sql-time revision-time)
+          concept {:concept-type :granule
                    :native-id "foo"
                    :concept-id "G7-PROV1"
                    :provider-id "PROV1"
@@ -119,7 +130,8 @@
                    :format "xml"
                    :revision-id 2
                    :deleted false
-                   :extra-fields {:parent-collection-id "C5-PROV1"}}]
-      (is (= [["native_id" "concept_id" "metadata" "format" "revision_id" "deleted" "parent_collection_id"]
-              ["foo" "G7-PROV1" "<foo>" "xml" 2 false "C5-PROV1"]]
+                   :extra-fields {:parent-collection-id "C5-PROV1"
+                                  :delete-time "1986-10-14T04:03:27.456Z"}}]
+      (is (= [["native_id" "concept_id" "metadata" "format" "revision_id" "deleted" "parent_collection_id" "delete_time"]
+              ["foo" "G7-PROV1" "<foo>" "xml" 2 false "C5-PROV1" sql-timestamp]]
              (fix-result (c/concept->insert-args concept)))))))
