@@ -36,6 +36,69 @@
     (is (approx= expected-northern northernmost-point))
     (is (approx= expected-southern southernmost-point))))
 
+(defspec arc-midpoint-spec 100
+  (for-all [arc sgen/arcs]
+    (let [midpoint (a/midpoint arc)]
+      (and (or (mbr/covers-point? (:mbr1 arc) midpoint)
+               (and (:mbr2 arc)
+                    (mbr/covers-point? (:mbr2 arc) midpoint)))))))
+
+(deftest arc-midpoint-test
+  (are [ords lon-lat-midpoint]
+       (= (apply p/point lon-lat-midpoint)
+          (a/midpoint (apply a/ords->arc ords)))
+
+       ;; Normal arc
+       [0 0 10 10] [5 5.057514896828208]
+
+       ;; vertical
+       [1 2, 1 10] [1 6]
+
+       ;; vertical on antimeridian
+       [180 2, 180 10] [180 6]
+       [180 2, -180 10] [180 6]
+       [-180 2, 180 10] [-180 6]
+       [-180 2, -180 10] [-180 6]
+
+       ;; across north pole
+       [0 85, 180 85] [0 90]
+       [-10 85, 170 85] [0 90]
+
+       ;; across south pole
+       [0 -85, 180 -85] [0 -90]
+       [-10 -85, 170 -85] [0 -90]))
+
+
+(deftest arc-vertical-test
+  (testing "vertical cases"
+    (are [ords]
+         (and
+           (a/vertical? (apply a/ords->arc ords))
+           (a/vertical? (apply a/ords->arc (flatten (reverse (partition 2 ords))))))
+         [1 2, 1 10]
+         ; One point on a pole
+         [5,5, 0 90]
+         [5,5, 0 -90]
+
+         ;; on antimeridian
+         [180 2, 180 10]
+         [180 2, -180 10]
+         [-180 2, 180 10]
+         [-180 2, -180 10]
+         [44.99999999999999 -40.28192423875854, 45.0 -37.143419950509745]
+         ))
+  (testing "not vertical cases"
+    (are [ords]
+         (not (a/vertical? (apply a/ords->arc ords)))
+         [1 0, 2 0]
+         [1 0, 2 1]
+         [1 0, 2 1]
+         ;; across pole
+         [-10 85, 170 85]
+         [0 85, 180 85]
+         [0 85, -180 85])))
+
+
 (deftest arc-great-circles-examples
   (testing "Normal set of points"
     (assert-gc-extreme-points

@@ -5,6 +5,7 @@
             [cmr.spatial.point :as p]
             [cmr.spatial.polygon :as poly]
             [cmr.spatial.mbr :as m]
+            [cmr.spatial.arc :as a]
             [cmr.spatial.ring :as r]
             [clojure.string :as s]
             [cmr.spatial.derived :as d]
@@ -12,7 +13,8 @@
   (:import cmr.spatial.point.Point
            cmr.spatial.ring.Ring
            cmr.spatial.polygon.Polygon
-           cmr.spatial.mbr.Mbr))
+           cmr.spatial.mbr.Mbr
+           cmr.spatial.arc.Arc))
 
 (comment
 
@@ -22,13 +24,14 @@
      (p/point 2 2)])
 
   (add-geometries
-    [(assoc (r/ring [(p/point 1.0 1.0)
+    [(assoc
+       (r/ring [(p/point 1.0 1.0)
                      (p/point 1.0 4.0)
                      (p/point -1.0 1.0)
                      (p/point -2.0 1.0)
                      (p/point -1.0 0.0)
                      (p/point 1.0 1.0)])
-            :draggable true)])
+       :display-options {:style {:color "9918A0ff" :width 5}})])
 
   (clear-geometries)
 
@@ -82,11 +85,20 @@
         :ords (p/points->ords points)
         :displayOptions display-options}]))
 
+  Arc
+  (cmr-spatial->viz-geoms
+    [arc]
+    (let [{:keys [display-options draggable]} arc
+          type (if draggable :draggable-ring :ring)]
+      [{:type type
+        :ords (a/arc->ords arc)
+        :displayOptions display-options}]))
+
   Polygon
   (cmr-spatial->viz-geoms
     [polygon]
-    (let [{:keys [rings]} polygon]
-      (mapcat cmr-spatial->viz-geoms rings)))
+    (let [{:keys [rings display-options]} polygon]
+      (mapcat cmr-spatial->viz-geoms (map #(assoc % :display-options display-options) rings))))
 
   Mbr
   (cmr-spatial->viz-geoms

@@ -12,24 +12,6 @@
             [cmr.spatial.derived :as d]
             [cmr.spatial.test.generators :as sgen]))
 
-;; TODO Need to finish this spec
-#_(defspec ring-covers-point-spec num-tests
-
-    ;; properties to verify
-    ; The MBR covers all the ring points
-    ; The ring covers all the points of the ring.
-    ; The ring does not cover the external points.
-    ; Midpoint of each arc of the ring is covered
-    ; does or does not cover poles depending on the contains variable
-
-    ;; other points inside the ring?
-    ;; One way would be to take cross section arcs from one side of the mbr to another.
-    ;; Find intersections of the arc and the ring.
-    ;; All cross section arcs should intersect the ring 0 or an even number of times.
-    ;; If an arc intersects at all then the midpoint of the intersections should be inside the ring.
-
-  )
-
 (declare ring-examples)
 
 (deftest ring-examples-test

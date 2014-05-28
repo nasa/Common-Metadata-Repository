@@ -75,6 +75,12 @@
     (and (covers-lat? mbr (.lat p))
          (covers-lon? mbr (.lon p)))))
 
+(defn corner-points
+  "Returns the corner points of the mbr"
+  [br]
+  (let [{^double n :north ^double s :south ^double e :east ^double w :west} br]
+    (p/ords->points w,n e,n e,s w,s)))
+
 (defn center-point [m]
   (let [{^double n :north ^double s :south ^double e :east ^double w :west} m
         lat-center (mid s n)

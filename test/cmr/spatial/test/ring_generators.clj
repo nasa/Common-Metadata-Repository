@@ -27,10 +27,9 @@
   [{:keys [points]}]
   (= (dec (count points)) (count (set points))))
 
-(defn points-not-antipodal
+(defn consecutive-points-not-antipodal
   [{:keys [points]}]
-  (let [unique-points (drop-last points)
-        point-pairs (combo/combinations unique-points 2)]
+  (let [point-pairs (partition 2 1 points)]
     (nil? (some (partial apply p/antipodal?) point-pairs))))
 
 (defn contains-1-or-0-poles
@@ -63,11 +62,21 @@
   (into {} (for [v var-syms]
              [(keyword v) @(resolve v)]) ))
 
+(comment
+
+  ;; TODO the generator needs to know that it can't add more than one pole in particular to a ring.
+
+  (def ring (d/calculate-derived
+              (r/ring [(p/point -1.0 90.0) (p/point 1.0 1.0) (p/point 1.0 -1.0) (p/point -1.0 -90.0) (p/point -1.0 -1.0) (p/point 0.0 -1.0) (p/point -1.0 90.0)])))
+  (sgen/reverse-if-both-poles ring)
+
+  )
+
 (def ring-tests
   "A map of ring test names to functions that perform the test."
   (vars-map [start-and-end-with-same-point
              points-unique
-             points-not-antipodal
+             consecutive-points-not-antipodal
              contains-1-or-0-poles
              more-than-one-external-point
              external-points-are-not-in-ring
@@ -87,7 +96,6 @@
 
 (defn print-failure
   [type ring]
-  (println "--------------------------------------------------------------------")
   (try
     (println type "Ring failed" (test-ring ring))
     (catch Throwable e

@@ -17,31 +17,65 @@
             [cmr.spatial.lr-binary-search :as lbs]
             [cmr.spatial.dev.viz-helper :as viz-helper]))
 
-
-;; TODO still working on the LR algorithm
-#_(defspec all-rings-have-lrs {:times 100 :printer-fn sgen/print-failed-ring}
+(defspec all-rings-have-lrs {:times 1000 :printer-fn sgen/print-failed-ring}
   (for-all [ring sgen/rings]
     (let [lr (lbs/find-lr ring)]
       (and lr
            (r/covers-br? ring lr)))))
+
 (comment
-  (def ring (r/ring [(p/point 1.0 1.0) (p/point 1.0 4.0) (p/point -1.0 1.0) (p/point -2.0 1.0) (p/point -1.0 0.0) (p/point 1.0 1.0)]))
+  (def ring (d/calculate-derived
+              (r/ring [(p/point 98.92857142857143 -1.0)
+                       (p/point 0.0 1.0)
+                       (p/point 1.0 2.0)
+                       (p/point 151.0 -1.0)
+                       (p/point -30.0 1.0)
+                       (p/point -81.07142857142857 1.0)
+                       (p/point 98.92857142857143 -1.0)])))
+
+  (a/intersections (a/ords->arc -81.07142857142857 1.0 98.92857142857143 -1.0)
+                   (a/ords->arc 151.0 -1.0 -30.0 1.0))
+  (viz-helper/add-geometries
+    [(a/ords->arc -81.07142857142857, 1.0, 98.92857142857143, -1.0)
+     (a/ords->arc 151.0, -1.0, -30.0, 1.0)])
+
+  (viz-helper/add-geometries (lbs/ring->triangles ring))
+  (viz-helper/add-geometries [ring])
 
   (lbs/find-lr ring)
+  (r/covers-br? ring (lbs/find-lr ring))
+
+
+  (viz-helper/add-geometries (lbs/ring->lr-search-points ring))
 
   (display-draggable-lr-ring ring)
-)
+
+
+  (a/midpoint (a/arc (p/point 1 90) (p/point 1 1)))
+
+
+
+  (viz-helper/clear-geometries)
+  (viz-helper/add-geometries [ring])
+
+  (viz-helper/add-geometries
+    [(lbs/mbr->vert-dividing-arc (:mbr ring))])
+
+
+  )
 
 (defn display-draggable-lr-ring
   "Displays a draggable ring in the spatial visualization. As the ring is dragged the LR of the ring is updated."
   [ring]
   (viz-helper/clear-geometries)
-  (let [lr (lbs/find-lr ring)
+  (let [ring (d/calculate-derived ring)
+        lr (lbs/find-lr ring)
         callback "cmr.spatial.test.lr-binary-search/handle-ring-moved"
         ring (assoc ring
                     :display-options {:callbackFn callback}
                     :draggable true)
-        geoms (if lr [ring lr] [ring])]
+        _ (println "Found LR:" (pr-str lr))
+        geoms (if lr [ring lr (first (mbr/corner-points lr)) (:mbr ring)] [ring (:mbr ring)])]
     (viz-helper/add-geometries geoms)))
 
 (defn handle-ring-moved

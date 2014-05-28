@@ -90,11 +90,26 @@
     ;; Are any of the points in ring 1 inside ring 2?
     (some #(covers-point? r2 %) (:points r1))))
 
-(defn covers-br? [ring br]
-  "Returns true if the ring covers the br"
-  (let [{^double n :north ^double s :south ^double e :east ^double w :west} br
-        corner-points (p/ords->points w,n e,n e,s w,s)]
-    (every? (partial covers-point? ring) corner-points)))
+(defn covers-br?
+  "Returns true if the ring covers the entire br"
+  [ring br]
+  ;; The ring contains all the corner points of the br.
+  (every? (partial covers-point? ring) (mbr/corner-points br)))
+
+;; TODO this needs additional testing and work. This will fail on at least one case:
+;; Imagine a t shaped area. The vertical part of the T is a ring of 4 points. The horizontal part
+;; of the t is a BR. None of the points of the br are in the ring. None of the points of the ring
+;; are in the br. We need to add a test that some of the rings arcs pass through the lat or lon
+;; lines of the br.
+
+(defn intersects-br?
+  "Returns true if the ring intersects the br"
+  [ring br]
+  (or
+    ;; Does the br cover any points of the ring?
+    (some (partial mbr/covers-point? br) (:points ring))
+    ;; Does the ring contain any points of the br?
+    (some (partial covers-point? ring) (mbr/corner-points br))))
 
 (defn self-intersections
   "Returns the rings self intersections"
@@ -210,6 +225,17 @@
   calculate-derived function should be used to populate it."
   [points]
   (->Ring points nil nil nil nil nil nil))
+
+(defn contains-both-poles?
+  "Returns true if a ring contains both the north pole and the south pole"
+  [ring]
+  (and (:contains-north-pole ring)
+       (:contains-south-pole ring)))
+
+(defn invert
+  "Returns the inverse of the ring. It will cover the exact opposite area on the earth."
+  [r]
+  (ring (reverse (:points r))))
 
 (defn ring->arcs
   "Determines the arcs from the points in the ring."

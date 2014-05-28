@@ -6,6 +6,7 @@
             [cmr.spatial.vector :as v]
             [cmr.spatial.mbr :as mbr]
             [cmr.spatial.conversion :as c]
+            [cmr.spatial.derived :as d]
             [cmr.common.util :as util])
   (:import cmr.spatial.point.Point))
 (primitive-math/use-primitive-operators)
@@ -191,8 +192,48 @@
   (let [{:keys [west-point east-point]} a]
     (arc (p/antipodal west-point) (p/antipodal east-point))))
 
-(defn- arc->points [a]
+(defn arc->points [a]
   [(:west-point a) (:east-point a)])
+
+(defn vertical?
+  "Returns true if the arc is vertical"
+  [a]
+  (let [vertical-delta 0.000001
+        {:keys [^Point west-point ^Point east-point]} a]
+    (or
+      (double-approx= (.lon west-point) (.lon east-point) vertical-delta)
+      (and (p/is-pole? west-point) (not (p/is-pole? east-point)))
+      (and (p/is-pole? east-point) (not (p/is-pole? west-point)))
+      (and
+        (double-approx= 180.0 (abs (.lon west-point)) vertical-delta)
+        (double-approx= 180.0 (abs (.lon east-point)) vertical-delta)))))
+
+(defn midpoint
+  "Finds the midpoint of the arc."
+  [^Arc arc]
+  (let [{:keys [^Point west-point ^Point east-point]} arc]
+    (if (vertical? arc)
+      (p/point (.lon west-point) (mid (.lat west-point) (.lat east-point)))
+      (let [mid (radians (mid-lon (.lon west-point)  (.lon east-point)))
+            lon1 (.lon-rad west-point)
+            lon2 (.lon-rad east-point)
+            lat1 (.lat-rad west-point)
+            lat2 (.lat-rad east-point)
+            cos-lat1 (cos lat1)
+            cos-lat2 (cos lat2)
+            ;; From http://williams.best.vwh.net/avform.htm#Int
+            ; top = sin(lat1) * cos(lat2) * sin(mid - lon2) - sin(lat2) * cos(lat1) * sin(mid - lon1)
+            ; bottom = cos(lat1) * cos(lat2) * sin(lon1 - lon2)
+            ; lat = atan(top/bottom)
+            top (- (* (sin lat1)
+                      cos-lat2
+                      (sin (- mid lon2)))
+                   (* (sin lat2)
+                      cos-lat1
+                      (sin (- mid lon1))))
+            bottom (* cos-lat1 cos-lat2 (sin (- lon1 lon2)))
+            lat (atan (/ top bottom))]
+            (p/point (degrees mid) (degrees lat) mid lat)))))
 
 (defn- points-within-arc-bounding-rectangles
   "A helper function. Returns the points that are within the bounding rectangles of the arcs"
@@ -243,3 +284,8 @@
   (if (great-circle-equivalency-applicable? a1 a2)
     (great-circle-equivalency-arc-intersections a1 a2)
     (default-arc-intersections a1 a2)))
+
+
+(extend-protocol d/DerivedCalculator
+  cmr.spatial.arc.Arc
+  (calculate-derived ^Arc [^Arc a] a))

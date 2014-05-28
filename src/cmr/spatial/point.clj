@@ -228,7 +228,7 @@
 (defn angular-distance
   "Returns the angular distance between the points in radians
   From: http://williams.best.vwh.net/avform.htm#Dist"
-  [^Point p1 ^Point p2]
+  ^double [^Point p1 ^Point p2]
   (pj/assert (not (antipodal? p1 p2)))
   (let [lon1 (.lon_rad p1)
         lat1 (.lat_rad p1)
@@ -239,6 +239,7 @@
         ^double part1 (sin-sq lat1 lat2)
         part2 (* (cos lat1) (cos lat2) (double (sin-sq lon1 lon2)))]
     (* 2.0 (asin (sqrt (+ part1 part2))))))
+
 
 (defn course
   "Returns the initial bearing between two points. The bearing starts at 0 pointing towards the north

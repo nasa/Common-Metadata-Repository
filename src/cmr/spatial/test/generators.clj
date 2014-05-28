@@ -11,7 +11,8 @@
             [cmr.spatial.polygon :as poly]
             [cmr.spatial.line :as l]
             [cmr.spatial.arc :as a]
-            [cmr.spatial.derived :as d]))
+            [cmr.spatial.derived :as d]
+            [clojure.math.combinatorics :as combo]))
 
 (primitive-math/use-primitive-operators)
 
@@ -34,7 +35,9 @@
                    (let [point-set (set points)]
                      (and
                        (= num (count point-set))
-                       (every? #(not (point-set (p/antipodal %))) points))))
+                       (every? #(not (point-set (p/antipodal %))) points)
+                       ()
+                       )))
                  (apply gen/tuple (repeat num points))))
 
 (def lat-ranges
@@ -89,19 +92,26 @@
   "Takes a ring and reverses it if it contains both poles"
   [ring]
   (let [ring (d/calculate-derived ring)]
-    (if (and (:contains-south-pole ring)
-             (:contains-north-pole ring))
-      (d/calculate-derived (r/ring (reverse (:points ring))))
+    (if (r/contains-both-poles? ring)
+      (d/calculate-derived (r/invert ring))
       ring)))
 
 (defn insert-point-at
-  "Inserts a point at the specified location in the ring."
+  "Inserts a point at the specified location in the ring if the point to be added is not equal to
+  or antipodal to the points it's between. Returns nil if it would be invalid"
   [ring point n]
-  (let [points (drop-last (:points ring))
+  (let [valid-consecutive (fn [p1 p2]
+                            (and (not= p1 p2)
+                                 (not (p/antipodal? p1 p2))
+                                 (< (p/angular-distance p1 p2) 180.0)))
+        points (drop-last (:points ring))
         front (take n points)
         tail (drop n points)
         points (concat front [point] tail)]
-    (r/ring (concat points [(first points)]))))
+    (when (and (valid-consecutive point (last front))
+               (valid-consecutive point (or (first tail)
+                                            (first points))))
+      (r/ring (concat points [(first points)])))))
 
 (defn add-point-to-ring
   "Tries to add the point to the ring. If it can't returns nil"
@@ -113,12 +123,14 @@
         (if (= pos (count points))
           ;; We couldn't find a spot to add the point. Return nil
           nil
-          (let [new-ring (insert-point-at ring point pos)
-                new-ring (d/calculate-derived new-ring)
-                self-intersections (r/self-intersections new-ring)]
-            (if (empty? self-intersections)
-              new-ring
-              (recur (inc pos)))))))))
+          (if-let [new-ring (insert-point-at ring point pos)]
+            (let [new-ring (d/calculate-derived new-ring)
+                  self-intersections (r/self-intersections new-ring)]
+              (if (and (empty? self-intersections)
+                       (not (r/contains-both-poles? new-ring)))
+                new-ring
+                (recur (inc pos))))
+            (recur (inc pos))))))))
 
 (def rings-3-point
   "Generator for 3 point rings. This is used as a base for which to add additional points"
