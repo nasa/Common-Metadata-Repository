@@ -3,7 +3,6 @@
   (:require [clojure.string :as s]
             [clj-time.core :as t]
             [cmr.common.log :as log :refer (debug info warn error)]
-            [cmr.common.services.errors :as errors]
             [cmr.common.concepts :as cs]
             [cmr.transmit.metadata-db :as meta-db]
             [cmr.indexer.data.elasticsearch :as es]
@@ -36,10 +35,7 @@
         ttl (when delete-time (t/in-millis (t/interval (t/now) delete-time)))
         concept-index (idx-set/get-concept-index-name context concept-id revision-id concept)
         es-doc (concept->elastic-doc context concept umm-concept)]
-    (if (and ttl (<= ttl 0))
-      (errors/throw-service-error
-        :bad-request
-        (format "DeleteTime %s is before the current time." (str delete-time)))
+    (if-not (and ttl (<= ttl 0))
       (es/save-document-in-elastic
         context
         concept-index
