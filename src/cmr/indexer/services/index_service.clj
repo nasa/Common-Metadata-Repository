@@ -36,10 +36,14 @@
         ttl (when delete-time (t/in-millis (t/interval (t/now) delete-time)))
         concept-index (idx-set/get-concept-index-name context concept-id revision-id concept)
         es-doc (concept->elastic-doc context concept umm-concept)]
-    (es/save-document-in-elastic
-      context
-      concept-index
-      (concept-mapping-types concept-type) es-doc (Integer. revision-id) ttl ignore-conflict)))
+    (if (and ttl (<= ttl 0))
+      (errors/throw-service-error
+        :bad-request
+        (format "DeleteTime %s is before the current time." (str delete-time)))
+      (es/save-document-in-elastic
+        context
+        concept-index
+        (concept-mapping-types concept-type) es-doc (Integer. revision-id) ttl ignore-conflict))))
 
 
 (deftracefn delete-concept
