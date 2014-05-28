@@ -22,12 +22,10 @@
 (defn create-system
   "Returns a new instance of the whole application."
   []
-  (let [db (oracle/create-db (oracle/db-spec))]
-    (mo/set-db! db)
-    {:db db
-     :log (log/create-logger)
-     :web (web/create-web-server 3001 routes/make-api)
-     :zipkin (context/zipkin-config "Metadata DB" false)}))
+  {:db (oracle/create-db (oracle/db-spec))
+   :log (log/create-logger)
+   :web (web/create-web-server 3001 routes/make-api)
+   :zipkin (context/zipkin-config "Metadata DB" false)})
 
 (defn start
   "Performs side effects to initialize the system, acquire resources,
@@ -39,6 +37,7 @@
                                             #(lifecycle/start % system)))
                                this
                                component-order)]
+    (mo/set-db! (:db started-system))
     (jobs/start)
     (info "Metadata DB started")
     started-system))

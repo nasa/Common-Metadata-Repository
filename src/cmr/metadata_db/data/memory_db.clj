@@ -149,7 +149,7 @@
               delete-time (when delete-time (p/parse-datetime  delete-time))]
           (and (= provider (:provider-id c))
                (= concept-type (:concept-type c))
-               (not= nil delete-time)
+               (some? delete-time)
                (t/before? delete-time (t/now)))))
       @concepts-atom))
 
