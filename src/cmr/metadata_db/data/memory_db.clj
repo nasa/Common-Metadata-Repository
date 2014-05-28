@@ -6,6 +6,7 @@
             [cmr.common.lifecycle :as lifecycle]
             [clj-time.core :as t]
             [clj-time.format :as f]
+            [cmr.common.date-time-parser :as p]
             [cmr.metadata-db.data.oracle.concepts]))
 
 
@@ -139,6 +140,18 @@
     [db]
     (reset! concepts-atom [])
     (reset! next-id-atom (dec cmr.metadata-db.data.oracle.concepts/INITIAL_CONCEPT_NUM)))
+
+  (get-expired-concepts
+    [db provider concept-type]
+    (filter
+      (fn [c]
+        (let [delete-time (get-in c [:extra-fields :delete-time])
+              delete-time (when delete-time (p/parse-datetime  delete-time))]
+          (and (= provider (:provider-id c))
+               (= concept-type (:concept-type c))
+               (not= nil delete-time)
+               (t/before? delete-time (t/now)))))
+      @concepts-atom))
 
   providers/ProvidersStore
 
