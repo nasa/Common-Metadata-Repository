@@ -7,6 +7,7 @@
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.api.web-server :as web]
             [cmr.system-trace.context :as context]
+            [cmr.oracle.connection :as oracle]
             [cmr.metadata-db.oracle :as mo]
             [cmr.metadata-db.api.routes :as routes]
             [cmr.metadata-db.services.jobs :as jobs]))
@@ -21,10 +22,12 @@
 (defn create-system
   "Returns a new instance of the whole application."
   []
-  {:db (mo/get-db)
-   :log (log/create-logger)
-   :web (web/create-web-server 3001 routes/make-api)
-   :zipkin (context/zipkin-config "Metadata DB" false)})
+  (let [db (oracle/create-db (oracle/db-spec))]
+    (mo/set-db! db)
+    {:db db
+     :log (log/create-logger)
+     :web (web/create-web-server 3001 routes/make-api)
+     :zipkin (context/zipkin-config "Metadata DB" false)}))
 
 (defn start
   "Performs side effects to initialize the system, acquire resources,

@@ -1,11 +1,13 @@
-(ns cmr.metadata-db.oracle
-  (:require [cmr.oracle.connection :as oracle]))
+(ns cmr.metadata-db.oracle)
 
 (def db-atom (atom nil))
 
 (defn get-db
   "Returns the db-atom that is populated with db instance"
   []
-  (if @db-atom
-    @db-atom
-    (reset! db-atom (oracle/create-db (oracle/db-spec)))))
+  @db-atom)
+
+(defn set-db!
+  "Sets the db-atom to the given db instance"
+  [db]
+  (reset! db-atom db))
