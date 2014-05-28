@@ -8,7 +8,7 @@
             [cmr.common.api.web-server :as web]
             [cmr.system-trace.context :as context]
             [cmr.oracle.connection :as oracle]
-            [cmr.metadata-db.oracle :as mo]
+            [cmr.metadata-db.db-holder :as db-holder]
             [cmr.metadata-db.api.routes :as routes]
             [cmr.metadata-db.services.jobs :as jobs]))
 
@@ -37,7 +37,7 @@
                                             #(lifecycle/start % system)))
                                this
                                component-order)]
-    (mo/set-db! (:db started-system))
+    (db-holder/set-db! (:db started-system))
     (jobs/start)
     (info "Metadata DB started")
     started-system))

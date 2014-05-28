@@ -7,7 +7,6 @@
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.api.web-server :as web]
             [cmr.oracle.connection :as oracle]
-            [cmr.metadata-db.oracle :as mo]
             [cmr.metadata-db.api.routes :as routes])
   (:gen-class))
 

@@ -5,7 +5,7 @@
             [clojurewerkz.quartzite.jobs :refer [defjob]]
             [clojurewerkz.quartzite.schedule.calendar-interval :refer [schedule with-interval-in-seconds]]
             [clojurewerkz.quartzite.conversion :as c]
-            [cmr.metadata-db.oracle :as mo]
+            [cmr.metadata-db.db-holder :as db-holder]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.metadata-db.data.providers :as provider-db]
             [cmr.metadata-db.data.oracle.providers]
@@ -17,7 +17,7 @@
   [ctx]
   (info "Excuting expired concepts cleanup.")
   (try
-    (let [db (mo/get-db)]
+    (let [db (db-holder/get-db)]
       (doseq [provider (provider-db/get-providers db)]
         (srv/delete-expired-concepts db provider :collection)
         (srv/delete-expired-concepts db provider :granule)))

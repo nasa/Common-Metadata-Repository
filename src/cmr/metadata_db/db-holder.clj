@@ -1,4 +1,5 @@
-(ns cmr.metadata-db.oracle)
+(ns cmr.metadata-db.db-holder
+  "Provides access to the database instance for components that do not have access to a system map.")
 
 (def db-atom (atom nil))
 
