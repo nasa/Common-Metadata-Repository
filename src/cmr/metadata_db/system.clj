@@ -36,9 +36,11 @@
                                  (update-in system [component-name]
                                             #(lifecycle/start % system)))
                                this
-                               component-order)]
-    (db-holder/set-db! (:db started-system))
-    (jobs/start)
+                               component-order)
+        db (:db started-system)]
+    (db-holder/set-db! db)
+    (when-not (re-find #"MemoryDB" (str (type db)))
+      (jobs/start))
     (info "Metadata DB started")
     started-system))
 
