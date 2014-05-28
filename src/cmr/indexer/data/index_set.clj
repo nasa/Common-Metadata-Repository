@@ -80,6 +80,7 @@
                 :_source {:enabled false},
                 :_all {:enabled false},
                 :_id   {:path "concept-id"},
+                :_ttl {:enabled true},
                 :properties {:concept-id            (stored string-field-mapping)
                              :entry-id           (stored string-field-mapping)
                              :entry-id.lowercase string-field-mapping
@@ -122,6 +123,7 @@
     :_source { "enabled" false},
     :_all {"enabled" false},
     :_id  {:path "concept-id"},
+    :_ttl {:enabled true},
     :properties {:concept-id            (stored string-field-mapping)
                  :collection-concept-id (stored string-field-mapping)
 
