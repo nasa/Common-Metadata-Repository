@@ -43,36 +43,35 @@
     (r/ords->ring 175 -10, -175 -10, -175 0, -175 10
                   175 10, 175 0, 175 -10))
 
+  ;; Performance testing
+  (require '[criterium.core :refer [with-progress-reporting bench]])
 
+  (let [ring (d/calculate-derived (r/ords->ring 0,0, 4,0, 6,5, 2,5, 0,0))]
+    (with-progress-reporting
+      (bench
+        (lbs/find-lr ring))))
 
-  (def ring (d/calculate-derived (r/ring [(p/point -1.0 1.0)
-                                          (p/point -1.0 -1.0)
-                                          (p/point 1.0 1.0)
-                                          (p/point -82.0 1.125)
-                                          (p/point 102.0 -1.0)
-                                          (p/point -79.0 1.0)
-                                          (p/point -1.0 1.0)])))
+  (defn br->ring-with-n-points
+    "Creates a ring with at least n points from the br. Br must not cross antimeridian"
+    [br ^double n]
+    (let [{:keys [^double west ^double north ^double east ^double south]} br
+          num-edge (/ n 2.0)
+          edge-length (/ (- east west) num-edge)
+          south-points (for [i (range num-edge)]
+                         (p/point (+ west (* i edge-length)) south))
+          north-points (for [i (range num-edge)]
+                         (p/point (- east (* i edge-length)) north))]
 
-  (lbs/find-lr ring)
+      (r/ring (concat south-points north-points [(first south-points)]))))
 
-  (r/covers-br? ring (lbs/find-lr ring))
+  (let [ring (d/calculate-derived (br->ring-with-n-points (mbr/mbr -170 45 170 -45) 2000.0))]
+    (with-progress-reporting
+      (bench
+        (lbs/find-lr ring))))
 
-  (viz-helper/clear-geometries)
-  (viz-helper/add-geometries [ring])
-
-  (display-draggable-lr-ring ring)
-
-
-  (a/midpoint (a/arc (p/point 1 90)
-                     (p/point 1 1)))
-
-
-  (viz-helper/clear-geometries)
-  (viz-helper/add-geometries [ring])
-
-  (viz-helper/add-geometries
-    [(lbs/mbr->vert-dividing-arc (:mbr ring))])
-
+  ; 1 - 950ms
+  ; 2 - 450 ms (changed ring to cache the point set)
+  ; 3 -
 
   )
 

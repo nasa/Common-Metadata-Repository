@@ -36,20 +36,22 @@
 
   ;; The ^replace is done to disable the tiered compilation for accurate benchmarks
   ;; See https://github.com/technomancy/leiningen/wiki/Faster
-  ;; Use the following to enable JMX profiling with visualvm
-  ; :jvm-opts ^:replace ["-server"
-  ;                      ;; Uncomment this to enable assertions. Turn off during performance tests.
-  ;                      "-ea"
-  ;                      "-Dcom.sun.management.jmxremote"
-  ;                      "-Dcom.sun.management.jmxremote.ssl=false"
-  ;                      "-Dcom.sun.management.jmxremote.authenticate=false"
-  ;                      "-Dcom.sun.management.jmxremote.port=1098"]
+  :jvm-opts ^:replace ["-server"
+                       ;; Uncomment this to enable assertions. Turn off during performance tests.
+                       "-ea"
 
-  ; :jvm-opts ^:replace ["-server"]
+                       ;; Use the following to enable JMX profiling with visualvm
+                       ; "-Dcom.sun.management.jmxremote"
+                       ; "-Dcom.sun.management.jmxremote.ssl=false"
+                       ; "-Dcom.sun.management.jmxremote.authenticate=false"
+                       ; "-Dcom.sun.management.jmxremote.port=1098"
+                       ]
+
 
   :profiles
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.4"]
-                        [org.clojars.gjahad/debug-repl "0.3.3"]]
+                        [org.clojars.gjahad/debug-repl "0.3.3"]
+                        [criterium "0.4.3"]]
 
          :source-paths ["src" "dev" "test"]}})
 

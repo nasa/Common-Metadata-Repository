@@ -5,10 +5,13 @@
 (primitive-math/use-primitive-operators)
 
 ;; Generate function wrappers around java math methods that take a single arg.
-(doseq [f '[cos sin tan atan abs sqrt acos asin]]
+(doseq [f '[cos sin tan atan sqrt acos asin]]
   (let [math-sym (symbol (str "StrictFastMath/" f))]
     (eval `(defn ~f ^double [^double v#]
              (~math-sym v#)))))
+
+(defn abs ^double [^double v]
+  (Math/abs v))
 
 (defn atan2 ^double [^double y ^double x]
   (StrictFastMath/atan2 y x))

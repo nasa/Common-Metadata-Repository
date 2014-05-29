@@ -19,6 +19,10 @@
 
    ;; Derived fields
 
+   ;; A set of the unique points in the ring.
+   ;; This should be used as opposed to creating a set from the points many times over which is expensive.
+   point-set
+
    ;; The arcs of the ring
    arcs
 
@@ -54,7 +58,7 @@
   {:pre [(> (count (:external-points ring)) 0)]}
   ;; Only do real intersection if the ring covers the point.
   (when (mbr/covers-point? (:mbr ring) point)
-    (if (some (set (:points ring)) point)
+    (if (some (:point-set ring) point)
       true ; The point is actually one of the rings points
       ;; otherwise we'll do the real intersection algorithm
       (let [antipodal-point (p/antipodal point)
@@ -259,7 +263,7 @@
   "Creates a new ring with the given points. If the other fields of a ring are needed. The
   calculate-derived function should be used to populate it."
   [points]
-  (->Ring points nil nil nil nil nil nil))
+  (->Ring points nil nil nil nil nil nil nil))
 
 (defn contains-both-poles?
   "Returns true if a ring contains both the north pole and the south pole"
@@ -339,6 +343,7 @@
       ring
 
       (as-> ring ring
+            (assoc ring :point-set (set (:points ring)))
             (assoc ring :arcs (ring->arcs ring))
             (ring->pole-containment ring)
             (assoc ring :mbr (ring->mbr ring))
