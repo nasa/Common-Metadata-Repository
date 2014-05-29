@@ -11,6 +11,10 @@
   (:import cmr.spatial.point.Point))
 (primitive-math/use-primitive-operators)
 
+(def APPROXIMATION_DELTA
+  "The delta to use when needing to compare things approximately."
+  0.0000001)
+
 (defrecord GreatCircle
   [
     plane-vector
@@ -196,44 +200,158 @@
   [(:west-point a) (:east-point a)])
 
 (defn vertical?
-  "Returns true if the arc is vertical"
+  "Returns true if the arc is vertical. Crossing a pole is considered vertical."
   [a]
-  (let [vertical-delta 0.000001
-        {:keys [^Point west-point ^Point east-point]} a]
+  (let [{:keys [^Point west-point ^Point east-point]} a]
     (or
-      (double-approx= (.lon west-point) (.lon east-point) vertical-delta)
+      ;; the longitudes are equal
+      (double-approx= (.lon west-point) (.lon east-point) APPROXIMATION_DELTA)
+
+      ;; It crosses a pole
+      (or (crosses-north-pole? a) (crosses-south-pole? a))
+
+      ;; one or the other point is a pole
       (and (p/is-pole? west-point) (not (p/is-pole? east-point)))
       (and (p/is-pole? east-point) (not (p/is-pole? west-point)))
+
+      ;; both on antimeridian
       (and
-        (double-approx= 180.0 (abs (.lon west-point)) vertical-delta)
-        (double-approx= 180.0 (abs (.lon east-point)) vertical-delta)))))
+        (double-approx= 180.0 (abs (.lon west-point)) APPROXIMATION_DELTA)
+        (double-approx= 180.0 (abs (.lon east-point)) APPROXIMATION_DELTA)))))
+
+(defn point-at-lon
+  "Returns the point on the arc where it crosses a given longitude. Returns nil if the longitude
+  is outside the bounds of the arc. Does not work for vertical arcs.
+  Based on http://williams.best.vwh.net/avform.htm#Int"
+  [^Arc arc lon]
+  (pj/assert (not (vertical? arc)))
+  (when (or (some #(mbr/covers-lon? % lon) (mbrs arc))
+            (crosses-south-pole? arc)
+            (crosses-north-pole? arc))
+    (let [{:keys [^Point west-point ^Point east-point]} arc
+          lon-rad (radians lon)
+          lon1 (.lon-rad west-point)
+          lon2 (.lon-rad east-point)
+          lat1 (.lat-rad west-point)
+          lat2 (.lat-rad east-point)
+          cos-lat1 (cos lat1)
+          cos-lat2 (cos lat2)
+          ;; From http://williams.best.vwh.net/avform.htm#Int
+          ; top = sin(lat1) * cos(lat2) * sin(mid - lon2) - sin(lat2) * cos(lat1) * sin(mid - lon1)
+          ; bottom = cos(lat1) * cos(lat2) * sin(lon1 - lon2)
+          ; lat = atan(top/bottom)
+          top (- (* (sin lat1)
+                    cos-lat2
+                    (sin (- lon-rad lon2)))
+                 (* (sin lat2)
+                    cos-lat1
+                    (sin (- lon-rad lon1))))
+          bottom (* cos-lat1 cos-lat2 (sin (- lon1 lon2)))
+          lat-rad (atan (/ top bottom))]
+      (p/point (degrees lon-rad) (degrees lat-rad) lon-rad lat-rad))))
+
+(defn points-at-lat
+  "Returns the points where the arc crosses at a given latitude. Returns nil if the arc
+  does not cross that lat. Based on http://williams.best.vwh.net/avform.htm#Par"
+  [arc ^double lat]
+  (when (some #(mbr/covers-lat? % lat) (mbrs arc))
+    (let [{:keys [^Point west-point ^Point east-point]} arc
+          lat3 (radians lat) ; lat3 is just the latitude argument in radians
+          lon1 (.lon-rad west-point)
+          lon2 (.lon-rad east-point)
+          lat1 (.lat-rad west-point)
+          lat2 (.lat-rad east-point)
+          lon12 (- lon1 lon2)
+          sin-lon12 (sin lon12)
+          cos-lon12 (cos lon12)
+          sin-lat1 (sin lat1)
+          cos-lat1 (cos lat1)
+          sin-lat2 (sin lat2)
+          cos-lat2 (cos lat2)
+          sin-lat3 (sin lat3)
+          cos-lat3 (cos lat3)
+
+          ;;  A = sin(lat1) * cos(lat2) * cos(lat3) * sin(l12)
+          A (* sin-lat1 cos-lat2 cos-lat3 sin-lon12)
+          ;;  B = sin(lat1)*cos(lat2)*cos(lat3)*cos(l12) - cos(lat1)*sin(lat2)*cos(lat3)
+          B (- (* sin-lat1 cos-lat2 cos-lat3 cos-lon12)
+               (* cos-lat1 sin-lat2 cos-lat3))
+          ;;  C = cos(lat1)*cos(lat2)*sin(lat3)*sin(l12)
+          C (* cos-lat1 cos-lat2 sin-lat3 sin-lon12)
+          h (sqrt (+ (sq A) (sq B)))]
+
+      (when (<= (abs C) h)
+        (let [lon-rad (atan2 B A)
+              ;;   dlon = acos(C/sqrt(A^2+B^2))
+              dlon (acos (/ C h))
+              ;;   lon3_1=mod(lon1+dlon+lon+pi, 2*pi)-pi
+              lon3-1 (- ^double (mod (+ lon1 dlon lon-rad PI)
+                                     TAU)
+                        PI)
+              ;;   lon3_2=mod(lon1-dlon+lon+pi, 2*pi)-pi
+              lon3-2 (- ^double (mod (+ (- lon1 dlon) lon-rad PI)
+                                     TAU)
+                        PI)
+              points [(p/point (degrees lon3-1) lat lon3-1 lat3)
+                      (p/point (degrees lon3-2) lat lon3-2 lat3)]]
+          (->> points
+               (filterv (fn [p]
+                          (some #(mbr/covers-point? % p)
+                                (mbrs arc))))
+               set))))))
+
+(defn point-on-arc?
+  "Returns true if the point is on the arc"
+  [arc point]
+  (let [{:keys [west-point east-point]} arc]
+    (and (some #(mbr/covers-point? % point) (mbrs arc))
+         (or (= west-point point)
+             (= east-point point)
+             ;; If the arc is vertical and the point is in the mbr of the arc then it's on the arc
+             (vertical? arc)
+
+             ;; Find the point on the arc at the given longitude to see if it's the same point.
+             (approx= point
+                      (point-at-lon arc (:lon point))
+                      APPROXIMATION_DELTA)))))
 
 (defn midpoint
   "Finds the midpoint of the arc."
   [^Arc arc]
   (let [{:keys [^Point west-point ^Point east-point]} arc]
     (if (vertical? arc)
-      (p/point (.lon west-point) (mid (.lat west-point) (.lat east-point)))
-      (let [mid (radians (mid-lon (.lon west-point)  (.lon east-point)))
-            lon1 (.lon-rad west-point)
-            lon2 (.lon-rad east-point)
-            lat1 (.lat-rad west-point)
-            lat2 (.lat-rad east-point)
-            cos-lat1 (cos lat1)
-            cos-lat2 (cos lat2)
-            ;; From http://williams.best.vwh.net/avform.htm#Int
-            ; top = sin(lat1) * cos(lat2) * sin(mid - lon2) - sin(lat2) * cos(lat1) * sin(mid - lon1)
-            ; bottom = cos(lat1) * cos(lat2) * sin(lon1 - lon2)
-            ; lat = atan(top/bottom)
-            top (- (* (sin lat1)
-                      cos-lat2
-                      (sin (- mid lon2)))
-                   (* (sin lat2)
-                      cos-lat1
-                      (sin (- mid lon1))))
-            bottom (* cos-lat1 cos-lat2 (sin (- lon1 lon2)))
-            lat (atan (/ top bottom))]
-            (p/point (degrees mid) (degrees lat) mid lat)))))
+      (cond
+        ;; Vertical across north pole
+        (crosses-north-pole? arc)
+        (let [west-dist (- 90.0 (.lat west-point))
+              east-dist (- 90.0 (.lat east-point))
+              middle-dist (mid west-dist east-dist)]
+          (cond
+            (= west-dist east-dist) p/north-pole
+            (< west-dist east-dist) (p/point (.lon east-point)
+                                             (- 90.0 (- middle-dist west-dist)))
+            :else (p/point (.lon west-point)
+                           (- 90.0 (- middle-dist west-dist)))))
+
+        ;; Vertical across south pole
+        (crosses-south-pole? arc)
+        (let [west-dist (- (.lat west-point) -90.0)
+              east-dist (- (.lat east-point) -90.0)
+              middle-dist (mid west-dist east-dist)]
+          (cond
+            (= west-dist east-dist) p/south-pole
+            (< west-dist east-dist) (p/point (.lon east-point)
+                                             (+ -90.0 (- middle-dist west-dist)))
+            :else (p/point (.lon west-point)
+                           (+ -90.0 (- middle-dist west-dist)))))
+
+        ;; Vertical arc not crossing a pole
+        :else
+        (let [not-pole-point (if (p/is-pole? west-point) east-point west-point)]
+          (p/point (.lon not-pole-point) (mid (.lat west-point) (.lat east-point)))))
+
+      ;; Not a vertical arc
+      (point-at-lon arc (mid-lon (.lon west-point) (.lon east-point))))))
 
 (defn- points-within-arc-bounding-rectangles
   "A helper function. Returns the points that are within the bounding rectangles of the arcs"
@@ -247,6 +365,20 @@
                          (or (mbr/covers-point? a2-br1 p)
                              (and a2-br2 (mbr/covers-point? a2-br2 p)))))
             points)))
+
+(defn lat-segment-intersections
+  "Returns the points where an arc intersects the latitude segment. The latitude segment is defined
+  at lat between the lon-west and lon-east"
+  [arc lat lon-west lon-east]
+  ;; Find the points where the arc crosses that latitude (if any)
+  (when-let [points (points-at-lat arc lat)]
+    ;; See if those points are within the lon-west and east
+    (let [lat-seg-mbr (mbr/mbr lon-west lat lon-east lat)
+          brs (mbrs arc)]
+      (filter (fn [p]
+                (and (some #(mbr/covers-point? % p) brs)
+                     (mbr/covers-point? lat-seg-mbr p)))
+              points))))
 
 (defn great-circle-equivalency-applicable?
   "Checks if special case for both arcs having the same great circle is applicable."

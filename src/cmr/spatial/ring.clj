@@ -93,8 +93,10 @@
 (defn covers-br?
   "Returns true if the ring covers the entire br"
   [ring br]
-  ;; The ring contains all the corner points of the br.
-  (every? (partial covers-point? ring) (mbr/corner-points br)))
+  (and ;; The rings mbr covers the br
+       (mbr/covers-mbr? (:mbr ring) br)
+       ;; The ring contains all the corner points of the br.
+       (every? (partial covers-point? ring) (mbr/corner-points br))))
 
 ;; TODO this needs additional testing and work. This will fail on at least one case:
 ;; Imagine a t shaped area. The vertical part of the T is a ring of 4 points. The horizontal part

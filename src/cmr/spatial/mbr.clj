@@ -47,18 +47,28 @@
   but within this tolerance will be considered covered by the bounding rectangle"
   0.000001)
 
-(defn covers-lon? [^Mbr mbr ^double v]
-  (let [west (.west mbr) east (.east mbr)
-        west (- west COVERS_TOLERANCE)
-        east (+ east COVERS_TOLERANCE)]
+(defn- lon-range-covers-lon?
+  "Returns true if lon is between west and east."
+  [^double west ^double east ^double lon]
+  (let [west (- west COVERS_TOLERANCE)
+        east (+ east COVERS_TOLERANCE)
+        crosses-antimeridian (> west east)]
     (cond
-      (crosses-antimeridian? mbr) (or (>= v west) (<= v east))
-      (= (abs v) 180.0) (let [within-180 (- 180.0 COVERS_TOLERANCE)]
-                          (or (>= (abs west) within-180)
-                              (>= (abs east) within-180)))
-      :else (and (>= v west) (<= v east)))))
+      crosses-antimeridian (or (>= lon west) (<= lon east))
+      (= (abs lon) 180.0) (let [within-180 (- 180.0 COVERS_TOLERANCE)]
+                            (or (>= (abs west) within-180)
+                                (>= (abs east) within-180)))
+      :else (and (>= lon west) (<= lon east)))))
 
-(defn covers-lat? [^Mbr mbr ^double v]
+(defn covers-lon?
+  "Returns true if the mbr covers the given longitude"
+  [^Mbr mbr ^double v]
+  (let [west (.west mbr) east (.east mbr)]
+    (lon-range-covers-lon? west east v)))
+
+(defn covers-lat?
+  "Returns true if the mbr covers the given latitude"
+  [^Mbr mbr ^double v]
   (let [north (.north mbr) south (.south mbr)
         north (+ north COVERS_TOLERANCE)
         south (- south COVERS_TOLERANCE)]
@@ -81,11 +91,38 @@
   (let [{^double n :north ^double s :south ^double e :east ^double w :west} br]
     (p/ords->points w,n e,n e,s w,s)))
 
+(defn covers-mbr?
+  "Returns true if the mbr completely covers the other-br."
+  [mbr other-br]
+  (and (= (crosses-antimeridian? mbr)
+          (crosses-antimeridian? other-br))
+       (every? (partial covers-point? mbr) (corner-points other-br))))
+
 (defn center-point [m]
   (let [{^double n :north ^double s :south ^double e :east ^double w :west} m
         lat-center (mid s n)
         lon-center (mid-lon w e)]
     (p/point lon-center lat-center)))
+
+(defn intersects-br?
+  "Returns true if the mbr intersects the other bounding rectangle"
+  [^Mbr mbr ^Mbr other-br]
+  (or (some (partial covers-point? mbr) (corner-points other-br))
+      (some (partial covers-point? other-br) (corner-points mbr))
+
+      ;; Do they form a overlapping t shape?
+      (and (= (crosses-antimeridian? mbr)
+              (crosses-antimeridian? other-br))
+           (let [{^double w1 :west ^double  n1 :north ^double e1 :east ^double s1 :south} mbr
+                 {^double w2 :west ^double  n2 :north ^double e2 :east ^double s2 :south} other-br]
+             (or (and (< w1 w2)
+                      (> e1 e2)
+                      (> n2 n1)
+                      (< s2 s1))
+                 (and (< w2 w1)
+                      (> e2 e1)
+                      (> n1 n2)
+                      (< s1 s2)))))))
 
 (defn split-across-antimeridian
   "Splits MBRs across the antimeridian. Returns a sequence of the mbrs if it crosses the antimeridian

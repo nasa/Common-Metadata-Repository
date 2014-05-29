@@ -12,6 +12,17 @@
             [cmr.spatial.derived :as d]
             [cmr.spatial.test.generators :as sgen]))
 
+
+;; TODO a work in progress
+#_(deftest ring-covers-br-test
+  (testing "concave ring"
+    (is (not (r/covers-br? (d/calculate-derived
+                             (r/ords->ring -0.11,2.79,2.53,1.44,-0.01,3.79,-2.2,2.28,-0.11,2.79))
+                           (m/mbr -0.7921474469772579
+                                  3.2516294093733533
+                                  0.5732165527343749
+                                  2.7123539880645877))))))
+
 (declare ring-examples)
 
 (deftest ring-examples-test
@@ -35,6 +46,7 @@
             (is (not (r/covers-point? ring point)) (str "Ring should not cover point " point)))
 
         (is (r/intersects-ring? ring ring) "Ring should intersect itself")))))
+
 
 
 (def ring-examples

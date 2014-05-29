@@ -15,6 +15,8 @@
 
 (def ^:const ^double PI Math/PI)
 
+(def ^:const ^double TAU (* 2.0 PI))
+
 (def ^:const ^double EARTH_RADIUS_METERS 6371000)
 
 (defn radians ^double [^double d]

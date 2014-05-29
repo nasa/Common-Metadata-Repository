@@ -78,6 +78,195 @@
         (every? #(m/covers-point? mbr %) corner-points)
         (m/covers-point? mbr midpoint)))))
 
+(deftest covers-point-test
+  (let [examples [;; Normal
+                  {:mbr [-10 25 10 -25]
+                   :on [0 0
+                        1 1]
+                   :off [0 90
+                         0 -90
+                         0 180
+                         0 26
+                         -11 0
+                         11 0
+                         0 -26]}
+
+                  ;; Touches north pole
+                  {:mbr [-10 90 10 -25]
+                   :on [0 0
+                        1 1
+                        0 90
+                        180 90
+                        90 90
+                        -90 90
+                        -180 90]
+                   :off [0 -90
+                         0 180
+                         -11 0
+                         11 0
+                         0 -26]}
+
+                  ;; Touches south pole
+                  {:mbr [-10 25 10 -90]
+                   :on [0 0
+                        1 1
+                        0 -90
+                        180 -90
+                        90 -90
+                        -90 -90
+                        -180 -90]
+                   :off [0 90
+                         0 180
+                         0 26
+                         -11 0
+                         11 0]}]]
+    (doseq [{mbr-parts :mbr
+             on-ords :on
+             off-ords :off} examples]
+      (let [mbr (apply m/mbr mbr-parts)
+            on-points (concat (apply p/ords->points on-ords)
+                              (m/corner-points mbr))
+            off-points (apply p/ords->points off-ords)]
+
+        (doseq [p on-points]
+          (is (m/covers-point? mbr p) (str (pr-str mbr) (pr-str p))))
+        (doseq [p off-points]
+          (is (not (m/covers-point? mbr p)) (str (pr-str mbr) (pr-str p))))))))
+
+(deftest covers-br-test
+  (testing "normal mbrs"
+    (let [m1 (m/mbr -10 25 10 -25)]
+      (are [w n e s]
+           (m/covers-mbr? m1 (m/mbr w n e s))
+
+           ;; covers self
+           -10 25 10 -25
+
+           ;; Each part brought in by one
+           -9 25 10 -25
+           -10 24 10 -25
+           -10 25 9 -25
+           -10 25 10 -24
+
+           ;; smaller mbr
+           -9 24 9 -24
+
+           ;; single point mbrs
+           -10 25 -10 25 ; nw corner
+           -10 -25 -10 -25  ; sw corner
+           10 25 10 25 ; ne corner
+           10 -25 10 -25  ; se corner
+           )
+      (are [w n e s]
+           (not (m/covers-mbr? m1 (m/mbr w n e s)))
+
+           ;; Each part just outside mbr
+           -11 25 10 -25
+           -10 26 10 -25
+           -10 25 11 -25
+           -10 25 10 -26
+
+           ;; Completely larger
+           -11 26 11 -26)))
+  (testing "crossing antimeridians"
+    (let [m1 (m/mbr -10 25 10 -25) ; doesn't cross
+          m2 (m/mbr 10 25 -10 -25) ; crosses antimeridian
+          m3 (m/mbr 175 25 -175 -25) ; crosses antimeridian
+          m4 (m/mbr 10 26 -10 25)] ; crosses antimeridian
+
+      ;; Sanity check the test
+      (is (not (m/crosses-antimeridian? m1)))
+      (is (m/crosses-antimeridian? m2))
+      (is (m/crosses-antimeridian? m3))
+      (is (m/crosses-antimeridian? m4))
+
+      (testing "covers self"
+        (is (m/covers-mbr? m1 m1))
+        (is (m/covers-mbr? m2 m2))
+        (is (m/covers-mbr? m3 m3))
+        (is (m/covers-mbr? m4 m4)))
+
+      (testing "mbrs crossing antimeridian and non crossing"
+        (is (not (m/covers-mbr? m1 m2)))
+        (is (not (m/covers-mbr? m2 m1)))
+        (is (not (m/covers-mbr? m1 m3)))
+        (is (not (m/covers-mbr? m3 m1))))
+
+      (testing "mbrs both crossing antimeridian"
+        (is (m/covers-mbr? m2 m3))
+        (is (not (m/covers-mbr? m3 m2)))
+        (is (not (m/covers-mbr? m2 m4)))
+        (is (not (m/covers-mbr? m4 m2)))))))
+
+(defspec intersects-br-spec
+  (for-all [mbr1 sgen/mbrs
+            mbr2 sgen/mbrs]
+    (and
+      ;; intersect self
+      (m/intersects-br? mbr1 mbr1)
+      (m/intersects-br? mbr2 mbr2)
+
+      ;; The union of the area intersects both
+      (let [unioned (m/union mbr1 mbr2)]
+          (and (m/intersects-br? unioned mbr1)
+               (m/intersects-br? unioned mbr2)
+               (m/intersects-br? mbr1 unioned)
+               (m/intersects-br? mbr2 unioned)))
+
+      ;; Inverse should be true
+      (= (m/intersects-br? mbr1 mbr2)
+         (m/intersects-br? mbr2 mbr1)))))
+
+(deftest intersects-br-test
+  (let [m1 (m/mbr -10 25 10 -25)]
+    (are [w n e s]
+         (let [m2 (m/mbr w n e s)]
+           (and (m/intersects-br? m1 m2)
+                (m/intersects-br? m2 m1)))
+         ;; corners overlap
+         9 -24 11 -26
+         9 26 11 24
+
+         ;; Completely within
+         -9 24 9 -24
+
+         ;; antimeridian
+         11 -24 9 -26
+
+         ;; No corners are in the other
+         ;; They form a lower case t shape
+         -9 26 9 -26)
+
+    ;; t shape across antimeridian
+    (let [m2 (m/mbr 160 5 -160 -5)
+          m3 (m/mbr 170 25 -170 -25)]
+      (is (m/intersects-br? m2 m3))
+      (is (m/intersects-br? m3 m2)))
+
+    (are [w n e s]
+         (let [m2 (m/mbr w n e s)]
+           (and (not (m/intersects-br? m1 m2))
+                (not (m/intersects-br? m2 m1))))
+         ;; to the right
+         11 1 13 0
+         11 26 13 -26
+
+         ;; across antimeridian
+         11 26 -11 -26
+
+         ;; to the left
+         -13 1 -11 0
+         -13 26 -11 -26
+
+         ;; above
+         -9 27 9 26
+
+         ;; below
+         -9 -26 9 -27
+
+         )))
+
+
 (defspec union-test 100
   (for-all [mbr1 sgen/mbrs
             mbr2 sgen/mbrs]

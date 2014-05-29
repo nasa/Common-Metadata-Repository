@@ -142,6 +142,12 @@
            (double lon-rad)
            (double lat-rad))))
 
+(def north-pole
+  (point 0 90))
+
+(def south-pole
+  (point 0 -90))
+
 (defn order-longitudes
   "Orders the longitudes from west to east such that traveling east crosses at most 180 degrees."
   [^double l1 ^double l2]
@@ -211,10 +217,10 @@
       (= (antipodal-lon (.lon p1)) (.lon p2)))))
 
 (defn is-north-pole? [^Point p]
-  (= (.lat p) 90.0))
+  (approx= (.lat p) 90.0 0.0000001))
 
 (defn is-south-pole? [^Point p]
-  (= (.lat p) -90.0))
+  (approx= (.lat p) -90.0 0.0000001))
 
 (defn is-pole? [p]
   (or (is-north-pole? p)

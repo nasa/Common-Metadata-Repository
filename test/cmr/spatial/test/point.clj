@@ -90,11 +90,11 @@
   (testing "is-north-pole?"
     (is (p/is-north-pole? (p/point 0 90)))
     (is (not (p/is-north-pole? (p/point 0 -90))))
-    (is (not (p/is-north-pole? (p/point 0 89.99999999)))))
+    (is (not (p/is-north-pole? (p/point 0 89.999999)))))
   (testing "is-south-pole?"
     (is (p/is-south-pole? (p/point 0 -90)))
     (is (not (p/is-south-pole? (p/point 0 90))))
-    (is (not (p/is-south-pole? (p/point 0 -89.99999999))))))
+    (is (not (p/is-south-pole? (p/point 0 -89.999999))))))
 
 (deftest antipodal-points
   (testing "north and south poles"
@@ -219,6 +219,20 @@
            (< course 360)))))
 
 (deftest course
+  (testing "should not fail when close to a pole"
+    (are [lat] (> (p/course (p/point 0 0) (p/point 45 lat))
+                  359.99)
+         89.99
+         89.999
+         89.9999
+         89.99999
+         89.999999)
+    (are [lat] (= (p/course (p/point 0 0) (p/point 45 lat))
+                  0.0)
+         89.9999999
+         89.99999999
+         89.999999999
+         89.9999999999))
   (testing "should return 0 when pointing directly at north pole"
     (let [p1 (p/point 0 0)
           p2 (p/point 0 1)]
