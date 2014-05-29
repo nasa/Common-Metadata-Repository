@@ -190,7 +190,8 @@
         (is (not (m/covers-mbr? m1 m2)))
         (is (not (m/covers-mbr? m2 m1)))
         (is (not (m/covers-mbr? m1 m3)))
-        (is (not (m/covers-mbr? m3 m1))))
+        (is (not (m/covers-mbr? m3 m1)))
+        (is (m/covers-mbr? m2 (m/mbr 176 9 177 9))))
 
       (testing "mbrs both crossing antimeridian"
         (is (m/covers-mbr? m2 m3))

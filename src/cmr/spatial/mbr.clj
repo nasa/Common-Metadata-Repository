@@ -91,12 +91,29 @@
   (let [{^double n :north ^double s :south ^double e :east ^double w :west} br]
     (p/ords->points w,n e,n e,s w,s)))
 
+(defn split-across-antimeridian
+  "Splits MBRs across the antimeridian. Returns a sequence of the mbrs if it crosses the antimeridian
+  or a sequence containing original mbr."
+  [m]
+  (if (crosses-antimeridian? m)
+    (let [{:keys [west north east south]} m]
+      [(mbr west north 180.0 south)
+       (mbr -180.0 north east south)])
+    [m]))
+
 (defn covers-mbr?
   "Returns true if the mbr completely covers the other-br."
   [mbr other-br]
-  (and (= (crosses-antimeridian? mbr)
-          (crosses-antimeridian? other-br))
-       (every? (partial covers-point? mbr) (corner-points other-br))))
+  (or (and (= (crosses-antimeridian? mbr)
+              (crosses-antimeridian? other-br))
+           (every? (partial covers-point? mbr) (corner-points other-br)))
+
+      ;; one crosses and one doesn't
+      (and (crosses-antimeridian? mbr)
+           (let [[c1 c2] (split-across-antimeridian mbr)]
+             ;; Check to see if the mbr crosses the other br on either side of the antimeridian
+             (or (covers-mbr? c1 other-br)
+                 (covers-mbr? c2 other-br))))))
 
 (defn center-point [m]
   (let [{^double n :north ^double s :south ^double e :east ^double w :west} m
@@ -110,7 +127,7 @@
   (or (some (partial covers-point? mbr) (corner-points other-br))
       (some (partial covers-point? other-br) (corner-points mbr))
 
-      ;; Do they form a overlapping t shape?
+      ;; Do they form an overlapping t shape?
       (and (= (crosses-antimeridian? mbr)
               (crosses-antimeridian? other-br))
            (let [{^double w1 :west ^double  n1 :north ^double e1 :east ^double s1 :south} mbr
@@ -123,16 +140,6 @@
                       (> e2 e1)
                       (> n1 n2)
                       (< s1 s2)))))))
-
-(defn split-across-antimeridian
-  "Splits MBRs across the antimeridian. Returns a sequence of the mbrs if it crosses the antimeridian
-  or a sequence containing original mbr."
-  [m]
-  (if (crosses-antimeridian? m)
-    (let [{:keys [west north east south]} m]
-      [(mbr west north 180.0 south)
-       (mbr -180.0 north east south)])
-    [m]))
 
 (def whole-world
   "an mbr that covers the whole world"

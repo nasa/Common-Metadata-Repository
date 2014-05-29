@@ -90,13 +90,46 @@
     ;; Are any of the points in ring 1 inside ring 2?
     (some #(covers-point? r2 %) (:points r1))))
 
+(defn br-intersections
+  "Returns a lazy sequence of the points where the ring arcs intersect the br"
+  [ring br]
+  (when (mbr/intersects-br? (:mbr ring) br)
+    (let [arcs (:arcs ring)
+          {:keys [west north east south]} br]
+      (if (= north south)
+        ;; A zero height mbr
+        (mapcat #(a/lat-segment-intersections % north west east) arcs)
+
+        ;; Create vertical arcs for the sides of the br
+        (let [west-arc (a/arc (p/point west south) (p/point west north))
+              east-arc (a/arc (p/point east south) (p/point east north))]
+
+          (mapcat #(concat ;; intersections with the west side
+                           (a/intersections % west-arc)
+                           ;; intersections with the east side
+                           (a/intersections % east-arc)
+                           ;; intersections with the north side
+                           (a/lat-segment-intersections % north west east)
+                           ;; intersections with the south side
+                           (a/lat-segment-intersections % south west east))
+                  arcs))))))
+
 (defn covers-br?
   "Returns true if the ring covers the entire br"
   [ring br]
-  (and ;; The rings mbr covers the br
-       (mbr/covers-mbr? (:mbr ring) br)
-       ;; The ring contains all the corner points of the br.
-       (every? (partial covers-point? ring) (mbr/corner-points br))))
+  (let [corner-points (mbr/corner-points br)]
+    (and ;; The rings mbr covers the br
+         (mbr/covers-mbr? (:mbr ring) br)
+         ;; The ring contains all the corner points of the br.
+         (every? (partial covers-point? ring) corner-points)
+
+         ;; The ring arcs does not intersect bounding rectangle except on the points of the ring or br.
+         (let [acceptable-points (set (concat (:points ring) corner-points))
+               intersections (br-intersections ring br)]
+           ;; Are there no intersections ...
+           (or (empty? intersections)
+               ;; Or is every intersection and acceptable point?
+               (every? acceptable-points intersections))))))
 
 ;; TODO this needs additional testing and work. This will fail on at least one case:
 ;; Imagine a t shaped area. The vertical part of the T is a ring of 4 points. The horizontal part

@@ -17,37 +17,54 @@
             [cmr.spatial.lr-binary-search :as lbs]
             [cmr.spatial.dev.viz-helper :as viz-helper]))
 
-;; TODO still a work in progress
-#_(defspec all-rings-have-lrs {:times 1000 :printer-fn sgen/print-failed-ring}
+(defspec all-rings-have-lrs {:times 1000 :printer-fn sgen/print-failed-ring}
   (for-all [ring sgen/rings]
     (let [lr (lbs/find-lr ring)]
       (and lr
            (r/covers-br? ring lr)))))
 
 (comment
+  ;; Visualization samples and helpers
+
   (def ring (d/calculate-derived
               (first (gen/sample sgen/rings 1))))
 
-  ;; TODO
+  ;; Samples
+  ;; around north pole
+  (display-draggable-lr-ring
+    (r/ords->ring 45 85, 90 85, 135 85, 180 85, -135 85, -45 85, 45 85))
 
-  (def ring (d/calculate-derived (r/ords->ring -0.06,2.68,2.53,1.44,-0.01,3.79,-2.2,2.28,-0.06,2.68)))
+  ;; around south pole
+  (display-draggable-lr-ring
+    (r/ords->ring 45 -85, -45 -85, -135 -85, 180 -85, 135 -85, 90 -85, 45 -85))
+
+    ;; across antimeridian
+  (display-draggable-lr-ring
+    (r/ords->ring 175 -10, -175 -10, -175 0, -175 10
+                  175 10, 175 0, 175 -10))
 
 
-  (def lr #cmr.spatial.mbr.Mbr{:west -1.200695979893208, :north 2.969781649184588, :east 0.8782859247922897, :south 2.593485107421875})
 
-  (r/covers-br? ring lr)
-  (lbs/mid-br #{:west :north :east :south} lr (:mbr ring))
-
-
+  (def ring (d/calculate-derived (r/ring [(p/point -1.0 1.0)
+                                          (p/point -1.0 -1.0)
+                                          (p/point 1.0 1.0)
+                                          (p/point -82.0 1.125)
+                                          (p/point 102.0 -1.0)
+                                          (p/point -79.0 1.0)
+                                          (p/point -1.0 1.0)])))
 
   (lbs/find-lr ring)
+
   (r/covers-br? ring (lbs/find-lr ring))
 
+  (viz-helper/clear-geometries)
   (viz-helper/add-geometries [ring])
+
   (display-draggable-lr-ring ring)
 
 
-  (a/midpoint (a/arc (p/point 1 90) (p/point 1 1)))
+  (a/midpoint (a/arc (p/point 1 90)
+                     (p/point 1 1)))
 
 
   (viz-helper/clear-geometries)
