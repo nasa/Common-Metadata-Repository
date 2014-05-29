@@ -58,8 +58,7 @@
     (is (re-find #"Invalid XML file." (first errors)))))
 
 ;; Verify old DeleteTime concept results in 400 error.
-;; TODO commenting out this test while delete time issue is being implemented.
-#_(deftest old-delete-time-collection-ingest-test
+(deftest old-delete-time-collection-ingest-test
   (let [coll (dc/collection {:delete-time "2000-01-01T12:00:00Z"})
         {:keys [status errors]} (ingest/ingest-concept
                                   (d/item->concept (assoc coll :provider-id "PROV1")))]
