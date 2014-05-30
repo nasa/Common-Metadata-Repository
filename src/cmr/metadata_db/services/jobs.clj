@@ -40,6 +40,6 @@
                   (t/with-identity (t/key "triggers.1"))
                   (t/start-now)
                   (t/with-schedule (schedule
-                                     (with-interval-in-seconds 10))))]
+                                     (with-interval-in-seconds 3600))))]
     (qs/schedule job trigger))
   (info "Expired concepts cleanup job started."))
