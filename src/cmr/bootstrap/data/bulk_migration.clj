@@ -132,7 +132,8 @@
   (delete-provider provider-id)
   (create-provider provider-id)
   (copy-collection-data db provider-id)
-  (copy-granule-data-for-provider db provider-id))
+  (copy-granule-data-for-provider db provider-id)
+  (info "Processing of provider" provider-id "completed."))
 
 ;; Background task to handle requests
 (defn handle-copy-requests
