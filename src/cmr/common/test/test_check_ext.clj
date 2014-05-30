@@ -23,10 +23,10 @@
   (when printer-fn
     (when fail
       (println "-----------------------------------------------------------------------")
-      (printer-fn :first-fail (first fail)))
+      (apply printer-fn :first-fail fail))
     (when (:smallest shrunk)
       (println "-----------------------------------------------------------------------")
-      (printer-fn :shrunken (first (:smallest shrunk)))))
+      (apply printer-fn :shrunken (:smallest shrunk))))
 
   (if (instance? Throwable result)
     (throw result)
