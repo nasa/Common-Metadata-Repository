@@ -11,11 +11,12 @@
             [cmr.spatial.math :refer :all]
             [cmr.spatial.arc :as a]
             [cmr.spatial.point :as p]
+            [cmr.spatial.vector :as v]
             [cmr.spatial.mbr :as mbr]
             [cmr.spatial.test.generators :as sgen]
             [cmr.spatial.dev.viz-helper :as viz-helper]))
 
-(defspec arc-equivalency-spec 100
+(defspec arc-equivalency-spec 1000
   (for-all [arc sgen/arcs]
     (let [{:keys [west-point east-point]} arc]
       (and (= arc arc)
@@ -24,12 +25,19 @@
            (not= arc (a/arc (p/antipodal west-point) east-point))
            (not= arc (a/arc west-point (p/antipodal east-point)))))))
 
-(defspec arc-great-circles-spec 100
+(defspec arc-great-circles-spec 1000
   (for-all [arc sgen/arcs]
     (let [{:keys [west-point east-point great-circle]} arc
-          antipodal-arc (a/arc (p/antipodal west-point) (p/antipodal east-point))]
+          antipodal-arc (a/arc (p/antipodal west-point) (p/antipodal east-point))
+          gc1 (:great-circle arc)
+          gc2 (:great-circle antipodal-arc)]
       ;; The antipodal arc should lie on the same great circle
-      (approx= great-circle (:great-circle antipodal-arc)))))
+      (and (approx= (:northernmost-point gc1)
+              (:northernmost-point gc2))
+           (approx= (:southernmost-point gc1)
+              (:southernmost-point gc2))
+           (v/parallel? (:plane-vector gc1)
+                        (:plane-vector gc2))))))
 
 (defn- assert-gc-extreme-points [arc expected-northern expected-southern]
   (let [{{:keys [northernmost-point
@@ -37,7 +45,7 @@
     (is (approx= expected-northern northernmost-point))
     (is (approx= expected-southern southernmost-point))))
 
-(defspec arc-midpoint-spec 100
+(defspec arc-midpoint-spec 1000
   (for-all [arc sgen/arcs]
     (let [midpoint (a/midpoint arc)]
       (and (or (mbr/covers-point? (:mbr1 arc) midpoint)

@@ -50,16 +50,16 @@
   ;; Any thing after that loses precision
   (= false (maintains-precision? 179.12345678)))
 
-(def multiplication-factor
+(def ^:const ^double multiplication-factor
   "Ordinates are stored as integers in elasticsearch to maintain space. This is the number used
   to convert the ordinate to and from an integer such that the largest ordinate fits in integer
   space and maintains as much accuracy as possible"
-  10000000)
+  10000000.0)
 
 (defn ordinate->stored
   "Converts an ordinate value into an integer for storage"
-  [v]
-  (int (round 0 (* v multiplication-factor))))
+  ^long [^double v]
+  (Math/round (* v multiplication-factor)))
 
 (defn stored->ordinate
   "Converts an stored ordinate value into a double for spatial calculations"

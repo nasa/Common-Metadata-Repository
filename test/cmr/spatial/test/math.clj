@@ -42,25 +42,9 @@
           ^double d2 dvalue2]
       (math-values-close? (Math/atan2 d1 d2) (atan2 d1 d2)))))
 
-;; Negative numbers must be tested separately as the rules for rounding negative numbers in Java
-;; math are apparently different than if you are outputing formatted text.
-;; (Math/round -1.5) -> -1
-;; (Math/round -1.6) -> -2
-;; compared to
-;; (Math/round 1.5) -> 2
-;; See this stack overflow question: http://stackoverflow.com/questions/269721/rounding-negative-numbers-in-java
-
-(deftest round-negative-numbers
-  (is (= -1.124 (round 3 -1.1236)))
-  (is (= -1.123 (round 3 -1.1235)))
-  (is (= -1.123 (round 3 -1.123)))
-  (is (= -1.12 (round 2 -1.123)))
-  (is (= -1.1 (round 1 -1.123)))
-  (is (= -1.0 (round 0 -1.123))))
-
-(defspec round-spec 100
+(defspec round-spec 2000
   (for-all [precision (gen/choose 0 10)
-            n (gen-ext/choose-double 0 100)]
+            n (gen-ext/choose-double -100 100)]
     (= (Double. (format (str "%." precision "f") n))
        (round precision n))))
 

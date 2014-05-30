@@ -34,9 +34,11 @@
 (defn round
   "Rounds the value with the given precision"
   ^double [^long precision ^double v]
-  (let [multiplier (Math/pow 10 precision)
-        rounded (Math/round (* v multiplier))]
-    (/ (double rounded) (double multiplier))))
+  ;; See http://stackoverflow.com/questions/153724/how-to-round-a-number-to-n-decimal-places-in-java
+  (-> v
+      bigdec
+      (.setScale precision BigDecimal/ROUND_HALF_UP)
+      (.doubleValue)))
 
 (defn within-range? [^double v ^double min ^double max]
   (and (>= v min)

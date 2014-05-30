@@ -17,7 +17,7 @@
             [cmr.spatial.lr-binary-search :as lbs]
             [cmr.spatial.dev.viz-helper :as viz-helper]))
 
-(defspec all-rings-have-lrs {:times 1000 :printer-fn sgen/print-failed-ring}
+(defspec all-rings-have-lrs {:times 100 :printer-fn sgen/print-failed-ring}
   (for-all [ring sgen/rings]
     (let [lr (lbs/find-lr ring)]
       (and lr
