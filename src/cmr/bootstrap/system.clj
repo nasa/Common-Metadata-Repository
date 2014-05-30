@@ -7,7 +7,9 @@
             [cmr.bootstrap.api.routes :as routes]
             [cmr.common.api.web-server :as web]
             [cmr.oracle.connection :as oracle]
-            [cmr.system-trace.context :as context]))
+            [cmr.system-trace.context :as context]
+            [clojure.core.async :as ca :refer [chan]]
+            [cmr.bootstrap.data.bulk-migration :as bm]))
 
 (def DEFAULT_PORT 3006)
 
@@ -20,6 +22,7 @@
   "Returns a new instance of the whole application."
   []
   {:log (log/create-logger)
+   :provider-channel (chan 10)
    :db (oracle/create-db (oracle/db-spec))
    :web (web/create-web-server DEFAULT_PORT routes/make-api)
    :zipkin (context/zipkin-config "bootstrap" false)})
@@ -35,6 +38,7 @@
                                this
                                component-order)]
     (oracle/test-db-connection! (:db started-system))
+    (bm/handle-copy-requests this)
     (info "Bootstrap System started")
     started-system))
 

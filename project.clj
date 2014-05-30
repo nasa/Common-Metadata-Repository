@@ -12,7 +12,8 @@
                  [ring/ring-json "0.3.1"]
                  [org.clojure/tools.reader "0.8.4"]
                  [org.clojure/tools.cli "0.3.1"]
-                 [sqlingvo "0.5.17"]]
+                 [sqlingvo "0.5.17"]
+                 [org.clojure/core.async "0.1.303.0-886421-alpha"]]
   :plugins [[lein-test-out "0.3.1"]]
   :repl-options {:init-ns user}
   :profiles
