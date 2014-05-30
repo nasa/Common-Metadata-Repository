@@ -229,7 +229,7 @@
     (if previous-revision
       (if (util/is-tombstone? previous-revision)
         previous-revision
-        (let [tombstone (merge previous-revision {:revision-id revision-id :deleted true})]
+        (let [tombstone (merge previous-revision {:revision-id revision-id :deleted true :metadata ""})]
           (validate-concept-revision-id db tombstone previous-revision)
           (let [revisioned-tombstone (set-or-generate-revision-id db tombstone previous-revision)]
             (try-to-save db revisioned-tombstone revision-id))))
@@ -287,5 +287,5 @@
       (info "Deleting expired" (name concept-type) "concepts: " (map :concept-id expired-concepts)))
     (doseq [coll expired-concepts]
       (let [revision-id (inc (:revision-id coll))
-            tombstone (merge coll {:revision-id revision-id :deleted true})]
+            tombstone (merge coll {:revision-id revision-id :deleted true :metadata ""})]
         (try-to-save db tombstone revision-id)))))
