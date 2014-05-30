@@ -13,6 +13,8 @@
 
 (def DEFAULT_PORT 3006)
 
+(def CHANNEL_BUFFER_SIZE 10)
+
 (def
   ^{:doc "Defines the order to start the components."
     :private true}
@@ -22,7 +24,8 @@
   "Returns a new instance of the whole application."
   []
   {:log (log/create-logger)
-   :provider-channel (chan 10)
+   :provider-channel (chan CHANNEL_BUFFER_SIZE)
+   :collection-channel (chan CHANNEL_BUFFER_SIZE)
    :db (oracle/create-db (oracle/db-spec))
    :web (web/create-web-server DEFAULT_PORT routes/make-api)
    :zipkin (context/zipkin-config "bootstrap" false)})

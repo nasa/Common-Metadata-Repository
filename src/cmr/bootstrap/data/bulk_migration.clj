@@ -45,6 +45,48 @@
   (client/delete (delete-provider-url provider-id)
                  {:throw-exceptions false}))
 
+(defn- delete-collection-sql
+  "Generate SQL to delete a collection from a provider's collection table."
+  [provider-id collection-id]
+  (let [collection-table (keyword (str metadata-db-tablespace "." provider-id "-collections"))]
+    (su/build (delete collection-table (where `(= :concept-id ~collection-id))))))
+
+(defn- delete-collection
+  "Delete a collection from a provider's collection table."
+  [db provider-id collection-id]
+  (info "Deleting collection" collection-id "from provider" provider-id)
+  (j/with-db-transaction
+    [conn db]
+    (j/execute! conn (delete-collection-sql provider-id collection-id))))
+
+(defn- delete-collection-granules-sql
+  "Generate SQL to delete granules for a given collection from a provider's granule table."
+  [provider-id collection-id]
+  (let [granule-table (keyword (str metadata-db-tablespace "." provider-id "-granules"))]
+    (su/build (delete granule-table (where `(= :parent-collection-id ~collection-id))))))
+
+(defn- delete-collection-granules
+  "Delete granules for a given collection from a provider's granule table."
+  [db provider-id collection-id]
+  (info "Deleting granules for collection" collection-id)
+  (j/with-db-transaction
+    [conn db]
+    (j/execute! conn (delete-collection-granules-sql provider-id collection-id))))
+
+(defn- get-dataset-record-id-for-collection-sql
+  "Generate SQL to retrieve the id for a given collection/dataset from the catalog-rest table."
+  [provider-id collection-id]
+  (let [dataset-table (keyword (str catalog-rest-tablespace "." provider-id "-dataset-records"))]
+    (su/build (select [:id] (from dataset-table) (where `(= :echo-collection-id ~collection-id))))))
+
+(defn- get-dataset-record-id-for-collection
+  "Retrieve the id for a given collection/dataset from the catalog-rest table."
+  [db provider-id collection-id]
+  (:id (j/with-db-transaction
+         [conn db]
+         (j/query conn (get-dataset-record-id-for-collection-sql provider-id collection-id)))))
+
+
 (defn- get-provider-collection-list-sql
   "Gengerate SQL to get the list of collections (datasets) for the given provider."
   [provider-id]
@@ -61,10 +103,18 @@
 (defn- copy-collection-data-sql
   "Generate SQL to copy the dataset/collection data from the catalog rest database to the
   metadata db for the given provider."
-  [provider-id]
-  (let [dataset-table (keyword (str catalog-rest-tablespace "." provider-id "-dataset-records"))
-        collection-table (keyword (str metadata-db-tablespace "." provider-id "-collections"))
-        sequence (keyword (str metadata-db-tablespace ".concept_id_seq.NEXTVAL"))]
+  [provider-id & collection-id]
+  (let [dataset-table (keyword (str catalog-rest-tablespace
+                                    "."
+                                    provider-id
+                                    "-dataset-records"))
+        collection-table (keyword (str metadata-db-tablespace
+                                       "."
+                                       provider-id
+                                       "-collections"))
+        sequence (keyword (str metadata-db-tablespace
+                               ".concept_id_seq.NEXTVAL"))
+        collection-id (first collection-id)]
     (su/build (insert collection-table [:concept-id
                                         :native-id
                                         :metadata
@@ -79,17 +129,19 @@
                                :short-name
                                :version-id
                                :long-name]
-                              (from dataset-table))))))
+                              (from dataset-table)
+                              (when collection-id
+                                (where `(= :echo-collection-id ~collection-id))))))))
 
 
 (defn- copy-collection-data
   "Copy the dataset/collection data from the catalog rest database to the metadata db
   for the given provider."
-  [db provider-id]
+  [db provider-id & collection-id]
   (info "Copying collection data for provider" provider-id)
   (j/with-db-transaction
     [conn db]
-    (j/execute! conn (copy-collection-data-sql provider-id))))
+    (j/execute! conn (copy-collection-data-sql provider-id collection-id))))
 
 (defn- copy-granule-data-for-collection-sql
   "Generate the SQL to copy the granule data from the catalog reset datbase to the metadata db."
@@ -125,6 +177,18 @@
   (doseq [{:keys [id echo_collection_id]} (get-provider-collection-list db provider-id)]
     (copy-granule-data-for-collection db provider-id echo_collection_id id)))
 
+(defn copy-single-collection
+  "Delete a collection form the provider's collection table and all associated granules and
+  then copy the data from the catalog-rest db."
+  [db provider-id collection-id]
+  (let [dataset-record-id (get-dataset-record-id-for-collection db provider-id collection-id)]
+    (delete-collection-granules db provider-id collection-id)
+    (delete-collection db provider-id collection-id)
+    (copy-collection-data db provider-id collection-id)
+    (copy-granule-data-for-collection db provider-id collection-id dataset-record-id)
+    (info "Processing of collection" collection-id "for provider" provider-id "completed.")))
+
+
 (defn copy-provider
   "Copy all data for a given provider (including datasets and granules from the catalog-rest
   database into the metadata db database."
@@ -141,7 +205,7 @@
   [system]
   (info "Starting background task for monitoring bulk migration channels.")
   (let [db (:db system)
-        channels ((juxt :provider-channel) system)] ; add other channels as needed
+        channels ((juxt :provider-channel :collection-channel) system)] ; add other channels as needed
     (thread (while true
               (let [[v ch] (alts!! channels)]
                 (cond
@@ -149,14 +213,21 @@
                   (= (:provider-channel system) ch)
                   (do
                     (info "Processing provider" v)
-                    (copy-provider db v))))))))
+                    (copy-provider db v))
+
+                  (= (:collection-channel system) ch)
+                  (let [{:keys [provider-id collection-id]} v]
+                    (info "Processing collection" collection-id "for provider" provider-id)
+                    (copy-single-collection db provider-id collection-id))))))))
 
 
 (comment
   (delete-provider "FIX_PROV1")
   (get-provider-collection-list (oc/create-db (oc/db-spec)) "FIX_PROV1")
   (copy-provider (oc/create-db (oc/db-spec)) "FIX_PROV1")
+  (copy-single-collection (oc/create-db (oc/db-spec)) "FIX_PROV1" "C1000000073-FIX_PROV1")
   (get-provider-collection-list-sql  "FIX_PROV1")
   (copy-collection-data-sql "FIX_PROV1")
   (copy-granule-data-for-provider (oc/create-db (oc/db-spec)) "FIX_PROV1")
+  (delete-collection-granules-sql "FIX_PROV1" "C1000000073-FIX_PROV1")
   )
