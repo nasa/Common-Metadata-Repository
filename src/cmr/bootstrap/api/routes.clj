@@ -16,7 +16,7 @@
   (let [provider-id (get provider-id-map "provider_id")
         channel (get-in context [:system :provider-channel])]
     (ps/copy-provider channel provider-id)
-    {:status 200}))
+    {:status 202 :body {:message (str "Processing provider " provider-id)}}))
 
 (defn- build-routes [system]
   (routes
