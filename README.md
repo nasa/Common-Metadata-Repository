@@ -11,9 +11,9 @@ To start a web server for the application, run:
 
 ## Example curls
 
-### bulk copy provider FIX_PROV1 and all it's collections and granules to the metadata db
+### Bulk copy provider FIX_PROV1 and all it's collections and granules to the metadata db
 
-	curl -XPOST  -H "Content-Type: application/json" -d '{"provider_id": "FIX_PROV1"}' http://localhost:3006/bulk_migration/providers
+	curl -v -XPOST  -H "Content-Type: application/json" -d '{"provider_id": "FIX_PROV1"}' http://localhost:3006/bulk_migration/providers
 
 For the echo-reverb test fixture data, the following curl can be used to check metadata db
 to make sure the new data is available:
@@ -21,6 +21,11 @@ to make sure the new data is available:
 	curl -v http://localhost:3001/concepts/G1000000033-FIX_PROV1
 
 This should return the granule including the echo-10 xml.
+
+### Copy a single collection and all its granules
+
+	curl -v -XPOST  -H "Content-Type: application/json" -d '{"provider_id": "FIX_PROV1", "collection_id": "C1000000073-FIX_PROV1"}' http://localhost:3006/bulk_migration/collections
+
 
 
 
