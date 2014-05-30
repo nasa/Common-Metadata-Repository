@@ -17,7 +17,7 @@
                  [log4j/log4j "1.2.17"]
                  [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"]]
 
-  :plugins [[lein-shell "0.3.0"]
+  :plugins [[lein-shell "0.4.0"]
             [lein-test-out "0.3.1"]]
 
   :global-vars {*warn-on-reflection* true
@@ -56,7 +56,7 @@
             ;; Packages and installs the plugin into the local elastic search vm
             "install-local" ["do"
                              "package,"
-                             "shell" "../cmr-vms/elastic_local/install_plugin.sh" ~plugin-zip-name "spatialsearch-plugin"
+                             "shell" "../cmr-vms/elastic_local/install_plugin.sh" ~plugin-zip-name "spatialsearch-plugin,"
                              "clean"]
 
             "install-aws" ["do"
