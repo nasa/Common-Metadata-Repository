@@ -16,10 +16,10 @@
 (primitive-math/use-primitive-operators)
 
 (def ^:const ^long max-search-depth
-  "The number of times the binary search can iterate before we choose the best option."
-  10)
-
-;; TODO I think this won't work for MBRs crossing the antimeridian
+  "The number of times the binary search can iterate before we choose the best option. If it's covering
+  a space 90 tall or wide after 10 recursions it will 5.625 degrees wide (90 / 2^4). We do more than one search
+  in different directions so that get's shrunk multiple times past that."
+  4)
 
 (defn mid-br
   "Returns an mbr midway between inner and outer mbrs growing the mbr in the directions given.
@@ -40,7 +40,13 @@
   [directions ring from-mbr]
   (pj/assert (r/covers-br? ring from-mbr))
   (util/binary-search
-    from-mbr (:mbr ring) (partial mid-br (set directions))
+    ;; min value
+    from-mbr
+    ;; max value
+    (:mbr ring)
+    ;; Can compute middle value for binary search
+    (partial mid-br (set directions))
+    ;; Determines if binary search is done.
     (fn [current-br inner-br outer-br ^long depth]
       (let [current-in-ring (r/covers-br? ring current-br)]
         (if (> depth max-search-depth)

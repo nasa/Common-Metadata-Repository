@@ -30,6 +30,15 @@
               (first (gen/sample sgen/rings 1))))
 
   ;; Samples
+
+  ;; Normal
+  (display-draggable-lr-ring
+    (r/ords->ring 0,0, 4,0, 6,5, 2,5, 0,0))
+
+  ;; Very larges
+  (display-draggable-lr-ring
+    (r/ords->ring -89.9 -45, 89.9 -45, 89.9 45, -89.9 45, -89 -45))
+
   ;; around north pole
   (display-draggable-lr-ring
     (r/ords->ring 45 85, 90 85, 135 85, 180 85, -135 85, -45 85, 45 85))
@@ -64,16 +73,18 @@
 
       (r/ring (concat south-points north-points [(first south-points)]))))
 
-  (let [ring (d/calculate-derived (br->ring-with-n-points (mbr/mbr -170 45 170 -45) 2000.0))]
-    (with-progress-reporting
-      (bench
-        (lbs/find-lr ring))))
+  (defn measure-find-lr-performance
+    [n-points]
+    (let [ring (d/calculate-derived (br->ring-with-n-points (mbr/mbr -170 45 170 -45) n-points))]
+      (with-progress-reporting
+        (bench
+          (lbs/find-lr ring)))))
 
-  ; 1 - 950ms
-  ; 2 - 450 ms (changed ring to cache the point set)
-  ; 3 -
+  (measure-find-lr-performance 4) ; 1.4 ms
+  (measure-find-lr-performance 50) ; 5 ms
+  (measure-find-lr-performance 2000) ; 301 ms
 
-  )
+)
 
 (defn display-draggable-lr-ring
   "Displays a draggable ring in the spatial visualization. As the ring is dragged the LR of the ring is updated."
