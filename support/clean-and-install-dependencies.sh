@@ -9,6 +9,8 @@ lein do clean, install, clean
 
 cd ../cmr-vdd-spatial-viz
 lein do clean, install, clean
+# Run as a separate step since it fails in CI but works locally. It's not necessary for CI.
+lein compile-coffeescript
 
 cd ../cmr-spatial-lib
 lein do clean, install, clean
@@ -30,11 +32,6 @@ lein do clean, install, clean
 
 cd ../cmr-es-spatial-plugin
 lein do clean, install, clean
-
-cd ../cmr-vdd-spatial-viz
-lein do clean, install, clean
-# Run as a separate step since it fails in CI but works locally. It's not necessary for CI.
-lein compile-coffeescript
 
 cd ../cmr-ingest-app
 lein do clean, install, clean
