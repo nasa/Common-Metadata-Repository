@@ -31,7 +31,7 @@
                      (p/point -2.0 1.0)
                      (p/point -1.0 0.0)
                      (p/point 1.0 1.0)])
-       :display-options {:style {:color "9918A0ff" :width 5}})])
+       :options {:style {:color "9918A0ff" :width 5}})])
 
   (clear-geometries)
 
@@ -74,41 +74,39 @@
       [{:type :point
         :lon lon
         :lat lat
-        :label label
-        :balloon balloon}]))
+        :options {:label label :balloon balloon}}]))
   Ring
   (cmr-spatial->viz-geoms
     [ring]
-    (let [{:keys [points mbr display-options draggable]} ring
-          type (if draggable :draggable-ring :ring)]
-      [{:type type
+    (let [{:keys [points mbr options]} ring]
+      [{:type :ring
         :ords (p/points->ords points)
-        :displayOptions display-options}]))
+        :options options}]))
 
   Arc
   (cmr-spatial->viz-geoms
     [arc]
-    (let [{:keys [display-options draggable]} arc
-          type (if draggable :draggable-ring :ring)]
-      [{:type type
+    (let [{:keys [options]} arc]
+      [{:type :ring
         :ords (a/arc->ords arc)
-        :displayOptions display-options}]))
+        :options options}]))
 
   Polygon
   (cmr-spatial->viz-geoms
     [polygon]
-    (let [{:keys [rings display-options]} polygon]
-      (mapcat cmr-spatial->viz-geoms (map #(assoc % :display-options display-options) rings))))
+    (let [{:keys [rings options]} polygon]
+      (mapcat cmr-spatial->viz-geoms (map #(assoc % :options options) rings))))
 
   Mbr
   (cmr-spatial->viz-geoms
     [mbr]
-    (let [{:keys [west north east south]} mbr]
+    (let [{:keys [west north east south options]} mbr]
       [{:type :bounding-rectangle
         :west west
         :north north
         :east east
-        :south south}])))
+        :south south
+        :options options}])))
 
 (defn clear-geometries
   "Removes any displayed visualizations in the geometry"
@@ -123,3 +121,9 @@
        (map d/calculate-derived)
        (mapcat cmr-spatial->viz-geoms)
        earth-viz/add-viz-geometries))
+
+(defn remove-geometries
+  "Removes geometries displayed on the page with the specified ids. The ids for a geometry can be
+  set in the options map under the top level of the object."
+  [ids]
+  (earth-viz/remove-geometries ids))

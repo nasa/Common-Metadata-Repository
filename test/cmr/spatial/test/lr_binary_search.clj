@@ -94,8 +94,8 @@
         lr (lbs/find-lr ring)
         callback "cmr.spatial.test.lr-binary-search/handle-ring-moved"
         ring (assoc ring
-                    :display-options {:callbackFn callback}
-                    :draggable true)
+                    :options {:callbackFn callback
+                              :draggable true})
         _ (println "Found LR:" (pr-str lr))
         geoms (if lr [ring lr (first (mbr/corner-points lr)) #_(:mbr ring)] [ring (:mbr ring)])]
     (viz-helper/add-geometries geoms)))
