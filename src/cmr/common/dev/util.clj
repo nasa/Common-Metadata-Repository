@@ -11,7 +11,7 @@
   [file]
   (future
     (try
-      (clojure.java.shell/sh "touch" file)
+      (sh/sh "touch" file)
       (catch Throwable e
         (println "Error touch" file)
         (.printStackTrace e))))
@@ -31,10 +31,10 @@
         files (seq (.listFiles d))]
     (dorun (map #(-> % str touch-file) (filter #(not (.isDirectory ^java.io.File %)) files)))))
 
-(comment
-(touch-files-in-dir ".")
-
-)
+(defn speak
+  "Says the specified text outloud."
+  [text]
+  (sh/sh "say" "-v" "Victoria" text))
 
 (defn copy-to-clipboard
   "Copies the string into the clipboard"
