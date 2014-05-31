@@ -4,10 +4,12 @@ class window.BoundingRectangle extends Module
   # A very light blue that is very transparent
   @DEFAULT_COLOR = '55CEB0A5'
 
-  constructor: (@west, @north, @east, @south, @color = BoundingRectangle.DEFAULT_COLOR) ->
+  constructor: (@west, @north, @east, @south, options={}) ->
     super()
     # multiple placemarks are used so we can handle crossing antimeridian
     @boxPlacemarks = []
+    @color = BoundingRectangle.DEFAULT_COLOR
+    @color = options.color if options.color
 
   @fromObject: (data)->
     new BoundingRectangle(data.west, data.north, data.east, data.south)

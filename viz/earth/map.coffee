@@ -108,7 +108,7 @@ class window.Map extends Module
                 when "draggable-ring"
                   DraggableRing.fromOrdinates(g.ords, g.displayOptions, window.vddSession)
                 when "bounding-rectangle"
-                  new BoundingRectangle(g.west, g.north, g.east, g.south)
+                  new BoundingRectangle(g.west, g.north, g.east, g.south, g.displayOptions)
                 else throw "Unexpected geometry type: #{g.type}"
       this.addEventListener(geom)
       geom.display(@ge)
