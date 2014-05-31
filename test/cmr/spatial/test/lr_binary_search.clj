@@ -96,14 +96,21 @@
         ring (assoc ring
                     :options {:callbackFn callback
                               :draggable true})
-        _ (println "Found LR:" (pr-str lr))
-        geoms (if lr [ring lr (first (mbr/corner-points lr)) #_(:mbr ring)] [ring (:mbr ring)])]
-    (viz-helper/add-geometries geoms)))
+        _ (println "Found LR:" (pr-str lr))]
+    (viz-helper/add-geometries [ring])
+    (when lr
+      (viz-helper/add-geometries [(assoc-in lr [:options :id] "lr")]))))
 
 (defn handle-ring-moved
   "Callback handler for when the ring is moved. It removes the existing ring and lr and readds it with
   the updated lr."
   [ords-str]
   (let [ords (map #(Double. ^String %) (str/split ords-str #","))
-        ring (apply r/ords->ring ords)]
-    (display-draggable-lr-ring ring)))
+        ring (d/calculate-derived (apply r/ords->ring ords))
+        lr (lbs/find-lr ring)]
+    (viz-helper/remove-geometries ["lr"])
+    (when lr
+      (viz-helper/add-geometries [(assoc-in lr [:options :id] "lr")]))))
+
+
+
