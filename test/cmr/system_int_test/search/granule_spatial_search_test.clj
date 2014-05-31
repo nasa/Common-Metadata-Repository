@@ -8,24 +8,23 @@
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.core :as d]
             [cmr.spatial.polygon :as p]
+            [cmr.spatial.mbr :as m]
             [cmr.spatial.ring :as r]
             [cmr.spatial.derived :as derived]
             [cmr.spatial.codec]
             [clojure.string :as str]
             [cmr.spatial.dev.viz-helper :as viz-helper]
             [cmr.spatial.serialize :as srl]
-            [cmr.common.dev.util :as dev-util]))
+            [cmr.common.dev.util :as dev-util]
+            [cmr.spatial.lr-binary-search :as lbs]))
 
 (use-fixtures :each (ingest/reset-fixture "PROV1"))
-
 
 (defn polygon
   "Creates a single ring polygon with the given ordinates. Points must be in counter clockwise order.
   The polygon will be closed automatically."
   [& ords]
-  ;; Take first two coordinates and append to end to close the ring
-  (let [ords (concat ords (take 2 ords))
-        polygon (p/polygon [(apply r/ords->ring ords)])
+  (let [polygon (p/polygon [(apply r/ords->ring ords)])
         outer (-> polygon :rings first derived/calculate-derived)]
     (when (and (:contains-north-pole outer)
                (:contains-south-pole outer))
@@ -65,7 +64,7 @@
                               (srl/shape->mbr g)
                               (srl/shape->lr g)])
                            geometries)]
-        (viz-helper/add-geometries geometries)))
+    (viz-helper/add-geometries geometries)))
 
 (defn display-search-area
   "Displays a spatial search area on the map"
@@ -75,27 +74,16 @@
                                 (srl/shape->mbr geometry)
                                 (srl/shape->lr geometry)])))
 
-(comment
-  (viz-helper/add-geometries [(polygon 20,10, 30,20, 10,20)])
-
-  (derived/calculate-derived (r/ords->ring 20,10, 30,20, 10,20, 20, 10))
-
-  (do
-    (ingest/reset)
-    (ingest/create-provider "PROV1"))
-
-)
-
 (deftest spatial-search-test
-  (let [polygon-ne (polygon 20 10, 30 20, 10 20)
-        polygon-se (polygon 30 -20, 20 -10, 10 -20)
-        polygon-sw (polygon -20 -20, -10 -10, -30 -10)
-        polygon-nw (polygon -20 10, -30 20, -30 10)
-        polygon-half-earth (polygon -179.9 0, -179.9 -89.9, 0 -89.9, 0 0, 0 89.9, -179.9 89.9)
-        polygon-north-pole (polygon 45, 80, 135, 80, -135, 80, -45, 80)
-        polygon-south-pole (polygon -45 -80, -135 -80, 135 -80, 45 -80)
-        polygon-antimeridian (polygon 135 -10, -135 -10, -135 10, 135 10)
-        polygon-near-sp (polygon 168.1075,-78.0047, 170.1569,-78.4112, 172.019,-78.0002, 169.9779,-77.6071)
+  (let [polygon-ne (polygon 20 10, 30 20, 10 20, 20 10)
+        polygon-se (polygon 30 -20, 20 -10, 10 -20, 30 -20)
+        polygon-sw (polygon -20 -20, -10 -10, -30 -10,-20 -20)
+        polygon-nw (polygon -20 10, -30 20, -30 10, -20 10)
+        polygon-half-earth (polygon -179.9 0, -179.9 -89.9, 0 -89.9, 0 0, 0 89.9, -179.9 89.9, -179.9 0)
+        polygon-north-pole (polygon 45, 80, 135, 80, -135, 80, -45, 80,  45 80)
+        polygon-south-pole (polygon -45 -80, -135 -80, 135 -80, 45 -80, -45 -80)
+        polygon-antimeridian (polygon 135 -10, -135 -10, -135 10, 135 10, 135 -10)
+        polygon-near-sp (polygon 168.1075 -78.0047, 170.1569,-78.4112, 172.019,-78.0002, 169.9779,-77.6071, 168.1075 -78.0047)
         coll (d/ingest "PROV1" (dc/collection {:spatial-coverage (dc/spatial :geodetic)}))
         make-gran (fn [& polygons]
                     (d/ingest "PROV1" (dg/granule coll {:spatial-coverage (apply dg/spatial polygons)})))
@@ -117,8 +105,8 @@
              (display-indexed-granules items)
              (display-search-area (apply polygon ords)))
            matches?)
-         [10 10, 30 10, 30 20, 10 20] [gran1 gran4]
-         [173.34,-77.17, 171.41,-77.08, 170.64,-78.08, 173.71,-78.05] [gran9]
+         [10 10, 30 10, 30 20, 10 20, 10 10] [gran1 gran4]
+         [173.34,-77.17, 171.41,-77.08, 170.64,-78.08, 173.71,-78.05, 173.34,-77.17] [gran9]
          )
 
     ))
