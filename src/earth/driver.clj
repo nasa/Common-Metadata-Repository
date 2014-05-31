@@ -13,7 +13,7 @@
 
   (def ring {:type :ring
              :ords [-55.3,30 -55.3,27, -43,27, -43,30, -55.3,30]
-             :displayOptions {:hidingPoints false}})
+             :ptions {:hidingPoints false}})
 
   {:type :point
    :ords []
@@ -49,6 +49,10 @@
 (defn add-viz-geometries [geometries]
   (vdd/data->viz {:cmd :add-geometries
                   :geometries geometries}))
+
+(defn remove-geometries [ids]
+  (vdd/data->viz {:cmd :remove-geometries
+                  :ids ids}))
 
 (defn clear-viz-geometries []
   (vdd/data->viz {:cmd :clear-geometries}))

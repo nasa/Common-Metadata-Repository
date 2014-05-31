@@ -100,15 +100,17 @@ class window.Map extends Module
     newGeoms = _.map(geometries, (g)=>
       geom = switch g.type
                 when "point"
-                  new Point(g.lon, g.lat, label:g.label, balloonContents:g.balloon)
-                when "draggable-point"
-                  new Point(g.lon, g.lat, label:g.label, balloonContents:g.balloon)
+                  if g.options && g.options.draggable
+                    new DraggablePoint(g.lon, g.lat, g.options)
+                  else
+                    new Point(g.lon, g.lat, g.options)
                 when "ring"
-                  Ring.fromOrdinates(g.ords, g.displayOptions)
-                when "draggable-ring"
-                  DraggableRing.fromOrdinates(g.ords, g.displayOptions, window.vddSession)
+                  if g.options && g.options.draggable
+                    DraggableRing.fromOrdinates(g.ords, g.options, window.vddSession)
+                  else
+                    Ring.fromOrdinates(g.ords, g.options)
                 when "bounding-rectangle"
-                  new BoundingRectangle(g.west, g.north, g.east, g.south, g.displayOptions)
+                  new BoundingRectangle(g.west, g.north, g.east, g.south, g.options)
                 else throw "Unexpected geometry type: #{g.type}"
       this.addEventListener(geom)
       geom.display(@ge)
@@ -117,6 +119,13 @@ class window.Map extends Module
     @currentGeometries = @currentGeometries.concat(newGeoms)
     this.zoomToPoints(_.reduce(newGeoms, ((m,g)->
       m.concat(g.zoomablePoints())), []))
+
+  # Removes geometries by id
+  removeGeometries: (geometryIds)->
+    [geometriesToRemove, @currentGeometries] = _.partition(@currentGeometries, (g)-> geometryIds.indexOf(g.id) >= 0)
+    for g in geometriesToRemove
+      g.undisplay(@ge)
+      this.removeEventListener(g)
 
   enableGrid: (enabled=true)->
     @ge.getOptions().setGridVisibility(enabled)

@@ -5,6 +5,7 @@
     super()
     @lon = parseFloat(@lon)
     @lat = parseFloat(@lat)
+    @id = options.id
 
     # Set it to a function so it's always correct for the current location
     # of the point

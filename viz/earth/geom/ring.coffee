@@ -9,6 +9,7 @@ class window.Ring extends Module
   # matches the last point
   constructor: (@points, options={}) ->
     super()
+    @id = options.id
     @hidingPoints = false
     @hidingPoints = options.hidingPoints if options.hidingPoints
 

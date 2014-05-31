@@ -6,6 +6,7 @@ class window.BoundingRectangle extends Module
 
   constructor: (@west, @north, @east, @south, options={}) ->
     super()
+    @id = options.id
     # multiple placemarks are used so we can handle crossing antimeridian
     @boxPlacemarks = []
     @color = BoundingRectangle.DEFAULT_COLOR
@@ -34,7 +35,7 @@ class window.BoundingRectangle extends Module
     @west > @east
 
   zoomablePoints: ()->
-    [{lon: @west, lat: @north}, {lon: @east, lat: @south}]
+    [new Point(@west, @north), new Point(@east, @south)]
 
   # A helper that creates a polygon placemark with the given bounds.
   createBoxPolygon: (ge, west, east, north=@north, south=@south)->
