@@ -13,6 +13,12 @@
 
 (def job-key "jobs.expired.1")
 
+(def EXPIRED_CONCEPT_CLEANUP_INTERVAL
+  ; 10
+  3600
+  )
+
+
 (defjob ExpiredConceptCleanupJob
   [ctx]
   (info "Excuting expired concepts cleanup.")
@@ -40,6 +46,6 @@
                   (t/with-identity (t/key "triggers.1"))
                   (t/start-now)
                   (t/with-schedule (schedule
-                                     (with-interval-in-seconds 3600))))]
+                                     (with-interval-in-seconds EXPIRED_CONCEPT_CLEANUP_INTERVAL))))]
     (qs/schedule job trigger))
   (info "Expired concepts cleanup job started."))

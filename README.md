@@ -153,7 +153,7 @@ Insert Flow
   - If we get a conflict from a uniqueness constraint restart from beginning of this flow
 
 
-## Old API
+## API
 
 
 ### GET /concept-id/:concept-type/:provider-id/:native-id
