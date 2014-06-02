@@ -50,6 +50,9 @@ lein do clean, install, clean
 cd ../cmr-metadata-db-app
 lein do clean, install, clean
 
+cd ../cmr-bootstrap-app
+lein do clean, install, clean
+
 cd ../cmr-system-int-test
 lein do clean, install, clean
 

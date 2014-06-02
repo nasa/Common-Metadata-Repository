@@ -1,5 +1,6 @@
 (ns cmr.dev-system.system
   (:require [cmr.common.log :refer (debug info warn error)]
+            [cmr.bootstrap.system :as bootstrap-system]
             [cmr.metadata-db.system :as mdb-system]
             [cmr.indexer.system :as indexer-system]
             [cmr.search.system :as search-system]
@@ -18,6 +19,8 @@
   "A map of application name to the start function"
   {:metadata-db {:start mdb-system/start
                  :stop mdb-system/stop}
+   :bootstrap {:start bootstrap-system/start
+                 :stop bootstrap-system/stop}
    :index-set {:start index-set-system/start
                :stop index-set-system/stop}
    :indexer {:start indexer-system/start
@@ -46,7 +49,7 @@
   ;; Memory DB configured to run in memory
   {:apps {:metadata-db (assoc (mdb-system/create-system)
                               :db (memory/create-db))
-
+          :bootstrap (bootstrap-system/create-system)
 
           :indexer (indexer-system/create-system)
 
@@ -73,12 +76,13 @@
 (defmethod create-system :external-dbs
   [type]
   {:apps {:metadata-db (mdb-system/create-system)
+          :bootstrap (bootstrap-system/create-system)
           :indexer (indexer-system/create-system)
           :index-set (index-set-system/create-system)
           :ingest (ingest-system/create-system)
           :search (search-system/create-system)}
    :components {
-                ;:vdd-server (viz-helper/create-viz-server)
+                ; :vdd-server (viz-helper/create-viz-server)
                 }})
 
 (defn- stop-components
