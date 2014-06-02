@@ -8,6 +8,17 @@ To start a web server for the application, run:
 
     lein run
 
+## Giving read permission to metadata db user for catalog rest tables
+
+grant select on DEV_52_CATALOG_REST.providers to METADATA_DB;
+
+grant select on DEV_52_CATALOG_REST.FIX_PROV1_DATASET_RECORDS to METADATA_DB;
+
+grant select on DEV_52_CATALOG_REST.FIX_PROV1_GRANULE_RECORDS to METADATA_DB;
+
+
+This needs to be done for each provider.
+
 
 ## Example curls
 
