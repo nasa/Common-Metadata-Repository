@@ -8,34 +8,34 @@
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.api.errors :as errors]
             [cmr.system-trace.http :as http-trace]
-            [cmr.bootstrap.services.copy :as cp]))
+            [cmr.bootstrap.services.data-migration :as dm]))
 
 
-(defn- copy-collection
+(defn- migrate-collection
   "Copy collections data from catalog-rest to metadata db (including granules)"
   [context provider-id-collection-map]
   (let [provider-id (get provider-id-collection-map "provider_id")
         collection-id (get provider-id-collection-map "collection_id")
-        channel (get-in context [:system :collection-channel])]
-    (cp/copy-collection channel provider-id collection-id)
+        system (:system context)]
+    (dm/migrate-collection system provider-id collection-id)
     {:status 202
      :body {:message (str "Processing collection " collection-id "for provider " provider-id)}}))
 
-(defn- copy-provider
+(defn- migrate-provider
   "Copy a single provider's data from catalog-rest to metadata db (including collections and granules)"
   [context provider-id-map]
   (let [provider-id (get provider-id-map "provider_id")
-        channel (get-in context [:system :provider-channel])]
-    (cp/copy-provider channel provider-id)
+        system (:system context)]
+    (dm/migrate-provider system provider-id)
     {:status 202 :body {:message (str "Processing provider " provider-id)}}))
 
 (defn- build-routes [system]
   (routes
     (context "/bulk_migration" []
       (POST "/providers" {:keys [request-context body]}
-        (copy-provider request-context body))
+        (migrate-provider request-context body))
       (POST "/collections" {:keys [request-context body]}
-        (copy-collection request-context body)))))
+        (migrate-collection request-context body)))))
 
 (defn make-api [system]
   (-> (build-routes system)
