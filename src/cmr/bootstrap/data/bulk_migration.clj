@@ -14,7 +14,6 @@
 
 ;; To copy a provider
 ;; 1. Tell the metadata db to drop the provider
-;; FIXME - Will this work even if the metadata db doesn't have the provider yet?
 ;; 2. Tell the metadata db to create the provider
 ;; 3. Insert collections by selecting from dataset table.
 ;; 4. Iterate over dataset ids for provider and insert granules into metadata db table
