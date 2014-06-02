@@ -21,7 +21,7 @@
 
 (defjob ExpiredConceptCleanupJob
   [ctx]
-  (info "Excuting expired concepts cleanup.")
+  (info "Executing expired concepts cleanup.")
   (try
     (let [db (db-holder/get-db)]
       (doseq [provider (provider-db/get-providers db)]
