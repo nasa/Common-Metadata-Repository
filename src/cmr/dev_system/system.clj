@@ -49,7 +49,8 @@
   ;; Memory DB configured to run in memory
   {:apps {:metadata-db (assoc (mdb-system/create-system)
                               :db (memory/create-db))
-          :bootstrap (bootstrap-system/create-system)
+
+          ;; Bootstrap is not enabled for in-memory dev system
 
           :indexer (indexer-system/create-system)
 
@@ -96,7 +97,7 @@
 (defn- stop-apps
   [system]
   (reduce (fn [system [app {stop-fn :stop}]]
-            (update-in system [:apps app] stop-fn))
+            (update-in system [:apps app] #(when % (stop-fn %))))
           system
           app-control-functions))
 
@@ -117,7 +118,8 @@
   (reduce (fn [system [app {start-fn :start}]]
             (update-in system [:apps app]
                        #(try
-                          (start-fn %)
+                          (when %
+                            (start-fn %))
                           (catch Exception e
                             (stop-components (stop-apps system))
                             (throw e)))))
