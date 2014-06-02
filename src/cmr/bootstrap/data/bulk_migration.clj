@@ -9,7 +9,8 @@
             [sqlingvo.vendor :as v]
             [cmr.metadata-db.data.oracle.sql-utils :as su]
             [clojure.core.async :as ca :refer [thread alts!! <!!]]
-            [cmr.oracle.connection :as oc]))
+            [cmr.oracle.connection :as oc]
+            [cmr.metadata-db.data.oracle.concept-tables :as tables]))
 
 ;; To copy a provider
 ;; 1. Tell the metadata db to drop the provider
@@ -19,21 +20,24 @@
 ;; 4. Iterate over dataset ids for provider and insert granules into metadata db table
 ;; by selecting from catlaog-rest table.
 
-(def catalog-rest-tablespace "DEV_52_CATALOG_REST")
+(def catalog-rest-tablespace (config/config-value-fn :catalog-rest-tablespace "DEV_52_CATALOG_REST"))
 
-(def metadata-db-tablespace "METADATA_DB")
+(def metadata-db-tablespace (config/config-value-fn :metadata-db-tablespace "METADATA_DB"))
 
-;;FIXME - metadata-db url should be the configuration value we load. This will be different
-;; when deployed in various environments.
-(def metadata-db-port (config/config-value-fn :metadata-db-port 3001))
+(def metadata-db-url (config/config-value-fn :metadata-db-host "http://localhost:3001"))
+
+(defn catalog-rest-dataset-table
+  "Get the dataset table name for a given provider."
+  [provider-id]
+  (keyword (str (catalog-rest-tablespace) "." provider-id "-dataset-records")))
 
 (defn create-provider-url
   []
-  (format "http://localhost:%s/providers" (metadata-db-port)))
+  (format "%s/providers" (metadata-db-url)))
 
 (defn delete-provider-url
   [provider-id]
-  (format "http://localhost:%s/providers/%s" (metadata-db-port) provider-id))
+  (format "%s/providers/%s" (metadata-db-url) provider-id))
 
 (defn- create-provider
   "Create the provider with the given provider id"
@@ -51,9 +55,7 @@
 (defn- delete-collection-sql
   "Generate SQL to delete a collection from a provider's collection table."
   [provider-id collection-id]
-  ;; FIXME - this runs as the metadata db user so it's not necessary to specify the tablespace
-  ;; FIXME - Don't manually create the table names here. This should use shared code from metadata db or something.
-  (let [collection-table (keyword (str metadata-db-tablespace "." provider-id "-collections"))]
+  (let [collection-table (tables/get-table-name provider-id :collection)]
     (su/build (delete collection-table (where `(= :concept-id ~collection-id))))))
 
 (defn- delete-collection
@@ -67,7 +69,7 @@
 (defn- delete-collection-granules-sql
   "Generate SQL to delete granules for a given collection from a provider's granule table."
   [provider-id collection-id]
-  (let [granule-table (keyword (str metadata-db-tablespace "." provider-id "-granules"))]
+  (let [granule-table (tables/get-table-name provider-id :granule)]
     (su/build (delete granule-table (where `(= :parent-collection-id ~collection-id))))))
 
 (defn- delete-collection-granules
@@ -81,10 +83,8 @@
 (defn- get-dataset-record-id-for-collection-sql
   "Generate SQL to retrieve the id for a given collection/dataset from the catalog-rest table."
   [provider-id collection-id]
-  ;; FIXME - you have need to create table names with user prefixes in multiple places. This should
-  ;; be extracted into a helper function.
-  (let [dataset-table (keyword (str catalog-rest-tablespace "." provider-id "-dataset-records"))]
-    (su/build (select [:id] (from dataset-table) (where `(= :echo-collection-id ~collection-id))))))
+  (su/build (select [:id] (from (catalog-rest-dataset-table provider-id))
+                    (where `(= :echo-collection-id ~collection-id)))))
 
 (defn- get-dataset-record-id-for-collection
   "Retrieve the id for a given collection/dataset from the catalog-rest table."
@@ -97,8 +97,7 @@
 (defn- get-provider-collection-list-sql
   "Gengerate SQL to get the list of collections (datasets) for the given provider."
   [provider-id]
-  (let [dataset-table (keyword (str catalog-rest-tablespace "." provider-id "-dataset-records"))]
-    (su/build (select [:id :echo-collection-id] (from dataset-table)))))
+  (su/build (select [:id :echo-collection-id] (from (catalog-rest-dataset-table provider-id)))))
 
 (defn- get-provider-collection-list
   "Get the list of collections (datasets) for the given provider."
@@ -110,39 +109,33 @@
 (defn- copy-collection-data-sql
   "Generate SQL to copy the dataset/collection data from the catalog rest database to the
   metadata db for the given provider for all the provider's collections or a single collection."
-  ;; FIXME - if collection-id is supposed to be optional but not a list it should be done through
-  ;; the use of multiple arguments instead of the & method.
-  [provider-id & collection-id]
-  (let [dataset-table (keyword (str catalog-rest-tablespace
-                                    "."
-                                    provider-id
-                                    "-dataset-records"))
-        collection-table (keyword (str metadata-db-tablespace
-                                       "."
-                                       provider-id
-                                       "-collections"))
-        ;; FIXME - You instantiate this variable but never use it. I'm guessing you want to update
-        ;; the metadata db sequence using this. This should be a separate function specifically for this.
-        sequence (keyword (str metadata-db-tablespace
-                               ".concept_id_seq.NEXTVAL"))
-        collection-id (first collection-id)]
-    (su/build (insert collection-table [:concept-id
-                                        :native-id
-                                        :metadata
-                                        :format
-                                        :short-name
-                                        :version-id
-                                        :entry-title]
-                      (select [:echo-collection-id
-                               :dataset-id
-                               :compressed-xml
-                               :xml-mime-type
-                               :short-name
-                               :version-id
-                               :long-name]
-                              (from dataset-table)
-                              (when collection-id
-                                (where `(= :echo-collection-id ~collection-id))))))))
+  ([provider-id] (copy-collection-data-sql provider-id nil))
+  ([provider-id  collection-id] (let [dataset-table (keyword (str (catalog-rest-tablespace)
+                                                                  "."
+                                                                  provider-id
+                                                                  "-dataset-records"))
+                                      collection-table (keyword (str (metadata-db-tablespace)
+                                                                     "."
+                                                                     provider-id
+                                                                     "-collections"))
+                                      collection-id (first collection-id)]
+                                  (su/build (insert collection-table [:concept-id
+                                                                      :native-id
+                                                                      :metadata
+                                                                      :format
+                                                                      :short-name
+                                                                      :version-id
+                                                                      :entry-title]
+                                                    (select [:echo-collection-id
+                                                             :dataset-id
+                                                             :compressed-xml
+                                                             :xml-mime-type
+                                                             :short-name
+                                                             :version-id
+                                                             :long-name]
+                                                            (from dataset-table)
+                                                            (when collection-id
+                                                              (where `(= :echo-collection-id ~collection-id)))))))))
 
 
 (defn- copy-collection-data
@@ -157,9 +150,9 @@
 (defn- copy-granule-data-for-collection-sql
   "Generate the SQL to copy the granule data from the catalog reset datbase to the metadata db."
   [provider-id collection-id dataset-record-id]
-  (let [granule-echo-table (keyword (str catalog-rest-tablespace "." provider-id "-granule-records"))
-        granule-mdb-table (keyword (str metadata-db-tablespace "." provider-id "-granules"))
-        sequence (keyword (str metadata-db-tablespace ".concept_id_seq.NEXTVAL"))]
+  (let [granule-echo-table (keyword (str (catalog-rest-tablespace) "." provider-id "-granule-records"))
+        granule-mdb-table (keyword (str (metadata-db-tablespace) "." provider-id "-granules"))
+        sequence (keyword (str (metadata-db-tablespace) ".concept_id_seq.NEXTVAL"))]
     (su/build (insert granule-mdb-table [:concept-id
                                          :native-id
                                          :parent-collection-id
