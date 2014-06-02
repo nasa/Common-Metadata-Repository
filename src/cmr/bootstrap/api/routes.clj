@@ -22,7 +22,7 @@
      :body {:message (str "Processing collection " collection-id "for provider " provider-id)}}))
 
 (defn- copy-provider
-  "Copy provider data from catalog-rest to metadata db (including collections and granules)"
+  "Copy a single provider's data from catalog-rest to metadata db (including collections and granules)"
   [context provider-id-map]
   (let [provider-id (get provider-id-map "provider_id")
         channel (get-in context [:system :provider-channel])]

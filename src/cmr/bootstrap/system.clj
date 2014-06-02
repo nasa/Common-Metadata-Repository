@@ -24,6 +24,7 @@
   "Returns a new instance of the whole application."
   []
   {:log (log/create-logger)
+   ;; FIXME - add comment above each channel for what kind of messages it's for.
    :provider-channel (chan CHANNEL_BUFFER_SIZE)
    :collection-channel (chan CHANNEL_BUFFER_SIZE)
    :db (oracle/create-db (oracle/db-spec))

@@ -13,6 +13,7 @@
 
 ;; To copy a provider
 ;; 1. Tell the metadata db to drop the provider
+;; FIXME - Will this work even if the metadata db doesn't have the provider yet?
 ;; 2. Tell the metadata db to create the provider
 ;; 3. Insert collections by selecting from dataset table.
 ;; 4. Iterate over dataset ids for provider and insert granules into metadata db table
@@ -22,6 +23,8 @@
 
 (def metadata-db-tablespace "METADATA_DB")
 
+;;FIXME - metadata-db url should be the configuration value we load. This will be different
+;; when deployed in various environments.
 (def metadata-db-port (config/config-value-fn :metadata-db-port 3001))
 
 (defn create-provider-url
@@ -48,6 +51,8 @@
 (defn- delete-collection-sql
   "Generate SQL to delete a collection from a provider's collection table."
   [provider-id collection-id]
+  ;; FIXME - this runs as the metadata db user so it's not necessary to specify the tablespace
+  ;; FIXME - Don't manually create the table names here. This should use shared code from metadata db or something.
   (let [collection-table (keyword (str metadata-db-tablespace "." provider-id "-collections"))]
     (su/build (delete collection-table (where `(= :concept-id ~collection-id))))))
 
@@ -76,6 +81,8 @@
 (defn- get-dataset-record-id-for-collection-sql
   "Generate SQL to retrieve the id for a given collection/dataset from the catalog-rest table."
   [provider-id collection-id]
+  ;; FIXME - you have need to create table names with user prefixes in multiple places. This should
+  ;; be extracted into a helper function.
   (let [dataset-table (keyword (str catalog-rest-tablespace "." provider-id "-dataset-records"))]
     (su/build (select [:id] (from dataset-table) (where `(= :echo-collection-id ~collection-id))))))
 
@@ -102,7 +109,9 @@
 
 (defn- copy-collection-data-sql
   "Generate SQL to copy the dataset/collection data from the catalog rest database to the
-  metadata db for the given provider."
+  metadata db for the given provider for all the provider's collections or a single collection."
+  ;; FIXME - if collection-id is supposed to be optional but not a list it should be done through
+  ;; the use of multiple arguments instead of the & method.
   [provider-id & collection-id]
   (let [dataset-table (keyword (str catalog-rest-tablespace
                                     "."
@@ -112,6 +121,8 @@
                                        "."
                                        provider-id
                                        "-collections"))
+        ;; FIXME - You instantiate this variable but never use it. I'm guessing you want to update
+        ;; the metadata db sequence using this. This should be a separate function specifically for this.
         sequence (keyword (str metadata-db-tablespace
                                ".concept_id_seq.NEXTVAL"))
         collection-id (first collection-id)]
