@@ -30,6 +30,16 @@
   [provider-id]
   (keyword (str (catalog-rest-tablespace) "." provider-id "-dataset-records")))
 
+(defn catalog-rest-granule-table
+  "Get the granule table name for a given provider."
+  [provider-id]
+  (keyword (str (catalog-rest-tablespace) "." provider-id "-granule-records")))
+
+(defn metadata-db-concept-table
+  "Get the collection/granule table name for a given provider."
+  [provider-id concept-type]
+  (keyword (str (metadata-db-tablespace) "." (tables/get-table-name provider-id concept-type))))
+
 (defn create-provider-url
   []
   (format "%s/providers" (metadata-db-url)))
@@ -109,15 +119,9 @@
   "Generate SQL to copy the dataset/collection data from the catalog rest database to the
   metadata db for the given provider for all the provider's collections or a single collection."
   ([provider-id] (copy-collection-data-sql provider-id nil))
-  ([provider-id  collection-id] (let [dataset-table (keyword (str (catalog-rest-tablespace)
-                                                                  "."
-                                                                  provider-id
-                                                                  "-dataset-records"))
-                                      collection-table (keyword (str (metadata-db-tablespace)
-                                                                     "."
-                                                                     provider-id
-                                                                     "-collections"))
-                                      collection-id (first collection-id)]
+  ([provider-id  collection-id] (let [dataset-table (catalog-rest-dataset-table provider-id)
+                                      collection-table (metadata-db-concept-table provider-id
+                                                                                  :collection)]
                                   (su/build (insert collection-table [:concept-id
                                                                       :native-id
                                                                       :metadata
@@ -140,18 +144,17 @@
 (defn- copy-collection-data
   "Copy the dataset/collection data from the catalog rest database to the metadata db
   for the given provider."
-  [db provider-id & collection-id]
-  (info "Copying collection data for provider" provider-id)
-  (j/with-db-transaction
-    [conn db]
-    (j/execute! conn (copy-collection-data-sql provider-id collection-id))))
+  ([db provider-id] (copy-collection-data db provider-id nil))
+  ([db provider-id collection-id] (info "Copying collection data for provider" provider-id)
+   (j/with-db-transaction
+     [conn db]
+     (j/execute! conn (copy-collection-data-sql provider-id collection-id)))))
 
 (defn- copy-granule-data-for-collection-sql
   "Generate the SQL to copy the granule data from the catalog reset datbase to the metadata db."
   [provider-id collection-id dataset-record-id]
-  (let [granule-echo-table (keyword (str (catalog-rest-tablespace) "." provider-id "-granule-records"))
-        granule-mdb-table (keyword (str (metadata-db-tablespace) "." provider-id "-granules"))
-        sequence (keyword (str (metadata-db-tablespace) ".concept_id_seq.NEXTVAL"))]
+  (let [granule-echo-table (catalog-rest-granule-table provider-id)
+        granule-mdb-table (metadata-db-concept-table provider-id :granule)]
     (su/build (insert granule-mdb-table [:concept-id
                                          :native-id
                                          :parent-collection-id
@@ -159,7 +162,7 @@
                                          :format]
                       (select [:echo-granule-id
                                :granule-ur
-                               `(concat ~collection-id "") ; don't know how else to select constant
+                               collection-id
                                :compressed-xml
                                :xml-mime-type]
                               (from granule-echo-table)
@@ -230,7 +233,7 @@
   (copy-provider (oc/create-db (oc/db-spec)) "FIX_PROV1")
   (copy-single-collection (oc/create-db (oc/db-spec)) "FIX_PROV1" "C1000000073-FIX_PROV1")
   (get-provider-collection-list-sql  "FIX_PROV1")
-  (copy-collection-data-sql "FIX_PROV1")
   (copy-granule-data-for-provider (oc/create-db (oc/db-spec)) "FIX_PROV1")
   (delete-collection-granules-sql "FIX_PROV1" "C1000000073-FIX_PROV1")
+  (metadata-db-concept-table "FIX_PROV1" :collection)
   )
