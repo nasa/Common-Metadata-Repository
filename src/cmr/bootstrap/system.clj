@@ -9,7 +9,8 @@
             [cmr.oracle.connection :as oracle]
             [cmr.system-trace.context :as context]
             [clojure.core.async :as ca :refer [chan]]
-            [cmr.bootstrap.data.bulk-migration :as bm]))
+            [cmr.bootstrap.data.bulk-migration :as bm]
+            [cmr.oracle.config :as oracle-config]))
 
 (def DEFAULT_PORT 3006)
 
@@ -27,7 +28,7 @@
    ;; FIXME - add comment above each channel for what kind of messages it's for.
    :provider-channel (chan CHANNEL_BUFFER_SIZE)
    :collection-channel (chan CHANNEL_BUFFER_SIZE)
-   :db (oracle/create-db (oracle/db-spec))
+   :db (oracle/create-db (apply oracle/db-spec (oracle-config/db-spec-args)))
    :web (web/create-web-server DEFAULT_PORT routes/make-api)
    :zipkin (context/zipkin-config "bootstrap" false)})
 
