@@ -31,6 +31,12 @@
    "grant create procedure to %%CMR_USER%%"
    "grant unlimited tablespace to %%CMR_USER%%"])
 
+(def select-users-tables-template
+  "select table_name from all_tables where owner = '%%USERNAME%%'")
+
+(def grant-select-template
+  "grant select on %%TABLESPACE%%.%%TABLE%% to %%CMR_USER%%")
+
 (defn replace-values
   "Replaces values in a sql template using the key values given"
   [key-values template]
@@ -63,4 +69,16 @@
   [db user]
   (j/db-do-commands db (replace-values {"CMR_USER" user}
                                        drop-user-sql-template)))
+
+(defn grant-select-priviliges
+  "Grant select priviliges from one user's tables to another user."
+  [db from-tablespace from-user to-user]
+  (let [select-tables-sql (replace-values {"USERNAME" from-user} select-users-tables-template)
+        tables (j/query db select-tables-sql)]
+    (doseq [{:keys [table_name]} tables]
+      (let [grant-sql (replace-values {"TABLESPACE" from-tablespace
+                                        "TABLE" table_name
+                                        "CMR_USER" to-user}
+                                       grant-select-template)]
+      (j/db-do-commands db grant-sql)))))
 
