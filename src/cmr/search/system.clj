@@ -5,7 +5,8 @@
             [cmr.common.cache :as cache]
             [cmr.search.api.routes :as routes]
             [cmr.search.data.elastic-search-index :as idx]
-            [cmr.system-trace.context :as context]))
+            [cmr.system-trace.context :as context]
+            [cmr.transmit.config :as transmit-config]))
 
 ;; Design based on http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts
 
@@ -17,11 +18,12 @@
 (defn create-system
   "Returns a new instance of the whole application."
   []
-  {:log (log/create-logger)
-   :search-index (idx/create-elastic-search-index "localhost" 9210)
-   :web (web/create-web-server 3003 routes/make-api)
-   :cache (cache/create-cache)
-   :zipkin (context/zipkin-config "Search" false)})
+  (let [sys {:log (log/create-logger)
+             :search-index (idx/create-elastic-search-index "localhost" 9210)
+             :web (web/create-web-server (transmit-config/search-port) routes/make-api)
+             :cache (cache/create-cache)
+             :zipkin (context/zipkin-config "Search" false)}]
+    (transmit-config/system-with-connections sys [:metadata-db :index-set])))
 
 (defn start
   "Performs side effects to initialize the system, acquire resources,
