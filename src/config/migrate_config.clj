@@ -5,21 +5,29 @@
             [cmr.oracle.connection :as oracle]
             [cmr.oracle.config :as oracle-config]))
 
-(def db (oracle/create-db (apply oracle/db-spec (oracle-config/db-spec-args))))
+(def db-atom (atom nil))
+
+(defn db
+  "Lazily connects to the database and caches it"
+  []
+  (when-not @db-atom
+    (reset! db-atom (oracle/create-db (apply oracle/db-spec (oracle-config/db-spec-args)))))
+  @db-atom)
+
 
 (defn- maybe-create-schema-table
   "Creates the schema table if it doesn't already exist."
   [args]
   ;; wrap in a try-catch since there is not easy way to check for the existence of the DB
   (try
-    (j/db-do-commands db "CREATE TABLE METADATA_DB.schema_version (version INTEGER NOT NULL, created_at TIMESTAMP(9) WITH TIME ZONE DEFAULT sysdate NOT NULL)")
+    (j/db-do-commands (db) "CREATE TABLE METADATA_DB.schema_version (version INTEGER NOT NULL, created_at TIMESTAMP(9) WITH TIME ZONE DEFAULT sysdate NOT NULL)")
     (catch Exception e)))
 
 (defn current-db-version []
-  (int (or (:version (first (j/query db ["select version from METADATA_DB.schema_version order by created_at desc"]))) 0)))
+  (int (or (:version (first (j/query (db) ["select version from METADATA_DB.schema_version order by created_at desc"]))) 0)))
 
 (defn update-db-version [version]
-  (j/insert! db "METADATA_DB.schema_version" ["version"] [version])
+  (j/insert! (db) "METADATA_DB.schema_version" ["version"] [version])
   ; sleep a second to workaround timestamp precision issue
   (Thread/sleep 1000))
 

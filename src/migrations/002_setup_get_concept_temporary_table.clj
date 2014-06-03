@@ -6,7 +6,7 @@
   "Migrates the database up to version 2."
   []
   (println "migrations.002-setup-get-concept-temporary-table up...")
-  (j/db-do-commands config/db "CREATE GLOBAL TEMPORARY TABLE METADATA_DB.get_concepts_work_area
+  (j/db-do-commands (config/db) "CREATE GLOBAL TEMPORARY TABLE METADATA_DB.get_concepts_work_area
                          (concept_id VARCHAR(255),
                          revision_id INTEGER)
                          ON COMMIT DELETE ROWS"))
@@ -15,4 +15,4 @@
   "Migrates the database down from version 2."
   []
   (println "migrations.002-setup-get-concept-temporary-table down...")
-  (j/db-do-commands config/db "DROP TABLE METADATA_DB.get_concepts_work_area"))
+  (j/db-do-commands (config/db) "DROP TABLE METADATA_DB.get_concepts_work_area"))

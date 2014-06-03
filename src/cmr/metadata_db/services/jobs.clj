@@ -14,9 +14,17 @@
 (def job-key "jobs.expired.1")
 
 (def EXPIRED_CONCEPT_CLEANUP_INTERVAL
-  ; 10
-  3600
-  )
+  "The number of seconds between jobs run to cleanup expired granules and collections"
+  3600)
+
+(defn configure-quartz-system-properties
+  [db]
+  (let [{{:keys [subprotocol subname user password]} :spec} db]
+    (System/setProperty
+      "org.quartz.dataSource.myDS.URL"
+      (str "jdbc:" subprotocol ":" subname))
+    (System/setProperty "org.quartz.dataSource.myDS.user" user)
+    (System/setProperty "org.quartz.dataSource.myDS.password" password)))
 
 
 (defjob ExpiredConceptCleanupJob
@@ -32,8 +40,9 @@
   (info "Finished expired concepts cleanup."))
 
 (defn start
-  []
+  [db]
   (info "Starting expired concepts cleanup job")
+  (configure-quartz-system-properties db)
   (qs/initialize)
   (qs/start)
   ;; We delete exiting job and recreate it

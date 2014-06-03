@@ -11,9 +11,12 @@
             [cmr.metadata-db.db-holder :as db-holder]
             [cmr.metadata-db.api.routes :as routes]
             [cmr.metadata-db.services.jobs :as jobs]
-            [cmr.oracle.config :as oracle-config]))
+            [cmr.oracle.config :as oracle-config]
+            [cmr.common.config :as cfg]))
 
 ;; Design based on http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts
+
+(def app-port (cfg/config-value-fn :metadata-db-port 3001 #(Long. %)))
 
 (def
   ^{:doc "Defines the order to start the components."
@@ -25,7 +28,7 @@
   []
   {:db (oracle/create-db (apply oracle/db-spec (oracle-config/db-spec-args)))
    :log (log/create-logger)
-   :web (web/create-web-server 3001 routes/make-api)
+   :web (web/create-web-server (app-port) routes/make-api)
    :zipkin (context/zipkin-config "Metadata DB" false)})
 
 (defn start
@@ -39,9 +42,12 @@
                                this
                                component-order)
         db (:db started-system)]
+
     (db-holder/set-db! db)
+
     (when-not (re-find #"MemoryDB" (str (type db)))
-      (jobs/start))
+      (jobs/start db))
+
     (info "Metadata DB started")
     started-system))
 

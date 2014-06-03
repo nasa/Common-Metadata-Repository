@@ -7,7 +7,9 @@
             [clojure.java.jdbc :as j]
             [clj-time.format :as f]
             [clj-time.coerce :as cr]
-            [clj-time.core :as t])
+            [clj-time.core :as t]
+            [cmr.oracle.config :as oracle-config]
+            [cmr.common.lifecycle :as lifecycle])
   (:import javax.sql.rowset.serial.SerialBlob
            java.util.zip.GZIPInputStream
            java.io.ByteArrayInputStream
@@ -44,8 +46,12 @@
 
 
 (deftest db-result->concept-map-test
+
   (j/with-db-transaction
-    [db (oracle/create-db (oracle/db-spec))]
+    [db (->> (oracle-config/db-spec-args)
+             (apply oracle/db-spec)
+             oracle/create-db
+             (#(lifecycle/start % nil)))]
     (let [revision-time (t/date-time 1986 10 14 4 3 27 456)
           oracle-timestamp (TIMESTAMPTZ. ^java.sql.Connection (c/db->oracle-conn db)
                                          ^java.sql.Timestamp (cr/to-sql-time revision-time))]

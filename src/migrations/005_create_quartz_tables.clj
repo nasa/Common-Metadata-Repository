@@ -6,7 +6,7 @@
   "Migrates the database up to version 5."
   []
   (println "migrations.005-create-quartz-tables up...")
-  (j/db-do-commands config/db "CREATE TABLE METADATA_DB.qrtz_job_details (
+  (j/db-do-commands (config/db) "CREATE TABLE METADATA_DB.qrtz_job_details (
                               SCHED_NAME VARCHAR2(120) NOT NULL,
                               JOB_NAME  VARCHAR2(200) NOT NULL,
                               JOB_GROUP VARCHAR2(200) NOT NULL,
@@ -19,7 +19,7 @@
                               JOB_DATA BLOB NULL,
                               CONSTRAINT QRTZ_JOB_DETAILS_PK PRIMARY KEY (SCHED_NAME,JOB_NAME,JOB_GROUP)
                               )")
-  (j/db-do-commands config/db "CREATE TABLE METADATA_DB.qrtz_triggers
+  (j/db-do-commands (config/db) "CREATE TABLE METADATA_DB.qrtz_triggers
                               (
                               SCHED_NAME VARCHAR2(120) NOT NULL,
                               TRIGGER_NAME VARCHAR2(200) NOT NULL,
@@ -41,7 +41,7 @@
                               CONSTRAINT QRTZ_TRIGGER_TO_JOBS_FK FOREIGN KEY (SCHED_NAME,JOB_NAME,JOB_GROUP)
                               REFERENCES QRTZ_JOB_DETAILS(SCHED_NAME,JOB_NAME,JOB_GROUP)
                               )")
-  (j/db-do-commands config/db "CREATE TABLE METADATA_DB.qrtz_simple_triggers
+  (j/db-do-commands (config/db) "CREATE TABLE METADATA_DB.qrtz_simple_triggers
                               (
                               SCHED_NAME VARCHAR2(120) NOT NULL,
                               TRIGGER_NAME VARCHAR2(200) NOT NULL,
@@ -53,7 +53,7 @@
                               CONSTRAINT QRTZ_SIMPLE_TRIG_TO_TRIG_FK FOREIGN KEY (SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP)
                               REFERENCES QRTZ_TRIGGERS(SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP)
                               )")
-  (j/db-do-commands config/db "CREATE TABLE METADATA_DB.qrtz_cron_triggers
+  (j/db-do-commands (config/db) "CREATE TABLE METADATA_DB.qrtz_cron_triggers
                               (
                               SCHED_NAME VARCHAR2(120) NOT NULL,
                               TRIGGER_NAME VARCHAR2(200) NOT NULL,
@@ -64,7 +64,7 @@
                               CONSTRAINT QRTZ_CRON_TRIG_TO_TRIG_FK FOREIGN KEY (SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP)
                               REFERENCES QRTZ_TRIGGERS(SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP)
                               )")
-  (j/db-do-commands config/db "CREATE TABLE METADATA_DB.qrtz_simprop_triggers
+  (j/db-do-commands (config/db) "CREATE TABLE METADATA_DB.qrtz_simprop_triggers
                               (
                               SCHED_NAME VARCHAR2(120) NOT NULL,
                               TRIGGER_NAME VARCHAR2(200) NOT NULL,
@@ -84,7 +84,7 @@
                               CONSTRAINT QRTZ_SIMPROP_TRIG_TO_TRIG_FK FOREIGN KEY (SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP)
                               REFERENCES QRTZ_TRIGGERS(SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP)
                               )")
-  (j/db-do-commands config/db "CREATE TABLE METADATA_DB.qrtz_blob_triggers
+  (j/db-do-commands (config/db) "CREATE TABLE METADATA_DB.qrtz_blob_triggers
                               (
                               SCHED_NAME VARCHAR2(120) NOT NULL,
                               TRIGGER_NAME VARCHAR2(200) NOT NULL,
@@ -94,20 +94,20 @@
                               CONSTRAINT QRTZ_BLOB_TRIG_TO_TRIG_FK FOREIGN KEY (SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP)
                               REFERENCES QRTZ_TRIGGERS(SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP)
                               )")
-  (j/db-do-commands config/db "CREATE TABLE METADATA_DB.qrtz_calendars
+  (j/db-do-commands (config/db) "CREATE TABLE METADATA_DB.qrtz_calendars
                               (
                               SCHED_NAME VARCHAR2(120) NOT NULL,
                               CALENDAR_NAME  VARCHAR2(200) NOT NULL,
                               CALENDAR BLOB NOT NULL,
                               CONSTRAINT QRTZ_CALENDARS_PK PRIMARY KEY (SCHED_NAME,CALENDAR_NAME)
                               )")
-  (j/db-do-commands config/db "CREATE TABLE METADATA_DB.qrtz_paused_trigger_grps
+  (j/db-do-commands (config/db) "CREATE TABLE METADATA_DB.qrtz_paused_trigger_grps
                               (
                               SCHED_NAME VARCHAR2(120) NOT NULL,
                               TRIGGER_GROUP  VARCHAR2(200) NOT NULL,
                               CONSTRAINT QRTZ_PAUSED_TRIG_GRPS_PK PRIMARY KEY (SCHED_NAME,TRIGGER_GROUP)
                               )")
-  (j/db-do-commands config/db "CREATE TABLE METADATA_DB.qrtz_fired_triggers
+  (j/db-do-commands (config/db) "CREATE TABLE METADATA_DB.qrtz_fired_triggers
                               (
                               SCHED_NAME VARCHAR2(120) NOT NULL,
                               ENTRY_ID VARCHAR2(95) NOT NULL,
@@ -124,7 +124,7 @@
                               CONSTRAINT QRTZ_FIRED_TRIGGER_PK PRIMARY KEY (SCHED_NAME,ENTRY_ID)
                               )")
 
-  (j/db-do-commands config/db "CREATE TABLE METADATA_DB.qrtz_scheduler_state
+  (j/db-do-commands (config/db) "CREATE TABLE METADATA_DB.qrtz_scheduler_state
                               (
                               SCHED_NAME VARCHAR2(120) NOT NULL,
                               INSTANCE_NAME VARCHAR2(200) NOT NULL,
@@ -132,48 +132,48 @@
                               CHECKIN_INTERVAL NUMBER(13) NOT NULL,
                               CONSTRAINT QRTZ_SCHEDULER_STATE_PK PRIMARY KEY (SCHED_NAME,INSTANCE_NAME)
                               )")
-  (j/db-do-commands config/db "CREATE TABLE METADATA_DB.qrtz_locks
+  (j/db-do-commands (config/db) "CREATE TABLE METADATA_DB.qrtz_locks
                               (
                               SCHED_NAME VARCHAR2(120) NOT NULL,
                               LOCK_NAME  VARCHAR2(40) NOT NULL,
                               CONSTRAINT QRTZ_LOCKS_PK PRIMARY KEY (SCHED_NAME,LOCK_NAME)
                               )")
 
-  (j/db-do-commands config/db "CREATE INDEX idx_qrtz_j_req_recovery ON METADATA_DB.qrtz_job_details(SCHED_NAME,REQUESTS_RECOVERY) TABLESPACE users")
-  (j/db-do-commands config/db "CREATE INDEX idx_qrtz_j_grp ON METADATA_DB.qrtz_job_details(SCHED_NAME,JOB_GROUP) TABLESPACE users")
+  (j/db-do-commands (config/db) "CREATE INDEX idx_qrtz_j_req_recovery ON METADATA_DB.qrtz_job_details(SCHED_NAME,REQUESTS_RECOVERY) TABLESPACE users")
+  (j/db-do-commands (config/db) "CREATE INDEX idx_qrtz_j_grp ON METADATA_DB.qrtz_job_details(SCHED_NAME,JOB_GROUP) TABLESPACE users")
 
-  (j/db-do-commands config/db "CREATE INDEX idx_qrtz_t_j ON METADATA_DB.qrtz_triggers(SCHED_NAME,JOB_NAME,JOB_GROUP) TABLESPACE users")
-  (j/db-do-commands config/db "CREATE INDEX idx_qrtz_t_jg ON METADATA_DB.qrtz_triggers(SCHED_NAME,JOB_GROUP) TABLESPACE users")
-  (j/db-do-commands config/db "CREATE INDEX idx_qrtz_t_c ON METADATA_DB.qrtz_triggers(SCHED_NAME,CALENDAR_NAME) TABLESPACE users")
-  (j/db-do-commands config/db "CREATE INDEX idx_qrtz_t_g ON METADATA_DB.qrtz_triggers(SCHED_NAME,TRIGGER_GROUP) TABLESPACE users")
-  (j/db-do-commands config/db "CREATE INDEX idx_qrtz_t_state ON METADATA_DB.qrtz_triggers(SCHED_NAME,TRIGGER_STATE) TABLESPACE users")
-  (j/db-do-commands config/db "CREATE INDEX idx_qrtz_t_n_state ON METADATA_DB.qrtz_triggers(SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP,TRIGGER_STATE) TABLESPACE users")
-  (j/db-do-commands config/db "CREATE INDEX idx_qrtz_t_n_g_state ON METADATA_DB.qrtz_triggers(SCHED_NAME,TRIGGER_GROUP,TRIGGER_STATE) TABLESPACE users")
-  (j/db-do-commands config/db "CREATE INDEX idx_qrtz_t_next_fire_time ON METADATA_DB.qrtz_triggers(SCHED_NAME,NEXT_FIRE_TIME) TABLESPACE users")
-  (j/db-do-commands config/db "CREATE INDEX idx_qrtz_t_nft_st ON METADATA_DB.qrtz_triggers(SCHED_NAME,TRIGGER_STATE,NEXT_FIRE_TIME) TABLESPACE users")
-  (j/db-do-commands config/db "CREATE INDEX idx_qrtz_t_nft_misfire ON METADATA_DB.qrtz_triggers(SCHED_NAME,MISFIRE_INSTR,NEXT_FIRE_TIME) TABLESPACE users")
-  (j/db-do-commands config/db "CREATE INDEX idx_qrtz_t_nft_st_misfire ON METADATA_DB.qrtz_triggers(SCHED_NAME,MISFIRE_INSTR,NEXT_FIRE_TIME,TRIGGER_STATE) TABLESPACE users")
-  (j/db-do-commands config/db "CREATE INDEX idx_qrtz_t_nft_st_misfire_grp ON METADATA_DB.qrtz_triggers(SCHED_NAME,MISFIRE_INSTR,NEXT_FIRE_TIME,TRIGGER_GROUP,TRIGGER_STATE) TABLESPACE users")
+  (j/db-do-commands (config/db) "CREATE INDEX idx_qrtz_t_j ON METADATA_DB.qrtz_triggers(SCHED_NAME,JOB_NAME,JOB_GROUP) TABLESPACE users")
+  (j/db-do-commands (config/db) "CREATE INDEX idx_qrtz_t_jg ON METADATA_DB.qrtz_triggers(SCHED_NAME,JOB_GROUP) TABLESPACE users")
+  (j/db-do-commands (config/db) "CREATE INDEX idx_qrtz_t_c ON METADATA_DB.qrtz_triggers(SCHED_NAME,CALENDAR_NAME) TABLESPACE users")
+  (j/db-do-commands (config/db) "CREATE INDEX idx_qrtz_t_g ON METADATA_DB.qrtz_triggers(SCHED_NAME,TRIGGER_GROUP) TABLESPACE users")
+  (j/db-do-commands (config/db) "CREATE INDEX idx_qrtz_t_state ON METADATA_DB.qrtz_triggers(SCHED_NAME,TRIGGER_STATE) TABLESPACE users")
+  (j/db-do-commands (config/db) "CREATE INDEX idx_qrtz_t_n_state ON METADATA_DB.qrtz_triggers(SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP,TRIGGER_STATE) TABLESPACE users")
+  (j/db-do-commands (config/db) "CREATE INDEX idx_qrtz_t_n_g_state ON METADATA_DB.qrtz_triggers(SCHED_NAME,TRIGGER_GROUP,TRIGGER_STATE) TABLESPACE users")
+  (j/db-do-commands (config/db) "CREATE INDEX idx_qrtz_t_next_fire_time ON METADATA_DB.qrtz_triggers(SCHED_NAME,NEXT_FIRE_TIME) TABLESPACE users")
+  (j/db-do-commands (config/db) "CREATE INDEX idx_qrtz_t_nft_st ON METADATA_DB.qrtz_triggers(SCHED_NAME,TRIGGER_STATE,NEXT_FIRE_TIME) TABLESPACE users")
+  (j/db-do-commands (config/db) "CREATE INDEX idx_qrtz_t_nft_misfire ON METADATA_DB.qrtz_triggers(SCHED_NAME,MISFIRE_INSTR,NEXT_FIRE_TIME) TABLESPACE users")
+  (j/db-do-commands (config/db) "CREATE INDEX idx_qrtz_t_nft_st_misfire ON METADATA_DB.qrtz_triggers(SCHED_NAME,MISFIRE_INSTR,NEXT_FIRE_TIME,TRIGGER_STATE) TABLESPACE users")
+  (j/db-do-commands (config/db) "CREATE INDEX idx_qrtz_t_nft_st_misfire_grp ON METADATA_DB.qrtz_triggers(SCHED_NAME,MISFIRE_INSTR,NEXT_FIRE_TIME,TRIGGER_GROUP,TRIGGER_STATE) TABLESPACE users")
 
-  (j/db-do-commands config/db "CREATE INDEX idx_qrtz_ft_trig_inst_name ON METADATA_DB.qrtz_fired_triggers(SCHED_NAME,INSTANCE_NAME) TABLESPACE users")
-  (j/db-do-commands config/db "CREATE INDEX idx_qrtz_ft_inst_job_req_rcvry ON METADATA_DB.qrtz_fired_triggers(SCHED_NAME,INSTANCE_NAME,REQUESTS_RECOVERY) TABLESPACE users")
-  (j/db-do-commands config/db "CREATE INDEX idx_qrtz_ft_j_g ON METADATA_DB.qrtz_fired_triggers(SCHED_NAME,JOB_NAME,JOB_GROUP) TABLESPACE users")
-  (j/db-do-commands config/db "CREATE INDEX idx_qrtz_ft_jg ON METADATA_DB.qrtz_fired_triggers(SCHED_NAME,JOB_GROUP) TABLESPACE users")
-  (j/db-do-commands config/db "CREATE INDEX idx_qrtz_ft_t_g ON METADATA_DB.qrtz_fired_triggers(SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP) TABLESPACE users")
-  (j/db-do-commands config/db "CREATE INDEX idx_qrtz_ft_tg ON METADATA_DB.qrtz_fired_triggers(SCHED_NAME,TRIGGER_GROUP) TABLESPACE users"))
+  (j/db-do-commands (config/db) "CREATE INDEX idx_qrtz_ft_trig_inst_name ON METADATA_DB.qrtz_fired_triggers(SCHED_NAME,INSTANCE_NAME) TABLESPACE users")
+  (j/db-do-commands (config/db) "CREATE INDEX idx_qrtz_ft_inst_job_req_rcvry ON METADATA_DB.qrtz_fired_triggers(SCHED_NAME,INSTANCE_NAME,REQUESTS_RECOVERY) TABLESPACE users")
+  (j/db-do-commands (config/db) "CREATE INDEX idx_qrtz_ft_j_g ON METADATA_DB.qrtz_fired_triggers(SCHED_NAME,JOB_NAME,JOB_GROUP) TABLESPACE users")
+  (j/db-do-commands (config/db) "CREATE INDEX idx_qrtz_ft_jg ON METADATA_DB.qrtz_fired_triggers(SCHED_NAME,JOB_GROUP) TABLESPACE users")
+  (j/db-do-commands (config/db) "CREATE INDEX idx_qrtz_ft_t_g ON METADATA_DB.qrtz_fired_triggers(SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP) TABLESPACE users")
+  (j/db-do-commands (config/db) "CREATE INDEX idx_qrtz_ft_tg ON METADATA_DB.qrtz_fired_triggers(SCHED_NAME,TRIGGER_GROUP) TABLESPACE users"))
 
 (defn down
   "Migrates the database down from version 5."
   []
   (println "migrations.005-create-quartz-tables down...")
-  (j/db-do-commands config/db "DROP TABLE METADATA_DB.qrtz_calendars")
-  (j/db-do-commands config/db "DROP TABLE METADATA_DB.qrtz_fired_triggers")
-  (j/db-do-commands config/db "DROP TABLE METADATA_DB.qrtz_blob_triggers")
-  (j/db-do-commands config/db "DROP TABLE METADATA_DB.qrtz_cron_triggers")
-  (j/db-do-commands config/db "DROP TABLE METADATA_DB.qrtz_simple_triggers")
-  (j/db-do-commands config/db "DROP TABLE METADATA_DB.qrtz_simprop_triggers")
-  (j/db-do-commands config/db "DROP TABLE METADATA_DB.qrtz_triggers")
-  (j/db-do-commands config/db "DROP TABLE METADATA_DB.qrtz_job_details")
-  (j/db-do-commands config/db "DROP TABLE METADATA_DB.qrtz_paused_trigger_grps")
-  (j/db-do-commands config/db "DROP TABLE METADATA_DB.qrtz_locks")
-  (j/db-do-commands config/db "DROP TABLE METADATA_DB.qrtz_scheduler_state"))
+  (j/db-do-commands (config/db) "DROP TABLE METADATA_DB.qrtz_calendars")
+  (j/db-do-commands (config/db) "DROP TABLE METADATA_DB.qrtz_fired_triggers")
+  (j/db-do-commands (config/db) "DROP TABLE METADATA_DB.qrtz_blob_triggers")
+  (j/db-do-commands (config/db) "DROP TABLE METADATA_DB.qrtz_cron_triggers")
+  (j/db-do-commands (config/db) "DROP TABLE METADATA_DB.qrtz_simple_triggers")
+  (j/db-do-commands (config/db) "DROP TABLE METADATA_DB.qrtz_simprop_triggers")
+  (j/db-do-commands (config/db) "DROP TABLE METADATA_DB.qrtz_triggers")
+  (j/db-do-commands (config/db) "DROP TABLE METADATA_DB.qrtz_job_details")
+  (j/db-do-commands (config/db) "DROP TABLE METADATA_DB.qrtz_paused_trigger_grps")
+  (j/db-do-commands (config/db) "DROP TABLE METADATA_DB.qrtz_locks")
+  (j/db-do-commands (config/db) "DROP TABLE METADATA_DB.qrtz_scheduler_state"))

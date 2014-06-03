@@ -6,7 +6,7 @@
   "Migrates the database up to version 4."
   []
   (println "migrations.004-drop-concept-table up...")
-  (j/db-do-commands config/db "DROP TABLE METADATA_DB.concept"))
+  (j/db-do-commands (config/db) "DROP TABLE METADATA_DB.concept"))
 
 (defn down
   "Migrates the database down from version 4."
