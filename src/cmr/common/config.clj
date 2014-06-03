@@ -19,15 +19,37 @@
   []
   (reset! runtime-config-values {}))
 
+(defn config-name->env-name
+  "Converts a config name into the environment variable name"
+  [config-name]
+  (str "CMR_" (csk/->SNAKE_CASE_STRING config-name)))
+
+(defn config-value
+  "Retrieves the currently configured value for the name or the default value.
+  A parser function can optionally be specified for parsing the value out of the environment variable
+  which comes back as a string unless the parser function is provided."
+  ([config-name default-value]
+   (config-value config-name default-value identity))
+  ([config-name default-value parser-fn]
+   (or (get @runtime-config-values config-name)
+       (let [env-value (System/getenv (config-name->env-name config-name))]
+         (when env-value
+           (parser-fn env-value)))
+       default-value)))
+
 (defn config-value-fn
   "Returns a function that can retrieve a configuration value which can be set as an environment
-  variable on the command line or default to a value."
-  [config-name default-value]
+  variable on the command line or default to a value.
+  A parser function can optionally be specified for parsing the value out of the environment variable
+  which comes back as a string unless the parser function is provided."
+  ([config-name default-value]
+   (config-value-fn config-name default-value identity))
+  ([config-name default-value parser-fn]
 
-  ;; Environment variables can't change at runtime so we look them up initially.
-  (let [env-name (str "CMR_" (csk/->SNAKE_CASE_STRING config-name))
-        env-value (System/getenv env-name)]
-    (fn []
-      (or (get @runtime-config-values config-name)
-          env-value
-          default-value))))
+   ;; Environment variables can't change at runtime so we look them up initially.
+   (let [env-value (System/getenv (config-name->env-name config-name))
+         env-value (when env-value (parser-fn env-value))]
+     (fn []
+       (or (get @runtime-config-values config-name)
+           env-value
+           default-value)))))
