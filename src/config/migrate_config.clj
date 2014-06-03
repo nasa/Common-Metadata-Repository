@@ -2,9 +2,10 @@
   "Provides the configuration for Drift migrations."
   (:require [drift.builder :refer [incremental-migration-number-generator]]
             [clojure.java.jdbc :as j]
-            [cmr.oracle.connection :as oracle]))
+            [cmr.oracle.connection :as oracle]
+            [cmr.oracle.config :as oracle-config]))
 
-(def db (oracle/create-db (oracle/db-spec)))
+(def db (oracle/create-db (apply oracle/db-spec (oracle-config/db-spec-args))))
 
 (defn- maybe-create-schema-table
   "Creates the schema table if it doesn't already exist."

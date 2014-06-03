@@ -10,7 +10,8 @@
             [cmr.oracle.connection :as oracle]
             [cmr.metadata-db.db-holder :as db-holder]
             [cmr.metadata-db.api.routes :as routes]
-            [cmr.metadata-db.services.jobs :as jobs]))
+            [cmr.metadata-db.services.jobs :as jobs]
+            [cmr.oracle.config :as oracle-config]))
 
 ;; Design based on http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts
 
@@ -22,7 +23,7 @@
 (defn create-system
   "Returns a new instance of the whole application."
   []
-  {:db (oracle/create-db (oracle/db-spec))
+  {:db (oracle/create-db (apply oracle/db-spec (oracle-config/db-spec-args)))
    :log (log/create-logger)
    :web (web/create-web-server 3001 routes/make-api)
    :zipkin (context/zipkin-config "Metadata DB" false)})
