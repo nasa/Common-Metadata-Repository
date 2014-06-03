@@ -6,4 +6,4 @@
 
 lein clean
 lein uberjar
-CMR_SEPARATE_COLL_INDEX='C1-SEP_PROV1,C2-SEP_PROV1' nohup java -jar target/cmr-dev-system-0.1.0-SNAPSHOT-standalone.jar&
+CMR_SEPARATE_COLL_INDEX='C1-SEP_PROV1,C2-SEP_PROV1' nohup java -XX:MaxPermSize=256m -jar target/cmr-dev-system-0.1.0-SNAPSHOT-standalone.jar&
