@@ -21,6 +21,7 @@
         {:keys [status revision-id]} (util/delete-concept (:concept-id coll1))]
     (is (= status 200))
     (is (= revision-id 4))
+    (util/verify-concept-was-deleted (:concept-id coll1) revision-id)
 
     ;; Verify granule was deleted
     (is (= {:status 404} (util/get-concept-by-id-and-revision (:concept-id gran1) 1)))
@@ -43,6 +44,8 @@
         {:keys [status revision-id]} (util/delete-concept (:concept-id gran1))]
     (is (= status 200))
     (is (= revision-id 4))
+    (util/verify-concept-was-deleted (:concept-id gran1) revision-id)
+
     ;; Other data left in database
     (is (util/verify-concept-was-saved gran2))))
 
