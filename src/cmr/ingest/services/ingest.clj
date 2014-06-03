@@ -1,6 +1,6 @@
 (ns cmr.ingest.services.ingest
   (:require [clj-time.core :as t]
-            [cmr.ingest.data.mdb :as mdb]
+            [cmr.transmit.metadata-db :as mdb]
             [cmr.ingest.data.indexer :as indexer]
             [cmr.ingest.services.messages :as msg]
             [cmr.common.log :refer (debug info warn error)]

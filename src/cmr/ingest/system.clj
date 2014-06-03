@@ -6,7 +6,8 @@
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.api.web-server :as web]
             [cmr.system-trace.context :as context]
-            [cmr.ingest.api.routes :as routes]))
+            [cmr.ingest.api.routes :as routes]
+            [cmr.transmit.config :as transmit-config]))
 
 (def
   ^{:doc "Defines the order to start the components."
@@ -14,20 +15,16 @@
   component-order [:log :web])
 
 (def default-config
-  {:mdb-url "http://localhost:3001"
-   :indexer-url "http://localhost:3004"})
+  {:indexer-url "http://localhost:3004"})
 
 (defn create-system
   "Returns a new instance of the whole application."
-  ([log config web]
-  {:log log
-   :config config
-   :web web})
-  ([]
-  {:log (log/create-logger)
-   :config default-config
-   :web (web/create-web-server 3002 routes/make-api)
-   :zipkin (context/zipkin-config "Ingest" false)}))
+  []
+  (let [sys {:log (log/create-logger)
+             :config default-config
+             :web (web/create-web-server 3002 routes/make-api)
+             :zipkin (context/zipkin-config "Ingest" false)}]
+    (transmit-config/system-with-connections sys [:metadata-db])))
 
    (defn start
      "Performs side effects to initialize the system, acquire resources,
