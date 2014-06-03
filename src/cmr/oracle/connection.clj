@@ -23,15 +23,34 @@
                (j/query oracle-store "select 1 a from dual"))
     (throw (Exception. "Could not select data from database."))))
 
+(defn pool
+  [spec]
+  (doto (ComboPooledDataSource.)
+    (.setDriverClass (:classname spec))
+    (.setJdbcUrl (str "jdbc:" (:subprotocol spec) ":" (:subname spec)))
+    (.setUser (:user spec))
+    (.setPassword (:password spec))
+    ;; expire excess connections after 30 minutes of inactivity:
+    (.setMaxIdleTimeExcessConnections (* 30 60))
+    ;; expire connections after 3 hours of inactivity:
+    (.setMaxIdleTime (* 3 60 60))))
 
-(defrecord OracleStore [db]
+(defrecord OracleStore
+  [
+   ;; The database spec.
+   spec
+
+   ;; The database pool of connections
+   datasource
+   ]
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   lifecycle/Lifecycle
 
   (start [this system]
-         (test-db-connection! this)
-         this)
+         (let [this (assoc this :datasource (pool spec))]
+           (test-db-connection! this)
+           this))
 
   (stop [this system]
         this))
@@ -39,20 +58,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn pool
-  [spec]
-  (let [cpds (doto (ComboPooledDataSource.)
-               (.setDriverClass (:classname spec))
-               (.setJdbcUrl (str "jdbc:" (:subprotocol spec) ":" (:subname spec)))
-               (.setUser (:user spec))
-               (.setPassword (:password spec))
-               ;; expire excess connections after 30 minutes of inactivity:
-               (.setMaxIdleTimeExcessConnections (* 30 60))
-               ;; expire connections after 3 hours of inactivity:
-               (.setMaxIdleTime (* 3 60 60)))]
-    {:datasource cpds}))
-
 (defn create-db
   "Creates and returns the database connection pool."
-  [db-spec]
-  (map->OracleStore (pool db-spec)))
+  [spec]
+  (->OracleStore spec nil))
