@@ -1,7 +1,6 @@
 (ns cmr.bootstrap.services.data-migration
   "Provides methods to insert migration requets on the approriate channels."
-  (:require [cmr.bootstrap.data.bulk-migration :as bm]
-            [clojure.core.async :as async :refer [go >!]]
+  (:require [clojure.core.async :as async :refer [go >!]]
             [cmr.common.log :refer (debug info warn error)]))
 
 (defn migrate-provider

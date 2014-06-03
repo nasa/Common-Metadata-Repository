@@ -13,7 +13,8 @@
                  [org.clojure/tools.reader "0.8.4"]
                  [org.clojure/tools.cli "0.3.1"]
                  [sqlingvo "0.5.17"]
-                 [org.clojure/core.async "0.1.303.0-886421-alpha"]]
+                 [org.clojure/core.async "0.1.303.0-886421-alpha"]
+                 [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]]
   :plugins [[lein-test-out "0.3.1"]]
   :repl-options {:init-ns user}
   :profiles
