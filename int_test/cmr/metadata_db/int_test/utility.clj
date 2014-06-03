@@ -71,8 +71,8 @@
   "Parses an error response from a JSON response"
   [response]
   (-> response
-       :body
-       (cheshire/decode true)))
+      :body
+      (cheshire/decode true)))
 
 (defn- parse-concepts
   "Parses multiple concept from a JSON response"
