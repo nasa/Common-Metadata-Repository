@@ -8,7 +8,8 @@
             [cmr.common.api.web-server :as web]
             [cmr.indexer.data.elasticsearch :as es]
             [cmr.common.cache :as cache]
-            [cmr.indexer.api.routes :as routes]))
+            [cmr.indexer.api.routes :as routes]
+            [cmr.transmit.config :as transmit-config]))
 
 (def
   ^{:doc "Defines the order to start the components."
@@ -18,11 +19,12 @@
 (defn create-system
   "Returns a new instance of the whole application."
   []
-  {:log (log/create-logger)
-   :db (es/create-elasticsearch-store)
-   :web (web/create-web-server 3004 routes/make-api)
-   :cache (cache/create-cache)
-   :zipkin (context/zipkin-config "Indexer" false)})
+  (let [sys {:log (log/create-logger)
+             :db (es/create-elasticsearch-store)
+             :web (web/create-web-server (transmit-config/indexer-port) routes/make-api)
+             :cache (cache/create-cache)
+             :zipkin (context/zipkin-config "Indexer" false)}]
+    (transmit-config/system-with-connections sys [:metadata-db :index-set])))
 
 (defn start
   "Performs side effects to initialize the system, acquire resources,
