@@ -190,13 +190,6 @@
         stored-concept (:concept (get-concept-by-id-and-revision concept-id revision-id))]
     (= concept (dissoc stored-concept :revision-date))))
 
-(defn verify-concept-was-deleted
-  "Check to make sure a concept is stored in the database as tombstone."
-  [concept-id revision-id]
-  (let [stored-concept (:concept (get-concept-by-id-and-revision concept-id revision-id))]
-    (is (= true (:deleted stored-concept)))
-    (is (= "" (:metadata stored-concept)))))
-
 (defn create-and-save-collection
   "Creates, saves, and returns a concept with its data from metadata-db. "
   ([provider-id uniq-num]
