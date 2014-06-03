@@ -15,8 +15,9 @@
   "Copy collections data from catalog-rest to metadata db (including granules)"
   [context provider-id-collection-map]
   (let [provider-id (get provider-id-collection-map "provider_id")
-        collection-id (get provider-id-collection-map "collection_id")]
-    (dm/migrate-collection context provider-id collection-id)
+        collection-id (get provider-id-collection-map "collection_id")
+        system (:system context)]
+    (dm/migrate-collection system provider-id collection-id)
     {:status 202
      :body {:message (str "Processing collection " collection-id "for provider " provider-id)}}))
 

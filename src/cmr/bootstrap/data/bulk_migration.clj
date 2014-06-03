@@ -86,7 +86,7 @@
   (info "Deleting collection" collection-id "from provider" provider-id)
   (j/with-db-transaction
     [conn (system->db system)]
-    (j/execute! conn (delete-collection-sql provider-id collection-id))))
+    (j/execute! conn (delete-collection-sql system provider-id collection-id))))
 
 (defn- delete-collection-granules-sql
   "Generate SQL to delete granules for a given collection from a provider's granule table."
@@ -162,7 +162,6 @@
    (copy-collection-data system provider-id nil))
   ([system provider-id collection-id]
    (info "Copying collection data for provider" provider-id)
-   (println (pr-str system))
    (j/with-db-transaction
      [conn (system->db system)]
      (j/execute! conn (copy-collection-data-sql system provider-id collection-id)))))
