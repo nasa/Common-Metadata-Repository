@@ -1,7 +1,8 @@
 (ns cmr.common.config
   "A namespace that allows for global configuration. Configuration can be provided at runtime or
   through an environment variable"
-  (:require [clojure.string :as str]))
+  (:require [clojure.string :as str]
+            [camel-snake-kebab :as csk]))
 
 (def runtime-config-values
   "An atom containing a map of explicitly set config values."
@@ -24,10 +25,7 @@
   [config-name default-value]
 
   ;; Environment variables can't change at runtime so we look them up initially.
-  (let [env-name (str "CMR_" (-> config-name
-                                 name
-                                 (str/replace "-" "_")
-                                 str/upper-case))
+  (let [env-name (str "CMR_" (csk/->SNAKE_CASE_STRING config-name))
         env-value (System/getenv env-name)]
     (fn []
       (or (get @runtime-config-values config-name)
