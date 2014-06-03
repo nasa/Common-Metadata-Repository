@@ -213,18 +213,21 @@
   (let [db (:db system)
         channels ((juxt :provider-channel :collection-channel) system)] ; add other channels as needed
     (thread (while true
-              (let [[v ch] (alts!! channels)]
-                (cond
-                  ;; add other channels as needed
-                  (= (:provider-channel system) ch)
-                  (do
-                    (info "Processing provider" v)
-                    (copy-provider db v))
+              (try ; catch any errors and log them, but don't let the thread die
+                (let [[v ch] (alts!! channels)]
+                  (cond
+                    ;; add other channels as needed
+                    (= (:provider-channel system) ch)
+                    (do
+                      (info "Processing provider" v)
+                      (copy-provider db v))
 
-                  (= (:collection-channel system) ch)
-                  (let [{:keys [provider-id collection-id]} v]
-                    (info "Processing collection" collection-id "for provider" provider-id)
-                    (copy-single-collection db provider-id collection-id))))))))
+                    (= (:collection-channel system) ch)
+                    (let [{:keys [provider-id collection-id]} v]
+                      (info "Processing collection" collection-id "for provider" provider-id)
+                      (copy-single-collection db provider-id collection-id))))
+                (catch Throwable e
+                  (error (.getMessage e))))))))
 
 
 (comment
