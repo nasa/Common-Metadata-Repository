@@ -25,8 +25,11 @@
   "Returns a new instance of the whole application."
   []
   {:log (log/create-logger)
-   ;; FIXME - add comment above each channel for what kind of messages it's for.
+   ;; Channel for requesting full provider migration - provider/collections/granules.
+   ;; Takes single provider-id strings.
    :provider-channel (chan CHANNEL_BUFFER_SIZE)
+   ;; Channel for requesting single collection/granules migration.
+   ;; Takes maps, e.g., {:collection-id collection-id :provider-id provider-id}
    :collection-channel (chan CHANNEL_BUFFER_SIZE)
    :db (oracle/create-db (apply oracle/db-spec (oracle-config/db-spec-args)))
    :web (web/create-web-server DEFAULT_PORT routes/make-api)
