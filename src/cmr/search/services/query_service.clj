@@ -120,7 +120,12 @@
 (deftracefn find-concept-by-id
   "Executes a search to metadata-db and returns the concept with the given cmr-concept-id."
   [context concept-id]
-  (meta-db/get-latest-concept context concept-id))
+  (let [concept (meta-db/get-latest-concept context concept-id)]
+    (when (:deleted concept)
+      (err/throw-service-error
+        :not-found
+        (format "Concept with concept-id: %s has been deleted" concept-id)))
+    concept))
 
 (deftracefn reset
   "Clear the cache for search app"
