@@ -6,23 +6,14 @@
             [clojure.java.jdbc :as j])
   (:import com.mchange.v2.c3p0.ComboPooledDataSource))
 
-;;; Constants
-
-(def db-username (get (System/getenv) "MDB_DB_USERNAME" "METADATA_DB"))
-(def db-password (get (System/getenv) "MDB_DB_PASSWORD" "METADATA_DB"))
-(def db-host (get (System/getenv) "MDB_DB_HOST" "localhost"))
-(def db-port (get (System/getenv) "MDB_DB_PORT" "1521"))
-(def db-sid (get (System/getenv) "MDB_DB_SID" "orcl"))
 
 (defn db-spec
-  ([]
-   (db-spec db-username db-password))
-  ([user password]
-   {:classname "oracle.jdbc.driver.OracleDriver"
-    :subprotocol "oracle"
-    :subname (format "thin:@%s:%s:%s" db-host db-port db-sid)
-    :user user
-    :password password}))
+  [db-host db-port db-sid user password]
+  {:classname "oracle.jdbc.driver.OracleDriver"
+   :subprotocol "oracle"
+   :subname (format "thin:@%s:%s:%s" db-host db-port db-sid)
+   :user user
+   :password password})
 
 
 (defn test-db-connection!
