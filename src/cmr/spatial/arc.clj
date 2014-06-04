@@ -329,21 +329,20 @@
           (cond
             (= west-dist east-dist) p/north-pole
             (< west-dist east-dist) (p/point (.lon east-point)
-                                             (- 90.0 (- middle-dist west-dist)))
+                                             (- 90.0 (/ (- east-dist west-dist) 2.0)))
             :else (p/point (.lon west-point)
-                           (- 90.0 (- middle-dist west-dist)))))
+                           (- 90.0 (/ (- west-dist east-dist) 2.0)))))
 
         ;; Vertical across south pole
         (crosses-south-pole? arc)
         (let [west-dist (- (.lat west-point) -90.0)
-              east-dist (- (.lat east-point) -90.0)
-              middle-dist (mid west-dist east-dist)]
+              east-dist (- (.lat east-point) -90.0)]
           (cond
             (= west-dist east-dist) p/south-pole
             (< west-dist east-dist) (p/point (.lon east-point)
-                                             (+ -90.0 (- middle-dist west-dist)))
+                                             (+ -90.0 (/ (- east-dist west-dist) 2.0)))
             :else (p/point (.lon west-point)
-                           (+ -90.0 (- middle-dist west-dist)))))
+                           (+ -90.0 (/ (- west-dist east-dist) 2.0)))))
 
         ;; Vertical arc not crossing a pole
         :else

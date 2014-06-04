@@ -131,7 +131,7 @@
       (p/point 0 45.4385485867423)
       (p/point 180 -45.4385485867423))))
 
-(defspec point-on-arc-spec
+(defspec point-on-arc-spec 1000
   (for-all [arc sgen/arcs]
     (let [midpoint (a/midpoint arc)]
       ;;The midpoint of the arc should be on the arc.
@@ -339,10 +339,10 @@
       (cond
         (a/crosses-north-pole? arc)
         (and (= (count brs) 2)
-             (every? #(-> :north (= 90)) brs))
+             (every? #(-> % :north (= 90)) brs))
         (a/crosses-south-pole? arc)
         (and (= (count brs) 2)
-             (every? #(-> :south (= -90)) brs))
+             (every? #(-> % :south (= -90)) brs))
         :else
         (and
           (= (count brs) 1)
