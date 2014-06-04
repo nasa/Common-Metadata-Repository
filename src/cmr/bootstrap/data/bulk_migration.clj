@@ -10,13 +10,15 @@
             [clojure.core.async :as ca :refer [thread alts!! <!!]]
             [cmr.oracle.connection :as oc]
             [cmr.metadata-db.data.oracle.concept-tables :as tables]
-            [cmr.transmit.config :as transmit-config]))
+            [cmr.transmit.config :as transmit-config]
+            [cmr.oracle.config :as oracle-config]))
 
 ;; FIXME - Why not just use the metadata db code directly for creating the provider instead of using http?
 (defn system->metadata-db-url
   [system]
   (let [{:keys [host port]} (transmit-config/context->app-connection {:system system} :metadata-db)]
     (format "http://%s:%s" host port)))
+
 
 ;; To copy a provider
 ;; 1. Tell the metadata db to drop the provider
@@ -251,4 +253,16 @@
                                    v ch))))
                 (catch Throwable e
                   (error e (.getMessage e))))))))
+
+
+(comment
+  (delete-provider "FIX_PROV1")
+  (get-provider-collection-list (get-in user/system [:apps :bootstrap]) "FIX_PROV1")
+  (copy-provider (get-in user/system [:apps :bootstrap]) "FIX_PROV1")
+  (copy-single-collection (oc/create-db (apply oc/db-spec (oracle-config/db-spec-args))) "FIX_PROV1" "C1000000073-FIX_PROV1")
+  (get-provider-collection-list-sql  "FIX_PROV1")
+  (copy-granule-data-for-provider (oc/create-db (mdb-config/db-spec)) "FIX_PROV1")
+  (delete-collection-granules-sql "FIX_PROV1" "C1000000073-FIX_PROV1")
+  (metadata-db-concept-table "FIX_PROV1" :collection)
+  )
 
