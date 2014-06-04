@@ -9,7 +9,15 @@
             [cmr.indexer.data.elasticsearch :as es]
             [cmr.common.cache :as cache]
             [cmr.indexer.api.routes :as routes]
-            [cmr.transmit.config :as transmit-config]))
+            [cmr.transmit.config :as transmit-config]
+            [clojure.string :as str]
+            [cmr.common.config :as cfg]))
+
+
+(def collections-with-separate-indexes
+  "Configuration function that will return a list of collections with separate indexes for their
+  granule data."
+  (cfg/config-value-fn :colls-with-separate-indexes "" #(str/split % #",")))
 
 (def
   ^{:doc "Defines the order to start the components."
@@ -21,6 +29,8 @@
   []
   (let [sys {:log (log/create-logger)
              :db (es/create-elasticsearch-store)
+             ;; This is set as a dynamic lookup to enable easy replacement of the value for testing.
+             :colls-with-separate-indexes-fn collections-with-separate-indexes
              :web (web/create-web-server (transmit-config/indexer-port) routes/make-api)
              :cache (cache/create-cache)
              :zipkin (context/zipkin-config "Indexer" false)}]

@@ -21,17 +21,17 @@
 
 (defn create-indexes
   "Create elastic index for each index name"
-  []
-  (let [index-set (idx-set/index-set)
+  [context]
+  (let [index-set (idx-set/index-set context)
         index-set-id (get-in index-set [:index-set :id])]
     (when-not (index-set/get-index-set index-set-id)
       (idx-set/create index-set))))
 
 (defn reset-es-store
   "Delete elasticsearch indexes and re-create them via index-set app. A nuclear option just for the development team."
-  []
+  [context]
   (idx-set/reset)
-  (create-indexes))
+  (create-indexes context))
 
 (defrecord ESstore
   [
@@ -51,7 +51,7 @@
           elastic-config (idx-set/get-elastic-config context)
           conn (connect-with-config elastic-config)
           this (assoc this :conn conn)]
-      (create-indexes)
+      (create-indexes context)
       (assoc this
              :config elastic-config
              :conn conn)))

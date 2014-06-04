@@ -69,7 +69,7 @@
   "Delegate reset elastic indices operation to index-set app"
   [context]
   (cache/reset-cache (-> context :system :cache))
-  (es/reset-es-store)
+  (es/reset-es-store context)
   (cache/reset-cache (-> context :system :cache)))
 
 

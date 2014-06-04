@@ -3,7 +3,6 @@
             [clj-http.client :as client]
             [cheshire.core :as cheshire]
             [clojure.string :as s]
-            [cmr.common.config :as config]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.services.errors :as errors]
             [cmr.common.concepts :as cs]
@@ -191,12 +190,12 @@
                  ;; ords contains longitude latitude pairs (ordinates) of all the shapes
                  :ords (stored int-field-mapping)}}})
 
-(def separate-coll-index-value (config/config-value-fn :separate-coll-index ""))
-
 (defn index-set
-  "Returns the index-set configuration based on CMR_SEPARATE_COLL_INDEX environment variable"
-  []
-  (let [granule-indices (remove empty? (conj (s/split (separate-coll-index-value) #",") "small_collections"))]
+  "Returns the index-set configuration"
+  [context]
+  (let [colls-w-separate-indexes ((get-in context [:system :colls-with-separate-indexes-fn]))
+        granule-indices (remove empty? (concat colls-w-separate-indexes ["small_collections"]))]
+    (println (pr-str granule-indices))
     {:index-set {:name "cmr-base-index-set"
                  :id 1
                  :create-reason "indexer app requires this index set"
@@ -244,19 +243,19 @@
 
 (defn fetch-concept-type-index-names
   "Fetch index names for each concept type from index-set app"
-  ([]
-   (let [index-set-id (get-in (index-set) [:index-set :id])]
-     (fetch-concept-type-index-names index-set-id)))
-  ([index-set-id]
+  ([context]
+   (let [index-set-id (get-in (index-set context) [:index-set :id])]
+     (fetch-concept-type-index-names context index-set-id)))
+  ([context index-set-id]
    (let [fetched-index-set (index-set/get-index-set index-set-id)]
      (get-in fetched-index-set [:index-set :concepts]))))
 
 (defn fetch-concept-mapping-types
   "Fetch mapping types for each concept type from index-set app"
-  ([]
-   (let [index-set-id (get-in (index-set) [:index-set :id])]
-     (fetch-concept-mapping-types index-set-id)))
-  ([index-set-id]
+  ([context]
+   (let [index-set-id (get-in (index-set context) [:index-set :id])]
+     (fetch-concept-mapping-types context index-set-id)))
+  ([context index-set-id]
    (let [fetched-index-set (index-set/get-index-set index-set-id)]
      {:collection (name (first (keys (get-in fetched-index-set [:index-set :collection :mapping]))))
       :granule (name (first (keys (get-in fetched-index-set [:index-set :granule :mapping]))))})))
@@ -265,13 +264,13 @@
   "Fetch elastic config from the cache."
   [context]
   (let [cache-atom (-> context :system :cache)]
-    (cache/cache-lookup cache-atom :elastic-config #(fetch-elastic-config))))
+    (cache/cache-lookup cache-atom :elastic-config fetch-elastic-config)))
 
 (defn get-concept-type-index-names
   "Fetch index names associated with concepts."
   [context]
   (let [cache-atom (-> context :system :cache)]
-    (cache/cache-lookup cache-atom :concept-indices #(fetch-concept-type-index-names))))
+    (cache/cache-lookup cache-atom :concept-indices (partial fetch-concept-type-index-names context))))
 
 (defn get-concept-index-name
   "Return the concept index name for the given concept id"
@@ -297,6 +296,6 @@
   "Fetch mapping types associated with concepts."
   [context]
   (let [cache-atom (-> context :system :cache)]
-    (cache/cache-lookup cache-atom :concept-mapping-types #(fetch-concept-mapping-types))))
+    (cache/cache-lookup cache-atom :concept-mapping-types (partial fetch-concept-mapping-types context))))
 
 
