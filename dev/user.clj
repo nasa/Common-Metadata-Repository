@@ -6,7 +6,8 @@
             [cmr.common.api.web-server :as web]
             [cmr.search.api.routes :as routes]
             [cmr.common.dev.repeat-last-request :as repeat-last-request :refer (repeat-last-request)]
-            [cmr.common.dev.util :as d])
+            [cmr.common.dev.util :as d]
+            [cmr.transmit.config :as transmit-config])
   (:use [clojure.test :only [run-all-tests]]
         [clojure.repl]
         [alex-and-georges.debug-repl]))
@@ -16,7 +17,8 @@
 (defn start
   "Starts the current development system."
   []
-  (let [web-server (web/create-web-server 3003 (repeat-last-request/wrap-api routes/make-api))
+  (let [web-server (web/create-web-server (transmit-config/search-port)
+                                          (repeat-last-request/wrap-api routes/make-api))
         s (assoc (system/create-system) :web web-server)]
     (alter-var-root #'system
                     (constantly
