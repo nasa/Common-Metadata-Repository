@@ -1,10 +1,7 @@
 (ns cmr.oracle.config
   "Contains functions for retrieving connection configuration from environment variables"
-  (:require [cmr.common.config :as cfg]))
-
-(def db-username (cfg/config-value-fn :db-username "METADATA_DB"))
-
-(def db-password (cfg/config-value-fn :db-password "METADATA_DB"))
+  (:require [cmr.common.config :as cfg]
+            [cmr.oracle.connection :as conn]))
 
 (def db-host (cfg/config-value-fn :db-host "localhost"))
 
@@ -12,11 +9,15 @@
 
 (def db-sid (cfg/config-value-fn :db-sid "orcl"))
 
-(defn db-spec-args
-  "Returns a vector of arguments for instantiating the db-spec."
+(def sys-dba-username (cfg/config-value-fn :sys-dba-username "sys as sysdba"))
+
+(def sys-dba-password (cfg/config-value-fn :sys-dba-password "oracle"))
+
+(defn sys-dba-db-spec
   []
-  [(db-host)
-   (db-port)
-   (db-sid)
-   (db-username)
-   (db-password)])
+  (conn/db-spec
+    (db-host)
+    (db-port)
+    (db-sid)
+    (sys-dba-username)
+    (sys-dba-password)))

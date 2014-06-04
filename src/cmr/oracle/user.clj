@@ -35,7 +35,7 @@
   "select table_name from all_tables where owner = '%%USERNAME%%'")
 
 (def grant-select-template
-  "grant select on %%TABLESPACE%%.%%TABLE%% to %%CMR_USER%%")
+  "grant select on %%FROM_USER%%.%%TABLE%% to %%CMR_USER%%")
 
 (defn replace-values
   "Replaces values in a sql template using the key values given"
@@ -44,13 +44,6 @@
             (clojure.string/replace temp (str "%%" key "%%") val))
           template
           key-values))
-
-(defn sys-dba-conn
-  "Returns a database connection to the database as the sysdba user."
-  ([]
-   (sys-dba-conn "oracle"))
-  ([password]
-   (conn/db-spec "sys as sysdba" password)))
 
 (defn create-user
   "Creates the given user in the database."
@@ -70,13 +63,16 @@
   (j/db-do-commands db (replace-values {"CMR_USER" user}
                                        drop-user-sql-template)))
 
-(defn grant-select-priviliges
-  "Grant select priviliges from one user's tables to another user."
-  [db from-tablespace from-user to-user]
+(defn grant-select-privileges
+  "Grant select privileges from one user's tables to another user."
+  [db from-user to-user]
+    (println "Granting select privileges to" to-user "on tables in" from-user)
   (let [select-tables-sql (replace-values {"USERNAME" from-user} select-users-tables-template)
         tables (j/query db select-tables-sql)]
+    (when (empty? tables)
+      (println "WARNING: Found 0 tables owned by" from-user))
     (doseq [{:keys [table_name]} tables]
-      (let [grant-sql (replace-values {"TABLESPACE" from-tablespace
+      (let [grant-sql (replace-values {"FROM_USER" from-user
                                         "TABLE" table_name
                                         "CMR_USER" to-user}
                                        grant-select-template)]
