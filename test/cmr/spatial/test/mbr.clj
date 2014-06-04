@@ -297,9 +297,11 @@
       ;; union with self = self
       (= mbr (m/union mbr mbr))
 
-      ;; union with reverse area = whole world
-      (let [lon-flipped (m/mbr (:east mbr) (:north mbr) (:west mbr) (:south mbr))]
-        (= (m/mbr -180 (:north mbr) 180 (:south mbr)) (m/union mbr lon-flipped))))))
+      ;; union with reverse area = whole world unless west = east
+      (if (not= (:west mbr) (:east mbr))
+        (let [lon-flipped (m/mbr (:east mbr) (:north mbr) (:west mbr) (:south mbr))]
+          (= (m/mbr -180 (:north mbr) 180 (:south mbr)) (m/union mbr lon-flipped)))
+        true))))
 
 
 (deftest union-example-test
