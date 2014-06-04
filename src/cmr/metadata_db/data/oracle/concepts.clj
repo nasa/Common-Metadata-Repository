@@ -15,7 +15,8 @@
             [clj-time.coerce :as cr]
             [clj-time.core :as t]
             [cmr.common.concepts :as cc]
-            [cmr.oracle.connection])
+            [cmr.oracle.connection]
+            [cmr.metadata-db.data.oracle.sql-utils :as sql-utils])
   (:import cmr.oracle.connection.OracleStore
            java.util.zip.GZIPInputStream
            java.util.zip.GZIPOutputStream
@@ -240,6 +241,28 @@
         (doall (map (partial db-result->concept-map concept-type conn provider-id)
                     (j/query conn stmt))))))
 
+  (find-concepts-in-batches
+    [db params batch-size]
+
+    (letfn [(find-batch
+              [start-index]
+              (j/with-db-transaction
+                [conn db]
+                (let [{:keys [concept-type provider-id]} params
+                      params (dissoc params :concept-type :provider-id)
+                      table (tables/get-table-name provider-id concept-type)
+                      istmt (select [:*]
+                                    (from table)
+                                    (where (find-params->sql-clause params))
+                                    (order-by :concept-id))]
+                  (doall (map (partial db-result->concept-map concept-type conn provider-id)
+                              (sql-utils/find-batch conn istmt start-index batch-size))))))
+            (lazy-find
+              [start-index]
+              (let [batch (find-batch start-index)]
+                (when-not (empty? batch)
+                  (cons batch (lazy-seq (lazy-find (+ start-index (count batch))))))))]
+      (lazy-find 0)))
 
   (save-concept
     [db concept]
