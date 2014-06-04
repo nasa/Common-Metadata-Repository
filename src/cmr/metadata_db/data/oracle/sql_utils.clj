@@ -52,17 +52,3 @@
   (let [stmt (find-batch-sql stmt start-index batch-size)]
     (println (pr-str stmt))
     (j/query db stmt)))
-
-
-(comment
-  (let [istmt (select ['*] (from :fix_prov1_collections) (order-by :concept-id))]
-    (find-batch-sql istmt 100 10))
-
-  )
-
-
-; select * from
-;   (SELECT a.*, rownum r FROM
-;     (SELECT * from fix_prov1_collections order by concept_id) a
-;    WHERE ROWNUM < 210)
-; where r >= 111
