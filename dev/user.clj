@@ -7,7 +7,8 @@
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.api.web-server :as web]
             [cmr.indexer.api.routes :as routes]
-            [cmr.common.dev.repeat-last-request :as repeat-last-request :refer (repeat-last-request)])
+            [cmr.common.dev.repeat-last-request :as repeat-last-request :refer (repeat-last-request)]
+            [cmr.transmit.config :as transmit-config])
   (:use [clojure.test :only [run-all-tests]]
         [clojure.repl]
         [alex-and-georges.debug-repl]))
@@ -20,7 +21,8 @@
 (defn start
   "Starts the current development system."
   []
-  (let [web-server (web/create-web-server 3004 (repeat-last-request/wrap-api routes/make-api))
+  (let [web-server (web/create-web-server (transmit-config/indexer-port)
+                                          (repeat-last-request/wrap-api routes/make-api))
         s (system/create-system)
         s (assoc s :web web-server)]
     (alter-var-root #'system
