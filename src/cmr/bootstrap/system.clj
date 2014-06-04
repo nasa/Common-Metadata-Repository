@@ -10,8 +10,7 @@
             [cmr.system-trace.context :as context]
             [clojure.core.async :as ca :refer [chan]]
             [cmr.bootstrap.data.bulk-migration :as bm]
-            [cmr.common.config :as config]
-            [cmr.oracle.config :as oracle-config]
+            [cmr.metadata-db.config :as mdb-config]
             [cmr.transmit.config :as transmit-config]))
 
 (def DEFAULT_PORT 3006)
@@ -23,9 +22,6 @@
     :private true}
   component-order [:log :db :web])
 
-(def catalog-rest-db-user
-  (config/config-value-fn :catalog-rest-db-user "DEV_52_CATALOG_REST"))
-
 (defn create-system
   "Returns a new instance of the whole application."
   []
@@ -36,8 +32,8 @@
              ;; Channel for requesting single collection/granules migration.
              ;; Takes maps, e.g., {:collection-id collection-id :provider-id provider-id}
              :collection-channel (chan CHANNEL_BUFFER_SIZE)
-             :catalog-rest-user (catalog-rest-db-user)
-             :db (oracle/create-db (apply oracle/db-spec (oracle-config/db-spec-args)))
+             :catalog-rest-user (mdb-config/catalog-rest-db-username)
+             :db (oracle/create-db (mdb-config/db-spec))
              :web (web/create-web-server DEFAULT_PORT routes/make-api)
              :zipkin (context/zipkin-config "bootstrap" false)}]
     (transmit-config/system-with-connections sys [:metadata-db])))
