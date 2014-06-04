@@ -5,11 +5,13 @@
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.services.errors :as errors]
             [cmr.system-trace.core :refer [deftracefn]]
-            [cmr.system-trace.http :as ch]))
+            [cmr.system-trace.http :as ch]
+            [cmr.transmit.config :as transmit-config]))
 
 (defn- context->indexer-url
   [context]
-  (-> context :system :config :indexer-url))
+  (let [{:keys [host port]} (transmit-config/context->app-connection context :indexer)]
+    (format "http://%s:%s" host port)))
 
 (deftracefn index-concept
   "Forward newly created concept for indexer app consumption."

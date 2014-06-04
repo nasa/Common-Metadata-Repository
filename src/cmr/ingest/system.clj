@@ -14,17 +14,14 @@
     :private true}
   component-order [:log :web])
 
-(def default-config
-  {:indexer-url "http://localhost:3004"})
 
 (defn create-system
   "Returns a new instance of the whole application."
   []
   (let [sys {:log (log/create-logger)
-             :config default-config
-             :web (web/create-web-server 3002 routes/make-api)
+             :web (web/create-web-server (transmit-config/ingest-port) routes/make-api)
              :zipkin (context/zipkin-config "Ingest" false)}]
-    (transmit-config/system-with-connections sys [:metadata-db])))
+    (transmit-config/system-with-connections sys [:metadata-db :indexer])))
 
    (defn start
      "Performs side effects to initialize the system, acquire resources,
