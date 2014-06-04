@@ -50,5 +50,4 @@
   and starting at a given index."
   [db stmt start-index batch-size]
   (let [stmt (find-batch-sql stmt start-index batch-size)]
-    (println (pr-str stmt))
     (j/query db stmt)))
