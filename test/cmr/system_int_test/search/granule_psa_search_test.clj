@@ -109,6 +109,8 @@
   (let [psa1 (dc/psa "alpha" :string)
         psa2 (dc/psa "bravo" :string)
         psa3 (dc/psa "charlie" :string "foo")
+        psa4 (dc/psa "case" :string)
+
         coll1 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2]}))
         gran1 (d/ingest "PROV1" (dg/granule coll1 {:product-specific-attributes [(dg/psa "alpha" ["ab" "bc"])
                                                                                  (dg/psa "bravo" ["cd" "bf"])]}))
@@ -116,16 +118,23 @@
 
         coll2 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa2 psa3]}))
         gran3 (d/ingest "PROV1" (dg/granule coll2 {:product-specific-attributes [(dg/psa "bravo" ["aa" "bf"])]}))
-        gran4 (d/ingest "PROV1" (dg/granule coll2 {:product-specific-attributes [(dg/psa "charlie" ["az"])]}))]
+        gran4 (d/ingest "PROV1" (dg/granule coll2 {:product-specific-attributes [(dg/psa "charlie" ["az"])]}))
+
+        coll3 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa4]}))
+        gran5 (d/ingest "PROV1" (dg/granule coll3 {:product-specific-attributes [(dg/psa "case" ["UP"])]}))]
     (index/refresh-elastic-index)
     (testing "search by value"
       (are [v items]
            (d/refs-match? items (search/find-refs :granule {"attribute[]" v}))
            "string,alpha,ab" [gran1]
+           "string,alpha,AB" [gran1]
            "string,alpha,c" []
            "string,bravo,bf" [gran1 gran3]
+           "string,case,UP" [gran5]
+           "string,case,up" [gran5]
 
            ;; tests by value inheritance
+           "string,charlie,FoO" [gran3 gran4]
            "string,charlie,foo" [gran3 gran4]))
 
     (testing "search by value catalog-rest style"
