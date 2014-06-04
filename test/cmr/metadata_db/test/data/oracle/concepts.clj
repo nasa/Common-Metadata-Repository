@@ -9,7 +9,8 @@
             [clj-time.coerce :as cr]
             [clj-time.core :as t]
             [cmr.oracle.config :as oracle-config]
-            [cmr.common.lifecycle :as lifecycle])
+            [cmr.common.lifecycle :as lifecycle]
+            [cmr.metadata-db.config :as mdb-config])
   (:import javax.sql.rowset.serial.SerialBlob
            java.util.zip.GZIPInputStream
            java.io.ByteArrayInputStream
@@ -48,8 +49,7 @@
 (deftest db-result->concept-map-test
 
   (j/with-db-transaction
-    [db (->> (oracle-config/db-spec-args)
-             (apply oracle/db-spec)
+    [db (->> (mdb-config/db-spec)
              oracle/create-db
              (#(lifecycle/start % nil)))]
     (let [revision-time (t/date-time 1986 10 14 4 3 27 456)

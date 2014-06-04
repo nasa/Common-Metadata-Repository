@@ -3,7 +3,9 @@
   (:require [drift.builder :refer [incremental-migration-number-generator]]
             [clojure.java.jdbc :as j]
             [cmr.oracle.connection :as oracle]
-            [cmr.oracle.config :as oracle-config]))
+            [cmr.common.lifecycle :as lifecycle]
+            [cmr.oracle.config :as oracle-config]
+            [cmr.metadata-db.config :as mdb-config]))
 
 (def db-atom (atom nil))
 
@@ -11,7 +13,7 @@
   "Lazily connects to the database and caches it"
   []
   (when-not @db-atom
-    (reset! db-atom (oracle/create-db (apply oracle/db-spec (oracle-config/db-spec-args)))))
+    (reset! db-atom (lifecycle/start (oracle/create-db (mdb-config/db-spec)) nil)))
   @db-atom)
 
 

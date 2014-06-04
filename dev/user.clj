@@ -41,4 +41,4 @@
   ; Refreshes all of the code and then restarts the system
   (refresh :after 'user/start))
 
-(info "Custom user.clj loaded 4.")
+(info "Custom user.clj loaded.")

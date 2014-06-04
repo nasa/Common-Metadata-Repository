@@ -1,9 +1,8 @@
-;;; run with lein exec create_user.clj
+;;; run with lein exec -p create_user.clj
+(require '[cmr.oracle.user :as o]
+         '[cmr.oracle.config :as oracle-config]
+         '[cmr.metadata-db.config :as mdb-config])
 
-(use '[leiningen.exec :only (deps)])
-(deps '[[nasa-cmr/cmr-oracle-lib "0.1.0-SNAPSHOT"]]
-      :repositories {"releases" "http://devrepo1.dev.echo.nasa.gov/data/dist/projects/echo/mavenrepo/"})
-
-(require '[cmr.oracle.user :as o])
-
-(o/drop-user (o/sys-dba-conn) "METADATA_DB")
+(let [db (oracle-config/sys-dba-db-spec)
+      metadata-db-user (mdb-config/db-username)]
+  (o/drop-user db metadata-db-user))

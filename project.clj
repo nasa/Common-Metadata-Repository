@@ -43,8 +43,8 @@
              :aot :all}}
 
   ;; Database migrations run by executing "lein migrate"
-  :aliases {"create-user" ["exec" "./support/create_user.clj"]
-            "drop-user" ["exec" "./support/drop_user.clj"]})
+  :aliases {"create-user" ["exec" "-p" "./support/create_user.clj"]
+            "drop-user" ["exec" "-p" "./support/drop_user.clj"]})
 
 
 

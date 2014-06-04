@@ -12,11 +12,9 @@
             [cmr.metadata-db.api.routes :as routes]
             [cmr.metadata-db.services.jobs :as jobs]
             [cmr.oracle.config :as oracle-config]
-            [cmr.common.config :as cfg]))
+            [cmr.metadata-db.config :as config]))
 
 ;; Design based on http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts
-
-(def app-port (cfg/config-value-fn :metadata-db-port 3001 #(Long. %)))
 
 (def
   ^{:doc "Defines the order to start the components."
@@ -26,9 +24,9 @@
 (defn create-system
   "Returns a new instance of the whole application."
   []
-  {:db (oracle/create-db (apply oracle/db-spec (oracle-config/db-spec-args)))
+  {:db (oracle/create-db (config/db-spec))
    :log (log/create-logger)
-   :web (web/create-web-server (app-port) routes/make-api)
+   :web (web/create-web-server (config/app-port) routes/make-api)
    :zipkin (context/zipkin-config "Metadata DB" false)})
 
 (defn start
