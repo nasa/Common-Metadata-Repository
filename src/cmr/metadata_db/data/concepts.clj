@@ -32,6 +32,10 @@
     [db params]
     "Finds concepts by the given parameters")
 
+  (find-concepts-in-batches
+    [db params batch-size]
+    "Get a lazy sequence of batched concepts for the given parameters.")
+
   (save-concept
     [db concept]
     "Saves a concept and returns the revision id. If the concept already
