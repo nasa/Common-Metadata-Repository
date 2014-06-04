@@ -111,10 +111,12 @@
 (defn- get-dataset-record-id-for-collection
   "Retrieve the id for a given collection/dataset from the catalog-rest table."
   [system provider-id collection-id]
-  (:id (j/with-db-transaction
+  (-> (j/with-db-transaction
          [conn (system->db system)]
-         (j/query conn (get-dataset-record-id-for-collection-sql system provider-id collection-id)))))
-
+         (j/query conn (get-dataset-record-id-for-collection-sql system provider-id collection-id)))
+      first
+      :id
+      int))
 
 (defn- get-provider-collection-list-sql
   "Gengerate SQL to get the list of collections (datasets) for the given provider."
