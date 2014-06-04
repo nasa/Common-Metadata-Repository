@@ -53,7 +53,7 @@
 (defn- case-sensitive-field?
   "Return true if the given field is a case-sensitive field"
   [field]
-  (some #{:concept-id :collection-concept-id "string-value"} [field]))
+  (some #{:concept-id :collection-concept-id} [field]))
 
 (defn- string-condition-with-options
   "Returns a string condition with the given field, value and options"
