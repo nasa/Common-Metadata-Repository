@@ -18,7 +18,7 @@
     ;; When this test is run in CI the set variable will not influence the cmr-search-app
     ;; or cmr-indexer-app which are running in a separate process.
     ;; The CI script must set this environment variable to make those work.
-    (config/set-config-value! :separate-coll-index "C1-SEP_PROV1,C2-SEP_PROV1")
+    (config/set-config-value! :colls-with-separate-indexes "C1-SEP_PROV1,C2-SEP_PROV1")
     (ingest/reset)
     (ingest/create-provider "SEP_PROV1")
     (f)
