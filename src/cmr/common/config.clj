@@ -31,11 +31,11 @@
   ([config-name default-value]
    (config-value config-name default-value identity))
   ([config-name default-value parser-fn]
-   (or (get @runtime-config-values config-name)
-       (let [env-value (System/getenv (config-name->env-name config-name))]
-         (when env-value
-           (parser-fn env-value)))
-       default-value)))
+   (let [value (or (get @runtime-config-values config-name)
+                   (System/getenv (config-name->env-name config-name))
+                   default-value)]
+     (when value
+       (parser-fn value)))))
 
 (defn config-value-fn
   "Returns a function that can retrieve a configuration value which can be set as an environment
@@ -47,9 +47,10 @@
   ([config-name default-value parser-fn]
 
    ;; Environment variables can't change at runtime so we look them up initially.
-   (let [env-value (System/getenv (config-name->env-name config-name))
-         env-value (when env-value (parser-fn env-value))]
+   (let [parser-when #(when % (parser-fn %))
+         parsed-default (parser-when default-value)
+         env-value (parser-when (System/getenv (config-name->env-name config-name)))]
      (fn []
-       (or (get @runtime-config-values config-name)
+       (or (parser-when (get @runtime-config-values config-name))
            env-value
-           default-value)))))
+           parsed-default)))))
