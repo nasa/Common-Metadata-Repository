@@ -53,6 +53,7 @@
    :properties
    {:name string-field-mapping
     :string-value string-field-mapping
+    :string-value.lowercase string-field-mapping
     :float-value double-field-mapping
     :int-value int-field-mapping
     :datetime-value date-field-mapping

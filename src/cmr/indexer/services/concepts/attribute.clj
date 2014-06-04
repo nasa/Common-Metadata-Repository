@@ -1,6 +1,7 @@
 (ns cmr.indexer.services.concepts.attribute
   "Contains functions for converting attributes into a elastic documents"
   (:require [clj-time.format :as f]
+            [clojure.string :as s]
             [cmr.umm.echo10.collection.product-specific-attribute :as coll-psa]
             [cmr.common.services.errors :as errors]))
 
@@ -49,10 +50,20 @@
   "Converts a PSA ref into the portion going in an elastic document"
   [type psa-ref]
   (let [field-name (type->field-name type)]
-    {:name (:name psa-ref)
-     field-name (map (comp #(value->elastic-value type %)
-                           #(coll-psa/parse-value type %))
-                     (:values psa-ref))}))
+    (if (some #{type} [:string :boolean :time-string :date-string :datetime-string])
+      [{:name (:name psa-ref)
+        field-name (map (comp #(value->elastic-value type %)
+                              #(coll-psa/parse-value type %))
+                        (:values psa-ref))}
+       {:name (:name psa-ref)
+        (str field-name ".lowercase") (map (comp s/lower-case
+                                                 #(value->elastic-value type %)
+                                                 #(coll-psa/parse-value type %))
+                                           (:values psa-ref))}]
+      {:name (:name psa-ref)
+       field-name (map (comp #(value->elastic-value type %)
+                             #(coll-psa/parse-value type %))
+                       (:values psa-ref))})))
 
 (defn psa-refs->elastic-docs
   "Converts the psa-refs into a list of elastic documents"
@@ -73,8 +84,13 @@
   [psa]
   (let [{:keys [name data-type value]} psa
         field-name (type->field-name data-type)]
-    {:name name
-     field-name (value->elastic-value data-type value)}))
+    (if (= :string data-type)
+      [{:name name
+        field-name (value->elastic-value data-type value)}
+       {:name name
+        (str field-name ".lowercase") (s/lower-case (value->elastic-value data-type value))}]
+      {:name name
+       field-name (value->elastic-value data-type value)})))
 
 (defn psas->elastic-docs
   "Converts the psa into a list of elastic documents"
