@@ -7,10 +7,11 @@
             [cmr.index-set.api.routes :as routes]
             [cmr.common.api.web-server :as web]
             [cmr.system-trace.context :as context]
-            [cmr.index-set.config.elasticsearch-config :as es-config]
-            [cmr.index-set.data.elasticsearch :as es]))
+            [cmr.index-set.data.elasticsearch :as es]
+            [cmr.elastic-utils.config :as es-config]
+            [cmr.common.config :as cfg]))
 
-(def DEFAULT_PORT 3005)
+(def app-port (cfg/config-value-fn :index-set-port 3005 #(Long. %)))
 
 (def
   ^{:doc "Defines the order to start the components."
@@ -21,8 +22,8 @@
   "Returns a new instance of the whole application."
   []
   {:log (log/create-logger)
-   :index (es/create-elasticsearch-store (es-config/config))
-   :web (web/create-web-server DEFAULT_PORT routes/make-api)
+   :index (es/create-elasticsearch-store (es-config/elastic-config))
+   :web (web/create-web-server (app-port) routes/make-api)
    :zipkin (context/zipkin-config "index-set" false)})
 
 (defn start

@@ -1,30 +1,4 @@
-(ns cmr.index-set.config.elasticsearch-config
-  (:require [cheshire.core :as cheshire]
-            [clojure.data.codec.base64 :as b64]
-            [clojure.java.io :as io]
-            [cmr.common.config :as config]))
-
-(def config-file
-  (io/resource "config/elasticsearch_config.json"))
-
-(def default-config
-  (let [{:strs [host port password]} (cheshire/decode (slurp config-file))]
-    {:host host
-     :port port
-     :admin-token (str "Basic " (b64/encode (.getBytes password)))}))
-
-(def elastic-host (config/config-value-fn :elastic-host (:host default-config)))
-
-(def elastic-port (config/config-value-fn :elastic-port (:port default-config)))
-
-(def elastic-admin-token (config/config-value-fn :elastic-admin-token (:admin-token default-config)))
-
-(defn config
-  "Return the configuration for elasticsearch"
-  []
-  {:host (elastic-host)
-   :port (elastic-port)
-   :admin-token (elastic-admin-token)})
+(ns cmr.index-set.config.elasticsearch-config)
 
 ;; index name and config for storing index-set requests
 ;; index the request after creating all of the requested indices successfully

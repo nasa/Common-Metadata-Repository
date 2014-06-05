@@ -88,12 +88,6 @@
         idx-mapping-type (first (keys mapping))]
     (es/get-index-set (context->es-store context) index-name idx-mapping-type index-set-id)))
 
-
-(deftracefn get-elastic-config
-  "Forward elastic config to index-set app clients."
-  [context]
-  (get-in context [:system :index :config]))
-
 (defn index-set-id-validation
   "Verify id is a positive integer."
   [index-set]

@@ -7,8 +7,8 @@
             [clojure.walk :as walk]
             [clojure.data.codec.base64 :as b64]
             [cheshire.core :as cheshire]
-            [cmr.index-set.config.elasticsearch-config :as config]
-            [clojurewerkz.elastisch.rest :as esr]))
+            [clojurewerkz.elastisch.rest :as esr]
+            [cmr.elastic-utils.config :as es-config]))
 
 ;;; index-set app enpoint
 (def port 3005)
@@ -98,7 +98,7 @@
 
 (defn elastic-root
   []
-  (format "http://%s:%s" (:host (config/config)) (:port (config/config))))
+  (format "http://%s:%s" (es-config/elastic-host) (es-config/elastic-port)))
 
 (defn submit-create-index-set-req
   "submit a request to index-set app to create indices"

@@ -6,18 +6,17 @@
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [nasa-cmr/cmr-umm-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-system-trace-lib "0.1.0-SNAPSHOT"]
+                 [nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]
                  [compojure "1.1.6"]
                  [ring/ring-core "1.2.2"]
                  [ring/ring-json "0.3.1"]
                  [org.clojure/tools.reader "0.8.4"]
-                 [clojurewerkz/elastisch "2.0.0-rc1" :exclusions [commons-codec]]
                  [org.clojure/tools.cli "0.3.1"]]
   :plugins []
   :repl-options {:init-ns user}
   :profiles
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.4"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]
-                        [nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]
                         [cheshire "5.3.1"]
                         [clj-http "0.9.1"]]
          :source-paths ["src" "dev" "test" "int_test"]}

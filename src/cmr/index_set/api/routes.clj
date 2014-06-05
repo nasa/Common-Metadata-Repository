@@ -32,9 +32,6 @@
     (POST "/reset" {request-context :request-context}
       (r/response (index-svc/reset request-context)))
 
-    ;; forward elastic config to indexer and search apps
-    (GET "/elastic-config" {request-context :request-context}
-      (r/response (index-svc/get-elastic-config request-context)))
     (route/not-found "Not Found")))
 
 (defn make-api [system]
