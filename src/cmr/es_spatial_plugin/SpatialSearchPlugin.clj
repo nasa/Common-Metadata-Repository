@@ -13,5 +13,8 @@
 (defn -processModule [this module]
   (when (instance? ScriptModule module)
     (let [^ScriptModule module module]
+      ;; Done here to avoid AOP problems during development
+      (require 'cmr.es-spatial-plugin.spatial-script-helper)
+      (require 'cmr.es-spatial-plugin.spatial-script-factory-helper)
       (.registerScript module "spatial" SpatialScriptFactory))))
 
