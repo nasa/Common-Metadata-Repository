@@ -5,5 +5,6 @@
 # for large collections. It is set to facilitate granule_search_index_name_test in system-int-test.
 
 lein clean
+rm -rf es_data
 lein uberjar
 CMR_COLLS_WITH_SEPARATE_INDEXES='C1-SEP_PROV1,C2-SEP_PROV1' nohup java -XX:MaxPermSize=256m -jar target/cmr-dev-system-0.1.0-SNAPSHOT-standalone.jar&
