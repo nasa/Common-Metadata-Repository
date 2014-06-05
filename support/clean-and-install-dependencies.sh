@@ -43,8 +43,6 @@ cd ../cmr-indexer-app
 lein do clean, install, clean
 
 cd ../cmr-index-set-app
-cp resources/config/elasticsearch_config.json.template \
-resources/config/elasticsearch_config.json
 lein do clean, install, clean
 
 cd ../cmr-metadata-db-app
