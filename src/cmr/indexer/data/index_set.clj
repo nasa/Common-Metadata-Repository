@@ -195,7 +195,6 @@
   [context]
   (let [colls-w-separate-indexes ((get-in context [:system :colls-with-separate-indexes-fn]))
         granule-indices (remove empty? (concat colls-w-separate-indexes ["small_collections"]))]
-    (println (pr-str granule-indices))
     {:index-set {:name "cmr-base-index-set"
                  :id 1
                  :create-reason "indexer app requires this index set"
