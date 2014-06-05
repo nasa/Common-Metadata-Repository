@@ -77,6 +77,7 @@
                   :spatial-keyword ["New York" "Washington DC"]
                   :spatial-keyword.lowercase ["new york" "washington dc"]
                   :attributes []
+                  :science-keywords []
                   :two-d-coord-name ["FOO" "Bar"]
                   :two-d-coord-name.lowercase  ["foo" "bar"]}
         actual (svc/concept->elastic-doc nil concept umm-concept)]
