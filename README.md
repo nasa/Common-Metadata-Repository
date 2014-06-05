@@ -8,12 +8,6 @@ You will need [Leiningen][1] 1.7.0 or above installed.
 
 [1]: https://github.com/technomancy/leiningen
 
-## config
-
-Copy config/elasticsearch_config.json.template to config/elasticsearch_config.json
-
-Replace the placeholder values of Elasticsearch configuration parameters with the appropriate values in config/elasticsearch_config.json
-
 ## Running
 
 To start a web server for the application, run:
