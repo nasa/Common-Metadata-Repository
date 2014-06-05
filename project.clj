@@ -32,10 +32,9 @@
                   ["shell" "ln" "-s" (str "../../" (name project-name)) "checkouts/,"])
                 (keys projects)))))
 
-
-
 (defproject nasa-cmr/cmr-dev-system "0.1.0-SNAPSHOT"
-  :description "Dev System combines together the separate microservices of the CMR into a single application to make it simpler to develop."
+  :description "Dev System combines together the separate microservices of the CMR into a single
+               application to make it simpler to develop."
   :url "***REMOVED***projects/CMR/repos/cmr-dev-system/browse"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}

@@ -41,32 +41,18 @@
 (defmethod create-system :in-memory
   [type]
 
-  ;; Sets a bit of global state used in system integration tests to find the elastic port
-  ;; This is evil. We shouldn't do this in what should be a side effect free function.
-  ;; We need some sort of workaround though
+  ;; Sets a bit of global state for the application and system integration tests that will know how to talk to elastic
   (config/set-config-value! :elastic-port in-memory-elastic-port-for-connection)
+
 
   ;; Memory DB configured to run in memory
   {:apps {:metadata-db (assoc (mdb-system/create-system)
                               :db (memory/create-db))
-
           ;; Bootstrap is not enabled for in-memory dev system
-
           :indexer (indexer-system/create-system)
-
-          ;; Index set and indexer will use the embedded elastic server
-          :index-set (assoc (index-set-system/create-system)
-                            :index (es-index/create-elasticsearch-store
-                                     {:host "localhost"
-                                      :port in-memory-elastic-port-for-connection
-                                      :admin-token "none"}))
+          :index-set (index-set-system/create-system)
           :ingest (ingest-system/create-system)
-
-          ;; Search will use the embedded elastic server
-          :search (assoc (search-system/create-system)
-                         :search-index
-                         (es-search/create-elastic-search-index
-                           "localhost" in-memory-elastic-port-for-connection))}
+          :search (search-system/create-system)}
    :components {:elastic-server (elastic-server/create-server
                                   in-memory-elastic-port
                                   (+ in-memory-elastic-port 10)
