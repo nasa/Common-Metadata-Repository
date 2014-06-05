@@ -13,8 +13,6 @@
             [cmr.metadata-db.config :as mdb-config]
             [cmr.transmit.config :as transmit-config]))
 
-(def DEFAULT_PORT 3006)
-
 (def CHANNEL_BUFFER_SIZE 10)
 
 (def
@@ -34,7 +32,7 @@
              :collection-channel (chan CHANNEL_BUFFER_SIZE)
              :catalog-rest-user (mdb-config/catalog-rest-db-username)
              :db (oracle/create-db (mdb-config/db-spec))
-             :web (web/create-web-server DEFAULT_PORT routes/make-api)
+             :web (web/create-web-server (transmit-config/bootstrap-port) routes/make-api)
              :zipkin (context/zipkin-config "bootstrap" false)}]
     (transmit-config/system-with-connections sys [:metadata-db])))
 

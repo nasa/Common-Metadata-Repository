@@ -11,14 +11,15 @@
             [cmr.common.api.web-server :as web]
             [cmr.bootstrap.api.routes :as routes]
             [cmr.common.dev.repeat-last-request :as repeat-last-request :refer (repeat-last-request)]
-            [cmr.common.dev.util :as d]))
+            [cmr.common.dev.util :as d]
+            [cmr.transmit.config :as transmit-config]))
 
 (def system nil)
 
 (defn start
   "Starts the current development system."
   []
-  (let [web-server (web/create-web-server system/DEFAULT_PORT
+  (let [web-server (web/create-web-server (transmit-config/bootstrap-port)
                                           (repeat-last-request/wrap-api routes/make-api))
         s (assoc (system/create-system) :web web-server)]
     (alter-var-root #'system
