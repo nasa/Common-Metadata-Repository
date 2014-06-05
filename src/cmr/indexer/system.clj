@@ -11,7 +11,8 @@
             [cmr.indexer.api.routes :as routes]
             [cmr.transmit.config :as transmit-config]
             [clojure.string :as str]
-            [cmr.common.config :as cfg]))
+            [cmr.common.config :as cfg]
+            [cmr.elastic-utils.config :as es-config]))
 
 
 (def collections-with-separate-indexes
@@ -28,7 +29,7 @@
   "Returns a new instance of the whole application."
   []
   (let [sys {:log (log/create-logger)
-             :db (es/create-elasticsearch-store)
+             :db (es/create-elasticsearch-store (es-config/elastic-config))
              ;; This is set as a dynamic lookup to enable easy replacement of the value for testing.
              :colls-with-separate-indexes-fn collections-with-separate-indexes
              :web (web/create-web-server (transmit-config/indexer-port) routes/make-api)
