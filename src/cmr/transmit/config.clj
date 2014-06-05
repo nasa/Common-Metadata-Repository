@@ -61,3 +61,10 @@
             system
             app-names)))
 
+(defn context->app-root-url
+  "Returns the root url for an application by looking up it's connection info in the context"
+  [context app-name]
+  (let [{:keys [host port]} (context->app-connection context app-name)]
+    (format "http://%s:%s" host port)))
+
+

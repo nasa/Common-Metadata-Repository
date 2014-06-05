@@ -8,15 +8,10 @@
             [cmr.system-trace.http :as ch]
             [cmr.system-trace.core :refer [deftracefn]]))
 
-(defn context->metadata-db-url
-  [context]
-  (let [{:keys [host port]} (config/context->app-connection context :metadata-db)]
-    (format "http://%s:%s" host port)))
-
 (deftracefn get-concept
   "Retrieve the concept with the given concept and revision-id"
   [context concept-id revision-id]
-  (let [mdb-url (context->metadata-db-url context)
+  (let [mdb-url (config/context->app-root-url context :metadata-db)
         response (client/get (format "%s/concepts/%s/%s" mdb-url concept-id revision-id)
                              {:accept :json
                               :throw-exceptions false
@@ -30,7 +25,7 @@
 (deftracefn get-latest-concept
   "Retrieve the latest version of the concept"
   [context concept-id]
-  (let [mdb-url (context->metadata-db-url context)
+  (let [mdb-url (config/context->app-root-url context :metadata-db)
         response (client/get (format "%s/concepts/%s" mdb-url concept-id)
                              {:accept :json
                               :throw-exceptions false
@@ -44,7 +39,7 @@
 (deftracefn get-concept-id
   "Return a distinct identifier for the given arguments."
   [context concept-type provider-id native-id]
-  (let [mdb-url (context->metadata-db-url context)
+  (let [mdb-url (config/context->app-root-url context :metadata-db)
         request-url (str mdb-url "/concept-id/" (name concept-type) "/" provider-id "/" native-id)
         response (client/get request-url {:accept :json
                                           :headers (ch/context->http-headers context)
@@ -67,7 +62,7 @@
 (deftracefn get-collection-concept-id
   "Search metadata db and return the collection-concept-id that matches the search params"
   [context search-params]
-  (let [mdb-url (context->metadata-db-url context)
+  (let [mdb-url (config/context->app-root-url context :metadata-db)
         request-url (str mdb-url "/concepts/search/collections")
         response (client/get request-url {:accept :json
                                           :query-params search-params
@@ -92,7 +87,7 @@
 (deftracefn save-concept
   "Saves a concept in metadata db and index."
   [context concept]
-  (let [mdb-url (context->metadata-db-url context)
+  (let [mdb-url (config/context->app-root-url context :metadata-db)
         concept-json-str (cheshire/generate-string concept)
         response (client/post (str mdb-url "/concepts") {:body concept-json-str
                                                          :content-type :json
@@ -120,7 +115,7 @@
 (deftracefn delete-concept
   "Delete a concept from metatdata db."
   [context concept-id]
-  (let [mdb-url (context->metadata-db-url context)
+  (let [mdb-url (config/context->app-root-url context :metadata-db)
         response (client/delete (str mdb-url "/concepts/" concept-id) {:accept :json
                                                                        :throw-exceptions false
                                                                        :headers (ch/context->http-headers context)})
