@@ -11,6 +11,7 @@
             [cmr.umm.echo10.collection.campaign :as cmpgn]
             [cmr.umm.echo10.collection.two-d-coordinate-system :as two-d]
             [cmr.umm.echo10.collection.org :as org]
+            [cmr.umm.echo10.collection.science-keyword :as sk]
             [cmr.umm.echo10.core]
             [camel-snake-kebab :as csk])
   (:import cmr.umm.collection.UmmCollection))
@@ -50,6 +51,7 @@
        :data-provider-timestamps data-provider-timestamps
        :spatial-keywords (seq (cx/strings-at-path xml-struct [:SpatialKeywords :Keyword]))
        :temporal (t/xml-elem->Temporal xml-struct)
+       :science-keywords (sk/xml-elem->ScienceKeywords xml-struct)
        :platforms (platform/xml-elem->Platforms xml-struct)
        :product-specific-attributes (psa/xml-elem->ProductSpecificAttributes xml-struct)
        :projects (cmpgn/xml-elem->Campaigns xml-struct)
@@ -79,7 +81,7 @@
      (let [{{:keys [short-name long-name version-id processing-level-id]} :product
             dataset-id :entry-title
             {:keys [insert-time update-time delete-time]} :data-provider-timestamps
-            :keys [organizations spatial-keywords temporal platforms product-specific-attributes
+            :keys [organizations spatial-keywords temporal science-keywords platforms product-specific-attributes
                    projects two-d-coordinate-systems spatial-coverage]} collection
            emit-fn (if indent? x/indent-str x/emit-str)]
        (emit-fn
@@ -105,6 +107,7 @@
                                  (for [spatial-keyword spatial-keywords]
                                    (x/element :Keyword {} spatial-keyword))))
                     (t/generate-temporal temporal)
+                    (sk/generate-science-keywords science-keywords)
                     (platform/generate-platforms platforms)
                     (psa/generate-product-specific-attributes product-specific-attributes)
                     (cmpgn/generate-campaigns projects)

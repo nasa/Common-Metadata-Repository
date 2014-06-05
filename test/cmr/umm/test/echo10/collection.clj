@@ -75,6 +75,29 @@
         <PeriodCycleDurationValue>7</PeriodCycleDurationValue>
       </PeriodicDateTime>
     </Temporal>
+    <ScienceKeywords>
+      <ScienceKeyword>
+        <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+        <TopicKeyword>CRYOSPHERE</TopicKeyword>
+        <TermKeyword>SNOW/ICE</TermKeyword>
+        <VariableLevel1Keyword>
+          <Value>ALBEDO</Value>
+          <VariableLevel2Keyword>
+            <Value>BETA</Value>
+            <VariableLevel3Keyword>GAMMA</VariableLevel3Keyword>
+          </VariableLevel2Keyword>
+        </VariableLevel1Keyword>
+        <DetailedVariableKeyword>DETAILED</DetailedVariableKeyword>
+      </ScienceKeyword>
+      <ScienceKeyword>
+        <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+        <TopicKeyword>CRYOSPHERE</TopicKeyword>
+        <TermKeyword>SEA ICE</TermKeyword>
+        <VariableLevel1Keyword>
+          <Value>REFLECTANCE</Value>
+        </VariableLevel1Keyword>
+      </ScienceKeyword>
+    </ScienceKeywords>
     <AdditionalAttributes>
       <AdditionalAttribute>
         <Name>String add attrib</Name>
@@ -213,6 +236,20 @@
                            :duration-value 3
                            :period-cycle-duration-unit "MONTH"
                            :period-cycle-duration-value 7})]})
+                    :science-keywords
+                    [(umm-c/map->ScienceKeyword
+                       {:category "EARTH SCIENCE"
+                        :topic "CRYOSPHERE"
+                        :term "SNOW/ICE"
+                        :variable-level-1 "ALBEDO"
+                        :variable-level-2 "BETA"
+                        :variable-level-3 "GAMMA"
+                        :detailed-variable "DETAILED"})
+                     (umm-c/map->ScienceKeyword
+                       {:category "EARTH SCIENCE"
+                        :topic "CRYOSPHERE"
+                        :term "SEA ICE"
+                        :variable-level-1 "REFLECTANCE"})]
                     :product-specific-attributes
                     [(umm-c/map->ProductSpecificAttribute
                        {:name "String add attrib"
@@ -279,11 +316,11 @@
 
 (comment
   ;;;;;;;;;;;;;
-    (let [collection (last (gen/sample coll-gen/collections 1))
-          xml (echo10/umm->echo10-xml collection)
-          parsed (c/parse-collection xml)]
-      (println (= parsed collection))
-      (clojure.data/diff parsed collection))
-    ;;;;;;;;;;;;'
-    )
+  (let [collection (last (gen/sample coll-gen/collections 1))
+        xml (echo10/umm->echo10-xml collection)
+        parsed (c/parse-collection xml)]
+    (println (= parsed collection))
+    (clojure.data/diff parsed collection))
+  ;;;;;;;;;;;;'
+  )
 
