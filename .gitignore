@@ -3,6 +3,7 @@
 /classes
 /checkouts
 /log
+/deploy
 pom.xml
 pom.xml.asc
 *.jar
