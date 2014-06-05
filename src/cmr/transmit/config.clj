@@ -9,7 +9,7 @@
   [s]
   (Long. s))
 
-(def metadata-db-port (cfg/config-value-fn :metadata-db-host 3001 parse-port))
+(def metadata-db-port (cfg/config-value-fn :metadata-db-port 3001 parse-port))
 
 (def ingest-port (cfg/config-value-fn :ingest-port 3002 parse-port))
 
