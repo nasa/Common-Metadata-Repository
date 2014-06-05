@@ -6,7 +6,8 @@
             [cmr.search.api.routes :as routes]
             [cmr.search.data.elastic-search-index :as idx]
             [cmr.system-trace.context :as context]
-            [cmr.transmit.config :as transmit-config]))
+            [cmr.transmit.config :as transmit-config]
+            [cmr.elastic-utils.config :as es-config]))
 
 ;; Design based on http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts
 
@@ -19,7 +20,7 @@
   "Returns a new instance of the whole application."
   []
   (let [sys {:log (log/create-logger)
-             :search-index (idx/create-elastic-search-index "localhost" 9210)
+             :search-index (idx/create-elastic-search-index (es-config/elastic-config))
              :web (web/create-web-server (transmit-config/search-port) routes/make-api)
              :cache (cache/create-cache)
              :zipkin (context/zipkin-config "Search" false)}]

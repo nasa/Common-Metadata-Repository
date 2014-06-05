@@ -11,7 +11,7 @@
                  [ring/ring-json "0.3.1"]
                  [org.clojure/tools.reader "0.8.4"]
                  [org.clojure/tools.cli "0.3.1"]
-                 [clojurewerkz/elastisch "2.0.0-rc1" :exclusions [commons-codec]]
+                 [nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]
                  [com.novemberain/pantomime "2.1.0"]
                  [org.clojure/data.xml "0.0.7"]]
   :plugins [[lein-test-out "0.3.1"]]

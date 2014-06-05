@@ -22,15 +22,16 @@
 
 (defn- fetch-concept-type-index-names
   "Fetch index names for each concept type from index-set app"
-  []
-  (let [fetched-index-set (index-set/get-index-set index-set-id)]
+  [context]
+  (let [fetched-index-set (index-set/get-index-set context index-set-id)]
     (get-in fetched-index-set [:index-set :concepts])))
 
 (defn- get-granule-index-names
   "Fetch index names associated with concepts."
   [context]
   (let [cache-atom (-> context :system :cache)
-        index-names (cache/cache-lookup cache-atom :concept-indices #(fetch-concept-type-index-names))]
+        index-names (cache/cache-lookup cache-atom :concept-indices
+                                        (partial fetch-concept-type-index-names context))]
     (get index-names :granule)))
 
 (defn- collection-concept-id->index-name
@@ -70,8 +71,8 @@
 
 (defrecord ElasticSearchIndex
   [
-   host
-   port
+   config
+
    ;; The connection to elastic
    conn
    ]
@@ -81,7 +82,7 @@
 
   (start
     [this system]
-    (let [{:keys [host port]} this]
+    (let [{{:keys [host port]} :config} this]
       (assoc this :conn (esr/connect (str "http://" host ":" port)))))
 
   (stop [this system]
@@ -131,5 +132,5 @@
 
 (defn create-elastic-search-index
   "Creates a new instance of the elastic search index."
-  [host port]
-  (->ElasticSearchIndex host port nil))
+  [config]
+  (->ElasticSearchIndex config nil))
