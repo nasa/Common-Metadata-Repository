@@ -8,13 +8,11 @@
             [clojure.data.codec.base64 :as b64]
             [cheshire.core :as cheshire]
             [clojurewerkz.elastisch.rest :as esr]
-            [cmr.elastic-utils.config :as es-config]))
-
-;;; index-set app enpoint
-(def port 3005)
+            [cmr.elastic-utils.config :as es-config]
+            [cmr.transmit.config :as transmit-config]))
 
 (def index-set-root-url
-  (format "%s:%s"  "http://localhost" port))
+  (format "%s:%s"  "http://localhost" (transmit-config/index-set-port)))
 
 ;; url applicable to create, get and delete index-set
 (def index-set-url
