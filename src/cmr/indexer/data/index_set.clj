@@ -9,6 +9,7 @@
             [cmr.transmit.metadata-db :as meta-db]
             [cmr.transmit.index-set :as index-set]
             [cmr.transmit.config :as transmit-config]
+            [cmr.transmit.connection :as transmit-conn]
             [cmr.common.cache :as cache]
             [cmr.system-trace.core :refer [deftracefn]]))
 
@@ -201,7 +202,8 @@
 (defn reset
   "Reset configured elastic indexes"
   [context]
-  (let [index-set-root-url (transmit-config/context->app-root-url context :index-set)
+  (let [index-set-root-url (transmit-conn/root-url
+                             (transmit-config/context->app-connection context :index-set))
         index-set-reset-url (format "%s/reset" index-set-root-url)]
     (client/request
       {:method :post
@@ -212,7 +214,8 @@
 (defn create
   "Submit a request to create index-set"
   [context index-set]
-  (let [index-set-root-url (transmit-config/context->app-root-url context :index-set)
+  (let [index-set-root-url (transmit-conn/root-url
+                             (transmit-config/context->app-connection context :index-set))
         index-set-url (format "%s/index-sets" index-set-root-url)
         response (client/request
                    {:method :post
