@@ -9,7 +9,17 @@
             [clj-time.local :as l]
             [clj-time.coerce :as cr]
             [inflections.core :as inf]
-            [cmr.transmit.config :as transmit-config]))
+            [cmr.transmit.config :as transmit-config]
+            [clj-http.conn-mgr :as conn-mgr]))
+
+(def conn-mgr-atom (atom nil))
+
+(defn conn-mgr
+  "Returns the HTTP connection manager to use. This allows integration tests to use persistent
+  HTTP connections"
+  []
+  (when-not @conn-mgr-atom
+    (reset! conn-mgr-atom  (conn-mgr/make-reusable-conn-manager {}))))
 
 (def concepts-url (str "http://localhost:" (transmit-config/metadata-db-port) "/concepts/"))
 
@@ -86,7 +96,8 @@
   [concept-type provider-id native-id]
   (let [response (client/get (str concept-id-url concept-type "/" provider-id "/" native-id)
                              {:accept :json
-                              :throw-exceptions false})
+                              :throw-exceptions false
+                              :connection-manager (conn-mgr)})
         status (:status response)
         body (cheshire/parse-string (:body response))
         {:strs [concept-id errors]} body]
@@ -97,7 +108,8 @@
   [concept-id revision-id]
   (let [response (client/get (str concepts-url concept-id "/" revision-id)
                              {:accept :json
-                              :throw-exceptions false})
+                              :throw-exceptions false
+                              :connection-manager (conn-mgr)})
         status (:status response)]
     (if (= status 200)
       {:status status :concept (parse-concept response)}
@@ -108,7 +120,8 @@
   [concept-id]
   (let [response (client/get (str concepts-url concept-id)
                              {:accept :json
-                              :throw-exceptions false})
+                              :throw-exceptions false
+                              :connection-manager (conn-mgr)})
         status (:status response)]
     (if (= status 200)
       {:status status :concept (parse-concept response)}
@@ -121,7 +134,8 @@
                               {:body (cheshire/generate-string tuples)
                                :content-type :json
                                :accept :json
-                               :throw-exceptions false})
+                               :throw-exceptions false
+                               :connection-manager (conn-mgr)})
         status (:status response)]
     (if (= status 200)
       {:status status
@@ -134,7 +148,8 @@
   (let [response (client/get (str concepts-url "search/" (inf/plural (name concept-type)))
                              {:query-params params
                               :accept :json
-                              :throw-exceptions false})
+                              :throw-exceptions false
+                              :connection-manager (conn-mgr)})
         status (:status response)]
     (if (= status 200)
       {:status status
@@ -149,7 +164,8 @@
                               {:body (cheshire/generate-string concept)
                                :content-type :json
                                :accept :json
-                               :throw-exceptions false})
+                               :throw-exceptions false
+                               :connection-manager (conn-mgr)})
         status (:status response)
         body (cheshire/parse-string (:body response))
         {:strs [revision-id concept-id errors]} body]
@@ -164,7 +180,8 @@
               (format "%s%s/%s" concepts-url concept-id revision-id)
               (format "%s%s" concepts-url concept-id))
         response (client/delete url
-                                {:throw-exceptions false})
+                                {:throw-exceptions false
+                                 :connection-manager (conn-mgr)})
         status (:status response)
         body (cheshire/parse-string (:body response))
         {:strs [revision-id errors]} body]
@@ -175,7 +192,8 @@
   [concept-id revision-id]
   (let [url (format "%sforce-delete/%s/%s" concepts-url concept-id revision-id)
         response (client/delete url
-                                {:throw-exceptions false})
+                                {:throw-exceptions false
+                                 :connection-manager (conn-mgr)})
         status (:status response)
         body (cheshire/parse-string (:body response))
         {:strs [revision-id errors]} body]
@@ -219,7 +237,8 @@
                               {:body (cheshire/generate-string {:provider-id provider-id})
                                :content-type :json
                                :accept :json
-                               :throw-exceptions false})
+                               :throw-exceptions false
+                               :connection-manager (conn-mgr)})
         status (:status response)
         body (cheshire/parse-string (:body response))
         errors (get body "errors")
@@ -231,7 +250,8 @@
   []
   (let [response (client/get providers-url
                              {:accept :json
-                              :throw-exceptions false})
+                              :throw-exceptions false
+                              :connection-manager (conn-mgr)})
         status (:status response)
         body (cheshire/parse-string (:body response))
         errors (get body "errors")
@@ -243,7 +263,8 @@
   [provider-id]
   (let [response (client/delete (format "%s/%s" providers-url provider-id)
                                 {:accept :json
-                                 :throw-exceptions false})
+                                 :throw-exceptions false
+                                 :connection-manager (conn-mgr)})
         status (:status response)
         body (cheshire/parse-string (:body response))
         errors (get body "errors")]
@@ -261,7 +282,8 @@
 (defn reset-database
   "Make a request to reset the database by clearing out all stored concepts."
   []
-  (let [response (client/post reset-url {:throw-exceptions false})
+  (let [response (client/post reset-url {:throw-exceptions false
+                                         :connection-manager (conn-mgr)})
         status (:status response)]
     status))
 
