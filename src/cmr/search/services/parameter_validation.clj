@@ -9,9 +9,11 @@
             [cmr.search.services.parameters :as p]
             [cmr.search.services.legacy-parameters :as lp]
             [cmr.search.services.parameter-converters.attribute :as attrib]
+            [cmr.search.services.parameter-converters.science-keyword :as sk]
             [cmr.search.services.messages.attribute-messages :as attrib-msg]
             [cmr.search.services.parameter-converters.orbit-number :as on]
             [cmr.search.services.messages.orbit-number-messages :as on-msg]
+            [cmr.search.services.messages.science-keyword-messages :as sk-msg]
             [cmr.search.services.messages.common-messages :as msg]
             [cmr.search.data.messages :as d-msg]
             [camel-snake-kebab :as csk])
@@ -232,6 +234,23 @@
       [(attrib-msg/attributes-must-be-sequence-msg)])
     []))
 
+(defn science-keywords-validation
+  [concept-type params]
+  (if-let [science-keywords (:science-keywords params)]
+    (if (map? science-keywords)
+      (let [values (vals science-keywords)]
+        (if (some #(not (map? %)) values)
+          [(sk-msg/science-keyword-invalid-format-msg)]
+          (reduce
+            (fn [array param]
+              (if-not (some #{param} (conj sk/science-keyword-fields :any))
+                (conj array (format "parameter [%s] is not a valid science keyword search term." (name param)))
+                array))
+            []
+            (mapcat keys values))))
+      [(sk-msg/science-keyword-invalid-format-msg)])
+    []))
+
 ;; This method is for processing legacy numeric ranges in the form of
 ;; param_nam[value], param_name[minValue], and param_name[maxValue].
 ;; It simply validates that the provided values are numbers and that
@@ -345,6 +364,7 @@
    equator-crossing-date-validation
    cloud-cover-validation
    attribute-validation
+   science-keywords-validation
    exclude-validation
    boolean-value-validation])
 

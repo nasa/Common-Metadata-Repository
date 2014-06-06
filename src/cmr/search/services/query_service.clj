@@ -24,6 +24,7 @@
             [cmr.search.services.parameter-converters.equator-crossing-longitude]
             [cmr.search.services.parameter-converters.equator-crossing-date]
             [cmr.search.services.parameter-converters.spatial]
+            [cmr.search.services.parameter-converters.science-keyword]
 
             ;; Validation
             [cmr.search.validators.validation :as v]
@@ -112,6 +113,7 @@
     (->> params
          lp/replace-parameter-aliases
          (lp/process-legacy-multi-params-conditions concept-type)
+         (lp/replace-science-keywords-or-option concept-type)
          (pv/validate-parameters concept-type)
          (p/parameters->query concept-type)
          (find-concepts-by-query context))))

@@ -24,7 +24,8 @@
                 :project :string
                 :archive-center :string
                 :spatial-keyword :string
-                :two-d-coordinate-system-name :string}
+                :two-d-coordinate-system-name :string
+                :science-keywords :science-keywords}
    :granule {:granule-ur :string
              :collection-concept-id :string
              :producer-granule-id :string
@@ -55,7 +56,7 @@
   [field]
   (some #{:concept-id :collection-concept-id} [field]))
 
-(defn- string-condition-with-options
+(defn string-condition-with-options
   "Returns a string condition with the given field, value and options"
   [field value options options-field]
   (let [case-sensitive (= "false" (get-in options [options-field :ignore-case]))

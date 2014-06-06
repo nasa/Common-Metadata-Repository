@@ -5,6 +5,7 @@
             [ring.util.codec :as rc]
             [cmr.common.util :as cu]
             [clojure.walk :as w]
+            [clojure.core.incubator :as incubator]
             [cmr.common.services.messages :as msg]
             [cmr.search.services.messages.attribute-messages :as a-msg]
             [cmr.common.services.errors :as errors]))
@@ -167,6 +168,14 @@
           params
           legacy-multi-params-condition-funcs))
 
+(defn replace-science-keywords-or-option
+  "Handle legacy styled science keywords or options."
+  [concept-type params]
+  (if-let [or-value (get-in params [:science-keywords :or])]
+      (-> params
+          (incubator/dissoc-in [:science-keywords :or])
+          (assoc-in [:options :science-keywords :or] or-value))
+      params))
 
 (comment
   ;;;;;;;;;;
