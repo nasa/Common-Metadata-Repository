@@ -9,6 +9,12 @@
             [cmr.metadata-db.services.concept-validations :as cv]
             [cmr.metadata-db.services.provider-service :as provider-service]
             [cmr.metadata-db.data.providers :as provider-db]
+
+            ;; Required to get code loaded
+            [cmr.metadata-db.data.oracle.concepts]
+            [cmr.metadata-db.data.oracle.concepts.collection]
+            [cmr.metadata-db.data.oracle.concepts.granule]
+
             [cmr.common.log :refer (debug info warn error)]
             [cmr.system-trace.core :refer [deftracefn]]
             [clojure.set :as set]
