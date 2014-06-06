@@ -81,7 +81,7 @@
               msg (str "Call to Elasticsearch caught exception " err-msg)]
           (errors/internal-error! msg))))))
 
-(defn- context->conn
+(defn context->conn
   "Returns the elastisch connection in the context"
   [context]
   (get-in context [:system :db :conn]))
