@@ -3,7 +3,6 @@
             [cmr.search.services.parameter-validation :as pv]
             [cmr.search.services.messages.attribute-messages :as attrib-msg]
             [cmr.search.services.messages.orbit-number-messages :as on-msg]
-            [cmr.search.services.messages.science-keyword-messages :as sk-msg]
             [cmr.common.services.messages :as com-msg]
             [cmr.search.services.messages.common-messages :as msg]))
 
@@ -186,7 +185,7 @@
 (deftest validate-science-keywords-is-a-map
   (is (= []
          (pv/science-keywords-validation :collection {:science-keywords {:0 {:category "Cat1"}}})))
-  (are [value] (= [(sk-msg/science-keyword-invalid-format-msg)]
+  (are [value] (= [(msg/science-keyword-invalid-format-msg)]
                   (pv/science-keywords-validation :collection {:science-keywords value}))
        "foo"
        ["foo"]

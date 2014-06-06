@@ -13,7 +13,6 @@
             [cmr.search.services.messages.attribute-messages :as attrib-msg]
             [cmr.search.services.parameter-converters.orbit-number :as on]
             [cmr.search.services.messages.orbit-number-messages :as on-msg]
-            [cmr.search.services.messages.science-keyword-messages :as sk-msg]
             [cmr.search.services.messages.common-messages :as msg]
             [cmr.search.data.messages :as d-msg]
             [camel-snake-kebab :as csk])
@@ -240,7 +239,7 @@
     (if (map? science-keywords)
       (let [values (vals science-keywords)]
         (if (some #(not (map? %)) values)
-          [(sk-msg/science-keyword-invalid-format-msg)]
+          [(msg/science-keyword-invalid-format-msg)]
           (reduce
             (fn [array param]
               (if-not (some #{param} (conj sk/science-keyword-fields :any))
@@ -248,7 +247,7 @@
                 array))
             []
             (mapcat keys values))))
-      [(sk-msg/science-keyword-invalid-format-msg)])
+      [(msg/science-keyword-invalid-format-msg)])
     []))
 
 ;; This method is for processing legacy numeric ranges in the form of
