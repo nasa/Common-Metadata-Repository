@@ -12,6 +12,7 @@
         provider-id "PROV1"
         concept-id "C1234-PROV1"
         processing-level-id "1B"
+        collection-data-type "NEAR_REAL_TIME"
         concept {:concept-id concept-id
                  :provider-id provider-id}
         platforms [{:short-name "PLATFORM ONE"
@@ -38,7 +39,8 @@
                      :entry-title dataset-id
                      :product {:short-name short-name
                                :version-id version-id
-                               :processing-level-id processing-level-id}
+                               :processing-level-id processing-level-id
+                               :collection-data-type collection-data-type}
                      :revision-date  nil
                      :temporal {:range-date-times [{:beginning-date-time (t/date-time 1996 2 24 22 20 41)
                                                     :ending-date-time (t/date-time 1997 3 25 23 23 43 123)}]}
@@ -62,6 +64,8 @@
                   :revision-date  nil
                   :processing-level-id "1B"
                   :processing-level-id.lowercase "1b"
+                  :collection-data-type "NEAR_REAL_TIME"
+                  :collection-data-type.lowercase "near_real_time"
                   :start-date "1996-02-24T22:20:41.000Z"
                   :end-date "1997-03-25T23:23:43.123Z"
                   :platform-sn ["PLATFORM ONE" "PLATFORM TWO"]
