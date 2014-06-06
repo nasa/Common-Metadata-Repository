@@ -19,8 +19,16 @@
 (def processing-level-ids
   (ext-gen/string-alpha-numeric 1 80))
 
+(def collection-data-types
+  (gen/elements ["SCIENCE_QUALITY" "NEAR_REAL_TIME" "OTHER"]))
+
 (def products
-  (ext-gen/model-gen c/->Product short-names long-names version-ids (ext-gen/optional processing-level-ids)))
+  (ext-gen/model-gen c/->Product
+                     short-names
+                     long-names
+                     version-ids
+                     (ext-gen/optional processing-level-ids)
+                     (ext-gen/optional collection-data-types)))
 
 (def data-provider-timestamps
   (ext-gen/model-gen c/->DataProviderTimestamps ext-gen/date-time ext-gen/date-time (ext-gen/optional ext-gen/date-time)))
