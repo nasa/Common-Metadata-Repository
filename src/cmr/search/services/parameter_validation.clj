@@ -9,6 +9,7 @@
             [cmr.search.services.parameters :as p]
             [cmr.search.services.legacy-parameters :as lp]
             [cmr.search.services.parameter-converters.attribute :as attrib]
+            [cmr.search.services.parameter-converters.science-keyword :as sk]
             [cmr.search.services.messages.attribute-messages :as attrib-msg]
             [cmr.search.services.parameter-converters.orbit-number :as on]
             [cmr.search.services.messages.orbit-number-messages :as on-msg]
@@ -242,7 +243,7 @@
           [(sk-msg/science-keyword-invalid-format-msg)]
           (reduce
             (fn [array param]
-              (if-not (some #{param} [:category :topic :term :variable-level-1 :variable-level-2 :variable-level-3 :detailed-variable])
+              (if-not (some #{param} (conj sk/science-keyword-fields :any))
                 (conj array (format "parameter [%s] is not a valid science keyword search term." (name param)))
                 array))
             []

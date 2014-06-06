@@ -56,7 +56,7 @@
   [field]
   (some #{:concept-id :collection-concept-id} [field]))
 
-(defn- string-condition-with-options
+(defn string-condition-with-options
   "Returns a string condition with the given field, value and options"
   [field value options options-field]
   (let [case-sensitive (= "false" (get-in options [options-field :ignore-case]))
@@ -139,22 +139,6 @@
 (defmethod parameter->condition :num-range
   [concept-type param value options]
   (qm/numeric-range-str->condition param value))
-
-(defmethod parameter->condition :science-keywords
-  [concept-type param value options]
-  (if (and (> (count value) 1) (map? (first (vals value))))
-    (if (= "true" (get-in options [param :or]))
-      (qm/or-conds
-        (map #(parameter->condition concept-type param % options) (vals value)))
-      (qm/and-conds
-        (map #(parameter->condition concept-type param % options) (vals value))))
-    (if (map? (first (vals value)))
-      (parameter->condition concept-type param (first (vals value)) options)
-      (qm/nested-condition :science-keywords
-                           (qm/and-conds
-                             (map (fn [[pn pv]]
-                                    (string-condition-with-options pn pv options pn))
-                                  value))))))
 
 (defn parse-sort-key
   "Parses the sort key param and returns a sequence of maps with fields and order.

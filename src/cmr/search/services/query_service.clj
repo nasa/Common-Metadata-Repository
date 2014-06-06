@@ -24,6 +24,7 @@
             [cmr.search.services.parameter-converters.equator-crossing-longitude]
             [cmr.search.services.parameter-converters.equator-crossing-date]
             [cmr.search.services.parameter-converters.spatial]
+            [cmr.search.services.parameter-converters.science-keyword]
 
             ;; Validation
             [cmr.search.validators.validation :as v]
