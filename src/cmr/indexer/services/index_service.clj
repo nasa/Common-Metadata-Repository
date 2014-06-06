@@ -101,18 +101,16 @@
   (info (format "Deleting concept %s, revision-id %s" id revision-id))
   ;; Assuming ingest will pass enough info for deletion
   ;; We should avoid making calls to metadata db to get the necessary info if possible
-  (let [elastic-config (idx-set/get-elastic-config context)
-        concept-type (cs/concept-id->type id)
+  (let [concept-type (cs/concept-id->type id)
         concept-index (idx-set/get-concept-index-name context id revision-id)
         concept-mapping-types (idx-set/get-concept-mapping-types context)]
     (es/delete-document
-      context elastic-config
+      context
       concept-index
       (concept-mapping-types concept-type) id revision-id ignore-conflict)
     (when (= :collection concept-type)
       (es/delete-by-query
         context
-        elastic-config
         (idx-set/get-index-name-for-granule-delete context id)
         (concept-mapping-types :granule)
         {:term {:collection-concept-id id}}))))

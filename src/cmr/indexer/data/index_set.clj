@@ -8,16 +8,10 @@
             [cmr.common.concepts :as cs]
             [cmr.transmit.metadata-db :as meta-db]
             [cmr.transmit.index-set :as index-set]
+            [cmr.transmit.config :as transmit-config]
+            [cmr.transmit.connection :as transmit-conn]
             [cmr.common.cache :as cache]
             [cmr.system-trace.core :refer [deftracefn]]))
-
-;; url applicable to create, get and delete index-sets
-(def index-set-es-cfg-url
-  (format "%s/%s" index-set/index-set-root-url "elastic-config"))
-
-;; reset indices for dev purposes
-(def index-set-reset-url
-  (format "%s/%s" index-set/index-set-root-url "reset"))
 
 (def collection-setting {:index
                          {:number_of_shards 2,
@@ -195,7 +189,6 @@
   [context]
   (let [colls-w-separate-indexes ((get-in context [:system :colls-with-separate-indexes-fn]))
         granule-indices (remove empty? (concat colls-w-separate-indexes ["small_collections"]))]
-    (println (pr-str granule-indices))
     {:index-set {:name "cmr-base-index-set"
                  :id 1
                  :create-reason "indexer app requires this index set"
@@ -206,31 +199,27 @@
                            :settings granule-setting
                            :mapping granule-mapping}}}))
 
-(defn fetch-elastic-config
-  "Submit a request to index-set app to fetch an index-set assoc with an id"
-  []
-  (let [response (client/request
-                   {:method :get
-                    :url index-set-es-cfg-url
-                    :accept :json})]
-    (cheshire/decode (:body response) true)))
-
-
 (defn reset
   "Reset configured elastic indexes"
-  []
-  (client/request
-    {:method :post
-     :url index-set-reset-url
-     :content-type :json
-     :accept :json}))
+  [context]
+  (let [index-set-root-url (transmit-conn/root-url
+                             (transmit-config/context->app-connection context :index-set))
+        index-set-reset-url (format "%s/reset" index-set-root-url)]
+    (client/request
+      {:method :post
+       :url index-set-reset-url
+       :content-type :json
+       :accept :json})))
 
 (defn create
   "Submit a request to create index-set"
-  [index-set]
-  (let [response (client/request
+  [context index-set]
+  (let [index-set-root-url (transmit-conn/root-url
+                             (transmit-config/context->app-connection context :index-set))
+        index-set-url (format "%s/index-sets" index-set-root-url)
+        response (client/request
                    {:method :post
-                    :url index-set/index-set-url
+                    :url index-set-url
                     :body (cheshire/generate-string index-set)
                     :content-type :json
                     :accept :json
@@ -247,7 +236,7 @@
    (let [index-set-id (get-in (index-set context) [:index-set :id])]
      (fetch-concept-type-index-names context index-set-id)))
   ([context index-set-id]
-   (let [fetched-index-set (index-set/get-index-set index-set-id)]
+   (let [fetched-index-set (index-set/get-index-set context index-set-id)]
      (get-in fetched-index-set [:index-set :concepts]))))
 
 (defn fetch-concept-mapping-types
@@ -256,15 +245,9 @@
    (let [index-set-id (get-in (index-set context) [:index-set :id])]
      (fetch-concept-mapping-types context index-set-id)))
   ([context index-set-id]
-   (let [fetched-index-set (index-set/get-index-set index-set-id)]
+   (let [fetched-index-set (index-set/get-index-set context index-set-id)]
      {:collection (name (first (keys (get-in fetched-index-set [:index-set :collection :mapping]))))
       :granule (name (first (keys (get-in fetched-index-set [:index-set :granule :mapping]))))})))
-
-(defn get-elastic-config
-  "Fetch elastic config from the cache."
-  [context]
-  (let [cache-atom (-> context :system :cache)]
-    (cache/cache-lookup cache-atom :elastic-config fetch-elastic-config)))
 
 (defn get-concept-type-index-names
   "Fetch index names associated with concepts."

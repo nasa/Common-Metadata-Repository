@@ -49,7 +49,8 @@
 
   (let [http-port (:port test-config)
         server (lifecycle/start (elastic-server/create-server http-port 9215 "es_data/indexer_test") nil)]
-    (reset! context {:system {:db {:conn (esr/connect (str "http://localhost:" http-port))}}})
+    (reset! context {:system {:db {:config test-config
+                                   :conn (esr/connect (str "http://localhost:" http-port))}}})
 
     ;; Disables standard out logging during testing because it breaks the JUnit parser in bamboo.
     (timbre/set-config! [:appenders :standard-out :enabled?] false)
@@ -125,26 +126,26 @@
 (deftest delete-with-increment-versions-test
   (testing "Delete with increment versions"
     (es/save-document-in-elastic @context "tests" "collection" (es-doc) 1 nil false)
-    (es/delete-document @context test-config "tests" "collection" "C1234-PROV1" "2" false)
+    (es/delete-document @context "tests" "collection" "C1234-PROV1" "2" false)
     (assert-delete "C1234-PROV1")
-    (es/delete-document @context test-config "tests" "collection" "C1234-PROV1" "8" false)
+    (es/delete-document @context "tests" "collection" "C1234-PROV1" "8" false)
     (assert-delete "C1234-PROV1")))
 
 (deftest delete-with-equal-versions-test
     (testing "Delete with equal versions"
       (es/save-document-in-elastic @context "tests" "collection" (es-doc) 1 nil false)
-      (es/delete-document @context test-config "tests" "collection" "C1234-PROV1" "1" false)
+      (es/delete-document @context "tests" "collection" "C1234-PROV1" "1" false)
       (assert-delete "C1234-PROV1")))
 
 (deftest delete-with-earlier-versions-test
   (testing "Delete with earlier versions ignore-conflict false"
     (es/save-document-in-elastic @context "tests" "collection" (es-doc) 2 nil false)
     (try
-      (es/delete-document @context test-config "tests" "collection" "C1234-PROV1" "1" false)
+      (es/delete-document @context "tests" "collection" "C1234-PROV1" "1" false)
       (catch java.lang.Exception e
         (is (re-find #"version conflict, current \[2\], provided \[1\]" (.getMessage e))))))
   (testing "Delete with earlier versions ignore-conflict true"
     (es/save-document-in-elastic @context "tests" "collection" (es-doc) 2 nil true)
-    (es/delete-document @context test-config "tests" "collection" "C1234-PROV1" "1" true)
+    (es/delete-document @context "tests" "collection" "C1234-PROV1" "1" true)
     (assert-version "C1234-PROV1" 2)))
 
