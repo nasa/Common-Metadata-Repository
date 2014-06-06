@@ -37,7 +37,8 @@
          response (client/put (url/ingest-url provider-id :granule (:granule-ur granule))
                               {:content-type :echo10+xml
                                :body granule-xml
-                               :throw-exceptions false})]
+                               :throw-exceptions false
+                               :connection-manager (url/conn-mgr)})]
      (is (some #{201 200} [(:status response)])))))
 
 (defn delete-collection
@@ -47,7 +48,8 @@
   the dataset id in the collection in general even though catalog rest will enforce this."
   [provider-id native-id]
   (let [response (client/delete (url/ingest-url provider-id :collection native-id)
-                                {:throw-exceptions false})
+                                {:throw-exceptions false
+                                 :connection-manager (url/conn-mgr)})
         status (:status response)]
     (is (some #{200 404} [status]))))
 
@@ -58,7 +60,8 @@
   the dataset id in the granule in general even though catalog rest will enforce this."
   [provider-id native-id]
   (let [response (client/delete (url/ingest-url provider-id :granule native-id)
-                                {:throw-exceptions false})
+                                {:throw-exceptions false
+                                 :connection-manager (url/conn-mgr)})
         status (:status response)]
     (is (some #{200 404} [status]))))
 

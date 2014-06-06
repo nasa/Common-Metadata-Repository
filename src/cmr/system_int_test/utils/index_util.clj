@@ -7,5 +7,5 @@
 
 (defn refresh-elastic-index
   []
-  (client/post (url/elastic-refresh-url)))
+  (client/post (url/elastic-refresh-url) {:connection-manager (url/conn-mgr)}))
 

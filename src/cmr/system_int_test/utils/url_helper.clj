@@ -3,8 +3,19 @@
   (:require [clojure.string :as str]
             [cmr.common.config :as config]
             [cmr.transmit.config :as transmit-config]
-            [cmr.elastic-utils.config :as es-config]))
+            [cmr.elastic-utils.config :as es-config]
+            [clj-http.conn-mgr :as conn-mgr]))
 
+(def conn-mgr-atom (atom nil))
+
+(defn conn-mgr
+  "Returns the HTTP connection manager to use. This allows system integration tests to use persistent
+  HTTP connections"
+  []
+  (when-not @conn-mgr-atom
+    (reset! conn-mgr-atom  (conn-mgr/make-reusable-conn-manager {})))
+
+  @conn-mgr-atom)
 
 (defn elastic-root
   []

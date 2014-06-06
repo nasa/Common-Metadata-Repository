@@ -17,11 +17,12 @@
   [provider-id]
   (client/post (url/create-provider-url)
                {:body (format "{\"provider-id\": \"%s\"}" provider-id)
-                :content-type :json}))
+                :content-type :json
+                :connection-manager (url/conn-mgr)}))
 
 (defn get-providers
   []
-  (-> (client/get (url/create-provider-url))
+  (-> (client/get (url/create-provider-url) {:connection-manager (url/conn-mgr)})
       :body
       (json/decode true)
       :providers))
@@ -30,7 +31,8 @@
   "Delete the provider with the matching provider-id from the CMR metadata repo."
   [provider-id]
   (let [response (client/delete (url/delete-provider-url provider-id)
-                                {:throw-exceptions false})
+                                {:throw-exceptions false
+                                 :connection-manager (url/conn-mgr)})
         status (:status response)]
     (is (some #{200 404} [status]))))
 
@@ -47,7 +49,8 @@
                     :content-type content-type
                     :headers headers
                     :accept :json
-                    :throw-exceptions false})
+                    :throw-exceptions false
+                    :connection-manager (url/conn-mgr)})
         body (json/decode (:body response) true)]
     (assoc body :status (:status response))))
 
@@ -58,7 +61,8 @@
                    {:method :delete
                     :url (url/ingest-url provider-id concept-type native-id)
                     :accept :json
-                    :throw-exceptions false})
+                    :throw-exceptions false
+                    :connection-manager (url/conn-mgr)})
         body (json/decode (:body response) true)]
     (assoc body :status (:status response))))
 
@@ -68,7 +72,8 @@
   ([concept-id revision-id]
    (let [response (client/get (url/mdb-concept-url concept-id revision-id)
                               {:accept :json
-                               :throw-exceptions false})]
+                               :throw-exceptions false
+                               :connection-manager (url/conn-mgr)})]
      (is (some #{200 404} [(:status response)]))
      (when (= (:status response) 200)
        (json/decode (:body response) true)))))
@@ -81,9 +86,9 @@
 (defn reset
   "Resets the database and the elastic indexes"
   []
-  (client/post (url/mdb-reset-url))
-  (client/post (url/indexer-reset-url))
-  (client/post (url/search-reset-url))
+  (client/post (url/mdb-reset-url) {:connection-manager (url/conn-mgr)})
+  (client/post (url/indexer-reset-url) {:connection-manager (url/conn-mgr)})
+  (client/post (url/search-reset-url) {:connection-manager (url/conn-mgr)})
   (index/refresh-elastic-index))
 
 

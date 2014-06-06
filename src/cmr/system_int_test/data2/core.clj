@@ -7,7 +7,6 @@
             [cmr.umm.echo10.core :as echo10]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.url-helper :as url]
-            [clj-http.client :as client]
             [clj-time.core :as t]
             [clj-time.format :as f]
             [cheshire.core :as json])

@@ -55,7 +55,8 @@
                                {:accept :json
                                 :query-params (if no-snake-kebab
                                                 params
-                                               (params->snake_case params))})
+                                               (params->snake_case params))
+                                :connection-manager (url/conn-mgr)})
           _ (is (= 200 (:status response)))
           result (json/decode (:body response) true)]
       (-> result
@@ -68,4 +69,5 @@
   [concept-id]
   (let [concept-type (cs/concept-prefix->concept-type (subs concept-id 0 1))]
     (client/get (url/retrieve-concept-url concept-type concept-id)
-                {:throw-exceptions false})))
+                {:throw-exceptions false
+                 :connection-manager (url/conn-mgr)})))
