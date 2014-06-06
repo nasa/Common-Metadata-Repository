@@ -8,18 +8,16 @@
             [clj-time.format :as f]
             [clj-time.local :as l]
             [clj-time.coerce :as cr]
-            [inflections.core :as inf]))
+            [inflections.core :as inf]
+            [cmr.transmit.config :as transmit-config]))
 
-;;; Enpoints for services - change this for tcp-mon
-(def port 3001)
+(def concepts-url (str "http://localhost:" (transmit-config/metadata-db-port) "/concepts/"))
 
-(def concepts-url (str "http://localhost:" port "/concepts/"))
+(def concept-id-url (str "http://localhost:" (transmit-config/metadata-db-port) "/concept-id/"))
 
-(def concept-id-url (str "http://localhost:" port "/concept-id/"))
+(def reset-url (str "http://localhost:" (transmit-config/metadata-db-port) "/reset"))
 
-(def reset-url (str "http://localhost:" port "/reset"))
-
-(def providers-url (str "http://localhost:" port "/providers"))
+(def providers-url (str "http://localhost:" (transmit-config/metadata-db-port) "/providers"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; utility methods
