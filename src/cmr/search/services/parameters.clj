@@ -24,7 +24,8 @@
                 :project :string
                 :archive-center :string
                 :spatial-keyword :string
-                :two-d-coordinate-system-name :string}
+                :two-d-coordinate-system-name :string
+                :science-keywords :science-keywords}
    :granule {:granule-ur :string
              :collection-concept-id :string
              :producer-granule-id :string
@@ -138,6 +139,22 @@
 (defmethod parameter->condition :num-range
   [concept-type param value options]
   (qm/numeric-range-str->condition param value))
+
+(defmethod parameter->condition :science-keywords
+  [concept-type param value options]
+  (if (and (> (count value) 1) (map? (first (vals value))))
+    (if (= "true" (get-in options [param :or]))
+      (qm/or-conds
+        (map #(parameter->condition concept-type param % options) (vals value)))
+      (qm/and-conds
+        (map #(parameter->condition concept-type param % options) (vals value))))
+    (if (map? (first (vals value)))
+      (parameter->condition concept-type param (first (vals value)) options)
+      (qm/nested-condition :science-keywords
+                           (qm/and-conds
+                             (map (fn [[pn pv]]
+                                    (string-condition-with-options pn pv options pn))
+                                  value))))))
 
 (defn parse-sort-key
   "Parses the sort key param and returns a sequence of maps with fields and order.

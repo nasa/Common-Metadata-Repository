@@ -112,6 +112,7 @@
     (->> params
          lp/replace-parameter-aliases
          (lp/process-legacy-multi-params-conditions concept-type)
+         (lp/replace-science-keywords-or-option concept-type)
          (pv/validate-parameters concept-type)
          (p/parameters->query concept-type)
          (find-concepts-by-query context))))

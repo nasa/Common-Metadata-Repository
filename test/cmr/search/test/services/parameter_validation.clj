@@ -3,6 +3,7 @@
             [cmr.search.services.parameter-validation :as pv]
             [cmr.search.services.messages.attribute-messages :as attrib-msg]
             [cmr.search.services.messages.orbit-number-messages :as on-msg]
+            [cmr.search.services.messages.science-keyword-messages :as sk-msg]
             [cmr.common.services.messages :as com-msg]
             [cmr.search.services.messages.common-messages :as msg]))
 
@@ -181,6 +182,32 @@
 (deftest validate-attributes-is-a-sequence
   (is (= [(attrib-msg/attributes-must-be-sequence-msg)]
          (pv/attribute-validation :granule {:attribute "foo"}))))
+
+(deftest validate-science-keywords-is-a-map
+  (is (= []
+         (pv/science-keywords-validation :collection {:science-keywords {:0 {:category "Cat1"}}})))
+  (are [value] (= [(sk-msg/science-keyword-invalid-format-msg)]
+                  (pv/science-keywords-validation :collection {:science-keywords value}))
+       "foo"
+       ["foo"]
+       {:or "true"}))
+
+(deftest validate-science-keywords-search-terms
+  (are [term] (= []
+                 (pv/science-keywords-validation :collection {:science-keywords {:0 {term "value"}}}))
+       :category
+       :topic
+       :term
+       :variable-level-1
+       :variable-level-2
+       :variable-level-3
+       :detailed-variable)
+  (is (= ["parameter [categories] is not a valid science keyword search term."]
+         (pv/science-keywords-validation :collection {:science-keywords {:0 {:categories "Cat1"}}})))
+  (is (= ["parameter [topics] is not a valid science keyword search term."
+          "parameter [categories] is not a valid science keyword search term."]
+         (pv/science-keywords-validation :collection {:science-keywords {:0 {:categories "Cat1"
+                                                                             :topics "Topic1"}}}))))
 
 (deftest validate-parameters-test
   (testing "parameters are returned when valid"

@@ -159,6 +159,16 @@ The temporal datetime has to be in yyyy-MM-ddTHH:mm:ssZ format.
 
      curl "http://localhost:3003/collections?spatial_keyword\[\]=DC&spatial_keyword\[\]=LA"
 
+### Find collections by science_keywords params, supports option :or
+
+  Find collections matching 'science_keywords' param value
+
+     curl "http://localhost:3003/collections?science_keywords\[0\]\[category\]=Cat1"
+
+  Find collections matching multiple 'science_keywords' param values, default is :and
+
+     curl "http://localhost:3003/collections?science_keywords\[0\]\[category\]=Cat1&science_keywords\[0\]\[topic\]=Topic1&science_keywords\[1\]\[category\]=Cat2"
+
 #### Sorting Collection Results
 
 Collection results are sorted by ascending entry title by default. One or more sort keys can be specified using the `sort_key[]` parameter. The order used impacts searching. Fields can be prepended with a `-` to sort in descending order. Ascending order is the default but `+` can be used to explicitly request ascending.
