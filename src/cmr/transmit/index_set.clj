@@ -4,17 +4,19 @@
             [cmr.common.services.errors :as errors]
             [cheshire.core :as cheshire]
             [cmr.system-trace.core :refer [deftracefn]]
-            [cmr.transmit.config :as config]))
+            [cmr.transmit.config :as config]
+            [cmr.transmit.connection :as conn]))
 
 (defn get-index-set
   "Submit a request to index-set app to fetch an index-set assoc with an id"
   [context id]
-  (let [root-url (config/context->app-root-url context :index-set)
+  (let [conn (config/context->app-connection context :index-set)
         response (client/request
                    {:method :get
-                    :url (format "%s/index-sets/%s" root-url (str id))
+                    :url (format "%s/index-sets/%s" (conn/root-url conn) (str id))
                     :accept :json
-                    :throw-exceptions false})
+                    :throw-exceptions false
+                    :connection-manager (conn/conn-mgr conn)})
         status (:status response)
         body (cheshire/decode (:body response) true)]
     (case status

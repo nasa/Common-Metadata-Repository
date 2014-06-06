@@ -6,16 +6,18 @@
             [cheshire.core :as cheshire]
             [clojure.walk :as walk]
             [cmr.system-trace.http :as ch]
-            [cmr.system-trace.core :refer [deftracefn]]))
+            [cmr.system-trace.core :refer [deftracefn]]
+            [cmr.transmit.connection :as conn]))
 
 (deftracefn get-concept
   "Retrieve the concept with the given concept and revision-id"
   [context concept-id revision-id]
-  (let [mdb-url (config/context->app-root-url context :metadata-db)
-        response (client/get (format "%s/concepts/%s/%s" mdb-url concept-id revision-id)
+  (let [conn (config/context->app-connection context :metadata-db)
+        response (client/get (format "%s/concepts/%s/%s" (conn/root-url conn) concept-id revision-id)
                              {:accept :json
                               :throw-exceptions false
-                              :headers (ch/context->http-headers context)})]
+                              :headers (ch/context->http-headers context)
+                              :connection-manager (conn/conn-mgr conn)})]
     (if (= 200 (:status response))
       (cheshire/decode (:body response) true)
       (errors/throw-service-error
@@ -25,11 +27,12 @@
 (deftracefn get-latest-concept
   "Retrieve the latest version of the concept"
   [context concept-id]
-  (let [mdb-url (config/context->app-root-url context :metadata-db)
-        response (client/get (format "%s/concepts/%s" mdb-url concept-id)
+  (let [conn (config/context->app-connection context :metadata-db)
+        response (client/get (format "%s/concepts/%s" (conn/root-url conn) concept-id)
                              {:accept :json
                               :throw-exceptions false
-                              :headers (ch/context->http-headers context)})]
+                              :headers (ch/context->http-headers context)
+                              :connection-manager (conn/conn-mgr conn)})]
     (if (= 200 (:status response))
       (cheshire/decode (:body response) true)
       (errors/throw-service-error
@@ -39,11 +42,12 @@
 (deftracefn get-concept-id
   "Return a distinct identifier for the given arguments."
   [context concept-type provider-id native-id]
-  (let [mdb-url (config/context->app-root-url context :metadata-db)
-        request-url (str mdb-url "/concept-id/" (name concept-type) "/" provider-id "/" native-id)
+  (let [conn (config/context->app-connection context :metadata-db)
+        request-url (str (conn/root-url conn) "/concept-id/" (name concept-type) "/" provider-id "/" native-id)
         response (client/get request-url {:accept :json
                                           :headers (ch/context->http-headers context)
-                                          :throw-exceptions false})
+                                          :throw-exceptions false
+                                          :connection-manager (conn/conn-mgr conn)})
         status (:status response)
         body (cheshire/decode (:body response))]
     (case status
@@ -62,12 +66,13 @@
 (deftracefn get-collection-concept-id
   "Search metadata db and return the collection-concept-id that matches the search params"
   [context search-params]
-  (let [mdb-url (config/context->app-root-url context :metadata-db)
-        request-url (str mdb-url "/concepts/search/collections")
+  (let [conn (config/context->app-connection context :metadata-db)
+        request-url (str (conn/root-url conn) "/concepts/search/collections")
         response (client/get request-url {:accept :json
                                           :query-params search-params
                                           :headers (ch/context->http-headers context)
-                                          :throw-exceptions false})
+                                          :throw-exceptions false
+                                          :connection-manager (conn/conn-mgr conn)})
         status (:status response)
         body (cheshire/decode (:body response))]
     (case status
@@ -87,21 +92,23 @@
 (deftracefn save-concept
   "Saves a concept in metadata db and index."
   [context concept]
-  (let [mdb-url (config/context->app-root-url context :metadata-db)
+  (let [conn (config/context->app-connection context :metadata-db)
         concept-json-str (cheshire/generate-string concept)
-        response (client/post (str mdb-url "/concepts") {:body concept-json-str
-                                                         :content-type :json
-                                                         :accept :json
-                                                         :throw-exceptions false
-                                                         :headers (ch/context->http-headers context)})
+        response (client/post (str (conn/root-url conn) "/concepts")
+                              {:body concept-json-str
+                               :content-type :json
+                               :accept :json
+                               :throw-exceptions false
+                               :headers (ch/context->http-headers context)
+                               :connection-manager (conn/conn-mgr conn)})
         status (:status response)
         body (cheshire/decode (:body response))
         {:strs [concept-id revision-id]} body]
     (case status
       422
       (let [errors-str (cheshire/generate-string (flatten (get body "errors")))]
-                           ;; catalog rest supplied invalid concept id
-                           (errors/throw-service-error :invalid-data errors-str))
+        ;; catalog rest supplied invalid concept id
+        (errors/throw-service-error :invalid-data errors-str))
 
       201
       {:concept-id concept-id :revision-id revision-id}
@@ -115,16 +122,18 @@
 (deftracefn delete-concept
   "Delete a concept from metatdata db."
   [context concept-id]
-  (let [mdb-url (config/context->app-root-url context :metadata-db)
-        response (client/delete (str mdb-url "/concepts/" concept-id) {:accept :json
-                                                                       :throw-exceptions false
-                                                                       :headers (ch/context->http-headers context)})
+  (let [conn (config/context->app-connection context :metadata-db)
+        response (client/delete (str (conn/root-url conn) "/concepts/" concept-id)
+                                {:accept :json
+                                 :throw-exceptions false
+                                 :headers (ch/context->http-headers context)
+                                 :connection-manager (conn/conn-mgr conn)})
         status (:status response)
         body (cheshire/decode (:body response))]
     (case status
       404
       (let [errors-str (cheshire/generate-string (flatten (get body "errors")))]
-                           (errors/throw-service-error :not-found errors-str))
+        (errors/throw-service-error :not-found errors-str))
 
       200
       (get body "revision-id")
