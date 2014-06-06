@@ -4,6 +4,7 @@
             [cmr.common.test.test-check-ext :as ext-gen]
             [cmr.umm.collection :as c]
             [cmr.umm.test.generators.collection.temporal :as t]
+            [cmr.umm.test.generators.collection.science-keyword :as sk]
             [cmr.umm.test.generators.collection.product-specific-attribute :as psa]))
 
 (def short-names
@@ -66,7 +67,6 @@
 (def campaigns
   (ext-gen/model-gen c/->Project campaign-short-names (ext-gen/optional campaign-long-names)))
 
-
 (def two-d-names
   (ext-gen/string-ascii 1 80))
 
@@ -101,6 +101,7 @@
                 :data-provider-timestamps data-provider-timestamps
                 :temporal t/temporals
                 :spatial-keywords (ext-gen/nil-if-empty (gen/vector (ext-gen/string-ascii 1 80) 0 4))
+                :science-keywords (ext-gen/nil-if-empty (gen/vector sk/science-keywords 0 3))
                 :platforms (ext-gen/nil-if-empty (gen/vector platforms 0 4))
                 :product-specific-attributes (ext-gen/nil-if-empty (gen/vector psa/product-specific-attributes 0 10))
                 :projects (ext-gen/nil-if-empty (gen/vector campaigns 0 4))

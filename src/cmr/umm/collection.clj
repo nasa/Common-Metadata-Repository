@@ -45,6 +45,17 @@
    periodic-date-times
    ])
 
+(defrecord ScienceKeyword
+  [
+   category
+   topic
+   term
+   variable-level-1
+   variable-level-2
+   variable-level-3
+   detailed-variable
+  ])
+
 (def product-specific-attribute-types
   [:string :float :int :boolean :date :time :datetime :date-string :time-string :datetime-string])
 
@@ -129,6 +140,8 @@
    spatial-keywords
 
    temporal
+
+   science-keywords
 
    platforms
 
