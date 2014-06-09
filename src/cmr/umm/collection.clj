@@ -7,6 +7,7 @@
    long-name
    version-id
    processing-level-id
+   collection-data-type
    ])
 
 (defrecord DataProviderTimestamps

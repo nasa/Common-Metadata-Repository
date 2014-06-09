@@ -40,6 +40,7 @@
     <LongName>A minimal valid collection</LongName>
     <DataSetId>A minimal valid collection V 1</DataSetId>
     <Description>A minimal valid collection</Description>
+    <CollectionDataType>NEAR_REAL_TIME</CollectionDataType>
     <Orderable>true</Orderable>
     <Visible>true</Visible>
     <ProcessingCenter>SEDAC PC</ProcessingCenter>
@@ -205,7 +206,8 @@
                                {:short-name "MINIMAL"
                                 :long-name "A minimal valid collection"
                                 :version-id "1"
-                                :processing-level-id "1B"})
+                                :processing-level-id "1B"
+                                :collection-data-type "NEAR_REAL_TIME"})
                     :data-provider-timestamps (umm-c/map->DataProviderTimestamps
                                                 {:insert-time (p/parse-datetime "1999-12-30T19:00:00-05:00")
                                                  :update-time (p/parse-datetime "1999-12-31T19:00:00-05:00")

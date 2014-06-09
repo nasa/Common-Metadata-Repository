@@ -22,7 +22,8 @@
   (c/map->Product {:short-name (cx/string-at-path collection-content [:ShortName])
                    :long-name (cx/string-at-path collection-content [:LongName])
                    :version-id (cx/string-at-path collection-content [:VersionId])
-                   :processing-level-id (cx/string-at-path collection-content [:ProcessingLevelId])}))
+                   :processing-level-id (cx/string-at-path collection-content [:ProcessingLevelId])
+                   :collection-data-type (cx/string-at-path collection-content [:CollectionDataType])}))
 
 (defn xml-elem->DataProviderTimestamps
   "Returns a UMM DataProviderTimestamps from a parsed Collection Content XML structure"
@@ -78,7 +79,7 @@
     ([collection]
      (cmr.umm.echo10.core/umm->echo10-xml collection false))
     ([collection indent?]
-     (let [{{:keys [short-name long-name version-id processing-level-id]} :product
+     (let [{{:keys [short-name long-name version-id processing-level-id collection-data-type]} :product
             dataset-id :entry-title
             {:keys [insert-time update-time delete-time]} :data-provider-timestamps
             :keys [organizations spatial-keywords temporal science-keywords platforms product-specific-attributes
@@ -95,6 +96,8 @@
                     (x/element :LongName {} long-name)
                     (x/element :DataSetId {} dataset-id)
                     (x/element :Description {} "stubbed")
+                    (when collection-data-type
+                      (x/element :CollectionDataType {} collection-data-type))
                     (x/element :Orderable {} "true")
                     (x/element :Visible {} "true")
                     ;; archive center to follow processing center
