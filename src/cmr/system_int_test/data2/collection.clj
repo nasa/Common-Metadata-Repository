@@ -7,6 +7,7 @@
   (:import [cmr.umm.collection
             Product
             DataProviderTimestamps
+            ScienceKeyword
             UmmCollection]))
 
 
@@ -60,6 +61,10 @@
         end (when ending-date-time (p/parse-datetime ending-date-time))]
     (when (or begin end)
       (ct/temporal {:range-date-times [(c/->RangeDateTime begin end)]}))))
+
+(defn science-keyword
+  [attribs]
+  (c/map->ScienceKeyword attribs))
 
 (defn sensor
   "Return an sensor based on sensor short-name"
