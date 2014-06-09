@@ -15,7 +15,7 @@
 (defmethod idx/concept->elastic-doc :collection
   [context concept umm-concept]
   (let [{:keys [concept-id provider-id revision-date]} concept
-        {{:keys [short-name version-id processing-level-id]} :product
+        {{:keys [short-name version-id processing-level-id collection-data-type]} :product
          entry-id :entry-id
          entry-title :entry-title
          temporal :temporal} umm-concept
@@ -47,7 +47,9 @@
      :version-id.lowercase (s/lower-case version-id)
      :revision-date revision-date
      :processing-level-id processing-level-id
-     :processing-level-id.lowercase (when processing-level-id (s/lower-case  processing-level-id))
+     :processing-level-id.lowercase (when processing-level-id (s/lower-case processing-level-id))
+     :collection-data-type collection-data-type
+     :collection-data-type.lowercase (when collection-data-type (s/lower-case collection-data-type))
      :platform-sn platform-short-names
      :platform-sn.lowercase  (map s/lower-case platform-short-names)
      :instrument-sn instrument-short-names
