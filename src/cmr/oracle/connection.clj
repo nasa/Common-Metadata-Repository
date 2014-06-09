@@ -8,10 +8,10 @@
 
 
 (defn db-spec
-  [db-host db-port db-sid user password]
+  [db-url user password]
   {:classname "oracle.jdbc.driver.OracleDriver"
    :subprotocol "oracle"
-   :subname (format "thin:@%s:%s:%s" db-host db-port db-sid)
+   :subname db-url
    :user user
    :password password})
 

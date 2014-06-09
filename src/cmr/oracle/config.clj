@@ -3,11 +3,7 @@
   (:require [cmr.common.config :as cfg]
             [cmr.oracle.connection :as conn]))
 
-(def db-host (cfg/config-value-fn :db-host "localhost"))
-
-(def db-port (cfg/config-value-fn :db-port "1521"))
-
-(def db-sid (cfg/config-value-fn :db-sid "orcl"))
+(def db-url (cfg/config-value-fn :db-url "thin:@localhost:1521:orcl"))
 
 (def sys-dba-username (cfg/config-value-fn :sys-dba-username "sys as sysdba"))
 
@@ -16,8 +12,6 @@
 (defn sys-dba-db-spec
   []
   (conn/db-spec
-    (db-host)
-    (db-port)
-    (db-sid)
+    (db-url)
     (sys-dba-username)
     (sys-dba-password)))
