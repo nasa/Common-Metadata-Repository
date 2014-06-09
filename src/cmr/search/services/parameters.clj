@@ -1,6 +1,7 @@
 (ns cmr.search.services.parameters
   "Contains functions for parsing and converting query parameters to query conditions"
-  (:require [cmr.common.services.errors :as errors]
+  (:require [clojure.string :as s]
+            [cmr.common.services.errors :as errors]
             [cmr.search.models.query :as qm]
             [cmr.search.data.query-to-elastic :as q2e]
             [cmr.common.date-time-parser :as dt-parser]
@@ -16,6 +17,7 @@
                 :version :string
                 :updated-since :updated-since
                 :processing-level-id :string
+                :collection-data-type :collection-data-type
                 :temporal :temporal
                 :concept-id :string
                 :platform :string
@@ -135,6 +137,23 @@
       [(string-condition-with-options :granule-ur value options :readable-granule-name)
        (string-condition-with-options :producer-granule-id value options :readable-granule-name)])))
 
+(defmethod parameter->condition :collection-data-type
+  [concept-type param value options]
+  (if (sequential? value)
+    (if (= "true" (get-in options [param :and]))
+      (qm/and-conds
+        (map #(parameter->condition concept-type param % options) value))
+      (qm/or-conds
+        (map #(parameter->condition concept-type param % options) value)))
+    (let [nrt-aliases ["near_real_time","nrt", "NRT", "near real time","near-real time","near-real-time","near real-time"]
+          value (if (some #{value} nrt-aliases) "NEAR_REAL_TIME" value)]
+      (if (or (= "SCIENCE_QUALITY" value)
+              (and (= "SCIENCE_QUALITY" (s/upper-case value))
+                   (not= "false" (get-in options [:collection-data-type :ignore-case]))))
+        (qm/or-conds
+          [(string-condition-with-options :collection-data-type value options :collection-data-type)
+           (qm/map->MissingCondition {:field :collection-data-type})])
+        (string-condition-with-options :collection-data-type value options :collection-data-type)))))
 
 (defmethod parameter->condition :num-range
   [concept-type param value options]

@@ -169,6 +169,16 @@ The temporal datetime has to be in yyyy-MM-ddTHH:mm:ssZ format.
 
      curl "http://localhost:3003/collections?science_keywords\[0\]\[category\]=Cat1&science_keywords\[0\]\[topic\]=Topic1&science_keywords\[1\]\[category\]=Cat2"
 
+### Find collections by collection_data_type param, supports ignore_case and the following aliases for "NEAR_REAL_TIME": "near_real_time","nrt", "NRT", "near real time","near-real time","near-real-time","near real-time".
+
+  Find collections matching 'collection_data_type' param value
+
+     curl "http://localhost:3003/collections?collection_data_type\[\]=NEAR_REAL_TIME"
+
+  Find collections matching any of the 'collection_data_type' param values
+
+     curl "http://localhost:3003/collections?collection_data_type\[\]=NEAR_REAL_TIME&collection_data_type\[\]=OTHER"
+
 #### Sorting Collection Results
 
 Collection results are sorted by ascending entry title by default. One or more sort keys can be specified using the `sort_key[]` parameter. The order used impacts searching. Fields can be prepended with a `-` to sort in descending order. Ascending order is the default but `+` can be used to explicitly request ascending.
