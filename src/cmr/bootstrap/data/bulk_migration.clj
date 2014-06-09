@@ -146,14 +146,18 @@
                                          :format
                                          :short-name
                                          :version-id
-                                         :entry-title]
+                                         :entry-title
+                                         :delete-time
+                                         :revision-date]
                  (select [:echo-collection-id
                           :dataset-id
                           :compressed-xml
                           :xml-mime-type
                           :short-name
                           :version-id
-                          :long-name]
+                          :dataset-id
+                          :delete-time
+                          :ingest-updated-at]
                    (from dataset-table)
                    (when collection-id
                      (where `(= :echo-collection-id ~collection-id)))))))))
@@ -179,12 +183,16 @@
                                          :native-id
                                          :parent-collection-id
                                          :metadata
-                                         :format]
+                                         :format
+                                         :delete-time
+                                         :revision-date]
                 (select [:echo-granule-id
                          :granule-ur
                          collection-id
                          :compressed-xml
-                         :xml-mime-type]
+                         :xml-mime-type
+                         :delete-time
+                         :ingest-updated-at]
                   (from granule-echo-table)
                   (where `(= :dataset-record-id ~dataset-record-id)))))))
 

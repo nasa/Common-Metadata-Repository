@@ -11,7 +11,11 @@
             [clojure.core.async :as ca :refer [chan]]
             [cmr.bootstrap.data.bulk-migration :as bm]
             [cmr.metadata-db.config :as mdb-config]
-            [cmr.transmit.config :as transmit-config]))
+            [cmr.transmit.config :as transmit-config]
+            [cmr.metadata-db.system :as mdb-system]
+            [cmr.indexer.system :as idx-system]
+            [cmr.common.cache :as cache]
+            [clojure.core.cache :as cc]))
 
 (def CHANNEL_BUFFER_SIZE 10)
 
@@ -23,7 +27,16 @@
 (defn create-system
   "Returns a new instance of the whole application."
   []
-  (let [sys {:log (log/create-logger)
+  (let [metadata-db (dissoc (mdb-system/create-system) :log :web)
+        indexer (-> (idx-system/create-system)
+                    (dissoc :log :web)
+                    ;; Setting the parent-collection-cache to cache parent collection umm
+                    ;; of granules during bulk indexing.
+                    (assoc :parent-collection-cache
+                           (cache/create-cache (cc/lru-cache-factory {:threshold 2000}))))
+        sys {:log (log/create-logger)
+             :metadata-db metadata-db
+             :indexer indexer
              ;; Channel for requesting full provider migration - provider/collections/granules.
              ;; Takes single provider-id strings.
              :provider-channel (chan CHANNEL_BUFFER_SIZE)
@@ -45,7 +58,10 @@
                                  (update-in system [component-name]
                                             #(lifecycle/start % system)))
                                this
-                               component-order)]
+                               component-order)
+        started-system (update-in started-system [:metadata-db] mdb-system/start)
+        started-system (update-in started-system [:indexer] idx-system/start)]
+
     (oracle/test-db-connection! (:db started-system))
     (bm/handle-copy-requests started-system)
     (info "Bootstrap System started")
@@ -61,6 +77,8 @@
                                  (update-in system [component-name]
                                             #(lifecycle/stop % system)))
                                this
-                               (reverse component-order))]
+                               (reverse component-order))
+        stopped-system (update-in stopped-system [:metadata-db] mdb-system/stop)
+        stopped-system (update-in stopped-system [:indexer] idx-system/stop)]
     (info "bootstrap System stopped")
     stopped-system))
