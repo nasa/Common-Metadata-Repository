@@ -5,7 +5,8 @@
             [cmr.indexer.services.index-service :as idx]
             [cmr.umm.echo10.collection :as collection]
             [cmr.indexer.services.concepts.temporal :as temporal]
-            [cmr.indexer.services.concepts.attribute :as attrib]))
+            [cmr.indexer.services.concepts.attribute :as attrib]
+            [cmr.indexer.services.concepts.science-keyword :as sk]))
 
 (defmethod idx/parse-concept :collection
   [concept]
@@ -14,7 +15,7 @@
 (defmethod idx/concept->elastic-doc :collection
   [context concept umm-concept]
   (let [{:keys [concept-id provider-id revision-date]} concept
-        {{:keys [short-name version-id processing-level-id]} :product
+        {{:keys [short-name version-id processing-level-id collection-data-type]} :product
          entry-id :entry-id
          entry-title :entry-title
          temporal :temporal} umm-concept
@@ -46,7 +47,9 @@
      :version-id.lowercase (s/lower-case version-id)
      :revision-date revision-date
      :processing-level-id processing-level-id
-     :processing-level-id.lowercase (when processing-level-id (s/lower-case  processing-level-id))
+     :processing-level-id.lowercase (when processing-level-id (s/lower-case processing-level-id))
+     :collection-data-type collection-data-type
+     :collection-data-type.lowercase (when collection-data-type (s/lower-case collection-data-type))
      :platform-sn platform-short-names
      :platform-sn.lowercase  (map s/lower-case platform-short-names)
      :instrument-sn instrument-short-names
@@ -60,6 +63,7 @@
      :spatial-keyword spatial-keywords
      :spatial-keyword.lowercase  (map s/lower-case spatial-keywords)
      :attributes (attrib/psas->elastic-docs umm-concept)
+     :science-keywords (sk/science-keywords->elastic-doc umm-concept)
      :start-date (when start-date (f/unparse (f/formatters :date-time) start-date))
      :end-date (when end-date (f/unparse (f/formatters :date-time) end-date))
      :archive-center archive-center-val

@@ -53,6 +53,26 @@
     :time-value date-field-mapping
     :date-value date-field-mapping}})
 
+(def science-keywords-field-mapping
+  "Defines mappings for science keywords."
+  {:type "nested"
+   :dynamic "strict"
+   :properties
+   {:category string-field-mapping
+    :category.lowercase string-field-mapping
+    :topic string-field-mapping
+    :topic.lowercase string-field-mapping
+    :term string-field-mapping
+    :term.lowercase string-field-mapping
+    :variable-level-1 string-field-mapping
+    :variable-level-1.lowercase string-field-mapping
+    :variable-level-2 string-field-mapping
+    :variable-level-2.lowercase string-field-mapping
+    :variable-level-3 string-field-mapping
+    :variable-level-3.lowercase string-field-mapping
+    :detailed-variable string-field-mapping
+    :detailed-variable.lowercase string-field-mapping}})
+
 (def orbit-calculated-spatial-domain-mapping
   {:type "nested"
    :dynamic "strict"
@@ -87,8 +107,10 @@
                              :version-id            (stored string-field-mapping)
                              :version-id.lowercase  string-field-mapping
                              :revision-date         date-field-mapping
-                             :processing-level-id    string-field-mapping
+                             :processing-level-id   string-field-mapping
                              :processing-level-id.lowercase  string-field-mapping
+                             :collection-data-type  string-field-mapping
+                             :collection-data-type.lowercase  string-field-mapping
                              :start-date            date-field-mapping
                              :end-date              date-field-mapping
                              :platform-sn           string-field-mapping
@@ -105,7 +127,8 @@
                              :spatial-keyword.lowercase string-field-mapping
                              :two-d-coord-name string-field-mapping
                              :two-d-coord-name.lowercase string-field-mapping
-                             :attributes attributes-field-mapping}}})
+                             :attributes attributes-field-mapping
+                             :science-keywords science-keywords-field-mapping}}})
 
 (def granule-setting {:index {:number_of_shards 2,
                               :number_of_replicas 1,
