@@ -19,8 +19,6 @@
   "Returns a db spec populated with config information that can be used to connect to oracle"
   []
   (conn/db-spec
-    (oracle-config/db-host)
-    (oracle-config/db-port)
-    (oracle-config/db-sid)
+    (oracle-config/db-url)
     (db-username)
     (db-password)))
