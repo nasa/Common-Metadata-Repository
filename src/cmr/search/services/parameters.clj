@@ -8,6 +8,9 @@
             [cmr.common.util :as u]
             [cmr.search.services.legacy-parameters :as lp]))
 
+(def nrt-aliases
+  ["near_real_time","nrt", "NRT", "near real time","near-real time","near-real-time","near real-time"])
+
 (def concept-param->type
   "A mapping of param names to query condition types based on concept-type"
   {:collection {:entry-title :string
@@ -145,11 +148,12 @@
         (map #(parameter->condition concept-type param % options) value))
       (qm/or-conds
         (map #(parameter->condition concept-type param % options) value)))
-    (let [nrt-aliases ["near_real_time","nrt", "NRT", "near real time","near-real time","near-real-time","near real-time"]
-          value (if (some #{value} nrt-aliases) "NEAR_REAL_TIME" value)]
+    (let [value (if (some #{value} nrt-aliases) "NEAR_REAL_TIME" value)]
       (if (or (= "SCIENCE_QUALITY" value)
               (and (= "SCIENCE_QUALITY" (s/upper-case value))
                    (not= "false" (get-in options [:collection-data-type :ignore-case]))))
+        ; SCIENCE_QUALITY collection-data-type should match concepts with SCIENCE_QUALITY
+        ; or the ones missing collection-data-type field
         (qm/or-conds
           [(string-condition-with-options :collection-data-type value options :collection-data-type)
            (qm/map->MissingCondition {:field :collection-data-type})])
