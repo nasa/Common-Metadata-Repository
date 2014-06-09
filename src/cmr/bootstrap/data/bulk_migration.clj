@@ -199,7 +199,9 @@
   [system provider-id]
   (info "Copying granule data for provider" provider-id)
   (doseq [{:keys [id echo_collection_id]} (get-provider-collection-list system provider-id)]
-    (copy-granule-data-for-collection system provider-id echo_collection_id id)))
+    (info (str "Copying granule data for collection " echo_collection_id))
+    (let [result (copy-granule-data-for-collection system provider-id echo_collection_id id)]
+      (info result))))
 
 (defn copy-single-collection
   "Delete a collection form the provider's collection table and all associated granules and
