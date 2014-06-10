@@ -26,6 +26,11 @@
   (fn [context concept umm-concept]
     (cs/concept-id->type (:concept-id concept))))
 
+(defn concept->type
+  "Returns concept type for the given concept"
+  [concept]
+  (cs/concept-id->type (:concept-id concept)))
+
 (defn- prepare-batch
   "Convert a batch of concepts into elastic docs for bulk indexing."
   [context concepts]
@@ -47,7 +52,7 @@
                                                                         concept-id
                                                                         revision-id concept)))
                                     concepts))
-          all-types (set (map cs/concept->type concepts))
+          all-types (set (map concept->type concepts))
           _ (assert (= 1 (count all-index-names)) (msg/inconsistent-index-names-msg))
           _ (assert (= 1 (count all-types)) (msg/inconsistent-types-msg))
           concept-index (first all-index-names)
@@ -57,20 +62,6 @@
           response (bulk/bulk-with-index-and-type conn concept-index type bulk-operations)]
       (when (:errors response)
         (errors/internal-error! (msg/bulk-indexing-error-msg batch-index response))))))
-
-(comment
-
-
-  (let [indexer-context {:system (get-in user/system [:apps :bootstrap :indexer])}
-
-        concepts (first (cmr.metadata-db.data.concepts/find-concepts-in-batches (get-in user/system [:apps :metadata-db :db]) {:concept-type :granule :parent-collection-id "C1000000073-FIX_PROV1" :provider-id "FIX_PROV1"} 10))
-        ]
-    (println concepts)
-    (bulk-index indexer-context concepts 10))
-
-
-  )
-
 
 (deftracefn index-concept
   "Index the given concept and revision-id"
