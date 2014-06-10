@@ -29,6 +29,10 @@
   "The number to use as the numeric value for the first concept."
   1000000000)
 
+(def EXPIRED_CONCEPTS_BATCH_SIZE
+  "The batch size to retrieve expired concepts"
+  5000)
+
 (defn blob->input-stream
   "Convert a BLOB to an InputStream"
   [^Blob blob]
@@ -321,15 +325,27 @@
     (j/with-db-transaction
       [conn this]
       (let [table (tables/get-table-name provider concept-type)
-            stmt (su/build
-                   (select [:*]
-                           (from (as (keyword table) :a))
-                           (where `(and (= :revision-id ~(select ['(max :revision-id)]
-                                                                 (from (as (keyword table) :b))
-                                                                 (where '(= :a.concept-id :b.concept-id))))
-                                        (= :deleted 0)
-                                        (is-not-null :delete-time)
-                                        (< :delete-time :SYSTIMESTAMP)))))]
+            stmt [(format "select *
+                          from %s outer,
+                          ( select a.concept_id, a.revision_id
+                            from (select concept_id, max(revision_id) as revision_id
+                                    from %s
+                                    where deleted = 0
+                                    and   delete_time is not null
+                                    and   delete_time < systimestamp
+                                    group by concept_id
+                                    ) a,
+                                    (select concept_id, max(revision_id) as revision_id
+                                    from %s
+                                    group by concept_id
+                                    ) b
+                            where a.concept_id = b.concept_id
+                            and   a.revision_id = b.revision_id
+                            and   rowNum <= %d
+                          ) inner
+                          where outer.concept_id = inner.concept_id
+                          and   outer.revision_id = inner.revision_id"
+                          table table table EXPIRED_CONCEPTS_BATCH_SIZE)]]
         (doall (map (partial db-result->concept-map concept-type conn provider)
                     (j/query conn stmt)))))))
 
