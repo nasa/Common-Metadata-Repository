@@ -26,7 +26,7 @@
   (fn [context concept umm-concept]
     (cs/concept-id->type (:concept-id concept))))
 
-(defn concept->type
+(defn- concept->type
   "Returns concept type for the given concept"
   [concept]
   (cs/concept-id->type (:concept-id concept)))
