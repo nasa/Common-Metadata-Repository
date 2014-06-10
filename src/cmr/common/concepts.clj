@@ -64,8 +64,3 @@
   "Returns concept type for the given concept-id"
   [concept-id]
   (concept-prefix->concept-type (subs concept-id 0 1)))
-
-(defn concept->type
-  "Returns concept type for the given concept"
-  [concept]
-  (concept-id->type (:concept-id concept)))
