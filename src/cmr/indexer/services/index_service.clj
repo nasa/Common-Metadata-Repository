@@ -13,7 +13,6 @@
             [cmr.indexer.data.index-set :as idx-set]
             [cmr.common.cache :as cache]
             [cmr.common.services.errors :as errors]
-            [cmr.indexer.services.messages :as msg]
             [cmr.system-trace.core :refer [deftracefn]]))
 
 (defmulti parse-concept
@@ -31,12 +30,17 @@
   [concept]
   (cs/concept-id->type (:concept-id concept)))
 
-(defn- prepare-batch
+(defn prepare-batch
   "Convert a batch of concepts into elastic docs for bulk indexing."
   [context concepts]
   (map (fn [concept]
-         (let [umm-concept (parse-concept concept)]
-           (concept->elastic-doc context concept umm-concept)))
+         (let [umm-concept (parse-concept concept)
+               concept-id (:concept-id concept)
+               revision-id (:revision-id concept)
+               index-name (idx-set/get-concept-index-name context concept-id revision-id umm-concept)
+               type (name (concept->type concept))
+               elastic-doc (concept->elastic-doc context concept umm-concept)]
+           (merge elastic-doc {:_index index-name :_type type})))
        concepts))
 
 (deftracefn bulk-index
@@ -45,23 +49,8 @@
   invoked repeatedly if necessary - processing batch-size concepts each time."
   [context concepts batch-size]
   (doseq [[batch-index batch] (map-indexed vector (partition-all batch-size concepts))]
-    (let [batch (prepare-batch context concepts)
-          all-index-names (set (map (fn [concept]
-                                      (let [{:keys [concept-id revision-id]} concept]
-                                        (idx-set/get-concept-index-name context
-                                                                        concept-id
-                                                                        revision-id concept)))
-                                    concepts))
-          all-types (set (map concept->type concepts))
-          _ (assert (= 1 (count all-index-names)) (msg/inconsistent-index-names-msg))
-          _ (assert (= 1 (count all-types)) (msg/inconsistent-types-msg))
-          concept-index (first all-index-names)
-          type (name (first all-types))
-          bulk-operations (bulk/bulk-index batch)
-          conn (es/context->conn context)
-          response (bulk/bulk-with-index-and-type conn concept-index type bulk-operations)]
-      (when (:errors response)
-        (errors/internal-error! (msg/bulk-indexing-error-msg batch-index response))))))
+    (let [batch (prepare-batch context batch)]
+      (es/bulk-index context batch))))
 
 (deftracefn index-concept
   "Index the given concept and revision-id"
