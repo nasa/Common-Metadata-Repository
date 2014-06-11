@@ -6,6 +6,7 @@
             [cmr.umm.echo10.granule :as granule]
             [cmr.umm.echo10.related-url :as ru]
             [cmr.transmit.metadata-db :as mdb]
+            [cmr.common.log :refer (debug info warn error)]
             [cmr.common.services.errors :as errors]
             [cmr.indexer.services.concepts.temporal :as temporal]
             [cmr.indexer.services.concepts.attribute :as attrib]
@@ -20,7 +21,8 @@
 (defn- fetch-parent-collection
   "Retrieve the parent collection umm from the db"
   [context parent-collection-id]
-  (let [concept (mdb/get-latest-concept context parent-collection-id)]
+  (let [parent-collection-cache (get-in context [:system :parent-collection-cache])
+        concept (mdb/get-latest-concept context parent-collection-id)]
     (assoc (idx/parse-concept concept) :concept-id parent-collection-id)))
 
 (defn- get-parent-collection
@@ -36,8 +38,8 @@
     (let [gsr (get-in parent-collection [:spatial-coverage :granule-spatial-representation])]
       (if (= gsr :geodetic)
         (spatial/spatial->elastic-docs gsr granule)
-        (errors/internal-error!
-          (format "Only geodetic is supported for granule spatial representation not [%s]"
+        (error
+          (format "Only geodetic is supported for granule spatial representation currently. GSR: [%s]"
                   gsr))))))
 
 (defmethod idx/concept->elastic-doc :granule
