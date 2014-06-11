@@ -57,19 +57,6 @@
   (index-granules-for-provider system provider-id)
   (info "Indexing of provider" provider-id "completed."))
 
-(comment
-
-
-  (let [system (get-in user/system [:apps :bootstrap])
-        concepts (index-provider system "FIX_PROV1")
-
-        ]
-    (println concepts))
-
-
-  )
-
-
 ;; Background task to handle requests
 (defn handle-bulk-index-requests
   "Handle any requests for copying data from echo catalog rest to metadata db."
