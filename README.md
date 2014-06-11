@@ -397,6 +397,11 @@ Example of sorting by start_date in descending order: (Most recent data first)
 ### Reset cache
 curl -i -XPOST -H "Content-Type: application/json" http://localhost:3003/reset
 
+### Search with POST
+Search collections or granules with query parameters encoded form in POST request body.
+
+curl -i -XPOST http://localhost:3003/collections -d "dataset_id[]=Example%20DatasetId&dataset_id[]=Dataset2"
+
 ## Search Flow
 
 ### Stage 1: Convert to query model
