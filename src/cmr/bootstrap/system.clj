@@ -43,6 +43,8 @@
              ;; Channel for requesting single collection/granules migration.
              ;; Takes maps, e.g., {:collection-id collection-id :provider-id provider-id}
              :collection-channel (chan CHANNEL_BUFFER_SIZE)
+             ;; Channel for requesting full provider indexing - collections/granules
+             :provider-index-channel (chan CHANNEL_BUFFER_SIZE)
              :catalog-rest-user (mdb-config/catalog-rest-db-username)
              :db (oracle/create-db (mdb-config/db-spec))
              :web (web/create-web-server (transmit-config/bootstrap-port) routes/make-api)
