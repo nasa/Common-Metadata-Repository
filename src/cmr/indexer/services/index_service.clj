@@ -33,15 +33,21 @@
 (defn prepare-batch
   "Convert a batch of concepts into elastic docs for bulk indexing."
   [context concepts]
-  (map (fn [concept]
-         (let [umm-concept (parse-concept concept)
-               concept-id (:concept-id concept)
-               revision-id (:revision-id concept)
-               index-name (idx-set/get-concept-index-name context concept-id revision-id umm-concept)
-               type (name (concept->type concept))
-               elastic-doc (concept->elastic-doc context concept umm-concept)]
-           (merge elastic-doc {:_index index-name :_type type})))
-       concepts))
+  ;; we only handle ECHO10 format right now
+  (let [concepts (filter #(#{"ECHO10"} (:format %)) concepts)]
+    (map (fn [concept]
+           (let [umm-concept (parse-concept concept)
+                 _ (println (get-in umm-concept [:product :short-name]))
+                 _ (when (nil? (get-in umm-concept [:product :short-name]))
+                     (do (println "nil short-name:" umm-concept)
+                       (println concept)))
+                 concept-id (:concept-id concept)
+                 revision-id (:revision-id concept)
+                 index-name (idx-set/get-concept-index-name context concept-id revision-id umm-concept)
+                 type (name (concept->type concept))
+                 elastic-doc (concept->elastic-doc context concept umm-concept)]
+             (merge elastic-doc {:_index index-name :_type type})))
+         concepts)))
 
 (deftracefn bulk-index
   "Index many concepts at once using the elastic bulk api. The concepts to be indexed are passed
