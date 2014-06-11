@@ -17,7 +17,8 @@
    :campaign :project
    :echo-collection-id :concept-id
    :echo-granule-id :concept-id
-   :online-only :downloadable})
+   :online-only :downloadable
+   :provider-id :provider})
 
 (defn merger
   "Make a sequence from supplied values."
