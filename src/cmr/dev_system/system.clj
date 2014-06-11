@@ -19,8 +19,6 @@
   "A map of application name to the start function"
   {:metadata-db {:start mdb-system/start
                  :stop mdb-system/stop}
-   :bootstrap {:start bootstrap-system/start
-                 :stop bootstrap-system/stop}
    :index-set {:start index-set-system/start
                :stop index-set-system/stop}
    :indexer {:start indexer-system/start
@@ -28,7 +26,13 @@
    :ingest {:start ingest-system/start
             :stop ingest-system/stop}
    :search {:start search-system/start
-            :stop search-system/stop}})
+            :stop search-system/stop}
+   :bootstrap {:start bootstrap-system/start
+               :stop bootstrap-system/stop}})
+
+(def app-startup-order
+  "Defines the order in which applications should be started"
+  [:metadata-db :index-set :indexer :ingest :search :bootstrap])
 
 (def in-memory-elastic-port 9206)
 (def in-memory-elastic-port-for-connection 9206)
@@ -82,10 +86,11 @@
 
 (defn- stop-apps
   [system]
-  (reduce (fn [system [app {stop-fn :stop}]]
-            (update-in system [:apps app] #(when % (stop-fn %))))
+  (reduce (fn [system app]
+            (let [{stop-fn :stop} (app-control-functions app)]
+              (update-in system [:apps app] #(when % (stop-fn %)))))
           system
-          app-control-functions))
+          (reverse app-startup-order)))
 
 (defn- start-components
   [system]
@@ -101,16 +106,17 @@
 
 (defn- start-apps
   [system]
-  (reduce (fn [system [app {start-fn :start}]]
-            (update-in system [:apps app]
-                       #(try
-                          (when %
-                            (start-fn %))
-                          (catch Exception e
-                            (stop-components (stop-apps system))
-                            (throw e)))))
+  (reduce (fn [system app]
+            (let [{start-fn :start} (app-control-functions app)]
+              (update-in system [:apps app]
+                         #(try
+                            (when %
+                              (start-fn %))
+                            (catch Exception e
+                              (stop-components (stop-apps system))
+                              (throw e))))))
           system
-          app-control-functions))
+          app-startup-order))
 
 (defn start
   "Performs side effects to initialize the system, acquire resources,
