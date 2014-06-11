@@ -41,9 +41,19 @@
            (mbr->elastic-attribs "mbr" mbr)
            (mbr->elastic-attribs "lr" lr))))
 
+(defn- unsupported-geometry?
+  "Check whether or not the given geometry is an unsupported type."
+  [geometry]
+  (some #(instance? % geometry) [cmr.spatial.point.Point cmr.spatial.mbr.Mbr]))
+
+(defn- unsupported-geometries?
+  "Check whether or not one of the geometries belongs to an unsupported type."
+  [geometries]
+  (some unsupported-geometry? geometries))
 
 (defn spatial->elastic-docs
   "Converts the spatial area of the given catalog item to the elastic documents"
   [coordinate-system catalog-item]
   (when-let [geometries (get-in catalog-item [:spatial-coverage :geometries])]
-    (shapes->elastic-doc geometries coordinate-system)))
+    (when-not (unsupported-geometries? geometries)
+      (shapes->elastic-doc geometries coordinate-system))))
