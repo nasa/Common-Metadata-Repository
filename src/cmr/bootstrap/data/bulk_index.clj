@@ -27,15 +27,11 @@
   "Index the granule data for every collection for a given provider."
   [system provider-id]
   (info "Indexing granule data for provider" provider-id)
-  (doseq [{:keys [id echo_collection_id]} (bm/get-provider-collection-list
-                                            (:metadata-db system)
-                                            provider-id)]
-    (info (str "Indexing granule data for collection " echo_collection_id))
-    (let [result (index-granules-for-collection {:system (:indexer system)}
-                                                provider-id
-                                                echo_collection_id
-                                                id)]
-      (info result))))
+  (let [db (get-in system [:metadata-db :db])
+        params {:concept-type :granule
+                :provider-id provider-id}
+        concepts (db/find-concepts db params)]
+    (index/bulk-index {:system (:indexer system)} concepts (BATCH-SIZE))))
 
 (defn- index-provider-collections
   "Index all the collections concepts for a given provider."
@@ -58,15 +54,14 @@
   [system provider-id]
   (delete-provider system provider-id)
   (index-provider-collections system provider-id)
-  #_(index-granules-for-provider system provider-id)
+  (index-granules-for-provider system provider-id)
   (info "Indexing of provider" provider-id "completed."))
 
 (comment
 
 
   (let [system (get-in user/system [:apps :bootstrap])
-        _ (println system)
-        concepts (index-provider-collections system "FIX_PROV1")
+        concepts (index-provider system "FIX_PROV1")
 
         ]
     (println concepts))

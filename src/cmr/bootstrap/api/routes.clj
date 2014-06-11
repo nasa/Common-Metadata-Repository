@@ -48,7 +48,7 @@
         (migrate-collection request-context body)))
 
     (context "/bulk_index" []
-      (POST "providers" {:keys [request-context body]}
+      (POST "/providers" {:keys [request-context body]}
         (bulk-index-provider request-context body)))))
 
 (defn make-api [system]

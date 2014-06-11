@@ -10,6 +10,7 @@
             [cmr.system-trace.context :as context]
             [clojure.core.async :as ca :refer [chan]]
             [cmr.bootstrap.data.bulk-migration :as bm]
+            [cmr.bootstrap.data.bulk-index :as bi]
             [cmr.metadata-db.config :as mdb-config]
             [cmr.transmit.config :as transmit-config]
             [cmr.metadata-db.system :as mdb-system]
@@ -66,6 +67,7 @@
 
     (oracle/test-db-connection! (:db started-system))
     (bm/handle-copy-requests started-system)
+    (bi/handle-bulk-index-requests started-system)
     (info "Bootstrap System started")
     started-system))
 
