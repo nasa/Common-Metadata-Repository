@@ -46,10 +46,14 @@
   (routes
     (context "/collections" []
       (GET "/" {params :params headers :headers context :request-context query-string :query-string}
-        (find-references context :collection params headers query-string)))
+        (find-references context :collection params headers query-string))
+      (POST "/" {params :params headers :headers context :request-context body :body-copy}
+        (find-references context :collection params headers body)))
     (context "/granules" []
       (GET "/" {params :params headers :headers context :request-context query-string :query-string}
-        (find-references context :granule params headers query-string)))
+        (find-references context :granule params headers query-string))
+      (POST "/" {params :params headers :headers context :request-context body :body-copy}
+        (find-references context :granule params headers body)))
     (context "/concepts/:cmr-concept-id" [cmr-concept-id]
       (GET "/" {headers :headers context :request-context}
         (find-concept-by-cmr-concept-id context cmr-concept-id headers)))
@@ -60,10 +64,22 @@
       (r/created (query-svc/reset request-context)))
     (route/not-found "Not Found")))
 
+;; Copies the body into a new attributed called :body-copy so that after a post of form content type
+;; the original body can still be read. The default ring params reads the body and parses it and we
+;; don't have access to it.
+(defn copy-of-body-handler
+  [f]
+  (fn [request]
+    (let [^String body (slurp (:body request))]
+      (f (assoc request
+                :body-copy body
+                :body (java.io.ByteArrayInputStream. (.getBytes body)))))))
+
 (defn make-api [system]
   (-> (build-routes system)
       (http-trace/build-request-context-handler system)
       errors/exception-handler
       handler/site
+      copy-of-body-handler
       ring-json/wrap-json-body
       ring-json/wrap-json-response))
