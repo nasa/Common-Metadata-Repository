@@ -10,16 +10,25 @@
             [cmr.indexer.services.concepts.temporal :as temporal]
             [cmr.indexer.services.concepts.attribute :as attrib]
             [cmr.indexer.services.concepts.orbit-calculated-spatial-domain :as ocsd]
-            [cmr.indexer.services.concepts.spatial :as spatial]))
+            [cmr.indexer.services.concepts.spatial :as spatial]
+            [cmr.common.cache :as cache]))
 
 (defmethod idx/parse-concept :granule
   [concept]
   (granule/parse-granule (:metadata concept)))
 
-(defn- get-parent-collection
+(defn- fetch-parent-collection
+  "Retrieve the parent collection umm from the db"
   [context parent-collection-id]
   (let [concept (mdb/get-latest-concept context parent-collection-id)]
     (assoc (idx/parse-concept concept) :concept-id parent-collection-id)))
+
+(defn- get-parent-collection
+  [context parent-collection-id]
+  (if-let [cache (get-in context [:system :parent-collection-cache])]
+    (cache/cache-lookup cache parent-collection-id
+                        (partial fetch-parent-collection context parent-collection-id))
+    (fetch-parent-collection context parent-collection-id)))
 
 (defn spatial->elastic
   [parent-collection granule]
@@ -30,7 +39,6 @@
         (errors/internal-error!
           (format "Only geodetic is supported for granule spatial representation not [%s]"
                   gsr))))))
-
 
 (defmethod idx/concept->elastic-doc :granule
   [context concept umm-granule]

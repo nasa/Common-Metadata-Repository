@@ -5,12 +5,14 @@
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.concepts :as cs]
             [cmr.transmit.metadata-db :as meta-db]
+            [clojurewerkz.elastisch.rest.bulk :as bulk]
             [cmr.indexer.data.elasticsearch :as es]
             [cmr.umm.echo10.collection :as collection]
             [cmr.umm.echo10.granule :as granule]
             [cheshire.core :as cheshire]
             [cmr.indexer.data.index-set :as idx-set]
             [cmr.common.cache :as cache]
+            [cmr.common.services.errors :as errors]
             [cmr.system-trace.core :refer [deftracefn]]))
 
 (defmulti parse-concept
@@ -22,6 +24,33 @@
   "Returns elastic json that can be used to insert into Elasticsearch for the given concept"
   (fn [context concept umm-concept]
     (cs/concept-id->type (:concept-id concept))))
+
+(defn- concept->type
+  "Returns concept type for the given concept"
+  [concept]
+  (cs/concept-id->type (:concept-id concept)))
+
+(defn prepare-batch
+  "Convert a batch of concepts into elastic docs for bulk indexing."
+  [context concepts]
+  (map (fn [concept]
+         (let [umm-concept (parse-concept concept)
+               concept-id (:concept-id concept)
+               revision-id (:revision-id concept)
+               index-name (idx-set/get-concept-index-name context concept-id revision-id umm-concept)
+               type (name (concept->type concept))
+               elastic-doc (concept->elastic-doc context concept umm-concept)]
+           (merge elastic-doc {:_index index-name :_type type})))
+       concepts))
+
+(deftracefn bulk-index
+  "Index many concepts at once using the elastic bulk api. The concepts to be indexed are passed
+  directly to this function - it does not retrieve them from metadata db. The bulk API is
+  invoked repeatedly if necessary - processing batch-size concepts each time."
+  [context concepts batch-size]
+  (doseq [[batch-index batch] (map-indexed vector (partition-all batch-size concepts))]
+    (let [batch (prepare-batch context batch)]
+      (es/bulk-index context batch))))
 
 (deftracefn index-concept
   "Index the given concept and revision-id"

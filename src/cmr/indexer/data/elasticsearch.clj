@@ -3,6 +3,7 @@
             [clojurewerkz.elastisch.rest :as esr]
             [clojurewerkz.elastisch.rest.index :as esi]
             [clojurewerkz.elastisch.rest.document :as doc]
+            [clojurewerkz.elastisch.rest.bulk :as bulk]
             [clj-http.client :as client]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.services.errors :as errors]
@@ -81,7 +82,7 @@
               msg (str "Call to Elasticsearch caught exception " err-msg)]
           (errors/internal-error! msg))))))
 
-(defn- context->conn
+(defn context->conn
   "Returns the elastisch connection in the context"
   [context]
   (get-in context [:system :db :conn]))
@@ -90,6 +91,16 @@
   "Returns the elastic config in the context"
   [context]
   (get-in context [:system :db :config]))
+
+(deftracefn bulk-index
+  "Save a batch of documents in Elasticsearch."
+  [context docs]
+  (let [bulk-operations (bulk/bulk-index docs)
+        conn (context->conn context)
+        response (bulk/bulk conn bulk-operations)]
+    (when (:errors response)
+      (errors/internal-error! (format "Bulk indexing failed with repsonse %s" response)))))
+
 
 (deftracefn save-document-in-elastic
   "Save the document in Elasticsearch, raise error if failed."
