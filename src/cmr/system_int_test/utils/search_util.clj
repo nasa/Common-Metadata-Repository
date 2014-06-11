@@ -8,7 +8,8 @@
             [cmr.system-int-test.utils.url-helper :as url]
             [cmr.common.util :as u]
             [camel-snake-kebab :as csk]
-            [clojure.walk]))
+            [clojure.walk]
+            [ring.util.codec :as codec]))
 
 (defn params->snake_case
   "Converts search parameters to snake_case"
@@ -56,6 +57,23 @@
                                 :query-params (if no-snake-kebab
                                                 params
                                                (params->snake_case params))
+                                :connection-manager (url/conn-mgr)})
+          _ (is (= 200 (:status response)))
+          result (json/decode (:body response) true)]
+      (-> result
+          ;; Rename references to refs
+          (assoc :refs (:references result))
+          (dissoc :references)))))
+
+(defn find-refs-with-post
+  "Returns the references that are found by searching through POST request with the input params"
+  [concept-type params]
+  (get-search-failure-data
+    (let [response (client/post (url/search-url concept-type)
+                               {:accept :json
+                                :content-type "application/x-www-form-urlencoded"
+                                :body (codec/form-encode params)
+                                :throw-exceptions false
                                 :connection-manager (url/conn-mgr)})
           _ (is (= 200 (:status response)))
           result (json/decode (:body response) true)]
