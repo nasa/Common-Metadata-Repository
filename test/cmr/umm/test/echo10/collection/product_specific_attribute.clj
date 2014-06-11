@@ -45,8 +45,10 @@
          0 "03:03:27-01:00"
          123 "03:03:27.123-01:00"))
   (testing "parse date"
-    (is (= (t/date-time 1986 10 14)
-           (psa/parse-value :date "1986-10-14"))))
+    (are [string] (= (t/date-time 1986 10 14)
+                     (psa/parse-value :date string))
+         "1986-10-14"
+         "1986-10-14Z"))
   (testing "parse nils"
     (doseq [type umm-c/product-specific-attribute-types]
       (is (nil? (psa/parse-value type nil))))))

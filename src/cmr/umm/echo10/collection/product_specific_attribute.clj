@@ -81,7 +81,8 @@
 (defmethod parse-value :date
   [data-type value]
   (when value
-    (f/parse (f/formatters :date) value)))
+    (let [value (str/replace value "Z" "")]
+      (f/parse (f/formatters :date) value))))
 
 
 (defn xml-elem->ProductSpecificAttribute
