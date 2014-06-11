@@ -68,7 +68,10 @@
 
            ;; Ignore case
            all-prov1-colls "pRoV1" {:ignore-case true}
-           [] "prov1" {:ignore-case false}))
+           [] "prov1" {:ignore-case false})
+
+      (testing "legacy catalog rest parameter name"
+        (is (d/refs-match? all-prov1-colls (search/find-refs :collection {:provider-id "PROV1"})))))
 
     (testing "short name"
       (are [items sn options]
