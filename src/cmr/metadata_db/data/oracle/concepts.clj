@@ -241,7 +241,8 @@
             table (tables/get-table-name provider-id concept-type)
             stmt (su/build (select [:*]
                                    (from table)
-                                   (where (find-params->sql-clause params))))]
+                                   (when-not (empty? params)
+                                     (where (find-params->sql-clause params)))))]
         (doall (map (partial db-result->concept-map concept-type conn provider-id)
                     (j/query conn stmt))))))
 
@@ -257,7 +258,8 @@
                       table (tables/get-table-name provider-id concept-type)
                       istmt (select [:*]
                                     (from table)
-                                    (where (find-params->sql-clause params))
+                                    (when-not (empty? params)
+                                      (where (find-params->sql-clause params)))
                                     (order-by :concept-id))]
                   (doall (map (partial db-result->concept-map concept-type conn provider-id)
                               (sql-utils/find-batch conn istmt start-index batch-size))))))
