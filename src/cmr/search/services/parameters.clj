@@ -127,7 +127,7 @@
     (qm/map->BooleanCondition {:field param
                                :value (= "true" value)})
 
-    (= "unset" value)
+    (= "unset" (s/lower-case value))
     (qm/map->MatchAllCondition {})
 
     :else
