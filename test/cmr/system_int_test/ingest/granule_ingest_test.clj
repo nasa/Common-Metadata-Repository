@@ -55,7 +55,7 @@
         granule-with-empty-body  (assoc (old-ingest/granule-concept "PROV1" "C1000000000-PROV1" 5 "G1-PROV1") :metadata "")
         {:keys [status errors]} (ingest/ingest-concept granule-with-empty-body)]
     (is (= 400 status))
-    (is (re-find #"Invalid XML file." (first errors)))))
+    (is (re-find #"Invalid XML content." (first errors)))))
 
 ;;; Verify non-existent granule deletion results in not found / 404 error.
 (deftest delete-non-existent-granule-test
@@ -81,7 +81,7 @@
 (deftest missing-content-type-ingest-test
   (let [collection (old-ingest/collection-concept "PROV1" 5)
         _ (ingest/ingest-concept collection)
-        granule-with-no-content-type  (assoc (old-ingest/granule-concept "PROV1" "C1000000000-PROV1" 5 "G1-PROV1") :content-type "")
+        granule-with-no-content-type  (assoc (old-ingest/granule-concept "PROV1" "C1000000000-PROV1" 5 "G1-PROV1") :format "")
         {:keys [status errors]} (ingest/ingest-concept granule-with-no-content-type)]
     (is (= 400 status))
     (is (re-find #"Invalid content-type" (first errors)))))
@@ -90,7 +90,7 @@
 (deftest invalid-content-type-ingest-test
   (let [collection (old-ingest/collection-concept "PROV1" 5)
         _ (ingest/ingest-concept collection)
-        granule-with-no-content-type (assoc (old-ingest/granule-concept "PROV1" "C1000000000-PROV1" 5 "G1-PROV1") :content-type "blah")
+        granule-with-no-content-type (assoc (old-ingest/granule-concept "PROV1" "C1000000000-PROV1" 5 "G1-PROV1") :format "blah")
         {:keys [status errors]} (ingest/ingest-concept granule-with-no-content-type)]
     (is (= 400 status))
     (is (re-find #"Invalid content-type" (first errors)))))
