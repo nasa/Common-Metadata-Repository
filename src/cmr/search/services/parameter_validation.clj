@@ -342,7 +342,7 @@
       (fn [[key value]]
         (if (or (= "true" value) (= "false" value) (= "unset" value))
           []
-          [(format "Parameter %s must take value of true of false, but was %s" key value)]))
+          [(format "Parameter %s must take value of true, false, or unset, but was %s" key value)]))
       bool-params)))
 
 (def parameter-validations
