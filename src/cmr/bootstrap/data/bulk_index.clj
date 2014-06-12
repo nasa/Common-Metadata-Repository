@@ -34,7 +34,8 @@
                 :provider-id provider-id
                 :parent-collection-id collection-id}
         concepts (db/find-concepts-in-batches db params (:db-batch-size system))]
-    (index/bulk-index {:system (:indexer system)} concepts (:bulk-index-batch-size system))))
+    (index/bulk-index {:system (:indexer system)} concepts (:bulk-index-batch-size system))
+    (info "Indexed" (count concepts) " granule(s) for provider" provider-id " collection" collection-id)))
 
 (defn- index-granules-for-provider
   "Index the granule data for every collection for a given provider."
