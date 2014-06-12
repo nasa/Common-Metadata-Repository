@@ -19,11 +19,11 @@
             [cmr.common.config :as config]
             [clojure.core.cache :as cc]))
 
-(def CHANNEL_BUFFER_SIZE 10)
+(def channel-buffer-size (config/config-value-fn :channel-buffer-size 10 #(Long. %)))
 
-(def DB-BATCH-SIZE ((config/config-value-fn :db-batch-size 1000 #(Long. %))))
+(def db-batch-size (config/config-value-fn :db-batch-size 1000 #(Long. %)))
 
-(def BULK-INDEX-BATCH-SIZE ((config/config-value-fn :bulk-index-batch-size 1000 #(Long. %))))
+(def bulk-index-batch-size (config/config-value-fn :bulk-index-batch-size 1000 #(Long. %)))
 
 (def
   ^{:doc "Defines the order to start the components."
@@ -43,18 +43,16 @@
         sys {:log (log/create-logger)
              :metadata-db metadata-db
              :indexer indexer
-             :db-batch-size DB-BATCH-SIZE
-             :bulk-index-batch-size BULK-INDEX-BATCH-SIZE
+             :db-batch-size (db-batch-size)
+             :bulk-index-batch-size (bulk-index-batch-size)
              ;; Channel for requesting full provider migration - provider/collections/granules.
              ;; Takes single provider-id strings.
-             :provider-channel (chan CHANNEL_BUFFER_SIZE)
+             :provider-channel (chan (channel-buffer-size))
              ;; Channel for requesting single collection/granules migration.
              ;; Takes maps, e.g., {:collection-id collection-id :provider-id provider-id}
-             :collection-channel (chan CHANNEL_BUFFER_SIZE)
+             :collection-channel (chan (channel-buffer-size))
              ;; Channel for requesting full provider indexing - collections/granules
-             :provider-index-channel (chan CHANNEL_BUFFER_SIZE)
-             ;; Channel for requesting bulk indexing of a given collection
-             :collection-index-channel (chan CHANNEL_BUFFER_SIZE)
+             :provider-index-channel (chan (channel-buffer-size))
              :catalog-rest-user (mdb-config/catalog-rest-db-username)
              :db (oracle/create-db (mdb-config/db-spec))
              :web (web/create-web-server (transmit-config/bootstrap-port) routes/make-api)

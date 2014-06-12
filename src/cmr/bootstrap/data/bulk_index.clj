@@ -1,4 +1,5 @@
 (ns cmr.bootstrap.data.bulk-index
+  "Functions to support concurrent bulk indexing."
   (:require [cmr.common.log :refer (debug info warn error)]
             [cmr.indexer.services.index-service :as index]
             [cmr.metadata-db.data.concepts :as db]
@@ -9,7 +10,7 @@
             [sqlingvo.core :as sql :refer [sql select insert from where with order-by desc delete as]]
             [sqlingvo.vendor :as v]
             [cmr.metadata-db.data.oracle.sql-utils :as su]
-            [clojure.core.async :as ca :refer [merge go go-loop thread alts!! <!! >!]]
+            [clojure.core.async :as ca :refer [go go-loop alts!! <!! >!]]
             [cmr.oracle.connection :as oc]
             [cmr.metadata-db.data.oracle.concept-tables :as tables]
             [cmr.transmit.config :as transmit-config]
@@ -39,11 +40,9 @@
   "Index the granule data for every collection for a given provider."
   [system provider-id]
   (info "Indexing granule data for provider" provider-id)
-  (let[channel (:collection-index-channel system)
-       go-channels (merge (doall (for [collection-id (get-provider-collection-list system provider-id)]
-                                   (go (>! channel {:provider-id provider-id
-                                                    :collection-id collection-id})))))]
-    (<!! go-channels))
+  (doall (pmap
+           (partial index-granules-for-collection system provider-id)
+           (get-provider-collection-list system provider-id)))
   (info "Indexing of granule data for provider" provider-id "completed."))
 
 (defn- index-provider-collections
@@ -65,36 +64,22 @@
 (defn- index-provider
   "Bulk index a provider."
   [system provider-id]
+  (info "Indexing provider" provider-id)
   (unindex-provider system provider-id)
   (index-provider-collections system provider-id)
   (index-granules-for-provider system provider-id)
   (info "Indexing of provider" provider-id "completed."))
 
-;; Background task to handle requests
+;; Background task to handle provider bulk index requests
 (defn handle-bulk-index-requests
-  "Handle any requests for copying data from echo catalog rest to metadata db."
+  "Handle any requests for indexing providers."
   [system]
-  (info "Starting background task for monitoring bulk migration channels.")
-  (let [channels ((juxt :provider-index-channel :collection-index-channel) system)] ; add other channels as needed
-    (thread (while true
+  (info "Starting background task for monitoring bulk provider indexing channels.")
+  (let [channel (:provider-index-channel system)]
+    (ca/thread (while true
               (try ; catch any errors and log them, but don't let the thread die
-                (let [[v ch] (alts!! channels)]
-                  (cond
-                    ;; add other channels as needed
-                    (= (:provider-index-channel system) ch)
-                    (do
-                      (info "Processing provider" v)
-                      (index-provider system v))
-
-                    (= (:collection-index-channel system) ch)
-                    (do
-                      (info "Processing collection" v)
-                      (let [{:keys [provider-id collection-id]} v]
-                        (index-granules-for-collection system provider-id collection-id)))
-
-                    :else
-                    (error (format "Received message [%s] on channel [%s] that is unrecognized"
-                                   v ch))))
+                (let [provider-id (<!! channel)]
+                  (index-provider system provider-id))
                 (catch Throwable e
                   (error e (.getMessage e))))))))
 

@@ -1,4 +1,5 @@
 (ns cmr.bootstrap.data.bulk-migration
+  "Functions to support migration of data form catlog rest to metadata db."
   (:require [cmr.common.log :refer (debug info warn error)]
             [clojure.java.jdbc :as j]
             [clj-http.client :as client]
