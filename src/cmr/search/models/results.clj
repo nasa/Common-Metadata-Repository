@@ -9,7 +9,7 @@
 
    revision-id
 
-   provider-id
+   location
 
    name
    ])

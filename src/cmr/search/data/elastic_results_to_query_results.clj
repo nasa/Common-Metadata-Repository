@@ -1,6 +1,7 @@
 (ns cmr.search.data.elastic-results-to-query-results
   "Contains function to covert elasticsearch results to query reference results."
-  (:require [cmr.search.models.results :as results]))
+  (:require [cmr.search.models.results :as results]
+            [cmr.search.services.url-helper :as h]))
 
 (defn- elastic-results->query-results-with-name-key
   "Converts the Elasticsearch results into the results expected from execute-query
@@ -11,12 +12,11 @@
         refs (map (fn [match]
                     (let [{concept-id :_id
                            revision-id :_version
-                           {[name-value] name-key
-                            [provider-id] :provider-id} :fields} match]
+                           {[name-value] name-key} :fields} match]
                       (results/map->Reference
                         {:concept-id concept-id
                          :revision-id revision-id
-                         :provider-id provider-id
+                         :location (format "%s%s" (h/location-root) concept-id)
                          :name name-value})))
                   elastic-matches)]
     (results/map->Results {:hits hits :references refs})))

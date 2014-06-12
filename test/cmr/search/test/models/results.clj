@@ -3,6 +3,7 @@
   (:require [clojure.test.check.generators :as gen]
             [cmr.common.test.test-check-ext :as ext-gen]
             [cmr.search.models.results :as r]
+            [cmr.search.services.url-helper :as h]
             [clojure.string :as s]))
 
 (def provider-ids
@@ -31,8 +32,9 @@
 
 (def references
   (gen/fmap (fn [[concept-type-prefix concept-num provider-id revision-id native-id]]
-              (let [concept-id (str concept-type-prefix concept-num "-" provider-id)]
-                (r/->Reference concept-id revision-id provider-id native-id)))
+              (let [concept-id (str concept-type-prefix concept-num "-" provider-id)
+                    location (str (h/location-root) concept-id)]
+                (r/->Reference concept-id revision-id location native-id)))
             (gen/tuple concept-type-prefixes gen/s-pos-int provider-ids revision-ids native-ids)))
 
 (def results
