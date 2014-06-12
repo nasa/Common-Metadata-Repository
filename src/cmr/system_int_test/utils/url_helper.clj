@@ -6,6 +6,11 @@
             [cmr.elastic-utils.config :as es-config]
             [clj-http.conn-mgr :as conn-mgr]))
 
+(def search-public-protocol (config/config-value :search-public-protocol "http"))
+(def search-public-host (config/config-value :search-public-host "localhost"))
+(def search-public-port (config/config-value :search-public-port 3003 transmit-config/parse-port))
+(def search-relative-root-url (config/config-value :search-relative-root-url ""))
+
 (def conn-mgr-atom (atom nil))
 
 (defn conn-mgr
@@ -82,4 +87,10 @@
           provider-id
           native-id))
 
-
+(defn location-root
+  "Returns the url root for reference location"
+  []
+  (let [port (if (empty? search-relative-root-url)
+               search-public-port
+               (format "%s%s" search-public-port search-relative-root-url))]
+    (format "%s://%s:%s/concepts/" search-public-protocol search-public-host port)))
