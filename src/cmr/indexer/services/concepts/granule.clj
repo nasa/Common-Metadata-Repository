@@ -38,9 +38,8 @@
     (let [gsr (get-in parent-collection [:spatial-coverage :granule-spatial-representation])]
       (if (= gsr :geodetic)
         (spatial/spatial->elastic-docs gsr granule)
-        (error
-          (format "Only geodetic is supported for granule spatial representation currently. GSR: [%s]"
-                  gsr))))))
+        (warn
+          "Only geodetic is supported for granule spatial representation currently. Ignoring this area.")))))
 
 (defmethod idx/concept->elastic-doc :granule
   [context concept umm-granule]
