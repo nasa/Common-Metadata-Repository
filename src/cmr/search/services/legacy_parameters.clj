@@ -106,7 +106,7 @@
   with attributes matching the new cmr csv style"
   [params query-string]
   (psa-pre-validation params)
-  (let [param-strings (map rc/url-decode (s/split query-string #"&"))
+  (let [param-strings (if (empty? query-string) [] (map rc/url-decode (s/split query-string #"&")))
         param-tuples (keep legacy-psa-param->tuple param-strings)
         param-maps (group-legacy-psa-tuples param-tuples)
         psa (map attr-map->cmr-param param-maps)]

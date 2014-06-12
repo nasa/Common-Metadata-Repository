@@ -18,7 +18,6 @@
   "Converts a mime-type into the format requested."
   [mime-type]
   (if mime-type
-
     (get base-mime-type-to-format
          (str (mt/base-type (mt/parse mime-type))))
     default-search-result-format))
@@ -45,11 +44,11 @@
 (defn- reference->xml-element
   "Converts a search result reference into an XML element"
   [reference]
-  (let [{:keys [concept-id revision-id provider-id name]} reference]
+  (let [{:keys [concept-id revision-id location name]} reference]
     (x/element :reference {}
                (x/element :concept-id {} concept-id)
                (x/element :revision-id {} (str revision-id))
-               (x/element :provider-id {} provider-id)
+               (x/element :location {} location)
                (x/element :name {} name))))
 
 (defmethod search-results->response :xml

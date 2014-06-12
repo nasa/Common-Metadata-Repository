@@ -39,7 +39,7 @@
   [xml-struct]
   {:concept-id (cx/string-at-path xml-struct [:concept-id])
    :revision-id (cx/long-at-path xml-struct [:revision-id])
-   :provider-id (cx/string-at-path xml-struct [:provider-id])
+   :location (cx/string-at-path xml-struct [:location])
    :name (cx/string-at-path xml-struct [:name])})
 
 (defmethod parse-search-results-response :xml
