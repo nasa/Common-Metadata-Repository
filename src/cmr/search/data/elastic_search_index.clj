@@ -125,7 +125,7 @@
   (let [page-size (:page-size query)
         page-num (:page-num query)
         e-results (send-query-to-elastic context query page-size page-num)
-        results (rc/elastic-results->query-results (:concept-type query) e-results)]
+        results (rc/elastic-results->query-results context (:concept-type query) e-results)]
     (when (and (= :unlimited page-size) (> (:hits results) (count (:references results)))
                (e/internal-error! "Failed to retrieve all hits.")))
     results))
