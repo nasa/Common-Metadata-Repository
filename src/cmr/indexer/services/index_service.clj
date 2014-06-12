@@ -39,7 +39,7 @@
            (let [umm-concept (parse-concept concept)
                  concept-id (:concept-id concept)
                  revision-id (:revision-id concept)
-                 index-name (idx-set/get-concept-index-name context concept-id revision-id umm-concept)
+                 index-name (idx-set/get-concept-index-name context concept-id revision-id concept)
                  type (name (concept->type concept))
                  elastic-doc (concept->elastic-doc context concept umm-concept)]
              (merge elastic-doc {:_index index-name :_type type})))
