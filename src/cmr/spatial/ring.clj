@@ -56,27 +56,30 @@
   [ring point]
   ;; The pre check is necessary for rings which might contain both north and south poles
   {:pre [(> (count (:external-points ring)) 0)]}
-  ;; Only do real intersection if the ring covers the point.
-  (when (mbr/covers-point? (:mbr ring) point)
-    (if (some (:point-set ring) point)
-      true ; The point is actually one of the rings points
-      ;; otherwise we'll do the real intersection algorithm
-      (let [antipodal-point (p/antipodal point)
-            ;; Find an external point to use. We can't use an external point that is antipodal to the given point or equal to the point.
-            external-point (first (filter #(and (not= % antipodal-point)
-                                                (not= % point))
-                                          (:external-points ring)))
-            ;; Create the test arc
-            crossing-arc (a/arc point external-point)
-            ;; Find all the points the arc passes through
-            intersections (mapcat #(a/intersections % crossing-arc) (:arcs ring))
-            ;; Round the points. If the crossing arc passes through a point on the ring the
-            ;; intersection algorithm will result in two very, very close points. By rounding to
-            ;; within an acceptable range they'll be seen as the same point.
-            intersections (set (map (partial p/round-point 5) intersections))]
-        (or (odd? (count intersections))
-            ;; if the point itself is one of the intersections then the ring covers it
-            (intersections point))))))
+
+  (or (and (:contains-north-pole ring) (p/is-north-pole? point))
+      (and (:contains-south-pole ring) (p/is-south-pole? point))
+      ;; Only do real intersection if the mbr covers the point.
+      (when (mbr/covers-point? (:mbr ring) point)
+        (if (some (:point-set ring) point)
+          true ; The point is actually one of the rings points
+          ;; otherwise we'll do the real intersection algorithm
+          (let [antipodal-point (p/antipodal point)
+                ;; Find an external point to use. We can't use an external point that is antipodal to the given point or equal to the point.
+                external-point (first (filter #(and (not= % antipodal-point)
+                                                    (not= % point))
+                                              (:external-points ring)))
+                ;; Create the test arc
+                crossing-arc (a/arc point external-point)
+                ;; Find all the points the arc passes through
+                intersections (mapcat #(a/intersections % crossing-arc) (:arcs ring))
+                ;; Round the points. If the crossing arc passes through a point on the ring the
+                ;; intersection algorithm will result in two very, very close points. By rounding to
+                ;; within an acceptable range they'll be seen as the same point.
+                intersections (set (map (partial p/round-point 5) intersections))]
+            (or (odd? (count intersections))
+                ;; if the point itself is one of the intersections then the ring covers it
+                (intersections point)))))))
 
 (defn intersects-ring?
   "Returns true if the rings intersect each other."
@@ -134,6 +137,15 @@
            (or (empty? intersections)
                ;; Or is every intersection and acceptable point?
                (every? acceptable-points intersections))))))
+
+(defn covers-ring?
+  "Returns true if the ring covers the other ring."
+  [ring1 ring2]
+  (let [ring1-arcs (:arcs ring1)]
+    (and (every? (partial covers-point? ring1) (:points ring2))
+         (not-any? (fn [a1]
+                     (some (partial a/intersects? a1) ring1-arcs))
+                   (:arcs ring2)))))
 
 ;; TODO this needs additional testing and work. This will fail on at least one case:
 ;; Imagine a t shaped area. The vertical part of the T is a ring of 4 points. The horizontal part

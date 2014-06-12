@@ -13,21 +13,28 @@
             [cmr.spatial.ring :as r]
             [cmr.spatial.mbr :as mbr]
             [cmr.spatial.derived :as d]
+            [cmr.spatial.polygon :as poly]
             [cmr.spatial.test.generators :as sgen]
             [cmr.spatial.lr-binary-search :as lbs]
             [cmr.spatial.dev.viz-helper :as viz-helper]))
 
 (defspec all-rings-have-lrs {:times 100 :printer-fn sgen/print-failed-ring}
-  (for-all [ring sgen/rings]
+  (for-all [ring (sgen/rings)]
     (let [lr (lbs/find-lr ring)]
       (and lr
            (r/covers-br? ring lr)))))
+
+(defspec all-polygons-with-holes-have-lrs {:times 100}
+  (for-all [polygon sgen/polygons-with-holes]
+    (let [lr (lbs/find-lr polygon)]
+      (and lr
+           (poly/covers-br? polygon lr)))))
 
 (comment
   ;; Visualization samples and helpers
 
   (def ring (d/calculate-derived
-              (first (gen/sample sgen/rings 1))))
+              (first (gen/sample (sgen/rings) 1))))
 
   ;; Samples
 

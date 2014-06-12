@@ -94,8 +94,10 @@
   Polygon
   (cmr-spatial->viz-geoms
     [polygon]
-    (let [{:keys [rings options]} polygon]
-      (mapcat cmr-spatial->viz-geoms (map #(assoc % :options options) rings))))
+    (let [{:keys [rings options]} polygon
+          [boundary & holes] (map #(assoc % :options options) rings)
+          holes (map #(assoc-in % [:options :style] {:width 5 :color "9918A0ff"}) holes)]
+      (mapcat cmr-spatial->viz-geoms (cons boundary holes))))
 
   Mbr
   (cmr-spatial->viz-geoms

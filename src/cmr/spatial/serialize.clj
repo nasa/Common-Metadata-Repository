@@ -69,7 +69,7 @@
 (defprotocol SerializeConversions
   (shape->stored-ords
     [shape]
-    "Converts a spatial shape into the ordinates to ordinates to store in the search index")
+    "Converts a spatial shape into ta list of maps containing a shape type and ordinates  to store in the search index")
   (shape->mbr
     [shape]
     "Converts a spatial shape into it's minimum bounding rectangle")
@@ -83,14 +83,15 @@
 
   (shape->stored-ords
     [{:keys [rings]}]
-    ;; only supports single ring polygons for now
-    (when (> (count rings) 1)
-      (errors/internal-error! "shape->stored-ords only supports polygons with a single ring. TODO add support"))
-
     ;; TODO reduce size of stored rings and polygons by dropping the duplicate last two ordinates of a ring
-
-    {:type :polygon
-     :ords (map ordinate->stored (r/ring->ords (first rings)))})
+    (concat
+      [{:type :polygon
+       :ords (map ordinate->stored (r/ring->ords (first rings)))}]
+      ;; holes
+      (map (fn [r]
+             {:type :hole
+              :ords (map ordinate->stored (r/ring->ords r))})
+           (drop 1 rings))))
 
   (shape->mbr
     [{:keys [mbr]}]
@@ -117,9 +118,15 @@
   [type ords]
   (poly/polygon [(apply r/ords->ring (map stored->ordinate ords))]))
 
+(defmethod stored-ords->shape :hole
+  [type ords]
+  (apply r/ords->ring (map stored->ordinate ords)))
+
 (def shape-type->integer
   "Converts a shape type into an integer for storage"
-  {:polygon 1})
+  {:polygon 1
+   ;; A hole will immediately follow the shape which has the hole
+   :hole 2})
 
 (def integer->shape-type
   "Map of shape type integers to the equivalent keyword type"
@@ -129,7 +136,7 @@
   "Converts a sequence of shapes into a map contains the ordinate values and ordinate info"
   [shapes]
   (let [;; Convert each shape into a map of types and ordinates
-        infos (map shape->stored-ords shapes)]
+        infos (mapcat shape->stored-ords shapes)]
 
     {;; Create the ords-info sequence which is a sequence of types followed by the number of ordinates in the shape
      :ords-info (mapcat (fn [{:keys [type ords]}]
@@ -147,9 +154,13 @@
       (let [[int-type size] (first ords-info-pairs)
             type (integer->shape-type int-type)
             shape-ords (take size ords)
-            shape (stored-ords->shape type shape-ords)]
+            shape (stored-ords->shape type shape-ords)
+            ;; If shape is a hole add it to the last shape
+            shapes (if (= type :hole)
+                     (update-in shapes [(dec (count shapes)) :rings] conj shape)
+                     (conj shapes shape))]
         (recur (rest ords-info-pairs)
                (drop size ords)
-               (conj shapes shape))))))
+               shapes)))))
 
 

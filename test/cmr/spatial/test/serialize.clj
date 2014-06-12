@@ -42,11 +42,15 @@
   (is (= 123.1234568 (srl/stored->ordinate (srl/ordinate->stored 123.12345675))))
   (is (= 123.1234567 (srl/stored->ordinate (srl/ordinate->stored 123.12345674)))))
 
-(defspec ords-serialize-test 100
+(defn print-failed-shapes
+  [type shapes]
+  (doseq [shape shapes]
+    (sgen/print-failed-polygon type shape)))
+
+(defspec ords-serialize-test {:times 100 :printer-fn print-failed-shapes}
   (for-all [shapes (gen/fmap #(map round-shape %)
-                             (gen/vector sgen/polygons-without-holes 1 5))]
+                             (gen/vector sgen/polygons-invalid 1 5))]
     (let [ords-map (srl/shapes->ords-info-map shapes)
           {:keys [ords ords-info]} ords-map
           parsed-shapes (srl/ords-info->shapes ords-info ords)]
       (= shapes parsed-shapes))))
-

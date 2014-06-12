@@ -14,7 +14,8 @@
             [cmr.spatial.ring :as r]
             [cmr.spatial.mbr :as mbr]
             [cmr.spatial.derived :as d]
-            [cmr.spatial.test.generators :as sgen]))
+            [cmr.spatial.test.generators :as sgen]
+            [cmr.spatial.dev.viz-helper :as viz-helper]))
 
 ;; Ring tests. These are functions that return true if the ring is correct and false if invalid.
 
@@ -105,31 +106,34 @@
 
 
 ;; Verifies that the three point rings have some fundamental things correct
-(defspec rings-3-point-test {:times 1000 :printer-fn print-failure}
-  (for-all [ring sgen/rings-3-point]
+(defspec rings-3-point-test {:times 100 :printer-fn print-failure}
+  (for-all [ring (sgen/rings-3-point)]
     (let [failed-tests (test-ring ring)]
       (empty? failed-tests))))
 
-(defspec rings-generator-test {:times 1000 :printer-fn print-failure}
-  (for-all [ring sgen/rings]
+(defspec rings-generator-test {:times 100 :printer-fn print-failure}
+  (for-all [ring (sgen/rings)]
     (let [failed-tests (test-ring ring)]
       (empty? failed-tests))))
 
-;; TODO we could add a new defspec or a variation which will attempt to print out the failing example using a protocol
-;; which could be optionally implemented for a type.
-;; May also add an option to defspec to print out some code to try it yourself.
-;; - Would allow printing a ring with code. Also would allow printing a link to show ring in map.
 
-;; Or modify it to take a list of named tests to run. Could call this defspecs
+(defspec polygon-with-holes-generator-test {:times 50}
+  (for-all [polygon sgen/polygons-with-holes]
+    (let [rings (:rings polygon)
+          failed-tests (mapcat test-ring rings)
+          [boundary & holes] rings]
+      (and (empty? failed-tests)
+           (every? (partial r/covers-ring? boundary) holes)))))
 
 (comment
-  ;; defspecs example
 
-  (defspecs numbers-are-valid
-    [n gen/int]
-    (spec "numbers are positive"
-          (> n 0))
-    (spec "numbers are less than 100"
-          (< n 100)))
-)
+  (do
+    (viz-helper/clear-geometries)
+    (viz-helper/add-geometries (gen/sample sgen/polygons-with-holes 1)))
+
+
+
+  )
+
+
 

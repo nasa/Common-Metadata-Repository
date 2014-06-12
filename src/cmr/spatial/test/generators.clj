@@ -6,13 +6,14 @@
             [primitive-math]
             [cmr.spatial.point :as p]
             [cmr.spatial.vector :as v]
-            [cmr.spatial.mbr :as mbr]
+            [cmr.spatial.mbr :as m]
             [cmr.spatial.ring :as r]
             [cmr.spatial.polygon :as poly]
             [cmr.spatial.line :as l]
             [cmr.spatial.arc :as a]
             [cmr.spatial.derived :as d]
-            [clojure.math.combinatorics :as combo]))
+            [clojure.math.combinatorics :as combo]
+            [cmr.spatial.dev.viz-helper :as viz-helper]))
 
 (primitive-math/use-primitive-operators)
 
@@ -29,16 +30,19 @@
 (def points
   (ext-gen/model-gen p/point lons lats))
 
-(defn non-antipodal-points [num]
-  "A tuple of two points that aren't equal or antipodal to one another"
-  (gen/such-that (fn [points]
-                   (let [point-set (set points)]
-                     (and
-                       (= num (count point-set))
-                       (every? #(not (point-set (p/antipodal %))) points)
-                       ()
-                       )))
-                 (apply gen/tuple (repeat num points))))
+(defn non-antipodal-points
+  "Returns a generator returning tuples of points of the given size that are not antipodal or equal
+  to each other. Optionally takes a point generator to use."
+  ([num]
+   (non-antipodal-points num points))
+  ([num points-gen]
+   (gen/such-that (fn [points]
+                    (let [point-set (set points)]
+                      (and
+                        (= num (count point-set))
+                        (every? #(not (point-set (p/antipodal %))) points))))
+                  (gen/vector points-gen num))))
+
 
 (def lat-ranges
   "Tuples containing a latitude range from low to high"
@@ -47,7 +51,7 @@
 (def mbrs
   (gen/fmap
     (fn [[[south north] west east]]
-      (mbr/mbr west north east south))
+      (m/mbr west north east south))
     (gen/tuple lat-ranges lons lons)))
 
 (def arcs
@@ -72,7 +76,7 @@
       (r/ring (concat points [(first points)])))
     (gen/bind (gen/choose 3 10) non-antipodal-points)))
 
-(def polygons
+(def polygons-invalid
   "Generates polygons that are not valid but could be used for testing where validity is not important"
   (ext-gen/model-gen poly/polygon (gen/vector rings-invalid 1 4)))
 
@@ -83,7 +87,7 @@
 (def geometries
   "A generator returning individual points, bounding rectangles, lines, and polygons.
   The spatial areas generated will not necessarily be valid."
-  (gen/one-of [points mbrs lines polygons]))
+  (gen/one-of [points mbrs lines polygons-invalid]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Ring generation functions
@@ -132,41 +136,141 @@
                 (recur (inc pos))))
             (recur (inc pos))))))))
 
-(def rings-3-point
-  "Generator for 3 point rings. This is used as a base for which to add additional points"
-  (gen/such-that (fn [{:keys [mbr]}]
-                   ;; Limit it to rings with MBRs covering less than 99% of the world
-                   ;; The reason I'm doing this is because if the whole world is covered except very close
-                   ;; to a pole then the MBR of the ring will consider the pole covered.
-                   ;; TODO this should be a requirement of the CMR spatial validation.
-                   (< (mbr/percent-covering-world mbr) 99.999))
-                 (gen/fmap (fn [points]
-                             (let [points (concat points [(first points)])]
-                               (reverse-if-both-poles (r/ring points))))
-                           (non-antipodal-points 3))))
+(defn rings-3-point
+  "Generator for 3 point rings. This is used as a base for which to add additional points.
+  Takes the point generator function to use for generating points. The function passed in should take
+  the number of points requested. Defaults to non-antipodal-points"
+  ([]
+   (rings-3-point non-antipodal-points))
+  ([points-gen-fn]
+   (gen/such-that (fn [{:keys [mbr]}]
+                    ;; Limit it to rings with MBRs covering less than 99% of the world
+                    ;; The reason I'm doing this is because if the whole world is covered except very close
+                    ;; to a pole then the MBR of the ring will consider the pole covered.
+                    ;; TODO this should be a requirement of the CMR spatial validation.
+                    (< (m/percent-covering-world mbr) 99.999))
+                  (gen/fmap (fn [points]
+                              (let [points (concat points [(first points)])]
+                                (reverse-if-both-poles (r/ring points))))
+                            (points-gen-fn 3)))))
 
-(def rings
-  "Generator for rings of 3 to 6 points"
-  (gen/fmap
-    (fn [[ring new-points]]
-      (reduce (fn [ring point]
-                (if-let [new-ring (add-point-to-ring ring point)]
-                  (reverse-if-both-poles new-ring)
-                  ring))
-              ring
-              new-points))
-    (gen/tuple rings-3-point (non-antipodal-points 3))))
+(defn rings
+  "Generator for rings of 3 to 6 points. Takes the point generator function to use for generating
+  points. The function passed in should take the number of points requested. Defaults to
+  non-antipodal-points"
+  ([]
+   (rings non-antipodal-points))
+  ([points-gen-fn]
+   (gen/fmap
+     (fn [[ring new-points]]
+       (reduce (fn [ring point]
+                 (if-let [new-ring (add-point-to-ring ring point)]
+                   (reverse-if-both-poles new-ring)
+                   ring))
+               ring
+               new-points))
+     (gen/tuple (rings-3-point points-gen-fn) (points-gen-fn 3)))))
 
 (defn print-failed-ring
   "A printer function that can be used with the defspec defined in cmr.common to print out a failed
   ring."
   [type ring]
   ;; Print out the ring in a way that it can be easily copied to the test.
-  (println (pr-str (concat '(r/ring)
-                           [(vec (map
-                                   #(list 'p/point (:lon %) (:lat %))
-                                   (:points ring)))])))
+  (println (pr-str (concat `(r/ords->ring) (r/ring->ords ring))))
 
   (println (str "http://testbed.echo.nasa.gov/spatial-viz/ring_self_intersection?test_point_ordinates=2,2"
                 "&ring_ordinates="
                 (str/join "," (r/ring->ords ring)))))
+
+(defn print-failed-polygon
+  "A printer function that can be used with the defspec defined in cmr.common to print out a failed
+  polygon"
+  [type polygon]
+  ;; Print out the polygon in a way that it can be easily copied to the test.
+  (println (pr-str (concat `(poly/polygon)
+                           [(vec (map (fn [ring]
+                                        (concat `(r/ords->ring) (r/ring->ords ring)))
+                                      (:rings polygon)))]))))
+
+
+(defn points-in-mbr
+  "Returns a generator of points in the MBR"
+  [mbr]
+  (let [double-gen (fn [^double l ^double u]
+                     (let [li (int (Math/floor l))
+                           ui (int (Math/floor u))
+                           ;; Bring in the MBR slightly if possible
+                           ^long li (if (< (inc li) ui)
+                                      (inc li)
+                                      li)
+                           ^long ui (if (> (dec ui) li)
+                                      (dec ui)
+                                      ui)
+                           diff (- ui li)
+                           [li ui] (cond
+                                     (> diff 2) [li ui]
+                                     (> ui 0) [(- li (- 3 diff)) ui]
+                                     :else [li (+ ui (- 3 diff))])]
+                       (ext-gen/choose-double li ui)))
+        lon-gen (if (m/crosses-antimeridian? mbr)
+                  (gen/one-of (map #(double-gen (:west %) (:east %))
+                                   (m/split-across-antimeridian mbr)))
+                  (double-gen (:west mbr) (:east mbr)))
+        lat-gen (double-gen (:south mbr) (:north mbr))]
+    (gen/such-that (partial m/covers-point? mbr)
+                   (gen/fmap (partial apply p/point)
+                             (gen/tuple lon-gen lat-gen)))))
+
+(defn rings-in-ring
+  "Creates a generator of rings within the given ring. Useful for creating holes in a polygon. This is
+  an expensive generator. It works by generating points in the MBR of the ring. It uses those
+  points to build valid internal rings. Then each ring is only included if none of the arcs
+  of the ring intersect."
+  [ring]
+  (let [ring-arcs (:arcs ring)]
+    (gen/such-that
+      ;; Checks that arcs do not intersect
+      (fn [potential-ring]
+        (not-any? (fn [a1]
+                    (some (partial a/intersects? a1) ring-arcs))
+                  (:arcs potential-ring)))
+      (rings
+        ;; The function passed in builds sets of points that are non-antipodal and in the ring.
+        (fn [num-points]
+          (non-antipodal-points
+            num-points
+            ;; points in ring
+            (gen/such-that (partial r/covers-point? ring)
+                           (points-in-mbr (:mbr ring))
+                           ;; Number of points such-that will try in a row before giving up.
+                           500))))
+
+      ;; Number of rings in a row we could attempt to generate that don't intersect the parent
+      ;; before giving up.
+      1000)))
+
+(def polygons-with-holes
+  "Generator for polygons with holes"
+  (gen/fmap (fn [[outer-boundary potential-holes]]
+              ;; The holes can go in the polygon if they don't intersect any of the other holes
+              (let [[h1 h2 h3] potential-holes
+                    ;; h2 can be used if it doesn't intersect h1
+                    h2-valid? (not (r/intersects-ring? h1 h2))
+                    ;; h3 can be used if it doesn't intersect h1 or h2 (if h2 is valid)
+                    h3-valid? (and (not (r/intersects-ring? h1 h3))
+                                   (or (not h2-valid?)
+                                       (not (r/intersects-ring? h2 h3))))
+                    holes (cond
+                            (and h2-valid? h3-valid?) [h1 h2 h3]
+                            h2-valid? [h1 h2]
+                            h3-valid? [h1 h3]
+                            :else [h1])]
+                (poly/polygon (cons outer-boundary holes))))
+            ;; Generates tuples of outer boundaries along with holes that are in the boundary.
+            (gen/bind
+              (rings)
+              (fn [outer-boundary]
+                (gen/tuple (gen/return outer-boundary)
+                           ;; potential holes
+                           (gen/vector (rings-in-ring outer-boundary) 3))))))
+

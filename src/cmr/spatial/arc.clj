@@ -416,6 +416,11 @@
     (great-circle-equivalency-arc-intersections a1 a2)
     (default-arc-intersections a1 a2)))
 
+(defn intersects?
+  "Returns true if a1 intersects a2"
+  [a1 a2]
+  (seq (intersections a1 a2)))
+
 
 (extend-protocol d/DerivedCalculator
   cmr.spatial.arc.Arc

@@ -11,8 +11,12 @@
             [cmr.spatial.derived :as d]
             [clojure.math.combinatorics :as combo]
             [pjstadig.assertions :as pj]
-            [cmr.common.util :as util])
-  (:import cmr.spatial.mbr.Mbr))
+            [cmr.common.util :as util]
+            [cmr.spatial.polygon :as poly]
+            [cmr.spatial.relations :as relations])
+  (:import cmr.spatial.mbr.Mbr
+           cmr.spatial.ring.Ring
+           cmr.spatial.polygon.Polygon))
 (primitive-math/use-primitive-operators)
 
 (def ^:const ^long max-search-depth
@@ -35,33 +39,33 @@
     (m/mbr w n e s)))
 
 (defn lr-search
-  "Searches for an LR from the given point in the ring. The LR will grow the coordinates in the given
+  "Searches for an LR from the given point in the shape. The LR will grow the coordinates in the given
   directions. Directions should be a sequence of keywords i.e. :north, :south, :east, :west"
-  [directions ring from-mbr]
-  (pj/assert (r/covers-br? ring from-mbr))
+  [directions shape from-mbr]
+  (pj/assert (relations/covers-br? shape from-mbr))
   (util/binary-search
     ;; min value
     from-mbr
     ;; max value
-    (:mbr ring)
+    (relations/mbr shape)
     ;; Can compute middle value for binary search
     (partial mid-br (set directions))
     ;; Determines if binary search is done.
     (fn [current-br inner-br outer-br ^long depth]
-      (let [current-in-ring (r/covers-br? ring current-br)]
+      (let [current-in-shape (relations/covers-br? shape current-br)]
         (if (> depth max-search-depth)
           ;; Exceeded the recursion depth. Take our best choice
-          (if current-in-ring current-br inner-br)
-          (if current-in-ring :less-than :greater-than))))))
+          (if current-in-shape current-br inner-br)
+          (if current-in-shape :less-than :greater-than))))))
 
 (defn- even-lr-search
-  "Searches for an LR from the given point in the ring. The LR will grown evently from the point
+  "Searches for an LR from the given point in the shape. The LR will grown evently from the point
   given with the same shape as the outer MBR."
-  [ring from-point]
-  (when (r/covers-point? ring from-point) ; Only continue if the seed point is in the ring.
+  [shape from-point]
+  (when (relations/covers-point? shape from-point) ; Only continue if the seed point is in the shape.
     (let [{:keys [lon lat]} from-point
           minv (m/mbr lon lat lon lat)]
-      (lr-search [:north :south :east :west] ring minv))))
+      (lr-search [:north :south :east :west] shape minv))))
 
 (defn mbr->vert-dividing-arc
   "Returns an arc dividing the MBR in two vertically"
@@ -129,34 +133,49 @@
            (a/midpoint (a/arc p1 p2)))
          (combo/combinations intersections 2))))
 
-(defn find-lr
-  "Finds the 'largest' interior rectangle (LR) of the ring. This is not the provably largest interior
-  rectangle for a ring. It uses a simpler algorithm that works well for simple 4 point rings and
-  less well for more points. It should always find a LR for any ring of arbitrary shape."
+(defmulti shape->lr-search-points
+  "Returns points that may potentially be in the shape to use to search for a LR."
+  (fn [shape]
+    (type shape)))
+
+(defmethod shape->lr-search-points Polygon
+  [polygon]
+  (ring->lr-search-points (poly/boundary polygon)))
+
+(defmethod shape->lr-search-points Ring
   [ring]
-  (let [ring (d/calculate-derived ring)
-        {:keys [mbr contains-north-pole contains-south-pole]} ring
+  (ring->lr-search-points ring))
+
+(defn find-lr
+  "Finds the 'largest' interior rectangle (LR) of the shape. This is not the provably largest interior
+  rectangle for a shape. It uses a simpler algorithm that works well for simple 4 point rings and
+  less well for more points. It should always find a LR for any ring of arbitrary shape."
+  [shape]
+  (let [shape (d/calculate-derived shape)
+        mbr (relations/mbr shape)
+        contains-north-pole (relations/contains-north-pole? shape)
+        contains-south-pole (relations/contains-south-pole? shape)
         initial-lr (or
-                     ;; Find an LR from the center point of the ring
-                     (even-lr-search ring (m/center-point mbr))
+                     ;; Find an LR from the center point of the shape
+                     (even-lr-search shape (m/center-point mbr))
                      ;; Return the first LR that we can find using a test point
                      (first (filter identity
-                                    (map (partial even-lr-search ring)
-                                         (ring->lr-search-points ring)))))]
+                                    (map (partial even-lr-search shape)
+                                         (shape->lr-search-points shape)))))]
     (when-not initial-lr
       (errors/internal-error!
-        (str "Could not find lr from ring " (pr-str ring))))
+        (str "Could not find lr from shape " (pr-str shape))))
 
     ;; Grow LR in all directions
     (->> initial-lr
          ;; Grow corners
-         (lr-search [:west :north] ring)
-         (lr-search [:north :east] ring)
-         (lr-search [:east :south] ring)
-         (lr-search [:south :west] ring)
+         (lr-search [:west :north] shape)
+         (lr-search [:north :east] shape)
+         (lr-search [:east :south] shape)
+         (lr-search [:south :west] shape)
          ;; Grow edges
-         (lr-search [:north] ring)
-         (lr-search [:east] ring)
-         (lr-search [:south] ring)
-         (lr-search [:west] ring))))
+         (lr-search [:north] shape)
+         (lr-search [:east] shape)
+         (lr-search [:south] shape)
+         (lr-search [:west] shape))))
 
