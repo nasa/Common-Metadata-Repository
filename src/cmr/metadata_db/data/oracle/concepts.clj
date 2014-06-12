@@ -267,7 +267,7 @@
               [start-index]
               (let [batch (find-batch start-index)]
                 (when-not (empty? batch)
-                  (cons batch (lazy-seq (lazy-find (+ start-index (count batch))))))))]
+                  (concat batch (lazy-seq (lazy-find (+ start-index (count batch))))))))]
       (lazy-find 0)))
 
   (save-concept
