@@ -21,9 +21,9 @@
 
 (def channel-buffer-size (config/config-value-fn :channel-buffer-size 10 #(Long. %)))
 
-(def db-batch-size (config/config-value-fn :db-batch-size 1000 #(Long. %)))
+(def db-batch-size (config/config-value-fn :db-batch-size 100 #(Long. %)))
 
-(def bulk-index-batch-size (config/config-value-fn :bulk-index-batch-size 1000 #(Long. %)))
+(def bulk-index-batch-size (config/config-value-fn :bulk-index-batch-size 100 #(Long. %)))
 
 (def
   ^{:doc "Defines the order to start the components."

@@ -77,9 +77,9 @@
   (info "Starting background task for monitoring bulk provider indexing channels.")
   (let [channel (:provider-index-channel system)]
     (ca/thread (while true
-              (try ; catch any errors and log them, but don't let the thread die
-                (let [provider-id (<!! channel)]
-                  (index-provider system provider-id))
-                (catch Throwable e
-                  (error e (.getMessage e))))))))
+                 (try ; catch any errors and log them, but don't let the thread die
+                   (let [provider-id (<!! channel)]
+                     (index-provider system provider-id))
+                   (catch Throwable e
+                     (error e (.getMessage e))))))))
 
