@@ -6,6 +6,11 @@
             [cmr.elastic-utils.config :as es-config]
             [clj-http.conn-mgr :as conn-mgr]))
 
+(def search-public-protocol (config/config-value :search-public-protocol "http"))
+(def search-public-host (config/config-value :search-public-host "localhost"))
+(def search-public-port (config/config-value :search-public-port 3003 transmit-config/parse-port))
+(def search-relative-root-url (config/config-value :search-relative-root-url ""))
+
 (def conn-mgr-atom (atom nil))
 
 (defn conn-mgr
@@ -85,7 +90,7 @@
 (defn location-root
   "Returns the url root for reference location"
   []
-  ;; TODO we will configure sparate (external) config parameters for this.
-  ;; For now, just use the internal configuration.
-  (let [{:keys [host port]} (get (transmit-config/app-conn-info) :search)]
-    (format "http://%s:%s/concepts/" host port)))
+  (let [port (if (empty? search-relative-root-url)
+               search-public-port
+               (format "%s%s" search-public-port search-relative-root-url))]
+    (format "%s://%s:%s/concepts/" search-public-protocol search-public-host port)))
