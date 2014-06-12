@@ -340,7 +340,7 @@
   (let [bool-params (select-keys params [:downloadable])]
     (mapcat
       (fn [[key value]]
-        (if (or (= "true" value) (= "false" value))
+        (if (or (= "true" value) (= "false" value) (= "unset" value))
           []
           [(format "Parameter %s must take value of true of false, but was %s" key value)]))
       bool-params)))

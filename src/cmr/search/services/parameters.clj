@@ -122,9 +122,15 @@
 
 (defmethod parameter->condition :boolean
   [concept-type param value options]
-  (if (or (= "true" value) (= "false" value))
+  (cond
+    (or (= "true" value) (= "false" value))
     (qm/map->BooleanCondition {:field param
                                :value (= "true" value)})
+
+    (= "unset" value)
+    (qm/map->MatchAllCondition {})
+
+    :else
     (errors/internal-error! (format "Boolean condition for %s has invalid value of [%s]" param value))))
 
 
