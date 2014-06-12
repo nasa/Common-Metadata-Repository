@@ -66,8 +66,9 @@
   "Converts an item into the expected reference"
   [item]
   (-> item
-      (select-keys [:concept-id :revision-id :provider-id])
-      (assoc :name (item->native-id item))))
+      (select-keys [:concept-id :revision-id])
+      (assoc :name (item->native-id item))
+      (assoc :location (str (url/location-root) (:concept-id item)))))
 
 (defn refs-match?
   "Returns true if the references match the expected items"

@@ -82,4 +82,10 @@
           provider-id
           native-id))
 
-
+(defn location-root
+  "Returns the url root for reference location"
+  []
+  ;; TODO we will configure sparate (external) config parameters for this.
+  ;; For now, just use the internal configuration.
+  (let [{:keys [host port]} (get (transmit-config/app-conn-info) :search)]
+    (format "http://%s:%s/concepts/" host port)))
