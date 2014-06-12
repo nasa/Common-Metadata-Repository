@@ -17,7 +17,7 @@
 (def search-public-port (cfg/config-value :search-public-port 3003 transmit-config/parse-port))
 (def search-relative-root-url (cfg/config-value :search-relative-root-url ""))
 
-(def search-pulblic-conf
+(def search-public-conf
   {:protocol search-public-protocol
    :host search-public-host
    :port search-public-port
@@ -36,7 +36,7 @@
              :web (web/create-web-server (transmit-config/search-port) routes/make-api)
              :cache (cache/create-cache)
              :zipkin (context/zipkin-config "Search" false)
-             :search-pulblic-conf search-pulblic-conf}]
+             :search-public-conf search-public-conf}]
     (transmit-config/system-with-connections sys [:metadata-db :index-set])))
 
 (defn start

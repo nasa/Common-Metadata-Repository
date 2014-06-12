@@ -5,7 +5,7 @@
 (defn location-root
   "Returns the url root for reference location"
   [context]
-  (let [{:keys [protocol host port relative-root-url]} (get-in context [:system :search-pulblic-conf])
+  (let [{:keys [protocol host port relative-root-url]} (get-in context [:system :search-public-conf])
         port (if (empty? relative-root-url) port (format "%s%s" port relative-root-url))]
     (format "%s://%s:%s/concepts/" protocol host port)))
 
