@@ -245,7 +245,7 @@ params: none
 returns: nothing (status 204)
 
 __Example Curl:__
-curl -v XDELETE http://localhost:3001/providers/PROV1
+curl -v -XDELETE http://localhost:3001/providers/PROV1
 
 ### GET "/providers"
 params: none
