@@ -10,14 +10,20 @@
             [cmr.system-trace.context :as context]
             [clojure.core.async :as ca :refer [chan]]
             [cmr.bootstrap.data.bulk-migration :as bm]
+            [cmr.bootstrap.data.bulk-index :as bi]
             [cmr.metadata-db.config :as mdb-config]
             [cmr.transmit.config :as transmit-config]
             [cmr.metadata-db.system :as mdb-system]
             [cmr.indexer.system :as idx-system]
             [cmr.common.cache :as cache]
+            [cmr.common.config :as config]
             [clojure.core.cache :as cc]))
 
-(def CHANNEL_BUFFER_SIZE 10)
+(def channel-buffer-size (config/config-value-fn :channel-buffer-size 10 #(Long. %)))
+
+(def db-batch-size (config/config-value-fn :db-batch-size 100 #(Long. %)))
+
+(def bulk-index-batch-size (config/config-value-fn :bulk-index-batch-size 100 #(Long. %)))
 
 (def
   ^{:doc "Defines the order to start the components."
@@ -37,12 +43,16 @@
         sys {:log (log/create-logger)
              :metadata-db metadata-db
              :indexer indexer
+             :db-batch-size (db-batch-size)
+             :bulk-index-batch-size (bulk-index-batch-size)
              ;; Channel for requesting full provider migration - provider/collections/granules.
              ;; Takes single provider-id strings.
-             :provider-channel (chan CHANNEL_BUFFER_SIZE)
+             :provider-channel (chan (channel-buffer-size))
              ;; Channel for requesting single collection/granules migration.
              ;; Takes maps, e.g., {:collection-id collection-id :provider-id provider-id}
-             :collection-channel (chan CHANNEL_BUFFER_SIZE)
+             :collection-channel (chan (channel-buffer-size))
+             ;; Channel for requesting full provider indexing - collections/granules
+             :provider-index-channel (chan (channel-buffer-size))
              :catalog-rest-user (mdb-config/catalog-rest-db-username)
              :db (oracle/create-db (mdb-config/db-spec))
              :web (web/create-web-server (transmit-config/bootstrap-port) routes/make-api)
@@ -64,6 +74,7 @@
 
     (oracle/test-db-connection! (:db started-system))
     (bm/handle-copy-requests started-system)
+    (bi/handle-bulk-index-requests started-system)
     (info "Bootstrap System started")
     started-system))
 

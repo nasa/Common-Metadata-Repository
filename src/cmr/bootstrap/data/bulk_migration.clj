@@ -1,4 +1,5 @@
 (ns cmr.bootstrap.data.bulk-migration
+  "Functions to support migration of data form catlog rest to metadata db."
   (:require [cmr.common.log :refer (debug info warn error)]
             [clojure.java.jdbc :as j]
             [clj-http.client :as client]
@@ -30,10 +31,6 @@
 (defn catalog-rest-user
   [system]
   (get-in system [:catalog-rest-user]))
-
-(defn system->db
-  [system]
-  (get-in system [:db]))
 
 (defn metadata-db-user
   [system]
@@ -87,7 +84,7 @@
   [system provider-id collection-id]
   (info "Deleting collection" collection-id "from provider" provider-id)
   (j/with-db-transaction
-    [conn (system->db system)]
+    [conn (:db system)]
     (j/execute! conn (delete-collection-sql system provider-id collection-id))))
 
 (defn- delete-collection-granules-sql
@@ -101,7 +98,7 @@
   [system provider-id collection-id]
   (info "Deleting granules for collection" collection-id)
   (j/with-db-transaction
-    [conn (system->db system)]
+    [conn (:db system)]
     (j/execute! conn (delete-collection-granules-sql provider-id collection-id))))
 
 (defn- get-dataset-record-id-for-collection-sql
@@ -114,7 +111,7 @@
   "Retrieve the id for a given collection/dataset from the catalog-rest table."
   [system provider-id collection-id]
   (-> (j/with-db-transaction
-         [conn (system->db system)]
+         [conn (:db system)]
          (j/query conn (get-dataset-record-id-for-collection-sql system provider-id collection-id)))
       first
       :id
@@ -125,11 +122,11 @@
   [system provider-id]
   (su/build (select [:id :echo-collection-id] (from (catalog-rest-dataset-table system provider-id)))))
 
-(defn- get-provider-collection-list
+(defn get-provider-collection-list
   "Get the list of collections (datasets) for the given provider."
   [system provider-id]
   (j/with-db-transaction
-    [conn (system->db system)]
+    [conn (:db system)]
     (j/query conn (get-provider-collection-list-sql system provider-id))))
 
 (defn- copy-collection-data-sql
@@ -171,7 +168,7 @@
   ([system provider-id collection-id]
    (info "Copying collection data for provider" provider-id)
    (j/with-db-transaction
-     [conn (system->db system)]
+     [conn (:db system)]
      (j/execute! conn (copy-collection-data-sql system provider-id collection-id)))))
 
 (defn- copy-granule-data-for-collection-sql
@@ -201,7 +198,7 @@
   [system provider-id collection-id dataset-record-id]
   (let [stmt (copy-granule-data-for-collection-sql system provider-id collection-id dataset-record-id)]
     (j/with-db-transaction
-      [conn (system->db system)]
+      [conn (:db system)]
       (j/execute! conn stmt))))
 
 (defn- copy-granule-data-for-provider

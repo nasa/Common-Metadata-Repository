@@ -8,7 +8,8 @@
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.api.errors :as errors]
             [cmr.system-trace.http :as http-trace]
-            [cmr.bootstrap.services.data-migration :as dm]))
+            [cmr.bootstrap.services.data-migration :as dm]
+            [cmr.bootstrap.services.bulk-index :as bulk]))
 
 
 (defn- migrate-collection
@@ -29,13 +30,26 @@
     (dm/migrate-provider system provider-id)
     {:status 202 :body {:message (str "Processing provider " provider-id)}}))
 
+(defn- bulk-index-provider
+  "Index all the collections and granules for a given provider."
+  [context provider-id-map]
+  (let [provider-id (get provider-id-map "provider_id")
+        system (:system context)]
+    (bulk/index-provider system provider-id)
+    {:status 202
+     :body {:message (str "Processing provider " provider-id " for bulk indexing.")}}))
+
 (defn- build-routes [system]
   (routes
     (context "/bulk_migration" []
       (POST "/providers" {:keys [request-context body]}
         (migrate-provider request-context body))
       (POST "/collections" {:keys [request-context body]}
-        (migrate-collection request-context body)))))
+        (migrate-collection request-context body)))
+
+    (context "/bulk_index" []
+      (POST "/providers" {:keys [request-context body]}
+        (bulk-index-provider request-context body)))))
 
 (defn make-api [system]
   (-> (build-routes system)
