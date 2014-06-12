@@ -31,8 +31,9 @@
 
 (def references
   (gen/fmap (fn [[concept-type-prefix concept-num provider-id revision-id native-id]]
-              (let [concept-id (str concept-type-prefix concept-num "-" provider-id)]
-                (r/->Reference concept-id revision-id provider-id native-id)))
+              (let [concept-id (str concept-type-prefix concept-num "-" provider-id)
+                    location (str "http://localhost:3003/" concept-id)]
+                (r/->Reference concept-id revision-id location native-id)))
             (gen/tuple concept-type-prefixes gen/s-pos-int provider-ids revision-ids native-ids)))
 
 (def results

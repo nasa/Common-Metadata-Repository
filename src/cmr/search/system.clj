@@ -6,10 +6,22 @@
             [cmr.search.api.routes :as routes]
             [cmr.search.data.elastic-search-index :as idx]
             [cmr.system-trace.context :as context]
+            [cmr.common.config :as cfg]
             [cmr.transmit.config :as transmit-config]
             [cmr.elastic-utils.config :as es-config]))
 
 ;; Design based on http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts
+
+(def search-public-protocol (cfg/config-value :search-public-protocol "http"))
+(def search-public-host (cfg/config-value :search-public-host "localhost"))
+(def search-public-port (cfg/config-value :search-public-port 3003 transmit-config/parse-port))
+(def search-relative-root-url (cfg/config-value :search-relative-root-url ""))
+
+(def search-pulblic-conf
+  {:protocol search-public-protocol
+   :host search-public-host
+   :port search-public-port
+   :relative-root-url search-relative-root-url})
 
 (def
   ^{:doc "Defines the order to start the components."
@@ -23,7 +35,8 @@
              :search-index (idx/create-elastic-search-index (es-config/elastic-config))
              :web (web/create-web-server (transmit-config/search-port) routes/make-api)
              :cache (cache/create-cache)
-             :zipkin (context/zipkin-config "Search" false)}]
+             :zipkin (context/zipkin-config "Search" false)
+             :search-pulblic-conf search-pulblic-conf}]
     (transmit-config/system-with-connections sys [:metadata-db :index-set])))
 
 (defn start
