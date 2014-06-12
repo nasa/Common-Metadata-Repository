@@ -30,6 +30,9 @@
     (testing "search by downloadable false."
       (let [references (search/find-refs :granule {:downloadable false})]
         (is (d/refs-match? [gran2 gran3 gran4 gran6] references))))
+    (testing "search by online only unset."
+      (let [references (search/find-refs :granule {:downloadable "unset"})]
+        (is (d/refs-match? [gran1 gran2 gran3 gran4 gran5 gran6] references))))
     (testing "search by downloadable wrong value"
       (is (= {:status 422 :errors ["Parameter :downloadable must take value of true of false, but was wrong"]}
              (search/find-refs :granule {:downloadable "wrong"}))))))
@@ -54,6 +57,9 @@
     (testing "search by online only false."
       (let [references (search/find-refs :granule {:online-only false})]
         (is (d/refs-match? [gran2 gran3 gran4 gran6] references))))
+    (testing "search by online only unset."
+      (let [references (search/find-refs :granule {:online-only "unset"})]
+        (is (d/refs-match? [gran1 gran2 gran3 gran4 gran5 gran6] references))))
     (testing "search by online only wrong value"
       (is (= {:status 422 :errors ["Parameter :downloadable must take value of true of false, but was wrong"]}
              (search/find-refs :granule {:online-only "wrong"}))))))
