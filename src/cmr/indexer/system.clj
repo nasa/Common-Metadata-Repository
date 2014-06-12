@@ -18,7 +18,7 @@
 (def collections-with-separate-indexes
   "Configuration function that will return a list of collections with separate indexes for their
   granule data."
-  (cfg/config-value-fn :colls-with-separate-indexes "C1000000120-FIX_PROV1" #(str/split % #",")))
+  (cfg/config-value-fn :colls-with-separate-indexes "" #(str/split % #",")))
 
 (def
   ^{:doc "Defines the order to start the components."
