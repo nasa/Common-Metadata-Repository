@@ -123,7 +123,7 @@
       :concept-id-concept-conflict
       (let [{:keys [concept-id concept-type provider-id native-id]} concept]
         (cmsg/data-error :conflict
-                         msg/concept-exists-with-differnt-id
+                         msg/concept-exists-with-different-id
                          concept-id
                          concept-type
                          provider-id

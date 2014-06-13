@@ -57,9 +57,9 @@
           provider-id
           concept-type))
 
-(defn concept-exists-with-differnt-id [concept-id concept-type provider-id native-id]
+(defn concept-exists-with-different-id [concept-id concept-type provider-id native-id]
   (format
-    "A concept with a differnt concept-id from %s already exists for concept-type [%s] provider-id [%s] and native-id [%s]"
+    "A concept with a different concept-id from %s already exists for concept-type [%s] provider-id [%s] and native-id [%s]"
     concept-id
     concept-type
     provider-id
