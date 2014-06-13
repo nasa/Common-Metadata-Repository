@@ -7,6 +7,7 @@
                  [nasa-cmr/cmr-oracle-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-system-trace-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-metadata-db-app "0.1.0-SNAPSHOT"]
+                 [nasa-cmr/cmr-indexer-app "0.1.0-SNAPSHOT"]
                  [compojure "1.1.6"]
                  [ring/ring-core "1.2.2"]
                  [ring/ring-json "0.3.1"]

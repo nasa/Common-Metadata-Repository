@@ -28,7 +28,7 @@
 (defn- index-granules-for-collection
   "Index the granules for the given collection."
   [system provider-id collection-id]
-  (info (str "Indexing granule data for collection " collection-id))
+  (info (str "Indexing granule data for collection" collection-id))
   (let [db (get-in system [:metadata-db :db])
         params {:concept-type :granule
                 :provider-id provider-id
@@ -41,7 +41,7 @@
   "Index the granule data for every collection for a given provider."
   [system provider-id]
   (info "Indexing granule data for provider" provider-id)
-  (doall (pmap
+  (dorun (pmap
            (partial index-granules-for-collection system provider-id)
            (get-provider-collection-list system provider-id)))
   (info "Indexing of granule data for provider" provider-id "completed."))
