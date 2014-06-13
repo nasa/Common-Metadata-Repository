@@ -7,18 +7,11 @@
             [clj-http.client :as client]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.services.errors :as errors]
+            [cmr.transmit.elasticsearch :as es]
             [cmr.transmit.index-set :as index-set]
             [cmr.indexer.data.index-set :as idx-set]
             [cmr.system-trace.core :refer [deftracefn]]
             [cheshire.core :as json]))
-
-
-(defn- connect-with-config
-  "Connects to ES with the given config"
-  [config]
-  (let [{:keys [host port]} config]
-    (info (format "Connecting to single ES on %s %d" host port))
-    (esr/connect (str "http://" host ":" port))))
 
 (defn create-indexes
   "Create elastic index for each index name"
@@ -49,7 +42,7 @@
   (start
     [this system]
     (let [context {:system system}
-          conn (connect-with-config (:config this))
+          conn (es/try-connect (:config this))
           this (assoc this :conn conn)]
       (create-indexes context)
       (assoc this
