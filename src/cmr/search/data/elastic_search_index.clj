@@ -1,13 +1,13 @@
 (ns cmr.search.data.elastic-search-index
   "Implements the search index protocols for searching against Elasticsearch."
-  (:require [clojurewerkz.elastisch.rest :as esr]
-            [clojurewerkz.elastisch.rest.document :as esd]
+  (:require [clojurewerkz.elastisch.rest.document :as esd]
             [clojurewerkz.elastisch.query :as q]
             [clojurewerkz.elastisch.rest.response :as esrsp]
             [clojure.string :as s]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.lifecycle :as lifecycle]
             [cmr.common.cache :as cache]
+            [cmr.transmit.elasticsearch :as es]
             [cmr.transmit.index-set :as index-set]
             [cmr.search.models.results :as results]
             [cmr.search.data.query-to-elastic :as q2e]
@@ -82,8 +82,7 @@
 
   (start
     [this system]
-    (let [{{:keys [host port]} :config} this]
-      (assoc this :conn (esr/connect (str "http://" host ":" port)))))
+    (assoc this :conn (es/try-connect (:config this))))
 
   (stop [this system]
         this))
