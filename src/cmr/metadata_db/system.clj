@@ -43,8 +43,9 @@
 
     (db-holder/set-db! db)
 
-    (when-not (re-find #"MemoryDB" (str (type db)))
-      (jobs/start db))
+    (when-not (or (re-find #"MemoryDB" (str (type db)))
+                  (:skip-background-jobs started-system)
+      (jobs/start db)))
 
     (info "Metadata DB started")
     started-system))
