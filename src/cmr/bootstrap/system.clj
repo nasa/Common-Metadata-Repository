@@ -30,10 +30,19 @@
     :private true}
   component-order [:log :db :web])
 
+
+(comment
+
+  (into {:a :A :b :B} {:b nil :c :C})
+
+  )
+
 (defn create-system
   "Returns a new instance of the whole application."
   []
-  (let [metadata-db (dissoc (mdb-system/create-system) :log :web)
+  (let [metadata-db (-> (mdb-system/create-system)
+                        (dissoc :log :web)
+                        (assoc :skip-background-jobs true))
         indexer (-> (idx-system/create-system)
                     (dissoc :log :web)
                     ;; Setting the parent-collection-cache to cache parent collection umm
