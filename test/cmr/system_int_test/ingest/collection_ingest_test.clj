@@ -55,7 +55,7 @@
   (let [concept-with-empty-body  (assoc (old-ingest/distinct-concept "PROV1" 2) :metadata "")
         {:keys [status errors]} (ingest/ingest-concept concept-with-empty-body)]
     (is (= status 400))
-    (is (re-find #"Invalid XML content." (first errors)))))
+    (is (re-find #"XML content is too short." (first errors)))))
 
 ;; Verify old DeleteTime concept results in 400 error.
 (deftest old-delete-time-collection-ingest-test

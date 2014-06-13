@@ -55,7 +55,7 @@
         granule-with-empty-body  (assoc (old-ingest/granule-concept "PROV1" "C1000000000-PROV1" 5 "G1-PROV1") :metadata "")
         {:keys [status errors]} (ingest/ingest-concept granule-with-empty-body)]
     (is (= 400 status))
-    (is (re-find #"Invalid XML content." (first errors)))))
+    (is (re-find #"XML content is too short." (first errors)))))
 
 ;;; Verify non-existent granule deletion results in not found / 404 error.
 (deftest delete-non-existent-granule-test
