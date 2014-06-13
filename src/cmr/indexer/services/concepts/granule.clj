@@ -36,10 +36,10 @@
   [parent-collection granule]
   (when (get-in granule [:spatial-coverage :geometries])
     (let [gsr (get-in parent-collection [:spatial-coverage :granule-spatial-representation])]
-      (if (= gsr :geodetic)
-        (spatial/spatial->elastic-docs gsr granule)
-        (warn
-          "Only geodetic is supported for granule spatial representation currently. Ignoring this area.")))))
+      (when (= gsr :geodetic)
+        ;; Only index the types we support. We will silently ignore the other kinds. Adding a warning
+        ;; turned out to be way too much logging.
+        (spatial/spatial->elastic-docs gsr granule)))))
 
 (defmethod idx/concept->elastic-doc :granule
   [context concept umm-granule]
