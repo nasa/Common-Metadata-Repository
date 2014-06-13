@@ -9,14 +9,8 @@
             [cmr.index-set.services.messages :as m]
             [cheshire.core :as cheshire]
             [cmr.index-set.config.elasticsearch-config :as es-config]
+            [cmr.transmit.elasticsearch :as es]
             [cmr.system-trace.core :refer [deftracefn]]))
-
-(defn- connect-with-config
-  "Connects to ES with the given config"
-  [config]
-  (let [{:keys [host port]} config]
-    (info (format "Connecting to single ES on %s %d" host port))
-    (esr/connect (str "http://" host ":" port))))
 
 (defn create-index
   "Create elastic index"
@@ -91,7 +85,7 @@
 
   (start
     [this system]
-    (let [conn (connect-with-config (:config this))
+    (let [conn (es/try-connect (:config this))
           this (assoc this :conn conn)]
       (create-index this es-config/idx-cfg-for-index-sets)
       this))
