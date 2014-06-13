@@ -10,15 +10,19 @@
   "Configures logging using Timbre."
   [{:keys [level file stdout-enabled?]}]
 
-  ;; Make sure the log directory exists
-  (.. (io/file file) getParentFile mkdirs)
-
   (t/set-level! (or level :warn))
   (t/set-config! [:timestamp-pattern] "yyyy-MM-dd HH:mm:ss")
 
-  ; Enable file logging
-  (t/set-config! [:appenders :spit :enabled?] true)
-  (t/set-config! [:shared-appender-config :spit-filename] file)
+  (if file
+    ;; Enable file logging
+    (do
+      ;; Make sure the log directory exists
+      (.. (io/file file) getParentFile mkdirs)
+      (t/set-config! [:appenders :spit :enabled?] true)
+      (t/set-config! [:shared-appender-config :spit-filename] file))
+    ;; Disable file logging
+    (t/set-config! [:appenders :spit :enabled?] false))
+
 
   ;; Set the format for logging.
   (t/set-config! [:fmt-output-fn]
@@ -84,7 +88,8 @@
 
 (def default-log-options
   {:level :debug
-   :file "log/app.log"
+   ;; Do not log to a file by default
+   :file nil
    :stdout-enabled? true})
 
 (defn create-logger
