@@ -1,6 +1,7 @@
 (ns cmr.ingest.services.validation
   "Provides functions to validate concept"
-  (:require [cmr.common.services.errors :as err]))
+  (:require [cmr.common.services.errors :as err]
+            [clojure.string :as s]))
 
 ;; body element (metadata) of a request arriving at ingest app should be in xml format and mime type
 ;; should be of the items in this def.
@@ -15,14 +16,14 @@
     (if (contains? CMR_VALID_CONTENT_TYPES content-type)
       []
       [(format "Invalid content-type: %s. Valid content-types: %s."
-               content-type CMR_VALID_CONTENT_TYPES)])))
+               content-type (s/join ", " CMR_VALID_CONTENT_TYPES))])))
 
 (defn- metadata-length-validation
   "Validates the metadata length is not unreasonable."
   [concept]
   (if (> (count (:metadata concept)) 4)
     []
-    ["Invalid XML content."]))
+    ["XML content is too short."]))
 
 (def concept-validations
   "A list of the functions that can validate concept."
