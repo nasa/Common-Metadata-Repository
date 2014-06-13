@@ -3,6 +3,7 @@
             [cmr.transmit.metadata-db :as mdb]
             [cmr.ingest.data.indexer :as indexer]
             [cmr.ingest.services.messages :as msg]
+            [cmr.ingest.services.validation :as v]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.services.errors :as serv-errors]
             [cmr.common.services.messages :as cmsg]
@@ -11,15 +12,6 @@
             [cmr.umm.echo10.granule :as g]
             [clojure.string :as string]
             [cmr.system-trace.core :refer [deftracefn]]))
-
-;; body element (metadata) of a request arriving at ingest app should be in xml format and mime type
-;; should be of the items in this def.
-(def cmr-valid-content-types
-  #{"application/echo10+xml", "application/iso_prototype+xml", "application/iso:smap+xml",
-    "application/iso19115+xml", "application/dif+xml"})
-
-;; metadata should be atleast this size to proceed with next steps of ingest workflow
-(def smallest-xml-file-length (count "<a/>\n"))
 
 (defmulti add-extra-fields
   "Parse the metadata of concept, add the extra fields to it and return the concept."
@@ -55,27 +47,18 @@
 (deftracefn save-concept
   "Store a concept in mdb and indexer and return concept-id and revision-id."
   [context concept]
-  ;; TODO break these checks out as validations and create a validation method that calls them
-  ;;      to validate before saving.
-  (let [metadata (:metadata concept)
-        content-type (:format concept)
-        xml-content? (> (count metadata) smallest-xml-file-length)
-        valid-content-type? (contains? cmr-valid-content-types (string/trim content-type))]
-    (cond (not xml-content?) (serv-errors/throw-service-error :bad-request "Invalid XML file.")
-          (not valid-content-type?) (serv-errors/throw-service-error :bad-request
-                                                                     (format "Invalid content-type: %s. Valid content-types %s."
-                                                                             content-type cmr-valid-content-types))
-          :else (let [concept (add-extra-fields context concept)
-                      time-to-compare (t/plus (t/now) (t/minutes 1))
-                      delete-time (get-in concept [:extra-fields :delete-time])
-                      delete-time (if delete-time (p/parse-datetime delete-time) nil)]
-                  (if (and delete-time (t/after? time-to-compare delete-time))
-                    (serv-errors/throw-service-error
-                      :bad-request
-                      (format "DeleteTime %s is before the current time." (str delete-time)))
-                    (let [{:keys [concept-id revision-id]} (mdb/save-concept context concept)]
-                      (indexer/index-concept context concept-id revision-id)
-                      {:concept-id concept-id, :revision-id revision-id}))))))
+  (v/validate concept)
+  (let [concept (add-extra-fields context concept)
+        time-to-compare (t/plus (t/now) (t/minutes 1))
+        delete-time (get-in concept [:extra-fields :delete-time])
+        delete-time (if delete-time (p/parse-datetime delete-time) nil)]
+    (if (and delete-time (t/after? time-to-compare delete-time))
+      (serv-errors/throw-service-error
+        :bad-request
+        (format "DeleteTime %s is before the current time." (str delete-time)))
+      (let [{:keys [concept-id revision-id]} (mdb/save-concept context concept)]
+        (indexer/index-concept context concept-id revision-id)
+        {:concept-id concept-id, :revision-id revision-id}))))
 
 (deftracefn delete-concept
   "Delete a concept from mdb and indexer."
