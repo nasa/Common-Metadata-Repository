@@ -169,6 +169,16 @@ The temporal datetime has to be in yyyy-MM-ddTHH:mm:ssZ format.
 
      curl "http://localhost:3003/collections?science_keywords\[0\]\[category\]=Cat1&science_keywords\[0\]\[topic\]=Topic1&science_keywords\[1\]\[category\]=Cat2"
 
+### Find collections by two_d_coordinate_system_name param, supports pattern
+
+  Find collections matching 'two_d_coordinate_system_name' param value
+
+    curl "http://localhost:3003/collections?two_d_coordinate_system_name\[\]=Alpha"
+
+  Find collections matching any ofthe 'two_d_coordinate_system_name' param values
+
+    curl "http://localhost:3003/collections?two_d_coordinate_system_name\[\]=Alpha&two_d_coordinate_system_name\[\]=Bravo"
+
 ### Find collections by collection_data_type param, supports ignore_case and the following aliases for "NEAR_REAL_TIME": "near_real_time","nrt", "NRT", "near real time","near-real time","near-real-time","near real-time".
 
   Find collections matching 'collection_data_type' param value
@@ -338,6 +348,15 @@ Polygon points are provided in clockwise order. The last point should match the 
   Find granules by parent concept id
 
     curl "http://localhost:3003/granules?concept_id\[\]=C1000000001-CMR_PROV2"
+
+### Find granules by day_night param, supports pattern, ignore_case, and option :and, :or
+
+  curl "http://localhost:3003/granules?day_night=night
+
+  curl "http://localhost:3003/granules?day_night=day
+
+  curl "http://localhost:3003/granules?day_night=unspecified
+
 
 ### Exclude granules from elastic results by echo granule id and concept ids. Note: more than one id may be supplied in exclude param
 
