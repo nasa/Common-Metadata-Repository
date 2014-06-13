@@ -86,7 +86,7 @@
    :native-id (str "native-id " uniq-num)
    :provider-id provider-id
    :metadata (collection-xml base-concept-attribs)
-   :content-type "application/echo10+xml"
+   :format "application/echo10+xml"
    :deleted false
    :extra-fields {:short-name (str "short" uniq-num)
                   :version-id (str "V" uniq-num)
@@ -101,7 +101,7 @@
                  :native-id (str "native-id " uniq-num)
                  :provider-id provider-id
                  :metadata (granule-xml base-concept-attribs)
-                 :content-type "application/echo10+xml"
+                 :format "application/echo10+xml"
                  :deleted false
                  :extra-fields {:parent-collection-id parent-collection-id}}]
     (if concept-id
@@ -117,7 +117,7 @@
                           :provider-id provider-id
                           :native-id (str "nativeId" unique-id)
                           :metadata (collection-xml base-concept-attribs)
-                          :content-type "application/echo10+xml")]
+                          :format "application/echo10+xml")]
     concept))
 
 ;; DEPRECATED function
@@ -129,6 +129,6 @@
                           :provider-id provider-id
                           :native-id (str "nativeId" unique-id)
                           :metadata (collection-xml base-concept-attribs)
-                          :content-type "application/echo10+xml")
+                          :format "application/echo10+xml")
         concept-id (format "C%s-%s" unique-id provider-id)]
     (assoc concept :concept-id concept-id)))

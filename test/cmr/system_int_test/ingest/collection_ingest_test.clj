@@ -55,7 +55,7 @@
   (let [concept-with-empty-body  (assoc (old-ingest/distinct-concept "PROV1" 2) :metadata "")
         {:keys [status errors]} (ingest/ingest-concept concept-with-empty-body)]
     (is (= status 400))
-    (is (re-find #"Invalid XML file." (first errors)))))
+    (is (re-find #"Invalid XML content." (first errors)))))
 
 ;; Verify old DeleteTime concept results in 400 error.
 (deftest old-delete-time-collection-ingest-test
@@ -128,14 +128,14 @@
 
 ;; Verify ingest behaves properly if request is missing content type.
 (deftest missing-content-type-ingest-test
-  (let [concept-with-no-content-type  (assoc (old-ingest/distinct-concept "PROV1" 4) :content-type "")
+  (let [concept-with-no-content-type  (assoc (old-ingest/distinct-concept "PROV1" 4) :format "")
         {:keys [status errors]} (ingest/ingest-concept concept-with-no-content-type)]
     (is (= status 400))
     (is (re-find #"Invalid content-type" (first errors)))))
 
 ;; Verify ingest behaves properly if request contains invalid  content type.
 (deftest invalid-content-type-ingest-test
-  (let [concept-with-no-content-type (assoc (old-ingest/distinct-concept "PROV1" 4) :content-type "blah")
+  (let [concept-with-no-content-type (assoc (old-ingest/distinct-concept "PROV1" 4) :format "blah")
         {:keys [status errors]} (ingest/ingest-concept concept-with-no-content-type)]
     (is (= status 400))
     (is (re-find #"Invalid content-type" (first errors)))))
@@ -149,8 +149,3 @@
     (is (= 200 (:status ingest-result)))
     (is (= 200 (:status delete1-result)))
     (is (= 200 (:status delete2-result)))))
-
-
-
-
-

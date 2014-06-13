@@ -46,7 +46,7 @@
           :provider-id (:provider-id item)
           :native-id (item->native-id item)
           :metadata (echo10/umm->echo10-xml item)
-          :content-type "application/echo10+xml"}
+          :format "application/echo10+xml"}
          (when (:concept-id item)
            {:concept-id (:concept-id item)})
          (when (:revision-id item)

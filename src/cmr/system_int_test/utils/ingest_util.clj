@@ -38,7 +38,7 @@
 
 (defn ingest-concept
   "Ingest a concept and return a map with status, concept-id, and revision-id"
-  [{:keys [metadata content-type concept-type concept-id revision-id provider-id native-id] :as concept}]
+  [{:keys [metadata format concept-type concept-id revision-id provider-id native-id] :as concept}]
   (let [headers (merge {}
                        (when concept-id {"concept-id" concept-id})
                        (when concept-id {"revision-id" revision-id}))
@@ -46,7 +46,7 @@
                    {:method :put
                     :url (url/ingest-url provider-id concept-type native-id)
                     :body  metadata
-                    :content-type content-type
+                    :content-type format
                     :headers headers
                     :accept :json
                     :throw-exceptions false
