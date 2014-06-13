@@ -75,7 +75,8 @@
              :platform :platform-sn.lowercase
              :instrument :instrument-sn.lowercase
              :sensor :sensor-sn.lowercase
-             :project :project-refs.lowercase}})
+             :project :project-refs.lowercase
+             :day-night-flag :day-night.lowercase}})
 
 (defn query->sort-params
   "Converts a query into the elastic parameters for sorting results"
