@@ -114,4 +114,20 @@
     (is (= 404 status))
     (is (not (ingest/concept-exists-in-mdb? "G1-PROV1" 0)))))
 
+;;; Verify that granules with embedded / (%2F) in the native-id are handled correctly
+(deftest ingest-granule-with-slash-in-native-id-test
+  (let [collection (old-ingest/collection-concept "PROV1" 5)
+        _ (ingest/ingest-concept collection)
+        granule {:concept-type :granule
+                 :native-id "Name%2FWith%2FSlashes"
+                 :provider-id "PROV1"
+                 :metadata (old-ingest/granule-xml old-ingest/base-concept-attribs)
+                 :format "application/echo10+xml"
+                 :deleted false
+                 :extra-fields {:parent-collection-id "C1000000000-PROV1"}}
+        {:keys [concept-id revision-id] :as response} (ingest/ingest-concept granule)]
+    (is (= 200 (:status response)))
+    (is (ingest/concept-exists-in-mdb? concept-id revision-id))
+    (is (= 1 revision-id))))
+
 
