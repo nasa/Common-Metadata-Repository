@@ -161,7 +161,9 @@
                     :extra-fields {:short-name "short5"
                                    :version-id "V5"
                                    :entry-title "dataset5"}}
-        {:keys [concept-id revision-id] :as response} (ingest/ingest-concept collection)]
+        {:keys [concept-id revision-id] :as response} (ingest/ingest-concept collection)
+        ingested-concept (ingest/get-concept concept-id)]
     (is (= 200 (:status response)))
     (is (ingest/concept-exists-in-mdb? concept-id revision-id))
-    (is (= 1 revision-id))))
+    (is (= 1 revision-id))
+    (is (= "Name/With/Slashes" (:native-id ingested-concept)))))

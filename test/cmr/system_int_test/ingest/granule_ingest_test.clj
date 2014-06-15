@@ -125,9 +125,11 @@
                  :format "application/echo10+xml"
                  :deleted false
                  :extra-fields {:parent-collection-id "C1000000000-PROV1"}}
-        {:keys [concept-id revision-id] :as response} (ingest/ingest-concept granule)]
+        {:keys [concept-id revision-id] :as response} (ingest/ingest-concept granule)
+        ingested-concept (ingest/get-concept concept-id)]
     (is (= 200 (:status response)))
     (is (ingest/concept-exists-in-mdb? concept-id revision-id))
-    (is (= 1 revision-id))))
+    (is (= 1 revision-id))
+    (is (= "Name/With/Slashes" (:native-id ingested-concept)))))
 
 
