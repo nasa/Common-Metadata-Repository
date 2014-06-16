@@ -33,17 +33,21 @@
         params {:concept-type :granule
                 :provider-id provider-id
                 :parent-collection-id collection-id}
-        concepts (db/find-concepts-in-batches db params (:db-batch-size system))]
-    (index/bulk-index {:system (:indexer system)} concepts (:bulk-index-batch-size system))
-    (info "Indexed" (count concepts) "granule(s) for provider" provider-id " collection" collection-id)))
+        concept-batches (db/find-concepts-in-batches db params (:db-batch-size system))
+        num-granules (index/bulk-index {:system (:indexer system)} concept-batches)]
+        (info "Indexed" num-granules "granule(s) for provider" provider-id "collection" collection-id)))
 
 (defn- index-granules-for-provider
   "Index the granule data for every collection for a given provider."
   [system provider-id]
   (info "Indexing granule data for provider" provider-id)
-  (dorun (pmap
+  #_(dorun (pmap
            (partial index-granules-for-collection system provider-id)
            (get-provider-collection-list system provider-id)))
+
+  (doseq [collection-id (get-provider-collection-list system provider-id)]
+    (index-granules-for-collection system provider-id collection-id))
+
   (info "Indexing of granule data for provider" provider-id "completed."))
 
 (defn- index-provider-collections
@@ -52,8 +56,8 @@
   (let [db (get-in system [:metadata-db :db])
         params {:concept-type :collection
                 :provider-id provider-id}
-        concepts (db/find-concepts db params)]
-    (index/bulk-index {:system (:indexer system)} concepts (:bulk-index-batch-size system))))
+        concept-batches (db/find-concepts-in-batches db params (:db-batch-size system))]
+    (index/bulk-index {:system (:indexer system)} concept-batches)))
 
 
 (defn- unindex-provider
