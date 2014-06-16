@@ -189,6 +189,14 @@ The temporal datetime has to be in yyyy-MM-ddTHH:mm:ssZ format.
 
      curl "http://localhost:3003/collections?collection_data_type\[\]=NEAR_REAL_TIME&collection_data_type\[\]=OTHER"
 
+#### Find collections by online_only
+
+    curl "http://localhost:3003/collections?online_only=true"
+
+#### Find collections by downloadable
+
+    curl "http://localhost:3003/collections?downloadable=true"
+
 #### Sorting Collection Results
 
 Collection results are sorted by ascending entry title by default. One or more sort keys can be specified using the `sort_key[]` parameter. The order used impacts searching. Fields can be prepended with a `-` to sort in descending order. Ascending order is the default but `+` can be used to explicitly request ascending.
@@ -397,13 +405,13 @@ Granule results are sorted by ascending provider and start date by default. One 
   * instrument
   * sensor
   * day_night_flag
+  * online_only
 
 ##### Future Granule Sort Keys
 Not yet implemented
 
   * browse_only
   * cloud_cover
-  * online_only
 
 Example of sorting by start_date in descending order: (Most recent data first)
 

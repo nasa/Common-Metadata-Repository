@@ -30,7 +30,8 @@
                 :archive-center :string
                 :spatial-keyword :string
                 :two-d-coordinate-system-name :string
-                :science-keywords :science-keywords}
+                :science-keywords :science-keywords
+                :downloadable :boolean}
    :granule {:granule-ur :string
              :collection-concept-id :string
              :producer-granule-id :string
