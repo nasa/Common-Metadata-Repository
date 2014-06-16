@@ -254,3 +254,19 @@
 
          "day_night_flag" [g3 g1 g2 g4]
          "-day_night_flag" [g4 g2 g1 g3])))
+
+(deftest granule-downloadable-sorting-test
+  (let [ru1 (dc/related-url "GET DATA")
+        coll (d/ingest "PROV1" (dc/collection {}))
+        g1 (d/ingest "PROV1" (dg/granule coll {:related-urls [ru1]}))
+        g2 (d/ingest "PROV1" (dg/granule coll {}))]
+    (index/refresh-elastic-index)
+    (are [sort-key items]
+         (d/refs-match-order? items
+                              (search/find-refs :granule {:page-size 20
+                                                          :sort-key sort-key}))
+
+         "downloadable" [g2 g1]
+         "online_only" [g2 g1]
+         "-downloadable" [g1 g2]
+         "-online_only" [g1 g2])))
