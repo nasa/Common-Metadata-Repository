@@ -187,7 +187,7 @@ curl -v http://localhost:3001/concepts/C1-PROV1/2
 
 ### POST /concepts/search/concept-revisions
 params: [[concept-id/revision-id tuple] ...]
-returns: list of concepts matching the touples provided in the body of the POST
+returns: list of concepts matching the tuples provided in the body of the POST
 
 __Example Curl:__
 curl -v -XPOST -H "Content-Type: application/json" -d '[["C1-PROV1", 1], ["C2-PROV1", 1]]' http://localhost:3001/concepts/search/concept-revisions
