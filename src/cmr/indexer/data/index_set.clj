@@ -14,7 +14,7 @@
             [cmr.system-trace.core :refer [deftracefn]]))
 
 (def collection-setting {:index
-                         {:number_of_shards 2,
+                         {:number_of_shards 6,
                           :number_of_replicas 1,
                           :refresh_interval "1s"}})
 
@@ -130,7 +130,7 @@
                              :attributes attributes-field-mapping
                              :science-keywords science-keywords-field-mapping}}})
 
-(def granule-setting {:index {:number_of_shards 2,
+(def granule-setting {:index {:number_of_shards 6,
                               :number_of_replicas 1,
                               :refresh_interval "1s"}})
 
