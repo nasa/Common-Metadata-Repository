@@ -239,3 +239,18 @@
          "sensor" [g1 g2 g3 g4 g5]
          ;; Descending sorts by the max value of a multi value fields
          "-sensor" [g2 g5 g1 g4 g3])))
+
+(deftest granule-day-night-flag-sorting-test
+  (let [coll (d/ingest "PROV1" (dc/collection {}))
+        g1 (d/ingest "PROV1" (dg/granule coll {:day-night "DAY"}))
+        g2 (d/ingest "PROV1" (dg/granule coll {:day-night "NIGHT"}))
+        g3 (d/ingest "PROV1" (dg/granule coll {:day-night "BOTH"}))
+        g4 (d/ingest "PROV1" (dg/granule coll {:day-night "UNSPECIFIED"}))]
+    (index/refresh-elastic-index)
+    (are [sort-key items]
+         (d/refs-match-order? items
+                              (search/find-refs :granule {:page-size 20
+                                                          :sort-key sort-key}))
+
+         "day_night_flag" [g3 g1 g2 g4]
+         "-day_night_flag" [g4 g2 g1 g3])))

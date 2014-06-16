@@ -25,51 +25,51 @@
         gran9 (d/ingest "CMR_PROV2" (dg/granule coll2 {:day-night "BOTH"}))
         gran10 (d/ingest "CMR_PROV2" (dg/granule coll2 {:day-night "UNSPECIFIED"}))]
     (index/refresh-elastic-index)
-    (testing "search by invalid day-night flag."
-      (let [refs (search/find-refs :granule {:day-night "FAKE"})]
+    (testing "search by invalid day-night-flag."
+      (let [refs (search/find-refs :granule {:day-night-flag "FAKE"})]
         (is (d/refs-match? [] refs))))
-    (testing "search by day-night default is ignore case true."
-      (let [refs (search/find-refs :granule {:day-night "nIgHt"})]
+    (testing "search by day-night-flag default is ignore case true."
+      (let [refs (search/find-refs :granule {:day-night-flag "nIgHt"})]
         (is (d/refs-match? [gran2] refs))))
-    (testing "search by day-night does not ignore case when specifying ignore case false."
-      (let [refs (search/find-refs :granule {:day-night "nIgHt"
-                                             "options[day-night][ignore-case]" "false"})]
+    (testing "search by day-night-flag does not ignore case when specifying ignore case false."
+      (let [refs (search/find-refs :granule {:day-night-flag "nIgHt"
+                                             "options[day-night-flag][ignore-case]" "false"})]
         (is (d/refs-match? [] refs))))
-    (testing "search by day-night ignores case when specifying ignore case true."
-      (let [refs (search/find-refs :granule {:day-night "nIgHt"
-                                             "options[day-night][ignore-case]" "true"})]
+    (testing "search by day-night-flag ignores case when specifying ignore case true."
+      (let [refs (search/find-refs :granule {:day-night-flag "nIgHt"
+                                             "options[day-night-flag][ignore-case]" "true"})]
         (is (d/refs-match? [gran2] refs))))
-    (testing "search by day-night DAY."
-      (let [refs (search/find-refs :granule {:day-night "DAY"})]
+    (testing "search by day-night-flag DAY."
+      (let [refs (search/find-refs :granule {:day-night-flag "DAY"})]
         (is (d/refs-match? [gran1 gran5 gran6] refs))))
-    (testing "search by day-night NIGHT."
-      (let [refs (search/find-refs :granule {:day-night "NIGHT"})]
+    (testing "search by day-night-flag NIGHT."
+      (let [refs (search/find-refs :granule {:day-night-flag "NIGHT"})]
         (is (d/refs-match? [gran2] refs))))
-    (testing "search by day-night BOTH"
-      (let [refs (search/find-refs :granule {:day-night "BOTH"})]
+    (testing "search by day-night-flag BOTH"
+      (let [refs (search/find-refs :granule {:day-night-flag "BOTH"})]
         (is (d/refs-match? [gran3 gran7 gran8 gran9] refs))))
-    (testing "search by day-night UNSPECIFIED"
-      (let [refs (search/find-refs :granule {:day-night "UNSPECIFIED"})]
+    (testing "search by day-night-flag UNSPECIFIED"
+      (let [refs (search/find-refs :granule {:day-night-flag "UNSPECIFIED"})]
         (is (d/refs-match? [gran4 gran10] refs))))
-    (testing "search by multiple day-night flags."
-      (let [refs (search/find-refs :granule {"day-night[]" ["DAY", "BOTH", "UNSPECIFIED"]})]
+    (testing "search by multiple day-night-flag flags."
+      (let [refs (search/find-refs :granule {"day-night-flag[]" ["DAY", "BOTH", "UNSPECIFIED"]})]
         (is (d/refs-match? [gran1 gran3 gran4 gran5 gran6 gran7 gran8 gran9 gran10] refs))))
-    (testing "search by day-night using wildcard *."
+    (testing "search by day-night-flag using wildcard *."
       (let [refs (search/find-refs :granule
-                                   {:day-night "*SP*C*"
-                                    "options[day-night][pattern]" "true"})]
+                                   {:day-night-flag "*SP*C*"
+                                    "options[day-night-flag][pattern]" "true"})]
         (is (d/refs-match? [gran4 gran10] refs))))
-    (testing "search by day-night using wildcard ?."
+    (testing "search by day-night-flag using wildcard ?."
       (let [refs (search/find-refs :granule
-                                   {:day-night "?I?H?"
-                                    "options[day-night][pattern]" "true"})]
+                                   {:day-night-flag "?I?H?"
+                                    "options[day-night-flag][pattern]" "true"})]
         (is (d/refs-match? [gran2] refs))))
-    (testing "search by day-night using :or option."
-      (let [refs (search/find-refs :granule {"day-night[]" ["DAY", "BOTH", "UNSPECIFIED"]
-                                             "options[day-night][or]" "true"})]
+    (testing "search by day-night-flag using :or option."
+      (let [refs (search/find-refs :granule {"day-night-flag[]" ["DAY", "BOTH", "UNSPECIFIED"]
+                                             "options[day-night-flag][or]" "true"})]
         (is (d/refs-match? [gran1 gran3 gran4 gran5 gran6 gran7 gran8 gran9 gran10] refs))))
-    (testing "search by readable granule name options :and does not return results."
+    (testing "search by day-night-flag options :and does not return results."
       (let [refs (search/find-refs :granule
-                                   {:day-night ["DAY", "NIGHT"]
-                                    "options[day-night][and]" "true"})]
+                                   {:day-night-flag ["DAY", "NIGHT"]
+                                    "options[day-night-flag][and]" "true"})]
         (is (d/refs-match? [] refs))))))
