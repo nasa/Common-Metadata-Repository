@@ -7,7 +7,7 @@
             [clj-http.client :as client]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.services.errors :as errors]
-            [cmr.transmit.elasticsearch :as es]
+            [cmr.elastic-utils.elasticsearch :as es]
             [cmr.transmit.index-set :as index-set]
             [cmr.indexer.data.index-set :as idx-set]
             [cmr.system-trace.core :refer [deftracefn]]
