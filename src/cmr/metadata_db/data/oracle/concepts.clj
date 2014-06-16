@@ -261,13 +261,13 @@
                                     (when-not (empty? params)
                                       (where (find-params->sql-clause params)))
                                     (order-by :concept-id))]
-                  (doall (map (partial db-result->concept-map concept-type conn provider-id)
-                              (sql-utils/find-batch conn istmt start-index batch-size))))))
+                  (mapv (partial db-result->concept-map concept-type conn provider-id)
+                              (sql-utils/find-batch conn istmt start-index batch-size)))))
             (lazy-find
               [start-index]
               (let [batch (find-batch start-index)]
                 (when-not (empty? batch)
-                  (concat batch (lazy-seq (lazy-find (+ start-index (count batch))))))))]
+                  (cons batch (lazy-seq (lazy-find (+ start-index (count batch))))))))]
       (lazy-find 0)))
 
   (save-concept
