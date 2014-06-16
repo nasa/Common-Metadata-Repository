@@ -96,7 +96,8 @@
               :platform
               :instrument
               :sensor
-              :project}})
+              :project
+              :day-night-flag}})
 
 (defn sort-key-validation
   "Validates the sort-key parameter if present"

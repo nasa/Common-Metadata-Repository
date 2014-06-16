@@ -18,7 +18,8 @@
    :echo-collection-id :concept-id
    :echo-granule-id :concept-id
    :online-only :downloadable
-   :provider-id :provider})
+   :provider-id :provider
+   :day-night-flag :day-night})
 
 (defn merger
   "Make a sequence from supplied values."

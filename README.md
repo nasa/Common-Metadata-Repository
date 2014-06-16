@@ -349,11 +349,11 @@ Polygon points are provided in clockwise order. The last point should match the 
 
     curl "http://localhost:3003/granules?concept_id\[\]=C1000000001-CMR_PROV2"
 
-### Find granules by day_night param, supports pattern, ignore_case, and option :and, :or
+### Find granules by day_night_flag param, supports pattern, ignore_case, and option :and, :or
 
-  curl "http://localhost:3003/granules?day_night=night
+  curl "http://localhost:3003/granules?day_night_flag=night
 
-  curl "http://localhost:3003/granules?day_night=day
+  curl "http://localhost:3003/granules?day_night_flag=day
 
   curl "http://localhost:3003/granules?day_night=unspecified
 
@@ -396,13 +396,13 @@ Granule results are sorted by ascending provider and start date by default. One 
   * platform
   * instrument
   * sensor
+  * day_night_flag
 
 ##### Future Granule Sort Keys
 Not yet implemented
 
   * browse_only
   * cloud_cover
-  * day_night_flag
   * online_only
 
 Example of sorting by start_date in descending order: (Most recent data first)
