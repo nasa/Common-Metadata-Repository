@@ -173,17 +173,17 @@
                                                           :stop-orbit-number 0.0
                                                           :equator-crossing-longitude 0.0
                                                           :equator-crossing-date-time (p/parse-datetime "2010-01-05T05:30:30Z")})]
-                    :related-urls [(umm-g/map->RelatedURL
+                    :related-urls [(umm-c/map->RelatedURL
                                      {:type "GET DATA"
                                       :url "http://ghrc.nsstc.nasa.gov/hydro/details.pl?ds=dc8capac"})
-                                   (umm-g/map->RelatedURL
+                                   (umm-c/map->RelatedURL
                                      {:type "GET DATA"
                                       :url "http://camex.nsstc.nasa.gov/camex3/"})
-                                   (umm-g/map->RelatedURL
+                                   (umm-c/map->RelatedURL
                                      {:type "VIEW RELATED INFORMATION"
                                       :sub-type "USER'S GUIDE"
                                       :url "http://ghrc.nsstc.nasa.gov/uso/ds_docs/camex3/dc8capac/dc8capac_dataset.html"})
-                                   (umm-g/map->RelatedURL
+                                   (umm-c/map->RelatedURL
                                      {:type "GET RELATED VISUALIZATION"
                                       :url "ftp://camex.nsstc.nasa.gov/camex3/dc8capac/browse/"
                                       :description "Some description."})]})

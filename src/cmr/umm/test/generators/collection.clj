@@ -90,6 +90,14 @@
 (def processing-center-organizations
   (ext-gen/model-gen c/->Organization (gen/return :processing-center) org-names))
 
+(def related-url
+  (ext-gen/model-gen
+    c/map->RelatedURL
+    ;; we only test OnlineAccessURL here for simplification purpose
+    (gen/hash-map :type (gen/return "GET DATA")
+                  :url ext-gen/file-url-string
+                  :description (ext-gen/string-ascii 1 80))))
+
 (def granule-spatial-representations
   (gen/elements c/granule-spatial-representations))
 
@@ -114,6 +122,7 @@
                 :product-specific-attributes (ext-gen/nil-if-empty (gen/vector psa/product-specific-attributes 0 10))
                 :projects (ext-gen/nil-if-empty (gen/vector campaigns 0 4))
                 :two-d-coordinate-systems (ext-gen/nil-if-empty (gen/vector two-d-coordinate-systems 0 3))
+                :related-urls (ext-gen/nil-if-empty (gen/vector related-url 0 5))
                 :spatial-coverage (ext-gen/optional spatial-coverages))
               (ext-gen/optional processing-center-organizations)
               (ext-gen/optional archive-center-organizations))))

@@ -183,6 +183,26 @@
         </Coordinate2>
       </TwoDCoordinateSystem>
     </TwoDCoordinateSystems>
+    <OnlineAccessURLs>
+      <OnlineAccessURL>
+        <URL>http://ghrc.nsstc.nasa.gov/hydro/details.pl?ds=dc8capac</URL>
+      </OnlineAccessURL>
+    </OnlineAccessURLs>
+    <OnlineResources>
+      <OnlineResource>
+        <URL>http://camex.nsstc.nasa.gov/camex3/</URL>
+        <Type>DATA ACCESS</Type>
+      </OnlineResource>
+      <OnlineResource>
+        <URL>http://ghrc.nsstc.nasa.gov/uso/ds_docs/camex3/dc8capac/dc8capac_dataset.html</URL>
+        <Type>Guide</Type>
+      </OnlineResource>
+      <OnlineResource>
+        <URL>ftp://camex.nsstc.nasa.gov/camex3/dc8capac/browse/</URL>
+        <Description>Some description.</Description>
+        <Type>Browse</Type>
+      </OnlineResource>
+    </OnlineResources>
  </Collection>")
 
 (def valid-collection-xml
@@ -295,6 +315,21 @@
                     :two-d-coordinate-systems
                     [(umm-c/map->TwoDCoordinateSystem {:name "name0"})
                      (umm-c/map->TwoDCoordinateSystem {:name "name1"})]
+                    :related-urls
+                    [(umm-c/map->RelatedURL
+                       {:type "GET DATA"
+                        :url "http://ghrc.nsstc.nasa.gov/hydro/details.pl?ds=dc8capac"})
+                     (umm-c/map->RelatedURL
+                       {:type "GET DATA"
+                        :url "http://camex.nsstc.nasa.gov/camex3/"})
+                     (umm-c/map->RelatedURL
+                       {:type "VIEW RELATED INFORMATION"
+                        :sub-type "USER'S GUIDE"
+                        :url "http://ghrc.nsstc.nasa.gov/uso/ds_docs/camex3/dc8capac/dc8capac_dataset.html"})
+                     (umm-c/map->RelatedURL
+                       {:type "GET RELATED VISUALIZATION"
+                        :url "ftp://camex.nsstc.nasa.gov/camex3/dc8capac/browse/"
+                        :description "Some description."})]
                     :organizations
                     [(umm-c/map->Organization
                        {:type :processing-center

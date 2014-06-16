@@ -10,6 +10,7 @@
             [cmr.umm.echo10.collection.platform :as platform]
             [cmr.umm.echo10.collection.campaign :as cmpgn]
             [cmr.umm.echo10.collection.two-d-coordinate-system :as two-d]
+            [cmr.umm.echo10.related-url :as ru]
             [cmr.umm.echo10.collection.org :as org]
             [cmr.umm.echo10.collection.science-keyword :as sk]
             [cmr.umm.echo10.core]
@@ -57,6 +58,7 @@
        :product-specific-attributes (psa/xml-elem->ProductSpecificAttributes xml-struct)
        :projects (cmpgn/xml-elem->Campaigns xml-struct)
        :two-d-coordinate-systems (two-d/xml-elem->TwoDCoordinateSystems xml-struct)
+       :related-urls (ru/xml-elem->related-urls xml-struct)
        :spatial-coverage (xml-elem->SpatialCoverage xml-struct)
        :organizations (org/xml-elem->Organizations xml-struct)})))
 
@@ -83,7 +85,7 @@
             dataset-id :entry-title
             {:keys [insert-time update-time delete-time]} :data-provider-timestamps
             :keys [organizations spatial-keywords temporal science-keywords platforms product-specific-attributes
-                   projects two-d-coordinate-systems spatial-coverage]} collection
+                   projects two-d-coordinate-systems related-urls spatial-coverage]} collection
            emit-fn (if indent? x/indent-str x/emit-str)]
        (emit-fn
          (x/element :Collection {}
@@ -115,6 +117,8 @@
                     (psa/generate-product-specific-attributes product-specific-attributes)
                     (cmpgn/generate-campaigns projects)
                     (two-d/generate-two-ds two-d-coordinate-systems)
+                    (ru/generate-access-urls related-urls)
+                    (ru/generate-resource-urls related-urls)
                     (generate-spatial spatial-coverage)))))))
 
 (defn validate-xml
