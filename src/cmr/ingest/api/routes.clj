@@ -25,7 +25,7 @@
 (defn- build-routes [system]
   (routes
     (context "/providers/:provider-id" [provider-id]
-      (context "/collections/:native-id" [native-id]
+      (context ["/collections/:native-id" :native-id #".*$"] [native-id]
         (PUT "/" {:keys [body content-type headers request-context]}
           (let [metadata (string/trim (slurp body))
                 base-concept {:metadata metadata
@@ -40,7 +40,7 @@
                                  :native-id native-id
                                  :concept-type :collection}]
             (r/response (ingest/delete-concept request-context concept-attribs)))))
-      (context "/granules/:native-id" [native-id]
+      (context ["/granules/:native-id" :native-id #".*$"] [native-id]
         (PUT "/" {:keys [body content-type headers request-context]}
           (let [metadata (string/trim (slurp body))
                 base-concept {:metadata metadata
