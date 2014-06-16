@@ -83,7 +83,8 @@
                   :attributes []
                   :science-keywords []
                   :two-d-coord-name ["FOO" "Bar"]
-                  :two-d-coord-name.lowercase  ["foo" "bar"]}
+                  :two-d-coord-name.lowercase  ["foo" "bar"]
+                  :downloadable false}
         actual (svc/concept->elastic-doc nil concept umm-concept)]
     (is (= expected actual))))
 
