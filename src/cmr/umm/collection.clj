@@ -117,6 +117,14 @@
    org-name
    ])
 
+(defrecord RelatedURL
+  [
+   type
+   sub-type
+   url
+   description
+  ])
+
 (def granule-spatial-representations
   [:cartesian :geodetic :orbit :no-spatial])
 
@@ -152,6 +160,8 @@
    projects
 
    two-d-coordinate-systems
+
+   related-urls
 
    ;; Records Archive Center, Processing Center
    organizations

@@ -54,14 +54,6 @@
    values
   ])
 
-(defrecord RelatedURL
-  [
-   type
-   sub-type
-   url
-   description
-  ])
-
 (defrecord SensorRef
   [
    short-name

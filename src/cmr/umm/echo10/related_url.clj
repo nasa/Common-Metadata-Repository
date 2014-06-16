@@ -4,7 +4,7 @@
   (:require [clojure.string :as s]
             [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
-            [cmr.umm.granule :as g]))
+            [cmr.umm.collection :as c]))
 
 (def resource-type->related-url-types
   "A mapping of ECHO10 OnlineResource's type to UMM RelatedURL's type and sub-type.
@@ -57,7 +57,7 @@
         description (cx/string-at-path elem [:Description])
         resource-type (cx/string-at-path elem [:Type])
         [type sub-type] (resource-type->related-url-types (when resource-type (s/upper-case resource-type)))]
-    (g/map->RelatedURL
+    (c/map->RelatedURL
       {:url url
        :description description
        :type type
@@ -77,7 +77,7 @@
   [elem]
   (let [url (cx/string-at-path elem [:URL])
         description (cx/string-at-path elem [:URLDescription])]
-    (g/map->RelatedURL
+    (c/map->RelatedURL
       {:url url
        :description description
        :type "GET DATA"})))
