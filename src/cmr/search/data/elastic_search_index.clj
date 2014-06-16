@@ -7,7 +7,7 @@
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.lifecycle :as lifecycle]
             [cmr.common.cache :as cache]
-            [cmr.elastic-utils.elasticsearch :as es]
+            [cmr.elastic-utils.connect :as es]
             [cmr.transmit.index-set :as index-set]
             [cmr.search.models.results :as results]
             [cmr.search.data.query-to-elastic :as q2e]
