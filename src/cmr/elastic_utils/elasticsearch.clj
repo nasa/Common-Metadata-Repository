@@ -1,4 +1,4 @@
-(ns cmr.elastic-utils.elasticsearch
+(ns cmr.elastic-utils.connect
   "Provide functions to invoke elasticsearch"
   (:require [clojurewerkz.elastisch.rest :as esr]
             [cmr.common.log :as log :refer (debug info warn error)]
