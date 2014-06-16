@@ -89,7 +89,7 @@
   (ingest/create-provider "PROV1")
   (def coll1 (d/ingest "PROV1" (dc/collection)))
   (ingest/delete-concept coll1)
-(get-in user/system [:apps :metadata-db :db])
+  (get-in user/system [:apps :metadata-db :db])
 )
 
 (deftest delete-collection-test
@@ -149,3 +149,21 @@
     (is (= 200 (:status ingest-result)))
     (is (= 200 (:status delete1-result)))
     (is (= 200 (:status delete2-result)))))
+
+;;; Verify that collections with embedded / (%2F) in the native-id are handled correctly
+(deftest ingest-granule-with-slash-in-native-id-test
+  (let [collection {:concept-type :collection
+                    :native-id "Name%2FWith%2FSlashes"
+                    :provider-id "PROV1"
+                    :metadata (old-ingest/collection-xml old-ingest/base-concept-attribs)
+                    :format "application/echo10+xml"
+                    :deleted false
+                    :extra-fields {:short-name "short5"
+                                   :version-id "V5"
+                                   :entry-title "dataset5"}}
+        {:keys [concept-id revision-id] :as response} (ingest/ingest-concept collection)
+        ingested-concept (ingest/get-concept concept-id)]
+    (is (= 200 (:status response)))
+    (is (ingest/concept-exists-in-mdb? concept-id revision-id))
+    (is (= 1 revision-id))
+    (is (= "Name/With/Slashes" (:native-id ingested-concept)))))

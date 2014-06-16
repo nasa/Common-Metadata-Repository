@@ -29,3 +29,17 @@
         (is (= 404 (:status response)))
         (re-find #"Failed to retrieve concept C1111-CMR_PROV1 from metadata-db:" (:body response))
         (re-find #"Concept with concept-id \[C1111-CMR_PROV1\] does not exist" (:body response))))))
+
+(deftest search-with-slashes-in-dataset-id
+  (let [coll1 (d/ingest "CMR_PROV1" (dc/collection {:entry-title "Dataset1"}))
+        coll2 (d/ingest "CMR_PROV1" (dc/collection {:entry-title "Dataset/With/Slashes"}))
+        coll3 (d/ingest "CMR_PROV1" (dc/collection {:entry-title "Dataset3"}))
+        coll4 (d/ingest "CMR_PROV1" (dc/collection {:entry-title "Dataset/With/More/Slashes"}))
+        coll5 (d/ingest "CMR_PROV1" (dc/collection {}))]
+
+    (index/refresh-elastic-index)
+
+    (testing "search for dataset with slashes"
+      (are [dataset-id items] (d/refs-match? items (search/find-refs :collection {:dataset-id dataset-id}))
+           "Dataset/With/Slashes" [coll2]
+           "BLAH" []))))
