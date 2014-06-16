@@ -10,10 +10,10 @@
 
 (use-fixtures :each (ingest/reset-fixture "CMR_PROV1"))
 
-(deftest search-by-downloadable
-  (let [ru1 (dg/related-url "GET DATA")
-        ru2 (dg/related-url "GET RELATED VISUALIZATION")
-        ru3 (dg/related-url nil)
+(deftest search-granule-by-downloadable
+  (let [ru1 (dc/related-url "GET DATA")
+        ru2 (dc/related-url "GET RELATED VISUALIZATION")
+        ru3 (dc/related-url nil)
         coll (d/ingest "CMR_PROV1" (dc/collection {}))
         gran1 (d/ingest "CMR_PROV1" (dg/granule coll {:related-urls [ru1]}))
         gran2 (d/ingest "CMR_PROV1" (dg/granule coll {:related-urls [ru2]}))
@@ -25,22 +25,22 @@
     (index/refresh-elastic-index)
 
     (testing "search by downloadable true."
-      (let [references (search/find-refs :granule {:downloadable true})]
-        (is (d/refs-match? [gran1 gran5] references))))
+      (is (d/refs-match? [gran1 gran5]
+                         (search/find-refs :granule {:downloadable true}))))
     (testing "search by downloadable false."
-      (let [references (search/find-refs :granule {:downloadable false})]
-        (is (d/refs-match? [gran2 gran3 gran4 gran6] references))))
+      (is (d/refs-match? [gran2 gran3 gran4 gran6]
+                         (search/find-refs :granule {:downloadable false}))))
     (testing "search by online only unset."
-      (let [references (search/find-refs :granule {:downloadable "unset"})]
-        (is (d/refs-match? [gran1 gran2 gran3 gran4 gran5 gran6] references))))
+      (is (d/refs-match? [gran1 gran2 gran3 gran4 gran5 gran6]
+                         (search/find-refs :granule {:downloadable "unset"}))))
     (testing "search by downloadable wrong value"
       (is (= {:status 422 :errors ["Parameter :downloadable must take value of true, false, or unset, but was wrong"]}
              (search/find-refs :granule {:downloadable "wrong"}))))))
 
-(deftest search-by-online-only
-  (let [ru1 (dg/related-url "GET DATA")
-        ru2 (dg/related-url "GET RELATED VISUALIZATION")
-        ru3 (dg/related-url nil)
+(deftest search-granule-by-online-only
+  (let [ru1 (dc/related-url "GET DATA")
+        ru2 (dc/related-url "GET RELATED VISUALIZATION")
+        ru3 (dc/related-url nil)
         coll (d/ingest "CMR_PROV1" (dc/collection {}))
         gran1 (d/ingest "CMR_PROV1" (dg/granule coll {:related-urls [ru1]}))
         gran2 (d/ingest "CMR_PROV1" (dg/granule coll {:related-urls [ru2]}))
@@ -52,14 +52,14 @@
     (index/refresh-elastic-index)
 
     (testing "search by online only true."
-      (let [references (search/find-refs :granule {:online-only true})]
-        (is (d/refs-match? [gran1 gran5] references))))
+      (is (d/refs-match? [gran1 gran5]
+                         (search/find-refs :granule {:online-only true}))))
     (testing "search by online only false."
-      (let [references (search/find-refs :granule {:online-only false})]
-        (is (d/refs-match? [gran2 gran3 gran4 gran6] references))))
+      (is (d/refs-match? [gran2 gran3 gran4 gran6]
+                         (search/find-refs :granule {:online-only false}))))
     (testing "search by online only unset."
-      (let [references (search/find-refs :granule {:online-only "unset"})]
-        (is (d/refs-match? [gran1 gran2 gran3 gran4 gran5 gran6] references))))
+      (is (d/refs-match? [gran1 gran2 gran3 gran4 gran5 gran6]
+                         (search/find-refs :granule {:online-only "unset"}))))
     (testing "search by online only wrong value"
       (is (= {:status 422 :errors ["Parameter :downloadable must take value of true, false, or unset, but was wrong"]}
              (search/find-refs :granule {:online-only "wrong"}))))))

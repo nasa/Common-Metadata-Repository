@@ -110,6 +110,11 @@
     {:type (keyword type)
      :org-name center-name}))
 
+(defn related-url
+  "Creates related url for online_only test"
+  [type]
+  (c/->RelatedURL type nil (d/unique-str "http://example.com/file") (d/unique-str "description")))
+
 (defn spatial
   [gsr]
   (c/->SpatialCoverage gsr))
