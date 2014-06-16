@@ -9,7 +9,7 @@
             [cmr.index-set.services.messages :as m]
             [cheshire.core :as cheshire]
             [cmr.index-set.config.elasticsearch-config :as es-config]
-            [cmr.elastic-utils.elasticsearch :as es]
+            [cmr.elastic-utils.connect :as es]
             [cmr.system-trace.core :refer [deftracefn]]))
 
 (defn create-index
