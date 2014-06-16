@@ -32,27 +32,31 @@
 
 (defn prepare-batch
   "Convert a batch of concepts into elastic docs for bulk indexing."
-  [context concepts]
+  [context concept-batch]
   ;; we only handle ECHO10 format right now
-  (let [concepts (filter #(#{"ECHO10"} (:format %)) concepts)]
-    (map (fn [concept]
-           (let [umm-concept (parse-concept concept)
-                 concept-id (:concept-id concept)
-                 revision-id (:revision-id concept)
-                 index-name (idx-set/get-concept-index-name context concept-id revision-id concept)
-                 type (name (concept->type concept))
-                 elastic-doc (concept->elastic-doc context concept umm-concept)]
-             (merge elastic-doc {:_index index-name :_type type})))
-         concepts)))
+  (let [concept-batch (filterv #(#{"ECHO10"} (:format %)) concept-batch)]
+    (doall (pmap (fn [concept]
+               (let [umm-concept (parse-concept concept)
+                     concept-id (:concept-id concept)
+                     revision-id (:revision-id concept)
+                     index-name (idx-set/get-concept-index-name context concept-id revision-id concept)
+                     type (name (concept->type concept))
+                     elastic-doc (concept->elastic-doc context concept umm-concept)]
+                 (merge elastic-doc {:_index index-name :_type type})))
+             concept-batch))))
 
 (deftracefn bulk-index
   "Index many concepts at once using the elastic bulk api. The concepts to be indexed are passed
   directly to this function - it does not retrieve them from metadata db. The bulk API is
-  invoked repeatedly if necessary - processing batch-size concepts each time."
-  [context concepts batch-size]
-  (doseq [[batch-index batch] (map-indexed vector (partition-all batch-size concepts))]
-    (let [batch (prepare-batch context batch)]
-      (es/bulk-index context batch))))
+  invoked repeatedly if necessary - processing batch-size concepts each time. Returns the number
+  of concepts that have been indexed"
+  [context concept-batches]
+  (reduce (fn [num-indexed batch]
+            (let [batch (prepare-batch context batch)]
+              (es/bulk-index context batch)
+              (+ num-indexed (count batch))))
+          0
+          concept-batches))
 
 (deftracefn index-concept
   "Index the given concept and revision-id"
