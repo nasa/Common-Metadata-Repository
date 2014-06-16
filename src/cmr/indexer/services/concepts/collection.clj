@@ -4,6 +4,7 @@
             [clj-time.format :as f]
             [cmr.indexer.services.index-service :as idx]
             [cmr.umm.echo10.collection :as collection]
+            [cmr.umm.echo10.related-url :as ru]
             [cmr.indexer.services.concepts.temporal :as temporal]
             [cmr.indexer.services.concepts.attribute :as attrib]
             [cmr.indexer.services.concepts.science-keyword :as sk]))
@@ -16,9 +17,7 @@
   [context concept umm-concept]
   (let [{:keys [concept-id provider-id revision-date]} concept
         {{:keys [short-name version-id processing-level-id collection-data-type]} :product
-         entry-id :entry-id
-         entry-title :entry-title
-         temporal :temporal} umm-concept
+         :keys [entry-id entry-title temporal related-urls]} umm-concept
         platforms (:platforms umm-concept)
         platform-short-names (map :short-name platforms)
         instruments (mapcat :instruments platforms)
@@ -33,7 +32,8 @@
                                           (let [{:keys [type org-name]} org]
                                             (when (= :archive-center type) org-name))))
         start-date (temporal/start-date :collection temporal)
-        end-date (temporal/end-date :collection temporal)]
+        end-date (temporal/end-date :collection temporal)
+        downloadable (not (empty? (filter ru/downloadable-url? related-urls)))]
     {:concept-id concept-id
      :entry-id entry-id
      :entry-id.lowercase (s/lower-case entry-id)
@@ -67,5 +67,6 @@
      :start-date (when start-date (f/unparse (f/formatters :date-time) start-date))
      :end-date (when end-date (f/unparse (f/formatters :date-time) end-date))
      :archive-center archive-center-val
-     :archive-center.lowercase (map s/lower-case archive-center-val)}))
+     :archive-center.lowercase (map s/lower-case archive-center-val)
+     :downloadable downloadable}))
 

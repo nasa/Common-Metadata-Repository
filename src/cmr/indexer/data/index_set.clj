@@ -128,7 +128,8 @@
                              :two-d-coord-name string-field-mapping
                              :two-d-coord-name.lowercase string-field-mapping
                              :attributes attributes-field-mapping
-                             :science-keywords science-keywords-field-mapping}}})
+                             :science-keywords science-keywords-field-mapping
+                             :downloadable bool-field-mapping}}})
 
 (def granule-setting {:index {:number_of_shards 6,
                               :number_of_replicas 1,
