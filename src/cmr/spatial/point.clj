@@ -10,9 +10,21 @@
 
 (declare is-north-pole?
          is-south-pole?
-         on-antimeridian?)
+         on-antimeridian?
+         north-pole
+         south-pole)
 
 (def ^:const ^:private ^int PRIME 31)
+
+(def ^:const ^:private ^int NORTH_POLE_HASH
+  "Precomputed hash code for points on or very near the north pole."
+  (let [lon-hash (+ PRIME (.hashCode (Double. 0.0)))]
+    (int (+ (* PRIME lon-hash) (.hashCode (Double. 90.0))))))
+
+(def ^:const ^:private ^int SOUTH_POLE_HASH
+  "Precomputed hash code for points on or very near the south pole."
+  (let [lon-hash (+ PRIME (.hashCode (Double. 0.0)))]
+    (int (+ (* PRIME lon-hash) (.hashCode (Double. -90.0))))))
 
 ;; Point type definition
 ;; It is a Type and not a record because it has some special rules that don't follow normal
@@ -27,18 +39,21 @@
     ^double lat
     ^double lon-rad
     ^double lat-rad
+
+    ;; This field is holding options when debugging points so they can be displayed in a visualization
+    ;; with labels etc. It will typically be set to null during normal operations. It is excluded
+    ;; from hashCode and equals.
+    ^clojure.lang.Associative options
   ]
   Object
   (hashCode
     [this]
-    (let [^Double lon-v (cond
-                  (is-north-pole? this) 0.0
-                  (is-south-pole? this) 0.0
-                  (on-antimeridian? this) 180.0
-                  :else lon)
-          result (+ PRIME (.hashCode lon-v))
-          result (int (+ (* PRIME result) (.hashCode (Double. lat))))]
-      result))
+    (cond
+      (is-north-pole? this) NORTH_POLE_HASH
+      (is-south-pole? this) SOUTH_POLE_HASH
+      :else (let [result (+ PRIME (.hashCode (Double. lon)))
+                  result (int (+ (* PRIME result) (.hashCode (Double. lat))))]
+              result)))
   (equals
     [this other]
     (or (identical? this other)
@@ -56,15 +71,15 @@
     [this]
     (pr-str this))
 
-
   clojure.lang.IPersistentMap
   (assoc
     [_ k v]
     (cond
-      (= k :lon) (Point. v lat (radians v) lat-rad)
-      (= k :lon-rad) (Point. (degrees v) lat v lat-rad)
-      (= k :lat) (Point. lon v lon-rad (radians v))
-      (= k :lat-rad) (Point. lon (degrees v) lon-rad v)
+      (= k :lon) (Point. v lat (radians v) lat-rad options)
+      (= k :lon-rad) (Point. (degrees v) lat v lat-rad options)
+      (= k :lat) (Point. lon v lon-rad (radians v) options)
+      (= k :lat-rad) (Point. lon (degrees v) lon-rad v options)
+      (= k :options) (Point. lon lat lon-rad lat-rad v)
       :else (throw (Exception. (str "Unknown point key " k)))))
   (assocEx
     [this k v]
@@ -99,6 +114,7 @@
       (= k :lon-rad) lon-rad
       (= k :lat) lat
       (= k :lat-rad) lat-rad
+      (= k :options) options
       :else (throw (Exception. (str "Unknown point key " k)))))
   (valAt [_ k not-found]
     (cond
@@ -106,6 +122,7 @@
       (= k :lon-rad) lon-rad
       (= k :lat) lat
       (= k :lat-rad) lat-rad
+      (= k :options) options
       :else not-found)))
 
 (defn print-point
@@ -140,7 +157,8 @@
    (Point. (double lon)
            (double lat)
            (double lon-rad)
-           (double lat-rad))))
+           (double lat-rad)
+           nil)))
 
 (def north-pole
   (point 0 90))
@@ -197,7 +215,7 @@
 (defn points->ords
   "Takes points and converts them to a list of numbers lon1, lat1, lon2, lat2, ..."
   [points]
-  (mapcat #(vector (:lon %) (:lat %)) points))
+  (vec (mapcat #(vector (:lon %) (:lat %)) points)))
 
 (defn antipodal
   "Returns the point antipodal to the point."

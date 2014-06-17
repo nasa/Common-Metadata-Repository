@@ -192,7 +192,6 @@
                                         (concat `(r/ords->ring) (r/ring->ords ring)))
                                       (:rings polygon)))]))))
 
-
 (defn points-in-mbr
   "Returns a generator of points in the MBR"
   [mbr]
@@ -227,13 +226,26 @@
   points to build valid internal rings. Then each ring is only included if none of the arcs
   of the ring intersect."
   [ring]
-  (let [ring-arcs (:arcs ring)]
+  (let [{ring-arcs :arcs
+         contains-np :contains-north-pole
+         contains-sp :contains-south-pole} ring]
     (gen/such-that
-      ;; Checks that arcs do not intersect
       (fn [potential-ring]
-        (not-any? (fn [a1]
-                    (some (partial a/intersects? a1) ring-arcs))
-                  (:arcs potential-ring)))
+        (and
+          ;; Checks that arcs do not intersect
+          (not-any? (fn [a1]
+                      (some (partial a/intersects? a1) ring-arcs))
+                    (:arcs potential-ring))
+          ;; and that pole containment is allowed
+          (or (and (not contains-np)
+                   (not contains-sp)
+                   (not (:contains-north-pole potential-ring))
+                   (not (:contains-south-pole potential-ring)))
+              ;; The potential ring can't contain the same pole as the boundary.
+              (and contains-np
+                   (not (:contains-north-pole potential-ring)))
+              (and contains-sp
+                   (not (:contains-south-pole potential-ring))))))
       (rings
         ;; The function passed in builds sets of points that are non-antipodal and in the ring.
         (fn [num-points]

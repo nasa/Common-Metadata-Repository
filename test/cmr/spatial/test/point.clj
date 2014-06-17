@@ -23,7 +23,7 @@
     (.equals p2 p1)
     (= (hash p1) (hash p2))))
 
-(defspec point-hashCode-equals-consistency 100
+(defspec point-hashCode-equals-consistency 1000
   (for-all [^Point p1 sgen/points
             ^Point p2 sgen/points]
     (and
@@ -51,6 +51,11 @@
 
       ;; South poles don't equal points near the south pole
       (is (not (some #(= (p/point (:lon %) -89.99) %) south-poles)))))
+  (testing "very close on pole"
+    (let [p1 (p/point 0.0 89.99999999999996)
+          p2 (p/point 0.0 90.0)]
+      (is (= p1 p2))
+      (is (= (hash p1) (hash p2)))))
   (testing "antimeridian"
     (is (= (p/point -180 0) (p/point 180 0)))
     (is (= (p/point -180 10) (p/point 180 10)))

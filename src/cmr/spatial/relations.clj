@@ -35,7 +35,9 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   cmr.spatial.point.Point
 
-  ;; TODO implement mbr
+  (mbr
+    [point]
+    (m/point->mbr point))
 
   (contains-north-pole?
     [point]

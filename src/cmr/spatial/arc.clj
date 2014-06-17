@@ -379,6 +379,12 @@
                      (mbr/covers-point? lat-seg-mbr p)))
               points))))
 
+(defn intersects-lat-segment?
+  "Returns true if the arc intersects the lat segment.  The latitude segment is definedat lat
+  between the lon-west and lon-east"
+  [arc lat lon-west lon-east]
+  (seq (lat-segment-intersections arc lat lon-west lon-east)))
+
 (defn great-circle-equivalency-applicable?
   "Checks if special case for both arcs having the same great circle is applicable."
   [^Arc a1 ^Arc a2]

@@ -51,7 +51,6 @@
     (vdd/stop-viz server)
     (dissoc this :server)))
 
-
 (defn create-viz-server
   "Creates a visualization server which responds to lifecycle start and stop."
   []
@@ -68,13 +67,15 @@
   Point
   (cmr-spatial->viz-geoms
     [point]
-    (let [{:keys [lon lat]} point
+    (let [{:keys [lon lat options]} point
           label (str (round 2 lon) "," (round 2 lat))
-          balloon label]
+          balloon label
+          ;; provide a default label and balloon
+          options (merge {:label label :balloon balloon} options)]
       [{:type :point
         :lon lon
         :lat lat
-        :options {:label label :balloon balloon}}]))
+        :options options}]))
   Ring
   (cmr-spatial->viz-geoms
     [ring]
@@ -95,9 +96,18 @@
   (cmr-spatial->viz-geoms
     [polygon]
     (let [{:keys [rings options]} polygon
-          [boundary & holes] (map #(assoc % :options options) rings)
-          holes (map #(assoc-in % [:options :style] {:width 5 :color "9918A0ff"}) holes)]
+          [boundary & holes] (map #(update-in % [:options] merge options) rings)
+          ;; Create distinct colors for the holes that are evenly distributed among the color space. (mostly)
+          hole-colors (map #(format "99%02x%02xff" % %)
+                           (range 0 255 (int (Math/ceil (/ 255 (count holes))))))
+          holes (map (fn [hole color]
+                       (assoc-in hole [:options :style] {:width 5 :color color}))
+                     holes
+                     hole-colors)]
+
       (mapcat cmr-spatial->viz-geoms (cons boundary holes))))
+
+
 
   Mbr
   (cmr-spatial->viz-geoms

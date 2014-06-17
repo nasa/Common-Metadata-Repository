@@ -47,6 +47,12 @@
   but within this tolerance will be considered covered by the bounding rectangle"
   0.000001)
 
+(defn point->mbr
+  "Returns an mbr that covers only a single point"
+  [point]
+  (let [{:keys [lon lat]} point]
+    (mbr lon lat lon lat)))
+
 (defn- lon-range-covers-lon?
   "Returns true if lon is between west and east."
   [^double west ^double east ^double lon]

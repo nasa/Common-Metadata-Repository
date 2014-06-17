@@ -147,20 +147,39 @@
                      (some (partial a/intersects? a1) ring1-arcs))
                    (:arcs ring2)))))
 
-;; TODO this needs additional testing and work. This will fail on at least one case:
-;; Imagine a t shaped area. The vertical part of the T is a ring of 4 points. The horizontal part
-;; of the t is a BR. None of the points of the br are in the ring. None of the points of the ring
-;; are in the br. We need to add a test that some of the rings arcs pass through the lat or lon
-;; lines of the br.
-
 (defn intersects-br?
   "Returns true if the ring intersects the br"
   [ring br]
-  (or
-    ;; Does the br cover any points of the ring?
-    (some (partial mbr/covers-point? br) (:points ring))
-    ;; Does the ring contain any points of the br?
-    (some (partial covers-point? ring) (mbr/corner-points br))))
+  (when (mbr/intersects-br? (:mbr ring) br)
+
+    (or
+      ;; Does the br cover any points of the ring?
+      (some (partial mbr/covers-point? br) (:points ring))
+      ;; Does the ring contain any points of the br?
+      (some (partial covers-point? ring) (mbr/corner-points br))
+
+      ;; Do any of the sides intersect?
+      (let [arcs (:arcs ring)
+            {:keys [west north east south]} br]
+
+        (if (= north south)
+          ;; A zero height mbr. It's basically a single lat segment.
+          (some #(a/intersects-lat-segment? % north west east) arcs)
+          (or
+            ;; intersections with the north side
+            (some #(a/intersects-lat-segment? % north west east) arcs)
+
+            ;; intersections with the south side
+            (some #(a/lat-segment-intersections % south west east) arcs)
+
+            ;; intersections with the west side
+            (let [west-arc (a/arc (p/point west south) (p/point west north))]
+              (some #(a/intersects? % west-arc) arcs))
+
+            ;; intersections with the east side
+            (let [east-arc (a/arc (p/point east south) (p/point east north))]
+              (some #(a/intersects? % east-arc) arcs))))))))
+
 
 (defn self-intersections
   "Returns the rings self intersections"
@@ -329,12 +348,17 @@
       (let [arcs (ring->arcs ring)
             {:keys [contains-north-pole contains-south-pole]} (ring->pole-containment ring)
             br (->> arcs (mapcat a/mbrs) (reduce mbr/union))
-            br (if contains-north-pole
+            br (if (and contains-north-pole
+                        (not (some p/is-north-pole? (:points ring)))
+                        (not (some a/crosses-north-pole? arcs)))
                  (mbr/mbr -180.0 90.0 180.0 (:south br))
                  br)]
-        (if contains-south-pole
+        (if (and contains-south-pole
+                 (not (some p/is-south-pole? (:points ring)))
+                 (not (some a/crosses-south-pole? arcs)))
           (mbr/mbr -180.0 (:north br) 180.0 -90.0)
           br))))
+
 
 (defn ring->external-points
   "Determines external points that are not in the ring."

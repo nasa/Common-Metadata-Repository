@@ -22,7 +22,7 @@
 (defn polygon
   "Creates a polygon"
   [rings]
-  (->Polygon rings nil))
+  (->Polygon (vec rings) nil))
 
 (defn boundary
   "Returns the outer boundary"
@@ -71,5 +71,5 @@
       polygon
 
       (as-> polygon p
-            (update-in p [:rings] (partial map d/calculate-derived))
+            (update-in p [:rings] (partial mapv d/calculate-derived))
             (assoc p :mbr (-> p :rings first :mbr))))))

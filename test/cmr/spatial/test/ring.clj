@@ -74,19 +74,19 @@
 
    :point-on-np {:ords [0,0 90,0 0,90 0,0]
                  :north-pole true
-                 :bounds (m/mbr -180 90 180 0)
+                 :bounds (m/mbr 0 90 90 0)
                  :internal-points [0,90 45,85 1,85 89.9,85 45,1 1,1 90,1]
                  :external-points [0,-90 -1,0 45,-85]}
 
    :point-on-np2 {:ords [-90,85 0,85 90,85 0,90 -90,85]
                   :north-pole true
-                  :bounds (m/mbr -180 90 180 85)
+                  :bounds (m/mbr -90 90 90 85)
                   :internal-points [0,87 89,87 -89,87]
                   :external-points [0,-90 180,0 0,0 -180,89 -135,89 135,89 180,89 89,-87 -89,-87]}
 
    :point-on-np-across-am {:ords [90,85 180,85 -90,85 0,90 90,85]
                            :north-pole true
-                           :bounds (m/mbr -180 90 180 85)
+                           :bounds (m/mbr 90 90 -90 85)
                            :internal-points [-180,89 -135,89 135,89 180,89]
                            :external-points [0,-90 180,0 0,0 0,87 89,87 -89,87 89,-87 -89,-87]}
 
@@ -97,20 +97,20 @@
 
    :arc-across-np {:ords [-90,75, 0,60, 90,-74, -90,75]
                    :north-pole true
-                   :bounds (m/mbr -180 90 180 -74)
+                   :bounds (m/mbr -90 90 90 -74)
 
                    :internal-points [0,90 -87,76 88,84 87,75 87,-72]
                    :external-points [0,-90 0,0 91,-72]}
 
    :point-on-sp {:ords [-175,0 175,0 0,-90 -175,0]
                  :south-pole true
-                 :bounds (m/mbr -180 0 180 -90)
+                 :bounds (m/mbr 175 0 -175 -90)
                  :internal-points [180,0 -180,0 180,-1 175,-10 -175,-10 175,-89 -175,-89]
                  :external-points [0,0 0,90 174,-10 -174,-10 174,-89 -174,-89]}
 
    :point-on-sp2 {:ords [-90,-85 0,-90 90,-85 0,-85 -90,-85]
                   :south-pole true
-                  :bounds (m/mbr -180 -85 180 -90)
+                  :bounds (m/mbr -90 -85 90 -90)
                   :internal-points [0,-87 89,-87 -89,-87]
                   :external-points [0,90 180,0 0,0 -180,-89 -135,-89 135,-89 180,-89 89,87 -89,87]}
 
@@ -121,7 +121,7 @@
 
    :arc-across-sp {:ords [-90,75 90,-76 0,60 -90,75]
                    :south-pole true
-                   :bounds (m/mbr -180 76.33917886681955 180 -90)
+                   :bounds (m/mbr -90.0 76.33917886681955 90.0 -90.0)
                    :internal-points [0,0 -81,75 0,-89 -89,-89 90,-76.1]
                    :external-points [0,90 180,0 -180,0 81,75 180,-89 90,-75.9]}
 
