@@ -46,16 +46,14 @@
     (poly/polygon [(r/ords->ring 0,0, 4,0, 6,5, 2,5, 0,0)
                    (r/ords->ring 4,3.34, 2,3.34, 3,1.67, 4,3.34)]))
 
-  ;; TODO fix this problem where if the search point is in the bottom corner of the polygon
-  ;; then an LR will be found that has no height and it could be taller
+  ;; Polygon with multiple inner rings
 
-  (let [ordses [[0.0 0.0 6.68 0.65 5.54 5.37 0.07 4.5 0.0 0.0]
-                [3.4 4.57 0.68 4.14 0.55 0.27 3.4 4.57]]
-        rings (map (partial apply r/ords->ring) ordses)
-        polygon (d/calculate-derived (poly/polygon rings))]
-    (display-draggable-lr-polygon polygon)
-    (lbs/find-lr polygon))
-
+  (let [ordses [[0,0, 4,0, 6,5, 2.14,4.86, -0.92,4.75, 0,0]
+                [2.34,4.22, 1.22,3.92, -0.11,4.21, 0.7,2.57, 2.34,4.22]
+                [3.7,3.33, 1.25,1.04, 3.37,0.61, 3.7,3.33]]
+        polygon (poly/polygon (mapv (partial apply r/ords->ring)
+                                    ordses))]
+    (display-draggable-lr-polygon polygon))
 
 
   (def ring (d/calculate-derived
@@ -147,14 +145,10 @@
                                                  (fn [i ring]
                                                    (assoc-in ring [:options :id] i))
                                                  rings)))))
-        ;; Find the points used to find the LR. We'll display these to help debug the algorithm
-        lr-search-points (map #(assoc-in % [:options :id] "search-point")
-                              (lbs/shape->lr-search-points polygon))
         _ (println "Found LR:" (pr-str lr))]
 
     (reset! displaying-polygon-atom polygon)
-    (viz-helper/add-geometries (concat [polygon]
-                                       lr-search-points))
+    (viz-helper/add-geometries [polygon])
     (when lr
       (viz-helper/add-geometries [(assoc-in lr [:options :id] "lr")]))))
 
@@ -167,14 +161,11 @@
         ring (d/calculate-derived (apply r/ords->ring ords))
         polygon (swap! displaying-polygon-atom (fn [polygon]
                                                  (assoc-in polygon [:rings (Long. id)] ring)))
-        ;; Find the points used to find the LR. We'll display these to help debug the algorithm
-        lr-search-points (map #(assoc-in % [:options :id] "search-point")
-                              (lbs/shape->lr-search-points polygon))
         lr (lbs/find-lr polygon false)
         _ (println "Found LR:" (pr-str lr))]
-    (viz-helper/remove-geometries ["lr" "search-point"])
-    (println "lr-search-points" (pr-str lr-search-points))
-    (viz-helper/add-geometries lr-search-points)
+
+    (viz-helper/remove-geometries ["lr"])
+
     (when lr
       (viz-helper/add-geometries [(assoc-in lr [:options :id] "lr")]))))
 

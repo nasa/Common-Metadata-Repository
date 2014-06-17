@@ -170,7 +170,7 @@
             (some #(a/intersects-lat-segment? % north west east) arcs)
 
             ;; intersections with the south side
-            (some #(a/lat-segment-intersections % south west east) arcs)
+            (some #(a/intersects-lat-segment? % south west east) arcs)
 
             ;; intersections with the west side
             (let [west-arc (a/arc (p/point west south) (p/point west north))]
