@@ -4,7 +4,9 @@
   (:require [cheshire.core :as json]
             [pantomime.media :as mt]
             [cmr.common.services.errors :as errors]
-            [clojure.data.xml :as x]))
+            [clojure.data.xml :as x]
+            [clojure.set :as set]
+            [cmr.search.models.results :as r]))
 
 (def default-search-result-format :json)
 
@@ -39,17 +41,20 @@
 
 (defmethod search-results->response :json
   [results result-type pretty]
-  (json/generate-string results {:pretty pretty}))
+  (let [{:keys [hits references]} results
+        response-refs (map #(set/rename-keys % {:concept-id :id}) references)
+        response-results (r/->Results hits response-refs)]
+    (json/generate-string response-results {:pretty pretty})))
 
 (defn- reference->xml-element
   "Converts a search result reference into an XML element"
   [reference]
   (let [{:keys [concept-id revision-id location name]} reference]
     (x/element :reference {}
-               (x/element :concept-id {} concept-id)
-               (x/element :revision-id {} (str revision-id))
+               (x/element :name {} name)
+               (x/element :id {} concept-id)
                (x/element :location {} location)
-               (x/element :name {} name))))
+               (x/element :revision-id {} (str revision-id)))))
 
 (defmethod search-results->response :xml
   [results result-typ pretty]

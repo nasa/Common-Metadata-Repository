@@ -10,6 +10,7 @@
             [clojure.walk :as walk]
             [cheshire.core :as json]
             [clojure.data.xml :as x]
+            [clojure.set :as set]
             [cmr.common.xml :as cx]
             [cmr.search.api.search-results :as s]
             [cmr.search.models.results :as r]
@@ -37,10 +38,10 @@
 (defn ref-xml-struct->reference
   "Converts a parsed XML reference into a map"
   [xml-struct]
-  {:concept-id (cx/string-at-path xml-struct [:concept-id])
-   :revision-id (cx/long-at-path xml-struct [:revision-id])
+  {:name (cx/string-at-path xml-struct [:name])
+   :id (cx/string-at-path xml-struct [:id])
    :location (cx/string-at-path xml-struct [:location])
-   :name (cx/string-at-path xml-struct [:name])})
+   :revision-id (cx/long-at-path xml-struct [:revision-id])})
 
 (defmethod parse-search-results-response :xml
   [response-str format]
@@ -52,12 +53,12 @@
      :references references}))
 
 (defn result-records->map
-  "Converts the result records into a map for easy comparison. Really this should use
-  clojure.walk/post-walk but it doesn't work on records. Updating after upgrading to clojure 1.6."
+  "Converts the result records into a map for easy comparison."
   [search-result]
-  (update-in (into {} search-result)
-             [:references]
-             (partial map (partial into {}))))
+  (let [{:keys [hits references]} search-result
+        response-refs (map #(set/rename-keys % {:concept-id :id}) references)]
+    {:hits hits
+     :references response-refs}))
 
 (defspec search-result->response-test 100
   (for-all [result results-gen/results
