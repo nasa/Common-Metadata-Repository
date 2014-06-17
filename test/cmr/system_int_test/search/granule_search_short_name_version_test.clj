@@ -34,9 +34,9 @@
       (let [{:keys [refs]} (search/find-refs :granule {:short_name "OnlyShort"})]
         (is (= 1 (count refs)))
         (let [ref (first refs)
-              {:keys [name concept-id location]} ref]
+              {:keys [name id location]} ref]
           (is (= "Granule2" name))
-          (is (re-matches #"G[0-9]+-CMR_PROV1" concept-id)))))
+          (is (re-matches #"G[0-9]+-CMR_PROV1" id)))))
     (testing "search by multiple short names."
       (is (d/refs-match?
             [gran4 gran5]
@@ -89,9 +89,9 @@
       (let [{:keys [refs]} (search/find-refs :granule {:version "2"})]
         (is (= 1 (count refs)))
         (let [ref (first refs)
-              {:keys [name concept-id location]} ref]
+              {:keys [name id location]} ref]
           (is (= "Granule3" name))
-          (is (re-matches #"G[0-9]+-CMR_PROV1" concept-id)))))
+          (is (re-matches #"G[0-9]+-CMR_PROV1" id)))))
     (testing "search by multiple versions."
       (is (d/refs-match?
             [gran3 gran4]

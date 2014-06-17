@@ -81,9 +81,9 @@
       (let [{:keys [refs]} (search/find-refs :granule {:dataset-id "AnotherCollectionV1"})]
         (is (= 1 (count refs)))
         (let [ref (first refs)
-              {:keys [name concept-id location]} ref]
+              {:keys [name id location]} ref]
           (is (= "Granule3" name))
-          (is (re-matches #"G[0-9]+-CMR_PROV1" concept-id)))))
+          (is (re-matches #"G[0-9]+-CMR_PROV1" id)))))
     (testing "search by multiple dataset ids."
       (is (d/refs-match?
             [gran3 gran5]
@@ -154,9 +154,9 @@
       (let [{:keys [refs]} (search/find-refs :granule {:granule-ur "Granule1"})]
         (is (= 1 (count refs)))
         (let [ref (first refs)
-              {:keys [name concept-id location]} ref]
+              {:keys [name id location]} ref]
           (is (= "Granule1" name))
-          (is (re-matches #"G[0-9]+-CMR_PROV1" concept-id)))))
+          (is (re-matches #"G[0-9]+-CMR_PROV1" id)))))
     (testing "search by multiple granule urs."
       (is (d/refs-match?
             [gran1 gran2]
