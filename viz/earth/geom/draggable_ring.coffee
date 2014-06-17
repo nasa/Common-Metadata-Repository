@@ -30,8 +30,12 @@ class window.DraggableRing extends Ring
       this.notifyGuiEventListeners(DraggableRing.DRAG_FINISH_EVENT_CACHED)
       if @callbackFn
         pointStr = this.toOrdinatesString()
-        console.log("Calling callback #{@callbackFn} with #{pointStr}")
-        vdd_core.connection.callServerFunction(window.vddSession, @callbackFn, pointStr);
+        if @id != null
+          callbackStr = "#{@id}:#{pointStr}"
+        else
+          callbackStr = pointStr
+        console.log("Calling callback #{@callbackFn} with #{callbackStr}")
+        vdd_core.connection.callServerFunction(window.vddSession, @callbackFn, callbackStr);
     else
       console.log "Error: Unknown event to handle #{event.type}"
 

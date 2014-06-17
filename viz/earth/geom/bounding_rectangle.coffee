@@ -12,6 +12,13 @@ class window.BoundingRectangle extends Module
     @color = BoundingRectangle.DEFAULT_COLOR
     @color = options.color if options.color
 
+    # Make a zero height bounding rectangle slightly taller so it's visible
+    if @north == @south
+      if @north == 90
+        @south = @south - 0.01
+      else
+        @north = @north + 0.01
+
   @fromObject: (data)->
     new BoundingRectangle(data.west, data.north, data.east, data.south)
 
