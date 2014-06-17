@@ -94,7 +94,10 @@
     (j/db-do-commands db (format "CREATE INDEX %s_crdi ON %s (concept_id, revision_id, deleted, delete_time) TABLESPACE users"
                                  table-name
                                  table-name))
-    (j/db-do-commands db (format "CREATE INDEX %s_pcid ON %s(parent_collection_id) TABLESPACE users"
+    (j/db-do-commands db (format "CREATE INDEX %s_pcid ON %s (parent_collection_id) TABLESPACE users"
+                                 table-name
+                                 table-name))
+    (j/db-do-commands db (format "CREATE INDEX %s_pcr ON %s (parent_collection_id, concept_id, revision_id) TABLESPACE users"
                                  table-name
                                  table-name))))
 

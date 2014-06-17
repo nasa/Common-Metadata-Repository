@@ -256,13 +256,13 @@
                 (let [{:keys [concept-type provider-id]} params
                       params (dissoc params :concept-type :provider-id)
                       table (tables/get-table-name provider-id concept-type)
-                      istmt (select [:*]
+                      istmt (select [:concept-id :revision-id]
                                     (from table)
                                     (when-not (empty? params)
                                       (where (find-params->sql-clause params)))
                                     (order-by :concept-id))]
                   (mapv (partial db-result->concept-map concept-type conn provider-id)
-                              (sql-utils/find-batch conn istmt start-index batch-size)))))
+                              (sql-utils/find-batch conn table istmt start-index batch-size)))))
             (lazy-find
               [start-index]
               (let [batch (find-batch start-index)]
