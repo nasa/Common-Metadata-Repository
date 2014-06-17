@@ -35,19 +35,23 @@
 (defn- find-batch-sql
   "Generates SQL to find and return a batch of items found from a given select statement starting
   at a given rownum"
-  [stmt start-index batch-size]
+  [table stmt start-index batch-size]
   (let [end-index (+ start-index batch-size)
         [inner-sql & params] (build stmt)]
-    (cons (str "SELECT * FROM (SELECT a.*, ROWNUM r from ("
+    (cons (str "SELECT * FROM "
+               table  " t1, "
+               "(SELECT concept_id, revision_id FROM (SELECT a.concept_id, a.revision_id, "
+               "ROWNUM r from ("
                inner-sql
-               ") a where ROWNUM <= "
-               end-index
-               ") WHERE r > "
-               start-index) params)))
+               ") a where ROWNUM <= " end-index
+               ") WHERE r > " start-index
+               ") ids WHERE "
+               "t1.concept_id = ids.concept_id
+               AND t1.revision_id = ids.revision_id") params)))
 
 (defn find-batch
-  "Batches a given select statment to provided a subset of the resutls of a given batch size
+  "Batches a given select statment to provided a subset of the results of a given batch size
   and starting at a given index."
-  [db stmt start-index batch-size]
-  (let [stmt (find-batch-sql stmt start-index batch-size)]
+  [db table stmt start-index batch-size]
+  (let [stmt (find-batch-sql table stmt start-index batch-size)]
     (j/query db stmt)))
