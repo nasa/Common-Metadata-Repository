@@ -28,7 +28,7 @@
 (defn- index-granules-for-collection
   "Index the granules for the given collection."
   [system provider-id collection-id]
-  (info "Indexing granule data for collection" collection-id))
+  (info "Indexing granule data for collection" collection-id)
   (let [db (get-in system [:metadata-db :db])
         params {:concept-type :granule
                 :provider-id provider-id
