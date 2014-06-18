@@ -10,8 +10,11 @@
 
 (defn- shape->script-cond
   [shape]
-  (qm/map->ScriptCondition {:name "spatial"
-                            :params {:ords (str/join "," (:ords (srl/shape->stored-ords shape)))}}))
+  (let [ords-info-map (-> (srl/shapes->ords-info-map [shape])
+                          (update-in [:ords-info] #(str/join "," %))
+                          (update-in [:ords] #(str/join "," %)))]
+    (qm/map->ScriptCondition {:name "spatial"
+                              :params ords-info-map})))
 
 (defn- br->cond
   [prefix {:keys [west north east south] :as br}]
