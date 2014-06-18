@@ -150,7 +150,7 @@
                 :projects (ext-gen/nil-if-empty (gen/vector campaigns 0 4))
                 :related-urls (ext-gen/nil-if-empty (gen/vector related-url 0 5))
                 :spatial-coverage (ext-gen/optional spatial-coverages)
-                :organizations (gen/vector distribution-center-organizations 1 1)))))
+                :organizations (gen/vector distribution-center-organizations 1 3)))))
 
 ; Generator for basic collections that only have the bare minimal fields
 ;; DEPRECATED - this will go away in the future. Don't use it.
