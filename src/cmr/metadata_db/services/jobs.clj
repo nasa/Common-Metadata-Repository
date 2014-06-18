@@ -15,7 +15,7 @@
 
 (def EXPIRED_CONCEPT_CLEANUP_INTERVAL
   "The number of seconds between jobs run to cleanup expired granules and collections"
-  3600)
+  (* 3600 5))
 
 (defn configure-quartz-system-properties
   [db]
