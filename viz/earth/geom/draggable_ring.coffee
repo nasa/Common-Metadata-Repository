@@ -30,7 +30,7 @@ class window.DraggableRing extends Ring
       this.notifyGuiEventListeners(DraggableRing.DRAG_FINISH_EVENT_CACHED)
       if @callbackFn
         pointStr = this.toOrdinatesString()
-        if @id != null
+        if @id && @id != null
           callbackStr = "#{@id}:#{pointStr}"
         else
           callbackStr = pointStr
