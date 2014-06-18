@@ -99,7 +99,7 @@
           [boundary & holes] (map #(update-in % [:options] merge options) rings)
           ;; Create distinct colors for the holes that are evenly distributed among the color space. (mostly)
           hole-colors (map #(format "99%02x%02xff" % %)
-                           (range 0 255 (int (Math/ceil (/ 255 (count holes))))))
+                           (range 0 255 (int (Math/ceil (/ 255 (inc (count holes)))))))
           holes (map (fn [hole color]
                        (assoc-in hole [:options :style] {:width 5 :color color}))
                      holes

@@ -55,6 +55,20 @@
   (and (r/intersects-ring? (boundary polygon) ring)
        (not-any? #(r/covers-ring? % ring) (holes polygon))))
 
+(defn intersects-polygon?
+  "Returns true if the polygon intersects the other polygon"
+  [poly1 poly2]
+  ;; 1. The outer boundary intersects the other boundary
+  ;; 2. None of the holes _cover_ the other polygon
+  ;; 3. The polygon isn't inside any of the holes of the other polygon
+  (let [boundary1 (boundary poly1)
+        boundary2 (boundary poly2)
+        holes1 (holes poly1)
+        holes2 (holes poly2)]
+    (and (r/intersects-ring? boundary1 boundary2)
+         (not-any? #(r/covers-ring? % boundary2) holes1)
+         (not-any? #(r/covers-ring? % boundary1) holes2))))
+
 (defn intersects-br?
   "Returns true if the polygon the bounding rectangle."
   [polygon br]

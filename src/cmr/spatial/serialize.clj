@@ -98,15 +98,8 @@
     mbr)
 
   (shape->lr
-    [{:keys [rings]}]
-    ;; TODO this does not yet take into account holes
-    (when (> (count rings) 1)
-      (errors/internal-error! "Finding LR of polygon with holes is not supported yet."))
-    (if-let [lr (lr/find-lr (first rings))]
-      lr
-      (errors/internal-error!
-        (format "Unable to find lr of ring [%s]. The current LR algorithm is limited and needs to be improved."
-                (pr-str (first rings)))))))
+    [polygon]
+    (lr/find-lr polygon)))
 
 
 (defmulti stored-ords->shape

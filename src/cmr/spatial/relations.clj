@@ -4,15 +4,12 @@
             [cmr.spatial.mbr :as m]
             [cmr.spatial.ring :as r]
             [cmr.spatial.polygon :as poly]
+            [cmr.spatial.derived :as d]
             [cmr.spatial.math :refer :all])
   (:import cmr.spatial.point.Point
            cmr.spatial.ring.Ring
            cmr.spatial.mbr.Mbr
            cmr.spatial.polygon.Polygon))
-
-
-;; TODO to support covers? and intersects? type functions that dynamically work with any type we can
-;; add multi methods which then call one of these protocol functions.
 
 (defprotocol SpatialRelations
   "TODO document the protocol"
@@ -27,6 +24,7 @@
                                a point.")
   (covers-br? [shape br] "Returns true if the shape covers the bounding rectangle.")
   (intersects-ring? [shape ring] "Returns true if the shape intersects the ring.")
+  (intersects-polygon? [shape polygon] "Returns true if the shape intersects the polygon.")
   (intersects-br? [shape br] "Returns true if the shape intersects the bounding rectangle."))
 
 ;; Only certain functions are implemented here
@@ -62,6 +60,10 @@
     [point br]
     (m/covers-point? br point))
 
+  (intersects-polygon?
+    [point polygon]
+    (poly/covers-point? polygon point))
+
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   cmr.spatial.mbr.Mbr
 
@@ -90,6 +92,10 @@
   (intersects-br?
     [br1 br2]
     (m/intersects-br? br1 br2))
+
+  (intersects-polygon?
+    [br polygon]
+    (poly/intersects-br? polygon br))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   cmr.spatial.ring.Ring
@@ -121,6 +127,10 @@
   (intersects-br?
     [ring br]
     (r/intersects-br? ring br))
+
+  (intersects-polygon?
+    [ring polygon]
+    (poly/intersects-ring? polygon ring))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   cmr.spatial.polygon.Polygon
@@ -156,9 +166,23 @@
     [polygon br]
     (poly/intersects-br? polygon br))
 
+  (intersects-polygon?
+    [poly1 poly2]
+    (poly/intersects-polygon? poly1 poly2)))
 
+(def shape-type->intersects-fn
+  "A map of spatial types to the intersect functions to use."
+  {Point covers-point?
+   Polygon intersects-polygon?
+   Mbr intersects-br?})
 
-)
-
-
+(defn shape->intersects-fn
+  "Creates a function for determining if another shape intersects this shape."
+  [shape]
+  (let [shape (d/calculate-derived shape)
+        f (get shape-type->intersects-fn (type shape))]
+    (fn [other-shape]
+      ;; Shape is the second argument so that the polymorphic protocol dispatch can be used
+      ;; on the first argument.
+      (f (d/calculate-derived other-shape) shape))))
 
