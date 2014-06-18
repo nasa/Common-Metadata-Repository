@@ -2,7 +2,7 @@
   (:require [clojurewerkz.quartzite.scheduler :as qs]
             [clojurewerkz.quartzite.triggers :as t]
             [clojurewerkz.quartzite.jobs :as jobs]
-            [clojurewerkz.quartzite.jobs :refer [defjob]]
+            [clojurewerkz.quartzite.stateful :refer [def-stateful-job]]
             [clojurewerkz.quartzite.schedule.calendar-interval :refer [schedule with-interval-in-seconds]]
             [clojurewerkz.quartzite.conversion :as c]
             [cmr.metadata-db.db-holder :as db-holder]
@@ -27,7 +27,7 @@
     (System/setProperty "org.quartz.dataSource.myDS.password" password)))
 
 
-(defjob ExpiredConceptCleanupJob
+(def-stateful-job ExpiredConceptCleanupJob
   [ctx]
   (info "Executing expired concepts cleanup.")
   (try
@@ -46,7 +46,7 @@
   (qs/initialize)
   (qs/start)
   ;; We delete exiting job and recreate it
-  (if (qs/get-job job-key)
+  (when (qs/get-job job-key)
     (qs/delete-job (jobs/key job-key)))
   (let [job (jobs/build
               (jobs/of-type ExpiredConceptCleanupJob)
