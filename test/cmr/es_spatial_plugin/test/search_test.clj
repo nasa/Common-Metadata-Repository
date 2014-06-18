@@ -74,9 +74,10 @@
 
 (defn search-spatial
   [conn shape]
-  (let [{:keys [type ords]} (srl/shape->stored-ords shape)
+  (let [{:keys [ords-info ords]} (srl/shapes->ords-info-map [shape])
         elastic-filter {:script {:script "spatial"
-                                 :params {:ords (str/join "," ords)}
+                                 :params {:ords (str/join "," ords)
+                                          :ords-info (str/join "," ords-info)}
                                  :lang "native"}}
         result (esd/search conn index-name [type-name] :filter elastic-filter)]
     (set (map (comp keyword :_id) (get-in result [:hits :hits])))))

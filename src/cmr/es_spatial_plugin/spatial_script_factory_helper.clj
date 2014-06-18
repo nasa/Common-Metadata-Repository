@@ -1,11 +1,13 @@
 (ns cmr.es-spatial-plugin.spatial-script-factory-helper
   "Contains functionality used by SpatialScriptFactory. Seperated into a typical Clojure namespace
   to make it more compatible with REPL development."
-  (:require [clojure.string]
+  (:require [clojure.string :as str]
             [cmr.spatial.ring :as ring]
             [cmr.spatial.point :as point]
+            [cmr.spatial.polygon :as poly]
             [cmr.spatial.derived :as d]
             [cmr.spatial.serialize :as srl]
+            [cmr.spatial.relations :as relations]
             [cmr.es-spatial-plugin.SpatialScript])
   (:import cmr.es_spatial_plugin.SpatialScript
            org.elasticsearch.common.xcontent.support.XContentMapValues
@@ -13,7 +15,7 @@
 
 (def parameters
   "The parameters to the Spatial script"
-  [:ords])
+  [:ords :ords-info])
 
 (defn- extract-params
   "Extracts the parameters from the params map given in the script."
@@ -31,25 +33,21 @@
              (str "Missing one or more of required parameters: "
                   (clojure.string/join parameters ", "))))))
 
-(defn- ords-str->intersects-fn
-  "Chooses which intersection function to use. Eventually it will support more than one"
-  [ords-str]
-  (let [ords (map #(Integer. ^String %) (clojure.string/split ords-str #","))
-        ;; Hard coded to polygon for now.
-        shape (srl/stored-ords->shape :polygon ords)
-        ring (-> shape :rings first d/calculate-derived)]
-
-    ;; The function is hardcoded to assume polygon for now
-    (fn [polygon]
-      (ring/intersects-ring? ring (-> polygon
-                                      :rings
-                                      first
-                                      d/calculate-derived)))))
+(defn- params->spatial-shape
+  [params]
+  (let [{:keys [ords-info ords]} (->> params
+                                      (map
+                                        (fn [[k v]]
+                                          ;; Convert the comma separated string into a vector of integers.
+                                          [k (map #(Integer. ^String %) (str/split v #","))]))
+                                      (into {}))]
+    (first (srl/ords-info->shapes ords-info ords))))
 
 (defn new-script [logger script-params]
   (try
-    (let [{:keys [ords] :as params} (extract-params script-params)
-          intersects-fn (ords-str->intersects-fn ords)]
+    (let [params (extract-params script-params)
+          shape (params->spatial-shape params)
+          intersects-fn (relations/shape->intersects-fn shape)]
       (assert-required-parameters params)
       (SpatialScript. ^Object intersects-fn logger))
     (catch Throwable e
