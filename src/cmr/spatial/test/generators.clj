@@ -218,7 +218,8 @@
         lat-gen (double-gen (:south mbr) (:north mbr))]
     (gen/such-that (partial m/covers-point? mbr)
                    (gen/fmap (partial apply p/point)
-                             (gen/tuple lon-gen lat-gen)))))
+                             (gen/tuple lon-gen lat-gen))
+                   50)))
 
 (defn rings-in-ring
   "Creates a generator of rings within the given ring. Useful for creating holes in a polygon. This is

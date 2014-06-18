@@ -333,16 +333,16 @@
     (is (not (over-south -180,85, 0,85)))
     (is (not (over-south 1,2 3,4))))))
 
-(defspec arc-bounding-rectangles-spec 100
+(defspec arc-bounding-rectangles-spec 1000
   (for-all [arc sgen/arcs]
     (let [brs (a/mbrs arc)]
       (cond
         (a/crosses-north-pole? arc)
         (and (= (count brs) 2)
-             (every? #(-> % :north (= 90)) brs))
+             (every? #(-> % :north (approx= 90.0)) brs))
         (a/crosses-south-pole? arc)
         (and (= (count brs) 2)
-             (every? #(-> % :south (= -90)) brs))
+             (every? #(-> % :south (approx= -90.0)) brs))
         :else
         (and
           (= (count brs) 1)
