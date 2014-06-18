@@ -21,8 +21,7 @@
             [cmr.spatial.lr-binary-search :as lbs]))
 
 (defn polygon
-  "Creates a single ring polygon with the given ordinates. Points must be in counter clockwise order.
-  The polygon will be closed automatically."
+  "Creates a single ring polygon with the given ordinates. Points must be in counter clockwise order."
   [& ords]
   (let [polygon (p/polygon [(apply r/ords->ring ords)])
         outer (-> polygon :rings first derived/calculate-derived)]
@@ -92,6 +91,15 @@
 
 
 (comment
+
+  ;; A polygon with a hole
+  (let [outer (r/ords->ring -5.26,-2.59, 11.56,-2.77, 10.47,8.71, -5.86,8.63, -5.26,-2.59)
+        hole1 (r/ords->ring 6.95,2.05, 2.98,2.06, 3.92,-0.08, 6.95,2.05)
+        hole2 (r/ords->ring 5.18,6.92, -1.79,7.01, -2.65,5, 4.29,5.05, 5.18,6.92)
+        polygon-with-holes  (p/polygon [outer hole1 hole2])
+        search-area (polygon 0 0, 1 0, 1 1, 0 1, 0 0)]
+    (visual-interactive-search [polygon-with-holes] search-area))
+
 
   ;; A set of polygons and a search area that can be displayed.
   (let [polygon-ne (polygon 20 10, 30 20, 10 20, 20 10)
