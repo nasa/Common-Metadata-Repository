@@ -4,16 +4,20 @@
   (:require [cmr.common.lifecycle :as lifecycle]
             [cmr.common.log :refer (debug info warn error)]
             [clojure.java.jdbc :as j])
-  (:import com.mchange.v2.c3p0.ComboPooledDataSource))
+  (:import oracle.ucp.jdbc.PoolDataSourceFactory
+           oracle.ucp.admin.UniversalConnectionPoolManagerImpl))
 
 
 (defn db-spec
-  [db-url user password]
-  {:classname "oracle.jdbc.driver.OracleDriver"
+  [connection-pool-name db-url fcf-enabled ons-config user password]
+  {:classname "oracle.jdbc.pool.OracleDataSource"
    :subprotocol "oracle"
    :subname db-url
    :user user
-   :password password})
+   :password password
+   :connection-pool-name connection-pool-name
+   :fcf-enabled fcf-enabled
+   :ons-config ons-config})
 
 
 (defn test-db-connection!
@@ -25,15 +29,30 @@
 
 (defn pool
   [spec]
-  (doto (ComboPooledDataSource.)
-    (.setDriverClass (:classname spec))
-    (.setJdbcUrl (str "jdbc:" (:subprotocol spec) ":" (:subname spec)))
-    (.setUser (:user spec))
-    (.setPassword (:password spec))
-    ;; expire excess connections after 30 minutes of inactivity:
-    (.setMaxIdleTimeExcessConnections (* 30 60))
-    ;; expire connections after 3 hours of inactivity:
-    (.setMaxIdleTime (* 3 60 60))))
+  (let [{:keys [classname
+                subprotocol
+                subname
+                user
+                password
+                connection-pool-name
+                fcf-enabled
+                ons-config]} spec]
+    (doto (PoolDataSourceFactory/getPoolDataSource)
+      (.setConnectionFactoryClassName classname)
+      (.setConnectionPoolName connection-pool-name)
+      (.setUser user)
+      (.setPassword password)
+      (.setURL (str "jdbc:" subprotocol ":" subname))
+      (.setMinPoolSize 5)
+      (.setMaxPoolSize 100)
+      (.setInactiveConnectionTimeout 60)
+      (.setConnectionWaitTimeout 600)
+      (.setPropertyCycle 120)
+      (.setFastConnectionFailoverEnabled fcf-enabled)
+      (.setONSConfiguration ons-config)
+      (.setAbandonedConnectionTimeout 3500)
+      (.setValidateConnectionOnBorrow true)
+      (.setSQLForValidateConnection "select 1 from DUAL"))))
 
 (defrecord OracleStore
   [
@@ -53,7 +72,10 @@
            this))
 
   (stop [this system]
-        this))
+        (let [pool-name (get-in this [:spec :connection-pool-name])
+              ucp-manager (UniversalConnectionPoolManagerImpl/getUniversalConnectionPoolManager)]
+          (.destroyConnectionPool ucp-manager pool-name))
+        (dissoc this :datasource)))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
