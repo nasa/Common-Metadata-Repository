@@ -35,19 +35,20 @@
 (defn- find-batch-sql
   "Generates SQL to find and return a batch of items found from a given select statement starting
   at a given rownum"
-  [table stmt start-index batch-size]
-  (let [end-index (+ start-index batch-size)
+  [^String table stmt start-index batch-size]
+  (let [table (.toUpperCase table)
+        end-index (+ start-index batch-size)
         [inner-sql & params] (build stmt)]
-    (cons (str "SELECT * FROM "
-               table  " t1, "
-               "(SELECT concept_id, revision_id FROM (SELECT a.concept_id, a.revision_id, "
-               "ROWNUM r from ("
-               inner-sql
-               ") a where ROWNUM <= " end-index
-               ") WHERE r > " start-index
-               ") ids WHERE "
-               "t1.concept_id = ids.concept_id
-               AND t1.revision_id = ids.revision_id") params)))
+    (cons (format
+            (str "SELECT /*+ INDEX(%s %s_CRI) */ * FROM %s t1, "
+                 "(SELECT concept_id, revision_id FROM ("
+                 "SELECT a.concept_id, a.revision_id, ROWNUM r from (%s) a where ROWNUM <= ?"
+                 ") WHERE r > ?) ids WHERE "
+                 "t1.concept_id = ids.concept_id "
+                 "AND t1.revision_id = ids.revision_id")
+            table table table inner-sql)
+          (concat params [end-index start-index]))))
+
 
 (defn find-batch
   "Batches a given select statment to provided a subset of the results of a given batch size

@@ -265,6 +265,7 @@
                               (sql-utils/find-batch conn table istmt start-index batch-size)))))
             (lazy-find
               [start-index]
+              (debug "Finding batch from" start-index)
               (let [batch (find-batch start-index)]
                 (when-not (empty? batch)
                   (cons batch (lazy-seq (lazy-find (+ start-index (count batch))))))))]
