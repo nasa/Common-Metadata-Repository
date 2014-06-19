@@ -65,7 +65,8 @@
           true ; The point is actually one of the rings points
           ;; otherwise we'll do the real intersection algorithm
           (let [antipodal-point (p/antipodal point)
-                ;; Find an external point to use. We can't use an external point that is antipodal to the given point or equal to the point.
+                ;; Find an external point to use. We can't use an external point that is antipodal
+                ;; to the given point or equal to the point.
                 external-point (first (filter #(and (not= % antipodal-point)
                                                     (not= % point))
                                               (:external-points ring)))

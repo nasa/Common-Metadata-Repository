@@ -26,19 +26,33 @@
       (and lr
            (r/covers-br? ring lr)))))
 
+(defn polygon-has-valid-lr?
+  "Returns true if the polygon has a valid lr."
+  [polygon]
+  (let [lr (lbs/find-lr polygon false)]
+    (and lr
+         (poly/covers-br? polygon lr))))
+
 (defspec simple-polygon-with-holes-has-lr {:times 100 :printer-fn sgen/print-failed-ring}
   (let [boundary (d/calculate-derived (r/ords->ring 0 0, 10 0, 10 10, 0 10, 0 0))]
     (for-all [hole (sgen/rings-in-ring boundary)]
-      (let [polygon (d/calculate-derived (poly/polygon [boundary hole]))
-            lr (lbs/find-lr polygon false)]
-        (and lr
-             (poly/covers-br? polygon lr))))))
+      (let [polygon (d/calculate-derived (poly/polygon [boundary hole]))]
+        (polygon-has-valid-lr? polygon)))))
 
 (defspec all-polygons-with-holes-have-lrs {:times 100 :printer-fn sgen/print-failed-polygon}
   (for-all [polygon (gen/no-shrink sgen/polygons-with-holes)]
-    (let [lr (lbs/find-lr polygon false)]
-      (and lr
-           (poly/covers-br? polygon lr)))))
+    (polygon-has-valid-lr? polygon)))
+
+(deftest example-polygons-have-lrs
+  (let [polygons-ordses [[[-60.25739 -68.00377, -59.64225 -68.05437, -59.57187 -68.05437,
+                           -59.5413 -68.05092, -59.49545 -68.04172, -59.49851 -68.03482,
+                           -59.51381 -68.03597, -59.59335 -68.04747, -59.93609 -68.01872,
+                           -60.21455 -67.99917, -60.25739 -67.99917, -60.25739 -68.00377]]]]
+    (doseq [polygon-ordses polygons-ordses]
+      (let [polygon (d/calculate-derived (poly/polygon (mapv (partial apply r/ords->ring)
+                                                             polygon-ordses)))]
+        (is (polygon-has-valid-lr? polygon))))))
+
 (comment
   ;; Visualization samples and helpers
 
