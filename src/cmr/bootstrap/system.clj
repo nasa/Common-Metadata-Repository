@@ -19,23 +19,16 @@
             [cmr.common.config :as config]
             [clojure.core.cache :as cc]))
 
+;; FIXME it doesn't make sense to have a configurable channel buffer size as an env var.
+;; It also doesn't make sense for their to be just one value.
 (def channel-buffer-size (config/config-value-fn :channel-buffer-size 10 #(Long. %)))
 
 (def db-batch-size (config/config-value-fn :db-batch-size 100 #(Long. %)))
-
-(def bulk-index-batch-size (config/config-value-fn :bulk-index-batch-size 100 #(Long. %)))
 
 (def
   ^{:doc "Defines the order to start the components."
     :private true}
   component-order [:log :db :web])
-
-
-(comment
-
-  (into {:a :A :b :B} {:b nil :c :C})
-
-  )
 
 (defn create-system
   "Returns a new instance of the whole application."
@@ -53,15 +46,23 @@
              :metadata-db metadata-db
              :indexer indexer
              :db-batch-size (db-batch-size)
-             :bulk-index-batch-size (bulk-index-batch-size)
+
+             ;;FIXME the names of the channels is not consistent here. We should rename provider and
+             ;; collection channel to indicate they're for database migration.
+
              ;; Channel for requesting full provider migration - provider/collections/granules.
              ;; Takes single provider-id strings.
              :provider-channel (chan (channel-buffer-size))
              ;; Channel for requesting single collection/granules migration.
              ;; Takes maps, e.g., {:collection-id collection-id :provider-id provider-id}
              :collection-channel (chan (channel-buffer-size))
+
              ;; Channel for requesting full provider indexing - collections/granules
              :provider-index-channel (chan (channel-buffer-size))
+
+             ;; Channel for processing collections to index.
+             :collection-index-channel (chan 100)
+
              :catalog-rest-user (mdb-config/catalog-rest-db-username)
              :db (oracle/create-db (mdb-config/db-spec))
              :web (web/create-web-server (transmit-config/bootstrap-port) routes/make-api)

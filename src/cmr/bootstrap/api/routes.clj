@@ -39,6 +39,16 @@
     {:status 202
      :body {:message (str "Processing provider " provider-id " for bulk indexing.")}}))
 
+(defn- bulk-index-collection
+  "Index all the granules in a collection"
+  [context provider-id-collection-map]
+  (let [provider-id (get provider-id-collection-map "provider_id")
+        collection-id (get provider-id-collection-map "collection_id")
+        system (:system context)]
+    (bulk/index-collection system provider-id collection-id)
+    {:status 202
+     :body {:message (str "Processing collection " collection-id " for bulk indexing.")}}))
+
 (defn- build-routes [system]
   (routes
     (context "/bulk_migration" []
@@ -49,7 +59,10 @@
 
     (context "/bulk_index" []
       (POST "/providers" {:keys [request-context body]}
-        (bulk-index-provider request-context body)))))
+        (bulk-index-provider request-context body))
+
+      (POST "/collections" {:keys [request-context body]}
+        (bulk-index-collection request-context body)))))
 
 (defn make-api [system]
   (-> (build-routes system)

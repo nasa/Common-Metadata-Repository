@@ -82,5 +82,13 @@
                    (let [provider-id (<!! channel)]
                      (index-provider system provider-id))
                    (catch Throwable e
-                     (error e (.getMessage e))))))))
+                     (error e (.getMessage e)))))))
+  (let [channel (:collection-index-channel system)]
+    (ca/thread (while true
+                 (try ; catch any errors and log them, but don't let the thread die
+                   (let [[provider-id collection-id] (<!! channel)]
+                     (index-granules-for-collection system provider-id collection-id))
+                   (catch Throwable e
+                     (error e (.getMessage e)))))))
+  )
 
