@@ -17,6 +17,13 @@
   (util/validate-provider-id provider-id)
   (format "%s_%s" (string/lower-case provider-id) (inf/plural (name concept-type))))
 
+(defn create-concept-table-id-sequence
+   "Create a sequence to populate the ids for a concept table."
+   [db provider-id concept-type]
+  (let [sequence-name (str (get-table-name provider-id concept-type) "_seq")]
+    (info "Creating sequence [" sequence-name "]")
+    (j/db-do-commands db (format "CREATE SEQUENCE %s" sequence-name))))
+
 (defmulti create-concept-table
   "Create a table to hold concepts of a given type."
   :concept-type)
@@ -25,6 +32,7 @@
   (let [table-name (get-table-name provider-id :collection)]
     (info "Creating table [" table-name "]")
     (j/db-do-commands db (format "CREATE TABLE %s (
+                                 id NUMBER,
                                  concept_id VARCHAR(255) NOT NULL,
                                  native_id VARCHAR(1030) NOT NULL,
                                  metadata BLOB NOT NULL,
@@ -36,6 +44,7 @@
                                  version_id VARCHAR(80) NOT NULL,
                                  entry_title VARCHAR(1030) NOT NULL,
                                  delete_time TIMESTAMP WITH TIME ZONE,
+                                 CONSTRAINT %s_pk PRIMARY KEY (id),
                                  CONSTRAINT %s_con_rev
                                  UNIQUE (native_id, revision_id)
                                  USING INDEX (create unique index %s_ucr_i on
@@ -44,6 +53,7 @@
                                  UNIQUE (concept_id, revision_id)
                                  USING INDEX (create unique index %s_cri
                                  ON %s(concept_id, revision_id)))"
+                                 table-name
                                  table-name
                                  table-name
                                  table-name
@@ -65,6 +75,7 @@
   (let [table-name (get-table-name provider-id :granule)]
     (info "Creating table [" table-name "]")
     (j/db-do-commands db (format "CREATE TABLE %s (
+                                 id NUMBER,
                                  concept_id VARCHAR(255) NOT NULL,
                                  native_id VARCHAR(250) NOT NULL,
                                  parent_collection_id VARCHAR(255) NOT NULL,
@@ -74,6 +85,7 @@
                                  revision_date TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP NOT NULL,
                                  deleted INTEGER DEFAULT 0 NOT NULL,
                                  delete_time TIMESTAMP WITH TIME ZONE,
+                                 CONSTRAINT %s_pk PRIMARY KEY (id),
                                  CONSTRAINT %s_con_rev
                                  UNIQUE (native_id, revision_id)
                                  USING INDEX (create unique index %s_ucr_i on
@@ -82,6 +94,7 @@
                                  UNIQUE (concept_id, revision_id)
                                  USING INDEX (create unique index %s_cri
                                  ON %s (concept_id, revision_id)))"
+                                 table-name
                                  table-name
                                  table-name
                                  table-name
@@ -106,11 +119,22 @@
   [db provider-id]
   (info "Creating concept tables for provider [" provider-id "]")
   (doseq [concept-type all-concept-types]
-    (create-concept-table {:db db :provider-id provider-id :concept-type concept-type})))
+    (create-concept-table {:db db :provider-id provider-id :concept-type concept-type})
+    (create-concept-table-id-sequence db provider-id concept-type)))
 
 (defn delete-provider-concept-tables
   "Delete the concept tables associated with the given provider-id."
   [db provider-id]
   (info "Deleting concept tables for provider [" provider-id "]")
   (doseq [concept-type all-concept-types]
-    (j/db-do-commands db (str "DROP TABLE " (get-table-name provider-id concept-type)))))
+    (let [table-name (get-table-name provider-id concept-type)
+          sequence-name (str table-name "_seq")]
+    (info "Dropping table" table-name)
+    (try
+      (j/db-do-commands db (str "DROP TABLE " table-name))
+      (catch Exception e))
+
+    (info "Dropping sequence" sequence-name)
+    (try
+      (j/db-do-commands db (str "DROP SEQUENCE " sequence-name))
+      (catch Exception e)))))

@@ -7,7 +7,7 @@
             [cmr.common.services.errors :as errors]
             [clojure.java.io :as io]
             [clojure.string :as str]
-            [sqlingvo.core :as s :refer [select from where with order-by desc delete as]]
+            [sqlingvo.core :as s :refer [insert values select from where with order-by desc delete as]]
             [cmr.metadata-db.data.oracle.sql-utils :as su]
             [cmr.metadata-db.services.util :as util]
             [cmr.metadata-db.services.provider-service :as provider-service]
@@ -277,8 +277,15 @@
       (j/with-db-transaction
         [conn db]
         (let [{:keys [concept-type provider-id]} concept
-              table (tables/get-table-name provider-id concept-type)]
-          (apply j/insert! conn table (concept->insert-args concept))
+              table (tables/get-table-name provider-id concept-type)
+              seq-name (str table "_seq")
+              insert-args (concept->insert-args concept)
+              stmt (format "INSERT INTO %s (id, %s) VALUES (%s.NEXTVAL,%s)"
+                           table
+                           (str/join "," (first insert-args))
+                           seq-name
+                           (str/join "," (repeat (count (nth insert-args 1)) "?")))]
+          (j/db-do-prepared db stmt (nth insert-args 1))
           (after-save conn concept)
 
           nil))
