@@ -29,7 +29,7 @@
 (defn create-system
   "Returns a new instance of the whole application."
   []
-  (let [metadata-db (-> (mdb-system/create-system)
+  (let [metadata-db (-> (mdb-system/create-system "metadata-db-in-bootstrap-pool")
                         (dissoc :log :web)
                         (assoc :skip-background-jobs true))
         indexer (-> (idx-system/create-system)
@@ -57,7 +57,7 @@
              :collection-index-channel (chan 100)
 
              :catalog-rest-user (mdb-config/catalog-rest-db-username)
-             :db (oracle/create-db (mdb-config/db-spec))
+             :db (oracle/create-db (mdb-config/db-spec "bootstrap-pool"))
              :web (web/create-web-server (transmit-config/bootstrap-port) routes/make-api)
              :zipkin (context/zipkin-config "bootstrap" false)}]
     (transmit-config/system-with-connections sys [:metadata-db])))
