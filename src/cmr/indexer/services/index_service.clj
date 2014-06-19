@@ -35,15 +35,22 @@
   [context concept-batch]
   ;; we only handle ECHO10 format right now
   (let [concept-batch (filterv #(#{"ECHO10"} (:format %)) concept-batch)]
-    (doall (pmap (fn [concept]
-               (let [umm-concept (parse-concept concept)
-                     concept-id (:concept-id concept)
-                     revision-id (:revision-id concept)
-                     index-name (idx-set/get-concept-index-name context concept-id revision-id concept)
-                     type (name (concept->type concept))
-                     elastic-doc (concept->elastic-doc context concept umm-concept)]
-                 (merge elastic-doc {:_index index-name :_type type})))
-             concept-batch))))
+    (doall
+      ;; Remove nils because some granules may fail with an exception and return nil.
+      (filter identity
+              (pmap (fn [concept]
+                      (try
+                        (let [umm-concept (parse-concept concept)
+                              concept-id (:concept-id concept)
+                              revision-id (:revision-id concept)
+                              index-name (idx-set/get-concept-index-name context concept-id revision-id concept)
+                              type (name (concept->type concept))
+                              elastic-doc (concept->elastic-doc context concept umm-concept)]
+                          (merge elastic-doc {:_index index-name :_type type}))
+                        (catch Exception e
+                          (error e (str "Exception trying to convert concept to elastic doc:"
+                                        (pr-str concept))))))
+                    concept-batch)))))
 
 (deftracefn bulk-index
   "Index many concepts at once using the elastic bulk api. The concepts to be indexed are passed

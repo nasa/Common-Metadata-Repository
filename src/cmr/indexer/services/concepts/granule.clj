@@ -34,12 +34,16 @@
 
 (defn spatial->elastic
   [parent-collection granule]
-  (when (get-in granule [:spatial-coverage :geometries])
-    (let [gsr (get-in parent-collection [:spatial-coverage :granule-spatial-representation])]
-      (when (= gsr :geodetic)
-        ;; Only index the types we support. We will silently ignore the other kinds. Adding a warning
-        ;; turned out to be way too much logging.
-        (spatial/spatial->elastic-docs gsr granule)))))
+  (try
+    (when (get-in granule [:spatial-coverage :geometries])
+      (let [gsr (get-in parent-collection [:spatial-coverage :granule-spatial-representation])]
+        (when (= gsr :geodetic)
+          ;; Only index the types we support. We will silently ignore the other kinds. Adding a warning
+          ;; turned out to be way too much logging.
+          (spatial/spatial->elastic-docs gsr granule))))
+    (catch Exception e
+      (error e (format "Error generating spatial for granule: %s. Skipping spatial."
+                       (pr-str granule))))))
 
 (defmethod idx/concept->elastic-doc :granule
   [context concept umm-granule]
