@@ -30,6 +30,9 @@
                      (ext-gen/optional processing-level-ids)
                      (ext-gen/optional collection-data-types)))
 
+(def dif-products
+  (ext-gen/model-gen c/->Product short-names long-names version-ids (gen/return nil) (gen/return nil)))
+
 (def data-provider-timestamps
   (ext-gen/model-gen c/->DataProviderTimestamps ext-gen/date-time ext-gen/date-time (ext-gen/optional ext-gen/date-time)))
 
@@ -90,6 +93,9 @@
 (def processing-center-organizations
   (ext-gen/model-gen c/->Organization (gen/return :processing-center) org-names))
 
+(def distribution-center-organizations
+  (ext-gen/model-gen c/->Organization (gen/return :distribution-center) org-names))
+
 (def related-url
   (ext-gen/model-gen
     c/map->RelatedURL
@@ -126,6 +132,25 @@
                 :spatial-coverage (ext-gen/optional spatial-coverages))
               (ext-gen/optional processing-center-organizations)
               (ext-gen/optional archive-center-organizations))))
+
+(def dif-collections
+  (gen/fmap (fn [[attribs]]
+              (let [product (:product attribs)]
+                (c/map->UmmCollection (assoc attribs
+                                             :entry-id (:short-name product)
+                                             :entry-title (:long-name product)))))
+            (gen/tuple
+              (gen/hash-map
+                :product dif-products
+                ;:temporal t/temporals
+                ;:spatial-keywords (ext-gen/nil-if-empty (gen/vector (ext-gen/string-ascii 1 80) 0 4))
+                :science-keywords (gen/vector sk/science-keywords 1 3)
+                ;:platforms (ext-gen/nil-if-empty (gen/vector platforms 0 4))
+                ;:product-specific-attributes (ext-gen/nil-if-empty (gen/vector psa/product-specific-attributes 0 10))
+                :projects (ext-gen/nil-if-empty (gen/vector campaigns 0 4))
+                :related-urls (ext-gen/nil-if-empty (gen/vector related-url 0 5))
+                :spatial-coverage (ext-gen/optional spatial-coverages)
+                :organizations (gen/vector distribution-center-organizations 1 3)))))
 
 ; Generator for basic collections that only have the bare minimal fields
 ;; DEPRECATED - this will go away in the future. Don't use it.

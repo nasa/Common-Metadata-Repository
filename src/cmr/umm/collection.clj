@@ -105,7 +105,7 @@
    name
    ])
 
-(def organization-types [:archive-center :processing-center])
+(def organization-types [:archive-center :processing-center :distribution-center])
 
 ;; See CMR-202 issue description
 (defrecord Organization
