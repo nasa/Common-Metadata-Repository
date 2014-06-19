@@ -22,7 +22,6 @@
            java.util.zip.GZIPOutputStream
            java.io.ByteArrayOutputStream
            java.sql.Blob
-           com.mchange.v2.c3p0.impl.NewProxyConnection
            oracle.sql.TIMESTAMPTZ))
 
 (def INITIAL_CONCEPT_NUM
@@ -52,19 +51,12 @@
     (.finish gzip)
     (.toByteArray output)))
 
-(def inner-conn-field
-  "Cached class reflection field to retrieve the inner oracle connection from the proxy
-  created by connection pooling"
-  (let [field (.getDeclaredField com.mchange.v2.c3p0.impl.NewProxyConnection "inner")]
-    (.setAccessible field true)
-    field))
-
 (defn db->oracle-conn
   "Gets an oracle connection from the outer database connection. Should be called from within as
   with-db-transaction block."
   [db]
   (if-let [proxy-conn (:connection db)]
-    (.get inner-conn-field proxy-conn)
+    proxy-conn
     (errors/internal-error!
       (str "Called db->oracle-conn with connection that was not within a db transaction. "
            "It must be called from within call j/with-db-transaction"))))
@@ -167,8 +159,8 @@
     (let [table (tables/get-table-name provider-id concept-type)]
       (:concept_id
         (su/find-one db (select [:concept-id]
-                                (from table)
-                                (where `(= :native-id ~native-id)))))))
+                          (from table)
+                          (where `(= :native-id ~native-id)))))))
 
   (get-concept-by-provider-id-native-id-concept-type
     [db concept]
@@ -179,14 +171,14 @@
             stmt (if revision-id
                    ;; find specific revision
                    (select '[*]
-                           (from table)
-                           (where `(and (= :native-id ~native-id)
-                                        (= :revision-id ~revision-id))))
+                     (from table)
+                     (where `(and (= :native-id ~native-id)
+                                  (= :revision-id ~revision-id))))
                    ;; find latest
                    (select '[*]
-                           (from table)
-                           (where `(= :native-id ~native-id))
-                           (order-by (desc :revision-id))))]
+                     (from table)
+                     (where `(= :native-id ~native-id))
+                     (order-by (desc :revision-id))))]
         (db-result->concept-map concept-type conn provider-id
                                 (su/find-one conn stmt)))))
 
@@ -197,9 +189,9 @@
        (let [table (tables/get-table-name provider-id concept-type)]
          (db-result->concept-map concept-type conn provider-id
                                  (su/find-one conn (select '[*]
-                                                           (from table)
-                                                           (where `(= :concept-id ~concept-id))
-                                                           (order-by (desc :revision-id))))))))
+                                                     (from table)
+                                                     (where `(= :concept-id ~concept-id))
+                                                     (order-by (desc :revision-id))))))))
     ([db concept-type provider-id concept-id revision-id]
      (if revision-id
        (let [table (tables/get-table-name provider-id concept-type)]
@@ -207,9 +199,9 @@
            [conn db]
            (db-result->concept-map concept-type conn provider-id
                                    (su/find-one conn (select '[*]
-                                                             (from table)
-                                                             (where `(and (= :concept-id ~concept-id)
-                                                                          (= :revision-id ~revision-id))))))))
+                                                       (from table)
+                                                       (where `(and (= :concept-id ~concept-id)
+                                                                    (= :revision-id ~revision-id))))))))
        (c/get-concept db concept-type provider-id concept-id))))
 
   (get-concepts
@@ -224,10 +216,10 @@
              (concat concept-id-revision-id-tuples [:transaction false]))
       (let [table (tables/get-table-name provider-id concept-type)
             stmt (su/build (select [:c.*]
-                                   (from (as (keyword table) :c)
-                                         (as :get-concepts-work-area :t))
-                                   (where `(and (= :c.concept-id :t.concept-id)
-                                                (= :c.revision-id :t.revision-id)))))]
+                             (from (as (keyword table) :c)
+                                   (as :get-concepts-work-area :t))
+                             (where `(and (= :c.concept-id :t.concept-id)
+                                          (= :c.revision-id :t.revision-id)))))]
 
         (doall (map (partial db-result->concept-map concept-type conn provider-id)
                     (j/query conn stmt))))))
@@ -240,9 +232,9 @@
             params (dissoc params :concept-type :provider-id)
             table (tables/get-table-name provider-id concept-type)
             stmt (su/build (select [:*]
-                                   (from table)
-                                   (when-not (empty? params)
-                                     (where (find-params->sql-clause params)))))]
+                             (from table)
+                             (when-not (empty? params)
+                               (where (find-params->sql-clause params)))))]
         (doall (map (partial db-result->concept-map concept-type conn provider-id)
                     (j/query conn stmt))))))
 
@@ -256,13 +248,15 @@
                 (let [{:keys [concept-type provider-id]} params
                       params (dissoc params :concept-type :provider-id)
                       table (tables/get-table-name provider-id concept-type)
-                      istmt (select [:concept-id :revision-id]
-                                    (from table)
-                                    (when-not (empty? params)
-                                      (where (find-params->sql-clause params)))
-                                    (order-by :concept-id))]
+                      stmt (select [:*]
+                             (from table)
+                             (where `(and
+                                       ~(when-not (empty? params)
+                                          (find-params->sql-clause params))
+                                       (>= :id ~start-index)
+                                       (< :id ~(+ start-index batch-size)))))]
                   (mapv (partial db-result->concept-map concept-type conn provider-id)
-                              (sql-utils/find-batch conn table istmt start-index batch-size)))))
+                        (j/query db stmt)))))
             (lazy-find
               [start-index]
               (debug "Finding batch from" start-index)
@@ -307,8 +301,8 @@
     [this concept-type provider-id concept-id revision-id]
     (let [table (tables/get-table-name provider-id concept-type)
           stmt (su/build (delete table
-                                 (where `(and (= :concept-id ~concept-id)
-                                              (= :revision-id ~revision-id)))))]
+                           (where `(and (= :concept-id ~concept-id)
+                                        (= :revision-id ~revision-id)))))]
       (j/execute! this stmt)))
 
   (force-delete-by-params
@@ -317,7 +311,7 @@
           params (dissoc params :concept-type :provider-id)
           table (tables/get-table-name provider-id concept-type)
           stmt (su/build (delete table
-                                 (where (find-params->sql-clause params))))]
+                           (where (find-params->sql-clause params))))]
       (j/execute! db stmt)))
 
   (reset
@@ -338,20 +332,20 @@
             stmt [(format "select *
                           from %s outer,
                           ( select a.concept_id, a.revision_id
-                            from (select concept_id, max(revision_id) as revision_id
-                                    from %s
-                                    where deleted = 0
-                                    and   delete_time is not null
-                                    and   delete_time < systimestamp
-                                    group by concept_id
-                                    ) a,
-                                    (select concept_id, max(revision_id) as revision_id
-                                    from %s
-                                    group by concept_id
-                                    ) b
-                            where a.concept_id = b.concept_id
-                            and   a.revision_id = b.revision_id
-                            and   rowNum <= %d
+                          from (select concept_id, max(revision_id) as revision_id
+                          from %s
+                          where deleted = 0
+                          and   delete_time is not null
+                          and   delete_time < systimestamp
+                          group by concept_id
+                          ) a,
+                          (select concept_id, max(revision_id) as revision_id
+                          from %s
+                          group by concept_id
+                          ) b
+                          where a.concept_id = b.concept_id
+                          and   a.revision_id = b.revision_id
+                          and   rowNum <= %d
                           ) inner
                           where outer.concept_id = inner.concept_id
                           and   outer.revision_id = inner.revision_id"

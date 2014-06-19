@@ -17,8 +17,11 @@
 
 (defn db-spec
   "Returns a db spec populated with config information that can be used to connect to oracle"
-  []
-  (conn/db-spec
-    (oracle-config/db-url)
-    (db-username)
-    (db-password)))
+  [connection-pool-name]
+   (conn/db-spec
+     connection-pool-name
+     (oracle-config/db-url)
+     (oracle-config/db-fcf-enabled)
+     (oracle-config/db-ons-config)
+     (db-username)
+     (db-password)))

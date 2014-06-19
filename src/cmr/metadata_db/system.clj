@@ -23,11 +23,13 @@
 
 (defn create-system
   "Returns a new instance of the whole application."
-  []
-  {:db (oracle/create-db (config/db-spec))
-   :log (log/create-logger)
-   :web (web/create-web-server (config/app-port) routes/make-api)
-   :zipkin (context/zipkin-config "Metadata DB" false)})
+  ([]
+   (create-system "metadata-db"))
+  ([connection-pool-name]
+   {:db (oracle/create-db (config/db-spec connection-pool-name))
+    :log (log/create-logger)
+    :web (web/create-web-server (config/app-port) routes/make-api)
+    :zipkin (context/zipkin-config "Metadata DB" false)}))
 
 (defn start
   "Performs side effects to initialize the system, acquire resources,
