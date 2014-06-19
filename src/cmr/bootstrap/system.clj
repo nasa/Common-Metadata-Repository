@@ -19,10 +19,6 @@
             [cmr.common.config :as config]
             [clojure.core.cache :as cc]))
 
-;; FIXME it doesn't make sense to have a configurable channel buffer size as an env var.
-;; It also doesn't make sense for their to be just one value.
-(def channel-buffer-size (config/config-value-fn :channel-buffer-size 10 #(Long. %)))
-
 (def db-batch-size (config/config-value-fn :db-batch-size 100 #(Long. %)))
 
 (def
@@ -47,18 +43,15 @@
              :indexer indexer
              :db-batch-size (db-batch-size)
 
-             ;;FIXME the names of the channels is not consistent here. We should rename provider and
-             ;; collection channel to indicate they're for database migration.
-
              ;; Channel for requesting full provider migration - provider/collections/granules.
              ;; Takes single provider-id strings.
-             :provider-channel (chan (channel-buffer-size))
+             :provider-db-channel (chan 10)
              ;; Channel for requesting single collection/granules migration.
              ;; Takes maps, e.g., {:collection-id collection-id :provider-id provider-id}
-             :collection-channel (chan (channel-buffer-size))
+             :collection-db-channel (chan 100)
 
              ;; Channel for requesting full provider indexing - collections/granules
-             :provider-index-channel (chan (channel-buffer-size))
+             :provider-index-channel (chan 10)
 
              ;; Channel for processing collections to index.
              :collection-index-channel (chan 100)

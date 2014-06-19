@@ -237,18 +237,18 @@
   "Handle any requests for copying data from echo catalog rest to metadata db."
   [system]
   (info "Starting background task for monitoring bulk migration channels.")
-  (let [channels ((juxt :provider-channel :collection-channel) system)] ; add other channels as needed
+  (let [channels ((juxt :provider-db-channel :collection-db-channel) system)] ; add other channels as needed
     (thread (while true
               (try ; catch any errors and log them, but don't let the thread die
                 (let [[v ch] (alts!! channels)]
                   (cond
                     ;; add other channels as needed
-                    (= (:provider-channel system) ch)
+                    (= (:provider-db-channel system) ch)
                     (do
                       (info "Processing provider" v)
                       (copy-provider system v))
 
-                    (= (:collection-channel system) ch)
+                    (= (:collection-db-channel system) ch)
                     (let [{:keys [provider-id collection-id]} v]
                       (info "Processing collection" collection-id "for provider" provider-id)
                       (copy-single-collection system provider-id collection-id))
