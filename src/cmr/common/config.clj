@@ -47,7 +47,7 @@
   ([config-name default-value parser-fn]
 
    ;; Environment variables can't change at runtime so we look them up initially.
-   (let [parser-when #(when % (parser-fn %))
+   (let [parser-when #(when (some? %) (parser-fn %))
          parsed-default (parser-when default-value)
          env-value (parser-when (System/getenv (config-name->env-name config-name)))]
      (fn []
