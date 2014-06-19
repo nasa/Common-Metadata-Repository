@@ -76,8 +76,12 @@
       <Long_Name>Systeme Probatoire Pour l'Observation de la Terre-4</Long_Name>
     </Source_Name>
     <Temporal_Coverage>
-      <Start_Date>2000-01-01</Start_Date>
-      <Stop_Date>2000-12-31</Stop_Date>
+      <Start_Date>1996-02-24T22:20:41-05:00</Start_Date>
+      <Stop_Date>1997-03-24T22:20:41-05:00</Stop_Date>
+    </Temporal_Coverage>
+    <Temporal_Coverage>
+      <Start_Date>1998-02-24T22:20:41-05:00</Start_Date>
+      <Stop_Date>1999-03-24T22:20:41-05:00</Stop_Date>
     </Temporal_Coverage>
     <Spatial_Coverage>
       <Southernmost_Latitude>-90.0</Southernmost_Latitude>
@@ -240,6 +244,17 @@
                                 :long-name "Global Land Cover 2000 (GLC 2000)"
                                 :version-id "006"})
                     ;:spatial-keywords ["Word-2" "Word-1" "Word-0"]
+                    :temporal
+                    (umm-c/map->Temporal
+                      {:range-date-times
+                       [(umm-c/map->RangeDateTime
+                          {:beginning-date-time (p/parse-datetime "1996-02-24T22:20:41-05:00")
+                           :ending-date-time (p/parse-datetime "1997-03-24T22:20:41-05:00")})
+                        (umm-c/map->RangeDateTime
+                          {:beginning-date-time (p/parse-datetime "1998-02-24T22:20:41-05:00")
+                           :ending-date-time (p/parse-datetime "1999-03-24T22:20:41-05:00")})]
+                       :single-date-times []
+                       :periodic-date-times []})
                     :science-keywords
                     [(umm-c/map->ScienceKeyword
                        {:category "EARTH SCIENCE"

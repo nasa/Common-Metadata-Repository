@@ -98,3 +98,8 @@
                temporals-singles
                temporals-periodics]))
 
+(def dif-temporals
+  (ext-gen/model-gen
+    tc/temporal
+    (gen/hash-map :range-date-times (gen/vector range-date-times 1 3))))
+
