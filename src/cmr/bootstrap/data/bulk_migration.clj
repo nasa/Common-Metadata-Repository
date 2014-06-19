@@ -105,14 +105,14 @@
   "Generate SQL to retrieve the id for a given collection/dataset from the catalog-rest table."
   [system provider-id collection-id]
   (su/build (select [:id] (from (catalog-rest-dataset-table system provider-id))
-              (where `(= :echo-collection-id ~collection-id)))))
+                    (where `(= :echo-collection-id ~collection-id)))))
 
 (defn- get-dataset-record-id-for-collection
   "Retrieve the id for a given collection/dataset from the catalog-rest table."
   [system provider-id collection-id]
   (-> (j/with-db-transaction
-         [conn (:db system)]
-         (j/query conn (get-dataset-record-id-for-collection-sql system provider-id collection-id)))
+        [conn (:db system)]
+        (j/query conn (get-dataset-record-id-for-collection-sql system provider-id collection-id)))
       first
       :id
       int))
@@ -136,28 +136,18 @@
    (copy-collection-data-sql system provider-id nil))
   ([system provider-id  collection-id]
    (let [dataset-table (catalog-rest-dataset-table system provider-id)
-         collection-table (metadata-db-concept-table system provider-id :collection)]
-     (su/build (insert collection-table [:concept-id
-                                         :native-id
-                                         :metadata
-                                         :format
-                                         :short-name
-                                         :version-id
-                                         :entry-title
-                                         :delete-time
-                                         :revision-date]
-                 (select [:echo-collection-id
-                          :dataset-id
-                          :compressed-xml
-                          :xml-mime-type
-                          :short-name
-                          :version-id
-                          :dataset-id
-                          :delete-time
-                          :ingest-updated-at]
-                   (from dataset-table)
-                   (when collection-id
-                     (where `(= :echo-collection-id ~collection-id)))))))))
+         collection-table (metadata-db-concept-table system provider-id :collection)
+         stmt (format (str "INSERT INTO %s (id, concept_id, native_id, metadata, format, short_name, "
+                           "version_id, entry_title, delete_time, revision_date) VALUES SELECT %s_seq.NEXTVAL,"
+                           "echo_collection_id, dataset_id, compressed_xml, xml_mime_type, short_name,"
+                           "version_id, dataset_id, delete_time, ingest_updated_at FROM %s")
+                      (name collection-table)
+                      (name collection-table)
+                      (name dataset-table)
+                      collection-id)]
+     (if collection-id
+       (format "%s WHERE echo_collection_id = '%s'" stmt collection-id)
+       stmt))))
 
 
 (defn- copy-collection-data
@@ -167,36 +157,41 @@
    (copy-collection-data system provider-id nil))
   ([system provider-id collection-id]
    (info "Copying collection data for provider" provider-id)
-   (j/with-db-transaction
-     [conn (:db system)]
-     (j/execute! conn (copy-collection-data-sql system provider-id collection-id)))))
+   (let [stmt (copy-collection-data-sql system provider-id collection-id)]
+     (println (pr-str stmt))
+     (j/with-db-transaction
+       [conn (:db system)]
+       (j/execute! conn stmt)))))
 
 (defn- copy-granule-data-for-collection-sql
   "Generate the SQL to copy the granule data from the catalog reset datbase to the metadata db."
   [system provider-id collection-id dataset-record-id]
   (let [granule-echo-table (catalog-rest-granule-table system provider-id)
         granule-mdb-table (metadata-db-concept-table system provider-id :granule)]
-    (su/build (insert granule-mdb-table [:concept-id
+    (su/build (insert granule-mdb-table [:id
+                                         :concept-id
                                          :native-id
                                          :parent-collection-id
                                          :metadata
                                          :format
                                          :delete-time
                                          :revision-date]
-                (select [:echo-granule-id
-                         :granule-ur
-                         collection-id
-                         :compressed-xml
-                         :xml-mime-type
-                         :delete-time
-                         :ingest-updated-at]
-                  (from granule-echo-table)
-                  (where `(= :dataset-record-id ~dataset-record-id)))))))
+                      (select [(keyword (str granule-mdb-table "_seq.NEXTVAL"))
+                               :echo-granule-id
+                               :granule-ur
+                               collection-id
+                               :compressed-xml
+                               :xml-mime-type
+                               :delete-time
+                               :ingest-updated-at]
+                              (from granule-echo-table)
+                              (where `(= :dataset-record-id ~dataset-record-id)))))))
 
 (defn- copy-granule-data-for-collection
   "Copy the granule data from the catalog reset datbase to the metadata db."
   [system provider-id collection-id dataset-record-id]
   (let [stmt (copy-granule-data-for-collection-sql system provider-id collection-id dataset-record-id)]
+    (println (pr-str stmt))
     (j/with-db-transaction
       [conn (:db system)]
       (j/execute! conn stmt))))
