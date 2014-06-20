@@ -130,10 +130,20 @@
 ;; ring. It returns the midpoints of those intersections.
 (defmethod ring->lr-search-points :default
   [ring]
-  (let [{:keys [mbr contains-north-pole contains-south-pole]} ring
+  (let [{:keys [mbr]} ring
         vert-arc (mbr->vert-dividing-arc mbr)
-        intersections (distinct
-                        (arc-ring-intersection-points vert-arc ring))]
+        intersections (arc-ring-intersection-points vert-arc ring)
+
+        ;; Handle cases where the ring mbr is the width of the entire world
+        intersections (if (and (= -180.0 (:west mbr))
+                               (= 180.0 (:east mbr)))
+                        ;; The vertical arc above will be on the prime meridian. Try the antimeridian as well.
+                        (distinct
+                          (concat intersections
+                                  (arc-ring-intersection-points
+                                    (mbr->vert-dividing-arc (assoc mbr :west 179.0 :east -179.0))
+                                    ring)))
+                        (distinct intersections))]
 
     ;; Between at least 2 of the points there will be a midpoint in the ring.
     ;; Create a list of test points from midpoints of all combinations of points.
