@@ -13,7 +13,20 @@
             [cmr.common.date-time-parser :as p]
             [cmr.umm.test.generators.collection :as coll-gen]
             [cmr.umm.dif.collection :as c]
+            [cmr.umm.echo10.collection :as echo10-c]
+            [cmr.umm.echo10.core :as echo10]
             [cmr.umm.collection :as umm-c]))
+
+(def NON_CONFORMANT_FIELDS
+  "Fields that are lossy when converting from DIF to ECHO10 format"
+  [:entry-id :data-provider-timestamps :organizations])
+
+(defn- collections-match?
+  "Returns true if the two collections match after excluding the non-conformant fields"
+  [coll1 coll2]
+  (let [revised_coll1 (apply dissoc coll1 NON_CONFORMANT_FIELDS)
+        revised_coll2 (apply dissoc coll2 NON_CONFORMANT_FIELDS)]
+    (= revised_coll1 revised_coll2)))
 
 (defspec generate-collection-is-valid-xml-test 100
   (for-all [collection coll-gen/dif-collections]
@@ -27,6 +40,14 @@
     (let [xml (c/umm->dif-xml collection)
           parsed (c/parse-collection xml)]
       (= parsed collection))))
+
+(defspec generate-and-parse-collection-between-formats-test 100
+  (for-all [collection coll-gen/dif-collections]
+    (let [xml (c/umm->dif-xml collection)
+          parsed-dif (c/parse-collection xml)
+          echo10-xml (echo10/umm->echo10-xml parsed-dif)
+          parsed-echo10 (echo10-c/parse-collection echo10-xml)]
+      (is (collections-match? parsed-echo10 collection)))))
 
 ;; This is a made-up include all fields collection xml sample for the parse collection test
 (def all-fields-collection-xml
