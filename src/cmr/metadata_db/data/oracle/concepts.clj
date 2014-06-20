@@ -271,7 +271,6 @@
                       stmt (su/build (select [:*]
                                        (from table)
                                        (where (cons `and conditions))))]
-                  (println stmt)
                   (mapv (partial db-result->concept-map concept-type conn provider-id)
                         (j/query db stmt)))))
             (lazy-find
