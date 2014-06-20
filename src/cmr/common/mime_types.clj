@@ -3,12 +3,9 @@
   (:require [pantomime.media :as mt]
             [cmr.common.services.errors :as errors]))
 
-(def default-result-format :json)
-
 (def base-mime-type-to-format
   "A map of base mime types to the format symbols supported"
-  {"*/*" default-result-format
-   "application/json" :json
+  {"application/json" :json
    "application/xml" :xml
    "application/echo10+xml" :echo10
    "application/iso_prototype+xml" :iso-prototype
