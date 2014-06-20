@@ -21,7 +21,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def json-header
-  {"Content-Type" "json"})
+  {"Content-Type" "json; charset=utf-8"})
 
 (defn to-json
   "Converts the object to JSON. If the pretty parameter is passed with true formats the response for
@@ -139,7 +139,7 @@
     (context "/concepts" []
 
       (context "/search" []
-      ;; get multiple concpts by concept-id and revision-id
+        ;; get multiple concpts by concept-id and revision-id
         (POST "/concept-revisions" {:keys [params request-context body]}
           (get-concepts request-context params body))
         ;; Find concepts by parameters
