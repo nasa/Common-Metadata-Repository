@@ -143,6 +143,21 @@
       (cons `and comparisons)
       (first comparisons))))
 
+(defn- find-batch-starting-id
+  "Returns the first id that would be returned in a batch."
+  [conn params]
+  (let [{:keys [concept-type provider-id]} params
+        params (dissoc params :concept-type :provider-id)
+        table (tables/get-table-name provider-id concept-type)
+        stmt (select ['(min :id)]
+                         (from table)
+                           (when (seq params)
+                             (where
+                               (find-params->sql-clause params))))]
+    (-> (su/find-one conn stmt)
+        vals
+        first)))
+
 (extend-protocol c/ConceptsStore
   OracleStore
 
@@ -248,13 +263,15 @@
                 (let [{:keys [concept-type provider-id]} params
                       params (dissoc params :concept-type :provider-id)
                       table (tables/get-table-name provider-id concept-type)
-                      stmt (select [:*]
-                             (from table)
-                             (where `(and
-                                       ~(when-not (empty? params)
-                                          (find-params->sql-clause params))
-                                       (>= :id ~start-index)
-                                       (< :id ~(+ start-index batch-size)))))]
+                      conditions [`(>= :id ~start-index)
+                                  `(< :id ~(+ start-index batch-size))]
+                      conditions (if (empty? params)
+                                   conditions
+                                   (cons (find-params->sql-clause params) conditions))
+                      stmt (su/build (select [:*]
+                                       (from table)
+                                       (where (cons `and conditions))))]
+                  (println stmt)
                   (mapv (partial db-result->concept-map concept-type conn provider-id)
                         (j/query db stmt)))))
             (lazy-find
@@ -263,7 +280,9 @@
               (let [batch (find-batch start-index)]
                 (when-not (empty? batch)
                   (cons batch (lazy-seq (lazy-find (+ start-index (count batch))))))))]
-      (lazy-find 0)))
+      ;; If there's no minimum found so there are no concepts that match
+      (when-let [start-index (find-batch-starting-id db params)]
+        (lazy-find start-index))))
 
   (save-concept
     [db concept]
