@@ -45,9 +45,13 @@
   (for-all [collection coll-gen/dif-collections]
     (let [xml (c/umm->dif-xml collection)
           parsed-dif (c/parse-collection xml)
+          ;; add the required InsertTime and LastUpdate for ECHO10 schema validation
+          data-provider-timestamps (first (gen/sample coll-gen/data-provider-timestamps 1))
+          parsed-dif (assoc parsed-dif :data-provider-timestamps data-provider-timestamps)
           echo10-xml (echo10/umm->echo10-xml parsed-dif)
           parsed-echo10 (echo10-c/parse-collection echo10-xml)]
-      (is (collections-match? parsed-echo10 collection)))))
+      (and (collections-match? parsed-echo10 collection)
+           (= 0 (count (echo10-c/validate-xml echo10-xml)))))))
 
 ;; This is a made-up include all fields collection xml sample for the parse collection test
 (def all-fields-collection-xml
