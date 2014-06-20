@@ -9,6 +9,7 @@
             [cmr.umm.dif.collection.related-url :as ru]
             [cmr.umm.dif.collection.science-keyword :as sk]
             [cmr.umm.dif.collection.org :as org]
+            [cmr.umm.dif.collection.temporal :as t]
             [cmr.umm.dif.collection.spatial-coverage :as sc]
             [cmr.umm.dif.collection.extended-metadata :as em])
   (:import cmr.umm.collection.UmmCollection))
@@ -29,7 +30,7 @@
        :entry-title (cx/string-at-path xml-struct [:Entry_Title])
        :product product
        ;:spatial-keywords (seq (cx/strings-at-path xml-struct [:Location]))
-       ;:temporal (t/xml-elem->Temporal xml-struct)
+       :temporal (t/xml-elem->Temporal xml-struct)
        :science-keywords (sk/xml-elem->ScienceKeywords xml-struct)
        ;:platforms (platform/xml-elem->Platforms xml-struct)
        ;:product-specific-attributes (psa/xml-elem->ProductSpecificAttributes xml-struct)
@@ -49,7 +50,7 @@
   ([collection indent?]
    (let [{{:keys [short-name long-name version-id]} :product
           {:keys [insert-time update-time delete-time]} :data-provider-timestamps
-          :keys [entry-title organizations science-keywords platforms product-specific-attributes
+          :keys [entry-title temporal organizations science-keywords platforms product-specific-attributes
                  projects related-urls spatial-coverage]} collection
          emit-fn (if indent? x/indent-str x/emit-str)]
      (emit-fn
@@ -63,6 +64,7 @@
                     (x/element :Data_Set_Citation {}
                                (x/element :Version {} version-id)))
                   (sk/generate-science-keywords science-keywords)
+                  (t/generate-temporal temporal)
                   (when-not (empty? projects)
                     (pj/generate-projects projects))
                   (org/generate-data-center organizations)
