@@ -224,26 +224,27 @@
   [system]
   (info "Starting background task for monitoring bulk migration channels.")
   (let [channels ((juxt :provider-db-channel :collection-db-channel) system)] ; add other channels as needed
-    (thread (while true
-              (try ; catch any errors and log them, but don't let the thread die
-                (let [[v ch] (alts!! channels)]
-                  (cond
-                    ;; add other channels as needed
-                    (= (:provider-db-channel system) ch)
-                    (do
-                      (info "Processing provider" v)
-                      (copy-provider system v))
+    (dotimes [n 2]
+      (thread (while true
+                (try ; catch any errors and log them, but don't let the thread die
+                  (let [[v ch] (alts!! channels)]
+                    (cond
+                      ;; add other channels as needed
+                      (= (:provider-db-channel system) ch)
+                      (do
+                        (info "Processing provider" v)
+                        (copy-provider system v))
 
-                    (= (:collection-db-channel system) ch)
-                    (let [{:keys [provider-id collection-id]} v]
-                      (info "Processing collection" collection-id "for provider" provider-id)
-                      (copy-single-collection system provider-id collection-id))
+                      (= (:collection-db-channel system) ch)
+                      (let [{:keys [provider-id collection-id]} v]
+                        (info "Processing collection" collection-id "for provider" provider-id)
+                        (copy-single-collection system provider-id collection-id))
 
-                    :else
-                    (error (format "Received message [%s] on channel [%s] that is unrecognized"
-                                   v ch))))
-                (catch Throwable e
-                  (error e (.getMessage e))))))))
+                      :else
+                      (error (format "Received message [%s] on channel [%s] that is unrecognized"
+                                     v ch))))
+                  (catch Throwable e
+                    (error e (.getMessage e)))))))))
 
 
 (comment
