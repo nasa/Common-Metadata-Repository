@@ -142,7 +142,7 @@
             (gen/tuple
               (gen/hash-map
                 :product dif-products
-                :temporal t/dif-temporals
+                :temporal (ext-gen/optional t/dif-temporals)
                 ;:spatial-keywords (ext-gen/nil-if-empty (gen/vector (ext-gen/string-ascii 1 80) 0 4))
                 :science-keywords (gen/vector sk/science-keywords 1 3)
                 ;:platforms (ext-gen/nil-if-empty (gen/vector platforms 0 4))
