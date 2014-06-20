@@ -21,6 +21,8 @@
 
 (def bootstrap-port (cfg/config-value-fn :bootstrap-port 3006 parse-port))
 
+(def transformer-port (cfg/config-value-fn :transformer-port 3007 parse-port))
+
 
 (defn app-conn-info
   "Returns the current application connection information as a map by application name"
