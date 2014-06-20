@@ -66,7 +66,6 @@
 (deftracefn get-concept-revisions
   "Search metadata db and return the concepts given by the concept-id, revision-id tuples."
   [context concept-tuples]
-  (println context)
   (let [conn (config/context->app-connection context :metadata-db)
         tuples-json-str (cheshire/generate-string concept-tuples)
         request-url (str (conn/root-url conn) "/concepts/search/concept-revisions")
