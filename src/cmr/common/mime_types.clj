@@ -25,10 +25,9 @@
 (defn mime-type->format
   "Converts a mime-type into the format requested."
   [mime-type]
-  (if mime-type
+  (when mime-type
     (get base-mime-type-to-format
-         (str (mt/base-type (mt/parse mime-type))))
-    default-result-format))
+         (str (mt/base-type (mt/parse mime-type))))))
 
 (defn validate-request-mime-type
   "Validates the requested mime type is supported."
