@@ -72,9 +72,16 @@
            this))
 
   (stop [this system]
-        (let [pool-name (get-in this [:spec :connection-pool-name])
-              ucp-manager (UniversalConnectionPoolManagerImpl/getUniversalConnectionPoolManager)]
-          (.destroyConnectionPool ucp-manager pool-name))
+
+        (try
+          ;; Cleanup the connection pool
+          (let [pool-name (get-in this [:spec :connection-pool-name])
+                ucp-manager (UniversalConnectionPoolManagerImpl/getUniversalConnectionPoolManager)]
+            (.destroyConnectionPool ucp-manager pool-name))
+          (catch Exception e
+            (warn (str "Unable to destroy connection pool. It may not have started. Error: "
+                       (.getMessage e)))))
+
         (dissoc this :datasource)))
 
 
