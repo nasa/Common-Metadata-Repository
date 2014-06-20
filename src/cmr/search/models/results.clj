@@ -19,6 +19,9 @@
    ;; The number of hits
    hits
 
+   ;; The number of milliseconds the search took
+   took
+
    ;; Sequence of references found in the query
    references
   ])

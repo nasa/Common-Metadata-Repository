@@ -41,9 +41,9 @@
 
 (defmethod search-results->response :json
   [results result-type pretty]
-  (let [{:keys [hits references]} results
+  (let [{:keys [hits took references]} results
         response-refs (map #(set/rename-keys % {:concept-id :id}) references)
-        response-results (r/->Results hits response-refs)]
+        response-results (r/->Results hits took response-refs)]
     (json/generate-string response-results {:pretty pretty})))
 
 (defn- reference->xml-element
@@ -58,11 +58,12 @@
 
 (defmethod search-results->response :xml
   [results result-typ pretty]
-  (let [{:keys [hits references]} results
+  (let [{:keys [hits took references]} results
         xml-fn (if pretty x/indent-str x/emit-str)]
     (xml-fn
       (x/element :results {}
                  (x/element :hits {} (str hits))
+                 (x/element :took {} (str took))
                  (x/->Element :references {}
                               (map reference->xml-element references))))))
 

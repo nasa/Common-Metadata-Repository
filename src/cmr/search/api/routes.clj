@@ -19,15 +19,26 @@
     (sr/validate-search-result-mime-type mime-type)
     (sr/mime-type->format mime-type)))
 
+(defn- measure-query-time
+  "Executes the query function measuring how long it takes. Adds a :took key to the results map
+  with the number of milliseconds taken."
+  [query-fn]
+  (let [start (System/currentTimeMillis)
+        result (query-fn)
+        stop (System/currentTimeMillis)
+        took (- stop start)]
+    (assoc result :took took)))
+
 (defn- find-references
   "Invokes query service to find references and returns the response"
   [context concept-type params headers query-string]
   (let [result-format (get-search-results-format headers)
         pretty? (= (get params :pretty) "true")
-        _ (info (format "Search for %ss in format [%s] with params [%s]" (name concept-type) result-format params))
-        params (dissoc params :pretty)
-        params (lp/process-legacy-psa params query-string)
-        results (query-svc/find-concepts-by-parameters context concept-type params)]
+        _ (info (format "Searching for %ss in format %s with params %s." (name concept-type) result-format (pr-str params)))
+        search-params (lp/process-legacy-psa (dissoc params :pretty) query-string)
+        results (measure-query-time #(query-svc/find-concepts-by-parameters context concept-type search-params))]
+    (info (format "Found %d %ss in %d ms in format %s with params %s."
+                  (:hits results) (name concept-type) (:took results) result-format (pr-str params)))
     {:status 200
      :headers {"Content-Type" (sr/format->mime-type result-format)}
      :body (sr/search-results->response results result-format pretty?)}))
