@@ -12,7 +12,8 @@
             [cmr.umm.echo10.granule.product-specific-attribute-ref :as psa]
             [cmr.umm.echo10.granule.orbit-calculated-spatial-domain :as ocsd]
             [cmr.umm.xml-schema-validator :as v]
-            [cmr.umm.echo10.core])
+            [cmr.umm.echo10.core]
+            [cmr.umm.core])
   (:import cmr.umm.granule.UmmGranule))
 
 (defn xml-elem->project-refs
@@ -155,5 +156,9 @@
   "Validates the XML against the Granule ECHO10 schema."
   [xml]
   (v/validate-xml (io/resource "schema/echo10/Granule.xsd") xml))
+
+(defmethod cmr.umm.core/parse-concept [:collection "application/echo10+xml"]
+  [concept]
+  (parse-granule (get concept "metadata")))
 
 
