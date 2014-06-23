@@ -57,7 +57,8 @@
       (let [extent "2000-02-15T00:00:00Z, 2002-03-15T00:00:00Z, 32, 90"
             references (search/find-refs :collection {"temporal[]" extent :page_size 100})
             references1 (search/find-refs :collection {"temporal" extent :page_size 100})]
-        (is (= references references1))))
+        (is (= (dissoc references :took)
+               (dissoc references1 :took)))))
     (testing "search by end-day."
       (let [references (search/find-refs :collection
                                          {"temporal[]" "2000-02-15T00:00:00Z, 2002-03-15T00:00:00Z, , 90"
