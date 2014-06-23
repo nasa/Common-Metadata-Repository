@@ -82,7 +82,7 @@
         (errors/throw-service-error :not-found err-msg))
 
       200
-      (cheshire/decode (:body response))
+      (cheshire/decode (:body response) true)
 
       ;; default
       (errors/internal-error! (str "Get concept revisions failed. MetadataDb app response status code: "
