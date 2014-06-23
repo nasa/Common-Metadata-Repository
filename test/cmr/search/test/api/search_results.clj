@@ -47,17 +47,20 @@
   [response-str format]
   (let [xml-struct (x/parse-str response-str)
         hits (cx/long-at-path xml-struct [:hits])
+        took (cx/long-at-path xml-struct [:took])
         ref-structs (cx/content-at-path xml-struct [:references])
         references (map ref-xml-struct->reference ref-structs)]
     {:hits hits
+     :took took
      :references references}))
 
 (defn result-records->map
   "Converts the result records into a map for easy comparison."
   [search-result]
-  (let [{:keys [hits references]} search-result
+  (let [{:keys [hits took references]} search-result
         response-refs (map #(set/rename-keys % {:concept-id :id}) references)]
     {:hits hits
+     :took took
      :references response-refs}))
 
 (defspec search-result->response-test 100

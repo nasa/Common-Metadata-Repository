@@ -37,6 +37,6 @@
             (gen/tuple concept-type-prefixes gen/s-pos-int provider-ids revision-ids native-ids)))
 
 (def results
-  (gen/fmap (fn [refs]
-              (r/->Results (count refs) refs))
-              (gen/vector references 1 20)))
+  (gen/fmap (fn [[took refs]]
+              (r/->Results (count refs) took refs))
+              (gen/tuple gen/s-pos-int (gen/vector references 1 20))))
