@@ -272,15 +272,14 @@
                                        (from table)
                                        (where (cons `and conditions))))
                       batch-result (j/query db stmt)]
-                  [(mapv (partial db-result->concept-map concept-type conn provider-id)
-                        batch-result)
-                   (-> batch-result last :id)])))
+                  (mapv (partial db-result->concept-map concept-type conn provider-id)
+                        batch-result))))
             (lazy-find
               [start-index]
               (debug "Finding batch from" start-index)
-              (let [[batch end-index] (find-batch start-index)]
+              (let [batch (find-batch start-index)]
                 (when-not (empty? batch)
-                  (cons batch (lazy-seq (lazy-find (inc end-index)))))))]
+                  (cons batch (lazy-seq (lazy-find (+ start-index batch-size)))))))]
       ;; If there's no minimum found so there are no concepts that match
       (when-let [start-index (find-batch-starting-id db params)]
         (lazy-find start-index))))
