@@ -21,7 +21,7 @@
                               CONSTRAINT unique_concept_id_revision
                               UNIQUE (concept_id, revision_id)
                               USING INDEX (create unique index cid_rev_indx on concept(concept_id, revision_id)))")
-  (j/db-do-commands (config/db) "CREATE INDEX concept_id_indx ON METADATA_DB.concept(concept_id) TABLESPACE users"))
+  (j/db-do-commands (config/db) "CREATE INDEX concept_id_indx ON METADATA_DB.concept(concept_id)"))
 
 (defn down
   "Migrates the database down from version 1."

@@ -61,13 +61,13 @@
                                  table-name
                                  table-name
                                  table-name))
-    (j/db-do-commands db (format "CREATE INDEX %s_crdi ON %s (concept_id, revision_id, deleted, delete_time) TABLESPACE users"
+    (j/db-do-commands db (format "CREATE INDEX %s_crdi ON %s (concept_id, revision_id, deleted, delete_time)"
                                  table-name
                                  table-name))
-    (j/db-do-commands db (format "CREATE INDEX %s_snv_i ON %s(short_name, version_id) TABLESPACE users"
+    (j/db-do-commands db (format "CREATE INDEX %s_snv_i ON %s(short_name, version_id)"
                                  table-name
                                  table-name))
-    (j/db-do-commands db (format "CREATE INDEX %s_et_i ON %s(entry_title) TABLESPACE users"
+    (j/db-do-commands db (format "CREATE INDEX %s_et_i ON %s(entry_title)"
                                  table-name
                                  table-name))))
 
@@ -104,15 +104,23 @@
                                  table-name))
     ;; can't create constraint with column of datatype TIME/TIMESTAMP WITH TIME ZONE
     ;; so we create the index separately from the create table statement
-    (j/db-do-commands db (format "CREATE INDEX %s_crdi ON %s (concept_id, revision_id, deleted, delete_time) TABLESPACE users"
+    (j/db-do-commands db (format "CREATE INDEX %s_crdi ON %s (concept_id, revision_id, deleted, delete_time)"
                                  table-name
                                  table-name))
-    (j/db-do-commands db (format "CREATE INDEX %s_pcid ON %s (parent_collection_id) TABLESPACE users"
+    (j/db-do-commands db (format "CREATE INDEX %s_pcid ON %s (parent_collection_id)"
                                  table-name
                                  table-name))
-    (j/db-do-commands db (format "CREATE INDEX %s_pcr ON %s (parent_collection_id, concept_id, revision_id) TABLESPACE users"
+    (j/db-do-commands db (format "CREATE INDEX %s_pcr ON %s (parent_collection_id, concept_id, revision_id)"
                                  table-name
-                                 table-name))))
+                                 table-name))
+
+    ;; This index is needed when bulk indexing granules within a collection
+    (j/db-do-commands db (format "CREATE INDEX %s_cpk ON %s (parent_collection_id, id)"
+                                 table-name
+                                 table-name))
+
+    ))
+
 
 (defn create-provider-concept-tables
   "Create all the concept tables for the given provider-id."
