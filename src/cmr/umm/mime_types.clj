@@ -4,6 +4,8 @@
 ;; body element (metadata) of a request arriving at ingest app should be in xml format and mime type
 ;; should be of the items in this def.
 (def CMR_VALID_CONTENT_TYPES
-  #{"application/echo10+xml", "application/iso_prototype+xml", "application/iso:smap+xml",
-    "application/iso19115+xml", "application/dif+xml"})
+  {:collection #{"application/echo10+xml", "application/iso_prototype+xml", "application/iso:smap+xml",
+                 "application/iso19115+xml", "application/dif+xml"}
+   :granule #{"application/echo10+xml", "application/iso_prototype+xml", "application/iso:smap+xml",
+              "application/iso19115+xml"}})
 
