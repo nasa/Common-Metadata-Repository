@@ -14,8 +14,7 @@
             [cmr.umm.echo10.collection.org :as org]
             [cmr.umm.echo10.collection.science-keyword :as sk]
             [cmr.umm.echo10.core]
-            [camel-snake-kebab :as csk]
-            [cmr.umm.core])
+            [camel-snake-kebab :as csk])
   (:import cmr.umm.collection.UmmCollection))
 
 (defn- xml-elem->Product
@@ -127,9 +126,5 @@
   [xml]
   (v/validate-xml (io/resource "schema/echo10/Collection.xsd") xml))
 
-
-(defmethod cmr.umm.core/parse-concept [:collection "application/echo10+xml"]
-  [concept]
-  (parse-collection (get concept "metadata")))
 
 
