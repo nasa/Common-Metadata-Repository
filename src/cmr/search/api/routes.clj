@@ -40,7 +40,7 @@
     (info (format "Found %d %ss in %d ms in format %s with params %s."
                   (:hits results) (name concept-type) (:took results) result-format (pr-str params)))
     {:status 200
-     :headers {"Content-Type" (sr/format->mime-type result-format)}
+     :headers {"Content-Type" (str (sr/format->mime-type result-format) "; charset=utf-8")}
      :body (sr/search-results->response results result-format pretty?)}))
 
 (defn- find-concept-by-cmr-concept-id
@@ -50,7 +50,7 @@
   (info (format "Search for concept with cmr-concept-id [%s]" concept-id))
   (let [concept (query-svc/find-concept-by-id context concept-id)]
     {:status 200
-     :headers {"Content-Type" "application/xml"}
+     :headers {"Content-Type" "application/xml; charset=utf-8"}
      :body (:metadata concept)}))
 
 (defn- build-routes [system]
