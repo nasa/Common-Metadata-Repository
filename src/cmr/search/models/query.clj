@@ -51,11 +51,24 @@
    ;; The value to match
    value
 
-   ;; indicates if the search is case sensitive. Defaults to true.
+   ;; indicates if the search is case sensitive. Defaults to false.
    case-sensitive?
 
    ;; Indicates if the search contains pattern matching expressions. Defaults to false.
    pattern?
+   ])
+
+;; Represents a search for multiple possible values on a single field. The values are essentially OR'd
+(defrecord StringsCondition
+  [
+   ;; The field being searched.
+   field
+
+   ;; The values to match
+   values
+
+   ;; indicates if the search is case sensitive. Defaults to false.
+   case-sensitive?
    ])
 
 (defrecord NegatedCondition
@@ -259,13 +272,6 @@
                                :min-value min
                                :max-value max}))
 
-(defn string-condition
-  "Creates a string condition."
-  ([field value]
-   (string-condition field value false false))
-  ([field value case-sensitive? pattern?]
-   (->StringCondition field value case-sensitive? pattern?)))
-
 (defn string-range-condition
   "Create a string range condition."
   [field start stop]
@@ -293,6 +299,8 @@
   (cond
     (empty? conditions) (errors/internal-error! "Grouping empty list of conditions")
     (= (count conditions) 1) (first conditions)
+    ;; TODO performance enhancement. If subconditions are condition groups of the same type they can
+    ;; be combined into this new one.
     :else (->ConditionGroup type conditions)))
 
 (defn and-conds
@@ -304,6 +312,29 @@
   "Combines conditions in an OR condition."
   [conditions]
   (group-conds :or conditions))
+
+(defn string-condition
+  ([field value]
+   (string-condition field value false false))
+  ([field value case-sensitive? pattern?]
+   (->StringCondition field value case-sensitive? pattern?)))
+
+(defn string-conditions
+  "Creates a string condition."
+  ([field values]
+   (string-conditions field values false false :or))
+  ([field values case-sensitive? pattern? group-operation]
+   (cond
+     (= (count values) 1)
+     (string-condition field (first values) case-sensitive? pattern?)
+
+     (or pattern? (= group-operation :and))
+     (group-conds group-operation
+                  (map #(->StringCondition field % case-sensitive? pattern?)
+                       values))
+     :else
+     ;; Strings condition can be used non-pattern, strings combined as an OR
+     (->StringsCondition field values case-sensitive?))))
 
 (defn numeric-range-str->condition
   "Creates a numeric range condition."

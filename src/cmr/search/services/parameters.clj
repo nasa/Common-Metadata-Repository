@@ -57,20 +57,30 @@
              :downloadable :boolean
              :polygon :polygon}})
 
-(defn- case-sensitive-field?
-  "Return true if the given field is a case-sensitive field"
-  [field]
-  (some #{:concept-id :collection-concept-id} [field]))
+(def always-case-sensitive
+  "A set of parameters that will always be case sensitive"
+  #{:concept-id :collection-concept-id})
 
-(defn string-condition-with-options
-  "Returns a string condition with the given field, value and options"
-  [field value options options-field]
-  (let [case-sensitive (= "false" (get-in options [options-field :ignore-case]))
-        case-sensitive (if (case-sensitive-field? field) true case-sensitive)]
-    (qm/string-condition field
-                         value
-                         case-sensitive
-                         (= "true" (get-in options [options-field :pattern])))))
+(defn case-sensitive-field?
+  "Return true if the given field is a case-sensitive field"
+  [field options]
+  (or (always-case-sensitive field)
+      (= "false" (get-in options [field :ignore-case]))))
+
+(defn pattern-field?
+  "Returns true if the field is a pattern"
+  [field options]
+  (= "true" (get-in options [field :pattern])))
+
+(defn group-operation
+  "Returns the group operation (:and or :or) for the given field."
+  ([field options]
+   (group-operation field options :or))
+  ([field options default]
+   (cond
+     (= "true" (get-in options [field :and])) :and
+     (= "true" (get-in options [field :or])) :or
+     :else default)))
 
 (defn- param-name->type
   "Returns the query condition type based on the given concept-type and param-name."
@@ -84,13 +94,12 @@
 
 (defmethod parameter->condition :string
   [concept-type param value options]
-  (if (sequential? value)
-    (if (= "true" (get-in options [param :and]))
-      (qm/and-conds
-        (map #(parameter->condition concept-type param % options) value))
-      (qm/or-conds
-        (map #(parameter->condition concept-type param % options) value)))
-    (string-condition-with-options param value options param)))
+  (let [case-sensitive (case-sensitive-field? param options)
+        pattern (pattern-field? param options)
+        group-operation (group-operation param options)]
+    (if (sequential? value)
+      (qm/string-conditions param value case-sensitive pattern group-operation)
+      (qm/string-condition param value case-sensitive pattern))))
 
 ;; Construct an inheritance query condition for granules.
 ;; This will find granules which either have explicitly specified a value
@@ -143,9 +152,11 @@
         (map #(parameter->condition concept-type param % options) value))
       (qm/or-conds
         (map #(parameter->condition concept-type param % options) value)))
+    (let [case-sensitive (case-sensitive-field? :readable-granule-name options)
+          pattern (pattern-field? :readable-granule-name options)]
     (qm/or-conds
-      [(string-condition-with-options :granule-ur value options :readable-granule-name)
-       (string-condition-with-options :producer-granule-id value options :readable-granule-name)])))
+      [(qm/string-condition :granule-ur value case-sensitive pattern)
+       (qm/string-condition :producer-granule-id value case-sensitive pattern)]))))
 
 (defmethod parameter->condition :collection-data-type
   [concept-type param value options]
@@ -155,16 +166,18 @@
         (map #(parameter->condition concept-type param % options) value))
       (qm/or-conds
         (map #(parameter->condition concept-type param % options) value)))
-    (let [value (if (some #{value} nrt-aliases) "NEAR_REAL_TIME" value)]
+    (let [value (if (some #{value} nrt-aliases) "NEAR_REAL_TIME" value)
+          case-sensitive (case-sensitive-field? :collection-data-type options)
+          pattern (pattern-field? :collection-data-type options)]
       (if (or (= "SCIENCE_QUALITY" value)
               (and (= "SCIENCE_QUALITY" (s/upper-case value))
                    (not= "false" (get-in options [:collection-data-type :ignore-case]))))
         ; SCIENCE_QUALITY collection-data-type should match concepts with SCIENCE_QUALITY
         ; or the ones missing collection-data-type field
         (qm/or-conds
-          [(string-condition-with-options :collection-data-type value options :collection-data-type)
+          [(qm/string-condition :collection-data-type value case-sensitive pattern)
            (qm/map->MissingCondition {:field :collection-data-type})])
-        (string-condition-with-options :collection-data-type value options :collection-data-type)))))
+        (qm/string-condition :collection-data-type value case-sensitive pattern)))))
 
 (defmethod parameter->condition :num-range
   [concept-type param value options]

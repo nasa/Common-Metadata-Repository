@@ -42,17 +42,32 @@
       (is (= (q/string-condition :entry-title "bar")
              (p/parameter->condition :collection :entry-title "bar" nil))))
     (testing "with multiple values"
-      (is (= (q/or-conds [(q/string-condition :entry-title "foo")
-                          (q/string-condition :entry-title "bar")])
+      (is (= (q/string-conditions :entry-title ["foo" "bar"])
              (p/parameter->condition :collection :entry-title ["foo" "bar"] nil))))
+    (testing "with multiple values case sensitive"
+      (is (= (q/string-conditions :entry-title ["foo" "bar"] true false :or)
+             (p/parameter->condition :collection :entry-title ["foo" "bar"]
+                                     {:entry-title {:ignore-case "false"}}))))
+    (testing "with multiple values pattern"
+      (is (= (q/or-conds [(q/string-condition :entry-title "foo" false true)
+                          (q/string-condition :entry-title "bar" false true)])
+             (p/parameter->condition :collection :entry-title ["foo" "bar"]
+                                     {:entry-title {:pattern "true"}}))))
+    (testing "with multiple values and'd"
+      (is (= (q/and-conds [(q/string-condition :entry-title "foo" false false)
+                          (q/string-condition :entry-title "bar" false false)])
+             (p/parameter->condition :collection :entry-title ["foo" "bar"]
+                                     {:entry-title {:and "true"}}))))
     (testing "case-insensitive"
       (is (= (q/string-condition :entry-title "bar" false false)
-             (p/parameter->condition :collection :entry-title "bar" {:entry-title {:ignore-case "true"}}))))
+             (p/parameter->condition :collection :entry-title "bar"
+                                     {:entry-title {:ignore-case "true"}}))))
     (testing "pattern"
       (is (= (q/string-condition :entry-title "bar*" false false)
              (p/parameter->condition :collection :entry-title "bar*" {})))
       (is (= (q/string-condition :entry-title "bar*" false true)
-             (p/parameter->condition :collection :entry-title "bar*" {:entry-title {:pattern "true"}}))))))
+             (p/parameter->condition :collection :entry-title "bar*"
+                                     {:entry-title {:pattern "true"}}))))))
 
 (deftest parameters->query-test
   (testing "Empty parameters"

@@ -33,6 +33,13 @@
       [value]
       []))
 
+  cmr.search.models.query.StringsCondition
+  (extract-collection-concept-ids
+    [{:keys [field values]} context]
+    (if (= :collection-concept-id field)
+      values
+      []))
+
   ;; catch all extractor
   java.lang.Object
   (extract-collection-concept-ids [this context] []))

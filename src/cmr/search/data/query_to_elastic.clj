@@ -130,6 +130,15 @@
         {:query {:wildcard {field value}}}
         {:term {field value}})))
 
+  cmr.search.models.query.StringsCondition
+  (condition->elastic
+    [{:keys [field values case-sensitive?]} concept-type]
+    (let [field (query-field->elastic-field field concept-type (first values))
+          field (if case-sensitive? field (str (name field) ".lowercase"))
+          values (if case-sensitive? values (map s/lower-case values))]
+      {:terms {field values
+               :execution "bool"}}))
+
   cmr.search.models.query.BooleanCondition
   (condition->elastic
     [{:keys [field value]} concept-type]
