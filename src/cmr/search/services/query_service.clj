@@ -75,8 +75,8 @@
 
 (deftracefn execute-query
   "Executes a query returning results as concept id, native provider id, and revision id."
-  [context result-format query]
-  (idx/execute-query context result-format query))
+  [context query]
+  (idx/execute-query context query))
 
 (deftracefn simplify-query
   "Simplifies the query to increase performance."
@@ -87,14 +87,19 @@
 (deftracefn find-concepts-by-query
   "Executes a search for concepts using a query The concepts will be returned with
   concept id and native provider id."
-  [context result-format query]
+  [context query]
   (->> query
        (validate-query context)
        (apply-acls context)
        c2s/reduce-query
        (resolve-collection-query context)
        (simplify-query context)
-       (execute-query context result-format)))
+       (execute-query context)))
+
+(defn append-result-format
+  "Append result-format to query and returns the query"
+  [result-format query]
+  (assoc query :result-format result-format))
 
 (deftracefn find-concepts-by-parameters
   "Executes a search for concepts using the given parameters. The concepts will be returned with
@@ -115,7 +120,8 @@
          (lp/replace-science-keywords-or-option concept-type)
          (pv/validate-parameters concept-type)
          (p/parameters->query concept-type)
-         (find-concepts-by-query context result-format))))
+         (append-result-format result-format)
+         (find-concepts-by-query context))))
 
 
 (deftracefn find-concept-by-id
