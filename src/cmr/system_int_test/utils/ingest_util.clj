@@ -91,8 +91,6 @@
   (client/post (url/search-reset-url) {:connection-manager (url/conn-mgr)})
   (index/refresh-elastic-index))
 
-
-
 ;;; fixture - each test to call this fixture
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
