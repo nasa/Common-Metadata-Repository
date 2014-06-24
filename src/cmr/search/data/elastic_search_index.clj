@@ -67,7 +67,23 @@
     {:index-name (get-granule-indexes context query)
      :type-name "granule"
      :fields ["granule-ur"
-              "provider-id"]}))
+              "provider-id"]
+     :csv-fields ["granule-ur"
+                  "producer-gran-id"
+                  "start-date"
+                  "end-date"
+                  "downloadable-urls"
+                  "cloud-cover"
+                  "day-night"
+                  "size"]}))
+
+(defn- result-format->fields-key
+  [result-format]
+  (get
+    {:json :fields
+     :xml :fields
+     :csv :csv-fields}
+    result-format))
 
 (defrecord ElasticSearchIndex
   [
@@ -93,11 +109,13 @@
 
 (deftracefn send-query-to-elastic
   "Created to trace only the sending of the query off to elastic search."
-  [context query page-size page-num]
+  [context result-format query page-size page-num]
   (let [concept-type (:concept-type query)
         elastic-query (q2e/query->elastic query)
         sort-params (q2e/query->sort-params query)
-        {:keys [index-name type-name fields]} (concept-type->index-info context concept-type query)
+        index-info (concept-type->index-info context concept-type query)
+        {:keys [index-name type-name]} index-info
+        {fields (result-format->fields-key result-format)} index-info
         conn (context->conn context)]
     (debug "Executing elastic query:" (pr-str elastic-query))
     (if (= :unlimited page-size)
@@ -121,15 +139,17 @@
 
 (defn execute-query
   "Executes a query to find concepts. Returns concept id, native id, and revision id."
-  [context query]
-  (let [page-size (:page-size query)
-        page-num (:page-num query)
-        e-results (send-query-to-elastic context query page-size page-num)
-        results (rc/elastic-results->query-results context (:concept-type query) e-results)]
-    (debug "Elastic query took" (:took e-results) "ms")
-    (when (and (= :unlimited page-size) (> (:hits results) (count (:references results)))
-               (e/internal-error! "Failed to retrieve all hits.")))
-    results))
+  ([context query]
+   (execute-query context :json query))
+  ([context result-format query]
+   (let [page-size (:page-size query)
+         page-num (:page-num query)
+         e-results (send-query-to-elastic context result-format query page-size page-num)
+         results (rc/elastic-results->query-results context (:concept-type query) e-results result-format)]
+     (debug "Elastic query took" (:took e-results) "ms")
+     (when (and (= :unlimited page-size) (> (:hits results) (count (:references results)))
+                (e/internal-error! "Failed to retrieve all hits.")))
+     results)))
 
 (defn create-elastic-search-index
   "Creates a new instance of the elastic search index."

@@ -15,6 +15,7 @@ Provides a public search API for concepts in the CMR.
 
   * Accept - specifies the format to return references in. Default is json.
     * `curl -H "Accept: application/xml" -i "http://localhost:3003/collections"`
+    * `curl -H "Accept: text/csv" -i "http://localhost:3003/granules"`
 
 ### Search for Collections
 

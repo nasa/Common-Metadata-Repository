@@ -36,7 +36,7 @@
         pretty? (= (get params :pretty) "true")
         _ (info (format "Searching for %ss in format %s with params %s." (name concept-type) result-format (pr-str params)))
         search-params (lp/process-legacy-psa (dissoc params :pretty) query-string)
-        results (measure-query-time #(query-svc/find-concepts-by-parameters context concept-type search-params))]
+        results (measure-query-time #(query-svc/find-concepts-by-parameters context concept-type search-params result-format))]
     (info (format "Found %d %ss in %d ms in format %s with params %s."
                   (:hits results) (name concept-type) (:took results) result-format (pr-str params)))
     {:status 200
