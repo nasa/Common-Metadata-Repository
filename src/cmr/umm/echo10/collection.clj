@@ -125,4 +125,3 @@
   "Validates the XML against the ECHO10 schema."
   [xml]
   (v/validate-xml (io/resource "schema/echo10/Collection.xsd") xml))
-
