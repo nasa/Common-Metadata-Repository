@@ -103,14 +103,19 @@
   [related-url]
   (= "GET DATA" (:type related-url)))
 
+(defn downloadable-urls
+  "Returns the related-urls that are downloadable"
+  [related-urls]
+  (filter downloadable-url? related-urls))
+
 (defn generate-access-urls
   "Generates the OnlineAccessURLs element of an ECHO10 XML from a UMM Granule related urls entry."
   [related-urls]
-  (let [downloadable-urls (filter downloadable-url? related-urls)]
-    (when-not (empty? downloadable-urls)
+  (let [urls (downloadable-urls related-urls)]
+    (when-not (empty? urls)
       (x/element
         :OnlineAccessURLs {}
-        (for [related-url downloadable-urls]
+        (for [related-url urls]
           (let [{:keys [url description]} related-url]
             (x/element :OnlineAccessURL {}
                        (x/element :URL {} url)
