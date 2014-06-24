@@ -11,20 +11,21 @@
 (use-fixtures :each (ingest/reset-fixture "PROV1"))
 
 (deftest transform-collection-echo10
-  (let [umm1 (d/ingest "PROV1" (dc/collection {:short-name "MINIMAL"
+  (let [col1-1 (d/ingest "PROV1" (dc/collection {:short-name "MINIMAL"
                                                :long-name "A minimal valid collection"
                                                :version-id 1}))
-        umm2 (dc/collection {:short-name "MINIMAL2"
+        col2 (dc/collection {:short-name "MINIMAL2"
                              :long-name "A second minimal valid collection."
                              :version-id 3})
-        umm2 (d/ingest "PROV1" umm2)
-        umm2 (d/ingest "PROV1" umm2)]
+        col2-1 (d/ingest "PROV1" col2)
+        col2-2 (d/ingest "PROV1" col2)]
     (testing "transform collections"
       (are [v]
-           (t/transform-and-compare v)
-           [[umm1 1]]
-           [[umm1 1] [umm2 1]]
-           [[umm1 1] [umm2 2]]))
+           (= (t/expected-response v :echo10)
+               (:response (t/transform-concepts v :echo10)))
+           [col1-1]
+           [col1-1 col2-1]
+           [col1-1 col2-2]))
     (testing "tranform missing collection revision returns 404"
-      (let [resp (t/transform-concepts [[(:concept-id umm1) 5]] "application/echo10+xml")]
+      (let [resp (t/transform-concepts [(assoc col1-1 :revision-id 5)] :echo10)]
         (is (= 404 (:status resp)))))))

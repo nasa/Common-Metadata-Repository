@@ -15,16 +15,17 @@
   (let [col1 (d/ingest "PROV1" (dc/collection {:short-name "MINIMAL"
                                                :long-name "A minimal valid collection"
                                                :version-id 1}))
-        g1 (d/ingest "PROV1" (dg/granule col1))
+        g1-1 (d/ingest "PROV1" (dg/granule col1))
         g2 (dg/granule col1)
-       	g2 (d/ingest "PROV1" g2)
-        g2 (d/ingest "PROV1" g2)]
-    (testing "transform granules"
+       	g2-1 (d/ingest "PROV1" g2)
+        g2-2 (d/ingest "PROV1" g2)]
+    (testing "transform granules to echo10"
       (are [v]
-           (t/transform-and-compare v)
-           [[g1 1]]
-           [[g1 1] [g2 1]]
-           [[g1 1] [g2 2]]))
+           (= (t/expected-response v :echo10)
+               (:response (t/transform-concepts v :echo10)))
+           [g1-1]
+           [g1-1 g2-1]
+           [g1-1 g2-2]))
     (testing "tranform missing granule revision returns 404"
-      (let [resp (t/transform-concepts [[(:concept-id g1) 5]] "application/echo10+xml")]
+      (let [resp (t/transform-concepts [(assoc g1-1 :revision-id 5)] :echo10)]
         (is (= 404 (:status resp)))))))
