@@ -46,8 +46,11 @@
   :jvm-opts ["-XX:PermSize=256m" "-XX:MaxPermSize=256m"]
   :profiles
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.4"]
-                        [org.clojars.gjahad/debug-repl "0.3.3"]]
-         :source-paths ["src" "dev" "test"]}
+                        [org.clojars.gjahad/debug-repl "0.3.3"]
+                        [pjstadig/humane-test-output "0.6.0"]]
+         :source-paths ["src" "dev" "test"]
+         :injections [(require 'pjstadig.humane-test-output)
+                      (pjstadig.humane-test-output/activate!)]}
    :uberjar {:main cmr.dev-system.runner
              ;; See http://stephen.genoprime.com/2013/11/14/uberjar-with-titan-dependency.html
              :uberjar-merge-with {#"org\.apache\.lucene\.codecs\.*" [slurp str spit]}
