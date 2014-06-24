@@ -6,7 +6,11 @@
             [cmr.common.services.errors :as errors]
             [clojure.data.xml :as x]
             [clojure.set :as set]
-            [cmr.search.models.results :as r]))
+            [clojure.data.csv :as csv]
+            [cmr.search.models.results :as r])
+  (:import
+    [java.io StringWriter]))
+
 
 (def default-search-result-format :json)
 
@@ -14,7 +18,8 @@
   "A map of base mime types to the format symbols supported"
   {"*/*" default-search-result-format
    "application/json" :json
-   "application/xml" :xml})
+   "application/xml" :xml
+   "text/csv" :csv})
 
 (defn mime-type->format
   "Converts a mime-type into the format requested."
@@ -26,7 +31,8 @@
 
 (def format->mime-type
   {:json "application/json"
-   :xml "application/xml"})
+   :xml "application/xml"
+   :csv "text/csv"})
 
 (defn validate-search-result-mime-type
   "Validates the requested search result mime type."
@@ -66,4 +72,15 @@
                  (x/element :took {} (str took))
                  (x/->Element :references {}
                               (map reference->xml-element references))))))
+
+(def CSV_HEADER
+  ["Granule UR","Producer Granule ID","Start Time","End Time","Online Access URLs","Browse URLs","Cloud Cover","Day/Night","Size"])
+
+(defmethod search-results->response :csv
+  [results result-type pretty]
+  (let [{:keys [hits took references]} results
+        response-refs (conj references CSV_HEADER)
+        string-writer (StringWriter.)]
+    (csv/write-csv string-writer response-refs)
+    (str string-writer)))
 
