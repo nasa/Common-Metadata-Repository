@@ -6,40 +6,40 @@
 (defprotocol ExtractCollectionConceptId
   "Defines a function to extract collection concept ids into a vector."
   (extract-collection-concept-ids
-    [c context]
+    [c]
     "Extract collection concept ids into a vector."))
 
 (extend-protocol ExtractCollectionConceptId
   cmr.search.models.query.Query
   (extract-collection-concept-ids
-    [query context]
-    (extract-collection-concept-ids (:condition query) context))
+    [query]
+    (extract-collection-concept-ids (:condition query)))
 
   cmr.search.models.query.ConditionGroup
   (extract-collection-concept-ids
-    [{:keys [conditions]} context]
-    (mapcat #(extract-collection-concept-ids % context) conditions))
+    [{:keys [conditions]}]
+    (mapcat extract-collection-concept-ids conditions))
 
   cmr.search.models.query.NegatedCondition
   (extract-collection-concept-ids
-    [{:keys [condition]} context]
-    (if-not (empty? (extract-collection-concept-ids condition context))
+    [{:keys [condition]}]
+    (if-not (empty? (extract-collection-concept-ids condition))
       (errors/internal-error! "collection-concept-id should not be allowed in NegatedCondition.")))
 
   cmr.search.models.query.StringCondition
   (extract-collection-concept-ids
-    [{:keys [field value]} context]
+    [{:keys [field value]}]
     (if (= :collection-concept-id field)
       [value]
       []))
 
   cmr.search.models.query.StringsCondition
   (extract-collection-concept-ids
-    [{:keys [field values]} context]
+    [{:keys [field values]}]
     (if (= :collection-concept-id field)
       values
       []))
 
   ;; catch all extractor
   java.lang.Object
-  (extract-collection-concept-ids [this context] []))
+  (extract-collection-concept-ids [this] []))

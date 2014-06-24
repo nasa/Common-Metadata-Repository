@@ -12,7 +12,8 @@
             [cmr.search.models.results :as results]
             [cmr.search.data.query-to-elastic :as q2e]
             [cmr.search.services.parameters :as p]
-            [cmr.search.services.collection-concept-id-extractor :as ex]
+            [cmr.search.services.collection-concept-id-extractor :as cex]
+            [cmr.search.services.provider-id-extractor :as pex]
             [cmr.search.data.elastic-results-to-query-results :as rc]
             [cmr.system-trace.core :refer [deftracefn]]
             [cmr.common.services.errors :as e]))
@@ -45,13 +46,30 @@
   (let [indexes (get-granule-index-names context)]
     (distinct (map #(collection-concept-id->index-name indexes %) coll-concept-ids))))
 
+(defn- provider-ids->index-names
+  "Return the granule index names for the input provider-ids"
+  [context provider-ids]
+  (let [indexes (get-granule-index-names context)]
+    (cons (get indexes :small_collections)
+          (map #(format "%d_c*_%s" index-set-id (s/lower-case %))
+         provider-ids))))
+
 (defn- get-granule-indexes
   "Returns the granule indexes that should be searched based on the input query"
   [context query]
-  (let [coll-concept-ids (ex/extract-collection-concept-ids query context)]
-    (if (empty? coll-concept-ids)
-      (format "%d_c*,%d_small_collections,-%d_collections" index-set-id index-set-id index-set-id)
-      (s/join "," (collection-concept-ids->index-names context coll-concept-ids)))))
+  (let [coll-concept-ids (seq (cex/extract-collection-concept-ids query))
+        provider-ids (seq (pex/extract-provider-ids query))]
+    (cond
+      coll-concept-ids
+      ;; Use collection concept ids to limit the indexes queried
+      (s/join "," (collection-concept-ids->index-names context coll-concept-ids))
+
+      provider-ids
+      ;; Use provider ids to limit the indexes queried
+      (s/join "," (provider-ids->index-names context provider-ids))
+
+      :else
+      (format "%d_c*,%d_small_collections,-%d_collections" index-set-id index-set-id index-set-id))))
 
 (defn concept-type->index-info
   "Returns index info based on input concept type. For granule concept type, it will walks through
@@ -99,7 +117,7 @@
         sort-params (q2e/query->sort-params query)
         {:keys [index-name type-name fields]} (concept-type->index-info context concept-type query)
         conn (context->conn context)]
-    (debug "Executing elastic query:" (pr-str elastic-query))
+    (debug "Executing against indexes [" index-name "] the elastic query:" (pr-str elastic-query))
     (if (= :unlimited page-size)
       (esd/search conn
                   index-name
