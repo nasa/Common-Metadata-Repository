@@ -99,6 +99,7 @@
         sort-params (q2e/query->sort-params query)
         {:keys [index-name type-name fields]} (concept-type->index-info context concept-type query)
         conn (context->conn context)]
+    (debug "Executing elastic query:" (pr-str elastic-query))
     (if (= :unlimited page-size)
       (esd/search conn
                   index-name
@@ -125,6 +126,7 @@
         page-num (:page-num query)
         e-results (send-query-to-elastic context query page-size page-num)
         results (rc/elastic-results->query-results context (:concept-type query) e-results)]
+    (debug "Elastic query took" (:took e-results) "ms")
     (when (and (= :unlimited page-size) (> (:hits results) (count (:references results)))
                (e/internal-error! "Failed to retrieve all hits.")))
     results))
