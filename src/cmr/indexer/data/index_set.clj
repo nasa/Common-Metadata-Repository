@@ -155,9 +155,9 @@
 
                  :granule-ur            (stored string-field-mapping)
                  :granule-ur.lowercase  string-field-mapping
-                 :producer-gran-id string-field-mapping
+                 :producer-gran-id (stored string-field-mapping)
                  :producer-gran-id.lowercase string-field-mapping
-                 :day-night string-field-mapping
+                 :day-night (stored string-field-mapping)
                  :day-night.lowercase string-field-mapping
 
                  ;; We need to sort by a combination of producer granule and granule ur
@@ -173,16 +173,18 @@
                  :instrument-sn.lowercase string-field-mapping
                  :sensor-sn             string-field-mapping
                  :sensor-sn.lowercase   string-field-mapping
-                 :start-date date-field-mapping
-                 :end-date date-field-mapping
-                 :size double-field-mapping
-                 :cloud-cover double-field-mapping
+                 :start-date (stored date-field-mapping)
+                 :end-date (stored date-field-mapping)
+                 :size (stored double-field-mapping)
+                 :cloud-cover (stored double-field-mapping)
                  :orbit-calculated-spatial-domains orbit-calculated-spatial-domain-mapping
                  :project-refs string-field-mapping
                  :project-refs.lowercase string-field-mapping
                  :revision-date         date-field-mapping
                  :downloadable bool-field-mapping
                  :attributes attributes-field-mapping
+                 :downloadable-urls (stored string-field-mapping)
+                 ;:browse-urls (stored string-field-mapping)
 
                  ;; Spatial coverage fields
 
