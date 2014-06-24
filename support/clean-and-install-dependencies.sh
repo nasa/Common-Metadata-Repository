@@ -48,6 +48,9 @@ lein do clean, install, clean
 cd ../cmr-metadata-db-app
 lein do clean, install, clean
 
+cd ../cmr-transformer-app
+lein do clean, install, clean
+
 cd ../cmr-bootstrap-app
 lein do clean, install, clean
 
