@@ -10,24 +10,21 @@
 
 (use-fixtures :each (ingest/reset-fixture "PROV1"))
 
-(def valid-collection-xml
-  "<Collection>
-    <ShortName>MINIMAL</ShortName>
-    <VersionId>1</VersionId>
-    <InsertTime>1999-12-31T19:00:00-05:00</InsertTime>
-    <LastUpdate>1999-12-31T19:00:00-05:00</LastUpdate>
-    <LongName>A minimal valid collection</LongName>
-    <DataSetId>A minimal valid collection V 1</DataSetId>
-    <Description>A minimal valid collection</Description>
-    <Orderable>true</Orderable>
-    <Visible>true</Visible>
-  </Collection>")
-
-
 (deftest transform-collection-echo10
-  (let [{:keys [concept-id, revision-id] :as umm} (d/ingest "PROV1" (dc/collection {:short-name "MINIMAL"
-                                                :long-name "A minimal valid collection"
-                                                :version-id 1}))
-        resp (t/transform-concepts [[concept-id revision-id]] "application/echo10+xml")]
-    (println umm)
-    (println resp)))
+  (let [umm1 (d/ingest "PROV1" (dc/collection {:short-name "MINIMAL"
+                                               :long-name "A minimal valid collection"
+                                               :version-id 1}))
+        umm2 (dc/collection {:short-name "MINIMAL2"
+                             :long-name "A second minimal valid collection."
+                             :version-id 3})
+        umm2 (d/ingest "PROV1" umm2)
+        umm2 (d/ingest "PROV1" umm2)]
+    (testing "transform collections"
+      (are [v]
+           (t/transform-and-compare v)
+           [[umm1 1]]
+           [[umm1 1] [umm2 1]]
+           [[umm1 1] [umm2 2]]))
+    (testing "tranform missing collection revision returns 404"
+      (let [resp (t/transform-concepts [[(:concept-id umm1) 5]] "application/echo10+xml")]
+        (is (= 404 (:status resp)))))))
