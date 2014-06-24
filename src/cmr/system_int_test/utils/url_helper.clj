@@ -42,6 +42,10 @@
           (name type)
           native-id))
 
+(defn transformer-url
+  []
+  (format "http://localhost:%s/concepts" (transmit-config/transformer-port)))
+
 (defn search-url
   [type]
   (format "http://localhost:%s/%ss" (transmit-config/search-port) (name type)))
