@@ -59,7 +59,8 @@
         sensor-short-names (remove nil? (map :short-name sensor-refs))
         start-date (temporal/start-date :granule temporal)
         end-date (temporal/end-date :granule temporal)
-        downloadable (not (empty? (filter ru/downloadable-url? related-urls)))]
+        downloadable-urls (map :url (ru/downloadable-urls related-urls))
+        downloadable (not (empty? downloadable-urls))]
     (merge {:concept-id concept-id
             :collection-concept-id parent-collection-id
 
@@ -94,5 +95,6 @@
             :revision-date revision-date
             :downloadable downloadable
             :start-date (when start-date (f/unparse (f/formatters :date-time) start-date))
-            :end-date (when end-date (f/unparse (f/formatters :date-time) end-date))}
+            :end-date (when end-date (f/unparse (f/formatters :date-time) end-date))
+            :downloadable-urls downloadable-urls}
            (spatial->elastic parent-collection umm-granule))))
