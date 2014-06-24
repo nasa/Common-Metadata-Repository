@@ -15,9 +15,9 @@
 
 (defn transform-concepts
   "Transform concepts given as concept-id, revision tuples into the given format"
-  [umm format]
+  [umm-records format]
   (let [mime-type (format mt/format->mime-type)
-        tuples (map #(vector (:concept-id %) (:revision-id %)) umm)
+        tuples (map #(vector (:concept-id %) (:revision-id %)) umm-records)
         response (client/post (url/transformer-url)
                               {:accept mime-type
                                :throw-exceptions false
@@ -29,5 +29,5 @@
 
 (defn expected-response
   "Returns the expected xml for a given vector of umm records"
-  [umm format]
-  (map #(ummc/umm->xml % format) umm))
+  [umm-records format]
+  (map #(ummc/umm->xml % format) umm-records))
