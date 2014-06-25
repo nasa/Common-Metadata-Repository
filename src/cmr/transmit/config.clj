@@ -40,7 +40,7 @@
    :bootstrap {:host (cfg/config-value :bootstrap-host "localhost")
                :port (bootstrap-port)}
    :transformer {:host (cfg/config-value :transformer-host "localhost")
-                 :port (transformer-port)})
+                 :port (transformer-port)}})
 
 (defn app-connection-system-key-name
   "The name of the app connection in the system"
