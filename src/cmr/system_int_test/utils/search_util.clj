@@ -44,6 +44,24 @@
              errors# (:errors (json/decode body# true))]
          {:status status# :errors errors#}))))
 
+;; TODO this function will be refactored into the multi-format search function
+;; This is thrown together temporarily to complete the csv functionality
+;; Remove it later
+(defn find-grans-csv
+  "Returns the response of granule search in csv format"
+  [concept-type params & no-snake-kebab]
+  (get-search-failure-data
+    (let [params (if no-snake-kebab
+                   params
+                   (u/map-keys csk/->snake_case_keyword params))
+          response (client/get (url/search-url concept-type)
+                               {:headers {"accept" "text/csv"}
+                                :query-params (if no-snake-kebab
+                                                params
+                                                (params->snake_case params))
+                                :connection-manager (url/conn-mgr)})]
+      response)))
+
 (defn find-refs
   "Returns the references that are found by searching with the input params"
   [concept-type params & no-snake-kebab]
@@ -56,7 +74,7 @@
                                {:accept :json
                                 :query-params (if no-snake-kebab
                                                 params
-                                               (params->snake_case params))
+                                                (params->snake_case params))
                                 :connection-manager (url/conn-mgr)})
           _ (is (= 200 (:status response)))
           result (json/decode (:body response) true)]
@@ -70,11 +88,11 @@
   [concept-type params]
   (get-search-failure-data
     (let [response (client/post (url/search-url concept-type)
-                               {:accept :json
-                                :content-type "application/x-www-form-urlencoded"
-                                :body (codec/form-encode params)
-                                :throw-exceptions false
-                                :connection-manager (url/conn-mgr)})
+                                {:accept :json
+                                 :content-type "application/x-www-form-urlencoded"
+                                 :body (codec/form-encode params)
+                                 :throw-exceptions false
+                                 :connection-manager (url/conn-mgr)})
           _ (is (= 200 (:status response)))
           result (json/decode (:body response) true)]
       (-> result

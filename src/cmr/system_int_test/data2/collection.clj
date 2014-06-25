@@ -112,8 +112,10 @@
 
 (defn related-url
   "Creates related url for online_only test"
-  [type]
-  (c/->RelatedURL type nil (d/unique-str "http://example.com/file") (d/unique-str "description")))
+  ([type]
+   (related-url type (d/unique-str "http://example.com/file")))
+  ([type url]
+   (c/->RelatedURL type nil url (d/unique-str "description"))))
 
 (defn spatial
   [gsr]
