@@ -8,7 +8,8 @@
                  [org.clojure/data.xml "0.0.7"]
                  [camel-snake-kebab "0.1.5"]
                  [org.clojure/core.cache "0.6.3"]
-                 [org.clojure/data.codec "0.1.0"]]
+                 [org.clojure/data.codec "0.1.0"]
+                 [com.novemberain/pantomime "2.1.0"]]
 
    :plugins [[lein-test-out "0.3.1"]]
 
