@@ -1,4 +1,4 @@
-(ns cmr.system-int-test.search.granule-search-csv-test
+(ns cmr.system-int-test.search.granule-search-format-test
   "Integration tests for searching granules in csv format"
   (:require [clojure.test :refer :all]
             [cmr.system-int-test.utils.ingest-util :as ingest]
