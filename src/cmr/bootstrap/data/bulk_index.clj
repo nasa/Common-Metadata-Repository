@@ -48,16 +48,15 @@
         num-granules (index/bulk-index {:system (:indexer system)} concept-batches)]
         (info "Indexed" num-granules "granule(s) for provider" provider-id)))
 
-
 (defn- index-provider-collections
   "Index all the collections concepts for a given provider."
   [system provider-id]
   (let [db (get-in system [:metadata-db :db])
         params {:concept-type :collection
                 :provider-id provider-id}
-        concept-batches (db/find-concepts-in-batches db params (:db-batch-size system))]
-    (index/bulk-index {:system (:indexer system)} concept-batches)))
-
+        concept-batches (db/find-concepts-in-batches db params (:db-batch-size system))
+        num-collections (index/bulk-index {:system (:indexer system)} concept-batches)]
+    (info "Indexed" num-collections "collection(s) for provider" provider-id)))
 
 (defn- unindex-provider
   "Remove all records from elastic related to the given provider including indexes."
