@@ -25,8 +25,10 @@
            oracle.sql.TIMESTAMPTZ))
 
 (def INITIAL_CONCEPT_NUM
-  "The number to use as the numeric value for the first concept."
-  1000000000)
+  "The number to use as the numeric value for the first concept. Chosen to be larger than the current
+  largest sequence in Catalog REST in operations which is 1005488460 as of this writing."
+  1200000000)
+
 
 (def EXPIRED_CONCEPTS_BATCH_SIZE
   "The batch size to retrieve expired concepts"
