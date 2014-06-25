@@ -97,6 +97,8 @@
 (defmethod search-results->response :echo10
   [context results result-type pretty]
   (let [{:keys [hits took references]} results
+        echo10 (references->format context references :echo10)
+        _ (println (str "ECHO10: " (vec echo10)))
         xml-fn (if pretty x/indent-str x/emit-str)]
     (xml-fn
       (x/element :results {}
