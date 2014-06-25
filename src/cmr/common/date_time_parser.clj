@@ -44,9 +44,20 @@
       (catch IllegalArgumentException e
         (msg/data-error :invalid-data msg/invalid-msg type value (.getMessage e))))))
 
-(def parse-datetime
+(defn- truncate-ms
+  "Some dates from providers can contain additional fractional seconds more accurate than a single
+  millisecond. This detects if they're present and truncates them so the date can be parsed."
+  [^String value]
+  (if-let [[_ fractional-secs] (re-matches #"^.*\d\.(\d\d\d\d+)" value)]
+    (let [extra-length (- (count fractional-secs) 3)]
+      (.substring value 0 (- (count value) extra-length)))
+    value))
+
+(defn parse-datetime
   "Parses date times of one of the formats as specified in datetime-regex->formatter"
-  (make-parser :datetime datetime-regex->formatter))
+  [value]
+  (let [parser-fn (make-parser :datetime datetime-regex->formatter)]
+    (parser-fn (truncate-ms value))))
 
 (def parse-time
   "Parses times of one of the formats as specified in time-regex->formatter"
