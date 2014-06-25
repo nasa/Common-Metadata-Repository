@@ -83,9 +83,13 @@
 
 (defmethod reference+echo10->xml-element :granule
   [reference echo10-xml]
-  (let [{:keys [concept-id parent-collection-id]} reference]
+  (println (str "REF: " reference))
+  (let [{:keys [concept-id]} reference
+        matcher (re-matcher #"<DataSetId>(.*?)<\/DataSetId>" echo10-xml)
+        match (re-find matcher)
+        dataset-id (last (re-groups matcher))]
     (x/element :result
-               {:echo_granule_id concept-id :echo_dataset_id parent-collection-id}
+               {:echo_granule_id concept-id :echo_dataset_id dataset-id}
                echo10-xml)))
 
 (defmethod reference+echo10->xml-element :collection
