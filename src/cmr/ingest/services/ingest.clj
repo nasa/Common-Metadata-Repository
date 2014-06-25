@@ -8,8 +8,7 @@
             [cmr.common.services.errors :as serv-errors]
             [cmr.common.services.messages :as cmsg]
             [cmr.common.date-time-parser :as p]
-            [cmr.umm.echo10.collection :as c]
-            [cmr.umm.echo10.granule :as g]
+            [cmr.umm.core :as umm]
             [clojure.string :as string]
             [cmr.system-trace.core :refer [deftracefn]]))
 
@@ -20,7 +19,7 @@
 
 (defmethod add-extra-fields :collection
   [context concept]
-  (let [collection (c/parse-collection (:metadata concept))
+  (let [collection (umm/parse-concept concept)
         {{:keys [short-name version-id]} :product
          {:keys [delete-time]} :data-provider-timestamps
          entry-title :entry-title} collection]
@@ -31,7 +30,7 @@
 
 (defmethod add-extra-fields :granule
   [context concept]
-  (let [granule (g/parse-granule (:metadata concept))
+  (let [granule (umm/parse-concept concept)
         {:keys [collection-ref granule-ur]
          {:keys [delete-time]} :data-provider-timestamps} granule
         params (merge {:provider-id (:provider-id concept)} collection-ref)
