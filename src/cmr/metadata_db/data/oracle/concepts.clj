@@ -265,6 +265,7 @@
                       table (tables/get-table-name provider-id concept-type)
                       conditions [`(>= :id ~start-index)
                                   `(< :id ~(+ start-index batch-size))]
+                      _ (debug "Finding batch from id >=" start-index " and id <" (+ start-index batch-size))
                       conditions (if (empty? params)
                                    conditions
                                    (cons (find-params->sql-clause params) conditions))
@@ -276,7 +277,6 @@
                         batch-result))))
             (lazy-find
               [start-index]
-              (debug "Finding batch from" start-index)
               (let [batch (find-batch start-index)]
                 (when-not (empty? batch)
                   (cons batch (lazy-seq (lazy-find (+ start-index batch-size)))))))]
