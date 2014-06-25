@@ -34,7 +34,9 @@
   "Convert a batch of concepts into elastic docs for bulk indexing."
   [context concept-batch]
   ;; we only handle ECHO10 format right now
-  (let [concept-batch (filterv #(#{"ECHO10"} (:format %)) concept-batch)]
+  (let [parseable-batch (filterv #(#{"ECHO10"} (:format %)) concept-batch)
+        num-skipped (- (count concept-batch) (count parseable-batch))]
+    (debug "Skipping" num-skipped "concepts that are not in a supported format.")
     (doall
       ;; Remove nils because some granules may fail with an exception and return nil.
       (filter identity
@@ -50,7 +52,7 @@
                         (catch Exception e
                           (error e (str "Exception trying to convert concept to elastic doc:"
                                         (pr-str concept))))))
-                    concept-batch)))))
+                    parseable-batch)))))
 
 (deftracefn bulk-index
   "Index many concepts at once using the elastic bulk api. The concepts to be indexed are passed
