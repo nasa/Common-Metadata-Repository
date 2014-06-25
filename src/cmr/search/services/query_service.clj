@@ -97,9 +97,9 @@
        (execute-query context)))
 
 (defn append-result-format
-  "Append result-format to query and returns the query"
-  [result-format query]
-  (assoc query :result-format result-format))
+  "Append result-format to params and return them"
+  [result-format params]
+  (assoc params :result-format result-format))
 
 (deftracefn find-concepts-by-parameters
   "Executes a search for concepts using the given parameters. The concepts will be returned with
@@ -119,8 +119,8 @@
          (lp/process-legacy-multi-params-conditions concept-type)
          (lp/replace-science-keywords-or-option concept-type)
          (pv/validate-parameters concept-type)
-         (p/parameters->query concept-type)
          (append-result-format result-format)
+         (p/parameters->query concept-type)
          (find-concepts-by-query context))))
 
 

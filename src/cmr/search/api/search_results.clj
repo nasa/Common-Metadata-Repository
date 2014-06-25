@@ -7,7 +7,8 @@
             [clojure.data.xml :as x]
             [clojure.set :as set]
             [clojure.data.csv :as csv]
-            [cmr.search.models.results :as r])
+            [cmr.search.models.results :as r]
+            [cmr.transmit.transformer :as t])
   (:import
     [java.io StringWriter]))
 
@@ -20,7 +21,7 @@
    "application/json" :json
    "application/xml" :xml
    "text/csv" :csv
-   "application/echo10+xml"})
+   "application/echo10+xml" :echo10})
 
 (defn mime-type->format
   "Converts a mime-type into the format requested."
@@ -44,11 +45,11 @@
       :bad-request (format "The mime type [%s] is not supported for search results." mime-type))))
 
 (defmulti search-results->response
-  (fn [results result-type pretty]
+  (fn [context results result-type pretty]
     result-type))
 
 (defmethod search-results->response :json
-  [results result-type pretty]
+  [context results result-type pretty]
   (let [{:keys [hits took references]} results
         response-refs (map #(set/rename-keys % {:concept-id :id}) references)
         response-results (r/->Results hits took response-refs)]
@@ -64,8 +65,14 @@
                (x/element :location {} location)
                (x/element :revision-id {} (str revision-id)))))
 
+(defn- references->format
+  "Converts search result references into the desired format"
+  [context references format]
+  (let [tuples (map #(vector (:concept-id %) (:revision-id %)) references)]
+    (t/get-formatted-concept-revisions context tuples format)))
+
 (defmethod search-results->response :xml
-  [results result-typ pretty]
+  [context results result-typ pretty]
   (let [{:keys [hits took references]} results
         xml-fn (if pretty x/indent-str x/emit-str)]
     (xml-fn
@@ -79,7 +86,7 @@
   ["Granule UR","Producer Granule ID","Start Time","End Time","Online Access URLs","Browse URLs","Cloud Cover","Day/Night","Size"])
 
 (defmethod search-results->response :csv
-  [results result-type pretty]
+  [context results result-type pretty]
   (let [{:keys [hits took references]} results
         response-refs (conj references CSV_HEADER)
         string-writer (StringWriter.)]
@@ -88,7 +95,7 @@
 
 ;; TODO - CHANGE THIS FOR ECHO10
 (defmethod search-results->response :echo10
-  [results result-type pretty]
+  [context results result-type pretty]
   (let [{:keys [hits took references]} results
         xml-fn (if pretty x/indent-str x/emit-str)]
     (xml-fn

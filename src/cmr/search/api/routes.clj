@@ -41,7 +41,7 @@
                   (:hits results) (name concept-type) (:took results) result-format (pr-str params)))
     {:status 200
      :headers {"Content-Type" (str (sr/format->mime-type result-format) "; charset=utf-8")}
-     :body (sr/search-results->response results result-format pretty?)}))
+     :body (sr/search-results->response context results result-format pretty?)}))
 
 (defn- find-concept-by-cmr-concept-id
   "Invokes query service to find concept metadata by cmr concept id and returns the response"
