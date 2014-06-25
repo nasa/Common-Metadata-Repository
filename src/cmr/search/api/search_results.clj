@@ -19,7 +19,8 @@
   {"*/*" default-search-result-format
    "application/json" :json
    "application/xml" :xml
-   "text/csv" :csv})
+   "text/csv" :csv
+   "application/echo10+xml"})
 
 (defn mime-type->format
   "Converts a mime-type into the format requested."
@@ -32,7 +33,8 @@
 (def format->mime-type
   {:json "application/json"
    :xml "application/xml"
-   :csv "text/csv"})
+   :csv "text/csv"
+   :echo10 "application/echo10+xml"})
 
 (defn validate-search-result-mime-type
   "Validates the requested search result mime type."
@@ -83,4 +85,16 @@
         string-writer (StringWriter.)]
     (csv/write-csv string-writer response-refs)
     (str string-writer)))
+
+;; TODO - CHANGE THIS FOR ECHO10
+(defmethod search-results->response :echo10
+  [results result-type pretty]
+  (let [{:keys [hits took references]} results
+        xml-fn (if pretty x/indent-str x/emit-str)]
+    (xml-fn
+      (x/element :results {}
+                 (x/element :hits {} (str hits))
+                 (x/element :took {} (str took))
+                 (x/->Element :references {}
+                              (map reference->xml-element references))))))
 
