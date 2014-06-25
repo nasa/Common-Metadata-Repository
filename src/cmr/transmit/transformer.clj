@@ -4,7 +4,6 @@
             [cmr.common.services.errors :as errors]
             [cmr.transmit.config :as config]
             [cheshire.core :as cheshire]
-            [clojure.walk :as walk]
             [cmr.system-trace.http :as ch]
             [cmr.system-trace.core :refer [deftracefn]]
             [cmr.transmit.connection :as conn]))
