@@ -3,7 +3,7 @@
   (:require [clojure.string :as s]
             [clj-time.format :as f]
             [cmr.indexer.services.index-service :as idx]
-            [cmr.umm.echo10.granule :as granule]
+            [cmr.umm.core :as umm]
             [cmr.umm.echo10.related-url :as ru]
             [cmr.transmit.metadata-db :as mdb]
             [cmr.common.log :refer (debug info warn error)]
@@ -14,16 +14,12 @@
             [cmr.indexer.services.concepts.spatial :as spatial]
             [cmr.common.cache :as cache]))
 
-(defmethod idx/parse-concept :granule
-  [concept]
-  (granule/parse-granule (:metadata concept)))
-
 (defn- fetch-parent-collection
   "Retrieve the parent collection umm from the db"
   [context parent-collection-id]
   (let [parent-collection-cache (get-in context [:system :parent-collection-cache])
         concept (mdb/get-latest-concept context parent-collection-id)]
-    (assoc (idx/parse-concept concept) :concept-id parent-collection-id)))
+    (assoc (umm/parse-concept concept) :concept-id parent-collection-id)))
 
 (defn- get-parent-collection
   [context parent-collection-id]

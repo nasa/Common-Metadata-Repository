@@ -3,15 +3,10 @@
   (:require [clojure.string :as s]
             [clj-time.format :as f]
             [cmr.indexer.services.index-service :as idx]
-            [cmr.umm.echo10.collection :as collection]
             [cmr.umm.echo10.related-url :as ru]
             [cmr.indexer.services.concepts.temporal :as temporal]
             [cmr.indexer.services.concepts.attribute :as attrib]
             [cmr.indexer.services.concepts.science-keyword :as sk]))
-
-(defmethod idx/parse-concept :collection
-  [concept]
-  (collection/parse-collection (:metadata concept)))
 
 (defmethod idx/concept->elastic-doc :collection
   [context concept umm-concept]

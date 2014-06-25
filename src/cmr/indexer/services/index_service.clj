@@ -7,18 +7,12 @@
             [cmr.transmit.metadata-db :as meta-db]
             [clojurewerkz.elastisch.rest.bulk :as bulk]
             [cmr.indexer.data.elasticsearch :as es]
-            [cmr.umm.echo10.collection :as collection]
-            [cmr.umm.echo10.granule :as granule]
+            [cmr.umm.core :as umm]
             [cheshire.core :as cheshire]
             [cmr.indexer.data.index-set :as idx-set]
             [cmr.common.cache :as cache]
             [cmr.common.services.errors :as errors]
             [cmr.system-trace.core :refer [deftracefn]]))
-
-(defmulti parse-concept
-  "Returns the UMM model of the concept by parsing its metadata field"
-  (fn [concept]
-    (cs/concept-id->type (:concept-id concept))))
 
 (defmulti concept->elastic-doc
   "Returns elastic json that can be used to insert into Elasticsearch for the given concept"
@@ -42,7 +36,7 @@
       (filter identity
               (pmap (fn [concept]
                       (try
-                        (let [umm-concept (parse-concept concept)
+                        (let [umm-concept (umm/parse-concept concept)
                               concept-id (:concept-id concept)
                               revision-id (:revision-id concept)
                               index-name (idx-set/get-concept-index-name context concept-id revision-id concept)
@@ -74,7 +68,7 @@
   (let [concept-type (cs/concept-id->type concept-id)
         concept-mapping-types (idx-set/get-concept-mapping-types context)
         concept (meta-db/get-concept context concept-id revision-id)
-        umm-concept (parse-concept concept)
+        umm-concept (umm/parse-concept concept)
         delete-time (get-in umm-concept [:data-provider-timestamps :delete-time])
         ttl (when delete-time (t/in-millis (t/interval (t/now) delete-time)))
         concept-index (idx-set/get-concept-index-name context concept-id revision-id concept)
