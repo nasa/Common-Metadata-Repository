@@ -96,10 +96,15 @@
        (simplify-query context)
        (execute-query context)))
 
+(defn append-result-format
+  "Append result-format to query and returns the query"
+  [result-format query]
+  (assoc query :result-format result-format))
+
 (deftracefn find-concepts-by-parameters
   "Executes a search for concepts using the given parameters. The concepts will be returned with
   concept id and native provider id."
-  [context concept-type params]
+  [context concept-type params result-format]
   (let [params (-> params
                    u/map-keys->kebab-case
                    (update-in [:options] u/map-keys->kebab-case)
@@ -115,6 +120,7 @@
          (lp/replace-science-keywords-or-option concept-type)
          (pv/validate-parameters concept-type)
          (p/parameters->query concept-type)
+         (append-result-format result-format)
          (find-concepts-by-query context))))
 
 
