@@ -8,6 +8,7 @@
             [clojure.data.xml :as x]
             [clojure.set :as set]
             [clojure.data.csv :as csv]
+            [clojure.string :as s]
             [cmr.search.models.results :as r]
             [cmr.transmit.transformer :as t])
   (:import
@@ -66,6 +67,15 @@
                (x/element :location {} location)
                (x/element :revision-id {} (str revision-id)))))
 
+(defn- remove-xml-processing-instructions
+  "Removes xml processing instructions from XML so it can be embedded in another XML document"
+  [xml]
+  (let [processing-regex #"<\?.*?\?>"
+        doctype-regex #"<!DOCTYPE.*?>"]
+    (-> xml
+        (s/replace processing-regex "")
+        (s/replace doctype-regex ""))))
+
 (defmulti reference+echo10->xml-element
   "Converts a search result + echo10 data into an XML element"
   (fn [reference echo10-xml]
@@ -123,6 +133,7 @@
                  (x/element :hits {} (str hits))
                  (x/element :took {} (str took))
                  (map (fn [reference echo10-xml]
-                        (reference+echo10->xml-element reference echo10-xml))
+                        (reference+echo10->xml-element reference
+                                                       (remove-xml-processing-instructions echo10-xml)))
                       references echo10)))))
 
