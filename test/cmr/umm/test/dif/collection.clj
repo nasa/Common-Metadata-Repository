@@ -15,7 +15,8 @@
             [cmr.umm.dif.collection :as c]
             [cmr.umm.echo10.collection :as echo10-c]
             [cmr.umm.echo10.core :as echo10]
-            [cmr.umm.collection :as umm-c]))
+            [cmr.umm.collection :as umm-c]
+            [cmr.umm.dif.core :as dif]))
 
 (def NON_CONFORMANT_FIELDS
   "Fields that are lossy when converting from DIF to ECHO10 format"
@@ -30,20 +31,20 @@
 
 (defspec generate-collection-is-valid-xml-test 100
   (for-all [collection coll-gen/dif-collections]
-    (let [xml (c/umm->dif-xml collection)]
+    (let [xml (dif/umm->dif-xml collection)]
       (and
         (> (count xml) 0)
         (= 0 (count (c/validate-xml xml)))))))
 
 (defspec generate-and-parse-collection-test 100
   (for-all [collection coll-gen/dif-collections]
-    (let [xml (c/umm->dif-xml collection)
+    (let [xml (dif/umm->dif-xml collection)
           parsed (c/parse-collection xml)]
       (= parsed collection))))
 
 (defspec generate-and-parse-collection-between-formats-test 100
   (for-all [collection coll-gen/dif-collections]
-    (let [xml (c/umm->dif-xml collection)
+    (let [xml (dif/umm->dif-xml collection)
           parsed-dif (c/parse-collection xml)
           ;; add the required InsertTime and LastUpdate for ECHO10 schema validation
           data-provider-timestamps (first (gen/sample coll-gen/data-provider-timestamps 1))
