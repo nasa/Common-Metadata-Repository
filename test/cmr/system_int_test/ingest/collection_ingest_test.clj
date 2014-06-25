@@ -61,7 +61,7 @@
 (deftest old-delete-time-collection-ingest-test
   (let [coll (dc/collection {:delete-time "2000-01-01T12:00:00Z"})
         {:keys [status errors]} (ingest/ingest-concept
-                                  (d/item->concept (assoc coll :provider-id "PROV1")))]
+                                  (d/item->concept (assoc coll :provider-id "PROV1") :echo10))]
     (is (= status 400))
     (is (re-find #"DeleteTime 2000-01-01T12:00:00.000Z is before the current time." (first errors)))))
 
@@ -101,7 +101,7 @@
     (index/refresh-elastic-index)
 
     ;; delete collection
-    (is (= 200 (:status (ingest/delete-concept (d/item->concept coll1)))))
+    (is (= 200 (:status (ingest/delete-concept (d/item->concept coll1 :echo10)))))
     (index/refresh-elastic-index)
 
     (is (:deleted (ingest/get-concept (:concept-id coll1))) "The collection should be deleted")
