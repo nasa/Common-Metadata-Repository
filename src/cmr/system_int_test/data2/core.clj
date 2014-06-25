@@ -1,10 +1,9 @@
 (ns cmr.system-int-test.data2.core
   "Contains helper functions for data generation and ingest for example based testing in system
   integration tests."
-  (:require [cmr.umm.echo10.collection :as umm-c]
-            [clojure.test :refer [is]]
-            [cmr.umm.echo10.granule :as umm-g]
-            [cmr.umm.echo10.core :as echo10]
+  (:require [clojure.test :refer [is]]
+            [cmr.umm.core :as umm]
+            [cmr.common.mime-types :as mime-types]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.url-helper :as url]
             [clj-time.core :as t]
@@ -41,26 +40,31 @@
 
 (defn item->concept
   "Converts an UMM item to a concept map. Expects provider-id to be in the item"
-  [item]
-  (merge {:concept-type (item->concept-type item)
-          :provider-id (:provider-id item)
-          :native-id (item->native-id item)
-          :metadata (echo10/umm->echo10-xml item)
-          :format "application/echo10+xml"}
-         (when (:concept-id item)
-           {:concept-id (:concept-id item)})
-         (when (:revision-id item)
-           {:revision-id (:revision-id item)})))
+  [item format-key]
+  (let [format (mime-types/format->mime-type format-key)]
+    (merge {:concept-type (item->concept-type item)
+            :provider-id (:provider-id item)
+            :native-id (item->native-id item)
+            :metadata (umm/umm->xml item format-key)
+            :format format}
+           (when (:concept-id item)
+             {:concept-id (:concept-id item)})
+           (when (:revision-id item)
+             {:revision-id (:revision-id item)}))))
 
 (defn ingest
   "Ingests the catalog item. Returns it with concept-id, revision-id, and provider-id set on it."
-  [provider-id item]
-  (let [response (ingest/ingest-concept (item->concept (assoc item :provider-id provider-id)))]
-    (is (= 200 (:status response)))
-    (assoc item
-           :provider-id provider-id
-           :concept-id (:concept-id response)
-           :revision-id (:revision-id response))))
+  ([provider-id item]
+   (ingest provider-id item :echo10))
+  ([provider-id item format-key]
+   (let [response (ingest/ingest-concept
+                    (item->concept (assoc item :provider-id provider-id) format-key))]
+     (is (= 200 (:status response))
+         (pr-str response))
+     (assoc item
+            :provider-id provider-id
+            :concept-id (:concept-id response)
+            :revision-id (:revision-id response)))))
 
 (defn item->ref
   "Converts an item into the expected reference"
