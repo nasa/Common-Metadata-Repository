@@ -4,6 +4,7 @@
   (:require [cheshire.core :as json]
             [pantomime.media :as mt]
             [cmr.common.services.errors :as errors]
+            [cmr.common.concepts :as ct]
             [clojure.data.xml :as x]
             [clojure.set :as set]
             [clojure.data.csv :as csv]
@@ -65,6 +66,25 @@
                (x/element :location {} location)
                (x/element :revision-id {} (str revision-id)))))
 
+(defmulti reference+echo10->xml-element
+  "Converts a search result + echo10 data into an XML element"
+  (fn [reference echo10-xml]
+    (ct/concept-id->type (:concept-id reference))))
+
+(defmethod reference+echo10->xml-element :granule
+  [reference echo10-xml]
+  (let [{:keys [concept-id parent-collection-id]} reference]
+    (x/element :result
+               {:echo_granule_id concept-id :echo_dataset_id parent-collection-id}
+               echo10-xml)))
+
+(defmethod reference+echo10->xml-element :collection
+  [reference echo10-xml]
+  (let [{:keys [concept-id]} reference]
+    (x/element :result
+               {:echo_dataset_id concept-id}
+               echo10-xml)))
+
 (defn- references->format
   "Converts search result references into the desired format"
   [context references format]
@@ -93,17 +113,16 @@
     (csv/write-csv string-writer response-refs)
     (str string-writer)))
 
-;; TODO - CHANGE THIS FOR ECHO10
 (defmethod search-results->response :echo10
   [context results result-type pretty]
   (let [{:keys [hits took references]} results
         echo10 (references->format context references :echo10)
-        _ (println (str "ECHO10: " (vec echo10)))
         xml-fn (if pretty x/indent-str x/emit-str)]
     (xml-fn
       (x/element :results {}
                  (x/element :hits {} (str hits))
                  (x/element :took {} (str took))
-                 (x/->Element :references {}
-                              (map reference->xml-element references))))))
+                 (map (fn [reference echo10-xml]
+                        (reference+echo10->xml-element reference echo10-xml))
+                      references echo10)))))
 
