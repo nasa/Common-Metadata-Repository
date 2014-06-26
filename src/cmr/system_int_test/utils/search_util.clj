@@ -88,6 +88,8 @@
                 :metadata (x/emit-str inner-elem)}))
            (cx/elements-at-path parsed [:result])))))
 
+;; TODO change this to retrieve references in XML.
+;; TODO also remove the JSON search response that we support. That should really be atom json
 (defn find-refs
   "Returns the references that are found by searching with the input params"
   [concept-type params & no-snake-kebab]

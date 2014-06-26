@@ -24,7 +24,9 @@
     (testing "retrieval by granule cmr-concept-id returns the latest revision."
       (let [response (search/get-concept-by-concept-id (:concept-id gran1))
             parsed-granule (g/parse-granule (:body response))]
-        (is (= umm-gran parsed-granule))))
+        (is (= (dissoc umm-gran
+                       :collection-concept-id)
+               parsed-granule))))
     (testing "retrieval by granule cmr-concept-id, not found."
       (let [response (search/get-concept-by-concept-id "G1111-CMR_PROV1")]
         (is (= 404 (:status response)))

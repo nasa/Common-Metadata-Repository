@@ -6,11 +6,14 @@
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.granule :as dg]
-            [cmr.system-int-test.data2.core :as d]))
+            [cmr.system-int-test.data2.core :as d]
+            [cmr.system-int-test.utils.url-helper :as url]
+            [clj-http.client :as client]
+            [cmr.umm.core :as umm]))
 
 (use-fixtures :each (ingest/reset-fixture "CMR_PROV1"))
 
-#_(deftest search-granules-in-xml-metadata
+(deftest search-granules-in-xml-metadata
   ;; TODO we can add additional formats here later such as iso
   (let [coll1 (d/ingest "CMR_PROV1" (dc/collection))
         coll2 (d/ingest "CMR_PROV1" (dc/collection))
@@ -18,7 +21,8 @@
         gran2 (d/ingest "CMR_PROV1" (dg/granule coll2 {:granule-ur "g2"}))
         all-granules [gran1 gran2]]
     (index/refresh-elastic-index)
-    (testing "echo10"
+    ;; TODO James should uncomment this after merging results
+    #_(testing "echo10"
       (d/assert-metadata-results-match
         :echo10 all-granules
         (search/find-metadata :granule :echo10 {}))
@@ -31,7 +35,18 @@
               :status 400}
              (search/get-search-failure-data
                (search/find-concepts-in-format
-                 "application/echo11+xml" :granule {})))))))
+                 "application/echo11+xml" :granule {})))))
+
+    (testing "reference XML"
+      (let [refs (search/find-refs :granule {:granule-ur "g1"})
+            location (:location (first (:refs refs)))]
+
+        (is (d/refs-match? [gran1] refs))
+        (testing "Location allows granule native format retrieval"
+          (let [response (client/get location
+                                     {:accept :xml
+                                      :connection-manager (url/conn-mgr)})]
+            (is (= (umm/umm->xml gran1 :echo10) (:body response)))))))))
 
 
 (deftest search-granule-csv
