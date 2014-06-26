@@ -2,7 +2,7 @@
   "Provide functions to parse and generate DIF Extended_Meatadata elements."
   (:require [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
-            [cmr.umm.echo10.collection.product-specific-attribute :as echo10]))
+            [cmr.umm.collection.product-specific-attribute :as psa]))
 
 (defn- string-value-with-attr
   "Returns the string value of the first element with the given attribute"
@@ -10,14 +10,14 @@
   (when-let [elem (first (filter #(= (name attr) (get-in % [:attrs :type])) elements))]
     (str (first (:content elem)))))
 
-(defn xml-elem->simple-extended-metadata
+(defn- xml-elem->simple-extended-metadata
   [extended-elem]
   (let [name (cx/string-at-path extended-elem [:Name])
         value (cx/string-at-path extended-elem [:Value])]
     {:name name
      :value value}))
 
-(defn xml-elem->psa-extended-metadata
+(defn- xml-elem->psa-extended-metadata
   "Returns the METADATA fields that we are interested in string format in a map."
   [extended-elem]
   (let [group (cx/string-at-path extended-elem [:Group])
@@ -34,7 +34,7 @@
      :data-type data-type
      :value {:begin begin :end end :value value}}))
 
-(defn xml-elem->extended-metadata
+(defn- xml-elem->extended-metadata
   "Returns the METADATA fields that we are interested in string format in a map."
   [extended-elem is-psa]
   (if is-psa
@@ -67,12 +67,12 @@
                  (x/element :Group {} "AdditionalAttribute")
                  (x/element :Name {} name)
                  (when description (x/element :Description {} description))
-                 (x/element :Type {} (echo10/gen-data-type data-type))
+                 (x/element :Type {} (psa/gen-data-type data-type))
                  (when-not (nil? parameter-range-begin) (x/element :Value {:type "ParamRangeBegin"}
-                                                        (echo10/gen-value data-type parameter-range-begin)))
+                                                        (psa/gen-value data-type parameter-range-begin)))
                  (when-not (nil? parameter-range-end) (x/element :Value {:type "ParamRangeEnd"}
-                                                      (echo10/gen-value data-type parameter-range-end)))
-                 (when-not (nil? value) (x/element :Value {:type "Value"} (echo10/gen-value data-type value)))))))
+                                                      (psa/gen-value data-type parameter-range-end)))
+                 (when-not (nil? value) (x/element :Value {:type "Value"} (psa/gen-value data-type value)))))))
 
 (defn generate-extended-metadatas
   "Generate the Extended_Metadatas, is-psa indicates if the Extended_Metadata is for AdditionalAttribute."
@@ -82,9 +82,3 @@
                (if is-psa
                  (generate-psa extended-metadatas)
                  (generate-simple extended-metadatas)))))
-
-
-(comment
-  (echo10/gen-value :date (org.joda.time.DateTime. 28027314))
-
-  )

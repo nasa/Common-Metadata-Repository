@@ -1,13 +1,6 @@
 (ns cmr.umm.dif.collection.product-specific-attribute
-  (:require [clojure.data.xml :as x]
-            [clojure.string :as str]
-            [cmr.common.xml :as cx]
-            [cmr.umm.collection :as c]
-            [clj-time.format :as f]
-            [camel-snake-kebab :as csk]
-            [cmr.common.services.errors :as errors]
-            [cmr.umm.generator-util :as gu]
-            [cmr.umm.echo10.collection.product-specific-attribute :as echo10]
+  (:require [cmr.umm.collection :as c]
+            [cmr.umm.collection.product-specific-attribute :as psa]
             [cmr.umm.dif.collection.extended-metadata :as em]))
 
 (def ADDITIONAL_ATTRIBUTE_EXTERNAL_META_NAME
@@ -23,14 +16,14 @@
       (seq (map (fn [attr]
                   (let [{:keys [name data-type description value]} attr
                         {:keys [begin end value]} value
-                        data-type (echo10/parse-data-type data-type)]
+                        data-type (psa/parse-data-type data-type)]
                     (c/map->ProductSpecificAttribute
                       {:name name
                        :data-type data-type
                        :description description
-                       :parameter-range-begin (echo10/parse-value data-type begin)
-                       :parameter-range-end (echo10/parse-value data-type end)
-                       :value (echo10/parse-value data-type value)})))
+                       :parameter-range-begin (psa/parse-value data-type begin)
+                       :parameter-range-end (psa/parse-value data-type end)
+                       :value (psa/parse-value data-type value)})))
                 attribs)))))
 
 (defn generate-product-specific-attributes
