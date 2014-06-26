@@ -96,11 +96,6 @@
        (simplify-query context)
        (execute-query context)))
 
-(defn append-result-format
-  "Append result-format to params and return them"
-  [result-format params]
-  (assoc params :result-format result-format))
-
 (deftracefn find-concepts-by-parameters
   "Executes a search for concepts using the given parameters. The concepts will be returned with
   concept id and native provider id."
