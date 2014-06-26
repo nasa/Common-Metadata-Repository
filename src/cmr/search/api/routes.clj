@@ -18,7 +18,6 @@
   [headers]
   (let [mime-type (get headers "accept")]
     (mt/validate-request-mime-type mime-type sr/supported-mime-types)
-    (println (str "FORMAT: " (mt/mime-type->format mime-type)))
     (mt/mime-type->format mime-type)))
 
 (defn- measure-query-time

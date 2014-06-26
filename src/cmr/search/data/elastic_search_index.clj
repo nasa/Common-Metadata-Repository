@@ -163,7 +163,6 @@
   "Executes a query to find concepts. Returns concept id, native id, and revision id."
   [context query]
   (let [{:keys [page-size concept-type result-format]} query
-        _ (println (str "FORMAT: " result-format))
         e-results (send-query-to-elastic context query)
         results (rc/elastic-results->query-results context concept-type e-results result-format)]
     (debug "Elastic query took" (:took e-results) "ms")

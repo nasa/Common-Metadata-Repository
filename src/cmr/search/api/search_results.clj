@@ -55,28 +55,26 @@
         (s/replace processing-regex "")
         (s/replace doctype-regex ""))))
 
-(defmulti reference+echo10->xml-element
-  "Converts a search result + echo10 data into an XML element"
-  (fn [reference echo10-xml]
+(defmulti reference+metadata->xml-element
+  "Converts a search result + metadata into an XML element"
+  (fn [reference metadata]
     (ct/concept-id->type (:concept-id reference))))
 
-(defmethod reference+echo10->xml-element :granule
-  [reference echo10-xml]
-  (println (str "REF: " reference))
+(defmethod reference+metadata->xml-element :granule
+  [reference metadata]
   (let [{:keys [concept-id collection-concept-id revision-id]} reference]
-    (x/element :result
-               {:echo_granule_id concept-id
-                :echo_dataset_id collection-concept-id
-                :revision-id revision-id}
-               echo10-xml)))
+    (format "<result concept-id=\"%s\" collection-concept-id=\"%s\" revision-id=\"%s\">%s</result>"
+            concept-id
+            collection-concept-id
+            revision-id
+            metadata)))
 
-(defmethod reference+echo10->xml-element :collection
-  [reference echo10-xml]
+(defmethod reference+metadata->xml-element :collection
+  [reference metadata]
   (let [{:keys [concept-id]} reference]
-    (x/element :result
-               {:echo_dataset_id concept-id}
-               echo10-xml)))
-
+    (format "<result concept-id=\"%s\" revision-id=\"%s\">%s</result>"
+            concept-id
+            metadata)))
 (defn- references->format
   "Converts search result references into the desired format"
   [context references format]
@@ -108,14 +106,13 @@
 (defmethod search-results->response :echo10
   [context results result-type pretty]
   (let [{:keys [hits took references]} results
-        echo10 (references->format context references :echo10)
-        xml-fn (if pretty x/indent-str x/emit-str)]
-    (xml-fn
-      (x/element :results {}
-                 (x/element :hits {} (str hits))
-                 (x/element :took {} (str took))
-                 (map (fn [reference echo10-xml]
-                        (reference+echo10->xml-element reference
-                                                       (remove-xml-processing-instructions echo10-xml)))
-                      references echo10)))))
+        echo10 (references->format context references :echo10)]
+    (format "<?xml version=\"1.0\" encoding=\"UTF-8\"?><results><hits>%s</hits><took>%s</took>%s</results>"
+            (str hits)
+            (str took)
+            (s/join ""
+                    (map (fn [reference echo10-xml]
+                           (reference+metadata->xml-element reference
+                                                            (remove-xml-processing-instructions echo10-xml)))
+                         references echo10)))))
 
