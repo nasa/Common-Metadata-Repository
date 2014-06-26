@@ -31,7 +31,7 @@
         (search/find-metadata :granule :echo10 {:granule-ur "g1"})))
 
     (testing "invalid format"
-      (is (= {:errors ["The mime type [application/echo11+xml] is not supported for search results."],
+      (is (= {:errors ["The mime type [application/echo11+xml] is not supported."],
               :status 400}
              (search/get-search-failure-data
                (search/find-concepts-in-format
