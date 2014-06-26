@@ -46,37 +46,43 @@
   [xml]
   (xml-elem->Collection (x/parse-str xml)))
 
-(defn umm->dif-xml
-  ([collection]
-   (umm->dif-xml collection false))
-  ([collection indent?]
-   (let [{{:keys [short-name long-name version-id]} :product
-          {:keys [insert-time update-time delete-time]} :data-provider-timestamps
-          :keys [entry-title temporal organizations science-keywords platforms product-specific-attributes
-                 projects related-urls spatial-coverage]} collection
-         emit-fn (if indent? x/indent-str x/emit-str)]
-     (emit-fn
-       (x/element :DIF {:xmlns "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
-                        :xmlns:dif "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
-                        :xmlns:xsi "http://www.w3.org/2001/XMLSchema-instance"
-                        :xsi:schemaLocation "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.8.4.xsd"}
-                  (x/element :Entry_ID {} short-name)
-                  (x/element :Entry_Title {} entry-title)
-                  (when version-id
-                    (x/element :Data_Set_Citation {}
-                               (x/element :Version {} version-id)))
-                  (sk/generate-science-keywords science-keywords)
-                  (t/generate-temporal temporal)
-                  (when-not (empty? projects)
-                    (pj/generate-projects projects))
-                  (org/generate-data-center organizations)
-                  (x/element :Summary {} (x/element :Abstract {} "dummy"))
-                  (when-not (empty? related-urls)
-                    (ru/generate-related-urls related-urls))
-                  (x/element :Metadata_Name {} "dummy")
-                  (x/element :Metadata_Version {} "dummy")
-                  (sc/generate-spatial-coverage spatial-coverage)
-                  (psa/generate-product-specific-attributes product-specific-attributes))))))
+(def dif-header-attributes
+  "The set of attributes that go on the dif root element"
+  {:xmlns "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+   :xmlns:dif "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+   :xmlns:xsi "http://www.w3.org/2001/XMLSchema-instance"
+   :xsi:schemaLocation "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.8.4.xsd"})
+
+(extend-protocol cmr.umm.dif.core/UmmToDifXml
+  UmmCollection
+  (umm->dif-xml
+    ([collection]
+     (cmr.umm.dif.core/umm->dif-xml collection false))
+    ([collection indent?]
+     (let [{{:keys [short-name long-name version-id]} :product
+            {:keys [insert-time update-time delete-time]} :data-provider-timestamps
+            :keys [entry-title temporal organizations science-keywords platforms product-specific-attributes
+                   projects related-urls spatial-coverage]} collection
+           emit-fn (if indent? x/indent-str x/emit-str)]
+       (emit-fn
+         (x/element :DIF dif-header-attributes
+                    (x/element :Entry_ID {} short-name)
+                    (x/element :Entry_Title {} entry-title)
+                    (when version-id
+                      (x/element :Data_Set_Citation {}
+                                 (x/element :Version {} version-id)))
+                    (sk/generate-science-keywords science-keywords)
+                    (t/generate-temporal temporal)
+                    (when-not (empty? projects)
+                      (pj/generate-projects projects))
+                    (org/generate-data-center organizations)
+                    (x/element :Summary {} (x/element :Abstract {} "dummy"))
+                    (when-not (empty? related-urls)
+                      (ru/generate-related-urls related-urls))
+                    (x/element :Metadata_Name {} "dummy")
+                    (x/element :Metadata_Version {} "dummy")
+                    (sc/generate-spatial-coverage spatial-coverage)
+                    (psa/generate-product-specific-attributes product-specific-attributes)))))))
 
 (defn validate-xml
   "Validates the XML against the DIF schema."
