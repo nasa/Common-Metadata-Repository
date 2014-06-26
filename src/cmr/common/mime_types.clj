@@ -11,7 +11,8 @@
    "application/iso_prototype+xml" :iso-prototype
    "application/iso:smap+xml" :iso-smap
    "application/iso19115+xml" :iso19115
-   "application/dif+xml" :dif})
+   "application/dif+xml" :dif
+   "text/csv" :csv})
 
 (def format->mime-type
   {:json "application/json"
@@ -20,14 +21,20 @@
    :iso-prototype "application/iso_prototype+xml"
    :iso-smap "application/iso:smap+xml"
    :iso19115 "application/iso19115+xml"
-   :dif "application/dif+xml"})
+   :dif "application/dif+xml"
+   :csv "text/cvs"})
 
 (defn mime-type->format
   "Converts a mime-type into the format requested."
-  [mime-type]
-  (when mime-type
-    (get base-mime-type-to-format
-         (str (mt/base-type (mt/parse mime-type))))))
+  ([mime-type]
+   (mime-type->format mime-type :json))
+  ([mime-type default]
+   (if mime-type
+     (if-let [format (get base-mime-type-to-format
+                          (str (mt/base-type (mt/parse mime-type))))]
+       format
+       default)
+     default)))
 
 (defn validate-request-mime-type
   "Validates the requested mime type is supported."
