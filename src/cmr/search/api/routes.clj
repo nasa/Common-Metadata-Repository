@@ -35,10 +35,11 @@
   "Invokes query service to find references and returns the response"
   [context concept-type params headers query-string]
   (let [result-format (get-search-results-format headers)
+        params (assoc params :result-format result-format)
         pretty? (= (get params :pretty) "true")
         _ (info (format "Searching for %ss in format %s with params %s." (name concept-type) result-format (pr-str params)))
         search-params (lp/process-legacy-psa (dissoc params :pretty) query-string)
-        results (measure-query-time #(query-svc/find-concepts-by-parameters context concept-type search-params result-format))]
+        results (measure-query-time #(query-svc/find-concepts-by-parameters context concept-type search-params))]
     (info (format "Found %d %ss in %d ms in format %s with params %s."
                   (:hits results) (name concept-type) (:took results) result-format (pr-str params)))
     {:status 200

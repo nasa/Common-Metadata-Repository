@@ -104,7 +104,7 @@
 (deftracefn find-concepts-by-parameters
   "Executes a search for concepts using the given parameters. The concepts will be returned with
   concept id and native provider id."
-  [context concept-type params result-format]
+  [context concept-type params]
   (let [params (-> params
                    u/map-keys->kebab-case
                    (update-in [:options] u/map-keys->kebab-case)
@@ -119,7 +119,6 @@
          (lp/process-legacy-multi-params-conditions concept-type)
          (lp/replace-science-keywords-or-option concept-type)
          (pv/validate-parameters concept-type)
-         (append-result-format result-format)
          (p/parameters->query concept-type)
          (find-concepts-by-query context))))
 
