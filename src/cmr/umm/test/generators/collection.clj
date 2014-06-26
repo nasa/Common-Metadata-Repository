@@ -133,6 +133,9 @@
               (ext-gen/optional processing-center-organizations)
               (ext-gen/optional archive-center-organizations))))
 
+;; FIXME Leo can you remove this? I don't want us to have specific generators for the types. If there
+;; are specific fields that are broken then I'd rather have a dissoc in the test where it's used
+;; with a comment about why we can't support something yet.
 (def dif-collections
   (gen/fmap (fn [[attribs]]
               (let [product (:product attribs)]

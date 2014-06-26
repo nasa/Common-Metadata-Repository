@@ -46,6 +46,7 @@
   (for-all [collection coll-gen/dif-collections]
     (let [xml (dif/umm->dif-xml collection)
           parsed-dif (c/parse-collection xml)
+          ;; FIXME Leo: Remove the data-provider-timestamps. See Katie's answer to number 8 in the document.
           ;; add the required InsertTime and LastUpdate for ECHO10 schema validation
           data-provider-timestamps (first (gen/sample coll-gen/data-provider-timestamps 1))
           parsed-dif (assoc parsed-dif :data-provider-timestamps data-provider-timestamps)
