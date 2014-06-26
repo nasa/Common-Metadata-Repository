@@ -71,37 +71,41 @@
       :else
       (format "%d_c*,%d_small_collections,-%d_collections" index-set-id index-set-id index-set-id))))
 
+
+
 (defn concept-type->index-info
   "Returns index info based on input concept type. For granule concept type, it will walks through
   the query and figures out only the relevant granule index names and return those."
   [context concept-type query]
   (if (= :collection concept-type)
     {:index-name  "1_collections"
-     :type-name "collection"
-     :fields ["entry-title"
-              "provider-id"
-              "short-name"
-              "version-id"]}
+     :type-name "collection"}
     {:index-name (get-granule-indexes context query)
-     :type-name "granule"
-     :fields ["granule-ur"
-              "provider-id"]
-     :csv-fields ["granule-ur"
-                  "producer-gran-id"
-                  "start-date"
-                  "end-date"
-                  "downloadable-urls"
-                  "cloud-cover"
-                  "day-night"
-                  "size"]}))
+     :type-name "granule"}))
 
-(defn- result-format->fields-key
-  [result-format]
-  (get
-    {:json :fields
-     :xml :fields
-     :csv :csv-fields}
-    result-format))
+(def concept-type->result-format->fields
+  {:collection {:json ["entry-title"
+                       "provider-id"
+                       "short-name"
+                       "version-id"]
+                :xml ["entry-title"
+                      "provider-id"
+                      "short-name"
+                      "version-id"]
+                :echo10 []}
+   :granule {:json ["granule-ur"
+                    "provider-id"]
+             :xml ["granule-ur"
+                   "provider-id"]
+             :csv ["granule-ur"
+                   "producer-gran-id"
+                   "start-date"
+                   "end-date"
+                   "downloadable-urls"
+                   "cloud-cover"
+                   "day-night"
+                   "size"]
+             :echo10 ["collection-concept-id"]}})
 
 (defrecord ElasticSearchIndex
   [
@@ -133,7 +137,7 @@
         sort-params (q2e/query->sort-params query)
         index-info (concept-type->index-info context concept-type query)
         {:keys [index-name type-name]} index-info
-        {fields (result-format->fields-key result-format)} index-info
+        fields (get-in concept-type->result-format->fields [concept-type result-format])
         conn (context->conn context)]
     (debug "Executing against indexes [" index-name "] the elastic query:" (pr-str elastic-query))
     (if (= :unlimited page-size)

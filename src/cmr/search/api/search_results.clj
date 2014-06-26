@@ -84,12 +84,9 @@
 (defmethod reference+echo10->xml-element :granule
   [reference echo10-xml]
   (println (str "REF: " reference))
-  (let [{:keys [concept-id]} reference
-        matcher (re-matcher #"<DataSetId>(.*?)<\/DataSetId>" echo10-xml)
-        match (re-find matcher)
-        dataset-id (last (re-groups matcher))]
+  (let [{:keys [concept-id collection-concept-id]} reference]
     (x/element :result
-               {:echo_granule_id concept-id :echo_dataset_id dataset-id}
+               {:echo_granule_id concept-id :echo_dataset_id collection-concept-id}
                echo10-xml)))
 
 (defmethod reference+echo10->xml-element :collection
@@ -106,7 +103,7 @@
     (t/get-formatted-concept-revisions context tuples format)))
 
 (defmethod search-results->response :xml
-  [context results result-typ pretty]
+  [context results result-type pretty]
   (let [{:keys [hits took references]} results
         xml-fn (if pretty x/indent-str x/emit-str)]
     (xml-fn
