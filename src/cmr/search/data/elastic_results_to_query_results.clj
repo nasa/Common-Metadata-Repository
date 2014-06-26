@@ -46,12 +46,10 @@
   [context result-format name-key elastic-result]
   (let [{concept-id :_id
          revision-id :_version
-         {[name-value] name-key
-          [collection-concept-id] :collection-concept-id} :fields} elastic-result]
+         {[name-value] name-key} :fields} elastic-result]
     (results/map->Reference
       {:concept-id concept-id
        :revision-id revision-id
-       :collection-concept-id collection-concept-id
        :location (format "%s%s" (location-root context) concept-id)
        :name name-value})))
 
