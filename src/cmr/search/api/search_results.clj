@@ -23,6 +23,7 @@
     "application/xml"
     "application/json"
     "application/echo10+xml"
+    "application/dif+xml"
     "text/csv"})
 
 (defmulti search-results->response
@@ -105,16 +106,22 @@
     (csv/write-csv string-writer response-refs)
     (str string-writer)))
 
-(defmethod search-results->response :echo10
+(defn search-results->metadata-response
   [context results result-type pretty]
   (let [{:keys [hits took references]} results
-        echo10 (references->format context references :echo10)]
-    (format "<?xml version=\"1.0\" encoding=\"UTF-8\"?><results><hits>%s</hits><took>%s</took>%s</results>"
-            (str hits)
-            (str took)
-            (s/join ""
-                    (map (fn [reference echo10-xml]
-                           (reference+metadata->xml-element reference
-                                                            (remove-xml-processing-instructions echo10-xml)))
-                         references echo10)))))
+        metadatas (references->format context references result-type)]
+    (format "<?xml version=\"1.0\" encoding=\"UTF-8\"?><results><hits>%d</hits><took>%d</took>%s</results>"
+            hits took
+            (s/join "" (map reference+metadata->xml-element
+                            references
+                            (map remove-xml-processing-instructions
+                                 metadatas))))))
+
+(defmethod search-results->response :echo10
+  [context results result-type pretty]
+  (search-results->metadata-response context results result-type pretty))
+
+(defmethod search-results->response :dif
+  [context results result-type pretty]
+  (search-results->metadata-response context results result-type pretty))
 
