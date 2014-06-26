@@ -52,8 +52,7 @@
            {:entry-title "ET3"} [c3-dif]
            {:version ["V3" "V2"]} [c2-echo c3-dif]))
 
-    ;; TODO James should uncomment this after merging results
-    #_(testing "Retrieving results in echo10"
+    (testing "Retrieving results in echo10"
       (d/assert-metadata-results-match
         :echo10 all-colls
         (search/find-metadata :collection :echo10 {})))

@@ -21,8 +21,7 @@
         gran2 (d/ingest "CMR_PROV1" (dg/granule coll2 {:granule-ur "g2"}))
         all-granules [gran1 gran2]]
     (index/refresh-elastic-index)
-    ;; TODO James should uncomment this after merging results
-    #_(testing "echo10"
+    (testing "echo10"
       (d/assert-metadata-results-match
         :echo10 all-granules
         (search/find-metadata :granule :echo10 {}))
