@@ -22,7 +22,7 @@
    :iso-smap "application/iso:smap+xml"
    :iso19115 "application/iso19115+xml"
    :dif "application/dif+xml"
-   :csv "text/cvs"})
+   :csv "text/csv"})
 
 (defn mime-type->format
   "Converts a mime-type into the format requested."
