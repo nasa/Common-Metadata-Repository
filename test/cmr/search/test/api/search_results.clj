@@ -12,20 +12,21 @@
             [clojure.data.xml :as x]
             [clojure.set :as set]
             [cmr.common.xml :as cx]
+            [cmr.common.mime-types :as mt]
             [cmr.search.api.search-results :as s]
             [cmr.search.models.results :as r]
             [cmr.search.test.models.results :as results-gen]))
 
 (deftest validate-search-result-mime-type-test
   (testing "valid mime types"
-    (s/validate-search-result-mime-type "application/json")
-    (s/validate-search-result-mime-type "application/xml")
-    (s/validate-search-result-mime-type "*/*"))
+    (mt/validate-request-mime-type "application/json" s/supported-mime-types)
+    (mt/validate-request-mime-type "application/xml" s/supported-mime-types)
+    (mt/validate-request-mime-type "*/*" s/supported-mime-types))
   (testing "invalid mime types"
     (is (thrown-with-msg?
           clojure.lang.ExceptionInfo
-          #"The mime type \[application/foo\] is not supported for search results"
-          (s/validate-search-result-mime-type "application/foo")))))
+          #"The mime type \[application/foo\] is not supported."
+          (mt/validate-request-mime-type "application/foo" s/supported-mime-types)))))
 
 (defmulti parse-search-results-response
   (fn [response-str format]
@@ -67,6 +68,6 @@
   (for-all [result results-gen/results
             format (gen/elements [:json :xml])
             pretty gen/boolean]
-    (let [resp (s/search-results->response result format pretty)
+    (let [resp (s/search-results->response nil result format pretty)
           result (result-records->map result)]
       (= result (parse-search-results-response resp format)))))

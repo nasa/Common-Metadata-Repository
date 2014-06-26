@@ -2,51 +2,35 @@
   "Contains functions for validating search results requested formats and for converting to
   requested format"
   (:require [cheshire.core :as json]
-            [pantomime.media :as mt]
             [cmr.common.services.errors :as errors]
+            [cmr.common.concepts :as ct]
+            [cmr.common.mime-types :as mt]
             [clojure.data.xml :as x]
             [clojure.set :as set]
             [clojure.data.csv :as csv]
-            [cmr.search.models.results :as r])
+            [clojure.string :as s]
+            [cmr.search.models.results :as r]
+            [cmr.transmit.transformer :as t])
   (:import
     [java.io StringWriter]))
 
 
 (def default-search-result-format :json)
 
-(def base-mime-type-to-format
-  "A map of base mime types to the format symbols supported"
-  {"*/*" default-search-result-format
-   "application/json" :json
-   "application/xml" :xml
-   "text/csv" :csv})
-
-(defn mime-type->format
-  "Converts a mime-type into the format requested."
-  [mime-type]
-  (if mime-type
-    (get base-mime-type-to-format
-         (str (mt/base-type (mt/parse mime-type))))
-    default-search-result-format))
-
-(def format->mime-type
-  {:json "application/json"
-   :xml "application/xml"
-   :csv "text/csv"})
-
-(defn validate-search-result-mime-type
-  "Validates the requested search result mime type."
-  [mime-type]
-  (when-not (mime-type->format mime-type)
-    (errors/throw-service-error
-      :bad-request (format "The mime type [%s] is not supported for search results." mime-type))))
+(def supported-mime-types
+  "The mime types supported by search."
+  #{"*/*"
+    "application/xml"
+    "application/json"
+    "application/echo10+xml"
+    "text/csv"})
 
 (defmulti search-results->response
-  (fn [results result-type pretty]
+  (fn [context results result-type pretty]
     result-type))
 
 (defmethod search-results->response :json
-  [results result-type pretty]
+  [context results result-type pretty]
   (let [{:keys [hits took references]} results
         response-refs (map #(set/rename-keys % {:concept-id :id}) references)
         response-results (r/->Results hits took response-refs)]
@@ -62,8 +46,43 @@
                (x/element :location {} location)
                (x/element :revision-id {} (str revision-id)))))
 
+(defn- remove-xml-processing-instructions
+  "Removes xml processing instructions from XML so it can be embedded in another XML document"
+  [xml]
+  (let [processing-regex #"<\?.*?\?>"
+        doctype-regex #"<!DOCTYPE.*?>"]
+    (-> xml
+        (s/replace processing-regex "")
+        (s/replace doctype-regex ""))))
+
+(defmulti reference+metadata->xml-element
+  "Converts a search result + metadata into an XML element"
+  (fn [reference metadata]
+    (ct/concept-id->type (:concept-id reference))))
+
+(defmethod reference+metadata->xml-element :granule
+  [reference metadata]
+  (let [{:keys [concept-id collection-concept-id revision-id]} reference]
+    (format "<result concept-id=\"%s\" collection-concept-id=\"%s\" revision-id=\"%s\">%s</result>"
+            concept-id
+            collection-concept-id
+            revision-id
+            metadata)))
+
+(defmethod reference+metadata->xml-element :collection
+  [reference metadata]
+  (let [{:keys [concept-id]} reference]
+    (format "<result concept-id=\"%s\" revision-id=\"%s\">%s</result>"
+            concept-id
+            metadata)))
+(defn- references->format
+  "Converts search result references into the desired format"
+  [context references format]
+  (let [tuples (map #(vector (:concept-id %) (:revision-id %)) references)]
+    (t/get-formatted-concept-revisions context tuples format)))
+
 (defmethod search-results->response :xml
-  [results result-typ pretty]
+  [context results result-type pretty]
   (let [{:keys [hits took references]} results
         xml-fn (if pretty x/indent-str x/emit-str)]
     (xml-fn
@@ -77,10 +96,23 @@
   ["Granule UR","Producer Granule ID","Start Time","End Time","Online Access URLs","Browse URLs","Cloud Cover","Day/Night","Size"])
 
 (defmethod search-results->response :csv
-  [results result-type pretty]
+  [context results result-type pretty]
   (let [{:keys [hits took references]} results
         response-refs (conj references CSV_HEADER)
         string-writer (StringWriter.)]
     (csv/write-csv string-writer response-refs)
     (str string-writer)))
+
+(defmethod search-results->response :echo10
+  [context results result-type pretty]
+  (let [{:keys [hits took references]} results
+        echo10 (references->format context references :echo10)]
+    (format "<?xml version=\"1.0\" encoding=\"UTF-8\"?><results><hits>%s</hits><took>%s</took>%s</results>"
+            (str hits)
+            (str took)
+            (s/join ""
+                    (map (fn [reference echo10-xml]
+                           (reference+metadata->xml-element reference
+                                                            (remove-xml-processing-instructions echo10-xml)))
+                         references echo10)))))
 

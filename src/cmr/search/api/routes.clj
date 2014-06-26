@@ -7,6 +7,7 @@
             [ring.middleware.json :as ring-json]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.api.errors :as errors]
+            [cmr.common.mime-types :as mt]
             [cmr.search.services.query-service :as query-svc]
             [cmr.system-trace.http :as http-trace]
             [cmr.search.api.search-results :as sr]
@@ -16,8 +17,8 @@
   "Returns the requested search results format parsed from headers"
   [headers]
   (let [mime-type (get headers "accept")]
-    (sr/validate-search-result-mime-type mime-type)
-    (sr/mime-type->format mime-type)))
+    (mt/validate-request-mime-type mime-type sr/supported-mime-types)
+    (mt/mime-type->format mime-type)))
 
 (defn- measure-query-time
   "Executes the query function measuring how long it takes. Adds a :took key to the results map
@@ -33,15 +34,16 @@
   "Invokes query service to find references and returns the response"
   [context concept-type params headers query-string]
   (let [result-format (get-search-results-format headers)
+        params (assoc params :result-format result-format)
         pretty? (= (get params :pretty) "true")
         _ (info (format "Searching for %ss in format %s with params %s." (name concept-type) result-format (pr-str params)))
         search-params (lp/process-legacy-psa (dissoc params :pretty) query-string)
-        results (measure-query-time #(query-svc/find-concepts-by-parameters context concept-type search-params result-format))]
+        results (measure-query-time #(query-svc/find-concepts-by-parameters context concept-type search-params))]
     (info (format "Found %d %ss in %d ms in format %s with params %s."
                   (:hits results) (name concept-type) (:took results) result-format (pr-str params)))
     {:status 200
-     :headers {"Content-Type" (str (sr/format->mime-type result-format) "; charset=utf-8")}
-     :body (sr/search-results->response results result-format pretty?)}))
+     :headers {"Content-Type" (str (mt/format->mime-type result-format) "; charset=utf-8")}
+     :body (sr/search-results->response context results result-format pretty?)}))
 
 (defn- find-concept-by-cmr-concept-id
   "Invokes query service to find concept metadata by cmr concept id and returns the response"
