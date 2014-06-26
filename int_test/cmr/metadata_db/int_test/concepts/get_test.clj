@@ -6,37 +6,13 @@
             [cheshire.core :as cheshire]
             [cmr.metadata-db.int-test.utility :as util]))
 
-(def concept1 (util/collection-concept "PROV1" 1))
-(def concept2 (assoc (util/collection-concept "PROV1" 2) :concept-id "C2-PROV1"))
+(use-fixtures :each (util/reset-database-fixture "PROV1"))
 
-;;; fixtures
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defn setup-database-fixture
-  "Load the database with test data."
-  [f]
-
-  ;; clear out the database
-  (util/reset-database)
-  ;; setup database
-  (util/save-provider "PROV1")
-  (let [verify #(when-not (= 201 (:status %))
-                  (throw (ex-info "Failed to create concept" %)))]
-    ;; save a concept
-    (verify (util/save-concept concept1))
-    ;; save a revision
-    (verify (util/save-concept concept1))
-    ;; save it a third time
-    (verify (util/save-concept concept1))
-   	;; save another concept
-    (verify (util/save-concept concept2)))
-
-  (f)
-
-  ;; clear out the database
-  (util/reset-database))
-
-
-(use-fixtures :once setup-database-fixture)
+(defn verify
+  [result]
+  (if (= 201 (:status result))
+    result
+    (throw (ex-info "Failed to create concept" result))))
 
 ;; TODO this needs more tests for granules
 ;; This also needs a test where it retrieves granules and collections at the same time.
@@ -44,33 +20,40 @@
 
 ;;; tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(deftest get-concept-test
-  (testing "latest version"
-    (let [{:keys [status concept]} (util/get-concept-by-id "C1000000000-PROV1")]
-      (is (= 200 status))
-      (is (= 3 (:revision-id concept))))))
+(deftest get-test
+  (let [concept1 (util/collection-concept "PROV1" 1)
+        concept2 (assoc (util/collection-concept "PROV1" 2) :concept-id "C2-PROV1")
+        {:keys [concept-id]} (last (for [n (range 3)]
+                                     (verify (util/save-concept concept1))))
+        concept-id2 (:concept-id (verify (util/save-concept concept2)))]
 
-(deftest get-non-existant-concept-test
-  (testing "Non existant collection id"
-    (is (= 404 (:status (util/get-concept-by-id "C123-PROV1")))))
-  (testing "Non existant provider id"
-    (is (= 404 (:status (util/get-concept-by-id "C1000000000-PROV12"))))))
+    (testing "get-concept-test"
+      (testing "latest version"
+        (let [{:keys [status concept]} (util/get-concept-by-id concept-id)]
+          (is (= 200 status))
+          (is (= 3 (:revision-id concept))))))
 
-(deftest get-concept-with-version-test
-  "Get a concept by concept-id and version-id."
-  (let [{:keys [status concept]} (util/get-concept-by-id-and-revision "C1000000000-PROV1" 3)]
-    (is (= status 200))
-    (is (= (:revision-id concept) 3))))
+    (testing "get-non-existant-concept-test"
+      (testing "Non existant collection id"
+        (is (= 404 (:status (util/get-concept-by-id "C123-PROV1")))))
+      (testing "Non existant provider id"
+        (is (= 404 (:status (util/get-concept-by-id "C1000000000-PROV12"))))))
 
-(deftest get-concept-invalid-concept-id-or-revision-test
-  "Expect a status 4XX if we try to get a concept that doesn't exist or use an improper concept-id."
-  (testing "invalid concept-id"
-    (let [{:keys [status]} (util/get-concept-by-id "bad id")]
-      (is (= 400 status))))
-  (testing "out of range revision-id"
-    (let [concept (util/collection-concept "PROV1" 1)
-          {:keys [status]} (util/get-concept-by-id-and-revision "C1000000000-PROV1" 10)]
-      (is (= 404 status))))
-  (testing "non-integer revision-id"
-    (let [{:keys [status]}(util/get-concept-by-id-and-revision "C1000000000-PROV1" "NON-INTEGER")]
-      (is (= 422 status)))))
+    (testing "get-concept-with-version-test"
+      "Get a concept by concept-id and version-id."
+      (let [{:keys [status concept]} (util/get-concept-by-id-and-revision concept-id 3)]
+        (is (= status 200))
+        (is (= (:revision-id concept) 3))))
+
+    (testing "get-concept-invalid-concept-id-or-revision-test"
+      "Expect a status 4XX if we try to get a concept that doesn't exist or use an improper concept-id."
+      (testing "invalid concept-id"
+        (let [{:keys [status]} (util/get-concept-by-id "bad id")]
+          (is (= 400 status))))
+      (testing "out of range revision-id"
+        (let [concept (util/collection-concept "PROV1" 1)
+              {:keys [status]} (util/get-concept-by-id-and-revision concept-id 10)]
+          (is (= 404 status))))
+      (testing "non-integer revision-id"
+        (let [{:keys [status]}(util/get-concept-by-id-and-revision concept-id "NON-INTEGER")]
+          (is (= 422 status)))))))
