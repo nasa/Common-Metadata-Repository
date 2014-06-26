@@ -9,7 +9,8 @@
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.metadata-db.data.providers :as provider-db]
             [cmr.metadata-db.data.oracle.providers]
-            [cmr.metadata-db.services.concept-service :as srv]))
+            [cmr.metadata-db.services.concept-service :as srv]
+            [clj-time.core :as ct]))
 
 (def job-key "jobs.expired.1")
 
@@ -53,7 +54,7 @@
               (jobs/with-identity (jobs/key job-key)))
         trigger (t/build
                   (t/with-identity (t/key "triggers.1"))
-                  (t/start-now)
+                  (t/start-at (-> 5 ct/seconds ct/from-now))
                   (t/with-schedule (schedule
                                      (with-interval-in-seconds EXPIRED_CONCEPT_CLEANUP_INTERVAL))))]
     (qs/schedule job trigger))
