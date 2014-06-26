@@ -71,10 +71,12 @@
 
 (defmethod reference+metadata->xml-element :collection
   [reference metadata]
-  (let [{:keys [concept-id]} reference]
+  (let [{:keys [concept-id revision-id]} reference]
     (format "<result concept-id=\"%s\" revision-id=\"%s\">%s</result>"
             concept-id
+            revision-id
             metadata)))
+
 (defn- references->format
   "Converts search result references into the desired format"
   [context references format]
