@@ -13,6 +13,7 @@
             [clojure.walk]
             [ring.util.codec :as codec]
             [clojure.data.xml :as x]
+            [cmr.umm.dif.collection :as dif-c]
             [cmr.common.xml :as cx]))
 
 (defn params->snake_case
@@ -80,7 +81,11 @@
           parsed (x/parse-str (:body response))]
       (map (fn [result]
              (let [{attrs :attrs [inner-elem] :content} result
-                   {:keys [concept-id collection-concept-id revision-id]} attrs]
+                   {:keys [concept-id collection-concept-id revision-id]} attrs
+                   inner-elem (if (= :dif format-key)
+                                ;; Fixes issue with parsing and regenerating the XML
+                                (assoc inner-elem :attrs dif-c/dif-header-attributes)
+                                inner-elem)]
                {:concept-id concept-id
                 :revision-id (Long. ^String revision-id)
                 :format format-key

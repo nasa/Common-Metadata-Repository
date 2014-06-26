@@ -57,6 +57,11 @@
         :echo10 all-colls
         (search/find-metadata :collection :echo10 {})))
 
+    (testing "Retrieving results in echo10"
+      (d/assert-metadata-results-match
+        :dif all-colls
+        (search/find-metadata :collection :dif {})))
+
     (testing "Retrieving results as XML References"
       (let [refs (search/find-refs :collection {:short-name "S1"})
             location (:location (first (:refs refs)))]
