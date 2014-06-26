@@ -25,26 +25,26 @@
 (defn- collections-match?
   "Returns true if the two collections match after excluding the non-conformant fields"
   [coll1 coll2]
-  (let [revised_coll1 (apply dissoc coll1 NON_CONFORMANT_FIELDS)
-        revised_coll2 (apply dissoc coll2 NON_CONFORMANT_FIELDS)]
-    (= revised_coll1 revised_coll2)))
+  (let [revised-coll1 (apply dissoc coll1 NON_CONFORMANT_FIELDS)
+        revised-coll2 (apply dissoc coll2 NON_CONFORMANT_FIELDS)]
+    (= revised-coll1 revised-coll2)))
 
 (defspec generate-collection-is-valid-xml-test 100
   (for-all [collection coll-gen/dif-collections]
-    (let [xml (dif/umm->dif-xml collection)]
+    (let [xml (c/umm->dif-xml collection)]
       (and
         (> (count xml) 0)
         (= 0 (count (c/validate-xml xml)))))))
 
 (defspec generate-and-parse-collection-test 100
   (for-all [collection coll-gen/dif-collections]
-    (let [xml (dif/umm->dif-xml collection)
+    (let [xml (c/umm->dif-xml collection)
           parsed (c/parse-collection xml)]
       (= parsed collection))))
 
 (defspec generate-and-parse-collection-between-formats-test 100
   (for-all [collection coll-gen/dif-collections]
-    (let [xml (dif/umm->dif-xml collection)
+    (let [xml (c/umm->dif-xml collection)
           parsed-dif (c/parse-collection xml)
           ;; add the required InsertTime and LastUpdate for ECHO10 schema validation
           data-provider-timestamps (first (gen/sample coll-gen/data-provider-timestamps 1))
@@ -212,20 +212,29 @@
         <Value>2013-09-30 09:45:15</Value>
       </Metadata>
       <Metadata>
-        <Group>gov.nasa.gsfc.gcmd</Group>
-        <Name>metadata.keyword_version</Name>
-        <Value>8.0</Value>
+        <Group>spatial coverage</Group>
+        <Name>GranuleSpatialRepresentation</Name>
+        <Value>GEODETIC</Value>
       </Metadata>
       <Metadata>
-         <group>AdditionalAttribute</group>
-         <name>PercentGroundHit</name>
-         <Description>Percent of ....</Description>
-         <Type>FLOAT</Type>
-         <Value type=\"MeasurementResolution\">1</Value>
-         <Value type=\"ParamRangeBegin\">1.0</Value>
-         <Value type=\"ParamRangeEnd\">100.0</Value>
-         <Value type=\"ParamUtilsOfMeasure\">Percent</Value>
-         <Value type=\"MeasurementResolution\">1</Value>
+        <Group>AdditionalAttribute</Group>
+        <Name>String add attrib</Name>
+        <Description>something string</Description>
+        <Type>STRING</Type>
+        <Value type=\"ParamRangeBegin\">alpha</Value>
+        <Value type=\"ParamRangeEnd\">bravo</Value>
+        <Value type=\"Value\">alpha1</Value>
+      </Metadata>
+      <Metadata>
+        <Group>AdditionalAttribute</Group>
+        <Name>Float add attrib</Name>
+        <Description>something float</Description>
+        <Type>FLOAT</Type>
+        <Value type=\"MeasurementResolution\">1</Value>
+        <Value type=\"ParamRangeBegin\">0.1</Value>
+        <Value type=\"ParamRangeEnd\">100.43</Value>
+        <Value type=\"ParamUtilsOfMeasure\">Percent</Value>
+        <Value type=\"Value\">12.3</Value>
       </Metadata>
     </Extended_Metadata>
   </DIF>")
@@ -295,6 +304,24 @@
                         :variable-level-2 "PRECIPITATION Level 2"
                         :variable-level-3 "PRECIPITATION Level 3"
                         :detailed-variable "PRECIPITATION Details"})]
+                    :product-specific-attributes
+                    [(umm-c/map->ProductSpecificAttribute
+                       {:name "String add attrib"
+                        :description "something string"
+                        :data-type :string
+                        :parameter-range-begin "alpha"
+                        :parameter-range-end "bravo"
+                        :value "alpha1"})
+                     (umm-c/map->ProductSpecificAttribute
+                       {:name "Float add attrib"
+                        :description "something float"
+                        :data-type :float
+                        :parameter-range-begin 0.1
+                        :parameter-range-end 100.43
+                        :value 12.3})]
+                    :spatial-coverage
+                    (umm-c/map->SpatialCoverage
+                      {:granule-spatial-representation :geodetic})
                     :projects
                     [(umm-c/map->Project
                        {:short-name "ESI"

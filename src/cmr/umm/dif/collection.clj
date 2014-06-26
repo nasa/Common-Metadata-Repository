@@ -11,6 +11,7 @@
             [cmr.umm.dif.collection.science-keyword :as sk]
             [cmr.umm.dif.collection.org :as org]
             [cmr.umm.dif.collection.temporal :as t]
+            [cmr.umm.dif.collection.product-specific-attribute :as psa]
             [cmr.umm.dif.collection.spatial-coverage :as sc]
             [cmr.umm.dif.collection.extended-metadata :as em])
   (:import cmr.umm.collection.UmmCollection))
@@ -34,7 +35,7 @@
        :temporal (t/xml-elem->Temporal xml-struct)
        :science-keywords (sk/xml-elem->ScienceKeywords xml-struct)
        ;:platforms (platform/xml-elem->Platforms xml-struct)
-       ;:product-specific-attributes (psa/xml-elem->ProductSpecificAttributes xml-struct)
+       :product-specific-attributes (psa/xml-elem->ProductSpecificAttributes xml-struct)
        :projects (pj/xml-elem->Projects xml-struct)
        :related-urls (ru/xml-elem->RelatedURLs xml-struct)
        :spatial-coverage (sc/xml-elem->SpatialCoverage xml-struct)
@@ -45,39 +46,37 @@
   [xml]
   (xml-elem->Collection (x/parse-str xml)))
 
-(extend-protocol cmr.umm.dif.core/UmmToDifXml
-  UmmCollection
-  (umm->dif-xml
-    ([collection]
-     (cmr.umm.dif.core/umm->dif-xml collection false))
-    ([collection indent?]
-     (let [{{:keys [short-name long-name version-id]} :product
-            {:keys [insert-time update-time delete-time]} :data-provider-timestamps
-            :keys [entry-title temporal organizations science-keywords platforms product-specific-attributes
-                   projects related-urls spatial-coverage]} collection
-           emit-fn (if indent? x/indent-str x/emit-str)]
-       (emit-fn
-         (x/element :DIF {:xmlns "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
-                          :xmlns:dif "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
-                          :xmlns:xsi "http://www.w3.org/2001/XMLSchema-instance"
-                          :xsi:schemaLocation "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.8.4.xsd"}
-                    (x/element :Entry_ID {} short-name)
-                    (x/element :Entry_Title {} entry-title)
-                    (when version-id
-                      (x/element :Data_Set_Citation {}
-                                 (x/element :Version {} version-id)))
-                    (sk/generate-science-keywords science-keywords)
-                    (t/generate-temporal temporal)
-                    (when-not (empty? projects)
-                      (pj/generate-projects projects))
-                    (org/generate-data-center organizations)
-                    (x/element :Summary {} (x/element :Abstract {} "dummy"))
-                    (when-not (empty? related-urls)
-                      (ru/generate-related-urls related-urls))
-                    (x/element :Metadata_Name {} "dummy")
-                    (x/element :Metadata_Version {} "dummy")
-                    (when spatial-coverage
-                      (em/generate-extended-metadatas [(sc/SpatialCoverage->extended-metadata spatial-coverage)]))))))))
+(defn umm->dif-xml
+  ([collection]
+   (umm->dif-xml collection false))
+  ([collection indent?]
+   (let [{{:keys [short-name long-name version-id]} :product
+          {:keys [insert-time update-time delete-time]} :data-provider-timestamps
+          :keys [entry-title temporal organizations science-keywords platforms product-specific-attributes
+                 projects related-urls spatial-coverage]} collection
+         emit-fn (if indent? x/indent-str x/emit-str)]
+     (emit-fn
+       (x/element :DIF {:xmlns "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+                        :xmlns:dif "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+                        :xmlns:xsi "http://www.w3.org/2001/XMLSchema-instance"
+                        :xsi:schemaLocation "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.8.4.xsd"}
+                  (x/element :Entry_ID {} short-name)
+                  (x/element :Entry_Title {} entry-title)
+                  (when version-id
+                    (x/element :Data_Set_Citation {}
+                               (x/element :Version {} version-id)))
+                  (sk/generate-science-keywords science-keywords)
+                  (t/generate-temporal temporal)
+                  (when-not (empty? projects)
+                    (pj/generate-projects projects))
+                  (org/generate-data-center organizations)
+                  (x/element :Summary {} (x/element :Abstract {} "dummy"))
+                  (when-not (empty? related-urls)
+                    (ru/generate-related-urls related-urls))
+                  (x/element :Metadata_Name {} "dummy")
+                  (x/element :Metadata_Version {} "dummy")
+                  (sc/generate-spatial-coverage spatial-coverage)
+                  (psa/generate-product-specific-attributes product-specific-attributes))))))
 
 (defn validate-xml
   "Validates the XML against the DIF schema."
