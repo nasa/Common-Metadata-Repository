@@ -27,8 +27,8 @@
 (defn prepare-batch
   "Convert a batch of concepts into elastic docs for bulk indexing."
   [context concept-batch]
-  ;; we only handle ECHO10 format right now
-  (let [parseable-batch (filterv #(#{"ECHO10"} (:format %)) concept-batch)
+  ;; we only handle these formats right now
+  (let [parseable-batch (filterv #(#{"ECHO10" "DIF"} (:format %)) concept-batch)
         num-skipped (- (count concept-batch) (count parseable-batch))]
     (debug "Skipping" num-skipped "concepts that are not in a supported format.")
     (doall
