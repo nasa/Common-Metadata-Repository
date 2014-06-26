@@ -69,7 +69,9 @@
    (let [timestamps {:data-provider-timestamps (dc/data-provider-timestamps attribs)}
          coll-ref (g/collection-ref (:entry-title collection))
          minimal-gran {:granule-ur (d/unique-str "ur")
-                       :collection-ref coll-ref}
+                       :collection-ref coll-ref
+                       ;; Including the parent collection concept id so it's available later.
+                       :collection-concept-id (:concept-id collection)}
          data-granule {:data-granule (data-granule attribs)}
          temporal {:temporal (temporal attribs)}]
      (g/map->UmmGranule (merge minimal-gran timestamps data-granule temporal attribs)))))

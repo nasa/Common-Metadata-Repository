@@ -75,6 +75,28 @@
      :location (str (url/location-root) (:concept-id item))
      :revision-id revision-id}))
 
+(defn item->metadata-result
+  "Converts an item into the expected metadata result"
+  [format-key item]
+  (let [{:keys [concept-id revision-id collection-concept-id]} item]
+    {:concept-id concept-id
+     :revision-id revision-id
+     :format format-key
+     :collection-concept-id collection-concept-id
+     :metadata (umm/umm->xml item format-key)}))
+
+(defn metadata-results-match?
+  "Returns true if the metadata results match the expected items"
+  [format-key items search-result]
+  (= (set (map (partial item->metadata-result format-key) items))
+     (set search-result)))
+
+(defn assert-metadata-results-match
+  "Returns true if the metadata results match the expected items"
+  [format-key items search-result]
+  (is (= (set (map (partial item->metadata-result format-key) items))
+         (set search-result))))
+
 (defn refs-match?
   "Returns true if the references match the expected items"
   [items search-result]
