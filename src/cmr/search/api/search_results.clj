@@ -2,9 +2,9 @@
   "Contains functions for validating search results requested formats and for converting to
   requested format"
   (:require [cheshire.core :as json]
-            [pantomime.media :as mt]
             [cmr.common.services.errors :as errors]
             [cmr.common.concepts :as ct]
+            [cmr.common.mime-types :as mt]
             [clojure.data.xml :as x]
             [clojure.set :as set]
             [clojure.data.csv :as csv]
@@ -17,34 +17,13 @@
 
 (def default-search-result-format :json)
 
-(def base-mime-type-to-format
-  "A map of base mime types to the format symbols supported"
-  {"*/*" default-search-result-format
-   "application/json" :json
-   "application/xml" :xml
-   "text/csv" :csv
-   "application/echo10+xml" :echo10})
-
-(defn mime-type->format
-  "Converts a mime-type into the format requested."
-  [mime-type]
-  (if mime-type
-    (get base-mime-type-to-format
-         (str (mt/base-type (mt/parse mime-type))))
-    default-search-result-format))
-
-(def format->mime-type
-  {:json "application/json"
-   :xml "application/xml"
-   :csv "text/csv"
-   :echo10 "application/echo10+xml"})
-
-(defn validate-search-result-mime-type
-  "Validates the requested search result mime type."
-  [mime-type]
-  (when-not (mime-type->format mime-type)
-    (errors/throw-service-error
-      :bad-request (format "The mime type [%s] is not supported for search results." mime-type))))
+(def supported-mime-types
+  "The mime types supported by search."
+  #{"*/*"
+    "application/xml"
+    "application/json"
+    "application/echo10+xml"
+    "text/csv"})
 
 (defmulti search-results->response
   (fn [context results result-type pretty]
@@ -84,9 +63,11 @@
 (defmethod reference+echo10->xml-element :granule
   [reference echo10-xml]
   (println (str "REF: " reference))
-  (let [{:keys [concept-id collection-concept-id]} reference]
+  (let [{:keys [concept-id collection-concept-id revision-id]} reference]
     (x/element :result
-               {:echo_granule_id concept-id :echo_dataset_id collection-concept-id}
+               {:echo_granule_id concept-id
+                :echo_dataset_id collection-concept-id
+                :revision-id revision-id}
                echo10-xml)))
 
 (defmethod reference+echo10->xml-element :collection
