@@ -45,6 +45,13 @@
   [xml]
   (xml-elem->Collection (x/parse-str xml)))
 
+(def dif-header-attributes
+  "The set of attributes that go on the dif root element"
+  {:xmlns "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+   :xmlns:dif "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+   :xmlns:xsi "http://www.w3.org/2001/XMLSchema-instance"
+   :xsi:schemaLocation "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.8.4.xsd"})
+
 (extend-protocol cmr.umm.dif.core/UmmToDifXml
   UmmCollection
   (umm->dif-xml
@@ -57,10 +64,7 @@
                    projects related-urls spatial-coverage]} collection
            emit-fn (if indent? x/indent-str x/emit-str)]
        (emit-fn
-         (x/element :DIF {:xmlns "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
-                          :xmlns:dif "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
-                          :xmlns:xsi "http://www.w3.org/2001/XMLSchema-instance"
-                          :xsi:schemaLocation "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.8.4.xsd"}
+         (x/element :DIF dif-header-attributes
                     (x/element :Entry_ID {} short-name)
                     (x/element :Entry_Title {} entry-title)
                     (when version-id
