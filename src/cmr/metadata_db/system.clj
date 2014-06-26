@@ -45,10 +45,9 @@
 
     (db-holder/set-db! db)
 
-    ;; Skipping background jobs to improve bootstrapping performance.
-    #_(when-not (or (re-find #"MemoryDB" (str (type db)))
+    (when-not (or (re-find #"MemoryDB" (str (type db)))
                   (:skip-background-jobs started-system)
-      (jobs/start db)))
+                  (jobs/start db)))
 
     (info "Metadata DB started")
     started-system))
