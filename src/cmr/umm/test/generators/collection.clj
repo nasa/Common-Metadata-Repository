@@ -36,6 +36,12 @@
 (def data-provider-timestamps
   (ext-gen/model-gen c/->DataProviderTimestamps ext-gen/date-time ext-gen/date-time (ext-gen/optional ext-gen/date-time)))
 
+(def dif-data-provider-timestamps
+  (ext-gen/model-gen c/->DataProviderTimestamps
+                     ext-gen/date-time
+                     (ext-gen/optional ext-gen/date-time)
+                     (gen/return nil)))
+
 (def entry-titles
   (ext-gen/string-alpha-numeric 1 1030))
 
@@ -146,6 +152,7 @@
               (gen/hash-map
                 :product dif-products
                 :temporal (ext-gen/optional t/dif-temporals)
+                :data-provider-timestamps dif-data-provider-timestamps
                 ;:spatial-keywords (ext-gen/nil-if-empty (gen/vector (ext-gen/string-ascii 1 80) 0 4))
                 :science-keywords (gen/vector sk/science-keywords 1 3)
                 ;:platforms (ext-gen/nil-if-empty (gen/vector platforms 0 4))

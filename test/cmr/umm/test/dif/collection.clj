@@ -279,6 +279,9 @@
                                {:short-name "geodata_1848"
                                 :long-name "Global Land Cover 2000 (GLC 2000)"
                                 :version-id "006"})
+                    :data-provider-timestamps (umm-c/map->DataProviderTimestamps
+                                                {:insert-time (p/parse-date "2013-02-21")
+                                                 :update-time (p/parse-date "2013-10-22")})
                     ;:spatial-keywords ["Word-2" "Word-1" "Word-0"]
                     :temporal
                     (umm-c/map->Temporal

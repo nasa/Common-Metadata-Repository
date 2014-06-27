@@ -3,6 +3,7 @@
   (:require [clojure.data.xml :as x]
             [clojure.java.io :as io]
             [cmr.common.xml :as cx]
+            [cmr.common.date-time-parser :as parser]
             [cmr.umm.dif.core :as dif-core]
             [cmr.umm.collection :as c]
             [cmr.umm.xml-schema-validator :as v]
@@ -23,23 +24,41 @@
                    :long-name (cx/string-at-path collection-content [:Entry_Title])
                    :version-id (cx/string-at-path collection-content [:Data_Set_Citation :Version])}))
 
+(defn- string->datetime
+  "convert the string to joda datetime if it is in either DateTime or Date format."
+  [datetime-string]
+  (when datetime-string
+    (if (re-matches #"^\d\d\d\d-\d?\d-\d?\d$" datetime-string)
+      (parser/parse-date datetime-string)
+      (parser/parse-datetime datetime-string))))
+
+(defn- xml-elem->DataProviderTimestamps
+  "Returns a UMM DataProviderTimestamps from a parsed Collection Content XML structure"
+  [collection-content]
+  (let [insert-time (cx/string-at-path collection-content [:DIF_Creation_Date])
+        update-time (cx/string-at-path collection-content [:Last_DIF_Revision_Date])]
+    (when (or insert-time update-time)
+      (c/map->DataProviderTimestamps
+        {:insert-time (string->datetime insert-time)
+         :update-time (string->datetime update-time)}))))
+
 (defn- xml-elem->Collection
   "Returns a UMM Product from a parsed Collection XML structure"
   [xml-struct]
-  (let [product (xml-elem->Product xml-struct)]
-    (c/map->UmmCollection
-      {:entry-id (cx/string-at-path xml-struct [:Entry_ID])
-       :entry-title (cx/string-at-path xml-struct [:Entry_Title])
-       :product product
-       ;:spatial-keywords (seq (cx/strings-at-path xml-struct [:Location]))
-       :temporal (t/xml-elem->Temporal xml-struct)
-       :science-keywords (sk/xml-elem->ScienceKeywords xml-struct)
-       ;:platforms (platform/xml-elem->Platforms xml-struct)
-       :product-specific-attributes (psa/xml-elem->ProductSpecificAttributes xml-struct)
-       :projects (pj/xml-elem->Projects xml-struct)
-       :related-urls (ru/xml-elem->RelatedURLs xml-struct)
-       :spatial-coverage (sc/xml-elem->SpatialCoverage xml-struct)
-       :organizations (org/xml-elem->Organizations xml-struct)})))
+  (c/map->UmmCollection
+    {:entry-id (cx/string-at-path xml-struct [:Entry_ID])
+     :entry-title (cx/string-at-path xml-struct [:Entry_Title])
+     :product (xml-elem->Product xml-struct)
+     :data-provider-timestamps (xml-elem->DataProviderTimestamps xml-struct)
+     ;:spatial-keywords (seq (cx/strings-at-path xml-struct [:Location]))
+     :temporal (t/xml-elem->Temporal xml-struct)
+     :science-keywords (sk/xml-elem->ScienceKeywords xml-struct)
+     ;:platforms (platform/xml-elem->Platforms xml-struct)
+     :product-specific-attributes (psa/xml-elem->ProductSpecificAttributes xml-struct)
+     :projects (pj/xml-elem->Projects xml-struct)
+     :related-urls (ru/xml-elem->RelatedURLs xml-struct)
+     :spatial-coverage (sc/xml-elem->SpatialCoverage xml-struct)
+     :organizations (org/xml-elem->Organizations xml-struct)}))
 
 (defn parse-collection
   "Parses DIF XML into a UMM Collection record."
@@ -60,7 +79,7 @@
      (cmr.umm.dif.core/umm->dif-xml collection false))
     ([collection indent?]
      (let [{{:keys [short-name long-name version-id]} :product
-            {:keys [insert-time update-time delete-time]} :data-provider-timestamps
+            {:keys [insert-time update-time]} :data-provider-timestamps
             :keys [entry-title temporal organizations science-keywords platforms product-specific-attributes
                    projects related-urls spatial-coverage]} collection
            emit-fn (if indent? x/indent-str x/emit-str)]
@@ -81,6 +100,10 @@
                       (ru/generate-related-urls related-urls))
                     (x/element :Metadata_Name {} "dummy")
                     (x/element :Metadata_Version {} "dummy")
+                    (when insert-time
+                      (x/element :DIF_Creation_Date {} (str insert-time)))
+                    (when update-time
+                      (x/element :Last_DIF_Revision_Date {} (str update-time)))
                     (sc/generate-spatial-coverage spatial-coverage)
                     (psa/generate-product-specific-attributes product-specific-attributes)))))))
 
