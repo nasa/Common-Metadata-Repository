@@ -103,8 +103,8 @@
       <Long_Name>Systeme Probatoire Pour l'Observation de la Terre-4</Long_Name>
     </Source_Name>
     <Temporal_Coverage>
-      <Start_Date>1996-02-24T22:20:41-05:00</Start_Date>
-      <Stop_Date>1997-03-24T22:20:41-05:00</Stop_Date>
+      <Start_Date>1996-02-24</Start_Date>
+      <Stop_Date>1997-03-24</Stop_Date>
     </Temporal_Coverage>
     <Temporal_Coverage>
       <Start_Date>1998-02-24T22:20:41-05:00</Start_Date>
@@ -287,8 +287,8 @@
                     (umm-c/map->Temporal
                       {:range-date-times
                        [(umm-c/map->RangeDateTime
-                          {:beginning-date-time (p/parse-datetime "1996-02-24T22:20:41-05:00")
-                           :ending-date-time (p/parse-datetime "1997-03-24T22:20:41-05:00")})
+                          {:beginning-date-time (p/parse-date "1996-02-24")
+                           :ending-date-time (p/parse-date "1997-03-24")})
                         (umm-c/map->RangeDateTime
                           {:beginning-date-time (p/parse-datetime "1998-02-24T22:20:41-05:00")
                            :ending-date-time (p/parse-datetime "1999-03-24T22:20:41-05:00")})]

@@ -3,7 +3,6 @@
   (:require [clojure.data.xml :as x]
             [clojure.java.io :as io]
             [cmr.common.xml :as cx]
-            [cmr.common.date-time-parser :as parser]
             [cmr.umm.dif.core :as dif-core]
             [cmr.umm.collection :as c]
             [cmr.umm.xml-schema-validator :as v]
@@ -24,14 +23,6 @@
                    :long-name (cx/string-at-path collection-content [:Entry_Title])
                    :version-id (cx/string-at-path collection-content [:Data_Set_Citation :Version])}))
 
-(defn- string->datetime
-  "convert the string to joda datetime if it is in either DateTime or Date format."
-  [datetime-string]
-  (when datetime-string
-    (if (re-matches #"^\d\d\d\d-\d?\d-\d?\d$" datetime-string)
-      (parser/parse-date datetime-string)
-      (parser/parse-datetime datetime-string))))
-
 (defn- xml-elem->DataProviderTimestamps
   "Returns a UMM DataProviderTimestamps from a parsed Collection Content XML structure"
   [collection-content]
@@ -39,8 +30,8 @@
         update-time (cx/string-at-path collection-content [:Last_DIF_Revision_Date])]
     (when (or insert-time update-time)
       (c/map->DataProviderTimestamps
-        {:insert-time (string->datetime insert-time)
-         :update-time (string->datetime update-time)}))))
+        {:insert-time (t/string->datetime insert-time)
+         :update-time (t/string->datetime update-time)}))))
 
 (defn- xml-elem->Collection
   "Returns a UMM Product from a parsed Collection XML structure"
