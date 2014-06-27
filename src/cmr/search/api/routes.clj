@@ -57,24 +57,25 @@
 
 (defn- build-routes [system]
   (routes
-    (context "/collections" []
-      (GET "/" {params :params headers :headers context :request-context query-string :query-string}
-        (find-references context :collection params headers query-string))
-      (POST "/" {params :params headers :headers context :request-context body :body-copy}
-        (find-references context :collection params headers body)))
-    (context "/granules" []
-      (GET "/" {params :params headers :headers context :request-context query-string :query-string}
-        (find-references context :granule params headers query-string))
-      (POST "/" {params :params headers :headers context :request-context body :body-copy}
-        (find-references context :granule params headers body)))
-    (context "/concepts/:cmr-concept-id" [cmr-concept-id]
-      (GET "/" {headers :headers context :request-context}
-        (find-concept-by-cmr-concept-id context cmr-concept-id headers)))
+    (context (get-in system [:search-public-conf :relative-root-url]) []
+      (context "/collections" []
+        (GET "/" {params :params headers :headers context :request-context query-string :query-string}
+          (find-references context :collection params headers query-string))
+        (POST "/" {params :params headers :headers context :request-context body :body-copy}
+          (find-references context :collection params headers body)))
+      (context "/granules" []
+        (GET "/" {params :params headers :headers context :request-context query-string :query-string}
+          (find-references context :granule params headers query-string))
+        (POST "/" {params :params headers :headers context :request-context body :body-copy}
+          (find-references context :granule params headers body)))
+      (context "/concepts/:cmr-concept-id" [cmr-concept-id]
+        (GET "/" {headers :headers context :request-context}
+          (find-concept-by-cmr-concept-id context cmr-concept-id headers)))
 
-    ;; reset operation available just for development purposes
-    ;; clear the cache for search app
-    (POST "/reset" {:keys [request-context]}
-      (r/created (query-svc/reset request-context)))
+      ;; reset operation available just for development purposes
+      ;; clear the cache for search app
+      (POST "/reset" {:keys [request-context]}
+        (r/created (query-svc/reset request-context))))
     (route/not-found "Not Found")))
 
 ;; Copies the body into a new attributed called :body-copy so that after a post of form content type

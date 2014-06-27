@@ -6,11 +6,13 @@
             [cmr.common.concepts :as ct]
             [cmr.common.mime-types :as mt]
             [clojure.data.xml :as x]
+            [cmr.common.xml :as cx]
             [clojure.set :as set]
             [clojure.data.csv :as csv]
             [clojure.string :as s]
             [cmr.search.models.results :as r]
-            [cmr.transmit.transformer :as t])
+            [cmr.transmit.transformer :as t]
+            [cmr.umm.dif.collection :as dif-c])
   (:import
     [java.io StringWriter]))
 
@@ -56,12 +58,12 @@
         (s/replace processing-regex "")
         (s/replace doctype-regex ""))))
 
-(defmulti reference+metadata->xml-element
-  "Converts a search result + metadata into an XML element"
+(defmulti reference+metadata->result-string
+  "Converts a search result + metadata into a string containing a single result for the metadata format."
   (fn [reference metadata]
     (ct/concept-id->type (:concept-id reference))))
 
-(defmethod reference+metadata->xml-element :granule
+(defmethod reference+metadata->result-string :granule
   [reference metadata]
   (let [{:keys [concept-id collection-concept-id revision-id]} reference]
     (format "<result concept-id=\"%s\" collection-concept-id=\"%s\" revision-id=\"%s\">%s</result>"
@@ -70,7 +72,7 @@
             revision-id
             metadata)))
 
-(defmethod reference+metadata->xml-element :collection
+(defmethod reference+metadata->result-string :collection
   [reference metadata]
   (let [{:keys [concept-id revision-id]} reference]
     (format "<result concept-id=\"%s\" revision-id=\"%s\">%s</result>"
@@ -109,13 +111,25 @@
 (defn search-results->metadata-response
   [context results result-type pretty]
   (let [{:keys [hits took references]} results
-        metadatas (references->format context references result-type)]
-    (format "<?xml version=\"1.0\" encoding=\"UTF-8\"?><results><hits>%d</hits><took>%d</took>%s</results>"
-            hits took
-            (s/join "" (map reference+metadata->xml-element
+        metadatas (references->format context references result-type)
+        result-strings (map reference+metadata->result-string
                             references
                             (map remove-xml-processing-instructions
-                                 metadatas))))))
+                                 metadatas))
+        response (format "<?xml version=\"1.0\" encoding=\"UTF-8\"?><results><hits>%d</hits><took>%d</took>%s</results>"
+                         hits took
+                         (s/join "" result-strings))]
+    (if pretty
+      (let [parsed (x/parse-str response)
+            ;; Fix for DIF emitting XML
+            parsed (if (= :dif result-type)
+                     (cx/update-elements-at-path
+                       parsed [:result :DIF]
+                       assoc :attrs dif-c/dif-header-attributes)
+                     parsed)]
+        (x/indent-str parsed))
+
+      response)))
 
 (defmethod search-results->response :echo10
   [context results result-type pretty]
