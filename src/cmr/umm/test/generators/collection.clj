@@ -149,7 +149,7 @@
                 ;:spatial-keywords (ext-gen/nil-if-empty (gen/vector (ext-gen/string-ascii 1 80) 0 4))
                 :science-keywords (gen/vector sk/science-keywords 1 3)
                 ;:platforms (ext-gen/nil-if-empty (gen/vector platforms 0 4))
-                ;:product-specific-attributes (ext-gen/nil-if-empty (gen/vector psa/product-specific-attributes 0 10))
+                :product-specific-attributes (ext-gen/nil-if-empty (gen/vector psa/product-specific-attributes 0 10))
                 :projects (ext-gen/nil-if-empty (gen/vector campaigns 0 4))
                 :related-urls (ext-gen/nil-if-empty (gen/vector related-url 0 5))
                 :spatial-coverage (ext-gen/optional spatial-coverages)

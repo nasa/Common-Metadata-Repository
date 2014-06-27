@@ -11,6 +11,7 @@
             [cmr.umm.dif.collection.science-keyword :as sk]
             [cmr.umm.dif.collection.org :as org]
             [cmr.umm.dif.collection.temporal :as t]
+            [cmr.umm.dif.collection.product-specific-attribute :as psa]
             [cmr.umm.dif.collection.spatial-coverage :as sc]
             [cmr.umm.dif.collection.extended-metadata :as em])
   (:import cmr.umm.collection.UmmCollection))
@@ -34,7 +35,7 @@
        :temporal (t/xml-elem->Temporal xml-struct)
        :science-keywords (sk/xml-elem->ScienceKeywords xml-struct)
        ;:platforms (platform/xml-elem->Platforms xml-struct)
-       ;:product-specific-attributes (psa/xml-elem->ProductSpecificAttributes xml-struct)
+       :product-specific-attributes (psa/xml-elem->ProductSpecificAttributes xml-struct)
        :projects (pj/xml-elem->Projects xml-struct)
        :related-urls (ru/xml-elem->RelatedURLs xml-struct)
        :spatial-coverage (sc/xml-elem->SpatialCoverage xml-struct)
@@ -80,8 +81,8 @@
                       (ru/generate-related-urls related-urls))
                     (x/element :Metadata_Name {} "dummy")
                     (x/element :Metadata_Version {} "dummy")
-                    (when spatial-coverage
-                      (em/generate-extended-metadatas [(sc/SpatialCoverage->extended-metadata spatial-coverage)]))))))))
+                    (sc/generate-spatial-coverage spatial-coverage)
+                    (psa/generate-product-specific-attributes product-specific-attributes)))))))
 
 (defn validate-xml
   "Validates the XML against the DIF schema."

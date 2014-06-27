@@ -11,14 +11,15 @@
   "Returns a UMM SpatialCoverage from a parsed Collection XML structure"
   [xml-struct]
   ;; DIF: Extended_Metadata.Name=GranuleSpatialRepresention
-  (when-let [ems (em/xml-elem->extended-metadatas xml-struct)]
+  (when-let [ems (em/xml-elem->extended-metadatas xml-struct false)]
     (let [rep (filter #(= SPATIAL_COVERAGE_EXTERNAL_META_NAME (:name %)) ems)]
       (when-not (empty? rep)
         (c/map->SpatialCoverage
           {:granule-spatial-representation (csk/->kebab-case-keyword (:value (first rep)))})))))
 
-(defn SpatialCoverage->extended-metadata
-  "Returns an extended-metadata map for the given SpatialCoverage"
+(defn generate-spatial-coverage
   [spatial-coverage]
-  {:name SPATIAL_COVERAGE_EXTERNAL_META_NAME
-   :value (csk/->SNAKE_CASE_STRING (:granule-spatial-representation spatial-coverage))})
+  (when spatial-coverage
+    (let [extended-metadata {:name SPATIAL_COVERAGE_EXTERNAL_META_NAME
+                             :value (csk/->SNAKE_CASE_STRING (:granule-spatial-representation spatial-coverage))}]
+      (em/generate-extended-metadatas [extended-metadata] false))))
