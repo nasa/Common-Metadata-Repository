@@ -2,7 +2,7 @@
   "Contains functions for converting attributes into a elastic documents"
   (:require [clj-time.format :as f]
             [clojure.string :as s]
-            [cmr.umm.echo10.collection.product-specific-attribute :as coll-psa]
+            [cmr.umm.collection.product-specific-attribute :as coll-psa]
             [cmr.common.services.errors :as errors]))
 
 (defmulti value->elastic-value
