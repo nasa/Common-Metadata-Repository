@@ -32,3 +32,14 @@
                            (where '(= :ROWNUM 1))))]
     (first (j/query db (build stmt)))))
 
+(defn query
+  "Execute a query and log how long it took."
+  [db [stmt & params]]
+  (let [start (System/currentTimeMillis)
+        result (if params
+                 (j/query db [stmt params])
+                 (j/query db [stmt]))
+        millis (- (System/currentTimeMillis) start)]
+    (debug "Query execution took" millis "msec")
+    result))
+

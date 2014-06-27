@@ -239,7 +239,7 @@
                                           (= :c.revision-id :t.revision-id)))))]
 
         (doall (map (partial db-result->concept-map concept-type conn provider-id)
-                    (j/query conn stmt))))))
+                    (sql-utils/query conn stmt))))))
 
   (find-concepts
     [db params]
