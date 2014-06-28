@@ -37,10 +37,7 @@
   (ext-gen/model-gen c/->DataProviderTimestamps ext-gen/date-time ext-gen/date-time (ext-gen/optional ext-gen/date-time)))
 
 (def dif-data-provider-timestamps
-  (ext-gen/model-gen c/->DataProviderTimestamps
-                     ext-gen/date-time
-                     (ext-gen/optional ext-gen/date-time)
-                     (gen/return nil)))
+  (ext-gen/model-gen c/->DataProviderTimestamps ext-gen/date-time ext-gen/date-time (gen/return nil)))
 
 (def entry-titles
   (ext-gen/string-alpha-numeric 1 1030))
