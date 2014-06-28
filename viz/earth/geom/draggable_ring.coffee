@@ -22,12 +22,12 @@ class window.DraggableRing extends Ring
   @fromOrdinates: (ordinates, options={})->
     new DraggableRing(DraggablePoint.fromOrdinates(ordinates), options)
 
-  handleGuiEvent: (event) ->
+  handleGuiEvent: (event, ge) ->
     if event.type == DraggablePoint.MOVE_EVENT
       this.drawLineString()
-      this.notifyGuiEventListeners(DraggableRing.MOVE_EVENT_CACHED)
+      this.notifyGuiEventListeners(DraggableRing.MOVE_EVENT_CACHED, ge)
     else if event.type == DraggablePoint.DRAG_FINISH_EVENT
-      this.notifyGuiEventListeners(DraggableRing.DRAG_FINISH_EVENT_CACHED)
+      this.notifyGuiEventListeners(DraggableRing.DRAG_FINISH_EVENT_CACHED, ge)
       if @callbackFn
         pointStr = this.toOrdinatesString()
         if @id && @id != null
@@ -70,5 +70,5 @@ class window.DraggableRing extends Ring
     this.reinitializeArcs(ge)
     this.drawLineString()
 
-    this.notifyGuiEventListeners(DraggableRing.POINT_INSERTED_EVENT_CACHED)
+    this.notifyGuiEventListeners(DraggableRing.POINT_INSERTED_EVENT_CACHED, ge)
 

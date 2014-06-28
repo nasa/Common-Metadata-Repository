@@ -110,7 +110,10 @@ class window.Map extends Module
                   else
                     Ring.fromOrdinates(g.ords, g.options)
                 when "bounding-rectangle"
-                  new BoundingRectangle(g.west, g.north, g.east, g.south, g.options)
+                  if g.options && g.options.draggable
+                    new DraggableBoundingRectangle(g.west, g.north, g.east, g.south, g.options)
+                  else
+                    new BoundingRectangle(g.west, g.north, g.east, g.south, g.options)
                 else throw "Unexpected geometry type: #{g.type}"
       this.addEventListener(geom)
       geom.display(@ge)

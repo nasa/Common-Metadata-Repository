@@ -36,10 +36,15 @@
 
   (set-viz-geometries [(point 1 1 "hi" "hello")])
 
-  (set-viz-geometries [ring])
+  (set-viz-geometries [{:type :bounding-rectangle
+                        :west 160
+                        :north 10
+                        :east 170
+                        :south -10
+                        :options {:draggable true}}])
 
 
-)
+  )
 
 
 (defn set-viz-geometries [geometries]

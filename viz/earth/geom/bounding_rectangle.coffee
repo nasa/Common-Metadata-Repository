@@ -8,7 +8,9 @@ class window.BoundingRectangle extends Module
     super()
     @id = options.id
     # multiple placemarks are used so we can handle crossing antimeridian
-    @boxPlacemarks = []
+    @box1 = null
+    @box2 = null
+
     @color = BoundingRectangle.DEFAULT_COLOR
     @color = options.color if options.color
 
@@ -24,21 +26,24 @@ class window.BoundingRectangle extends Module
 
   # Adds the ring to google earth
   display: (ge) ->
-    if this.crossesAntimeridan()
-      @boxPlacemarks.push(this.createBoxPolygon(ge, @west, 180))
-      @boxPlacemarks.push(this.createBoxPolygon(ge, -180, @east))
+    if this.crossesAntimeridian()
+      @box1 = this.createBoxPolygon(ge, @west, 180)
+      @box2 = this.createBoxPolygon(ge, -180, @east)
     else
-      @boxPlacemarks.push(this.createBoxPolygon(ge, @west, @east))
+      @box1 = this.createBoxPolygon(ge, @west, @east)
+      @box2 = null
 
-    _.each(@boxPlacemarks, (p)->
-      ge.getFeatures().appendChild(p))
+    ge.getFeatures().appendChild(@box1)
+    ge.getFeatures().appendChild(@box2) if @box2 != null
+
 
   undisplay: (ge) ->
-    _.each(@boxPlacemarks, (p)->
-      ge.getFeatures().removeChild(p))
-    @boxPlacemarks = []
+    ge.getFeatures().removeChild(@box1)
+    ge.getFeatures().removeChild(@box2) if @box2 != null
+    @box1 = null
+    @box2 = null
 
-  crossesAntimeridan: ->
+  crossesAntimeridian: ->
     @west > @east
 
   zoomablePoints: ()->

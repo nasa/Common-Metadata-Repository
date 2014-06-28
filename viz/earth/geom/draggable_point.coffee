@@ -16,19 +16,20 @@ class window.DraggablePoint extends Point
     Point.fromOrdinates(ordinates, DraggablePoint)
 
   # updates the location of the point and notifies listeners
-  setLonAndLat: (lon,lat) ->
+  setLonAndLat: (ge, lon,lat, notify=true) ->
     @lat = lat
     @lon = lon
     this.placemark.setLonAndLat(lon,lat)
-    this.notifyGuiEventListeners(DraggablePoint.MOVE_EVENT_CACHED)
+    if notify
+      this.notifyGuiEventListeners(DraggablePoint.MOVE_EVENT_CACHED, ge)
 
   # Makes the point move to a position rounded on lat and lon
   # of numDigits
-  snapToGrid: (numDigits=2) ->
+  snapToGrid: (ge, numDigits=2) ->
     power = Math.pow(10, numDigits)
     lon = Math.round(@lon*power)/power
     lat = Math.round(@lat*power)/power
-    this.setLonAndLat(lon,lat)
+    this.setLonAndLat(ge, lon,lat)
 
   # Handles mouse events
   handleMouseDown: (event, ge) ->
@@ -39,15 +40,15 @@ class window.DraggablePoint extends Point
   handleMouseMove: (event, ge) ->
     if @dragging
       @moved = true
-      this.setLonAndLat event.getLongitude(), event.getLatitude()
+      this.setLonAndLat(ge, event.getLongitude(), event.getLatitude())
       event.preventDefault()
 
   handleMouseUp: (event, ge) ->
     if @dragging
       @dragging = false
       if @moved
-        this.snapToGrid()
-        this.notifyGuiEventListeners(DraggablePoint.DRAG_FINISH_EVENT_CACHED)
+        this.snapToGrid(ge)
+        this.notifyGuiEventListeners(DraggablePoint.DRAG_FINISH_EVENT_CACHED, ge)
 
   handleClick: (event, ge) ->
     super(event, ge) unless @moved
