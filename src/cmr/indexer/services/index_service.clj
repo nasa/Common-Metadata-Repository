@@ -28,9 +28,10 @@
   "Convert a batch of concepts into elastic docs for bulk indexing."
   [context concept-batch]
   ;; we only handle these formats right now
-  (let [parseable-batch (filterv #(#{"ECHO10" "DIF"} (:format %)) concept-batch)
+  (let [parseable-batch (filterv #(#{"application/echo10+xml" "application/dif+xml"} (:format %)) concept-batch)
         num-skipped (- (count concept-batch) (count parseable-batch))]
-    (debug "Skipping" num-skipped "concepts that are not in a supported format.")
+    (when (> num-skipped 0)
+      (debug "Skipping" num-skipped "concepts that are not in a supported format."))
     (doall
       ;; Remove nils because some granules may fail with an exception and return nil.
       (filter identity
