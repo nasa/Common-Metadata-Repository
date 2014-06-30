@@ -11,7 +11,7 @@
             [cmr.spatial.mbr :as m]
             [cmr.spatial.ring :as r]
             [cmr.spatial.derived :as derived]
-            [cmr.spatial.codec]
+            [cmr.spatial.codec :as codec]
             [clojure.string :as str]
             [cmr.spatial.dev.viz-helper :as viz-helper]
             [cmr.spatial.serialize :as srl]
@@ -34,21 +34,7 @@
 (defn search-poly
   "Returns a url encoded polygon for searching"
   [& ords]
-  (cmr.spatial.codec/url-encode (apply polygon ords)))
-
-(defn cat-rest->native
-  "Helper for creating tests that will output the command to create a polygon from a catalog rest test"
-  [& ords]
-  (let [pairs (->> ords
-                   (partition 2)
-                   reverse)
-        pair-strs (map (fn [[lon lat]]
-                         (str lon " " lat))
-                       pairs)
-        ordinates-str (str/join ", " pair-strs)
-        polygon-str (str "(polygon " ordinates-str ")")]
-    (dev-util/copy-to-clipboard polygon-str)
-    (println "Copied to clipboard:" polygon-str)))
+  (codec/url-encode (apply polygon ords)))
 
 (def spatial-viz-enabled
   "Set this to true to debug test failures with the spatial visualization."
@@ -74,63 +60,108 @@
                                 (srl/shape->mbr geometry)
                                 (srl/shape->lr geometry)])))
 
+
 (deftest spatial-search-test
-  (let [polygon-ne (polygon 20 10, 30 20, 10 20, 20 10)
-        polygon-se (polygon 30 -20, 20 -10, 10 -20, 30 -20)
-        polygon-sw (polygon -20 -20, -10 -10, -30 -10,-20 -20)
-        polygon-nw (polygon -20 10, -30 20, -30 10, -20 10)
-        polygon-half-earth (polygon -179.9 0, -179.9 -89.9, 0 -89.9, 0 0, 0 89.9, -179.9 89.9, -179.9 0)
-        polygon-north-pole (polygon 45, 80, 135, 80, -135, 80, -45, 80,  45 80)
-        polygon-south-pole (polygon -45 -80, -135 -80, 135 -80, 45 -80, -45 -80)
-        polygon-antimeridian (polygon 135 -10, -135 -10, -135 10, 135 10, 135 -10)
-        polygon-near-sp (polygon 168.1075 -78.0047, 170.1569,-78.4112, 172.019,-78.0002, 169.9779,-77.6071, 168.1075 -78.0047)
+  (let [coll (d/ingest "PROV1" (dc/collection {:spatial-coverage (dc/spatial :geodetic)}))
+        make-gran (fn [ur & shapes]
+                    (d/ingest "PROV1" (dg/granule coll {:granule-ur ur
+                                                        :spatial-coverage (apply dg/spatial shapes)})))
+
+        ;; Bounding rectangles
+        whole-world (make-gran "whole-world" (m/mbr -180 90 180 -90))
+        touches-np (make-gran "touches-np" (m/mbr 45 90 55 70))
+        touches-sp (make-gran "touches-sp" (m/mbr -160 -70 -150 -90))
+        across-am-br (make-gran "across-am-br" (m/mbr 170 10 -170 -10))
+        normal-br (make-gran "normal-br" (m/mbr 10 10 20 0))
+
+        ;; Polygons
+        wide-north (make-gran "wide-north" (polygon -70 20, 70 20, 70 30, -70 30, -70 20))
+        wide-south (make-gran "wide-south" (polygon -70 -30, 70 -30, 70 -20, -70 -20, -70 -30))
+        across-am-poly (make-gran "across-am-poly" (polygon 170 35, -175 35, -170 45, 175 45, 170 35))
+        on-np (make-gran "on-np" (polygon 45 85, 135 85, -135 85, -45 85, 45 85))
+        on-sp (make-gran "on-sp" (polygon -45 -85, -135 -85, 135 -85, 45 -85, -45 -85))
+        normal-poly (make-gran "normal-poly" (polygon -20 -10, -10 -10, -10 10, -20 10, -20 -10))
 
         ;; polygon with holes
         outer (r/ords->ring -5.26,-2.59, 11.56,-2.77, 10.47,8.71, -5.86,8.63, -5.26,-2.59)
         hole1 (r/ords->ring 6.95,2.05, 2.98,2.06, 3.92,-0.08, 6.95,2.05)
         hole2 (r/ords->ring 5.18,6.92, -1.79,7.01, -2.65,5, 4.29,5.05, 5.18,6.92)
-        polygon-with-holes  (p/polygon [outer hole1 hole2])
-
-        coll (d/ingest "PROV1" (dc/collection {:spatial-coverage (dc/spatial :geodetic)}))
-        make-gran (fn [& polygons]
-                    (d/ingest "PROV1" (dg/granule coll {:spatial-coverage (apply dg/spatial polygons)})))
-        gran1 (make-gran polygon-ne polygon-se)
-        gran2 (make-gran polygon-sw)
-        gran3 (make-gran polygon-nw)
-        gran4 (make-gran polygon-ne)
-        gran11 (make-gran polygon-half-earth)
-        gran6 (make-gran polygon-north-pole)
-        gran7 (make-gran polygon-south-pole)
-        gran8 (make-gran polygon-antimeridian)
-        gran9 (make-gran polygon-near-sp)
-        gran10 (make-gran polygon-with-holes)]
+        polygon-with-holes  (make-gran "polygon-with-holes" (p/polygon [outer hole1 hole2]))]
     (index/refresh-elastic-index)
-    (are [ords items]
-         (let [found (search/find-refs :granule {:polygon (apply search-poly ords) })
-               matches? (d/refs-match? items found)]
-           (when (and (not matches?) spatial-viz-enabled)
-             (println "Displaying failed granules and search area")
-             (println "Found: " (pr-str found))
-             (viz-helper/clear-geometries)
-             (display-indexed-granules items)
-             (display-search-area (apply polygon ords)))
-           matches?)
 
-         ;; Related the polygon with the hole
-         ;; Inside holes
-         [4.1,0.64,4.95,0.97,6.06,1.76,3.8,1.5,4.1,0.64] []
-         [1.41,5.12,3.49,5.52,2.66,6.11,0.13,6.23,1.41,5.12] []
-         ;; Partially inside a hole
-         [3.58,-1.34,4.95,0.97,6.06,1.76,3.8,1.5,3.58,-1.34] [gran10]
-         ;; Covers a hole
-         [3.58,-1.34,5.6,0.05,7.6,2.33,2.41,2.92,3.58,-1.34] [gran10]
-         ;; points inside both holes
-         [4.44,0.66,5.4,1.35,2.66,6.11,0.13,6.23,4.44,0.66] [gran10]
-         ;; completely covers the polygon with holes
-         [-6.45,-3.74,12.34,-4.18,12,9.45,-6.69,9.2,-6.45,-3.74] [gran10 gran11]
+    (testing "bounding rectangle searches"
+      (are [wnes items]
+           (let [found (search/find-refs :granule {:bounding-box (codec/url-encode (apply m/mbr wnes))
+                                                   :page-size 50})
+                 matches? (d/refs-match? items found)]
+             (when-not matches?
+               (println "Expected:" (pr-str (map :granule-ur items)))
+               (println "Actual:" (->> found :refs (map :name) pr-str)))
+             matches?)
 
-         ;; Normal searching
-         [10 10, 30 10, 30 20, 10 20, 10 10] [gran1 gran4]
-         [173.34,-77.17, 171.41,-77.08, 170.64,-78.08, 173.71,-78.05, 173.34,-77.17] [gran9])))
+           [-23.43 5 25.54 -6.31] [whole-world polygon-with-holes normal-poly normal-br]
+
+           ;; inside polygon with hole
+           [4.03,1.51,4.62,0.92] [whole-world]
+           ;; corner points inside different holes
+           [4.03,5.94,4.35,0.92] [whole-world polygon-with-holes]
+
+           ;; just under wide north polygon
+           [-1.82,46.56,5.25,44.04] [whole-world]
+           ; [-1.74,46.98,5.25,44.04] [whole-world wide-north]
+           [-1.74 47.05 5.27 44.04] [whole-world wide-north]
+
+           ;; vertical slice of earth
+           [-10 90 10 -90] [whole-world on-np on-sp wide-north wide-south polygon-with-holes
+                            normal-poly normal-br]
+
+           ;; crosses am
+           [166.11,53.04,-166.52,-19.14] [whole-world across-am-poly across-am-br]
+
+           ;; whole world
+           [-180 90 180 -90] [whole-world touches-np touches-sp across-am-br normal-br
+                              wide-north wide-south across-am-poly on-sp on-np normal-poly
+                              polygon-with-holes]))
+
+    (testing "polygon searches"
+      (are [ords items]
+           (let [found (search/find-refs :granule {:polygon (apply search-poly ords) })
+                 matches? (d/refs-match? items found)]
+             (when (and (not matches?) spatial-viz-enabled)
+               (println "Displaying failed granules and search area")
+               (println "Found: " (pr-str found))
+               (viz-helper/clear-geometries)
+               (display-indexed-granules items)
+               (display-search-area (apply polygon ords)))
+             matches?)
+
+           [20.16,-13.7,21.64,12.43,12.47,11.84,-22.57,7.06,20.16,-13.7]
+           [whole-world normal-poly normal-br polygon-with-holes]
+
+           [0.53,39.23,21.57,59.8,-112.21,84.48,-13.37,40.91,0.53,39.23]
+           [whole-world on-np wide-north]
+
+           ;; around north pole
+           [58.41,76.95,163.98,80.56,-122.99,81.94,-26.18,82.82,58.41,76.95]
+           [whole-world on-np touches-np]
+
+           [-161.53,-69.93,25.43,-51.08,13.89,-39.94,-2.02,-40.67,-161.53,-69.93]
+           [whole-world on-sp wide-south touches-sp]
+
+           [-163.9,49.6,171.51,53.82,166.96,-11.32,-168.36,-14.86,-163.9,49.6]
+           [whole-world across-am-poly across-am-br]
+
+           ;; Related the polygon with the hole
+           ;; Inside holes
+           [4.1,0.64,4.95,0.97,6.06,1.76,3.8,1.5,4.1,0.64] [whole-world]
+           [1.41,5.12,3.49,5.52,2.66,6.11,0.13,6.23,1.41,5.12] [whole-world]
+           ;; Partially inside a hole
+           [3.58,-1.34,4.95,0.97,6.06,1.76,3.8,1.5,3.58,-1.34] [whole-world polygon-with-holes]
+           ;; Covers a hole
+           [3.58,-1.34,5.6,0.05,7.6,2.33,2.41,2.92,3.58,-1.34] [whole-world polygon-with-holes]
+           ;; points inside both holes
+           [4.44,0.66,5.4,1.35,2.66,6.11,0.13,6.23,4.44,0.66] [whole-world polygon-with-holes]
+           ;; completely covers the polygon with holes
+           [-6.45,-3.74,12.34,-4.18,12,9.45,-6.69,9.2,-6.45,-3.74] [whole-world polygon-with-holes normal-br]))))
 
 

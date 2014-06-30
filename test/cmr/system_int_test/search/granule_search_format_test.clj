@@ -13,6 +13,11 @@
 
 (use-fixtures :each (ingest/reset-fixture "CMR_PROV1"))
 
+(comment
+(ingest/reset)
+(ingest/create-provider "CMR_PROV1")
+)
+
 (deftest search-granules-in-xml-metadata
   ;; TODO we can add additional formats here later such as iso
   (let [coll1 (d/ingest "CMR_PROV1" (dc/collection))
