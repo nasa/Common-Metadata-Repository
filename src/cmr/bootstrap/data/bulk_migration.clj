@@ -137,6 +137,8 @@
   ([system provider-id  collection-id]
    (let [dataset-table (catalog-rest-dataset-table system provider-id)
          collection-table (metadata-db-concept-table system provider-id :collection)
+         ;; FIXME: Format is incorrect when copied over. Catalog REST has a constant like "ECHO10"
+         ;; but we expect application/echo10+xml
          stmt (format (str "INSERT INTO %s (id, concept_id, native_id, metadata, format, short_name, "
                            "version_id, entry_title, delete_time, revision_date) SELECT %s_seq.NEXTVAL,"
                            "echo_collection_id, dataset_id, compressed_xml, xml_mime_type, short_name,"
