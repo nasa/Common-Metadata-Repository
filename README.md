@@ -279,6 +279,12 @@ Polygon points are provided in clockwise order. The last point should match the 
 
     curl "http://localhost:3003/granules?polygon=10,10,10,20,30,20,30,10,10,10"
 
+#### Bounding Box
+
+Bounding boxes define an area on the earth aligned with longitude and latitude. The Bounding box parameters must be 4 comma-separated numbers: lower left longitude,lower left latitude,upper right longitude,upper right latitude.
+
+    curl "http://localhost:3003/granules?bounding_box=-10,-5,10,5
+
 ### Find granules by orbit number
 
   Find granules with an orbit number of 10

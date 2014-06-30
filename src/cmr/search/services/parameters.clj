@@ -55,7 +55,8 @@
              :concept-id :string
              :exclude :exclude
              :downloadable :boolean
-             :polygon :polygon}})
+             :polygon :polygon
+             :bounding-box :bounding-box}})
 
 (def always-case-sensitive
   "A set of parameters that will always be case sensitive"
