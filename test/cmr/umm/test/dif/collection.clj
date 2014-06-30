@@ -46,10 +46,6 @@
   (for-all [collection coll-gen/dif-collections]
     (let [xml (dif/umm->dif-xml collection)
           parsed-dif (c/parse-collection xml)
-          ;; FIXME Leo: Remove the data-provider-timestamps. See Katie's answer to number 8 in the document.
-          ;; add the required InsertTime and LastUpdate for ECHO10 schema validation
-          data-provider-timestamps (first (gen/sample coll-gen/data-provider-timestamps 1))
-          parsed-dif (assoc parsed-dif :data-provider-timestamps data-provider-timestamps)
           echo10-xml (echo10/umm->echo10-xml parsed-dif)
           parsed-echo10 (echo10-c/parse-collection echo10-xml)]
       (and (collections-match? parsed-echo10 collection)
@@ -103,8 +99,8 @@
       <Long_Name>Systeme Probatoire Pour l'Observation de la Terre-4</Long_Name>
     </Source_Name>
     <Temporal_Coverage>
-      <Start_Date>1996-02-24T22:20:41-05:00</Start_Date>
-      <Stop_Date>1997-03-24T22:20:41-05:00</Stop_Date>
+      <Start_Date>1996-02-24</Start_Date>
+      <Stop_Date>1997-03-24</Stop_Date>
     </Temporal_Coverage>
     <Temporal_Coverage>
       <Start_Date>1998-02-24T22:20:41-05:00</Start_Date>
@@ -279,13 +275,16 @@
                                {:short-name "geodata_1848"
                                 :long-name "Global Land Cover 2000 (GLC 2000)"
                                 :version-id "006"})
+                    :data-provider-timestamps (umm-c/map->DataProviderTimestamps
+                                                {:insert-time (p/parse-date "2013-02-21")
+                                                 :update-time (p/parse-date "2013-10-22")})
                     ;:spatial-keywords ["Word-2" "Word-1" "Word-0"]
                     :temporal
                     (umm-c/map->Temporal
                       {:range-date-times
                        [(umm-c/map->RangeDateTime
-                          {:beginning-date-time (p/parse-datetime "1996-02-24T22:20:41-05:00")
-                           :ending-date-time (p/parse-datetime "1997-03-24T22:20:41-05:00")})
+                          {:beginning-date-time (p/parse-date "1996-02-24")
+                           :ending-date-time (p/parse-date "1997-03-24")})
                         (umm-c/map->RangeDateTime
                           {:beginning-date-time (p/parse-datetime "1998-02-24T22:20:41-05:00")
                            :ending-date-time (p/parse-datetime "1999-03-24T22:20:41-05:00")})]
