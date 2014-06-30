@@ -33,7 +33,7 @@
         (math-values-close? (Math/tan d) (tan d))
         (math-values-close? (Math/atan d) (atan d))
         (math-values-close? (Math/abs d) (abs d))
-        (math-values-close? (Math/sqrt d)  (sqrt d))))))
+        (math-values-close? (Math/sqrt d) (sqrt d))))))
 
 (defspec test-math-atan2-accuracy 2000
   (for-all [dvalue1 (gen/fmap double gen/ratio)

@@ -87,7 +87,7 @@
   [r1 r2]
   (or
     ;; Do any of the arcs intersect?
-    ;; TODO this should use the multiple arc intersection algorithm to avoid O(N^2) intersections
+    ;; TODO performance improvement: this should use the multiple arc intersection algorithm to avoid O(N^2) intersections
     (some (fn [[a1 a2]]
                (seq (a/intersections a1 a2)))
           (for [a1 (:arcs r1) a2 (:arcs r2)] [a1 a2]))

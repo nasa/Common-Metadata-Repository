@@ -18,12 +18,29 @@
             [cmr.spatial.test.generators :as sgen]
             [cmr.spatial.serialize :as srl])
   (:import cmr.spatial.ring.Ring
-           cmr.spatial.polygon.Polygon))
+           cmr.spatial.polygon.Polygon
+           cmr.spatial.point.Point
+           cmr.spatial.mbr.Mbr
+           cmr.spatial.line.Line))
 
 (defmulti round-shape
   "Rounds the shape as it would be rounded when stored so that we can compare items"
   (fn [shape]
     (type shape)))
+
+(defmethod round-shape Mbr
+  [mbr]
+  (let [r (partial round 7)
+        {w :west n :north e :east s :south} mbr]
+    (m/mbr (r w) (r n) (r e) (r s))))
+
+(defmethod round-shape Point
+  [point]
+  (p/round-point 7 point))
+
+(defmethod round-shape Line
+  [line]
+  (l/line (map (partial p/round-point 7) (:points line))))
 
 (defmethod round-shape Ring
   [ring]
@@ -49,7 +66,7 @@
 
 (defspec ords-serialize-test {:times 100 :printer-fn print-failed-shapes}
   (for-all [shapes (gen/fmap #(map round-shape %)
-                             (gen/vector sgen/polygons-invalid 1 5))]
+                             (gen/vector sgen/geometries 1 5))]
     (let [ords-map (srl/shapes->ords-info-map shapes)
           {:keys [ords ords-info]} ords-map
           parsed-shapes (srl/ords-info->shapes ords-info ords)]

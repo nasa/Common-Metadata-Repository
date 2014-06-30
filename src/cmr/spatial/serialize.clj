@@ -15,6 +15,9 @@
             [cmr.spatial.ring :as r]
             [cmr.spatial.math :refer :all]
             [cmr.spatial.polygon :as poly]
+            [cmr.spatial.point :as p]
+            [cmr.spatial.line :as l]
+            [cmr.spatial.mbr :as m]
             [cmr.spatial.lr-binary-search :as lr]
             [clojure.set :as set]))
 
@@ -86,7 +89,7 @@
     ;; TODO reduce size of stored rings and polygons by dropping the duplicate last two ordinates of a ring
     (concat
       [{:type :polygon
-       :ords (map ordinate->stored (r/ring->ords (first rings)))}]
+        :ords (map ordinate->stored (r/ring->ords (first rings)))}]
       ;; holes
       (map (fn [r]
              {:type :hole
@@ -99,7 +102,57 @@
 
   (shape->lr
     [polygon]
-    (lr/find-lr polygon)))
+    (lr/find-lr polygon))
+
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  cmr.spatial.mbr.Mbr
+
+  (shape->stored-ords
+    [{:keys [west north east south]}]
+    [{:type :br
+      :ords (map ordinate->stored [west north east south])}])
+
+  (shape->mbr
+    [br]
+    br)
+
+  (shape->lr
+    [br]
+    br)
+
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  cmr.spatial.point.Point
+
+  (shape->stored-ords
+    [{:keys [lon lat]}]
+    [{:type :point
+      :ords [(ordinate->stored lon) (ordinate->stored lat)]}])
+
+  (shape->mbr
+    [point]
+    (m/point->mbr point))
+
+  (shape->lr
+    [point]
+    (m/point->mbr point))
+
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  cmr.spatial.line.Line
+
+  (shape->stored-ords
+    [line]
+    [{:type :line
+      :ords (map ordinate->stored (l/line->ords line))}])
+
+  (shape->mbr
+    [line]
+    (:mbr line))
+
+  (shape->lr
+    [line]
+    ;; TODO performance enhancement. If a line has a vertical arc we could use that to define
+    ;; an LR that would be larger than just a point
+    (m/point->mbr (first (:points line)))))
 
 
 (defmulti stored-ords->shape
@@ -115,11 +168,26 @@
   [type ords]
   (apply r/ords->ring (map stored->ordinate ords)))
 
+(defmethod stored-ords->shape :br
+  [type ords]
+  (apply m/mbr (map stored->ordinate ords)))
+
+(defmethod stored-ords->shape :point
+  [type ords]
+  (apply p/point (map stored->ordinate ords)))
+
+(defmethod stored-ords->shape :line
+  [type ords]
+  (apply l/ords->line (map stored->ordinate ords)))
+
 (def shape-type->integer
   "Converts a shape type into an integer for storage"
   {:polygon 1
    ;; A hole will immediately follow the shape which has the hole
-   :hole 2})
+   :hole 2
+   :br 3
+   :point 4
+   :line 5})
 
 (def integer->shape-type
   "Map of shape type integers to the equivalent keyword type"

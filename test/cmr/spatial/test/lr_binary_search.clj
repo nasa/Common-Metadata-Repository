@@ -167,7 +167,7 @@
                     (update-in [:rings] (fn [rings]
                                           (vec (map-indexed
                                                  (fn [i ring]
-                                                   (assoc-in ring [:options :id] i))
+                                                   (assoc-in ring [:options :id] (inc i)))
                                                  rings)))))
         _ (println "Found LR:" (pr-str lr))]
 
@@ -184,7 +184,7 @@
         ords (map #(Double. ^String %) (str/split ords-str #","))
         ring (d/calculate-derived (apply r/ords->ring ords))
         polygon (swap! displaying-polygon-atom (fn [polygon]
-                                                 (assoc-in polygon [:rings (Long. id)] ring)))
+                                                 (assoc-in polygon [:rings (dec (Long. id))] ring)))
         lr (lbs/find-lr polygon false)
         _ (println "Found LR:" (pr-str lr))]
 

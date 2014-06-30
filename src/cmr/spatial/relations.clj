@@ -12,7 +12,7 @@
            cmr.spatial.polygon.Polygon))
 
 (defprotocol SpatialRelations
-  "TODO document the protocol"
+  "Defines functions for determining relations between different spatial areas."
 
   (mbr [shape] "Returns the minimum bounding rectangle of the shape")
 
