@@ -31,7 +31,9 @@
                 :spatial-keyword :string
                 :two-d-coordinate-system-name :string
                 :science-keywords :science-keywords
-                :downloadable :boolean}
+                :downloadable :boolean
+                :polygon :polygon
+                :bounding-box :bounding-box}
    :granule {:granule-ur :string
              :collection-concept-id :string
              :producer-granule-id :string
