@@ -49,7 +49,7 @@
          "1,1,2,2,3,3,4,4,5"))
   (testing "invalid mbrs"
     (are [s] (= {:errors [(cmesg/shape-decode-msg "bounding_box" s)]}
-                (c/url-decode :mbr s))
+                (c/url-decode :br s))
          "foo"
          "45,,45"
          "1,1,1,a"
@@ -74,5 +74,5 @@
 
 (defspec mbr-encode-decode-test 100
   (for-all [shape sgen/mbrs]
-    (= shape (c/url-decode :mbr (c/url-encode shape)))))
+    (= shape (c/url-decode :br (c/url-encode shape)))))
 
