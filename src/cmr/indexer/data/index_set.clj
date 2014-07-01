@@ -89,47 +89,73 @@
    :dynamic "strict"
    :properties {}})
 
+(def spatial-coverage-fields
+  "Defines the sets of fields shared by collections and granules for indexing spatial data."
+  {;; Minimum Bounding Rectangle Fields
+   ;; If a granule has multiple shapes then the MBR will cover all of the shapes
+   :mbr-west double-field-mapping
+   :mbr-north double-field-mapping
+   :mbr-east double-field-mapping
+   :mbr-south double-field-mapping
+   :mbr-crosses-antimeridian bool-field-mapping
+
+   ;; Largest Interior Rectangle Fields
+   ;; If a granule has multiple shapes then the LR will be the largest in one of the shapes
+   :lr-west double-field-mapping
+   :lr-north double-field-mapping
+   :lr-east double-field-mapping
+   :lr-south double-field-mapping
+   :lr-crosses-antimeridian bool-field-mapping
+
+   ;; ords-info contains tuples of shapes stored in ords
+   ;; Each tuple contains the shape type and the number of ordinates
+   :ords-info (stored int-field-mapping)
+   ;; ords contains longitude latitude pairs (ordinates) of all the shapes
+   :ords (stored int-field-mapping)})
+
+
 (def collection-mapping
   {:collection {:dynamic "strict",
                 :_source {:enabled false},
                 :_all {:enabled false},
                 :_id   {:path "concept-id"},
                 :_ttl {:enabled true},
-                :properties {:concept-id            (stored string-field-mapping)
-                             :entry-id           (stored string-field-mapping)
-                             :entry-id.lowercase string-field-mapping
-                             :entry-title           (stored string-field-mapping)
-                             :entry-title.lowercase string-field-mapping
-                             :provider-id           (stored string-field-mapping)
-                             :provider-id.lowercase string-field-mapping
-                             :short-name            (stored string-field-mapping)
-                             :short-name.lowercase  string-field-mapping
-                             :version-id            (stored string-field-mapping)
-                             :version-id.lowercase  string-field-mapping
-                             :revision-date         date-field-mapping
-                             :processing-level-id   string-field-mapping
-                             :processing-level-id.lowercase  string-field-mapping
-                             :collection-data-type  string-field-mapping
-                             :collection-data-type.lowercase  string-field-mapping
-                             :start-date            date-field-mapping
-                             :end-date              date-field-mapping
-                             :platform-sn           string-field-mapping
-                             :platform-sn.lowercase string-field-mapping
-                             :instrument-sn           string-field-mapping
-                             :instrument-sn.lowercase string-field-mapping
-                             :sensor-sn             string-field-mapping
-                             :sensor-sn.lowercase   string-field-mapping
-                             :project-sn            string-field-mapping
-                             :project-sn.lowercase  string-field-mapping
-                             :archive-center        string-field-mapping
-                             :archive-center.lowercase string-field-mapping
-                             :spatial-keyword        string-field-mapping
-                             :spatial-keyword.lowercase string-field-mapping
-                             :two-d-coord-name string-field-mapping
-                             :two-d-coord-name.lowercase string-field-mapping
-                             :attributes attributes-field-mapping
-                             :science-keywords science-keywords-field-mapping
-                             :downloadable bool-field-mapping}}})
+                :properties (merge {:concept-id            (stored string-field-mapping)
+                                    :entry-id           (stored string-field-mapping)
+                                    :entry-id.lowercase string-field-mapping
+                                    :entry-title           (stored string-field-mapping)
+                                    :entry-title.lowercase string-field-mapping
+                                    :provider-id           (stored string-field-mapping)
+                                    :provider-id.lowercase string-field-mapping
+                                    :short-name            (stored string-field-mapping)
+                                    :short-name.lowercase  string-field-mapping
+                                    :version-id            (stored string-field-mapping)
+                                    :version-id.lowercase  string-field-mapping
+                                    :revision-date         date-field-mapping
+                                    :processing-level-id   string-field-mapping
+                                    :processing-level-id.lowercase  string-field-mapping
+                                    :collection-data-type  string-field-mapping
+                                    :collection-data-type.lowercase  string-field-mapping
+                                    :start-date            date-field-mapping
+                                    :end-date              date-field-mapping
+                                    :platform-sn           string-field-mapping
+                                    :platform-sn.lowercase string-field-mapping
+                                    :instrument-sn           string-field-mapping
+                                    :instrument-sn.lowercase string-field-mapping
+                                    :sensor-sn             string-field-mapping
+                                    :sensor-sn.lowercase   string-field-mapping
+                                    :project-sn            string-field-mapping
+                                    :project-sn.lowercase  string-field-mapping
+                                    :archive-center        string-field-mapping
+                                    :archive-center.lowercase string-field-mapping
+                                    :spatial-keyword        string-field-mapping
+                                    :spatial-keyword.lowercase string-field-mapping
+                                    :two-d-coord-name string-field-mapping
+                                    :two-d-coord-name.lowercase string-field-mapping
+                                    :attributes attributes-field-mapping
+                                    :science-keywords science-keywords-field-mapping
+                                    :downloadable bool-field-mapping}
+                                   spatial-coverage-fields)}})
 
 (def granule-setting {:index {:number_of_shards 6,
                               :number_of_replicas 1,
@@ -142,73 +168,52 @@
     :_all {"enabled" false},
     :_id  {:path "concept-id"},
     :_ttl {:enabled true},
-    :properties {:concept-id            (stored string-field-mapping)
-                 :collection-concept-id (stored string-field-mapping)
+    :properties (merge
+                  {:concept-id            (stored string-field-mapping)
+                   :collection-concept-id (stored string-field-mapping)
 
-                 ;; Collection fields added strictly for sorting granule results
-                 :entry-title.lowercase string-field-mapping
-                 :short-name.lowercase  string-field-mapping
-                 :version-id.lowercase  string-field-mapping
+                   ;; Collection fields added strictly for sorting granule results
+                   :entry-title.lowercase string-field-mapping
+                   :short-name.lowercase  string-field-mapping
+                   :version-id.lowercase  string-field-mapping
 
-                 :provider-id           (stored string-field-mapping)
-                 :provider-id.lowercase string-field-mapping
+                   :provider-id           (stored string-field-mapping)
+                   :provider-id.lowercase string-field-mapping
 
-                 :granule-ur            (stored string-field-mapping)
-                 :granule-ur.lowercase  string-field-mapping
-                 :producer-gran-id (stored string-field-mapping)
-                 :producer-gran-id.lowercase string-field-mapping
-                 :day-night (stored string-field-mapping)
-                 :day-night.lowercase string-field-mapping
+                   :granule-ur            (stored string-field-mapping)
+                   :granule-ur.lowercase  string-field-mapping
+                   :producer-gran-id (stored string-field-mapping)
+                   :producer-gran-id.lowercase string-field-mapping
+                   :day-night (stored string-field-mapping)
+                   :day-night.lowercase string-field-mapping
 
-                 ;; We need to sort by a combination of producer granule and granule ur
-                 ;; It should use producer granule id if present otherwise the granule ur is used
-                 ;; The producer granule id will be put in this field if present otherwise it
-                 ;; will default to granule-ur. This avoids the solution Catalog REST uses which is
-                 ;; to use a sort script which is (most likely) much slower.
-                 :readable-granule-name-sort string-field-mapping
+                   ;; We need to sort by a combination of producer granule and granule ur
+                   ;; It should use producer granule id if present otherwise the granule ur is used
+                   ;; The producer granule id will be put in this field if present otherwise it
+                   ;; will default to granule-ur. This avoids the solution Catalog REST uses which is
+                   ;; to use a sort script which is (most likely) much slower.
+                   :readable-granule-name-sort string-field-mapping
 
-                 :platform-sn           string-field-mapping
-                 :platform-sn.lowercase string-field-mapping
-                 :instrument-sn         string-field-mapping
-                 :instrument-sn.lowercase string-field-mapping
-                 :sensor-sn             string-field-mapping
-                 :sensor-sn.lowercase   string-field-mapping
-                 :start-date (stored date-field-mapping)
-                 :end-date (stored date-field-mapping)
-                 :size (stored double-field-mapping)
-                 :cloud-cover (stored double-field-mapping)
-                 :orbit-calculated-spatial-domains orbit-calculated-spatial-domain-mapping
-                 :project-refs string-field-mapping
-                 :project-refs.lowercase string-field-mapping
-                 :revision-date         date-field-mapping
-                 :downloadable bool-field-mapping
-                 :attributes attributes-field-mapping
-                 :downloadable-urls (stored string-field-mapping)
-                 ;:browse-urls (stored string-field-mapping)
-
-                 ;; Spatial coverage fields
-
-                 ;; Minimum Bounding Rectangle Fields
-                 ;; If a granule has multiple shapes then the MBR will cover all of the shapes
-                 :mbr-west double-field-mapping
-                 :mbr-north double-field-mapping
-                 :mbr-east double-field-mapping
-                 :mbr-south double-field-mapping
-                 :mbr-crosses-antimeridian bool-field-mapping
-
-                 ;; Largest Interior Rectangle Fields
-                 ;; If a granule has multiple shapes then the LR will be the largest in one of the shapes
-                 :lr-west double-field-mapping
-                 :lr-north double-field-mapping
-                 :lr-east double-field-mapping
-                 :lr-south double-field-mapping
-                 :lr-crosses-antimeridian bool-field-mapping
-
-                 ;; ords-info contains tuples of shapes stored in ords
-                 ;; Each tuple contains the shape type and the number of ordinates
-                 :ords-info (stored int-field-mapping)
-                 ;; ords contains longitude latitude pairs (ordinates) of all the shapes
-                 :ords (stored int-field-mapping)}}})
+                   :platform-sn           string-field-mapping
+                   :platform-sn.lowercase string-field-mapping
+                   :instrument-sn         string-field-mapping
+                   :instrument-sn.lowercase string-field-mapping
+                   :sensor-sn             string-field-mapping
+                   :sensor-sn.lowercase   string-field-mapping
+                   :start-date (stored date-field-mapping)
+                   :end-date (stored date-field-mapping)
+                   :size (stored double-field-mapping)
+                   :cloud-cover (stored double-field-mapping)
+                   :orbit-calculated-spatial-domains orbit-calculated-spatial-domain-mapping
+                   :project-refs string-field-mapping
+                   :project-refs.lowercase string-field-mapping
+                   :revision-date         date-field-mapping
+                   :downloadable bool-field-mapping
+                   :attributes attributes-field-mapping
+                   :downloadable-urls (stored string-field-mapping)
+                   ;:browse-urls (stored string-field-mapping)
+                   }
+                  spatial-coverage-fields)}})
 
 (defn index-set
   "Returns the index-set configuration"

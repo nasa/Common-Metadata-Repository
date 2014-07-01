@@ -12,7 +12,8 @@
             [cmr.indexer.services.concepts.attribute :as attrib]
             [cmr.indexer.services.concepts.orbit-calculated-spatial-domain :as ocsd]
             [cmr.indexer.services.concepts.spatial :as spatial]
-            [cmr.common.cache :as cache]))
+            [cmr.common.cache :as cache])
+  (:import cmr.spatial.mbr.Mbr))
 
 (defn- fetch-parent-collection
   "Retrieve the parent collection umm from the db"
@@ -31,12 +32,20 @@
 (defn spatial->elastic
   [parent-collection granule]
   (try
-    (when (get-in granule [:spatial-coverage :geometries])
+    (when-let [geometries (seq (get-in granule [:spatial-coverage :geometries]))]
       (let [gsr (get-in parent-collection [:spatial-coverage :granule-spatial-representation])]
-        (if (= gsr :geodetic)
-          ;; Only index the types we support. We will ignore the other kinds. Adding a warning
-          ;; turned out to be way too much logging.
+        ;; TODO Add support for all granule spatial representations and geometries
+        (cond
+          (= gsr :geodetic)
           (spatial/spatial->elastic-docs gsr granule)
+
+          (= gsr :cartesian)
+          (let [[supported not-supported] (split-with #(= (type %) Mbr) geometries)]
+            (when (seq not-supported)
+              (info "Ignoring indexing spatial of spatial for non supported cartesian types"))
+            (spatial/spatial->elastic-docs gsr (assoc-in granule [:spatial-coverage :geometries] supported)))
+
+          :else
           (info "Ignoring indexing spatial of granule spatial representation of" gsr))))
     (catch Exception e
       (error e (format "Error generating spatial for granule: %s. Skipping spatial."
