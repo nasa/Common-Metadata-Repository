@@ -126,6 +126,12 @@
             (when contains-north-pole [p/north-pole])
             (when contains-south-pole [p/south-pole]))))
 
+(defn distinct-points
+  "Lazily returns a set of distinct points. Works by rounding the points so that if they are very
+  close they will be considered equal"
+  [points]
+  (distinct (map (partial p/round-point 11) points)))
+
 ;; The default implementation will find intersections of an arc through the middle of the MBR of the
 ;; ring. It returns the midpoints of those intersections.
 (defmethod ring->lr-search-points :default
@@ -138,16 +144,16 @@
         intersections (if (and (= -180.0 (:west mbr))
                                (= 180.0 (:east mbr)))
                         ;; The vertical arc above will be on the prime meridian. Try the antimeridian as well.
-                        (distinct
+                        (distinct-points
                           (concat intersections
                                   (arc-ring-intersection-points
                                     (mbr->vert-dividing-arc (assoc mbr :west 179.0 :east -179.0))
                                     ring)))
-                        (distinct intersections))]
+                        (distinct-points intersections))]
 
     ;; Between at least 2 of the points there will be a midpoint in the ring.
     ;; Create a list of test points from midpoints of all combinations of points.
-    (distinct
+    (distinct-points
       (map (fn [[p1 p2]]
              (a/midpoint (a/arc p1 p2)))
            (combo/combinations intersections 2)))))
@@ -169,11 +175,11 @@
       ;; through the middle of the MBR and the ring and all the holes. The midpoints of the
       ;; intersections should result in a point that will work.
       (let [vert-arc (mbr->vert-dividing-arc mbr)
-            intersections (distinct (mapcat (partial arc-ring-intersection-points vert-arc)
-                                            (:rings polygon)))]
+            intersections (distinct-points (mapcat (partial arc-ring-intersection-points vert-arc)
+                                                   (:rings polygon)))]
         ;; Between at least 2 of the points there will be a midpoint in the polygon.
         ;; Create a list of test points from midpoints of all combinations of points.
-        (distinct
+        (distinct-points
           (map (fn [[p1 p2]]
                  (a/midpoint (a/arc p1 p2)))
                ;; Skip intersection combinations that are antipodal to each other.
