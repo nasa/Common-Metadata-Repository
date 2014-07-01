@@ -22,7 +22,6 @@
 
 (def NON_CONFORMANT_FIELDS
   "Fields that are lossy when converting from DIF to ECHO10 format"
-  ;; FIXME Leo, why is entry id in here?
   [:entry-id :data-provider-timestamps :organizations])
 
 (defn- collections-match?
@@ -54,23 +53,54 @@
   [coll]
   (update-in coll [:spatial-coverage] spatial-coverage->expected-parsed))
 
+(defn- difnized-collection
+  "Returns umm collection that has been adapted to DIF.
+  If the UMM model is perfect, this function should just return the collection unchanged."
+  [collection]
+  (let [{{:keys [short-name long-name]} :product} collection
+          collection (assoc collection :entry-id short-name)
+          collection (assoc collection :entry-title long-name)
+          collection (assoc-in collection [:data-provider-timestamps :delete-time] nil)
+          collection (assoc-in collection [:product :processing-level-id] nil)
+          collection (assoc-in collection [:product :collection-data-type] nil)
+          collection (dissoc collection :spatial-keywords)
+          collection (dissoc collection :platforms)
+          collection (dissoc collection :two-d-coordinate-systems)
+          range-date-times (get-in collection [:temporal :range-date-times])
+          collection (if (seq range-date-times)
+                       (assoc collection :temporal (umm-c/map->Temporal {:range-date-times range-date-times
+                                                                         :single-date-times []
+                                                                         :periodic-date-times []}))
+                       (dissoc collection :temporal))
+          collection (assoc collection :organizations
+                            (filter #(= :distribution-center (:type %)) (:organizations collection)))
+          collection (umm-c/map->UmmCollection collection)]
+    collection))
+
 (defspec generate-collection-is-valid-xml-test 100
-  (for-all [collection coll-gen/dif-collections]
-    (let [xml (dif/umm->dif-xml collection)]
+  (for-all [collection coll-gen/collections]
+    (let [range-date-times (get-in collection [:temporal :range-date-times])
+          collection (if (seq range-date-times) collection (dissoc collection :temporal))
+          collection (assoc collection :organizations
+                            (filter #(= :distribution-center (:type %)) (:organizations collection)))
+          collection (umm-c/map->UmmCollection collection)
+          xml (dif/umm->dif-xml collection)]
       (and
         (> (count xml) 0)
         (= 0 (count (c/validate-xml xml)))))))
 
 (defspec generate-and-parse-collection-test 100
-  (for-all [collection coll-gen/dif-collections]
-    (let [xml (dif/umm->dif-xml collection)
+  (for-all [collection coll-gen/collections]
+    (let [collection (difnized-collection collection)
+          xml (dif/umm->dif-xml collection)
           parsed (c/parse-collection xml)
           expected-parsed (umm->expected-parsed-dif collection)]
       (= parsed expected-parsed))))
 
 (defspec generate-and-parse-collection-between-formats-test 100
-  (for-all [collection coll-gen/dif-collections]
-    (let [xml (dif/umm->dif-xml collection)
+  (for-all [collection coll-gen/collections]
+    (let [collection (difnized-collection collection)
+          xml (dif/umm->dif-xml collection)
           parsed-dif (c/parse-collection xml)
           echo10-xml (echo10/umm->echo10-xml parsed-dif)
           parsed-echo10 (echo10-c/parse-collection echo10-xml)

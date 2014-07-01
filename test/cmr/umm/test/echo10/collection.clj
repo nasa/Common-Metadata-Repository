@@ -25,7 +25,11 @@
 
 (defspec generate-and-parse-collection-test 100
   (for-all [collection coll-gen/collections]
-    (let [xml (echo10/umm->echo10-xml collection)
+    (let [{{:keys [short-name version-id]} :product} collection
+          collection (assoc collection :entry-id (str short-name "_" version-id))
+          echo10-orgs (seq (filter #(not= :distribution-center (:type %)) (:organizations collection)))
+          collection (assoc collection :organizations echo10-orgs)
+          xml (echo10/umm->echo10-xml collection)
           parsed (c/parse-collection xml)]
       (= parsed collection))))
 

@@ -31,14 +31,11 @@
                      (ext-gen/optional processing-level-ids)
                      (ext-gen/optional collection-data-types)))
 
-(def dif-products
-  (ext-gen/model-gen c/->Product short-names long-names version-ids (gen/return nil) (gen/return nil)))
-
 (def data-provider-timestamps
   (ext-gen/model-gen c/->DataProviderTimestamps ext-gen/date-time ext-gen/date-time (ext-gen/optional ext-gen/date-time)))
 
-(def dif-data-provider-timestamps
-  (ext-gen/model-gen c/->DataProviderTimestamps ext-gen/date-time ext-gen/date-time (gen/return nil)))
+(def entry-ids
+  (ext-gen/string-alpha-numeric 1 85))
 
 (def entry-titles
   (ext-gen/string-alpha-numeric 1 1030))
@@ -116,19 +113,20 @@
                        (ext-gen/optional (gen/vector spatial-gen/geometries 1 5)))))
 
 (def collections
-  (gen/fmap (fn [[attribs proc-org archive-org]]
+  (gen/fmap (fn [[attribs proc-org archive-org dist-org]]
               (let [product (:product attribs)]
                 (c/map->UmmCollection (assoc attribs
-                                             :entry-id (str (:short-name product) "_" (:version-id product))
-                                             :organizations (seq (remove nil? [proc-org archive-org]))))))
+                                             :organizations (seq (remove nil? (flatten [proc-org archive-org dist-org])))))))
             (gen/tuple
               (gen/hash-map
+                :entry-id entry-ids
                 :entry-title entry-titles
                 :product products
                 :data-provider-timestamps data-provider-timestamps
                 :temporal t/temporals
-                :spatial-keywords (ext-gen/nil-if-empty (gen/vector (ext-gen/string-ascii 1 80) 0 4))
-                :science-keywords (ext-gen/nil-if-empty (gen/vector sk/science-keywords 0 3))
+                :spatial-keywords (ext-gen/nil-if-empty (gen/vector (ext-gen/string-alpha-numeric 1 80) 0 4))
+                ;; DIF requires science-keyowrds to always exist, not ideal here for ECHO10. As science-keywords is optional for ECHO10
+                :science-keywords (gen/vector sk/science-keywords 1 3)
                 :platforms (ext-gen/nil-if-empty (gen/vector platforms 0 4))
                 :product-specific-attributes (ext-gen/nil-if-empty (gen/vector psa/product-specific-attributes 0 10))
                 :projects (ext-gen/nil-if-empty (gen/vector campaigns 0 4))
@@ -136,30 +134,8 @@
                 :related-urls (ext-gen/nil-if-empty (gen/vector related-url 0 5))
                 :spatial-coverage (ext-gen/optional spatial-coverages))
               (ext-gen/optional processing-center-organizations)
-              (ext-gen/optional archive-center-organizations))))
-
-;; FIXME Leo can you remove this? I don't want us to have specific generators for the types. If there
-;; are specific fields that are broken then I'd rather have a dissoc in the test where it's used
-;; with a comment about why we can't support something yet.
-(def dif-collections
-  (gen/fmap (fn [[attribs]]
-              (let [product (:product attribs)]
-                (c/map->UmmCollection (assoc attribs
-                                             :entry-id (:short-name product)
-                                             :entry-title (:long-name product)))))
-            (gen/tuple
-              (gen/hash-map
-                :product dif-products
-                :temporal (ext-gen/optional t/dif-temporals)
-                :data-provider-timestamps dif-data-provider-timestamps
-                ;:spatial-keywords (ext-gen/nil-if-empty (gen/vector (ext-gen/string-ascii 1 80) 0 4))
-                :science-keywords (gen/vector sk/science-keywords 1 3)
-                ;:platforms (ext-gen/nil-if-empty (gen/vector platforms 0 4))
-                :product-specific-attributes (ext-gen/nil-if-empty (gen/vector psa/product-specific-attributes 0 10))
-                :projects (ext-gen/nil-if-empty (gen/vector campaigns 0 4))
-                :related-urls (ext-gen/nil-if-empty (gen/vector related-url 0 5))
-                :spatial-coverage (ext-gen/optional spatial-coverages)
-                :organizations (gen/vector distribution-center-organizations 1 3)))))
+              (ext-gen/optional archive-center-organizations)
+              (gen/vector distribution-center-organizations 1 3))))
 
 ; Generator for basic collections that only have the bare minimal fields
 ;; DEPRECATED - this will go away in the future. Don't use it.
@@ -171,16 +147,3 @@
                    :entry-title entry-title
                    :product product})))
             (gen/tuple entry-titles products)))
-
-
-(comment
-  ;;;;;;;;;;;;
-  (clojure.repl/dir clojure.test.check.generators)
-  (ordered-orgs (last (gen/sample  (gen/vector organizations 0 2) 1)))
-
-  (gen/sample collections 1)
-  ;;;;;;;;;;;;
-  )
-
-
-
