@@ -95,10 +95,25 @@
   (map-keys csk/->kebab-case-keyword m))
 
 (defn map-n
-  "Calls f with every step count elements from items. Equivalent to (map f (partition-all n step items))
-  but faster."
+  "Calls f with every step count elements from items. Equivalent to (map f (partition n step items))
+  but faster. Note that it drops partitions at the end that would be less than a length of n."
   ([f n items]
    (map-n f n n items))
+  ([f ^long n ^long step items]
+   (let [items (vec items)
+         size (count items)]
+     (loop [index 0 results (transient [])]
+       (let [subvec-end (+ index n)]
+         (if (or (>= index size) (> subvec-end size))
+           (persistent! results)
+           (let [sub (subvec items index subvec-end)]
+             (recur (+ index step) (conj! results (f sub))))))))))
+
+(defn map-n-all
+  "Calls f with every step count elements from items. Equivalent to (map f (partition-all n step items))
+  but faster. Includes sets at the end that could be less than a lenght of n."
+  ([f n items]
+   (map-n-all f n n items))
   ([f ^long n ^long step items]
    (let [items (vec items)
          size (count items)]
@@ -109,7 +124,7 @@
            (let [sub (subvec items index subvec-end)]
              (recur (+ index step) (conj! results (f sub))))))))))
 
-(defn pmap-n
+(defn pmap-n-all
   "Splits work up n ways across futures and executes it in parallel. Calls the function with a set of
   n or fewer at the end. Not lazy - Items will be evaluated fully.
 
@@ -123,7 +138,7 @@
                            (catch Throwable t
                              (error t (.getMessage t))
                              (throw t)))))
-        futures (map-n build-future n items)]
+        futures (map-n-all build-future n items)]
     (mapv deref futures)))
 
 (defn double->string

@@ -125,16 +125,24 @@
   (for-all [n gen/s-pos-int
             step gen/s-pos-int
             items (gen/vector gen/int)]
-    ;; Verifies map-n is equivalent to partition-all
+    ;; Verifies map-n is equivalent to partition
     (= (util/map-n identity n step items)
+       (map identity (partition n step items)))))
+
+(defspec map-n-all-spec 1000
+  (for-all [n gen/s-pos-int
+            step gen/s-pos-int
+            items (gen/vector gen/int)]
+    ;; Verifies map-n-all is equivalent to partition-all
+    (= (util/map-n-all identity n step items)
        (map identity (partition-all n step items)))))
 
-(defspec pmap-n-spec 1000
+(defspec pmap-n-all-spec 1000
   (for-all [n gen/s-pos-int
             items (gen/vector gen/int)]
     ;; Verifies pmap-n is equivalent to map-n (just runs in parallel)
-    (= (util/map-n identity n items)
-       (util/pmap-n identity n items))))
+    (= (util/map-n-all identity n items)
+       (util/pmap-n-all identity n items))))
 
 (defspec double->string-test 1000
   (for-all [d (gen/fmap double gen/ratio)]
