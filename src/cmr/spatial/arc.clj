@@ -176,7 +176,7 @@
 (defn points->arcs
   "Takes a list of points and returns arcs connecting all the points"
   [points]
-  (util/map-n arc 2 1 points))
+  (util/map-n (partial apply arc) 2 1 points))
 
 (defn ords->arc
   "Takes all arguments as coordinates for points, lon1, lat1, lon2, lat2, and creates an arc."

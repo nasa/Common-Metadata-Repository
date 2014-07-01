@@ -250,7 +250,7 @@
         ;; Calculates the amount of change between each angle.
         ;; Positive numbers are turns to the left (counter-clockwise).
         ;; Negative numbers are turns to the right (clockwise)
-        deltas (util/map-n angle-delta 2 1 angles)
+        deltas (util/map-n (partial apply angle-delta) 2 1 angles)
 
         ;; Summing the amounts of turn will give us a net turn. If it's positive then there
         ;; is a net turn to the right. If it's negative then there's a net turn to the left.

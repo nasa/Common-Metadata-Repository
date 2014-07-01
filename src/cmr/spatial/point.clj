@@ -210,7 +210,7 @@
   user=> (ords->points 1 2 3 4)
   ((cmr-spatial.point/point 1.0 2.0) (cmr-spatial.point/point 3.0 4.0))"
   [& ords]
-  (util/map-n point 2 ords))
+  (util/map-n (partial apply point) 2 ords))
 
 (defn points->ords
   "Takes points and converts them to a list of numbers lon1, lat1, lon2, lat2, ..."
