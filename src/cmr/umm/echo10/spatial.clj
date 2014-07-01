@@ -44,10 +44,14 @@
         south (cx/double-at-path element [:SouthBoundingCoordinate])]
     (mbr/mbr west north east south)))
 
+(def geometry-tags
+  "The list of geometry tags in the geometry element that are actual spatial area elements"
+  #{:GPolygon :Point :Line :Boundary :BoundingRectangle})
+
 (defn geometry-element->geometries
   "Converts a Geometry element into a sequence of spatial geometry objects"
   [geom-elem]
-  (map parse-geometry (:content geom-elem)))
+  (map parse-geometry (filter (comp geometry-tags :tag) (:content geom-elem))))
 
 (defprotocol ShapeToXml
   "Protocol for converting a shape into XML."

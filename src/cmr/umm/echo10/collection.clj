@@ -13,6 +13,7 @@
             [cmr.umm.echo10.related-url :as ru]
             [cmr.umm.echo10.collection.org :as org]
             [cmr.umm.echo10.collection.science-keyword :as sk]
+            [cmr.umm.echo10.spatial :as s]
             [cmr.umm.echo10.core]
             [camel-snake-kebab :as csk])
   (:import cmr.umm.collection.UmmCollection))
@@ -38,8 +39,32 @@
   [xml-struct]
   (if-let [spatial-elem (cx/element-at-path xml-struct [:Spatial])]
     (let [gsr (csk/->kebab-case-keyword (cx/string-at-path spatial-elem [:GranuleSpatialRepresentation]))]
-      (c/map->SpatialCoverage
-        {:granule-spatial-representation gsr}))))
+      (if-let [geom-elem (cx/element-at-path spatial-elem [:HorizontalSpatialDomain :Geometry])]
+        (c/map->SpatialCoverage
+          {:granule-spatial-representation gsr
+           :spatial-representation (csk/->kebab-case-keyword (cx/string-at-path geom-elem [:CoordinateSystem]))
+           :geometries (s/geometry-element->geometries geom-elem)})
+        (c/map->SpatialCoverage
+          {:granule-spatial-representation gsr})))))
+
+(defn generate-spatial
+  "Generates the Spatial element from spatial coverage"
+  [spatial-coverage]
+  (when spatial-coverage
+    (let [{:keys [granule-spatial-representation
+                  spatial-representation
+                  geometries]} spatial-coverage
+          gsr (csk/->SNAKE_CASE_STRING granule-spatial-representation)
+          sr (some-> spatial-representation csk/->SNAKE_CASE_STRING)]
+      (if sr
+        (x/element :Spatial {}
+                   (x/element :HorizontalSpatialDomain {}
+                              (x/element :Geometry {}
+                                         (x/element :CoordinateSystem {} sr)
+                                         (map s/shape-to-xml geometries)))
+                   (x/element :GranuleSpatialRepresentation {} gsr))
+        (x/element :Spatial {}
+                   (x/element :GranuleSpatialRepresentation {} gsr))))))
 
 (defn- xml-elem->Collection
   "Returns a UMM Product from a parsed Collection XML structure"
@@ -62,13 +87,6 @@
        :spatial-coverage (xml-elem->SpatialCoverage xml-struct)
        :organizations (org/xml-elem->Organizations xml-struct)})))
 
-(defn generate-spatial
-  "Generates the Spatial element from spatial coverage"
-  [spatial-coverage]
-  (when spatial-coverage
-    (let [gsr (csk/->SNAKE_CASE_STRING (:granule-spatial-representation spatial-coverage))]
-      (x/element :Spatial {}
-                 (x/element :GranuleSpatialRepresentation {} gsr)))))
 
 (defn parse-collection
   "Parses ECHO10 XML into a UMM Collection record."

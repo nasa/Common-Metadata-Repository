@@ -83,6 +83,7 @@
                                  (x/element :Version {} version-id)))
                     (sk/generate-science-keywords science-keywords)
                     (t/generate-temporal temporal)
+                    (sc/generate-spatial-coverage spatial-coverage)
                     (when-not (empty? projects)
                       (pj/generate-projects projects))
                     (org/generate-data-center organizations)
@@ -95,7 +96,7 @@
                       (x/element :DIF_Creation_Date {} (str insert-time)))
                     (when update-time
                       (x/element :Last_DIF_Revision_Date {} (str update-time)))
-                    (sc/generate-spatial-coverage spatial-coverage)
+                    (sc/generate-spatial-coverage-extended-metadata spatial-coverage)
                     (psa/generate-product-specific-attributes product-specific-attributes)))))))
 
 (defn validate-xml

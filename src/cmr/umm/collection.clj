@@ -128,10 +128,21 @@
 (def granule-spatial-representations
   [:cartesian :geodetic :orbit :no-spatial])
 
+(def spatial-representations
+  "Enumeration of collection spatial representations"
+  [:cartesian :geodetic])
+
 (defrecord SpatialCoverage
   [
    ;; indicates the type of spatial representation for granules in the collection. (:orbit, :geodetic, etc.)
    granule-spatial-representation
+
+   ;; The spatial representation of shapes in the collection. Not required.
+   spatial-representation
+
+   ;; A sequence of spatial points, bounding rectangles, polygons, and lines.
+   ;; If this is set then spatial-representation must be set as well.
+   geometries
    ])
 
 (defrecord UmmCollection

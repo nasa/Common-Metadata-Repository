@@ -16,10 +16,13 @@
             [cmr.umm.echo10.collection :as echo10-c]
             [cmr.umm.echo10.core :as echo10]
             [cmr.umm.collection :as umm-c]
-            [cmr.umm.dif.core :as dif]))
+            [cmr.umm.dif.core :as dif]
+            [cmr.spatial.mbr :as m])
+  (:import cmr.spatial.mbr.Mbr))
 
 (def NON_CONFORMANT_FIELDS
   "Fields that are lossy when converting from DIF to ECHO10 format"
+  ;; FIXME Leo, why is entry id in here?
   [:entry-id :data-provider-timestamps :organizations])
 
 (defn- collections-match?
@@ -28,6 +31,28 @@
   (let [revised-coll1 (apply dissoc coll1 NON_CONFORMANT_FIELDS)
         revised-coll2 (apply dissoc coll2 NON_CONFORMANT_FIELDS)]
     (= revised-coll1 revised-coll2)))
+
+(defn- spatial-coverage->expected-parsed
+  "Takes the spatial-coverage used to generate the dif and returns the expected parsed spatial-coverage
+  from the dif."
+  [spatial-coverage]
+  (when spatial-coverage
+    (let [{:keys [granule-spatial-representation
+                  spatial-representation
+                  geometries]} spatial-coverage
+          geometries (seq (filter (comp (partial = Mbr) type) geometries))
+          spatial-representation (when geometries :cartesian)]
+      (when (or granule-spatial-representation spatial-representation)
+        (assoc spatial-coverage
+               :granule-spatial-representation granule-spatial-representation
+               :spatial-representation spatial-representation
+               :geometries geometries)))))
+
+(defn- umm->expected-parsed-dif
+  "Modifies the UMM record for testing DIF. DIF contains a subset of the total UMM fields so certain
+  fields are removed for comparison of the parsed record"
+  [coll]
+  (update-in coll [:spatial-coverage] spatial-coverage->expected-parsed))
 
 (defspec generate-collection-is-valid-xml-test 100
   (for-all [collection coll-gen/dif-collections]
@@ -39,16 +64,18 @@
 (defspec generate-and-parse-collection-test 100
   (for-all [collection coll-gen/dif-collections]
     (let [xml (dif/umm->dif-xml collection)
-          parsed (c/parse-collection xml)]
-      (= parsed collection))))
+          parsed (c/parse-collection xml)
+          expected-parsed (umm->expected-parsed-dif collection)]
+      (= parsed expected-parsed))))
 
 (defspec generate-and-parse-collection-between-formats-test 100
   (for-all [collection coll-gen/dif-collections]
     (let [xml (dif/umm->dif-xml collection)
           parsed-dif (c/parse-collection xml)
           echo10-xml (echo10/umm->echo10-xml parsed-dif)
-          parsed-echo10 (echo10-c/parse-collection echo10-xml)]
-      (and (collections-match? parsed-echo10 collection)
+          parsed-echo10 (echo10-c/parse-collection echo10-xml)
+          expected-parsed (umm->expected-parsed-dif collection)]
+      (and (collections-match? parsed-echo10 expected-parsed)
            (= 0 (count (echo10-c/validate-xml echo10-xml)))))))
 
 ;; This is a made-up include all fields collection xml sample for the parse collection test
@@ -321,7 +348,9 @@
                         :value 12.3})]
                     :spatial-coverage
                     (umm-c/map->SpatialCoverage
-                      {:granule-spatial-representation :geodetic})
+                      {:granule-spatial-representation :geodetic
+                       :spatial-representation :cartesian
+                       :geometries [(m/mbr -180 -60.5033 180 -90)]})
                     :projects
                     [(umm-c/map->Project
                        {:short-name "ESI"

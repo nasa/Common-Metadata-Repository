@@ -5,7 +5,8 @@
             [cmr.umm.collection :as c]
             [cmr.umm.test.generators.collection.temporal :as t]
             [cmr.umm.test.generators.collection.science-keyword :as sk]
-            [cmr.umm.test.generators.collection.product-specific-attribute :as psa]))
+            [cmr.umm.test.generators.collection.product-specific-attribute :as psa]
+            [cmr.spatial.test.generators :as spatial-gen]))
 
 (def short-names
   (ext-gen/string-alpha-numeric 1 85))
@@ -107,11 +108,12 @@
                   :url ext-gen/file-url-string
                   :description (ext-gen/string-ascii 1 80))))
 
-(def granule-spatial-representations
-  (gen/elements c/granule-spatial-representations))
-
 (def spatial-coverages
-  (ext-gen/model-gen c/->SpatialCoverage granule-spatial-representations))
+  (gen/fmap (fn [[gsr sr geoms]]
+              (c/->SpatialCoverage gsr (when geoms sr) geoms))
+            (gen/tuple (gen/elements c/granule-spatial-representations)
+                       (gen/elements c/spatial-representations)
+                       (ext-gen/optional (gen/vector spatial-gen/geometries 1 5)))))
 
 (def collections
   (gen/fmap (fn [[attribs proc-org archive-org]]
