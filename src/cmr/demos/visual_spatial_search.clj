@@ -113,23 +113,12 @@
     (visual-interactive-search [polygon-with-holes] search-area))
 
 
-  ;; A bunch of bounding rectangles
-  (let [brs (for [lon (range -170 170 40)
-                  lat (range -70 70 20)]
-              (m/mbr lon (+ lat 5) (+ lon 10) lat))
-        ;; Search area as a polygon
-        ; search-area (assoc (polygon 8.38,12.57,11.38,14.8,3.39,22.53,0.35,21.85,8.38,12.57)
-        ;                    :options {:id "polygon"})
-
-
-        ;; Search area as a bounding rectangle
-        search-area (assoc (m/mbr -5 5 5 -5) :options {:id "bounding_box"})]
-    (visual-interactive-search brs search-area))
-
+  ;; all supported spatial types
   (let [touches-np (m/mbr 45 90 55 70)
         touches-sp (m/mbr -160 -70 -150 -90)
         across-am-br (m/mbr 170 10 -170 -10)
-        normal-br (m/mbr 10 10 20 0)
+        normal-br1 (m/mbr 10 10 20 0)
+        normal-br2 (m/mbr -20 0 -10 -10)
 
         ;; Polygons
         wide-north (polygon -70 20, 70 20, 70 30, -70 30, -70 20)
@@ -153,7 +142,8 @@
     (visual-interactive-search [touches-sp
                                 across-am-br
                                 touches-np
-                                normal-br
+                                normal-br1
+                                normal-br2
                                 wide-north
                                 wide-south
                                 across-am-poly
@@ -162,35 +152,6 @@
                                 normal-poly
                                 polygon-with-holes] search-area))
 
-
-  ;; A set of polygons and a search area that can be displayed.
-  (let [polygon-ne (polygon 20 10, 30 20, 10 20, 20 10)
-        polygon-se (polygon 30 -20, 20 -10, 10 -20, 30 -20)
-        polygon-sw (polygon -20 -20, -10 -10, -30 -10,-20 -20)
-        polygon-nw (polygon -20 10, -30 20, -30 10, -20 10)
-        polygon-north-pole (polygon 45, 80, 135, 80, -135, 80, -45, 80,  45 80)
-        polygon-south-pole (polygon -45 -80, -135 -80, 135 -80, 45 -80, -45 -80)
-        polygon-antimeridian (polygon 135 -10, -135 -10, -135 10, 135 10, 135 -10)
-        polygon-near-sp (polygon 168.1075 -78.0047, 170.1569,-78.4112, 172.019,-78.0002, 169.9779,-77.6071, 168.1075 -78.0047)
-
-        ;; Search area as a polygon
-        ; search-area (assoc (polygon 8.38,12.57,11.38,14.8,3.39,22.53,0.35,21.85,8.38,12.57)
-        ;                    :options {:id "polygon"})
-
-
-        ;; Search area as a bounding rectangle
-        search-area (assoc (m/mbr -5 5 5 -5) :options {:id "bounding_box"})
-        ]
-
-    (visual-interactive-search [polygon-ne
-                                polygon-se
-                                polygon-sw
-                                polygon-nw
-                                polygon-north-pole
-                                polygon-south-pole
-                                polygon-antimeridian
-                                polygon-near-sp]
-                               search-area))
 
 
   )
