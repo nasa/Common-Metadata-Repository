@@ -1,11 +1,10 @@
-(ns cmr.system-int-test.search.granule-spatial-search-test
+(ns cmr.system-int-test.search.collection-spatial-search-test
   (:require [clojure.test :refer :all]
             [clojure.string :as s]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.core :as d]
             [cmr.spatial.polygon :as p]
             [cmr.spatial.mbr :as m]
@@ -36,68 +35,49 @@
   [& ords]
   (codec/url-encode (apply polygon ords)))
 
-(def spatial-viz-enabled
-  "Set this to true to debug test failures with the spatial visualization."
-  false)
-
-(defn display-indexed-granules
-  "Displays the spatial areas of granules on the map."
-  [granules]
-  (let [geometries (mapcat (comp :geometries :spatial-coverage) granules)
-        geometries (map derived/calculate-derived geometries)
-        geometries (mapcat (fn [g]
-                             [g
-                              (srl/shape->mbr g)
-                              (srl/shape->lr g)])
-                           geometries)]
-    (viz-helper/add-geometries geometries)))
-
-(defn display-search-area
-  "Displays a spatial search area on the map"
-  [geometry]
-  (let [geometry (derived/calculate-derived geometry)]
-    (viz-helper/add-geometries [geometry
-                                (srl/shape->mbr geometry)
-                                (srl/shape->lr geometry)])))
-
-
 (deftest spatial-search-test
-  (let [coll (d/ingest "PROV1" (dc/collection {:spatial-coverage (dc/spatial :geodetic)}))
-        make-gran (fn [ur & shapes]
-                    (d/ingest "PROV1" (dg/granule coll {:granule-ur ur
-                                                        :spatial-coverage (apply dg/spatial shapes)})))
+  (let [make-coll (fn [et & shapes]
+                    (d/ingest "PROV1"
+                              (dc/collection
+                                {:entry-title et
+                                 :spatial-coverage (apply dc/spatial
+                                                          :geodetic
+                                                          :geodetic
+                                                          shapes)})))
 
         ;; Bounding rectangles
-        whole-world (make-gran "whole-world" (m/mbr -180 90 180 -90))
-        touches-np (make-gran "touches-np" (m/mbr 45 90 55 70))
-        touches-sp (make-gran "touches-sp" (m/mbr -160 -70 -150 -90))
-        across-am-br (make-gran "across-am-br" (m/mbr 170 10 -170 -10))
-        normal-brs (make-gran "normal-brs"
+        whole-world (make-coll "whole-world" (m/mbr -180 90 180 -90))
+        touches-np (make-coll "touches-np" (m/mbr 45 90 55 70))
+        touches-sp (make-coll "touches-sp" (m/mbr -160 -70 -150 -90))
+        across-am-br (make-coll "across-am-br" (m/mbr 170 10 -170 -10))
+        normal-brs (make-coll "normal-brs"
                               (m/mbr 10 10 20 0)
                               (m/mbr -20 0 -10 -10))
 
         ;; Polygons
-        wide-north (make-gran "wide-north" (polygon -70 20, 70 20, 70 30, -70 30, -70 20))
-        wide-south (make-gran "wide-south" (polygon -70 -30, 70 -30, 70 -20, -70 -20, -70 -30))
-        across-am-poly (make-gran "across-am-poly" (polygon 170 35, -175 35, -170 45, 175 45, 170 35))
-        on-np (make-gran "on-np" (polygon 45 85, 135 85, -135 85, -45 85, 45 85))
-        on-sp (make-gran "on-sp" (polygon -45 -85, -135 -85, 135 -85, 45 -85, -45 -85))
-        normal-poly (make-gran "normal-poly" (polygon -20 -10, -10 -10, -10 10, -20 10, -20 -10))
+        wide-north (make-coll "wide-north" (polygon -70 20, 70 20, 70 30, -70 30, -70 20))
+        wide-south (make-coll "wide-south" (polygon -70 -30, 70 -30, 70 -20, -70 -20, -70 -30))
+        across-am-poly (make-coll "across-am-poly" (polygon 170 35, -175 35, -170 45, 175 45, 170 35))
+        on-np (make-coll "on-np" (polygon 45 85, 135 85, -135 85, -45 85, 45 85))
+        on-sp (make-coll "on-sp" (polygon -45 -85, -135 -85, 135 -85, 45 -85, -45 -85))
+        normal-poly (make-coll "normal-poly" (polygon -20 -10, -10 -10, -10 10, -20 10, -20 -10))
 
         ;; polygon with holes
         outer (r/ords->ring -5.26,-2.59, 11.56,-2.77, 10.47,8.71, -5.86,8.63, -5.26,-2.59)
         hole1 (r/ords->ring 6.95,2.05, 2.98,2.06, 3.92,-0.08, 6.95,2.05)
         hole2 (r/ords->ring 5.18,6.92, -1.79,7.01, -2.65,5, 4.29,5.05, 5.18,6.92)
-        polygon-with-holes  (make-gran "polygon-with-holes" (p/polygon [outer hole1 hole2]))]
+        polygon-with-holes  (make-coll "polygon-with-holes" (p/polygon [outer hole1 hole2]))]
     (index/refresh-elastic-index)
+
+    ;; TODO test with difs or just make dif spatial work
 
     (testing "bounding rectangle searches"
       (are [wnes items]
-           (let [found (search/find-refs :granule {:bounding-box (codec/url-encode (apply m/mbr wnes))
+           (let [found (search/find-refs :collection {:bounding-box (codec/url-encode (apply m/mbr wnes))
                                                    :page-size 50})
                  matches? (d/refs-match? items found)]
              (when-not matches?
-               (println "Expected:" (pr-str (map :granule-ur items)))
+               (println "Expected:" (pr-str (map :entry-title items)))
                (println "Actual:" (->> found :refs (map :name) pr-str)))
              matches?)
 
@@ -127,14 +107,11 @@
 
     (testing "polygon searches"
       (are [ords items]
-           (let [found (search/find-refs :granule {:polygon (apply search-poly ords) })
+           (let [found (search/find-refs :collection {:polygon (apply search-poly ords) })
                  matches? (d/refs-match? items found)]
-             (when (and (not matches?) spatial-viz-enabled)
-               (println "Displaying failed granules and search area")
-               (println "Found: " (pr-str found))
-               (viz-helper/clear-geometries)
-               (display-indexed-granules items)
-               (display-search-area (apply polygon ords)))
+             (when-not matches?
+               (println "Expected:" (pr-str (map :entry-title items)))
+               (println "Actual:" (->> found :refs (map :name) pr-str)))
              matches?)
 
            [20.16,-13.7,21.64,12.43,12.47,11.84,-22.57,7.06,20.16,-13.7]
