@@ -3,7 +3,8 @@
   (:require [cmr.common.log :refer (debug info warn error)]
             [cmr.common.services.errors :as errors]
             [camel-snake-kebab :as csk]
-            [clojure.set :as set])
+            [clojure.set :as set]
+            [clojure.string :as str])
   (:import java.text.DecimalFormat))
 
 (defn sequence->fn
@@ -34,15 +35,15 @@
   `(future
     (info "Starting " ~taskname)
     (try
-      ~@body
-
-      (info ~taskname " completed without exception")
-
+      (let [result# (do ~@body)]
+        (info ~taskname " completed without exception")
+        result#)
       (catch Throwable e#
         (error e# "Exception in " ~taskname)
         (throw e#))
       (finally
         (info ~taskname " complete.")))))
+
 
 (defn build-validator
   "Creates a function that will call f with it's arguments. If f returns any errors then it will
@@ -94,7 +95,7 @@
   (map-keys csk/->kebab-case-keyword m))
 
 (defn map-n
-  "Calls f with every step count elements from items. Equivalent to (map f (partition n step items))
+  "Calls f with every step count elements from items. Equivalent to (map f (partition-all n step items))
   but faster."
   ([f n items]
    (map-n f n n items))
@@ -102,18 +103,33 @@
    (let [items (vec items)
          size (count items)]
      (loop [index 0 results (transient [])]
-       (let [subvec-end (+ index n)]
-         (if (or (>= index size) (> subvec-end size))
+       (let [subvec-end (min (+ index n) size)]
+         (if (>= index size)
            (persistent! results)
            (let [sub (subvec items index subvec-end)]
-             (recur (+ index step) (conj! results (apply f sub))))))))))
+             (recur (+ index step) (conj! results (f sub))))))))))
 
+(defn pmap-n
+  "Splits work up n ways across futures and executes it in parallel. Calls the function with a set of
+  n or fewer at the end. Not lazy - Items will be evaluated fully.
+
+  Note that n is _not_ the number of threads that will be used. It's the number of items that will be
+  processed in each parallel batch."
+  [f n items]
+  (let [build-future (fn [subset]
+                       (future
+                         (try
+                           (f subset)
+                           (catch Throwable t
+                             (error t (.getMessage t))
+                             (throw t)))))
+        futures (map-n build-future n items)]
+    (mapv deref futures)))
 
 (defn double->string
   "Converts a double to string without using exponential notation or loss of accuracy."
   [d]
   (.format (DecimalFormat. "#.#####################") d))
-
 
 (defn rename-keys-with [m kmap merge-fn]
   "Returns the map with the keys in kmap renamed to the vals in kmap. Values of renamed keys for which

@@ -121,13 +121,20 @@
              (util/rename-keys-with params param-aliases merge-fn))))))
 
 
-(defspec map-n-spec 100
+(defspec map-n-spec 1000
   (for-all [n gen/s-pos-int
             step gen/s-pos-int
             items (gen/vector gen/int)]
-    ;; Verifies map-n is equivalent to partition
-    (= (util/map-n vector n step items)
-       (partition n step items))))
+    ;; Verifies map-n is equivalent to partition-all
+    (= (util/map-n identity n step items)
+       (map identity (partition-all n step items)))))
+
+(defspec pmap-n-spec 1000
+  (for-all [n gen/s-pos-int
+            items (gen/vector gen/int)]
+    ;; Verifies pmap-n is equivalent to map-n (just runs in parallel)
+    (= (util/map-n identity n items)
+       (util/pmap-n identity n items))))
 
 (defspec double->string-test 1000
   (for-all [d (gen/fmap double gen/ratio)]
