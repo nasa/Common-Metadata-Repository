@@ -118,8 +118,12 @@
    (c/->RelatedURL type nil url (d/unique-str "description"))))
 
 (defn spatial
-  [gsr]
-  (c/->SpatialCoverage gsr))
+  ([gsr]
+   (spatial gsr nil))
+  ([gsr sr & shapes]
+   (c/map->SpatialCoverage {:granule-spatial-representation gsr
+                            :spatial-representation sr
+                            :geometries (seq shapes)})))
 
 (defn collection
   "Creates a collection"
