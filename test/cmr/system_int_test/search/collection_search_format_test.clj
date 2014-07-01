@@ -5,10 +5,13 @@
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.data2.collection :as dc]
+            [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.core :as d]
             [cmr.system-int-test.utils.url-helper :as url]
             [clj-http.client :as client]
-            [cmr.umm.core :as umm]))
+            [cmr.umm.core :as umm]
+            [cmr.spatial.mbr :as m]
+            [cmr.spatial.codec :as codec]))
 
 (use-fixtures :each (ingest/reset-fixture "PROV1" "PROV2"))
 
@@ -71,5 +74,53 @@
                                      {:accept :xml
                                       :connection-manager (url/conn-mgr)})]
             (is (= (umm/umm->xml c1-echo :echo10) (:body response)))))))))
+
+;; Tests that we can ingest and find difs with spatial and that granules in the dif can also be
+;; ingested and found
+(deftest dif-with-spatial
+  (let [c1 (d/ingest "PROV1" (dc/collection {:spatial-coverage nil}) :dif)
+        g1 (d/ingest "PROV1" (dg/granule c1))
+
+        ;; A collection with a granule spatial representation
+        c2 (d/ingest "PROV1" (dc/collection {:spatial-coverage (dc/spatial :geodetic)}) :dif)
+        g2 (d/ingest "PROV1" (dg/granule c2 {:spatial-coverage (dg/spatial (m/mbr -160 45 -150 35))}))
+
+
+        ;; A collections with a granule spatial representation and spatial data
+        c3 (d/ingest "PROV1"
+                     (dc/collection
+                       {:spatial-coverage
+                        (dc/spatial :geodetic
+                                    :geodetic
+                                    (m/mbr -10 9 0 -10))})
+                     :dif)
+        g3 (d/ingest "PROV1" (dg/granule c3))]
+    (index/refresh-elastic-index)
+
+    (testing "spatial search for dif collections"
+      (are [wnes items]
+           (let [found (search/find-refs :collection {:bounding-box (codec/url-encode (apply m/mbr wnes))})
+                 matches? (d/refs-match? items found)]
+             (when-not matches?
+               (println "Expected:" (pr-str (map :entry-title items)))
+               (println "Actual:" (->> found :refs (map :name) pr-str)))
+             matches?)
+           ;; whole world
+           [-180 90 180 -90] [c3]
+           [-180 90 -11 -90] []
+           [-20 20 20 -20] [c3]))
+
+    (testing "spatial search for granules in dif collections"
+      (are [wnes items]
+           (let [found (search/find-refs :granule {:bounding-box (codec/url-encode (apply m/mbr wnes))})
+                 matches? (d/refs-match? items found)]
+             (when-not matches?
+               (println "Expected:" (pr-str (map :entry-title items)))
+               (println "Actual:" (->> found :refs (map :name) pr-str)))
+             matches?)
+           ;; whole world
+           [-180 90 180 -90] [g2]
+           [0 90 180 -90] []
+           [-180 90 0 -90] [g2]))))
 
 
