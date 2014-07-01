@@ -128,7 +128,7 @@
 (defn print-point
   "Prints the point in a way that it can be copy and pasted for testing"
   [^Point p ^java.io.Writer writer]
-  (.write writer (str (apply list (into ['cmr.spatial.point/point]
+  (.write writer (str "#=" (apply list (into ['cmr.spatial.point/point]
                                         [(.lon p) (.lat p)])))))
 
 ;; These define Clojure built in multimethods for point so it can be printed easily
