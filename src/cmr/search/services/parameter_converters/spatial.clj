@@ -18,3 +18,7 @@
 (defmethod p/parameter->condition :polygon
   [concept-type param value options]
   (url-value->spatial-condition :polygon value))
+
+(defmethod p/parameter->condition :bounding-box
+  [concept-type param value options]
+  (url-value->spatial-condition :br value))
