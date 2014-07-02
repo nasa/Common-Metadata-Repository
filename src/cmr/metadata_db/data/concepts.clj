@@ -28,6 +28,11 @@
     "Get a sequence of concepts by specifying a list of
     tuples holding concept-id/revision-id")
 
+  (get-latest-concepts
+    [db concept-type provider-id concept-ids]
+    "Get a sequence of the latest revision of concepts by specifying a list of
+    concept-ids")
+
   (find-concepts
     [db params]
     "Finds concepts by the given parameters")

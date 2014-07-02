@@ -25,3 +25,13 @@
      (oracle-config/db-ons-config)
      (db-username)
      (db-password)))
+
+(defn parallel-n
+  "Get the number of concepts that should be processed in each thread of get-concepts."
+  []
+  (Integer/parseInt ((cfg/config-value-fn :parallel-n "200"))))
+
+(defn fetch-size
+  "Get the setting for query fetch-size (number of rows to fetch at once)"
+  []
+  (Integer/parseInt ((cfg/config-value-fn :fetch-size "200"))))

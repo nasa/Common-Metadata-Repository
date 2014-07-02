@@ -34,6 +34,15 @@
   "The batch size to retrieve expired concepts"
   5000)
 
+(defn safe-max
+  "Return the maximimum of two numbers, treating nil as the lowest possible number"
+  [num1, num2]
+  (if (nil? num2)
+    num1
+    (if (nil? num1)
+      num2
+      (max num1 num2))))
+
 (defn blob->input-stream
   "Convert a BLOB to an InputStream"
   [^Blob blob]
@@ -230,7 +239,7 @@
       (apply j/insert! conn
              "get_concepts_work_area"
              ["concept_id" "revision_id"]
-             (concat concept-id-revision-id-tuples [:transaction false]))
+             (concat concept-id-revision-id-tuples [:transaction? false]))
       (let [table (tables/get-table-name provider-id concept-type)
             stmt (su/build (select [:c.*]
                              (from (as (keyword table) :c)
@@ -240,6 +249,29 @@
 
         (doall (map (partial db-result->concept-map concept-type conn provider-id)
                     (sql-utils/query conn stmt))))))
+
+  (get-latest-concepts
+    [db concept-type provider-id concept-ids]
+    (j/with-db-transaction
+      [conn db]
+      ;; use a temporary table to insert our values so we can use a join to
+      ;; pull everything in one select
+      (apply j/insert! conn
+             "get_concepts_work_area"
+             ["concept_id"]
+             (concat (map vector concept-ids) [:transaction? false]))
+      ;; pull back all revisions of each concept-id instead of using group-by in SQL
+      (let [table (tables/get-table-name provider-id concept-type)
+            stmt (su/build (select [:c.concept-id :c.revision-id]
+                             (from (as (keyword table) :c)
+                                   (as :get-concepts-work-area :t))
+                             (where `(and (= :c.concept-id :t.concept-id)))))
+            cid-rid-maps (sql-utils/query conn stmt)
+            my-ids (map #(hash-map (:concept_id %) (:revision_id %)) cid-rid-maps)
+            latest (apply merge-with safe-max {}
+                          my-ids)
+            concept-id-revision-id-tuples (seq latest)]
+        (c/get-concepts db concept-type provider-id concept-id-revision-id-tuples))))
 
   (find-concepts
     [db params]

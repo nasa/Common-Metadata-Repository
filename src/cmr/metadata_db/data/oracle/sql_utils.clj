@@ -1,5 +1,6 @@
 (ns cmr.metadata-db.data.oracle.sql-utils
   (:require [cmr.common.log :refer (debug info warn error)]
+            [cmr.metadata-db.config :as config]
             [clojure.java.jdbc :as j]
             [sqlingvo.core :as s :refer [select from where with order-by desc delete as]]
             [sqlingvo.vendor :as sv]
@@ -35,11 +36,12 @@
 (defn query
   "Execute a query and log how long it took."
   [db [stmt & params]]
-  (let [start (System/currentTimeMillis)
+  (let [fetch-size (config/fetch-size)
+        start (System/currentTimeMillis)
         result (if params
-                 (j/query db [stmt params])
-                 (j/query db [stmt]))
+                 (j/query db [{:fetch-size fetch-size} stmt params])
+                 (j/query db [{:fetch-size fetch-size} stmt]))
         millis (- (System/currentTimeMillis) start)]
-    (debug "Query execution took" millis "msec")
+    (debug "Query execution took" millis "ms")
     result))
 

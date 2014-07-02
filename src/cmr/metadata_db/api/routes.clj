@@ -51,6 +51,14 @@
      :body (to-json concepts params)
      :headers json-header}))
 
+(defn- get-latest-concepts
+  "Get latest version of concepts using a list of concept-ids"
+  [context params concept-ids]
+  (let [concepts (concept-service/get-latest-concepts context concept-ids)]
+    {:status 200
+     :body (to-json concepts params)
+     :headers json-header}))
+
 (defn- find-concepts
   "Find concepts for a concept type with specific params"
   [context params params]
@@ -142,6 +150,8 @@
         ;; get multiple concpts by concept-id and revision-id
         (POST "/concept-revisions" {:keys [params request-context body]}
           (get-concepts request-context params body))
+        (POST "/latest-concept-revisions" {:keys [params request-context body]}
+          (get-latest-concepts request-context params body))
         ;; Find concepts by parameters
         (GET "/:concept-type" {:keys [params request-context]}
           (find-concepts request-context params params)))
