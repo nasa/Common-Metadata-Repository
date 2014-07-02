@@ -9,7 +9,7 @@
             [clj-time.local :as l]
             [clj-time.coerce :as cr]
             [inflections.core :as inf]
-            [cmr.transmit.config :as transmit-config]
+            [cmr.metadata-db.config :as config]
             [clj-http.conn-mgr :as conn-mgr]))
 
 (def conn-mgr-atom (atom nil))
@@ -21,13 +21,13 @@
   (when-not @conn-mgr-atom
     (reset! conn-mgr-atom  (conn-mgr/make-reusable-conn-manager {}))))
 
-(def concepts-url (str "http://localhost:" (transmit-config/metadata-db-port) "/concepts/"))
+(def concepts-url (str "http://localhost:" (config/app-port) "/concepts/"))
 
-(def concept-id-url (str "http://localhost:" (transmit-config/metadata-db-port) "/concept-id/"))
+(def concept-id-url (str "http://localhost:" (config/app-port) "/concept-id/"))
 
-(def reset-url (str "http://localhost:" (transmit-config/metadata-db-port) "/reset"))
+(def reset-url (str "http://localhost:" (config/app-port) "/reset"))
 
-(def providers-url (str "http://localhost:" (transmit-config/metadata-db-port) "/providers"))
+(def providers-url (str "http://localhost:" (config/app-port) "/providers"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; utility methods
