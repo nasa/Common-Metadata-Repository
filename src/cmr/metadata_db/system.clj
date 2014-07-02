@@ -26,10 +26,11 @@
   ([]
    (create-system "metadata-db"))
   ([connection-pool-name]
-   {:db (oracle/create-db (config/db-spec connection-pool-name))
+   {:db (oracle/create-db (config/db-spec connection-pool-name) (config/result-set-fetch-size))
     :log (log/create-logger)
     :web (web/create-web-server (config/app-port) routes/make-api)
-    :zipkin (context/zipkin-config "Metadata DB" false)}))
+    :zipkin (context/zipkin-config "Metadata DB" false)
+    :parallel-chunk-size (config/parallel-chunk-size)}))
 
 (defn start
   "Performs side effects to initialize the system, acquire resources,

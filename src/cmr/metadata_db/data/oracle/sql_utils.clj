@@ -24,6 +24,19 @@
   [stmt]
   (s/sql (->CmrSqlStyle) stmt))
 
+(defn query
+  "Execute a query and log how long it took."
+  [db [stmt params]]
+  (let [fetch-size (:result-set-fetch-size db)
+        start (System/currentTimeMillis)
+        result (if params
+                 (j/query db [stmt params])
+                 (j/query db [{:fetch-size fetch-size} stmt]))
+        millis (- (System/currentTimeMillis) start)]
+    (debug "SQL:" stmt)
+    (debug (format "Query execution took [%d] ms" millis))
+    result))
+
 (defn find-one
   "Finds and returns the first item found from a select statment."
   [db stmt]
@@ -31,18 +44,4 @@
                    (select ['*]
                            (from :inner)
                            (where '(= :ROWNUM 1))))]
-    (first (j/query db (build stmt)))))
-
-(defn query
-  "Execute a query and log how long it took."
-  [db [stmt & params]]
-  (let [fetch-size (config/fetch-size)
-        start (System/currentTimeMillis)
-        result (if params
-                 (j/query db [{:fetch-size fetch-size} stmt params])
-                 (j/query db [{:fetch-size fetch-size} stmt]))
-        millis (- (System/currentTimeMillis) start)]
-    (debug "SQL:" stmt)
-    (debug "Query execution took" millis "ms")
-    result))
-
+    (first (query db (build stmt)))))

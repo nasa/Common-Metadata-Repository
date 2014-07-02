@@ -183,17 +183,17 @@
   [concept-ids]
   (reduce (fn [m concept-id]
             (let [{:keys [concept-type provider-id]} (cu/parse-concept-id concept-id)]
-              (update-in m [provider-id concept-type] #(if %
-                                                         (conj % concept-id)
-                                                         [concept-id]))))
+              (update-in m [provider-id concept-type] #(conj % concept-id))))
           {}
           concept-ids))
 
 (deftracefn get-concepts
   "Get multiple concepts by concept-id and revision-id. Returns concepts in order requested"
   [context concept-id-revision-id-tuples]
-  (info "Getting concepts by concept-id/revision-id")
+  (info (format "Getting [%d] concepts by concept-id/revision-id"
+                (count concept-id-revision-id-tuples)))
   (let [start (System/currentTimeMillis)
+        parallel-chunk-size (:parallel-chunk-size (util/context->system context))
         db (util/context->db context)
         ;; Split the tuples so they can be requested separately for each provider and concept type
         split-tuples-map (split-concept-id-revision-id-tuples concept-id-revision-id-tuples)]
@@ -202,11 +202,12 @@
                           (for [[provider-id concept-type-tuples-map] split-tuples-map
                                 [concept-type tuples] concept-type-tuples-map]
                             ;; Retrieve the concepts for this type and provider id.
-                            (if (> (config/parallel-n) 0)
+                            (if (> parallel-chunk-size 0)
+                              ;; retrieving chunks in parallel for faster read performance
                               (apply concat
                                      (cutil/pmap-n-all
                                        (partial c/get-concepts db concept-type provider-id)
-                                       (config/parallel-n)
+                                       parallel-chunk-size
                                        tuples))
                               (c/get-concepts db concept-type provider-id tuples))))
           ;; Create a map of tuples to concepts
@@ -225,11 +226,12 @@
                  missing-concept-tuples)))))))
 
 (deftracefn get-latest-concepts
-  "Get the lastest version of conepts by specifiying a list of concept-ids. Results are
+  "Get the lastest version of concepts by specifiying a list of concept-ids. Results are
   returned in the order requested"
   [context concept-ids]
   (info "Getting latest concepts by id")
-  (let [start-time (System/currentTimeMillis)
+  (let [start (System/currentTimeMillis)
+        parallel-chunk-size (:parallel-chunk-size (util/context->system context))
         db (util/context->db context)
         ;; Split the concept-ids so they can be requested separately for each provider and concept type
         split-concept-ids-map (split-concept-ids concept-ids)]
@@ -238,18 +240,19 @@
                           (for [[provider-id concept-type-concept-id-map] split-concept-ids-map
                                 [concept-type cids] concept-type-concept-id-map]
                             ;; Retrieve the concepts for this type and provider id.
-                            (if (> (config/parallel-n) 0)
+                            (if (> parallel-chunk-size 0)
+                              ;; retrieving chunks in parallel for faster read performance
                               (apply concat
                                      (cutil/pmap-n-all
                                        (partial c/get-latest-concepts db concept-type provider-id)
-                                       (config/parallel-n)
+                                       parallel-chunk-size
                                        cids))
                               (c/get-latest-concepts db concept-type provider-id cids))))
           ;; Create a map of concept-ids to concepts
           concepts-by-concept-id (into {} (for [c concepts] [(:concept-id c) c]))]
       (if (= (count concepts) (count concept-ids))
         ;; Return the concepts in the order they were requested
-        (let [millis (- (System/currentTimeMillis) start-time)]
+        (let [millis (- (System/currentTimeMillis) start)]
           (info (format "Found [%d] concepts in [%d] ms" (count concepts) millis))
           (map concepts-by-concept-id concept-ids))
         ;; some concepts weren't found
