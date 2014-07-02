@@ -8,7 +8,7 @@
   "Defines a function to extract provider-ids"
   (extract-provider-ids
     [c]
-    "Extract provider-ids into a vector."))
+    "Extract provider-ids"))
 
 (defn- concept-id->provider-id
   [concept-id]

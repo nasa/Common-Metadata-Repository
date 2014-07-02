@@ -4,42 +4,60 @@
             [cmr.search.models.query :as qm]))
 
 (defprotocol ExtractCollectionConceptId
-  "Defines a function to extract collection concept ids into a vector."
+  "Defines a function to extract collection concept ids"
   (extract-collection-concept-ids
     [c]
-    "Extract collection concept ids into a vector."))
+    "Extract collection concept ids"))
 
 (extend-protocol ExtractCollectionConceptId
   cmr.search.models.query.Query
   (extract-collection-concept-ids
     [query]
-    (extract-collection-concept-ids (:condition query)))
+    ;; This is expected to the entry way into the
+    (let [concept-ids (set (extract-collection-concept-ids (:condition query)))]
+      (if (or (concept-ids :none) (concept-ids :any))
+        #{}
+        concept-ids)))
 
   cmr.search.models.query.ConditionGroup
   (extract-collection-concept-ids
-    [{:keys [conditions]}]
-    (mapcat extract-collection-concept-ids conditions))
+    [{:keys [operation conditions]}]
+    (let [concept-ids (set (mapcat extract-collection-concept-ids conditions))]
+      (cond
+        (concept-ids :none) [:none]
+        (and (= operation :or) (concept-ids :any)) [:any]
+        :else
+        (disj concept-ids :any))))
 
-  cmr.search.models.query.NegatedCondition
-  (extract-collection-concept-ids
-    [{:keys [condition]}]
-    (if-not (empty? (extract-collection-concept-ids condition))
-      (errors/internal-error! "collection-concept-id should not be allowed in NegatedCondition.")))
 
   cmr.search.models.query.StringCondition
   (extract-collection-concept-ids
-    [{:keys [field value]}]
-    (if (= :collection-concept-id field)
-      [value]
-      []))
+    [{:keys [field value pattern]}]
+    (if pattern
+      [:any]
+      (if (= field :collection-concept-id)
+        [value]
+        [:any])))
 
   cmr.search.models.query.StringsCondition
   (extract-collection-concept-ids
     [{:keys [field values]}]
-    (if (= :collection-concept-id field)
+    (if (= field :collection-concept-id)
       values
-      []))
+      [:any]))
+
+  cmr.search.models.query.CollectionQueryCondition
+  (extract-collection-concept-ids
+    [_]
+    (errors/internal-error! "extract-collection-concept-ids does not support CollectionQueryCondition"))
+
+  cmr.search.models.query.NegatedCondition
+  (extract-collection-concept-ids
+    [_]
+    (errors/internal-error! "extract-collection-concept-ids does not support NegatedCondition."))
 
   ;; catch all extractor
   java.lang.Object
-  (extract-collection-concept-ids [this] []))
+  (extract-collection-concept-ids
+    [this]
+    [:any]))
