@@ -51,11 +51,6 @@
     [_]
     (errors/internal-error! "extract-collection-concept-ids does not support CollectionQueryCondition"))
 
-  cmr.search.models.query.NegatedCondition
-  (extract-collection-concept-ids
-    [_]
-    (errors/internal-error! "extract-collection-concept-ids does not support NegatedCondition."))
-
   ;; catch all extractor
   java.lang.Object
   (extract-collection-concept-ids
