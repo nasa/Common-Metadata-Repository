@@ -1,6 +1,7 @@
 (ns cmr.search.validators.validation
   "Defines protocols and functions to validate conditions"
-  (:require [cmr.search.models.query :as qm]))
+  (:require [cmr.search.models.query :as qm]
+            [cmr.spatial.validation :as spatial-validation]))
 
 (defprotocol Validator
   "Defines the protocol for validating query conditions.
@@ -19,6 +20,11 @@
   (validate
     [{:keys [conditions]}]
     (mapcat validate conditions))
+
+  cmr.search.models.query.SpatialCondition
+  (validate
+    [{:keys [shape]}]
+    (spatial-validation/validate shape))
 
   ;; catch all validator
   java.lang.Object

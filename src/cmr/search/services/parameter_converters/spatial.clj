@@ -21,4 +21,4 @@
 
 (defmethod p/parameter->condition :bounding-box
   [concept-type param value options]
-  (url-value->spatial-condition :br value))
+  (url-value->spatial-condition :bounding-box value))

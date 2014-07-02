@@ -15,7 +15,8 @@
             [cmr.search.services.messages.orbit-number-messages :as on-msg]
             [cmr.search.services.messages.common-messages :as msg]
             [cmr.search.data.messages :as d-msg]
-            [camel-snake-kebab :as csk])
+            [camel-snake-kebab :as csk]
+            [cmr.spatial.codec :as spatial-codec])
   (:import clojure.lang.ExceptionInfo))
 
 (def case-sensitive-params
@@ -348,6 +349,20 @@
           [(format "Parameter %s must take value of true, false, or unset, but was %s" key value)]))
       bool-params)))
 
+(defn polygon-validation
+  [concept-type params]
+  (some->> params
+          :polygon
+          (spatial-codec/url-decode :polygon)
+          :errors))
+
+(defn bounding-box-validation
+  [concept-type params]
+  (some->> params
+          :bounding-box
+          (spatial-codec/url-decode :bounding-box)
+          :errors))
+
 (def parameter-validations
   "A list of the functions that can validate parameters. They all accept parameters as an argument
   and return a list of errors."
@@ -368,13 +383,15 @@
    attribute-validation
    science-keywords-validation
    exclude-validation
-   boolean-value-validation])
+   boolean-value-validation
+   polygon-validation
+   bounding-box-validation])
 
 (defn validate-parameters
   "Validates parameters. Throws exceptions to send to the user. Returns parameters if validation
   was successful so it can be chained with other calls."
   [concept-type params]
   (let [errors (mapcat #(% concept-type params) parameter-validations)]
-    (when-not (empty? errors)
+    (when (seq errors)
       (err/throw-service-errors :invalid-data errors)))
   params)
