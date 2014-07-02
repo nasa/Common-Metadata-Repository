@@ -34,6 +34,19 @@
   "The batch size to retrieve expired concepts"
   5000)
 
+(defn safe-max
+  "Return the maximimum of two numbers, treating nil as the lowest possible number"
+  [num1, num2]
+  (cond
+    (nil? num2)
+    num1
+
+    (nil? num1)
+    num2
+
+    :else
+    (max num1 num2)))
+
 (defn blob->input-stream
   "Convert a BLOB to an InputStream"
   [^Blob blob]
@@ -152,10 +165,10 @@
         params (dissoc params :concept-type :provider-id)
         table (tables/get-table-name provider-id concept-type)
         stmt (select ['(min :id)]
-                         (from table)
-                           (when (seq params)
-                             (where
-                               (find-params->sql-clause params))))]
+               (from table)
+               (when (seq params)
+                 (where
+                   (find-params->sql-clause params))))]
     (-> (su/find-one conn stmt)
         vals
         first)))
@@ -223,23 +236,58 @@
 
   (get-concepts
     [db concept-type provider-id concept-id-revision-id-tuples]
-    (j/with-db-transaction
-      [conn db]
-      ;; use a temporary table to insert our values so we can use a join to
-      ;; pull everything in one select
-      (apply j/insert! conn
-             "get_concepts_work_area"
-             ["concept_id" "revision_id"]
-             (concat concept-id-revision-id-tuples [:transaction false]))
-      (let [table (tables/get-table-name provider-id concept-type)
-            stmt (su/build (select [:c.*]
-                             (from (as (keyword table) :c)
-                                   (as :get-concepts-work-area :t))
-                             (where `(and (= :c.concept-id :t.concept-id)
-                                          (= :c.revision-id :t.revision-id)))))]
+    (let [start (System/currentTimeMillis)]
+      (j/with-db-transaction
+        [conn db]
+        ;; use a temporary table to insert our values so we can use a join to
+        ;; pull everything in one select
+        (apply j/insert! conn
+               "get_concepts_work_area"
+               ["concept_id" "revision_id"]
+               ;; set :transaction? false since we are already inside a transaction, and
+               ;; we want the temp table to persist for the main select
+               (concat concept-id-revision-id-tuples [:transaction? false]))
+        (let [table (tables/get-table-name provider-id concept-type)
+              stmt (su/build (select [:c.*]
+                               (from (as (keyword table) :c)
+                                     (as :get-concepts-work-area :t))
+                               (where `(and (= :c.concept-id :t.concept-id)
+                                            (= :c.revision-id :t.revision-id)))))
 
-        (doall (map (partial db-result->concept-map concept-type conn provider-id)
-                    (j/query conn stmt))))))
+              result (doall (map (partial db-result->concept-map concept-type conn provider-id)
+                                 (sql-utils/query conn stmt)))
+              millis (- (System/currentTimeMillis) start)]
+          (debug (format "Getting [%d] concepts took [%d] ms" (count result) millis))
+          result))))
+
+  (get-latest-concepts
+    [db concept-type provider-id concept-ids]
+    (let [start (System/currentTimeMillis)]
+      (j/with-db-transaction
+        [conn db]
+        ;; use a temporary table to insert our values so we can use a join to
+        ;; pull everything in one select
+        (apply j/insert! conn
+               "get_concepts_work_area"
+               ["concept_id"]
+               ;; set :transaction? false since we are already inside a transaction, and
+               ;; we want the temp table to persist for the main select
+               (concat (map vector concept-ids) [:transaction? false]))
+        ;; pull back all revisions of each concept-id and then take the latest
+        ;; instead of using group-by in SQL
+        (let [table (tables/get-table-name provider-id concept-type)
+              stmt (su/build (select [:c.concept-id :c.revision-id]
+                               (from (as (keyword table) :c)
+                                     (as :get-concepts-work-area :t))
+                               (where `(and (= :c.concept-id :t.concept-id)))))
+              cid-rid-maps (sql-utils/query conn stmt)
+              concept-id-to-rev-id-maps (map #(hash-map (:concept_id %) (:revision_id %)) cid-rid-maps)
+              latest (apply merge-with safe-max {}
+                            concept-id-to-rev-id-maps)
+              concept-id-revision-id-tuples (seq latest)
+              latest-time (- (System/currentTimeMillis) start)]
+          (debug (format "Retrieving latest revision-ids took [%d] ms" latest-time))
+          (c/get-concepts db concept-type provider-id concept-id-revision-id-tuples)))))
 
   (find-concepts
     [db params]

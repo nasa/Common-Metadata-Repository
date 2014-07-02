@@ -142,6 +142,22 @@
        :concepts (parse-concepts response)}
       (assoc (parse-errors response) :status status))))
 
+(defn get-latest-concepts
+  "Make a POST to retreive the latest revision of concpets by concept-id."
+  [concept-ids]
+  (let [response (client/post (str concepts-url "search/latest-concept-revisions")
+                              {:body (cheshire/generate-string concept-ids)
+                               :content-type :json
+                               :accept :json
+                               :throw-exceptions false
+                               :connection-manager (conn-mgr)})
+        status (:status response)]
+    (if (= status 200)
+      {:status status
+       :concepts (parse-concepts response)}
+      (assoc (parse-errors response) :status status))))
+
+
 (defn find-concepts
   "Make a get to retrieve concepts by parameters for a specific concept type"
   [concept-type params]

@@ -49,6 +49,37 @@
              (msg/concept-with-concept-id-and-rev-id-does-not-exist "C2-PROV1" 1)}
            (set errors)))))
 
+(deftest get-latest-by-concept-id
+  (let [coll1 (util/create-and-save-collection "PROV1" 1 3)
+        coll2 (util/create-and-save-collection "PROV1" 2 1)
+        coll3 (util/create-and-save-collection "PROV2" 3 3)
+        gran1 (util/create-and-save-granule "PROV1" (:concept-id coll1) 1 2)
+        gran2 (util/create-and-save-granule "PROV1" (:concept-id coll2) 2 1)]
+    (are [item-revision-tuples]
+         (let [ids (map #(:concept-id (first %)) item-revision-tuples)
+               {:keys [status concepts]} (util/get-latest-concepts ids)
+               expected-concepts (map (fn [[item revision]]
+                                        (assoc item :revision-id revision))
+                                      item-revision-tuples)]
+           (and (= 200 status)
+                (= expected-concepts (concepts-for-comparison concepts))))
+         ; one collection
+         [[coll1 3]]
+         ;; two collections
+         [[coll1 3] [coll2 1]]
+         ;; granules
+         [[gran1 2] [gran2 1]]
+         ; granules and collections
+         [[gran1 2] [gran2 1] [coll3 3] [coll2 1]])))
+
+(deftest get-latest-concepts-with-missing-concept-test
+  (let [coll1 (util/create-and-save-collection "PROV1" 1)
+        ids [(:concept-id coll1) "C1234-PROV1"]
+        {:keys [status errors]} (util/get-latest-concepts ids)]
+    (is (= 404 status ))
+    (is (= #{(msg/concept-does-not-exist "C1234-PROV1")}
+           (set errors)))))
+
 (deftest find-collections
   (let [coll1 (util/create-and-save-collection "PROV1" 1)
         coll2 (util/create-and-save-collection "PROV1" 2)
