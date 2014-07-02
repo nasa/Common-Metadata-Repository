@@ -193,7 +193,7 @@
   (info (format "Getting [%d] concepts by concept-id/revision-id"
                 (count concept-id-revision-id-tuples)))
   (let [start (System/currentTimeMillis)
-        parallel-chunk-size (:parallel-chunk-size (util/context->system context))
+        parallel-chunk-size (get-in context [:system :parallel-chunk-size])
         db (util/context->db context)
         ;; Split the tuples so they can be requested separately for each provider and concept type
         split-tuples-map (split-concept-id-revision-id-tuples concept-id-revision-id-tuples)]
@@ -231,7 +231,7 @@
   [context concept-ids]
   (info "Getting latest concepts by id")
   (let [start (System/currentTimeMillis)
-        parallel-chunk-size (:parallel-chunk-size (util/context->system context))
+        parallel-chunk-size (get-in context [:system :parallel-chunk-size])
         db (util/context->db context)
         ;; Split the concept-ids so they can be requested separately for each provider and concept type
         split-concept-ids-map (split-concept-ids concept-ids)]

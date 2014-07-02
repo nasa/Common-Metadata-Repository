@@ -8,10 +8,6 @@
   [context]
   (-> context :system :db))
 
-(defn context->system
-  [context]
-  (:system context))
-
 (defn is-tombstone?
   "Check to see if an entry is a tombstone (has a :deleted true entry)."
   [concept]
