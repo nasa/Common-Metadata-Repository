@@ -7,7 +7,7 @@
             [cmr.common.regex-builder :as rb]
             [clojure.string :as str]
             [cmr.common.services.errors :as errors]
-            [cmr.spatial.codec-messages :as cmsg]
+            [cmr.spatial.messages :as smsg]
             [cmr.common.util :as util]))
 
 
@@ -77,7 +77,7 @@
   (if-let [match (re-matches point-regex s)]
     (let [[_ ^String lon-s ^String lat-s] match]
       (p/point (Double. lon-s) (Double. lat-s)))
-    {:errors [(cmsg/shape-decode-msg :point s)]}))
+    {:errors [(smsg/shape-decode-msg :point s)]}))
 
 (defmethod url-decode :br
   [type s]
@@ -88,14 +88,14 @@
            ^String e
            ^String n] match]
       (mbr/mbr (Double. w) (Double. n) (Double. e) (Double. s)))
-    {:errors [(cmsg/shape-decode-msg :bounding-box s)]}))
+    {:errors [(smsg/shape-decode-msg :bounding-box s)]}))
 
 (defmethod url-decode :polygon
   [type s]
   (if-let [match (re-matches polygon-regex s)]
     (let [ordinates (map #(Double. ^String %) (str/split s #","))]
       (poly/polygon [(apply r/ords->ring ordinates)]))
-    {:errors [(cmsg/shape-decode-msg :polygon s)]}))
+    {:errors [(smsg/shape-decode-msg :polygon s)]}))
 
 
 

@@ -11,6 +11,8 @@
             ;;my code
             [cmr.spatial.test.generators :as sgen]
             [cmr.spatial.point :as p]
+            [cmr.spatial.validation :as v]
+            [cmr.spatial.messages :as msg]
             [cmr.spatial.math :refer :all])
   (:import cmr.spatial.point.Point))
 
@@ -68,6 +70,18 @@
     (is (not= (p/point 0 1) {:lon 0 :lat 1}))
     (is (not= (p/point 0 1) "foo"))
     (is (not (.equals ^Point (p/point 0 1) "foo")))))
+
+(deftest point-validation
+  (testing "valid point"
+    (is (nil? (seq (v/validate (p/point 0 0))))))
+  (testing "invalid points"
+    (are [lon lat msg]
+         (= [msg]
+            (v/validate (p/point lon lat)))
+         -181 0 (msg/point-lon-invalid -181)
+        181 0 (msg/point-lon-invalid 181)
+        0 90.1 (msg/point-lat-invalid 90.1)
+        0 -90.1 (msg/point-lat-invalid -90.1))))
 
 ;; Tests that when associating a new subvalue to a point it stays consistent.
 (defspec point-assoc 100

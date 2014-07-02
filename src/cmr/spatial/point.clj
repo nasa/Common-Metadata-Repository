@@ -4,7 +4,9 @@
             [clojure.pprint]
             [pjstadig.assertions :as pj]
             [cmr.spatial.derived :as d]
-            [cmr.common.util :as util]))
+            [cmr.common.util :as util]
+            [cmr.spatial.validation :as v]
+            [cmr.spatial.messages :as msg]))
 
 (primitive-math/use-primitive-operators)
 
@@ -149,8 +151,6 @@
   (^Point [lon lat]
    (point lon lat (radians lon) (radians lat)))
   (^Point [lon lat lon-rad lat-rad]
-   (pj/assert (within-range? lon -180.0 180.0))
-   (pj/assert (within-range? lat -90.0 90.0))
    (pj/assert (double-approx= (radians lon) lon-rad))
    (pj/assert (double-approx= (radians lat) lat-rad))
 
@@ -341,4 +341,28 @@
   (calculate-derived
     ^Point [^Point point]
     point))
+
+(defn- validate-point-longitude
+  [{:keys [^double lon]}]
+  (when (or (< lon -180.0)
+            (> lon 180.0))
+    [(msg/point-lon-invalid lon)]))
+
+(defn- validate-point-latitude
+  [{:keys [^double lat]}]
+  (when (or (< lat -90.0)
+            (> lat 90.0))
+    [(msg/point-lat-invalid lat)]))
+
+(extend-protocol v/SpatialValidation
+  cmr.spatial.point.Point
+  (validate
+    [point]
+    (concat (validate-point-longitude point)
+            (validate-point-latitude point))))
+
+
+
+
+
 

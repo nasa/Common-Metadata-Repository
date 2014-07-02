@@ -16,13 +16,13 @@
             [cmr.spatial.line :as l]
             [cmr.spatial.ring :as r]
             [cmr.spatial.test.generators :as sgen]
-            [cmr.spatial.codec-messages :as cmesg]
+            [cmr.spatial.messages :as smesg]
             [cmr.spatial.codec :as c]))
 
 
 (deftest url-decode-test
   (testing "invalid points"
-    (are [s] (= {:errors [(cmesg/shape-decode-msg :point s)]}
+    (are [s] (= {:errors [(smesg/shape-decode-msg :point s)]}
                 (c/url-decode :point s))
          "foo"
          "45"
@@ -31,7 +31,7 @@
          "45,a"
          "45,45,"))
   (testing "invalid polygons"
-    (are [s] (= {:errors [(cmesg/shape-decode-msg :polygon s)]}
+    (are [s] (= {:errors [(smesg/shape-decode-msg :polygon s)]}
                 (c/url-decode :polygon s))
          "foo"
          "45"
@@ -48,7 +48,7 @@
          ;; odd number of ordinates
          "1,1,2,2,3,3,4,4,5"))
   (testing "invalid mbrs"
-    (are [s] (= {:errors [(cmesg/shape-decode-msg "bounding_box" s)]}
+    (are [s] (= {:errors [(smesg/shape-decode-msg "bounding_box" s)]}
                 (c/url-decode :br s))
          "foo"
          "45,,45"

@@ -10,7 +10,9 @@
             [cmr.spatial.mbr :as m]
             [cmr.spatial.ring :as r]
             [cmr.spatial.derived :as d]
-            [cmr.spatial.test.generators :as sgen]))
+            [cmr.spatial.test.generators :as sgen]
+            [cmr.spatial.validation :as v]
+            [cmr.spatial.messages :as msg]))
 
 
 (deftest ring-covers-br-test
@@ -21,6 +23,73 @@
                                   3.2516294093733533
                                   0.5732165527343749
                                   2.7123539880645877))))))
+
+
+;; Validations
+;; no consecutive antipodal points
+;; does not cross itself
+;; does not contain both the north and south poles.
+;; Get examples from ruby spatial lib
+
+
+(deftest ring-validation-test
+  (testing "valid ring"
+    (is (nil? (seq (v/validate (r/ords->ring 0 0, 1 0, 0 1, 0 0))))))
+  (testing "invalid rings"
+    (are [ords msgs] (= msgs (v/validate (apply r/ords->ring ords)))
+
+         ;; invalid point
+         [0 0, 181 0, 0 1, 0 0]
+         [(msg/ring-point-invalid 1 (msg/point-lon-invalid 181))]
+
+         ;; multiple invalid points and point parts
+         [0 0, 181 91, 0 92, 0 0]
+         [(msg/ring-point-invalid 1 (msg/point-lon-invalid 181))
+          (msg/ring-point-invalid 1 (msg/point-lat-invalid 91))
+          (msg/ring-point-invalid 2 (msg/point-lat-invalid 92))]
+
+         ;; Ring not closed
+         [0 0, 1 0, 0 1]
+         [(msg/ring-not-closed)]
+
+         ;; Duplicate points
+         [0 0, 1 0, 1 0, 0 1, 0 0]
+         [(msg/ring-duplicate-points [[1 (p/point 1 0)] [2 (p/point 1 0)]])]
+
+         ;; duplicate non consecutive points
+         [0 0, 1 0, 4 5, 1 0, 0 1, 0 0]
+         [(msg/ring-duplicate-points [[1 (p/point 1 0)] [3 (p/point 1 0)]])]
+
+         ;; Multiple duplicate points
+         [0 0, 1 0, 4 5, 1 0, 0 0, 4 5 0 1, 0 0]
+         [(msg/ring-duplicate-points [[2 (p/point 4 5)] [5 (p/point 4 5)]])
+          (msg/ring-duplicate-points [[1 (p/point 1 0)] [3 (p/point 1 0)]])
+          (msg/ring-duplicate-points [[0 (p/point 0 0)] [4 (p/point 0 0)]])]
+
+         ;; very very close points
+         [0 0, 1 1, 1 1.0000000000000001, 0 1, 0 0]
+         [(msg/ring-duplicate-points [[1 (p/point 1 1)] [2 (p/point 1 1.0000000000000001)]])]
+
+         ;; Not too close
+         [0 0, 1 1, 1 1.000000000000001, 0 1, 0 0]
+         []
+
+         ;; No consecutive antipodal points
+         [0 0, 45 0, -135 0, 0 0]
+         [(msg/ring-consecutive-antipodal-points [1 (p/point 45 0)] [2 (p/point -135 0)])]
+
+         ;; Multiple consecutive antipodal points
+         [0 0, 45 0, -135 0, 45 0, 0 0]
+         [(msg/ring-duplicate-points [[1 (p/point 45 0)] [3 (p/point 45 0)]])
+          (msg/ring-consecutive-antipodal-points [1 (p/point 45 0)] [2 (p/point -135 0)])
+          (msg/ring-consecutive-antipodal-points [2 (p/point -135 0)] [3 (p/point 45 0)])]
+
+         ;; non consecutive antipodal points are allowed
+         [0 0, 45 0, 180 0, -135 0, 0 0]
+         []
+
+         )))
+
 
 
 (declare ring-examples)
