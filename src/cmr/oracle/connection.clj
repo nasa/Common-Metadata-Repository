@@ -62,8 +62,6 @@
    ;; The database pool of connections
    datasource
 
-   ;; The number of results to pull back simultaneously during a query
-   result-set-fetch-size
    ]
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -92,7 +90,5 @@
 
 (defn create-db
   "Creates and returns the database connection pool."
-  ([spec]
-   (create-db spec 2000))
-  ([spec result-set-fetch-size]
-   (->OracleStore spec nil result-set-fetch-size)))
+  [spec]
+  (->OracleStore spec nil))
