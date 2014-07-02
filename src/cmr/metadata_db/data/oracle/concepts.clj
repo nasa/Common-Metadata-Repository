@@ -161,10 +161,10 @@
         params (dissoc params :concept-type :provider-id)
         table (tables/get-table-name provider-id concept-type)
         stmt (select ['(min :id)]
-                         (from table)
-                           (when (seq params)
-                             (where
-                               (find-params->sql-clause params))))]
+                     (from table)
+                     (when (seq params)
+                       (where
+                         (find-params->sql-clause params))))]
     (-> (su/find-one conn stmt)
         vals
         first)))
@@ -185,8 +185,8 @@
     (let [table (tables/get-table-name provider-id concept-type)]
       (:concept_id
         (su/find-one db (select [:concept-id]
-                          (from table)
-                          (where `(= :native-id ~native-id)))))))
+                                (from table)
+                                (where `(= :native-id ~native-id)))))))
 
   (get-concept-by-provider-id-native-id-concept-type
     [db concept]
@@ -197,14 +197,14 @@
             stmt (if revision-id
                    ;; find specific revision
                    (select '[*]
-                     (from table)
-                     (where `(and (= :native-id ~native-id)
-                                  (= :revision-id ~revision-id))))
+                           (from table)
+                           (where `(and (= :native-id ~native-id)
+                                        (= :revision-id ~revision-id))))
                    ;; find latest
                    (select '[*]
-                     (from table)
-                     (where `(= :native-id ~native-id))
-                     (order-by (desc :revision-id))))]
+                           (from table)
+                           (where `(= :native-id ~native-id))
+                           (order-by (desc :revision-id))))]
         (db-result->concept-map concept-type conn provider-id
                                 (su/find-one conn stmt)))))
 
@@ -215,9 +215,9 @@
        (let [table (tables/get-table-name provider-id concept-type)]
          (db-result->concept-map concept-type conn provider-id
                                  (su/find-one conn (select '[*]
-                                                     (from table)
-                                                     (where `(= :concept-id ~concept-id))
-                                                     (order-by (desc :revision-id))))))))
+                                                           (from table)
+                                                           (where `(= :concept-id ~concept-id))
+                                                           (order-by (desc :revision-id))))))))
     ([db concept-type provider-id concept-id revision-id]
      (if revision-id
        (let [table (tables/get-table-name provider-id concept-type)]
@@ -225,9 +225,9 @@
            [conn db]
            (db-result->concept-map concept-type conn provider-id
                                    (su/find-one conn (select '[*]
-                                                       (from table)
-                                                       (where `(and (= :concept-id ~concept-id)
-                                                                    (= :revision-id ~revision-id))))))))
+                                                             (from table)
+                                                             (where `(and (= :concept-id ~concept-id)
+                                                                          (= :revision-id ~revision-id))))))))
        (c/get-concept db concept-type provider-id concept-id))))
 
   (get-concepts
@@ -242,10 +242,10 @@
              (concat concept-id-revision-id-tuples [:transaction? false]))
       (let [table (tables/get-table-name provider-id concept-type)
             stmt (su/build (select [:c.*]
-                             (from (as (keyword table) :c)
-                                   (as :get-concepts-work-area :t))
-                             (where `(and (= :c.concept-id :t.concept-id)
-                                          (= :c.revision-id :t.revision-id)))))]
+                                   (from (as (keyword table) :c)
+                                         (as :get-concepts-work-area :t))
+                                   (where `(and (= :c.concept-id :t.concept-id)
+                                                (= :c.revision-id :t.revision-id)))))]
 
         (doall (map (partial db-result->concept-map concept-type conn provider-id)
                     (sql-utils/query conn stmt))))))
@@ -260,16 +260,17 @@
              "get_concepts_work_area"
              ["concept_id"]
              (concat (map vector concept-ids) [:transaction? false]))
-      ;; pull back all revisions of each concept-id instead of using group-by in SQL
+      ;; pull back all revisions of each concept-id and then take the latest
+      ;; instead of using group-by in SQL
       (let [table (tables/get-table-name provider-id concept-type)
             stmt (su/build (select [:c.concept-id :c.revision-id]
-                             (from (as (keyword table) :c)
-                                   (as :get-concepts-work-area :t))
-                             (where `(and (= :c.concept-id :t.concept-id)))))
+                                   (from (as (keyword table) :c)
+                                         (as :get-concepts-work-area :t))
+                                   (where `(and (= :c.concept-id :t.concept-id)))))
             cid-rid-maps (sql-utils/query conn stmt)
-            my-ids (map #(hash-map (:concept_id %) (:revision_id %)) cid-rid-maps)
+            concept-id-to-rev-id-maps (map #(hash-map (:concept_id %) (:revision_id %)) cid-rid-maps)
             latest (apply merge-with safe-max {}
-                          my-ids)
+                          concept-id-to-rev-id-maps)
             concept-id-revision-id-tuples (seq latest)]
         (c/get-concepts db concept-type provider-id concept-id-revision-id-tuples))))
 
@@ -281,9 +282,9 @@
             params (dissoc params :concept-type :provider-id)
             table (tables/get-table-name provider-id concept-type)
             stmt (su/build (select [:*]
-                             (from table)
-                             (when-not (empty? params)
-                               (where (find-params->sql-clause params)))))]
+                                   (from table)
+                                   (when-not (empty? params)
+                                     (where (find-params->sql-clause params)))))]
         (doall (map (partial db-result->concept-map concept-type conn provider-id)
                     (j/query conn stmt))))))
 
@@ -304,8 +305,8 @@
                                    conditions
                                    (cons (find-params->sql-clause params) conditions))
                       stmt (su/build (select [:*]
-                                       (from table)
-                                       (where (cons `and conditions))))
+                                             (from table)
+                                             (where (cons `and conditions))))
                       batch-result (j/query db stmt)]
                   (mapv (partial db-result->concept-map concept-type conn provider-id)
                         batch-result))))
@@ -354,8 +355,8 @@
     [this concept-type provider-id concept-id revision-id]
     (let [table (tables/get-table-name provider-id concept-type)
           stmt (su/build (delete table
-                           (where `(and (= :concept-id ~concept-id)
-                                        (= :revision-id ~revision-id)))))]
+                                 (where `(and (= :concept-id ~concept-id)
+                                              (= :revision-id ~revision-id)))))]
       (j/execute! this stmt)))
 
   (force-delete-by-params
@@ -364,7 +365,7 @@
           params (dissoc params :concept-type :provider-id)
           table (tables/get-table-name provider-id concept-type)
           stmt (su/build (delete table
-                           (where (find-params->sql-clause params))))]
+                                 (where (find-params->sql-clause params))))]
       (j/execute! db stmt)))
 
   (reset
