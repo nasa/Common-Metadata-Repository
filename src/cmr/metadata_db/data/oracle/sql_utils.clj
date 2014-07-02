@@ -44,4 +44,4 @@
                    (select ['*]
                            (from :inner)
                            (where '(= :ROWNUM 1))))]
-    (first (query db (build stmt)))))
+    (first (j/query db (build stmt)))))
