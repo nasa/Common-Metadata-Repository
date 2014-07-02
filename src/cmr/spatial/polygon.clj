@@ -2,12 +2,15 @@
   (:require [cmr.spatial.point :as p]
             [cmr.spatial.math :refer :all]
             [cmr.common.util :as util]
+            [cmr.common.services.errors :as errors]
             [primitive-math]
             [cmr.spatial.mbr :as m]
             [cmr.spatial.conversion :as c]
             [cmr.spatial.ring :as r]
             [cmr.spatial.arc :as a]
-            [cmr.spatial.derived :as d]))
+            [cmr.spatial.derived :as d]
+            [cmr.spatial.validation :as v]
+            [cmr.spatial.messages :as msg]))
 
 (primitive-math/use-primitive-operators)
 
@@ -87,3 +90,16 @@
       (as-> polygon p
             (update-in p [:rings] (partial mapv d/calculate-derived))
             (assoc p :mbr (-> p :rings first :mbr))))))
+
+
+(extend-protocol v/SpatialValidation
+  cmr.spatial.polygon.Polygon
+  (validate
+    [{:keys [rings]}]
+    (if (> (count rings) 1)
+      ;; Hole validation is not supported yet. We only implemented validation of what was possible
+      ;; on the search API
+      (errors/internal-error! "Validation of polygons with holes is not yet supported")
+      (v/validate (first rings)))))
+
+

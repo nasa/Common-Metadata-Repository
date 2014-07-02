@@ -24,19 +24,11 @@
                                   0.5732165527343749
                                   2.7123539880645877))))))
 
-
-;; Validations
-;; no consecutive antipodal points
-;; does not cross itself
-;; does not contain both the north and south poles.
-;; Get examples from ruby spatial lib
-
-
 (deftest ring-validation-test
   (testing "valid ring"
     (is (nil? (seq (v/validate (r/ords->ring 0 0, 1 0, 0 1, 0 0))))))
   (testing "invalid rings"
-    (are [ords msgs] (= msgs (v/validate (apply r/ords->ring ords)))
+    (are [ords msgs] (= (seq msgs) (seq (v/validate (apply r/ords->ring ords))))
 
          ;; invalid point
          [0 0, 181 0, 0 1, 0 0]
@@ -67,11 +59,11 @@
           (msg/ring-duplicate-points [[0 (p/point 0 0)] [4 (p/point 0 0)]])]
 
          ;; very very close points
-         [0 0, 1 1, 1 1.0000000000000001, 0 1, 0 0]
-         [(msg/ring-duplicate-points [[1 (p/point 1 1)] [2 (p/point 1 1.0000000000000001)]])]
+         [0 0, 1 1, 1 1.000000001, 0 1, 0 0]
+         [(msg/ring-duplicate-points [[1 (p/point 1 1)] [2 (p/point 1 1.000000001)]])]
 
          ;; Not too close
-         [0 0, 1 1, 1 1.000000000000001, 0 1, 0 0]
+         [0 0, 1 1, 1 1.00000001, 0 1, 0 0]
          []
 
          ;; No consecutive antipodal points
@@ -88,9 +80,12 @@
          [0 0, 45 0, 180 0, -135 0, 0 0]
          []
 
-         )))
+         ;; Self intersection
+         [0 0, -1.07 3.05, 6 5, 2 5, 0 0]
+         [(msg/ring-self-intersections [(p/point 1.5055573678910719 3.768366191776642)])]
 
-
+         [0 0, 4 0, 6 5, 4.97 -1.77, 0 0]
+         [(msg/ring-contains-both-poles)])))
 
 (declare ring-examples)
 

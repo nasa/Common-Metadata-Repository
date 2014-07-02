@@ -35,10 +35,15 @@
   []
   "Polygon boundary was not closed. The last point must be equal to the first point.")
 
+(defn- point->human-readable
+  "Converts a point into a human readable representation"
+  [{:keys [lon lat]}]
+  (format "[lon=%s lat=%s]" (u/double->string lon) (u/double->string lat)))
+
 (defn- indexed-point->-msg-part
   "Takes an index and point pair and returns a human readable representation"
-  [[i {:keys [lon lat]}]]
-  (format "%d [lon=%s lat=%s]" (inc i) (u/double->string lon) (u/double->string lat)))
+  [[i point]]
+  (format "%d %s" (inc i) (point->human-readable point)))
 
 (defn ring-duplicate-points
   "Takes a list of index point pairs that were considered duplicates or very close."
@@ -58,3 +63,13 @@
                "Points %s and %s are antipodal.")
           (indexed-point->-msg-part point1-w-index)
           (indexed-point->-msg-part point2-w-index)))
+
+(defn ring-self-intersections
+  "Takes a list of points where the ring intersects itself"
+  [intersections]
+  (format "The polygon boundary intersected itself at the following points: %s"
+          (str/join "," (map point->human-readable intersections))))
+
+(defn ring-contains-both-poles
+  []
+  "The polygon boundary contains both the North and South Poles. A polygon can contain at most one pole.")

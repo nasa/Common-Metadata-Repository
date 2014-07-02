@@ -187,8 +187,7 @@
 (defn self-intersections
   "Returns the rings self intersections"
   [ring]
-  (let [ring (d/calculate-derived ring)
-        arcs (:arcs ring)
+  (let [arcs (:arcs ring)
         ;; Finds the indexes of the arcs in the list to test intersecting together.
         ;; Works by finding all combinations and rejecting the arcs would be sequential.
         ;; (The first and second arc naturally touch on a shared point for instance.)
@@ -416,7 +415,7 @@
   map of rounded points to list of index, point pairs."
   [points]
   (reduce (fn [m [i point]]
-            (let [rounded (p/round-point 15 point)]
+            (let [rounded (p/round-point 8 point)]
               (update-in m [rounded] conj [i point])))
           {}
           (map-indexed vector points)))
@@ -448,22 +447,33 @@
     (map (partial apply msg/ring-consecutive-antipodal-points)
          antipodal-indexed-point-pairs)))
 
+(defn- ring-self-intersection-validation
+  "Validates that the ring does not intersect itself"
+  [ring]
+  (when-let [intersections (seq (self-intersections ring))]
+    [(msg/ring-self-intersections intersections)]))
+
+(defn- ring-pole-validation
+  "Validates that the ring does not contain both poles"
+  [ring]
+  (let [ring (ring->pole-containment ring)]
+    (when (and (:contains-south-pole ring) (:contains-north-pole ring))
+      [(msg/ring-contains-both-poles)])))
+
 (extend-protocol v/SpatialValidation
   cmr.spatial.ring.Ring
   (validate
     [ring]
-    (concat (ring-points-validation ring)
-            (ring-closed-validation ring)
-            (ring-duplicate-point-validation ring)
-            (ring-consecutive-antipodal-points-validation ring))
+    ;; Certain validations can only be run if earlier validations passed. Validations are grouped
+    ;; here so that subsequent validations won't run if earlier validations fail.
 
-    ;; TODO capture initial set of validations. After each stage of ring validation that derive
-    ;; more information and associate in the ring that will allow us to perform more validation.
-
-    ))
-
-
-
-
-
+    (or (seq (ring-points-validation ring))
+        ;; basic ring validation
+        (or (seq (concat (ring-closed-validation ring)
+                         (ring-duplicate-point-validation ring)
+                         (ring-consecutive-antipodal-points-validation ring)))
+            ;; Advanced ring validation
+            (let [ring (assoc ring :arcs (ring->arcs ring))]
+              (or (seq (ring-self-intersection-validation ring))
+                  (seq (ring-pole-validation ring))))))))
 
