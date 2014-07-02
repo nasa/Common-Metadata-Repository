@@ -1,5 +1,5 @@
 (ns cmr.oracle.connection
- "Contains a record definition that implements the ConcpetStore and Lifecycle protocols
+  "Contains a record definition that implements the ConcpetStore and Lifecycle protocols
   backed by an Oracle database."
   (:require [cmr.common.lifecycle :as lifecycle]
             [cmr.common.log :refer (debug info warn error)]
@@ -62,7 +62,7 @@
    ;; The database pool of connections
    datasource
 
-   ;; The number of resutls to pull back simultaneously during a query
+   ;; The number of results to pull back simultaneously during a query
    result-set-fetch-size
    ]
 
@@ -92,5 +92,7 @@
 
 (defn create-db
   "Creates and returns the database connection pool."
-  [spec result-set-fetch-size]
-  (->OracleStore spec nil result-set-fetch-size))
+  ([spec]
+   (create-db spec 2000))
+  ([spec result-set-fetch-size]
+   (->OracleStore spec nil result-set-fetch-size)))
