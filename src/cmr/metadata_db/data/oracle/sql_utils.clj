@@ -42,6 +42,7 @@
                  (j/query db [{:fetch-size fetch-size} stmt params])
                  (j/query db [{:fetch-size fetch-size} stmt]))
         millis (- (System/currentTimeMillis) start)]
+    (debug "SQL:" stmt)
     (debug "Query execution took" millis "ms")
     result))
 
