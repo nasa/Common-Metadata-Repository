@@ -21,8 +21,11 @@
   {:dev {:dependencies [[ring-mock "0.1.5"]
                         [org.clojure/tools.namespace "0.2.4"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]
-                        [criterium "0.4.3"]]
-         :source-paths ["src" "dev" "test"]}
+                        [criterium "0.4.3"]
+                        [pjstadig/humane-test-output "0.6.0"]]
+         :source-paths ["src" "dev" "test"]
+         :injections [(require 'pjstadig.humane-test-output)
+                      (pjstadig.humane-test-output/activate!)]}
    :uberjar {:main cmr.search.runner
              :aot :all}})
 
