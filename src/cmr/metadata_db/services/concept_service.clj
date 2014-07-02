@@ -229,7 +229,7 @@
   "Get the lastest version of concepts by specifiying a list of concept-ids. Results are
   returned in the order requested"
   [context concept-ids]
-  (info (format "Getting [%d] latest concepts by concept-id"))
+  (info (format "Getting [%d] latest concepts by concept-id" (count concept-ids)))
   (let [start (System/currentTimeMillis)
         parallel-chunk-size (get-in context [:system :parallel-chunk-size])
         db (util/context->db context)
