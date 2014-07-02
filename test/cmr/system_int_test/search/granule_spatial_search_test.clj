@@ -12,6 +12,7 @@
             [cmr.spatial.ring :as r]
             [cmr.spatial.derived :as derived]
             [cmr.spatial.codec :as codec]
+            [cmr.spatial.messages :as smsg]
             [clojure.string :as str]
             [cmr.spatial.dev.viz-helper :as viz-helper]
             [cmr.spatial.serialize :as srl]
@@ -59,6 +60,26 @@
     (viz-helper/add-geometries [geometry
                                 (srl/shape->mbr geometry)
                                 (srl/shape->lr geometry)])))
+
+
+;; Tests that invalid spatial areas are detected and error messages are returned.
+(deftest spatial-search-validation-test
+  (testing "invalid encoding"
+    (is (= {:errors [(smsg/shape-decode-msg :polygon "0,ad,d,0")] :status 422}
+           (search/find-refs :granule {:polygon "0,ad,d,0"})))
+    (is (= {:errors [(smsg/shape-decode-msg :bounding-box "0,ad,d,0")] :status 422}
+           (search/find-refs :granule {:bounding-box "0,ad,d,0"}))))
+
+  (testing "invalid polygons"
+    (is (= {:errors [(smsg/ring-not-closed)] :status 422}
+           (search/find-refs :granule
+                             {:polygon (codec/url-encode
+                                         (p/polygon [(r/ords->ring 0 0, 1 0, 1 1, 0 1)]))}))))
+  (testing "invalid bounding box"
+    (is (= {:errors [(smsg/br-north-less-than-south 45 46)] :status 422}
+           (search/find-refs
+             :granule
+             {:bounding-box (codec/url-encode (m/mbr -180 45 180 46))})))))
 
 
 (deftest spatial-search-test
