@@ -40,7 +40,7 @@
           (spatial/spatial->elastic-docs gsr granule)
 
           (= gsr :cartesian)
-          (let [[supported not-supported] (split-with #(= (type %) Mbr) geometries)]
+          (let [{supported true not-supported false} (group-by #(= (type %) Mbr) geometries)]
             (when (seq not-supported)
               (info "Ignoring indexing spatial of spatial for non supported cartesian types"))
             (spatial/spatial->elastic-docs gsr (assoc-in granule [:spatial-coverage :geometries] supported)))
