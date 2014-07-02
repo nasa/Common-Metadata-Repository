@@ -12,7 +12,9 @@
             [cmr.spatial.math :refer :all]
             [cmr.spatial.mbr :as m]
             [cmr.spatial.point :as p]
-            [cmr.spatial.test.generators :as sgen]))
+            [cmr.spatial.test.generators :as sgen]
+            [cmr.spatial.validation :as v]
+            [cmr.spatial.messages :as msg]))
 
 (deftest on-antimeridian
   (testing "west on antimeridian"
@@ -55,6 +57,13 @@
   (testing "full width"
     (is (= (p/point 0 0)
            (m/center-point (m/mbr -180 90 180 -90))))))
+
+(deftest br-validation-test
+  (testing "valid br"
+    (is (empty? (v/validate (m/mbr 0 0 0 0)))))
+  (testing "invalid brs"
+    (is (= [(msg/br-north-less-than-south 46 47)]
+           (v/validate (m/mbr 0 46 0 47))))))
 
 (defspec external-points-spec 100
   (for-all [mbr (gen/such-that (complement m/whole-world?) sgen/mbrs)]

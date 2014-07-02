@@ -15,7 +15,8 @@
             [cmr.spatial.mbr :as mbr]
             [cmr.spatial.derived :as d]
             [cmr.spatial.test.generators :as sgen]
-            [cmr.spatial.dev.viz-helper :as viz-helper]))
+            [cmr.spatial.dev.viz-helper :as viz-helper]
+            [cmr.spatial.validation :as v]))
 
 ;; Ring tests. These are functions that return true if the ring is correct and false if invalid.
 
@@ -63,16 +64,6 @@
   (into {} (for [v var-syms]
              [(keyword v) @(resolve v)]) ))
 
-(comment
-
-  ;; TODO the generator needs to know that it can't add more than one pole in particular to a ring.
-
-  (def ring (d/calculate-derived
-              (r/ring [(p/point -1.0 90.0) (p/point 1.0 1.0) (p/point 1.0 -1.0) (p/point -1.0 -90.0) (p/point -1.0 -1.0) (p/point 0.0 -1.0) (p/point -1.0 90.0)])))
-  (sgen/reverse-if-both-poles ring)
-
-  )
-
 (def ring-tests
   "A map of ring test names to functions that perform the test."
   (vars-map [start-and-end-with-same-point
@@ -114,7 +105,8 @@
 (defspec rings-generator-test {:times 100 :printer-fn print-failure}
   (for-all [ring (sgen/rings)]
     (let [failed-tests (test-ring ring)]
-      (empty? failed-tests))))
+      (and (empty? failed-tests)
+           (empty? (v/validate ring))))))
 
 
 (defspec polygon-with-holes-generator-test {:times 50}

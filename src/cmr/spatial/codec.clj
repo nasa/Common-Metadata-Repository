@@ -79,7 +79,7 @@
       (p/point (Double. lon-s) (Double. lat-s)))
     {:errors [(smsg/shape-decode-msg :point s)]}))
 
-(defmethod url-decode :br
+(defmethod url-decode :bounding-box
   [type s]
   (if-let [match (re-matches mbr-regex s)]
     (let [[_

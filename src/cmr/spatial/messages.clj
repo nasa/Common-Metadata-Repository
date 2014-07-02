@@ -73,3 +73,14 @@
 (defn ring-contains-both-poles
   []
   "The polygon boundary contains both the North and South Poles. A polygon can contain at most one pole.")
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Bounding rectangle validation messages
+
+(defn br-north-less-than-south
+  [north south]
+  (format "The bounding rectangle north value [%s] was less than the south value [%s]"
+          (u/double->string north) (u/double->string south)))
+
+
+

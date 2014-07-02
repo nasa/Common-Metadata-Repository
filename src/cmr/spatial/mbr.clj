@@ -4,7 +4,9 @@
             [cmr.spatial.point :as p]
             [cmr.spatial.derived :as d]
             [cmr.common.services.errors :as errors]
-            [pjstadig.assertions :as pj])
+            [pjstadig.assertions :as pj]
+            [cmr.spatial.validation :as v]
+            [cmr.spatial.messages :as msg])
   (:import cmr.spatial.point.Point))
 
 (primitive-math/use-primitive-operators)
@@ -281,3 +283,10 @@
   (calculate-derived
     ^Mbr [^Mbr mbr]
     mbr))
+
+(extend-protocol v/SpatialValidation
+  cmr.spatial.mbr.Mbr
+  (validate
+    [{:keys [north south]}]
+      (when (< north south)
+        [(msg/br-north-less-than-south north south)])))
