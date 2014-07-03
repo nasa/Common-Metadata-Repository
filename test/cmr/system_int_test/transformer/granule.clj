@@ -20,9 +20,9 @@
        	g2-1 (d/ingest "PROV1" g2)
         g2-2 (d/ingest "PROV1" g2)]
     (testing "transform granules to echo10"
-      (are [v]
-           (= (t/expected-response v :echo10)
-               (:response (t/transform-concepts v :echo10)))
+      (are [concepts]
+           (= (t/expected-response concepts :echo10)
+              (:response (t/transform-concepts concepts :echo10)))
            [g1-1]
            [g1-1 g2-1]
            [g1-1 g2-2]))
@@ -39,12 +39,12 @@
         g2-1 (d/ingest "PROV1" g2)
         g2-2 (d/ingest "PROV1" g2)]
     (testing "transform latest revision of granules to echo10"
-      (are [v]
-           (= (t/expected-response (map #(nth % 1) v) :echo10)
-               (:response (t/transform-latest-concepts (map first v) :echo10)))
-           [[g1-1 g1-1]]
-           [[g1-1 g1-1] [g2-1 g2-2]]))
+      (are [sent expected]
+           (= (t/expected-response expected :echo10)
+              (:response (t/transform-latest-concepts sent :echo10)))
+           [(:concept-id g1-1)] [g1-1]
+           [(:concept-id g1-1) (:concept-id g2-1)] [g1-1 g2-2]))
     (testing "transform latest with missing concept-id returns 404"
-      (let [resp (t/transform-latest-concepts [(assoc g1-1 :concept-id "G1234-PROV1")] :echo10)]
+      (let [resp (t/transform-latest-concepts ["G1234-PROV1"] :echo10)]
         (is (= 404 (:status resp)))))))
 

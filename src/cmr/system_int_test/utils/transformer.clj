@@ -29,9 +29,8 @@
 
 (defn transform-latest-concepts
   "Transform latest version of concepts given as concept-id into the given format"
-  [umm-records format]
+  [ids format]
   (let [mime-type (format mt/format->mime-type)
-        ids (map :concept-id umm-records)
         response (client/post (str (url/transformer-url) "/latest-concepts")
                               {:accept mime-type
                                :throw-exceptions false
