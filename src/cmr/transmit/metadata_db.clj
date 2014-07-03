@@ -90,6 +90,33 @@
                                    " "
                                    response)))))
 
+(deftracefn get-latest-concepts
+  "Search metadata db and return the latest-concepts given by the concept-id list"
+  [context concept-ids]
+  (let [conn (config/context->app-connection context :metadata-db)
+        ids-json-str (cheshire/generate-string concept-ids)
+        request-url (str (conn/root-url conn) "/concepts/search/latest-concept-revisions")
+        response (client/post request-url {:body ids-json-str
+                                           :content-type :json
+                                           :accept :json
+                                           :throw-exceptions false
+                                           :headers (ch/context->http-headers context)
+                                           :connection-manager (conn/conn-mgr conn)})
+        status (:status response)]
+    (case status
+      404
+      (let [err-msg "Unable to find all concepts."]
+        (errors/throw-service-error :not-found err-msg))
+
+      200
+      (cheshire/decode (:body response) true)
+
+      ;; default
+      (errors/internal-error! (str "Get latest concept revisions failed. MetadataDb app response status code: "
+                                   status
+                                   " "
+                                   response)))))
+
 (deftracefn get-collection-concept-id
   "Search metadata db and return the collection-concept-id that matches the search params"
   [context search-params]
