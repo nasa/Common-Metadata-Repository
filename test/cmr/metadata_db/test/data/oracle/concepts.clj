@@ -60,7 +60,7 @@
             (let [result {:native_id "foo"
                           :concept_id "C5-PROV1"
                           :metadata (mock-blob "<foo>")
-                          :format "xml"
+                          :format "ECHO10"
                           :revision_id 2
                           :revision_date oracle-timestamp
                           :deleted 0
@@ -73,7 +73,7 @@
                       :concept-id "C5-PROV1"
                       :provider-id "PROV1"
                       :metadata "<foo>"
-                      :format "xml"
+                      :format "application/echo10+xml"
                       :revision-id 2
                       :revision-date "1986-10-14T04:03:27.456Z"
                       :deleted false
@@ -86,7 +86,7 @@
             (let [result {:native_id "foo"
                           :concept_id "G7-PROV1"
                           :metadata (mock-blob "<foo>")
-                          :format "xml"
+                          :format "ECHO10"
                           :revision_date oracle-timestamp
                           :revision_id 2
                           :deleted 0
@@ -97,7 +97,7 @@
                       :concept-id "G7-PROV1"
                       :provider-id "PROV1"
                       :metadata "<foo>"
-                      :format "xml"
+                      :format "application/echo10+xml"
                       :revision-id 2
                       :revision-date "1986-10-14T04:03:27.456Z"
                       :deleted false
@@ -117,7 +117,7 @@
                    :concept-id "C5-PROV1"
                    :provider-id "PROV1"
                    :metadata "<foo>"
-                   :format "xml"
+                   :format "application/echo10+xml"
                    :revision-id 2
                    :deleted false
                    :extra-fields {:short-name "short"
@@ -126,7 +126,7 @@
                                   :delete-time "1986-10-14T04:03:27.456Z"}}]
       (is (= [["native_id" "concept_id" "metadata" "format" "revision_id" "deleted"
                "short_name" "version_id" "entry_title" "delete_time"]
-              ["foo" "C5-PROV1" "<foo>" "xml" 2 false "short" "v1" "entry" sql-timestamp]]
+              ["foo" "C5-PROV1" "<foo>" "ECHO10" 2 false "short" "v1" "entry" sql-timestamp]]
              (fix-result (c/concept->insert-args concept))))))
   (testing "granule insert-args"
     (let [revision-time (t/date-time 1986 10 14 4 3 27 456)
@@ -136,11 +136,11 @@
                    :concept-id "G7-PROV1"
                    :provider-id "PROV1"
                    :metadata "<foo>"
-                   :format "xml"
+                   :format "application/echo10+xml"
                    :revision-id 2
                    :deleted false
                    :extra-fields {:parent-collection-id "C5-PROV1"
                                   :delete-time "1986-10-14T04:03:27.456Z"}}]
       (is (= [["native_id" "concept_id" "metadata" "format" "revision_id" "deleted" "parent_collection_id" "delete_time"]
-              ["foo" "G7-PROV1" "<foo>" "xml" 2 false "C5-PROV1" sql-timestamp]]
+              ["foo" "G7-PROV1" "<foo>" "ECHO10" 2 false "C5-PROV1" sql-timestamp]]
              (fix-result (c/concept->insert-args concept)))))))

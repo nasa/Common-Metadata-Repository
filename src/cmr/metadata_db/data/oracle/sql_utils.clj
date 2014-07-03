@@ -26,14 +26,14 @@
 
 (defn query
   "Execute a query and log how long it took."
-  [db [stmt params]]
+  [db stmt-and-params]
+  ;; Uncomment to debug sql
+  ; (debug "SQL:" (first stmt-and-params))
+
   (let [fetch-size (:result-set-fetch-size db)
         start (System/currentTimeMillis)
-        result (if params
-                 (j/query db [stmt params])
-                 (j/query db [{:fetch-size fetch-size} stmt]))
+        result (j/query db (cons {:fetch-size fetch-size} stmt-and-params))
         millis (- (System/currentTimeMillis) start)]
-    (debug "SQL:" stmt)
     (debug (format "Query execution took [%d] ms" millis))
     result))
 
@@ -44,4 +44,4 @@
                    (select ['*]
                            (from :inner)
                            (where '(= :ROWNUM 1))))]
-    (first (j/query db (build stmt)))))
+    (first (query db (build stmt)))))

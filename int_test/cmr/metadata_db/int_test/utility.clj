@@ -43,7 +43,7 @@
    :native-id (str "native-id " uniq-num)
    :provider-id provider-id
    :metadata (str "xml here " uniq-num)
-   :format "echo10"
+   :format "application/echo10+xml"
    :deleted false
    :extra-fields {:short-name (str "short" uniq-num)
                   :version-id (str "V" uniq-num)
@@ -57,7 +57,7 @@
                  :native-id (str "native-id " uniq-num)
                  :provider-id provider-id
                  :metadata (str "xml here " uniq-num)
-                 :format "echo10"
+                 :format "application/echo10+xml"
                  :deleted false
                  :extra-fields {:parent-collection-id parent-collection-id
                                 :delete-time nil}}]

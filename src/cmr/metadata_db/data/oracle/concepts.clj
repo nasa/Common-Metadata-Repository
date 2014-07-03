@@ -7,6 +7,7 @@
             [cmr.common.services.errors :as errors]
             [clojure.java.io :as io]
             [clojure.string :as str]
+            [clojure.set :as set]
             [sqlingvo.core :as s :refer [insert values select from where with order-by desc delete as]]
             [cmr.metadata-db.data.oracle.sql-utils :as su]
             [cmr.metadata-db.services.util :as util]
@@ -33,6 +34,20 @@
 (def EXPIRED_CONCEPTS_BATCH_SIZE
   "The batch size to retrieve expired concepts"
   5000)
+
+(def mime-type->db-format
+  "A mapping of mime type strings to the strings they are stored in the database as. The existing ones
+  here match what Catalog REST stores and must continue to match that. Adding new ones is allowed
+  but do not modify these existing values."
+  {"application/echo10+xml" "ECHO10"
+   "application/iso_prototype+xml" "ISO"
+   "application/iso:smap+xml" "SMAP_ISO"
+   "application/iso19115+xml" "ISO19115"
+   "application/dif+xml" "DIF"})
+
+(def db-format->mime-type
+  "A mapping of the format strings stored in the database to the equivalent mime type in concepts"
+  (set/map-invert mime-type->db-format))
 
 (defn safe-max
   "Return the maximimum of two numbers, treating nil as the lowest possible number"
@@ -121,7 +136,7 @@
        :concept-id concept_id
        :provider-id provider-id
        :metadata (blob->string metadata)
-       :format format
+       :format (db-format->mime-type format)
        :revision-id (int revision_id)
        :revision-date (oracle-timestamp-tz->clj-time db revision_date)
        :deleted (not= (int deleted) 0)})))
@@ -137,7 +152,12 @@
                 revision-id
                 deleted]} concept]
     [["native_id" "concept_id" "metadata" "format" "revision_id" "deleted"]
-     [native-id concept-id (string->gzip-bytes metadata) format revision-id deleted]]))
+     [native-id
+      concept-id
+      (string->gzip-bytes metadata)
+      (mime-type->db-format format)
+      revision-id
+      deleted]]))
 
 (defmethod after-save :default
   [db concept]
@@ -160,18 +180,23 @@
 
 (defn- find-batch-starting-id
   "Returns the first id that would be returned in a batch."
-  [conn params]
-  (let [{:keys [concept-type provider-id]} params
-        params (dissoc params :concept-type :provider-id)
-        table (tables/get-table-name provider-id concept-type)
-        stmt (select ['(min :id)]
-               (from table)
-               (when (seq params)
-                 (where
-                   (find-params->sql-clause params))))]
-    (-> (su/find-one conn stmt)
-        vals
-        first)))
+  ([conn params]
+   (find-batch-starting-id conn params 0))
+  ([conn params min-id]
+   (let [{:keys [concept-type provider-id]} params
+         params (dissoc params :concept-type :provider-id)
+         table (tables/get-table-name provider-id concept-type)
+         existing-params (when (seq params) (find-params->sql-clause params))
+         params-clause (if existing-params
+                         `(and (>= :id ~min-id)
+                               ~existing-params)
+                         `(>= :id ~min-id))
+         stmt (select ['(min :id)]
+                (from table)
+                  (where params-clause))]
+     (-> (su/find-one conn stmt)
+         vals
+         first))))
 
 (extend-protocol c/ConceptsStore
   OracleStore
@@ -179,7 +204,7 @@
   (generate-concept-id
     [db concept]
     (let [{:keys [concept-type provider-id]} concept
-          seq-num (:nextval (first (j/query db ["SELECT concept_id_seq.NEXTVAL FROM DUAL"])))]
+          seq-num (:nextval (first (sql-utils/query db ["SELECT concept_id_seq.NEXTVAL FROM DUAL"])))]
       (cc/build-concept-id {:concept-type concept-type
                             :provider-id provider-id
                             :sequence-number (biginteger seq-num)})))
@@ -303,7 +328,7 @@
                              (when-not (empty? params)
                                (where (find-params->sql-clause params)))))]
         (doall (map (partial db-result->concept-map concept-type conn provider-id)
-                    (j/query conn stmt))))))
+                    (sql-utils/query conn stmt))))))
 
   (find-concepts-in-batches
     [db params batch-size]
@@ -324,13 +349,21 @@
                       stmt (su/build (select [:*]
                                        (from table)
                                        (where (cons `and conditions))))
-                      batch-result (j/query db stmt)]
+                      batch-result (sql-utils/query db stmt)]
                   (mapv (partial db-result->concept-map concept-type conn provider-id)
                         batch-result))))
             (lazy-find
               [start-index]
               (let [batch (find-batch start-index)]
-                (when-not (empty? batch)
+                (if (empty? batch)
+                  ;; We couldn't find any items  between start-index and start-index + batch-size
+                  ;; Look for the next greatest id and to see if there's a gap that we can restart from.
+                  (do
+                    (debug "Couldn't find batch so searching for more from" start-index)
+                    (when-let [next-id (find-batch-starting-id db params start-index)]
+                      (debug "Found next-id of" next-id)
+                      (lazy-find next-id)))
+                  ;; We found a batch. Return it and the next batch lazily
                   (cons batch (lazy-seq (lazy-find (+ start-index batch-size)))))))]
       ;; If there's no minimum found so there are no concepts that match
       (when-let [start-index (find-batch-starting-id db params)]
@@ -422,5 +455,5 @@
                           and   outer.revision_id = inner.revision_id"
                           table table table EXPIRED_CONCEPTS_BATCH_SIZE)]]
         (doall (map (partial db-result->concept-map concept-type conn provider)
-                    (j/query conn stmt)))))))
+                    (sql-utils/query conn stmt)))))))
 
