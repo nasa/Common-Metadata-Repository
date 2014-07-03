@@ -1,4 +1,4 @@
-(ns cmr.search.services.parameter-validation
+(ns cmr.search.services.parameters.parameter-validation
   "Contains functions for validating query parameters"
   (:require [clojure.set :as set]
             [cmr.common.services.errors :as err]
@@ -6,12 +6,12 @@
             [cmr.common.parameter-parser :as parser]
             [clojure.string :as s]
             [cmr.common.date-time-parser :as dt-parser]
-            [cmr.search.services.parameters :as p]
-            [cmr.search.services.legacy-parameters :as lp]
-            [cmr.search.services.parameter-converters.attribute :as attrib]
-            [cmr.search.services.parameter-converters.science-keyword :as sk]
+            [cmr.search.services.parameters.conversion :as p]
+            [cmr.search.services.parameters.legacy-parameters :as lp]
+            [cmr.search.services.parameters.converters.attribute :as attrib]
+            [cmr.search.services.parameters.converters.science-keyword :as sk]
             [cmr.search.services.messages.attribute-messages :as attrib-msg]
-            [cmr.search.services.parameter-converters.orbit-number :as on]
+            [cmr.search.services.parameters.converters.orbit-number :as on]
             [cmr.search.services.messages.orbit-number-messages :as on-msg]
             [cmr.search.services.messages.common-messages :as msg]
             [cmr.search.data.messages :as d-msg]

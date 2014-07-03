@@ -1,6 +1,6 @@
 (ns cmr.search.test.services.parameter-validation
   (:require [clojure.test :refer :all]
-            [cmr.search.services.parameter-validation :as pv]
+            [cmr.search.services.parameters.parameter-validation :as pv]
             [cmr.search.services.messages.attribute-messages :as attrib-msg]
             [cmr.search.services.messages.orbit-number-messages :as on-msg]
             [cmr.common.services.messages :as com-msg]

@@ -1,6 +1,6 @@
-(ns cmr.search.services.parameter-converters.spatial
+(ns cmr.search.services.parameters.converters.spatial
   "Contains parameter converters for spatial parameters"
-  (:require [cmr.search.services.parameters :as p]
+  (:require [cmr.search.services.parameters.conversion :as p]
             [cmr.search.models.query :as qm]
             [cmr.spatial.codec :as spatial-codec]
             [cmr.common.services.errors :as errors]

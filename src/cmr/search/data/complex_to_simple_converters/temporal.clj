@@ -4,7 +4,7 @@
 
   (:require [clj-time.core :as t]
             [cmr.search.models.query :as qm]
-            [cmr.search.services.parameter-converters.temporal :as temporal]
+            [cmr.search.services.parameters.converters.temporal :as temporal]
             [cmr.search.data.complex-to-simple :as c2s]))
 
 (defn- intersect-temporal->simple-conditions

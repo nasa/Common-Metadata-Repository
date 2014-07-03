@@ -11,7 +11,6 @@
             [cmr.transmit.index-set :as index-set]
             [cmr.search.models.results :as results]
             [cmr.search.data.query-to-elastic :as q2e]
-            [cmr.search.services.parameters :as p]
             [cmr.search.services.collection-concept-id-extractor :as cex]
             [cmr.search.services.provider-id-extractor :as pex]
             [cmr.search.data.elastic-results-to-query-results :as rc]

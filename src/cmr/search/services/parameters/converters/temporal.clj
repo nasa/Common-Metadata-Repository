@@ -1,10 +1,10 @@
-(ns cmr.search.services.parameter-converters.temporal
+(ns cmr.search.services.parameters.converters.temporal
   "Contains functions for parsing, validating and converting temporal query parameters to query conditions"
   (:require [clojure.string :as s]
             [cmr.common.services.errors :as err]
             [cmr.common.date-time-parser :as parser]
             [cmr.search.models.query :as qm]
-            [cmr.search.services.parameters :as p]))
+            [cmr.search.services.parameters.conversion :as p]))
 
 (defn- string->int-value
   "Return int value of the string value if it is not blank or nil if it is"

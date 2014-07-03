@@ -1,7 +1,7 @@
-(ns cmr.search.services.parameter-converters.science-keyword
+(ns cmr.search.services.parameters.converters.science-keyword
   "Contains functions for converting science keywords query parameters to conditions"
   (:require [cmr.search.models.query :as qm]
-            [cmr.search.services.parameters :as p]))
+            [cmr.search.services.parameters.conversion :as p]))
 
 (def science-keyword-fields
   [:category :topic :term :variable-level-1 :variable-level-2 :variable-level-3 :detailed-variable])

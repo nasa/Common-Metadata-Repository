@@ -1,6 +1,6 @@
 (ns cmr.search.test.models.query
   (:require [clojure.test :refer :all]
-            [cmr.search.services.parameters :as p]
+            [cmr.search.services.parameters.conversion :as p]
             [cmr.search.models.query :as q]))
 
 ;; TODO add test of and-ing and or-ing conditions

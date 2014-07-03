@@ -1,6 +1,6 @@
 (ns cmr.search.test.services.legacy-parameters
   (:require [clojure.test :refer :all]
-            [cmr.search.services.legacy-parameters :as lp]
+            [cmr.search.services.parameters.legacy-parameters :as lp]
             [clojure.test.check.generators :refer [such-that] :as gen]
             [clojure.test.check.properties :refer [for-all]]
             [ring.util.codec :as rc]

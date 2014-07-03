@@ -1,4 +1,4 @@
-(ns cmr.search.services.legacy-parameters
+(ns cmr.search.services.parameters.legacy-parameters
   "Contains functions for tranforming legacy parameters to the CMR format."
   (:require [clojure.set :as set]
             [clojure.string :as s]

@@ -16,15 +16,15 @@
 
             ;; parameter-converters
             ;; These must be required here to make multimethod implementations available.
-            [cmr.search.services.parameters :as p]
-            [cmr.search.services.parameter-converters.collection-query]
-            [cmr.search.services.parameter-converters.temporal]
-            [cmr.search.services.parameter-converters.attribute]
-            [cmr.search.services.parameter-converters.orbit-number]
-            [cmr.search.services.parameter-converters.equator-crossing-longitude]
-            [cmr.search.services.parameter-converters.equator-crossing-date]
-            [cmr.search.services.parameter-converters.spatial]
-            [cmr.search.services.parameter-converters.science-keyword]
+            [cmr.search.services.parameters.conversion :as p]
+            [cmr.search.services.parameters.converters.collection-query]
+            [cmr.search.services.parameters.converters.temporal]
+            [cmr.search.services.parameters.converters.attribute]
+            [cmr.search.services.parameters.converters.orbit-number]
+            [cmr.search.services.parameters.converters.equator-crossing-longitude]
+            [cmr.search.services.parameters.converters.equator-crossing-date]
+            [cmr.search.services.parameters.converters.spatial]
+            [cmr.search.services.parameters.converters.science-keyword]
 
             ;; Validation
             [cmr.search.validators.validation :as v]
@@ -42,8 +42,8 @@
             [cmr.search.data.complex-to-simple-converters.temporal]
             [cmr.search.data.complex-to-simple-converters.spatial]
 
-            [cmr.search.services.legacy-parameters :as lp]
-            [cmr.search.services.parameter-validation :as pv]
+            [cmr.search.services.parameters.legacy-parameters :as lp]
+            [cmr.search.services.parameters.parameter-validation :as pv]
             [cmr.search.services.collection-query-resolver :as r]
             [cmr.search.data.complex-to-simple :as c2s]
             [cmr.transmit.metadata-db :as meta-db]

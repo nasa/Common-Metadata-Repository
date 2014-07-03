@@ -3,7 +3,7 @@
   (:require [clojure.test :refer :all]
             [cmr.search.validators.validation :as v]
             [cmr.search.validators.temporal]
-            [cmr.search.services.parameter-converters.temporal :as c]))
+            [cmr.search.services.parameters.converters.temporal :as c]))
 
 (deftest validate-temporal-start-day-test
   (testing "start-day-must-be-with-start-date"

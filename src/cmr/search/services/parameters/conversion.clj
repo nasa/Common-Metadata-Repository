@@ -1,4 +1,4 @@
-(ns cmr.search.services.parameters
+(ns cmr.search.services.parameters.conversion
   "Contains functions for parsing and converting query parameters to query conditions"
   (:require [clojure.string :as s]
             [cmr.common.services.errors :as errors]

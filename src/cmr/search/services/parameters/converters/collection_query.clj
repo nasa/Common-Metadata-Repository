@@ -1,8 +1,8 @@
-(ns cmr.search.services.parameter-converters.collection-query
+(ns cmr.search.services.parameters.converters.collection-query
   "Contains functions for converting query parameters to collection query condition"
   (:require [clojure.set :as set]
             [cmr.search.models.query :as qm]
-            [cmr.search.services.parameters :as p]))
+            [cmr.search.services.parameters.conversion :as p]))
 
 ;; Converts parameter and values into collection query condition
 (defmethod p/parameter->condition :collection-query

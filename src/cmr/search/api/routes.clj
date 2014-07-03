@@ -11,7 +11,7 @@
             [cmr.search.services.query-service :as query-svc]
             [cmr.system-trace.http :as http-trace]
             [cmr.search.api.search-results :as sr]
-            [cmr.search.services.legacy-parameters :as lp]))
+            [cmr.search.services.parameters.legacy-parameters :as lp]))
 
 (defn- get-search-results-format
   "Returns the requested search results format parsed from headers"

@@ -1,8 +1,8 @@
 (ns cmr.search.test.services.parameters
   (:require [clojure.test :refer :all]
-            [cmr.search.services.parameters :as p]
+            [cmr.search.services.parameters.conversion :as p]
             [cmr.search.models.query :as q]
-            [cmr.search.services.legacy-parameters :as lp]))
+            [cmr.search.services.parameters.legacy-parameters :as lp]))
 
 (deftest replace-parameter-aliases-test
   (testing "with options"
