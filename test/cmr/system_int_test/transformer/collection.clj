@@ -26,6 +26,25 @@
            [col1-1]
            [col1-1 col2-1]
            [col1-1 col2-2]))
-    (testing "tranform missing collection revision returns 404"
+    (testing "transform missing collection revision returns 404"
       (let [resp (t/transform-concepts [(assoc col1-1 :revision-id 5)] :echo10)]
+        (is (= 404 (:status resp)))))))
+
+(deftest transform-latest-collection-echo10
+  (let [col1-1 (d/ingest "PROV1" (dc/collection {:short-name "MINIMAL"
+                                               :long-name "A minimal valid collection"
+                                               :version-id 1}))
+        col2 (dc/collection {:short-name "MINIMAL2"
+                             :long-name "A second minimal valid collection."
+                             :version-id 3})
+        col2-1 (d/ingest "PROV1" col2)
+        col2-2 (d/ingest "PROV1" (assoc col2-1 :entry-id "MINIMAL2-2"))]
+    (testing "transform collections"
+      (are [v]
+           (= (t/expected-response (map #(nth % 1) v) :echo10)
+               (:response (t/transform-latest-concepts (map first v) :echo10)))
+           [[col1-1 col1-1]]
+           [[col1-1 col1-1] [col2-1 col2-2]]))
+    (testing "transform missing concept-id returns 404"
+      (let [resp (t/transform-latest-concepts [(assoc col1-1 :concept-id "C1234-PROV1")] :echo10)]
         (is (= 404 (:status resp)))))))

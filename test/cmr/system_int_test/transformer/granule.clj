@@ -26,6 +26,27 @@
            [g1-1]
            [g1-1 g2-1]
            [g1-1 g2-2]))
-    (testing "tranform missing granule revision returns 404"
+    (testing "transform missing granule revision returns 404"
       (let [resp (t/transform-concepts [(assoc g1-1 :revision-id 5)] :echo10)]
         (is (= 404 (:status resp)))))))
+
+(deftest transform-latest-granule-echo10
+  (let [col1 (d/ingest "PROV1" (dc/collection {:short-name "MINIMAL"
+                                               :long-name "A minimal valid collection"
+                                               :version-id 1}))
+        g1-1 (d/ingest "PROV1" (dg/granule col1))
+        g2 (dg/granule col1)
+        g2-1 (d/ingest "PROV1" g2)
+        g2-2 (d/ingest "PROV1" g2)]
+    (println "----------------------------")
+    (println g2-2)
+    (testing "transform latest revision of granules to echo10"
+      (are [v]
+           (= (t/expected-response (map #(nth % 1) v) :echo10)
+               (:response (t/transform-latest-concepts (map first v) :echo10)))
+           [[g1-1 g1-1]]
+           [[g1-1 g1-1] [g2-1 g2-2]]))
+    (testing "transform latest with missing concept-id returns 404"
+      (let [resp (t/transform-latest-concepts [(assoc g1-1 :concept-id "G1234-PROV1")] :echo10)]
+        (is (= 404 (:status resp)))))))
+

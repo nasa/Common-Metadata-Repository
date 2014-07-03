@@ -18,11 +18,25 @@
   [umm-records format]
   (let [mime-type (format mt/format->mime-type)
         tuples (map #(vector (:concept-id %) (:revision-id %)) umm-records)
-        response (client/post (url/transformer-url)
+        response (client/post (str (url/transformer-url) "/concepts")
                               {:accept mime-type
                                :throw-exceptions false
                                :content-type "application/json"
                                :body (json/encode tuples)})
+        status (:status response)
+        parsed (json/decode (:body response) true)]
+    {:status status :response parsed}))
+
+(defn transform-latest-concepts
+  "Transform latest version of concepts given as concept-id into the given format"
+  [umm-records format]
+  (let [mime-type (format mt/format->mime-type)
+        ids (map :concept-id umm-records)
+        response (client/post (str (url/transformer-url) "/latest-concepts")
+                              {:accept mime-type
+                               :throw-exceptions false
+                               :content-type "application/json"
+                               :body (json/encode ids)})
         status (:status response)
         parsed (json/decode (:body response) true)]
     {:status status :response parsed}))
