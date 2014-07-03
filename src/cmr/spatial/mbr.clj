@@ -287,6 +287,6 @@
 (extend-protocol v/SpatialValidation
   cmr.spatial.mbr.Mbr
   (validate
-    [{:keys [north south]}]
+    [{:keys [^double north ^double south]}]
       (when (< north south)
         [(msg/br-north-less-than-south north south)])))
