@@ -38,8 +38,6 @@
         g2 (dg/granule col1)
         g2-1 (d/ingest "PROV1" g2)
         g2-2 (d/ingest "PROV1" g2)]
-    (println "----------------------------")
-    (println g2-2)
     (testing "transform latest revision of granules to echo10"
       (are [v]
            (= (t/expected-response (map #(nth % 1) v) :echo10)
