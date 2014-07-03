@@ -44,7 +44,7 @@
 
 (defn transformer-url
   []
-  (format "http://localhost:%s/concepts" (transmit-config/transformer-port)))
+  (format "http://localhost:%s" (transmit-config/transformer-port)))
 
 (defn search-url
   [type]
