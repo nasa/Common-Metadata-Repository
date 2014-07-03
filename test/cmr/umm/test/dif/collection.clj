@@ -39,7 +39,9 @@
     (let [{:keys [granule-spatial-representation
                   spatial-representation
                   geometries]} spatial-coverage
+          ;; DIF only support bounding rectangles
           geometries (seq (filter (comp (partial = Mbr) type) geometries))
+          ;; DIF only supports the cartesian coordinate system for the collection spatial representation
           spatial-representation (when geometries :cartesian)]
       (when (or granule-spatial-representation spatial-representation)
         (assoc spatial-coverage
