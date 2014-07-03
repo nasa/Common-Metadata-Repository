@@ -99,6 +99,26 @@
                    (concepts/get-concept this concept-type provider-id concept-id revision-id))
                  concept-id-revision-id-tuples)))
 
+  (get-latest-concepts
+    [db concept-type provider-id concept-ids]
+    (let [concept-id-set (set concept-ids)
+          concept-map (reduce (fn [concept-map {:keys [concept-id revision-id] :as concept}]
+                                (if (contains? concept-id-set concept-id)
+                                  (cond
+
+                                    (nil? (get concept-map concept-id))
+                                    (assoc concept-map concept-id concept)
+
+                                    (> revision-id (:revision-id (get concept-map concept-id)))
+                                    (assoc concept-map concept-id concept)
+
+                                    :else
+                                    concept-map)
+                                  concept-map))
+                              {}
+                              @concepts-atom)]
+      (keep (partial get concept-map) concept-ids)))
+
   (find-concepts
     [db params]
     (let [{:keys [concept-type provider-id]} params
