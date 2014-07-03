@@ -45,7 +45,7 @@
                               elastic-doc (concept->elastic-doc context concept umm-concept)]
                           (merge elastic-doc {:_index index-name :_type type}))
                         (catch Exception e
-                          (error e (str "Exception trying to convert concept to elastic doc:"
+                          (error e (str "Skipping failed granule. Exception trying to convert concept to elastic doc:"
                                         (pr-str concept))))))
                     parseable-batch)))))
 
