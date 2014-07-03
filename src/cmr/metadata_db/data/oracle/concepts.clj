@@ -236,29 +236,31 @@
 
   (get-concepts
     [db concept-type provider-id concept-id-revision-id-tuples]
-    (let [start (System/currentTimeMillis)]
-      (j/with-db-transaction
-        [conn db]
-        ;; use a temporary table to insert our values so we can use a join to
-        ;; pull everything in one select
-        (apply j/insert! conn
-               "get_concepts_work_area"
-               ["concept_id" "revision_id"]
-               ;; set :transaction? false since we are already inside a transaction, and
-               ;; we want the temp table to persist for the main select
-               (concat concept-id-revision-id-tuples [:transaction? false]))
-        (let [table (tables/get-table-name provider-id concept-type)
-              stmt (su/build (select [:c.*]
-                               (from (as (keyword table) :c)
-                                     (as :get-concepts-work-area :t))
-                               (where `(and (= :c.concept-id :t.concept-id)
-                                            (= :c.revision-id :t.revision-id)))))
+    (if (> (count concept-id-revision-id-tuples) 0)
+      (let [start (System/currentTimeMillis)]
+        (j/with-db-transaction
+          [conn db]
+          ;; use a temporary table to insert our values so we can use a join to
+          ;; pull everything in one select
+          (apply j/insert! conn
+                 "get_concepts_work_area"
+                 ["concept_id" "revision_id"]
+                 ;; set :transaction? false since we are already inside a transaction, and
+                 ;; we want the temp table to persist for the main select
+                 (concat concept-id-revision-id-tuples [:transaction? false]))
+          (let [table (tables/get-table-name provider-id concept-type)
+                stmt (su/build (select [:c.*]
+                                 (from (as (keyword table) :c)
+                                       (as :get-concepts-work-area :t))
+                                 (where `(and (= :c.concept-id :t.concept-id)
+                                              (= :c.revision-id :t.revision-id)))))
 
-              result (doall (map (partial db-result->concept-map concept-type conn provider-id)
-                                 (sql-utils/query conn stmt)))
-              millis (- (System/currentTimeMillis) start)]
-          (debug (format "Getting [%d] concepts took [%d] ms" (count result) millis))
-          result))))
+                result (doall (map (partial db-result->concept-map concept-type conn provider-id)
+                                   (sql-utils/query conn stmt)))
+                millis (- (System/currentTimeMillis) start)]
+            (debug (format "Getting [%d] concepts took [%d] ms" (count result) millis))
+            result)))
+      []))
 
   (get-latest-concepts
     [db concept-type provider-id concept-ids]
