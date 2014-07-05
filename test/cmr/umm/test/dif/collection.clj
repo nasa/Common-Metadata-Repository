@@ -17,19 +17,9 @@
             [cmr.umm.echo10.core :as echo10]
             [cmr.umm.collection :as umm-c]
             [cmr.umm.dif.core :as dif]
-            [cmr.spatial.mbr :as m])
+            [cmr.spatial.mbr :as m]
+            [cmr.umm.test.echo10.collection :as test-echo10])
   (:import cmr.spatial.mbr.Mbr))
-
-(def NON_CONFORMANT_FIELDS
-  "Fields that are lossy when converting from DIF to ECHO10 format"
-  [:entry-id :data-provider-timestamps :organizations])
-
-(defn- collections-match?
-  "Returns true if the two collections match after excluding the non-conformant fields"
-  [coll1 coll2]
-  (let [revised-coll1 (apply dissoc coll1 NON_CONFORMANT_FIELDS)
-        revised-coll2 (apply dissoc coll2 NON_CONFORMANT_FIELDS)]
-    (= revised-coll1 revised-coll2)))
 
 (defn- spatial-coverage->expected-parsed
   "Takes the spatial-coverage used to generate the dif and returns the expected parsed spatial-coverage
@@ -53,38 +43,40 @@
   "Modifies the UMM record for testing DIF. DIF contains a subset of the total UMM fields so certain
   fields are removed for comparison of the parsed record"
   [coll]
-  (update-in coll [:spatial-coverage] spatial-coverage->expected-parsed))
-
-(defn- difnized-collection
-  "Returns umm collection that has been adapted to DIF.
-  If the UMM model is perfect, this function should just return the collection unchanged."
-  [collection]
-  (let [{{:keys [short-name long-name]} :product} collection
-          collection (assoc collection :entry-id short-name)
-          collection (assoc collection :entry-title long-name)
-          collection (assoc-in collection [:data-provider-timestamps :delete-time] nil)
-          collection (assoc-in collection [:product :processing-level-id] nil)
-          collection (assoc-in collection [:product :collection-data-type] nil)
-          collection (dissoc collection :spatial-keywords)
-          collection (dissoc collection :platforms)
-          collection (dissoc collection :two-d-coordinate-systems)
-          range-date-times (get-in collection [:temporal :range-date-times])
-          collection (if (seq range-date-times)
-                       (assoc collection :temporal (umm-c/map->Temporal {:range-date-times range-date-times
-                                                                         :single-date-times []
-                                                                         :periodic-date-times []}))
-                       (dissoc collection :temporal))
-          collection (assoc collection :organizations
-                            (filter #(= :distribution-center (:type %)) (:organizations collection)))
-          collection (umm-c/map->UmmCollection collection)]
-    collection))
+  (let [{:keys [entry-id entry-title spatial-coverage]} coll
+        version-id (get-in coll [:product :version-id])
+        range-date-times (get-in coll [:temporal :range-date-times])
+        temporal (if (seq range-date-times)
+                   (umm-c/map->Temporal {:range-date-times range-date-times
+                                         :single-date-times []
+                                         :periodic-date-times []})
+                   nil)
+        organizations (filter #(= :distribution-center (:type %)) (:organizations coll))]
+    (-> coll
+        ;; DIF does not have short-name or long-name, so we assign them to be entry-id and entry-title respectively
+        (assoc :product (umm-c/map->Product {:short-name entry-id
+                                             :long-name entry-title
+                                             :version-id version-id}))
+        ;; There is no delete-time in DIF
+        (assoc-in [:data-provider-timestamps :delete-time] nil)
+        ;; DIF only has range-date-times
+        (assoc :temporal temporal)
+        ;; DIF only has distribution centers as Organization
+        (assoc :organizations organizations)
+        ;; DIF only support some portion of the spatial
+        (assoc :spatial-coverage (spatial-coverage->expected-parsed spatial-coverage))
+        ;; CMR-588: UMM doesn't have a good recommendation on how to handle spatial-keywords
+        (dissoc :spatial-keywords)
+        ;; CMR-590: UMM doesn't have a good recommendation on how to handle platforms
+        (dissoc :platforms)
+        ;; DIF does not have two-d-coordinate-systems
+        (dissoc :two-d-coordinate-systems)
+        umm-c/map->UmmCollection)))
 
 (defspec generate-collection-is-valid-xml-test 100
   (for-all [collection coll-gen/collections]
     (let [range-date-times (get-in collection [:temporal :range-date-times])
           collection (if (seq range-date-times) collection (dissoc collection :temporal))
-          collection (assoc collection :organizations
-                            (filter #(= :distribution-center (:type %)) (:organizations collection)))
           collection (umm-c/map->UmmCollection collection)
           xml (dif/umm->dif-xml collection)]
       (and
@@ -93,21 +85,19 @@
 
 (defspec generate-and-parse-collection-test 100
   (for-all [collection coll-gen/collections]
-    (let [collection (difnized-collection collection)
-          xml (dif/umm->dif-xml collection)
+    (let [xml (dif/umm->dif-xml collection)
           parsed (c/parse-collection xml)
           expected-parsed (umm->expected-parsed-dif collection)]
       (= parsed expected-parsed))))
 
 (defspec generate-and-parse-collection-between-formats-test 100
   (for-all [collection coll-gen/collections]
-    (let [collection (difnized-collection collection)
-          xml (dif/umm->dif-xml collection)
+    (let [xml (dif/umm->dif-xml collection)
           parsed-dif (c/parse-collection xml)
           echo10-xml (echo10/umm->echo10-xml parsed-dif)
           parsed-echo10 (echo10-c/parse-collection echo10-xml)
-          expected-parsed (umm->expected-parsed-dif collection)]
-      (and (collections-match? parsed-echo10 expected-parsed)
+          expected-parsed (test-echo10/umm->expected-parsed-echo10 (umm->expected-parsed-dif collection))]
+      (and (= parsed-echo10 expected-parsed)
            (= 0 (count (echo10-c/validate-xml echo10-xml)))))))
 
 ;; This is a made-up include all fields collection xml sample for the parse collection test

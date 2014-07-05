@@ -16,6 +16,21 @@
             [cmr.umm.echo10.core :as echo10]
             [cmr.umm.collection :as umm-c]))
 
+(defn umm->expected-parsed-echo10
+  "Modifies the UMM record for testing ECHO10. ECHO10 contains a subset of the total UMM fields so certain
+  fields are removed for comparison of the parsed record"
+  [coll]
+  (let [{{:keys [short-name long-name version-id]} :product} coll
+        entry-id (str short-name "_" version-id)
+        organizations (seq (filter #(not= :distribution-center (:type %)) (:organizations coll)))]
+    (-> coll
+        ;; ECHO10 does not have entry-id and we generate it as concatenation of short-name and version-id
+        (assoc :entry-id entry-id)
+        ;; ECHO10 does not support Organizations of distribution-center which only exists in DIF.
+        ;; UMMC-72 is proposing to change this.
+        (assoc :organizations organizations)
+        umm-c/map->UmmCollection)))
+
 (defspec generate-collection-is-valid-xml-test 100
   (for-all [collection coll-gen/collections]
     (let [xml (echo10/umm->echo10-xml collection)]
@@ -26,12 +41,10 @@
 (defspec generate-and-parse-collection-test 100
   (for-all [collection coll-gen/collections]
     (let [{{:keys [short-name version-id]} :product} collection
-          collection (assoc collection :entry-id (str short-name "_" version-id))
-          echo10-orgs (seq (filter #(not= :distribution-center (:type %)) (:organizations collection)))
-          collection (assoc collection :organizations echo10-orgs)
           xml (echo10/umm->echo10-xml collection)
-          parsed (c/parse-collection xml)]
-      (= parsed collection))))
+          parsed (c/parse-collection xml)
+          expected-parsed (umm->expected-parsed-echo10 collection)]
+      (= parsed expected-parsed))))
 
 ;; This is a made-up include all fields collection xml sample for the parse collection test
 (def all-fields-collection-xml

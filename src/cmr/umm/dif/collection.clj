@@ -69,14 +69,14 @@
     ([collection]
      (cmr.umm.dif.core/umm->dif-xml collection false))
     ([collection indent?]
-     (let [{{:keys [short-name long-name version-id]} :product
+     (let [{{:keys [version-id]} :product
             {:keys [insert-time update-time]} :data-provider-timestamps
-            :keys [entry-title temporal organizations science-keywords platforms product-specific-attributes
+            :keys [entry-id entry-title temporal organizations science-keywords platforms product-specific-attributes
                    projects related-urls spatial-coverage]} collection
            emit-fn (if indent? x/indent-str x/emit-str)]
        (emit-fn
          (x/element :DIF dif-header-attributes
-                    (x/element :Entry_ID {} short-name)
+                    (x/element :Entry_ID {} entry-id)
                     (x/element :Entry_Title {} entry-title)
                     (when version-id
                       (x/element :Data_Set_Citation {}
