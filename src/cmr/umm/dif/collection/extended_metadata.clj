@@ -51,6 +51,15 @@
     (when-not (empty? extended-metadatas)
       extended-metadatas)))
 
+(defn extended-metadatas-value
+  "Returns the single value of the extended metadatas with the given name.
+  This is used to extract the value of simple extended metadatas by name."
+  [xml-struct extended-metadata-name]
+  (when-let [ems (xml-elem->extended-metadatas xml-struct false)]
+    (let [elem (filter #(= extended-metadata-name (:name %)) ems)]
+      (when (seq elem)
+        (:value (first elem))))))
+
 (defn- generate-simple
   [extended-metadatas]
   (for [em extended-metadatas]

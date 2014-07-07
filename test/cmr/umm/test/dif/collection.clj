@@ -43,8 +43,8 @@
   "Modifies the UMM record for testing DIF. DIF contains a subset of the total UMM fields so certain
   fields are removed for comparison of the parsed record"
   [coll]
-  (let [{:keys [entry-id entry-title spatial-coverage]} coll
-        version-id (get-in coll [:product :version-id])
+  (let [{{:keys [version-id processing-level-id collection-data-type]} :product
+         :keys [entry-id entry-title spatial-coverage]} coll
         range-date-times (get-in coll [:temporal :range-date-times])
         temporal (if (seq range-date-times)
                    (umm-c/map->Temporal {:range-date-times range-date-times
@@ -56,7 +56,9 @@
         ;; DIF does not have short-name or long-name, so we assign them to be entry-id and entry-title respectively
         (assoc :product (umm-c/map->Product {:short-name entry-id
                                              :long-name entry-title
-                                             :version-id version-id}))
+                                             :version-id version-id
+                                             :processing-level-id processing-level-id
+                                             :collection-data-type collection-data-type}))
         ;; There is no delete-time in DIF
         (assoc-in [:data-provider-timestamps :delete-time] nil)
         ;; DIF only has range-date-times
@@ -258,6 +260,16 @@
         <Value>2013-09-30 09:45:15</Value>
       </Metadata>
       <Metadata>
+        <Group>EMS</Group>
+        <Name>ProductLevelId</Name>
+        <Value>2</Value>
+      </Metadata>
+      <Metadata>
+        <Group>ECHO</Group>
+        <Name>CollectionDataType</Name>
+        <Value>NEAR_REAL_TIME</Value>
+      </Metadata>
+      <Metadata>
         <Group>spatial coverage</Group>
         <Name>GranuleSpatialRepresentation</Name>
         <Value>GEODETIC</Value>
@@ -323,7 +335,9 @@
                     :product (umm-c/map->Product
                                {:short-name "geodata_1848"
                                 :long-name "Global Land Cover 2000 (GLC 2000)"
-                                :version-id "006"})
+                                :version-id "006"
+                                :processing-level-id "2"
+                                :collection-data-type "NEAR_REAL_TIME"})
                     :data-provider-timestamps (umm-c/map->DataProviderTimestamps
                                                 {:insert-time (p/parse-date "2013-02-21")
                                                  :update-time (p/parse-date "2013-10-22")})
