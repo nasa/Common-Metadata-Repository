@@ -15,34 +15,27 @@
 
 (use-fixtures :each (ingest/reset-fixture "PROV1" "PROV2"))
 
-;; FIXME Leo Make it so we don't need this anymore
-(defn temp-fix-dif-problem
-  "Difs don't contain the insert time and last update. This removes them so that we get echo10 XML
-  back with nils"
-  [coll]
-  (-> coll
-      (assoc-in [:data-provider-timestamps :insert-time] nil)
-      (assoc-in [:data-provider-timestamps :update-time] nil)))
-
 ;; Tests that we can ingest and find items in different formats
 (deftest multi-format-search-test
-  (let [c1-echo (d/ingest "PROV1" (temp-fix-dif-problem (dc/collection {:short-name "S1"
-                                                                        :version-id "V1"
-                                                                        :entry-title "ET1"}))
+  (let [c1-echo (d/ingest "PROV1" (dc/collection {:short-name "S1"
+                                                  :version-id "V1"
+                                                  :entry-title "ET1"})
                           :echo10)
-        c2-echo (d/ingest "PROV2" (temp-fix-dif-problem (dc/collection {:short-name "S2"
-                                                                        :version-id "V2"
-                                                                        :entry-title "ET2"}))
+        c2-echo (d/ingest "PROV2" (dc/collection {:short-name "S2"
+                                                  :version-id "V2"
+                                                  :entry-title "ET2"})
                           :echo10)
-        c3-dif (d/ingest "PROV1" (temp-fix-dif-problem (dc/collection {:short-name "S3"
-                                                                       :version-id "V3"
-                                                                       :entry-title "ET3"
-                                                                       :long-name "ET3"}))
+        c3-dif (d/ingest "PROV1" (dc/collection {:entry-id "S3"
+                                                 :short-name "S3"
+                                                 :version-id "V3"
+                                                 :entry-title "ET3"
+                                                 :long-name "ET3"})
                          :dif)
-        c4-dif (d/ingest "PROV2" (temp-fix-dif-problem (dc/collection {:short-name "S4"
-                                                                       :version-id "V4"
-                                                                       :entry-title "ET4"
-                                                                       :long-name "ET4"}))
+        c4-dif (d/ingest "PROV2" (dc/collection {:entry-id "S4"
+                                                 :short-name "S4"
+                                                 :version-id "V4"
+                                                 :entry-title "ET4"
+                                                 :long-name "ET4"})
                          :dif)
         all-colls [c1-echo c2-echo c3-dif c4-dif]]
     (index/refresh-elastic-index)
