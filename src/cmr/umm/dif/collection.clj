@@ -92,6 +92,7 @@
             {:keys [insert-time update-time]} :data-provider-timestamps
             :keys [entry-id entry-title temporal organizations science-keywords platforms product-specific-attributes
                    projects related-urls spatial-coverage]} collection
+           ;; DIF only has range-date-times, so we ignore the temporal field if it is not of range-date-times
            temporal (when (seq (:range-date-times temporal)) temporal)
            emit-fn (if indent? x/indent-str x/emit-str)]
        (emit-fn
