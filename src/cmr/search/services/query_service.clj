@@ -45,6 +45,7 @@
             [cmr.search.services.parameters.legacy-parameters :as lp]
             [cmr.search.services.parameters.parameter-validation :as pv]
             [cmr.search.services.collection-query-resolver :as r]
+            [cmr.search.services.query-execution :as qe]
             [cmr.search.data.complex-to-simple :as c2s]
             [cmr.transmit.metadata-db :as meta-db]
             [cmr.system-trace.core :refer [deftracefn]]
@@ -73,11 +74,6 @@
   [context query]
   (r/resolve-collection-query query context))
 
-(deftracefn execute-query
-  "Executes a query returning results as concept id, native provider id, and revision id."
-  [context query]
-  (idx/execute-query context query))
-
 (deftracefn simplify-query
   "Simplifies the query to increase performance."
   [context query]
@@ -94,7 +90,7 @@
        c2s/reduce-query
        (resolve-collection-query context)
        (simplify-query context)
-       (execute-query context)))
+       (qe/execute-query context)))
 
 (deftracefn find-concepts-by-parameters
   "Executes a search for concepts using the given parameters. The concepts will be returned with
