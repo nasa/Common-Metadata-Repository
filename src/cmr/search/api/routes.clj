@@ -88,7 +88,7 @@
 (def concept-type-w-extension-regex
   "A regular expression that matches URLs including the concept type (pluralized) along with a file
   extension."
-  #"(?:granules)|(?:collections)(?:\..+)?")
+  #"(?:(?:granules)|(?:collections))(?:\..+)?")
 
 (defn- build-routes [system]
   (routes
