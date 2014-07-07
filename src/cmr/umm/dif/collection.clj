@@ -16,12 +16,31 @@
             [cmr.umm.dif.collection.extended-metadata :as em])
   (:import cmr.umm.collection.UmmCollection))
 
+(def PRODUCT_LEVEL_ID_EXTERNAL_META_NAME
+  "ProductLevelId")
+
+(def COLLECTION_DATA_TYPE_EXTERNAL_META_NAME
+  "CollectionDataType")
+
+(defn trunc
+  "Returns the given string truncated to n characters."
+  [s n]
+  (subs s 0 (min (count s) n)))
+
 (defn- xml-elem->Product
   "Returns a UMM Product from a parsed Collection Content XML structure"
   [collection-content]
-  (c/map->Product {:short-name (cx/string-at-path collection-content [:Entry_ID])
-                   :long-name (cx/string-at-path collection-content [:Entry_Title])
-                   :version-id (cx/string-at-path collection-content [:Data_Set_Citation :Version])}))
+  (let [short-name (cx/string-at-path collection-content [:Entry_ID])
+        long-name (cx/string-at-path collection-content [:Entry_Title])
+        long-name (trunc long-name 1024)
+        version-id (cx/string-at-path collection-content [:Data_Set_Citation :Version])
+        processing-level-id (em/extended-metadatas-value collection-content PRODUCT_LEVEL_ID_EXTERNAL_META_NAME)
+        collection-data-type (em/extended-metadatas-value collection-content COLLECTION_DATA_TYPE_EXTERNAL_META_NAME)]
+    (c/map->Product {:short-name short-name
+                     :long-name long-name
+                     :version-id version-id
+                     :processing-level-id processing-level-id
+                     :collection-data-type collection-data-type})))
 
 (defn- xml-elem->DataProviderTimestamps
   "Returns a UMM DataProviderTimestamps from a parsed Collection Content XML structure"
@@ -69,14 +88,16 @@
     ([collection]
      (cmr.umm.dif.core/umm->dif-xml collection false))
     ([collection indent?]
-     (let [{{:keys [short-name long-name version-id]} :product
+     (let [{{:keys [version-id processing-level-id collection-data-type]} :product
             {:keys [insert-time update-time]} :data-provider-timestamps
-            :keys [entry-title temporal organizations science-keywords platforms product-specific-attributes
+            :keys [entry-id entry-title temporal organizations science-keywords platforms product-specific-attributes
                    projects related-urls spatial-coverage]} collection
+           ;; DIF only has range-date-times, so we ignore the temporal field if it is not of range-date-times
+           temporal (when (seq (:range-date-times temporal)) temporal)
            emit-fn (if indent? x/indent-str x/emit-str)]
        (emit-fn
          (x/element :DIF dif-header-attributes
-                    (x/element :Entry_ID {} short-name)
+                    (x/element :Entry_ID {} entry-id)
                     (x/element :Entry_Title {} entry-title)
                     (when version-id
                       (x/element :Data_Set_Citation {}
@@ -97,7 +118,13 @@
                     (when update-time
                       (x/element :Last_DIF_Revision_Date {} (str update-time)))
                     (sc/generate-spatial-coverage-extended-metadata spatial-coverage)
-                    (psa/generate-product-specific-attributes product-specific-attributes)))))))
+                    (psa/generate-product-specific-attributes product-specific-attributes)
+                    (when processing-level-id
+                      (em/generate-extended-metadatas [{:name PRODUCT_LEVEL_ID_EXTERNAL_META_NAME
+                                                        :value processing-level-id}] false))
+                    (when collection-data-type
+                      (em/generate-extended-metadatas [{:name COLLECTION_DATA_TYPE_EXTERNAL_META_NAME
+                                                        :value collection-data-type}] false))))))))
 
 (defn validate-xml
   "Validates the XML against the DIF schema."

@@ -14,10 +14,8 @@
 (defn- extract-granule-spatial-representation
   [xml-struct]
   ;; DIF: Extended_Metadata.Name=GranuleSpatialRepresention
-  (when-let [ems (em/xml-elem->extended-metadatas xml-struct false)]
-    (let [rep (filter #(= SPATIAL_COVERAGE_EXTERNAL_META_NAME (:name %)) ems)]
-      (when (seq rep)
-        (csk/->kebab-case-keyword (:value (first rep)))))))
+  (when-let [value (em/extended-metadatas-value xml-struct SPATIAL_COVERAGE_EXTERNAL_META_NAME)]
+    (csk/->kebab-case-keyword value)))
 
 (defn- spatial-coverage-elem->br
   "Converts a DIF Spatial_Coverage element into a bounding rectangle"

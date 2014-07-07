@@ -17,20 +17,9 @@
             [cmr.umm.echo10.core :as echo10]
             [cmr.umm.collection :as umm-c]
             [cmr.umm.dif.core :as dif]
-            [cmr.spatial.mbr :as m])
+            [cmr.spatial.mbr :as m]
+            [cmr.umm.test.echo10.collection :as test-echo10])
   (:import cmr.spatial.mbr.Mbr))
-
-(def NON_CONFORMANT_FIELDS
-  "Fields that are lossy when converting from DIF to ECHO10 format"
-  ;; FIXME Leo, why is entry id in here?
-  [:entry-id :data-provider-timestamps :organizations])
-
-(defn- collections-match?
-  "Returns true if the two collections match after excluding the non-conformant fields"
-  [coll1 coll2]
-  (let [revised-coll1 (apply dissoc coll1 NON_CONFORMANT_FIELDS)
-        revised-coll2 (apply dissoc coll2 NON_CONFORMANT_FIELDS)]
-    (= revised-coll1 revised-coll2)))
 
 (defn- spatial-coverage->expected-parsed
   "Takes the spatial-coverage used to generate the dif and returns the expected parsed spatial-coverage
@@ -54,30 +43,61 @@
   "Modifies the UMM record for testing DIF. DIF contains a subset of the total UMM fields so certain
   fields are removed for comparison of the parsed record"
   [coll]
-  (update-in coll [:spatial-coverage] spatial-coverage->expected-parsed))
+  (let [{{:keys [version-id processing-level-id collection-data-type]} :product
+         :keys [entry-id entry-title spatial-coverage]} coll
+        range-date-times (get-in coll [:temporal :range-date-times])
+        temporal (if (seq range-date-times)
+                   (umm-c/map->Temporal {:range-date-times range-date-times
+                                         :single-date-times []
+                                         :periodic-date-times []})
+                   nil)
+        organizations (filter #(= :distribution-center (:type %)) (:organizations coll))]
+    (-> coll
+        ;; DIF does not have short-name or long-name, so we assign them to be entry-id and entry-title respectively
+        ;; long-name will only take the first 1024 characters of entry-title if entry-title is too long
+        (assoc :product (umm-c/map->Product {:short-name entry-id
+                                             :long-name (c/trunc entry-title 1024)
+                                             :version-id version-id
+                                             :processing-level-id processing-level-id
+                                             :collection-data-type collection-data-type}))
+        ;; There is no delete-time in DIF
+        (assoc-in [:data-provider-timestamps :delete-time] nil)
+        ;; DIF only has range-date-times
+        (assoc :temporal temporal)
+        ;; DIF only has distribution centers as Organization
+        (assoc :organizations organizations)
+        ;; DIF only support some portion of the spatial
+        (assoc :spatial-coverage (spatial-coverage->expected-parsed spatial-coverage))
+        ;; CMR-588: UMM doesn't have a good recommendation on how to handle spatial-keywords
+        (dissoc :spatial-keywords)
+        ;; CMR-590: UMM doesn't have a good recommendation on how to handle platforms
+        (dissoc :platforms)
+        ;; DIF does not have two-d-coordinate-systems
+        (dissoc :two-d-coordinate-systems)
+        umm-c/map->UmmCollection)))
 
 (defspec generate-collection-is-valid-xml-test 100
-  (for-all [collection coll-gen/dif-collections]
+  (for-all [collection coll-gen/collections]
     (let [xml (dif/umm->dif-xml collection)]
       (and
         (> (count xml) 0)
         (= 0 (count (c/validate-xml xml)))))))
 
 (defspec generate-and-parse-collection-test 100
-  (for-all [collection coll-gen/dif-collections]
+  (for-all [collection coll-gen/collections]
     (let [xml (dif/umm->dif-xml collection)
           parsed (c/parse-collection xml)
           expected-parsed (umm->expected-parsed-dif collection)]
       (= parsed expected-parsed))))
 
 (defspec generate-and-parse-collection-between-formats-test 100
-  (for-all [collection coll-gen/dif-collections]
+  (for-all [collection coll-gen/collections]
     (let [xml (dif/umm->dif-xml collection)
           parsed-dif (c/parse-collection xml)
           echo10-xml (echo10/umm->echo10-xml parsed-dif)
           parsed-echo10 (echo10-c/parse-collection echo10-xml)
-          expected-parsed (umm->expected-parsed-dif collection)]
-      (and (collections-match? parsed-echo10 expected-parsed)
+          expected-parsed (test-echo10/umm->expected-parsed-echo10 (umm->expected-parsed-dif collection))]
+      (and (= parsed-echo10 expected-parsed)
            (= 0 (count (echo10-c/validate-xml echo10-xml)))))))
 
 ;; This is a made-up include all fields collection xml sample for the parse collection test
@@ -238,6 +258,16 @@
         <Value>2013-09-30 09:45:15</Value>
       </Metadata>
       <Metadata>
+        <Group>EMS</Group>
+        <Name>ProductLevelId</Name>
+        <Value>2</Value>
+      </Metadata>
+      <Metadata>
+        <Group>ECHO</Group>
+        <Name>CollectionDataType</Name>
+        <Value>NEAR_REAL_TIME</Value>
+      </Metadata>
+      <Metadata>
         <Group>spatial coverage</Group>
         <Name>GranuleSpatialRepresentation</Name>
         <Value>GEODETIC</Value>
@@ -303,7 +333,9 @@
                     :product (umm-c/map->Product
                                {:short-name "geodata_1848"
                                 :long-name "Global Land Cover 2000 (GLC 2000)"
-                                :version-id "006"})
+                                :version-id "006"
+                                :processing-level-id "2"
+                                :collection-data-type "NEAR_REAL_TIME"})
                     :data-provider-timestamps (umm-c/map->DataProviderTimestamps
                                                 {:insert-time (p/parse-date "2013-02-21")
                                                  :update-time (p/parse-date "2013-10-22")})

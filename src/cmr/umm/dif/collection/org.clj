@@ -14,7 +14,7 @@
 (defn generate-data-center
   "Return archive or processing center based on org type"
   [orgs]
-  (for [org orgs]
+  (for [org orgs :when (= :distribution-center (:type org))]
     (x/element :Data_Center {}
                (x/element :Data_Center_Name {}
                           (x/element :Short_Name {} (:org-name org)))
