@@ -35,7 +35,7 @@ class window.DraggableRing extends Ring
         else
           callbackStr = pointStr
         console.log("Calling callback #{@callbackFn} with #{callbackStr}")
-        vdd_core.connection.callServerFunction(window.vddSession, @callbackFn, callbackStr);
+        vdd_core.connection.callServerFunction(window.vddSession, @callbackFn, callbackStr)
     else
       console.log "Error: Unknown event to handle #{event.type}"
 

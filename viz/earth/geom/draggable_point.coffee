@@ -10,6 +10,7 @@ class window.DraggablePoint extends Point
 
   constructor: (lon, lat, options={}) ->
     super(lon, lat, options)
+    @callbackFn = options.callbackFn if options.callbackFn
     @dragging = false
 
   @fromOrdinates: (ordinates)->
@@ -49,6 +50,14 @@ class window.DraggablePoint extends Point
       if @moved
         this.snapToGrid(ge)
         this.notifyGuiEventListeners(DraggablePoint.DRAG_FINISH_EVENT_CACHED, ge)
+        if @callbackFn
+          pointStr = "#{@lon},#{@lat}"
+          if @id && @id != null
+            callbackStr = "#{@id}:#{pointStr}"
+          else
+            callbackStr = pointStr
+          console.log("Calling callback #{@callbackFn} with #{callbackStr}")
+          vdd_core.connection.callServerFunction(window.vddSession, @callbackFn, callbackStr)
 
   handleClick: (event, ge) ->
     super(event, ge) unless @moved
