@@ -92,6 +92,7 @@
             {:keys [insert-time update-time]} :data-provider-timestamps
             :keys [entry-id entry-title temporal organizations science-keywords platforms product-specific-attributes
                    projects related-urls spatial-coverage]} collection
+           temporal (when (seq (:range-date-times temporal)) temporal)
            emit-fn (if indent? x/indent-str x/emit-str)]
        (emit-fn
          (x/element :DIF dif-header-attributes

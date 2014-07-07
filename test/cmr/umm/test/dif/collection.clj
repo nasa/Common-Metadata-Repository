@@ -78,10 +78,7 @@
 
 (defspec generate-collection-is-valid-xml-test 100
   (for-all [collection coll-gen/collections]
-    (let [range-date-times (get-in collection [:temporal :range-date-times])
-          collection (if (seq range-date-times) collection (dissoc collection :temporal))
-          collection (umm-c/map->UmmCollection collection)
-          xml (dif/umm->dif-xml collection)]
+    (let [xml (dif/umm->dif-xml collection)]
       (and
         (> (count xml) 0)
         (= 0 (count (c/validate-xml xml)))))))
