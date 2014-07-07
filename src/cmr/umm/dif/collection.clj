@@ -22,14 +22,25 @@
 (def COLLECTION_DATA_TYPE_EXTERNAL_META_NAME
   "CollectionDataType")
 
+(defn trunc
+  "Returns the given string truncated to n characters."
+  [s n]
+  (subs s 0 (min (count s) n)))
+
 (defn- xml-elem->Product
   "Returns a UMM Product from a parsed Collection Content XML structure"
   [collection-content]
-  (c/map->Product {:short-name (cx/string-at-path collection-content [:Entry_ID])
-                   :long-name (cx/string-at-path collection-content [:Entry_Title])
-                   :version-id (cx/string-at-path collection-content [:Data_Set_Citation :Version])
-                   :processing-level-id (em/extended-metadatas-value collection-content PRODUCT_LEVEL_ID_EXTERNAL_META_NAME)
-                   :collection-data-type (em/extended-metadatas-value collection-content COLLECTION_DATA_TYPE_EXTERNAL_META_NAME)}))
+  (let [short-name (cx/string-at-path collection-content [:Entry_ID])
+        long-name (cx/string-at-path collection-content [:Entry_Title])
+        long-name (trunc long-name 1024)
+        version-id (cx/string-at-path collection-content [:Data_Set_Citation :Version])
+        processing-level-id (em/extended-metadatas-value collection-content PRODUCT_LEVEL_ID_EXTERNAL_META_NAME)
+        collection-data-type (em/extended-metadatas-value collection-content COLLECTION_DATA_TYPE_EXTERNAL_META_NAME)]
+    (c/map->Product {:short-name short-name
+                     :long-name long-name
+                     :version-id version-id
+                     :processing-level-id processing-level-id
+                     :collection-data-type collection-data-type})))
 
 (defn- xml-elem->DataProviderTimestamps
   "Returns a UMM DataProviderTimestamps from a parsed Collection Content XML structure"

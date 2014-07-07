@@ -38,7 +38,7 @@
   (ext-gen/string-alpha-numeric 1 85))
 
 (def entry-titles
-  (ext-gen/string-alpha-numeric 1 1024))
+  (ext-gen/string-alpha-numeric 1 1030))
 
 (def sensor-short-names
   (ext-gen/string-ascii 1 80))

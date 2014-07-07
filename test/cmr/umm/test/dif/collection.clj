@@ -54,8 +54,9 @@
         organizations (filter #(= :distribution-center (:type %)) (:organizations coll))]
     (-> coll
         ;; DIF does not have short-name or long-name, so we assign them to be entry-id and entry-title respectively
+        ;; long-name will only take the first 1024 characters of entry-title if entry-title is too long
         (assoc :product (umm-c/map->Product {:short-name entry-id
-                                             :long-name entry-title
+                                             :long-name (c/trunc entry-title 1024)
                                              :version-id version-id
                                              :processing-level-id processing-level-id
                                              :collection-data-type collection-data-type}))
