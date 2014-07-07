@@ -6,7 +6,8 @@
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.core :as d]
-            [cmr.spatial.polygon :as p]
+            [cmr.spatial.polygon :as poly]
+            [cmr.spatial.point :as p]
             [cmr.spatial.mbr :as m]
             [cmr.spatial.ring :as r]
             [cmr.spatial.derived :as derived]
@@ -23,7 +24,7 @@
   "Creates a single ring polygon with the given ordinates. Points must be in counter clockwise order.
   The polygon will be closed automatically."
   [& ords]
-  (let [polygon (derived/calculate-derived (p/polygon [(apply r/ords->ring ords)]))
+  (let [polygon (derived/calculate-derived (poly/polygon [(apply r/ords->ring ords)]))
         outer (-> polygon :rings first)]
     (when (and (:contains-north-pole outer)
                (:contains-south-pole outer))
@@ -66,10 +67,49 @@
         outer (r/ords->ring -5.26,-2.59, 11.56,-2.77, 10.47,8.71, -5.86,8.63, -5.26,-2.59)
         hole1 (r/ords->ring 6.95,2.05, 2.98,2.06, 3.92,-0.08, 6.95,2.05)
         hole2 (r/ords->ring 5.18,6.92, -1.79,7.01, -2.65,5, 4.29,5.05, 5.18,6.92)
-        polygon-with-holes  (make-coll "polygon-with-holes" (p/polygon [outer hole1 hole2]))]
+        polygon-with-holes  (make-coll "polygon-with-holes" (poly/polygon [outer hole1 hole2]))
+
+        ;; Points
+        north-pole (make-coll "north-pole" (p/point 0 90))
+        south-pole (make-coll "south-pole" (p/point 0 -90))
+        normal-point (make-coll "normal-point" (p/point 10 22))
+        am-point (make-coll "am-point" (p/point 180 22))]
     (index/refresh-elastic-index)
 
-    ;; TODO test with difs or just make dif spatial work
+    (testing "point searches"
+      (are [lon_lat items]
+           (let [found (search/find-refs :collection {:point (codec/url-encode (apply p/point lon_lat))
+                                                   :page-size 50})
+                 matches? (d/refs-match? items found)]
+             (when-not matches?
+               (println "Expected:" (->> items (map :entry-title) sort pr-str))
+               (println "Actual:" (->> found :refs (map :name) sort pr-str)))
+             matches?)
+
+           ;; north pole
+           [0 90] [whole-world north-pole on-np touches-np]
+
+           ;; south pole
+           [0 -90] [whole-world south-pole on-sp touches-sp]
+
+           ;; matches normal point
+           [10 22] [whole-world normal-point]
+
+           ;; in hole of polygon with a hole
+           [4.83 1.06] [whole-world]
+           ;; in hole of polygon with a hole
+           [1.67 5.43] [whole-world]
+           ;; and not in hole
+           [1.95 3.36] [whole-world polygon-with-holes]
+
+           ;; in mbr
+           [17.73 2.21] [whole-world normal-brs]
+
+           ;;matches exact point on polygon
+           [-5.26 -2.59] [whole-world polygon-with-holes]
+
+           ;; Matches a granule point
+           [10 22] [whole-world normal-point]))
 
     (testing "bounding rectangle searches"
       (are [wnes items]
@@ -77,8 +117,8 @@
                                                    :page-size 50})
                  matches? (d/refs-match? items found)]
              (when-not matches?
-               (println "Expected:" (pr-str (map :entry-title items)))
-               (println "Actual:" (->> found :refs (map :name) pr-str)))
+               (println "Expected:" (->> items (map :entry-title) sort pr-str))
+               (println "Actual:" (->> found :refs (map :name) sort pr-str)))
              matches?)
 
            [-23.43 5 25.54 -6.31] [whole-world polygon-with-holes normal-poly normal-brs]
@@ -95,23 +135,23 @@
 
            ;; vertical slice of earth
            [-10 90 10 -90] [whole-world on-np on-sp wide-north wide-south polygon-with-holes
-                            normal-poly normal-brs]
+                            normal-poly normal-brs north-pole south-pole normal-point]
 
            ;; crosses am
-           [166.11,53.04,-166.52,-19.14] [whole-world across-am-poly across-am-br]
+           [166.11,53.04,-166.52,-19.14] [whole-world across-am-poly across-am-br am-point]
 
            ;; whole world
            [-180 90 180 -90] [whole-world touches-np touches-sp across-am-br normal-brs
                               wide-north wide-south across-am-poly on-sp on-np normal-poly
-                              polygon-with-holes]))
+                              polygon-with-holes north-pole south-pole normal-point am-point]))
 
     (testing "polygon searches"
       (are [ords items]
            (let [found (search/find-refs :collection {:polygon (apply search-poly ords) })
                  matches? (d/refs-match? items found)]
              (when-not matches?
-               (println "Expected:" (pr-str (map :entry-title items)))
-               (println "Actual:" (->> found :refs (map :name) pr-str)))
+               (println "Expected:" (->> items (map :entry-title) sort pr-str))
+               (println "Actual:" (->> found :refs (map :name) sort pr-str)))
              matches?)
 
            [20.16,-13.7,21.64,12.43,12.47,11.84,-22.57,7.06,20.16,-13.7]
@@ -126,13 +166,13 @@
 
            ;; around north pole
            [58.41,76.95,163.98,80.56,-122.99,81.94,-26.18,82.82,58.41,76.95]
-           [whole-world on-np touches-np]
+           [whole-world on-np touches-np north-pole]
 
            [-161.53,-69.93,25.43,-51.08,13.89,-39.94,-2.02,-40.67,-161.53,-69.93]
-           [whole-world on-sp wide-south touches-sp]
+           [whole-world on-sp wide-south touches-sp south-pole]
 
            [-163.9,49.6,171.51,53.82,166.96,-11.32,-168.36,-14.86,-163.9,49.6]
-           [whole-world across-am-poly across-am-br]
+           [whole-world across-am-poly across-am-br am-point]
 
            ;; Related the polygon with the hole
            ;; Inside holes

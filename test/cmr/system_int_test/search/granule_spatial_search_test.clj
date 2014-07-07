@@ -7,7 +7,8 @@
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.core :as d]
-            [cmr.spatial.polygon :as p]
+            [cmr.spatial.polygon :as poly]
+            [cmr.spatial.point :as p]
             [cmr.spatial.mbr :as m]
             [cmr.spatial.ring :as r]
             [cmr.spatial.derived :as derived]
@@ -25,7 +26,7 @@
   "Creates a single ring polygon with the given ordinates. Points must be in counter clockwise order.
   The polygon will be closed automatically."
   [& ords]
-  (let [polygon (derived/calculate-derived (p/polygon [(apply r/ords->ring ords)]))
+  (let [polygon (derived/calculate-derived (poly/polygon [(apply r/ords->ring ords)]))
         outer (-> polygon :rings first)]
     (when (and (:contains-north-pole outer)
                (:contains-south-pole outer))
@@ -68,18 +69,24 @@
     (is (= {:errors [(smsg/shape-decode-msg :polygon "0,ad,d,0")] :status 422}
            (search/find-refs :granule {:polygon "0,ad,d,0"})))
     (is (= {:errors [(smsg/shape-decode-msg :bounding-box "0,ad,d,0")] :status 422}
-           (search/find-refs :granule {:bounding-box "0,ad,d,0"}))))
+           (search/find-refs :granule {:bounding-box "0,ad,d,0"})))
+    (is (= {:errors [(smsg/shape-decode-msg :point "0,ad")] :status 422}
+           (search/find-refs :granule {:point "0,ad"}))))
 
   (testing "invalid polygons"
     (is (= {:errors [(smsg/ring-not-closed)] :status 422}
            (search/find-refs :granule
                              {:polygon (codec/url-encode
-                                         (p/polygon [(r/ords->ring 0 0, 1 0, 1 1, 0 1)]))}))))
+                                         (poly/polygon [(r/ords->ring 0 0, 1 0, 1 1, 0 1)]))}))))
   (testing "invalid bounding box"
     (is (= {:errors [(smsg/br-north-less-than-south 45 46)] :status 422}
            (search/find-refs
              :granule
-             {:bounding-box (codec/url-encode (m/mbr -180 45 180 46))})))))
+             {:bounding-box (codec/url-encode (m/mbr -180 45 180 46))}))))
+
+  (testing "invalid point"
+    (is (= {:errors [(smsg/point-lon-invalid -181)] :status 422}
+           (search/find-refs :granule {:point "-181.0,5"})))))
 
 
 (deftest spatial-search-test
@@ -109,8 +116,49 @@
         outer (r/ords->ring -5.26,-2.59, 11.56,-2.77, 10.47,8.71, -5.86,8.63, -5.26,-2.59)
         hole1 (r/ords->ring 6.95,2.05, 2.98,2.06, 3.92,-0.08, 6.95,2.05)
         hole2 (r/ords->ring 5.18,6.92, -1.79,7.01, -2.65,5, 4.29,5.05, 5.18,6.92)
-        polygon-with-holes  (make-gran "polygon-with-holes" (p/polygon [outer hole1 hole2]))]
+        polygon-with-holes  (make-gran "polygon-with-holes" (poly/polygon [outer hole1 hole2]))
+
+        ;; Points
+        north-pole (make-gran "north-pole" (p/point 0 90))
+        south-pole (make-gran "south-pole" (p/point 0 -90))
+        normal-point (make-gran "normal-point" (p/point 10 22))
+        am-point (make-gran "am-point" (p/point 180 22))]
     (index/refresh-elastic-index)
+
+    (testing "point searches"
+      (are [lon_lat items]
+           (let [found (search/find-refs :granule {:point (codec/url-encode (apply p/point lon_lat))
+                                                   :page-size 50})
+                 matches? (d/refs-match? items found)]
+             (when-not matches?
+               (println "Expected:" (->> items (map :granule-ur) sort pr-str))
+               (println "Actual:" (->> found :refs (map :name) sort pr-str)))
+             matches?)
+
+           ;; north pole
+           [0 90] [whole-world north-pole on-np touches-np]
+
+           ;; south pole
+           [0 -90] [whole-world south-pole on-sp touches-sp]
+
+           ;; matches normal point
+           [10 22] [whole-world normal-point]
+
+           ;; in hole of polygon with a hole
+           [4.83 1.06] [whole-world]
+           ;; in hole of polygon with a hole
+           [1.67 5.43] [whole-world]
+           ;; and not in hole
+           [1.95 3.36] [whole-world polygon-with-holes]
+
+           ;; in mbr
+           [17.73 2.21] [whole-world normal-brs]
+
+           ;;matches exact point on polygon
+           [-5.26 -2.59] [whole-world polygon-with-holes]
+
+           ;; Matches a granule point
+           [10 22] [whole-world normal-point]))
 
     (testing "bounding rectangle searches"
       (are [wnes items]
@@ -118,8 +166,8 @@
                                                    :page-size 50})
                  matches? (d/refs-match? items found)]
              (when-not matches?
-               (println "Expected:" (pr-str (map :granule-ur items)))
-               (println "Actual:" (->> found :refs (map :name) pr-str)))
+               (println "Expected:" (->> items (map :granule-ur) sort pr-str))
+               (println "Actual:" (->> found :refs (map :name) sort pr-str)))
              matches?)
 
            [-23.43 5 25.54 -6.31] [whole-world polygon-with-holes normal-poly normal-brs]
@@ -136,23 +184,25 @@
 
            ;; vertical slice of earth
            [-10 90 10 -90] [whole-world on-np on-sp wide-north wide-south polygon-with-holes
-                            normal-poly normal-brs]
+                            normal-poly normal-brs north-pole south-pole normal-point]
 
            ;; crosses am
-           [166.11,53.04,-166.52,-19.14] [whole-world across-am-poly across-am-br]
+           [166.11,53.04,-166.52,-19.14] [whole-world across-am-poly across-am-br am-point]
 
            ;; whole world
            [-180 90 180 -90] [whole-world touches-np touches-sp across-am-br normal-brs
                               wide-north wide-south across-am-poly on-sp on-np normal-poly
-                              polygon-with-holes]))
+                              polygon-with-holes north-pole south-pole normal-point am-point]))
 
     (testing "polygon searches"
       (are [ords items]
            (let [found (search/find-refs :granule {:polygon (apply search-poly ords) })
                  matches? (d/refs-match? items found)]
+             (when-not matches?
+               (println "Expected:" (->> items (map :granule-ur) sort pr-str))
+               (println "Actual:" (->> found :refs (map :name) sort pr-str)))
              (when (and (not matches?) spatial-viz-enabled)
                (println "Displaying failed granules and search area")
-               (println "Found: " (pr-str found))
                (viz-helper/clear-geometries)
                (display-indexed-granules items)
                (display-search-area (apply polygon ords)))
@@ -170,13 +220,15 @@
 
            ;; around north pole
            [58.41,76.95,163.98,80.56,-122.99,81.94,-26.18,82.82,58.41,76.95]
-           [whole-world on-np touches-np]
+           [whole-world on-np touches-np north-pole]
 
+           ;; around south pole
            [-161.53,-69.93,25.43,-51.08,13.89,-39.94,-2.02,-40.67,-161.53,-69.93]
-           [whole-world on-sp wide-south touches-sp]
+           [whole-world on-sp wide-south touches-sp south-pole]
 
+           ;; Across antimeridian
            [-163.9,49.6,171.51,53.82,166.96,-11.32,-168.36,-14.86,-163.9,49.6]
-           [whole-world across-am-poly across-am-br]
+           [whole-world across-am-poly across-am-br am-point]
 
            ;; Related the polygon with the hole
            ;; Inside holes
