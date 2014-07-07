@@ -23,9 +23,11 @@
           (spatial/spatial->elastic-docs sr collection)
 
           (= sr :cartesian)
-          (let [{supported true not-supported false} (group-by #(= (type %) Mbr) geometries)]
+          (let [{supported true not-supported false}
+                (group-by (comp some? spatial/temporary-supported-cartesian-types type) geometries)]
             (when (seq not-supported)
-              (info "Ignoring indexing spatial of spatial for non supported cartesian types"))
+              (info "Ignoring indexing spatial of spatial for non supported cartesian types: "
+                    (pr-str not-supported)))
             (spatial/spatial->elastic-docs sr (assoc-in collection [:spatial-coverage :geometries] supported)))
 
           :else

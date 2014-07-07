@@ -29,6 +29,7 @@
                         (partial fetch-parent-collection context parent-collection-id))
     (fetch-parent-collection context parent-collection-id)))
 
+
 (defn spatial->elastic
   [parent-collection granule]
   (try
@@ -40,14 +41,15 @@
           (spatial/spatial->elastic-docs gsr granule)
 
           (= gsr :cartesian)
-          (let [{supported true not-supported false} (group-by #(= (type %) Mbr) geometries)]
+          (let [{supported true not-supported false}
+                (group-by (comp some? spatial/temporary-supported-cartesian-types type) geometries)]
             (when (seq not-supported)
-              (info "Ignoring indexing spatial of spatial for non supported cartesian types"))
+              (info "Ignoring indexing spatial of spatial for non supported cartesian types: " (pr-str not-supported)))
             (spatial/spatial->elastic-docs gsr (assoc-in granule [:spatial-coverage :geometries] supported)))
 
           :else
           (info "Ignoring indexing spatial of granule spatial representation of" gsr))))
-    (catch Exception e
+    (catch Throwable e
       (error e (format "Error generating spatial for granule: %s. Skipping spatial."
                        (pr-str granule))))))
 

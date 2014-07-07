@@ -10,6 +10,10 @@
             [cmr.spatial.serialize :as srl]
             [cmr.common.services.errors :as errors]))
 
+(def temporary-supported-cartesian-types
+  "A temporary list of the subset of spatial types that we support."
+  #{cmr.spatial.mbr.Mbr cmr.spatial.point.Point})
+
 (defn mbr->elastic-attribs
   [prefix mbr]
   (let [with-prefix #(->> %
