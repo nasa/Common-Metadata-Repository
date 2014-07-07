@@ -52,8 +52,19 @@
 (defn point->mbr
   "Returns an mbr that covers only a single point"
   [point]
-  (let [{:keys [lon lat]} point]
-    (mbr lon lat lon lat)))
+  (cond
+    ;; It's important that this covers all longitudes at the pole. The function is used for creating
+    ;; an MBR to represent a point in Elasticsearch. An MBR touching the north pole might miss the
+    ;; point mbr if it didn't cover every longitude.
+    (p/is-north-pole? point)
+    (mbr -180 90 180 90)
+
+    (p/is-south-pole? point)
+    (mbr -180 -90 180 -90)
+
+    :else
+    (let [{:keys [lon lat]} point]
+      (mbr lon lat lon lat))))
 
 (defn- lon-range-covers-lon?
   "Returns true if lon is between west and east."

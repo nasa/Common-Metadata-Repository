@@ -116,8 +116,7 @@
       (= k :lon-rad) lon-rad
       (= k :lat) lat
       (= k :lat-rad) lat-rad
-      (= k :options) options
-      :else (throw (Exception. (str "Unknown point key " k)))))
+      (= k :options) options))
   (valAt [_ k not-found]
     (cond
       (= k :lon) lon
