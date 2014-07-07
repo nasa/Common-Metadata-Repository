@@ -56,12 +56,14 @@
   (let [url (cx/string-at-path elem [:URL])
         description (cx/string-at-path elem [:Description])
         resource-type (cx/string-at-path elem [:Type])
+        mime-type (cx/string-at-path elem [:MimeType])
         [type sub-type] (resource-type->related-url-types (when resource-type (s/upper-case resource-type)))]
     (c/map->RelatedURL
       {:url url
        :description description
        :type type
-       :sub-type sub-type})))
+       :sub-type sub-type
+       :mime-type mime-type})))
 
 (defn- xml-elem->online-resource-urls
   "Returns online-resource-urls elements from a parsed Granule XML structure"
@@ -116,10 +118,11 @@
       (x/element
         :OnlineAccessURLs {}
         (for [related-url urls]
-          (let [{:keys [url description]} related-url]
+          (let [{:keys [url description mime-type]} related-url]
             (x/element :OnlineAccessURL {}
                        (x/element :URL {} url)
-                       (x/element :URLDescription {} description))))))))
+                       (when description (x/element :URLDescription {} description))
+                       (when mime-type (x/element :MimeType {} mime-type)))))))))
 
 (defn generate-resource-urls
   "Generates the OnlineResources element of an ECHO10 XML from a UMM Granule related urls entry."
@@ -129,8 +132,9 @@
       (x/element
         :OnlineResources {}
         (for [related-url undownloadable-urls]
-          (let [{:keys [url description type]} related-url]
+          (let [{:keys [url description type mime-type]} related-url]
             (x/element :OnlineResource {}
                        (x/element :URL {} url)
                        (x/element :Type {} type)
-                       (x/element :Description {} description))))))))
+                       (when description (x/element :URLDescription {} description))
+                       (when mime-type (x/element :MimeType {} mime-type)))))))))

@@ -117,6 +117,7 @@
       <OnlineResource>
         <URL>http://ghrc.nsstc.nasa.gov/uso/ds_docs/camex3/dc8capac/dc8capac_dataset.html</URL>
         <Type>Guide</Type>
+        <MimeType>Text/html</MimeType>
       </OnlineResource>
       <OnlineResource>
         <URL>ftp://camex.nsstc.nasa.gov/camex3/dc8capac/browse/</URL>
@@ -182,6 +183,7 @@
                                    (umm-c/map->RelatedURL
                                      {:type "VIEW RELATED INFORMATION"
                                       :sub-type "USER'S GUIDE"
+                                      :mime-type "Text/html"
                                       :url "http://ghrc.nsstc.nasa.gov/uso/ds_docs/camex3/dc8capac/dc8capac_dataset.html"})
                                    (umm-c/map->RelatedURL
                                      {:type "GET RELATED VISUALIZATION"

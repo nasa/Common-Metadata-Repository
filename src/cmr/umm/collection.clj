@@ -123,6 +123,7 @@
    sub-type
    url
    description
+   mime-type
   ])
 
 (def granule-spatial-representations
