@@ -28,7 +28,7 @@
    result-format
 
    ;; flag to determine if the results should be pretty printed in the response
-   pretty
+   pretty?
    ])
 
 (defrecord ConditionGroup

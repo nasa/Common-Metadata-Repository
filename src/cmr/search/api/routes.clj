@@ -14,17 +14,6 @@
             [cmr.search.services.search-results :as sr]
             [cmr.search.services.parameters.legacy-parameters :as lp]))
 
-
-(defn- measure-query-time
-  "Executes the query function measuring how long it takes. Adds a :took key to the results map
-  with the number of milliseconds taken."
-  [query-fn]
-  (let [start (System/currentTimeMillis)
-        result (query-fn)
-        stop (System/currentTimeMillis)
-        took (- stop start)]
-    (assoc result :took took)))
-
 (def extension->mime-type
   "A map of URL file extensions to the mime type they represent."
   {"json" "application/json"
@@ -67,12 +56,10 @@
         params (assoc params :result-format result-format)
         _ (info (format "Searching for %ss in format %s with params %s." (name concept-type) result-format (pr-str params)))
         search-params (lp/process-legacy-psa params query-string)
-        results (measure-query-time #(query-svc/find-concepts-by-parameters context concept-type search-params))]
-    (info (format "Found %d %ss in %d ms in format %s with params %s."
-                  (:hits results) (name concept-type) (:took results) result-format (pr-str params)))
+        results (query-svc/find-concepts-by-parameters context concept-type search-params)]
     {:status 200
      :headers {"Content-Type" (str (mt/format->mime-type result-format) "; charset=utf-8")}
-     :body (sr/search-results->response context results result-format pretty?)}))
+     :body results}))
 
 (defn- find-concept-by-cmr-concept-id
   "Invokes query service to find concept metadata by cmr concept id and returns the response"

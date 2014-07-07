@@ -1,4 +1,4 @@
-(ns cmr.search.api.search-results
+(ns cmr.search.services.search-results
   "Contains functions for validating search results requested formats and for converting to
   requested format"
   (:require [cheshire.core :as json]
