@@ -180,7 +180,7 @@
                (search/find-refs
                  :granule
                  query
-                 true)))
+                 {:snake-kebab? false})))
 
            ["string,alpha,ab" "string,bravo,,bc"] [gran1 gran2 gran3] :or
            ["string,alpha,ab" "string,bravo,,bc"] [] :and
@@ -210,7 +210,7 @@
 
     (testing "search by range catalog-rest style"
       (are [v items]
-           (d/refs-match? items (search/find-refs :granule (csv->tuples v) true))
+           (d/refs-match? items (search/find-refs :granule (csv->tuples v) {:snake-kebab? false}))
 
            ;; inside range
            "string,alpha,aa,ac"  [gran1]
@@ -278,7 +278,7 @@
            "float,charlie,44,45.1" [gran3 gran4]))
     (testing "search by range legacy parameters"
       (are [v items]
-           (d/refs-match? items (search/find-refs :granule (csv->tuples v) true))
+           (d/refs-match? items (search/find-refs :granule (csv->tuples v) {:snake-kebab? false}))
 
            ;; inside range
            "float,alpha,10.2,11" [gran1]
@@ -348,7 +348,7 @@
            "int,charlie,44,46" [gran3,gran4]))
     (testing "search by range legacy parameters"
       (are [v items]
-           (d/refs-match? items (search/find-refs :granule (csv->tuples v) true))
+           (d/refs-match? items (search/find-refs :granule (csv->tuples v) {:snake-kebab? false}))
 
            ;; inside range
            "int,alpha,9,11" [gran1]
@@ -436,7 +436,7 @@
            (let [min-v (d/make-datetime min-n)
                  max-v (d/make-datetime max-n)
                  full-value (str v min-v "," max-v)]
-             (d/refs-match? items (search/find-refs :granule (csv->tuples full-value) true)))
+             (d/refs-match? items (search/find-refs :granule (csv->tuples full-value) {:snake-kebab? false})))
 
            ;; inside range
            "datetime,alpha," 9 11 [gran1]
@@ -523,7 +523,7 @@
            (let [min-v (d/make-time min-n)
                  max-v (d/make-time max-n)
                  full-value (str v min-v "," max-v)]
-             (d/refs-match? items (search/find-refs :granule (csv->tuples full-value) true)))
+             (d/refs-match? items (search/find-refs :granule (csv->tuples full-value) {:snake-kebab? false})))
 
            ;; inside range
            "time,alpha," 9 11 [gran1]
@@ -610,7 +610,7 @@
            (let [min-v (d/make-date min-n)
                  max-v (d/make-date max-n)
                  full-value (str v min-v "," max-v)]
-             (d/refs-match? items (search/find-refs :granule (csv->tuples full-value) true)))
+             (d/refs-match? items (search/find-refs :granule (csv->tuples full-value) {:snake-kebab? false})))
 
            ;; inside range
            "date,alpha," 9 11 [gran1]

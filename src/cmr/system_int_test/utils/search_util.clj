@@ -49,60 +49,101 @@
              errors# (:errors (json/decode body# true))]
          {:status status# :errors errors#}))))
 
+(def mime-type->extension
+  {"application/json" "json"
+   "application/xml" "xml"
+   "application/echo10+xml" "echo10"
+   "application/iso_prototype+xml" "iso_prototype"
+   "application/iso:smap+xml" "smap_iso"
+   "application/iso19115+xml" "iso19115"
+   "application/dif+xml" "dif"
+   "text/csv" "csv"})
+
 (defn find-concepts-in-format
   "Returns the concepts in the format given."
-  [format concept-type params & no-snake-kebab]
-  ;; no-snake-kebab needed for legacy psa which use camel case minValue/maxValue
+  ([format concept-type params]
+   (find-concepts-in-format format concept-type params {}))
+  ([format concept-type params options]
+   ;; no-snake-kebab needed for legacy psa which use camel case minValue/maxValue
 
-  (let [params (if no-snake-kebab
-                 params
-                 (u/map-keys csk/->snake_case_keyword params))
-        response (client/get (url/search-url concept-type)
-                             {:accept format
-                              :query-params (if no-snake-kebab
-                                              params
-                                              (params->snake_case params))
-                              :connection-manager (url/conn-mgr)})]
-    (is (= 200 (:status response)))
-    response))
+   (let [{:keys [format-as-ext? snake-kebab?]
+          :or {:format-as-ext? false
+               :snake-kebab? true}} options
+         params (if snake-kebab?
+                  (params->snake_case (u/map-keys csk/->snake_case_keyword params))
+                  params)
+         [url accept] (if format-as-ext?
+                        [(str (url/search-url concept-type) "." (mime-type->extension format))]
+                        [(url/search-url concept-type) format])
+         response (client/get url {:accept accept
+                                   :query-params params
+                                   :connection-manager (url/conn-mgr)})]
+     (is (= 200 (:status response)))
+     response)))
 
 (defn find-grans-csv
   "Returns the response of granule search in csv format"
-  [concept-type params & no-snake-kebab]
-  (get-search-failure-data
-    (find-concepts-in-format "text/csv" concept-type params no-snake-kebab)))
+  ([concept-type params]
+   (find-grans-csv concept-type params {}))
+  ([concept-type params options]
+   (let [format-as-ext? (get options :format-as-ext? false)]
+     (get-search-failure-data
+       (find-concepts-in-format "text/csv" concept-type params options)))))
 
 (defn find-metadata
   "Returns the response of concept search in a specific metadata XML format."
-  [concept-type format-key params & no-snake-kebab]
-  (get-search-failure-data
-    (let [format-mime-type (mime-types/format->mime-type format-key)
-          response (find-concepts-in-format format-mime-type concept-type params no-snake-kebab)
-          parsed (x/parse-str (:body response))]
-      (map (fn [result]
-             (let [{attrs :attrs [inner-elem] :content} result
-                   {:keys [concept-id collection-concept-id revision-id]} attrs
-                   inner-elem (if (= :dif format-key)
-                                ;; Fixes issue with parsing and regenerating the XML
-                                (assoc inner-elem :attrs dif-c/dif-header-attributes)
-                                inner-elem)]
-               {:concept-id concept-id
-                :revision-id (Long. ^String revision-id)
-                :format format-key
-                :collection-concept-id collection-concept-id
-                :metadata (x/emit-str inner-elem)}))
-           (cx/elements-at-path parsed [:result])))))
+  ([concept-type format-key params]
+   (find-metadata concept-type format-key params {}))
+  ([concept-type format-key params options]
+   (get-search-failure-data
+     (let [format-mime-type (mime-types/format->mime-type format-key)
+           response (find-concepts-in-format format-mime-type concept-type params options)
+           parsed (x/parse-str (:body response))]
+       (map (fn [result]
+              (let [{attrs :attrs [inner-elem] :content} result
+                    {:keys [concept-id collection-concept-id revision-id]} attrs
+                    inner-elem (if (= :dif format-key)
+                                 ;; Fixes issue with parsing and regenerating the XML
+                                 (assoc inner-elem :attrs dif-c/dif-header-attributes)
+                                 inner-elem)]
+                {:concept-id concept-id
+                 :revision-id (Long. ^String revision-id)
+                 :format format-key
+                 :collection-concept-id collection-concept-id
+                 :metadata (x/emit-str inner-elem)}))
+            (cx/elements-at-path parsed [:result]))))))
 
-;; TODO change this to retrieve references in XML.
-;; TODO also remove the JSON search response that we support. That should really be atom json
+(defn find-refs-json
+  "Finds references using the JSON format. This will eventually go away as the json response format
+  should be similar to the ATOM XML format."
+  ([concept-type params]
+   (find-refs-json concept-type params {}))
+  ([concept-type params options]
+   (get-search-failure-data
+     (-> (find-concepts-in-format "application/json" concept-type params options)
+         :body
+         (json/decode true)
+         (set/rename-keys {:references :refs})))))
+
 (defn find-refs
   "Returns the references that are found by searching with the input params"
-  [concept-type params & no-snake-kebab]
-  (get-search-failure-data
-    (-> (find-concepts-in-format :json concept-type params no-snake-kebab)
-        :body
-        (json/decode true)
-        (set/rename-keys {:references :refs}))))
+  ([concept-type params]
+   (find-refs concept-type params {}))
+  ([concept-type params options]
+   (get-search-failure-data
+     (let [response (find-concepts-in-format "application/xml" concept-type params options)
+           parsed (-> response :body x/parse-str)
+           hits (cx/long-at-path parsed [:hits])
+           took (cx/long-at-path parsed [:took])
+           refs (map (fn [ref-elem]
+                       {:id (cx/string-at-path ref-elem [:id])
+                        :name (cx/string-at-path ref-elem [:name])
+                        :revision-id (cx/long-at-path ref-elem [:revision-id])
+                        :location (cx/string-at-path ref-elem [:location])})
+                     (cx/elements-at-path parsed [:references :reference]))]
+       {:refs refs
+        :hits hits
+        :took took}))))
 
 (defn find-refs-with-post
   "Returns the references that are found by searching through POST request with the input params"

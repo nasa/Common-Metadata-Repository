@@ -58,12 +58,20 @@
     (testing "Retrieving results in echo10"
       (d/assert-metadata-results-match
         :echo10 all-colls
-        (search/find-metadata :collection :echo10 {})))
+        (search/find-metadata :collection :echo10 {}))
+      (testing "as extension"
+        (d/assert-metadata-results-match
+          :echo10 all-colls
+          (search/find-metadata :collection :echo10 {} {:format-as-ext? true}))))
 
-    (testing "Retrieving results in echo10"
+    (testing "Retrieving results in dif"
       (d/assert-metadata-results-match
         :dif all-colls
-        (search/find-metadata :collection :dif {})))
+        (search/find-metadata :collection :dif {}))
+      (testing "as extension"
+        (d/assert-metadata-results-match
+          :dif all-colls
+          (search/find-metadata :collection :dif {} {:format-as-ext? true}))))
 
     (testing "Retrieving results as XML References"
       (let [refs (search/find-refs :collection {:short-name "S1"})
@@ -73,7 +81,12 @@
           (let [response (client/get location
                                      {:accept :xml
                                       :connection-manager (url/conn-mgr)})]
-            (is (= (umm/umm->xml c1-echo :echo10) (:body response)))))))))
+            (is (= (umm/umm->xml c1-echo :echo10) (:body response))))))
+
+      (testing "as extension"
+        (is (d/refs-match? [c1-echo] (search/find-refs :collection
+                                                       {:short-name "S1"}
+                                                       {:format-as-ext? true})))))))
 
 ;; Tests that we can ingest and find difs with spatial and that granules in the dif can also be
 ;; ingested and found
