@@ -363,6 +363,13 @@
           (spatial-codec/url-decode :bounding-box)
           :errors))
 
+(defn point-validation
+  [concept-type params]
+  (some->> params
+          :point
+          (spatial-codec/url-decode :point)
+          :errors))
+
 (def parameter-validations
   "A list of the functions that can validate parameters. They all accept parameters as an argument
   and return a list of errors."
@@ -385,7 +392,8 @@
    exclude-validation
    boolean-value-validation
    polygon-validation
-   bounding-box-validation])
+   bounding-box-validation
+   point-validation])
 
 (defn validate-parameters
   "Validates parameters. Throws exceptions to send to the user. Returns parameters if validation

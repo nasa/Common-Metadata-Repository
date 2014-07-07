@@ -33,7 +33,8 @@
                 :science-keywords :science-keywords
                 :downloadable :boolean
                 :polygon :polygon
-                :bounding-box :bounding-box}
+                :bounding-box :bounding-box
+                :point :point}
    :granule {:granule-ur :string
              :collection-concept-id :string
              :producer-granule-id :string
@@ -58,7 +59,8 @@
              :exclude :exclude
              :downloadable :boolean
              :polygon :polygon
-             :bounding-box :bounding-box}})
+             :bounding-box :bounding-box
+             :point :point}})
 
 (def always-case-sensitive
   "A set of parameters that will always be case sensitive"

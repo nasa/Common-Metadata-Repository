@@ -22,3 +22,7 @@
 (defmethod p/parameter->condition :bounding-box
   [concept-type param value options]
   (url-value->spatial-condition :bounding-box value))
+
+(defmethod p/parameter->condition :point
+  [concept-type param value options]
+  (url-value->spatial-condition :point value))
