@@ -9,7 +9,8 @@
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.core :as d]
-            [cmr.spatial.polygon :as p]
+            [cmr.spatial.polygon :as poly]
+            [cmr.spatial.point :as p]
             [cmr.spatial.mbr :as m]
             [cmr.spatial.ring :as r]
             [cmr.spatial.derived :as derived]
@@ -27,7 +28,7 @@
 (defn polygon
   "Creates a single ring polygon with the given ordinates. Points must be in counter clockwise order."
   [& ords]
-  (let [polygon (p/polygon [(apply r/ords->ring ords)])
+  (let [polygon (poly/polygon [(apply r/ords->ring ords)])
         outer (-> polygon :rings first derived/calculate-derived)]
     (when (and (:contains-north-pole outer)
                (:contains-south-pole outer))
@@ -39,19 +40,21 @@
   [shape]
   (assoc (srl/shape->lr shape) :options {:color "AA76775E"}))
 
-(defmulti ords-str->shape
-  (fn [spatial-type ords-str]
+(defmulti ords->shape
+  (fn [spatial-type ords]
     spatial-type))
 
-(defmethod ords-str->shape :polygon
-  [spatial-type ords-str]
-  (let [ords (map #(Double. ^String %) (str/split ords-str #","))]
-    (derived/calculate-derived (apply polygon ords))))
+(defmethod ords->shape :polygon
+  [spatial-type ords]
+  (derived/calculate-derived (apply polygon ords)))
 
-(defmethod ords-str->shape :bounding_box
-  [spatial-type ords-str]
-  (let [[w n e s] (map #(Double. ^String %) (str/split ords-str #","))]
-    (m/mbr w n e s)))
+(defmethod ords->shape :bounding_box
+  [spatial-type ords]
+  (apply m/mbr ords))
+
+(defmethod ords->shape :point
+  [spatial-type ords]
+  (apply p/point ords))
 
 (defn handle-search-area-moved
   "This is the VDD callback function. Everytime the search area is moved this will be called with the
@@ -62,7 +65,8 @@
 
   (let [[id ords-str] (str/split id-ords-str #":")
         spatial-type (keyword id)
-        shape (ords-str->shape spatial-type ords-str)]
+        ords (map #(Double. ^String %) (str/split ords-str #","))
+        shape (ords->shape spatial-type ords)]
 
     (let [results (search/find-refs :granule {spatial-type (cmr.spatial.codec/url-encode
                                                              shape)})
@@ -108,7 +112,7 @@
   (let [outer (r/ords->ring -5.26,-2.59, 11.56,-2.77, 10.47,8.71, -5.86,8.63, -5.26,-2.59)
         hole1 (r/ords->ring 6.95,2.05, 2.98,2.06, 3.92,-0.08, 6.95,2.05)
         hole2 (r/ords->ring 5.18,6.92, -1.79,7.01, -2.65,5, 4.29,5.05, 5.18,6.92)
-        polygon-with-holes  (p/polygon [outer hole1 hole2])
+        polygon-with-holes  (poly/polygon [outer hole1 hole2])
         search-area (polygon 0 0, 1 0, 1 1, 0 0)]
     (visual-interactive-search [polygon-with-holes] search-area))
 
@@ -132,11 +136,20 @@
         outer (r/ords->ring -5.26,-2.59, 11.56,-2.77, 10.47,8.71, -5.86,8.63, -5.26,-2.59)
         hole1 (r/ords->ring 6.95,2.05, 2.98,2.06, 3.92,-0.08, 6.95,2.05)
         hole2 (r/ords->ring 5.18,6.92, -1.79,7.01, -2.65,5, 4.29,5.05, 5.18,6.92)
-        polygon-with-holes  (p/polygon [outer hole1 hole2])
+        polygon-with-holes  (poly/polygon [outer hole1 hole2])
 
-        search-area (assoc (polygon -6.45,-3.74,12.34,-4.18,12,9.45,-6.69,9.2,-6.45,-3.74)
-                           :options {:id "polygon"})
-        ; search-area (assoc (m/mbr -23.43 5 25.54 -6.31) :options {:id "bounding_box"})
+        ;; points
+        north-pole (p/point 90 0)
+        south-pole (p/point -90 0)
+        normal-point (p/point 10 22)
+        am-point (p/point 180 22)
+
+        ; search-area (assoc (polygon -6.45,-3.74,12.34,-4.18,12,9.45,-6.69,9.2,-6.45,-3.74)
+        ;                    :options {:id "polygon"})
+
+        ;search-area (assoc (m/mbr -23.43 5 25.54 -6.31) :options {:id "bounding_box"})
+
+        search-area (assoc (p/point 0 0) :options {:id "point"})
 
         ]
     (visual-interactive-search [touches-sp
@@ -150,7 +163,11 @@
                                 on-np
                                 on-sp
                                 normal-poly
-                                polygon-with-holes] search-area))
+                                polygon-with-holes
+                                north-pole
+                                south-pole
+                                normal-point
+                                am-point] search-area))
 
 
 
