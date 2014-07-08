@@ -12,7 +12,8 @@
    "application/iso:smap+xml" :iso-smap
    "application/iso19115+xml" :iso19115
    "application/dif+xml" :dif
-   "text/csv" :csv})
+   "text/csv" :csv
+   "application/atom+xml" :atom})
 
 (def format->mime-type
   {:json "application/json"
@@ -22,7 +23,8 @@
    :iso-smap "application/iso:smap+xml"
    :iso19115 "application/iso19115+xml"
    :dif "application/dif+xml"
-   :csv "text/csv"})
+   :csv "text/csv"
+   :atom "application/atom+xml"})
 
 (defn mime-type->format
   "Converts a mime-type into the format requested."
