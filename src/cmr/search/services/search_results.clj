@@ -84,7 +84,7 @@
   "Converts search result references into the desired format"
   [context references format]
   (let [tuples (map #(vector (:concept-id %) (:revision-id %)) references)]
-    (t/get-formatted-concept-revisions context tuples format)))
+    (map :metadata (t/get-formatted-concept-revisions context tuples format))))
 
 (defmethod search-results->response :xml
   [context results result-type pretty]
@@ -111,7 +111,8 @@
 (defn search-results->metadata-response
   [context results result-type pretty]
   (let [{:keys [hits took references]} results
-        metadatas (references->format context references result-type)
+        metadatas (or (:metadatas results) ; straight from transformer
+                      (references->format context references result-type))
         result-strings (map reference+metadata->result-string
                             references
                             (map remove-xml-processing-instructions

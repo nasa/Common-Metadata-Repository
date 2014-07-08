@@ -118,10 +118,12 @@
         result-format (:result-format params)
         pretty? (:pretty? query)
         results (find-concepts-by-query context query)
-        took (- (System/currentTimeMillis) start)
-        results (sr/search-results->response context (assoc results :took took) result-format pretty?)]
+        search-took (- (System/currentTimeMillis) start)
+        hits (:hits results)
+        results (sr/search-results->response context (assoc results :took search-took) result-format pretty?)
+        took (- (System/currentTimeMillis) start)]
     (info (format "Found %d %ss in %d ms in format %s with params %s."
-                  (:hits results) (name concept-type) took result-format (pr-str params)))
+                  hits (name concept-type) took result-format (pr-str params)))
     results))
 
 (deftracefn find-concept-by-id
