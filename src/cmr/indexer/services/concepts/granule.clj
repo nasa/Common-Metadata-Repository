@@ -55,7 +55,7 @@
 
 (defmethod idx/concept->elastic-doc :granule
   [context concept umm-granule]
-  (let [{:keys [concept-id extra-fields provider-id revision-date]} concept
+  (let [{:keys [concept-id extra-fields provider-id revision-date format]} concept
         {:keys [parent-collection-id]} extra-fields
         parent-collection (get-parent-collection context parent-collection-id)
         {:keys [granule-ur data-granule temporal platform-refs project-refs related-urls cloud-cover]} umm-granule
@@ -68,9 +68,16 @@
         start-date (temporal/start-date :granule temporal)
         end-date (temporal/end-date :granule temporal)
         downloadable-urls (map :url (ru/downloadable-urls related-urls))
-        downloadable (not (empty? downloadable-urls))]
+        browse-urls (map :url (ru/browse-urls related-urls))
+        documentation-urls (map :url (ru/documentation-urls related-urls))
+        metadata-urls (map :url (ru/metadata-urls related-urls))
+        downloadable (not (empty? downloadable-urls))
+        browsable (not (empty? browse-urls))]
     (merge {:concept-id concept-id
             :collection-concept-id parent-collection-id
+
+            :entry-title (:entry-title parent-collection)
+            :original-format format
 
             :entry-title.lowercase (s/lower-case (:entry-title parent-collection))
             :short-name.lowercase (s/lower-case (get-in parent-collection [:product :short-name]))
@@ -102,7 +109,11 @@
             :attributes (attrib/psa-refs->elastic-docs parent-collection umm-granule)
             :revision-date revision-date
             :downloadable downloadable
+            :browsable browsable
             :start-date (when start-date (f/unparse (f/formatters :date-time) start-date))
             :end-date (when end-date (f/unparse (f/formatters :date-time) end-date))
-            :downloadable-urls downloadable-urls}
+            :downloadable-urls downloadable-urls
+            :browse-urls browse-urls
+            :documentation-urls documentation-urls
+            :metadata-urls metadata-urls}
            (spatial->elastic parent-collection umm-granule))))
