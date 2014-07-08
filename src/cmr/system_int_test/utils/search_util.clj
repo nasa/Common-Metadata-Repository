@@ -57,7 +57,8 @@
    "application/iso:smap+xml" "smap_iso"
    "application/iso19115+xml" "iso19115"
    "application/dif+xml" "dif"
-   "text/csv" "csv"})
+   "text/csv" "csv"
+   "application/atom+xml" "atom"})
 
 (defn find-concepts-in-format
   "Returns the concepts in the format given."
@@ -86,9 +87,16 @@
   ([concept-type params]
    (find-grans-csv concept-type params {}))
   ([concept-type params options]
-   (let [format-as-ext? (get options :format-as-ext? false)]
-     (get-search-failure-data
-       (find-concepts-in-format "text/csv" concept-type params options)))))
+   (get-search-failure-data
+     (find-concepts-in-format "text/csv" concept-type params options))))
+
+(defn find-grans-atom
+  "Returns the response of granule search in atom format"
+  ([concept-type params]
+   (find-grans-atom concept-type params {}))
+  ([concept-type params options]
+   (get-search-failure-data
+     (find-concepts-in-format "application/atom+xml" concept-type params options))))
 
 (defn find-metadata
   "Returns the response of concept search in a specific metadata XML format."

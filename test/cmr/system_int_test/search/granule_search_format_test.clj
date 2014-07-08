@@ -1,6 +1,7 @@
 (ns cmr.system-int-test.search.granule-search-format-test
   "Integration tests for searching granules in csv format"
   (:require [clojure.test :refer :all]
+            [clojure.string :as s]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.index-util :as index]
@@ -112,4 +113,100 @@
                                                  {:granule-ur "Granule1"}
                                                  {:format-as-ext? true})
                           [:status :body]))))))
+
+(defn- sanitize-atom
+  "Returns the atom xml that has the updated field removed so that we can compare atom xmls generated at different times"
+  [xml]
+  (s/replace xml #"<updated>.*</updated>" ""))
+
+(deftest search-granule-atom
+  (let [ru1 (dc/related-url "GET DATA" "http://example.com")
+        ru2 (dc/related-url "GET DATA" "http://example2.com")
+        ru3 (dc/related-url "BROWSE" "http://example.com/browse")
+        coll1 (d/ingest "CMR_PROV1" (dc/collection {:entry-title "Dataset1"}))
+        coll2 (d/ingest "CMR_PROV1" (dc/collection {:entry-title "Dataset2"}))
+        gran1 (d/ingest "CMR_PROV1" (dg/granule coll1 {:granule-ur "Granule1"
+                                                       :beginning-date-time "2010-01-01T12:00:00Z"
+                                                       :ending-date-time "2010-01-11T12:00:00Z"
+                                                       :producer-gran-id "Granule #1"
+                                                       :day-night "DAY"
+                                                       :size 100
+                                                       :cloud-cover 50
+                                                       :related-urls [ru1 ru2]}))
+        gran2 (d/ingest "CMR_PROV1" (dg/granule coll2 {:granule-ur "Granule2"
+                                                       :beginning-date-time "2011-01-01T12:00:00Z"
+                                                       :ending-date-time "2011-01-11T12:00:00Z"
+                                                       :producer-gran-id "Granule #2"
+                                                       :day-night "NIGHT"
+                                                       :size 80
+                                                       :cloud-cover 30
+                                                       :related-urls [ru3]}))]
+
+    (index/refresh-elastic-index)
+
+    (let [atom-top (str "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+                        "<feed xmlns:os=\"http://a9.com/-/spec/opensearch/1.1/\" "
+                        "xmlns:georss=\"http://www.georss.org/georss/10\" xmlns=\"http://www.w3.org/2005/Atom\" "
+                        "xmlns:dc=\"http://purl.org/dc/terms/\" xmlns:echo=\"http://www.echo.nasa.gov/esip\" "
+                        "xmlns:esipdiscovery=\"http://commons.esipfed.org/ns/discovery/1.2/\" "
+                        "xmlns:gml=\"http://www.opengis.net/gml\" esipdiscovery:version=\"1.2\" "
+                        "xmlns:time=\"http://a9.com/-/opensearch/extensions/time/1.0/\">")
+          gran1-atom (str (format "<entry><id>%s</id>" (:concept-id gran1))
+                          "<title type=\"text\">Granule1</title>"
+                          "<echo:datasetId>Dataset1</echo:datasetId>"
+                          "<echo:producerGranuleId>Granule #1</echo:producerGranuleId>"
+                          "<echo:granuleSizeMB>100.0</echo:granuleSizeMB>"
+                          "<echo:originalFormat>application/echo10+xml</echo:originalFormat>"
+                          "<echo:dataCenter>CMR_PROV1</echo:dataCenter>"
+                          "<time:start>2010-01-01T12:00:00Z</time:start>"
+                          "<time:end>2010-01-11T12:00:00Z</time:end>"
+                          "<link href=\"http://example.com\" rel=\"http://esipfed.org/ns/fedsearch/1.1/data#\"></link>"
+                          "<link href=\"http://example2.com\" rel=\"http://esipfed.org/ns/fedsearch/1.1/data#\"></link>"
+                          "<echo:onlineAccessFlag>true</echo:onlineAccessFlag>"
+                          "<echo:browseFlag>false</echo:browseFlag>"
+                          "<echo:dayNightFlag>DAY</echo:dayNightFlag>"
+                          "<echo:cloudCover>50.0</echo:cloudCover>"
+                          "</entry>")
+          gran2-atom (str (format "<entry><id>%s</id>" (:concept-id gran2))
+                          "<title type=\"text\">Granule2</title>"
+                          "<echo:datasetId>Dataset2</echo:datasetId>"
+                          "<echo:producerGranuleId>Granule #2</echo:producerGranuleId>"
+                          "<echo:granuleSizeMB>80.0</echo:granuleSizeMB>"
+                          "<echo:originalFormat>application/echo10+xml</echo:originalFormat>"
+                          "<echo:dataCenter>CMR_PROV1</echo:dataCenter>"
+                          "<time:start>2011-01-01T12:00:00Z</time:start>"
+                          "<time:end>2011-01-11T12:00:00Z</time:end>"
+                          "<link href=\"http://example.com/browse\" rel=\"http://esipfed.org/ns/fedsearch/1.1/browse#\"></link>"
+                          "<echo:onlineAccessFlag>false</echo:onlineAccessFlag>"
+                          "<echo:browseFlag>true</echo:browseFlag>"
+                          "<echo:dayNightFlag>NIGHT</echo:dayNightFlag>"
+                          "<echo:cloudCover>30.0</echo:cloudCover>"
+                          "</entry>")
+          response (search/find-grans-atom :granule {:granule-ur "Granule1"})
+          response2 (search/find-grans-atom :granule {})]
+      (is (= 200 (:status response)))
+      (is (= (str atom-top
+                  "<id>http://localhost:3003/granules.atom?granule-ur=Granule1</id>"
+                  "<title type=\"text\">ECHO granule metadata</title>"
+                  gran1-atom
+                  "</feed>")
+             (sanitize-atom (:body response))))
+      (is (= 200 (:status response2)))
+      (is (= (str atom-top
+                  "<id>http://localhost:3003/granules.atom</id>"
+                  "<title type=\"text\">ECHO granule metadata</title>"
+                  gran1-atom
+                  gran2-atom
+                  "</feed>")
+             (sanitize-atom (:body response2)))))
+
+    (testing "as extension"
+      (is (= (map sanitize-atom (select-keys
+                                  (search/find-grans-atom :granule {:granule-ur "Granule1"})
+                                  [:status :body]))
+             (map sanitize-atom (select-keys
+                                  (search/find-grans-atom :granule
+                                                          {:granule-ur "Granule1"}
+                                                          {:format-as-ext? true})
+                                  [:status :body])))))))
 
