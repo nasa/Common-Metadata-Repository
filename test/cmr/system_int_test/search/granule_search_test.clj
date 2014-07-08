@@ -311,7 +311,7 @@
                (search/find-refs :granule srch2)))))))
 
 ;; Find granules by echo_granule_id, echo_collection_id and concept_id params
-(deftest echo-granule-id-search-test
+(deftest granule-concept-id-search-test
   (let [coll1 (d/ingest "CMR_PROV1" (dc/collection))
         coll2 (d/ingest "CMR_PROV2" (dc/collection))
         gran1 (d/ingest "CMR_PROV1" (dg/granule coll1))
@@ -382,6 +382,8 @@
            [gran1 gran2 gran3 gran4 gran5] [gran1-cid gran2-cid gran3-cid gran4-cid gran5-cid] {}
            [] [gran1-cid gran5-cid] {:and true}))
     (testing "search granules by concept id retrieve metadata"
+      ;; This type of query skips elastic and goes straight to transformer,
+      ;; so we need this particular configuration to test this.
       (are [items cid options]
            (let [params (merge {:concept_id cid}
                                (when options
