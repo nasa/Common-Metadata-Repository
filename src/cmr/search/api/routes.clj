@@ -12,6 +12,7 @@
             [cmr.search.services.query-service :as query-svc]
             [cmr.system-trace.http :as http-trace]
             [cmr.search.api.search-results :as sr]
+            [cmr.search.api.atom-search-results]
             [cmr.search.services.parameters.legacy-parameters :as lp]
             [cmr.search.services.url-helper :as url]))
 
@@ -70,8 +71,8 @@
         pretty? (= (get params :pretty) "true")
         _ (info (format "Searching for %ss in format %s with params %s." (name concept-type) result-format (pr-str params)))
         search-params (lp/process-legacy-psa (dissoc params :pretty) query-string)
-        context (assoc context :concept-type-w-extension concept-type-w-extension)
-        context (assoc context :atom-request-url (url/atom-request-url context concept-type-w-extension query-string))
+        context (assoc context :concept-type-w-extension concept-type-w-extension
+                       :atom-request-url (url/atom-request-url context concept-type-w-extension query-string))
         results (measure-query-time #(query-svc/find-concepts-by-parameters context concept-type search-params))]
     (info (format "Found %d %ss in %d ms in format %s with params %s."
                   (:hits results) (name concept-type) (:took results) result-format (pr-str params)))
