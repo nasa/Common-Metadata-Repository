@@ -46,7 +46,6 @@
             [cmr.search.services.parameters.parameter-validation :as pv]
             [cmr.search.services.collection-query-resolver :as r]
             [cmr.search.services.query-execution :as qe]
-            [cmr.search.services.search-results :as sr]
             [cmr.search.data.complex-to-simple :as c2s]
             [cmr.transmit.metadata-db :as meta-db]
             [cmr.system-trace.core :refer [deftracefn]]
@@ -86,14 +85,13 @@
   "Executes a search for concepts using a query The concepts will be returned with
   concept id and native provider id."
   [context query]
-  (let [results (->> query
-                     (validate-query context)
-                     (apply-acls context)
-                     c2s/reduce-query
-                     (resolve-collection-query context)
-                     (simplify-query context)
-                     (qe/execute-query context))]
-    results))
+  (->> query
+       (validate-query context)
+       (apply-acls context)
+       c2s/reduce-query
+       (resolve-collection-query context)
+       (simplify-query context)
+       (qe/execute-query context)))
 
 (deftracefn find-concepts-by-parameters
   "Executes a search for concepts using the given parameters. The concepts will be returned with
@@ -109,18 +107,15 @@
                    (update-in [:sort-key] #(when % (if (sequential? %)
                                                      (map csk/->kebab-case % )
                                                      (csk/->kebab-case %)))))
-        query (->> params
-                   lp/replace-parameter-aliases
-                   (lp/process-legacy-multi-params-conditions concept-type)
-                   (lp/replace-science-keywords-or-option concept-type)
-                   (pv/validate-parameters concept-type)
-                   (p/parameters->query concept-type))
         result-format (:result-format params)
-        pretty? (:pretty? query)
-        results (find-concepts-by-query context query)
-        search-took (- (System/currentTimeMillis) start)
+        results (->> params
+                     lp/replace-parameter-aliases
+                     (lp/process-legacy-multi-params-conditions concept-type)
+                     (lp/replace-science-keywords-or-option concept-type)
+                     (pv/validate-parameters concept-type)
+                     (p/parameters->query concept-type)
+                     (find-concepts-by-query context))
         hits (:hits results)
-        results (sr/search-results->response context (assoc results :took search-took) result-format pretty?)
         took (- (System/currentTimeMillis) start)]
     (info (format "Found %d %ss in %d ms in format %s with params %s."
                   hits (name concept-type) took result-format (pr-str params)))
