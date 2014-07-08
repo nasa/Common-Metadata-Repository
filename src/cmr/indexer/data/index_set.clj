@@ -40,7 +40,7 @@
   (assoc field-mapping :store "yes"))
 
 (defn not-indexed
-  "modifies a mapping to indicate that it should not be indexed"
+  "modifies a mapping to indicate that it should not be indexed and thus is not searchable."
   [field-mapping]
   (assoc field-mapping :index "no"))
 
@@ -217,8 +217,8 @@
                    :project-refs string-field-mapping
                    :project-refs.lowercase string-field-mapping
                    :revision-date         date-field-mapping
-                   :downloadable bool-field-mapping
-                   :browsable bool-field-mapping
+                   :downloadable (stored bool-field-mapping)
+                   :browsable (stored bool-field-mapping)
                    :attributes attributes-field-mapping
                    :downloadable-urls (not-indexed (stored string-field-mapping))
                    :browse-urls (not-indexed (stored string-field-mapping))
