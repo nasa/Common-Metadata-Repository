@@ -22,7 +22,7 @@
     (testing "transform granules to echo10"
       (are [concepts]
            (= (t/expected-response concepts :echo10)
-              (:response (t/transform-concepts concepts :echo10)))
+              (map :metadata (:response (t/transform-concepts concepts :echo10))))
            [g1-1]
            [g1-1 g2-1]
            [g1-1 g2-2]))
@@ -39,9 +39,9 @@
         g2-1 (d/ingest "PROV1" g2)
         g2-2 (d/ingest "PROV1" g2)]
     (testing "transform latest revision of granules to echo10"
-      (are [sent expected]
+      (are [sent-ids expected]
            (= (t/expected-response expected :echo10)
-              (:response (t/transform-latest-concepts sent :echo10)))
+              (map :metadata (:response (t/transform-latest-concepts sent-ids :echo10))))
            [(:concept-id g1-1)] [g1-1]
            [(:concept-id g1-1) (:concept-id g2-1)] [g1-1 g2-2]))
     (testing "transform latest with missing concept-id returns 404"
