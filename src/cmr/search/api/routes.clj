@@ -12,7 +12,8 @@
             [cmr.search.services.query-service :as query-svc]
             [cmr.system-trace.http :as http-trace]
             [cmr.search.api.search-results :as sr]
-            [cmr.search.services.parameters.legacy-parameters :as lp]))
+            [cmr.search.services.parameters.legacy-parameters :as lp]
+            [cmr.search.services.url-helper :as url]))
 
 
 (defn- measure-query-time
@@ -34,7 +35,8 @@
    "smap_iso" "application/iso:smap+xml"
    "iso19115" "application/iso19115+xml"
    "dif" "application/dif+xml"
-   "csv" "text/csv"})
+   "csv" "text/csv"
+   "atom" "application/atom+xml"})
 
 (defn- parse-concept-type-w-extension
   "Parses the concept type and extension (\"granules.echo10\") into a pair of concept type keyword
@@ -68,6 +70,8 @@
         pretty? (= (get params :pretty) "true")
         _ (info (format "Searching for %ss in format %s with params %s." (name concept-type) result-format (pr-str params)))
         search-params (lp/process-legacy-psa (dissoc params :pretty) query-string)
+        context (assoc context :concept-type-w-extension concept-type-w-extension)
+        context (assoc context :atom-request-url (url/atom-request-url context concept-type-w-extension query-string))
         results (measure-query-time #(query-svc/find-concepts-by-parameters context concept-type search-params))]
     (info (format "Found %d %ss in %d ms in format %s with params %s."
                   (:hits results) (name concept-type) (:took results) result-format (pr-str params)))
