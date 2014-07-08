@@ -381,6 +381,19 @@
            ;; Multiple values
            [gran1 gran2 gran3 gran4 gran5] [gran1-cid gran2-cid gran3-cid gran4-cid gran5-cid] {}
            [] [gran1-cid gran5-cid] {:and true}))
+    (testing "search granules by concept id retrieve metadata"
+      (are [items cid options]
+           (let [params (merge {:concept_id cid}
+                               (when options
+                                 {"options[concept_id]" options}))]
+             (d/assert-metadata-results-match :echo10
+                                              items
+                                              (search/find-metadata :granule :echo10 params)))
+           [gran1] gran1-cid {}
+           [gran5] gran5-cid {}
+           ;; Multiple values
+           [gran1 gran2 gran3 gran4 gran5] [gran1-cid gran2-cid gran3-cid gran4-cid gran5-cid] {}
+           [] [gran1-cid gran5-cid] {:and true}))
     (testing "Search with wildcards in concept_id param not supported."
       (is (= {:status 422
               :errors [(msg/invalid-pattern-opt-setting-msg #{:concept-id :echo-collection-id :echo-granule-id})]}
