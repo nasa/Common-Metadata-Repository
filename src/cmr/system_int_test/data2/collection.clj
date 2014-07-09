@@ -115,7 +115,6 @@
   ([type]
    (related-url type (d/unique-str "http://example.com/file")))
   ([type url]
-   (c/->RelatedURL type nil url (d/unique-str "description"))))
    (related-url type nil url))
   ([type mime-type url]
    (c/->RelatedURL type nil url (d/unique-str "description") mime-type)))
