@@ -51,17 +51,24 @@
    "DATA ACCESS" ["GET DATA"]
    "ALGORITHM INFO" ["VIEW RELATED INFORMATION"]})
 
+(def DOCUMENTATION_MIME_TYPES
+  ["Text/rtf" "Text/richtext" "Text/plain" "Text/html" "Text/example" "Text/enriched"
+   "Text/directory" "Text/csv" "Text/css" "Text/calendar" "Application/http" "Application/msword"
+   "Application/rtf" "Application/wordperfect5.1"])
+
 (defn xml-elem->online-resource-url
   [elem]
   (let [url (cx/string-at-path elem [:URL])
         description (cx/string-at-path elem [:Description])
         resource-type (cx/string-at-path elem [:Type])
+        mime-type (cx/string-at-path elem [:MimeType])
         [type sub-type] (resource-type->related-url-types (when resource-type (s/upper-case resource-type)))]
     (c/map->RelatedURL
       {:url url
        :description description
        :type type
-       :sub-type sub-type})))
+       :sub-type sub-type
+       :mime-type mime-type})))
 
 (defn- xml-elem->online-resource-urls
   "Returns online-resource-urls elements from a parsed Granule XML structure"
@@ -108,6 +115,38 @@
   [related-urls]
   (filter downloadable-url? related-urls))
 
+(defn browse-url?
+  "Returns true if the related-url is browse url"
+  [related-url]
+  (= "GET RELATED VISUALIZATION" (:type related-url)))
+
+(defn browse-urls
+  "Returns the related-urls that are browse urls"
+  [related-urls]
+  (filter browse-url? related-urls))
+
+(defn documentation-url?
+  "Returns true if the related-url is documentation url"
+  [related-url]
+  (some #{(:mime-type related-url)} DOCUMENTATION_MIME_TYPES))
+
+(defn documentation-urls
+  "Returns the related-urls that are documentation urls"
+  [related-urls]
+  (filter documentation-url? related-urls))
+
+(defn metadata-url?
+  "Returns true if the related-url is metadata url"
+  [related-url]
+  (not (or (downloadable-url? related-url)
+           (browse-url? related-url)
+           (documentation-url? related-url))))
+
+(defn metadata-urls
+  "Returns the related-urls that are metadata urls"
+  [related-urls]
+  (filter metadata-url? related-urls))
+
 (defn generate-access-urls
   "Generates the OnlineAccessURLs element of an ECHO10 XML from a UMM Granule related urls entry."
   [related-urls]
@@ -116,10 +155,11 @@
       (x/element
         :OnlineAccessURLs {}
         (for [related-url urls]
-          (let [{:keys [url description]} related-url]
+          (let [{:keys [url description mime-type]} related-url]
             (x/element :OnlineAccessURL {}
                        (x/element :URL {} url)
-                       (x/element :URLDescription {} description))))))))
+                       (when description (x/element :URLDescription {} description))
+                       (when mime-type (x/element :MimeType {} mime-type)))))))))
 
 (defn generate-resource-urls
   "Generates the OnlineResources element of an ECHO10 XML from a UMM Granule related urls entry."
@@ -129,8 +169,9 @@
       (x/element
         :OnlineResources {}
         (for [related-url undownloadable-urls]
-          (let [{:keys [url description type]} related-url]
+          (let [{:keys [url description type mime-type]} related-url]
             (x/element :OnlineResource {}
                        (x/element :URL {} url)
                        (x/element :Type {} type)
-                       (x/element :Description {} description))))))))
+                       (when description (x/element :URLDescription {} description))
+                       (when mime-type (x/element :MimeType {} mime-type)))))))))
