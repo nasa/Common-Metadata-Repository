@@ -11,10 +11,8 @@
             [cmr.common.mime-types :as mt]
             [cmr.search.services.query-service :as query-svc]
             [cmr.system-trace.http :as http-trace]
-            [cmr.search.api.atom-search-results]
             [cmr.search.services.parameters.legacy-parameters :as lp]
             [cmr.search.services.url-helper :as url]
-
 
             ;; Result handlers
             ;; required here to avoid circular dependency in query service
