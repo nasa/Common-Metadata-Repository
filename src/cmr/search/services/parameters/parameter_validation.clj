@@ -119,8 +119,8 @@
 (defn unrecognized-params-validation
   "Validates that no invalid parameters were supplied"
   [concept-type params]
-  ;; this test does not apply to page_size, page_num, or result-format
-  (let [params (dissoc params :page-size :page-num :sort-key :result-format)]
+  ;; this test does not apply to page_size, page_num, pretty, or result-format
+  (let [params (dissoc params :page-size :page-num :sort-key :result-format :pretty)]
     (map #(str "Parameter [" (csk/->snake_case_string % )"] was not recognized.")
          (set/difference (set (keys params))
                          (concept-type->valid-param-names concept-type)))))

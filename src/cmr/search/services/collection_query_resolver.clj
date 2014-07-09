@@ -61,8 +61,7 @@
                                     (qm/query {:concept-type :collection
                                                :condition condition
                                                :page-size :unlimited}))
-          {:keys [references]} result
-          collection-concept-ids (map :concept-id references)]
+          collection-concept-ids (map :_id (get-in result [:hits :hits]))]
       (if (empty? collection-concept-ids)
         (qm/->MatchNoneCondition)
         (qm/or-conds

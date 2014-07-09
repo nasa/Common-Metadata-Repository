@@ -212,15 +212,17 @@
         page-size (Integer. (get params :page-size qm/default-page-size))
         page-num (Integer. (get params :page-num qm/default-page-num))
         sort-keys (parse-sort-key (:sort-key params))
+        pretty (get params :pretty false)
         result-format (get params :result-format (qm/default-result-format concept-type))
-        params (dissoc params :options :page-size :page-num :sort-key :result-format)]
+        params (dissoc params :options :page-size :page-num :sort-key :result-format :pretty)]
     (if (empty? params)
       ;; matches everything
       (qm/query {:concept-type concept-type
                  :page-size page-size
                  :page-num page-num
                  :sort-keys sort-keys
-                 :result-format result-format})
+                 :result-format result-format
+                 :pretty pretty})
       ;; Convert params into conditions
       (let [conditions (map (fn [[param value]]
                               (parameter->condition concept-type param value options))
@@ -228,6 +230,7 @@
         (qm/query {:concept-type concept-type
                    :page-size page-size
                    :page-num page-num
+                   :pretty pretty
                    :condition (qm/and-conds conditions)
                    :sort-keys sort-keys
                    :result-format result-format})))))

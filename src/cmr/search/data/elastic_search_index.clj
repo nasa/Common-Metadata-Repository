@@ -13,7 +13,6 @@
             [cmr.search.data.query-to-elastic :as q2e]
             [cmr.search.services.collection-concept-id-extractor :as cex]
             [cmr.search.services.provider-id-extractor :as pex]
-            [cmr.search.data.elastic-results-to-query-results :as rc]
             [cmr.system-trace.core :refer [deftracefn]]
             [cmr.common.services.errors :as e]))
 
@@ -70,8 +69,6 @@
       :else
       (format "%d_c*,%d_small_collections,-%d_collections" index-set-id index-set-id index-set-id))))
 
-
-
 (defn concept-type->index-info
   "Returns index info based on input concept type. For granule concept type, it will walks through
   the query and figures out only the relevant granule index names and return those."
@@ -82,45 +79,11 @@
     {:index-name (get-granule-indexes context query)
      :type-name "granule"}))
 
-(def concept-type->result-format->fields
-  {:collection {:json ["entry-title"
-                       "provider-id"
-                       "short-name"
-                       "version-id"]
-                :xml ["entry-title"
-                      "provider-id"
-                      "short-name"
-                      "version-id"]
-                :echo10 []}
-   :granule {:json ["granule-ur"
-                    "provider-id"]
-             :xml ["granule-ur"
-                   "provider-id"]
-             :csv ["granule-ur"
-                   "producer-gran-id"
-                   "start-date"
-                   "end-date"
-                   "downloadable-urls"
-                   "cloud-cover"
-                   "day-night"
-                   "size"]
-             :atom ["granule-ur"
-                    "entry-title"
-                    "producer-gran-id"
-                    "size"
-                    "original-format"
-                    "provider-id"
-                    "start-date"
-                    "end-date"
-                    "downloadable-urls"
-                    "browse-urls"
-                    "documentation-urls"
-                    "metadata-urls"
-                    "downloadable"
-                    "browsable"
-                    "day-night"
-                    "cloud-cover"]
-             :echo10 ["collection-concept-id"]}})
+(defmulti concept-type+result-format->fields
+  "Returns the fields that should be selected out of elastic search given a concept type and result
+  format"
+  (fn [concept-type result-format]
+    [concept-type result-format]))
 
 (defrecord ElasticSearchIndex
   [
@@ -151,39 +114,30 @@
         elastic-query (q2e/query->elastic query)
         sort-params (q2e/query->sort-params query)
         index-info (concept-type->index-info context concept-type query)
-        {:keys [index-name type-name]} index-info
-        fields (get-in concept-type->result-format->fields [concept-type result-format])
-        conn (context->conn context)]
-    (debug "Executing against indexes [" index-name "] the elastic query:" (pr-str elastic-query))
-    (if (= :unlimited page-size)
-      (esd/search conn
-                  index-name
-                  [type-name]
-                  :query elastic-query
-                  :version true
-                  :fields fields
-                  :sort sort-params
-                  :size 10000) ;10,000 == "unlimited"
-      (esd/search conn
-                  index-name
-                  [type-name]
-                  :query elastic-query
-                  :version true
-                  :sort sort-params
-                  :size page-size
-                  :from (* (dec page-num) page-size)
-                  :fields fields))))
+        fields (concept-type+result-format->fields concept-type result-format)
+        [from size] (if (= (:page-size query) :unlimited)
+                      [0 10000]
+                      [(* (dec page-num) page-size) page-size])]
+    (debug "Executing against indexes [" (:index-name index-info) "] the elastic query:" (pr-str elastic-query))
+    (esd/search (context->conn context)
+                (:index-name index-info)
+                [(:type-name index-info)]
+                :query elastic-query
+                :version true
+                :sort sort-params
+                :size size
+                :from from
+                :fields fields)))
 
 (defn execute-query
   "Executes a query to find concepts. Returns concept id, native id, and revision id."
   [context query]
-  (let [{:keys [page-size concept-type result-format]} query
-        e-results (send-query-to-elastic context query)
-        results (rc/elastic-results->query-results context concept-type e-results result-format)]
+  (let [e-results (send-query-to-elastic context query)
+        hits (get-in e-results [:hits :total])]
     (debug "Elastic query took" (:took e-results) "ms")
-    (when (and (= :unlimited page-size) (> (:hits results) (count (:references results)))
+    (when (and (= :unlimited (:page-size query)) (> hits (count (get-in e-results [:hits :hits])))
                (e/internal-error! "Failed to retrieve all hits.")))
-    results))
+    e-results))
 
 (defn create-elastic-search-index
   "Creates a new instance of the elastic search index."

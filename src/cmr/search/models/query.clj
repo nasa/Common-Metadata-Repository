@@ -9,10 +9,10 @@
 
 (defrecord Query
   [
-   ;; The concept type that is being queried.
+   ;; the concept type that is being queried.
    concept-type
 
-   ;; The root level condition
+   ;; the root level condition
    condition
 
    ;; the desired number of results
@@ -21,11 +21,14 @@
    ;; the desired page in the result set - starting at zero
    page-num
 
-   ;; A sequence of maps with :order and :field for sorting
+   ;; a sequence of maps with :order and :field for sorting
    sort-keys
 
-   ;; Desired result format
+   ;; desired result format
    result-format
+
+   ;; flag to determine if the results should be pretty printed in the response
+   pretty?
    ])
 
 (defrecord ConditionGroup
@@ -262,13 +265,14 @@
   and root condition. If root condition is not provided it matches everything.
   If page-size, page-num, or result-format are not specified then they are given default values."
   [params]
-  (let [{:keys [concept-type page-size page-num condition sort-keys result-format]} params
+  (let [{:keys [concept-type page-size page-num condition sort-keys result-format pretty]} params
         page-size (or page-size default-page-size)
         page-num (or page-num default-page-num)
         condition (or condition (->MatchAllCondition))
         sort-keys (or sort-keys (default-sort-keys concept-type))
-        result-format (or result-format (default-result-format concept-type))]
-    (->Query concept-type condition page-size page-num sort-keys result-format)))
+        result-format (or result-format (default-result-format concept-type))
+        pretty (or pretty false)]
+    (->Query concept-type condition page-size page-num sort-keys result-format pretty)))
 
 (defn numeric-value-condition
   "Creates a NumericValueCondition"

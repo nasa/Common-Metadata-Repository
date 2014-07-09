@@ -45,13 +45,15 @@
             [cmr.search.services.parameters.legacy-parameters :as lp]
             [cmr.search.services.parameters.parameter-validation :as pv]
             [cmr.search.services.collection-query-resolver :as r]
+            [cmr.search.services.query-execution :as qe]
             [cmr.search.data.complex-to-simple :as c2s]
             [cmr.transmit.metadata-db :as meta-db]
             [cmr.system-trace.core :refer [deftracefn]]
             [cmr.common.services.errors :as err]
             [cmr.common.util :as u]
             [cmr.common.cache :as cache]
-            [camel-snake-kebab :as csk]))
+            [camel-snake-kebab :as csk]
+            [cmr.common.log :refer (debug info warn error)]))
 
 (deftracefn validate-query
   "Validates a query model. Throws an exception to return to user with errors.
@@ -62,61 +64,64 @@
       (err/throw-service-errors :invalid-data errors))
     query))
 
-(deftracefn apply-acls
-  "Modifies the query to apply ACLs for the current user."
-  [context query]
-  ;; TODO adjust this operation to take a token or similar and apply ACLS to the query
-  query)
-
 (deftracefn resolve-collection-query
   "Replace the collection query conditions in the query with conditions of collection-concept-ids."
   [context query]
   (r/resolve-collection-query query context))
 
-(deftracefn execute-query
-  "Executes a query returning results as concept id, native provider id, and revision id."
-  [context query]
-  (idx/execute-query context query))
+(defmulti search-results->response
+  "Converts query search results into a string response."
+  (fn [context query results]
+    (:result-format query)))
 
-(deftracefn simplify-query
-  "Simplifies the query to increase performance."
-  [context query]
-  ;; TODO - do something useful here.
-  query)
+(defmacro time-execution
+  "Times the execution of the body and returns a tuple of time it took and the results"
+  [& body]
+  `(let [start# (System/currentTimeMillis)
+         result# (do ~@body)]
+     [(- (System/currentTimeMillis) start#) result#]))
 
-(deftracefn find-concepts-by-query
-  "Executes a search for concepts using a query The concepts will be returned with
-  concept id and native provider id."
-  [context query]
-  (->> query
-       (validate-query context)
-       (apply-acls context)
-       c2s/reduce-query
-       (resolve-collection-query context)
-       (simplify-query context)
-       (execute-query context)))
+(defn- sanitize-params
+  "Manipulates the parameters to make them easier to process"
+  [params]
+  (-> params
+      u/map-keys->kebab-case
+      (update-in [:options] u/map-keys->kebab-case)
+      (update-in [:options] #(when % (into {} (map (fn [[k v]]
+                                                     [k (u/map-keys->kebab-case v)])
+                                                   %))))
+      (update-in [:sort-key] #(when % (if (sequential? %)
+                                        (map csk/->kebab-case % )
+                                        (csk/->kebab-case %))))))
 
 (deftracefn find-concepts-by-parameters
   "Executes a search for concepts using the given parameters. The concepts will be returned with
   concept id and native provider id."
   [context concept-type params]
-  (let [params (-> params
-                   u/map-keys->kebab-case
-                   (update-in [:options] u/map-keys->kebab-case)
-                   (update-in [:options] #(when % (into {} (map (fn [[k v]]
-                                                                  [k (u/map-keys->kebab-case v)])
-                                                                %))))
-                   (update-in [:sort-key] #(when % (if (sequential? %)
-                                                     (map csk/->kebab-case % )
-                                                     (csk/->kebab-case %)))))]
-    (->> params
-         lp/replace-parameter-aliases
-         (lp/process-legacy-multi-params-conditions concept-type)
-         (lp/replace-science-keywords-or-option concept-type)
-         (pv/validate-parameters concept-type)
-         (p/parameters->query concept-type)
-         (find-concepts-by-query context))))
+  (let [[query-creation-time query] (time-execution
+                                      (->> params
+                                           sanitize-params
+                                           ;; handle legacy parameters
+                                           lp/replace-parameter-aliases
+                                           (lp/process-legacy-multi-params-conditions concept-type)
+                                           (lp/replace-science-keywords-or-option concept-type)
 
+                                           (pv/validate-parameters concept-type)
+                                           (p/parameters->query concept-type)
+                                           (validate-query context)
+                                           c2s/reduce-query))
+        [query-execution-time results] (time-execution
+                                         (->> query
+                                              (resolve-collection-query context)
+                                              (qe/execute-query context)))
+        [result-gen-time result-str] (time-execution
+                                       (search-results->response
+                                         context query (assoc results :took (+ query-creation-time
+                                                                               query-execution-time))))
+        total-took (+ query-creation-time query-execution-time result-gen-time)]
+    (info (format "Found %d %ss in %d ms in format %s with params %s."
+                  (:hits results) (name concept-type) total-took (:result-format query) (pr-str params)))
+    result-str))
 
 (deftracefn find-concept-by-id
   "Executes a search to metadata-db and returns the concept with the given cmr-concept-id."
