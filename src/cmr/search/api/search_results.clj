@@ -2,14 +2,14 @@
   "Contains functions for validating search results requested formats and for converting to
   requested format"
   (:require [cheshire.core :as json]
-            [cmr.common.services.errors :as errors]
-            [cmr.common.concepts :as ct]
-            [cmr.common.mime-types :as mt]
             [clojure.data.xml :as x]
-            [cmr.common.xml :as cx]
             [clojure.set :as set]
             [clojure.data.csv :as csv]
             [clojure.string :as s]
+            [cmr.common.xml :as cx]
+            [cmr.common.services.errors :as errors]
+            [cmr.common.concepts :as ct]
+            [cmr.common.mime-types :as mt]
             [cmr.search.models.results :as r]
             [cmr.transmit.transformer :as t]
             [cmr.umm.dif.collection :as dif-c])
@@ -26,6 +26,7 @@
     "application/json"
     "application/echo10+xml"
     "application/dif+xml"
+    "application/atom+xml"
     "text/csv"})
 
 (defmulti search-results->response

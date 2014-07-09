@@ -51,7 +51,7 @@
   (let [indexes (get-granule-index-names context)]
     (cons (get indexes :small_collections)
           (map #(format "%d_c*_%s" index-set-id (s/lower-case %))
-         provider-ids))))
+               provider-ids))))
 
 (defn- get-granule-indexes
   "Returns the granule indexes that should be searched based on the input query"
@@ -104,6 +104,22 @@
                    "cloud-cover"
                    "day-night"
                    "size"]
+             :atom ["granule-ur"
+                    "entry-title"
+                    "producer-gran-id"
+                    "size"
+                    "original-format"
+                    "provider-id"
+                    "start-date"
+                    "end-date"
+                    "downloadable-urls"
+                    "browse-urls"
+                    "documentation-urls"
+                    "metadata-urls"
+                    "downloadable"
+                    "browsable"
+                    "day-night"
+                    "cloud-cover"]
              :echo10 ["collection-concept-id"]}})
 
 (defrecord ElasticSearchIndex
