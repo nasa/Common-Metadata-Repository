@@ -2,14 +2,16 @@
   (:require [cmr.search.models.query :as qm]
             [cmr.search.data.elastic-search-index :as idx]
             [cmr.transmit.transformer :as t]
-            [cmr.search.services.search-results :as sr])
+            [cmr.search.services.search-results :as sr]
+            [cmr.search.models.results :as results]
+            [cmr.search.data.elastic-results-to-query-results :as rc])
   (:import cmr.search.models.query.StringsCondition
            cmr.search.models.query.StringCondition))
 
 (def non-transformer-supported-formats
   "Formats that the transformer does not support because they're implemented in search. Assumed
   that the transformer will support any format not listed here."
-  #{:csv :json})
+  #{:csv :json :xml})
 
 (def transformer-supported-format?
   "Returns true if the format is supported by the transformer."
@@ -20,6 +22,16 @@
   [{:keys [condition result-format]}]
   (and (transformer-supported-format? result-format)
        (#{StringCondition StringsCondition} (type condition))
+
+       ;; TODO Add the following conditions
+       ;; and test it too
+       ;; page_num must be 1
+       ;; page_size must be >= number of ids
+       ;; sort must be unset
+
+       ;; TODO file issue that sorting in this case is not the normal default.
+       ;; it's sorted by the order the items are listed in the query
+
        (= :concept-id (:field condition))))
 
 (defn- query->execution-type
@@ -52,25 +64,19 @@
         {:keys [result-format pretty?]} query
         concept-ids (query->concept-ids query)
         tresults (t/get-latest-formatted-concepts context concept-ids result-format)
-        metadata (map :metadata tresults)
-        refs (map #(select-keys % [:concept-id :revision-id :collection-concept-id]) tresults)
+        items (map #(select-keys % [:concept-id :revision-id :collection-concept-id :metadata]) tresults)
+        ;; TODO add timing macro
         took (- (System/currentTimeMillis) start)]
-    (sr/search-results->response context
-                                 {:metadatas metadata
-                                  :hits (count refs)
-                                  :took took
-                                  :references refs}
-                                 result-format
-                                 pretty?)))
+    (results/map->Results {:hits (count items)
+                           :references items
+                           :took took})))
 
 (defmethod execute-query :elastic
   [context query]
   (let [start (System/currentTimeMillis)
-        {:keys [result-format pretty?]} query
-        refs (idx/execute-query context query)
-        result-format (:result-format query)
+        {:keys [result-format concept-type]} query
+        elastic-results (idx/execute-query context query)
+        results (rc/elastic-results->query-results context concept-type elastic-results result-format)
+        ;; TODO use timing macro
         took (- (System/currentTimeMillis) start)]
-    (sr/search-results->response context
-                                 (assoc refs :took took)
-                                 result-format
-                                 pretty?)))
+    (assoc results :took took)))

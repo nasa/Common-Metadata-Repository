@@ -27,6 +27,20 @@
    "csv" "text/csv"
    "atom" "application/atom+xml"})
 
+;; TODO this isn't used. How do we determine the default result format
+(def default-search-result-format :json)
+
+(def supported-mime-types
+  "The mime types supported by search."
+  #{"*/*"
+    "application/xml"
+    "application/json"
+    "application/echo10+xml"
+    "application/dif+xml"
+    "application/atom+xml"
+    "text/csv"})
+
+
 (defn- parse-concept-type-w-extension
   "Parses the concept type and extension (\"granules.echo10\") into a pair of concept type keyword
   and mime type"
@@ -46,7 +60,7 @@
   "Returns the requested search results format parsed from headers or from the URL extension"
   [ext-mime-type headers]
   (let [mime-type (or ext-mime-type (get headers "accept"))]
-    (mt/validate-request-mime-type mime-type sr/supported-mime-types)
+    (mt/validate-request-mime-type mime-type supported-mime-types)
     (mt/mime-type->format mime-type)))
 
 (defn- find-concepts
@@ -57,8 +71,11 @@
         result-format (get-search-results-format ext-mime-type headers)
         params (assoc params :result-format result-format)
         _ (info (format "Searching for %ss in format %s with params %s." (name concept-type) result-format (pr-str params)))
+
+        ;; FIXME - We shouldn't be stuffing this info in the context.
         context (assoc context :concept-type-w-extension concept-type-w-extension
                        :atom-request-url (url/atom-request-url context concept-type-w-extension query-string))
+
         search-params (lp/process-legacy-psa params query-string)
         results (query-svc/find-concepts-by-parameters context concept-type search-params)]
     {:status 200

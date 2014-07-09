@@ -1,18 +1,7 @@
 (ns cmr.search.models.results
   "Defines types for search results")
 
-;; A single catalog item reference.
-(defrecord Reference
-  [
-   ;; CMR concept id, i.e. C5-PROV1
-   concept-id
 
-   revision-id
-
-   location
-
-   name
-   ])
 
 (defrecord Results
   [
@@ -22,6 +11,13 @@
    ;; The number of milliseconds the search took
    took
 
+
+   ;; TODO change this to items
    ;; Sequence of references found in the query
    references
+
+   ;; TODO add result format
+
   ])
+
+

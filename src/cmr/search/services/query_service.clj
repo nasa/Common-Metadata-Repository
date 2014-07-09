@@ -42,10 +42,17 @@
             [cmr.search.data.complex-to-simple-converters.temporal]
             [cmr.search.data.complex-to-simple-converters.spatial]
 
+            ;; Result handlers
+            [cmr.search.results-handlers.csv-results-handler]
+            [cmr.search.results-handlers.atom-results-handler]
+            [cmr.search.results-handlers.reference-results-handler]
+            [cmr.search.results-handlers.metadata-results-handler]
+
             [cmr.search.services.parameters.legacy-parameters :as lp]
             [cmr.search.services.parameters.parameter-validation :as pv]
             [cmr.search.services.collection-query-resolver :as r]
             [cmr.search.services.query-execution :as qe]
+            [cmr.search.services.search-results :as sr]
             [cmr.search.data.complex-to-simple :as c2s]
             [cmr.transmit.metadata-db :as meta-db]
             [cmr.system-trace.core :refer [deftracefn]]
@@ -91,7 +98,8 @@
        c2s/reduce-query
        (resolve-collection-query context)
        (simplify-query context)
-       (qe/execute-query context)))
+       (qe/execute-query context)
+       (sr/search-results->response context query)))
 
 (deftracefn find-concepts-by-parameters
   "Executes a search for concepts using the given parameters. The concepts will be returned with
