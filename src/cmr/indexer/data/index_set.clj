@@ -39,6 +39,11 @@
   [field-mapping]
   (assoc field-mapping :store "yes"))
 
+(defn not-indexed
+  "modifies a mapping to indicate that it should not be indexed and thus is not searchable."
+  [field-mapping]
+  (assoc field-mapping :index "no"))
+
 (def attributes-field-mapping
   "Defines mappings for attributes."
   {:type "nested"
@@ -172,6 +177,10 @@
                   {:concept-id            (stored string-field-mapping)
                    :collection-concept-id (stored string-field-mapping)
 
+                   ;; fields added for atom
+                   :entry-title (not-indexed (stored string-field-mapping))
+                   :original-format (not-indexed (stored string-field-mapping))
+
                    ;; Collection fields added strictly for sorting granule results
                    :entry-title.lowercase string-field-mapping
                    :short-name.lowercase  string-field-mapping
@@ -208,10 +217,13 @@
                    :project-refs string-field-mapping
                    :project-refs.lowercase string-field-mapping
                    :revision-date         date-field-mapping
-                   :downloadable bool-field-mapping
+                   :downloadable (stored bool-field-mapping)
+                   :browsable (stored bool-field-mapping)
                    :attributes attributes-field-mapping
-                   :downloadable-urls (stored string-field-mapping)
-                   ;:browse-urls (stored string-field-mapping)
+                   :downloadable-urls (not-indexed (stored string-field-mapping))
+                   :browse-urls (not-indexed (stored string-field-mapping))
+                   :documentation-urls (not-indexed (stored string-field-mapping))
+                   :metadata-urls (not-indexed (stored string-field-mapping))
                    }
                   spatial-coverage-fields)}})
 
