@@ -91,10 +91,15 @@
           provider-id
           native-id))
 
-(defn location-root
-  "Returns the url root for reference location"
+(defn search-root
+  "Returns the search url root"
   []
   (let [port (if (empty? search-relative-root-url)
                search-public-port
                (format "%s%s" search-public-port search-relative-root-url))]
-    (format "%s://%s:%s/concepts/" search-public-protocol search-public-host port)))
+    (format "%s://%s:%s/" search-public-protocol search-public-host port)))
+
+(defn location-root
+  "Returns the url root for reference location"
+  []
+  (str (search-root) "concepts/"))
