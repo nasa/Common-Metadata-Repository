@@ -51,6 +51,12 @@
    "DATA ACCESS" ["GET DATA"]
    "ALGORITHM INFO" ["VIEW RELATED INFORMATION"]})
 
+(def related-url-types->resource-types
+  "A mapping of UMM RelatedURL's type to ECHO10 OnlineResource's type.
+  This list is used for generating ECHO10 OnlineResources from UMM RelatedURLs."
+  {"GET DATA" "STATIC URL"
+   "GET RELATED VISUALIZATION" "BROWSE"})
+
 (def DOCUMENTATION_MIME_TYPES
   ["Text/rtf" "Text/richtext" "Text/plain" "Text/html" "Text/example" "Text/enriched"
    "Text/directory" "Text/csv" "Text/css" "Text/calendar" "Application/http" "Application/msword"
@@ -172,6 +178,6 @@
           (let [{:keys [url description type mime-type]} related-url]
             (x/element :OnlineResource {}
                        (x/element :URL {} url)
-                       (x/element :Type {} type)
+                       (x/element :Type {} (related-url-types->resource-types type))
                        (when description (x/element :URLDescription {} description))
                        (when mime-type (x/element :MimeType {} mime-type)))))))))
