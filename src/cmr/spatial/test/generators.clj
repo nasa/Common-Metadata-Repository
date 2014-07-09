@@ -12,6 +12,7 @@
             [cmr.spatial.line :as l]
             [cmr.spatial.arc :as a]
             [cmr.spatial.derived :as d]
+            [cmr.spatial.segment :as s]
             [clojure.math.combinatorics :as combo]
             [cmr.spatial.dev.viz-helper :as viz-helper]))
 
@@ -29,6 +30,22 @@
 
 (def points
   (ext-gen/model-gen p/point lons lats))
+
+(def line-segments
+  (let [non-equal-point-pairs
+        (gen/bind
+          points
+          (fn [point]
+            (gen/tuple (gen/return point)
+                       (gen/such-that (partial not= point) points))))]
+    (gen/fmap (partial apply s/line-segment) non-equal-point-pairs)))
+
+(defn print-failed-line-segment
+  "A printer function that can be used with the defspec defined in cmr.common to print out a failed
+  line segment"
+  [type ls]
+  ;; Print out the line segment in a way that it can be easily copied to the test.
+  (println (pr-str (concat `(s/ords->line-segment) (s/line-segment->ords ls)))))
 
 (defn non-antipodal-points
   "Returns a generator returning tuples of points of the given size that are not antipodal or equal
@@ -53,6 +70,12 @@
     (fn [[[south north] west east]]
       (m/mbr west north east south))
     (gen/tuple lat-ranges lons lons)))
+
+(def mbrs-not-crossing-antimeridian
+  (gen/fmap
+    (fn [[[south north] [west east]]]
+      (m/mbr west north east south))
+    (gen/tuple lat-ranges (gen/fmap sort (gen/tuple lons lons)))))
 
 (def arcs
   (gen/fmap (fn [[p1 p2]] (a/arc p1 p2))

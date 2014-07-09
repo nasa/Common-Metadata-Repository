@@ -22,13 +22,19 @@
 
 (def ^:const ^double EARTH_RADIUS_METERS 6371000)
 
-(defn radians ^double [^double d]
+(defn radians
+  "Converts degrees to radians"
+  ^double [^double d]
   (* d (/ PI 180.0)))
 
-(defn degrees ^double [^double r]
+(defn degrees
+  "Converts radians to degrees"
+  ^double [^double r]
   (* r (/ 180.0 PI)))
 
-(defn sq ^double [^double v]
+(defn sq
+  "Returns the square of the given value."
+  ^double [^double v]
   (* v v))
 
 (defn round
@@ -40,11 +46,15 @@
       (.setScale precision BigDecimal/ROUND_HALF_UP)
       (.doubleValue)))
 
-(defn within-range? [^double v ^double min ^double max]
+(defn within-range?
+  "Returns true if v is within min and max."
+  [^double v ^double min ^double max]
   (and (>= v min)
        (<= v max)))
 
-(defn avg ^double [nums]
+(defn avg
+  "Computes the average of the numbers"
+  ^double [nums]
   (/ (double (apply clojure.core/+ nums)) (double (count nums))))
 
 (defn mid

@@ -1,10 +1,6 @@
 (ns cmr.spatial.test.mbr
   (:require [clojure.test :refer :all]
-
-            ; [clojure.test.check.clojure-test :refer [defspec]]
-            ;; Temporarily included to use the fixed defspec. Remove once issue is fixed.
             [cmr.common.test.test-check-ext :refer [defspec]]
-
             [clojure.test.check.properties :refer [for-all]]
             [clojure.test.check.generators :as gen]
 
@@ -218,10 +214,10 @@
 
       ;; The union of the area intersects both
       (let [unioned (m/union mbr1 mbr2)]
-          (and (m/intersects-br? unioned mbr1)
-               (m/intersects-br? unioned mbr2)
-               (m/intersects-br? mbr1 unioned)
-               (m/intersects-br? mbr2 unioned)))
+        (and (m/intersects-br? unioned mbr1)
+             (m/intersects-br? unioned mbr2)
+             (m/intersects-br? mbr1 unioned)
+             (m/intersects-br? mbr2 unioned)))
 
       ;; Inverse should be true
       (= (m/intersects-br? mbr1 mbr2)
@@ -297,8 +293,23 @@
                 (mapcat #(map (fn [k] (k %)) [:west :east]) [mbr1 mbr2]))
 
         (every? #(m/covers-lat? unioned %)
-                (mapcat #(map (fn [k] (k %)) [:north :south]) [mbr1 mbr2]))
-        ))))
+                (mapcat #(map (fn [k] (k %)) [:north :south]) [mbr1 mbr2]))))))
+
+(defspec union-not-crossing-antimeridian-test 100
+  (for-all [mbr1 sgen/mbrs-not-crossing-antimeridian
+            mbr2 sgen/mbrs-not-crossing-antimeridian]
+    (let [unioned (m/union mbr1 mbr2 false)]
+      (and
+        (not (m/crosses-antimeridian? unioned))
+        ;; is commutative
+        (= unioned (m/union mbr2 mbr1 false))
+
+        ;; should cover all parts
+        (every? #(m/covers-lon? unioned %)
+                (mapcat #(map (fn [k] (k %)) [:west :east]) [mbr1 mbr2]))
+
+        (every? #(m/covers-lat? unioned %)
+                (mapcat #(map (fn [k] (k %)) [:north :south]) [mbr1 mbr2]))))))
 
 (defspec union-self-test 100
   (for-all [mbr sgen/mbrs]
