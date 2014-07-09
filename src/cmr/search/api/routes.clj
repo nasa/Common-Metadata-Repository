@@ -11,8 +11,9 @@
             [cmr.common.mime-types :as mt]
             [cmr.search.services.query-service :as query-svc]
             [cmr.system-trace.http :as http-trace]
-            [cmr.search.services.search-results :as sr]
-            [cmr.search.services.parameters.legacy-parameters :as lp]))
+            [cmr.search.api.atom-search-results]
+            [cmr.search.services.parameters.legacy-parameters :as lp]
+            [cmr.search.services.url-helper :as url]))
 
 (def extension->mime-type
   "A map of URL file extensions to the mime type they represent."
@@ -23,7 +24,8 @@
    "smap_iso" "application/iso:smap+xml"
    "iso19115" "application/iso19115+xml"
    "dif" "application/dif+xml"
-   "csv" "text/csv"})
+   "csv" "text/csv"
+   "atom" "application/atom+xml"})
 
 (defn- parse-concept-type-w-extension
   "Parses the concept type and extension (\"granules.echo10\") into a pair of concept type keyword
@@ -55,6 +57,8 @@
         result-format (get-search-results-format ext-mime-type headers)
         params (assoc params :result-format result-format)
         _ (info (format "Searching for %ss in format %s with params %s." (name concept-type) result-format (pr-str params)))
+        context (assoc context :concept-type-w-extension concept-type-w-extension
+                       :atom-request-url (url/atom-request-url context concept-type-w-extension query-string))
         search-params (lp/process-legacy-psa params query-string)
         results (query-svc/find-concepts-by-parameters context concept-type search-params)]
     {:status 200
