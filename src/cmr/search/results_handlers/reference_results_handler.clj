@@ -1,12 +1,11 @@
 (ns cmr.search.results-handlers.reference-results-handler
-  "TODO document this"
+  "Handles the XML reference format."
   (:require [cmr.search.data.elastic-results-to-query-results :as elastic-results]
             [cmr.search.data.elastic-search-index :as elastic-search-index]
-            [cmr.search.services.search-results :as search-results]
+            [cmr.search.services.query-service :as qs]
             [cmr.search.services.url-helper :as url]
             [clojure.data.xml :as x]
             [clojure.set :as set]
-            [cmr.search.models.results :as r]
             [cheshire.core :as json]))
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:granule :xml]
@@ -41,8 +40,8 @@
    :granule :granule-ur})
 
 (defmethod elastic-results/elastic-result->query-result-item :xml
-  [context concept-type result-format elastic-result]
-  (let [name-key (concept-type->name-key concept-type)
+  [context query elastic-result]
+  (let [name-key (concept-type->name-key (:concept-type query))
         {concept-id :_id
          revision-id :_version
          {[name-value] name-key} :fields} elastic-result]
@@ -53,8 +52,8 @@
 
 ;; This is temporary until ATOM JSON response is implemented
 (defmethod elastic-results/elastic-result->query-result-item :json
-  [context concept-type result-format elastic-result]
-  (elastic-results/elastic-result->query-result-item context concept-type :xml elastic-result))
+  [context query elastic-result]
+  (elastic-results/elastic-result->query-result-item context (assoc query :result-format :xml) elastic-result))
 
 (defn- reference->xml-element
   "Converts a search result reference into an XML element"
@@ -66,9 +65,9 @@
                (x/element :location {} location)
                (x/element :revision-id {} (str revision-id)))))
 
-(defmethod search-results/search-results->response :xml
+(defmethod qs/search-results->response :xml
   [context query results]
-  (let [{:keys [hits took references]} results
+  (let [{:keys [hits took items]} results
         {:keys [pretty?]} query
         xml-fn (if pretty? x/indent-str x/emit-str)]
     (xml-fn
@@ -76,15 +75,15 @@
                  (x/element :hits {} (str hits))
                  (x/element :took {} (str took))
                  (x/->Element :references {}
-                              (map reference->xml-element references))))))
+                              (map reference->xml-element items))))))
 
 ;; This is temporary until ATOM JSON response is implemented
-(defmethod search-results/search-results->response :json
+(defmethod qs/search-results->response :json
   [context query results]
   (println "results:" (pr-str results))
-  (let [{:keys [hits took references]} results
-        response-refs (map #(set/rename-keys % {:concept-id :id}) references)
-        response-results (r/->Results hits took response-refs)]
+  (let [{:keys [hits took items]} results
+        response-refs (map #(set/rename-keys % {:concept-id :id}) items)
+        response-results {:hits hits :took took :references response-refs}]
     (json/generate-string response-results {:pretty (:pretty? query)})))
 
 

@@ -1,8 +1,8 @@
 (ns cmr.search.results-handlers.csv-results-handler
-  "TODO document this"
+  "Handles the CSV results format and related functions."
   (:require [cmr.search.data.elastic-results-to-query-results :as elastic-results]
             [cmr.search.data.elastic-search-index :as elastic-search-index]
-            [cmr.search.services.search-results :as search-results]
+            [cmr.search.services.query-service :as qs]
             [clojure.data.csv :as csv]
             [clojure.string :as str])
   (:import
@@ -10,7 +10,6 @@
 
 (def CSV_HEADER
   ["Granule UR","Producer Granule ID","Start Time","End Time","Online Access URLs","Browse URLs","Cloud Cover","Day/Night","Size"])
-
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:granule :csv]
   [concept-type result-format]
@@ -24,7 +23,7 @@
    "size"])
 
 (defmethod elastic-results/elastic-result->query-result-item :csv
-  [context concept-type result-format elastic-result]
+  [context query elastic-result]
   (let [{[granule-ur] :granule-ur
          [producer-gran-id] :producer-gran-id
          [start-date] :start-date
@@ -39,10 +38,10 @@
                (str cloud-cover) day-night (str size)]))
 
 
-(defmethod search-results/search-results->response :csv
+(defmethod qs/search-results->response :csv
   [context query results]
-  (let [{:keys [hits took references]} results
-        response-refs (conj references CSV_HEADER)
+  (let [{:keys [hits took items]} results
+        rows (conj items CSV_HEADER)
         string-writer (StringWriter.)]
-    (csv/write-csv string-writer response-refs)
+    (csv/write-csv string-writer rows)
     (str string-writer)))

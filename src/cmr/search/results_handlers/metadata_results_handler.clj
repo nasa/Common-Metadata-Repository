@@ -1,16 +1,14 @@
 (ns cmr.search.results-handlers.metadata-results-handler
-  "TODO document this"
+  "Handles search results with metadata including ECHO10 and DIF formats."
   (:require [cmr.search.data.elastic-results-to-query-results :as elastic-results]
             [cmr.search.data.elastic-search-index :as elastic-search-index]
-            [cmr.search.services.search-results :as search-results]
+            [cmr.search.services.query-service :as qs]
             [cmr.search.models.results :as results]
             [cmr.transmit.transformer :as t]
             [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
             [clojure.string :as str]
             [cmr.umm.dif.collection :as dif-c]))
-
-
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:granule :echo10]
   [concept-type result-format]
@@ -30,26 +28,25 @@
    :granule :granule-ur})
 
 (defn- elastic-results->query-metadata-results
-  "TODO document this"
-  [context elastic-results result-format]
+  "A helper for converting elastic results into metadata results."
+  [context query elastic-results]
   (let [hits (get-in elastic-results [:hits :total])
         tuples (map #(vector (:_id %) (:_version %))
                     (get-in elastic-results [:hits :hits]))
-        tresults (t/get-formatted-concept-revisions context tuples result-format)
+        tresults (t/get-formatted-concept-revisions context tuples (:result-format query))
         items (map #(select-keys % [:concept-id :revision-id :collection-concept-id :metadata]) tresults)]
-    (results/map->Results {:hits hits :references items})))
+    (results/map->Results {:hits hits :items items})))
 
 (defmethod elastic-results/elastic-results->query-results :echo10
-  [context concept-type elastic-results result-format]
-  (elastic-results->query-metadata-results context elastic-results result-format))
+  [context query elastic-results]
+  (elastic-results->query-metadata-results context query elastic-results))
 
 (defmethod elastic-results/elastic-results->query-results :dif
-  [context concept-type elastic-results result-format]
-  (elastic-results->query-metadata-results context elastic-results result-format))
+  [context query elastic-results]
+  (elastic-results->query-metadata-results context query elastic-results))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Search results handling
-
 
 (defn- remove-xml-processing-instructions
   "Removes xml processing instructions from XML so it can be embedded in another XML document"
@@ -82,12 +79,11 @@
             revision-id
             (remove-xml-processing-instructions metadata))))
 
-
 (defn search-results->metadata-response
   [context query results]
-  (let [{:keys [hits took references]} results
+  (let [{:keys [hits took items]} results
         {:keys [result-format pretty? concept-type]} query
-        result-strings (map (partial metadata-item->result-string concept-type) references)
+        result-strings (map (partial metadata-item->result-string concept-type) items)
         response (format (str "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
                               "<results><hits>%d</hits><took>%d</took>%s</results>")
                          hits took (str/join "" result-strings))]
@@ -103,10 +99,10 @@
 
       response)))
 
-(defmethod search-results/search-results->response :echo10
+(defmethod qs/search-results->response :echo10
   [context query results]
   (search-results->metadata-response context query results))
 
-(defmethod search-results/search-results->response :dif
+(defmethod qs/search-results->response :dif
   [context query results]
   (search-results->metadata-response context query results))

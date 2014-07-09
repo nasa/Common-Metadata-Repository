@@ -1,8 +1,8 @@
 (ns cmr.search.results-handlers.atom-results-handler
-  "TODO document this"
+  "Handles the ATOM results format and related functions"
   (:require [cmr.search.data.elastic-results-to-query-results :as elastic-results]
             [cmr.search.data.elastic-search-index :as elastic-search-index]
-            [cmr.search.services.search-results :as search-results]
+            [cmr.search.services.query-service :as qs]
             [clojure.data.xml :as x]
             [clojure.string :as str]
             [clj-time.core :as time]))
@@ -27,7 +27,7 @@
    "cloud-cover"])
 
 (defmethod elastic-results/elastic-result->query-result-item :atom
-  [context concept-type result-format name-key elastic-result]
+  [context query elastic-result]
   (let [{concept-id :_id
          revision-id :_version
          {[granule-ur] :granule-ur
@@ -81,6 +81,7 @@
    :xmlns:os "http://a9.com/-/spec/opensearch/1.1/"
    :esipdiscovery:version "1.2"})
 
+;; TODO make this concept-type->atom-title
 (defn- atom-title
   "Returns the title of atom"
   [context]
@@ -127,15 +128,15 @@
                (when day-night (x/element :echo:dayNightFlag {} day-night))
                (when cloud-cover (x/element :echo:cloudCover {} cloud-cover)))))
 
-(defmethod search-results/search-results->response :atom
+(defmethod qs/search-results->response :atom
   [context query results]
-  (let [{:keys [hits took references]} results
+  (let [{:keys [hits took items]} results
         xml-fn (if (:pretty? query) x/indent-str x/emit-str)]
     (xml-fn
       (x/element :feed ATOM_HEADER_ATTRIBUTES
                  (x/element :updated {} (str (time/now)))
                  (x/element :id {} (:atom-request-url context))
                  (x/element :title {:type "text"} (atom-title context))
-                 (map atom-reference->xml-element references)))))
+                 (map atom-reference->xml-element items)))))
 
 

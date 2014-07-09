@@ -13,7 +13,15 @@
             [cmr.system-trace.http :as http-trace]
             [cmr.search.api.atom-search-results]
             [cmr.search.services.parameters.legacy-parameters :as lp]
-            [cmr.search.services.url-helper :as url]))
+            [cmr.search.services.url-helper :as url]
+
+
+            ;; Result handlers
+            ;; required here to avoid circular dependency in query service
+            [cmr.search.results-handlers.csv-results-handler]
+            [cmr.search.results-handlers.atom-results-handler]
+            [cmr.search.results-handlers.reference-results-handler]
+            [cmr.search.results-handlers.metadata-results-handler]))
 
 (def extension->mime-type
   "A map of URL file extensions to the mime type they represent."
@@ -27,9 +35,6 @@
    "csv" "text/csv"
    "atom" "application/atom+xml"})
 
-;; TODO this isn't used. How do we determine the default result format
-(def default-search-result-format :json)
-
 (def supported-mime-types
   "The mime types supported by search."
   #{"*/*"
@@ -39,7 +44,6 @@
     "application/dif+xml"
     "application/atom+xml"
     "text/csv"})
-
 
 (defn- parse-concept-type-w-extension
   "Parses the concept type and extension (\"granules.echo10\") into a pair of concept type keyword
@@ -64,7 +68,7 @@
     (mt/mime-type->format mime-type)))
 
 (defn- find-concepts
-  "Invokes query service to find references and returns the response"
+  "Invokes query service to find results and returns the response"
   [context concept-type-w-extension params headers query-string]
   (let [[concept-type ext-mime-type] (parse-concept-type-w-extension concept-type-w-extension)
         params (dissoc params :concept-type-w-extension)
@@ -72,7 +76,7 @@
         params (assoc params :result-format result-format)
         _ (info (format "Searching for %ss in format %s with params %s." (name concept-type) result-format (pr-str params)))
 
-        ;; FIXME - We shouldn't be stuffing this info in the context.
+        ;; TODO - We shouldn't be stuffing this info in the context.
         context (assoc context :concept-type-w-extension concept-type-w-extension
                        :atom-request-url (url/atom-request-url context concept-type-w-extension query-string))
 
@@ -85,7 +89,7 @@
 (defn- find-concept-by-cmr-concept-id
   "Invokes query service to find concept metadata by cmr concept id and returns the response"
   [context concept-id headers]
-  ;; TODO headers argument is reserved for ACL validation
+  ;; Note: headers argument is reserved for ACL validation
   (info (format "Search for concept with cmr-concept-id [%s]" concept-id))
   (let [concept (query-svc/find-concept-by-id context concept-id)]
     {:status 200

@@ -2,7 +2,6 @@
   (:require [cmr.search.models.query :as qm]
             [cmr.search.data.elastic-search-index :as idx]
             [cmr.transmit.transformer :as t]
-            [cmr.search.services.search-results :as sr]
             [cmr.search.models.results :as results]
             [cmr.search.data.elastic-results-to-query-results :as rc])
   (:import cmr.search.models.query.StringsCondition
@@ -19,22 +18,20 @@
 
 (defn- direct-transformer-query?
   "Returns true if the query should be executed directly against the transformer and bypass elastic."
-  [{:keys [condition result-format]}]
+  [{:keys [condition concept-type result-format page-num page-size sort-keys]}]
   (and (transformer-supported-format? result-format)
        (#{StringCondition StringsCondition} (type condition))
+       (= :concept-id (:field condition))
+       (= page-num 1)
+       (<= page-size (count (:values condition)))
 
-       ;; TODO Add the following conditions
-       ;; and test it too
-       ;; page_num must be 1
-       ;; page_size must be >= number of ids
-       ;; sort must be unset
+       ;; sorting has been left at the default level
+       ;; Note that we don't actually sort items by the default sort keys
+       ;; See issue CMR-607
+       (= (concept-type qm/default-sort-keys) sort-keys)))
 
-       ;; TODO file issue that sorting in this case is not the normal default.
-       ;; it's sorted by the order the items are listed in the query
-
-       (= :concept-id (:field condition))))
-
-(defn- query->execution-type
+(defn- query->execution-strategy
+  "Determines the execution strategy to use for the given query."
   [query]
   (if (direct-transformer-query? query)
     :direct-transformer
@@ -56,27 +53,21 @@
 (defmulti execute-query
   "Executes the query using the most appropriate mechanism"
   (fn [context query]
-    (query->execution-type query)))
+    (query->execution-strategy query)))
 
 (defmethod execute-query :direct-transformer
   [context query]
-  (let [start (System/currentTimeMillis)
-        {:keys [result-format pretty?]} query
+  (let [{:keys [result-format pretty?]} query
         concept-ids (query->concept-ids query)
         tresults (t/get-latest-formatted-concepts context concept-ids result-format)
-        items (map #(select-keys % [:concept-id :revision-id :collection-concept-id :metadata]) tresults)
-        ;; TODO add timing macro
-        took (- (System/currentTimeMillis) start)]
+        items (map #(select-keys % [:concept-id :revision-id :collection-concept-id :metadata]) tresults)]
     (results/map->Results {:hits (count items)
-                           :references items
-                           :took took})))
+                           :items items})))
 
 (defmethod execute-query :elastic
   [context query]
-  (let [start (System/currentTimeMillis)
-        {:keys [result-format concept-type]} query
-        elastic-results (idx/execute-query context query)
-        results (rc/elastic-results->query-results context concept-type elastic-results result-format)
-        ;; TODO use timing macro
-        took (- (System/currentTimeMillis) start)]
-    (assoc results :took took)))
+  (->> query
+       (idx/execute-query context)
+       (rc/elastic-results->query-results context query)))
+
+

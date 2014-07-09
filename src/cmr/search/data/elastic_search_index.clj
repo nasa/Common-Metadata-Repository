@@ -69,8 +69,6 @@
       :else
       (format "%d_c*,%d_small_collections,-%d_collections" index-set-id index-set-id index-set-id))))
 
-
-
 (defn concept-type->index-info
   "Returns index info based on input concept type. For granule concept type, it will walks through
   the query and figures out only the relevant granule index names and return those."
@@ -86,18 +84,6 @@
   format"
   (fn [concept-type result-format]
     [concept-type result-format]))
-
-;; Temporary default implementation  TODO get rid of this
-(defmethod concept-type+result-format->fields :default
-  [concept-type result-format]
-  (let [temp {:collection {:json ["entry-title"
-                       "provider-id"
-                       "short-name"
-                       "version-id"]}
-   :granule {:json ["granule-ur"
-                    "provider-id"]}}]
-
-    (get-in temp [concept-type result-format])))
 
 (defrecord ElasticSearchIndex
   [
@@ -146,10 +132,10 @@
 (defn execute-query
   "Executes a query to find concepts. Returns concept id, native id, and revision id."
   [context query]
-  (let [e-results (send-query-to-elastic context query)]
+  (let [e-results (send-query-to-elastic context query)
+        hits (get-in e-results [:hits :total])]
     (debug "Elastic query took" (:took e-results) "ms")
-    ;; TODO fix this so that it will work with e-results
-    #_(when (and (= :unlimited (:page-size query)) (> (:hits results) (count (:references results)))
+    (when (and (= :unlimited (:page-size query)) (> hits (count (get-in e-results [:hits :hits])))
                (e/internal-error! "Failed to retrieve all hits.")))
     e-results))
 
