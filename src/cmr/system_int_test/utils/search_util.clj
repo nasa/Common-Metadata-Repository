@@ -165,39 +165,41 @@
          (json/decode true)
          (set/rename-keys {:references :refs})))))
 
+(defn- parse-reference-response
+  [response]
+  (let [parsed (-> response :body x/parse-str)
+        hits (cx/long-at-path parsed [:hits])
+        took (cx/long-at-path parsed [:took])
+        refs (map (fn [ref-elem]
+                    {:id (cx/string-at-path ref-elem [:id])
+                     :name (cx/string-at-path ref-elem [:name])
+                     :revision-id (cx/long-at-path ref-elem [:revision-id])
+                     :location (cx/string-at-path ref-elem [:location])})
+                  (cx/elements-at-path parsed [:references :reference]))]
+    {:refs refs
+     :hits hits
+     :took took}))
+
 (defn find-refs
   "Returns the references that are found by searching with the input params"
   ([concept-type params]
    (find-refs concept-type params {}))
   ([concept-type params options]
    (get-search-failure-data
-     (let [response (find-concepts-in-format "application/xml" concept-type params options)
-           parsed (-> response :body x/parse-str)
-           hits (cx/long-at-path parsed [:hits])
-           took (cx/long-at-path parsed [:took])
-           refs (map (fn [ref-elem]
-                       {:id (cx/string-at-path ref-elem [:id])
-                        :name (cx/string-at-path ref-elem [:name])
-                        :revision-id (cx/long-at-path ref-elem [:revision-id])
-                        :location (cx/string-at-path ref-elem [:location])})
-                     (cx/elements-at-path parsed [:references :reference]))]
-       {:refs refs
-        :hits hits
-        :took took}))))
+     (parse-reference-response
+       (find-concepts-in-format "application/xml" concept-type params options)))))
 
 (defn find-refs-with-post
   "Returns the references that are found by searching through POST request with the input params"
   [concept-type params]
   (get-search-failure-data
     (let [response (client/post (url/search-url concept-type)
-                                {:accept :json
+                                {:accept "application/xml"
                                  :content-type "application/x-www-form-urlencoded"
                                  :body (codec/form-encode params)
                                  :throw-exceptions false
                                  :connection-manager (url/conn-mgr)})]
-      (is (= 200 (:status response)))
-      (set/rename-keys (json/decode (:body response) true)
-                       {:references :refs}))))
+      (parse-reference-response response))))
 
 (defn get-concept-by-concept-id
   "Returns the concept metadata by searching metadata-db using the given cmr concept id"
