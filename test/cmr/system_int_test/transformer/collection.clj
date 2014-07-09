@@ -12,8 +12,8 @@
 
 (deftest transform-collection-echo10
   (let [col1-1 (d/ingest "PROV1" (dc/collection {:short-name "MINIMAL"
-                                               :long-name "A minimal valid collection"
-                                               :version-id 1}))
+                                                 :long-name "A minimal valid collection"
+                                                 :version-id 1}))
         col2 (dc/collection {:short-name "MINIMAL2"
                              :long-name "A second minimal valid collection."
                              :version-id 3})
@@ -22,7 +22,7 @@
     (testing "transform collections"
       (are [concepts]
            (= (t/expected-response concepts :echo10)
-               (:response (t/transform-concepts concepts :echo10)))
+              (:response (t/transform-concepts concepts :echo10)))
            [col1-1]
            [col1-1 col2-1]
            [col1-1 col2-2]))
@@ -32,8 +32,8 @@
 
 (deftest transform-latest-collection-echo10
   (let [col1-1 (d/ingest "PROV1" (dc/collection {:short-name "MINIMAL"
-                                               :long-name "A minimal valid collection"
-                                               :version-id 1}))
+                                                 :long-name "A minimal valid collection"
+                                                 :version-id 1}))
         col2 (dc/collection {:short-name "MINIMAL2"
                              :long-name "A second minimal valid collection."
                              :version-id 3})
@@ -42,7 +42,7 @@
     (testing "transform collections"
       (are [sent-ids expected]
            (= (t/expected-response expected :echo10)
-               (:response (t/transform-latest-concepts sent-ids :echo10)))
+              (:response (t/transform-latest-concepts sent-ids :echo10)))
            [(:concept-id col1-1)] [col1-1]
            [(:concept-id col1-1) (:concept-id col2-1)] [col1-1 col2-2]))
     (testing "transform missing concept-id returns 404"

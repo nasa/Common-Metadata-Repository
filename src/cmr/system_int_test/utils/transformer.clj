@@ -43,4 +43,8 @@
 (defn expected-response
   "Returns the expected xml for a given vector of umm records"
   [umm-records format]
-  (map #(ummc/umm->xml % format) umm-records))
+  (map (fn [umm]
+         (let [metadata (ummc/umm->xml umm format)]
+           (merge (select-keys umm [:concept-id :revision-id :collection-concept-id])
+                  {:metadata metadata})))
+       umm-records))
