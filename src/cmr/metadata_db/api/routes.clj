@@ -46,7 +46,8 @@
 (defn- get-concepts
   "Get concepts using concept-id/revision-id tuples."
   [context params concept-id-revisions]
-  (let [concepts (concept-service/get-concepts context concept-id-revisions)]
+  (let [allow-missing? (boolean (Boolean/valueOf (:allow-missing params)))
+        concepts (concept-service/get-concepts context concept-id-revisions allow-missing?)]
     {:status 200
      :body (to-json concepts params)
      :headers json-header}))
@@ -54,7 +55,8 @@
 (defn- get-latest-concepts
   "Get latest version of concepts using a list of concept-ids"
   [context params concept-ids]
-  (let [concepts (concept-service/get-latest-concepts context concept-ids)]
+  (let [allow-missing? (boolean (Boolean/valueOf (:allow-missing params)))
+        concepts (concept-service/get-latest-concepts context concept-ids allow-missing?)]
     {:status 200
      :body (to-json concepts params)
      :headers json-header}))
