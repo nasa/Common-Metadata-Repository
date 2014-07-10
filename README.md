@@ -130,11 +130,21 @@ __Example Curl:__
 curl -v http://localhost:3001/concepts/C1-PROV1/2
 
 ### POST /concepts/search/concept-revisions
-params: [[concept-id/revision-id tuple] ...]
+params: as JSON body: [[concept-id/revision-id tuple] ...]
+url param: allow_missing - if true missing concepts will not result in a 404 - defaults to false
 returns: list of concepts matching the tuples provided in the body of the POST
 
 __Example Curl:__
-curl -v -XPOST -H "Content-Type: application/json" -d '[["C1-PROV1", 1], ["C2-PROV1", 1]]' http://localhost:3001/concepts/search/concept-revisions
+curl -v -XPOST -H "Content-Type: application/json" -d '[["C1-PROV1", 1], ["C2-PROV1", 1]]' http://localhost:3001/concepts/search/concept-revisions?allow_missing=true
+
+### POST /concepts/search/latest-concept-revisions
+params: as JSON body: [concept-id1, concept-id2 ...]
+url param: allow_missing - if true missing concepts will not result in a 404 - defaults to false
+returns: list of the latest revisions of concepts matching the ids provided in the body of the POST
+
+__Example Curl:__
+curl -v -XPOST -H "Content-Type: application/json" -d '["C1-PROV1", "C2-PROV1"]' http://localhost:3001/concepts/search/latest-concept-revisions?allow_missing=true
+
 
 ### GET /concepts/search/:concept-types?param1=value&...
 

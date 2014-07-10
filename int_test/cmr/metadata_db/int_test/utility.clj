@@ -128,11 +128,16 @@
 
 (defn get-concepts
   "Make a POST to retrieve concepts by concept-id and revision."
-  ([tuples] (get-concepts tuples false))
+  ([tuples]
+   (get-concepts tuples nil))
   ([tuples allow-missing?]
-   (let [path (str "search/concept-revisions?allow-missing=" allow-missing?)
+   (let [query-params (if (nil? allow-missing?)
+                        {}
+                        {:allow_missing allow-missing?})
+         path "search/concept-revisions"
          response (client/post (str concepts-url path)
-                               {:body (cheshire/generate-string tuples)
+                               {:query-params query-params
+                                :body (cheshire/generate-string tuples)
                                 :content-type :json
                                 :accept :json
                                 :throw-exceptions false
@@ -145,11 +150,16 @@
 
 (defn get-latest-concepts
   "Make a POST to retreive the latest revision of concpets by concept-id."
-  ([concept-ids] (get-latest-concepts concept-ids false))
+  ([concept-ids]
+   (get-latest-concepts concept-ids nil))
   ([concept-ids allow-missing?]
-   (let [path (str "search/latest-concept-revisions?allow-missing=" allow-missing?)
+   (let [query-params (if (nil? allow-missing?)
+                        {}
+                        {:allow_missing allow-missing?})
+         path "search/latest-concept-revisions"
          response (client/post (str concepts-url path)
-                               {:body (cheshire/generate-string concept-ids)
+                               {:query-params query-params
+                                :body (cheshire/generate-string concept-ids)
                                 :content-type :json
                                 :accept :json
                                 :throw-exceptions false
