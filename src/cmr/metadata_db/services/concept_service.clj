@@ -187,6 +187,12 @@
           {}
           concept-ids))
 
+(defn- filter-non-existant-providers
+  "Removes providers that don't exist from a map of provider-ids to values."
+  [db provider-id-map]
+  (let [existing-provider-ids (set (provider-db/get-providers db))]
+    (into {} (filter (comp existing-provider-ids first) provider-id-map))))
+
 (deftracefn get-concepts
   "Get multiple concepts by concept-id and revision-id. Returns concepts in order requested"
   [context concept-id-revision-id-tuples allow-missing?]
@@ -196,8 +202,13 @@
         parallel-chunk-size (get-in context [:system :parallel-chunk-size])
         db (util/context->db context)
         ;; Split the tuples so they can be requested separately for each provider and concept type
-        split-tuples-map (split-concept-id-revision-id-tuples concept-id-revision-id-tuples)]
-    (validate-providers-exist db (keys split-tuples-map))
+        split-tuples-map (split-concept-id-revision-id-tuples concept-id-revision-id-tuples)
+        split-tuples-map (if allow-missing?
+                           (filter-non-existant-providers db split-tuples-map)
+                           (do
+                             (validate-providers-exist db (keys split-tuples-map))
+                             split-tuples-map))]
+
     (let [concepts (apply concat
                           (for [[provider-id concept-type-tuples-map] split-tuples-map
                                 [concept-type tuples] concept-type-tuples-map]
@@ -234,8 +245,12 @@
         parallel-chunk-size (get-in context [:system :parallel-chunk-size])
         db (util/context->db context)
         ;; Split the concept-ids so they can be requested separately for each provider and concept type
-        split-concept-ids-map (split-concept-ids concept-ids)]
-    (validate-providers-exist db (keys split-concept-ids-map))
+        split-concept-ids-map (split-concept-ids concept-ids)
+        split-concept-ids-map (if allow-missing?
+                                (filter-non-existant-providers db split-concept-ids-map)
+                                (do
+                                  (validate-providers-exist db (keys split-concept-ids-map))
+                                  split-concept-ids-map))]
     (let [concepts (apply concat
                           (for [[provider-id concept-type-concept-id-map] split-concept-ids-map
                                 [concept-type cids] concept-type-concept-id-map]
