@@ -117,7 +117,12 @@
   ([type url]
    (related-url type nil url))
   ([type mime-type url]
-   (c/->RelatedURL type nil url (d/unique-str "description") mime-type)))
+   (let [description (d/unique-str "description")]
+     (c/map->RelatedURL {:type type
+                         :url url
+                         :description description
+                         :title description
+                         :mime-type mime-type}))))
 
 (defn spatial
   ([gsr]

@@ -125,6 +125,7 @@
   [related-url]
   (let [{:keys [type url]} related-url]
     {:href url
+     :hreflang "en-US"
      :rel (resource-type->link-type-uri type)}))
 
 (defn- related-urls->links
@@ -132,7 +133,7 @@
   [related-urls]
   (map related-url->link related-urls))
 
-(defn- granule->atom
+(defn- granule->expected-atom
   "Returns the atom map of the granule"
   [granule]
   (let [{:keys [concept-id granule-ur producer-gran-id size related-urls
@@ -154,12 +155,12 @@
      :day-night-flag day-night
      :cloud-cover (str cloud-cover)}))
 
-(defn- granules->atom
+(defn- granules->expected-atom
   "Returns the atom map of the granules"
   [granules atom-path]
   {:id (str (url/search-root) atom-path)
    :title "ECHO granule metadata"
-   :entries (map granule->atom granules)})
+   :entries (map granule->expected-atom granules)})
 
 (deftest search-granule-atom
   (let [ru1 (dc/related-url "GET DATA" "http://example.com")
@@ -186,14 +187,13 @@
 
     (index/refresh-elastic-index)
 
-    (let [gran-atom (granules->atom [gran1] "granules.atom?granule-ur=Granule1")
-          response (search/find-grans-atom :granule {:granule-ur "Granule1"})
-          response2 (search/find-grans-atom :granule {})]
+    (let [gran-atom (granules->expected-atom [gran1] "granules.atom?granule-ur=Granule1")
+          response (search/find-grans-atom :granule {:granule-ur "Granule1"})]
       (is (= 200 (:status response)))
       (is (= gran-atom
              (:results response))))
 
-    (let [gran-atom (granules->atom [gran1 gran2] "granules.atom")
+    (let [gran-atom (granules->expected-atom [gran1 gran2] "granules.atom")
           response (search/find-grans-atom :granule {})]
       (is (= 200 (:status response)))
       (is (= gran-atom
