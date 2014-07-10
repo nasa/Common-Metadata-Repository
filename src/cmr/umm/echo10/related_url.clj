@@ -4,7 +4,8 @@
   (:require [clojure.string :as s]
             [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
-            [cmr.umm.collection :as c]))
+            [cmr.umm.collection :as c]
+            [cmr.umm.related-url-helper :as h]))
 
 (def resource-type->related-url-types
   "A mapping of ECHO10 OnlineResource's type to UMM RelatedURL's type and sub-type.
@@ -56,11 +57,6 @@
   This list is used for generating ECHO10 OnlineResources from UMM RelatedURLs."
   {"GET DATA" "STATIC URL"
    "GET RELATED VISUALIZATION" "BROWSE"})
-
-(def DOCUMENTATION_MIME_TYPES
-  ["Text/rtf" "Text/richtext" "Text/plain" "Text/html" "Text/example" "Text/enriched"
-   "Text/directory" "Text/csv" "Text/css" "Text/calendar" "Application/http" "Application/msword"
-   "Application/rtf" "Application/wordperfect5.1"])
 
 (defn xml-elem->online-resource-url
   [elem]
@@ -138,63 +134,10 @@
                (xml-elem->online-resource-urls xml-struct)
                (xml-elem->browse-urls xml-struct))))
 
-(defn downloadable-url?
-  "Returns true if the related-url is downloadable"
-  [related-url]
-  (= "GET DATA" (:type related-url)))
-
-(defn downloadable-urls
-  "Returns the related-urls that are downloadable"
-  [related-urls]
-  (filter downloadable-url? related-urls))
-
-(defn browse-url?
-  "Returns true if the related-url is browse url"
-  [related-url]
-  (= "GET RELATED VISUALIZATION" (:type related-url)))
-
-(defn browse-urls
-  "Returns the related-urls that are browse urls"
-  [related-urls]
-  (filter browse-url? related-urls))
-
-(defn documentation-url?
-  "Returns true if the related-url is documentation url"
-  [related-url]
-  (some #{(:mime-type related-url)} DOCUMENTATION_MIME_TYPES))
-
-(defn documentation-urls
-  "Returns the related-urls that are documentation urls"
-  [related-urls]
-  (filter documentation-url? related-urls))
-
-(defn metadata-url?
-  "Returns true if the related-url is metadata url"
-  [related-url]
-  (not (or (downloadable-url? related-url)
-           (browse-url? related-url)
-           (documentation-url? related-url))))
-
-(defn metadata-urls
-  "Returns the related-urls that are metadata urls"
-  [related-urls]
-  (filter metadata-url? related-urls))
-
-(defn resource-url?
-  "Returns true if the related-url is resource url"
-  [related-url]
-  (not (or (downloadable-url? related-url)
-           (browse-url? related-url))))
-
-(defn resource-urls
-  "Returns the related-urls that are resource urls"
-  [related-urls]
-  (filter resource-url? related-urls))
-
 (defn generate-access-urls
   "Generates the OnlineAccessURLs element of an ECHO10 XML from a UMM related urls entry."
   [related-urls]
-  (let [urls (downloadable-urls related-urls)]
+  (let [urls (h/downloadable-urls related-urls)]
     (when-not (empty? urls)
       (x/element
         :OnlineAccessURLs {}
@@ -208,7 +151,7 @@
 (defn generate-resource-urls
   "Generates the OnlineResources element of an ECHO10 XML from a UMM related urls entry."
   [related-urls]
-  (let [urls (resource-urls related-urls)]
+  (let [urls (h/resource-urls related-urls)]
     (when-not (empty? urls)
       (x/element
         :OnlineResources {}
@@ -223,7 +166,7 @@
 (defn generate-browse-urls
   "Generates the AssociatedBrowseImageUrls element of an ECHO10 XML from a UMM related urls entry."
   [related-urls]
-  (let [urls (browse-urls related-urls)]
+  (let [urls (h/browse-urls related-urls)]
     (when-not (empty? urls)
       (x/element
         :AssociatedBrowseImageUrls {}

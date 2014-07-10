@@ -1,7 +1,7 @@
-(ns cmr.umm.test.echo10.related-url
+(ns cmr.umm.test.related-url-helper
   "Tests functions that categorize related urls."
   (:require [clojure.test :refer :all]
-            [cmr.umm.echo10.related-url :as ru]
+            [cmr.umm.related-url-helper :as ru]
             [cmr.umm.collection :as umm-c]))
 
 (deftest categorize-related-urls
