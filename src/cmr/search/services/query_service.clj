@@ -74,13 +74,6 @@
   (fn [context query results]
     (:result-format query)))
 
-(defmacro time-execution
-  "Times the execution of the body and returns a tuple of time it took and the results"
-  [& body]
-  `(let [start# (System/currentTimeMillis)
-         result# (do ~@body)]
-     [(- (System/currentTimeMillis) start#) result#]))
-
 (defn- sanitize-params
   "Manipulates the parameters to make them easier to process"
   [params]
@@ -98,7 +91,7 @@
   "Executes a search for concepts using the given parameters. The concepts will be returned with
   concept id and native provider id."
   [context concept-type params]
-  (let [[query-creation-time query] (time-execution
+  (let [[query-creation-time query] (u/time-execution
                                       (->> params
                                            sanitize-params
                                            ;; handle legacy parameters
@@ -110,15 +103,18 @@
                                            (p/parameters->query concept-type)
                                            (validate-query context)
                                            c2s/reduce-query))
-        [query-execution-time results] (time-execution
+        [query-execution-time results] (u/time-execution
                                          (->> query
                                               (resolve-collection-query context)
                                               (qe/execute-query context)))
-        [result-gen-time result-str] (time-execution
+        [result-gen-time result-str] (u/time-execution
                                        (search-results->response
                                          context query (assoc results :took (+ query-creation-time
                                                                                query-execution-time))))
         total-took (+ query-creation-time query-execution-time result-gen-time)]
+    (debug "query-creation-time:" query-creation-time
+           "query-execution-time:" query-execution-time
+           "result-gen-time:" result-gen-time)
     (info (format "Found %d %ss in %d ms in format %s with params %s."
                   (:hits results) (name concept-type) total-took (:result-format query) (pr-str params)))
     result-str))

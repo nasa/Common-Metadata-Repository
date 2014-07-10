@@ -8,7 +8,9 @@
             [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
             [clojure.string :as str]
-            [cmr.umm.dif.collection :as dif-c]))
+            [cmr.umm.dif.collection :as dif-c]
+            [cmr.common.util :as u]
+            [cmr.common.log :refer (debug info warn error)]))
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:granule :echo10]
   [concept-type result-format]
@@ -31,10 +33,15 @@
   "A helper for converting elastic results into metadata results."
   [context query elastic-results]
   (let [hits (get-in elastic-results [:hits :total])
-        tuples (map #(vector (:_id %) (:_version %))
+
+        ;; TODO - big temporary hack here. All the revision ids indexed in workload were found to be 2 when metadata-db has 1.
+        ;; See https://bugs.earthdata.nasa.gov/browse/CMR-609
+        tuples (map #(vector (:_id %) 1 #_(:_version %))
                     (get-in elastic-results [:hits :hits]))
-        tresults (t/get-formatted-concept-revisions context tuples (:result-format query))
+        [req-time tresults] (u/time-execution
+                              (t/get-formatted-concept-revisions context tuples (:result-format query)))
         items (map #(select-keys % [:concept-id :revision-id :collection-concept-id :metadata]) tresults)]
+    (debug "Transformer metadata request time was" req-time "ms.")
     (results/map->Results {:hits hits :items items})))
 
 (defmethod elastic-results/elastic-results->query-results :echo10
