@@ -12,14 +12,9 @@
             [clj-http.client :as client]
             [cmr.common.concepts :as cu]
             [cmr.umm.core :as umm]
-            [cmr.umm.echo10.related-url :as ru]))
+            [cmr.umm.related-url-helper :as ru]))
 
 (use-fixtures :each (ingest/reset-fixture "CMR_PROV1"))
-
-(comment
-  (ingest/reset)
-  (ingest/create-provider "CMR_PROV1")
-  )
 
 (deftest search-granules-in-xml-metadata
   ;; TODO we can add additional formats here later such as iso
@@ -76,6 +71,7 @@
 
 (deftest search-granule-csv
   (let [ru1 (dc/related-url "GET DATA" "http://example.com")
+        ru2 (dc/related-url "GET RELATED VISUALIZATION" "http://example.com/browse")
         coll1 (d/ingest "CMR_PROV1" (dc/collection {}))
         coll2 (d/ingest "CMR_PROV1" (dc/collection {}))
         gran1 (d/ingest "CMR_PROV1" (dg/granule coll1 {:granule-ur "Granule1"
@@ -85,7 +81,7 @@
                                                        :day-night "DAY"
                                                        :size 100
                                                        :cloud-cover 50
-                                                       :related-urls [ru1]}))
+                                                       :related-urls [ru1 ru2]}))
         gran2 (d/ingest "CMR_PROV1" (dg/granule coll2 {:granule-ur "Granule2"
                                                        :beginning-date-time "2011-01-01T12:00:00Z"
                                                        :ending-date-time "2011-01-11T12:00:00Z"
@@ -99,13 +95,13 @@
     (let [response (search/find-grans-csv :granule {:granule-ur "Granule1"})]
       (is (= 200 (:status response)))
       (is (= (str "Granule UR,Producer Granule ID,Start Time,End Time,Online Access URLs,Browse URLs,Cloud Cover,Day/Night,Size\n"
-                  "Granule1,Granule #1,2010-01-01T12:00:00Z,2010-01-11T12:00:00Z,http://example.com,50.0,DAY,100.0\n")
+                  "Granule1,Granule #1,2010-01-01T12:00:00Z,2010-01-11T12:00:00Z,http://example.com,http://example.com/browse,50.0,DAY,100.0\n")
              (:body response))))
     (let [response (search/find-grans-csv :granule {})]
       (is (= 200 (:status response)))
       (is (= (str "Granule UR,Producer Granule ID,Start Time,End Time,Online Access URLs,Browse URLs,Cloud Cover,Day/Night,Size\n"
-                  "Granule1,Granule #1,2010-01-01T12:00:00Z,2010-01-11T12:00:00Z,http://example.com,50.0,DAY,100.0\n"
-                  "Granule2,Granule #2,2011-01-01T12:00:00Z,2011-01-11T12:00:00Z,,30.0,NIGHT,80.0\n")
+                  "Granule1,Granule #1,2010-01-01T12:00:00Z,2010-01-11T12:00:00Z,http://example.com,http://example.com/browse,50.0,DAY,100.0\n"
+                  "Granule2,Granule #2,2011-01-01T12:00:00Z,2011-01-11T12:00:00Z,,,30.0,NIGHT,80.0\n")
              (:body response))))
 
     (testing "as extension"
@@ -120,13 +116,23 @@
   {"GET DATA" "http://esipfed.org/ns/fedsearch/1.1/data#"
    "GET RELATED VISUALIZATION" "http://esipfed.org/ns/fedsearch/1.1/browse#"})
 
+(defn- add-attribs
+  "Returns the attribs with the field-value pair added if there is a value"
+  [attribs field value]
+  (if (empty? value) attribs (assoc attribs field value)))
+
 (defn- related-url->link
   "Returns the atom link of the given related url"
   [related-url]
-  (let [{:keys [type url]} related-url]
-    {:href url
-     :hreflang "en-US"
-     :rel (resource-type->link-type-uri type)}))
+  (let [{:keys [type url title mime-type size]} related-url
+        attribs (-> {}
+                    (add-attribs :size size)
+                    (add-attribs :rel (resource-type->link-type-uri type))
+                    (add-attribs :type mime-type)
+                    (add-attribs :title title)
+                    (add-attribs :hreflang "en-US")
+                    (add-attribs :href url))]
+    attribs))
 
 (defn- related-urls->links
   "Returns the atom links of the given related urls"
