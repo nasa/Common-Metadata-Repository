@@ -92,7 +92,7 @@
         conn (context->conn context)
         response (bulk/bulk conn bulk-operations)]
     (when (:errors response)
-      (errors/internal-error! (format "Bulk indexing failed with repsonse %s" response)))))
+      (errors/internal-error! (format "Bulk indexing failed with response %s" response)))))
 
 
 (deftracefn save-document-in-elastic
