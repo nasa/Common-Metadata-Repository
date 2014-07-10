@@ -311,7 +311,7 @@
                (search/find-refs :granule srch2)))))))
 
 ;; Find granules by echo_granule_id, echo_collection_id and concept_id params
-(deftest granule-concept-id-search-test
+(deftest search-by-concept-id
   (let [coll1 (d/ingest "CMR_PROV1" (dc/collection))
         coll2 (d/ingest "CMR_PROV2" (dc/collection))
         gran1 (d/ingest "CMR_PROV1" (dg/granule coll1))
@@ -395,6 +395,8 @@
            [gran5] gran5-cid {}
            ;; Multiple values
            [gran1 gran2 gran3 gran4 gran5] [gran1-cid gran2-cid gran3-cid gran4-cid gran5-cid] {}
+           ;; an non existant granule along with existing granules
+           [gran1 gran5] [gran1-cid "G555-CMR_PROV1" "G555-NON_EXIST" gran5-cid] {}
            [] [gran1-cid gran5-cid] {:and true}))
     (testing "Search with wildcards in concept_id param not supported."
       (is (= {:status 422
