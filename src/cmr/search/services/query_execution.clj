@@ -3,7 +3,8 @@
             [cmr.search.data.elastic-search-index :as idx]
             [cmr.transmit.transformer :as t]
             [cmr.search.models.results :as results]
-            [cmr.search.data.elastic-results-to-query-results :as rc])
+            [cmr.search.data.elastic-results-to-query-results :as rc]
+            [cmr.common.log :refer (debug info warn error)])
   (:import cmr.search.models.query.StringsCondition
            cmr.search.models.query.StringCondition))
 
@@ -18,12 +19,12 @@
 
 (defn- direct-transformer-query?
   "Returns true if the query should be executed directly against the transformer and bypass elastic."
-  [{:keys [condition concept-type result-format page-num page-size sort-keys]}]
+  [{:keys [condition concept-type result-format page-num page-size sort-keys] :as query}]
   (and (transformer-supported-format? result-format)
        (#{StringCondition StringsCondition} (type condition))
        (= :concept-id (:field condition))
        (= page-num 1)
-       (<= page-size (count (:values condition)))
+       (>= page-size (count (:values condition)))
 
        ;; sorting has been left at the default level
        ;; Note that we don't actually sort items by the default sort keys
