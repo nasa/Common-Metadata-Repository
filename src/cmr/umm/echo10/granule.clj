@@ -149,7 +149,8 @@
                     (ru/generate-resource-urls related-urls)
                     (x/element :Orderable {} "true")
                     (when cloud-cover
-                      (x/element :CloudCover {} cloud-cover))))))))
+                      (x/element :CloudCover {} cloud-cover))
+                    (ru/generate-browse-urls related-urls)))))))
 
 (defn validate-xml
   "Validates the XML against the Granule ECHO10 schema."

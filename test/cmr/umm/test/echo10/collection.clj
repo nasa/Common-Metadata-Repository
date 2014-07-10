@@ -338,15 +338,18 @@
                         :url "http://ghrc.nsstc.nasa.gov/hydro/details.pl?ds=dc8capac"})
                      (umm-c/map->RelatedURL
                        {:type "GET DATA"
+                        :title "(DATA ACCESS)"
                         :url "http://camex.nsstc.nasa.gov/camex3/"})
                      (umm-c/map->RelatedURL
                        {:type "VIEW RELATED INFORMATION"
                         :sub-type "USER'S GUIDE"
+                        :title "(Guide)"
                         :url "http://ghrc.nsstc.nasa.gov/uso/ds_docs/camex3/dc8capac/dc8capac_dataset.html"})
                      (umm-c/map->RelatedURL
                        {:type "GET RELATED VISUALIZATION"
                         :url "ftp://camex.nsstc.nasa.gov/camex3/dc8capac/browse/"
-                        :description "Some description."})]
+                        :description "Some description."
+                        :title "Some description. (Browse)"})]
                     :organizations
                     [(umm-c/map->Organization
                        {:type :processing-center

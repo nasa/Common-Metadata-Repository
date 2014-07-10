@@ -400,7 +400,8 @@
                        {:type "GET DATA"
                         :sub-type "ON-LINE ARCHIVE"
                         :url "ftp://airsl2.gesdisc.eosdis.nasa.gov/ftp/data/s4pa/Aqua_AIRS_Level2/AIRH2CCF.006/"
-                        :description "Access the AIRS/Aqua FINAL AIRS Level 2 Cloud Clear Radiance Product (With HSB) data  by FTP."})]
+                        :description "Access the AIRS/Aqua FINAL AIRS Level 2 Cloud Clear Radiance Product (With HSB) data  by FTP."
+                        :title "Access the AIRS/Aqua FINAL AIRS Level 2 Cloud Clear Radiance Product (With HSB) data  by FTP."})]
                     :organizations
                     [(umm-c/map->Organization
                        {:type :distribution-center

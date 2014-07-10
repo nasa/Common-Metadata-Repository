@@ -72,16 +72,17 @@
     (c/map->RelatedURL
       {:url url
        :description description
+       :title (s/trim (str description " (" resource-type ")"))
        :type type
        :sub-type sub-type
        :mime-type mime-type})))
 
 (defn- xml-elem->online-resource-urls
-  "Returns online-resource-urls elements from a parsed Granule XML structure"
-  [granule-content-node]
+  "Returns online-resource-urls elements from a parsed XML structure"
+  [xml-struct]
   (let [urls (map xml-elem->online-resource-url
                   (cx/elements-at-path
-                    granule-content-node
+                    xml-struct
                     [:OnlineResources :OnlineResource]))]
     (when-not (empty? urls)
       urls)))
@@ -93,23 +94,49 @@
     (c/map->RelatedURL
       {:url url
        :description description
+       :title description
        :type "GET DATA"})))
 
 (defn- xml-elem->online-access-urls
-  "Returns online-access-urls elements from a parsed Granule XML structure"
-  [granule-content-node]
+  "Returns online-access-urls elements from a parsed XML structure"
+  [xml-struct]
   (let [urls (map xml-elem->online-access-url
                   (cx/elements-at-path
-                    granule-content-node
+                    xml-struct
                     [:OnlineAccessURLs :OnlineAccessURL]))]
     (when-not (empty? urls)
       urls)))
 
+(defn xml-elem->browse-url
+  [elem]
+  (let [url (cx/string-at-path elem [:URL])
+        size (cx/long-at-path elem [:FileSize])
+        description (cx/string-at-path elem [:Description])
+        mime-type (cx/string-at-path elem [:MimeType])]
+    (c/map->RelatedURL
+      {:url url
+       :size size
+       :description description
+       :title description
+       :mime-type mime-type
+       :type "GET RELATED VISUALIZATION"})))
+
+(defn- xml-elem->browse-urls
+  "Returns browse-urls elements from a parsed XML structure"
+  [xml-struct]
+  (let [urls (map xml-elem->browse-url
+                  (cx/elements-at-path
+                    xml-struct
+                    [:AssociatedBrowseImageUrls :ProviderBrowseUrl]))]
+    (when-not (empty? urls)
+      urls)))
+
 (defn xml-elem->related-urls
-  "Returns related-urls elements from a parsed Granule XML structure"
-  [granule-content-node]
-  (seq (concat (xml-elem->online-access-urls granule-content-node)
-               (xml-elem->online-resource-urls granule-content-node))))
+  "Returns related-urls elements from a parsed XML structure"
+  [xml-struct]
+  (seq (concat (xml-elem->online-access-urls xml-struct)
+               (xml-elem->online-resource-urls xml-struct)
+               (xml-elem->browse-urls xml-struct))))
 
 (defn downloadable-url?
   "Returns true if the related-url is downloadable"
@@ -153,8 +180,19 @@
   [related-urls]
   (filter metadata-url? related-urls))
 
+(defn resource-url?
+  "Returns true if the related-url is resource url"
+  [related-url]
+  (not (or (downloadable-url? related-url)
+           (browse-url? related-url))))
+
+(defn resource-urls
+  "Returns the related-urls that are resource urls"
+  [related-urls]
+  (filter resource-url? related-urls))
+
 (defn generate-access-urls
-  "Generates the OnlineAccessURLs element of an ECHO10 XML from a UMM Granule related urls entry."
+  "Generates the OnlineAccessURLs element of an ECHO10 XML from a UMM related urls entry."
   [related-urls]
   (let [urls (downloadable-urls related-urls)]
     (when-not (empty? urls)
@@ -168,16 +206,31 @@
                        (when mime-type (x/element :MimeType {} mime-type)))))))))
 
 (defn generate-resource-urls
-  "Generates the OnlineResources element of an ECHO10 XML from a UMM Granule related urls entry."
+  "Generates the OnlineResources element of an ECHO10 XML from a UMM related urls entry."
   [related-urls]
-  (let [undownloadable-urls (filter (complement downloadable-url?) related-urls)]
-    (when-not (empty? undownloadable-urls)
+  (let [urls (resource-urls related-urls)]
+    (when-not (empty? urls)
       (x/element
         :OnlineResources {}
-        (for [related-url undownloadable-urls]
+        (for [related-url urls]
           (let [{:keys [url description type mime-type]} related-url]
             (x/element :OnlineResource {}
                        (x/element :URL {} url)
                        (x/element :Type {} (related-url-types->resource-types type))
                        (when description (x/element :URLDescription {} description))
+                       (when mime-type (x/element :MimeType {} mime-type)))))))))
+
+(defn generate-browse-urls
+  "Generates the AssociatedBrowseImageUrls element of an ECHO10 XML from a UMM related urls entry."
+  [related-urls]
+  (let [urls (browse-urls related-urls)]
+    (when-not (empty? urls)
+      (x/element
+        :AssociatedBrowseImageUrls {}
+        (for [related-url urls]
+          (let [{:keys [url size description mime-type]} related-url]
+            (x/element :ProviderBrowseUrl {}
+                       (x/element :URL {} url)
+                       (when size (x/element :FileSize {} size))
+                       (when description (x/element :Description {} description))
                        (when mime-type (x/element :MimeType {} mime-type)))))))))

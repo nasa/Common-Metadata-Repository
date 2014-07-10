@@ -98,12 +98,14 @@
   (ext-gen/model-gen c/->Organization (gen/return :distribution-center) org-names))
 
 (def related-url
-  (ext-gen/model-gen
-    c/map->RelatedURL
-    ;; we only test OnlineAccessURL here for simplification purpose
-    (gen/hash-map :type (gen/return "GET DATA")
-                  :url ext-gen/file-url-string
-                  :description (ext-gen/string-ascii 1 80))))
+  (gen/fmap (fn [[url description]]
+              ;; we only test OnlineAccessURL here for simplification purpose
+              (c/map->RelatedURL {:url url
+                                  :type "GET DATA"
+                                  :description description
+                                  :title description}))
+            (gen/tuple ext-gen/file-url-string
+                       (ext-gen/string-ascii 1 80))))
 
 (def spatial-coverages
   (gen/fmap (fn [[gsr sr geoms]]

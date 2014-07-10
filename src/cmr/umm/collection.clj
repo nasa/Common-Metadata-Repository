@@ -124,6 +124,11 @@
    url
    description
    mime-type
+   ;; a short description that is used for caption according to UMM-C doc,
+   ;; but we construct it as description plus resource-type in catalog-rest which doesn't make sense.
+   title
+   ;; only used by browse urls
+   length
   ])
 
 (def granule-spatial-representations
