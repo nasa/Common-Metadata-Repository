@@ -118,7 +118,7 @@
         [from size] (if (= (:page-size query) :unlimited)
                       [0 10000]
                       [(* (dec page-num) page-size) page-size])]
-    (debug "Executing against indexes [" (:index-name index-info) "] the elastic query:" (pr-str elastic-query))
+    (debug "Executing against indexes [" (:index-name index-info) "] the elastic query:" (pr-str elastic-query) "with sort" (pr-str sort-params))
     (esd/search (context->conn context)
                 (:index-name index-info)
                 [(:type-name index-info)]

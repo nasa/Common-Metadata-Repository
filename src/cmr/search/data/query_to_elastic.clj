@@ -81,11 +81,16 @@
 (defn query->sort-params
   "Converts a query into the elastic parameters for sorting results"
   [query]
-  (let [{:keys [concept-type sort-keys]} query]
-    (map (fn [{:keys [order field]}]
-           {(get-in sort-key-field->elastic-field [concept-type field] (name field))
-            {:order order}})
-         sort-keys)))
+  (let [{:keys [concept-type sort-keys]} query
+        concept-id-sort {:concept-id {:order "asc"}}
+        specified-sort (map (fn [{:keys [order field]}]
+                              {(get-in sort-key-field->elastic-field [concept-type field] (name field))
+                               {:order order}})
+                            sort-keys)]
+    ;; Sorting within elastic if the sort keys match is essentially random. We add a globally unique
+    ;; sort to the end of the specified sort keys so that sorting is always the same. This makes
+    ;; paging and query results consistent.
+    (concat specified-sort [concept-id-sort])))
 
 (defn- range-condition->elastic
     "Convert a range condition to an elastic search condition. Execution
