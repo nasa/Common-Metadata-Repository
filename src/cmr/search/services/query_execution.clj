@@ -60,7 +60,7 @@
   [context query]
   (let [{:keys [result-format pretty?]} query
         concept-ids (query->concept-ids query)
-        tresults (t/get-latest-formatted-concepts context concept-ids result-format)
+        tresults (t/get-latest-formatted-concepts context concept-ids result-format true)
         items (map #(select-keys % [:concept-id :revision-id :collection-concept-id :metadata]) tresults)]
     (results/map->Results {:hits (count items)
                            :items items})))
