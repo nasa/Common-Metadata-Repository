@@ -7,7 +7,8 @@
             [clojure.walk :as walk]
             [cmr.system-trace.http :as ch]
             [cmr.system-trace.core :refer [deftracefn]]
-            [cmr.transmit.connection :as conn]))
+            [cmr.transmit.connection :as conn]
+            [cmr.common.log :refer (debug info warn error)]))
 
 (deftracefn get-concept
   "Retrieve the concept with the given concept and revision-id"
@@ -34,7 +35,7 @@
                               :headers (ch/context->http-headers context)
                               :connection-manager (conn/conn-mgr conn)})]
     (if (= 200 (:status response))
-      (cheshire/decode (:body response) true)
+      (cheshire/parse-string (:body response) true)
       (errors/throw-service-error
         :not-found
         (str "Failed to retrieve concept " concept-id " from metadata-db: " (:body response))))))
@@ -65,57 +66,65 @@
 
 (deftracefn get-concept-revisions
   "Search metadata db and return the concepts given by the concept-id, revision-id tuples."
-  [context concept-tuples]
-  (let [conn (config/context->app-connection context :metadata-db)
-        tuples-json-str (cheshire/generate-string concept-tuples)
-        request-url (str (conn/root-url conn) "/concepts/search/concept-revisions")
-        response (client/post request-url {:body tuples-json-str
-                                           :content-type :json
-                                           :accept :json
-                                           :throw-exceptions false
-                                           :headers (ch/context->http-headers context)
-                                           :connection-manager (conn/conn-mgr conn)})
-        status (:status response)]
-    (case status
-      404
-      (let [err-msg "Unable to find all concepts."]
-        (errors/throw-service-error :not-found err-msg))
+  ([context concept-tuples]
+   (get-concept-revisions context concept-tuples false))
+  ([context concept-tuples allow-missing?]
+   (let [conn (config/context->app-connection context :metadata-db)
+         tuples-json-str (cheshire/generate-string concept-tuples)
+         request-url (str (conn/root-url conn) "/concepts/search/concept-revisions")
+         response (client/post request-url {:body tuples-json-str
+                                            :content-type :json
+                                            :query-params {:allow_missing allow-missing?}
+                                            :accept :json
+                                            :throw-exceptions false
+                                            :headers (ch/context->http-headers context)
+                                            :connection-manager (conn/conn-mgr conn)})
+         status (:status response)]
+     (case status
+       404
+       (let [err-msg "Unable to find all concepts."]
+         (debug "Not found response body:" (:body response))
+         (errors/throw-service-error :not-found err-msg))
 
-      200
-      (cheshire/decode (:body response) true)
+       200
+       (cheshire/decode (:body response) true)
 
-      ;; default
-      (errors/internal-error! (str "Get concept revisions failed. MetadataDb app response status code: "
-                                   status
-                                   " "
-                                   response)))))
+       ;; default
+       (errors/internal-error! (str "Get concept revisions failed. MetadataDb app response status code: "
+                                    status
+                                    " "
+                                    response))))))
 
 (deftracefn get-latest-concepts
   "Search metadata db and return the latest-concepts given by the concept-id list"
-  [context concept-ids]
-  (let [conn (config/context->app-connection context :metadata-db)
-        ids-json-str (cheshire/generate-string concept-ids)
-        request-url (str (conn/root-url conn) "/concepts/search/latest-concept-revisions")
-        response (client/post request-url {:body ids-json-str
-                                           :content-type :json
-                                           :accept :json
-                                           :throw-exceptions false
-                                           :headers (ch/context->http-headers context)
-                                           :connection-manager (conn/conn-mgr conn)})
-        status (:status response)]
-    (case status
-      404
-      (let [err-msg "Unable to find all concepts."]
-        (errors/throw-service-error :not-found err-msg))
+  ([context concept-ids]
+   (get-latest-concepts context concept-ids false))
+  ([context concept-ids allow-missing?]
+   (let [conn (config/context->app-connection context :metadata-db)
+         ids-json-str (cheshire/generate-string concept-ids)
+         request-url (str (conn/root-url conn) "/concepts/search/latest-concept-revisions")
+         response (client/post request-url {:body ids-json-str
+                                            :query-params {:allow_missing allow-missing?}
+                                            :content-type :json
+                                            :accept :json
+                                            :throw-exceptions false
+                                            :headers (ch/context->http-headers context)
+                                            :connection-manager (conn/conn-mgr conn)})
+         status (:status response)]
+     (case status
+       404
+       (let [err-msg "Unable to find all concepts."]
+         (debug "Not found response body:" (:body response))
+         (errors/throw-service-error :not-found err-msg))
 
-      200
-      (cheshire/decode (:body response) true)
+       200
+       (cheshire/decode (:body response) true)
 
-      ;; default
-      (errors/internal-error! (str "Get latest concept revisions failed. MetadataDb app response status code: "
-                                   status
-                                   " "
-                                   response)))))
+       ;; default
+       (errors/internal-error! (str "Get latest concept revisions failed. MetadataDb app response status code: "
+                                    status
+                                    " "
+                                    response))))))
 
 (deftracefn get-collection-concept-id
   "Search metadata db and return the collection-concept-id that matches the search params"
