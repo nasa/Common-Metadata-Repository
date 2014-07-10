@@ -49,6 +49,15 @@
              (msg/concept-with-concept-id-and-rev-id-does-not-exist "C2-PROV1" 1)}
            (set errors)))))
 
+(deftest get-concepts-with-one-invalid-id-test-allow-missing
+  (let [coll1 (util/create-and-save-collection "PROV1" 1)
+        tuples [[(:concept-id coll1) 1]
+                [(:concept-id coll1) 2]
+                ["C2-PROV1" 1] ]
+        {:keys [status concepts]} (util/get-concepts tuples true)]
+    (is (= 200 status ))
+    (is (= [(:concept-id coll1)] (map :concept-id concepts)))))
+
 (deftest get-latest-by-concept-id
   (let [coll1 (util/create-and-save-collection "PROV1" 1 3)
         coll2 (util/create-and-save-collection "PROV1" 2 1)
@@ -79,6 +88,13 @@
     (is (= 404 status ))
     (is (= #{(msg/concept-does-not-exist "C1234-PROV1")}
            (set errors)))))
+
+(deftest get-latest-concepts-with-missing-concept-allow-missing-test
+  (let [coll1 (util/create-and-save-collection "PROV1" 1)
+        ids [(:concept-id coll1) "C1234-PROV1"]
+        {:keys [status concepts]} (util/get-latest-concepts ids true)]
+    (is (= 200 status ))
+    (is (= [(:concept-id coll1)] (map :concept-id concepts)))))
 
 (deftest find-collections
   (let [coll1 (util/create-and-save-collection "PROV1" 1)

@@ -90,7 +90,6 @@
             (update-in [:concept-type] keyword))
        (cheshire/decode (:body response) true)))
 
-
 (defn get-concept-id
   "Make a GET to retrieve the id for a given concept-type, provider-id, and native-id."
   [concept-type provider-id native-id]
@@ -129,33 +128,47 @@
 
 (defn get-concepts
   "Make a POST to retrieve concepts by concept-id and revision."
-  [tuples]
-  (let [response (client/post (str concepts-url "search/concept-revisions")
-                              {:body (cheshire/generate-string tuples)
-                               :content-type :json
-                               :accept :json
-                               :throw-exceptions false
-                               :connection-manager (conn-mgr)})
-        status (:status response)]
-    (if (= status 200)
-      {:status status
-       :concepts (parse-concepts response)}
-      (assoc (parse-errors response) :status status))))
+  ([tuples]
+   (get-concepts tuples nil))
+  ([tuples allow-missing?]
+   (let [query-params (if (nil? allow-missing?)
+                        {}
+                        {:allow_missing allow-missing?})
+         path "search/concept-revisions"
+         response (client/post (str concepts-url path)
+                               {:query-params query-params
+                                :body (cheshire/generate-string tuples)
+                                :content-type :json
+                                :accept :json
+                                :throw-exceptions false
+                                :connection-manager (conn-mgr)})
+         status (:status response)]
+     (if (= status 200)
+       {:status status
+        :concepts (parse-concepts response)}
+       (assoc (parse-errors response) :status status)))))
 
 (defn get-latest-concepts
   "Make a POST to retreive the latest revision of concpets by concept-id."
-  [concept-ids]
-  (let [response (client/post (str concepts-url "search/latest-concept-revisions")
-                              {:body (cheshire/generate-string concept-ids)
-                               :content-type :json
-                               :accept :json
-                               :throw-exceptions false
-                               :connection-manager (conn-mgr)})
-        status (:status response)]
-    (if (= status 200)
-      {:status status
-       :concepts (parse-concepts response)}
-      (assoc (parse-errors response) :status status))))
+  ([concept-ids]
+   (get-latest-concepts concept-ids nil))
+  ([concept-ids allow-missing?]
+   (let [query-params (if (nil? allow-missing?)
+                        {}
+                        {:allow_missing allow-missing?})
+         path "search/latest-concept-revisions"
+         response (client/post (str concepts-url path)
+                               {:query-params query-params
+                                :body (cheshire/generate-string concept-ids)
+                                :content-type :json
+                                :accept :json
+                                :throw-exceptions false
+                                :connection-manager (conn-mgr)})
+         status (:status response)]
+     (if (= status 200)
+       {:status status
+        :concepts (parse-concepts response)}
+       (assoc (parse-errors response) :status status)))))
 
 
 (defn find-concepts

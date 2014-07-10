@@ -189,7 +189,7 @@
 
 (deftracefn get-concepts
   "Get multiple concepts by concept-id and revision-id. Returns concepts in order requested"
-  [context concept-id-revision-id-tuples]
+  [context concept-id-revision-id-tuples allow-missing?]
   (info (format "Getting [%d] concepts by concept-id/revision-id"
                 (count concept-id-revision-id-tuples)))
   (let [start (System/currentTimeMillis)
@@ -212,11 +212,11 @@
                               (c/get-concepts db concept-type provider-id tuples))))
           ;; Create a map of tuples to concepts
           concepts-by-tuple (into {} (for [c concepts] [[(:concept-id c) (:revision-id c)] c]))]
-      (if (= (count concepts) (count concept-id-revision-id-tuples))
+      (if (or allow-missing? (= (count concepts) (count concept-id-revision-id-tuples)))
         ;; Return the concepts in the order they were requested
         (let [millis (- (System/currentTimeMillis) start)]
           (info (format "Found [%d] concepts in [%d] ms" (count concepts) millis))
-          (map concepts-by-tuple concept-id-revision-id-tuples))
+          (keep concepts-by-tuple concept-id-revision-id-tuples))
         ;; some concepts weren't found
         (let [missing-concept-tuples (set/difference (set concept-id-revision-id-tuples)
                                                      (set (keys concepts-by-tuple)))]
@@ -228,7 +228,7 @@
 (deftracefn get-latest-concepts
   "Get the lastest version of concepts by specifiying a list of concept-ids. Results are
   returned in the order requested"
-  [context concept-ids]
+  [context concept-ids allow-missing?]
   (info (format "Getting [%d] latest concepts by concept-id" (count concept-ids)))
   (let [start (System/currentTimeMillis)
         parallel-chunk-size (get-in context [:system :parallel-chunk-size])
@@ -250,11 +250,11 @@
                               (c/get-latest-concepts db concept-type provider-id cids))))
           ;; Create a map of concept-ids to concepts
           concepts-by-concept-id (into {} (for [c concepts] [(:concept-id c) c]))]
-      (if (= (count concepts) (count concept-ids))
+      (if (or allow-missing? (= (count concepts) (count concept-ids)))
         ;; Return the concepts in the order they were requested
         (let [millis (- (System/currentTimeMillis) start)]
           (info (format "Found [%d] concepts in [%d] ms" (count concepts) millis))
-          (map concepts-by-concept-id concept-ids))
+          (keep concepts-by-concept-id concept-ids))
         ;; some concepts weren't found
         (let [missing-concept-ids (set/difference (set concept-ids)
                                                   (set (keys concepts-by-concept-id)))]

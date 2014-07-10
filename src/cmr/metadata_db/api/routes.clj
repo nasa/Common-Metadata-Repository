@@ -3,7 +3,7 @@
   (:require [compojure.handler :as handler]
             [compojure.route :as route]
             [compojure.core :refer :all]
-            [clojure.string :as string]
+            [clojure.string :as str]
             [ring.util.response :as r]
             [ring.util.codec :as codec]
             [ring.middleware.json :as ring-json]
@@ -46,7 +46,8 @@
 (defn- get-concepts
   "Get concepts using concept-id/revision-id tuples."
   [context params concept-id-revisions]
-  (let [concepts (concept-service/get-concepts context concept-id-revisions)]
+  (let [allow-missing? (= "true" (some-> params :allow_missing str/lower-case))
+        concepts (concept-service/get-concepts context concept-id-revisions allow-missing?)]
     {:status 200
      :body (to-json concepts params)
      :headers json-header}))
@@ -54,7 +55,8 @@
 (defn- get-latest-concepts
   "Get latest version of concepts using a list of concept-ids"
   [context params concept-ids]
-  (let [concepts (concept-service/get-latest-concepts context concept-ids)]
+  (let [allow-missing? (= "true" (some-> params :allow_missing str/lower-case))
+        concepts (concept-service/get-latest-concepts context concept-ids allow-missing?)]
     {:status 200
      :body (to-json concepts params)
      :headers json-header}))
