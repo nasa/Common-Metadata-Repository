@@ -202,7 +202,7 @@
                           (for [[provider-id concept-type-tuples-map] split-tuples-map
                                 [concept-type tuples] concept-type-tuples-map]
                             ;; Retrieve the concepts for this type and provider id.
-                            (if (> parallel-chunk-size 0)
+                            (if (and (> parallel-chunk-size 0) (< parallel-chunk-size (count tuples)))
                               ;; retrieving chunks in parallel for faster read performance
                               (apply concat
                                      (cutil/pmap-n-all
@@ -240,7 +240,7 @@
                           (for [[provider-id concept-type-concept-id-map] split-concept-ids-map
                                 [concept-type cids] concept-type-concept-id-map]
                             ;; Retrieve the concepts for this type and provider id.
-                            (if (> parallel-chunk-size 0)
+                            (if (and (> parallel-chunk-size 0) (< parallel-chunk-size (count cids)))
                               ;; retrieving chunks in parallel for faster read performance
                               (apply concat
                                      (cutil/pmap-n-all
