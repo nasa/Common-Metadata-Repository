@@ -81,8 +81,7 @@
    :xmlns:os "http://a9.com/-/spec/opensearch/1.1/"
    :esipdiscovery:version "1.2"})
 
-;; TODO make this concept-type->atom-title
-(defn- atom-title
+(defn- concept-type->atom-title
   "Returns the title of atom"
   [context]
   (if (re-find #"granules" (:concept-type-w-extension context))
@@ -98,7 +97,9 @@
 (defn- link->xml-element
   "Convert a link to an XML element"
   [type link]
-  (x/element :link {:href link :rel (link-type->link-type-uri type)}))
+  (x/element :link {:href link
+                    :hreflang "en-US"
+                    :rel (link-type->link-type-uri type)}))
 
 (defn- atom-reference->xml-element
   "Converts a search result atom reference into an XML element"
@@ -136,7 +137,7 @@
       (x/element :feed ATOM_HEADER_ATTRIBUTES
                  (x/element :updated {} (str (time/now)))
                  (x/element :id {} (:atom-request-url context))
-                 (x/element :title {:type "text"} (atom-title context))
+                 (x/element :title {:type "text"} (concept-type->atom-title context))
                  (map atom-reference->xml-element items)))))
 
 
