@@ -4,6 +4,7 @@
             [clojurewerkz.elastisch.rest.index :as esi]
             [clojurewerkz.elastisch.rest.document :as doc]
             [clojurewerkz.elastisch.rest.bulk :as bulk]
+            [cmr.indexer.data.bulk :as cmr-bulk]
             [clj-http.client :as client]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.services.errors :as errors]
@@ -88,12 +89,11 @@
 (deftracefn bulk-index
   "Save a batch of documents in Elasticsearch."
   [context docs]
-  (let [bulk-operations (bulk/bulk-index docs)
+  (let [bulk-operations (cmr-bulk/bulk-index docs)
         conn (context->conn context)
         response (bulk/bulk conn bulk-operations)]
     (when (:errors response)
       (errors/internal-error! (format "Bulk indexing failed with response %s" response)))))
-
 
 (deftracefn save-document-in-elastic
   "Save the document in Elasticsearch, raise error if failed."

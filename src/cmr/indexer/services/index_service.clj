@@ -43,7 +43,10 @@
                               index-name (idx-set/get-concept-index-name context concept-id revision-id concept)
                               type (name (concept->type concept))
                               elastic-doc (concept->elastic-doc context concept umm-concept)]
-                          (merge elastic-doc {:_index index-name :_type type}))
+                          (merge elastic-doc {:_index index-name
+                                              :_type type
+                                              :_version (Integer. revision-id)
+                                              :_version_type "external"}))
                         (catch Exception e
                           (error e (str "Skipping failed granule. Exception trying to convert concept to elastic doc:"
                                         (pr-str concept))))))
