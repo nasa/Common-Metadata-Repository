@@ -1,4 +1,5 @@
-(ns cmr.indexer.data.bulk)
+(ns cmr.indexer.data.bulk
+  "Implementation of elasitch bulk index preparation that supports _version and _version_type")
 
 (def ^:private special-operation-keys
   [:_index :_type :_version :_version_type :_id :_routing :_percolate :_parent :_timestamp :_ttl])
