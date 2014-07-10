@@ -44,6 +44,13 @@
       (finally
         (info ~taskname " complete.")))))
 
+(defmacro time-execution
+  "Times the execution of the body and returns a tuple of time it took and the results"
+  [& body]
+  `(let [start# (System/currentTimeMillis)
+         result# (do ~@body)]
+     [(- (System/currentTimeMillis) start#) result#]))
+
 
 (defn build-validator
   "Creates a function that will call f with it's arguments. If f returns any errors then it will

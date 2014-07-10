@@ -30,13 +30,13 @@
   "Converts a mime-type into the format requested."
   ([mime-type]
    (mime-type->format mime-type :json))
-  ([mime-type default]
+  ([mime-type default-format]
    (if mime-type
      (if-let [format (get base-mime-type-to-format
                           (str (mt/base-type (mt/parse mime-type))))]
        format
-       default)
-     default)))
+       default-format)
+     default-format)))
 
 (defn validate-request-mime-type
   "Validates the requested mime type is supported."
