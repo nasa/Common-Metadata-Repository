@@ -118,7 +118,6 @@
    ;; ords contains longitude latitude pairs (ordinates) of all the shapes
    :ords (stored int-field-mapping)})
 
-
 (def collection-mapping
   {:collection {:dynamic "strict",
                 :_source {:enabled false},
@@ -220,10 +219,7 @@
                    :downloadable (stored bool-field-mapping)
                    :browsable (stored bool-field-mapping)
                    :attributes attributes-field-mapping
-                   :downloadable-urls (not-indexed (stored string-field-mapping))
-                   :browse-urls (not-indexed (stored string-field-mapping))
-                   :documentation-urls (not-indexed (stored string-field-mapping))
-                   :metadata-urls (not-indexed (stored string-field-mapping))
+                   :atom-links (not-indexed (stored string-field-mapping))
                    }
                   spatial-coverage-fields)}})
 
