@@ -14,7 +14,30 @@
             [cmr.umm.test.generators.collection :as coll-gen]
             [cmr.umm.echo10.collection :as c]
             [cmr.umm.echo10.core :as echo10]
-            [cmr.umm.collection :as umm-c]))
+            [cmr.umm.collection :as umm-c]
+            [cmr.umm.related-url-helper :as ru]))
+
+(defn- umm-related-url->expected-related-url
+  "Modifies the umm related-urls to the expected-related urls"
+  [related-url]
+  (let [{:keys [type title]} related-url]
+    (case type
+      ;; For browse type there is a size field,
+      ;; we didn't add the size field in the generated related-urls for simplicity reasons
+      "GET RELATED VISUALIZATION" (assoc related-url :size nil)
+      ;; For resource type the title becomes description plus resource-type
+      "VIEW RELATED INFORMATION" (assoc related-url :title (s/trim (str title " (USER SUPPORT)")))
+      related-url)))
+
+(defn umm-related-urls->expected-related-urls
+  "Modifies the umm related-urls to the expected-related urls"
+  [related-urls]
+  ;; The related-urls are in the order of OnlineAccessURLs, OnlineResourceURLs and BrowseURLs
+  (let [related-urls (map umm-related-url->expected-related-url related-urls)
+        downloadable-urls (ru/downloadable-urls related-urls)
+        resource-urls (ru/resource-urls related-urls)
+        browse-urls (ru/browse-urls related-urls)]
+    (seq (flatten (conj browse-urls resource-urls downloadable-urls)))))
 
 (defn umm->expected-parsed-echo10
   "Modifies the UMM record for testing ECHO10. ECHO10 contains a subset of the total UMM fields so certain
@@ -22,13 +45,16 @@
   [coll]
   (let [{{:keys [short-name long-name version-id]} :product} coll
         entry-id (str short-name "_" version-id)
-        organizations (seq (filter #(not= :distribution-center (:type %)) (:organizations coll)))]
+        organizations (seq (filter #(not= :distribution-center (:type %)) (:organizations coll)))
+        related-urls (umm-related-urls->expected-related-urls (:related-urls coll))]
     (-> coll
         ;; ECHO10 does not have entry-id and we generate it as concatenation of short-name and version-id
         (assoc :entry-id entry-id)
         ;; ECHO10 does not support Organizations of distribution-center which only exists in DIF.
         ;; UMMC-72 is proposing to change this.
         (assoc :organizations organizations)
+        ;; ECHO10 OnlineResources' title is built as description plus resource-type
+        (assoc :related-urls related-urls)
         umm-c/map->UmmCollection)))
 
 (defspec generate-collection-is-valid-xml-test 100

@@ -132,7 +132,7 @@
    title
 
    ;; only used by browse urls, it is the file size of the browse file referenced by the URL
-   length
+   size
   ])
 
 (def granule-spatial-representations

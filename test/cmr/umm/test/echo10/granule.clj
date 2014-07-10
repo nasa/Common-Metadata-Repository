@@ -14,11 +14,18 @@
             [cmr.umm.echo10.granule :as g]
             [cmr.umm.echo10.core :as echo10]
             [cmr.umm.collection :as umm-c]
-            [cmr.umm.granule :as umm-g]))
+            [cmr.umm.granule :as umm-g]
+            [cmr.umm.test.echo10.collection :as tc]))
 
-(comment
-(gen/sample gran-gen/granules)
-)
+(defn umm->expected-parsed-echo10
+  "Modifies the UMM record for testing ECHO10. ECHO10 contains a subset of the total UMM fields so certain
+  fields are removed for comparison of the parsed record"
+  [gran]
+  (let [related-urls (tc/umm-related-urls->expected-related-urls (:related-urls gran))]
+    (-> gran
+        ;; ECHO10 OnlineResources' title is built as description plus resource-type
+        (assoc :related-urls related-urls)
+        umm-g/map->UmmGranule)))
 
 (defspec generate-granule-is-valid-xml-test 100
   (for-all [granule gran-gen/granules]
@@ -30,8 +37,9 @@
 (defspec generate-and-parse-granule-test 100
   (for-all [granule gran-gen/granules]
     (let [xml (echo10/umm->echo10-xml granule)
-          parsed (g/parse-granule xml)]
-      (= parsed granule))))
+          parsed (g/parse-granule xml)
+          expected-parsed (umm->expected-parsed-echo10 granule)]
+      (= parsed expected-parsed))))
 
 (def all-fields-granule-xml
   "<Granule>
