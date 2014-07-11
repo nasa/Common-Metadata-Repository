@@ -38,7 +38,23 @@
   [:metadata-db :index-set :indexer :ingest :transformer :search :bootstrap])
 
 (def in-memory-elastic-port 9206)
+
 (def in-memory-elastic-port-for-connection 9206)
+
+(def use-compression?
+  "Indicates whether the servers will use gzip compression. Disable this to make tcpmon usable"
+  true)
+
+(defn- set-app-compression
+  "Modifies the app server instances to configure the use of compression or not. Takes the system
+  and returns it with the updates made. Should be run a system before it is started"
+  [system]
+  (update-in system [:apps]
+             (fn [app-map]
+               (into {} (for [[app-name app-system] app-map]
+                          [app-name (assoc-in app-system
+                                              [:web :use-compression?]
+                                              use-compression?)])))))
 
 (defmulti create-system
   "Returns a new instance of the whole application."
@@ -111,17 +127,18 @@
 
 (defn- start-apps
   [system]
-  (reduce (fn [system app]
-            (let [{start-fn :start} (app-control-functions app)]
-              (update-in system [:apps app]
-                         #(try
-                            (when %
-                              (start-fn %))
-                            (catch Exception e
-                              (stop-components (stop-apps system))
-                              (throw e))))))
-          system
-          app-startup-order))
+  (let [system (set-app-compression system)]
+    (reduce (fn [system app]
+              (let [{start-fn :start} (app-control-functions app)]
+                (update-in system [:apps app]
+                           #(try
+                              (when %
+                                (start-fn %))
+                              (catch Exception e
+                                (stop-components (stop-apps system))
+                                (throw e))))))
+            system
+            app-startup-order)))
 
 (defn start
   "Performs side effects to initialize the system, acquire resources,
