@@ -118,7 +118,6 @@
    ;; ords contains longitude latitude pairs (ordinates) of all the shapes
    :ords (stored int-field-mapping)})
 
-
 (def collection-mapping
   {:collection {:dynamic "strict",
                 :_source {:enabled false},
@@ -220,10 +219,12 @@
                    :downloadable (stored bool-field-mapping)
                    :browsable (stored bool-field-mapping)
                    :attributes attributes-field-mapping
-                   :downloadable-urls (not-indexed (stored string-field-mapping))
-                   :browse-urls (not-indexed (stored string-field-mapping))
-                   :documentation-urls (not-indexed (stored string-field-mapping))
-                   :metadata-urls (not-indexed (stored string-field-mapping))
+
+                   ;; atom-links is a json string that contains the atom-links, which is a list of
+                   ;; maps of atom link attributes. We tried to use nested document to save atom-links
+                   ;; as a structure in elasticsearch, but can't find a way to retrieve it out.
+                   ;; So we are saving the links in json string, then parse it out when we need it.
+                   :atom-links (not-indexed (stored string-field-mapping))
                    }
                   spatial-coverage-fields)}})
 
