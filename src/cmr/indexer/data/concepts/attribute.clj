@@ -1,4 +1,4 @@
-(ns cmr.indexer.services.concepts.attribute
+(ns cmr.indexer.data.concepts.attribute
   "Contains functions for converting attributes into a elastic documents"
   (:require [clj-time.format :as f]
             [clojure.string :as s]

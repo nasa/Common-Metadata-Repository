@@ -3,7 +3,7 @@
   (:require [clojure.test :refer :all]
             [clj-time.core :as t]
             [cmr.indexer.services.index-service :as svc]
-            [cmr.indexer.services.concepts.collection]))
+            [cmr.indexer.data.concepts.collection]))
 
 (deftest concept->elastic-doc-test
   (let [short-name "MINIMAL"
