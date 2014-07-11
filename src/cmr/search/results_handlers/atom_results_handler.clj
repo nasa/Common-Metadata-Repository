@@ -4,6 +4,7 @@
             [cmr.search.data.elastic-search-index :as elastic-search-index]
             [cmr.search.services.query-service :as qs]
             [clojure.data.xml :as x]
+            [cheshire.core :as json]
             [clojure.string :as str]
             [clj-time.core :as time]))
 
@@ -18,9 +19,7 @@
    "start-date"
    "end-date"
    "downloadable-urls"
-   "browse-urls"
-   "documentation-urls"
-   "metadata-urls"
+   "atom-links"
    "downloadable"
    "browsable"
    "day-night"
@@ -38,16 +37,14 @@
           [provider-id] :provider-id
           [start-date] :start-date
           [end-date] :end-date
-          downloadable-urls :downloadable-urls
-          browse-urls :browse-urls
-          documentation-urls :documentation-urls
-          metadata-urls :metadata-urls
+          [atom-links] :atom-links
           [downloadable] :downloadable
           [browsable] :browsable
           [day-night] :day-night
           [cloud-cover] :cloud-cover} :fields} elastic-result
         start-date (when start-date (str/replace (str start-date) #"\+0000" "Z"))
-        end-date (when end-date (str/replace (str end-date) #"\+0000" "Z"))]
+        end-date (when end-date (str/replace (str end-date) #"\+0000" "Z"))
+        atom-links (if atom-links (json/decode atom-links true) [])]
     {:id concept-id
      :title granule-ur
      ;; TODO: last-updated is not indexed yet
@@ -59,10 +56,7 @@
      :data-center provider-id
      :start-date start-date
      :end-date end-date
-     :downloadable-urls downloadable-urls
-     :browse-urls browse-urls
-     :documentation-urls documentation-urls
-     :metadata-urls metadata-urls
+     :atom-links atom-links
      ;; TODO spatial info goes here
      :online-access-flag downloadable
      :browse-flag browsable
@@ -81,32 +75,43 @@
    :xmlns:os "http://a9.com/-/spec/opensearch/1.1/"
    :esipdiscovery:version "1.2"})
 
-;; TODO make this concept-type->atom-title
-(defn- atom-title
+(defn- concept-type->atom-title
   "Returns the title of atom"
-  [context]
-  (if (re-find #"granules" (:concept-type-w-extension context))
+  [concept-type]
+  (if (= concept-type :granule)
     "ECHO granule metadata"
     "ECHO dataset metadata"))
 
 (def link-type->link-type-uri
-  {:download "http://esipfed.org/ns/fedsearch/1.1/data#"
+  {:data "http://esipfed.org/ns/fedsearch/1.1/data#"
    :browse "http://esipfed.org/ns/fedsearch/1.1/browse#"
    :documentation "http://esipfed.org/ns/fedsearch/1.1/documentation#"
    :metadata "http://esipfed.org/ns/fedsearch/1.1/metadata#"})
 
-(defn- link->xml-element
-  "Convert a link to an XML element"
-  [type link]
-  (x/element :link {:href link :rel (link-type->link-type-uri type)}))
+(defn- add-attribs
+  "Returns the attribs with the field-value pair added if there is a value"
+  [attribs field value]
+  (if (empty? value) attribs (assoc attribs field value)))
+
+(defn- atom-link->xml-element
+  "Convert an atom link to an XML element"
+  [atom-link]
+  (let [{:keys [href link-type title mime-type size]} atom-link
+        attribs (-> {}
+                    (add-attribs :size size)
+                    (add-attribs :rel (link-type->link-type-uri (keyword link-type)))
+                    (add-attribs :type mime-type)
+                    (add-attribs :title title)
+                    (add-attribs :hreflang "en-US")
+                    (add-attribs :href href))]
+    (x/element :link attribs)))
 
 (defn- atom-reference->xml-element
   "Converts a search result atom reference into an XML element"
   [reference]
   (let [{:keys [id title updated dataset-id producer-gran-id
-     size original-format data-center start-date end-date
-     downloadable-urls browse-urls documentation-urls metadata-urls
-     online-access-flag browse-flag day-night cloud-cover]} reference]
+                size original-format data-center start-date end-date atom-links
+                online-access-flag browse-flag day-night cloud-cover]} reference]
     (x/element :entry {}
                (x/element :id {} id)
                (x/element :title {:type "text"} title)
@@ -117,12 +122,7 @@
                (x/element :echo:dataCenter {} data-center)
                (when start-date (x/element :time:start {} start-date))
                (when end-date (x/element :time:end {} end-date))
-               ;; TODO: we need to come up with a way to index the atom links correctly in elasticsearch
-               ;; There are multiple fields in the links. Also we need to include links from the collection.
-               (map (partial link->xml-element :download) downloadable-urls)
-               (map (partial link->xml-element :browse) browse-urls)
-               (map (partial link->xml-element :documentation) documentation-urls)
-               (map (partial link->xml-element :metadata) metadata-urls)
+               (map atom-link->xml-element atom-links)
                (x/element :echo:onlineAccessFlag {} online-access-flag)
                (x/element :echo:browseFlag {} browse-flag)
                (when day-night (x/element :echo:dayNightFlag {} day-night))
@@ -136,7 +136,7 @@
       (x/element :feed ATOM_HEADER_ATTRIBUTES
                  (x/element :updated {} (str (time/now)))
                  (x/element :id {} (:atom-request-url context))
-                 (x/element :title {:type "text"} (atom-title context))
+                 (x/element :title {:type "text"} (concept-type->atom-title (:concept-type query)))
                  (map atom-reference->xml-element items)))))
 
 
