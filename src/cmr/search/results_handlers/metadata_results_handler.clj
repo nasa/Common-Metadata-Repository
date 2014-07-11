@@ -52,17 +52,9 @@
   [context query elastic-results]
   (elastic-results->query-metadata-results context query elastic-results))
 
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Search results handling
-
-(defn- remove-xml-processing-instructions
-  "Removes xml processing instructions from XML so it can be embedded in another XML document"
-  [xml]
-  (let [processing-regex #"<\?.*?\?>"
-        doctype-regex #"<!DOCTYPE.*?>"]
-    (-> xml
-        (str/replace processing-regex "")
-        (str/replace doctype-regex ""))))
 
 (defmulti metadata-item->result-string
   "Converts a search result + metadata into a string containing a single result for the metadata format."
@@ -72,28 +64,40 @@
 (defmethod metadata-item->result-string :granule
   [concept-type metadata-item]
   (let [{:keys [concept-id collection-concept-id revision-id metadata]} metadata-item]
-    (format "<result concept-id=\"%s\" collection-concept-id=\"%s\" revision-id=\"%s\">%s</result>"
-            concept-id
-            collection-concept-id
-            revision-id
-            (remove-xml-processing-instructions metadata))))
+    ["<result concept-id=\""
+     concept-id
+     "\" collection-concept-id=\""
+     collection-concept-id
+     "\" revision-id=\""
+     revision-id
+     "\">"
+     (cx/remove-xml-processing-instructions metadata)
+     "</result>"]))
 
 (defmethod metadata-item->result-string :collection
   [concept-type metadata-item]
   (let [{:keys [concept-id revision-id metadata]} metadata-item]
-    (format "<result concept-id=\"%s\" revision-id=\"%s\">%s</result>"
-            concept-id
-            revision-id
-            (remove-xml-processing-instructions metadata))))
+    ["<result concept-id=\""
+     concept-id
+     "\" revision-id=\""
+     revision-id
+     "\">"
+     (cx/remove-xml-processing-instructions metadata)
+     "</result>"]))
 
 (defn search-results->metadata-response
   [context query results]
   (let [{:keys [hits took items]} results
         {:keys [result-format pretty? concept-type]} query
-        result-strings (map (partial metadata-item->result-string concept-type) items)
-        response (format (str "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-                              "<results><hits>%d</hits><took>%d</took>%s</results>")
-                         hits took (str/join "" result-strings))]
+        result-strings (apply concat (map (partial metadata-item->result-string concept-type) items))
+        headers ["<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+                 "<results><hits>"
+                 hits
+                 "</hits><took>"
+                 took
+                 "</took>"]
+        footers ["</results>"]
+        response (apply str (concat headers result-strings footers))]
     (if pretty?
       (let [parsed (x/parse-str response)
             ;; Fix for DIF emitting XML
