@@ -1,7 +1,7 @@
 (ns cmr.search.services.query-execution
   (:require [cmr.search.models.query :as qm]
             [cmr.search.data.elastic-search-index :as idx]
-            [cmr.transmit.transformer :as t]
+            [cmr.search.services.transformer :as t]
             [cmr.search.models.results :as results]
             [cmr.search.data.elastic-results-to-query-results :as rc]
             [cmr.common.log :refer (debug info warn error)])
