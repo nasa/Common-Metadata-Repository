@@ -1,8 +1,8 @@
-(ns cmr.indexer.test.services.index-service
-  "Integration test for elasticsearch data service"
+(ns cmr.indexer.test.data.elasticsearch
+  "Tests for elasticsearch in data layer"
   (:require [clojure.test :refer :all]
             [clj-time.core :as t]
-            [cmr.indexer.services.index-service :as svc]
+            [cmr.indexer.data.elasticsearch :as es]
             [cmr.indexer.data.concepts.collection]))
 
 (deftest concept->elastic-doc-test
@@ -85,6 +85,6 @@
                   :two-d-coord-name ["FOO" "Bar"]
                   :two-d-coord-name.lowercase  ["foo" "bar"]
                   :downloadable false}
-        actual (svc/concept->elastic-doc nil concept umm-concept)]
+        actual (es/concept->elastic-doc nil concept umm-concept)]
     (is (= expected actual))))
 
