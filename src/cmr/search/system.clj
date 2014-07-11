@@ -37,7 +37,7 @@
              :cache (cache/create-cache)
              :zipkin (context/zipkin-config "Search" false)
              :search-public-conf search-public-conf}]
-    (transmit-config/system-with-connections sys [:metadata-db :index-set :transformer])))
+    (transmit-config/system-with-connections sys [:metadata-db :index-set])))
 
 (defn start
   "Performs side effects to initialize the system, acquire resources,

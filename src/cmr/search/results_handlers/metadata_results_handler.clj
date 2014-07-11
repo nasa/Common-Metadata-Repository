@@ -4,7 +4,7 @@
             [cmr.search.data.elastic-search-index :as elastic-search-index]
             [cmr.search.services.query-service :as qs]
             [cmr.search.models.results :as results]
-            [cmr.transmit.transformer :as t]
+            [cmr.search.services.transformer :as t]
             [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
             [clojure.string :as str]
@@ -39,7 +39,7 @@
         tuples (map #(vector (:_id %) 1 #_(:_version %))
                     (get-in elastic-results [:hits :hits]))
         [req-time tresults] (u/time-execution
-                              (t/get-formatted-concept-revisions context tuples (:result-format query)))
+                              (t/get-formatted-concept-revisions context tuples (:result-format query) false))
         items (map #(select-keys % [:concept-id :revision-id :collection-concept-id :metadata]) tresults)]
     (debug "Transformer metadata request time was" req-time "ms.")
     (results/map->Results {:hits hits :items items})))
