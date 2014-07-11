@@ -1,7 +1,17 @@
 (ns cmr.common.xml
   "Contains XML helpers for extracting data from XML structs created using clojure.data.xml.
   See the test file for examples."
-  (:require [cmr.common.date-time-parser :as p]))
+  (:require [cmr.common.date-time-parser :as p]
+            [clojure.string :as str]))
+
+(defn remove-xml-processing-instructions
+  "Removes xml processing instructions from XML so it can be embedded in another XML document"
+  [xml]
+  (let [processing-regex #"<\?.*?\?>"
+        doctype-regex #"<!DOCTYPE.*?>"]
+    (-> xml
+        (str/replace processing-regex "")
+        (str/replace doctype-regex ""))))
 
 (defn- children-by-tag
   "Extracts the child elements with the given tag name."

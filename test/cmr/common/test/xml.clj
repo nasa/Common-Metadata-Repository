@@ -5,6 +5,16 @@
             [clj-time.core :as t]))
 
 
+(deftest remove-xml-processing-instructions-test
+  (let [expected "<foo><bar>&lt;!DOCTYPE ?xml?&gt;</bar></foo>" ; contains some things that should be left alone
+        with-processing-ins
+        (str
+          "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>"
+          "<!DOCTYPE NAME SYSTEM \"names.dtd\">"
+          expected)]
+    (is (= expected (cx/remove-xml-processing-instructions with-processing-ins)))))
+
+
 (def sample-xml
   "<top>
   <inner ia=\"1\" ib=\"foo\">
