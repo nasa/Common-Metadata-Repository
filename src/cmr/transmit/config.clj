@@ -21,8 +21,6 @@
 
 (def bootstrap-port (cfg/config-value-fn :bootstrap-port 3006 parse-port))
 
-(def transformer-port (cfg/config-value-fn :transformer-port 3007 parse-port))
-
 
 (defn app-conn-info
   "Returns the current application connection information as a map by application name"
@@ -38,9 +36,7 @@
    :index-set {:host (cfg/config-value :index-set-host "localhost")
                :port (index-set-port)}
    :bootstrap {:host (cfg/config-value :bootstrap-host "localhost")
-               :port (bootstrap-port)}
-   :transformer {:host (cfg/config-value :transformer-host "localhost")
-                 :port (transformer-port)}})
+               :port (bootstrap-port)}})
 
 (defn app-connection-system-key-name
   "The name of the app connection in the system"
