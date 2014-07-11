@@ -137,7 +137,8 @@
                     (two-d/generate-two-ds two-d-coordinate-systems)
                     (ru/generate-access-urls related-urls)
                     (ru/generate-resource-urls related-urls)
-                    (generate-spatial spatial-coverage)))))))
+                    (generate-spatial spatial-coverage)
+                    (ru/generate-browse-urls related-urls)))))))
 
 (defn validate-xml
   "Validates the XML against the ECHO10 schema."

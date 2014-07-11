@@ -14,11 +14,17 @@
             [cmr.umm.echo10.granule :as g]
             [cmr.umm.echo10.core :as echo10]
             [cmr.umm.collection :as umm-c]
-            [cmr.umm.granule :as umm-g]))
+            [cmr.umm.granule :as umm-g]
+            [cmr.umm.test.echo10.collection :as tc]))
 
-(comment
-(gen/sample gran-gen/granules)
-)
+(defn umm->expected-parsed-echo10
+  "Modifies the UMM record for testing ECHO10. ECHO10 contains a subset of the total UMM fields so certain
+  fields are removed for comparison of the parsed record"
+  [gran]
+  (-> gran
+      ;; Update the related-urls as ECHO10 OnlineResources' title is built as description plus resource-type
+      (update-in [:related-urls] tc/umm-related-urls->expected-related-urls)
+      umm-g/map->UmmGranule))
 
 (defspec generate-granule-is-valid-xml-test 100
   (for-all [granule gran-gen/granules]
@@ -30,8 +36,9 @@
 (defspec generate-and-parse-granule-test 100
   (for-all [granule gran-gen/granules]
     (let [xml (echo10/umm->echo10-xml granule)
-          parsed (g/parse-granule xml)]
-      (= parsed granule))))
+          parsed (g/parse-granule xml)
+          expected-parsed (umm->expected-parsed-echo10 granule)]
+      (= parsed expected-parsed))))
 
 (def all-fields-granule-xml
   "<Granule>
@@ -126,6 +133,18 @@
       </OnlineResource>
     </OnlineResources>
     <CloudCover>0.8</CloudCover>
+    <AssociatedBrowseImageUrls>
+      <ProviderBrowseUrl>
+        <URL>http://nasa.gov/1</URL>
+        <FileSize>101</FileSize>
+        <Description>A file 1</Description>
+      </ProviderBrowseUrl>
+      <ProviderBrowseUrl>
+        <URL>http://nasa.gov/2</URL>
+        <FileSize>102</FileSize>
+        <Description>A file 2</Description>
+      </ProviderBrowseUrl>
+    </AssociatedBrowseImageUrls>
   </Granule>")
 
 (deftest parse-granule-test
@@ -179,16 +198,31 @@
                                       :url "http://ghrc.nsstc.nasa.gov/hydro/details.pl?ds=dc8capac"})
                                    (umm-c/map->RelatedURL
                                      {:type "GET DATA"
+                                      :title "(DATA ACCESS)"
                                       :url "http://camex.nsstc.nasa.gov/camex3/"})
                                    (umm-c/map->RelatedURL
                                      {:type "VIEW RELATED INFORMATION"
                                       :sub-type "USER'S GUIDE"
                                       :mime-type "Text/html"
+                                      :title "(Guide)"
                                       :url "http://ghrc.nsstc.nasa.gov/uso/ds_docs/camex3/dc8capac/dc8capac_dataset.html"})
                                    (umm-c/map->RelatedURL
                                      {:type "GET RELATED VISUALIZATION"
                                       :url "ftp://camex.nsstc.nasa.gov/camex3/dc8capac/browse/"
-                                      :description "Some description."})]})
+                                      :description "Some description."
+                                      :title "Some description. (Browse)"})
+                                   (umm-c/map->RelatedURL
+                                     {:type "GET RELATED VISUALIZATION"
+                                      :url "http://nasa.gov/1"
+                                      :description "A file 1"
+                                      :title "A file 1"
+                                      :size 101})
+                                   (umm-c/map->RelatedURL
+                                     {:type "GET RELATED VISUALIZATION"
+                                      :url "http://nasa.gov/2"
+                                      :description "A file 2"
+                                      :title "A file 2"
+                                      :size 102})]})
         actual (g/parse-granule all-fields-granule-xml)]
     (is (= expected actual))))
 

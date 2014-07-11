@@ -17,6 +17,7 @@
            (c/map->RelatedURL
              {:url url
               :description description
+              :title description
               :type type
               :sub-type sub-type}))
          urls)))

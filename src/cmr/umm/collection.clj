@@ -124,6 +124,15 @@
    url
    description
    mime-type
+
+   ;; Title is supposed to be a short description that is used for caption according to UMM-C doc,
+   ;; but we construct it as either description (which could be really long)
+   ;; or description plus resource-type. This is how catalog-rest does it too.
+   ;; We may want to change the way title is constructed to make it shorter.
+   title
+
+   ;; only used by browse urls, it is the file size of the browse file referenced by the URL
+   size
   ])
 
 (def granule-spatial-representations
