@@ -12,6 +12,7 @@
   [concept-type result-format]
   ["granule-ur"
    "collection-concept-id"
+   "update-time"
    "entry-title"
    "producer-gran-id"
    "size"
@@ -32,6 +33,7 @@
          revision-id :_version
          {[granule-ur] :granule-ur
           [collection-concept-id] :collection-concept-id
+          [update-time] :update-time
           [entry-title] :entry-title
           [producer-gran-id] :producer-gran-id
           [size] :size
@@ -50,8 +52,7 @@
     {:id concept-id
      :title granule-ur
      :collection-concept-id collection-concept-id
-     ;; TODO: last-updated is not indexed yet
-     ; :updated last-updated
+     :updated update-time
      :dataset-id entry-title
      :producer-gran-id producer-gran-id
      :size (str size)
@@ -119,6 +120,7 @@
     (x/element :entry {}
                (x/element :id {} id)
                (x/element :title {:type "text"} title)
+               (x/element :updated {} updated)
                (x/element :echo:datasetId {} dataset-id)
                (when producer-gran-id (x/element :echo:producerGranuleId {} producer-gran-id))
                (when size (x/element :echo:granuleSizeMB {} size))
