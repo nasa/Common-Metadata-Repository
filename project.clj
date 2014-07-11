@@ -44,11 +44,27 @@
                          project-dependencies)
   :plugins [[lein-shell "0.4.0"]]
   :repl-options {:init-ns user}
+
+
   :jvm-opts ["-XX:PermSize=256m" "-XX:MaxPermSize=256m"]
+
+  ;; Uncomment this for performance testing or profiling
+  ; :jvm-opts ^:replace ["-server"
+  ;                      "-XX:PermSize=256m"
+  ;                      "-XX:MaxPermSize=256m"
+  ;                      ;; Use the following to enable JMX profiling with visualvm
+  ;                      ; "-Dcom.sun.management.jmxremote"
+  ;                      ; "-Dcom.sun.management.jmxremote.ssl=false"
+  ;                      ; "-Dcom.sun.management.jmxremote.authenticate=false"
+  ;                      ; "-Dcom.sun.management.jmxremote.port=1098"
+  ;                      ]
+
+
   :profiles
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.4"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]
-                        [pjstadig/humane-test-output "0.6.0"]]
+                        [pjstadig/humane-test-output "0.6.0"]
+                        [criterium "0.4.3"]]
          :source-paths ["src" "dev" "test"]
          :injections [(require 'pjstadig.humane-test-output)
                       (pjstadig.humane-test-output/activate!)]}
