@@ -32,6 +32,9 @@
    ;; The port Jetty will be running on
    port
 
+   ;; Whether gzip compressed responses are enabled or not
+   use-compression?
+
    ;; A function that will return the routes. Should accept a single argument of the system.
    routes-fn
 
@@ -43,22 +46,24 @@
 
   (start
     [this system]
-    (let [{:keys [port routes-fn]} this
+    (let [{:keys [port routes-fn use-compression?]} this
           routes (routes-fn system)
           ^Server server (jetty/run-jetty routes {:port port
-                                          :join? false
-                                          :min-threads MIN_THREADS
-                                          :max-threads MAX_THREADS})
-          ;; Create a GZIP handler to handle compression of responses
-          new-handler (doto (GzipHandler.)
-                        (.setHandler (.getHandler server))
-                        (.setMinGzipSize MIN_GZIP_SIZE))]
+                                                  :join? false
+                                                  :min-threads MIN_THREADS
+                                                  :max-threads MAX_THREADS})]
 
-      ;; Replace the existing handler with the gzip handler
-      (doto server
-        (.stop)
-        (.setHandler new-handler)
-        (.start))
+      (when use-compression?
+        (println "using compression")
+        ;; Create a GZIP handler to handle compression of responses
+        (let [new-handler (doto (GzipHandler.)
+                            (.setHandler (.getHandler server))
+                            (.setMinGzipSize MIN_GZIP_SIZE))]
+          ;; Replace the existing handler with the gzip handler
+          (doto server
+            (.stop)
+            (.setHandler new-handler)
+            (.start))))
 
       (info "Jetty started on port" port)
       (assoc this :server server)))
@@ -73,6 +78,9 @@
 (defn create-web-server
   "Creates a new web server. Accepts argument of port and a routes function that should accept
   system argument and return compojure routes to use."
-  [port routes-fn]
-  (map->WebServer {:port port
-                   :routes-fn routes-fn}))
+  ([port routes-fn]
+   (create-web-server port routes-fn true))
+  ([port routes-fn use-compression]
+   (map->WebServer {:port port
+                    :use-compression? use-compression
+                    :routes-fn routes-fn})))
