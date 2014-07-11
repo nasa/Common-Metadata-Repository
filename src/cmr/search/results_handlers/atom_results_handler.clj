@@ -11,6 +11,7 @@
 (defmethod elastic-search-index/concept-type+result-format->fields [:granule :atom]
   [concept-type result-format]
   ["granule-ur"
+   "collection-concept-id"
    "entry-title"
    "producer-gran-id"
    "size"
@@ -30,6 +31,7 @@
   (let [{concept-id :_id
          revision-id :_version
          {[granule-ur] :granule-ur
+          [collection-concept-id] :collection-concept-id
           [entry-title] :entry-title
           [producer-gran-id] :producer-gran-id
           [size] :size
@@ -47,6 +49,7 @@
         atom-links (if atom-links (json/decode atom-links true) [])]
     {:id concept-id
      :title granule-ur
+     :collection-concept-id collection-concept-id
      ;; TODO: last-updated is not indexed yet
      ; :updated last-updated
      :dataset-id entry-title
@@ -96,8 +99,9 @@
 (defn- atom-link->xml-element
   "Convert an atom link to an XML element"
   [atom-link]
-  (let [{:keys [href link-type title mime-type size]} atom-link
+  (let [{:keys [href link-type title mime-type size inherited]} atom-link
         attribs (-> {}
+                    (add-attribs :inherited inherited)
                     (add-attribs :size size)
                     (add-attribs :rel (link-type->link-type-uri (keyword link-type)))
                     (add-attribs :type mime-type)
@@ -128,10 +132,39 @@
                (when day-night (x/element :echo:dayNightFlag {} day-night))
                (when cloud-cover (x/element :echo:cloudCover {} cloud-cover)))))
 
+(defn- append-links
+  "Append collection links to the given reference and returns the reference"
+  [collection-links-map reference]
+  (let [{:keys [collection-concept-id atom-links]} reference
+        collection-links (get collection-links-map collection-concept-id)
+        collection-links (remove #(some #{%} atom-links) collection-links)
+        collection-links (map #(assoc % :inherited "true") collection-links)
+        atom-links (concat atom-links collection-links)]
+    (assoc reference :atom-links atom-links)))
+
+(defn- append-collection-links
+  "Returns the references after appending collection non-downloadable links into the atom-links"
+  [context refs]
+  (let [collection-concept-ids (distinct (map :collection-concept-id refs))
+        collection-links-map (reduce
+                               (fn [collection-links-map id]
+                                 (let [atom-links (elastic-search-index/collection-concept-id->atom-links context id)
+                                       atom-links (if atom-links (json/decode atom-links true) [])
+                                       ;; we will only include the collection links that are not of browse type
+                                       atom-links (filter #(not= "browse" (:link-type %)) atom-links)]
+                                   (assoc collection-links-map
+                                          id atom-links)))
+                               {}
+                               collection-concept-ids)]
+    (map (partial append-links collection-links-map) refs)))
+
 (defmethod qs/search-results->response :atom
   [context query results]
   (let [{:keys [hits took items]} results
-        xml-fn (if (:pretty? query) x/indent-str x/emit-str)]
+        xml-fn (if (:pretty? query) x/indent-str x/emit-str)
+        items (if (= :granule (:concept-type query))
+                (append-collection-links context items)
+                items)]
     (xml-fn
       (x/element :feed ATOM_HEADER_ATTRIBUTES
                  (x/element :updated {} (str (time/now)))
