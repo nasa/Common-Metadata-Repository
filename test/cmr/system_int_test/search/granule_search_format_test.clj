@@ -71,7 +71,8 @@
 
 (deftest search-granule-csv
   (let [ru1 (dc/related-url "GET DATA" "http://example.com")
-        ru2 (dc/related-url "GET RELATED VISUALIZATION" "http://example.com/browse")
+        ru2 (dc/related-url "GET DATA" "http://example2.com")
+        ru3 (dc/related-url "GET RELATED VISUALIZATION" "http://example.com/browse")
         coll1 (d/ingest "CMR_PROV1" (dc/collection {}))
         coll2 (d/ingest "CMR_PROV1" (dc/collection {}))
         gran1 (d/ingest "CMR_PROV1" (dg/granule coll1 {:granule-ur "Granule1"
@@ -81,11 +82,19 @@
                                                        :day-night "DAY"
                                                        :size 100
                                                        :cloud-cover 50
-                                                       :related-urls [ru1 ru2]}))
+                                                       :related-urls [ru1 ru2 ru3]}))
         gran2 (d/ingest "CMR_PROV1" (dg/granule coll2 {:granule-ur "Granule2"
                                                        :beginning-date-time "2011-01-01T12:00:00Z"
                                                        :ending-date-time "2011-01-11T12:00:00Z"
                                                        :producer-gran-id "Granule #2"
+                                                       :day-night "NIGHT"
+                                                       :size 80
+                                                       :cloud-cover 30
+                                                       :related-urls [ru1]}))
+        gran3 (d/ingest "CMR_PROV1" (dg/granule coll2 {:granule-ur "Granule3"
+                                                       :beginning-date-time "2012-01-01T12:00:00Z"
+                                                       :ending-date-time "2012-01-11T12:00:00Z"
+                                                       :producer-gran-id "Granule #3"
                                                        :day-night "NIGHT"
                                                        :size 80
                                                        :cloud-cover 30}))]
@@ -95,13 +104,19 @@
     (let [response (search/find-grans-csv :granule {:granule-ur "Granule1"})]
       (is (= 200 (:status response)))
       (is (= (str "Granule UR,Producer Granule ID,Start Time,End Time,Online Access URLs,Browse URLs,Cloud Cover,Day/Night,Size\n"
-                  "Granule1,Granule #1,2010-01-01T12:00:00Z,2010-01-11T12:00:00Z,http://example.com,http://example.com/browse,50.0,DAY,100.0\n")
+                  "Granule1,Granule #1,2010-01-01T12:00:00Z,2010-01-11T12:00:00Z,\"http://example.com,http://example2.com\",http://example.com/browse,50.0,DAY,100.0\n")
+             (:body response))))
+    (let [response (search/find-grans-csv :granule {:granule-ur "Granule2"})]
+      (is (= 200 (:status response)))
+      (is (= (str "Granule UR,Producer Granule ID,Start Time,End Time,Online Access URLs,Browse URLs,Cloud Cover,Day/Night,Size\n"
+                  "Granule2,Granule #2,2011-01-01T12:00:00Z,2011-01-11T12:00:00Z,http://example.com,,30.0,NIGHT,80.0\n")
              (:body response))))
     (let [response (search/find-grans-csv :granule {})]
       (is (= 200 (:status response)))
       (is (= (str "Granule UR,Producer Granule ID,Start Time,End Time,Online Access URLs,Browse URLs,Cloud Cover,Day/Night,Size\n"
-                  "Granule1,Granule #1,2010-01-01T12:00:00Z,2010-01-11T12:00:00Z,http://example.com,http://example.com/browse,50.0,DAY,100.0\n"
-                  "Granule2,Granule #2,2011-01-01T12:00:00Z,2011-01-11T12:00:00Z,,,30.0,NIGHT,80.0\n")
+                  "Granule1,Granule #1,2010-01-01T12:00:00Z,2010-01-11T12:00:00Z,\"http://example.com,http://example2.com\",http://example.com/browse,50.0,DAY,100.0\n"
+                  "Granule2,Granule #2,2011-01-01T12:00:00Z,2011-01-11T12:00:00Z,http://example.com,,30.0,NIGHT,80.0\n"
+                  "Granule3,Granule #3,2012-01-01T12:00:00Z,2012-01-11T12:00:00Z,,,30.0,NIGHT,80.0\n")
              (:body response))))
 
     (testing "as extension"
