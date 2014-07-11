@@ -4,7 +4,7 @@
             [cmr.search.data.elastic-search-index :as elastic-search-index]
             [cmr.search.services.query-service :as qs]
             [clojure.data.xml :as x]
-            [clojure.data.json :as json]
+            [cheshire.core :as json]
             [clojure.string :as str]
             [clj-time.core :as time]))
 
@@ -44,7 +44,7 @@
           [cloud-cover] :cloud-cover} :fields} elastic-result
         start-date (when start-date (str/replace (str start-date) #"\+0000" "Z"))
         end-date (when end-date (str/replace (str end-date) #"\+0000" "Z"))
-        atom-links (if atom-links (json/read-str atom-links) [])]
+        atom-links (if atom-links (json/decode atom-links true) [])]
     {:id concept-id
      :title granule-ur
      ;; TODO: last-updated is not indexed yet
@@ -77,8 +77,8 @@
 
 (defn- concept-type->atom-title
   "Returns the title of atom"
-  [context]
-  (if (re-find #"granules" (:concept-type-w-extension context))
+  [concept-type]
+  (if (= concept-type :granule)
     "ECHO granule metadata"
     "ECHO dataset metadata"))
 
@@ -96,7 +96,7 @@
 (defn- atom-link->xml-element
   "Convert an atom link to an XML element"
   [atom-link]
-  (let [{:strs [href link-type title mime-type size]} atom-link
+  (let [{:keys [href link-type title mime-type size]} atom-link
         attribs (-> {}
                     (add-attribs :size size)
                     (add-attribs :rel (link-type->link-type-uri (keyword link-type)))
@@ -136,7 +136,7 @@
       (x/element :feed ATOM_HEADER_ATTRIBUTES
                  (x/element :updated {} (str (time/now)))
                  (x/element :id {} (:atom-request-url context))
-                 (x/element :title {:type "text"} (concept-type->atom-title context))
+                 (x/element :title {:type "text"} (concept-type->atom-title (:concept-type query)))
                  (map atom-reference->xml-element items)))))
 
 
