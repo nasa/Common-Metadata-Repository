@@ -2,9 +2,10 @@
   "Contains functions to parse and convert granule concept"
   (:require [clojure.string :as s]
             [clj-time.format :as f]
+            [clojure.data.json :as json]
             [cmr.indexer.services.index-service :as idx]
             [cmr.umm.core :as umm]
-            [cmr.umm.echo10.related-url :as ru]
+            [cmr.umm.related-url-helper :as ru]
             [cmr.transmit.metadata-db :as mdb]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.services.errors :as errors]
@@ -67,12 +68,10 @@
         sensor-short-names (remove nil? (map :short-name sensor-refs))
         start-date (temporal/start-date :granule temporal)
         end-date (temporal/end-date :granule temporal)
-        downloadable-urls (map :url (ru/downloadable-urls related-urls))
-        browse-urls (map :url (ru/browse-urls related-urls))
-        documentation-urls (map :url (ru/documentation-urls related-urls))
-        metadata-urls (map :url (ru/metadata-urls related-urls))
-        downloadable (not (empty? downloadable-urls))
-        browsable (not (empty? browse-urls))]
+        atom-links (json/write-str (ru/atom-links related-urls))
+        ;; not empty is used below to get a real true false value
+        downloadable (not (empty? (ru/downloadable-urls related-urls)))
+        browsable (not (empty? (ru/browse-urls related-urls)))]
     (merge {:concept-id concept-id
             :collection-concept-id parent-collection-id
 
@@ -112,8 +111,5 @@
             :browsable browsable
             :start-date (when start-date (f/unparse (f/formatters :date-time) start-date))
             :end-date (when end-date (f/unparse (f/formatters :date-time) end-date))
-            :downloadable-urls downloadable-urls
-            :browse-urls browse-urls
-            :documentation-urls documentation-urls
-            :metadata-urls metadata-urls}
+            :atom-links atom-links}
            (spatial->elastic parent-collection umm-granule))))

@@ -4,7 +4,7 @@
             [clj-time.format :as f]
             [cmr.indexer.services.index-service :as idx]
             [cmr.common.log :refer (debug info warn error)]
-            [cmr.umm.echo10.related-url :as ru]
+            [cmr.umm.related-url-helper :as ru]
             [cmr.indexer.services.concepts.temporal :as temporal]
             [cmr.indexer.services.concepts.attribute :as attrib]
             [cmr.indexer.services.concepts.science-keyword :as sk]
