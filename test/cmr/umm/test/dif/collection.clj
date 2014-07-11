@@ -39,6 +39,11 @@
                :spatial-representation spatial-representation
                :geometries geometries)))))
 
+(defn- related-urls->expected-parsed
+  "Returns the expected parsed related-urls for the given related-urls."
+  [related-urls]
+  (seq (map #(assoc % :size nil) related-urls)))
+
 (defn- umm->expected-parsed-dif
   "Modifies the UMM record for testing DIF. DIF contains a subset of the total UMM fields so certain
   fields are removed for comparison of the parsed record"
@@ -67,7 +72,9 @@
         ;; DIF only has distribution centers as Organization
         (assoc :organizations organizations)
         ;; DIF only support some portion of the spatial
-        (assoc :spatial-coverage (spatial-coverage->expected-parsed spatial-coverage))
+        (update-in [:spatial-coverage] spatial-coverage->expected-parsed)
+        ;; DIF does not support size in RelatedURLs
+        (update-in [:related-urls] related-urls->expected-parsed)
         ;; CMR-588: UMM doesn't have a good recommendation on how to handle spatial-keywords
         (dissoc :spatial-keywords)
         ;; CMR-590: UMM doesn't have a good recommendation on how to handle platforms

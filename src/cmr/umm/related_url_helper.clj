@@ -2,6 +2,7 @@
   "Contains functions for categorizing UMM related urls.")
 
 (def DOCUMENTATION_MIME_TYPES
+  "Mime Types that indicate the RelatedURL is of documentation type"
   ["Text/rtf" "Text/richtext" "Text/plain" "Text/html" "Text/example" "Text/enriched"
    "Text/directory" "Text/csv" "Text/css" "Text/calendar" "Application/http" "Application/msword"
    "Application/rtf" "Application/wordperfect5.1"])
@@ -62,13 +63,11 @@
 (defn- related-url->link-type
   "Returns the atom link type of the related url"
   [related-url]
-  (if (downloadable-url? related-url)
-    "data"
-    (if (browse-url? related-url)
-      "browse"
-      (if (documentation-url? related-url)
-        "documentation"
-        "metadata"))))
+  (cond
+    (downloadable-url? related-url) "data"
+    (browse-url? related-url) "browse"
+    (documentation-url? related-url) "documentation"
+    :else "metadata"))
 
 (defn- related-url->atom-link
   "Returns the atom link of the given related-url"
@@ -81,6 +80,6 @@
      :size size}))
 
 (defn atom-links
-  "Returns the map of atom links for the given related urls"
+  "Returns a sequence of atom links for the given related urls"
   [related-urls]
   (map related-url->atom-link related-urls))

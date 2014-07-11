@@ -102,13 +102,20 @@
 
 (def related-url
   (gen/fmap (fn [[type url description size]]
-              (c/map->RelatedURL {:url url
-                                  :type type
-                                  :description description
-                                  :title description}))
+              (if (= type "GET RELATED VISUALIZATION")
+                (c/map->RelatedURL {:url url
+                                    :type type
+                                    :description description
+                                    :title description
+                                    :size size})
+                (c/map->RelatedURL {:url url
+                                    :type type
+                                    :description description
+                                    :title description})))
             (gen/tuple related-url-types
                        ext-gen/file-url-string
-                       (ext-gen/string-ascii 1 80))))
+                       (ext-gen/string-ascii 1 80)
+                       gen/s-pos-int)))
 
 (def spatial-coverages
   (gen/fmap (fn [[gsr sr geoms]]

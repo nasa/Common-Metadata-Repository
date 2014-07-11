@@ -22,9 +22,6 @@
   [related-url]
   (let [{:keys [type title]} related-url]
     (case type
-      ;; For browse type there is a size field,
-      ;; we didn't add the size field in the generated related-urls for simplicity reasons
-      "GET RELATED VISUALIZATION" (assoc related-url :size nil)
       ;; For resource type the title becomes description plus resource-type
       "VIEW RELATED INFORMATION" (assoc related-url :title (s/trim (str title " (USER SUPPORT)")))
       related-url)))
@@ -37,7 +34,7 @@
         downloadable-urls (ru/downloadable-urls related-urls)
         resource-urls (ru/resource-urls related-urls)
         browse-urls (ru/browse-urls related-urls)]
-    (seq (flatten (conj browse-urls resource-urls downloadable-urls)))))
+    (seq (concat downloadable-urls resource-urls browse-urls))))
 
 (defn umm->expected-parsed-echo10
   "Modifies the UMM record for testing ECHO10. ECHO10 contains a subset of the total UMM fields so certain

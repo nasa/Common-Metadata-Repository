@@ -21,11 +21,10 @@
   "Modifies the UMM record for testing ECHO10. ECHO10 contains a subset of the total UMM fields so certain
   fields are removed for comparison of the parsed record"
   [gran]
-  (let [related-urls (tc/umm-related-urls->expected-related-urls (:related-urls gran))]
-    (-> gran
-        ;; ECHO10 OnlineResources' title is built as description plus resource-type
-        (assoc :related-urls related-urls)
-        umm-g/map->UmmGranule)))
+  (-> gran
+      ;; Update the related-urls as ECHO10 OnlineResources' title is built as description plus resource-type
+      (update-in [:related-urls] tc/umm-related-urls->expected-related-urls)
+      umm-g/map->UmmGranule))
 
 (defspec generate-granule-is-valid-xml-test 100
   (for-all [granule gran-gen/granules]

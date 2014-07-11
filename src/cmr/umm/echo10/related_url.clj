@@ -121,12 +121,10 @@
 (defn- xml-elem->browse-urls
   "Returns browse-urls elements from a parsed XML structure"
   [xml-struct]
-  (let [urls (map xml-elem->browse-url
-                  (cx/elements-at-path
-                    xml-struct
-                    [:AssociatedBrowseImageUrls :ProviderBrowseUrl]))]
-    (when-not (empty? urls)
-      urls)))
+  (seq (map xml-elem->browse-url
+            (cx/elements-at-path
+              xml-struct
+              [:AssociatedBrowseImageUrls :ProviderBrowseUrl]))))
 
 (defn xml-elem->related-urls
   "Returns related-urls elements from a parsed XML structure"
@@ -138,43 +136,40 @@
 (defn generate-access-urls
   "Generates the OnlineAccessURLs element of an ECHO10 XML from a UMM related urls entry."
   [related-urls]
-  (let [urls (h/downloadable-urls related-urls)]
-    (when-not (empty? urls)
-      (x/element
-        :OnlineAccessURLs {}
-        (for [related-url urls]
-          (let [{:keys [url description mime-type]} related-url]
-            (x/element :OnlineAccessURL {}
-                       (x/element :URL {} url)
-                       (when description (x/element :URLDescription {} description))
-                       (when mime-type (x/element :MimeType {} mime-type)))))))))
+  (when-let [urls (seq (h/downloadable-urls related-urls))]
+    (x/element
+      :OnlineAccessURLs {}
+      (for [related-url urls]
+        (let [{:keys [url description mime-type]} related-url]
+          (x/element :OnlineAccessURL {}
+                     (x/element :URL {} url)
+                     (when description (x/element :URLDescription {} description))
+                     (when mime-type (x/element :MimeType {} mime-type))))))))
 
 (defn generate-resource-urls
   "Generates the OnlineResources element of an ECHO10 XML from a UMM related urls entry."
   [related-urls]
-  (let [urls (h/resource-urls related-urls)]
-    (when-not (empty? urls)
-      (x/element
-        :OnlineResources {}
-        (for [related-url urls]
-          (let [{:keys [url description type mime-type]} related-url]
-            (x/element :OnlineResource {}
-                       (x/element :URL {} url)
-                       (when description (x/element :Description {} description))
-                       (x/element :Type {} (related-url-types->resource-types type))
-                       (when mime-type (x/element :MimeType {} mime-type)))))))))
+  (when-let [urls (seq (h/resource-urls related-urls))]
+    (x/element
+      :OnlineResources {}
+      (for [related-url urls]
+        (let [{:keys [url description type mime-type]} related-url]
+          (x/element :OnlineResource {}
+                     (x/element :URL {} url)
+                     (when description (x/element :Description {} description))
+                     (x/element :Type {} (related-url-types->resource-types type))
+                     (when mime-type (x/element :MimeType {} mime-type))))))))
 
 (defn generate-browse-urls
   "Generates the AssociatedBrowseImageUrls element of an ECHO10 XML from a UMM related urls entry."
   [related-urls]
-  (let [urls (h/browse-urls related-urls)]
-    (when-not (empty? urls)
-      (x/element
-        :AssociatedBrowseImageUrls {}
-        (for [related-url urls]
-          (let [{:keys [url size description mime-type]} related-url]
-            (x/element :ProviderBrowseUrl {}
-                       (x/element :URL {} url)
-                       (when size (x/element :FileSize {} size))
-                       (when description (x/element :Description {} description))
-                       (when mime-type (x/element :MimeType {} mime-type)))))))))
+  (when-let [urls (seq (h/browse-urls related-urls))]
+    (x/element
+      :AssociatedBrowseImageUrls {}
+      (for [related-url urls]
+        (let [{:keys [url size description mime-type]} related-url]
+          (x/element :ProviderBrowseUrl {}
+                     (x/element :URL {} url)
+                     (when size (x/element :FileSize {} size))
+                     (when description (x/element :Description {} description))
+                     (when mime-type (x/element :MimeType {} mime-type))))))))
