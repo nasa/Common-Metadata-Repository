@@ -95,6 +95,7 @@
   [entry-elem]
   {:id (cx/string-at-path entry-elem [:id])
    :title (cx/string-at-path entry-elem [:title])
+   :updated (cx/string-at-path entry-elem [:updated])
    :dataset-id (cx/string-at-path entry-elem [:datasetId])
    :producer-granule-id (cx/string-at-path entry-elem [:producerGranuleId])
    :size (cx/string-at-path entry-elem [:granuleSizeMB])

@@ -129,7 +129,8 @@
 
 (def resource-type->link-type-uri
   {"GET DATA" "http://esipfed.org/ns/fedsearch/1.1/data#"
-   "GET RELATED VISUALIZATION" "http://esipfed.org/ns/fedsearch/1.1/browse#"})
+   "GET RELATED VISUALIZATION" "http://esipfed.org/ns/fedsearch/1.1/browse#"
+   "ALGORITHM INFO" "http://esipfed.org/ns/fedsearch/1.1/metadata#"})
 
 (defn- add-attribs
   "Returns the attribs with the field-value pair added if there is a value"
@@ -139,8 +140,10 @@
 (defn- related-url->link
   "Returns the atom link of the given related url"
   [related-url]
-  (let [{:keys [type url title mime-type size]} related-url
+  (let [{:keys [type url title mime-type size inherited]} related-url
+        title (if (= "ALGORITHM INFO" type) (str title " ()") title)
         attribs (-> {}
+                    (add-attribs :inherited inherited)
                     (add-attribs :size size)
                     (add-attribs :rel (resource-type->link-type-uri type))
                     (add-attribs :type mime-type)
@@ -159,11 +162,13 @@
   [granule]
   (let [{:keys [concept-id granule-ur producer-gran-id size related-urls
                 beginning-date-time ending-date-time day-night cloud-cover]} granule
-        dataset-id (get-in granule [:collection-ref :entry-title])]
+        dataset-id (get-in granule [:collection-ref :entry-title])
+        update-time (get-in granule [:data-provider-timestamps :update-time])]
     {:id concept-id
      :title granule-ur
      :dataset-id dataset-id
      :producer-granule-id producer-gran-id
+     :updated (str update-time)
      :size (str size)
      ;; TODO original-format will be changed to ECHO10 later once the metadata-db format is updated to ECHO10
      :original-format "application/echo10+xml"
@@ -183,12 +188,21 @@
    :title "ECHO granule metadata"
    :entries (map granule->expected-atom granules)})
 
+(defn- add-collection-links
+  "Returns the related-urls after adding the atom-links in the collection"
+  [coll related-urls]
+  (let [non-browse-coll-links (filter #(not= "GET RELATED VISUALIZATION" (:type %)) (:related-urls coll))]
+    (concat related-urls (map #(assoc % :inherited "true") non-browse-coll-links))))
+
 (deftest search-granule-atom
   (let [ru1 (dc/related-url "GET DATA" "http://example.com")
         ru2 (dc/related-url "GET DATA" "http://example2.com")
         ru3 (dc/related-url "GET RELATED VISUALIZATION" "http://example.com/browse")
+        ru4 (dc/related-url "ALGORITHM INFO" "http://inherited.com")
+        ru5 (dc/related-url "GET RELATED VISUALIZATION" "http://inherited.com/browse")
         coll1 (d/ingest "CMR_PROV1" (dc/collection {:entry-title "Dataset1"}))
-        coll2 (d/ingest "CMR_PROV1" (dc/collection {:entry-title "Dataset2"}))
+        coll2 (d/ingest "CMR_PROV1" (dc/collection {:entry-title "Dataset2"
+                                                    :related-urls [ru4 ru5]}))
         gran1 (d/ingest "CMR_PROV1" (dg/granule coll1 {:granule-ur "Granule1"
                                                        :beginning-date-time "2010-01-01T12:00:00Z"
                                                        :ending-date-time "2010-01-11T12:00:00Z"
@@ -214,7 +228,8 @@
       (is (= gran-atom
              (:results response))))
 
-    (let [gran-atom (granules->expected-atom [gran1 gran2] "granules.atom")
+    (let [expected-gran2 (update-in gran2 [:related-urls] (partial add-collection-links coll2))
+          gran-atom (granules->expected-atom [gran1 expected-gran2] "granules.atom")
           response (search/find-grans-atom :granule {})]
       (is (= 200 (:status response)))
       (is (= gran-atom
