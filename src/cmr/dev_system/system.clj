@@ -3,7 +3,6 @@
             [cmr.bootstrap.system :as bootstrap-system]
             [cmr.metadata-db.system :as mdb-system]
             [cmr.indexer.system :as indexer-system]
-            [cmr.transformer.system :as transformer-system]
             [cmr.search.system :as search-system]
             [cmr.ingest.system :as ingest-system]
             [cmr.index-set.system :as index-set-system]
@@ -26,8 +25,6 @@
              :stop indexer-system/stop}
    :ingest {:start ingest-system/start
             :stop ingest-system/stop}
-   :transformer {:start transformer-system/start
-                 :stop transformer-system/stop}
    :search {:start search-system/start
             :stop search-system/stop}
    :bootstrap {:start bootstrap-system/start
@@ -35,7 +32,7 @@
 
 (def app-startup-order
   "Defines the order in which applications should be started"
-  [:metadata-db :index-set :indexer :ingest :transformer :search :bootstrap])
+  [:metadata-db :index-set :indexer :ingest :search :bootstrap])
 
 (def in-memory-elastic-port 9206)
 
@@ -75,7 +72,6 @@
           :indexer (indexer-system/create-system)
           :index-set (index-set-system/create-system)
           :ingest (ingest-system/create-system)
-          :transformer (transformer-system/create-system)
           :search (search-system/create-system)}
    :components {:elastic-server (elastic-server/create-server
                                   in-memory-elastic-port
@@ -91,7 +87,6 @@
           :indexer (indexer-system/create-system)
           :index-set (index-set-system/create-system)
           :ingest (ingest-system/create-system)
-          :transformer (transformer-system/create-system)
           :search (search-system/create-system)}
    :components {
                 ; :vdd-server (viz-helper/create-viz-server)

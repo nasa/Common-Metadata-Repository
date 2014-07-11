@@ -6,7 +6,6 @@
    :cmr-bootstrap-app "0.1.0-SNAPSHOT"
    :cmr-metadata-db-app "0.1.0-SNAPSHOT"
    :cmr-index-set-app "0.1.0-SNAPSHOT"
-   :cmr-transformer-app "0.1.0-SNAPSHOT"
    :cmr-common-lib "0.1.1-SNAPSHOT"
    :cmr-transmit-lib "0.1.0-SNAPSHOT"
    :cmr-spatial-lib "0.1.0-SNAPSHOT"
