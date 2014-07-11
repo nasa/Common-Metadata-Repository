@@ -158,7 +158,8 @@
                                     :two-d-coord-name.lowercase string-field-mapping
                                     :attributes attributes-field-mapping
                                     :science-keywords science-keywords-field-mapping
-                                    :downloadable bool-field-mapping}
+                                    :downloadable bool-field-mapping
+                                    :atom-links (not-indexed (stored string-field-mapping))}
                                    spatial-coverage-fields)}})
 
 (def granule-setting {:index {:number_of_shards 6,
