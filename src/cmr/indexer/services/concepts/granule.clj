@@ -69,6 +69,7 @@
         start-date (temporal/start-date :granule temporal)
         end-date (temporal/end-date :granule temporal)
         atom-links (json/write-str (ru/atom-links related-urls))
+        ;; not empty is used below to get a real true false value
         downloadable (not (empty? (ru/downloadable-urls related-urls)))
         browsable (not (empty? (ru/browse-urls related-urls)))]
     (merge {:concept-id concept-id
