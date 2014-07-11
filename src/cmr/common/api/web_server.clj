@@ -54,7 +54,6 @@
                                                   :max-threads MAX_THREADS})]
 
       (when use-compression?
-        (println "using compression")
         ;; Create a GZIP handler to handle compression of responses
         (let [new-handler (doto (GzipHandler.)
                             (.setHandler (.getHandler server))
