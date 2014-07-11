@@ -11,7 +11,7 @@
   [{:keys [level file stdout-enabled?]}]
 
   (t/set-level! (or level :warn))
-  (t/set-config! [:timestamp-pattern] "yyyy-MM-dd HH:mm:ss")
+  (t/set-config! [:timestamp-pattern] "yyyy-MM-dd HH:mm:ss.SSS")
 
   (if file
     ;; Enable file logging
