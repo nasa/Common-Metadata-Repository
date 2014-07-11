@@ -71,12 +71,15 @@
         atom-links (json/generate-string (ru/atom-links related-urls))
         ;; not empty is used below to get a real true false value
         downloadable (not (empty? (ru/downloadable-urls related-urls)))
-        browsable (not (empty? (ru/browse-urls related-urls)))]
+        browsable (not (empty? (ru/browse-urls related-urls)))
+        update-time (get-in umm-granule [:data-provider-timestamps :update-time])
+        update-time (f/unparse (f/formatters :date-time) update-time)]
     (merge {:concept-id concept-id
             :collection-concept-id parent-collection-id
 
             :entry-title (:entry-title parent-collection)
             :original-format format
+            :update-time update-time
 
             :entry-title.lowercase (s/lower-case (:entry-title parent-collection))
             :short-name.lowercase (s/lower-case (get-in parent-collection [:product :short-name]))
