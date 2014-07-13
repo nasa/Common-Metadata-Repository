@@ -64,21 +64,23 @@
   ;; Sets a bit of global state for the application and system integration tests that will know how to talk to elastic
   (config/set-config-value! :elastic-port in-memory-elastic-port-for-connection)
 
-
-  ;; Memory DB configured to run in memory
-  {:apps {:metadata-db (assoc (mdb-system/create-system)
-                              :db (memory/create-db))
-          ;; Bootstrap is not enabled for in-memory dev system
-          :indexer (indexer-system/create-system)
-          :index-set (index-set-system/create-system)
-          :ingest (ingest-system/create-system)
-          :search (search-system/create-system)}
-   :components {:elastic-server (elastic-server/create-server
-                                  in-memory-elastic-port
-                                  (+ in-memory-elastic-port 10)
-                                  "es_data/dev_system")
-                ; :vdd-server (viz-helper/create-viz-server)
-                }})
+  (let [in-memory-db (memory/create-db)]
+    ;; Memory DB configured to run in memory
+    {:apps {:metadata-db (assoc (mdb-system/create-system)
+                                :db in-memory-db)
+            ;; Bootstrap is not enabled for in-memory dev system
+            :indexer (indexer-system/create-system)
+            :index-set (index-set-system/create-system)
+            :ingest (ingest-system/create-system)
+            :search (assoc-in (search-system/create-system)
+                              [:metadata-db :db]
+                              in-memory-db)}
+     :components {:elastic-server (elastic-server/create-server
+                                    in-memory-elastic-port
+                                    (+ in-memory-elastic-port 10)
+                                    "es_data/dev_system")
+                  ; :vdd-server (viz-helper/create-viz-server)
+                  }}))
 
 (defmethod create-system :external-dbs
   [type]
