@@ -47,7 +47,8 @@
             [cmr.search.services.collection-query-resolver :as r]
             [cmr.search.services.query-execution :as qe]
             [cmr.search.data.complex-to-simple :as c2s]
-            [cmr.transmit.metadata-db :as meta-db]
+            [cmr.search.services.transformer :as t]
+            [cmr.metadata-db.services.concept-service :as meta-db]
             [cmr.system-trace.core :refer [deftracefn]]
             [cmr.common.services.errors :as err]
             [cmr.common.util :as u]
@@ -122,7 +123,8 @@
 (deftracefn find-concept-by-id
   "Executes a search to metadata-db and returns the concept with the given cmr-concept-id."
   [context concept-id]
-  (let [concept (meta-db/get-latest-concept context concept-id)]
+  (let [mdb-context (t/context->metadata-db-context context)
+        concept (meta-db/get-concept mdb-context concept-id nil)]
     (when (:deleted concept)
       (err/throw-service-error
         :not-found

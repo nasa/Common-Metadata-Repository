@@ -1,12 +1,17 @@
 (ns cmr.search.services.transformer
   "Provides functions for retrieving concepts in a desired format."
   (:require [cmr.system-trace.core :refer [deftracefn]]
-            [cmr.transmit.metadata-db :as metadata-db]
+            [cmr.metadata-db.services.concept-service :as metadata-db]
             [cmr.umm.core :as ummc]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.mime-types :as mt]
             [cmr.common.services.errors :as errors]
             [cmr.common.util :as u]))
+
+(defn context->metadata-db-context
+  "Converts the context into one that can be used to invoke the metadata-db services."
+  [context]
+  (assoc context :system (get-in context [:system :metadata-db])))
 
 (defn- concept->value-map
   "Convert a concept into a map containing metadata in a desired format as well as
@@ -32,8 +37,9 @@
   "Get concepts with given concept-id, revision-id pairs in a given format."
   [context concepts-tuples format allow-missing?]
   (info "Transforming" (count concepts-tuples) "concept(s) to" format)
-  (let [[t1 concepts] (u/time-execution
-                        (metadata-db/get-concept-revisions context concepts-tuples allow-missing?))
+  (let [mdb-context (context->metadata-db-context context)
+        [t1 concepts] (u/time-execution
+                        (metadata-db/get-concepts mdb-context concepts-tuples allow-missing?))
         [t2 values] (u/time-execution (mapv #(concept->value-map % format) concepts))]
     (debug "get-concept-revisions time:" t1
            "concept->value-map time:" t2)
@@ -43,8 +49,9 @@
   "Get latest version of concepts with given concept-ids in a given format."
   [context concept-ids format allow-missing?]
   (info "Getting latest version of" (count concept-ids) "concept(s) in" format "format")
-  (let [[t1 concepts] (u/time-execution
-                        (metadata-db/get-latest-concepts context concept-ids allow-missing?))
+  (let [mdb-context (context->metadata-db-context context)
+        [t1 concepts] (u/time-execution
+                        (metadata-db/get-latest-concepts mdb-context concept-ids allow-missing?))
         [t2 values] (u/time-execution (mapv #(concept->value-map % format) concepts))]
     (debug "get-latest-concepts time:" t1
            "concept->value-map time:" t2)

@@ -6,6 +6,7 @@
             [cmr.search.api.routes :as routes]
             [cmr.search.data.elastic-search-index :as idx]
             [cmr.system-trace.context :as context]
+            [cmr.metadata-db.system :as mdb-system]
             [cmr.common.config :as cfg]
             [cmr.transmit.config :as transmit-config]
             [cmr.elastic-utils.config :as es-config]))
@@ -31,13 +32,20 @@
 (defn create-system
   "Returns a new instance of the whole application."
   []
-  (let [sys {:log (log/create-logger)
+  (let [metadata-db (-> (mdb-system/create-system "metadata-db-in-search-app-pool")
+                        (dissoc :log :web)
+                        (assoc :skip-background-jobs true))
+        sys {:log (log/create-logger)
+
+             ;; An embedded version of the metadata db app to allow quick retrieval of data
+             ;; from oracle.
+             :metadata-db metadata-db
              :search-index (idx/create-elastic-search-index (es-config/elastic-config))
              :web (web/create-web-server (transmit-config/search-port) routes/make-api)
              :cache (cache/create-cache)
              :zipkin (context/zipkin-config "Search" false)
              :search-public-conf search-public-conf}]
-    (transmit-config/system-with-connections sys [:metadata-db :index-set])))
+    (transmit-config/system-with-connections sys [:index-set])))
 
 (defn start
   "Performs side effects to initialize the system, acquire resources,
@@ -48,7 +56,8 @@
                                  (update-in system [component-name]
                                             #(lifecycle/start % system)))
                                this
-                               component-order)]
+                               component-order)
+        started-system (update-in started-system [:metadata-db] mdb-system/start)]
     (info "System started")
     started-system))
 
@@ -62,6 +71,7 @@
                                  (update-in system [component-name]
                                             #(lifecycle/stop % system)))
                                this
-                               (reverse component-order))]
+                               (reverse component-order))
+        stopped-system (update-in stopped-system [:metadata-db] mdb-system/stop)]
     (info "System stopped")
     stopped-system))
