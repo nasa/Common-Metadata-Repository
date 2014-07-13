@@ -13,8 +13,9 @@
             [clojure.walk]
             [ring.util.codec :as codec]
             [clojure.data.xml :as x]
+            [cmr.common.xml :as cx]
             [cmr.umm.dif.collection :as dif-c]
-            [cmr.common.xml :as cx]))
+            [cmr.system-int-test.data2.atom :as da]))
 
 (defn params->snake_case
   "Converts search parameters to snake_case"
@@ -90,33 +91,6 @@
    (get-search-failure-data
      (find-concepts-in-format "text/csv" concept-type params options))))
 
-(defn- xml-elem->entry
-  "Retrns an atom entry from a parsed xml structure"
-  [entry-elem]
-  {:id (cx/string-at-path entry-elem [:id])
-   :title (cx/string-at-path entry-elem [:title])
-   :dataset-id (cx/string-at-path entry-elem [:datasetId])
-   :producer-granule-id (cx/string-at-path entry-elem [:producerGranuleId])
-   :size (cx/string-at-path entry-elem [:granuleSizeMB])
-   :original-format (cx/string-at-path entry-elem [:originalFormat])
-   :data-center (cx/string-at-path entry-elem [:dataCenter])
-   :links (seq (map :attrs (cx/elements-at-path entry-elem [:link])))
-   :start (cx/string-at-path entry-elem [:start])
-   :end (cx/string-at-path entry-elem [:end])
-   :online-access-flag (cx/string-at-path entry-elem [:onlineAccessFlag])
-   :browse-flag (cx/string-at-path entry-elem [:browseFlag])
-   :day-night-flag (cx/string-at-path entry-elem [:dayNightFlag])
-   :cloud-cover (cx/string-at-path entry-elem [:cloudCover])})
-
-(defn- xml->atom-result
-  "Returns an atom result in map from an atom xml"
-  [xml]
-  (let [xml-struct (x/parse-str xml)]
-    {:id (cx/string-at-path xml-struct [:id])
-     :title (cx/string-at-path xml-struct [:title])
-     :entries (seq (map xml-elem->entry
-                        (cx/elements-at-path xml-struct [:entry])))}))
-
 (defn find-grans-atom
   "Returns the response of granule search in atom format"
   ([concept-type params]
@@ -127,7 +101,7 @@
          {:keys [status body]} response]
      (if (= status 200)
        {:status status
-        :results (xml->atom-result body)}
+        :results (da/parse-atom-result body)}
        response))))
 
 (defn find-metadata
