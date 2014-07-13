@@ -6,7 +6,9 @@
             [clojure.data.xml :as x]
             [cheshire.core :as json]
             [clojure.string :as str]
-            [clj-time.core :as time]))
+            [clj-time.core :as time]
+            [cmr.spatial.serialize :as srl]
+            [cmr.search.results-handlers.atom-spatial-results-handler :as atom-spatial]))
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:granule :atom]
   [concept-type result-format]
@@ -23,7 +25,9 @@
    "downloadable"
    "browsable"
    "day-night"
-   "cloud-cover"])
+   "cloud-cover"
+   "ords-info"
+   "ords"])
 
 (defmethod elastic-results/elastic-result->query-result-item :atom
   [context query elastic-result]
@@ -41,7 +45,9 @@
           [downloadable] :downloadable
           [browsable] :browsable
           [day-night] :day-night
-          [cloud-cover] :cloud-cover} :fields} elastic-result
+          [cloud-cover] :cloud-cover
+          ords-info :ords-info
+          ords :ords} :fields} elastic-result
         start-date (when start-date (str/replace (str start-date) #"\+0000" "Z"))
         end-date (when end-date (str/replace (str end-date) #"\+0000" "Z"))
         atom-links (if atom-links (json/decode atom-links true) [])]
@@ -61,7 +67,8 @@
      :online-access-flag downloadable
      :browse-flag browsable
      :day-night day-night
-     :cloud-cover (str cloud-cover)}))
+     :cloud-cover (str cloud-cover)
+     :shapes (srl/ords-info->shapes ords-info ords)}))
 
 (def ATOM_HEADER_ATTRIBUTES
   "The set of attributes that go on the ATOM root element"
@@ -111,7 +118,7 @@
   [reference]
   (let [{:keys [id title updated dataset-id producer-gran-id
                 size original-format data-center start-date end-date atom-links
-                online-access-flag browse-flag day-night cloud-cover]} reference]
+                online-access-flag browse-flag day-night cloud-cover shapes]} reference]
     (x/element :entry {}
                (x/element :id {} id)
                (x/element :title {:type "text"} title)
@@ -126,7 +133,8 @@
                (x/element :echo:onlineAccessFlag {} online-access-flag)
                (x/element :echo:browseFlag {} browse-flag)
                (when day-night (x/element :echo:dayNightFlag {} day-night))
-               (when cloud-cover (x/element :echo:cloudCover {} cloud-cover)))))
+               (when cloud-cover (x/element :echo:cloudCover {} cloud-cover))
+               (map atom-spatial/shape->xml-element shapes))))
 
 (defmethod qs/search-results->response :atom
   [context query results]
