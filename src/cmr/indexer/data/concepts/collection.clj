@@ -2,6 +2,8 @@
   "Contains functions to parse and convert collection concept"
   (:require [clojure.string :as s]
             [clj-time.format :as f]
+            [cheshire.core :as json]
+            [cmr.indexer.services.index-service :as idx]
             [cmr.indexer.data.elasticsearch :as es]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.umm.related-url-helper :as ru]
@@ -56,6 +58,7 @@
                                             (when (= :archive-center type) org-name))))
         start-date (temporal/start-date :collection temporal)
         end-date (temporal/end-date :collection temporal)
+        atom-links (map json/generate-string (ru/atom-links related-urls))
         downloadable (not (empty? (filter ru/downloadable-url? related-urls)))]
     (merge {:concept-id concept-id
             :entry-id entry-id
@@ -91,6 +94,7 @@
             :end-date (when end-date (f/unparse (f/formatters :date-time) end-date))
             :archive-center archive-center-val
             :archive-center.lowercase (map s/lower-case archive-center-val)
-            :downloadable downloadable}
+            :downloadable downloadable
+            :atom-links atom-links}
            (spatial->elastic collection))))
 
