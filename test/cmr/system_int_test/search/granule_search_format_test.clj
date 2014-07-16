@@ -7,14 +7,26 @@
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.granule :as dg]
+            [cmr.system-int-test.data2.atom :as da]
             [cmr.system-int-test.data2.core :as d]
             [cmr.system-int-test.utils.url-helper :as url]
+            [cmr.spatial.polygon :as poly]
+            [cmr.spatial.point :as p]
+            [cmr.spatial.mbr :as m]
+            [cmr.spatial.line :as l]
+            [cmr.spatial.ring :as r]
             [clj-http.client :as client]
             [cmr.common.concepts :as cu]
-            [cmr.umm.core :as umm]
-            [cmr.umm.related-url-helper :as ru]))
+            [cmr.umm.core :as umm]))
 
 (use-fixtures :each (ingest/reset-fixture "CMR_PROV1"))
+
+(comment
+
+  (ingest/reset)
+  (ingest/create-provider "CMR_PROV1")
+
+)
 
 (deftest search-granules-in-xml-metadata
   ;; TODO we can add additional formats here later such as iso
@@ -127,80 +139,14 @@
                                                  {:format-as-ext? true})
                           [:status :body]))))))
 
-(def resource-type->link-type-uri
-  {"GET DATA" "http://esipfed.org/ns/fedsearch/1.1/data#"
-   "GET RELATED VISUALIZATION" "http://esipfed.org/ns/fedsearch/1.1/browse#"
-   "ALGORITHM INFO" "http://esipfed.org/ns/fedsearch/1.1/metadata#"})
-
-(defn- add-attribs
-  "Returns the attribs with the field-value pair added if there is a value"
-  [attribs field value]
-  (if (empty? value) attribs (assoc attribs field value)))
-
-(defn- related-url->link
-  "Returns the atom link of the given related url"
-  [related-url]
-  (let [{:keys [type url title mime-type size inherited]} related-url
-        title (if (= "ALGORITHM INFO" type) (str title " ()") title)
-        attribs (-> {}
-                    (add-attribs :inherited inherited)
-                    (add-attribs :size size)
-                    (add-attribs :rel (resource-type->link-type-uri type))
-                    (add-attribs :type mime-type)
-                    (add-attribs :title title)
-                    (add-attribs :hreflang "en-US")
-                    (add-attribs :href url))]
-    attribs))
-
-(defn- related-urls->links
-  "Returns the atom links of the given related urls"
-  [related-urls]
-  (map related-url->link related-urls))
-
-(defn- granule->expected-atom
-  "Returns the atom map of the granule"
-  [granule]
-  (let [{:keys [concept-id granule-ur producer-gran-id size related-urls
-                beginning-date-time ending-date-time day-night cloud-cover]} granule
-        dataset-id (get-in granule [:collection-ref :entry-title])
-        update-time (get-in granule [:data-provider-timestamps :update-time])]
-    {:id concept-id
-     :title granule-ur
-     :dataset-id dataset-id
-     :producer-granule-id producer-gran-id
-     :updated (str update-time)
-     :size (str size)
-     ;; TODO original-format will be changed to ECHO10 later once the metadata-db format is updated to ECHO10
-     :original-format "application/echo10+xml"
-     :data-center (:provider-id (cu/parse-concept-id concept-id))
-     :links (related-urls->links related-urls)
-     :start beginning-date-time
-     :end ending-date-time
-     :online-access-flag (str (> (count (ru/downloadable-urls related-urls)) 0))
-     :browse-flag (str (> (count (ru/browse-urls related-urls)) 0))
-     :day-night-flag day-night
-     :cloud-cover (str cloud-cover)}))
-
-(defn- granules->expected-atom
-  "Returns the atom map of the granules"
-  [granules atom-path]
-  {:id (str (url/search-root) atom-path)
-   :title "ECHO granule metadata"
-   :entries (map granule->expected-atom granules)})
-
-(defn- add-collection-links
-  "Returns the related-urls after adding the atom-links in the collection"
-  [coll related-urls]
-  (let [non-browse-coll-links (filter #(not= "GET RELATED VISUALIZATION" (:type %)) (:related-urls coll))]
-    (concat related-urls (map #(assoc % :inherited "true") non-browse-coll-links))))
-
 (deftest search-granule-atom
   (let [ru1 (dc/related-url "GET DATA" "http://example.com")
         ru2 (dc/related-url "GET DATA" "http://example2.com")
         ru3 (dc/related-url "GET RELATED VISUALIZATION" "http://example.com/browse")
         ru4 (dc/related-url "ALGORITHM INFO" "http://inherited.com")
         ru5 (dc/related-url "GET RELATED VISUALIZATION" "http://inherited.com/browse")
-        coll1 (d/ingest "CMR_PROV1" (dc/collection {:entry-title "Dataset1"}))
+        coll1 (d/ingest "CMR_PROV1" (dc/collection {:entry-title "Dataset1"
+                                                    :spatial-coverage (dc/spatial :geodetic)}))
         coll2 (d/ingest "CMR_PROV1" (dc/collection {:entry-title "Dataset2"
                                                     :related-urls [ru4 ru5]}))
         gran1 (d/ingest "CMR_PROV1" (dg/granule coll1 {:granule-ur "Granule1"
@@ -219,17 +165,52 @@
                                                        :size 80.0
                                                        :cloud-cover 30.0
                                                        :related-urls [ru3]}))]
+                                                    :spatial-coverage (dc/spatial :geodetic)}))
+        make-gran (fn [coll attribs]
+                    (d/ingest "CMR_PROV1" (dg/granule coll attribs)))
+
+        ;; polygon with holes
+        outer (r/ords->ring -5.26,-2.59, 11.56,-2.77, 10.47,8.71, -5.86,8.63, -5.26,-2.59)
+        hole1 (r/ords->ring 6.95,2.05, 2.98,2.06, 3.92,-0.08, 6.95,2.05)
+        hole2 (r/ords->ring 5.18,6.92, -1.79,7.01, -2.65,5, 4.29,5.05, 5.18,6.92)
+        polygon-with-holes  (poly/polygon [outer hole1 hole2])
+
+        gran1 (make-gran coll1 {:granule-ur "Granule1"
+                                :beginning-date-time "2010-01-01T12:00:00Z"
+                                :ending-date-time "2010-01-11T12:00:00Z"
+                                :producer-gran-id "Granule #1"
+                                :day-night "DAY"
+                                :size 100.0
+                                :cloud-cover 50.0
+                                :related-urls [ru1 ru2]
+                                :spatial-coverage (dg/spatial
+                                                    (poly/polygon [(r/ords->ring -70 20, 70 20, 70 30, -70 30, -70 20)])
+                                                    polygon-with-holes
+                                                    (p/point 1 2)
+                                                    (p/point -179.9 89.4)
+                                                    (l/ords->line 0 0, 0 1, 0 -90, 180 0)
+                                                    (l/ords->line 1 2, 3 4, 5 6, 7 8)
+                                                    (m/mbr -180 90 180 -90)
+                                                    (m/mbr -10 20 30 -40))})
+        gran2 (make-gran coll2 {:granule-ur "Granule2"
+                                :beginning-date-time "2011-01-01T12:00:00Z"
+                                :ending-date-time "2011-01-11T12:00:00Z"
+                                :producer-gran-id "Granule #2"
+                                :day-night "NIGHT"
+                                :size 80.0
+                                :cloud-cover 30.0
+                                :related-urls [ru3]})]
 
     (index/refresh-elastic-index)
 
-    (let [gran-atom (granules->expected-atom [gran1] "granules.atom?granule-ur=Granule1")
+    (let [gran-atom (da/granules->expected-atom [gran1] "granules.atom?granule-ur=Granule1")
           response (search/find-grans-atom :granule {:granule-ur "Granule1"})]
       (is (= 200 (:status response)))
       (is (= gran-atom
              (:results response))))
 
-    (let [expected-gran2 (update-in gran2 [:related-urls] (partial add-collection-links coll2))
-          gran-atom (granules->expected-atom [gran1 expected-gran2] "granules.atom")
+    (let [expected-gran2 (update-in gran2 [:related-urls] (partial da/add-collection-links coll2))
+          gran-atom (da/granules->expected-atom [gran1 expected-gran2] "granules.atom")
           response (search/find-grans-atom :granule {})]
       (is (= 200 (:status response)))
       (is (= gran-atom
