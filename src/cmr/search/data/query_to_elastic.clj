@@ -5,7 +5,6 @@
             [cmr.search.models.query :as qm]
             [cmr.search.data.datetime-helper :as h]
             [cmr.common.services.errors :as errors]
-            [cmr.common.concepts :as cc]
             [cmr.search.data.messages :as m]))
 
 (def field-mappings
@@ -28,20 +27,10 @@
              :sensor :sensor-sn
              :project :project-refs}})
 
-(def granule-parent-es-field
-  "The granule elastic field that contains its parent collection CMR concept id."
-  :collection-concept-id)
-
 (defn query-field->elastic-field
   "Returns the elastic field name for the equivalent query field name."
-  ([field concept-type]
-   (get-in field-mappings [concept-type field] field))
-  ([field concept-type value]
-   (if (and (= :granule concept-type)
-            (= :concept-id field)
-            (= :collection (-> value cc/parse-concept-id  :concept-type)))
-     (query-field->elastic-field granule-parent-es-field concept-type)
-     (query-field->elastic-field field concept-type))))
+  [field concept-type]
+  (get-in field-mappings [concept-type field] field))
 
 (defprotocol ConditionToElastic
   "Defines a function to map from a query to elastic search query"
@@ -128,7 +117,7 @@
   cmr.search.models.query.StringCondition
   (condition->elastic
     [{:keys [field value case-sensitive? pattern?]} concept-type]
-    (let [field (query-field->elastic-field field concept-type value)
+    (let [field (query-field->elastic-field field concept-type)
           field (if case-sensitive? field (str (name field) ".lowercase"))
           value (if case-sensitive? value (s/lower-case value))]
       (if pattern?
@@ -138,7 +127,7 @@
   cmr.search.models.query.StringsCondition
   (condition->elastic
     [{:keys [field values case-sensitive?]} concept-type]
-    (let [field (query-field->elastic-field field concept-type (first values))
+    (let [field (query-field->elastic-field field concept-type)
           field (if case-sensitive? field (str (name field) ".lowercase"))
           values (if case-sensitive? values (map s/lower-case values))]
       {:terms {field values
@@ -164,28 +153,30 @@
 
   cmr.search.models.query.ExistCondition
   (condition->elastic
-    [{:keys [field]} _]
-    {:exists {:field field}})
+    [{:keys [field]} concept-type]
+    {:exists {:field (query-field->elastic-field field concept-type)}})
 
   cmr.search.models.query.MissingCondition
   (condition->elastic
-    [{:keys [field]} _]
-    {:missing {:field field}})
+    [{:keys [field]} concept-type]
+    {:missing {:field (query-field->elastic-field field concept-type)}})
 
   cmr.search.models.query.NumericValueCondition
   (condition->elastic
-    [{:keys [field value]} _]
-    {:term {field value}})
+    [{:keys [field value]} concept-type]
+    {:term {(query-field->elastic-field field concept-type) value}})
 
   cmr.search.models.query.NumericRangeCondition
   (condition->elastic
-    [{:keys [field min-value max-value]} _]
-    (range-condition->elastic field min-value max-value "fielddata"))
+    [{:keys [field min-value max-value]} concept-type]
+    (range-condition->elastic (query-field->elastic-field field concept-type)
+                              min-value max-value "fielddata"))
 
   cmr.search.models.query.StringRangeCondition
   (condition->elastic
-    [{:keys [field start-value end-value]} _]
-     (range-condition->elastic field start-value end-value "index"))
+    [{:keys [field start-value end-value]} concept-type]
+     (range-condition->elastic (query-field->elastic-field field concept-type)
+                               start-value end-value "index"))
 
   cmr.search.models.query.DateRangeCondition
   (condition->elastic
@@ -198,7 +189,7 @@
 
   cmr.search.models.query.DateValueCondition
   (condition->elastic
-    [{:keys [field value]} _]
+    [{:keys [field value]} concept-type]
     {:term {field (h/utc-time->elastic-time value)}})
 
   cmr.search.models.query.MatchAllCondition

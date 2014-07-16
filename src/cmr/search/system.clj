@@ -55,9 +55,8 @@
   (let [started-system (reduce (fn [system component-name]
                                  (update-in system [component-name]
                                             #(lifecycle/start % system)))
-                               this
-                               component-order)
-        started-system (update-in started-system [:metadata-db] mdb-system/start)]
+                               (update-in this [:metadata-db] mdb-system/start)
+                               component-order)]
     (info "System started")
     started-system))
 

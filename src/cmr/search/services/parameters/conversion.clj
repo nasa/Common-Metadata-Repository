@@ -3,10 +3,10 @@
   (:require [clojure.string :as s]
             [cmr.common.services.errors :as errors]
             [cmr.search.models.query :as qm]
-            [cmr.search.data.query-to-elastic :as q2e]
             [cmr.common.date-time-parser :as dt-parser]
             [cmr.common.util :as u]
-            [cmr.search.services.parameters.legacy-parameters :as lp]))
+            [cmr.search.services.parameters.legacy-parameters :as lp]
+            [cmr.common.concepts :as cc]))
 
 (def nrt-aliases
   ["near_real_time","nrt", "NRT", "near real time","near-real time","near-real-time","near real-time"])
@@ -36,6 +36,7 @@
                 :bounding-box :bounding-box
                 :point :point}
    :granule {:granule-ur :string
+             :concept-id :granule-concept-id
              :collection-concept-id :string
              :producer-granule-id :string
              :day-night :string
@@ -55,7 +56,6 @@
              :sensor :inheritance
              :project :string
              :cloud-cover :num-range
-             :concept-id :string
              :exclude :exclude
              :downloadable :boolean
              :polygon :polygon
@@ -97,14 +97,37 @@
   (fn [concept-type param value options]
     (param-name->type concept-type param)))
 
-(defmethod parameter->condition :string
-  [concept-type param value options]
+(defn string-parameter->condition
+  [param value options]
   (let [case-sensitive (case-sensitive-field? param options)
         pattern (pattern-field? param options)
-        group-operation (group-operation param options)]
+        group-operation (group-operation param options)
+        value (if (and (sequential? value) (= 1 (count value)))
+                (first value)
+                value)]
     (if (sequential? value)
       (qm/string-conditions param value case-sensitive pattern group-operation)
       (qm/string-condition param value case-sensitive pattern))))
+
+(defmethod parameter->condition :string
+  [concept-type param value options]
+  (string-parameter->condition param value options))
+
+;; Special case handler for concept-id. Concept id can refer to a granule or collection.
+;; If it's a granule query with a collection concept id then we convert the parameter to :collection-concept-id
+(defmethod parameter->condition :granule-concept-id
+  [concept-type param value options]
+  (let [values (if (sequential? value) value [value])
+        {granule-concept-ids :granule
+         collection-concept-ids :collection} (group-by (comp :concept-type cc/parse-concept-id) values)
+        collection-cond (when (seq collection-concept-ids)
+                          (string-parameter->condition :collection-concept-id collection-concept-ids {}))
+        granule-cond (when (seq granule-concept-ids)
+                       (string-parameter->condition :concept-id granule-concept-ids options))]
+    (if (and collection-cond granule-cond)
+      (qm/and-conds [collection-cond granule-cond])
+      (or collection-cond granule-cond))))
+
 
 ;; Construct an inheritance query condition for granules.
 ;; This will find granules which either have explicitly specified a value
@@ -116,7 +139,7 @@
       [field-condition
        (qm/and-conds
          [(qm/->CollectionQueryCondition field-condition)
-          (qm/map->MissingCondition {:field (q2e/query-field->elastic-field param concept-type)})])])))
+          (qm/map->MissingCondition {:field param})])])))
 
 ;; or-conds --> "not (CondA and CondB)" == "(not CondA) or (not CondB)"
 (defmethod parameter->condition :exclude
