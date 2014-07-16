@@ -148,25 +148,31 @@
   "Append collection links to the given reference and returns the reference"
   [collection-links-map reference]
   (let [{:keys [collection-concept-id atom-links]} reference
-        collection-links (get collection-links-map collection-concept-id)
-        collection-links  (filter #(not= "browse" (:link-type %)) collection-links)
-        collection-links (remove (set atom-links) collection-links)
-        collection-links (map #(assoc % :inherited "true") collection-links)
-        atom-links (concat atom-links collection-links)]
+        atom-links (->> (get collection-links-map collection-concept-id)
+                        ;; only non-browse links are inherited from the collection
+                        (filter #(not= "browse" (:link-type %)))
+                        ;; remove duplicate links from the collection links if it already exists in the granule
+                        (remove (set atom-links))
+                        ;; set the inherited flag for collection links
+                        (map #(assoc % :inherited "true"))
+                        (concat atom-links))]
     (assoc reference :atom-links atom-links)))
+
+(defn- find-collection-atom-links
+  "Returns a mapping of collection-concept-ids and its atom links for the given collection-concept-ids"
+  [context collection-concept-ids]
+  (let [collection-links-query (q/query {:concept-type :collection
+                                         :condition (q/string-conditions :concept-id collection-concept-ids true)
+                                         :page-size :unlimited
+                                         :result-format :atom-links})
+        result (qe/execute-query context collection-links-query)]
+    (into {} (:items result))))
 
 (defn- append-collection-links
   "Returns the references after appending collection non-downloadable links into the atom-links"
   [context refs]
   (let [collection-concept-ids (distinct (map :collection-concept-id refs))
-        collection-links-query (q/map->Query {:concept-type :collection
-                                              :condition (q/map->StringsCondition
-                                                           {:field :concept-id
-                                                            :values collection-concept-ids
-                                                            :case-sensitive? true})
-                                              :page-size :unlimited
-                                              :result-format :atom-links})
-        collection-links-map (into {} (:items (qe/execute-query context collection-links-query)))]
+        collection-links-map (find-collection-atom-links context collection-concept-ids)]
     (map (partial append-links collection-links-map) refs)))
 
 (defmethod qs/search-results->response :atom

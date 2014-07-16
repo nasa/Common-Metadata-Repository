@@ -336,6 +336,8 @@
   "Creates a string condition."
   ([field values]
    (string-conditions field values false false :or))
+  ([field values case-sensitive?]
+   (string-conditions field values case-sensitive? false :or))
   ([field values case-sensitive? pattern? group-operation]
    (cond
      (= (count values) 1)

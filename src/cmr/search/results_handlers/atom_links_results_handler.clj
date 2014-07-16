@@ -1,5 +1,8 @@
 (ns cmr.search.results-handlers.atom-links-results-handler
-  "Handles the ATOM links results format and related functions"
+  "Handles the ATOM links results format and related functions.
+  This is used by granule search in atom format where the atom links in the parent collection
+  that are not browse type should be included in the granule atom links as inherited.
+  This handles the retrieval of collection atom links by collection concept ids."
   (:require [cmr.search.data.elastic-results-to-query-results :as elastic-results]
             [cmr.search.data.elastic-search-index :as elastic-search-index]
             [cmr.search.services.query-service :as qs]
