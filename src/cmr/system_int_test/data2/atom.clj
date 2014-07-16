@@ -143,11 +143,18 @@
   [related-urls]
   (map related-url->link related-urls))
 
+(defn- add-collection-links
+  "Returns the related-urls after adding the atom-links in the collection"
+  [coll related-urls]
+  (let [non-browse-coll-links (filter #(not= "GET RELATED VISUALIZATION" (:type %)) (:related-urls coll))]
+    (concat related-urls (map #(assoc % :inherited "true") non-browse-coll-links))))
+
 (defn- granule->expected-atom
   "Returns the atom map of the granule"
-  [granule]
+  [granule coll]
   (let [{:keys [concept-id granule-ur producer-gran-id size related-urls
                 beginning-date-time ending-date-time day-night cloud-cover]} granule
+        related-urls (add-collection-links coll related-urls)
         dataset-id (get-in granule [:collection-ref :entry-title])
         update-time (get-in granule [:data-provider-timestamps :update-time])]
     {:id concept-id
@@ -168,15 +175,9 @@
      :cloud-cover (str cloud-cover)
      :shapes (seq (get-in granule [:spatial-coverage :geometries]))}))
 
-(defn- add-collection-links
-  "Returns the related-urls after adding the atom-links in the collection"
-  [coll related-urls]
-  (let [non-browse-coll-links (filter #(not= "GET RELATED VISUALIZATION" (:type %)) (:related-urls coll))]
-    (concat related-urls (map #(assoc % :inherited "true") non-browse-coll-links))))
-
 (defn granules->expected-atom
   "Returns the atom map of the granules"
-  [granules atom-path]
+  [granules collections atom-path]
   {:id (str (url/search-root) atom-path)
    :title "ECHO granule metadata"
-   :entries (map granule->expected-atom granules)})
+   :entries (map granule->expected-atom granules collections)})
