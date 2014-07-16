@@ -11,7 +11,7 @@
 (def non-transformer-supported-formats
   "Formats that the transformer does not support because they're implemented in search. Assumed
   that the transformer will support any format not listed here."
-  #{:csv :json :xml})
+  #{:csv :json :xml :atom :atom-links})
 
 (def transformer-supported-format?
   "Returns true if the format is supported by the transformer."

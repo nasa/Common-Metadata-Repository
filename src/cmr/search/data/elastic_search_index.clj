@@ -143,21 +143,3 @@
   "Creates a new instance of the elastic search index."
   [config]
   (->ElasticSearchIndex config nil))
-
-(defn collection-concept-id->atom-links
-  "Returns the atom-links string for the given collection-concept-id"
-  [context collection-concept-id]
-  (let [elastic-query {:filtered {:query {:match_all {}}, :filter {:term {:concept-id collection-concept-id}}}}
-        index-info (concept-type->index-info context :collection nil)
-        fields ["atom-links"]
-        result (esd/search (context->conn context)
-                           (:index-name index-info)
-                           [(:type-name index-info)]
-                           :query elastic-query
-                           :version true
-                           :size 10000
-                           :from 0
-                           :fields fields)
-        {{[atom-links] :atom-links} :fields} (first (get-in result [:hits :hits]))]
-    atom-links))
-

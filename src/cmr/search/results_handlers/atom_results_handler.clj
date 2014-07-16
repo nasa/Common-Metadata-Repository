@@ -2,7 +2,9 @@
   "Handles the ATOM results format and related functions"
   (:require [cmr.search.data.elastic-results-to-query-results :as elastic-results]
             [cmr.search.data.elastic-search-index :as elastic-search-index]
+            [cmr.search.services.query-execution :as qe]
             [cmr.search.services.query-service :as qs]
+            [cmr.search.models.query :as q]
             [clojure.data.xml :as x]
             [cheshire.core :as json]
             [clojure.string :as str]
@@ -41,14 +43,14 @@
           [provider-id] :provider-id
           [start-date] :start-date
           [end-date] :end-date
-          [atom-links] :atom-links
+          atom-links :atom-links
           [downloadable] :downloadable
           [browsable] :browsable
           [day-night] :day-night
           [cloud-cover] :cloud-cover} :fields} elastic-result
         start-date (when start-date (str/replace (str start-date) #"\+0000" "Z"))
         end-date (when end-date (str/replace (str end-date) #"\+0000" "Z"))
-        atom-links (if atom-links (json/decode atom-links true) [])]
+        atom-links (map #(json/decode % true) atom-links)]
     {:id concept-id
      :title granule-ur
      :collection-concept-id collection-concept-id
@@ -139,7 +141,8 @@
   [collection-links-map reference]
   (let [{:keys [collection-concept-id atom-links]} reference
         collection-links (get collection-links-map collection-concept-id)
-        collection-links (remove #(some #{%} atom-links) collection-links)
+        collection-links  (filter #(not= "browse" (:link-type %)) collection-links)
+        collection-links (remove (set atom-links) collection-links)
         collection-links (map #(assoc % :inherited "true") collection-links)
         atom-links (concat atom-links collection-links)]
     (assoc reference :atom-links atom-links)))
@@ -148,16 +151,14 @@
   "Returns the references after appending collection non-downloadable links into the atom-links"
   [context refs]
   (let [collection-concept-ids (distinct (map :collection-concept-id refs))
-        collection-links-map (reduce
-                               (fn [collection-links-map id]
-                                 (let [atom-links (elastic-search-index/collection-concept-id->atom-links context id)
-                                       atom-links (if atom-links (json/decode atom-links true) [])
-                                       ;; we will only include the collection links that are not of browse type
-                                       atom-links (filter #(not= "browse" (:link-type %)) atom-links)]
-                                   (assoc collection-links-map
-                                          id atom-links)))
-                               {}
-                               collection-concept-ids)]
+        collection-links-query (q/map->Query {:concept-type :collection
+                                              :condition (q/map->StringsCondition
+                                                           {:field :concept-id
+                                                            :values collection-concept-ids
+                                                            :case-sensitive? true})
+                                              :page-size :unlimited
+                                              :result-format :atom-links})
+        collection-links-map (into {} (:items (qe/execute-query context collection-links-query)))]
     (map (partial append-links collection-links-map) refs)))
 
 (defmethod qs/search-results->response :atom
