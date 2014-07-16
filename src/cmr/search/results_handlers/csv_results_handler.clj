@@ -29,13 +29,13 @@
          [producer-gran-id] :producer-gran-id
          [start-date] :start-date
          [end-date] :end-date
-         [atom-links] :atom-links
+         atom-links :atom-links
          [cloud-cover] :cloud-cover
          [day-night] :day-night
          [size] :size} (:fields elastic-result)
         start-date (when start-date (str/replace (str start-date) #"\+0000" "Z"))
         end-date (when end-date (str/replace (str end-date) #"\+0000" "Z"))
-        atom-links (if atom-links (json/decode atom-links true) [])
+        atom-links (map #(json/decode % true) atom-links)
         downloadable-urls (seq (map :href
                                     (filter #(= (:link-type %) "data") atom-links)))
         browse-urls (seq (map :href

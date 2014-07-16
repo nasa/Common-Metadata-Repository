@@ -8,11 +8,14 @@
             [clojure.string :as str]
             [clj-time.core :as time]
             [cmr.spatial.serialize :as srl]
-            [cmr.search.results-handlers.atom-spatial-results-handler :as atom-spatial]))
+            [cmr.search.results-handlers.atom-spatial-results-handler :as atom-spatial]
+            [cmr.search.results-handlers.atom-links-results-handler :as atom-links]))
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:granule :atom]
   [concept-type result-format]
   ["granule-ur"
+   "collection-concept-id"
+   "update-time"
    "entry-title"
    "producer-gran-id"
    "size"
@@ -34,6 +37,8 @@
   (let [{concept-id :_id
          revision-id :_version
          {[granule-ur] :granule-ur
+          [collection-concept-id] :collection-concept-id
+          [update-time] :update-time
           [entry-title] :entry-title
           [producer-gran-id] :producer-gran-id
           [size] :size
@@ -41,7 +46,7 @@
           [provider-id] :provider-id
           [start-date] :start-date
           [end-date] :end-date
-          [atom-links] :atom-links
+          atom-links :atom-links
           [downloadable] :downloadable
           [browsable] :browsable
           [day-night] :day-night
@@ -50,11 +55,11 @@
           ords :ords} :fields} elastic-result
         start-date (when start-date (str/replace (str start-date) #"\+0000" "Z"))
         end-date (when end-date (str/replace (str end-date) #"\+0000" "Z"))
-        atom-links (if atom-links (json/decode atom-links true) [])]
+        atom-links (map #(json/decode % true) atom-links)]
     {:id concept-id
      :title granule-ur
-     ;; TODO: last-updated is not indexed yet
-     ; :updated last-updated
+     :collection-concept-id collection-concept-id
+     :updated update-time
      :dataset-id entry-title
      :producer-gran-id producer-gran-id
      :size (str size)
@@ -103,8 +108,9 @@
 (defn- atom-link->xml-element
   "Convert an atom link to an XML element"
   [atom-link]
-  (let [{:keys [href link-type title mime-type size]} atom-link
+  (let [{:keys [href link-type title mime-type size inherited]} atom-link
         attribs (-> {}
+                    (add-attribs :inherited inherited)
                     (add-attribs :size size)
                     (add-attribs :rel (link-type->link-type-uri (keyword link-type)))
                     (add-attribs :type mime-type)
@@ -122,6 +128,7 @@
     (x/element :entry {}
                (x/element :id {} id)
                (x/element :title {:type "text"} title)
+               (x/element :updated {} updated)
                (x/element :echo:datasetId {} dataset-id)
                (when producer-gran-id (x/element :echo:producerGranuleId {} producer-gran-id))
                (when size (x/element :echo:granuleSizeMB {} size))
@@ -136,10 +143,34 @@
                (when cloud-cover (x/element :echo:cloudCover {} cloud-cover))
                (map atom-spatial/shape->xml-element shapes))))
 
+(defn- append-links
+  "Append collection links to the given reference and returns the reference"
+  [collection-links-map reference]
+  (let [{:keys [collection-concept-id atom-links]} reference
+        atom-links (->> (get collection-links-map collection-concept-id)
+                        ;; only non-browse links are inherited from the collection
+                        (filter #(not= "browse" (:link-type %)))
+                        ;; remove duplicate links from the collection links if it already exists in the granule
+                        (remove (set atom-links))
+                        ;; set the inherited flag for collection links
+                        (map #(assoc % :inherited "true"))
+                        (concat atom-links))]
+    (assoc reference :atom-links atom-links)))
+
+(defn- append-collection-links
+  "Returns the references after appending collection non-downloadable links into the atom-links"
+  [context refs]
+  (let [collection-concept-ids (distinct (map :collection-concept-id refs))
+        collection-links-map (atom-links/find-collection-atom-links context collection-concept-ids)]
+    (map (partial append-links collection-links-map) refs)))
+
 (defmethod qs/search-results->response :atom
   [context query results]
   (let [{:keys [hits took items]} results
-        xml-fn (if (:pretty? query) x/indent-str x/emit-str)]
+        xml-fn (if (:pretty? query) x/indent-str x/emit-str)
+        items (if (= :granule (:concept-type query))
+                (append-collection-links context items)
+                items)]
     (xml-fn
       (x/element :feed ATOM_HEADER_ATTRIBUTES
                  (x/element :updated {} (str (time/now)))
