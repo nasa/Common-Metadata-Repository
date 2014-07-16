@@ -85,7 +85,7 @@
                   :two-d-coord-name ["FOO" "Bar"]
                   :two-d-coord-name.lowercase  ["foo" "bar"]
                   :downloadable false
-                  :atom-links "[]"}
+                  :atom-links []}
         actual (es/concept->elastic-doc nil concept umm-concept)]
     (is (= expected actual))))
 

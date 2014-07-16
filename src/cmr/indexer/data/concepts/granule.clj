@@ -68,7 +68,7 @@
         sensor-short-names (remove nil? (map :short-name sensor-refs))
         start-date (temporal/start-date :granule temporal)
         end-date (temporal/end-date :granule temporal)
-        atom-links (json/generate-string (ru/atom-links related-urls))
+        atom-links (map json/generate-string (ru/atom-links related-urls))
         ;; not empty is used below to get a real true false value
         downloadable (not (empty? (ru/downloadable-urls related-urls)))
         browsable (not (empty? (ru/browse-urls related-urls)))

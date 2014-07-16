@@ -58,7 +58,7 @@
                                             (when (= :archive-center type) org-name))))
         start-date (temporal/start-date :collection temporal)
         end-date (temporal/end-date :collection temporal)
-        atom-links (json/generate-string (ru/atom-links related-urls))
+        atom-links (map json/generate-string (ru/atom-links related-urls))
         downloadable (not (empty? (filter ru/downloadable-url? related-urls)))]
     (merge {:concept-id concept-id
             :entry-id entry-id
