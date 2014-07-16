@@ -83,6 +83,7 @@
   [entry-elem]
   {:id (cx/string-at-path entry-elem [:id])
    :title (cx/string-at-path entry-elem [:title])
+   :updated (cx/string-at-path entry-elem [:updated])
    :dataset-id (cx/string-at-path entry-elem [:datasetId])
    :producer-granule-id (cx/string-at-path entry-elem [:producerGranuleId])
    :size (cx/string-at-path entry-elem [:granuleSizeMB])
@@ -114,7 +115,8 @@
 
 (def resource-type->link-type-uri
   {"GET DATA" "http://esipfed.org/ns/fedsearch/1.1/data#"
-   "GET RELATED VISUALIZATION" "http://esipfed.org/ns/fedsearch/1.1/browse#"})
+   "GET RELATED VISUALIZATION" "http://esipfed.org/ns/fedsearch/1.1/browse#"
+   "ALGORITHM INFO" "http://esipfed.org/ns/fedsearch/1.1/metadata#"})
 
 (defn- add-attribs
   "Returns the attribs with the field-value pair added if there is a value"
@@ -124,8 +126,10 @@
 (defn- related-url->link
   "Returns the atom link of the given related url"
   [related-url]
-  (let [{:keys [type url title mime-type size]} related-url
+  (let [{:keys [type url title mime-type size inherited]} related-url
+        title (if (= "ALGORITHM INFO" type) (str title " ()") title)
         attribs (-> {}
+                    (add-attribs :inherited inherited)
                     (add-attribs :size size)
                     (add-attribs :rel (resource-type->link-type-uri type))
                     (add-attribs :type mime-type)
@@ -139,16 +143,25 @@
   [related-urls]
   (map related-url->link related-urls))
 
+(defn- add-collection-links
+  "Returns the related-urls after adding the atom-links in the collection"
+  [coll related-urls]
+  (let [non-browse-coll-links (filter #(not= "GET RELATED VISUALIZATION" (:type %)) (:related-urls coll))]
+    (concat related-urls (map #(assoc % :inherited "true") non-browse-coll-links))))
+
 (defn- granule->expected-atom
   "Returns the atom map of the granule"
-  [granule]
+  [granule coll]
   (let [{:keys [concept-id granule-ur producer-gran-id size related-urls
                 beginning-date-time ending-date-time day-night cloud-cover]} granule
-        dataset-id (get-in granule [:collection-ref :entry-title])]
+        related-urls (add-collection-links coll related-urls)
+        dataset-id (get-in granule [:collection-ref :entry-title])
+        update-time (get-in granule [:data-provider-timestamps :update-time])]
     {:id concept-id
      :title granule-ur
      :dataset-id dataset-id
      :producer-granule-id producer-gran-id
+     :updated (str update-time)
      :size (str size)
      ;; TODO original-format will be changed to ECHO10 later once the metadata-db format is updated to ECHO10
      :original-format "application/echo10+xml"
@@ -164,7 +177,7 @@
 
 (defn granules->expected-atom
   "Returns the atom map of the granules"
-  [granules atom-path]
+  [granules collections atom-path]
   {:id (str (url/search-root) atom-path)
    :title "ECHO granule metadata"
-   :entries (map granule->expected-atom granules)})
+   :entries (map granule->expected-atom granules collections)})

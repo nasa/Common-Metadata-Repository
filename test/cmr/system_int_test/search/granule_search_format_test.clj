@@ -26,7 +26,7 @@
   (ingest/reset)
   (ingest/create-provider "CMR_PROV1")
 
-)
+  )
 
 (deftest search-granules-in-xml-metadata
   ;; TODO we can add additional formats here later such as iso
@@ -143,10 +143,29 @@
   (let [ru1 (dc/related-url "GET DATA" "http://example.com")
         ru2 (dc/related-url "GET DATA" "http://example2.com")
         ru3 (dc/related-url "GET RELATED VISUALIZATION" "http://example.com/browse")
+        ru4 (dc/related-url "ALGORITHM INFO" "http://inherited.com")
+        ru5 (dc/related-url "GET RELATED VISUALIZATION" "http://inherited.com/browse")
         coll1 (d/ingest "CMR_PROV1" (dc/collection {:entry-title "Dataset1"
                                                     :spatial-coverage (dc/spatial :geodetic)}))
         coll2 (d/ingest "CMR_PROV1" (dc/collection {:entry-title "Dataset2"
-                                                    :spatial-coverage (dc/spatial :geodetic)}))
+                                                    :related-urls [ru4 ru5]}))
+        gran1 (d/ingest "CMR_PROV1" (dg/granule coll1 {:granule-ur "Granule1"
+                                                       :beginning-date-time "2010-01-01T12:00:00Z"
+                                                       :ending-date-time "2010-01-11T12:00:00Z"
+                                                       :producer-gran-id "Granule #1"
+                                                       :day-night "DAY"
+                                                       :size 100.0
+                                                       :cloud-cover 50.0
+                                                       :related-urls [ru1 ru2]}))
+        gran2 (d/ingest "CMR_PROV1" (dg/granule coll2 {:granule-ur "Granule2"
+                                                       :beginning-date-time "2011-01-01T12:00:00Z"
+                                                       :ending-date-time "2011-01-11T12:00:00Z"
+                                                       :producer-gran-id "Granule #2"
+                                                       :day-night "NIGHT"
+                                                       :size 80.0
+                                                       :cloud-cover 30.0
+                                                       :related-urls [ru3]
+                                                       :spatial-coverage (dc/spatial :geodetic)}))
         make-gran (fn [coll attribs]
                     (d/ingest "CMR_PROV1" (dg/granule coll attribs)))
 
@@ -184,13 +203,13 @@
 
     (index/refresh-elastic-index)
 
-    (let [gran-atom (da/granules->expected-atom [gran1] "granules.atom?granule-ur=Granule1")
+    (let [gran-atom (da/granules->expected-atom [gran1] [coll1] "granules.atom?granule-ur=Granule1")
           response (search/find-grans-atom :granule {:granule-ur "Granule1"})]
       (is (= 200 (:status response)))
       (is (= gran-atom
              (:results response))))
 
-    (let [gran-atom (da/granules->expected-atom [gran1 gran2] "granules.atom")
+    (let [gran-atom (da/granules->expected-atom [gran1 gran2] [coll1 coll2] "granules.atom")
           response (search/find-grans-atom :granule {})]
       (is (= 200 (:status response)))
       (is (= gran-atom
