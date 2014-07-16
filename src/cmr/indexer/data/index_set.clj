@@ -2,7 +2,6 @@
   (:require [cmr.common.lifecycle :as lifecycle]
             [clj-http.client :as client]
             [cheshire.core :as cheshire]
-            [clojure.string :as s]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.services.errors :as errors]
             [cmr.common.concepts :as cs]

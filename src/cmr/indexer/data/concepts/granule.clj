@@ -1,18 +1,18 @@
-(ns cmr.indexer.services.concepts.granule
+(ns cmr.indexer.data.concepts.granule
   "Contains functions to parse and convert granule concept"
   (:require [clojure.string :as s]
             [clj-time.format :as f]
             [cheshire.core :as json]
-            [cmr.indexer.services.index-service :as idx]
+            [cmr.indexer.data.elasticsearch :as es]
             [cmr.umm.core :as umm]
             [cmr.umm.related-url-helper :as ru]
             [cmr.transmit.metadata-db :as mdb]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.services.errors :as errors]
-            [cmr.indexer.services.concepts.temporal :as temporal]
-            [cmr.indexer.services.concepts.attribute :as attrib]
-            [cmr.indexer.services.concepts.orbit-calculated-spatial-domain :as ocsd]
-            [cmr.indexer.services.concepts.spatial :as spatial]
+            [cmr.indexer.data.concepts.temporal :as temporal]
+            [cmr.indexer.data.concepts.attribute :as attrib]
+            [cmr.indexer.data.concepts.orbit-calculated-spatial-domain :as ocsd]
+            [cmr.indexer.data.concepts.spatial :as spatial]
             [cmr.common.cache :as cache])
   (:import cmr.spatial.mbr.Mbr))
 
@@ -54,7 +54,7 @@
       (error e (format "Error generating spatial for granule: %s. Skipping spatial."
                        (pr-str granule))))))
 
-(defmethod idx/concept->elastic-doc :granule
+(defmethod es/concept->elastic-doc :granule
   [context concept umm-granule]
   (let [{:keys [concept-id extra-fields provider-id revision-date format]} concept
         {:keys [parent-collection-id]} extra-fields

@@ -1,15 +1,16 @@
-(ns cmr.indexer.services.concepts.collection
+(ns cmr.indexer.data.concepts.collection
   "Contains functions to parse and convert collection concept"
   (:require [clojure.string :as s]
             [clj-time.format :as f]
             [cheshire.core :as json]
             [cmr.indexer.services.index-service :as idx]
+            [cmr.indexer.data.elasticsearch :as es]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.umm.related-url-helper :as ru]
-            [cmr.indexer.services.concepts.temporal :as temporal]
-            [cmr.indexer.services.concepts.attribute :as attrib]
-            [cmr.indexer.services.concepts.science-keyword :as sk]
-            [cmr.indexer.services.concepts.spatial :as spatial])
+            [cmr.indexer.data.concepts.temporal :as temporal]
+            [cmr.indexer.data.concepts.attribute :as attrib]
+            [cmr.indexer.data.concepts.science-keyword :as sk]
+            [cmr.indexer.data.concepts.spatial :as spatial])
   (:import cmr.spatial.mbr.Mbr))
 
 
@@ -37,7 +38,7 @@
       (error e (format "Error generating spatial for collection: %s. Skipping spatial."
                        (pr-str collection))))))
 
-(defmethod idx/concept->elastic-doc :collection
+(defmethod es/concept->elastic-doc :collection
   [context concept collection]
   (let [{:keys [concept-id provider-id revision-date]} concept
         {{:keys [short-name version-id processing-level-id collection-data-type]} :product

@@ -1,4 +1,4 @@
-(ns cmr.indexer.services.concepts.spatial
+(ns cmr.indexer.data.concepts.spatial
   "Contains functions to convert spatial geometry into indexed attributes."
   (:require [cmr.spatial.derived :as d]
 
