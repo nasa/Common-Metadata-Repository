@@ -1,4 +1,4 @@
-(ns cmr.indexer.services.concepts.science-keyword
+(ns cmr.indexer.data.concepts.science-keyword
   "Contains functions for converting science keyword domains into a elastic documents"
   (:require [clojure.string :as s]))
 

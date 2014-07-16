@@ -1,7 +1,6 @@
-(ns cmr.indexer.services.concepts.orbit-calculated-spatial-domain
+(ns cmr.indexer.data.concepts.orbit-calculated-spatial-domain
   "Contains functions for converting orbit calcuated spatial domains into a elastic documents"
-  (:require [clojure.string :as s]
-            [cmr.indexer.services.concepts.attribute :as attr]
+  (:require [cmr.indexer.data.concepts.attribute :as attr]
             [cmr.common.services.errors :as errors]))
 
 (defn ocsd->elastic-doc

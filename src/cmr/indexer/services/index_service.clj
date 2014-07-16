@@ -5,7 +5,6 @@
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.concepts :as cs]
             [cmr.transmit.metadata-db :as meta-db]
-            [clojurewerkz.elastisch.rest.bulk :as bulk]
             [cmr.indexer.data.elasticsearch :as es]
             [cmr.umm.core :as umm]
             [cheshire.core :as cheshire]
@@ -14,41 +13,6 @@
             [cmr.common.services.errors :as errors]
             [cmr.system-trace.core :refer [deftracefn]]))
 
-(defmulti concept->elastic-doc
-  "Returns elastic json that can be used to insert into Elasticsearch for the given concept"
-  (fn [context concept umm-concept]
-    (cs/concept-id->type (:concept-id concept))))
-
-(defn- concept->type
-  "Returns concept type for the given concept"
-  [concept]
-  (cs/concept-id->type (:concept-id concept)))
-
-(defn prepare-batch
-  "Convert a batch of concepts into elastic docs for bulk indexing."
-  [context concept-batch]
-  ;; we only handle these formats right now
-  (let [parseable-batch (filterv #(#{"application/echo10+xml" "application/dif+xml"} (:format %)) concept-batch)
-        num-skipped (- (count concept-batch) (count parseable-batch))]
-    (when (> num-skipped 0)
-      (debug "Skipping" num-skipped "concepts that are not in a supported format."))
-    (doall
-      ;; Remove nils because some granules may fail with an exception and return nil.
-      (filter identity
-              (pmap (fn [concept]
-                      (try
-                        (let [umm-concept (umm/parse-concept concept)
-                              concept-id (:concept-id concept)
-                              revision-id (:revision-id concept)
-                              index-name (idx-set/get-concept-index-name context concept-id revision-id concept)
-                              type (name (concept->type concept))
-                              elastic-doc (concept->elastic-doc context concept umm-concept)]
-                          (merge elastic-doc {:_index index-name :_type type}))
-                        (catch Exception e
-                          (error e (str "Skipping failed granule. Exception trying to convert concept to elastic doc:"
-                                        (pr-str concept))))))
-                    parseable-batch)))))
-
 (deftracefn bulk-index
   "Index many concepts at once using the elastic bulk api. The concepts to be indexed are passed
   directly to this function - it does not retrieve them from metadata db. The bulk API is
@@ -56,7 +20,7 @@
   of concepts that have been indexed"
   [context concept-batches]
   (reduce (fn [num-indexed batch]
-            (let [batch (prepare-batch context batch)]
+            (let [batch (es/prepare-batch context batch)]
               (es/bulk-index context batch)
               (+ num-indexed (count batch))))
           0
@@ -73,12 +37,12 @@
         delete-time (get-in umm-concept [:data-provider-timestamps :delete-time])
         ttl (when delete-time (t/in-millis (t/interval (t/now) delete-time)))
         concept-index (idx-set/get-concept-index-name context concept-id revision-id concept)
-        es-doc (concept->elastic-doc context concept umm-concept)]
+        es-doc (es/concept->elastic-doc context concept umm-concept)]
     (when-not (and ttl (<= ttl 0))
       (es/save-document-in-elastic
         context
         concept-index
-        (concept-mapping-types concept-type) es-doc (Integer. revision-id) ttl ignore-conflict))))
+        (concept-mapping-types concept-type) es-doc revision-id ttl ignore-conflict))))
 
 
 (deftracefn delete-concept
