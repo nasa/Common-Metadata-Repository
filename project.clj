@@ -4,13 +4,7 @@
                various dialects of each concept."
   :url "***REMOVED***projects/CMR/repos/cmr-umm-lib/browse"
 
-  ;; Add sonatype repository to pull in the 0.0.8-SNAPSHOT of org.clojure/data.xml
-  ;; We need this snapshot version of data.xml to address this issue: http://dev.clojure.org/jira/browse/DXML-14
-  ;; Once data.xml 0.0.8 is officially released, we should remove this repository
-  :repositories [["snapshots" "https://oss.sonatype.org/content/repositories/snapshots/"]]
-
   :dependencies [[org.clojure/clojure "1.6.0"]
-                 [org.clojure/data.xml "0.0.8-SNAPSHOT"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"]
                  [camel-snake-kebab "0.1.5"]
