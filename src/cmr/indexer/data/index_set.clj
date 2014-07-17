@@ -180,6 +180,7 @@
                    :entry-title (not-indexed (stored string-field-mapping))
                    :original-format (not-indexed (stored string-field-mapping))
                    :update-time (not-indexed (stored string-field-mapping))
+                   :coordinate-system (not-indexed (stored string-field-mapping))
 
                    ;; Collection fields added strictly for sorting granule results
                    :entry-title.lowercase string-field-mapping
