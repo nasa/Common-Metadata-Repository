@@ -29,6 +29,7 @@
    "browsable"
    "day-night"
    "cloud-cover"
+   "coordinate-system"
    "ords-info"
    "ords"])
 
@@ -51,6 +52,7 @@
           [browsable] :browsable
           [day-night] :day-night
           [cloud-cover] :cloud-cover
+          [coordinate-system] :coordinate-system
           ords-info :ords-info
           ords :ords} :fields} elastic-result
         start-date (when start-date (str/replace (str start-date) #"\+0000" "Z"))
@@ -68,11 +70,11 @@
      :start-date start-date
      :end-date end-date
      :atom-links atom-links
-     ;; TODO spatial info goes here
      :online-access-flag downloadable
      :browse-flag browsable
      :day-night day-night
      :cloud-cover (str cloud-cover)
+     :coordinate-system coordinate-system
      :shapes (srl/ords-info->shapes ords-info ords)}))
 
 (def ATOM_HEADER_ATTRIBUTES
@@ -122,9 +124,9 @@
 (defn- atom-reference->xml-element
   "Converts a search result atom reference into an XML element"
   [reference]
-  (let [{:keys [id title updated dataset-id producer-gran-id
-                size original-format data-center start-date end-date atom-links
-                online-access-flag browse-flag day-night cloud-cover shapes]} reference]
+  (let [{:keys [id title updated dataset-id producer-gran-id size original-format
+                data-center start-date end-date atom-links online-access-flag browse-flag
+                day-night cloud-cover coordinate-system shapes]} reference]
     (x/element :entry {}
                (x/element :id {} id)
                (x/element :title {:type "text"} title)
@@ -141,6 +143,7 @@
                (x/element :echo:browseFlag {} browse-flag)
                (when day-night (x/element :echo:dayNightFlag {} day-night))
                (when cloud-cover (x/element :echo:cloudCover {} cloud-cover))
+               (when coordinate-system (x/element :echo:coordinateSystem {} coordinate-system))
                (map atom-spatial/shape->xml-element shapes))))
 
 (defn- append-links
