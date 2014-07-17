@@ -4,14 +4,8 @@
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
 
-  ;; Add sonatype repository to pull in the 0.0.8-SNAPSHOT of org.clojure/data.xml
-  ;; We need this snapshot version of data.xml to address this issue: http://dev.clojure.org/jira/browse/DXML-14
-  ;; Once data.xml 0.0.8 is officially released, we should remove this repository
-  :repositories [["snapshots" "https://oss.sonatype.org/content/repositories/snapshots/"]]
-
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [clj-http "0.9.1"]
-                 [org.clojure/data.xml "0.0.8-SNAPSHOT"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [nasa-cmr/cmr-umm-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]
