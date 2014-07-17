@@ -70,7 +70,6 @@
      :start-date start-date
      :end-date end-date
      :atom-links atom-links
-     ;; TODO spatial info goes here
      :online-access-flag downloadable
      :browse-flag browsable
      :day-night day-night
