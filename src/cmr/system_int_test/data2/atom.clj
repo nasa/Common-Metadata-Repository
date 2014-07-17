@@ -10,7 +10,8 @@
             [cmr.system-int-test.utils.url-helper :as url]
             [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [camel-snake-kebab :as csk]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Parsing the ATOM results
@@ -96,6 +97,7 @@
    :browse-flag (cx/string-at-path entry-elem [:browseFlag])
    :day-night-flag (cx/string-at-path entry-elem [:dayNightFlag])
    :cloud-cover (cx/string-at-path entry-elem [:cloudCover])
+   :coordinate-system (cx/string-at-path entry-elem [:coordinateSystem])
    :shapes (seq (xml-elem->shapes entry-elem))})
 
 (def parsed (atom nil))
@@ -156,12 +158,15 @@
                 beginning-date-time ending-date-time day-night cloud-cover]} granule
         related-urls (add-collection-links coll related-urls)
         dataset-id (get-in granule [:collection-ref :entry-title])
-        update-time (get-in granule [:data-provider-timestamps :update-time])]
+        update-time (get-in granule [:data-provider-timestamps :update-time])
+        granule-spatial-representation (get-in coll [:spatial-coverage :granule-spatial-representation])
+        coordinate-system (when granule-spatial-representation (csk/->SNAKE_CASE_STRING granule-spatial-representation))]
     {:id concept-id
      :title granule-ur
      :dataset-id dataset-id
      :producer-granule-id producer-gran-id
      :updated (str update-time)
+     :coordinate-system coordinate-system
      :size (str size)
      ;; TODO original-format will be changed to ECHO10 later once the metadata-db format is updated to ECHO10
      :original-format "application/echo10+xml"
