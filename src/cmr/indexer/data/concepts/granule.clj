@@ -3,6 +3,7 @@
   (:require [clojure.string :as s]
             [clj-time.format :as f]
             [cheshire.core :as json]
+            [camel-snake-kebab :as csk]
             [cmr.indexer.data.elasticsearch :as es]
             [cmr.umm.core :as umm]
             [cmr.umm.related-url-helper :as ru]
@@ -73,13 +74,15 @@
         downloadable (not (empty? (ru/downloadable-urls related-urls)))
         browsable (not (empty? (ru/browse-urls related-urls)))
         update-time (get-in umm-granule [:data-provider-timestamps :update-time])
-        update-time (f/unparse (f/formatters :date-time) update-time)]
+        update-time (f/unparse (f/formatters :date-time) update-time)
+        granule-spatial-representation (get-in parent-collection [:spatial-coverage :granule-spatial-representation])]
     (merge {:concept-id concept-id
             :collection-concept-id parent-collection-id
 
             :entry-title (:entry-title parent-collection)
             :original-format format
             :update-time update-time
+            :coordinate-system (when granule-spatial-representation (csk/->SNAKE_CASE_STRING granule-spatial-representation))
 
             :entry-title.lowercase (s/lower-case (:entry-title parent-collection))
             :short-name.lowercase (s/lower-case (get-in parent-collection [:product :short-name]))
