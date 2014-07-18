@@ -63,7 +63,8 @@
   [ext-mime-type headers]
   (let [mime-type (or ext-mime-type (get headers "accept"))]
     (mt/validate-request-mime-type mime-type supported-mime-types)
-    (mt/mime-type->format mime-type)))
+    ;; set the default format to xml
+    (mt/mime-type->format mime-type :xml)))
 
 (defn- find-concepts
   "Invokes query service to find results and returns the response"
@@ -75,8 +76,8 @@
         _ (info (format "Searching for %ss in format %s with params %s." (name concept-type) result-format (pr-str params)))
 
         ;; TODO - We shouldn't be stuffing this info in the context.
-        context (assoc context :concept-type-w-extension concept-type-w-extension
-                       :atom-request-url (url/atom-request-url context concept-type-w-extension query-string))
+        context (assoc context :atom-request-url
+                       (url/atom-request-url context concept-type result-format query-string))
 
         search-params (lp/process-legacy-psa params query-string)
         results (query-svc/find-concepts-by-parameters context concept-type search-params)]

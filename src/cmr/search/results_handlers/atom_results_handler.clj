@@ -89,7 +89,7 @@
    :xmlns:os "http://a9.com/-/spec/opensearch/1.1/"
    :esipdiscovery:version "1.2"})
 
-(defn- concept-type->atom-title
+(defn concept-type->atom-title
   "Returns the title of atom"
   [concept-type]
   (if (= concept-type :granule)
@@ -107,7 +107,7 @@
   [attribs field value]
   (if (empty? value) attribs (assoc attribs field value)))
 
-(defn- atom-link->xml-element
+(defn atom-link->hash
   "Convert an atom link to an XML element"
   [atom-link]
   (let [{:keys [href link-type title mime-type size inherited]} atom-link
@@ -119,7 +119,12 @@
                     (add-attribs :title title)
                     (add-attribs :hreflang "en-US")
                     (add-attribs :href href))]
-    (x/element :link attribs)))
+    attribs))
+
+(defn- atom-link->xml-element
+  "Convert an atom link to an XML element"
+  [atom-link]
+  (x/element :link (atom-link->hash atom-link)))
 
 (defn- atom-reference->xml-element
   "Converts a search result atom reference into an XML element"
@@ -139,12 +144,12 @@
                (when start-date (x/element :time:start {} start-date))
                (when end-date (x/element :time:end {} end-date))
                (map atom-link->xml-element atom-links)
+               (when coordinate-system (x/element :echo:coordinateSystem {} coordinate-system))
+               (map atom-spatial/shape->xml-element shapes)
                (x/element :echo:onlineAccessFlag {} online-access-flag)
                (x/element :echo:browseFlag {} browse-flag)
                (when day-night (x/element :echo:dayNightFlag {} day-night))
-               (when cloud-cover (x/element :echo:cloudCover {} cloud-cover))
-               (when coordinate-system (x/element :echo:coordinateSystem {} coordinate-system))
-               (map atom-spatial/shape->xml-element shapes))))
+               (when cloud-cover (x/element :echo:cloudCover {} cloud-cover)))))
 
 (defn- append-links
   "Append collection links to the given reference and returns the reference"
@@ -160,7 +165,7 @@
                         (concat atom-links))]
     (assoc reference :atom-links atom-links)))
 
-(defn- append-collection-links
+(defn append-collection-links
   "Returns the references after appending collection non-downloadable links into the atom-links"
   [context refs]
   (let [collection-concept-ids (distinct (map :collection-concept-id refs))
