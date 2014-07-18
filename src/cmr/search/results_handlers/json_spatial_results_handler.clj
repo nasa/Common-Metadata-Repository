@@ -42,11 +42,11 @@
 (defn shapes->json
   "Returns the json representation of the given shapes"
   [shapes]
-  (let [group-by-shapes (group-by type shapes)
-        points (map shape->string (get group-by-shapes cmr.spatial.point.Point))
-        boxes (map shape->string (get group-by-shapes cmr.spatial.mbr.Mbr))
-        polygons (get group-by-shapes cmr.spatial.polygon.Polygon)
-        lines (map shape->string (get group-by-shapes cmr.spatial.line.Line))
+  (let [shapes-by-type (group-by type shapes)
+        points (map shape->string (get shapes-by-type cmr.spatial.point.Point))
+        boxes (map shape->string (get shapes-by-type cmr.spatial.mbr.Mbr))
+        polygons (get shapes-by-type cmr.spatial.polygon.Polygon)
+        lines (map shape->string (get shapes-by-type cmr.spatial.line.Line))
         spatial {:points points
                  :boxes boxes
                  :polygons polygons
