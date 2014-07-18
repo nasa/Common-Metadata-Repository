@@ -25,7 +25,7 @@
 
   )
 
-(defn- point-str->points
+(defn point-str->points
   "Converts a string of lat lon pairs separated by spaces into a list of points"
   [s]
   (->> (str/split s #" ")

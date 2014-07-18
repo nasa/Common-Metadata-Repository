@@ -139,7 +139,7 @@
                                                  {:format-as-ext? true})
                           [:status :body]))))))
 
-(deftest search-granule-atom
+(deftest search-granule-atom-and-json
   (let [ru1 (dc/related-url "GET DATA" "http://example.com")
         ru2 (dc/related-url "GET DATA" "http://example2.com")
         ru3 (dc/related-url "GET RELATED VISUALIZATION" "http://example.com/browse")
@@ -223,5 +223,27 @@
                (search/find-grans-atom :granule
                                        {:granule-ur "Granule1"}
                                        {:format-as-ext? true})
-               [:status :results]))))))
+               [:status :results]))))
 
+    ;; search json format
+    (let [gran-json (da/granules->expected-atom [gran1] [coll1] "granules.json?granule-ur=Granule1")
+          response (search/find-grans-json :granule {:granule-ur "Granule1"})]
+      (is (= 200 (:status response)))
+      (is (= gran-json
+             (:results response))))
+
+    (let [gran-json (da/granules->expected-atom [gran1 gran2] [coll1 coll2] "granules.json")
+          response (search/find-grans-json :granule {})]
+      (is (= 200 (:status response)))
+      (is (= gran-json
+             (:results response))))
+
+    (testing "as extension"
+      (is (= (select-keys
+               (search/find-grans-json :granule {:granule-ur "Granule1"})
+               [:status :results])
+             (select-keys
+               (search/find-grans-json :granule
+                                       {:granule-ur "Granule1"}
+                                       {:format-as-ext? true})
+               [:status :results]))))))
