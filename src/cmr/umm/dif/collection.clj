@@ -58,6 +58,7 @@
   (c/map->UmmCollection
     {:entry-id (cx/string-at-path xml-struct [:Entry_ID])
      :entry-title (cx/string-at-path xml-struct [:Entry_Title])
+     :summary (cx/string-at-path xml-struct [:Summary :Abstract])
      :product (xml-elem->Product xml-struct)
      :data-provider-timestamps (xml-elem->DataProviderTimestamps xml-struct)
      ;:spatial-keywords (seq (cx/strings-at-path xml-struct [:Location]))
@@ -90,8 +91,8 @@
     ([collection indent?]
      (let [{{:keys [version-id processing-level-id collection-data-type]} :product
             {:keys [insert-time update-time]} :data-provider-timestamps
-            :keys [entry-id entry-title temporal organizations science-keywords platforms product-specific-attributes
-                   projects related-urls spatial-coverage]} collection
+            :keys [entry-id entry-title summary temporal organizations science-keywords platforms
+                   product-specific-attributes projects related-urls spatial-coverage]} collection
            ;; DIF only has range-date-times, so we ignore the temporal field if it is not of range-date-times
            temporal (when (seq (:range-date-times temporal)) temporal)
            emit-fn (if indent? x/indent-str x/emit-str)]
@@ -108,7 +109,7 @@
                     (when-not (empty? projects)
                       (pj/generate-projects projects))
                     (org/generate-data-center organizations)
-                    (x/element :Summary {} (x/element :Abstract {} "dummy"))
+                    (x/element :Summary {} (x/element :Abstract {} summary))
                     (when-not (empty? related-urls)
                       (ru/generate-related-urls related-urls))
                     (x/element :Metadata_Name {} "dummy")

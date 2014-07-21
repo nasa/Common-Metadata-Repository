@@ -40,6 +40,9 @@
 (def entry-titles
   (ext-gen/string-alpha-numeric 1 1030))
 
+(def summary
+  (ext-gen/string-alpha-numeric 1 4000))
+
 (def sensor-short-names
   (ext-gen/string-ascii 1 80))
 
@@ -133,6 +136,7 @@
               (gen/hash-map
                 :entry-id entry-ids
                 :entry-title entry-titles
+                :summary summary
                 :product products
                 :data-provider-timestamps data-provider-timestamps
                 :temporal t/temporals

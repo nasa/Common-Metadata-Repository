@@ -229,7 +229,7 @@
       </Personnel>
     </Data_Center>
     <Summary>
-      <Abstract>Each regional partner used the VEGA2000 dataset, providing a daily global image from the Vegetation sensor onboard the SPOT4 satellite. Each partner also used the Land Cover Classification System (LCCS) produced by FAO and UNEP (Di Gregorio and Jansen, 2000), which ensured that a standard legend was used over the globe. This hierarchical classification system allowed each partner to choose the most appropriate land cover classes which best describe their region, whilst also providing the possibility to translate regional classes to a more generalised global legend.</Abstract>
+      <Abstract>Summary of collection.</Abstract>
     </Summary>
     <Related_URL>
       <URL_Content_Type>
@@ -337,6 +337,7 @@
   (let [expected (umm-c/map->UmmCollection
                    {:entry-id "geodata_1848"
                     :entry-title "Global Land Cover 2000 (GLC 2000)"
+                    :summary "Summary of collection."
                     :product (umm-c/map->Product
                                {:short-name "geodata_1848"
                                 :long-name "Global Land Cover 2000 (GLC 2000)"

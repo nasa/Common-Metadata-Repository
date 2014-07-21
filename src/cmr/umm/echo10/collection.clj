@@ -74,6 +74,7 @@
     (c/map->UmmCollection
       {:entry-id (str (:short-name product) "_" (:version-id product))
        :entry-title (cx/string-at-path xml-struct [:DataSetId])
+       :summary (cx/string-at-path xml-struct [:Description])
        :product product
        :data-provider-timestamps data-provider-timestamps
        :spatial-keywords (seq (cx/strings-at-path xml-struct [:SpatialKeywords :Keyword]))
@@ -103,7 +104,7 @@
             dataset-id :entry-title
             {:keys [insert-time update-time delete-time]} :data-provider-timestamps
             :keys [organizations spatial-keywords temporal science-keywords platforms product-specific-attributes
-                   projects two-d-coordinate-systems related-urls spatial-coverage]} collection
+                   projects two-d-coordinate-systems related-urls spatial-coverage summary]} collection
            emit-fn (if indent? x/indent-str x/emit-str)]
        (emit-fn
          (x/element :Collection {}
@@ -115,7 +116,7 @@
                       (x/element :DeleteTime {} (str delete-time)))
                     (x/element :LongName {} long-name)
                     (x/element :DataSetId {} dataset-id)
-                    (x/element :Description {} "stubbed")
+                    (x/element :Description {} summary)
                     (when collection-data-type
                       (x/element :CollectionDataType {} collection-data-type))
                     (x/element :Orderable {} "true")

@@ -262,6 +262,7 @@
   (let [expected (umm-c/map->UmmCollection
                    {:entry-id "MINIMAL_1"
                     :entry-title "A minimal valid collection V 1"
+                    :summary "A minimal valid collection"
                     :product (umm-c/map->Product
                                {:short-name "MINIMAL"
                                 :long-name "A minimal valid collection"
