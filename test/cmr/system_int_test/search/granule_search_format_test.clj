@@ -204,46 +204,46 @@
     (index/refresh-elastic-index)
 
     (let [gran-atom (da/granules->expected-atom [gran1] [coll1] "granules.atom?granule-ur=Granule1")
-          response (search/find-grans-atom :granule {:granule-ur "Granule1"})]
+          response (search/find-concepts-atom :granule {:granule-ur "Granule1"})]
       (is (= 200 (:status response)))
       (is (= gran-atom
              (:results response))))
 
     (let [gran-atom (da/granules->expected-atom [gran1 gran2] [coll1 coll2] "granules.atom")
-          response (search/find-grans-atom :granule {})]
+          response (search/find-concepts-atom :granule {})]
       (is (= 200 (:status response)))
       (is (= gran-atom
              (:results response))))
 
     (testing "as extension"
       (is (= (select-keys
-               (search/find-grans-atom :granule {:granule-ur "Granule1"})
+               (search/find-concepts-atom :granule {:granule-ur "Granule1"})
                [:status :results])
              (select-keys
-               (search/find-grans-atom :granule
+               (search/find-concepts-atom :granule
                                        {:granule-ur "Granule1"}
                                        {:format-as-ext? true})
                [:status :results]))))
 
     ;; search json format
     (let [gran-json (da/granules->expected-atom [gran1] [coll1] "granules.json?granule-ur=Granule1")
-          response (search/find-grans-json :granule {:granule-ur "Granule1"})]
+          response (search/find-concepts-json :granule {:granule-ur "Granule1"})]
       (is (= 200 (:status response)))
       (is (= gran-json
              (:results response))))
 
     (let [gran-json (da/granules->expected-atom [gran1 gran2] [coll1 coll2] "granules.json")
-          response (search/find-grans-json :granule {})]
+          response (search/find-concepts-json :granule {})]
       (is (= 200 (:status response)))
       (is (= gran-json
              (:results response))))
 
     (testing "as extension"
       (is (= (select-keys
-               (search/find-grans-json :granule {:granule-ur "Granule1"})
+               (search/find-concepts-json :granule {:granule-ur "Granule1"})
                [:status :results])
              (select-keys
-               (search/find-grans-json :granule
+               (search/find-concepts-json :granule
                                        {:granule-ur "Granule1"}
                                        {:format-as-ext? true})
                [:status :results]))))))

@@ -1,4 +1,4 @@
-(ns cmr.system-int-test.data2.json
+(ns cmr.system-int-test.data2.atom-json
   "Contains helper functions for converting granules into the expected map of parsed json results."
   (:require [cmr.spatial.polygon :as poly]
             [cmr.spatial.ring :as r]
@@ -12,8 +12,7 @@
 
 (defn json-polygons->polygons
   [polygons]
-  (when (seq polygons)
-    (map #(poly/polygon (map atom/ring-str->ring %)) polygons)))
+  (map #(poly/polygon (map atom/ring-str->ring %)) polygons))
 
 (defn json-points->points
   [points]
