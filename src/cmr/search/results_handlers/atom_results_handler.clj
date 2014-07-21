@@ -8,6 +8,7 @@
             [clojure.string :as str]
             [clj-time.core :as time]
             [cmr.spatial.serialize :as srl]
+            [cmr.search.services.url-helper :as url]
             [cmr.search.results-handlers.atom-spatial-results-handler :as atom-spatial]
             [cmr.search.results-handlers.atom-links-results-handler :as atom-links]))
 
@@ -107,7 +108,7 @@
   [attribs field value]
   (if (empty? value) attribs (assoc attribs field value)))
 
-(defn atom-link->hash
+(defn atom-link->attribute-map
   "Convert an atom link to an XML element"
   [atom-link]
   (let [{:keys [href link-type title mime-type size inherited]} atom-link
@@ -124,7 +125,7 @@
 (defn- atom-link->xml-element
   "Convert an atom link to an XML element"
   [atom-link]
-  (x/element :link (atom-link->hash atom-link)))
+  (x/element :link (atom-link->attribute-map atom-link)))
 
 (defn- atom-reference->xml-element
   "Converts a search result atom reference into an XML element"
@@ -175,15 +176,16 @@
 (defmethod qs/search-results->response :atom
   [context query results]
   (let [{:keys [hits took items]} results
+        {:keys [concept-type result-format]} query
         xml-fn (if (:pretty? query) x/indent-str x/emit-str)
-        items (if (= :granule (:concept-type query))
+        items (if (= :granule concept-type)
                 (append-collection-links context items)
                 items)]
     (xml-fn
       (x/element :feed ATOM_HEADER_ATTRIBUTES
                  (x/element :updated {} (str (time/now)))
-                 (x/element :id {} (:atom-request-url context))
-                 (x/element :title {:type "text"} (concept-type->atom-title (:concept-type query)))
+                 (x/element :id {} (url/atom-request-url context concept-type result-format))
+                 (x/element :title {:type "text"} (concept-type->atom-title concept-type))
                  (map atom-reference->xml-element items)))))
 
 
