@@ -10,16 +10,10 @@
             [clojure.string :as str]
             [cmr.system-int-test.data2.atom :as atom]))
 
-(defn- json-ring->ring
-  "Parses a ring as represented in JSON into a cmr.spatial.ring.Ring"
-  [jr]
-  (let [points (:points jr)]
-    (r/ring (map #(p/point (:lon %) (:lat %)) points))))
-
 (defn json-polygons->polygons
   [polygons]
   (when (seq polygons)
-    (map #(poly/polygon (map json-ring->ring (:rings %))) polygons)))
+    (map #(poly/polygon (map atom/ring-str->ring %)) polygons)))
 
 (defn json-points->points
   [points]

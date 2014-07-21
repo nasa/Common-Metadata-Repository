@@ -34,7 +34,7 @@
        (map (fn [[lat lon]]
               (p/point lon lat)))))
 
-(defn- ring-str->ring
+(defn ring-str->ring
   "Parses a ring as represented in ATOM into a cmr.spatial.ring.Ring"
   [s]
   (r/ring (point-str->points s)))
