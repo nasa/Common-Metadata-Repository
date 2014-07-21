@@ -9,7 +9,7 @@
     "Converts a spatial shape into the string of ordinates"))
 
 (defn ring->string
-  "Converts a ring _for a polygon with holes_ to a string."
+  "Converts a ring to a string."
   [ring]
   (atom-spatial/points-map->points-str ring))
 
@@ -19,10 +19,10 @@
   (shape->string
     [{:keys [rings]}]
     (if (= (count rings) 1)
-      (atom-spatial/points-map->points-str (first rings))
+      [(atom-spatial/points-map->points-str (first rings))]
       (let [boundary (first rings)
             holes (rest rings)]
-        (concat (ring->string boundary) (map ring->string holes)))))
+        (concat [(ring->string boundary)] (map ring->string holes)))))
 
   cmr.spatial.point.Point
   (shape->string
@@ -45,7 +45,7 @@
   (let [shapes-by-type (group-by type shapes)
         points (map shape->string (get shapes-by-type cmr.spatial.point.Point))
         boxes (map shape->string (get shapes-by-type cmr.spatial.mbr.Mbr))
-        polygons (get shapes-by-type cmr.spatial.polygon.Polygon)
+        polygons (map shape->string (get shapes-by-type cmr.spatial.polygon.Polygon))
         lines (map shape->string (get shapes-by-type cmr.spatial.line.Line))
         spatial {:points points
                  :boxes boxes
