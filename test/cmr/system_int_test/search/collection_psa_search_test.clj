@@ -15,62 +15,23 @@
 
 (use-fixtures :each (ingest/reset-fixture "PROV1"))
 
-(deftest invalid-psa-searches
-  (are [v error]
-       (= {:status 422 :errors [error]}
-          (search/find-refs :collection {"attribute[]" v}))
-       ",alpha,a" (am/invalid-type-msg "")
-       "foo,alpha,a" (am/invalid-type-msg "foo")
-       ",alpha,a,b" (am/invalid-type-msg "")
-
-       "string,,a" (am/invalid-name-msg "")
-       "string,,a,b" (am/invalid-name-msg "")
-       "string,alpha," (am/invalid-value-msg :string "")
-       "string,alpha" (am/invalid-num-parts-msg)
-       "string,alpha,," (am/one-of-min-max-msg)
-       "string,alpha,b,a" (am/max-must-be-greater-than-min-msg "b" "a")
-       "string,alpha,b,b" (am/max-must-be-greater-than-min-msg "b" "b")
-
-       "float,alpha,a" (am/invalid-value-msg :float "a")
-       "float,alpha,a,0" (am/invalid-value-msg :float "a")
-       "float,alpha,0,b" (am/invalid-value-msg :float "b")
-
-       "int,alpha,a" (am/invalid-value-msg :int "a")
-       "int,alpha,a,0" (am/invalid-value-msg :int "a")
-       "int,alpha,0,b" (am/invalid-value-msg :int "b")
-
-       "datetime,alpha,a" (am/invalid-value-msg :datetime "a")
-       "datetime,alpha,a,2000-01-01T12:23:45" (am/invalid-value-msg :datetime "a")
-       "datetime,alpha,2000-01-01T12:23:45,b" (am/invalid-value-msg :datetime "b")
-
-       "time,alpha,a" (am/invalid-value-msg :time "a")
-       "time,alpha,a,12:23:45" (am/invalid-value-msg :time "a")
-       "time,alpha,12:23:45,b" (am/invalid-value-msg :time "b")
-
-       "date,alpha,a" (am/invalid-value-msg :date "a")
-       "date,alpha,a,2000-01-01" (am/invalid-value-msg :date "a")
-       "date,alpha,2000-01-01,b" (am/invalid-value-msg :date "b"))
-
-  (is (= {:status 422 :errors [(am/attributes-must-be-sequence-msg)]}
-         (search/find-refs :collection {"attribute" "string,alpha,a"}))))
-
 ;; These are for boolean, datetime_string, time_string, and date_string attribute types which are all indexed and searchable as strings.
-; (deftest indexed-as-string-psas-search-test
-;   (let [psa1 (dc/psa "bool" :boolean true)
-;         psa2 (dc/psa "dts" :datetime-string "2012-01-01T01:02:03Z")
-;         psa3 (dc/psa "ts" :time-string "01:02:03Z")
-;         psa4 (dc/psa "ds" :date-string "2012-01-01")
-;         coll1 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2 psa3]}))
-;         coll2 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa2 psa3]}))
-;         coll3 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa3 psa4]}))]
-;     (index/refresh-elastic-index)
-;     (are [v items]
-;          (d/refs-match? items (search/find-refs :collection {"attribute[]" v}))
-;          "string,bool,true" [coll1]
-;          "string,bool,false" []
-;          "string,dts,2012-01-01T01:02:03Z" [coll1 coll2]
-;          "string,ts,01:02:03Z" [coll1 coll2 coll3]
-;          "string,ds,2012-01-01" [coll3])))
+(deftest indexed-as-string-psas-search-test
+  (let [psa1 (dc/psa "bool" :boolean true)
+        psa2 (dc/psa "dts" :datetime-string "2012-01-01T01:02:03Z")
+        psa3 (dc/psa "ts" :time-string "01:02:03Z")
+        psa4 (dc/psa "ds" :date-string "2012-01-01")
+        coll1 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2 psa3]}))
+        coll2 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa2 psa3]}))
+        coll3 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa3 psa4]}))]
+    (index/refresh-elastic-index)
+    (are [v items]
+         (d/refs-match? items (search/find-refs :collection {"attribute[]" v}))
+         "string,bool,true" [coll1]
+         "string,bool,false" []
+         "string,dts,2012-01-01T01:02:03Z" [coll1 coll2]
+         "string,ts,01:02:03Z" [coll1 coll2 coll3]
+         "string,ds,2012-01-01" [coll3])))
 
 (deftest string-psas-search-test
   (let [psa1 (dc/psa "alpha" :string "ab")
