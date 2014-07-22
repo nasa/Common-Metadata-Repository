@@ -16,6 +16,7 @@
   {:collection {:entry-title :string
                 :entry-id :string
                 :provider :string
+                :attribute :attribute
                 :short-name :string
                 :version :string
                 :updated-since :updated-since
