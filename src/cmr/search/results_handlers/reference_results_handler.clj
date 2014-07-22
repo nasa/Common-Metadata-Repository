@@ -21,12 +21,6 @@
    "version-id"])
 
 ;; This is temporary until ATOM JSON response is implemented
-(defmethod elastic-search-index/concept-type+result-format->fields [:granule :json]
-  [concept-type result-format]
-  ["granule-ur"
-   "provider-id"])
-
-;; This is temporary until ATOM JSON response is implemented
 (defmethod elastic-search-index/concept-type+result-format->fields [:collection :json]
   [concept-type result-format]
   ["entry-title"
@@ -50,11 +44,6 @@
      :location (format "%s%s" (url/reference-root context) concept-id)
      :name name-value}))
 
-;; This is temporary until ATOM JSON response is implemented
-(defmethod elastic-results/elastic-result->query-result-item :json
-  [context query elastic-result]
-  (elastic-results/elastic-result->query-result-item context (assoc query :result-format :xml) elastic-result))
-
 (defn- reference->xml-element
   "Converts a search result reference into an XML element"
   [reference]
@@ -77,14 +66,7 @@
                  (x/->Element :references {}
                               (map reference->xml-element items))))))
 
-;; This is temporary until ATOM JSON response is implemented
-(defmethod qs/search-results->response :json
-  [context query results]
-  (println "results:" (pr-str results))
-  (let [{:keys [hits took items]} results
-        response-refs (map #(set/rename-keys % {:concept-id :id}) items)
-        response-results {:hits hits :took took :references response-refs}]
-    (json/generate-string response-results {:pretty (:pretty? query)})))
+
 
 
 

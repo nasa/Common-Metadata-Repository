@@ -15,9 +15,7 @@
 
 (defn atom-request-url
   "Returns the atom request url based on search concept type with extension and query string"
-  [context concept-type-w-extension query-string]
-  (let [concept-type-w-extension (if (re-find #"atom" concept-type-w-extension)
-                                   concept-type-w-extension
-                                   (str concept-type-w-extension ".atom"))
+  [context concept-type result-format]
+  (let [{:keys [query-string]} context
         query-string (if (empty? query-string) query-string (str "?" query-string))]
-    (format "%s%s%s" (search-root context) concept-type-w-extension query-string)))
+    (format "%s%ss.%s%s" (search-root context) (name concept-type) (name result-format) query-string)))
