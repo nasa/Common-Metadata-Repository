@@ -17,6 +17,7 @@
             ;; required here to avoid circular dependency in query service
             [cmr.search.results-handlers.csv-results-handler]
             [cmr.search.results-handlers.atom-results-handler]
+            [cmr.search.results-handlers.atom-json-results-handler]
             [cmr.search.results-handlers.reference-results-handler]
             [cmr.search.results-handlers.metadata-results-handler]))
 

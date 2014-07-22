@@ -14,32 +14,69 @@
   (str/join " " (mapcat #(vector (:lat %) (:lon %)) points)))
 
 
-(defprotocol JsonSpatialHandler
+(defprotocol AtomSpatialHandler
   (shape->string
     [shape]
-    "Converts a spatial shape into the string of ordinates"))
+    "Converts a spatial shape into the string of ordinates")
+  (shape->xml-element
+    [shape]
+    "Converts a spatial shape into the ATOM XML element"))
 
-(extend-protocol JsonSpatialHandler
+(extend-protocol AtomSpatialHandler
 
   cmr.spatial.point.Point
   (shape->string
     [{:keys [lon lat]}]
     (str lat " " lon))
 
+  (shape->xml-element
+    [point]
+    (x/element :georss:point {} (shape->string point)))
+
+
   cmr.spatial.line.Line
   (shape->string
     [line]
     (points-map->points-str line))
+
+  (shape->xml-element
+    [line]
+    (x/element :georss:line {} (shape->string line)))
+
 
   cmr.spatial.mbr.Mbr
   (shape->string
     [{:keys [west north east south]}]
     (str/join " " [south west north east]))
 
+  (shape->xml-element
+    [mbr]
+    (x/element :georss:box {} (shape->string mbr)))
+
+
   cmr.spatial.ring.Ring
   (shape->string
     [ring]
-    (points-map->points-str ring)))
+    (points-map->points-str ring))
+
+  (shape->xml-element
+    [ring]
+    (x/element :gml:LinearRing {}
+               (x/element :gml:posList {}
+                          (shape->string ring))))
+
+  cmr.spatial.polygon.Polygon
+  (shape->xml-element
+    [{:keys [rings]}]
+    (if (= (count rings) 1)
+      (x/element :georss:polygon {} (shape->string (first rings)))
+      (let [boundary (first rings)
+            holes (rest rings)]
+        (x/element :georss:where {}
+                   (x/element :gml:Polygon {}
+                              (x/element :gml:exterior {} (shape->xml-element boundary))
+                              (x/element :gml:interior {} (map shape->xml-element holes))))))))
+
 
 (defn- polygon->json
   "Returns the json representation of the given polygon"
@@ -66,45 +103,4 @@
            spatial
            (for [[k v] spatial :when (empty? v)] k))))
 
-
-(defprotocol AtomSpatialHandler
-  (shape->xml-element
-    [shape]
-    "Converts a spatial shape into the ATOM XML element"))
-
-(extend-protocol AtomSpatialHandler
-
-  cmr.spatial.point.Point
-  (shape->xml-element
-    [point]
-    (x/element :georss:point {} (shape->string point)))
-
-  cmr.spatial.line.Line
-  (shape->xml-element
-    [line]
-    (x/element :georss:line {} (shape->string line)))
-
-  cmr.spatial.mbr.Mbr
-  (shape->xml-element
-    [mbr]
-    (x/element :georss:box {} (shape->string mbr)))
-
-  cmr.spatial.ring.Ring
-  (shape->xml-element
-    [ring]
-    (x/element :gml:LinearRing {}
-               (x/element :gml:posList {}
-                          (shape->string ring))))
-
-  cmr.spatial.polygon.Polygon
-  (shape->xml-element
-    [{:keys [rings]}]
-    (if (= (count rings) 1)
-      (x/element :georss:polygon {} (shape->string (first rings)))
-      (let [boundary (first rings)
-            holes (rest rings)]
-        (x/element :georss:where {}
-                   (x/element :gml:Polygon {}
-                              (x/element :gml:exterior {} (shape->xml-element boundary))
-                              (x/element :gml:interior {} (map shape->xml-element holes))))))))
 
