@@ -84,7 +84,7 @@
   [psa]
   (let [{:keys [name data-type value]} psa
         field-name (type->field-name data-type)]
-    (if (= :string data-type)
+    (if (some #{data-type} [:string :boolean :time-string :date-string :datetime-string])
       [{:name name
         field-name (value->elastic-value data-type value)}
        {:name name
