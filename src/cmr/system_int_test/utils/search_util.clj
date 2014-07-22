@@ -18,6 +18,25 @@
             [cmr.system-int-test.data2.atom :as da]
             [cmr.system-int-test.data2.atom-json :as dj]))
 
+(defn csv->tuples
+  "Convert a comma-separated-value string into a set of tuples to be use with find-refs."
+  [csv]
+  (let [[type name min-value max-value] (str/split csv #"," -1)
+        tuples [["attribute[][name]" name]
+                ["attribute[][type]" type]]]
+    (cond
+      (and (not (empty? max-value)) (not (empty? min-value)))
+      (into tuples [["attribute[][minValue]" min-value]
+                    ["attribute[][maxValue]" max-value]])
+      (not (empty? max-value))
+      (conj tuples ["attribute[][maxValue]" max-value])
+
+      max-value ;; max-value is empty but not nil
+      (conj tuples ["attribute[][minValue]" min-value])
+
+      :else ; min-value is really value
+      (conj tuples ["attribute[][value]" min-value]))))
+
 (defn params->snake_case
   "Converts search parameters to snake_case"
   [params]

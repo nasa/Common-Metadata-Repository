@@ -1,0 +1,363 @@
+(ns cmr.system-int-test.search.collection-psa-search-test
+  "Tests searching for granules by product specific attributes."
+  (:require [clojure.test :refer :all]
+            [clj-time.core :as t]
+            [clj-time.format :as f]
+            [clojure.string :as s]
+            [cmr.system-int-test.utils.ingest-util :as ingest]
+            [cmr.system-int-test.utils.search-util :as search]
+            [cmr.system-int-test.utils.index-util :as index]
+            [cmr.system-int-test.data2.collection :as dc]
+            [cmr.system-int-test.data2.granule :as dg]
+            [cmr.system-int-test.data2.core :as d]
+            [cmr.search.services.messages.attribute-messages :as am]
+            [clj-http.client :as client]))
+
+(use-fixtures :each (ingest/reset-fixture "PROV1"))
+
+(deftest invalid-psa-searches
+  (are [v error]
+       (= {:status 422 :errors [error]}
+          (search/find-refs :collection {"attribute[]" v}))
+       ",alpha,a" (am/invalid-type-msg "")
+       "foo,alpha,a" (am/invalid-type-msg "foo")
+       ",alpha,a,b" (am/invalid-type-msg "")
+
+       "string,,a" (am/invalid-name-msg "")
+       "string,,a,b" (am/invalid-name-msg "")
+       "string,alpha," (am/invalid-value-msg :string "")
+       "string,alpha" (am/invalid-num-parts-msg)
+       "string,alpha,," (am/one-of-min-max-msg)
+       "string,alpha,b,a" (am/max-must-be-greater-than-min-msg "b" "a")
+       "string,alpha,b,b" (am/max-must-be-greater-than-min-msg "b" "b")
+
+       "float,alpha,a" (am/invalid-value-msg :float "a")
+       "float,alpha,a,0" (am/invalid-value-msg :float "a")
+       "float,alpha,0,b" (am/invalid-value-msg :float "b")
+
+       "int,alpha,a" (am/invalid-value-msg :int "a")
+       "int,alpha,a,0" (am/invalid-value-msg :int "a")
+       "int,alpha,0,b" (am/invalid-value-msg :int "b")
+
+       "datetime,alpha,a" (am/invalid-value-msg :datetime "a")
+       "datetime,alpha,a,2000-01-01T12:23:45" (am/invalid-value-msg :datetime "a")
+       "datetime,alpha,2000-01-01T12:23:45,b" (am/invalid-value-msg :datetime "b")
+
+       "time,alpha,a" (am/invalid-value-msg :time "a")
+       "time,alpha,a,12:23:45" (am/invalid-value-msg :time "a")
+       "time,alpha,12:23:45,b" (am/invalid-value-msg :time "b")
+
+       "date,alpha,a" (am/invalid-value-msg :date "a")
+       "date,alpha,a,2000-01-01" (am/invalid-value-msg :date "a")
+       "date,alpha,2000-01-01,b" (am/invalid-value-msg :date "b"))
+
+  (is (= {:status 422 :errors [(am/attributes-must-be-sequence-msg)]}
+         (search/find-refs :collection {"attribute" "string,alpha,a"}))))
+
+;; These are for boolean, datetime_string, time_string, and date_string attribute types which are all indexed and searchable as strings.
+; (deftest indexed-as-string-psas-search-test
+;   (let [psa1 (dc/psa "bool" :boolean true)
+;         psa2 (dc/psa "dts" :datetime-string "2012-01-01T01:02:03Z")
+;         psa3 (dc/psa "ts" :time-string "01:02:03Z")
+;         psa4 (dc/psa "ds" :date-string "2012-01-01")
+;         coll1 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2 psa3]}))
+;         coll2 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa2 psa3]}))
+;         coll3 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa3 psa4]}))]
+;     (index/refresh-elastic-index)
+;     (are [v items]
+;          (d/refs-match? items (search/find-refs :collection {"attribute[]" v}))
+;          "string,bool,true" [coll1]
+;          "string,bool,false" []
+;          "string,dts,2012-01-01T01:02:03Z" [coll1 coll2]
+;          "string,ts,01:02:03Z" [coll1 coll2 coll3]
+;          "string,ds,2012-01-01" [coll3])))
+
+(deftest string-psas-search-test
+  (let [psa1 (dc/psa "alpha" :string "ab")
+        psa2 (dc/psa "bravo" :string "bf")
+        psa3 (dc/psa "charlie" :string "foo")
+        psa4 (dc/psa "case" :string "up")
+
+        coll1 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2]}))
+        coll2 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa2 psa3]}))
+        coll3 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa4]}))]
+    (index/refresh-elastic-index)
+    (testing "search by value"
+      (are [v items]
+           (d/refs-match? items (search/find-refs :collection {"attribute[]" v}))
+           "string,alpha,ab" [coll1]
+           "string,alpha,AB" [coll1]
+           "string,alpha,c" []
+           "string,bravo,bf" [coll1 coll2]
+           "string,case,UP" [coll3]
+           "string,case,up" [coll3]))
+
+    (testing "search by value catalog-rest style"
+      (are [v items]
+           (d/refs-match? items (search/find-refs :collection (search/csv->tuples v)))
+           "string,alpha,ab" [coll1]
+           "string,alpha,c" []
+           "string,alpha,c" []
+           "string,bravo,bf" [coll1 coll2]))
+
+    (testing "searching with multiple attribute conditions"
+      (are [v items operation]
+           (d/refs-match?
+             items
+             (search/find-refs
+               :collection
+               (merge
+                 {"attribute[]" v}
+                 (when operation
+                   {"options[attribute][or]" (= operation :or)}))))
+
+           ["string,alpha,ab" "string,bravo,,bc"] [coll1] :or
+           ["string,alpha,ab" "string,bravo,,bc"] [] :and
+           ["string,alpha,ab" "string,bravo,bc,"] [coll1] :and
+           ; and is the default
+           ["string,alpha,ab" "string,bravo,,bc"] [] nil ))
+
+    (testing "searching with multiple attribute conditions catalog-rest style"
+      (are [v items operation]
+           (let [query (mapcat search/csv->tuples v)
+                 query (if operation
+                         (merge query ["options[attribute][or]" (= operation :or)])
+                         query)]
+             (d/refs-match?
+               items
+               (search/find-refs
+                 :collection
+                 query
+                 {:snake-kebab? false})))
+
+           ["string,alpha,ab" "string,bravo,,bc"] [coll1] :or
+           ["string,alpha,ab" "string,bravo,,bc"] [] :and
+           ["string,alpha,ab" "string,bravo,bc,"] [coll1] :and
+           ; and is the default
+           ["string,alpha,ab" "string,bravo,,bc"] [] nil ))
+
+    (testing "search by range"
+      (are [v items]
+           (d/refs-match? items (search/find-refs :collection {"attribute[]" v}))
+
+           ;; inside range
+           "string,alpha,aa,ac" [coll1]
+           ;; beginning edge of range
+           "string,alpha,ab,ac" [coll1]
+           ;; ending edge of range
+           "string,alpha,aa,ab" [coll1]
+
+           ;; only min range provided
+           "string,bravo,bc," [coll1 coll2]
+
+           ;; only max range provided
+           "string,bravo,,bg" [coll1 coll2]))
+
+    (testing "search by range catalog-rest style"
+      (are [v items]
+           (d/refs-match? items (search/find-refs :collection (search/csv->tuples v) {:snake-kebab? false}))
+
+           ;; inside range
+           "string,alpha,aa,ac"  [coll1]
+           ;; beginning edge of range
+           "string,alpha,ab,ac"[coll1]
+           ;; ending edge of range
+           "string,alpha,aa,ab" [coll1]
+
+           ;; only min range provided
+           "string,bravo,bc," [coll1 coll2]
+
+           ;; only max range provided
+           "string,bravo,,bg" [coll1 coll2]))))
+
+(deftest float-psas-search-test
+  (let [psa1 (dc/psa "alpha" :float 10)
+        psa2 (dc/psa "bravo" :float -12)
+        psa3 (dc/psa "charlie" :float 45)
+        coll1 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2]}))
+        coll2 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa2 psa3]}))]
+    (index/refresh-elastic-index)
+
+    (testing "search by value"
+      (are [v items]
+           (d/refs-match? items (search/find-refs :collection {"attribute[]" v}))
+           "float,alpha,10" [coll1]
+           "float,alpha,11" []
+           "float,bravo,-12" [coll1 coll2]
+           "float,charlie,45" [coll2]))
+
+    (testing "search by value legacy parameters"
+      (are [v items]
+           (d/refs-match? items (search/find-refs :collection (search/csv->tuples v)))
+           "float,alpha,10" [coll1]
+           "float,alpha,11" []
+           "float,bravo,-12" [coll1 coll2]
+           "float,charlie,45" [coll2]))
+
+    (testing "search by range"
+      (are [v items]
+           (d/refs-match? items (search/find-refs :collection {"attribute[]" v}))
+
+           ;; inside range
+           "float,alpha,9.2,11" [coll1]
+           ;; beginning edge of range
+           "float,alpha,10.0,10.6" [coll1]
+           ;; ending edge of range
+           "float,alpha,9.2,10.0" [coll1]
+
+           ;; only min range provided
+           "float,bravo,-120," [coll1 coll2]
+
+           ;; only max range provided
+           "float,bravo,,13.6" [coll1 coll2]
+           "float,charlie,44,45.1" [coll2]))
+
+    (testing "search by range legacy parameters"
+      (are [v items]
+           (d/refs-match? items (search/find-refs :collection (search/csv->tuples v) {:snake-kebab? false}))
+
+           ;; inside range
+           "float,alpha,9.2,11" [coll1]
+           ;; beginning edge of range
+           "float,alpha,10.0,10.6" [coll1]
+           ;; ending edge of range
+           "float,alpha,9.2,10.0" [coll1]
+
+           ;; only min range provided
+           "float,bravo,-120," [coll1 coll2]
+
+           ;; only max range provided
+           "float,bravo,,13.6" [coll1 coll2]
+           "float,charlie,44,45.1" [coll2]))))
+
+(deftest int-psas-search-test
+  (let [psa1 (dc/psa "alpha" :int 10)
+        psa2 (dc/psa "bravo" :int -12)
+        psa3 (dc/psa "charlie" :int 45)
+        coll1 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2]}))
+        coll2 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa2 psa3]}))]
+    (index/refresh-elastic-index)
+
+    (testing "search by value"
+      (are [v items]
+           (d/refs-match? items (search/find-refs :collection {"attribute[]" v}))
+           "int,alpha,10" [coll1]
+           "int,alpha,11" []
+           "int,bravo,-12" [coll1 coll2]))
+
+    (testing "search by value legacy parameters"
+      (are [v items]
+           (d/refs-match? items (search/find-refs :collection (search/csv->tuples v)))
+           "int,alpha,10" [coll1]
+           "int,alpha,11" []
+           "int,bravo,-12" [coll1 coll2]))
+
+    (testing "search by range"
+      (are [v items]
+           (d/refs-match? items (search/find-refs :collection {"attribute[]" v}))
+
+           ;; inside range
+           "int,alpha,9,11" [coll1]
+           ;; beginning edge of range
+           "int,alpha,10,11" [coll1]
+           ;; ending edge of range
+           "int,alpha,9,10" [coll1]
+
+           ;; only min range provided
+           "int,bravo,-120," [coll1 coll2]
+
+           ;; only max range provided
+           "int,bravo,,12" [coll1 coll2]
+           "int,charlie,44,46" [coll2]))
+
+    (testing "search by range legacy parameters"
+      (are [v items]
+           (d/refs-match? items (search/find-refs :collection (search/csv->tuples v) {:snake-kebab? false}))
+
+           ;; inside range
+           "int,alpha,9,11" [coll1]
+           ;; beginning edge of range
+           "int,alpha,10,11" [coll1]
+           ;; ending edge of range
+           "int,alpha,9,10" [coll1]
+
+           ;; only min range provided
+           "int,bravo,-120," [coll1 coll2]
+
+           ;; only max range provided
+           "int,bravo,,12" [coll1 coll2]
+
+           ;; range inheritance
+           "int,charlie,44,46" [coll2]))))
+
+(deftest datetime-psas-search-test
+  (let [psa1 (dc/psa "alpha" :datetime (d/make-datetime 10 false))
+        psa2 (dc/psa "bravo" :datetime (d/make-datetime 14 false))
+        psa3 (dc/psa "charlie" :datetime (d/make-datetime 45 false))
+        coll1 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2]}))
+        coll2 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa2 psa3]}))]
+    (index/refresh-elastic-index)
+
+    (testing "search by value"
+      (are [v n items]
+           (d/refs-match?
+             items (search/find-refs :collection {"attribute[]" (str v (d/make-datetime n))}))
+           "datetime,bravo," 14 [coll1, coll2]
+           "datetime,alpha," 11 []
+           "datetime,alpha," 10 [coll1]
+           "datetime,charlie," 45 [coll2]))
+
+    (testing "search by value legacy parameters"
+      (are [v n items]
+           (d/refs-match? items
+                          (search/find-refs :collection (search/csv->tuples (str v (d/make-datetime n)))))
+           "datetime,bravo," 14 [coll1, coll2]
+           "datetime,alpha," 11 []
+           "datetime,alpha," 10 [coll1]
+           "datetime,charlie," 45 [coll2]))
+
+    (testing "search by range"
+      (are [v min-n max-n items]
+           (let [min-v (d/make-datetime min-n)
+                 max-v (d/make-datetime max-n)
+                 full-value (str v min-v "," max-v)]
+             (d/refs-match? items (search/find-refs :collection {"attribute[]" full-value})))
+
+           ;; inside range
+           "datetime,alpha," 9 11 [coll1]
+           ;; beginning edge of range
+           "datetime,alpha," 10 11 [coll1]
+           ;; ending edge of range
+           "datetime,alpha," 9 10 [coll1]
+
+           ;; only min range provided
+           "datetime,bravo," 10 nil [coll1 coll2]
+
+           ;; only max range provided
+           "datetime,bravo," nil 17 [coll1 coll2]
+
+           "datetime,charlie," 44 45 [coll2]))
+
+    (testing "search by range legacy parameters"
+      (are [v min-n max-n items]
+           (let [min-v (d/make-datetime min-n)
+                 max-v (d/make-datetime max-n)
+                 full-value (str v min-v "," max-v)]
+             (d/refs-match? items (search/find-refs :collection (search/csv->tuples full-value) {:snake-kebab? false})))
+
+           ;; inside range
+           "datetime,alpha," 9 11 [coll1]
+           ;; beginning edge of range
+           "datetime,alpha," 10 11 [coll1]
+           ;; ending edge of range
+           "datetime,alpha," 9 10 [coll1]
+
+           ;; only min range provided
+           "datetime,bravo," 10 nil [coll1 coll2]
+
+           ;; only max range provided
+           "datetime,bravo," nil 17 [coll1 coll2]
+
+           "datetime,charlie," 44 45 [coll2]))
+
+    ))

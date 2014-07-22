@@ -44,7 +44,7 @@
 
 (defn search-url
   [type]
-  (format "http://localhost:%s/%ss" (transmit-config/search-port) (name type)))
+  (format "http://localhost:%s/%ss" 3103 (name type)))
 
 (defn search-reset-url
   "Clear cache in search app. Only development team to use this functionality."
