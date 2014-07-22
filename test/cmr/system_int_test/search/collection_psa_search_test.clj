@@ -358,6 +358,75 @@
            ;; only max range provided
            "datetime,bravo," nil 17 [coll1 coll2]
 
-           "datetime,charlie," 44 45 [coll2]))
+           "datetime,charlie," 44 45 [coll2]))))
 
-    ))
+
+(deftest time-psas-search-test
+  (let [psa1 (dc/psa "alpha" :time (d/make-time 10 false))
+        psa2 (dc/psa "bravo" :time (d/make-time 23 false))
+        psa3 (dc/psa "charlie" :time (d/make-time 45 false))
+        coll1 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2]}))
+        coll2 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa2 psa3]}))]
+    (index/refresh-elastic-index)
+
+    (testing "search by value"
+      (are [v n items]
+           (d/refs-match?
+             items (search/find-refs :collection {"attribute[]" (str v (d/make-time n))}))
+           "time,alpha," 10 [coll1]
+           "time,alpha," 11 []
+           "time,bravo," 23 [coll1 coll2]
+           "time,charlie," 45 [coll2]))
+
+    (testing "search by value legacy parameters"
+      (are [v n items]
+           (d/refs-match? items
+                          (search/find-refs :collection (search/csv->tuples (str v (d/make-time n)))))
+           "time,alpha," 10 [coll1]
+           "time,alpha," 11 []
+           "time,bravo," 23 [coll1 coll2]
+           "time,charlie," 45 [coll2]))
+
+    (testing "search by range"
+      (are [v min-n max-n items]
+           (let [min-v (d/make-time min-n)
+                 max-v (d/make-time max-n)
+                 full-value (str v min-v "," max-v)]
+             (d/refs-match? items (search/find-refs :collection {"attribute[]" full-value})))
+
+           ;; inside range
+           "time,alpha," 9 11 [coll1]
+           ;; beginning edge of range
+           "time,alpha," 10 11 [coll1]
+           ;; ending edge of range
+           "time,alpha," 9 10 [coll1]
+
+           ;; only min range provided
+           "time,bravo," 20 nil [coll1 coll2]
+
+           ;; only max range provided
+           "time,bravo," nil 24 [coll1 coll2]
+
+           "time,charlie," 44 45 [coll2]))
+
+    (testing "search by range legacy parameters"
+      (are [v min-n max-n items]
+           (let [min-v (d/make-time min-n)
+                 max-v (d/make-time max-n)
+                 full-value (str v min-v "," max-v)]
+             (d/refs-match? items (search/find-refs :collection (search/csv->tuples full-value) {:snake-kebab? false})))
+
+           ;; inside range
+           "time,alpha," 9 11 [coll1]
+           ;; beginning edge of range
+           "time,alpha," 10 11 [coll1]
+           ;; ending edge of range
+           "time,alpha," 9 10 [coll1]
+
+           ;; only min range provided
+           "time,bravo," 20 nil [coll1 coll2]
+
+           ;; only max range provided
+           "time,bravo," nil 24 [coll1 coll2]
+
+           "time,charlie," 44 45 [coll2]))))
