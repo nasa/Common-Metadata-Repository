@@ -86,7 +86,8 @@
        :two-d-coordinate-systems (two-d/xml-elem->TwoDCoordinateSystems xml-struct)
        :related-urls (ru/xml-elem->related-urls xml-struct)
        :spatial-coverage (xml-elem->SpatialCoverage xml-struct)
-       :organizations (org/xml-elem->Organizations xml-struct)})))
+       :organizations (org/xml-elem->Organizations xml-struct)
+       :associated-difs (seq (cx/strings-at-path xml-struct [:AssociatedDIFs :DIF :EntryId]))})))
 
 
 (defn parse-collection
@@ -104,7 +105,7 @@
             dataset-id :entry-title
             {:keys [insert-time update-time delete-time]} :data-provider-timestamps
             :keys [organizations spatial-keywords temporal science-keywords platforms product-specific-attributes
-                   projects two-d-coordinate-systems related-urls spatial-coverage summary]} collection
+                   projects two-d-coordinate-systems related-urls spatial-coverage summary associated-difs]} collection
            emit-fn (if indent? x/indent-str x/emit-str)]
        (emit-fn
          (x/element :Collection {}
@@ -138,6 +139,11 @@
                     (two-d/generate-two-ds two-d-coordinate-systems)
                     (ru/generate-access-urls related-urls)
                     (ru/generate-resource-urls related-urls)
+                    (when associated-difs
+                      (x/element :AssociatedDIFs {}
+                                 (for [associated-dif associated-difs]
+                                   (x/element :DIF {}
+                                              (x/element :EntryId {} associated-dif)))))
                     (generate-spatial spatial-coverage)
                     (ru/generate-browse-urls related-urls)))))))
 

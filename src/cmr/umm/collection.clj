@@ -190,4 +190,6 @@
    organizations
 
    spatial-coverage
+
+   associated-difs
    ])

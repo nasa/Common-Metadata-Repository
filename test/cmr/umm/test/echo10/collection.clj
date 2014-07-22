@@ -243,6 +243,17 @@
         <Type>Browse</Type>
       </OnlineResource>
     </OnlineResources>
+    <AssociatedDIFs>
+      <DIF>
+        <EntryId>DIF-255</EntryId>
+      </DIF>
+      <DIF>
+        <EntryId>DIF-256</EntryId>
+      </DIF>
+      <DIF>
+        <EntryId>DIF-257</EntryId>
+      </DIF>
+    </AssociatedDIFs>
  </Collection>")
 
 (def valid-collection-xml
@@ -374,6 +385,7 @@
                         :url "ftp://camex.nsstc.nasa.gov/camex3/dc8capac/browse/"
                         :description "Some description."
                         :title "Some description. (Browse)"})]
+                    :associated-difs ["DIF-255" "DIF-256" "DIF-257"]
                     :organizations
                     [(umm-c/map->Organization
                        {:type :processing-center
