@@ -15,7 +15,8 @@
             [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
             [cmr.umm.dif.collection :as dif-c]
-            [cmr.system-int-test.data2.atom :as da]))
+            [cmr.system-int-test.data2.atom :as da]
+            [cmr.system-int-test.data2.atom-json :as dj]))
 
 (defn params->snake_case
   "Converts search parameters to snake_case"
@@ -91,10 +92,10 @@
    (get-search-failure-data
      (find-concepts-in-format "text/csv" concept-type params options))))
 
-(defn find-grans-atom
+(defn find-concepts-atom
   "Returns the response of granule search in atom format"
   ([concept-type params]
-   (find-grans-atom concept-type params {}))
+   (find-concepts-atom concept-type params {}))
   ([concept-type params options]
    (let [response (get-search-failure-data
                     (find-concepts-in-format "application/atom+xml" concept-type params options))
@@ -102,6 +103,19 @@
      (if (= status 200)
        {:status status
         :results (da/parse-atom-result body)}
+       response))))
+
+(defn find-concepts-json
+  "Returns the response of granule search in json format"
+  ([concept-type params]
+   (find-concepts-json concept-type params {}))
+  ([concept-type params options]
+   (let [response (get-search-failure-data
+                    (find-concepts-in-format "application/json" concept-type params options))
+         {:keys [status body]} response]
+     (if (= status 200)
+       {:status status
+        :results (dj/parse-json-result body)}
        response))))
 
 (defn find-metadata
