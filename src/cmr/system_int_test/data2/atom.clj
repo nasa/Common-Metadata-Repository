@@ -200,8 +200,7 @@
      :dataset-id entry-title
      :short-name short-name
      :version-id version-id
-     ;; TODO original-format will be changed to ECHO10 later once the metadata-db format is updated to ECHO10
-     :original-format "application/echo10+xml"
+     :original-format "ECHO10"
      :collection-data-type collection-data-type
      :data-center (:provider-id (cu/parse-concept-id concept-id))
      :archive-center archive-center
@@ -239,8 +238,7 @@
      :updated (str update-time)
      :coordinate-system coordinate-system
      :size (str size)
-     ;; TODO original-format will be changed to ECHO10 later once the metadata-db format is updated to ECHO10
-     :original-format "application/echo10+xml"
+     :original-format "ECHO10"
      :data-center (:provider-id (cu/parse-concept-id concept-id))
      :links (related-urls->links related-urls)
      :start beginning-date-time
