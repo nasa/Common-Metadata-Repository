@@ -6,6 +6,7 @@
             [camel-snake-kebab :as csk]
             [cmr.indexer.services.index-service :as idx]
             [cmr.indexer.data.elasticsearch :as es]
+            [cmr.common.mime-types :as mt]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.umm.related-url-helper :as ru]
             [cmr.indexer.data.concepts.temporal :as temporal]
@@ -103,7 +104,7 @@
             :browsable browsable
             :atom-links atom-links
             :summary summary
-            :original-format format
+            :original-format (s/upper-case (name (mt/mime-type->format format)))
             :update-time update-time
             :associated-difs associated-difs
             :coordinate-system (when spatial-representation (csk/->SNAKE_CASE_STRING spatial-representation))}

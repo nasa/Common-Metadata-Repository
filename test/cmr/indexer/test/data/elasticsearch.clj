@@ -15,7 +15,7 @@
         collection-data-type "NEAR_REAL_TIME"
         concept {:concept-id concept-id
                  :provider-id provider-id
-                 :format "ECHO10"}
+                 :format "application/echo10+xml"}
         platforms [{:short-name "PLATFORM ONE"
                     :long-name "dummy"
                     :type "Dummy"
