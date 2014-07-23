@@ -7,10 +7,15 @@
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.core :as d]
+            [cmr.system-int-test.data2.atom :as da]
             [cmr.system-int-test.utils.url-helper :as url]
             [clj-http.client :as client]
             [cmr.umm.core :as umm]
+            [cmr.spatial.polygon :as poly]
+            [cmr.spatial.point :as p]
             [cmr.spatial.mbr :as m]
+            [cmr.spatial.line :as l]
+            [cmr.spatial.ring :as r]
             [cmr.spatial.codec :as codec]))
 
 (use-fixtures :each (ingest/reset-fixture "PROV1" "PROV2"))
@@ -129,4 +134,94 @@
            [0 90 180 -90] []
            [-180 90 0 -90] [g2]))))
 
+(deftest search-collection-atom-and-json
+  (let [ru1 (dc/related-url "GET DATA" "http://example.com")
+        ru2 (dc/related-url "GET DATA" "http://example2.com")
+        ru3 (dc/related-url "GET RELATED VISUALIZATION" "http://example.com/browse")
+
+        ;; polygon with holes
+        outer (r/ords->ring -5.26,-2.59, 11.56,-2.77, 10.47,8.71, -5.86,8.63, -5.26,-2.59)
+        hole1 (r/ords->ring 6.95,2.05, 2.98,2.06, 3.92,-0.08, 6.95,2.05)
+        hole2 (r/ords->ring 5.18,6.92, -1.79,7.01, -2.65,5, 4.29,5.05, 5.18,6.92)
+        polygon-with-holes  (poly/polygon [outer hole1 hole2])
+
+        coll1 (d/ingest "PROV1"
+                        (dc/collection {:entry-title "Dataset1"
+                                        :short-name "ShortName#1"
+                                        :version-id "Version1"
+                                        :summary "Summary of coll1"
+                                        :organizations [(dc/org :archive-center "Larc")]
+                                        :collection-data-type "NEAR_REAL_TIME"
+                                        :processing-level-id "L1"
+                                        :beginning-date-time "2010-01-01T12:00:00Z"
+                                        :ending-date-time "2010-01-11T12:00:00Z"
+                                        :related-urls [ru1 ru2]
+                                        :associated-difs ["DIF-1" "DIF-2"]
+                                        :spatial-coverage
+                                        (dc/spatial :geodetic
+                                                    :geodetic
+                                                    (poly/polygon [(r/ords->ring -70 20, 70 20, 70 30, -70 30, -70 20)])
+                                                    polygon-with-holes
+                                                    (p/point 1 2)
+                                                    (p/point -179.9 89.4)
+                                                    (l/ords->line 0 0, 0 1, 0 -90, 180 0)
+                                                    (l/ords->line 1 2, 3 4, 5 6, 7 8)
+                                                    (m/mbr -180 90 180 -90)
+                                                    (m/mbr -10 20 30 -40))}))
+        coll2 (d/ingest "PROV1"
+                        (dc/collection {:entry-title "Dataset2"
+                                        :short-name "ShortName#2"
+                                        :version-id "Version2"
+                                        :summary "Summary of coll2"
+                                        :beginning-date-time "2010-01-01T12:00:00Z"
+                                        :ending-date-time "2010-01-11T12:00:00Z"
+                                        :related-urls [ru3]
+                                        }))]
+
+    (index/refresh-elastic-index)
+
+    (let [coll-atom (da/collections->expected-atom [coll1] "collections.atom?dataset-id=Dataset1")
+          response (search/find-concepts-atom :collection {:dataset-id "Dataset1"})]
+      (is (= 200 (:status response)))
+      (is (= coll-atom
+             (:results response))))
+
+    (let [coll-atom (da/collections->expected-atom [coll1 coll2] "collections.atom")
+          response (search/find-concepts-atom :collection {})]
+      (is (= 200 (:status response)))
+      (is (= coll-atom
+             (:results response))))
+
+    (testing "as extension"
+      (is (= (select-keys
+               (search/find-concepts-atom :collection {:dataset-id "Dataset1"})
+               [:status :results])
+             (select-keys
+               (search/find-concepts-atom :collection
+                                          {:dataset-id "Dataset1"}
+                                          {:format-as-ext? true})
+               [:status :results]))))
+
+    ;; search json format
+    (let [coll-json (da/collections->expected-atom [coll1] "collections.json?dataset-id=Dataset1")
+          response (search/find-concepts-json :collection {:dataset-id "Dataset1"})]
+      (is (= 200 (:status response)))
+      (is (= coll-json
+             (:results response))))
+
+    (let [coll-json (da/collections->expected-atom [coll1 coll2] "collections.json")
+          response (search/find-concepts-json :collection {})]
+      (is (= 200 (:status response)))
+      (is (= coll-json
+             (:results response))))
+
+    (testing "as extension"
+      (is (= (select-keys
+               (search/find-concepts-json :collection {:dataset-id "Dataset1"})
+               [:status :results])
+             (select-keys
+               (search/find-concepts-json :collection
+                                          {:dataset-id "Dataset1"}
+                                          {:format-as-ext? true})
+               [:status :results]))))))
 

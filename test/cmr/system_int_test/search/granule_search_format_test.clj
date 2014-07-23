@@ -149,23 +149,7 @@
                                                     :spatial-coverage (dc/spatial :geodetic)}))
         coll2 (d/ingest "CMR_PROV1" (dc/collection {:entry-title "Dataset2"
                                                     :related-urls [ru4 ru5]}))
-        gran1 (d/ingest "CMR_PROV1" (dg/granule coll1 {:granule-ur "Granule1"
-                                                       :beginning-date-time "2010-01-01T12:00:00Z"
-                                                       :ending-date-time "2010-01-11T12:00:00Z"
-                                                       :producer-gran-id "Granule #1"
-                                                       :day-night "DAY"
-                                                       :size 100.0
-                                                       :cloud-cover 50.0
-                                                       :related-urls [ru1 ru2]}))
-        gran2 (d/ingest "CMR_PROV1" (dg/granule coll2 {:granule-ur "Granule2"
-                                                       :beginning-date-time "2011-01-01T12:00:00Z"
-                                                       :ending-date-time "2011-01-11T12:00:00Z"
-                                                       :producer-gran-id "Granule #2"
-                                                       :day-night "NIGHT"
-                                                       :size 80.0
-                                                       :cloud-cover 30.0
-                                                       :related-urls [ru3]
-                                                       :spatial-coverage (dc/spatial :geodetic)}))
+
         make-gran (fn [coll attribs]
                     (d/ingest "CMR_PROV1" (dg/granule coll attribs)))
 
@@ -199,7 +183,8 @@
                                 :day-night "NIGHT"
                                 :size 80.0
                                 :cloud-cover 30.0
-                                :related-urls [ru3]})]
+                                :related-urls [ru3]
+                                :spatial-coverage (dc/spatial :geodetic)})]
 
     (index/refresh-elastic-index)
 
@@ -221,8 +206,8 @@
                [:status :results])
              (select-keys
                (search/find-concepts-atom :granule
-                                       {:granule-ur "Granule1"}
-                                       {:format-as-ext? true})
+                                          {:granule-ur "Granule1"}
+                                          {:format-as-ext? true})
                [:status :results]))))
 
     ;; search json format
@@ -244,6 +229,6 @@
                [:status :results])
              (select-keys
                (search/find-concepts-json :granule
-                                       {:granule-ur "Granule1"}
-                                       {:format-as-ext? true})
+                                          {:granule-ur "Granule1"}
+                                          {:format-as-ext? true})
                [:status :results]))))))
