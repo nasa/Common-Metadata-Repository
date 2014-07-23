@@ -3,6 +3,7 @@
   (:require [clojure.string :as s]
             [clj-time.format :as f]
             [cheshire.core :as json]
+            [camel-snake-kebab :as csk]
             [cmr.indexer.services.index-service :as idx]
             [cmr.indexer.data.elasticsearch :as es]
             [cmr.common.log :refer (debug info warn error)]
@@ -40,9 +41,9 @@
 
 (defmethod es/concept->elastic-doc :collection
   [context concept collection]
-  (let [{:keys [concept-id provider-id revision-date]} concept
+  (let [{:keys [concept-id provider-id revision-date format]} concept
         {{:keys [short-name version-id processing-level-id collection-data-type]} :product
-         :keys [entry-id entry-title temporal related-urls]} collection
+         :keys [entry-id entry-title summary temporal related-urls spatial-keywords associated-difs]} collection
         platforms (:platforms collection)
         platform-short-names (map :short-name platforms)
         instruments (mapcat :instruments platforms)
@@ -51,7 +52,6 @@
         sensor-short-names (remove nil? (map :short-name sensors))
         project-short-names (map :short-name (:projects collection))
         two-d-coord-names (map :name (:two-d-coordinate-systems collection))
-        spatial-keywords (:spatial-keywords collection)
         orgs (:organizations collection)
         archive-center-val (remove nil? (for [org orgs]
                                           (let [{:keys [type org-name]} org]
@@ -59,7 +59,12 @@
         start-date (temporal/start-date :collection temporal)
         end-date (temporal/end-date :collection temporal)
         atom-links (map json/generate-string (ru/atom-links related-urls))
-        downloadable (not (empty? (filter ru/downloadable-url? related-urls)))]
+        ;; not empty is used below to get a real true/false value
+        downloadable (not (empty? (ru/downloadable-urls related-urls)))
+        browsable (not (empty? (ru/browse-urls related-urls)))
+        update-time (get-in collection [:data-provider-timestamps :update-time])
+        update-time (f/unparse (f/formatters :date-time) update-time)
+        spatial-representation (get-in collection [:spatial-coverage :spatial-representation])]
     (merge {:concept-id concept-id
             :entry-id entry-id
             :entry-id.lowercase (s/lower-case entry-id)
@@ -95,6 +100,12 @@
             :archive-center archive-center-val
             :archive-center.lowercase (map s/lower-case archive-center-val)
             :downloadable downloadable
-            :atom-links atom-links}
+            :browsable browsable
+            :atom-links atom-links
+            :summary summary
+            :original-format format
+            :update-time update-time
+            :associated-difs associated-difs
+            :coordinate-system (when spatial-representation (csk/->SNAKE_CASE_STRING spatial-representation))}
            (spatial->elastic collection))))
 

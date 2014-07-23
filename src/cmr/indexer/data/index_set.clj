@@ -135,12 +135,12 @@
                                     :version-id            (stored string-field-mapping)
                                     :version-id.lowercase  string-field-mapping
                                     :revision-date         date-field-mapping
-                                    :processing-level-id   string-field-mapping
+                                    :processing-level-id   (stored string-field-mapping)
                                     :processing-level-id.lowercase  string-field-mapping
-                                    :collection-data-type  string-field-mapping
+                                    :collection-data-type  (stored string-field-mapping)
                                     :collection-data-type.lowercase  string-field-mapping
-                                    :start-date            date-field-mapping
-                                    :end-date              date-field-mapping
+                                    :start-date            (stored date-field-mapping)
+                                    :end-date              (stored date-field-mapping)
                                     :platform-sn           string-field-mapping
                                     :platform-sn.lowercase string-field-mapping
                                     :instrument-sn           string-field-mapping
@@ -149,7 +149,7 @@
                                     :sensor-sn.lowercase   string-field-mapping
                                     :project-sn            string-field-mapping
                                     :project-sn.lowercase  string-field-mapping
-                                    :archive-center        string-field-mapping
+                                    :archive-center        (stored string-field-mapping)
                                     :archive-center.lowercase string-field-mapping
                                     :spatial-keyword        string-field-mapping
                                     :spatial-keyword.lowercase string-field-mapping
@@ -157,8 +157,15 @@
                                     :two-d-coord-name.lowercase string-field-mapping
                                     :attributes attributes-field-mapping
                                     :science-keywords science-keywords-field-mapping
-                                    :downloadable bool-field-mapping
-                                    :atom-links (not-indexed (stored string-field-mapping))}
+                                    :downloadable (stored bool-field-mapping)
+                                    ;; fields added for atom
+                                    :browsable (not-indexed (stored bool-field-mapping))
+                                    :atom-links (not-indexed (stored string-field-mapping))
+                                    :summary (not-indexed (stored string-field-mapping))
+                                    :original-format (not-indexed (stored string-field-mapping))
+                                    :update-time (not-indexed (stored string-field-mapping))
+                                    :associated-difs (stored string-field-mapping)
+                                    :coordinate-system (not-indexed (stored string-field-mapping))}
                                    spatial-coverage-fields)}})
 
 (def granule-setting {:index {:number_of_shards 6,
