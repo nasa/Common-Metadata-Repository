@@ -12,6 +12,29 @@
             [cmr.search.results-handlers.atom-spatial-results-handler :as atom-spatial]
             [cmr.search.results-handlers.atom-links-results-handler :as atom-links]))
 
+(defmethod elastic-search-index/concept-type+result-format->fields [:collection :atom]
+  [concept-type result-format]
+  ["short-name"
+   "version-id"
+   "summary"
+   "update-time"
+   "entry-title"
+   "collection-data-type"
+   "data-center"
+   "archive-center"
+   "processing-level-id"
+   "original-format"
+   "provider-id"
+   "start-date"
+   "end-date"
+   "atom-links"
+   "associated-difs"
+   "downloadable"
+   "browsable"
+   "coordinate-system"
+   "ords-info"
+   "ords"])
+
 (defmethod elastic-search-index/concept-type+result-format->fields [:granule :atom]
   [concept-type result-format]
   ["granule-ur"
@@ -24,7 +47,6 @@
    "provider-id"
    "start-date"
    "end-date"
-   "downloadable-urls"
    "atom-links"
    "downloadable"
    "browsable"
@@ -34,10 +56,55 @@
    "ords-info"
    "ords"])
 
-(defmethod elastic-results/elastic-result->query-result-item :atom
-  [context query elastic-result]
+(defn- collection-elastic-result->query-result-item
+  [elastic-result]
   (let [{concept-id :_id
-         revision-id :_version
+         {[short-name] :short-name
+          [version-id] :version-id
+          [summary] :summary
+          [update-time] :update-time
+          [entry-title] :entry-title
+          [collection-data-type] :collection-data-type
+          [processing-level-id] :processing-level-id
+          [original-format] :original-format
+          [provider-id] :provider-id
+          [archive-center] :archive-center
+          [start-date] :start-date
+          [end-date] :end-date
+          atom-links :atom-links
+          associated-difs :associated-difs
+          [downloadable] :downloadable
+          [browsable] :browsable
+          [coordinate-system] :coordinate-system
+          ords-info :ords-info
+          ords :ords} :fields} elastic-result
+        start-date (when start-date (str/replace (str start-date) #"\+0000" "Z"))
+        end-date (when end-date (str/replace (str end-date) #"\+0000" "Z"))
+        atom-links (map #(json/decode % true) atom-links)]
+    {:id concept-id
+     :title entry-title
+     :short-name short-name
+     :version-id version-id
+     :summary summary
+     :updated update-time
+     :dataset-id entry-title
+     :collection-data-type collection-data-type
+     :processing-level-id processing-level-id
+     :original-format original-format
+     :data-center provider-id
+     :archive-center archive-center
+     :start-date start-date
+     :end-date end-date
+     :atom-links atom-links
+     :online-access-flag downloadable
+     :browse-flag browsable
+     :associated-difs associated-difs
+     :coordinate-system coordinate-system
+     :shapes (srl/ords-info->shapes ords-info ords)}))
+
+(defn- granule-elastic-result->query-result-item
+  [elastic-result]
+  (let [{concept-id :_id
          {[granule-ur] :granule-ur
           [collection-concept-id] :collection-concept-id
           [update-time] :update-time
@@ -77,6 +144,12 @@
      :cloud-cover (str cloud-cover)
      :coordinate-system coordinate-system
      :shapes (srl/ords-info->shapes ords-info ords)}))
+
+(defmethod elastic-results/elastic-result->query-result-item :atom
+  [context query elastic-result]
+  (if (= :granule (:concept-type query))
+    (granule-elastic-result->query-result-item elastic-result)
+    (collection-elastic-result->query-result-item elastic-result)))
 
 (def ATOM_HEADER_ATTRIBUTES
   "The set of attributes that go on the ATOM root element"
@@ -127,8 +200,36 @@
   [atom-link]
   (x/element :link (atom-link->attribute-map atom-link)))
 
-(defn- atom-reference->xml-element
-  "Converts a search result atom reference into an XML element"
+(defn- collection-atom-reference->xml-element
+  "Converts a collection search result atom reference into an XML element"
+  [reference]
+  (let [{:keys [id title short-name version-id summary updated dataset-id collection-data-type
+                processing-level-id original-format data-center archive-center start-date end-date
+                atom-links associated-difs online-access-flag browse-flag coordinate-system shapes]} reference]
+    (x/element :entry {}
+               (x/element :id {} id)
+               (x/element :title {:type "text"} title)
+               (x/element :summary {:type "text"} summary)
+               (x/element :updated {} updated)
+               (x/element :echo:datasetId {} dataset-id)
+               (x/element :echo:shortName {} short-name)
+               (x/element :echo:versionId {} version-id)
+               (x/element :echo:originalFormat {} original-format)
+               (when collection-data-type (x/element :echo:collectionDataType {} collection-data-type))
+               (x/element :echo:dataCenter {} data-center)
+               (when archive-center (x/element :echo:archiveCenter {} archive-center))
+               (when processing-level-id (x/element :echo:processingLevelId {} processing-level-id))
+               (when start-date (x/element :time:start {} start-date))
+               (when end-date (x/element :time:end {} end-date))
+               (map atom-link->xml-element atom-links)
+               (when coordinate-system (x/element :echo:coordinateSystem {} coordinate-system))
+               (map atom-spatial/shape->xml-element shapes)
+               (map #(x/element :echo:difId {} %) associated-difs)
+               (x/element :echo:onlineAccessFlag {} online-access-flag)
+               (x/element :echo:browseFlag {} browse-flag))))
+
+(defn- granule-atom-reference->xml-element
+  "Converts a granule search result atom reference into an XML element"
   [reference]
   (let [{:keys [id title updated dataset-id producer-gran-id size original-format
                 data-center start-date end-date atom-links online-access-flag browse-flag
@@ -178,6 +279,9 @@
   (let [{:keys [hits took items]} results
         {:keys [concept-type result-format]} query
         xml-fn (if (:pretty? query) x/indent-str x/emit-str)
+        atom-reference-to-xml-element-fn (if (= :granule concept-type) granule-atom-reference->xml-element
+                                           collection-atom-reference->xml-element)
+
         items (if (= :granule concept-type)
                 (append-collection-links context items)
                 items)]
@@ -186,6 +290,6 @@
                  (x/element :updated {} (str (time/now)))
                  (x/element :id {} (url/atom-request-url context concept-type result-format))
                  (x/element :title {:type "text"} (concept-type->atom-title concept-type))
-                 (map atom-reference->xml-element items)))))
+                 (map atom-reference-to-xml-element-fn items)))))
 
 
