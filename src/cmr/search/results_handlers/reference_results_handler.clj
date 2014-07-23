@@ -20,14 +20,6 @@
    "short-name"
    "version-id"])
 
-;; This is temporary until ATOM JSON response is implemented
-(defmethod elastic-search-index/concept-type+result-format->fields [:collection :json]
-  [concept-type result-format]
-  ["entry-title"
-   "provider-id"
-   "short-name"
-   "version-id"])
-
 (def concept-type->name-key
   "A map of the concept type to the key to use to extract the reference name field."
   {:collection :entry-title
