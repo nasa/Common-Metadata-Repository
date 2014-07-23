@@ -9,6 +9,7 @@
             [cmr.umm.related-url-helper :as ru]
             [cmr.transmit.metadata-db :as mdb]
             [cmr.common.log :refer (debug info warn error)]
+            [cmr.common.mime-types :as mt]
             [cmr.common.services.errors :as errors]
             [cmr.indexer.data.concepts.temporal :as temporal]
             [cmr.indexer.data.concepts.attribute :as attrib]
@@ -80,7 +81,7 @@
             :collection-concept-id parent-collection-id
 
             :entry-title (:entry-title parent-collection)
-            :original-format format
+            :original-format (s/upper-case (name (mt/mime-type->format format)))
             :update-time update-time
             :coordinate-system (when granule-spatial-representation (csk/->SNAKE_CASE_STRING granule-spatial-representation))
 
