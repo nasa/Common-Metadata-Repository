@@ -104,7 +104,7 @@
        short-names))
 
 (defn org
-  "Return  archive/ processing center"
+  "Return archive/ processing center"
   [type center-name]
   (c/map->Organization
     {:type (keyword type)

@@ -11,6 +11,7 @@
             [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
             [clojure.string :as str]
+            [clj-time.format :as f]
             [camel-snake-kebab :as csk]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -79,8 +80,32 @@
            xml-elem->lines
            xml-elem->bounding-rectangles]))
 
-(defn- xml-elem->entry
-  "Retrns an atom entry from a parsed xml structure"
+(defn- collection-xml-elem->entry
+  "Retrns an atom entry from a parsed collection xml structure"
+  [entry-elem]
+  {:id (cx/string-at-path entry-elem [:id])
+   :title (cx/string-at-path entry-elem [:title])
+   :updated (cx/string-at-path entry-elem [:updated])
+   :dataset-id (cx/string-at-path entry-elem [:datasetId])
+   :short-name (cx/string-at-path entry-elem [:shortName])
+   :version-id (cx/string-at-path entry-elem [:versionId])
+   :summary (cx/string-at-path entry-elem [:summary])
+   :original-format (cx/string-at-path entry-elem [:originalFormat])
+   :collection-data-type (cx/string-at-path entry-elem [:collectionDataType])
+   :data-center (cx/string-at-path entry-elem [:dataCenter])
+   :archive-center (cx/string-at-path entry-elem [:archiveCenter])
+   :processing-level-id (cx/string-at-path entry-elem [:processingLevelId])
+   :links (seq (map :attrs (cx/elements-at-path entry-elem [:link])))
+   :start (cx/string-at-path entry-elem [:start])
+   :end (cx/string-at-path entry-elem [:end])
+   :associated-difs (seq (cx/strings-at-path entry-elem [:difId]))
+   :online-access-flag (cx/string-at-path entry-elem [:onlineAccessFlag])
+   :browse-flag (cx/string-at-path entry-elem [:browseFlag])
+   :coordinate-system (cx/string-at-path entry-elem [:coordinateSystem])
+   :shapes (seq (xml-elem->shapes entry-elem))})
+
+(defn- granule-xml-elem->entry
+  "Retrns an atom entry from a parsed granule xml structure"
   [entry-elem]
   {:id (cx/string-at-path entry-elem [:id])
    :title (cx/string-at-path entry-elem [:title])
@@ -104,12 +129,15 @@
 
 (defn parse-atom-result
   "Returns an atom result in map from an atom xml"
-  [xml]
-  (let [xml-struct (x/parse-str xml)]
+  [concept-type xml]
+  (let [xml-struct (x/parse-str xml)
+        xml-elem-to-entry-fn (if (= :granule concept-type)
+                               granule-xml-elem->entry
+                               collection-xml-elem->entry)]
     (reset! parsed xml-struct)
     {:id (cx/string-at-path xml-struct [:id])
      :title (cx/string-at-path xml-struct [:title])
-     :entries (seq (map xml-elem->entry
+     :entries (seq (map xml-elem-to-entry-fn
                         (cx/elements-at-path xml-struct [:entry])))}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -150,6 +178,49 @@
   [coll related-urls]
   (let [non-browse-coll-links (filter #(not= "GET RELATED VISUALIZATION" (:type %)) (:related-urls coll))]
     (concat related-urls (map #(assoc % :inherited "true") non-browse-coll-links))))
+
+(defn- collection->expected-atom
+  "Returns the atom map of the collection"
+  [collection]
+  (let [{{:keys [short-name version-id processing-level-id collection-data-type]} :product
+         :keys [concept-id summary entry-title
+                related-urls beginning-date-time ending-date-time associated-difs organizations]} collection
+        update-time (get-in collection [:data-provider-timestamps :update-time])
+        spatial-representation (get-in collection [:spatial-coverage :spatial-representation])
+        coordinate-system (when spatial-representation (csk/->SNAKE_CASE_STRING spatial-representation))
+        archive-center (when organizations (:org-name (first organizations)))
+        ;; not really fool proof to get start/end datetime, just get by with the current test setting
+        range-date-time (first (get-in collection [:temporal :range-date-times]))
+        start (f/unparse (f/formatters :date-time-no-ms)(:beginning-date-time range-date-time))
+        end (f/unparse (f/formatters :date-time-no-ms)(:ending-date-time range-date-time))]
+    {:id concept-id
+     :title entry-title
+     :summary summary
+     :updated (str update-time)
+     :dataset-id entry-title
+     :short-name short-name
+     :version-id version-id
+     ;; TODO original-format will be changed to ECHO10 later once the metadata-db format is updated to ECHO10
+     :original-format "application/echo10+xml"
+     :collection-data-type collection-data-type
+     :data-center (:provider-id (cu/parse-concept-id concept-id))
+     :archive-center archive-center
+     :processing-level-id processing-level-id
+     :start start
+     :end end
+     :links (related-urls->links related-urls)
+     :coordinate-system coordinate-system
+     :shapes (seq (get-in collection [:spatial-coverage :geometries]))
+     :associated-difs associated-difs
+     :online-access-flag (str (> (count (ru/downloadable-urls related-urls)) 0))
+     :browse-flag (str (> (count (ru/browse-urls related-urls)) 0))}))
+
+(defn collections->expected-atom
+  "Returns the atom map of the collections"
+  [collections atom-path]
+  {:id (str (url/search-root) atom-path)
+   :title "ECHO dataset metadata"
+   :entries (map collection->expected-atom collections)})
 
 (defn- granule->expected-atom
   "Returns the atom map of the granule"

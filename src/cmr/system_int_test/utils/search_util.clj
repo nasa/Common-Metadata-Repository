@@ -121,7 +121,7 @@
          {:keys [status body]} response]
      (if (= status 200)
        {:status status
-        :results (da/parse-atom-result body)}
+        :results (da/parse-atom-result concept-type body)}
        response))))
 
 (defn find-concepts-json
@@ -134,7 +134,7 @@
          {:keys [status body]} response]
      (if (= status 200)
        {:status status
-        :results (dj/parse-json-result body)}
+        :results (dj/parse-json-result concept-type body)}
        response))))
 
 (defn find-metadata
