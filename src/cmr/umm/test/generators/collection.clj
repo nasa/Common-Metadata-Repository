@@ -40,6 +40,9 @@
 (def entry-titles
   (ext-gen/string-alpha-numeric 1 1030))
 
+(def summary
+  (ext-gen/string-alpha-numeric 1 4000))
+
 (def sensor-short-names
   (ext-gen/string-ascii 1 80))
 
@@ -133,6 +136,7 @@
               (gen/hash-map
                 :entry-id entry-ids
                 :entry-title entry-titles
+                :summary summary
                 :product products
                 :data-provider-timestamps data-provider-timestamps
                 :temporal t/temporals
@@ -144,6 +148,7 @@
                 :projects (ext-gen/nil-if-empty (gen/vector campaigns 0 4))
                 :two-d-coordinate-systems (ext-gen/nil-if-empty (gen/vector two-d-coordinate-systems 0 3))
                 :related-urls (ext-gen/nil-if-empty (gen/vector related-url 0 5))
+                :associated-difs (ext-gen/nil-if-empty (gen/vector (ext-gen/string-alpha-numeric 1 80) 0 4))
                 :spatial-coverage (ext-gen/optional spatial-coverages))
               (ext-gen/optional processing-center-organizations)
               (ext-gen/optional archive-center-organizations)

@@ -163,6 +163,8 @@
    ;; The dataset-id in ECHO10
    entry-title
 
+   summary
+
    product
 
    data-provider-timestamps
@@ -188,4 +190,6 @@
    organizations
 
    spatial-coverage
+
+   associated-difs
    ])
