@@ -14,7 +14,8 @@
         processing-level-id "1B"
         collection-data-type "NEAR_REAL_TIME"
         concept {:concept-id concept-id
-                 :provider-id provider-id}
+                 :provider-id provider-id
+                 :format "ECHO10"}
         platforms [{:short-name "PLATFORM ONE"
                     :long-name "dummy"
                     :type "Dummy"
@@ -37,6 +38,7 @@
               {:type :archive-center :org-name "SEDAC AC"}]
         umm-concept {:entry-id "MINIMAL_1"
                      :entry-title dataset-id
+                     :summary "Summary of collection"
                      :product {:short-name short-name
                                :version-id version-id
                                :processing-level-id processing-level-id
@@ -49,7 +51,10 @@
                      :two-d-coordinate-systems [{:name "FOO"}
                                                 {:name "Bar"}]
                      :spatial-keywords ["New York" "Washington DC"]
-                     :organizations orgs}
+                     :organizations orgs
+                     :data-provider-timestamps {:update-time (t/date-time 2014 2 24 22 20 56)}
+                     :spatial-coverage {:spatial-representation :cartesian}
+                     :associated-difs ["DIF-100" "DIF-101"]}
         expected {:concept-id concept-id
                   :entry-id "MINIMAL_1"
                   :entry-id.lowercase "minimal_1"
@@ -85,7 +90,13 @@
                   :two-d-coord-name ["FOO" "Bar"]
                   :two-d-coord-name.lowercase  ["foo" "bar"]
                   :downloadable false
-                  :atom-links []}
+                  :browsable false
+                  :atom-links []
+                  :summary "Summary of collection"
+                  :original-format "ECHO10"
+                  :coordinate-system "CARTESIAN"
+                  :update-time "2014-02-24T22:20:56.000Z"
+                  :associated-difs ["DIF-100" "DIF-101"]}
         actual (es/concept->elastic-doc nil concept umm-concept)]
     (is (= expected actual))))
 
