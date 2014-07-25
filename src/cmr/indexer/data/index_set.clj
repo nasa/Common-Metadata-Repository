@@ -21,6 +21,14 @@
 (def string-field-mapping
   {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "no"})
 
+(def text-field-mapping
+  {:type "string"
+   :index "analyzed"
+   :omit_norms "true"
+   :analyzer "whitespace"
+   :index_options "docs"
+   :stored "no"})
+
 (def date-field-mapping
   {:type "date" :format "yyyy-MM-dd'T'HH:mm:ssZ||yyyy-MM-dd'T'HH:mm:ss.SSSZ"})
 
@@ -123,7 +131,7 @@
                 :_all {:enabled false},
                 :_id   {:path "concept-id"},
                 :_ttl {:enabled true},
-                :properties (merge {:concept-id            (stored string-field-mapping)
+                :properties (merge {:concept-id   (stored string-field-mapping)
                                     :entry-id           (stored string-field-mapping)
                                     :entry-id.lowercase string-field-mapping
                                     :entry-title           (stored string-field-mapping)
@@ -158,14 +166,37 @@
                                     :attributes attributes-field-mapping
                                     :science-keywords science-keywords-field-mapping
                                     :downloadable (stored bool-field-mapping)
-                                    ;; fields added for atom
+                                    ;; mappings added for atom
                                     :browsable (not-indexed (stored bool-field-mapping))
                                     :atom-links (not-indexed (stored string-field-mapping))
                                     :summary (not-indexed (stored string-field-mapping))
                                     :original-format (not-indexed (stored string-field-mapping))
                                     :update-time (not-indexed (stored string-field-mapping))
                                     :associated-difs (stored string-field-mapping)
-                                    :coordinate-system (not-indexed (stored string-field-mapping))}
+                                    :coordinate-system (not-indexed (stored string-field-mapping))
+                                    ;; analyzed fields for keyword searches
+                                    :concept-id-keyword text-field-mapping
+                                    :entry-title-keyword text-field-mapping
+                                    :collection-data-type-keyword text-field-mapping
+                                    :short-name-keyword text-field-mapping
+                                    ;; TODO :long-name
+                                    :archive-center-keyword text-field-mapping
+                                    ;; TODO :collection-description
+                                    ;; TODO :suggested-usage
+                                    :version-id-keyword text-field-mapping
+                                    ;; TODO :version-description
+                                    ;; TODO :campaign-short-name
+                                    :processing-level-id-keyword text-field-mapping
+                                    :science-keywords-keyword text-field-mapping
+                                    :spatial-keyword-keyword text-field-mapping
+                                    ;; TODO :temporal-keyword
+                                    :platform-sn-keyword text-field-mapping
+                                    ;; TODO :platform-ln
+                                    ;; TODO platform nested stuff
+                                    :attributes-keyword text-field-mapping
+                                    ;; TODO :associated-difs
+                                    :two-d-coord-name-keyword text-field-mapping
+                                    }
                                    spatial-coverage-fields)}})
 
 (def granule-setting {:index {:number_of_shards 6,

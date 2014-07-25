@@ -1,6 +1,6 @@
 (ns cmr.indexer.data.concepts.collection
   "Contains functions to parse and convert collection concept"
-  (:require [clojure.string :as s]
+  (:require [clojure.string :as str]
             [clj-time.format :as f]
             [cheshire.core :as json]
             [camel-snake-kebab :as csk]
@@ -15,6 +15,14 @@
             [cmr.indexer.data.concepts.spatial :as spatial])
   (:import cmr.spatial.mbr.Mbr))
 
+;; Regex to split strings with special characters into multiple words for keyword searches
+(def keywords-separator-regex #"[!@#$%^&()\-=_+{}\[\]|;'.,\"/:<>?`~*]")
+
+(defn- prepare-keywords-field
+  [field-value]
+  "Convert a string to lowercase then separate the keywords to make it tokenizale by elastic"
+  (when field-value
+    (str/replace (str/lower-case field-value) keywords-separator-regex " ")))
 
 (defn spatial->elastic
   [collection]
@@ -68,45 +76,57 @@
         spatial-representation (get-in collection [:spatial-coverage :spatial-representation])]
     (merge {:concept-id concept-id
             :entry-id entry-id
-            :entry-id.lowercase (s/lower-case entry-id)
+            :entry-id.lowercase (str/lower-case entry-id)
             :entry-title entry-title
-            :entry-title.lowercase (s/lower-case entry-title)
+            :entry-title.lowercase (str/lower-case entry-title)
             :provider-id provider-id
-            :provider-id.lowercase (s/lower-case provider-id)
+            :provider-id.lowercase (str/lower-case provider-id)
             :short-name short-name
-            :short-name.lowercase (s/lower-case short-name)
+            :short-name.lowercase (str/lower-case short-name)
             :version-id version-id
-            :version-id.lowercase (s/lower-case version-id)
+            :version-id.lowercase (str/lower-case version-id)
             :revision-date revision-date
             :processing-level-id processing-level-id
-            :processing-level-id.lowercase (when processing-level-id (s/lower-case processing-level-id))
+            :processing-level-id.lowercase (when processing-level-id (str/lower-case processing-level-id))
             :collection-data-type collection-data-type
-            :collection-data-type.lowercase (when collection-data-type (s/lower-case collection-data-type))
+            :collection-data-type.lowercase (when collection-data-type (str/lower-case collection-data-type))
             :platform-sn platform-short-names
-            :platform-sn.lowercase  (map s/lower-case platform-short-names)
+            :platform-sn.lowercase  (map str/lower-case platform-short-names)
             :instrument-sn instrument-short-names
-            :instrument-sn.lowercase  (map s/lower-case instrument-short-names)
+            :instrument-sn.lowercase  (map str/lower-case instrument-short-names)
             :sensor-sn sensor-short-names
-            :sensor-sn.lowercase  (map s/lower-case sensor-short-names)
+            :sensor-sn.lowercase  (map str/lower-case sensor-short-names)
             :project-sn project-short-names
-            :project-sn.lowercase  (map s/lower-case project-short-names)
+            :project-sn.lowercase  (map str/lower-case project-short-names)
             :two-d-coord-name two-d-coord-names
-            :two-d-coord-name.lowercase  (map s/lower-case two-d-coord-names)
+            :two-d-coord-name.lowercase  (map str/lower-case two-d-coord-names)
             :spatial-keyword spatial-keywords
-            :spatial-keyword.lowercase  (map s/lower-case spatial-keywords)
+            :spatial-keyword.lowercase  (map str/lower-case spatial-keywords)
             :attributes (attrib/psas->elastic-docs collection)
             :science-keywords (sk/science-keywords->elastic-doc collection)
             :start-date (when start-date (f/unparse (f/formatters :date-time) start-date))
             :end-date (when end-date (f/unparse (f/formatters :date-time) end-date))
             :archive-center archive-center-val
-            :archive-center.lowercase (map s/lower-case archive-center-val)
+            :archive-center.lowercase (map str/lower-case archive-center-val)
             :downloadable downloadable
             :browsable browsable
             :atom-links atom-links
             :summary summary
-            :original-format (s/upper-case (name (mt/mime-type->format format)))
+            :original-format (str/upper-case (name (mt/mime-type->format format)))
             :update-time update-time
             :associated-difs associated-difs
-            :coordinate-system (when spatial-representation (csk/->SNAKE_CASE_STRING spatial-representation))}
+            :coordinate-system (when spatial-representation (csk/->SNAKE_CASE_STRING spatial-representation))
+            ;; fields added to support keyword searches
+            :concept-id-keyword (str/lower-case concept-id)
+            :entry-title-keyword (prepare-keywords-field entry-title)
+            :collection-data-type-keyword (prepare-keywords-field collection-data-type)
+            :short-name-keyword (prepare-keywords-field short-name)
+            :archive-center-keyword (str/join " " (map prepare-keywords-field archive-center-val))
+            :version-id-keyword (prepare-keywords-field version-id)
+            :processing-level-id-keyword (prepare-keywords-field processing-level-id)
+            :science-keywords-keyword (sk/science-keywords->keyword-string collection)
+            :spatial-keyword-keyword (prepare-keywords-field spatial-keywords)
+            :platform-sn-keyword (str/join " " (map prepare-keywords-field platform-short-names))
+            :attributes-keyword (attrib/psas->keyword-string collection)}
            (spatial->elastic collection))))
 
