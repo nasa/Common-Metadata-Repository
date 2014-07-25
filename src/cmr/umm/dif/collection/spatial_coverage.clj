@@ -33,7 +33,7 @@
         spatial-coverage-elems (cx/elements-at-path xml-struct [:Spatial_Coverage])]
     (when (or gsr (seq spatial-coverage-elems))
       (c/map->SpatialCoverage
-        {:granule-spatial-representation gsr
+        {:granule-spatial-representation (or gsr :no-spatial)
          :spatial-representation (when (seq spatial-coverage-elems) :cartesian)
          :geometries (seq (map spatial-coverage-elem->br spatial-coverage-elems))}))))
 
