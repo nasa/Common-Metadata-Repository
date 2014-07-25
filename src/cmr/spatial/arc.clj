@@ -315,6 +315,41 @@
                       (point-at-lon arc (:lon point))
                       APPROXIMATION_DELTA)))))
 
+(comment
+
+  (def a1 (ords->arc -45 30 0 0))
+  (def a2 (ords->arc -45 0 0 30))
+
+  (midpoint a1)
+  (midpoint a2)
+
+  (lat-segment-intersections
+    a1 16.175960878620344 -50 0)
+
+  (point-at-lon a1 -20.772845524037166)
+
+  (def ip (p/point -20.772845524037166,16.150056475830688))
+  (def aip (p/point -22.5,17.351921757240685))
+
+  (def ^double offset (p/angular-distance ip aip))
+  (def ^double total-dist (p/angular-distance (:west-point a1) (:east-point a1)))
+  (def ^double percent-of-total (*(/ ^double offset ^double total-dist)))
+
+  ;; An arc farther shorter than a2 but along the same cartesian line
+  (def a3 (ords->arc -30 10 -15 20))
+
+  (intersections a3 a1)
+  (def ip-a3 (p/point -20.945413480816008 16.271461041452543))
+
+  (def ^double offset-a3 (p/angular-distance ip-a3 aip))
+  (def ^double percent-of-total-a3 (* 100.0 (/ ^double offset-a3 ^double total-dist)))
+
+
+
+
+)
+
+
 (defn midpoint
   "Finds the midpoint of the arc."
   [^Arc arc]

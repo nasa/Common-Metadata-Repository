@@ -38,13 +38,13 @@
   ;; See https://github.com/technomancy/leiningen/wiki/Faster
   :jvm-opts ^:replace ["-server"
                        ;; Uncomment this to enable assertions. Turn off during performance tests.
-                       "-ea"
+                       ; "-ea"
 
                        ;; Use the following to enable JMX profiling with visualvm
-                       ; "-Dcom.sun.management.jmxremote"
-                       ; "-Dcom.sun.management.jmxremote.ssl=false"
-                       ; "-Dcom.sun.management.jmxremote.authenticate=false"
-                       ; "-Dcom.sun.management.jmxremote.port=1098"
+                       "-Dcom.sun.management.jmxremote"
+                       "-Dcom.sun.management.jmxremote.ssl=false"
+                       "-Dcom.sun.management.jmxremote.authenticate=false"
+                       "-Dcom.sun.management.jmxremote.port=1098"
                        ]
 
 

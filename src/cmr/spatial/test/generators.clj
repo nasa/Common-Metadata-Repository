@@ -38,14 +38,15 @@
           (fn [point]
             (gen/tuple (gen/return point)
                        (gen/such-that (partial not= point) points))))]
-    (gen/fmap (partial apply s/line-segment) non-equal-point-pairs)))
+    (gen/fmap (comp d/calculate-derived (partial apply s/line-segment)) non-equal-point-pairs)))
 
-(defn print-failed-line-segment
+(defn print-failed-line-segments
   "A printer function that can be used with the defspec defined in cmr.common to print out a failed
   line segment"
-  [type ls]
+  [type & lss]
   ;; Print out the line segment in a way that it can be easily copied to the test.
-  (println (pr-str (concat `(s/ords->line-segment) (s/line-segment->ords ls)))))
+  (doseq [ls lss]
+    (println (pr-str (concat `(s/ords->line-segment) (s/line-segment->ords ls))))))
 
 (defn non-antipodal-points
   "Returns a generator returning tuples of points of the given size that are not antipodal or equal
@@ -88,6 +89,12 @@
                                (and (not= p p2)
                                     (not (p/antipodal? p p2))))
                              points))))))
+
+(defn print-failed-arc
+  "A printer function that can be used with the defspec defined in cmr.common"
+  [type arc]
+  ;; Print out the ring in a way that it can be easily copied to the test.
+  (println (pr-str (concat `(a/ords->arc) (a/arc->ords arc)))))
 
 (def lines
   (ext-gen/model-gen l/line (gen/bind (gen/choose 2 20) non-antipodal-points)))

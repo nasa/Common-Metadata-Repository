@@ -106,15 +106,15 @@
 (defn distance
   "Calculates the distance of the line segment using the equation for a right triangle's hypotenuse."
   (^double [^LineSegment ls]
-   (distance (.point1 ls) (.point2 ls)))
+           (distance (.point1 ls) (.point2 ls)))
   (^double [^Point point1 ^Point point2]
-   (let [lon1 (.lon point1)
-         lat1 (.lat point1)
-         lon2 (.lon point2)
-         lat2 (.lat point2)
-         a (- lat2 lat1)
-         b (- lon2 lon1)]
-     (sqrt (+ (sq a) (sq b))))))
+           (let [lon1 (.lon point1)
+                 lat1 (.lat point1)
+                 lon2 (.lon point2)
+                 lat2 (.lat point2)
+                 a (- lat2 lat1)
+                 b (- lon2 lon1)]
+             (sqrt (+ (sq a) (sq b))))))
 
 (defn line-segment->line
   "Creates an approximate geodetic line of the line segment by desifying the line segment. Optionally
@@ -162,14 +162,6 @@
                     points)]
        (l/line points)))))
 
-
-(comment
-
-(line-segment->line (d/calculate-derived (ords->line-segment 0 0 1 0)) 2.0)
-
-)
-
-
 (defn slope
   "Returns or calculates the slope of a line segment."
   ^double [^LineSegment ls]
@@ -209,4 +201,124 @@
         (assoc :m (slope ls))
         (assoc :b (slope-intersect ls))
         (assoc :mbr (mbr ls)))))
+
+(defn mbr->line-segments
+  "Returns line segments representing the exerior of the MBR"
+  [mbr]
+  (let [[ul ur lr ll] (m/corner-points mbr)]
+    [(line-segment ul ur)
+     (line-segment ur lr)
+     (line-segment lr ll)
+     (line-segment ll ul)]))
+
+(defn- intersection-both-vertical
+  "Returns the intersection point of two vertical line segments if they do intersect"
+  [^LineSegment ls1 ^LineSegment ls2]
+  (let [mbr1 (.mbr ls1)
+        mbr2 (.mbr ls2)
+        lon1 (get-in ls1 [:point1 :lon])
+        lon2 (get-in ls2 [:point1 :lon])
+        {ls1-north :north ls1-south :south} mbr1
+        {ls2-north :north ls2-south :south} mbr2]
+    (when (= lon1 lon2)
+      (cond
+        (within-range? ls2-north ls1-south ls1-north)
+        (p/point lon1 ls2-north)
+
+        (within-range? ls2-south ls1-south ls1-north)
+        (p/point lon1 ls2-south)
+
+        (within-range? ls1-south ls2-south ls2-north)
+        (p/point lon1 ls1-south)
+
+        :else
+        ;; the latitude ranges don't intersect
+        nil))))
+
+(defn- intersection-one-vertical
+  "Returns the intersection point of one vertical line and another not vertical."
+  [ls1 ls2]
+  (let [[ls vert-ls] (if (vertical? ls1) [ls2 ls1] [ls1 ls2])
+        lon (get-in vert-ls [:point1 :lon])
+        mbr (:mbr ls)]
+    (when-let [point (some->> (segment+lon->lat ls lon)
+                              (p/point lon))]
+      (when (m/covers-point? mbr point)
+        point))))
+
+(defn- intersection-normal
+  "Returns the intersection of two normal line segments"
+  [^LineSegment ls1 ^LineSegment ls2]
+  (let [^double m1 (.m ls1)
+        ^double b1 (.b ls1)
+        ^double m2 (.m ls2)
+        ^double b2 (.b ls2)
+        mbr1 (.mbr ls1)
+        mbr2 (.mbr ls2)
+        lon (/ (- b2 b1) (- m1 m2))
+        lat (+ (* m1 lon) b1)
+        point (p/point lon lat)]
+    (when (and (m/covers-point? mbr1 point)
+               (m/covers-point? mbr2 point))
+      point)))
+
+(defn intersection
+  "Returns the intersection point of the line segments if they do intersect."
+  [ls1 ls2]
+  (let [ls1-vert? (vertical? ls1)
+        ls2-vert? (vertical? ls2)]
+    (cond
+      (and ls1-vert? ls2-vert?)
+      (intersection-both-vertical ls1 ls2)
+
+      (or ls1-vert? ls2-vert?)
+      (intersection-one-vertical ls1 ls2)
+
+      :else
+      (intersection-normal ls1 ls2))))
+
+(defn mbr-intersections
+  "Returns the points the line segment intersects the edges of the mbr"
+  [ls mbr]
+  (let [edges (mbr->line-segments mbr)]
+    (mapcat (partial intersection ls) edges)))
+
+;; TODO add tests for this
+(defn subselect
+  "Selects a smaller portion of the line segment using an mbr. Will return nil if the line segment
+  is not within the mbr"
+  [ls mbr]
+  (let [{:keys [point1 point2]} ls
+        point1-in-mbr (m/covers-point? mbr point1)
+        point2-in-mbr (m/covers-point? mbr point2)
+        ;; helper function that removes points that are = to 1 and 2
+        ;; If the MBR covers the edges of the line segment then the points will be found as intersections
+        not-point1-or-2 #(and (not (approx= point1 % COVERS_TOLERANCE))
+                              (not (approx= point2 % COVERS_TOLERANCE)))
+        ]
+    (if (and point1-in-mbr point2-in-mbr)
+      ;; Both points are in the mbr so there's no need to subselect
+      ls
+      (let [intersection-points (filter not-point1-or-2 (mbr-intersections ls mbr))]
+        (cond
+          (> (count intersection-points) 2)
+          (errors/internal-error! (str "Found too many intersection points" (count intersection-points)))
+
+          (= (count intersection-points) 2)
+          (apply line-segment intersection-points)
+
+          (= (count intersection-points) 0)
+          nil ; no intersection at all
+
+          ;; the number of intersection points must be 1
+          point1-in-mbr
+
+          point2-in-mbr
+
+          :else
+
+
+
+          )))))
+
 

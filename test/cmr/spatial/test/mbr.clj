@@ -268,10 +268,20 @@
          -9 27 9 26
 
          ;; below
-         -9 -26 9 -27
+         -9 -26 9 -27)))
 
-         )))
 
+(defspec intersections-br-spec 100
+  (for-all [mbr1 sgen/mbrs
+            mbr2 sgen/mbrs]
+    (let [intersects? (m/intersects-br? mbr1 mbr2)
+          intersections (m/intersections mbr1 mbr2)]
+      (or (and (not intersects?) (empty? intersections))
+
+          (and (seq intersections)
+          (every? #(and (m/covers-mbr? mbr1 %)
+                        (m/covers-mbr? mbr2 %))
+                  intersections))))))
 
 (defspec union-test 100
   (for-all [mbr1 sgen/mbrs

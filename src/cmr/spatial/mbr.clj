@@ -105,7 +105,7 @@
          (covers-lon? mbr (.lon p)))))
 
 (defn corner-points
-  "Returns the corner points of the mbr"
+  "Returns the corner points of the mbr as upper left, upper right, lower right, lower left."
   [br]
   (let [{^double n :north ^double s :south ^double e :east ^double w :west} br]
     (p/ords->points w,n e,n e,s w,s)))
@@ -139,26 +139,6 @@
         lat-center (mid s n)
         lon-center (mid-lon w e)]
     (p/point lon-center lat-center)))
-
-(defn intersects-br?
-  "Returns true if the mbr intersects the other bounding rectangle"
-  [^Mbr mbr ^Mbr other-br]
-  (or (some (partial covers-point? mbr) (corner-points other-br))
-      (some (partial covers-point? other-br) (corner-points mbr))
-
-      ;; Do they form an overlapping t shape?
-      (and (= (crosses-antimeridian? mbr)
-              (crosses-antimeridian? other-br))
-           (let [{^double w1 :west ^double  n1 :north ^double e1 :east ^double s1 :south} mbr
-                 {^double w2 :west ^double  n2 :north ^double e2 :east ^double s2 :south} other-br]
-             (or (and (< w1 w2)
-                      (> e1 e2)
-                      (> n2 n1)
-                      (< s2 s1))
-                 (and (< w2 w1)
-                      (> e2 e1)
-                      (> n1 n2)
-                      (< s1 s2)))))))
 
 (def whole-world
   "an mbr that covers the whole world"
@@ -230,6 +210,57 @@
                 "should have crossed the antimeridian: "
                 (pr-str mbr))))))
 
+(defn intersects-br?
+  "Returns true if the mbr intersects the other bounding rectangle"
+  [^Mbr mbr ^Mbr other-br]
+  (or (some (partial covers-point? mbr) (corner-points other-br))
+      (some (partial covers-point? other-br) (corner-points mbr))
+
+      ;; Do they form an overlapping t shape?
+      (and (= (crosses-antimeridian? mbr)
+              (crosses-antimeridian? other-br))
+           (let [{^double w1 :west ^double  n1 :north ^double e1 :east ^double s1 :south} mbr
+                 {^double w2 :west ^double  n2 :north ^double e2 :east ^double s2 :south} other-br]
+             (or (and (< w1 w2)
+                      (> e1 e2)
+                      (> n2 n1)
+                      (< s2 s1))
+                 (and (< w2 w1)
+                      (> e2 e1)
+                      (> n1 n2)
+                      (< s1 s2)))))))
+
+(defn non-crossing-intersects-br?
+  "Specialized version of intersects-br? for two mbrs that don't cross the antimeridian.
+  Returns true if the mbr intersects the other bounding rectangle."
+  [^Mbr m1 ^Mbr m2]
+  (pj/assert (not (or (crosses-antimeridian? m1)
+                      (crosses-antimeridian? m2))))
+  (let [{^double w1 :west ^double  n1 :north ^double e1 :east ^double s1 :south} m1
+        {^double w2 :west ^double  n2 :north ^double e2 :east ^double s2 :south} m2
+        range-intersects? (fn [s1 e1 s2 e2]
+                            (or (within-range? s2 s1 e1)
+                                (within-range? e2 s1 e1)
+                                (within-range? s1 s2 e2)))]
+    (and (range-intersects? w1 e1 w2 e2)
+         (range-intersects? s1 n1 s2 n2))))
+
+
+(defn intersections
+  "Returns the intersection of the two minimum bounding rectangles. This could return multiple mbrs
+  if one crosses the antimeridian and the other intersects both sides."
+  [^Mbr m1 ^Mbr m2]
+  (filter identity
+          (for [m1-sub (split-across-antimeridian m1)
+                m2-sub (split-across-antimeridian m2)]
+            (when (non-crossing-intersects-br? m1-sub m2-sub)
+              (let [{^double w1 :west ^double n1 :north ^double e1 :east ^double s1 :south} m1-sub
+                    {^double w2 :west ^double n2 :north ^double e2 :east ^double s2 :south} m2-sub
+                    new-west (max w1 w2)
+                    new-east (min e1 e2)
+                    new-north (min n1 n2)
+                    new-south (max s1 s2)]
+                (mbr new-west new-north new-east new-south))))))
 
 (defn union
   "Returns the union of the minimum bounding rectangles. Accepts an optional argument to disable
