@@ -51,6 +51,11 @@
   []
   (format "http://localhost:%s/reset" (transmit-config/search-port)))
 
+(defn provider-holdings-url
+  "Returns the URL for retrieving provider holdings."
+  []
+  (format "http://localhost:%s/provider_holdings" (transmit-config/search-port)))
+
 (defn retrieve-concept-url
   [type concept-id]
   (format "http://localhost:%s/concepts/%s" (transmit-config/search-port) concept-id))
