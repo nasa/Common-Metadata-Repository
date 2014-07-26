@@ -91,10 +91,49 @@
      :headers {"Content-Type" "application/xml; charset=utf-8"}
      :body (:metadata concept)}))
 
+(defn- parse-provider-holdings-w-extension
+  "Parses the provider-holdings-w-extension and returns the requested mime-type."
+  [provider-holdings-w-extension]
+  (let [[_ extension]
+        (filter
+          identity
+          (re-matches #"^provider_holdings(?:\.(.+))?$" provider-holdings-w-extension))]
+    (extension->mime-type extension)))
+
+(defn- get-provider-holdings-format
+  "Returns the requested search results format parsed from headers or from the URL extension"
+  [ext-mime-type headers]
+  (let [mime-type (or ext-mime-type (get headers "accept"))]
+    (when (and (some? mime-type) (not (some #{mime-type} ["application/xml" "application/json"])))
+      (svc-errors/throw-service-error
+        :bad-request (format "The mime-type [%s] is not supported." mime-type)))
+    ;; set the default format to xml
+    (mt/mime-type->format mime-type :xml)))
+
+(defn- get-provider-holdings
+  "Invokes query service to retrieve provider holdings and returns the response"
+  [context provider-holdings-w-extension params headers]
+  (let [ext-mime-type (parse-provider-holdings-w-extension provider-holdings-w-extension)
+        params (dissoc params :provider-holdings-w-extension)
+        result-format (get-provider-holdings-format ext-mime-type headers)
+        params (assoc params :result-format result-format)
+        _ (info (format "Searching for provider holdings in format %s with params %s." result-format (pr-str params)))
+        results (query-svc/get-provider-holdings context params)
+        {:keys [collection-count granule-count response-body]} results]
+    {:status 200
+     :headers {"Content-Type" (str (mt/format->mime-type result-format) "; charset=utf-8")
+               "collection-count" (str collection-count)
+               "granule-count" (str granule-count)}
+     :body response-body}))
+
 (def concept-type-w-extension-regex
   "A regular expression that matches URLs including the concept type (pluralized) along with a file
   extension."
   #"(?:(?:granules)|(?:collections))(?:\..+)?")
+
+(def provider-holdings-w-extension-regex
+  "A regular expression that matches URLs including the provider holdings and a file extension."
+  #"(?:provider_holdings)(?:\..+)?")
 
 (defn- build-routes [system]
   (routes
@@ -111,6 +150,11 @@
           (find-concepts context concept-type-w-extension params headers query-string))
         (POST "/" {params :params headers :headers context :request-context body :body-copy}
           (find-concepts context concept-type-w-extension params headers body)))
+
+      ;; Provider holdings
+      (context ["/:provider-holdings-w-extension" :provider-holdings-w-extension provider-holdings-w-extension-regex] [provider-holdings-w-extension]
+        (GET "/" {params :params headers :headers context :request-context}
+          (get-provider-holdings context provider-holdings-w-extension params headers)))
 
       ;; reset operation available just for development purposes
       ;; clear the cache for search app

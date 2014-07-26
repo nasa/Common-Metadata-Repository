@@ -17,5 +17,5 @@
   "Returns the atom request url based on search concept type with extension and query string"
   [context concept-type result-format]
   (let [{:keys [query-string]} context
-        query-string (if (empty? query-string) query-string (str "?" query-string))]
+        query-string (if (empty? query-string) "" (str "?" query-string))]
     (format "%s%ss.%s%s" (search-root context) (name concept-type) (name result-format) query-string)))

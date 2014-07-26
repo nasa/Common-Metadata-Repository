@@ -46,6 +46,7 @@
             [cmr.search.services.parameters.parameter-validation :as pv]
             [cmr.search.services.collection-query-resolver :as r]
             [cmr.search.services.query-execution :as qe]
+            [cmr.search.services.provider-holdings :as ph]
             [cmr.search.data.complex-to-simple :as c2s]
             [cmr.search.services.transformer :as t]
             [cmr.metadata-db.services.concept-service :as meta-db]
@@ -54,6 +55,7 @@
             [cmr.common.util :as u]
             [cmr.common.cache :as cache]
             [camel-snake-kebab :as csk]
+            [cheshire.core :as json]
             [cmr.common.log :refer (debug info warn error)]))
 
 (deftracefn validate-query
@@ -72,6 +74,12 @@
 
 (defmulti search-results->response
   "Converts query search results into a string response."
+  (fn [context query results]
+    (:result-format query)))
+
+(defmulti search-results->response-json
+  "Converts query search results into a json response.
+  This is added so that we can directly call get-collections-by-providers within this namespace."
   (fn [context query results]
     (:result-format query)))
 
@@ -135,3 +143,42 @@
   "Clear the cache for search app"
   [context]
   (cache/reset-cache (-> context :system :cache)))
+
+(deftracefn get-collections-by-providers
+  "Returns all collections found by the given provider ids"
+  [context provider-ids]
+  (let [query-condition (cond
+                          (empty? provider-ids) (qm/map->MatchAllCondition {})
+                          (vector? provider-ids) (qm/string-conditions :provider-id provider-ids)
+                          :else (qm/string-condition :provider-id provider-ids))
+        query (qm/query {:concept-type :collection
+                         :condition query-condition
+                         :page-size :unlimited
+                         :result-format :json})
+        results (->> query
+                     (resolve-collection-query context)
+                     (qe/execute-query context))
+        all-collections (-> (search-results->response-json context query results)
+                            (get-in [:feed :entry]))]
+    (map #(select-keys % [:id :data_center :title]) all-collections)))
+
+(deftracefn get-provider-holdings
+  "Executes elasticsearch search to get provider holdings"
+  [context params]
+  (let [{provider-ids :provider-id legacy-provider-ids :provider_id pretty? :pretty} params
+        provider-ids (or provider-ids legacy-provider-ids)
+        ;; get all collections limited by the list of providers in json format
+        collections (get-collections-by-providers context provider-ids)
+        ;; get a mapping of collection to granule count
+        collection-granule-count (idx/get-collection-granule-counts context provider-ids)
+        ;; combine the granule count into collections to form provider holdings
+        provider-holdings (map #(assoc % :granule-count (get collection-granule-count (:id %)))
+                               collections)
+        ;; generate response body in string
+        response-body (if (= :xml (:result-format params))
+                        (ph/provider-holdings->xml-response provider-holdings pretty?)
+                        (ph/provider-holdings->json-response provider-holdings pretty?))]
+    {:collection-count (count provider-holdings)
+     :granule-count (apply + (map :granule-count provider-holdings))
+     :response-body response-body}))
+

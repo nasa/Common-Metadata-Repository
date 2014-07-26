@@ -2,6 +2,7 @@
   "Implements the search index protocols for searching against Elasticsearch."
   (:require [clojurewerkz.elastisch.rest.document :as esd]
             [clojurewerkz.elastisch.query :as q]
+            [clojurewerkz.elastisch.aggregation :as a]
             [clojurewerkz.elastisch.rest.response :as esrsp]
             [clojure.string :as s]
             [cmr.common.log :refer (debug info warn error)]
@@ -52,6 +53,11 @@
           (map #(format "%d_c*_%s" index-set-id (s/lower-case %))
                provider-ids))))
 
+(defn- all-granule-indexes
+  "Returns all possilbe granule indexes in a string that can be used by elasticsearch query"
+  []
+  (format "%d_c*,%d_small_collections,-%d_collections" index-set-id index-set-id index-set-id))
+
 (defn- get-granule-indexes
   "Returns the granule indexes that should be searched based on the input query"
   [context query]
@@ -67,7 +73,7 @@
       (s/join "," (provider-ids->index-names context provider-ids))
 
       :else
-      (format "%d_c*,%d_small_collections,-%d_collections" index-set-id index-set-id index-set-id))))
+      (all-granule-indexes))))
 
 (defn concept-type->index-info
   "Returns index info based on input concept type. For granule concept type, it will walks through
@@ -143,3 +149,23 @@
   "Creates a new instance of the elastic search index."
   [config]
   (->ElasticSearchIndex config nil))
+
+(defn get-collection-granule-counts
+  "Returns the collection granule count by searching elasticsearch by aggregation"
+  [context provider-ids]
+  (let [granule-indexes (if (empty? provider-ids)
+                          (all-granule-indexes)
+                          (s/join "," (provider-ids->index-names context provider-ids)))
+        result (esd/search (context->conn context)
+                           granule-indexes
+                           "granule"
+                           ;; TODO Since we are limiting the indexes to search by provider id already,
+                           ;; we do not put the provider-ids in the query for now.
+                           ;; We can add it later if it is determined to be necessary.
+                           :query (q/match-all)
+                           :aggregations {:provider_holdings (a/terms "collection-concept-id" {:size 10000})}
+                           :version true
+                           :size 10000
+                           :from 0)
+        holdings (esrsp/aggregation-from result :provider_holdings)]
+    (into {} (map (fn [pair] [(:key pair) (:doc_count pair)]) (:buckets holdings)))))
