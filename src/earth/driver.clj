@@ -1,9 +1,6 @@
 (ns earth.driver
   (:require [vdd-core.core :as vdd]
-            [vdd-core.internal.project-viz :as project-viz]
-            [coffee-script.core :as coffee]
-            [clojure.java.io :as io]
-            [clojure.string :as s]))
+            [vdd-core.internal.project-viz :as project-viz]))
 
 (comment
   ;; want to send data over to be visualized. What could we visualize?
@@ -43,6 +40,83 @@
                         :south -10
                         :options {:draggable true}}])
 
+  (set-viz-geometries [{:type :cartesian-polygon
+                        :ords [-46 -1, 1 -1, 1 30, -46 -1 ]
+                        :options {:draggable false}}
+                       {:type :ring
+                        :ords [-45 30, 0 0]}])
+
+  ;; making the cartesian area mirror arc
+  (set-viz-geometries [{:type :cartesian-polygon
+                        :ords [-45 0, 1 -1, 0 30, -45 -0]
+                        :options {:draggable false}}
+                       ; {:type :ring
+                       ;  :ords [-45 30, 0 0]}
+
+                       {:type :ring
+                        :ords [-45 0, 0 30]}
+
+                       ; {:type :ring
+                       ;  :ords [-30 10, -15 20]}
+
+                       ])
+
+  ;; line segment intersection point
+  ; (add-viz-geometries [{:type :point
+  ;                       :lon -22.12299465240642
+  ;                       :lat 14.748663101604278}])
+
+  ; ;; arc intersection point
+  ; (add-viz-geometries [{:type :point
+  ;                       :lon -22.225270322709946
+  ;                       :lat 17.162733328149415}])
+  (add-viz-geometries [{:type :point
+                        :lon -20.945413480816008
+                        :lat 16.271461041452543}])
+
+
+  ;;; approximation method
+  ;; arc midpoint
+  (add-viz-geometries [{:type :point
+                        :lon -22.5
+                        :lat 17.351921757240685}])
+
+  ;; line midpoint (equivalent to mid lon of mbr intersection)
+  (add-viz-geometries [{:type :point
+                        :lon -22.5
+                        :lat 15.0}])
+
+  ;; midway (lat) between midpoints
+  (add-viz-geometries [{:type :point
+                        :lon -22.5
+                        :lat 16.175960878620344}])
+
+  ;; arc intersection and midway lat
+  (add-viz-geometries [{:type :point
+                        :lon -20.80963236600485
+                        :lat 16.175960878620344}])
+
+  ;; line intersection at midway lat
+  (add-viz-geometries [{:type :point
+                        :lon -20.736058682069483
+                        :lat 16.175960878620344}])
+
+  ;; midway (lon) between intersections
+  (add-viz-geometries [{:type :point
+                        :lon -20.772845524037166
+                        :lat 16.175960878620344}])
+
+  ;; arc intersection and midway lon
+  (add-viz-geometries [{:type :point
+                        :lon -20.772845524037166
+                        :lat 16.150056475830688}])
+
+  (add-viz-geometries [{:type :point
+                        :lon -20.772845524037166
+                        :lat 16.15143631730856}])
+
+
+
 
   )
 
@@ -63,30 +137,3 @@
   (vdd/data->viz {:cmd :clear-geometries}))
 
 
-(defn- coffeescript-files
-  "Finds all the coffeescript files in subdirectories"
-  [path]
-  (->> path
-       io/file
-       file-seq
-       (map str)
-       (filter #(.endsWith ^String % ".coffee"))))
-
-(defn- compile-coffeescript-file
-  "Compiles a single coffeescript file from blah.coffee to blah.js."
-  [path output-path]
-  (io/make-parents output-path)
-  (let [js (coffee/compile-coffee (slurp path))]
-    (spit output-path js)
-    output-path))
-
-(defn compile-coffeescript
-  "Compiles all the coffeescript files in the visualization."
-  [config]
-  (let [visualization-paths (map :path (project-viz/project-visualizations config))]
-    (doall (for [visualization-path visualization-paths
-                 coffeescript-file (coffeescript-files visualization-path)]
-             (let [compiled-path (-> coffeescript-file
-                                     (s/replace visualization-path (str visualization-path "/compiled"))
-                                     (s/replace ".coffee" ".js"))]
-               (compile-coffeescript-file coffeescript-file compiled-path))))))

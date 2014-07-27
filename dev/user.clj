@@ -2,7 +2,8 @@
   (:require [clojure.pprint :refer (pprint pp)]
             [clojure.tools.namespace.repl :refer (refresh refresh-all)]
             [vdd-core.core :as vdd]
-            [earth.driver :as earth-viz])
+            [earth.driver :as earth-viz]
+            [common.util :as c])
   (:use [clojure.test :only [run-all-tests]]
         [clojure.repl]))
 
@@ -10,7 +11,7 @@
 
 (def viz-config
   (-> (vdd/config)
-      (assoc :plugins ["earth"])))
+      (assoc :plugins ["earth" "flatland"])))
 
 (defn start
   "Starts the current development system."
@@ -34,7 +35,7 @@
 (defn reload-coffeescript []
   (do
     (println "Compiling coffeescript")
-    (println (earth-viz/compile-coffeescript (:config vdd-server)))
+    (println (c/compile-coffeescript (:config vdd-server)))
     (vdd/data->viz {:cmd :reload})))
 
 (println "Custom user.clj loaded.")

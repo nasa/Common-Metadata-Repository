@@ -16,4 +16,4 @@
          :source-paths ["src" "dev" "viz"]}}
 
   ;; Must be manually run before running lein install
-  :aliases {"compile-coffeescript" ["exec" "-ep" "(earth.driver/compile-coffeescript (vdd-core.core/config))"]})
+  :aliases {"compile-coffeescript" ["exec" "-ep" "(common.util/compile-coffeescript (vdd-core.core/config))"]})
