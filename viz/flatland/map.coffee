@@ -6,6 +6,13 @@ class window.Map extends Module
     @board = JXG.JSXGraph.initBoard('map', {boundingbox: [-180, 90, 180, -90], axis:true})
     @geometries = []
 
+  resize: (width, height)->
+    @board.needsFullUpdate = true
+    @board.resizeContainer(width, height)
+    @board.setBoundingBox([-180, 90, 180, -90], true)
+    @board.update()
+
+
   addGeometries: (geometries)->
     newGeoms = _.map(geometries, (g)=>
       geom = switch g.type
@@ -18,5 +25,10 @@ class window.Map extends Module
       geom
     )
     @geometries = @geometries.concat(newGeoms)
+
+
+  clearGeometries: (geometries)->
+    geom.undisplay(@board) for geom in @geometries
+    @geometries = []
 
 
