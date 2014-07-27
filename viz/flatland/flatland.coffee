@@ -1,25 +1,24 @@
-
-
-
 # Global vars
-window.map = Map.createMap()
+window.map = new Map()
 
 
 # Handles receiving visualization data through WAMP.
 onVizData = (topic, command)->
   console.log("visualization data received", command)
 
+  map = window.map
+
   switch command.cmd
     when "reload"
       location.reload()
     when "remove-geometries"
-      Map.map.removeGeometries(command.ids)
+      map.removeGeometries(command.ids)
     when "set-geometries"
-      Map.map.setGeometries(command.geometries)
+      map.setGeometries(command.geometries)
     when "add-geometries"
-      Map.map.addGeometries(command.geometries)
+      map.addGeometries(command.geometries)
     when "clear-geometries"
-      Map.map.clearGeometries()
+      map.clearGeometries()
     else throw "Unknown command: #{command.cmd}"
 
 # Connect using the WAMP protocol and register callback for visualization data

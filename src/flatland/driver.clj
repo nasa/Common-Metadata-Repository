@@ -2,6 +2,14 @@
   (:require [vdd-core.core :as vdd]
             [vdd-core.internal.project-viz :as project-viz]))
 
+
+(comment
+
+  (add-viz-geometries [{:type :cartesian-ring
+                        :ords [0 0 10 10]}])
+
+)
+
 (defn set-viz-geometries [geometries]
   (vdd/data->viz {:cmd :set-geometries
                   :geometries geometries}))
