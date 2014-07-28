@@ -8,6 +8,12 @@
   (add-viz-geometries [{:type :cartesian-ring
                         :ords [0 0 10 10]}])
 
+  (add-viz-geometries [{:type :bounding-rectangle
+                        :west -10
+                        :north 10
+                        :east 25
+                        :south -13}])
+
   (clear-viz-geometries)
 
 )
