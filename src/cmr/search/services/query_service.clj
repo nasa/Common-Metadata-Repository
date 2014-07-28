@@ -77,12 +77,6 @@
   (fn [context query results]
     (:result-format query)))
 
-(defmulti search-results->response-result
-  "Converts query search results into a json response.
-  This is added so that we can directly call get-collections-by-providers within this namespace."
-  (fn [context query results]
-    (:result-format query)))
-
 (defn- sanitize-params
   "Manipulates the parameters to make them easier to process"
   [params]

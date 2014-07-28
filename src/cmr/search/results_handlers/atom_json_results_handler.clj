@@ -82,7 +82,7 @@
            result
            (for [[k v] result :when (nil? v)] k))))
 
-(defmethod qs/search-results->response-result :json
+(defmethod qs/search-results->response :json
   [context query results]
   (let [{:keys [items]} results
         {:keys [concept-type result-format]} query
@@ -96,9 +96,5 @@
                            :id (url/atom-request-url context concept-type result-format)
                            :title (atom/concept-type->atom-title (:concept-type query))
                            :entry (map atom-reference-to-json-fn items)}}]
-    response-results))
-
-(defmethod qs/search-results->response :json
-  [context query results]
-  (let [response-results (qs/search-results->response-result context query results)]
     (json/generate-string response-results {:pretty (:pretty? query)})))
+
