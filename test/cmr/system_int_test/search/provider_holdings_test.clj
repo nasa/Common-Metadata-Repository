@@ -19,14 +19,6 @@
 (def prov2-collection-count 5)
 (def prov2-grans-increment-count 3)
 
-(def collection-count (+ prov1-collection-count prov2-collection-count))
-
-(def prov1-granule-count (apply + (map #(* prov1-grans-increment-count %)
-                                       (range 1 (inc prov1-collection-count)))))
-(def prov2-granule-count (apply + (map #(* prov2-grans-increment-count %)
-                                       (range 1 (inc prov2-collection-count)))))
-(def granule-count (+ prov1-granule-count prov2-granule-count))
-
 (defn- collection-holding
   "Returns the collection holding for the given collection and granule count"
   [provider-id coll granule-count]
@@ -71,21 +63,15 @@
     (testing "retrieve provider holdings in xml"
       (let [response (search/provider-holdings-in-format :xml)]
         (is (= 200 (:status response)))
-        (is (= collection-count (:collection-count response)))
-        (is (= granule-count (:granule-count response)))
         (is (= expected-all-holdings
                (set (:results response))))))
     (testing "retrieve provider holdings for list of providers in xml"
       (let [response (search/provider-holdings-in-format :xml {:provider_id "PROV1"})]
         (is (= 200 (:status response)))
-        (is (= prov1-collection-count (:collection-count response)))
-        (is (= prov1-granule-count (:granule-count response)))
         (is (= (set (get all-holdings "PROV1"))
                (set (:results response)))))
       (let [response (search/provider-holdings-in-format :xml {:provider_id ["PROV1" "PROV2"]})]
         (is (= 200 (:status response)))
-        (is (= collection-count (:collection-count response)))
-        (is (= granule-count (:granule-count response)))
         (is (= expected-all-holdings
                (set (:results response))))))
     (testing "as extension"
@@ -102,21 +88,15 @@
     (testing "retrieve provider holdings in JSON"
       (let [response (search/provider-holdings-in-format :json)]
         (is (= 200 (:status response)))
-        (is (= collection-count (:collection-count response)))
-        (is (= granule-count (:granule-count response)))
         (is (= expected-all-holdings
                (set (:results response))))))
     (testing "retrieve provider holdings for list of providers in JSON"
       (let [response (search/provider-holdings-in-format :json {:provider_id "PROV1"})]
         (is (= 200 (:status response)))
-        (is (= prov1-collection-count (:collection-count response)))
-        (is (= prov1-granule-count (:granule-count response)))
         (is (= (set (get all-holdings "PROV1"))
                (set (:results response)))))
       (let [response (search/provider-holdings-in-format :json {:provider_id ["PROV1" "PROV2"]})]
         (is (= 200 (:status response)))
-        (is (= collection-count (:collection-count response)))
-        (is (= granule-count (:granule-count response)))
         (is (= expected-all-holdings
                (set (:results response))))))
     (testing "as extension"

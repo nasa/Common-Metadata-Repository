@@ -234,11 +234,8 @@
          response (client/get url {:accept accept
                                    :query-params params
                                    :connection-manager (url/conn-mgr)})
-         {:keys [status headers body]} response
-         {:keys [collection-count granule-count]} headers]
+         {:keys [status body]} response]
      (if (= status 200)
        {:status status
-        :collection-count (Long. collection-count)
-        :granule-count (Long. granule-count)
         :results (ph/parse-provider-holdings format-key body)}
        response))))
