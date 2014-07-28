@@ -19,7 +19,8 @@
             [cmr.search.results-handlers.atom-results-handler]
             [cmr.search.results-handlers.atom-json-results-handler]
             [cmr.search.results-handlers.reference-results-handler]
-            [cmr.search.results-handlers.metadata-results-handler]))
+            [cmr.search.results-handlers.metadata-results-handler]
+            [cmr.search.results-handlers.all-collections-results-handler]))
 
 (def extension->mime-type
   "A map of URL file extensions to the mime type they represent."
@@ -43,6 +44,12 @@
     "application/atom+xml"
     "text/csv"})
 
+(def supported-provider-holdings-mime-types
+  "The mime types supported by search."
+  #{"*/*"
+    "application/xml"
+    "application/json"})
+
 (defn- parse-concept-type-w-extension
   "Parses the concept type and extension (\"granules.echo10\") into a pair of concept type keyword
   and mime type"
@@ -60,11 +67,13 @@
 
 (defn- get-search-results-format
   "Returns the requested search results format parsed from headers or from the URL extension"
-  [ext-mime-type headers]
+  ([ext-mime-type headers]
+   (get-search-results-format ext-mime-type headers supported-mime-types))
+  ([ext-mime-type headers valid-mime-types]
   (let [mime-type (or ext-mime-type (get headers "accept"))]
-    (mt/validate-request-mime-type mime-type supported-mime-types)
+    (mt/validate-request-mime-type mime-type valid-mime-types)
     ;; set the default format to xml
-    (mt/mime-type->format mime-type :xml)))
+    (mt/mime-type->format mime-type :xml))))
 
 (defn- find-concepts
   "Invokes query service to find results and returns the response"
@@ -91,10 +100,36 @@
      :headers {"Content-Type" "application/xml; charset=utf-8"}
      :body (:metadata concept)}))
 
+(defn- parse-provider-holdings-w-extension
+  "Parses the provider-holdings-w-extension and returns the requested mime-type."
+  [provider-holdings-w-extension]
+  (let [[_ extension]
+        (filter
+          identity
+          (re-matches #"^provider_holdings(?:\.(.+))?$" provider-holdings-w-extension))]
+    (extension->mime-type extension)))
+
+(defn- get-provider-holdings
+  "Invokes query service to retrieve provider holdings and returns the response"
+  [context provider-holdings-w-extension params headers]
+  (let [ext-mime-type (parse-provider-holdings-w-extension provider-holdings-w-extension)
+        params (dissoc params :provider-holdings-w-extension)
+        result-format (get-search-results-format ext-mime-type headers supported-provider-holdings-mime-types)
+        params (assoc params :result-format result-format)
+        _ (info (format "Searching for provider holdings in format %s with params %s." result-format (pr-str params)))
+        provider-holdings (query-svc/get-provider-holdings context params)]
+    {:status 200
+     :headers {"Content-Type" (str (mt/format->mime-type result-format) "; charset=utf-8")}
+     :body provider-holdings}))
+
 (def concept-type-w-extension-regex
   "A regular expression that matches URLs including the concept type (pluralized) along with a file
   extension."
   #"(?:(?:granules)|(?:collections))(?:\..+)?")
+
+(def provider-holdings-w-extension-regex
+  "A regular expression that matches URLs including the provider holdings and a file extension."
+  #"(?:provider_holdings)(?:\..+)?")
 
 (defn- build-routes [system]
   (routes
@@ -111,6 +146,11 @@
           (find-concepts context concept-type-w-extension params headers query-string))
         (POST "/" {params :params headers :headers context :request-context body :body-copy}
           (find-concepts context concept-type-w-extension params headers body)))
+
+      ;; Provider holdings
+      (context ["/:provider-holdings-w-extension" :provider-holdings-w-extension provider-holdings-w-extension-regex] [provider-holdings-w-extension]
+        (GET "/" {params :params headers :headers context :request-context}
+          (get-provider-holdings context provider-holdings-w-extension params headers)))
 
       ;; reset operation available just for development purposes
       ;; clear the cache for search app

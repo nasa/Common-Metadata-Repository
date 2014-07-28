@@ -438,6 +438,16 @@ Search collections or granules with query parameters encoded form in POST reques
 
 curl -i -XPOST http://localhost:3003/collections -d "dataset_id[]=Example%20DatasetId&dataset_id[]=Dataset2"
 
+### Retrieve provider holdings, support format :xml and :json in header and as extension.
+
+All provider holdings
+
+    curl "http://localhost:3003/provider_holdings.xml"
+
+Provider holdings for a list of providers
+
+    curl "http://localhost:3003/provider_holdings.json?provider-id\[\]=PROV1&provider-id\[\]=PROV2"
+
 ## Search Flow
 
 ### Stage 1: Convert to query model

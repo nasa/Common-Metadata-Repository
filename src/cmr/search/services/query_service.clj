@@ -46,6 +46,7 @@
             [cmr.search.services.parameters.parameter-validation :as pv]
             [cmr.search.services.collection-query-resolver :as r]
             [cmr.search.services.query-execution :as qe]
+            [cmr.search.services.provider-holdings :as ph]
             [cmr.search.data.complex-to-simple :as c2s]
             [cmr.search.services.transformer :as t]
             [cmr.metadata-db.services.concept-service :as meta-db]
@@ -54,6 +55,7 @@
             [cmr.common.util :as u]
             [cmr.common.cache :as cache]
             [camel-snake-kebab :as csk]
+            [cheshire.core :as json]
             [cmr.common.log :refer (debug info warn error)]))
 
 (deftracefn validate-query
@@ -135,3 +137,36 @@
   "Clear the cache for search app"
   [context]
   (cache/reset-cache (-> context :system :cache)))
+
+(deftracefn get-collections-by-providers
+  "Returns all collections found by the given provider ids"
+  [context provider-ids]
+  (let [query-condition (if (empty? provider-ids) (qm/map->MatchAllCondition {})
+                          (qm/string-conditions :provider-id provider-ids))
+        query (qm/query {:concept-type :collection
+                         :condition query-condition
+                         :page-size :unlimited
+                         :result-format :core-fields})
+        results (->> query
+                     (resolve-collection-query context)
+                     (qe/execute-query context))]
+    (:items results)))
+
+(deftracefn get-provider-holdings
+  "Executes elasticsearch search to get provider holdings"
+  [context params]
+  (let [{provider-ids :provider-id legacy-provider-ids :provider_id pretty? :pretty} params
+        provider-ids (or provider-ids legacy-provider-ids)
+        ;; make sure provider-ids is sequential
+        provider-ids (if (or (nil? provider-ids) (sequential? provider-ids))
+                       provider-ids
+                       [provider-ids])
+        ;; get all collections limited by the list of providers in json format
+        collections (get-collections-by-providers context provider-ids)
+        ;; get a mapping of collection to granule count
+        collection-granule-count (idx/get-collection-granule-counts context provider-ids)
+        ;; combine the granule count into collections to form provider holdings
+        provider-holdings (map #(assoc % :granule-count (get collection-granule-count (:concept-id %)))
+                               collections)]
+
+    (ph/provider-holdings->string (:result-format params) provider-holdings pretty?)))
