@@ -166,22 +166,15 @@
   (let [{provider-ids :provider-id legacy-provider-ids :provider_id pretty? :pretty} params
         provider-ids (or provider-ids legacy-provider-ids)
         ;; make sure provider-ids is sequential
-        provider-ids (cond
-                       (empty? provider-ids) []
-                       (sequential? provider-ids) provider-ids
-                       :else [provider-ids])
+        provider-ids (if (or (nil? provider-ids) (sequential? provider-ids))
+                       provider-ids
+                       [provider-ids])
         ;; get all collections limited by the list of providers in json format
         collections (get-collections-by-providers context provider-ids)
         ;; get a mapping of collection to granule count
         collection-granule-count (idx/get-collection-granule-counts context provider-ids)
         ;; combine the granule count into collections to form provider holdings
         provider-holdings (map #(assoc % :granule-count (get collection-granule-count (:id %)))
-                               collections)
-        ;; generate response body in string
-        response-body (if (= :xml (:result-format params))
-                        (ph/provider-holdings->xml-response provider-holdings pretty?)
-                        (ph/provider-holdings->json-response provider-holdings pretty?))]
-    {:collection-count (count provider-holdings)
-     :granule-count (apply + (map :granule-count provider-holdings))
-     :response-body response-body}))
+                               collections)]
 
+    (ph/provider-holdings->string (:result-format params) provider-holdings pretty?)))

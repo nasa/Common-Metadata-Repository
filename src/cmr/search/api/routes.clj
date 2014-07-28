@@ -116,13 +116,10 @@
         result-format (get-search-results-format ext-mime-type headers supported-provider-holdings-mime-types)
         params (assoc params :result-format result-format)
         _ (info (format "Searching for provider holdings in format %s with params %s." result-format (pr-str params)))
-        results (query-svc/get-provider-holdings context params)
-        {:keys [collection-count granule-count response-body]} results]
+        provider-holdings (query-svc/get-provider-holdings context params)]
     {:status 200
-     :headers {"Content-Type" (str (mt/format->mime-type result-format) "; charset=utf-8")
-               "collection-count" (str collection-count)
-               "granule-count" (str granule-count)}
-     :body response-body}))
+     :headers {"Content-Type" (str (mt/format->mime-type result-format) "; charset=utf-8")}
+     :body provider-holdings}))
 
 (def concept-type-w-extension-regex
   "A regular expression that matches URLs including the concept type (pluralized) along with a file

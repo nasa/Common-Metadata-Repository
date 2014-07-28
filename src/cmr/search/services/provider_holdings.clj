@@ -5,6 +5,11 @@
             [cmr.common.xml :as cx]
             [cheshire.core :as json]))
 
+(defmulti provider-holdings->string
+  "Returns the string representation of the given provider-holdings"
+  (fn [result-format provider-holdings pretty?]
+  result-format))
+
 (defn- provider-holding->xml-elem
   "Returns the XML element for the given provider holding"
   [provider-holding]
@@ -15,17 +20,15 @@
                (x/element :granule-count {} granule-count)
                (x/element :provider-id {} data_center))))
 
-(defn provider-holdings->xml-response
-  "Returns the XML string representation of the given provider-holdings"
-  [provider-holdings pretty?]
+(defmethod provider-holdings->string :xml
+  [result-format provider-holdings pretty?]
   (let [xml-fn (if pretty? x/indent-str x/emit-str)]
     (xml-fn
       (x/element :provider-holdings {:type "array"}
                  (map provider-holding->xml-elem provider-holdings)))))
 
-(defn provider-holdings->json-response
-  "Returns the JSON string representation of the given provider-holdings"
-  [provider-holdings pretty?]
+(defmethod provider-holdings->string :json
+  [result-format provider-holdings pretty?]
   (let [holdings-json (map #(set/rename-keys % {:id :concept-id
                                                 :title :entry-title
                                                 :data_center :provider-id})
