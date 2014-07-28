@@ -43,6 +43,12 @@
     "application/atom+xml"
     "text/csv"})
 
+(def supported-provider-holdings-mime-types
+  "The mime types supported by search."
+  #{"*/*"
+    "application/xml"
+    "application/json"})
+
 (defn- parse-concept-type-w-extension
   "Parses the concept type and extension (\"granules.echo10\") into a pair of concept type keyword
   and mime type"
@@ -60,11 +66,13 @@
 
 (defn- get-search-results-format
   "Returns the requested search results format parsed from headers or from the URL extension"
-  [ext-mime-type headers]
+  ([ext-mime-type headers]
+   (get-search-results-format ext-mime-type headers supported-mime-types))
+  ([ext-mime-type headers valid-mime-types]
   (let [mime-type (or ext-mime-type (get headers "accept"))]
-    (mt/validate-request-mime-type mime-type supported-mime-types)
+    (mt/validate-request-mime-type mime-type valid-mime-types)
     ;; set the default format to xml
-    (mt/mime-type->format mime-type :xml)))
+    (mt/mime-type->format mime-type :xml))))
 
 (defn- find-concepts
   "Invokes query service to find results and returns the response"
@@ -100,22 +108,12 @@
           (re-matches #"^provider_holdings(?:\.(.+))?$" provider-holdings-w-extension))]
     (extension->mime-type extension)))
 
-(defn- get-provider-holdings-format
-  "Returns the requested search results format parsed from headers or from the URL extension"
-  [ext-mime-type headers]
-  (let [mime-type (or ext-mime-type (get headers "accept"))]
-    (when (and (some? mime-type) (not (some #{mime-type} ["application/xml" "application/json"])))
-      (svc-errors/throw-service-error
-        :bad-request (format "The mime-type [%s] is not supported." mime-type)))
-    ;; set the default format to xml
-    (mt/mime-type->format mime-type :xml)))
-
 (defn- get-provider-holdings
   "Invokes query service to retrieve provider holdings and returns the response"
   [context provider-holdings-w-extension params headers]
   (let [ext-mime-type (parse-provider-holdings-w-extension provider-holdings-w-extension)
         params (dissoc params :provider-holdings-w-extension)
-        result-format (get-provider-holdings-format ext-mime-type headers)
+        result-format (get-search-results-format ext-mime-type headers supported-provider-holdings-mime-types)
         params (assoc params :result-format result-format)
         _ (info (format "Searching for provider holdings in format %s with params %s." result-format (pr-str params)))
         results (query-svc/get-provider-holdings context params)

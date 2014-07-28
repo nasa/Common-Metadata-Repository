@@ -53,9 +53,8 @@
           (map #(format "%d_c*_%s" index-set-id (s/lower-case %))
                provider-ids))))
 
-(defn- all-granule-indexes
-  "Returns all possilbe granule indexes in a string that can be used by elasticsearch query"
-  []
+(def all-granule-indexes
+  "Returns all possible granule indexes in a string that can be used by elasticsearch query"
   (format "%d_c*,%d_small_collections,-%d_collections" index-set-id index-set-id index-set-id))
 
 (defn- get-granule-indexes
@@ -73,7 +72,7 @@
       (s/join "," (provider-ids->index-names context provider-ids))
 
       :else
-      (all-granule-indexes))))
+      all-granule-indexes)))
 
 (defn concept-type->index-info
   "Returns index info based on input concept type. For granule concept type, it will walks through
@@ -154,12 +153,12 @@
   "Returns the collection granule count by searching elasticsearch by aggregation"
   [context provider-ids]
   (let [granule-indexes (if (empty? provider-ids)
-                          (all-granule-indexes)
+                          all-granule-indexes
                           (s/join "," (provider-ids->index-names context provider-ids)))
         result (esd/search (context->conn context)
                            granule-indexes
                            "granule"
-                           ;; TODO Since we are limiting the indexes to search by provider id already,
+                           ;; Since we are limiting the indexes to search by provider id already,
                            ;; we do not put the provider-ids in the query for now.
                            ;; We can add it later if it is determined to be necessary.
                            :query (q/match-all)

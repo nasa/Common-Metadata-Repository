@@ -441,9 +441,11 @@ curl -i -XPOST http://localhost:3003/collections -d "dataset_id[]=Example%20Data
 ### Retrieve provider holdings, support format :xml and :json in header and as extension.
 
 All provider holdings
+
     curl "http://localhost:3003/provider_holdings.xml"
 
 Provider holdings for a list of providers
+
     curl "http://localhost:3003/provider_holdings.json?provider-id\[\]=PROV1&provider-id\[\]=PROV2"
 
 ## Search Flow

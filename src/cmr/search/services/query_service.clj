@@ -77,7 +77,7 @@
   (fn [context query results]
     (:result-format query)))
 
-(defmulti search-results->response-json
+(defmulti search-results->response-result
   "Converts query search results into a json response.
   This is added so that we can directly call get-collections-by-providers within this namespace."
   (fn [context query results]
@@ -147,10 +147,8 @@
 (deftracefn get-collections-by-providers
   "Returns all collections found by the given provider ids"
   [context provider-ids]
-  (let [query-condition (cond
-                          (empty? provider-ids) (qm/map->MatchAllCondition {})
-                          (vector? provider-ids) (qm/string-conditions :provider-id provider-ids)
-                          :else (qm/string-condition :provider-id provider-ids))
+  (let [query-condition (if (empty? provider-ids) (qm/map->MatchAllCondition {})
+                          (qm/string-conditions :provider-id provider-ids))
         query (qm/query {:concept-type :collection
                          :condition query-condition
                          :page-size :unlimited
@@ -158,7 +156,7 @@
         results (->> query
                      (resolve-collection-query context)
                      (qe/execute-query context))
-        all-collections (-> (search-results->response-json context query results)
+        all-collections (-> (search-results->response-result context query results)
                             (get-in [:feed :entry]))]
     (map #(select-keys % [:id :data_center :title]) all-collections)))
 
@@ -167,6 +165,11 @@
   [context params]
   (let [{provider-ids :provider-id legacy-provider-ids :provider_id pretty? :pretty} params
         provider-ids (or provider-ids legacy-provider-ids)
+        ;; make sure provider-ids is sequential
+        provider-ids (cond
+                       (empty? provider-ids) []
+                       (sequential? provider-ids) provider-ids
+                       :else [provider-ids])
         ;; get all collections limited by the list of providers in json format
         collections (get-collections-by-providers context provider-ids)
         ;; get a mapping of collection to granule count

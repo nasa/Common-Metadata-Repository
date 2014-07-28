@@ -82,7 +82,7 @@
            result
            (for [[k v] result :when (nil? v)] k))))
 
-(defmethod qs/search-results->response-json :json
+(defmethod qs/search-results->response-result :json
   [context query results]
   (let [{:keys [items]} results
         {:keys [concept-type result-format]} query
@@ -100,5 +100,5 @@
 
 (defmethod qs/search-results->response :json
   [context query results]
-  (let [response-results (qs/search-results->response-json context query results)]
+  (let [response-results (qs/search-results->response-result context query results)]
     (json/generate-string response-results {:pretty (:pretty? query)})))
