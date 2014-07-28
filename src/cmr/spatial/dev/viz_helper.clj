@@ -7,14 +7,15 @@
             [cmr.spatial.mbr :as m]
             [cmr.spatial.arc :as a]
             [cmr.spatial.ring :as r]
-            [clojure.string :as s]
+            [cmr.spatial.segment :as s]
             [cmr.spatial.derived :as d]
             [cmr.spatial.math :refer :all])
   (:import cmr.spatial.point.Point
            cmr.spatial.ring.Ring
            cmr.spatial.polygon.Polygon
            cmr.spatial.mbr.Mbr
-           cmr.spatial.arc.Arc))
+           cmr.spatial.arc.Arc
+           cmr.spatial.segment.LineSegment))
 
 (comment
 
@@ -54,7 +55,7 @@
 (defn create-viz-server
   "Creates a visualization server which responds to lifecycle start and stop."
   []
-  (let [config (assoc (vdd/config) :plugins ["earth"])]
+  (let [config (assoc (vdd/config) :plugins ["earth" "flatland"])]
     (->VizServer config nil)))
 
 (defprotocol CmrSpatialToVizGeom
@@ -107,7 +108,12 @@
 
       (mapcat cmr-spatial->viz-geoms (cons boundary holes))))
 
-
+  LineSegment
+  (cmr-spatial->viz-geoms
+    [ls]
+    (let [{:keys [point1 point2]} ls]
+      [{:type :cartesian-ring
+        :ords (p/points->ords [point1 point2])}]))
 
   Mbr
   (cmr-spatial->viz-geoms

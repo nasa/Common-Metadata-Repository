@@ -4,13 +4,13 @@
   (:require [cmr.spatial.math :refer :all]
             [primitive-math]
             [pjstadig.assertions :as pj]
-            [cmr.spatial.derived :as d]
             [cmr.spatial.validation :as v]
             [cmr.spatial.mbr :as m]
             [cmr.spatial.point :as p]
             [cmr.spatial.messages :as msg]
             [cmr.common.services.errors :as errors]
-            [cmr.spatial.line :as l])
+            [cmr.spatial.line :as l]
+            [cmr.spatial.derived :as d])
   (:import cmr.spatial.point.Point
            cmr.spatial.mbr.Mbr))
 
@@ -38,10 +38,21 @@
    ^Mbr mbr
    ])
 
+
 (defn line-segment
   "Creates a new line segment"
-  [p1 p2]
-  (->LineSegment p1 p2 nil nil nil))
+  [^Point p1 ^Point p2]
+  (let [lon1 (.lon p1)
+        lat1 (.lat p1)
+        lon2 (.lon p2)
+        lat2 (.lat p2)
+        m (/ (- lat2 lat1) (- lon2 lon1))
+        b (- lat1 (* m lon1))
+        mbr (m/union (m/point->mbr p1)
+                     (m/point->mbr p2)
+                     ;; Resulting MBR should not cross the antimeridian as this isn't allowed for cartesian polygons
+                     false)]
+    (->LineSegment p1 p2 m b mbr)))
 
 (defn ords->line-segment
   "Takes all arguments as coordinates for points, lon1, lat1, lon2, lat2, and creates an line-segment."
@@ -162,46 +173,6 @@
                     points)]
        (l/line points)))))
 
-(defn slope
-  "Returns or calculates the slope of a line segment."
-  ^double [^LineSegment ls]
-  (or (:m ls)
-      (let [^Point p1 (.point1 ls)
-            ^Point p2 (.point2 ls)
-            lon1 (.lon p1)
-            lat1 (.lat p1)
-            lon2 (.lon p2)
-            lat2 (.lat p2)]
-        (/ (- lat2 lat1) (- lon2 lon1)))))
-
-(defn slope-intersect
-  "Returns or calculates the slope intersect of a line segment."
-  ^double [^LineSegment ls]
-  (or (:b ls)
-      (let [^Point p1 (.point1 ls)
-            lon1 (.lon p1)
-            lat1 (.lat p1)
-            m (slope ls)]
-        (- lat1 (* m lon1)))))
-
-(defn mbr
-  "Returns or calculates the minimumber bounding rectangle of a line segment"
-  [ls]
-  (or (:mbr ls)
-      (m/union (m/point->mbr (:point1 ls))
-               (m/point->mbr (:point2 ls))
-               ;; Resulting MBR should not cross the antimeridian as this isn't allowed for cartesian polygons
-               false)))
-
-(extend-protocol d/DerivedCalculator
-  cmr.spatial.segment.LineSegment
-  (calculate-derived
-    ^LineSegment [^LineSegment ls]
-    (-> ls
-        (assoc :m (slope ls))
-        (assoc :b (slope-intersect ls))
-        (assoc :mbr (mbr ls)))))
-
 (defn mbr->line-segments
   "Returns line segments representing the exerior of the MBR"
   [mbr]
@@ -240,10 +211,11 @@
   [ls1 ls2]
   (let [[ls vert-ls] (if (vertical? ls1) [ls2 ls1] [ls1 ls2])
         lon (get-in vert-ls [:point1 :lon])
-        mbr (:mbr ls)]
+        mbr (:mbr ls)
+        vert-mbr (:mbr vert-ls)]
     (when-let [point (some->> (segment+lon->lat ls lon)
                               (p/point lon))]
-      (when (m/covers-point? mbr point)
+      (when (and (m/covers-point? mbr point) (m/covers-point? vert-mbr point))
         point))))
 
 (defn- intersection-normal
@@ -281,7 +253,21 @@
   "Returns the points the line segment intersects the edges of the mbr"
   [ls mbr]
   (let [edges (mbr->line-segments mbr)]
-    (mapcat (partial intersection ls) edges)))
+    (filter identity (map (partial intersection ls) edges))))
+
+(comment
+
+ (def ls  (cmr.spatial.segment/ords->line-segment -139.0 2.0 160.5 -85.0))
+
+ (def mbr #cmr.spatial.mbr.Mbr{:west -113.0, :north 29.18229693893373, :east 55.0, :south -15.0})
+
+  (def edges (mbr->line-segments mbr))
+
+  (m/covers-point? (:mbr ls) (intersection ls (nth edges 1)))
+
+  (mbr-intersections ls mbr)
+
+)
 
 ;; TODO add tests for this
 (defn subselect
@@ -294,31 +280,42 @@
         ;; helper function that removes points that are = to 1 and 2
         ;; If the MBR covers the edges of the line segment then the points will be found as intersections
         not-point1-or-2 #(and (not (approx= point1 % COVERS_TOLERANCE))
-                              (not (approx= point2 % COVERS_TOLERANCE)))
-        ]
+                              (not (approx= point2 % COVERS_TOLERANCE)))]
     (if (and point1-in-mbr point2-in-mbr)
       ;; Both points are in the mbr so there's no need to subselect
       ls
-      (let [intersection-points (filter not-point1-or-2 (mbr-intersections ls mbr))]
+      (let [intersection-points (mbr-intersections ls mbr)
+            intersection-points (filter not-point1-or-2 intersection-points)]
         (cond
           (> (count intersection-points) 2)
-          (errors/internal-error! (str "Found too many intersection points" (count intersection-points)))
-
-          (= (count intersection-points) 2)
-          (apply line-segment intersection-points)
+          (errors/internal-error! (str "Found too many intersection points " (pr-str intersection-points)))
 
           (= (count intersection-points) 0)
           nil ; no intersection at all
 
-          ;; the number of intersection points must be 1
-          point1-in-mbr
+          (= (count intersection-points) 2)
+          (apply line-segment intersection-points)
 
+          ;; the number of intersection points must be 1 for any of the following conditions
           point2-in-mbr
+          (if (= point2 (first intersection-points))
+            ;; TODO handle the case where point 2 = the intersection point
+            (errors/internal-error! "TODO this case needs to be handled")
+            (line-segment point2 (first intersection-points)))
+
+
+
+          point1-in-mbr
+          (if (= point1 (first intersection-points))
+            (errors/internal-error! "TODO this case needs to be handled")
+            (line-segment point1 (first intersection-points)))
 
           :else
+          ;; could be a corner of the MBR
+          ;; TODO handle this case
+          (errors/internal-error! "TODO this case needs to be handled"))))))
 
 
-
-          )))))
-
-
+(extend-protocol d/DerivedCalculator
+  cmr.spatial.segment.LineSegment
+  (calculate-derived ^LineSegment [^LineSegment a] a))

@@ -4,7 +4,6 @@
             [cmr.spatial.arc :as a]
             [cmr.spatial.mbr :as m]
             [cmr.spatial.segment :as s]
-            [cmr.spatial.derived :as d]
             [cmr.common.services.errors :as errors]
             [cmr.spatial.math :refer :all]
             [primitive-math]
@@ -176,15 +175,16 @@
 (defn intersection-with-densification
   "Performs the intersection between a line segment and the arc using densification of the line segment"
   [ls arc mbrs]
-  (let [line (s/line-segment->line ls)
-        arcs (map (partial apply a/arc) (partition 2 1 (:points line)))]
+  (let [line-segments (filter identity (map (partial s/subselect ls) mbrs))
+        lines (mapv s/line-segment->line line-segments)
+        arcs (map (partial apply a/arc) (mapcat #(partition 2 1 (:points %)) lines))]
     (mapcat (partial a/intersections arc) arcs)))
 
 (comment
 
 (do
   (def arc (cmr.spatial.arc/ords->arc -180.0 84.0000029239881 -29.944444444444443, -25.833333333333332))
-  (def ls (d/calculate-derived (cmr.spatial.segment/ords->line-segment 106.96, -40.0, -135.1, 4.95)))
+  (def ls (cmr.spatial.segment/ords->line-segment 106.96, -40.0, -135.1, 4.95))
 
   (def mbr (first (m/intersections (:mbr ls) (:mbr1 arc))))
 
@@ -242,8 +242,7 @@
                         (s/line-segment point2 p/south-pole)]
 
                        :else
-                       [(s/line-segment point1 point2)])
-        arc-segments (mapv d/calculate-derived arc-segments)]
+                       [(s/line-segment point1 point2)])]
     (filter identity (map (partial s/intersection ls) arc-segments))))
 
 (defn intersections

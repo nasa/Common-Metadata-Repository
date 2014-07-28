@@ -38,7 +38,7 @@
           (fn [point]
             (gen/tuple (gen/return point)
                        (gen/such-that (partial not= point) points))))]
-    (gen/fmap (comp d/calculate-derived (partial apply s/line-segment)) non-equal-point-pairs)))
+    (gen/fmap (partial apply s/line-segment) non-equal-point-pairs)))
 
 (defn print-failed-line-segments
   "A printer function that can be used with the defspec defined in cmr.common to print out a failed
