@@ -45,13 +45,6 @@
                        (some #(m/covers-point? % point) arc-mbrs))
                      intersections))))))
 
-;; TODO test arc intersection examples with cartesian lines that aren't valid arcs
-;; - point 1 and 2 separated by a very large amount that would curve around opposite way in geodetic
-;; - point 1 and 2 at north pole but different longitudes.
-;; - point 1 and 2 from north pole to south pole (180 90 to -180 -90)
-;; - point 1 and 2 from antimeridian 180 to -180
-
-
 (comment
 
 (do
