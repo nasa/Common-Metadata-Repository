@@ -8,6 +8,9 @@
   (add-viz-geometries [{:type :cartesian-ring
                         :ords [0 0 10 10]}])
 
+  (add-viz-geometries [{:type :ring
+                        :ords [0 0 10 10 20 30]}])
+
   (add-viz-geometries [{:type :bounding-rectangle
                         :west -10
                         :north 10
@@ -32,3 +35,5 @@
 
 (defn clear-viz-geometries []
   (vdd/data->viz {:cmd :clear-geometries}))
+
+
