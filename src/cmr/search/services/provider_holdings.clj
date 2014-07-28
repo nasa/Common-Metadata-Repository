@@ -8,17 +8,17 @@
 (defmulti provider-holdings->string
   "Returns the string representation of the given provider-holdings"
   (fn [result-format provider-holdings pretty?]
-  result-format))
+    result-format))
 
 (defn- provider-holding->xml-elem
   "Returns the XML element for the given provider holding"
   [provider-holding]
-  (let [{:keys [id title data_center granule-count]} provider-holding]
+  (let [{:keys [entry-title concept-id provider-id granule-count]} provider-holding]
     (x/element :provider-holding {}
-               (x/element :entry-title {} title)
-               (x/element :concept-id {} id)
+               (x/element :entry-title {} entry-title)
+               (x/element :concept-id {} concept-id)
                (x/element :granule-count {} granule-count)
-               (x/element :provider-id {} data_center))))
+               (x/element :provider-id {} provider-id))))
 
 (defmethod provider-holdings->string :xml
   [result-format provider-holdings pretty?]
@@ -29,8 +29,4 @@
 
 (defmethod provider-holdings->string :json
   [result-format provider-holdings pretty?]
-  (let [holdings-json (map #(set/rename-keys % {:id :concept-id
-                                                :title :entry-title
-                                                :data_center :provider-id})
-                           provider-holdings)]
-    (json/generate-string holdings-json {:pretty pretty?})))
+  (json/generate-string provider-holdings {:pretty pretty?}))

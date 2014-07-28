@@ -19,7 +19,8 @@
             [cmr.search.results-handlers.atom-results-handler]
             [cmr.search.results-handlers.atom-json-results-handler]
             [cmr.search.results-handlers.reference-results-handler]
-            [cmr.search.results-handlers.metadata-results-handler]))
+            [cmr.search.results-handlers.metadata-results-handler]
+            [cmr.search.results-handlers.all-collections-results-handler]))
 
 (def extension->mime-type
   "A map of URL file extensions to the mime type they represent."

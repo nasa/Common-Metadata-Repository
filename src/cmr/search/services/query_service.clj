@@ -152,13 +152,11 @@
         query (qm/query {:concept-type :collection
                          :condition query-condition
                          :page-size :unlimited
-                         :result-format :json})
+                         :result-format :core-fields})
         results (->> query
                      (resolve-collection-query context)
-                     (qe/execute-query context))
-        all-collections (-> (search-results->response-result context query results)
-                            (get-in [:feed :entry]))]
-    (map #(select-keys % [:id :data_center :title]) all-collections)))
+                     (qe/execute-query context))]
+    (:items results)))
 
 (deftracefn get-provider-holdings
   "Executes elasticsearch search to get provider holdings"
@@ -174,7 +172,7 @@
         ;; get a mapping of collection to granule count
         collection-granule-count (idx/get-collection-granule-counts context provider-ids)
         ;; combine the granule count into collections to form provider holdings
-        provider-holdings (map #(assoc % :granule-count (get collection-granule-count (:id %)))
+        provider-holdings (map #(assoc % :granule-count (get collection-granule-count (:concept-id %)))
                                collections)]
 
     (ph/provider-holdings->string (:result-format params) provider-holdings pretty?)))
