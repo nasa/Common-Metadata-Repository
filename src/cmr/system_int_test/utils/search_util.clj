@@ -16,7 +16,8 @@
             [cmr.common.xml :as cx]
             [cmr.umm.dif.collection :as dif-c]
             [cmr.system-int-test.data2.atom :as da]
-            [cmr.system-int-test.data2.atom-json :as dj]))
+            [cmr.system-int-test.data2.atom-json :as dj]
+            [cmr.system-int-test.data2.provider-holdings :as ph]))
 
 (defn csv->tuples
   "Convert a comma-separated-value string into a set of tuples to be use with find-refs."
@@ -215,3 +216,26 @@
     (client/get (url/retrieve-concept-url concept-type concept-id)
                 {:throw-exceptions false
                  :connection-manager (url/conn-mgr)})))
+
+(defn provider-holdings-in-format
+  "Returns the provider holdings."
+  ([format-key]
+   (provider-holdings-in-format format-key {} {}))
+  ([format-key params]
+   (provider-holdings-in-format format-key params {}))
+  ([format-key params options]
+   (let [format-mime-type (mime-types/format->mime-type format-key)
+         {:keys [format-as-ext?]
+          :or {:format-as-ext? false}} options
+         params (params->snake_case (u/map-keys csk/->snake_case_keyword params))
+         [url accept] (if format-as-ext?
+                        [(str (url/provider-holdings-url) "." (mime-type->extension format-mime-type))]
+                        [(url/provider-holdings-url) format-mime-type])
+         response (client/get url {:accept accept
+                                   :query-params params
+                                   :connection-manager (url/conn-mgr)})
+         {:keys [status body]} response]
+     (if (= status 200)
+       {:status status
+        :results (ph/parse-provider-holdings format-key body)}
+       response))))
