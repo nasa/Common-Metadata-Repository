@@ -165,6 +165,7 @@
                                     :original-format (not-indexed (stored string-field-mapping))
                                     :update-time (not-indexed (stored string-field-mapping))
                                     :associated-difs (stored string-field-mapping)
+                                    :associated-difs.lowercase string-field-mapping
                                     :coordinate-system (not-indexed (stored string-field-mapping))}
                                    spatial-coverage-fields)}})
 

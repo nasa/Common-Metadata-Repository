@@ -107,6 +107,7 @@
             :original-format (s/upper-case (name (mt/mime-type->format format)))
             :update-time update-time
             :associated-difs associated-difs
+            :associated-difs.lowercase (map s/lower-case associated-difs)
             :coordinate-system (when spatial-representation (csk/->SNAKE_CASE_STRING spatial-representation))}
            (spatial->elastic collection))))
 
