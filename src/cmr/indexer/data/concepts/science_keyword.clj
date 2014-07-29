@@ -2,16 +2,16 @@
   "Contains functions for converting science keyword domains into a elastic documents"
   (:require [clojure.string :as str]))
 
-(defn science-keyword->keyword-string
-  "Converts a science keyword into a string of terms for keyword searches"
+(defn science-keyword->keywords
+  "Converts a science keyword into a vector of terms for keyword searches"
   [science-keyword]
-  (str/join " " (science-keyword [:category :topic :term :variable-level-1 :variable-level-2
-                                    :variable-level-3 :detailed-variable])))
+  (science-keyword [:category :topic :term :variable-level-1 :variable-level-2
+                                    :variable-level-3 :detailed-variable]))
 
-(defn science-keywords->keyword-string
-  "Converts the science keywords into a string of terms for keyword searches"
+(defn science-keywords->keywords
+  "Converts the science keywords into a sequence of terms for keyword searches"
   [umm-concept]
-  (str/join " " (map science-keywords->keyword-string (:science-keywords umm-concept))))
+  (mapcat science-keywords->keywords (:science-keywords umm-concept)))
 
 (defn science-keyword->elastic-doc
   "Converts a science keyword into the portion going in an elastic document"

@@ -99,15 +99,15 @@
        (filter :value ; only index those with a value
                (:product-specific-attributes collection))))
 
-(defn psa->keyword-string
-  "Converts a PSA into a string to be used in keyword searches"
+(defn psa->keywords
+  "Converts a PSA into a vector of terms to be used in keyword searches"
   [psa]
-  (let [{:keys [name value]} psa]
-    (str name " " value)))
+  (let [{:keys [name data-type value]} psa]
+    [name (value->elastic-value data-type value)]))
 
-(defn psas->keyword-string
+(defn psas->keywords
   [collection]
-  "Converts the psas into a string to be used in keyword searches"
-  (str/join " " (map psa->keyword-string (filter :value (:product-specific-attributes collection)))))
+  "Converts the psas into a vector to be used in keyword searches"
+  (mapcat psa->keywords (filter :value (:product-specific-attributes collection))))
 
 

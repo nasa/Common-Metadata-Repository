@@ -21,6 +21,7 @@
 (def string-field-mapping
   {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "no"})
 
+;; Not currently used but left here for future use in providing full text search capability
 (def text-field-mapping
   {:type "string"
    :index "analyzed"
@@ -175,27 +176,27 @@
                                     :associated-difs (stored string-field-mapping)
                                     :coordinate-system (not-indexed (stored string-field-mapping))
                                     ;; analyzed fields for keyword searches
-                                    :concept-id-keyword text-field-mapping
-                                    :entry-title-keyword text-field-mapping
-                                    :collection-data-type-keyword text-field-mapping
-                                    :short-name-keyword text-field-mapping
+                                    :concept-id-keyword string-field-mapping
+                                    :entry-title-keyword string-field-mapping
+                                    :collection-data-type-keyword string-field-mapping
+                                    :short-name-keyword string-field-mapping
                                     ;; TODO :long-name
-                                    :archive-center-keyword text-field-mapping
+                                    :archive-center-keyword string-field-mapping
                                     ;; TODO :collection-description
                                     ;; TODO :suggested-usage
-                                    :version-id-keyword text-field-mapping
+                                    :version-id-keyword string-field-mapping
                                     ;; TODO :version-description
                                     ;; TODO :campaign-short-name
-                                    :processing-level-id-keyword text-field-mapping
-                                    :science-keywords-keyword text-field-mapping
-                                    :spatial-keyword-keyword text-field-mapping
+                                    :processing-level-id-keyword string-field-mapping
+                                    :science-keywords-keyword string-field-mapping
+                                    :spatial-keyword-keyword string-field-mapping
                                     ;; TODO :temporal-keyword
-                                    :platform-sn-keyword text-field-mapping
+                                    :platform-sn-keyword string-field-mapping
                                     ;; TODO :platform-ln
                                     ;; TODO platform nested stuff
-                                    :attributes-keyword text-field-mapping
+                                    :attributes-keyword string-field-mapping
                                     ;; TODO :associated-difs
-                                    :two-d-coord-name-keyword text-field-mapping
+                                    :two-d-coord-name-keyword string-field-mapping
                                     }
                                    spatial-coverage-fields)}})
 

@@ -16,13 +16,13 @@
   (:import cmr.spatial.mbr.Mbr))
 
 ;; Regex to split strings with special characters into multiple words for keyword searches
-(def keywords-separator-regex #"[!@#$%^&()\-=_+{}\[\]|;'.,\"/:<>?`~*]")
+(def keywords-separator-regex #"[!@#$%^&()\-=_+{}\[\]|;'.,\"/:<>?`~* ]")
 
 (defn- prepare-keywords-field
   [field-value]
-  "Convert a string to lowercase then separate the keywords to make it tokenizale by elastic"
+  "Convert a string to lowercase then separate it into keywords"
   (when field-value
-    (str/replace (str/lower-case field-value) keywords-separator-regex " ")))
+    (str/split (str/lower-case field-value) keywords-separator-regex)))
 
 (defn spatial->elastic
   [collection]
@@ -121,12 +121,13 @@
             :entry-title-keyword (prepare-keywords-field entry-title)
             :collection-data-type-keyword (prepare-keywords-field collection-data-type)
             :short-name-keyword (prepare-keywords-field short-name)
-            :archive-center-keyword (str/join " " (map prepare-keywords-field archive-center-val))
+            :archive-center-keyword (mapcat prepare-keywords-field archive-center-val)
             :version-id-keyword (prepare-keywords-field version-id)
             :processing-level-id-keyword (prepare-keywords-field processing-level-id)
-            :science-keywords-keyword (sk/science-keywords->keyword-string collection)
-            :spatial-keyword-keyword (prepare-keywords-field spatial-keywords)
-            :platform-sn-keyword (str/join " " (map prepare-keywords-field platform-short-names))
-            :attributes-keyword (attrib/psas->keyword-string collection)}
+            :science-keywords-keyword (mapcat prepare-keywords-field
+                                              (sk/science-keywords->keywords collection))
+            :spatial-keyword-keyword (mapcat prepare-keywords-field spatial-keywords)
+            :platform-sn-keyword (mapcat prepare-keywords-field platform-short-names)
+            :attributes-keyword (mapcat prepare-keywords-field (attrib/psas->keywords collection))}
            (spatial->elastic collection))))
 
