@@ -6,7 +6,7 @@
             [primitive-math]
             [cmr.spatial.mbr :as m]
             [cmr.spatial.conversion :as c]
-            [cmr.spatial.ring :as r]
+            [cmr.spatial.geodetic-ring :as gr]
             [cmr.spatial.arc :as a]
             [cmr.spatial.derived :as d]
             [cmr.spatial.validation :as v]
@@ -41,22 +41,22 @@
   "Returns true if the polygon covers the point."
   [polygon point]
   ;; The outer ring covers point and none of the holes _cover_ the point.
-  (and (r/covers-point? (boundary polygon) point)
-       (not-any? #(r/covers-point? % point) (holes polygon))))
+  (and (gr/covers-point? (boundary polygon) point)
+       (not-any? #(gr/covers-point? % point) (holes polygon))))
 
 (defn covers-br?
   "Returns true if the polygon covers the bounding rectangle."
   [polygon br]
   ;; The outer ring covers br and none of the holes _intersect_ the br
-  (and (r/covers-br? (boundary polygon) br)
-       (not-any? #(r/intersects-br? % br) (holes polygon))))
+  (and (gr/covers-br? (boundary polygon) br)
+       (not-any? #(gr/intersects-br? % br) (holes polygon))))
 
 (defn intersects-ring?
   "Returns true if the polygon intersects the ring."
   [polygon ring]
   ;; The outer ring intersects the ring and none of the holes _cover_ the ring
-  (and (r/intersects-ring? (boundary polygon) ring)
-       (not-any? #(r/covers-ring? % ring) (holes polygon))))
+  (and (gr/intersects-ring? (boundary polygon) ring)
+       (not-any? #(gr/covers-ring? % ring) (holes polygon))))
 
 (defn intersects-polygon?
   "Returns true if the polygon intersects the other polygon"
@@ -68,16 +68,16 @@
         boundary2 (boundary poly2)
         holes1 (holes poly1)
         holes2 (holes poly2)]
-    (and (r/intersects-ring? boundary1 boundary2)
-         (not-any? #(r/covers-ring? % boundary2) holes1)
-         (not-any? #(r/covers-ring? % boundary1) holes2))))
+    (and (gr/intersects-ring? boundary1 boundary2)
+         (not-any? #(gr/covers-ring? % boundary2) holes1)
+         (not-any? #(gr/covers-ring? % boundary1) holes2))))
 
 (defn intersects-br?
   "Returns true if the polygon the bounding rectangle."
   [polygon br]
   ;; The outer ring intersects the br and none of the holes _cover_ the br
-  (and (r/intersects-br? (boundary polygon) br)
-       (not-any? #(r/covers-br? % br) (holes polygon))))
+  (and (gr/intersects-br? (boundary polygon) br)
+       (not-any? #(gr/covers-br? % br) (holes polygon))))
 
 
 (extend-protocol d/DerivedCalculator

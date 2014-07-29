@@ -31,7 +31,7 @@
       (if (empty? intersections)
         ;; They do not intersect
         ;; There should be no densified intersections
-        (empty? (asi/intersection-with-densification ls arc [m/whole-world]))
+        (empty? (asi/line-segment-arc-intersections-with-densification ls arc [m/whole-world]))
 
         ;; They do intersect
         (and (every? (fn [point]

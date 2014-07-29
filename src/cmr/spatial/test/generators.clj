@@ -7,7 +7,7 @@
             [cmr.spatial.point :as p]
             [cmr.spatial.vector :as v]
             [cmr.spatial.mbr :as m]
-            [cmr.spatial.ring :as r]
+            [cmr.spatial.geodetic-ring :as gr]
             [cmr.spatial.polygon :as poly]
             [cmr.spatial.line :as l]
             [cmr.spatial.arc :as a]
@@ -103,7 +103,7 @@
   "Generates rings that are not valid but could be used for testing where validity is not important"
   (gen/fmap
     (fn [points]
-      (r/ring (concat points [(first points)])))
+      (gr/ring (concat points [(first points)])))
     (gen/bind (gen/choose 3 10) non-antipodal-points)))
 
 (def polygons-invalid
@@ -126,8 +126,8 @@
   "Takes a ring and reverses it if it contains both poles"
   [ring]
   (let [ring (d/calculate-derived ring)]
-    (if (r/contains-both-poles? ring)
-      (d/calculate-derived (r/invert ring))
+    (if (gr/contains-both-poles? ring)
+      (d/calculate-derived (gr/invert ring))
       ring)))
 
 (defn insert-point-at
@@ -145,7 +145,7 @@
     (when (and (valid-consecutive point (last front))
                (valid-consecutive point (or (first tail)
                                             (first points))))
-      (r/ring (concat points [(first points)])))))
+      (gr/ring (concat points [(first points)])))))
 
 (defn add-point-to-ring
   "Tries to add the point to the ring. If it can't returns nil"
@@ -159,9 +159,9 @@
           nil
           (if-let [new-ring (insert-point-at ring point pos)]
             (let [new-ring (d/calculate-derived new-ring)
-                  self-intersections (r/self-intersections new-ring)]
+                  self-intersections (gr/self-intersections new-ring)]
               (if (and (empty? self-intersections)
-                       (not (r/contains-both-poles? new-ring)))
+                       (not (gr/contains-both-poles? new-ring)))
                 new-ring
                 (recur (inc pos))))
             (recur (inc pos))))))))
@@ -181,7 +181,7 @@
                     (< (m/percent-covering-world mbr) 99.999))
                   (gen/fmap (fn [points]
                               (let [points (concat points [(first points)])]
-                                (reverse-if-both-poles (r/ring points))))
+                                (reverse-if-both-poles (gr/ring points))))
                             (points-gen-fn 3)))))
 
 (defn rings
@@ -206,11 +206,11 @@
   ring."
   [type ring]
   ;; Print out the ring in a way that it can be easily copied to the test.
-  (println (pr-str (concat `(r/ords->ring) (r/ring->ords ring))))
+  (println (pr-str (concat `(gr/ords->ring) (gr/ring->ords ring))))
 
   (println (str "http://testbed.echo.nasa.gov/spatial-viz/ring_self_intersection?test_point_ordinates=2,2"
                 "&ring_ordinates="
-                (str/join "," (r/ring->ords ring)))))
+                (str/join "," (gr/ring->ords ring)))))
 
 (defn print-failed-polygon
   "A printer function that can be used with the defspec defined in cmr.common to print out a failed
@@ -219,7 +219,7 @@
   ;; Print out the polygon in a way that it can be easily copied to the test.
   (println (pr-str (concat `(poly/polygon)
                            [(vec (map (fn [ring]
-                                        (concat `(r/ords->ring) (r/ring->ords ring)))
+                                        (concat `(gr/ords->ring) (gr/ring->ords ring)))
                                       (:rings polygon)))]))))
 
 (defn points-in-mbr
@@ -283,7 +283,7 @@
           (non-antipodal-points
             num-points
             ;; points in ring
-            (gen/such-that (partial r/covers-point? ring)
+            (gen/such-that (partial gr/covers-point? ring)
                            (points-in-mbr (:mbr ring))
                            ;; Number of points such-that will try in a row before giving up.
                            500))))
@@ -298,11 +298,11 @@
               ;; The holes can go in the polygon if they don't intersect any of the other holes
               (let [[h1 h2 h3] potential-holes
                     ;; h2 can be used if it doesn't intersect h1
-                    h2-valid? (not (r/intersects-ring? h1 h2))
+                    h2-valid? (not (gr/intersects-ring? h1 h2))
                     ;; h3 can be used if it doesn't intersect h1 or h2 (if h2 is valid)
-                    h3-valid? (and (not (r/intersects-ring? h1 h3))
+                    h3-valid? (and (not (gr/intersects-ring? h1 h3))
                                    (or (not h2-valid?)
-                                       (not (r/intersects-ring? h2 h3))))
+                                       (not (gr/intersects-ring? h2 h3))))
                     holes (cond
                             (and h2-valid? h3-valid?) [h1 h2 h3]
                             h2-valid? [h1 h2]

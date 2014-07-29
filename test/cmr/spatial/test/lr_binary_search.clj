@@ -10,7 +10,7 @@
             [cmr.spatial.math :refer :all]
             [cmr.spatial.point :as p]
             [cmr.spatial.arc :as a]
-            [cmr.spatial.ring :as r]
+            [cmr.spatial.geodetic-ring :as gr]
             [cmr.spatial.mbr :as m]
             [cmr.spatial.derived :as d]
             [cmr.spatial.polygon :as poly]
@@ -24,7 +24,7 @@
   (for-all [ring (sgen/rings)]
     (let [lr (lbs/find-lr ring false)]
       (and lr
-           (r/covers-br? ring lr)))))
+           (gr/covers-br? ring lr)))))
 
 (defn polygon-has-valid-lr?
   "Returns true if the polygon has a valid lr."
@@ -34,7 +34,7 @@
          (poly/covers-br? polygon lr))))
 
 (defspec simple-polygon-with-holes-has-lr {:times 100 :printer-fn sgen/print-failed-ring}
-  (let [boundary (d/calculate-derived (r/ords->ring 0 0, 10 0, 10 10, 0 10, 0 0))]
+  (let [boundary (d/calculate-derived (gr/ords->ring 0 0, 10 0, 10 10, 0 10, 0 0))]
     (for-all [hole (sgen/rings-in-ring boundary)]
       (let [polygon (d/calculate-derived (poly/polygon [boundary hole]))]
         (polygon-has-valid-lr? polygon)))))
@@ -69,7 +69,7 @@
                            -41.58919 65.43968, -41.63335 65.45003, -41.71063 65.45003,
                            -41.71891 65.44888]]]]
     (doseq [polygon-ordses polygons-ordses]
-      (let [polygon (d/calculate-derived (poly/polygon (mapv (partial apply r/ords->ring)
+      (let [polygon (d/calculate-derived (poly/polygon (mapv (partial apply gr/ords->ring)
                                                              polygon-ordses)))]
         (is (polygon-has-valid-lr? polygon))))))
 
@@ -78,15 +78,15 @@
   ;; Visualization samples and helpers
 
   (display-draggable-lr-polygon
-    (poly/polygon [(r/ords->ring 0,0, 4,0, 6,5, 2,5, 0,0)
-                   (r/ords->ring 4,3.34, 2,3.34, 3,1.67, 4,3.34)]))
+    (poly/polygon [(gr/ords->ring 0,0, 4,0, 6,5, 2,5, 0,0)
+                   (gr/ords->ring 4,3.34, 2,3.34, 3,1.67, 4,3.34)]))
 
   ;; Polygon with multiple inner rings
 
   (let [ordses [[0,0, 4,0, 6,5, 2.14,4.86, -0.92,4.75, 0,0]
                 [2.34,4.22, 1.22,3.92, -0.11,4.21, 0.7,2.57, 2.34,4.22]
                 [3.7,3.33, 1.25,1.04, 3.37,0.61, 3.7,3.33]]
-        polygon (poly/polygon (mapv (partial apply r/ords->ring)
+        polygon (poly/polygon (mapv (partial apply gr/ords->ring)
                                     ordses))]
     (display-draggable-lr-polygon polygon))
 
@@ -98,29 +98,29 @@
 
   ;; Normal
   (display-draggable-lr-ring
-    (r/ords->ring 0,0, 4,0, 6,5, 2,5, 0,0))
+    (gr/ords->ring 0,0, 4,0, 6,5, 2,5, 0,0))
 
   ;; Very larges
   (display-draggable-lr-ring
-    (r/ords->ring -89.9 -45, 89.9 -45, 89.9 45, -89.9 45, -89 -45))
+    (gr/ords->ring -89.9 -45, 89.9 -45, 89.9 45, -89.9 45, -89 -45))
 
   ;; around north pole
   (display-draggable-lr-ring
-    (r/ords->ring 45 85, 90 85, 135 85, 180 85, -135 85, -45 85, 45 85))
+    (gr/ords->ring 45 85, 90 85, 135 85, 180 85, -135 85, -45 85, 45 85))
 
   ;; around south pole
   (display-draggable-lr-ring
-    (r/ords->ring 45 -85, -45 -85, -135 -85, 180 -85, 135 -85, 90 -85, 45 -85))
+    (gr/ords->ring 45 -85, -45 -85, -135 -85, 180 -85, 135 -85, 90 -85, 45 -85))
 
   ;; across antimeridian
   (display-draggable-lr-ring
-    (r/ords->ring 175 -10, -175 -10, -175 0, -175 10
+    (gr/ords->ring 175 -10, -175 -10, -175 0, -175 10
                   175 10, 175 0, 175 -10))
 
   ;; Performance testing
   (require '[criterium.core :refer [with-progress-reporting bench]])
 
-  (let [ring (d/calculate-derived (r/ords->ring 0,0, 4,0, 6,5, 2,5, 0,0))]
+  (let [ring (d/calculate-derived (gr/ords->ring 0,0, 4,0, 6,5, 2,5, 0,0))]
     (with-progress-reporting
       (bench
         (lbs/find-lr ring))))
@@ -136,7 +136,7 @@
           north-points (for [i (range num-edge)]
                          (p/point (- east (* i edge-length)) north))]
 
-      (r/ring (concat south-points north-points [(first south-points)]))))
+      (gr/ring (concat south-points north-points [(first south-points)]))))
 
   (defn measure-find-lr-performance
     [n-points]
@@ -160,7 +160,7 @@
   (atom nil))
 
 (comment
-  (mapv r/ring->ords (:rings @displaying-polygon-atom))
+  (mapv gr/ring->ords (:rings @displaying-polygon-atom))
 
   )
 
@@ -193,7 +193,7 @@
   [ring-str]
   (let [[^String id ords-str] (str/split ring-str #":")
         ords (map #(Double. ^String %) (str/split ords-str #","))
-        ring (d/calculate-derived (apply r/ords->ring ords))
+        ring (d/calculate-derived (apply gr/ords->ring ords))
         polygon (swap! displaying-polygon-atom (fn [polygon]
                                                  (assoc-in polygon [:rings (dec (Long. id))] ring)))
         lr (lbs/find-lr polygon false)
@@ -227,7 +227,7 @@
   the updated lr."
   [ords-str]
   (let [ords (map #(Double. ^String %) (str/split ords-str #","))
-        ring (d/calculate-derived (apply r/ords->ring ords))
+        ring (d/calculate-derived (apply gr/ords->ring ords))
         lr (lbs/find-lr ring false)]
     (viz-helper/remove-geometries ["lr"])
     (when lr

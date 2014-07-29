@@ -8,7 +8,7 @@
             [cmr.spatial.math :refer :all]
             [cmr.spatial.point :as p]
             [cmr.spatial.mbr :as m]
-            [cmr.spatial.ring :as r]
+            [cmr.spatial.geodetic-ring :as gr]
             [cmr.spatial.derived :as d]
             [cmr.spatial.test.generators :as sgen]
             [cmr.spatial.validation :as v]
@@ -17,8 +17,8 @@
 
 (deftest ring-covers-br-test
   (testing "concave ring"
-    (is (not (r/covers-br? (d/calculate-derived
-                             (r/ords->ring -0.11,2.79,2.53,1.44,-0.01,3.79,-2.2,2.28,-0.11,2.79))
+    (is (not (gr/covers-br? (d/calculate-derived
+                             (gr/ords->ring -0.11,2.79,2.53,1.44,-0.01,3.79,-2.2,2.28,-0.11,2.79))
                            (m/mbr -0.7921474469772579
                                   3.2516294093733533
                                   0.5732165527343749
@@ -26,9 +26,9 @@
 
 (deftest ring-validation-test
   (testing "valid ring"
-    (is (nil? (seq (v/validate (r/ords->ring 0 0, 1 0, 0 1, 0 0))))))
+    (is (nil? (seq (v/validate (gr/ords->ring 0 0, 1 0, 0 1, 0 0))))))
   (testing "invalid rings"
-    (are [ords msgs] (= (seq msgs) (seq (v/validate (apply r/ords->ring ords))))
+    (are [ords msgs] (= (seq msgs) (seq (v/validate (apply gr/ords->ring ords))))
 
          ;; invalid point
          [0 0, 181 0, 0 1, 0 0]
@@ -96,7 +96,7 @@
           :let [north-pole (if (nil? north-pole) false north-pole)
                 south-pole (if (nil? south-pole) false south-pole)]]
     (testing (str "Ring Example " ring-name)
-      (let [ring (apply r/ords->ring ords)
+      (let [ring (apply gr/ords->ring ords)
             ring (d/calculate-derived ring)]
         (is (= bounds (:mbr ring)))
 
@@ -104,12 +104,12 @@
         (is (= south-pole (:contains-south-pole ring)))
 
         (doseq [point (apply p/ords->points internal-points)]
-            (is (r/covers-point? ring point) (str "Ring should cover point " point)))
+            (is (gr/covers-point? ring point) (str "Ring should cover point " point)))
 
         (doseq [point (apply p/ords->points external-points)]
-            (is (not (r/covers-point? ring point)) (str "Ring should not cover point " point)))
+            (is (not (gr/covers-point? ring point)) (str "Ring should not cover point " point)))
 
-        (is (r/intersects-ring? ring ring) "Ring should intersect itself")))))
+        (is (gr/intersects-ring? ring ring) "Ring should intersect itself")))))
 
 
 

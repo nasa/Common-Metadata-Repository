@@ -2,12 +2,14 @@
   "This namespace describes functions for determining the relations between various spatial types."
   (:require [cmr.spatial.point :as p]
             [cmr.spatial.mbr :as m]
-            [cmr.spatial.ring :as r]
+            [cmr.spatial.geodetic-ring :as gr]
+            [cmr.spatial.cartesian-ring :as cr]
             [cmr.spatial.polygon :as poly]
             [cmr.spatial.derived :as d]
             [cmr.spatial.math :refer :all])
   (:import cmr.spatial.point.Point
-           cmr.spatial.ring.Ring
+           cmr.spatial.geodetic_ring.GeodeticRing
+           cmr.spatial.cartesian_ring.CartesianRing
            cmr.spatial.mbr.Mbr
            cmr.spatial.polygon.Polygon))
 
@@ -54,7 +56,7 @@
 
   (intersects-ring?
     [point ring]
-    (r/covers-point? ring point))
+    (gr/covers-point? ring point))
 
   (intersects-br?
     [point br]
@@ -87,7 +89,7 @@
 
   (intersects-ring?
     [br ring]
-    (r/intersects-br? ring br))
+    (gr/intersects-br? ring br))
 
   (intersects-br?
     [br1 br2]
@@ -98,7 +100,7 @@
     (poly/intersects-br? polygon br))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  cmr.spatial.ring.Ring
+  cmr.spatial.geodetic_ring.GeodeticRing
 
   (mbr
     [ring]
@@ -114,19 +116,54 @@
 
   (covers-point?
     [ring point]
-    (r/covers-point? ring point))
+    (gr/covers-point? ring point))
 
   (covers-br?
     [ring br]
-    (r/covers-br? ring br))
+    (gr/covers-br? ring br))
 
   (intersects-ring?
     [ring1 ring2]
-    (r/intersects-ring? ring1 ring2))
+    (gr/intersects-ring? ring1 ring2))
 
   (intersects-br?
     [ring br]
-    (r/intersects-br? ring br))
+    (gr/intersects-br? ring br))
+
+  (intersects-polygon?
+    [ring polygon]
+    (poly/intersects-ring? polygon ring))
+
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  cmr.spatial.cartesian_ring.CartesianRing
+
+  (mbr
+    [ring]
+    (:mbr ring))
+
+  (contains-north-pole?
+    [ring]
+    (cr/covers-point? ring p/north-pole))
+
+  (contains-south-pole?
+    [ring]
+    (cr/covers-point? ring p/south-pole))
+
+  (covers-point?
+    [ring point]
+    (cr/covers-point? ring point))
+
+  (covers-br?
+    [ring br]
+    (cr/covers-br? ring br))
+
+  (intersects-ring?
+    [ring1 ring2]
+    (cr/intersects-ring? ring1 ring2))
+
+  (intersects-br?
+    [ring br]
+    (cr/intersects-br? ring br))
 
   (intersects-polygon?
     [ring polygon]

@@ -1,4 +1,4 @@
-(ns cmr.spatial.ring
+(ns cmr.spatial.geodetic-ring
   (:require [cmr.spatial.point :as p]
             [cmr.spatial.math :refer :all]
             [cmr.common.util :as util]
@@ -13,7 +13,7 @@
   (:import cmr.spatial.arc.Arc))
 (primitive-math/use-primitive-operators)
 
-(defrecord Ring
+(defrecord GeodeticRing
   [
    ;; The points that make up the ring. Points must be in counterclockwise order. The last point
    ;; must match the first point.
@@ -206,65 +206,6 @@
             arc-test-indices)))
 
 
-(comment
-  (let [ords [ -78.4111074120776 -41.55810108186105 -78.40288285484534 -41.41987483268612
-              -78.591143372866 -41.41345428632509 -78.59968818214728 -41.55167244952579
-              -78.4111074120776 -41.55810108186105]
-        r1 (ords->ring -55.3,30 -55.3,27, -43,27, -43,30, -55.3,30)]
-    (criterium.core/with-progress-reporting
-      (criterium.core/bench
-        (intersects-ring? r1 (apply ords->ring ords)))))
-
-
-  (for [a1 (range 3) a2 (range 3)] [a1 (str a2)])
-
-  )
-
-(defn- rotation-direction
-  "A helper function that determines the final rotation direction based on a set of angles in
-  degrees. It works by summing the differences between each angle. A net negative means clockwise,
-  net positive is counter clockwise, and approximatly zero means that there was no net turn in either
-  direction.
-  Returns one of three keywords, :none, :counter-clockwise, or :clockwise, to indicate net direction
-  of rotation"
-  [angles]
-  (let [angle-delta (fn [^double a1 ^double a2]
-                      (let [a2 (if (< a2 a1)
-                                 ;; Shift angle 2 so it is always greater than angle 1. This allows
-                                 ;; us to get the real radial distance between angle 2 and angle 1
-                                 (+ 360.0 a2)
-                                 a2)
-                            ;; Then when we subtract angle 1 from angle 2 we're asking "How far do
-                            ;; we have to turn to the  left to get to angle 2 from angle 1?"
-                            left-turn-amount (- a2 a1)]
-                        ;; Determine which is smaller: turning to the left or turning to the right
-                        (cond
-                          ;; In this case we can't determine whether turning to the left or the
-                          ;; right is smaller. We handle this by returning 0. Summing the angle
-                          ;; deltas in this case will == 180 or -180
-                          (== 180.0 left-turn-amount) 0
-                          ;; Turning to the right is less than turning to the left in this case.
-                          ;; Returns a negative number between 0 and -180.0
-                          (> left-turn-amount 180.0) (- left-turn-amount 360.0)
-                          :else left-turn-amount)))
-
-        ;; Calculates the amount of change between each angle.
-        ;; Positive numbers are turns to the left (counter-clockwise).
-        ;; Negative numbers are turns to the right (clockwise)
-        deltas (util/map-n (partial apply angle-delta) 2 1 angles)
-
-        ;; Summing the amounts of turn will give us a net turn. If it's positive then there
-        ;; is a net turn to the right. If it's negative then there's a net turn to the left.
-        ^double net (loop [m 0.0 deltas deltas]
-                      (if (empty? deltas)
-                        m
-                        (recur (+ m ^double (first deltas))
-                               (rest deltas))))]
-    (cond
-      (< (abs net) 0.01) :none
-      (> net 0.0) :counter-clockwise
-      :else :clockwise)))
-
 (defn- arcs->course-rotation-direction
   "Calculates the rotation direction of the arcs of a ring. Will be one of :clockwise,
   :counter_clockwise, or :none.
@@ -296,7 +237,7 @@
   "Creates a new ring with the given points. If the other fields of a ring are needed. The
   calculate-derived function should be used to populate it."
   [points]
-  (->Ring points nil nil nil nil nil nil nil))
+  (->GeodeticRing points nil nil nil nil nil nil nil))
 
 (defn contains-both-poles?
   "Returns true if a ring contains both the north pole and the south pole"
@@ -311,13 +252,13 @@
 
 (defn ring->arcs
   "Determines the arcs from the points in the ring."
-  [^Ring ring]
+  [^GeodeticRing ring]
   (or (.arcs ring)
       (a/points->arcs (.points ring))))
 
 (defn ring->pole-containment
   "Returns the ring with north and south pole containment determined"
-  [^Ring ring]
+  [^GeodeticRing ring]
   (if (:course-rotation-direction ring)
     ring
     (let [arcs (ring->arcs ring)
@@ -345,7 +286,7 @@
 
 (defn ring->mbr
   "Determines the mbr from the points in the ring."
-  [^Ring ring]
+  [^GeodeticRing ring]
   (or (.mbr ring)
       (let [arcs (ring->arcs ring)
             {:keys [contains-north-pole contains-south-pole]} (ring->pole-containment ring)
@@ -364,7 +305,7 @@
 
 (defn ring->external-points
   "Determines external points that are not in the ring."
-  [^Ring ring]
+  [^GeodeticRing ring]
   (let [br (ring->mbr ring)
         {:keys [contains-north-pole contains-south-pole]} (ring->pole-containment ring)]
     (if (and contains-north-pole contains-south-pole)
@@ -374,9 +315,9 @@
       (mbr/external-points br))))
 
 (extend-protocol d/DerivedCalculator
-  cmr.spatial.ring.Ring
+  cmr.spatial.geodetic_ring.GeodeticRing
   (calculate-derived
-    [^Ring ring]
+    [^GeodeticRing ring]
     (if (.arcs ring)
       ring
 
@@ -461,7 +402,7 @@
       [(msg/ring-contains-both-poles)])))
 
 (extend-protocol v/SpatialValidation
-  cmr.spatial.ring.Ring
+  cmr.spatial.geodetic_ring.GeodeticRing
   (validate
     [ring]
     ;; Certain validations can only be run if earlier validations passed. Validations are grouped

@@ -13,7 +13,7 @@
            cmr.spatial.point.Point))
 (primitive-math/use-primitive-operators)
 
-(defn intersection-with-densification
+(defn line-segment-arc-intersections-with-densification
   "Performs the intersection between a line segment and the arc using densification of the line segment"
   [ls arc mbrs]
   (let [line-segments (filter identity (map (partial s/subselect ls) mbrs))
@@ -41,7 +41,7 @@
                        [(s/line-segment point1 point2)])]
     (filter identity (map (partial s/intersection ls) arc-segments))))
 
-(defn intersections
+(defn line-segment-arc-intersections
   "Returns a list of the points where the line segment intersects the arc."
   [ls arc]
 
@@ -67,10 +67,47 @@
         (vertical-arc-line-segment-intersections ls arc)
 
         :else
-        (intersection-with-densification
+        (line-segment-arc-intersections-with-densification
           ls arc
           ;; Compute the intersections of the intersecting mbrs. Smaller mbrs around the intersection
           ;; point will result in better bounding for newton's method.
           (mapcat (partial m/intersections ls-mbr) intersecting-mbrs))))))
 
+(defprotocol ArcSegmentIntersects
+  "Defines functions for intersecting with an arc or segments"
+  (intersections-with-arc
+    [line arc]
+    "Returns the intersection points of the line with the arc.")
+  (intersections-with-line-segment
+    [line ls]
+    "Returns the intersection points of the line with the line segment"))
 
+(defmulti intersections
+  "Determines if line 1 and 2 intersect. A line can be an arc or a line segment."
+  (fn [line1 line2]
+    (type line2)))
+
+(defmethod intersections Arc
+  [line arc]
+  (intersections-with-arc line arc))
+
+(defmethod intersections LineSegment
+  [line ls]
+  (intersections-with-line-segment line ls))
+
+(extend-protocol ArcSegmentIntersects
+  LineSegment
+  (intersections-with-arc
+    [ls arc]
+    (line-segment-arc-intersections ls arc))
+  (intersections-with-line-segment
+    [ls1 ls2]
+    (when-let [i (s/intersection ls1 ls2)]
+      [i]))
+  Arc
+  (intersections-with-arc
+    [arc1 arc2]
+    (a/intersections arc1 arc2))
+  (intersections-with-line-segment
+    [arc ls]
+    (line-segment-arc-intersections ls arc)))

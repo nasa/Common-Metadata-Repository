@@ -11,7 +11,7 @@
             [cmr.spatial.math :refer :all]
             [cmr.spatial.point :as p]
             [cmr.spatial.arc :as a]
-            [cmr.spatial.ring :as r]
+            [cmr.spatial.geodetic-ring :as gr]
             [cmr.spatial.mbr :as mbr]
             [cmr.spatial.derived :as d]
             [cmr.spatial.test.generators :as sgen]
@@ -44,7 +44,7 @@
 
 (defn external-points-are-not-in-ring
   [{:keys [external-points] :as ring}]
-  (nil? (some (partial r/covers-point? ring) external-points)))
+  (nil? (some (partial gr/covers-point? ring) external-points)))
 
 (defn external-points-are-not-in-mbr
   [{:keys [external-points mbr]}]
@@ -56,7 +56,7 @@
 
 (defn no-self-intersections
   [ring]
-  (empty? (r/self-intersections ring)))
+  (empty? (gr/self-intersections ring)))
 
 (defmacro vars-map
   "Takes a list of vars and creates a map that uses the keyword version of the var name to the var value"
@@ -115,7 +115,7 @@
           failed-tests (mapcat test-ring rings)
           [boundary & holes] rings]
       (and (empty? failed-tests)
-           (every? (partial r/covers-ring? boundary) holes)))))
+           (every? (partial gr/covers-ring? boundary) holes)))))
 
 (comment
 

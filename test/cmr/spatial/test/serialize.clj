@@ -14,10 +14,10 @@
             [cmr.spatial.point :as p]
             [cmr.spatial.polygon :as poly]
             [cmr.spatial.line :as l]
-            [cmr.spatial.ring :as r]
+            [cmr.spatial.geodetic-ring :as gr]
             [cmr.spatial.test.generators :as sgen]
             [cmr.spatial.serialize :as srl])
-  (:import cmr.spatial.ring.Ring
+  (:import cmr.spatial.geodetic_ring.GeodeticRing
            cmr.spatial.polygon.Polygon
            cmr.spatial.point.Point
            cmr.spatial.mbr.Mbr
@@ -42,9 +42,9 @@
   [line]
   (l/line (map (partial p/round-point 7) (:points line))))
 
-(defmethod round-shape Ring
+(defmethod round-shape GeodeticRing
   [ring]
-  (r/ring (map (partial p/round-point 7) (:points ring))))
+  (gr/ring (map (partial p/round-point 7) (:points ring))))
 
 (defmethod round-shape Polygon
   [polygon]

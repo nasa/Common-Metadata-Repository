@@ -1,7 +1,7 @@
 (ns cmr.spatial.lr-binary-search
   "Prototype code that finds the largest interior rectangle of a ring."
   (:require [cmr.spatial.point :as p]
-            [cmr.spatial.ring :as r]
+            [cmr.spatial.geodetic-ring :as gr]
             [cmr.spatial.math :refer :all]
             [primitive-math]
             [cmr.spatial.mbr :as m]
@@ -15,7 +15,7 @@
             [cmr.spatial.polygon :as poly]
             [cmr.spatial.relations :as relations])
   (:import cmr.spatial.mbr.Mbr
-           cmr.spatial.ring.Ring
+           cmr.spatial.geodetic_ring.GeodeticRing
            cmr.spatial.polygon.Polygon))
 (primitive-math/use-primitive-operators)
 
@@ -87,9 +87,9 @@
       ;; Already a triangle
       [ring]
       (map (fn [[p1 p2 p3]]
-             (let [tri (d/calculate-derived (r/ring [p1 p2 p3 p1]))]
-               (if (r/contains-both-poles? tri)
-                 (d/calculate-derived (r/invert tri))
+             (let [tri (d/calculate-derived (gr/ring [p1 p2 p3 p1]))]
+               (if (gr/contains-both-poles? tri)
+                 (d/calculate-derived (gr/invert tri))
                  tri)))
            ;; If contains two poles reverse it
            (partition 3 1 (concat points [(second points)]))))))
@@ -186,7 +186,7 @@
                (filter (partial apply (complement p/antipodal?))
                        (combo/combinations intersections 2))))))))
 
-(defmethod shape->lr-search-points Ring
+(defmethod shape->lr-search-points GeodeticRing
   [ring]
   (ring->lr-search-points ring))
 

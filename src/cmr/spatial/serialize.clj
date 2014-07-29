@@ -12,7 +12,7 @@
     * type - an integer representing the spatial type (polygon, mbr, etc)
     * size - the number of ordinates in the ords list this shape uses."
   (:require [cmr.common.services.errors :as errors]
-            [cmr.spatial.ring :as r]
+            [cmr.spatial.geodetic-ring :as gr]
             [cmr.spatial.math :refer :all]
             [cmr.spatial.polygon :as poly]
             [cmr.spatial.point :as p]
@@ -89,11 +89,11 @@
     ;; TODO reduce size of stored rings and polygons by dropping the duplicate last two ordinates of a ring
     (concat
       [{:type :polygon
-        :ords (map ordinate->stored (r/ring->ords (first rings)))}]
+        :ords (map ordinate->stored (gr/ring->ords (first rings)))}]
       ;; holes
       (map (fn [r]
              {:type :hole
-              :ords (map ordinate->stored (r/ring->ords r))})
+              :ords (map ordinate->stored (gr/ring->ords r))})
            (drop 1 rings))))
 
   (shape->mbr
@@ -162,11 +162,11 @@
 
 (defmethod stored-ords->shape :polygon
   [type ords]
-  (poly/polygon [(apply r/ords->ring (map stored->ordinate ords))]))
+  (poly/polygon [(apply gr/ords->ring (map stored->ordinate ords))]))
 
 (defmethod stored-ords->shape :hole
   [type ords]
-  (apply r/ords->ring (map stored->ordinate ords)))
+  (apply gr/ords->ring (map stored->ordinate ords)))
 
 (defmethod stored-ords->shape :br
   [type ords]

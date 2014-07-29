@@ -14,7 +14,7 @@
             [cmr.spatial.point :as p]
             [cmr.spatial.polygon :as poly]
             [cmr.spatial.line :as l]
-            [cmr.spatial.ring :as r]
+            [cmr.spatial.geodetic-ring :as gr]
             [cmr.spatial.test.generators :as sgen]
             [cmr.spatial.messages :as smesg]
             [cmr.spatial.codec :as c]))

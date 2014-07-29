@@ -6,16 +6,18 @@
             [cmr.spatial.polygon :as poly]
             [cmr.spatial.mbr :as m]
             [cmr.spatial.arc :as a]
-            [cmr.spatial.ring :as r]
+            [cmr.spatial.geodetic-ring :as gr]
             [cmr.spatial.segment :as s]
             [cmr.spatial.derived :as d]
+            [cmr.spatial.cartesian-ring :as cr]
             [cmr.spatial.math :refer :all])
   (:import cmr.spatial.point.Point
-           cmr.spatial.ring.Ring
+           cmr.spatial.geodetic_ring.GeodeticRing
            cmr.spatial.polygon.Polygon
            cmr.spatial.mbr.Mbr
            cmr.spatial.arc.Arc
-           cmr.spatial.segment.LineSegment))
+           cmr.spatial.segment.LineSegment
+           cmr.spatial.cartesian_ring.CartesianRing))
 
 (comment
 
@@ -26,7 +28,7 @@
 
   (add-geometries
     [(assoc
-       (r/ring [(p/point 1.0 1.0)
+       (gr/ring [(p/point 1.0 1.0)
                      (p/point 1.0 4.0)
                      (p/point -1.0 1.0)
                      (p/point -2.0 1.0)
@@ -77,7 +79,7 @@
         :lon lon
         :lat lat
         :options options}]))
-  Ring
+  GeodeticRing
   (cmr-spatial->viz-geoms
     [ring]
     (let [{:keys [points mbr options]} ring]
@@ -114,6 +116,14 @@
     (let [{:keys [point1 point2]} ls]
       [{:type :cartesian-ring
         :ords (p/points->ords [point1 point2])}]))
+
+  CartesianRing
+  (cmr-spatial->viz-geoms
+    [ring]
+    (let [{:keys [points options]} ring]
+      [{:type :cartesian-ring
+        :ords (p/points->ords points)
+        :options options}]))
 
   Mbr
   (cmr-spatial->viz-geoms

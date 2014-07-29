@@ -2,7 +2,7 @@
   "Makes the spatial areas URL encodeable as accepted on the Catalog REST API"
   (:require [cmr.spatial.polygon :as poly]
             [cmr.spatial.point :as p]
-            [cmr.spatial.ring :as r]
+            [cmr.spatial.geodetic-ring :as gr]
             [cmr.spatial.mbr :as mbr]
             [cmr.common.regex-builder :as rb]
             [clojure.string :as str]
@@ -32,7 +32,7 @@
     [{:keys [lon lat]}]
     (join-ordinates lon lat))
 
-  cmr.spatial.ring.Ring
+  cmr.spatial.geodetic_ring.GeodeticRing
   (url-encode
     [{:keys [points]}]
     (encode-points points))
@@ -94,7 +94,7 @@
   [type s]
   (if-let [match (re-matches polygon-regex s)]
     (let [ordinates (map #(Double. ^String %) (str/split s #","))]
-      (poly/polygon [(apply r/ords->ring ordinates)]))
+      (poly/polygon [(apply gr/ords->ring ordinates)]))
     {:errors [(smsg/shape-decode-msg :polygon s)]}))
 
 

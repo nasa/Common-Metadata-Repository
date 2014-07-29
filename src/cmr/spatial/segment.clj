@@ -10,7 +10,8 @@
             [cmr.spatial.messages :as msg]
             [cmr.common.services.errors :as errors]
             [cmr.spatial.line :as l]
-            [cmr.spatial.derived :as d])
+            [cmr.spatial.derived :as d]
+            [cmr.common.util :as util])
   (:import cmr.spatial.point.Point
            cmr.spatial.mbr.Mbr))
 
@@ -65,6 +66,11 @@
   (let [{{lon1 :lon lat1 :lat} :point1
          {lon2 :lon lat2 :lat} :point2} ls]
     [lon1, lat1, lon2, lat2]))
+
+(defn points->line-segments
+  "Takes a list of points and returns arcs connecting all the points"
+  [points]
+  (util/map-n (partial apply line-segment) 2 1 points))
 
 (defn vertical?
   "Returns true if this is a vertical line segment"
@@ -130,10 +136,7 @@
 (defn line-segment->line
   "Creates an approximate geodetic line of the line segment by desifying the line segment. Optionally
   accepts densification distance in degrees. Does no densification for vertical lines. The returned
-  line will not have derived fields calculated.
-
-  TODO if we have a horizontal line we probably want to use a different approach in the caller.
-  "
+  line will not have derived fields calculated."
   ([ls]
    (line-segment->line ls 0.1))
   ([^LineSegment ls ^double densification-dist]
@@ -255,20 +258,6 @@
   (let [edges (mbr->line-segments mbr)]
     (filter identity (map (partial intersection ls) edges))))
 
-(comment
-
- (def ls  (cmr.spatial.segment/ords->line-segment -139.0 2.0 160.5 -85.0))
-
- (def mbr #cmr.spatial.mbr.Mbr{:west -113.0, :north 29.18229693893373, :east 55.0, :south -15.0})
-
-  (def edges (mbr->line-segments mbr))
-
-  (m/covers-point? (:mbr ls) (intersection ls (nth edges 1)))
-
-  (mbr-intersections ls mbr)
-
-)
-
 ;; TODO add tests for this
 (defn subselect
   "Selects a smaller portion of the line segment using an mbr. Will return nil if the line segment
@@ -303,10 +292,9 @@
             (errors/internal-error! "TODO this case needs to be handled")
             (line-segment point2 (first intersection-points)))
 
-
-
           point1-in-mbr
           (if (= point1 (first intersection-points))
+            ;; TODO handle the case where point 1 = the intersection point
             (errors/internal-error! "TODO this case needs to be handled")
             (line-segment point1 (first intersection-points)))
 
