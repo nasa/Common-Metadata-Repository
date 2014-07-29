@@ -96,7 +96,8 @@
                   :original-format "ECHO10"
                   :coordinate-system "CARTESIAN"
                   :update-time "2014-02-24T22:20:56.000Z"
-                  :associated-difs ["DIF-100" "DIF-101"]}
+                  :associated-difs ["DIF-100" "DIF-101"]
+                  :associated-difs.lowercase ["dif-100" "dif-101"]}
         actual (es/concept->elastic-doc nil concept umm-concept)]
     (is (= expected actual))))
 
