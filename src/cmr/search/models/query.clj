@@ -245,6 +245,15 @@
    max-value
    ])
 
+(defrecord BoostedCondition
+  [
+   ;; A float value for the boost. Should be > 0. Default is 1.0.
+   boost
+   ;; The condition that should receive the  boost
+   condition
+   ])
+
+
 (def default-sort-keys
   "The default sort keys by concept type."
   {:collection [{:field :entry-title
@@ -356,3 +365,10 @@
   [field value]
   (let [{:keys [min-value max-value]} (pp/numeric-range-parameter->map value)]
     (->NumericRangeCondition field min-value max-value)))
+
+(defn boosted-condition
+  "Creates a boosted condtion"
+  ([condition] (boosted-condition condition 1.0))
+  ([condition boost]
+   (assert (> boost 0))
+   (->BoostedCondition boost condition)))

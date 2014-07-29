@@ -35,7 +35,8 @@
                 :downloadable :boolean
                 :polygon :polygon
                 :bounding-box :bounding-box
-                :point :point}
+                :point :point
+                :keyword :keyword}
    :granule {:granule-ur :string
              :concept-id :granule-concept-id
              :collection-concept-id :string
