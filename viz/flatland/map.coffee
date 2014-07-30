@@ -30,6 +30,12 @@ class window.Map extends Module
     )
     @geometries = @geometries.concat(newGeoms)
 
+  # Removes geometries by id
+  removeGeometries: (geometryIds)->
+    [geometriesToRemove, @geometries] = _.partition(@geometries, (g)-> geometryIds.indexOf(g.id) >= 0)
+    for g in geometriesToRemove
+      g.undisplay(@board)
+
 
   clearGeometries: (geometries)->
     geom.undisplay(@board) for geom in @geometries

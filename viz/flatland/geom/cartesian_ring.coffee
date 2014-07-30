@@ -1,6 +1,6 @@
 class window.CartesianRing extends Module
 
-  @LINE_STYLE = {straightFirst:false, straightLast:false, strokeWidth:2}
+  @LINE_STYLE = {straightFirst:false, straightLast:false, strokeWidth:1}
 
   constructor: (@points, options={}) ->
     super()

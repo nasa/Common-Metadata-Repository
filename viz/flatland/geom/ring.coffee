@@ -3,6 +3,8 @@ class window.Ring extends Module
   constructor: (@points, options={}) ->
     super()
     @id = options.id
+    # A clojure function to call on the server when the ring is dragged
+    @callbackFn = options.callbackFn if options.callbackFn
 
     # Determine if the points self close
     # Remove last point if it does
@@ -12,17 +14,20 @@ class window.Ring extends Module
     else
       @closed = false
 
+    for point in @points
+      point.addGuiEventListener(this)
+
   # Converts a string of points lon,lat,lon,lat to a ring
   @fromOrdinates: (ordinates, options={})->
     new Ring(Point.fromOrdinates(ordinates), options)
 
   toOrdinates: ->
-    Point.toOrdinates(this.getPoints())
+    Point.toOrdinates(@points)
 
   # Returns a string of comma separate lon,lat,lon,lat...
   # for all the points in the ring.
   toOrdinatesString: (options={}) ->
-    Point.toOrdinatesString(this.getPoints(), options)
+    Point.toOrdinatesString(@points, options)
 
   gcPointsToRanges: (p1, p2)->
     p1x = p1.X()
@@ -37,7 +42,6 @@ class window.Ring extends Module
       [{min: -180.0, max: westX}, {min: eastX, max: 180.0}]
     else
       [{min: westX, max: eastX}]
-
 
   limitWithinGCBounds: (fn, p1, p2)->
     (x)=>
@@ -84,3 +88,17 @@ class window.Ring extends Module
       board.removeObject(line) for line in @lines
       @lines = null
 
+
+  handleGuiEvent: (event, ge) ->
+    console.log("handling event")
+    if event.type == Point.DRAG_FINISH_EVENT
+      if @callbackFn
+        pointStr = this.toOrdinatesString()
+        if @id && @id != null
+          callbackStr = "#{@id}:#{pointStr}"
+        else
+          callbackStr = pointStr
+        console.log("Calling callback #{@callbackFn} with #{callbackStr}")
+        vdd_core.connection.callServerFunction(window.vddSession, @callbackFn, callbackStr)
+    else
+      console.log "Error: Unknown event to handle #{event.type}"

@@ -36,4 +36,3 @@
 (defn clear-viz-geometries []
   (vdd/data->viz {:cmd :clear-geometries}))
 
-
