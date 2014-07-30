@@ -54,6 +54,8 @@ class window.Point extends Module
   handleMouseMove: (event, board) ->
     if @dragging
       @moved = true
+      @lon = @displayedPoint.X()
+      @lat = @displayedPoint.Y()
 
   handleMouseUp: (event, board) ->
     if @dragging
