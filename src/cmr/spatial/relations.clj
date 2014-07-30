@@ -4,6 +4,7 @@
             [cmr.spatial.mbr :as m]
             [cmr.spatial.geodetic-ring :as gr]
             [cmr.spatial.cartesian-ring :as cr]
+            [cmr.spatial.ring-relations :as rr]
             [cmr.spatial.polygon :as poly]
             [cmr.spatial.derived :as d]
             [cmr.spatial.math :refer :all])
@@ -89,7 +90,7 @@
 
   (intersects-ring?
     [br ring]
-    (gr/intersects-br? ring br))
+    (rr/intersects-br? ring br))
 
   (intersects-br?
     [br1 br2]
@@ -120,15 +121,15 @@
 
   (covers-br?
     [ring br]
-    (gr/covers-br? ring br))
+    (rr/covers-br? ring br))
 
   (intersects-ring?
     [ring1 ring2]
-    (gr/intersects-ring? ring1 ring2))
+    (rr/intersects-ring? ring1 ring2))
 
   (intersects-br?
     [ring br]
-    (gr/intersects-br? ring br))
+    (rr/intersects-br? ring br))
 
   (intersects-polygon?
     [ring polygon]
@@ -155,15 +156,15 @@
 
   (covers-br?
     [ring br]
-    (cr/covers-br? ring br))
+    (rr/covers-br? ring br))
 
   (intersects-ring?
     [ring1 ring2]
-    (cr/intersects-ring? ring1 ring2))
+    (rr/intersects-ring? ring1 ring2))
 
   (intersects-br?
     [ring br]
-    (cr/intersects-br? ring br))
+    (rr/intersects-br? ring br))
 
   (intersects-polygon?
     [ring polygon]

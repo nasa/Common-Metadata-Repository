@@ -73,6 +73,7 @@
           ;; point will result in better bounding for newton's method.
           (mapcat (partial m/intersections ls-mbr) intersecting-mbrs))))))
 
+
 (defprotocol ArcSegmentIntersects
   "Defines functions for intersecting with an arc or segments"
   (intersections-with-arc
@@ -80,7 +81,10 @@
     "Returns the intersection points of the line with the arc.")
   (intersections-with-line-segment
     [line ls]
-    "Returns the intersection points of the line with the line segment"))
+    "Returns the intersection points of the line with the line segment")
+  (intersects-point?
+    [line point]
+    "Returns true if the point lies on the line"))
 
 (defmulti intersections
   "Determines if line 1 and 2 intersect. A line can be an arc or a line segment."
@@ -104,10 +108,17 @@
     [ls1 ls2]
     (when-let [i (s/intersection ls1 ls2)]
       [i]))
+  (intersects-point?
+    [ls point]
+    (s/point-on-segment? ls point))
+
   Arc
   (intersections-with-arc
     [arc1 arc2]
     (a/intersections arc1 arc2))
   (intersections-with-line-segment
     [arc ls]
-    (line-segment-arc-intersections ls arc)))
+    (line-segment-arc-intersections ls arc))
+  (intersects-point?
+    [arc point]
+    (a/point-on-arc? arc point)))

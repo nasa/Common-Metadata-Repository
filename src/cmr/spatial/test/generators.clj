@@ -8,6 +8,7 @@
             [cmr.spatial.vector :as v]
             [cmr.spatial.mbr :as m]
             [cmr.spatial.geodetic-ring :as gr]
+            [cmr.spatial.ring-relations :as rr]
             [cmr.spatial.polygon :as poly]
             [cmr.spatial.line :as l]
             [cmr.spatial.arc :as a]
@@ -298,11 +299,11 @@
               ;; The holes can go in the polygon if they don't intersect any of the other holes
               (let [[h1 h2 h3] potential-holes
                     ;; h2 can be used if it doesn't intersect h1
-                    h2-valid? (not (gr/intersects-ring? h1 h2))
+                    h2-valid? (not (rr/intersects-ring? h1 h2))
                     ;; h3 can be used if it doesn't intersect h1 or h2 (if h2 is valid)
-                    h3-valid? (and (not (gr/intersects-ring? h1 h3))
+                    h3-valid? (and (not (rr/intersects-ring? h1 h3))
                                    (or (not h2-valid?)
-                                       (not (gr/intersects-ring? h2 h3))))
+                                       (not (rr/intersects-ring? h2 h3))))
                     holes (cond
                             (and h2-valid? h3-valid?) [h1 h2 h3]
                             h2-valid? [h1 h2]

@@ -177,13 +177,26 @@
        (l/line points)))))
 
 (defn mbr->line-segments
-  "Returns line segments representing the exerior of the MBR"
+  "Returns line segments representing the exerior of the MBR. The MBR must cover more than a single point"
   [mbr]
-  (let [[ul ur lr ll] (m/corner-points mbr)]
-    [(line-segment ul ur)
-     (line-segment ur lr)
-     (line-segment lr ll)
-     (line-segment ll ul)]))
+  (cond
+    (m/single-point? mbr)
+    (errors/internal-error! "This function doesn't work for an MBR that's a single point.")
+
+    (= (:west mbr) (:east mbr))
+    ;; zero width mbr
+    [(line-segment (p/point (:west mbr) (:north mbr)) (p/point (:east mbr) (:south mbr)))]
+
+    (= (:north mbr) (:south mbr))
+    ;; zero height mbr
+    [(line-segment (p/point (:west mbr) (:north mbr)) (p/point (:east mbr) (:south mbr)))]
+
+    :else
+    (let [[ul ur lr ll] (m/corner-points mbr)]
+      [(line-segment ul ur)
+       (line-segment ur lr)
+       (line-segment lr ll)
+       (line-segment ll ul)])))
 
 (defn- intersection-both-vertical
   "Returns the intersection point of two vertical line segments if they do intersect"
@@ -255,8 +268,12 @@
 (defn mbr-intersections
   "Returns the points the line segment intersects the edges of the mbr"
   [ls mbr]
-  (let [edges (mbr->line-segments mbr)]
-    (filter identity (map (partial intersection ls) edges))))
+  (if (m/single-point? mbr)
+    (let [point (p/point (:west mbr) (:north mbr))]
+      (when (point-on-segment? ls point)
+        [point]))
+    (let [edges (mbr->line-segments mbr)]
+      (filter identity (map (partial intersection ls) edges)))))
 
 ;; TODO add tests for this
 (defn subselect

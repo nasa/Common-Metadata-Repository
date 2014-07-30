@@ -11,6 +11,7 @@
             [cmr.spatial.point :as p]
             [cmr.spatial.arc :as a]
             [cmr.spatial.geodetic-ring :as gr]
+            [cmr.spatial.ring-relations :as rr]
             [cmr.spatial.mbr :as m]
             [cmr.spatial.derived :as d]
             [cmr.spatial.polygon :as poly]
@@ -24,7 +25,7 @@
   (for-all [ring (sgen/rings)]
     (let [lr (lbs/find-lr ring false)]
       (and lr
-           (gr/covers-br? ring lr)))))
+           (rr/covers-br? ring lr)))))
 
 (defn polygon-has-valid-lr?
   "Returns true if the polygon has a valid lr."
@@ -93,6 +94,14 @@
 
   (def ring (d/calculate-derived
               (first (gen/sample (sgen/rings) 1))))
+
+  (def ring (d/calculate-derived (cmr.spatial.geodetic-ring/ords->ring 1.0 -1.0 1.0 1.0 -1.0 1.0 -1.0 0.5 1.0 -2.0 1.0 -1.0)))
+
+  (viz-helper/clear-geometries)
+  (viz-helper/add-geometries [ring])
+
+  (lbs/find-lr ring)
+
 
   ;; Samples
 

@@ -1,4 +1,4 @@
-(ns cmr.spatial.test.ring
+(ns cmr.spatial.test.geodetic-ring
   (:require [clojure.test :refer :all]
             [cmr.common.test.test-check-ext :refer [defspec]]
             [clojure.test.check.properties :refer [for-all]]
@@ -9,6 +9,7 @@
             [cmr.spatial.point :as p]
             [cmr.spatial.mbr :as m]
             [cmr.spatial.geodetic-ring :as gr]
+            [cmr.spatial.ring-relations :as rr]
             [cmr.spatial.derived :as d]
             [cmr.spatial.test.generators :as sgen]
             [cmr.spatial.validation :as v]
@@ -17,7 +18,7 @@
 
 (deftest ring-covers-br-test
   (testing "concave ring"
-    (is (not (gr/covers-br? (d/calculate-derived
+    (is (not (rr/covers-br? (d/calculate-derived
                              (gr/ords->ring -0.11,2.79,2.53,1.44,-0.01,3.79,-2.2,2.28,-0.11,2.79))
                            (m/mbr -0.7921474469772579
                                   3.2516294093733533
@@ -109,7 +110,7 @@
         (doseq [point (apply p/ords->points external-points)]
             (is (not (gr/covers-point? ring point)) (str "Ring should not cover point " point)))
 
-        (is (gr/intersects-ring? ring ring) "Ring should intersect itself")))))
+        (is (rr/intersects-ring? ring ring) "Ring should intersect itself")))))
 
 
 

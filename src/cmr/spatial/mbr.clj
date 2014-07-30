@@ -153,6 +153,12 @@
   "The number of square degrees in the world"
   ^double (* 360.0 180.0))
 
+(defn single-point?
+  "Returns true if the MBR only covers a single point."
+  [mbr]
+  (and (= (:west mbr) (:east mbr))
+       (= (:north mbr) (:south mbr))))
+
 (defn percent-covering-world
   "Returns percentage in square lat lons that the MBR covers the world"
   ^double [^Mbr mbr]

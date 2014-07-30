@@ -12,6 +12,7 @@
             [cmr.spatial.point :as p]
             [cmr.spatial.arc :as a]
             [cmr.spatial.geodetic-ring :as gr]
+            [cmr.spatial.ring-relations :as rr]
             [cmr.spatial.mbr :as mbr]
             [cmr.spatial.derived :as d]
             [cmr.spatial.test.generators :as sgen]
@@ -115,7 +116,7 @@
           failed-tests (mapcat test-ring rings)
           [boundary & holes] rings]
       (and (empty? failed-tests)
-           (every? (partial gr/covers-ring? boundary) holes)))))
+           (every? (partial rr/covers-ring? boundary) holes)))))
 
 (comment
 
