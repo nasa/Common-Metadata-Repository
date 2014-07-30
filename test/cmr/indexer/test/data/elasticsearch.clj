@@ -97,6 +97,8 @@
                   :coordinate-system "CARTESIAN"
                   :update-time "2014-02-24T22:20:56.000Z"
                   :associated-difs ["DIF-100" "DIF-101"]
+                  :associated-difs.lowercase ["dif-100" "dif-101"]
+                  :keyword "a minimal valid collection v 1 near real time minimal sedac ac summary of collection 1 1b   new york washington dc"
                   :entry-title-keyword ["a" "minimal" "valid" "collection" "v" "1"]
                   :short-name-keyword ["minimal"]
                   :collection-data-type-keyword ["near" "real" "time"]
@@ -107,7 +109,8 @@
                   :science-keywords-keyword []
                   :spatial-keyword-keyword ["new" "york" "washington" "dc"]
                   :attributes-keyword []
-                  :platform-sn-keyword ["platform" "one" "platform" "two"]}
+                  :platform-sn-keyword ["platform" "one" "platform" "two"]
+                  :summary-keyword ["summary" "of" "collection"]}
         actual (es/concept->elastic-doc nil concept umm-concept)]
     (is (= expected actual))))
 

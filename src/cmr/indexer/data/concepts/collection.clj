@@ -12,17 +12,9 @@
             [cmr.indexer.data.concepts.temporal :as temporal]
             [cmr.indexer.data.concepts.attribute :as attrib]
             [cmr.indexer.data.concepts.science-keyword :as sk]
-            [cmr.indexer.data.concepts.spatial :as spatial])
+            [cmr.indexer.data.concepts.spatial :as spatial]
+            [cmr.indexer.data.concepts.keyword :as k])
   (:import cmr.spatial.mbr.Mbr))
-
-;; Regex to split strings with special characters into multiple words for keyword searches
-(def keywords-separator-regex #"[!@#$%^&()\-=_+{}\[\]|;'.,\"/:<>?`~* ]")
-
-(defn prepare-keywords-field
-  [field-value]
-  "Convert a string to lowercase then separate it into keywords"
-  (when field-value
-    (str/split (str/lower-case field-value) keywords-separator-regex)))
 
 (defn spatial->elastic
   [collection]
@@ -115,20 +107,22 @@
             :original-format (str/upper-case (name (mt/mime-type->format format)))
             :update-time update-time
             :associated-difs associated-difs
+            :associated-difs.lowercase (map str/lower-case associated-difs)
             :coordinate-system (when spatial-representation (csk/->SNAKE_CASE_STRING spatial-representation))
             ;; fields added to support keyword searches
+            :keyword (k/create-keywords-field collection)
             :concept-id-keyword (str/lower-case concept-id)
-            :entry-title-keyword (prepare-keywords-field entry-title)
-            :collection-data-type-keyword (prepare-keywords-field collection-data-type)
-            :short-name-keyword (prepare-keywords-field short-name)
-            :archive-center-keyword (mapcat prepare-keywords-field archive-center-val)
-            :version-id-keyword (prepare-keywords-field version-id)
-            :processing-level-id-keyword (prepare-keywords-field processing-level-id)
-            :science-keywords-keyword (mapcat prepare-keywords-field
+            :entry-title-keyword (k/prepare-keyword-field entry-title)
+            :collection-data-type-keyword (k/prepare-keyword-field collection-data-type)
+            :short-name-keyword (k/prepare-keyword-field short-name)
+            :archive-center-keyword (mapcat k/prepare-keyword-field archive-center-val)
+            :version-id-keyword (k/prepare-keyword-field version-id)
+            :processing-level-id-keyword (k/prepare-keyword-field processing-level-id)
+            :science-keywords-keyword (mapcat k/prepare-keyword-field
                                               (sk/science-keywords->keywords collection))
-            :spatial-keyword-keyword (mapcat prepare-keywords-field spatial-keywords)
-            :platform-sn-keyword (mapcat prepare-keywords-field platform-short-names)
-            :attributes-keyword (mapcat prepare-keywords-field (attrib/psas->keywords collection))
-            :summary-keyword (prepare-keywords-field summary)}
+            :spatial-keyword-keyword (mapcat k/prepare-keyword-field spatial-keywords)
+            :platform-sn-keyword (mapcat k/prepare-keyword-field platform-short-names)
+            :attributes-keyword (mapcat k/prepare-keyword-field (attrib/psas->keywords collection))
+            :summary-keyword (k/prepare-keyword-field summary)}
            (spatial->elastic collection))))
 

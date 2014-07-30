@@ -21,7 +21,7 @@
 (def string-field-mapping
   {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "no"})
 
-;; Not currently used but left here for future use in providing full text search capability
+;; Used for analyzed text fields
 (def text-field-mapping
   {:type "string"
    :index "analyzed"
@@ -174,15 +174,16 @@
                                     :original-format (not-indexed (stored string-field-mapping))
                                     :update-time (not-indexed (stored string-field-mapping))
                                     :associated-difs (stored string-field-mapping)
+                                    :associated-difs.lowercase string-field-mapping
                                     :coordinate-system (not-indexed (stored string-field-mapping))
                                     ;; analyzed fields for keyword searches
+                                    :keyword text-field-mapping
                                     :concept-id-keyword string-field-mapping
                                     :entry-title-keyword string-field-mapping
                                     :collection-data-type-keyword string-field-mapping
                                     :short-name-keyword string-field-mapping
                                     ;; TODO :long-name
                                     :archive-center-keyword string-field-mapping
-                                    ;; TODO :collection-description
                                     ;; TODO :suggested-usage
                                     :version-id-keyword string-field-mapping
                                     ;; TODO :version-description
