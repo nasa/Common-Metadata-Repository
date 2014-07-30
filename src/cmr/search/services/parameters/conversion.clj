@@ -1,6 +1,7 @@
 (ns cmr.search.services.parameters.conversion
   "Contains functions for parsing and converting query parameters to query conditions"
   (:require [clojure.string :as s]
+            [clojure.set :as set]
             [cmr.common.services.errors :as errors]
             [cmr.search.models.query :as qm]
             [cmr.common.date-time-parser :as dt-parser]
@@ -32,6 +33,7 @@
                 :spatial-keyword :string
                 :two-d-coordinate-system-name :string
                 :science-keywords :science-keywords
+                :dif-entry-id :dif-entry-id
                 :downloadable :boolean
                 :polygon :polygon
                 :bounding-box :bounding-box
@@ -184,9 +186,9 @@
         (map #(parameter->condition concept-type param % options) value)))
     (let [case-sensitive (case-sensitive-field? :readable-granule-name options)
           pattern (pattern-field? :readable-granule-name options)]
-    (qm/or-conds
-      [(qm/string-condition :granule-ur value case-sensitive pattern)
-       (qm/string-condition :producer-granule-id value case-sensitive pattern)]))))
+      (qm/or-conds
+        [(qm/string-condition :granule-ur value case-sensitive pattern)
+         (qm/string-condition :producer-granule-id value case-sensitive pattern)]))))
 
 (defmethod parameter->condition :collection-data-type
   [concept-type param value options]
@@ -212,6 +214,13 @@
 (defmethod parameter->condition :num-range
   [concept-type param value options]
   (qm/numeric-range-str->condition param value))
+
+;; dif-entry-id matches on entry-id or associated-difs
+(defmethod parameter->condition :dif-entry-id
+  [concept-type param value options]
+  (qm/or-conds
+    [(parameter->condition concept-type :entry-id value (set/rename-keys options {:dif-entry-id :entry-id}))
+     (string-parameter->condition :associated-difs value (set/rename-keys options {:dif-entry-id :associated-difs}))]))
 
 (defn parse-sort-key
   "Parses the sort key param and returns a sequence of maps with fields and order.
