@@ -18,7 +18,7 @@
 ;; Regex to split strings with special characters into multiple words for keyword searches
 (def keywords-separator-regex #"[!@#$%^&()\-=_+{}\[\]|;'.,\"/:<>?`~* ]")
 
-(defn- prepare-keywords-field
+(defn prepare-keywords-field
   [field-value]
   "Convert a string to lowercase then separate it into keywords"
   (when field-value
@@ -128,6 +128,7 @@
                                               (sk/science-keywords->keywords collection))
             :spatial-keyword-keyword (mapcat prepare-keywords-field spatial-keywords)
             :platform-sn-keyword (mapcat prepare-keywords-field platform-short-names)
-            :attributes-keyword (mapcat prepare-keywords-field (attrib/psas->keywords collection))}
+            :attributes-keyword (mapcat prepare-keywords-field (attrib/psas->keywords collection))
+            :summary-keyword (prepare-keywords-field summary)}
            (spatial->elastic collection))))
 

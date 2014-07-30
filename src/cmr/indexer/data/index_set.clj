@@ -191,12 +191,14 @@
                                     :science-keywords-keyword string-field-mapping
                                     :spatial-keyword-keyword string-field-mapping
                                     ;; TODO :temporal-keyword
+                                    ;; TODO platform-long-name
                                     :platform-sn-keyword string-field-mapping
                                     ;; TODO :platform-ln
-                                    ;; TODO platform nested stuff
+                                    ;; TODO platform nested stuff (instruments)
                                     :attributes-keyword string-field-mapping
                                     ;; TODO :associated-difs
                                     :two-d-coord-name-keyword string-field-mapping
+                                    :summary-keyword string-field-mapping
                                     }
                                    spatial-coverage-fields)}})
 
