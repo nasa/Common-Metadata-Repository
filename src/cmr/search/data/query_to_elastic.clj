@@ -82,24 +82,24 @@
     (concat specified-sort [concept-id-sort])))
 
 (defn- range-condition->elastic
-    "Convert a range condition to an elastic search condition. Execution
-    should either by 'fielddata' or 'index'."
-    [field min-value max-value execution]
-    (cond
-      (and min-value max-value)
-      {:range {field {:gte min-value :lte max-value}
-               :execution execution}}
+  "Convert a range condition to an elastic search condition. Execution
+  should either by 'fielddata' or 'index'."
+  [field min-value max-value execution]
+  (cond
+    (and min-value max-value)
+    {:range {field {:gte min-value :lte max-value}
+             :execution execution}}
 
-      min-value
-      {:range {field {:gte min-value}
-               :execution execution}}
+    min-value
+    {:range {field {:gte min-value}
+             :execution execution}}
 
-      max-value
-      {:range {field {:lte max-value}
-               :execution execution}}
+    max-value
+    {:range {field {:lte max-value}
+             :execution execution}}
 
-      :else
-      (errors/internal-error! (m/nil-min-max-msg))))
+    :else
+    (errors/internal-error! (m/nil-min-max-msg))))
 
 (extend-protocol ConditionToElastic
   cmr.search.models.query.ConditionGroup
@@ -175,8 +175,8 @@
   cmr.search.models.query.StringRangeCondition
   (condition->elastic
     [{:keys [field start-value end-value]} concept-type]
-     (range-condition->elastic (query-field->elastic-field field concept-type)
-                               start-value end-value "index"))
+    (range-condition->elastic (query-field->elastic-field field concept-type)
+                              start-value end-value "index"))
 
   cmr.search.models.query.DateRangeCondition
   (condition->elastic
@@ -200,4 +200,12 @@
   cmr.search.models.query.MatchNoneCondition
   (condition->elastic
     [_ _]
-    {:term {:match_none "none"}}))
+    {:term {:match_none "none"}})
+
+  cmr.search.models.query.BoostedCondition
+  (condition->elastic
+    [{:keys [field condition boost]} concept-type]
+    ;; only support positive boosting now
+    {:boosting {:positive (condition->elastic condition concept-type)
+                :positive_boost boost}})
+  )
