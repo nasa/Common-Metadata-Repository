@@ -3,6 +3,7 @@
   (:require [cmr.spatial.polygon :as poly]
             [cmr.spatial.point :as p]
             [cmr.spatial.geodetic-ring :as gr]
+            [cmr.spatial.ring-relations :as rr]
             [cmr.spatial.mbr :as mbr]
             [cmr.common.regex-builder :as rb]
             [clojure.string :as str]
@@ -24,7 +25,6 @@
   "Joins the ordinates together with commas"
   [& ords]
   (str/join "," (map util/double->string ords)))
-
 
 (extend-protocol SpatialUrlEncode
   cmr.spatial.point.Point
@@ -94,7 +94,7 @@
   [type s]
   (if-let [match (re-matches polygon-regex s)]
     (let [ordinates (map #(Double. ^String %) (str/split s #","))]
-      (poly/polygon [(apply gr/ords->ring ordinates)]))
+      (poly/polygon :geodetic [(apply rr/ords->ring :geodetic ordinates)]))
     {:errors [(smsg/shape-decode-msg :polygon s)]}))
 
 

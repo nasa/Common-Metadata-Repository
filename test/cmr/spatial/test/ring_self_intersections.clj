@@ -10,6 +10,7 @@
             [cmr.spatial.point :as p]
             [cmr.spatial.mbr :as m]
             [cmr.spatial.geodetic-ring :as gr]
+            [cmr.spatial.ring-relations :as rr]
             [cmr.spatial.derived :as d]
             [cmr.spatial.test.generators :as sgen]))
 
@@ -17,8 +18,8 @@
 
 (deftest ring-self-intersections-test
   (doseq [[ring-name {:keys [ords intersects]}] ring-examples]
-    (let [ring (apply gr/ords->ring ords)
-          self-intersections (gr/self-intersections ring)]
+    (let [ring (apply rr/ords->ring :geodetic ords)
+          self-intersections (rr/self-intersections ring)]
       (if intersects
         (let [sorter (fn [{:keys [lon lat]}]
                        [lon lat])

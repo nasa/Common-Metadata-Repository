@@ -21,8 +21,10 @@
             [cmr.spatial.dev.viz-helper :as viz-helper])
   (:import cmr.spatial.point.Point))
 
+
+
 (defspec all-rings-have-lrs {:times 100 :printer-fn sgen/print-failed-ring}
-  (for-all [ring (sgen/rings)]
+  (for-all [ring (gen/bind sgen/coordinate-system sgen/rings)]
     (let [lr (lbs/find-lr ring false)]
       (and lr
            (rr/covers-br? ring lr)))))
@@ -35,9 +37,9 @@
          (poly/covers-br? polygon lr))))
 
 (defspec simple-polygon-with-holes-has-lr {:times 100 :printer-fn sgen/print-failed-ring}
-  (let [boundary (d/calculate-derived (gr/ords->ring 0 0, 10 0, 10 10, 0 10, 0 0))]
+  (let [boundary (d/calculate-derived (rr/ords->ring :geodetic 0 0, 10 0, 10 10, 0 10, 0 0))]
     (for-all [hole (sgen/rings-in-ring boundary)]
-      (let [polygon (d/calculate-derived (poly/polygon [boundary hole]))]
+      (let [polygon (d/calculate-derived (poly/polygon :geodetic [boundary hole]))]
         (polygon-has-valid-lr? polygon)))))
 
 (defspec all-polygons-with-holes-have-lrs {:times 100 :printer-fn sgen/print-failed-polygon}
@@ -70,7 +72,8 @@
                            -41.58919 65.43968, -41.63335 65.45003, -41.71063 65.45003,
                            -41.71891 65.44888]]]]
     (doseq [polygon-ordses polygons-ordses]
-      (let [polygon (d/calculate-derived (poly/polygon (mapv (partial apply gr/ords->ring)
+      (let [polygon (d/calculate-derived (poly/polygon :geodetic
+                                                       (mapv (partial apply rr/ords->ring :geodetic)
                                                              polygon-ordses)))]
         (is (polygon-has-valid-lr? polygon))))))
 
@@ -79,26 +82,27 @@
   ;; Visualization samples and helpers
 
   (display-draggable-lr-polygon
-    (poly/polygon [(gr/ords->ring 0,0, 4,0, 6,5, 2,5, 0,0)
-                   (gr/ords->ring 4,3.34, 2,3.34, 3,1.67, 4,3.34)]))
+    (poly/polygon :geodetic
+                  [(rr/ords->ring :geodetic 0,0, 4,0, 6,5, 2,5, 0,0)
+                   (rr/ords->ring :geodetic 4,3.34, 2,3.34, 3,1.67, 4,3.34)]))
 
   ;; Polygon with multiple inner rings
 
   (let [ordses [[0,0, 4,0, 6,5, 2.14,4.86, -0.92,4.75, 0,0]
                 [2.34,4.22, 1.22,3.92, -0.11,4.21, 0.7,2.57, 2.34,4.22]
                 [3.7,3.33, 1.25,1.04, 3.37,0.61, 3.7,3.33]]
-        polygon (poly/polygon (mapv (partial apply gr/ords->ring)
+        polygon (poly/polygon :geodetic
+                              (mapv (partial apply rr/ords->ring :geodetic)
                                     ordses))]
     (display-draggable-lr-polygon polygon))
 
 
   (def ring (d/calculate-derived
-              (first (gen/sample (sgen/rings) 1))))
+              (first (gen/sample (sgen/rings :geodetic) 1))))
 
-  (def ring (d/calculate-derived (cmr.spatial.geodetic-ring/ords->ring 1.0 -1.0 1.0 1.0 -1.0 1.0 -1.0 0.5 1.0 -2.0 1.0 -1.0)))
-
-  (viz-helper/clear-geometries)
   (viz-helper/add-geometries [ring])
+  (display-draggable-lr-ring ring)
+
 
   (lbs/find-lr ring)
 
@@ -124,7 +128,7 @@
   ;; across antimeridian
   (display-draggable-lr-ring
     (gr/ords->ring 175 -10, -175 -10, -175 0, -175 10
-                  175 10, 175 0, 175 -10))
+                   175 10, 175 0, 175 -10))
 
   ;; Performance testing
   (require '[criterium.core :refer [with-progress-reporting bench]])
@@ -177,7 +181,8 @@
   "Displays a draggable polygon in the spatial visualization. As the polygon is dragged the LR of the polygon is updated."
   [polygon]
   (viz-helper/clear-geometries)
-  (let [polygon (d/calculate-derived polygon)
+  (let [coord-sys (:coordinate-system polygon)
+        polygon (d/calculate-derived polygon)
         lr (lbs/find-lr polygon false)
         callback "cmr.spatial.test.lr-binary-search/handle-polygon-moved"
         ;; Add options for polygon to be displayed.
@@ -187,7 +192,8 @@
                     (update-in [:rings] (fn [rings]
                                           (vec (map-indexed
                                                  (fn [i ring]
-                                                   (assoc-in ring [:options :id] (inc i)))
+                                                   (assoc-in ring [:options :id] (str (inc i) "_"
+                                                                                      (name coord-sys))))
                                                  rings)))))
         _ (println "Found LR:" (pr-str lr))]
 
@@ -200,11 +206,12 @@
   "Callback handler for when the polygon is moved. It removes the existing polygon and lr and readds it with
   the updated lr."
   [ring-str]
-  (let [[^String id ords-str] (str/split ring-str #":")
+  (let [[id ords-str] (str/split ring-str #":")
+        [^String ring-num coord-sys] (str/split id #"_")
         ords (map #(Double. ^String %) (str/split ords-str #","))
-        ring (d/calculate-derived (apply gr/ords->ring ords))
+        ring (d/calculate-derived (apply rr/ords->ring (keyword coord-sys) ords))
         polygon (swap! displaying-polygon-atom (fn [polygon]
-                                                 (assoc-in polygon [:rings (dec (Long. id))] ring)))
+                                                 (assoc-in polygon [:rings (dec (Long. ring-num))] ring)))
         lr (lbs/find-lr polygon false)
         _ (println "Found LR:" (pr-str lr))]
 
@@ -225,6 +232,7 @@
         callback "cmr.spatial.test.lr-binary-search/handle-ring-moved"
         ring (assoc ring
                     :options {:callbackFn callback
+                              :id (name (rr/coordinate-system ring))
                               :draggable true})
         _ (println "Found LR:" (pr-str lr))]
     (viz-helper/add-geometries [ring])
@@ -234,9 +242,10 @@
 (defn handle-ring-moved
   "Callback handler for when the ring is moved. It removes the existing ring and lr and readds it with
   the updated lr."
-  [ords-str]
-  (let [ords (map #(Double. ^String %) (str/split ords-str #","))
-        ring (d/calculate-derived (apply gr/ords->ring ords))
+  [ring-str]
+  (let [[coord-sys ords-str] (str/split #":")
+        ords (map #(Double. ^String %) (str/split ords-str #","))
+        ring (d/calculate-derived (apply rr/ords->ring (keyword coord-sys) ords))
         lr (lbs/find-lr ring false)]
     (viz-helper/remove-geometries ["lr"])
     (when lr

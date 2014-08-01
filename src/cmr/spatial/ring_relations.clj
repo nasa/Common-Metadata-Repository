@@ -10,11 +10,33 @@
             [cmr.spatial.arc-segment-intersections :as asi]
             [cmr.spatial.cartesian-ring :as cr]
             [cmr.spatial.point :as p]
-            [cmr.spatial.geodetic-ring :as gr])
+            [cmr.spatial.geodetic-ring :as gr]
+            [clojure.math.combinatorics :as combo])
   (:import cmr.spatial.cartesian_ring.CartesianRing
            cmr.spatial.geodetic_ring.GeodeticRing
            cmr.spatial.point.Point))
 (primitive-math/use-primitive-operators)
+
+(defmulti ring
+  "Creates a new ring in the coordinate system and points."
+  (fn [coordinate-system points]
+    coordinate-system))
+
+(defmethod ring :geodetic
+  [coordinate-system points]
+  (gr/ring points))
+
+(defmethod ring :cartesian
+  [coordinate-system points]
+  (cr/ring points))
+
+(defn ords->ring
+  "Takes all arguments as coordinates for points, lon1, lat1, lon2, lat2, and creates a ring."
+  [coordinate-system & ords]
+  (ring coordinate-system (apply p/ords->points ords)))
+
+(defn ring->ords [ring]
+  (p/points->ords (:points ring)))
 
 (defprotocol RingFunctions
   "Contains functions on the different ring types"
@@ -23,7 +45,16 @@
     "Returns the line segments or arcs of the ring.")
   (covers-point?
     [ring point]
-    "Returns true if the ring covers the point"))
+    "Returns true if the ring covers the point")
+  (inside-out?
+    [ring]
+    "Returns true if the ring contains an area the opposite of what is allowed.")
+  (coordinate-system
+    [ring]
+    "Returns the coordinate system of the ring.")
+  (invert
+    [ring]
+    "Returns the ring with the points inverted"))
 
 (extend-protocol RingFunctions
   CartesianRing
@@ -33,6 +64,15 @@
   (covers-point?
     [ring point]
     (cr/covers-point? ring point))
+  (inside-out?
+    [ring]
+    (not= :counter-clockwise (cr/course-rotation-direction ring)))
+  (invert
+    [ring]
+    (cr/ring (reverse (:points ring))))
+  (coordinate-system
+    [_]
+    :cartesian)
 
   GeodeticRing
   (lines
@@ -40,7 +80,16 @@
     (:arcs ring))
   (covers-point?
     [ring point]
-    (gr/covers-point? ring point)))
+    (gr/covers-point? ring point))
+  (inside-out?
+    [ring]
+    (gr/contains-both-poles? ring))
+  (invert
+    [ring]
+    (gr/ring (reverse (:points ring))))
+  (coordinate-system
+    [_]
+    :geodetic))
 
 (defn intersects-ring?
   "Returns true if the rings intersect each other."
@@ -121,4 +170,25 @@
                        (for [ls1 lines
                              ls2 mbr-lines]
                          [ls1 ls2]))))))))
+
+(defn self-intersections
+  "Returns the rings self intersections"
+  [ring]
+  (let [lines (lines ring)
+        ;; Finds the indexes of the lines in the list to test intersecting together.
+        ;; Works by finding all combinations and rejecting the lines would be sequential.
+        ;; (The first and second line naturally touch on a shared point for instance.)
+        line-test-indices (filter (fn [[^int n1 ^int n2]]
+                                    (not (or ; Reject sequential indexes
+                                             (= n1 (dec n2))
+                                             ;; Reject the last line combined with first line.
+                                             (and
+                                               (= n1 0)
+                                               (= n2 (dec (count lines)))))))
+                                  (combo/combinations (range (count lines)) 2))]
+    (mapcat (fn [[n1 n2]]
+              (let [a1 (nth lines n1)
+                    a2 (nth lines n2)]
+                (asi/intersections a1 a2)))
+            line-test-indices)))
 

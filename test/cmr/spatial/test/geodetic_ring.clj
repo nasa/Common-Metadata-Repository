@@ -19,17 +19,17 @@
 (deftest ring-covers-br-test
   (testing "concave ring"
     (is (not (rr/covers-br? (d/calculate-derived
-                             (gr/ords->ring -0.11,2.79,2.53,1.44,-0.01,3.79,-2.2,2.28,-0.11,2.79))
-                           (m/mbr -0.7921474469772579
-                                  3.2516294093733533
-                                  0.5732165527343749
-                                  2.7123539880645877))))))
+                              (rr/ords->ring :geodetic -0.11,2.79,2.53,1.44,-0.01,3.79,-2.2,2.28,-0.11,2.79))
+                            (m/mbr -0.7921474469772579
+                                   3.2516294093733533
+                                   0.5732165527343749
+                                   2.7123539880645877))))))
 
 (deftest ring-validation-test
   (testing "valid ring"
-    (is (nil? (seq (v/validate (gr/ords->ring 0 0, 1 0, 0 1, 0 0))))))
+    (is (nil? (seq (v/validate (rr/ords->ring :geodetic 0 0, 1 0, 0 1, 0 0))))))
   (testing "invalid rings"
-    (are [ords msgs] (= (seq msgs) (seq (v/validate (apply gr/ords->ring ords))))
+    (are [ords msgs] (= (seq msgs) (seq (v/validate (apply rr/ords->ring :geodetic ords))))
 
          ;; invalid point
          [0 0, 181 0, 0 1, 0 0]
@@ -97,7 +97,7 @@
           :let [north-pole (if (nil? north-pole) false north-pole)
                 south-pole (if (nil? south-pole) false south-pole)]]
     (testing (str "Ring Example " ring-name)
-      (let [ring (apply gr/ords->ring ords)
+      (let [ring (apply rr/ords->ring :geodetic ords)
             ring (d/calculate-derived ring)]
         (is (= bounds (:mbr ring)))
 
@@ -105,10 +105,10 @@
         (is (= south-pole (:contains-south-pole ring)))
 
         (doseq [point (apply p/ords->points internal-points)]
-            (is (gr/covers-point? ring point) (str "Ring should cover point " point)))
+          (is (gr/covers-point? ring point) (str "Ring should cover point " point)))
 
         (doseq [point (apply p/ords->points external-points)]
-            (is (not (gr/covers-point? ring point)) (str "Ring should not cover point " point)))
+          (is (not (gr/covers-point? ring point)) (str "Ring should not cover point " point)))
 
         (is (rr/intersects-ring? ring ring) "Ring should intersect itself")))))
 

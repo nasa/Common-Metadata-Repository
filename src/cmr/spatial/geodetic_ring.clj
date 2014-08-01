@@ -6,10 +6,7 @@
             [cmr.spatial.mbr :as mbr]
             [cmr.spatial.conversion :as c]
             [cmr.spatial.arc :as a]
-            [cmr.spatial.derived :as d]
-            [clojure.math.combinatorics :as combo]
-            [cmr.spatial.validation :as v]
-            [cmr.spatial.messages :as msg])
+            [cmr.spatial.derived :as d])
   (:import cmr.spatial.arc.Arc))
 (primitive-math/use-primitive-operators)
 
@@ -84,27 +81,6 @@
                 ;; if the point itself is one of the intersections then the ring covers it
                 (intersections point)))))))
 
-(defn self-intersections
-  "Returns the rings self intersections"
-  [ring]
-  (let [arcs (:arcs ring)
-        ;; Finds the indexes of the arcs in the list to test intersecting together.
-        ;; Works by finding all combinations and rejecting the arcs would be sequential.
-        ;; (The first and second arc naturally touch on a shared point for instance.)
-        arc-test-indices (filter (fn [[^int n1 ^int n2]]
-                                   (not (or ; Reject sequential indexes
-                                            (= n1 (dec n2))
-                                            ;; Reject the last arc combined with first arc.
-                                            (and
-                                              (= n1 0)
-                                              (= n2 (dec (count arcs)))))))
-                                 (combo/combinations (range (count arcs)) 2))]
-    (mapcat (fn [[n1 n2]]
-              (let [a1 (nth arcs n1)
-                    a2 (nth arcs n2)]
-                (a/intersections a1 a2)))
-            arc-test-indices)))
-
 
 (defn- arcs->course-rotation-direction
   "Calculates the rotation direction of the arcs of a ring. Will be one of :clockwise,
@@ -144,11 +120,6 @@
   [ring]
   (and (:contains-north-pole ring)
        (:contains-south-pole ring)))
-
-(defn invert
-  "Returns the inverse of the ring. It will cover the exact opposite area on the earth."
-  [r]
-  (ring (reverse (:points r))))
 
 (defn ring->arcs
   "Determines the arcs from the points in the ring."
@@ -228,93 +199,4 @@
             (assoc ring :mbr (ring->mbr ring))
             (assoc ring :external-points (ring->external-points ring))))))
 
-
-(defn ords->ring
-  "Takes all arguments as coordinates for points, lon1, lat1, lon2, lat2, and creates a ring."
-  [& ords]
-  (ring (apply p/ords->points ords)))
-
-(defn ring->ords [ring]
-  (p/points->ords (:points ring)))
-
-(defn- ring-points-validation
-  "Validates the individual points of the ring."
-  [{:keys [points]}]
-  (mapcat (fn [[i point]]
-            (when-let [errors (v/validate point)]
-              (map (partial msg/ring-point-invalid i) errors)))
-          (map-indexed vector points)))
-
-(defn- ring-closed-validation
-  "Validates the ring is closed (last point = first point)"
-  [{:keys [points]}]
-  (when-not (= (first points) (last points))
-    [(msg/ring-not-closed)]))
-
-(defn- points->rounded-point-map
-  "Combines together points that round to the same value. Takes a sequence of points and returns a
-  map of rounded points to list of index, point pairs."
-  [points]
-  (reduce (fn [m [i point]]
-            (let [rounded (p/round-point 8 point)]
-              (update-in m [rounded] conj [i point])))
-          {}
-          (map-indexed vector points)))
-
-(defn- ring-duplicate-point-validation
-  "Validates that the ring does not contain any duplicate or very close together points."
-  [{:keys [points]}]
-
-  ;; Create a map of the rounded points to list of points that round that same value. If any of the
-  ;; rounded points has more than other point in the list then they are duplicates.
-  (let [rounded-point-map (points->rounded-point-map (drop-last points))
-        duplicate-point-lists (->> rounded-point-map
-                                   vals
-                                   (filter #(> (count %) 1))
-                                   ;; reversing lists of duplicate points to put points in indexed order
-                                   ;; for more pleasing messages.
-                                   (map reverse))]
-    (map msg/ring-duplicate-points duplicate-point-lists)))
-
-(defn- ring-consecutive-antipodal-points-validation
-  "Validates that the ring does not have any consecutive antipodal points"
-  [{:keys [points]}]
-
-  (let [indexed-points (map-indexed vector points)
-        indexed-point-pairs (partition 2 1 indexed-points)
-        antipodal-indexed-point-pairs (filter (fn [[[_ p1] [_ p2]]]
-                                                (p/antipodal? p1 p2))
-                                              indexed-point-pairs)]
-    (map (partial apply msg/ring-consecutive-antipodal-points)
-         antipodal-indexed-point-pairs)))
-
-(defn- ring-self-intersection-validation
-  "Validates that the ring does not intersect itself"
-  [ring]
-  (when-let [intersections (seq (self-intersections ring))]
-    [(msg/ring-self-intersections intersections)]))
-
-(defn- ring-pole-validation
-  "Validates that the ring does not contain both poles"
-  [ring]
-  (let [ring (ring->pole-containment ring)]
-    (when (and (:contains-south-pole ring) (:contains-north-pole ring))
-      [(msg/ring-contains-both-poles)])))
-
-(extend-protocol v/SpatialValidation
-  cmr.spatial.geodetic_ring.GeodeticRing
-  (validate
-    [ring]
-    ;; Certain validations can only be run if earlier validations passed. Validations are grouped
-    ;; here so that subsequent validations won't run if earlier validations fail.
-
-    (or (seq (ring-points-validation ring))
-        ;; basic ring validation
-        (or (seq (concat (ring-closed-validation ring)
-                         (ring-duplicate-point-validation ring)
-                         (ring-consecutive-antipodal-points-validation ring)))
-            ;; Advanced ring validation
-            (let [ring (assoc ring :arcs (ring->arcs ring))]
-              (or (seq (ring-self-intersection-validation ring))
-                  (seq (ring-pole-validation ring))))))))
 

@@ -122,3 +122,9 @@
   (intersects-point?
     [arc point]
     (a/point-on-arc? arc point)))
+
+
+(defn intersects?
+  "Returns true if line1 intersects line2"
+  [line1 line2]
+  (seq (intersections line1 line2)))

@@ -16,6 +16,8 @@
 
 (defrecord Polygon
   [
+   coordinate-system
+
    rings
 
    ;; Derived fields
@@ -24,8 +26,8 @@
 
 (defn polygon
   "Creates a polygon"
-  [rings]
-  (->Polygon (vec rings) nil))
+  [coord-sys rings]
+  (->Polygon coord-sys (vec rings) nil))
 
 (defn boundary
   "Returns the outer boundary"

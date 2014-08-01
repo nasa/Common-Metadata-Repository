@@ -113,9 +113,10 @@
   LineSegment
   (cmr-spatial->viz-geoms
     [ls]
-    (let [{:keys [point1 point2]} ls]
+    (let [{:keys [point1 point2 options]} ls]
       [{:type :cartesian-ring
-        :ords (p/points->ords [point1 point2])}]))
+        :ords (p/points->ords [point1 point2])
+        :options options}]))
 
   CartesianRing
   (cmr-spatial->viz-geoms

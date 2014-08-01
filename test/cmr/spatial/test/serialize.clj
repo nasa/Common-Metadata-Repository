@@ -15,9 +15,11 @@
             [cmr.spatial.polygon :as poly]
             [cmr.spatial.line :as l]
             [cmr.spatial.geodetic-ring :as gr]
+            [cmr.spatial.cartesian-ring :as cr]
             [cmr.spatial.test.generators :as sgen]
             [cmr.spatial.serialize :as srl])
   (:import cmr.spatial.geodetic_ring.GeodeticRing
+           cmr.spatial.cartesian_ring.CartesianRing
            cmr.spatial.polygon.Polygon
            cmr.spatial.point.Point
            cmr.spatial.mbr.Mbr
@@ -46,9 +48,13 @@
   [ring]
   (gr/ring (map (partial p/round-point 7) (:points ring))))
 
+(defmethod round-shape CartesianRing
+  [ring]
+  (cr/ring (map (partial p/round-point 7) (:points ring))))
+
 (defmethod round-shape Polygon
   [polygon]
-  (poly/polygon (map round-shape (:rings polygon))))
+  (poly/polygon (:coordinate-system polygon) (map round-shape (:rings polygon))))
 
 (defspec ordinate-to-stored-test
   (for-all [d (gen/fmap double gen/ratio)]
@@ -64,10 +70,11 @@
   (doseq [shape shapes]
     (sgen/print-failed-polygon type shape)))
 
-(defspec ords-serialize-test {:times 100 :printer-fn print-failed-shapes}
+(defspec ords-serialize-test {:times 100}
   (for-all [shapes (gen/fmap #(map round-shape %)
                              (gen/vector sgen/geometries 1 5))]
     (let [ords-map (srl/shapes->ords-info-map shapes)
           {:keys [ords ords-info]} ords-map
           parsed-shapes (srl/ords-info->shapes ords-info ords)]
       (= shapes parsed-shapes))))
+

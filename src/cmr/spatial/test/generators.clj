@@ -14,10 +14,14 @@
             [cmr.spatial.arc :as a]
             [cmr.spatial.derived :as d]
             [cmr.spatial.segment :as s]
+            [cmr.spatial.arc-segment-intersections :as asi]
             [clojure.math.combinatorics :as combo]
             [cmr.spatial.dev.viz-helper :as viz-helper]))
 
 (primitive-math/use-primitive-operators)
+
+(def coordinate-system
+  (gen/elements [:geodetic #_:cartesian]))
 
 (def vectors
   (let [vector-num (ext-gen/choose-double -10 10)]
@@ -100,20 +104,27 @@
 (def lines
   (ext-gen/model-gen l/line (gen/bind (gen/choose 2 20) non-antipodal-points)))
 
-(def rings-invalid
+(defn rings-invalid
   "Generates rings that are not valid but could be used for testing where validity is not important"
+  [coord-sys]
   (gen/fmap
     (fn [points]
-      (gr/ring (concat points [(first points)])))
+      (rr/ring coord-sys (concat points [(first points)])))
     (gen/bind (gen/choose 3 10) non-antipodal-points)))
 
 (def polygons-invalid
   "Generates polygons that are not valid but could be used for testing where validity is not important"
-  (ext-gen/model-gen poly/polygon (gen/vector rings-invalid 1 4)))
+  (gen/fmap (partial apply poly/polygon)
+            (gen/bind coordinate-system
+                      (fn [coord-sys]
+                        (gen/tuple (gen/return coord-sys) (gen/vector (rings-invalid coord-sys) 1 4))))))
 
 (def polygons-without-holes
   "Generates polygons with only an outer ring. The polygons will not be valid."
-  (ext-gen/model-gen poly/polygon (gen/tuple rings-invalid)))
+  (gen/fmap (partial apply poly/polygon)
+            (gen/bind coordinate-system
+                      (fn [coord-sys]
+                        (gen/tuple (gen/return coord-sys) (gen/tuple (rings-invalid coord-sys)))))))
 
 (def geometries
   "A generator returning individual points, bounding rectangles, lines, and polygons.
@@ -123,30 +134,42 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Ring generation functions
 
-(defn reverse-if-both-poles
-  "Takes a ring and reverses it if it contains both poles"
+(defn reverse-if-inside-out
+  "Takes a ring and reverses it if it is inside out."
   [ring]
   (let [ring (d/calculate-derived ring)]
-    (if (gr/contains-both-poles? ring)
-      (d/calculate-derived (gr/invert ring))
+    (if (rr/inside-out? ring)
+      (d/calculate-derived (rr/invert ring))
       ring)))
+
+(defmulti valid-consecutive-points?
+  "Returns true if the points are valid consecutive points in the given coordinate system."
+  (fn [coord-sys p1 p2]
+    coord-sys))
+
+(defmethod valid-consecutive-points? :geodetic
+  [coord-sys p1 p2]
+  (and (not= p1 p2)
+       (not (p/antipodal? p1 p2))
+       (< (p/angular-distance p1 p2) 180.0)))
+
+(defmethod valid-consecutive-points? :cartesian
+  [coord-sys p1 p2]
+  (not= p1 p2))
 
 (defn insert-point-at
   "Inserts a point at the specified location in the ring if the point to be added is not equal to
   or antipodal to the points it's between. Returns nil if it would be invalid"
   [ring point n]
-  (let [valid-consecutive (fn [p1 p2]
-                            (and (not= p1 p2)
-                                 (not (p/antipodal? p1 p2))
-                                 (< (p/angular-distance p1 p2) 180.0)))
+  (let [coord-sys (rr/coordinate-system ring)
         points (drop-last (:points ring))
         front (take n points)
         tail (drop n points)
         points (concat front [point] tail)]
-    (when (and (valid-consecutive point (last front))
-               (valid-consecutive point (or (first tail)
-                                            (first points))))
-      (gr/ring (concat points [(first points)])))))
+    (when (and (valid-consecutive-points? coord-sys point (last front))
+               (valid-consecutive-points? coord-sys point (or (first tail)
+                                                              (first points))))
+      (rr/ring coord-sys (concat points [(first points)])))))
 
 (defn add-point-to-ring
   "Tries to add the point to the ring. If it can't returns nil"
@@ -160,9 +183,9 @@
           nil
           (if-let [new-ring (insert-point-at ring point pos)]
             (let [new-ring (d/calculate-derived new-ring)
-                  self-intersections (gr/self-intersections new-ring)]
+                  self-intersections (rr/self-intersections new-ring)]
               (if (and (empty? self-intersections)
-                       (not (gr/contains-both-poles? new-ring)))
+                       (not (rr/inside-out? new-ring)))
                 new-ring
                 (recur (inc pos))))
             (recur (inc pos))))))))
@@ -171,9 +194,9 @@
   "Generator for 3 point rings. This is used as a base for which to add additional points.
   Takes the point generator function to use for generating points. The function passed in should take
   the number of points requested. Defaults to non-antipodal-points"
-  ([]
-   (rings-3-point non-antipodal-points))
-  ([points-gen-fn]
+  ([coord-sys]
+   (rings-3-point coord-sys non-antipodal-points))
+  ([coord-sys points-gen-fn]
    (gen/such-that (fn [{:keys [mbr]}]
                     ;; Limit it to rings with MBRs covering less than 99% of the world
                     ;; The reason I'm doing this is because if the whole world is covered except very close
@@ -182,45 +205,48 @@
                     (< (m/percent-covering-world mbr) 99.999))
                   (gen/fmap (fn [points]
                               (let [points (concat points [(first points)])]
-                                (reverse-if-both-poles (gr/ring points))))
+                                (reverse-if-inside-out (rr/ring coord-sys points))))
                             (points-gen-fn 3)))))
 
 (defn rings
   "Generator for rings of 3 to 6 points. Takes the point generator function to use for generating
   points. The function passed in should take the number of points requested. Defaults to
   non-antipodal-points"
-  ([]
-   (rings non-antipodal-points))
-  ([points-gen-fn]
+  ([coord-sys]
+   (rings coord-sys non-antipodal-points))
+  ([coord-sys points-gen-fn]
    (gen/fmap
      (fn [[ring new-points]]
        (reduce (fn [ring point]
                  (if-let [new-ring (add-point-to-ring ring point)]
-                   (reverse-if-both-poles new-ring)
+                   (reverse-if-inside-out new-ring)
                    ring))
                ring
                new-points))
-     (gen/tuple (rings-3-point points-gen-fn) (points-gen-fn 3)))))
+     (gen/tuple (rings-3-point coord-sys points-gen-fn) (points-gen-fn 3)))))
 
 (defn print-failed-ring
   "A printer function that can be used with the defspec defined in cmr.common to print out a failed
   ring."
   [type ring]
-  ;; Print out the ring in a way that it can be easily copied to the test.
-  (println (pr-str (concat `(gr/ords->ring) (gr/ring->ords ring))))
+  (let [coord-sys (rr/coordinate-system ring)]
+    ;; Print out the ring in a way that it can be easily copied to the test.
+    (println (pr-str (concat `(rr/ords->ring ~coord-sys) (rr/ring->ords ring))))
 
-  (println (str "http://testbed.echo.nasa.gov/spatial-viz/ring_self_intersection?test_point_ordinates=2,2"
-                "&ring_ordinates="
-                (str/join "," (gr/ring->ords ring)))))
+    (when (= coord-sys :geodetic)
+      (println (str "http://testbed.echo.nasa.gov/spatial-viz/ring_self_intersection?test_point_ordinates=2,2"
+                    "&ring_ordinates="
+                    (str/join "," (rr/ring->ords ring)))))))
 
 (defn print-failed-polygon
   "A printer function that can be used with the defspec defined in cmr.common to print out a failed
   polygon"
   [type polygon]
   ;; Print out the polygon in a way that it can be easily copied to the test.
-  (println (pr-str (concat `(poly/polygon)
+  (println (pr-str (concat `(poly/polygon ~(:coordinate-system polygon))
                            [(vec (map (fn [ring]
-                                        (concat `(gr/ords->ring) (gr/ring->ords ring)))
+                                        (concat `(rr/ords->ring ~(rr/coordinate-system ring))
+                                                (rr/ring->ords ring)))
                                       (:rings polygon)))]))))
 
 (defn points-in-mbr
@@ -258,17 +284,16 @@
   points to build valid internal rings. Then each ring is only included if none of the arcs
   of the ring intersect."
   [ring]
-  (let [{ring-arcs :arcs
-         contains-np :contains-north-pole
+  (let [{contains-np :contains-north-pole
          contains-sp :contains-south-pole} ring]
     (gen/such-that
       (fn [potential-ring]
         (and
-          ;; Checks that arcs do not intersect
+          ;; Checks that lines do not intersect
           (not-any? (fn [a1]
-                      (some (partial a/intersects? a1) ring-arcs))
-                    (:arcs potential-ring))
-          ;; and that pole containment is allowed
+                      (some (partial asi/intersects? a1) (rr/lines ring)))
+                    (rr/lines potential-ring))
+          ;; and that pole containment matches
           (or (and (not contains-np)
                    (not contains-sp)
                    (not (:contains-north-pole potential-ring))
@@ -279,12 +304,13 @@
               (and contains-sp
                    (not (:contains-south-pole potential-ring))))))
       (rings
+        (rr/coordinate-system ring)
         ;; The function passed in builds sets of points that are non-antipodal and in the ring.
         (fn [num-points]
           (non-antipodal-points
             num-points
             ;; points in ring
-            (gen/such-that (partial gr/covers-point? ring)
+            (gen/such-that (partial rr/covers-point? ring)
                            (points-in-mbr (:mbr ring))
                            ;; Number of points such-that will try in a row before giving up.
                            500))))
@@ -293,28 +319,31 @@
       ;; before giving up.
       1000)))
 
+
 (def polygons-with-holes
   "Generator for polygons with holes"
-  (gen/fmap (fn [[outer-boundary potential-holes]]
-              ;; The holes can go in the polygon if they don't intersect any of the other holes
-              (let [[h1 h2 h3] potential-holes
-                    ;; h2 can be used if it doesn't intersect h1
-                    h2-valid? (not (rr/intersects-ring? h1 h2))
-                    ;; h3 can be used if it doesn't intersect h1 or h2 (if h2 is valid)
-                    h3-valid? (and (not (rr/intersects-ring? h1 h3))
-                                   (or (not h2-valid?)
-                                       (not (rr/intersects-ring? h2 h3))))
-                    holes (cond
-                            (and h2-valid? h3-valid?) [h1 h2 h3]
-                            h2-valid? [h1 h2]
-                            h3-valid? [h1 h3]
-                            :else [h1])]
-                (poly/polygon (cons outer-boundary holes))))
-            ;; Generates tuples of outer boundaries along with holes that are in the boundary.
-            (gen/bind
-              (rings)
-              (fn [outer-boundary]
-                (gen/tuple (gen/return outer-boundary)
-                           ;; potential holes
-                           (gen/vector (rings-in-ring outer-boundary) 3))))))
+  (gen/bind coordinate-system
+            (fn [coord-sys]
+              (gen/fmap (fn [[outer-boundary potential-holes]]
+                          ;; The holes can go in the polygon if they don't intersect any of the other holes
+                          (let [[h1 h2 h3] potential-holes
+                                ;; h2 can be used if it doesn't intersect h1
+                                h2-valid? (not (rr/intersects-ring? h1 h2))
+                                ;; h3 can be used if it doesn't intersect h1 or h2 (if h2 is valid)
+                                h3-valid? (and (not (rr/intersects-ring? h1 h3))
+                                               (or (not h2-valid?)
+                                                   (not (rr/intersects-ring? h2 h3))))
+                                holes (cond
+                                        (and h2-valid? h3-valid?) [h1 h2 h3]
+                                        h2-valid? [h1 h2]
+                                        h3-valid? [h1 h3]
+                                        :else [h1])]
+                            (poly/polygon coord-sys (cons outer-boundary holes))))
+                        ;; Generates tuples of outer boundaries along with holes that are in the boundary.
+                        (gen/bind
+                          (rings coord-sys)
+                          (fn [outer-boundary]
+                            (gen/tuple (gen/return outer-boundary)
+                                       ;; potential holes
+                                       (gen/vector (rings-in-ring outer-boundary) 3))))))))
 

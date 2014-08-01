@@ -66,7 +66,7 @@
   "Creates a new ring with the given points. If the other fields of a ring are needed. The
   calculate-derived function should be used to populate it."
   [points]
-  (->CartesianRing points nil nil nil nil))
+  (->CartesianRing points nil nil nil))
 
 (defn ring->line-segments
   "Determines the line-segments from the points in the ring."
@@ -81,6 +81,28 @@
       (let [line-segments (ring->line-segments ring)]
         (->> line-segments (map :mbr) (reduce #(mbr/union %1 %2 false))))))
 
+(defn course-rotation-direction
+  "Calculates the rotation direction of the arcs of a ring. Will be one of :clockwise,
+  :counter_clockwise, or :none.
+
+  It works by calculating the number of degrees of turning that the ring does. It gets course from
+  each line segment. It determines how many degrees each turn is. Turns to the left,
+  counter clockwise, are positive. Turns to the right, clockwise, are negative. This adds all of the
+  differences together to get the net bearing change while traveling around the ring. A normal
+  counter clockwise ring will be approximately 360 degrees of turn. A clockwise ring will be -360.
+  A ring around a pole will be approximately 0 net degrees turn. If a ring crosses or has a point on
+  a single pole then the sum will be -180 or 180. If a ring crosses both poles then the sum will be
+  0."
+  [ring]
+  (let [courses (loop [courses (transient []) segments (:line-segments ring)]
+                  (if (empty? segments)
+                    (persistent! courses)
+                    (let [ls (first segments)]
+                      (recur (conj! courses (s/course ls)) (rest segments)))))
+        ;; Add the first turn angle on again to complete the turn
+        courses (conj courses (first courses))]
+    (rotation-direction courses)))
+
 (extend-protocol d/DerivedCalculator
   cmr.spatial.cartesian_ring.CartesianRing
   (calculate-derived
@@ -91,12 +113,3 @@
             (assoc ring :point-set (set (:points ring)))
             (assoc ring :line-segments (ring->line-segments ring))
             (assoc ring :mbr (ring->mbr ring))))))
-
-(defn ords->ring
-  "Takes all arguments as coordinates for points, lon1, lat1, lon2, lat2, and creates a ring."
-  [& ords]
-  (ring (apply p/ords->points ords)))
-
-(defn ring->ords [ring]
-  (p/points->ords (:points ring)))
-

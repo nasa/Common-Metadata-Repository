@@ -13,9 +13,11 @@
             [pjstadig.assertions :as pj]
             [cmr.common.util :as util]
             [cmr.spatial.polygon :as poly]
-            [cmr.spatial.relations :as relations])
+            [cmr.spatial.relations :as relations]
+            [cmr.spatial.ring-relations :as rr])
   (:import cmr.spatial.mbr.Mbr
            cmr.spatial.geodetic_ring.GeodeticRing
+           cmr.spatial.cartesian_ring.CartesianRing
            cmr.spatial.polygon.Polygon))
 (primitive-math/use-primitive-operators)
 
@@ -82,14 +84,15 @@
   "Converts a ring into a series of smaller triangles. Triangles do not necessarily represent
   the area of the ring."
   [ring]
-  (let [points (:points ring)]
+  (let [points (:points ring)
+        coord-sys (rr/coordinate-system ring)]
     (if (= 4 (count points))
       ;; Already a triangle
       [ring]
       (map (fn [[p1 p2 p3]]
-             (let [tri (d/calculate-derived (gr/ring [p1 p2 p3 p1]))]
-               (if (gr/contains-both-poles? tri)
-                 (d/calculate-derived (gr/invert tri))
+             (let [tri (d/calculate-derived (rr/ring coord-sys [p1 p2 p3 p1]))]
+               (if (rr/inside-out? tri)
+                 (d/calculate-derived (rr/invert tri))
                  tri)))
            ;; If contains two poles reverse it
            (partition 3 1 (concat points [(second points)]))))))

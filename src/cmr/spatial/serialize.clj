@@ -13,6 +13,7 @@
     * size - the number of ordinates in the ords list this shape uses."
   (:require [cmr.common.services.errors :as errors]
             [cmr.spatial.geodetic-ring :as gr]
+            [cmr.spatial.ring-relations :as rr]
             [cmr.spatial.math :refer :all]
             [cmr.spatial.polygon :as poly]
             [cmr.spatial.point :as p]
@@ -85,16 +86,18 @@
   cmr.spatial.polygon.Polygon
 
   (shape->stored-ords
-    [{:keys [rings]}]
+    [{:keys [coordinate-system rings]}]
     ;; TODO reduce size of stored rings and polygons by dropping the duplicate last two ordinates of a ring
-    (concat
-      [{:type :polygon
-        :ords (map ordinate->stored (gr/ring->ords (first rings)))}]
-      ;; holes
-      (map (fn [r]
-             {:type :hole
-              :ords (map ordinate->stored (gr/ring->ords r))})
-           (drop 1 rings))))
+    (let [polygon-type (keyword (str (name coordinate-system) "-polygon"))
+          hole-type (keyword (str (name coordinate-system) "-hole"))]
+      (concat
+        [{:type polygon-type
+          :ords (map ordinate->stored (rr/ring->ords (first rings)))}]
+        ;; holes
+        (map (fn [r]
+               {:type hole-type
+                :ords (map ordinate->stored (rr/ring->ords r))})
+             (drop 1 rings)))))
 
   (shape->mbr
     [{:keys [mbr]}]
@@ -160,13 +163,21 @@
   (fn [type ords]
     type))
 
-(defmethod stored-ords->shape :polygon
+(defmethod stored-ords->shape :geodetic-polygon
   [type ords]
-  (poly/polygon [(apply gr/ords->ring (map stored->ordinate ords))]))
+  (poly/polygon :geodetic [(apply rr/ords->ring :geodetic (map stored->ordinate ords))]))
 
-(defmethod stored-ords->shape :hole
+(defmethod stored-ords->shape :cartesian-polygon
   [type ords]
-  (apply gr/ords->ring (map stored->ordinate ords)))
+  (poly/polygon :cartesian [(apply rr/ords->ring :cartesian (map stored->ordinate ords))]))
+
+(defmethod stored-ords->shape :geodetic-hole
+  [type ords]
+  (apply rr/ords->ring :geodetic (map stored->ordinate ords)))
+
+(defmethod stored-ords->shape :cartesian-hole
+  [type ords]
+  (apply rr/ords->ring :cartesian (map stored->ordinate ords)))
 
 (defmethod stored-ords->shape :br
   [type ords]
@@ -182,12 +193,14 @@
 
 (def shape-type->integer
   "Converts a shape type into an integer for storage"
-  {:polygon 1
+  {:geodetic-polygon 1
    ;; A hole will immediately follow the shape which has the hole
-   :hole 2
+   :geodetic-hole 2
    :br 3
    :point 4
-   :line 5})
+   :line 5
+   :cartesian-polygon 6
+   :cartesian-hole 7})
 
 (def integer->shape-type
   "Map of shape type integers to the equivalent keyword type"
@@ -217,7 +230,7 @@
             shape-ords (take size ords)
             shape (stored-ords->shape type shape-ords)
             ;; If shape is a hole add it to the last shape
-            shapes (if (= type :hole)
+            shapes (if (or (= type :geodetic-hole) (= type :cartesian-hole))
                      (update-in shapes [(dec (count shapes)) :rings] conj shape)
                      (conj shapes shape))]
         (recur (rest ords-info-pairs)

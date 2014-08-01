@@ -57,7 +57,7 @@
 
 (defn no-self-intersections
   [ring]
-  (empty? (gr/self-intersections ring)))
+  (empty? (rr/self-intersections ring)))
 
 (defmacro vars-map
   "Takes a list of vars and creates a map that uses the keyword version of the var name to the var value"
@@ -99,12 +99,12 @@
 
 ;; Verifies that the three point rings have some fundamental things correct
 (defspec rings-3-point-test {:times 100 :printer-fn print-failure}
-  (for-all [ring (sgen/rings-3-point)]
+  (for-all [ring (gen/bind sgen/coordinate-system sgen/rings-3-point)]
     (let [failed-tests (test-ring ring)]
       (empty? failed-tests))))
 
 (defspec rings-generator-test {:times 100 :printer-fn print-failure}
-  (for-all [ring (sgen/rings)]
+  (for-all [ring (gen/bind sgen/coordinate-system sgen/rings)]
     (let [failed-tests (test-ring ring)]
       (and (empty? failed-tests)
            (empty? (v/validate ring))))))

@@ -39,7 +39,6 @@
    ^Mbr mbr
    ])
 
-
 (defn line-segment
   "Creates a new line segment"
   [^Point p1 ^Point p2]
@@ -85,6 +84,26 @@
   (let [^Point p1 (.point1 ls)
         ^Point p2 (.point2 ls)]
     (= (.lat p1) (.lat p2))))
+
+(defn course
+  "Returns the compass heading along the line"
+  [ls]
+  (let [{:keys [point1 point2 m]} ls
+        slope-angle (degrees (atan m))
+        {^double lat1 :lat ^double lon1 :lon} point1
+        {^double lat2 :lat ^double lon2 :lon} point2]
+    (cond
+      (= lon1 lon2)
+      ; a vertical line
+      (if (> lat1 lat2)
+        180.0
+        360.0)
+
+      (> lon1 lon2)
+      (+ 90.0 slope-angle)
+
+      :else ; lon1 < lon2
+      (+ 270.0 slope-angle))))
 
 (defn segment+lon->lat
   "Returns the latitude of the line at the given longitude. Fails with runtime error for vertical lines."
