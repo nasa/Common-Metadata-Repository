@@ -11,10 +11,12 @@
             [cmr.spatial.derived :as d]
             [clojure.math.combinatorics :as combo]
             [pjstadig.assertions :as pj]
+            [cmr.spatial.segment :as s]
             [cmr.common.util :as util]
             [cmr.spatial.polygon :as poly]
             [cmr.spatial.relations :as relations]
-            [cmr.spatial.ring-relations :as rr])
+            [cmr.spatial.ring-relations :as rr]
+            [cmr.spatial.arc-segment-intersections :as asi])
   (:import cmr.spatial.mbr.Mbr
            cmr.spatial.geodetic_ring.GeodeticRing
            cmr.spatial.cartesian_ring.CartesianRing
@@ -70,7 +72,7 @@
     (when (relations/covers-br? shape br) ; Only continue if the seed point is in the shape.
       (lr-search [:north :south :east :west] shape br))))
 
-(defn mbr->vert-dividing-arc
+(defn mbr->vert-dividing-line
   "Returns an arc dividing the MBR in two vertically"
   [^Mbr mbr]
   (let [w (.west mbr)
@@ -78,7 +80,7 @@
         e (.east mbr)
         s (.south mbr)
         mid (mid-lon w e)]
-    (a/arc (p/point mid n) (p/point mid s))))
+    (s/line-segment (p/point mid n) (p/point mid s))))
 
 (defn ring->triangles
   "Converts a ring into a series of smaller triangles. Triangles do not necessarily represent
@@ -102,14 +104,15 @@
   arc to its opposite point."
   [ring]
   (a/midpoint (a/arc (first (:points ring))
-                     (a/midpoint (second (:arcs ring))))))
+                     (a/midpoint (second (rr/lines ring))))))
 
 (defmulti ring->lr-search-points
   "Returns points that may potentially be in the ring to use to search for a LR."
   (fn [ring]
     (let [points (:points ring)]
       (cond
-        (some p/is-pole? points) :on-pole
+        (and (some p/is-pole? points)
+             (= :geodetic (rr/coordinate-system ring))) :on-pole
         :else :default))))
 
 ;; If the ring is on a pole we divide up the ring into triangles and return points inside the triangles.
@@ -117,13 +120,13 @@
   [ring]
   (map triangle->point (ring->triangles ring)))
 
-(defn arc-ring-intersection-points
-  "Returns the intersection points of the arc with the ring to use for finding lr search points
+(defn line-ring-intersection-points
+  "Returns the intersection points of the line with the ring to use for finding lr search points
   Also includes the north and south pole if the ring covers them."
   [arc ring]
   (let [{:keys [mbr contains-north-pole contains-south-pole]} ring
         ;; Find the intersections of the arc through the ring. It will intersect an even number of times.
-        intersections (mapcat (partial a/intersections arc) (:arcs ring))]
+        intersections (mapcat (partial asi/intersections arc) (rr/lines ring))]
     ;; Add pole to intersections if it contains a pole
     (concat intersections
             (when contains-north-pole [p/north-pole])
@@ -140,8 +143,8 @@
 (defmethod ring->lr-search-points :default
   [ring]
   (let [{:keys [mbr]} ring
-        vert-arc (mbr->vert-dividing-arc mbr)
-        intersections (arc-ring-intersection-points vert-arc ring)
+        vert-line (mbr->vert-dividing-line mbr)
+        intersections (line-ring-intersection-points vert-line ring)
 
         ;; Handle cases where the ring mbr is the width of the entire world
         intersections (if (and (= -180.0 (:west mbr))
@@ -149,8 +152,8 @@
                         ;; The vertical arc above will be on the prime meridian. Try the antimeridian as well.
                         (distinct-points
                           (concat intersections
-                                  (arc-ring-intersection-points
-                                    (mbr->vert-dividing-arc (assoc mbr :west 179.0 :east -179.0))
+                                  (line-ring-intersection-points
+                                    (mbr->vert-dividing-line (assoc mbr :west 179.0 :east -179.0))
                                     ring)))
                         (distinct-points intersections))]
 
@@ -177,8 +180,8 @@
       ;; The holes may contain all of the lr search points we would have. We'll find intersections
       ;; through the middle of the MBR and the ring and all the holes. The midpoints of the
       ;; intersections should result in a point that will work.
-      (let [vert-arc (mbr->vert-dividing-arc mbr)
-            intersections (distinct-points (mapcat (partial arc-ring-intersection-points vert-arc)
+      (let [vert-line (mbr->vert-dividing-line mbr)
+            intersections (distinct-points (mapcat (partial line-ring-intersection-points vert-line)
                                                    (:rings polygon)))]
         ;; Between at least 2 of the points there will be a midpoint in the polygon.
         ;; Create a list of test points from midpoints of all combinations of points.
@@ -190,6 +193,10 @@
                        (combo/combinations intersections 2))))))))
 
 (defmethod shape->lr-search-points GeodeticRing
+  [ring]
+  (ring->lr-search-points ring))
+
+(defmethod shape->lr-search-points CartesianRing
   [ring]
   (ring->lr-search-points ring))
 

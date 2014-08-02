@@ -69,7 +69,7 @@
 
 (defspec polygon-encode-decode-test 100
   ;; polygons with a single ring
-  (for-all [shape sgen/polygons-without-holes]
+  (for-all [shape sgen/geodetic-polygons-without-holes]
     (= shape (c/url-decode :polygon (c/url-encode shape)))))
 
 (defspec mbr-encode-decode-test 100

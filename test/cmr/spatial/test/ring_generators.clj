@@ -59,6 +59,10 @@
   [ring]
   (empty? (rr/self-intersections ring)))
 
+(defn not-inside-out
+  [ring]
+  (not (rr/inside-out? ring)))
+
 (defmacro vars-map
   "Takes a list of vars and creates a map that uses the keyword version of the var name to the var value"
   [var-syms]
@@ -67,15 +71,21 @@
 
 (def ring-tests
   "A map of ring test names to functions that perform the test."
-  (vars-map [start-and-end-with-same-point
-             points-unique
-             consecutive-points-not-antipodal
-             contains-1-or-0-poles
-             more-than-one-external-point
-             external-points-are-not-in-ring
-             external-points-are-not-in-mbr
-             mbr-contains-all-points
-             no-self-intersections]))
+  {:geodetic (vars-map [start-and-end-with-same-point
+                        points-unique
+                        consecutive-points-not-antipodal
+                        contains-1-or-0-poles
+                        more-than-one-external-point
+                        external-points-are-not-in-ring
+                        external-points-are-not-in-mbr
+                        mbr-contains-all-points
+                        no-self-intersections])
+   :cartesian (vars-map [start-and-end-with-same-point
+                         points-unique
+                         not-inside-out
+                         mbr-contains-all-points
+                         no-self-intersections])})
+
 
 (defn test-ring
   "Runs the ring through the ring tests. Returns a list of of the tests that failed for the ring"
@@ -85,7 +95,7 @@
               failures
               (conj failures test-fn-name)))
           []
-          ring-tests))
+          (ring-tests (rr/coordinate-system ring))))
 
 (defn print-failure
   [type ring]
@@ -103,12 +113,16 @@
     (let [failed-tests (test-ring ring)]
       (empty? failed-tests))))
 
-(defspec rings-generator-test {:times 100 :printer-fn print-failure}
-  (for-all [ring (gen/bind sgen/coordinate-system sgen/rings)]
+(defspec geodetic-rings-generator-test {:times 100 :printer-fn print-failure}
+  (for-all [ring (sgen/rings :geodetic)]
     (let [failed-tests (test-ring ring)]
       (and (empty? failed-tests)
            (empty? (v/validate ring))))))
 
+(defspec cartesian-rings-generator-test {:times 100 :printer-fn print-failure}
+  (for-all [ring (sgen/rings :cartesian)]
+    (let [failed-tests (test-ring ring)]
+      (empty? failed-tests))))
 
 (defspec polygon-with-holes-generator-test {:times 50}
   (for-all [polygon sgen/polygons-with-holes]

@@ -36,10 +36,16 @@
     (and lr
          (poly/covers-br? polygon lr))))
 
-(defspec simple-polygon-with-holes-has-lr {:times 100 :printer-fn sgen/print-failed-ring}
+(defspec simple-geodetic-polygon-with-holes-has-lr {:times 100 :printer-fn sgen/print-failed-ring}
   (let [boundary (d/calculate-derived (rr/ords->ring :geodetic 0 0, 10 0, 10 10, 0 10, 0 0))]
     (for-all [hole (sgen/rings-in-ring boundary)]
       (let [polygon (d/calculate-derived (poly/polygon :geodetic [boundary hole]))]
+        (polygon-has-valid-lr? polygon)))))
+
+(defspec simple-cartesian-polygon-with-holes-has-lr {:times 100 :printer-fn sgen/print-failed-ring}
+  (let [boundary (d/calculate-derived (rr/ords->ring :cartesian 0 0, 10 0, 10 10, 0 10, 0 0))]
+    (for-all [hole (sgen/rings-in-ring boundary)]
+      (let [polygon (d/calculate-derived (poly/polygon :cartesian [boundary hole]))]
         (polygon-has-valid-lr? polygon)))))
 
 (defspec all-polygons-with-holes-have-lrs {:times 100 :printer-fn sgen/print-failed-polygon}
@@ -86,6 +92,7 @@
                   [(rr/ords->ring :geodetic 0,0, 4,0, 6,5, 2,5, 0,0)
                    (rr/ords->ring :geodetic 4,3.34, 2,3.34, 3,1.67, 4,3.34)]))
 
+
   ;; Polygon with multiple inner rings
 
   (let [ordses [[0,0, 4,0, 6,5, 2.14,4.86, -0.92,4.75, 0,0]
@@ -99,12 +106,6 @@
 
   (def ring (d/calculate-derived
               (first (gen/sample (sgen/rings :geodetic) 1))))
-
-  (viz-helper/add-geometries [ring])
-  (display-draggable-lr-ring ring)
-
-
-  (lbs/find-lr ring)
 
 
   ;; Samples
@@ -243,7 +244,7 @@
   "Callback handler for when the ring is moved. It removes the existing ring and lr and readds it with
   the updated lr."
   [ring-str]
-  (let [[coord-sys ords-str] (str/split #":")
+  (let [[coord-sys ords-str] (str/split ring-str #":")
         ords (map #(Double. ^String %) (str/split ords-str #","))
         ring (d/calculate-derived (apply rr/ords->ring (keyword coord-sys) ords))
         lr (lbs/find-lr ring false)]

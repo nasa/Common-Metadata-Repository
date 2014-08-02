@@ -21,7 +21,7 @@
 (primitive-math/use-primitive-operators)
 
 (def coordinate-system
-  (gen/elements [:geodetic #_:cartesian]))
+  (gen/elements [:geodetic :cartesian]))
 
 (def vectors
   (let [vector-num (ext-gen/choose-double -10 10)]
@@ -119,12 +119,10 @@
                       (fn [coord-sys]
                         (gen/tuple (gen/return coord-sys) (gen/vector (rings-invalid coord-sys) 1 4))))))
 
-(def polygons-without-holes
+(def geodetic-polygons-without-holes
   "Generates polygons with only an outer ring. The polygons will not be valid."
-  (gen/fmap (partial apply poly/polygon)
-            (gen/bind coordinate-system
-                      (fn [coord-sys]
-                        (gen/tuple (gen/return coord-sys) (gen/tuple (rings-invalid coord-sys)))))))
+  (gen/fmap (partial apply poly/polygon :geodetic)
+            (gen/tuple (gen/tuple (rings-invalid :geodetic)))))
 
 (def geometries
   "A generator returning individual points, bounding rectangles, lines, and polygons.
