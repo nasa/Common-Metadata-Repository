@@ -1,28 +1,25 @@
-class window.CartesianPolygon extends Module
+class window.CartesianRing extends Module
   @include GoogleEarthEventEmitter
 
   @DEFAULT_STYLE = {width: 5, color: Map.YELLOW}
 
   # Takes a list of points on the polygon with lon and lat members. The points themselves
   # are not actually displayed
-  # The polygon determines whether it should close itself or not based on whether the first point
-  # matches the last point
   constructor: (@points, options={}) ->
     super()
     @id = options.id
     @hidingPoints = false
     @hidingPoints = options.hidingPoints if options.hidingPoints
 
-    @style = CartesianPolygon.DEFAULT_STYLE
+    @style = CartesianRing.DEFAULT_STYLE
     @style = options.style if options.style
 
     # Determine if the points self close
     # Remove last point if it does
     if @points[0].equals(@points[@points.length - 1])
       @points = @points[0..-2]
-      @closed = true
     else
-      @closed = false
+      throw "Cartesian rings must be closed."
 
     this.addEventListener(p) for p in @points
 
@@ -32,15 +29,11 @@ class window.CartesianPolygon extends Module
   # Returns all the points in the polygon in a new array.
   # Use this instead of the points attribute which won't have the repeated last point
   getPoints: ->
-    if @closed
-      @points.concat(@points[0])
-    else
-      # Create a copy of the points array
-      @points.slice(0)
+    @points.concat(@points[0])
 
   # Converts a string of points lon,lat,lon,lat to a polygon
   @fromOrdinates: (ordinates, options={})->
-    new CartesianPolygon(Point.fromOrdinates(ordinates), options)
+    new CartesianRing(Point.fromOrdinates(ordinates), options)
 
   toOrdinates: ->
     Point.toOrdinates(this.getPoints())

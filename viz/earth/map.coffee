@@ -109,11 +109,11 @@ class window.Map extends Module
                     DraggableRing.fromOrdinates(g.ords, g.options, window.vddSession)
                   else
                     Ring.fromOrdinates(g.ords, g.options)
-                when "cartesian-polygon"
+                when "cartesian-ring"
                   if g.options && g.options.draggable
-                    DraggableCartesianPolygon.fromOrdinates(g.ords, g.options, window.vddSession)
+                    DraggableCartesianRing.fromOrdinates(g.ords, g.options, window.vddSession)
                   else
-                    CartesianPolygon.fromOrdinates(g.ords, g.options)
+                    CartesianRing.fromOrdinates(g.ords, g.options)
                 when "bounding-rectangle"
                   if g.options && g.options.draggable
                     new DraggableBoundingRectangle(g.west, g.north, g.east, g.south, g.options)

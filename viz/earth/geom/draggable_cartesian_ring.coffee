@@ -1,4 +1,4 @@
-class window.DraggableCartesianPolygon extends CartesianPolygon
+class window.DraggableCartesianRing extends CartesianRing
   @include GuiEventEmitter
 
   @MOVE_EVENT = "move_cartesian_polygon"
@@ -20,14 +20,14 @@ class window.DraggableCartesianPolygon extends CartesianPolygon
 
   # Converts a string of points lon,lat,lon,lat to a ring
   @fromOrdinates: (ordinates, options={})->
-    new DraggableCartesianPolygon(DraggablePoint.fromOrdinates(ordinates), options)
+    new DraggableCartesianRing(DraggablePoint.fromOrdinates(ordinates), options)
 
   handleGuiEvent: (event, ge) ->
     if event.type == DraggablePoint.MOVE_EVENT
       this.drawLineString()
-      this.notifyGuiEventListeners(DraggableCartesianPolygon.MOVE_EVENT_CACHED, ge)
+      this.notifyGuiEventListeners(DraggableCartesianRing.MOVE_EVENT_CACHED, ge)
     else if event.type == DraggablePoint.DRAG_FINISH_EVENT
-      this.notifyGuiEventListeners(DraggableCartesianPolygon.DRAG_FINISH_EVENT_CACHED, ge)
+      this.notifyGuiEventListeners(DraggableCartesianRing.DRAG_FINISH_EVENT_CACHED, ge)
       if @callbackFn
         pointStr = this.toOrdinatesString()
         if @id && @id != null
@@ -70,5 +70,5 @@ class window.DraggableCartesianPolygon extends CartesianPolygon
     this.reinitializeArcs(ge)
     this.drawLineString()
 
-    this.notifyGuiEventListeners(DraggableCartesianPolygon.POINT_INSERTED_EVENT_CACHED, ge)
+    this.notifyGuiEventListeners(DraggableCartesianRing.POINT_INSERTED_EVENT_CACHED, ge)
 
