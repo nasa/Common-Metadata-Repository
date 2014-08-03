@@ -3,7 +3,7 @@
             [clojure.tools.namespace.repl :refer (refresh refresh-all)]
             [vdd-core.core :as vdd]
             [earth.driver :as earth-viz]
-            [common.util :as c])
+            [common-viz.util :as c])
   (:use [clojure.test :only [run-all-tests]]
         [clojure.repl]))
 

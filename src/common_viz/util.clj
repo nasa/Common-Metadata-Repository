@@ -1,4 +1,4 @@
-(ns common.util
+(ns common-viz.util
   (:require [vdd-core.core :as vdd]
             [vdd-core.internal.project-viz :as project-viz]
             [coffee-script.core :as coffee]
