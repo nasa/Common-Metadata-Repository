@@ -7,6 +7,7 @@
             [cmr.system-int-test.data2.core :as data]
             [cmr.common.config :as config]
             [earth.driver :as earth-viz]
+            [common-viz.util :as common-viz]
             [vdd-core.core :as vdd])
   (:use [clojure.test :only [run-all-tests]]
         [clojure.repl]
@@ -44,7 +45,7 @@
 (defn reload-coffeescript []
   (do
     (println "Compiling coffeescript")
-    (println (earth-viz/compile-coffeescript (get-in system [:components :vdd-server :config])))
+    (println (common-viz/compile-coffeescript (get-in system [:components :vdd-server :config])))
     (vdd/data->viz {:cmd :reload})))
 
 (info "Custom dev-system user.clj loaded.")
