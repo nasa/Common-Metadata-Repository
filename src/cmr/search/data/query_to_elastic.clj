@@ -41,9 +41,13 @@
 (defn query->elastic
   "Converts a query model into an elastic search query"
   [query]
+
   (let [{:keys [concept-type condition]} query]
     {:filtered {:query (q/match-all)
-                :filter (condition->elastic condition concept-type)}}))
+                :filter (condition->elastic condition concept-type)}}
+    ;; if kwyword exist, construct the function_score part of the query and merge into the final query
+    ;; otherwise return the query
+    ))
 
 (def sort-key-field->elastic-field
   "Submaps by concept type of the sort key fields given by the user to the exact elastic sort field to use.
@@ -113,6 +117,15 @@
     [{:keys [path condition]} concept-type]
     {:nested {:path path
               :filter (condition->elastic condition concept-type)}})
+
+  cmr.search.models.query.TextCondition
+  (condition->elastic
+    [{:keys [field query-str]} concept-type]
+    (let [field (query-field->elastic-field field concept-type)]
+      {:query {:simple_query_string {
+                                     :query query-str
+                                     :analyzer :whitespace
+                                     :fields [field]}}}))
 
   cmr.search.models.query.StringCondition
   (condition->elastic
@@ -200,12 +213,4 @@
   cmr.search.models.query.MatchNoneCondition
   (condition->elastic
     [_ _]
-    {:term {:match_none "none"}})
-
-  cmr.search.models.query.BoostedCondition
-  (condition->elastic
-    [{:keys [field condition boost]} concept-type]
-    ;; only support positive boosting now
-    {:boosting {:positive (condition->elastic condition concept-type)
-                :positive_boost boost}})
-  )
+    {:term {:match_none "none"}}))

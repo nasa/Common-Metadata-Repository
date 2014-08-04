@@ -1,6 +1,7 @@
 (ns cmr.search.services.parameters.converters.keyword
   "Contains functions for converting keyword query parameters to conditions"
-  (:require [cmr.search.models.query :as qm]
+  (:require [clojure.string :as str]
+            [cmr.search.models.query :as qm]
             [cmr.search.services.parameters.conversion :as p]
             [cmr.indexer.data.concepts.keyword :as k]))
 
@@ -36,19 +37,5 @@
 (defmethod p/parameter->condition :keyword
   [concept-type param value options]
   (let [pattern (p/pattern-field? param options)
-        keywords (k/prepare-keyword-field value)]
-    #_(qm/or-conds
-      [(qm/boosted-condition
-         (qm/or-conds
-           [(qm/and-conds
-              (map #(qm/string-condition :entry-title-keyword  % true pattern)
-                   keywords))
-            (qm/or-conds
-              (map #(qm/string-condition :short-name % false pattern)
-                   keywords))])
-         entry-tile-short-name-boost)
-       (qm/boosted-condition
-         (qm/and-conds
-           (map #(qm/string-condition :summary-keyword % true pattern)
-                keywords))
-         summary-boost)])))
+        keywords (str/join " " (k/prepare-keyword-field value))]
+    (qm/text-condition :keyword keywords)))

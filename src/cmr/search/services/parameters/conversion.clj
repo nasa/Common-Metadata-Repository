@@ -7,7 +7,8 @@
             [cmr.common.date-time-parser :as dt-parser]
             [cmr.common.util :as u]
             [cmr.search.services.parameters.legacy-parameters :as lp]
-            [cmr.common.concepts :as cc]))
+            [cmr.common.concepts :as cc]
+            [cmr.indexer.data.concepts.keyword :as k]))
 
 (def nrt-aliases
   ["near_real_time","nrt", "NRT", "near real time","near-real time","near-real-time","near real-time"])
@@ -266,6 +267,7 @@
                    :page-num page-num
                    :pretty pretty
                    :condition (qm/and-conds conditions)
+                   :keywords (k/prepare-keyword-field (:keyword params))
                    :sort-keys sort-keys
                    :result-format result-format})))))
 

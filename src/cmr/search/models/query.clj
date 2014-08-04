@@ -52,6 +52,16 @@
    condition
    ])
 
+;; whitespace analyzed text query
+(defrecord TextCondition
+  [
+   ;; the field being searched
+   field
+
+   ;; the query string
+   query-str
+   ])
+
 (defrecord StringCondition
   [
    ;; The field being searched.
@@ -270,14 +280,14 @@
   and root condition. If root condition is not provided it matches everything.
   If page-size, page-num, or result-format are not specified then they are given default values."
   [params]
-  (let [{:keys [concept-type page-size page-num condition sort-keys result-format pretty]} params
+  (let [{:keys [concept-type page-size page-num condition keywords sort-keys result-format pretty]} params
         page-size (or page-size default-page-size)
         page-num (or page-num default-page-num)
         condition (or condition (->MatchAllCondition))
         sort-keys (or sort-keys (default-sort-keys concept-type))
         result-format (or result-format (default-result-format concept-type))
         pretty (or pretty false)]
-    (->Query concept-type condition page-size page-num sort-keys result-format pretty)))
+    (->Query concept-type condition page-size page-num sort-keys result-format pretty keywords)))
 
 (defn numeric-value-condition
   "Creates a NumericValueCondition"
@@ -330,6 +340,10 @@
   "Combines conditions in an OR condition."
   [conditions]
   (group-conds :or conditions))
+
+(defn text-condition
+  [field query-str]
+  (->TextCondition field query-str))
 
 (defn string-condition
   ([field value]
