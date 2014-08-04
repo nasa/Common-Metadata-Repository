@@ -177,7 +177,7 @@
                                     :associated-difs.lowercase string-field-mapping
                                     :coordinate-system (not-indexed (stored string-field-mapping))
                                     ;; analyzed fields for keyword searches
-                                    :keyword text-field-mapping
+                                    :keyword (stored text-field-mapping)
                                     :concept-id-keyword string-field-mapping
                                     :entry-title-keyword string-field-mapping
                                     :collection-data-type-keyword string-field-mapping

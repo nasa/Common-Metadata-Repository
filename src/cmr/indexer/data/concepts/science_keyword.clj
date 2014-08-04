@@ -5,13 +5,19 @@
 (defn science-keyword->keywords
   "Converts a science keyword into a vector of terms for keyword searches"
   [science-keyword]
-  (science-keyword [:category :topic :term :variable-level-1 :variable-level-2
-                                    :variable-level-3 :detailed-variable]))
+  (let [{:keys [category topic term variable-level-1 variable-level-2 variable-level-3
+                detailed-variable]} science-keyword]
+    (println "CATEGORY --------------------")
+    (println category)
+    [category topic term variable-level-1 variable-level-2 variable-level-3 detailed-variable]))
 
 (defn science-keywords->keywords
   "Converts the science keywords into a sequence of terms for keyword searches"
   [umm-concept]
-  (mapcat science-keywords->keywords (:science-keywords umm-concept)))
+  (let [val (mapcat science-keyword->keywords (:science-keywords umm-concept))]
+    (println "SK-VALUE------------------")
+    (println val)
+    val))
 
 (defn science-keyword->elastic-doc
   "Converts a science keyword into the portion going in an elastic document"

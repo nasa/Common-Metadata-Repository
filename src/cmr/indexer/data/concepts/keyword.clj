@@ -44,6 +44,8 @@
   [collection]
   "Create a keyword field for keyword searches by concatenating several other fields
   into a single string"
+  (println "COLLECTION-------------------------")
+  (println collection)
   (let [{:keys [concept-id provider-id revision-date format]} collection
         {{:keys [short-name version-id processing-level-id collection-data-type]} :product
          :keys [entry-id entry-title summary spatial-keywords associated-difs]} collection
@@ -59,8 +61,12 @@
         archive-center-str (str/join " " (remove nil? (for [org orgs]
                                           (let [{:keys [type org-name]} org]
                                             (when (= :archive-center type) org-name)))))
-        science-keyword-str (str/join " " (mapcat prepare-keyword-field
-                                                  (sk/science-keywords->keywords collection)))
+        science-keywords (sk/science-keywords->keywords collection)
+        _ (println "SK:-------------------")
+        _ (println science-keywords)
+        science-keyword-str (str/join " " (mapcat prepare-keyword-field science-keywords))
+        _ (println "SCIENCE-KEYWORD----------------")
+        _ (println science-keyword-str)
         attrib-keyword-str (str/join " " (mapcat prepare-keyword-field
                                                  (attrib/psas->keywords collection)))
         spatial-keyword-str (str/join " " (mapcat prepare-keyword-field spatial-keywords))
@@ -69,12 +75,25 @@
                                                                   collection-data-type
                                                                   short-name
                                                                   archive-center-str
+                                                                  sensor-short-name-str
+                                                                  two-d-coord-name-str
                                                                   summary
                                                                   version-id
                                                                   processing-level-id]))
+        _ (println "FLAT FIELDS-----------------")
+        _ (println flat-fields-str)
         ;; TODO - platform fields
-        ]
-    (str/join " "
+        value (str/join " "
               (into []
-                    [flat-fields-str science-keyword-str attrib-keyword-str spatial-keyword-str]))))
+                    [flat-fields-str
+                     science-keyword-str
+                     attrib-keyword-str
+                     spatial-keyword-str
+                     platform-short-name-str
+                     platform-long-name-str]))
+        ]
+    (println "VALUE------------------------")
+    (println value)
+    value
+    ))
 
