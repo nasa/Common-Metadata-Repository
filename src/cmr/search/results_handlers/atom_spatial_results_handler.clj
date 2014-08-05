@@ -4,7 +4,7 @@
             [cmr.spatial.polygon :as poly]
             [cmr.spatial.point :as p]
             [cmr.spatial.mbr :as m]
-            [cmr.spatial.ring :as r]
+            [cmr.spatial.geodetic-ring :as gr]
             [cmr.spatial.line :as l]
             [clojure.string :as str]))
 
@@ -54,7 +54,7 @@
     (x/element :georss:box {} (shape->string mbr)))
 
 
-  cmr.spatial.ring.Ring
+  cmr.spatial.geodetic_ring.GeodeticRing
   (shape->string
     [ring]
     (points-map->points-str ring))
