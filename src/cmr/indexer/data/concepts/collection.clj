@@ -43,7 +43,7 @@
 (defmethod es/concept->elastic-doc :collection
   [context concept collection]
   (let [{:keys [concept-id provider-id revision-date format]} concept
-        {{:keys [short-name version-id processing-level-id collection-data-type]} :product
+        {{:keys [short-name long-name version-id processing-level-id collection-data-type]} :product
          :keys [entry-id entry-title summary temporal related-urls spatial-keywords associated-difs]} collection
         platforms (:platforms collection)
         platform-short-names (map :short-name platforms)
@@ -113,6 +113,7 @@
             :coordinate-system (when spatial-representation (csk/->SNAKE_CASE_STRING spatial-representation))
             ;; fields added to support keyword searches
             :keyword (k/create-keywords-field collection)
+            :long-name.lowercase (when long-name (str/lower-case long-name))
             :platform-ln.lowercase (map str/lower-case platform-long-names)
             :project-ln.lowercase (map str/lower-case project-long-names)
 

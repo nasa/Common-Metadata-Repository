@@ -7,6 +7,7 @@
 
 (deftest concept->elastic-doc-test
   (let [short-name "MINIMAL"
+        long-name "LONG-NAME"
         version-id "1"
         dataset-id "A minimal valid collection V 1"
         provider-id "PROV1"
@@ -40,6 +41,7 @@
                      :entry-title dataset-id
                      :summary "Summary of collection"
                      :product {:short-name short-name
+                               :long-name long-name
                                :version-id version-id
                                :processing-level-id processing-level-id
                                :collection-data-type collection-data-type}
@@ -98,9 +100,10 @@
                   :update-time "2014-02-24T22:20:56.000Z"
                   :associated-difs ["DIF-100" "DIF-101"]
                   :associated-difs.lowercase ["dif-100" "dif-101"]
-                  :keyword "a minimal valid collection v 1 near real time minimal sedac ac dar tar war foo bar summary of collection 1 1b   new york washington dc PLATFORM ONE PLATFORM TWO dummy dummy"
+                  :keyword "a minimal valid collection v 1 near real time minimal long name sedac ac dar tar war foo bar summary of collection 1 1b   new york washington dc PLATFORM ONE PLATFORM TWO dummy dummy"
                   :project-ln.lowercase ["dummy" "dummy" "dummy"]
-                  :platform-ln.lowercase ["dummy" "dummy"]}
+                  :platform-ln.lowercase ["dummy" "dummy"]
+                  :long-name.lowercase "long-name"}
         actual (es/concept->elastic-doc nil concept umm-concept)]
     (is (= expected actual))))
 

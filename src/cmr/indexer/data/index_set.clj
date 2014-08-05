@@ -176,13 +176,11 @@
                                     :associated-difs (stored string-field-mapping)
                                     :associated-difs.lowercase string-field-mapping
                                     :coordinate-system (not-indexed (stored string-field-mapping))
-                                    ;; analyzed fields for keyword searches
+                                    ;; analyzed field for keyword searches
                                     :keyword text-field-mapping
+                                    :long-name.lowercase string-field-mapping
                                     :project-ln.lowercase string-field-mapping
-                                    :platform-ln.lowercase string-field-mapping
-
-
-                                    }
+                                    :platform-ln.lowercase string-field-mapping}
                                    spatial-coverage-fields)}})
 
 (def granule-setting {:index {:number_of_shards 6,

@@ -6,27 +6,11 @@
 
 ;; NOTE -  The following fields are marked as deprecated in the UMM documenation
 ;; and are therefore not used for keyword searches in the CMR:
-;    SuggestedUsage (ECHO10)
+;;    SuggestedUsage (ECHO10)
+;;
 ;; TODO - The following fields are not mentioned in the UMM documentation and should
 ;; be inquired about
 ;;   :version-description
-;; TODO - the following fields need to be added
-;;    :campaign-short-name
-;;    :temporal-keyword
-;;
-(def keyword-fields
-  "Fields that are used to construct the keywords field for keyword searches"
-  [:entry-title
-   :concept-id
-   :collection-data-type
-   :short-name
-   :long-name
-   :archive-center
-   :summary
-   :version-id
-   :processing-level-id
-   :spatial-keywords
-   ])
 
 ;; Regex to split strings with special characters into multiple words for keyword searches
 (def keywords-separator-regex #"[!@#$%^&()\-=_+{}\[\]|;'.,\"/:<>?`~* ]")
@@ -37,15 +21,13 @@
   (when field-value
     (str/split (str/lower-case field-value) keywords-separator-regex)))
 
-(str/join " " (mapcat prepare-keyword-field ["New York" "Washington DC"]))
-
-;; TODO - add :long-name - should be part of product, :temporal-keyword
+;; TODO - add :temporal-keyword
 (defn create-keywords-field
   [collection]
   "Create a keyword field for keyword searches by concatenating several other fields
   into a single string"
   (let [{:keys [concept-id provider-id revision-date format]} collection
-        {{:keys [short-name version-id processing-level-id collection-data-type]} :product
+        {{:keys [short-name long-name version-id processing-level-id collection-data-type]} :product
          :keys [entry-id entry-title summary spatial-keywords associated-difs]} collection
         platforms (:platforms collection)
         platform-short-name-str (str/join " " (map :short-name platforms))
@@ -68,6 +50,7 @@
                                                                      entry-title
                                                                      collection-data-type
                                                                      short-name
+                                                                     long-name
                                                                      archive-center-str
                                                                      sensor-short-name-str
                                                                      two-d-coord-name-str
