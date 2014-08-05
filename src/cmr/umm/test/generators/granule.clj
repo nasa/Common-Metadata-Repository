@@ -7,7 +7,7 @@
             [cmr.umm.test.generators.collection.product-specific-attribute :as psa]
             [cmr.umm.test.generators.granule.orbit-calculated-spatial-domain :as ocsd]
             [cmr.umm.granule :as g]
-            [cmr.spatial.test.generators :as spatial-gen]))
+            [cmr.umm.test.generators.spatial :as spatial-gen]))
 
 ;;; granule related
 (def granule-urs

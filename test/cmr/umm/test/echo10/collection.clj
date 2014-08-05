@@ -55,19 +55,20 @@
         umm-c/map->UmmCollection)))
 
 (defspec generate-collection-is-valid-xml-test 100
-  (for-all [collection coll-gen/collections]
+  (for-all [collection (gen/no-shrink coll-gen/collections)]
     (let [xml (echo10/umm->echo10-xml collection)]
       (and
         (> (count xml) 0)
         (= 0 (count (c/validate-xml xml)))))))
 
 (defspec generate-and-parse-collection-test 100
-  (for-all [collection coll-gen/collections]
+  (for-all [collection (gen/no-shrink coll-gen/collections)]
     (let [{{:keys [short-name version-id]} :product} collection
           xml (echo10/umm->echo10-xml collection)
           parsed (c/parse-collection xml)
           expected-parsed (umm->expected-parsed-echo10 collection)]
       (= parsed expected-parsed))))
+
 
 ;; This is a made-up include all fields collection xml sample for the parse collection test
 (def all-fields-collection-xml

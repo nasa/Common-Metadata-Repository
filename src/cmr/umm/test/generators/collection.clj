@@ -6,7 +6,7 @@
             [cmr.umm.test.generators.collection.temporal :as t]
             [cmr.umm.test.generators.collection.science-keyword :as sk]
             [cmr.umm.test.generators.collection.product-specific-attribute :as psa]
-            [cmr.spatial.test.generators :as spatial-gen]))
+            [cmr.umm.test.generators.spatial :as spatial-gen]))
 
 (def short-names
   (ext-gen/string-alpha-numeric 1 85))

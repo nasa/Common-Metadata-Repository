@@ -6,7 +6,9 @@
             [cmr.spatial.mbr :as mbr]
             [cmr.spatial.line :as l]
             [cmr.spatial.polygon :as poly]
-            [cmr.spatial.ring :as r]
+            [cmr.spatial.geodetic-ring :as gr]
+            [cmr.spatial.cartesian-ring :as cr]
+            [cmr.umm.spatial :as umm-s]
             [cmr.common.util :as util]))
 
 (defmulti parse-geometry
@@ -34,7 +36,7 @@
   [element]
   (let [points (reverse (map parse-geometry (:content element)))
         points (concat points [(first points)])]
-    (r/ring points)))
+    (umm-s/ring points)))
 
 (defmethod parse-geometry :BoundingRectangle
   [element]
@@ -65,6 +67,17 @@
   (x/element :Geometry {}
              (map shape-to-xml geometries)))
 
+(defn- ring-to-xml
+  [ring]
+  (x/element :Boundary {}
+             (map shape-to-xml
+                  ;; Points must be specified in clockwise order and not closed.
+                  (-> (:points ring)
+                      ; drop first point since last point will match
+                      drop-last
+                      ; counter clocwise to clockwise
+                      reverse))))
+
 (extend-protocol ShapeToXml
   cmr.spatial.point.Point
   (shape-to-xml
@@ -87,17 +100,20 @@
     [{:keys [points]}]
     (x/element :Line {} (map shape-to-xml points)))
 
-  cmr.spatial.ring.Ring
+  cmr.spatial.geodetic_ring.GeodeticRing
   (shape-to-xml
-    [{:keys [points]}]
-    (x/element :Boundary {}
-               (map shape-to-xml
-                    ;; Points must be specified in clockwise order and not closed.
-                    (-> points
-                        ; drop first point since last point will match
-                        drop-last
-                        ; counter clocwise to clockwise
-                        reverse))))
+    [ring]
+    (ring-to-xml ring))
+
+  cmr.spatial.cartesian_ring.CartesianRing
+  (shape-to-xml
+    [ring]
+    (ring-to-xml ring))
+
+  cmr.umm.spatial.GenericRing
+  (shape-to-xml
+    [ring]
+    (ring-to-xml ring))
 
   cmr.spatial.polygon.Polygon
   (shape-to-xml
