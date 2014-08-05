@@ -87,7 +87,7 @@
   "Create filters for keyword search"
   [keywords]
   [;; entry-title, short-name
-   (keywords->name-filter :entry-title.lowercase :short-name.lowercase keywords 1.4)
+   (keywords->name-filter :long-name.lowercase :short-name.lowercase keywords 1.4)
    ;; project (ECHO campaign)
    (keywords->name-filter :project-ln.lowercase :project-sn.lowercase keywords 1.3)
    ;; platform
