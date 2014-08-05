@@ -17,9 +17,8 @@
                           :number_of_replicas 1,
                           :refresh_interval "1s"}})
 
-;; TODO verify that all these options are necessary
 (def string-field-mapping
-  {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "no"})
+  {:type "string" :index "not_analyzed"})
 
 ;; Used for analyzed text fields
 (def text-field-mapping
@@ -27,8 +26,7 @@
    :index "analyzed"
    :omit_norms "true"
    :analyzer "whitespace"
-   :index_options "docs"
-   :stored "no"})
+   :index_options "docs"})
 
 (def date-field-mapping
   {:type "date" :format "yyyy-MM-dd'T'HH:mm:ssZ||yyyy-MM-dd'T'HH:mm:ss.SSSZ"})

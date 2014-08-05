@@ -13,7 +13,8 @@
             [cmr.indexer.data.concepts.attribute :as attrib]
             [cmr.indexer.data.concepts.science-keyword :as sk]
             [cmr.indexer.data.concepts.spatial :as spatial]
-            [cmr.indexer.data.concepts.keyword :as k])
+            [cmr.indexer.data.concepts.keyword :as k]
+            [cmr.indexer.data.concepts.organization :as org])
   (:import cmr.spatial.mbr.Mbr))
 
 (defn spatial->elastic
@@ -55,10 +56,7 @@
         project-short-names (map :short-name (:projects collection))
         project-long-names (map :long-name (:projects collection))
         two-d-coord-names (map :name (:two-d-coordinate-systems collection))
-        orgs (:organizations collection)
-        archive-center-val (remove nil? (for [org orgs]
-                                          (let [{:keys [type org-name]} org]
-                                            (when (= :archive-center type) org-name))))
+        archive-center-val (org/extract-archive-centers collection)
         start-date (temporal/start-date :collection temporal)
         end-date (temporal/end-date :collection temporal)
         atom-links (map json/generate-string (ru/atom-links related-urls))
@@ -115,8 +113,6 @@
             :keyword (k/create-keywords-field collection)
             :long-name.lowercase (when long-name (str/lower-case long-name))
             :platform-ln.lowercase (map str/lower-case platform-long-names)
-            :project-ln.lowercase (map str/lower-case project-long-names)
-
-            }
+            :project-ln.lowercase (map str/lower-case project-long-names)}
            (spatial->elastic collection))))
 

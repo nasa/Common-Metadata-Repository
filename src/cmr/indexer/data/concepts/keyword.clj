@@ -2,7 +2,8 @@
   "Contains functions to create keyword fields"
   (require [clojure.string :as str]
            [cmr.indexer.data.concepts.science-keyword :as sk]
-           [cmr.indexer.data.concepts.attribute :as attrib]))
+           [cmr.indexer.data.concepts.attribute :as attrib]
+           [cmr.indexer.data.concepts.organization :as org]))
 
 ;; NOTE -  The following fields are marked as deprecated in the UMM documenation
 ;; and are therefore not used for keyword searches in the CMR:
@@ -26,42 +27,34 @@
   [collection]
   "Create a keyword field for keyword searches by concatenating several other fields
   into a single string"
-  (let [{:keys [concept-id provider-id revision-date format]} collection
+  (let [{:keys [concept-id ]} collection
         {{:keys [short-name long-name version-id processing-level-id collection-data-type]} :product
          :keys [entry-id entry-title summary spatial-keywords associated-difs]} collection
         platforms (:platforms collection)
-        platform-short-name-str (str/join " " (map :short-name platforms))
-        platform-long-name-str (str/join " " (map :long-name platforms))
+        platform-short-names (map :short-name platforms)
+        platform-long-names (map :long-name platforms)
         instruments (mapcat :instruments platforms)
-        instrument-short-name-str (str/join " " (keep :short-name instruments))
+        instrument-short-names (keep :short-name instruments)
         sensors (mapcat :sensors instruments)
-        sensor-short-name-str (str/join " " (keep :short-name sensors))
-        two-d-coord-name-str (str/join " " (map :name (:two-d-coordinate-systems collection)))
-        orgs (:organizations collection)
-        archive-center-str (str/join " " (remove nil? (for [org orgs]
-                                                        (let [{:keys [type org-name]} org]
-                                                          (when (= :archive-center type) org-name)))))
+        sensor-short-names (keep :short-name sensors)
+        two-d-coord-names (map :name (:two-d-coordinate-systems collection))
+        archive-centers (org/extract-archive-centers collection)
         science-keywords (sk/science-keywords->keywords collection)
-        science-keyword-str (str/join " " (mapcat prepare-keyword-field science-keywords))
-        attrib-keyword-str (str/join " " (mapcat prepare-keyword-field
-                                                 (attrib/psas->keywords collection)))
-        spatial-keyword-str (str/join " " (mapcat prepare-keyword-field spatial-keywords))
-        flat-fields-str (str/join " " (mapcat prepare-keyword-field [concept-id
-                                                                     entry-title
-                                                                     collection-data-type
-                                                                     short-name
-                                                                     long-name
-                                                                     archive-center-str
-                                                                     sensor-short-name-str
-                                                                     two-d-coord-name-str
-                                                                     summary
-                                                                     version-id
-                                                                     processing-level-id]))]
-    (str/join " "
-              (into []
-                    [flat-fields-str
-                     science-keyword-str
-                     attrib-keyword-str
-                     spatial-keyword-str
-                     platform-short-name-str
-                     platform-long-name-str]))))
+        attrib-keywords (attrib/psas->keywords collection)
+        all-fields (flatten (conj concept-id
+                                       entry-title
+                                       collection-data-type
+                                       short-name
+                                       long-name
+                                       two-d-coord-names
+                                       summary
+                                       version-id
+                                       processing-level-id
+                                       archive-centers
+                                       science-keywords
+                                       attrib-keywords
+                                       spatial-keywords
+                                       platform-short-names
+                                       platform-long-names))
+        split-fields (set (mapcat prepare-keyword-field all-fields))]
+    (str/join " " split-fields)))
