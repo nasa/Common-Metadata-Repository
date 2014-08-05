@@ -72,7 +72,9 @@ One entry id
 
     curl "http://localhost:3003/collections?entry_id\[\]=SHORT_V5"
 
-One dif\_entry\_id (alias for entry id)
+#### Find collections by dif entry id, this searches for matches on either entry id or associated difs
+
+One dif\_entry\_id
 
     curl "http://localhost:3003/collections?dif_entry_id\[\]=SHORT_V5"
 
