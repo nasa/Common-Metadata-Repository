@@ -3,7 +3,8 @@
   (require [clojure.string :as str]
            [cmr.indexer.data.concepts.science-keyword :as sk]
            [cmr.indexer.data.concepts.attribute :as attrib]
-           [cmr.indexer.data.concepts.organization :as org]))
+           [cmr.indexer.data.concepts.organization :as org]
+           [cmr.common.util :as util]))
 
 ;; NOTE -  The following fields are marked as deprecated in the UMM documenation
 ;; and are therefore not used for keyword searches in the CMR:
@@ -13,14 +14,6 @@
 ;; be inquired about
 ;;   :version-description
 
-;; Regex to split strings with special characters into multiple words for keyword searches
-(def keywords-separator-regex #"[!@#$%^&()\-=_+{}\[\]|;'.,\"/:<>?`~* ]")
-
-(defn prepare-keyword-field
-  [field-value]
-  "Convert a string to lowercase then separate it into keywords"
-  (when field-value
-    (str/split (str/lower-case field-value) keywords-separator-regex)))
 
 ;; TODO - add :temporal-keyword
 (defn create-keywords-field
@@ -56,5 +49,5 @@
                                        spatial-keywords
                                        platform-short-names
                                        platform-long-names))
-        split-fields (set (mapcat prepare-keyword-field all-fields))]
+        split-fields (set (mapcat util/prepare-keyword-field all-fields))]
     (str/join " " split-fields)))
