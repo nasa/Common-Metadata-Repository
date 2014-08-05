@@ -211,16 +211,18 @@
       (parse-reference-response response))))
 
 (defn find-refs-with-aql
-  "Returns the references that are found by searching through POST request with aql for the input params"
-  [concept-type params]
-  (get-search-failure-data
-    (let [response (client/post (url/aql-url)
-                                {:accept "application/xml"
-                                 :content-type "application/x-www-form-urlencoded"
-                                 :body (aql/params->aql concept-type params)
-                                 :throw-exceptions false
-                                 :connection-manager (url/conn-mgr)})]
-      (parse-reference-response response))))
+  "Returns the references that are found by searching through POST request with aql for the given conditions"
+  ([concept-type conditions]
+   (find-refs-with-aql concept-type conditions {}))
+  ([concept-type conditions data-center-condition]
+   (get-search-failure-data
+     (let [response (client/post (url/aql-url)
+                                 {:accept "application/xml"
+                                  :content-type "application/x-www-form-urlencoded"
+                                  :body (aql/generate-aql concept-type data-center-condition conditions)
+                                  :throw-exceptions false
+                                  :connection-manager (url/conn-mgr)})]
+       (parse-reference-response response)))))
 
 (defn get-concept-by-concept-id
   "Returns the concept metadata by searching metadata-db using the given cmr concept id"

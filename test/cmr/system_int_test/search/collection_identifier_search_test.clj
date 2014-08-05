@@ -41,7 +41,7 @@
            [c1-p1] [(:concept-id c1-p1) "FOO"]
            [] "FOO"))
 
-    (testing "provider"
+    (testing "provider with parameters"
       (are [items p options]
            (let [params (merge {:provider p}
                                (when options
@@ -68,10 +68,35 @@
 
            ;; Ignore case
            all-prov1-colls "pRoV1" {:ignore-case true}
-           [] "prov1" {:ignore-case false})
+           [] "prov1" {:ignore-case false}))
 
-      (testing "legacy catalog rest parameter name"
-        (is (d/refs-match? all-prov1-colls (search/find-refs :collection {:provider-id "PROV1"})))))
+    (testing "legacy catalog rest parameter name"
+      (is (d/refs-match? all-prov1-colls (search/find-refs :collection {:provider-id "PROV1"}))))
+
+    (testing "provider with aql"
+      (are [items p options]
+           (let [data-center-condition (merge {:dataCenterId p} options)]
+             (d/refs-match? items (search/find-refs-with-aql :collection [] data-center-condition)))
+
+           all-prov1-colls ["PROV1"] {}
+           all-prov2-colls ["PROV2"] {}
+           [] ["PROV3"] {}
+
+           ;; Multiple values
+           all-colls ["PROV1" "PROV2"] {}
+           all-prov1-colls ["PROV1" "PROV3"] {}
+
+           ;; Wildcards
+           all-colls "PROV%" {:pattern true}
+           [] "PROV%" {:pattern false}
+           [] "PROV%" {}
+           all-prov1-colls "%1" {:pattern true}
+           all-prov1-colls "P_OV1" {:pattern true}
+           [] "%Q%" {:pattern true}
+
+           ;; Ignore case
+           all-prov1-colls "pRoV1" {:ignore-case true}
+           [] "prov1" {:ignore-case false}))
 
     (testing "short name"
       (are [items sn options]
@@ -100,6 +125,30 @@
            [c1-p1 c1-p2] "s1" {:ignore-case true}
            [] "s1" {:ignore-case false}))
 
+    (testing "shortName with aql"
+      (are [items sn options]
+           (let [condition (merge {:shortName sn} options)]
+             (d/refs-match? items
+                            (search/find-refs-with-aql :collection [condition])))
+
+           [c1-p1 c1-p2] "S1" {}
+           [] "S44" {}
+           ;; Multiple values
+           [c1-p1 c1-p2 c2-p1 c2-p2] ["S1" "S2"] {}
+           [c1-p1 c1-p2] ["S1" "S44"] {}
+
+           ;; Wildcards
+           all-colls "S%" {:pattern true}
+           [] "S%" {:pattern false}
+           [] "S%" {}
+           [c1-p1 c1-p2] "%1" {:pattern true}
+           [c1-p1 c1-p2] "_1" {:pattern true}
+           [] "%Q%" {:pattern true}
+
+           ;; Ignore case
+           [c1-p1 c1-p2] "s1" {:ignore-case true}
+           [] "s1" {:ignore-case false}))
+
     (testing "version"
       (are [items v options]
            (let [params (merge {:version v}
@@ -122,6 +171,29 @@
            [c1-p1 c1-p2] "*1" {:pattern true}
            [c1-p1 c1-p2] "?1" {:pattern true}
            [] "*Q*" {:pattern true}
+
+           ;; Ignore case
+           [c1-p1 c1-p2] "v1" {:ignore-case true}
+           [] "v1" {:ignore-case false}))
+
+    (testing "versionId with aql"
+      (are [items v options]
+           (let [condition (merge {:versionId v} options)]
+             (d/refs-match? items (search/find-refs-with-aql :collection [condition])))
+
+           [c1-p1 c1-p2] "V1" {}
+           [] "V44" {}
+           ;; Multiple values
+           [c1-p1 c1-p2 c2-p1 c2-p2] ["V1" "V2"] {}
+           [c1-p1 c1-p2] ["V1" "V44"] {}
+
+           ;; Wildcards
+           all-colls "V%" {:pattern true}
+           [] "V%" {:pattern false}
+           [] "V%" {}
+           [c1-p1 c1-p2] "%1" {:pattern true}
+           [c1-p1 c1-p2] "_1" {:pattern true}
+           [] "%Q%" {:pattern true}
 
            ;; Ignore case
            [c1-p1 c1-p2] "v1" {:ignore-case true}
@@ -186,6 +258,29 @@
             (search/find-refs :collection {:dataset-id "ET1"}))
           "dataset_id should be an alias for entry title."))
 
+    (testing "dataSetId with aql"
+      (are [items v options]
+           (let [condition (merge {:dataSetId v} options)]
+             (d/refs-match? items (search/find-refs-with-aql :collection [condition])))
+
+           [c1-p1 c1-p2] "ET1" {}
+           [] "ET44" {}
+           ;; Multiple values
+           [c1-p1 c1-p2 c2-p1 c2-p2] ["ET1" "ET2"] {}
+           [c1-p1 c1-p2] ["ET1" "ET44"] {}
+
+           ;; Wildcards
+           all-colls "ET%" {:pattern true}
+           [] "ET%" {:pattern false}
+           [] "ET%" {}
+           [c1-p1 c1-p2] "%1" {:pattern true}
+           [c1-p1 c1-p2] "?T1" {:pattern true}
+           [] "%Q%" {:pattern true}
+
+           ;; Ignore case
+           [c1-p1 c1-p2] "et1" {:ignore-case true}
+           [] "et1" {:ignore-case false}))
+
     (testing "unsupported parameter"
       (is (= {:status 422,
               :errors ["Parameter [unsupported] was not recognized."]}
@@ -229,6 +324,28 @@
            [] "B*" {}
            all-prov2-colls "?B" {:pattern true}
            [] "*Q*" {:pattern true}
+
+           ;; Ignore case
+           [c2-p2] "2b" {:ignore-case true}
+           [] "2b" {:ignore-case false}))
+
+    (testing "processing level search with aql"
+      (are [items id options]
+           (let [condition (merge {:processingLevel id} options)]
+             (d/refs-match? items (search/find-refs-with-aql :collection [condition])))
+
+           [c1-p2] "1B" {}
+           [] "1C" {}
+           ;; Multiple values
+           [c1-p2 c2-p2 c3-p2] ["1B" "2B" "3B"] {}
+           [c4-p2] ["4B" "4C"] {}
+
+           ;; Wildcards
+           all-prov2-colls "%B" {:pattern true}
+           [] "B%" {:pattern false}
+           [] "B%" {}
+           all-prov2-colls "?B" {:pattern true}
+           [] "%Q%" {:pattern true}
 
            ;; Ignore case
            [c2-p2] "2b" {:ignore-case true}
@@ -288,7 +405,18 @@
     (testing "Search with wildcards in concep_id param not supported."
       (is (= {:status 422
               :errors [(msg/invalid-pattern-opt-setting-msg #{:concept-id :echo-collection-id :echo-granule-id})]}
-             (search/find-refs :granule {:concept_id "C*" "options[concept_id]" {:pattern true}}))))))
+             (search/find-refs :granule {:concept_id "C*" "options[concept_id]" {:pattern true}}))))
+
+    (testing "echo collection id search with aql"
+      (are [items cid options]
+           (let [condition (merge {:ECHOCollectionID cid} options)]
+             (d/refs-match? items (search/find-refs-with-aql :collection [condition])))
+
+           [c1-p1] c1-p1-cid {}
+           [c3-p2] c3-p2-cid {}
+           [] dummy-cid {}
+           ;; Multiple values
+           [c1-p1 c2-p1 c3-p2 c4-p2] [c1-p1-cid c2-p1-cid c3-p2-cid c4-p2-cid dummy-cid] {}))))
 
 (deftest dif-entry-id-search-test
   (let [coll1 (d/ingest "PROV1" (dc/collection {:short-name "S1"
@@ -360,4 +488,28 @@
                                            {:entry-id "s2"
                                             "options[entry-id][ignore-case]" "true"
                                             :dif-entry-id "S*"
-                                            "options[dif-entry-id][pattern]" "true"}))))))
+                                            "options[dif-entry-id][pattern]" "true"}))))
+
+    (testing "dif entry id search with aql"
+      (are [items id options]
+           (let [condition (merge {:difEntryId id} options)]
+           (d/refs-match? items (search/find-refs-with-aql :collection [condition])))
+
+           [coll1] "S1_V1" {}
+           [coll2] "S2" {}
+           [coll3] "S3" {}
+           [] "S1" {}
+           ;; Multiple values
+           [coll2 coll3] ["S2" "S3"] {}
+           [coll4] ["SL4" "DIF-1"] {}
+
+           ;; Wildcards
+           [coll1 coll2 coll3 coll4] "S%" {:pattern true}
+           [] "S%" {:pattern false}
+           [] "S%" {}
+           [coll2 coll3] "S?" {:pattern true}
+           [] "%Q%" {:pattern true}
+
+           ;; Ignore case
+           [coll2] "s2" {:ignore-case true}
+           [] "s2" {:ignore-case false}))))
