@@ -26,8 +26,11 @@
 
 (defn polygon
   "Creates a polygon"
-  [coord-sys rings]
-  (->Polygon coord-sys (vec rings) nil))
+  ([rings]
+   ;; Allows the coordinate system to be set at a later time
+   (polygon nil rings))
+  ([coord-sys rings]
+   (->Polygon coord-sys (vec rings) nil)))
 
 (defn boundary
   "Returns the outer boundary"

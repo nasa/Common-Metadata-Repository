@@ -30,34 +30,6 @@
                  ords1 "&arc2_ordinates=" ords2)]
     (str base-msg " " run-it-msg " " url)))
 
-(comment
-  (def little-examples
-    [[:endpoint_on_np [0,85, 0,90]
-      [:crosses_np_on_am [180,0, 0,85]]]])
-
-  (a/intersections (example-arcs :crosses_np_on_am) (example-arcs :ver_along_am))
-
-  ((:intersections a/great-circle-equivalency-intersection-strategy)
-   (example-arcs :crosses_np_on_am)
-   (example-arcs :ver_along_am))
-
-  {:x 1.2246467991473532E-16, :y -1.0, :z -1.0714271174870256E-17}
-  {:x -0.0, :y -1.0, :z 0.0}
-
-  (<= (abs (- -0.0 1.2246467991473532E-16)) 0.00001)
-  (<= (abs (- -0.0 -1.0714271174870256E-17)) 0.00001)
-  (<= (abs (- -1.0 -1.0)) 0.00001)
-
-  (<= (abs (- -1.0 1.0)) 0.00001)
-  (<= (abs (- 1.0 -1.0)) 0.00001)
-
-  ((cmr.spatial.point/point 0.0 90.0) (cmr.spatial.point/point 0.0 85.0))
-
-
-  (a/arc (p/point 180 0) (p/point 0 85))
-  (a/arc (p/point 0 85) (p/point 0 90))
-  )
-
 (deftest test-example-intersections
   (testing "example intersections"
     (doseq [[arc-name1 arc-name2 num-intersections] example-intersections

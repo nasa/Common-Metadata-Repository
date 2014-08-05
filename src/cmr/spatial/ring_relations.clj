@@ -165,7 +165,7 @@
 
         ;; Do any of the sides intersect?
         (let [lines (lines ring)
-              mbr-lines (s/mbr->line-segments (:mbr ring))]
+              mbr-lines (s/mbr->line-segments br)]
           (seq (mapcat (partial apply asi/intersections)
                        (for [ls1 lines
                              ls2 mbr-lines]
