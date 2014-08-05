@@ -12,7 +12,7 @@
             [cmr.spatial.polygon :as poly]
             [cmr.spatial.point :as p]
             [cmr.spatial.mbr :as m]
-            [cmr.spatial.ring :as r]
+            [cmr.spatial.ring-relations :as rr]
             [cmr.spatial.derived :as derived]
             [cmr.spatial.codec]
             [clojure.string :as str]
@@ -21,18 +21,18 @@
             [cmr.common.dev.util :as dev-util]
             [cmr.spatial.lr-binary-search :as lbs])
   (:import cmr.spatial.point.Point
-           cmr.spatial.ring.Ring
+           cmr.spatial.geodetic_ring.GeodeticRing
            cmr.spatial.mbr.Mbr
            cmr.spatial.polygon.Polygon))
 
 (defn polygon
-  "Creates a single ring polygon with the given ordinates. Points must be in counter clockwise order."
-  [& ords]
-  (let [polygon (poly/polygon [(apply r/ords->ring ords)])
-        outer (-> polygon :rings first derived/calculate-derived)]
-    (when (and (:contains-north-pole outer)
-               (:contains-south-pole outer))
-      (throw (Exception. "Polygon can not contain both north and south pole. Points are likely backwards.")))
+  "Creates a single ring polygon with the given ordinates. Points must be in counter clockwise order.
+  The polygon will be closed automatically."
+  [coord-sys & ords]
+  (let [polygon (derived/calculate-derived (poly/polygon coord-sys [(apply rr/ords->ring coord-sys ords)]))
+        outer (-> polygon :rings first)]
+    (when (rr/inside-out? outer)
+      (throw (Exception. "Polygon outer boundary is inside out. Point order is likely backwards")))
     polygon))
 
 (defn shape->lr
@@ -46,7 +46,7 @@
 
 (defmethod ords->shape :polygon
   [spatial-type ords]
-  (derived/calculate-derived (apply polygon ords)))
+  (derived/calculate-derived (apply polygon :geodetic ords)))
 
 (defmethod ords->shape :bounding_box
   [spatial-type ords]
@@ -109,10 +109,10 @@
 (comment
 
   ;; A polygon with a hole
-  (let [outer (r/ords->ring -5.26,-2.59, 11.56,-2.77, 10.47,8.71, -5.86,8.63, -5.26,-2.59)
-        hole1 (r/ords->ring 6.95,2.05, 2.98,2.06, 3.92,-0.08, 6.95,2.05)
-        hole2 (r/ords->ring 5.18,6.92, -1.79,7.01, -2.65,5, 4.29,5.05, 5.18,6.92)
-        polygon-with-holes  (poly/polygon [outer hole1 hole2])
+  (let [outer (rr/ords->ring :geodetic -5.26,-2.59, 11.56,-2.77, 10.47,8.71, -5.86,8.63, -5.26,-2.59)
+        hole1 (rr/ords->ring :geodetic 6.95,2.05, 2.98,2.06, 3.92,-0.08, 6.95,2.05)
+        hole2 (rr/ords->ring :geodetic 5.18,6.92, -1.79,7.01, -2.65,5, 4.29,5.05, 5.18,6.92)
+        polygon-with-holes  (poly/polygon :geodetic [outer hole1 hole2])
         search-area (polygon 0 0, 1 0, 1 1, 0 0)]
     (visual-interactive-search [polygon-with-holes] search-area))
 
@@ -133,10 +133,10 @@
         normal-poly (polygon -20 -10, -10 -10, -10 10, -20 10, -20 -10)
 
         ;; polygon with holes
-        outer (r/ords->ring -5.26,-2.59, 11.56,-2.77, 10.47,8.71, -5.86,8.63, -5.26,-2.59)
-        hole1 (r/ords->ring 6.95,2.05, 2.98,2.06, 3.92,-0.08, 6.95,2.05)
-        hole2 (r/ords->ring 5.18,6.92, -1.79,7.01, -2.65,5, 4.29,5.05, 5.18,6.92)
-        polygon-with-holes  (poly/polygon [outer hole1 hole2])
+        outer (rr/ords->ring :geodetic -5.26,-2.59, 11.56,-2.77, 10.47,8.71, -5.86,8.63, -5.26,-2.59)
+        hole1 (rr/ords->ring :geodetic 6.95,2.05, 2.98,2.06, 3.92,-0.08, 6.95,2.05)
+        hole2 (rr/ords->ring :geodetic 5.18,6.92, -1.79,7.01, -2.65,5, 4.29,5.05, 5.18,6.92)
+        polygon-with-holes (poly/polygon :geodetic [outer hole1 hole2])
 
         ;; points
         north-pole (p/point 90 0)
