@@ -10,7 +10,9 @@
             [cmr.spatial.polygon :as poly]
             [cmr.spatial.point :as p]
             [cmr.spatial.mbr :as m]
-            [cmr.spatial.ring :as r]
+            [cmr.spatial.geodetic-ring :as gr]
+            [cmr.spatial.cartesian-ring :as cr]
+            [cmr.spatial.ring-relations :as rr]
             [cmr.spatial.derived :as derived]
             [cmr.spatial.codec :as codec]
             [cmr.spatial.messages :as smsg]
@@ -18,7 +20,8 @@
             [cmr.spatial.dev.viz-helper :as viz-helper]
             [cmr.spatial.serialize :as srl]
             [cmr.common.dev.util :as dev-util]
-            [cmr.spatial.lr-binary-search :as lbs]))
+            [cmr.spatial.lr-binary-search :as lbs]
+            [cmr.umm.spatial :as umm-s]))
 
 (use-fixtures :each (ingest/reset-fixture "PROV1"))
 
@@ -26,17 +29,12 @@
   "Creates a single ring polygon with the given ordinates. Points must be in counter clockwise order.
   The polygon will be closed automatically."
   [& ords]
-  (let [polygon (derived/calculate-derived (poly/polygon [(apply r/ords->ring ords)]))
-        outer (-> polygon :rings first)]
-    (when (and (:contains-north-pole outer)
-               (:contains-south-pole outer))
-      (throw (Exception. "Polygon can not contain both north and south pole. Points are likely backwards.")))
-    polygon))
+  (poly/polygon [(apply umm-s/ords->ring ords)]))
 
 (defn search-poly
   "Returns a url encoded polygon for searching"
   [& ords]
-  (codec/url-encode (apply polygon ords)))
+  (codec/url-encode (umm-s/set-coordinate-system :geodetic (apply polygon ords))))
 
 (def spatial-viz-enabled
   "Set this to true to debug test failures with the spatial visualization."
@@ -77,7 +75,7 @@
     (is (= {:errors [(smsg/ring-not-closed)] :status 422}
            (search/find-refs :granule
                              {:polygon (codec/url-encode
-                                         (poly/polygon [(r/ords->ring 0 0, 1 0, 1 1, 0 1)]))}))))
+                                         (poly/polygon :geodetic [(rr/ords->ring :geodetic 0 0, 1 0, 1 1, 0 1)]))}))))
   (testing "invalid bounding box"
     (is (= {:errors [(smsg/br-north-less-than-south 45 46)] :status 422}
            (search/find-refs
@@ -89,40 +87,41 @@
            (search/find-refs :granule {:point "-181.0,5"})))))
 
 
+
 (deftest spatial-search-test
   (let [coll (d/ingest "PROV1" (dc/collection {:spatial-coverage (dc/spatial :geodetic)}))
         make-gran (fn [ur & shapes]
                     (d/ingest "PROV1" (dg/granule coll {:granule-ur ur
                                                         :spatial-coverage (apply dg/spatial shapes)})))
 
-        ;; Bounding rectangles
-        whole-world (make-gran "whole-world" (m/mbr -180 90 180 -90))
-        touches-np (make-gran "touches-np" (m/mbr 45 90 55 70))
-        touches-sp (make-gran "touches-sp" (m/mbr -160 -70 -150 -90))
-        across-am-br (make-gran "across-am-br" (m/mbr 170 10 -170 -10))
-        normal-brs (make-gran "normal-brs"
-                              (m/mbr 10 10 20 0)
-                              (m/mbr -20 0 -10 -10))
+       ;; Bounding rectangles
+       whole-world (make-gran "whole-world" (m/mbr -180 90 180 -90))
+       touches-np (make-gran "touches-np" (m/mbr 45 90 55 70))
+       touches-sp (make-gran "touches-sp" (m/mbr -160 -70 -150 -90))
+       across-am-br (make-gran "across-am-br" (m/mbr 170 10 -170 -10))
+       normal-brs (make-gran "normal-brs"
+                             (m/mbr 10 10 20 0)
+                             (m/mbr -20 0 -10 -10))
 
-        ;; Polygons
-        wide-north (make-gran "wide-north" (polygon -70 20, 70 20, 70 30, -70 30, -70 20))
-        wide-south (make-gran "wide-south" (polygon -70 -30, 70 -30, 70 -20, -70 -20, -70 -30))
-        across-am-poly (make-gran "across-am-poly" (polygon 170 35, -175 35, -170 45, 175 45, 170 35))
-        on-np (make-gran "on-np" (polygon 45 85, 135 85, -135 85, -45 85, 45 85))
-        on-sp (make-gran "on-sp" (polygon -45 -85, -135 -85, 135 -85, 45 -85, -45 -85))
-        normal-poly (make-gran "normal-poly" (polygon -20 -10, -10 -10, -10 10, -20 10, -20 -10))
+       ;; Polygons
+       wide-north (make-gran "wide-north" (polygon -70 20, 70 20, 70 30, -70 30, -70 20))
+       wide-south (make-gran "wide-south" (polygon -70 -30, 70 -30, 70 -20, -70 -20, -70 -30))
+       across-am-poly (make-gran "across-am-poly" (polygon 170 35, -175 35, -170 45, 175 45, 170 35))
+       on-np (make-gran "on-np" (polygon 45 85, 135 85, -135 85, -45 85, 45 85))
+       on-sp (make-gran "on-sp" (polygon -45 -85, -135 -85, 135 -85, 45 -85, -45 -85))
+       normal-poly (make-gran "normal-poly" (polygon -20 -10, -10 -10, -10 10, -20 10, -20 -10))
 
-        ;; polygon with holes
-        outer (r/ords->ring -5.26,-2.59, 11.56,-2.77, 10.47,8.71, -5.86,8.63, -5.26,-2.59)
-        hole1 (r/ords->ring 6.95,2.05, 2.98,2.06, 3.92,-0.08, 6.95,2.05)
-        hole2 (r/ords->ring 5.18,6.92, -1.79,7.01, -2.65,5, 4.29,5.05, 5.18,6.92)
-        polygon-with-holes  (make-gran "polygon-with-holes" (poly/polygon [outer hole1 hole2]))
+       ;; polygon with holes
+       outer (rr/ords->ring :geodetic -5.26,-2.59, 11.56,-2.77, 10.47,8.71, -5.86,8.63, -5.26,-2.59)
+       hole1 (rr/ords->ring :geodetic 6.95,2.05, 2.98,2.06, 3.92,-0.08, 6.95,2.05)
+       hole2 (rr/ords->ring :geodetic 5.18,6.92, -1.79,7.01, -2.65,5, 4.29,5.05, 5.18,6.92)
+       polygon-with-holes  (make-gran "polygon-with-holes" (poly/polygon :geodetic [outer hole1 hole2]))
 
-        ;; Points
-        north-pole (make-gran "north-pole" (p/point 0 90))
-        south-pole (make-gran "south-pole" (p/point 0 -90))
-        normal-point (make-gran "normal-point" (p/point 10 22))
-        am-point (make-gran "am-point" (p/point 180 22))]
+       ;; Points
+       north-pole (make-gran "north-pole" (p/point 0 90))
+       south-pole (make-gran "south-pole" (p/point 0 -90))
+       normal-point (make-gran "normal-point" (p/point 10 22))
+       am-point (make-gran "am-point" (p/point 180 22))]
     (index/refresh-elastic-index)
 
     (testing "point searches"
@@ -179,7 +178,7 @@
 
            ;; just under wide north polygon
            [-1.82,46.56,5.25,44.04] [whole-world]
-           ; [-1.74,46.98,5.25,44.04] [whole-world wide-north]
+           [-1.74,46.98,5.25,44.04] [whole-world wide-north]
            [-1.74 47.05 5.27 44.04] [whole-world wide-north]
 
            ;; vertical slice of earth

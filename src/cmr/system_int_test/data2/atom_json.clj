@@ -1,7 +1,6 @@
 (ns cmr.system-int-test.data2.atom-json
   "Contains helper functions for converting granules into the expected map of parsed json results."
   (:require [cmr.spatial.polygon :as poly]
-            [cmr.spatial.ring :as r]
             [cmr.spatial.point :as p]
             [cmr.spatial.line :as l]
             [cmr.spatial.mbr :as m]

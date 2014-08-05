@@ -3,7 +3,6 @@
   (:require [cmr.common.concepts :as cu]
             [cmr.umm.related-url-helper :as ru]
             [cmr.spatial.polygon :as poly]
-            [cmr.spatial.ring :as r]
             [cmr.spatial.point :as p]
             [cmr.spatial.line :as l]
             [cmr.spatial.mbr :as m]
@@ -12,7 +11,8 @@
             [cmr.common.xml :as cx]
             [clojure.string :as str]
             [clj-time.format :as f]
-            [camel-snake-kebab :as csk]))
+            [camel-snake-kebab :as csk]
+            [cmr.umm.spatial :as umm-s]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Parsing the ATOM results
@@ -36,9 +36,9 @@
               (p/point lon lat)))))
 
 (defn ring-str->ring
-  "Parses a ring as represented in ATOM into a cmr.spatial.ring.Ring"
+  "Parses a ring as represented in ATOM into a cmr.spatial.geodetic_ring.GeodeticRing"
   [s]
-  (r/ring (point-str->points s)))
+  (umm-s/ring (point-str->points s)))
 
 (defn xml-elem->polygons-without-holes
   [entry-elem]
