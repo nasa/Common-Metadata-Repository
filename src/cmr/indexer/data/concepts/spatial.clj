@@ -3,16 +3,17 @@
   (:require [cmr.spatial.derived :as d]
 
             ;; Must be required for derived calculations
-            [cmr.spatial.ring :as r]
+            [cmr.spatial.geodetic-ring :as gr]
             [cmr.spatial.polygon :as p]
             [cmr.spatial.mbr :as mbr]
             [cmr.spatial.lr-binary-search :as lr]
             [cmr.spatial.serialize :as srl]
-            [cmr.common.services.errors :as errors]))
+            [cmr.common.services.errors :as errors]
+            [cmr.umm.spatial :as umm-s]))
 
 (def temporary-supported-cartesian-types
   "A temporary list of the subset of spatial types that we support."
-  #{cmr.spatial.mbr.Mbr cmr.spatial.point.Point})
+  #{cmr.spatial.mbr.Mbr cmr.spatial.point.Point cmr.spatial.polygon.Polygon})
 
 (defn mbr->elastic-attribs
   [prefix mbr]
@@ -30,8 +31,9 @@
 (defn shapes->elastic-doc
   "Converts a spatial shapes into the nested elastic attributes"
   [shapes coordinate-system]
-  ;; ignores coordinate system for now
-  (let [shapes (map d/calculate-derived shapes)
+  (let [shapes (map d/calculate-derived
+                    (map (partial umm-s/set-coordinate-system coordinate-system)
+                         shapes))
         ords-info-map (srl/shapes->ords-info-map shapes)
         lrs (map srl/shape->lr shapes)
         ;; union mbrs to get one covering the whole area
