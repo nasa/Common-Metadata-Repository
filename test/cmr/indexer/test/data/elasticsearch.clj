@@ -98,19 +98,9 @@
                   :update-time "2014-02-24T22:20:56.000Z"
                   :associated-difs ["DIF-100" "DIF-101"]
                   :associated-difs.lowercase ["dif-100" "dif-101"]
-                  :keyword "a minimal valid collection v 1 near real time minimal sedac ac summary of collection 1 1b   new york washington dc"
-                  :entry-title-keyword ["a" "minimal" "valid" "collection" "v" "1"]
-                  :short-name-keyword ["minimal"]
-                  :collection-data-type-keyword ["near" "real" "time"]
-                  :archive-center-keyword ["sedac" "ac"]
-                  :concept-id-keyword "c1234-prov1"
-                  :version-id-keyword ["1"]
-                  :processing-level-id-keyword ["1b"]
-                  :science-keywords-keyword []
-                  :spatial-keyword-keyword ["new" "york" "washington" "dc"]
-                  :attributes-keyword []
-                  :platform-sn-keyword ["platform" "one" "platform" "two"]
-                  :summary-keyword ["summary" "of" "collection"]}
+                  :keyword "a minimal valid collection v 1 near real time minimal sedac ac dar tar war foo bar summary of collection 1 1b   new york washington dc PLATFORM ONE PLATFORM TWO dummy dummy"
+                  :project-ln.lowercase ["dummy" "dummy" "dummy"]
+                  :platform-ln.lowercase ["dummy" "dummy"]}
         actual (es/concept->elastic-doc nil concept umm-concept)]
     (is (= expected actual))))
 

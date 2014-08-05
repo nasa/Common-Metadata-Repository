@@ -177,29 +177,11 @@
                                     :associated-difs.lowercase string-field-mapping
                                     :coordinate-system (not-indexed (stored string-field-mapping))
                                     ;; analyzed fields for keyword searches
-                                    :keyword (stored text-field-mapping)
-                                    :concept-id-keyword string-field-mapping
-                                    :entry-title-keyword string-field-mapping
-                                    :collection-data-type-keyword string-field-mapping
-                                    :short-name-keyword string-field-mapping
-                                    ;; TODO :long-name
-                                    :archive-center-keyword string-field-mapping
-                                    ;; TODO :suggested-usage
-                                    :version-id-keyword string-field-mapping
-                                    ;; TODO :version-description
-                                    ;; TODO :campaign-short-name
-                                    :processing-level-id-keyword string-field-mapping
-                                    :science-keywords-keyword string-field-mapping
-                                    :spatial-keyword-keyword string-field-mapping
-                                    ;; TODO :temporal-keyword
-                                    ;; TODO platform-long-name
-                                    :platform-sn-keyword string-field-mapping
-                                    ;; TODO :platform-ln
-                                    ;; TODO platform nested stuff (instruments)
-                                    :attributes-keyword string-field-mapping
-                                    ;; TODO :associated-difs
-                                    :two-d-coord-name-keyword string-field-mapping
-                                    :summary-keyword string-field-mapping
+                                    :keyword text-field-mapping
+                                    :project-ln.lowercase string-field-mapping
+                                    :platform-ln.lowercase string-field-mapping
+
+
                                     }
                                    spatial-coverage-fields)}})
 

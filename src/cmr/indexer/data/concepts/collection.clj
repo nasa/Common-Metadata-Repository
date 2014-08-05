@@ -47,11 +47,13 @@
          :keys [entry-id entry-title summary temporal related-urls spatial-keywords associated-difs]} collection
         platforms (:platforms collection)
         platform-short-names (map :short-name platforms)
+        platform-long-names (map :long-name platforms)
         instruments (mapcat :instruments platforms)
         instrument-short-names (remove nil? (map :short-name instruments))
         sensors (mapcat :sensors instruments)
         sensor-short-names (remove nil? (map :short-name sensors))
         project-short-names (map :short-name (:projects collection))
+        project-long-names (map :long-name (:projects collection))
         two-d-coord-names (map :name (:two-d-coordinate-systems collection))
         orgs (:organizations collection)
         archive-center-val (remove nil? (for [org orgs]
@@ -111,18 +113,9 @@
             :coordinate-system (when spatial-representation (csk/->SNAKE_CASE_STRING spatial-representation))
             ;; fields added to support keyword searches
             :keyword (k/create-keywords-field collection)
-            :concept-id-keyword (str/lower-case concept-id)
-            :entry-title-keyword (k/prepare-keyword-field entry-title)
-            :collection-data-type-keyword (k/prepare-keyword-field collection-data-type)
-            :short-name-keyword (k/prepare-keyword-field short-name)
-            :archive-center-keyword (mapcat k/prepare-keyword-field archive-center-val)
-            :version-id-keyword (k/prepare-keyword-field version-id)
-            :processing-level-id-keyword (k/prepare-keyword-field processing-level-id)
-            :science-keywords-keyword (mapcat k/prepare-keyword-field
-                                              (sk/science-keywords->keywords collection))
-            :spatial-keyword-keyword (mapcat k/prepare-keyword-field spatial-keywords)
-            :platform-sn-keyword (mapcat k/prepare-keyword-field platform-short-names)
-            :attributes-keyword (mapcat k/prepare-keyword-field (attrib/psas->keywords collection))
-            :summary-keyword (k/prepare-keyword-field summary)}
+            :platform-ln.lowercase (map str/lower-case platform-long-names)
+            :project-ln.lowercase (map str/lower-case project-long-names)
+
+            }
            (spatial->elastic collection))))
 
