@@ -86,9 +86,13 @@
     (ingest/reset)
     (ingest/create-provider "PROV1")
 
-    (let [coll (d/ingest "PROV1" (dc/collection {:spatial-coverage (dc/spatial :geodetic)}))]
+    (let [coll-geodetic (d/ingest "PROV1" (dc/collection {:spatial-coverage (dc/spatial :geodetic)}))
+          coll-cartesian (d/ingest "PROV1" (dc/collection {:spatial-coverage (dc/spatial :cartesian)}))]
       (doseq [shape shapes]
-        (d/ingest "PROV1" (dg/granule coll {:spatial-coverage (dg/spatial shape)}))))
+        (let [coll (if (= :cartesian (:coordinate-system shape))
+                     coll-cartesian
+                     coll-geodetic)]
+          (d/ingest "PROV1" (dg/granule coll {:spatial-coverage (dg/spatial shape)})))))
     (index/refresh-elastic-index)
 
     ;; Save the shapes for display
@@ -116,7 +120,6 @@
         search-area (polygon 0 0, 1 0, 1 1, 0 0)]
     (visual-interactive-search [polygon-with-holes] search-area))
 
-
   ;; all supported spatial types
   (let [touches-np (m/mbr 45 90 55 70)
         touches-sp (m/mbr -160 -70 -150 -90)
@@ -125,12 +128,12 @@
         normal-br2 (m/mbr -20 0 -10 -10)
 
         ;; Polygons
-        wide-north (polygon -70 20, 70 20, 70 30, -70 30, -70 20)
-        wide-south (polygon -70 -30, 70 -30, 70 -20, -70 -20, -70 -30)
-        across-am-poly (polygon 170 35, -175 35, -170 45, 175 45, 170 35)
-        on-np (polygon 45 85, 135 85, -135 85, -45 85, 45 85)
-        on-sp (polygon -45 -85, -135 -85, 135 -85, 45 -85, -45 -85)
-        normal-poly (polygon -20 -10, -10 -10, -10 10, -20 10, -20 -10)
+        wide-north (polygon :geodetic -70 20, 70 20, 70 30, -70 30, -70 20)
+        wide-south (polygon :geodetic -70 -30, 70 -30, 70 -20, -70 -20, -70 -30)
+        across-am-poly (polygon :geodetic 170 35, -175 35, -170 45, 175 45, 170 35)
+        on-np (polygon :geodetic 45 85, 135 85, -135 85, -45 85, 45 85)
+        on-sp (polygon :geodetic -45 -85, -135 -85, 135 -85, 45 -85, -45 -85)
+        normal-poly (polygon :geodetic -20 -10, -10 -10, -10 10, -20 10, -20 -10)
 
         ;; polygon with holes
         outer (rr/ords->ring :geodetic -5.26,-2.59, 11.56,-2.77, 10.47,8.71, -5.86,8.63, -5.26,-2.59)
@@ -138,18 +141,25 @@
         hole2 (rr/ords->ring :geodetic 5.18,6.92, -1.79,7.01, -2.65,5, 4.29,5.05, 5.18,6.92)
         polygon-with-holes (poly/polygon :geodetic [outer hole1 hole2])
 
+        ;; Cartesian Polygons
+        wide-north-cart (polygon :cartesian -70 20, 70 20, 70 30, -70 30, -70 20)
+        wide-south-cart (polygon :cartesian -70 -30, 70 -30, 70 -20, -70 -20, -70 -30)
+        very-wide-cart (polygon :cartesian -179 40, -179 35, 179 35, 179 40, -179 40)
+        very-tall-cart (polygon :cartesian -160 90, -160 -90, -150 -90, -150 90, -160 90)
+        ;very-tall-cart (polygon :cartesian -160 89, -160 -89, -150 -89, -150 89, -160 89)
+
         ;; points
         north-pole (p/point 90 0)
         south-pole (p/point -90 0)
         normal-point (p/point 10 22)
         am-point (p/point 180 22)
 
-        ; search-area (assoc (polygon -6.45,-3.74,12.34,-4.18,12,9.45,-6.69,9.2,-6.45,-3.74)
-        ;                    :options {:id "polygon"})
+        ;search-area (assoc (polygon :geodetic -6.45,-3.74,12.34,-4.18,12,9.45,-6.69,9.2,-6.45,-3.74)
+        ;                   :options {:id "polygon"})
 
-        ;search-area (assoc (m/mbr -23.43 5 25.54 -6.31) :options {:id "bounding_box"})
+        search-area (assoc (m/mbr -23.43 5 25.54 -6.31) :options {:id "bounding_box"})
 
-        search-area (assoc (p/point 0 0) :options {:id "point"})
+        ;search-area (assoc (p/point 0 0) :options {:id "point"})
 
         ]
     (visual-interactive-search [touches-sp
@@ -164,6 +174,10 @@
                                 on-sp
                                 normal-poly
                                 polygon-with-holes
+                                wide-north-cart
+                                wide-south-cart
+                                very-wide-cart
+                                very-tall-cart
                                 north-pole
                                 south-pole
                                 normal-point
