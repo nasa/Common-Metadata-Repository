@@ -121,7 +121,7 @@
 (defn br-intersections
   "Returns a lazy sequence of the points where the ring lines intersect the br"
   [ring br]
-  (when (m/intersects-br? (:mbr ring) br)
+  (when (m/intersects-br? (coordinate-system ring) (:mbr ring) br)
     (if (m/single-point? br)
       (let [point (p/point (:west br) (:north br))]
         (when (some #(asi/intersects-point? % point) (lines ring))
@@ -138,7 +138,7 @@
   [ring br]
   (let [corner-points (m/corner-points br)]
     (and ;; The rings mbr covers the br
-         (m/covers-mbr? (:mbr ring) br)
+         (m/covers-mbr? (coordinate-system ring) (:mbr ring) br)
          ;; The ring contains all the corner points of the br.
          (every? (partial covers-point? ring) corner-points)
 
@@ -153,13 +153,13 @@
 (defn intersects-br?
   "Returns true if the ring intersects the br"
   [ring br]
-  (when (m/intersects-br? (:mbr ring) br)
+  (when (m/intersects-br? (coordinate-system ring) (:mbr ring) br)
     (if (m/single-point? br)
       (covers-point? ring (p/point (:west br) (:north br)))
 
       (or
         ;; Does the br cover any points of the ring?
-        (some (partial m/covers-point? br) (:points ring))
+        (some (partial m/covers-point? (coordinate-system ring) br) (:points ring))
         ;; Does the ring contain any points of the br?
         (some (partial covers-point? ring) (m/corner-points br))
 

@@ -64,7 +64,7 @@
           (if current-in-shape current-br inner-br)
           (if current-in-shape :less-than :greater-than))))))
 
-(defn- even-lr-search
+(defn even-lr-search
   "Searches for an LR from the given point in the shape. The LR will grown evently from the point
   given with the same shape as the outer MBR."
   [shape from-point]
@@ -209,8 +209,6 @@
   ([shape not-found-is-error?]
    (let [shape (d/calculate-derived shape)
          mbr (relations/mbr shape)
-         contains-north-pole (relations/contains-north-pole? shape)
-         contains-south-pole (relations/contains-south-pole? shape)
          initial-lr (or
                       ;; Find an LR from the center point of the shape
                       (even-lr-search shape (m/center-point mbr))

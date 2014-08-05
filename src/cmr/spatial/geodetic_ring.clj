@@ -59,7 +59,7 @@
   (or (and (:contains-north-pole ring) (p/is-north-pole? point))
       (and (:contains-south-pole ring) (p/is-south-pole? point))
       ;; Only do real intersection if the mbr covers the point.
-      (when (mbr/covers-point? (:mbr ring) point)
+      (when (mbr/covers-point? :geodetic (:mbr ring) point)
         (if (some (:point-set ring) point)
           true ; The point is actually one of the rings points
           ;; otherwise we'll do the real intersection algorithm

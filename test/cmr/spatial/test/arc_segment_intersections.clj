@@ -40,9 +40,9 @@
                              arc-point (a/point-at-lon arc lon)]
                          (approx= line-point arc-point 0.01)))
                      intersections)
-             (every? (partial m/covers-point? ls-mbr) intersections)
+             (every? (partial m/covers-point? :geodetic ls-mbr) intersections)
              (every? (fn [point]
-                       (some #(m/covers-point? % point) arc-mbrs))
+                       (some #(m/covers-point? :geodetic % point) arc-mbrs))
                      intersections))))))
 
 (comment

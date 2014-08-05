@@ -48,8 +48,8 @@
         lat2 (.lat p2)
         m (/ (- lat2 lat1) (- lon2 lon1))
         b (- lat1 (* m lon1))
-        mbr (m/union (m/point->mbr p1)
-                     (m/point->mbr p2)
+        mbr (m/union (m/mbr lon1 lat1 lon1 lat1)
+                     (m/mbr lon2 lat2 lon2 lat2)
                      ;; Resulting MBR should not cross the antimeridian as this isn't allowed for cartesian polygons
                      false)]
     (->LineSegment p1 p2 m b mbr)))
@@ -132,7 +132,7 @@
   "Returns true if the point is approximately on the segment."
   [ls point]
   (let [mbr (:mbr ls)]
-    (when (m/covers-point? mbr point)
+    (when (m/covers-point? :cartesian mbr point)
       (if (horizontal? ls)
         (approx= ^double (get-in ls [:point1 :lat])
                  ^double (:lat point) COVERS_TOLERANCE)
@@ -250,7 +250,7 @@
         vert-mbr (:mbr vert-ls)]
     (when-let [point (some->> (segment+lon->lat ls lon)
                               (p/point lon))]
-      (when (and (m/covers-point? mbr point) (m/covers-point? vert-mbr point))
+      (when (and (m/covers-point? :cartesian mbr point) (m/covers-point? :cartesian vert-mbr point))
         point))))
 
 (defn- intersection-normal
@@ -265,8 +265,8 @@
         lon (/ (- b2 b1) (- m1 m2))
         lat (+ (* m1 lon) b1)
         point (p/point lon lat)]
-    (when (and (m/covers-point? mbr1 point)
-               (m/covers-point? mbr2 point))
+    (when (and (m/covers-point? :cartesian mbr1 point)
+               (m/covers-point? :cartesian mbr2 point))
       point)))
 
 (defn intersection
@@ -300,8 +300,8 @@
   is not within the mbr"
   [ls mbr]
   (let [{:keys [point1 point2]} ls
-        point1-in-mbr (m/covers-point? mbr point1)
-        point2-in-mbr (m/covers-point? mbr point2)
+        point1-in-mbr (m/covers-point? :cartesian mbr point1)
+        point2-in-mbr (m/covers-point? :cartesian mbr point2)
         ;; helper function that removes points that are = to 1 and 2
         ;; If the MBR covers the edges of the line segment then the points will be found as intersections
         not-point1-or-2 #(and (not (approx= point1 % COVERS_TOLERANCE))

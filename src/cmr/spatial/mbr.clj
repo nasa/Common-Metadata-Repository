@@ -93,9 +93,18 @@
         south (- south COVERS_TOLERANCE)]
     (and (>= v south) (<= v north))))
 
-(defn covers-point?
+(defmulti covers-point?
   "Returns true if the mbr contains the given point"
-  [mbr ^Point p]
+  (fn [coord-sys mbr p]
+    coord-sys))
+
+(defmethod covers-point? :cartesian
+  [coord-sys mbr ^Point p]
+  (and (covers-lat? mbr (.lat p))
+       (covers-lon? mbr (.lon p))))
+
+(defmethod covers-point? :geodetic
+  [coord-sys mbr ^Point p]
   (or
     (and (p/is-north-pole? p)
          (covers-lat? mbr 90.0))
@@ -122,17 +131,17 @@
 
 (defn covers-mbr?
   "Returns true if the mbr completely covers the other-br."
-  [mbr other-br]
+  [coord-sys mbr other-br]
   (or (and (= (crosses-antimeridian? mbr)
               (crosses-antimeridian? other-br))
-           (every? (partial covers-point? mbr) (corner-points other-br)))
+           (every? (partial covers-point? coord-sys mbr) (corner-points other-br)))
 
       ;; one crosses and one doesn't
       (and (crosses-antimeridian? mbr)
            (let [[c1 c2] (split-across-antimeridian mbr)]
              ;; Check to see if the mbr crosses the other br on either side of the antimeridian
-             (or (covers-mbr? c1 other-br)
-                 (covers-mbr? c2 other-br))))))
+             (or (covers-mbr? coord-sys c1 other-br)
+                 (covers-mbr? coord-sys c2 other-br))))))
 
 (defn center-point [m]
   (let [{^double n :north ^double s :south ^double e :east ^double w :west} m
@@ -218,9 +227,9 @@
 
 (defn intersects-br?
   "Returns true if the mbr intersects the other bounding rectangle"
-  [^Mbr mbr ^Mbr other-br]
-  (or (some (partial covers-point? mbr) (corner-points other-br))
-      (some (partial covers-point? other-br) (corner-points mbr))
+  [coord-sys ^Mbr mbr ^Mbr other-br]
+  (or (some (partial covers-point? coord-sys mbr) (corner-points other-br))
+      (some (partial covers-point? coord-sys other-br) (corner-points mbr))
 
       ;; Do they form an overlapping t shape?
       (and (= (crosses-antimeridian? mbr)

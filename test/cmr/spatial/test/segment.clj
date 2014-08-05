@@ -58,8 +58,8 @@
               (valid-double? m)))
 
         (not (m/crosses-antimeridian? mbr))
-        (m/covers-point? mbr point1)
-        (m/covers-point? mbr point2)))))
+        (m/covers-point? :cartesian mbr point1)
+        (m/covers-point? :cartesian mbr point2)))))
 
 (defspec segment+lon->lat-spec {:times 1000 :printer-fn sgen/print-failed-line-segments}
   (for-all [ls (gen/such-that (complement s/vertical?) sgen/line-segments)]
@@ -115,8 +115,8 @@
           mbr2 (:mbr ls2)
           point (s/intersection ls1 ls2)]
       (or (nil? point)
-          (and (m/covers-point? mbr1 point)
-               (m/covers-point? mbr2 point)
+          (and (m/covers-point? :cartesian mbr1 point)
+               (m/covers-point? :cartesian mbr2 point)
                (s/point-on-segment? ls1 point)
                (s/point-on-segment? ls2 point))))))
 

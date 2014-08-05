@@ -107,14 +107,13 @@
   (def ring (d/calculate-derived
               (first (gen/sample (sgen/rings :geodetic) 1))))
 
-
   ;; Samples
 
   ;; Normal
   (display-draggable-lr-ring
     (gr/ords->ring 0,0, 4,0, 6,5, 2,5, 0,0))
 
-  ;; Very larges
+  ;; Very large
   (display-draggable-lr-ring
     (gr/ords->ring -89.9 -45, 89.9 -45, 89.9 45, -89.9 45, -89 -45))
 

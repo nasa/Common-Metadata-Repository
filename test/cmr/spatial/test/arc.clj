@@ -48,9 +48,9 @@
 (defspec arc-midpoint-spec 1000
   (for-all [arc sgen/arcs]
     (let [midpoint (a/midpoint arc)]
-      (and (or (mbr/covers-point? (:mbr1 arc) midpoint)
+      (and (or (mbr/covers-point? :geodetic (:mbr1 arc) midpoint)
                (and (:mbr2 arc)
-                    (mbr/covers-point? (:mbr2 arc) midpoint)))
+                    (mbr/covers-point? :geodetic (:mbr2 arc) midpoint)))
            (a/point-on-arc? arc midpoint)))))
 
 (deftest arc-midpoint-test
@@ -193,7 +193,7 @@
             lat sgen/lats]
     (let [points (a/points-at-lat a lat)
           mbrs (a/mbrs a)]
-      (and (every? #(some (fn [mbr] (mbr/covers-point? mbr %)) mbrs)
+      (and (every? #(some (fn [mbr] (mbr/covers-point? :geodetic mbr %)) mbrs)
               points)
            (every? (partial a/point-on-arc? a) points)))))
 
@@ -349,5 +349,5 @@
           (let [[br] brs
                 {:keys [west-point east-point]} arc]
             (and
-              (mbr/covers-point? br west-point)
-              (mbr/covers-point? br east-point))))))))
+              (mbr/covers-point? :geodetic br west-point)
+              (mbr/covers-point? :geodetic br east-point))))))))

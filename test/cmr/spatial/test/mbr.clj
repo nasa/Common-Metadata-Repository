@@ -65,10 +65,10 @@
   (for-all [mbr (gen/such-that (complement m/whole-world?) sgen/mbrs)]
     (let [external-points (m/external-points mbr)]
       (and (>= (count external-points) 3)
-           (every? (complement (partial m/covers-point? mbr))
+           (every? (complement (partial m/covers-point? :geodetic mbr))
                    external-points)))))
 
-(defspec covers-point-spec 100
+(defspec geodetic-covers-point-spec 100
   (for-all [mbr sgen/mbrs]
     (let [{w :west n :north e :east s :south} mbr
           corner-points (p/ords->points w,n e,n e,s w,s)
@@ -80,8 +80,8 @@
                    (avg [w e]))
           midpoint (p/point midlon (avg [n s]))]
       (and
-        (every? #(m/covers-point? mbr %) corner-points)
-        (m/covers-point? mbr midpoint)))))
+        (every? #(m/covers-point? :geodetic mbr %) corner-points)
+        (m/covers-point? :geodetic mbr midpoint)))))
 
 (deftest covers-point-test
   (let [examples [;; Normal
@@ -134,15 +134,15 @@
             off-points (apply p/ords->points off-ords)]
 
         (doseq [p on-points]
-          (is (m/covers-point? mbr p) (str (pr-str mbr) (pr-str p))))
+          (is (m/covers-point? :geodetic mbr p) (str (pr-str mbr) (pr-str p))))
         (doseq [p off-points]
-          (is (not (m/covers-point? mbr p)) (str (pr-str mbr) (pr-str p))))))))
+          (is (not (m/covers-point? :geodetic mbr p)) (str (pr-str mbr) (pr-str p))))))))
 
 (deftest covers-br-test
   (testing "normal mbrs"
     (let [m1 (m/mbr -10 25 10 -25)]
       (are [w n e s]
-           (m/covers-mbr? m1 (m/mbr w n e s))
+           (m/covers-mbr? :geodetic m1 (m/mbr w n e s))
 
            ;; covers self
            -10 25 10 -25
@@ -163,7 +163,7 @@
            10 -25 10 -25  ; se corner
            )
       (are [w n e s]
-           (not (m/covers-mbr? m1 (m/mbr w n e s)))
+           (not (m/covers-mbr? :geodetic m1 (m/mbr w n e s)))
 
            ;; Each part just outside mbr
            -11 25 10 -25
@@ -186,49 +186,49 @@
       (is (m/crosses-antimeridian? m4))
 
       (testing "covers self"
-        (is (m/covers-mbr? m1 m1))
-        (is (m/covers-mbr? m2 m2))
-        (is (m/covers-mbr? m3 m3))
-        (is (m/covers-mbr? m4 m4)))
+        (is (m/covers-mbr? :geodetic m1 m1))
+        (is (m/covers-mbr? :geodetic m2 m2))
+        (is (m/covers-mbr? :geodetic m3 m3))
+        (is (m/covers-mbr? :geodetic m4 m4)))
 
       (testing "mbrs crossing antimeridian and non crossing"
-        (is (not (m/covers-mbr? m1 m2)))
-        (is (not (m/covers-mbr? m2 m1)))
-        (is (not (m/covers-mbr? m1 m3)))
-        (is (not (m/covers-mbr? m3 m1)))
-        (is (m/covers-mbr? m2 (m/mbr 176 9 177 9))))
+        (is (not (m/covers-mbr? :geodetic m1 m2)))
+        (is (not (m/covers-mbr? :geodetic m2 m1)))
+        (is (not (m/covers-mbr? :geodetic m1 m3)))
+        (is (not (m/covers-mbr? :geodetic m3 m1)))
+        (is (m/covers-mbr? :geodetic m2 (m/mbr 176 9 177 9))))
 
       (testing "mbrs both crossing antimeridian"
-        (is (m/covers-mbr? m2 m3))
-        (is (not (m/covers-mbr? m3 m2)))
-        (is (not (m/covers-mbr? m2 m4)))
-        (is (not (m/covers-mbr? m4 m2)))))))
+        (is (m/covers-mbr? :geodetic m2 m3))
+        (is (not (m/covers-mbr? :geodetic m3 m2)))
+        (is (not (m/covers-mbr? :geodetic m2 m4)))
+        (is (not (m/covers-mbr? :geodetic m4 m2)))))))
 
 (defspec intersects-br-spec
   (for-all [mbr1 sgen/mbrs
             mbr2 sgen/mbrs]
     (and
       ;; intersect self
-      (m/intersects-br? mbr1 mbr1)
-      (m/intersects-br? mbr2 mbr2)
+      (m/intersects-br? :geodetic mbr1 mbr1)
+      (m/intersects-br? :geodetic mbr2 mbr2)
 
       ;; The union of the area intersects both
       (let [unioned (m/union mbr1 mbr2)]
-        (and (m/intersects-br? unioned mbr1)
-             (m/intersects-br? unioned mbr2)
-             (m/intersects-br? mbr1 unioned)
-             (m/intersects-br? mbr2 unioned)))
+        (and (m/intersects-br? :geodetic unioned mbr1)
+             (m/intersects-br? :geodetic unioned mbr2)
+             (m/intersects-br? :geodetic mbr1 unioned)
+             (m/intersects-br? :geodetic mbr2 unioned)))
 
       ;; Inverse should be true
-      (= (m/intersects-br? mbr1 mbr2)
-         (m/intersects-br? mbr2 mbr1)))))
+      (= (m/intersects-br? :geodetic mbr1 mbr2)
+         (m/intersects-br? :geodetic mbr2 mbr1)))))
 
 (deftest intersects-br-test
   (let [m1 (m/mbr -10 25 10 -25)]
     (are [w n e s]
          (let [m2 (m/mbr w n e s)]
-           (and (m/intersects-br? m1 m2)
-                (m/intersects-br? m2 m1)))
+           (and (m/intersects-br? :geodetic m1 m2)
+                (m/intersects-br? :geodetic m2 m1)))
          ;; corners overlap
          9 -24 11 -26
          9 26 11 24
@@ -246,13 +246,13 @@
     ;; t shape across antimeridian
     (let [m2 (m/mbr 160 5 -160 -5)
           m3 (m/mbr 170 25 -170 -25)]
-      (is (m/intersects-br? m2 m3))
-      (is (m/intersects-br? m3 m2)))
+      (is (m/intersects-br? :geodetic m2 m3))
+      (is (m/intersects-br? :geodetic m3 m2)))
 
     (are [w n e s]
          (let [m2 (m/mbr w n e s)]
-           (and (not (m/intersects-br? m1 m2))
-                (not (m/intersects-br? m2 m1))))
+           (and (not (m/intersects-br? :geodetic m1 m2))
+                (not (m/intersects-br? :geodetic m2 m1))))
          ;; to the right
          11 1 13 0
          11 26 13 -26
@@ -274,13 +274,13 @@
 (defspec intersections-br-spec 100
   (for-all [mbr1 sgen/mbrs
             mbr2 sgen/mbrs]
-    (let [intersects? (m/intersects-br? mbr1 mbr2)
+    (let [intersects? (m/intersects-br? :geodetic mbr1 mbr2)
           intersections (m/intersections mbr1 mbr2)]
       (or (and (not intersects?) (empty? intersections))
 
           (and (seq intersections)
-          (every? #(and (m/covers-mbr? mbr1 %)
-                        (m/covers-mbr? mbr2 %))
+          (every? #(and (m/covers-mbr? :geodetic mbr1 %)
+                        (m/covers-mbr? :geodetic mbr2 %))
                   intersections))))))
 
 (defspec union-test 100

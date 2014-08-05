@@ -61,7 +61,7 @@
 
   (intersects-br?
     [point br]
-    (m/covers-point? br point))
+    (m/covers-point? :geodetic br point))
 
   (intersects-polygon?
     [point polygon]
@@ -82,11 +82,11 @@
 
   (covers-point?
     [br point]
-    (m/covers-point? br point))
+    (m/covers-point? :geodetic br point))
 
   (covers-br?
     [br1 br2]
-    (m/covers-mbr? br1 br2))
+    (m/covers-mbr? :geodetic br1 br2))
 
   (intersects-ring?
     [br ring]
@@ -94,7 +94,7 @@
 
   (intersects-br?
     [br1 br2]
-    (m/intersects-br? br1 br2))
+    (m/intersects-br? :geodetic br1 br2))
 
   (intersects-polygon?
     [br polygon]

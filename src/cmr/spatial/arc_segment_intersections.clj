@@ -47,7 +47,7 @@
 
   (let [ls-mbr (:mbr ls)
         arc-mbrs (mapcat m/split-across-antimeridian (a/mbrs arc))
-        intersecting-mbrs (seq (filter (partial m/intersects-br? ls-mbr)
+        intersecting-mbrs (seq (filter (partial m/intersects-br? :geodetic ls-mbr)
                                        arc-mbrs))]
     (when intersecting-mbrs
       (cond
