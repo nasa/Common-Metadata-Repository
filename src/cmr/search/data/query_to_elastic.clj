@@ -38,16 +38,35 @@
     [condition concept-type]
     "Converts a query model condition into the equivalent elastic search filter"))
 
+(defn keyword-regexp-filter
+  "Create a regexp filter for a given field and keyword"
+  [field keyword]
+  (let [regex (str ".*" keyword ".*")]
+    {:regexp {field regex}}))
+
+; (defn keywords->name-filter
+;   "Create a filter for keyword searches that checks long-name and short-name"
+;   (let [long-name-cond
+;         condition (qm/or-conds
+
+(defn keywords->elastic-filters
+  "Create filters for keyword search"
+  [keywords]
+  (into [] (when keywords
+             ())))
+
 (defn query->elastic
   "Converts a query model into an elastic search query"
   [query]
-
-  (let [{:keys [concept-type condition]} query]
-    {:filtered {:query (q/match-all)
-                :filter (condition->elastic condition concept-type)}}
-    ;; if kwyword exist, construct the function_score part of the query and merge into the final query
-    ;; otherwise return the query
-    ))
+  (let [{:keys [concept-type condition keywords]} query
+        core-query (condition->elastic condition concept-type)]
+    (if-let [keywords (:keywords query)]
+      {:function_score {:functions []
+                        :query {:filtered {:query (q/match-all)
+                                           :filter core-query}}}}
+      {:filtered {:query (q/match-all)
+                  :filter core-query}}
+      )))
 
 (def sort-key-field->elastic-field
   "Submaps by concept type of the sort key fields given by the user to the exact elastic sort field to use.
