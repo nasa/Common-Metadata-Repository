@@ -1,7 +1,10 @@
 (ns cmr.search.validators.validation
   "Defines protocols and functions to validate conditions"
   (:require [cmr.search.models.query :as qm]
-            [cmr.spatial.validation :as spatial-validation]))
+            [cmr.spatial.validation :as spatial-validation]
+
+            ;; Must be required to be available.
+            [cmr.spatial.geodetic-ring-validations]))
 
 (defprotocol Validator
   "Defines the protocol for validating query conditions.
