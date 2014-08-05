@@ -1,15 +1,11 @@
 (ns cmr.search.services.aql.conversion
   "Contains functions for parsing and converting aql to query conditions"
   (:require [clojure.string :as s]
-            [clojure.set :as set]
             [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
             [cmr.common.services.errors :as errors]
             [cmr.search.models.query :as qm]
-            [cmr.common.date-time-parser :as dt-parser]
-            [cmr.common.util :as u]
-            [cmr.search.services.parameters.legacy-parameters :as lp]
-            [cmr.common.concepts :as cc]))
+            [cmr.search.services.parameters.conversion :as p]))
 
 (def aql-elem->converter-attrs
   "A mapping of aql element names to query condition types based on concept-type"
@@ -18,8 +14,6 @@
                 :versionId {:name :version-id :type :string}
                 :CampaignShortName {:name :project :type :string}
                 :dataSetId {:name :entry-title :type :string}
-                ;; TODO insert-time is not indexed yet
-                :ECHOInsertDate {:name :insert-time :type :datetime}
                 :ECHOLastUpdate {:name :update-since :type :datetime}
                 :onlineOnly {:name :downloadable :type :boolean}
                 :ECHOCollectionID {:name :concept-id :type :string}
@@ -29,14 +23,7 @@
                 :instrumentShortName {:name :instrument :type :string}
                 ;; TODO spatial
                 :spatial {:name :spatial :type :spatial}
-                :spatialKeywords {:name :spatial-keyword :type :string}
                 :temporal {:name :temporal :type :temporal}
-                ;; TODO temporal-keywords is not in UMM yet
-                :temporalKeywords {:name :temporal-keywords :type :string}
-                ;; TODO :additional-attr-names is not indexed yet
-                :additionalAttributeNames {:name :additional-attr-names :type :string}
-                :additionalAttributes {:name :attribute :type :attribute}
-                :archiveCenter {:name :archive-center :type :string}
                 :difEntryId {:name :dif-entry-id :type :dif-entry-id}
                 :entry-id {:name :entry-id :type :string}
                 :associated-difs {:name :associated-difs :type :string}
@@ -51,8 +38,6 @@
              :cloudCover {:name :cloud-cover :type :num-range}
              :dataSetId {:name :entry-title :type :collection-query}
              :dayNightFlag {:name :day-night :type :string}
-             ;; TODO insert-time is not indexed yet
-             :ECHOInsertDate {:name :insert-time :type :datetime}
              :ECHOLastUpdate {:name :update-since :type :datetime}
              :onlineOnly {:name :downloadable :type :boolean}
              :ECHOCollectionID {:name :collection-concept-id :type :string}
@@ -65,15 +50,6 @@
              :spatial {:name :spatial :type :spatial}
              :temporal {:name :temporal :type :temporal}
              :additionalAttributes {:name :attribute :type :attribute}
-             ;; pge-name is not in UMM yet
-             :PGEName {:name :pge-name :type :string}
-             ;; pge-version is not in UMM yet
-             :PGEVersion {:name :pge-version :type :string}
-             ;; TODO insert-time is not indexed yet
-             :providerInsertDate {:name :insert-time :type :datetime}
-             :providerProductionDate {:name :updated-since :type :datetime}
-             ;; TODO measured-parameters is not in UMM yet
-             :measuredParameters {:name :measured-parameters :type :measured-parameters}
              ;; orbit-number is not in UMM yet
              :orbitNumber {:name :orbit-number :type :string}
              ;; :equator-cross-longitude is not in UMM yet
@@ -99,7 +75,8 @@
   ([concept-type key elem pattern?]
    (let [value (first (:content elem))
          case-insensitive (get-in elem [:attrs :caseInsensitive])
-         case-sensitive? (if (and case-insensitive (= "N" (s/upper-case case-insensitive))) true false)]
+         case-sensitive? (if (and case-insensitive (= "N" (s/upper-case case-insensitive))) true false)
+         case-sensitive? (if (some? (p/always-case-sensitive key)) true case-sensitive?)]
      (if pattern?
        (let [new-value (-> value
                            (s/replace #"([^\\])(%)" "$1*")
@@ -158,6 +135,33 @@
   [concept-type condition-elems]
   (map (partial element->condition concept-type) condition-elems))
 
+(defn- get-concept-type
+  "Parse and returns the concept-type from the parsed AQL xml struct"
+  [xml-struct]
+  (let [aql-query-type (:value (cx/attrs-at-path xml-struct [:for]))]
+    (aql-query-type->concept-type aql-query-type)))
+
+(defn- xml-struct->data-center-condition
+  "Parse and returns the data-center-condition from the parsed AQL xml struct"
+  [concept-type xml-struct]
+  (when (nil? (cx/content-at-path xml-struct [:dataCenterId :all]))
+    (element->condition concept-type (cx/element-at-path xml-struct [:dataCenterId]))))
+
+(defn- xml-struct->where-conditions
+  "Parse and returns the where conditions from the parsed AQL xml struct"
+  [concept-type xml-struct]
+  (let [condition-key (if (= :collection concept-type) :collectionCondition :granuleCondition)
+        condition-groups (cx/contents-at-path xml-struct [:where condition-key])]
+    (mapcat (partial condition-elem-group->conditions concept-type) condition-groups)))
+
+(defn- xml-struct->query-condition
+  "Parse and returns the query condition from the parsed AQL xml struct"
+  [concept-type xml-struct]
+  (let [data-center-condition (xml-struct->data-center-condition concept-type xml-struct)
+        where-conditions (xml-struct->where-conditions concept-type xml-struct)
+        conditions (remove nil? (concat [data-center-condition] where-conditions))]
+    (if (empty? conditions) nil (qm/and-conds conditions))))
+
 (defn aql->query
   "Converts aql into a query model."
   [params aql]
@@ -165,23 +169,10 @@
   (let [page-size (Integer. (get params :page-size qm/default-page-size))
         page-num (Integer. (get params :page-num qm/default-page-num))
         pretty (get params :pretty false)
-        xml-struct (x/parse-str aql)
-        aql-query-type (:value (cx/attrs-at-path xml-struct [:for]))
         result-format (:result-format params)
-        concept-type (aql-query-type->concept-type aql-query-type)
-        data-center-condition (when (nil? (cx/content-at-path xml-struct [:dataCenterId :all]))
-                                [(element->condition concept-type (cx/element-at-path xml-struct [:dataCenterId]))])
-        condition-key (if (= :collection concept-type) :collectionCondition :granuleCondition)
-        negated (:negated (cx/attrs-at-path xml-struct [:where condition-key]))
-        negated? (if (and negated (= "Y" (s/upper-case negated))) true false)
-        condition-groups (cx/contents-at-path xml-struct [:where condition-key])
-        where-conditions (mapcat (partial condition-elem-group->conditions concept-type) condition-groups)
-        where-condition (if (empty? where-conditions) (qm/->MatchAllCondition) (qm/and-conds where-conditions))
-        where-condition (if negated?
-                    (qm/->NegatedCondition where-condition)
-                    where-condition)
-        conditions (concat data-center-condition [where-condition])
-        condition (qm/and-conds conditions)]
+        xml-struct (x/parse-str aql)
+        concept-type (get-concept-type xml-struct)
+        condition (xml-struct->query-condition concept-type xml-struct)]
     (qm/query {:concept-type concept-type
                :page-size page-size
                :page-num page-num

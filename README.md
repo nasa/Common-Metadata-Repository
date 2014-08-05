@@ -433,12 +433,12 @@ Example of sorting by start_date in descending order: (Most recent data first)
     curl -i "http://localhost:3003/concepts/G100000-PROV1"
 
 ### Reset cache
-curl -i -XPOST -H "Content-Type: application/json" http://localhost:3003/reset
+    curl -i -XPOST -H "Content-Type: application/json" http://localhost:3003/reset
 
 ### Search with POST
 Search collections or granules with query parameters encoded form in POST request body.
 
-curl -i -XPOST http://localhost:3003/collections -d "dataset_id[]=Example%20DatasetId&dataset_id[]=Dataset2"
+    curl -i -XPOST http://localhost:3003/collections -d "dataset_id[]=Example%20DatasetId&dataset_id[]=Dataset2"
 
 ### Retrieve provider holdings, support format :xml and :json in header and as extension.
 
@@ -453,7 +453,9 @@ Provider holdings for a list of providers
 ### Search with AQL
 Search collections or granules with AQL in POST request body.
 
-curl -i -XPOST http://localhost:3003/concepts/search -d '<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE query SYSTEM "https://api.echo.nasa.gov/echo/dtd/IIMSAQLQueryLanguage.dtd"><query><for value="collections"/><dataCenterId><all/></dataCenterId><where><collectionCondition><shortName><value>S1</value></shortName></collectionCondition></where></query>'
+    curl -i -XPOST http://localhost:3003/concepts/search -d '<?xml version="1.0" encoding="UTF-8"?>
+    <query><for value="collections"/><dataCenterId><all/></dataCenterId>
+    <where><collectionCondition><shortName><value>S1</value></shortName></collectionCondition></where></query>'
 
 ## Search Flow
 

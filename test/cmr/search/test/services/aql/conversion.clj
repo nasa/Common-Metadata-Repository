@@ -12,78 +12,62 @@
     (a/element->condition :collection (cx/element-at-path xml-struct [:dataCenterId]))))
 
 (deftest aql-string-conversion-test
-  (testing "string value"
-    (let [converted-condition (aql-string-elem->condition "<value>PROV1</value>")]
-      (is (= (q/string-condition :provider-id "PROV1") converted-condition))))
-  (testing "string value with caseInsensitive attribute"
-    (let [converted-condition (aql-string-elem->condition "<value caseInsensitive=\"Y\">PROV1</value>")]
-      (is (= (q/string-condition :provider-id "PROV1") converted-condition)))
-    (let [converted-condition (aql-string-elem->condition "<value caseInsensitive=\"y\">PROV1</value>")]
-      (is (= (q/string-condition :provider-id "PROV1") converted-condition)))
-    (let [converted-condition (aql-string-elem->condition "<value caseInsensitive=\"N\">PROV1</value>")]
-      (is (= (q/string-condition :provider-id "PROV1" true false) converted-condition)))
-    (let [converted-condition (aql-string-elem->condition "<value caseInsensitive=\"n\">PROV1</value>")]
-      (is (= (q/string-condition :provider-id "PROV1" true false) converted-condition))))
+  (testing "string aql"
+    (are [condition aql-snippet]
+         (= condition
+            (aql-string-elem->condition aql-snippet))
 
-  (testing "string pattern"
-    (let [converted-condition (aql-string-elem->condition "<textPattern>PROV*</textPattern>")]
-      (is (= (q/string-condition :provider-id "PROV*" false true) converted-condition)))
-    (let [converted-condition (aql-string-elem->condition "<textPattern>P%</textPattern>")]
-      (is (= (q/string-condition :provider-id "P*" false true) converted-condition)))
-    (let [converted-condition (aql-string-elem->condition "<textPattern>%1</textPattern>")]
-      (is (= (q/string-condition :provider-id "*1" false true) converted-condition)))
-    (let [converted-condition (aql-string-elem->condition "<textPattern>_1</textPattern>")]
-      (is (= (q/string-condition :provider-id "?1" false true) converted-condition)))
-    (let [converted-condition (aql-string-elem->condition "<textPattern>PROV_</textPattern>")]
-      (is (= (q/string-condition :provider-id "PROV?" false true) converted-condition)))
-    (let [converted-condition (aql-string-elem->condition "<textPattern>P\\%\\_R%V_</textPattern>")]
-      (is (= (q/string-condition :provider-id "P\\%\\_R*V?" false true) converted-condition))))
-  (testing "string pattern with caseInsensitive attribute"
-    (let [converted-condition (aql-string-elem->condition "<textPattern caseInsensitive=\"Y\">PROV?</textPattern>")]
-      (is (= (q/string-condition :provider-id "PROV?" false true) converted-condition)))
-    (let [converted-condition (aql-string-elem->condition "<textPattern caseInsensitive=\"y\">PROV?</textPattern>")]
-      (is (= (q/string-condition :provider-id "PROV?" false true) converted-condition)))
-    (let [converted-condition (aql-string-elem->condition "<textPattern caseInsensitive=\"N\">PROV?</textPattern>")]
-      (is (= (q/string-condition :provider-id "PROV?" true true) converted-condition)))
-    (let [converted-condition (aql-string-elem->condition "<textPattern caseInsensitive=\"n\">PROV?</textPattern>")]
-      (is (= (q/string-condition :provider-id "PROV?" true true) converted-condition))))
+         ;; string value
+         (q/string-condition :provider-id "PROV1") "<value>PROV1</value>"
 
-  (testing "string list"
-    (let [converted-condition (aql-string-elem->condition "<list><value>PROV1</value></list>")]
-      (is (= (q/string-condition :provider-id "PROV1") converted-condition)))
-    (let [converted-condition (aql-string-elem->condition "<list><value>PROV1</value><value>PROV2</value></list>")]
-      (is (= (q/or-conds[(q/string-condition :provider-id "PROV1")
-                         (q/string-condition :provider-id "PROV2")])
-             converted-condition))))
-  (testing "string list with caseInsensitive attribute"
-    (let [converted-condition (aql-string-elem->condition "<list><value caseInsensitive=\"N\">PROV1</value></list>")]
-      (is (= (q/string-condition :provider-id "PROV1" true false) converted-condition)))
-    (let [converted-condition (aql-string-elem->condition "<list><value caseInsensitive=\"N\">PROV1</value><value caseInsensitive=\"y\">PROV2</value></list>")]
-      (is (= (q/or-conds[(q/string-condition :provider-id "PROV1" true false)
-                         (q/string-condition :provider-id "PROV2" false false)])
-             converted-condition))))
+         ;; string value with caseInsensitive attribute
+         (q/string-condition :provider-id "PROV1") "<value caseInsensitive=\"Y\">PROV1</value>"
+         (q/string-condition :provider-id "PROV1") "<value caseInsensitive=\"y\">PROV1</value>"
+         (q/string-condition :provider-id "PROV1" true false) "<value caseInsensitive=\"N\">PROV1</value>"
+         (q/string-condition :provider-id "PROV1" true false) "<value caseInsensitive=\"n\">PROV1</value>"
 
-  (testing "string patternList"
-    (let [converted-condition (aql-string-elem->condition "<patternList><value>PROV1</value></patternList>")]
-      (is (= (q/string-condition :provider-id "PROV1") converted-condition)))
-    (let [converted-condition (aql-string-elem->condition "<patternList><value>PROV1</value><value>PROV2</value></patternList>")]
-      (is (= (q/or-conds[(q/string-condition :provider-id "PROV1")
-                         (q/string-condition :provider-id "PROV2")])
-             converted-condition)))
-    (let [converted-condition (aql-string-elem->condition "<patternList><value>PROV1</value><textPattern>PROV2</textPattern></patternList>")]
-      (is (= (q/or-conds[(q/string-condition :provider-id "PROV1")
-                         (q/string-condition :provider-id "PROV2" false true)])
-             converted-condition))))
-  (testing "string patternList with caseInsensitive attribute"
-    (let [converted-condition (aql-string-elem->condition "<patternList><value caseInsensitive=\"N\">PROV1</value></patternList>")]
-      (is (= (q/string-condition :provider-id "PROV1" true false) converted-condition)))
-    (let [converted-condition (aql-string-elem->condition "<patternList><value caseInsensitive=\"N\">PROV1</value><value caseInsensitive=\"y\">PROV2</value></patternList>")]
-      (is (= (q/or-conds[(q/string-condition :provider-id "PROV1" true false)
-                         (q/string-condition :provider-id "PROV2" false false)])
-             converted-condition)))
-    (let [converted-condition (aql-string-elem->condition "<patternList><textPattern caseInsensitive=\"N\">PROV1</textPattern><value caseInsensitive=\"y\">PROV2</value></patternList>")]
-      (is (= (q/or-conds[(q/string-condition :provider-id "PROV1" true true)
-                         (q/string-condition :provider-id "PROV2" false false)])
-             converted-condition)))))
+         ;; textPattern
+         (q/string-condition :provider-id "PROV*" false true) "<textPattern>PROV*</textPattern>"
+         (q/string-condition :provider-id "P*" false true) "<textPattern>P%</textPattern>"
+         (q/string-condition :provider-id "*1" false true) "<textPattern>%1</textPattern>"
+         (q/string-condition :provider-id "?1" false true) "<textPattern>_1</textPattern>"
+         (q/string-condition :provider-id "PROV?" false true) "<textPattern>PROV_</textPattern>"
+         (q/string-condition :provider-id "P\\%\\_R*V?" false true) "<textPattern>P\\%\\_R%V_</textPattern>"
+
+         ;; textPattern with caseInsensitive attribute
+         (q/string-condition :provider-id "PROV?" false true) "<textPattern caseInsensitive=\"Y\">PROV?</textPattern>"
+         (q/string-condition :provider-id "PROV?" false true) "<textPattern caseInsensitive=\"y\">PROV?</textPattern>"
+         (q/string-condition :provider-id "PROV?" true true) "<textPattern caseInsensitive=\"N\">PROV?</textPattern>"
+         (q/string-condition :provider-id "PROV?" true true) "<textPattern caseInsensitive=\"n\">PROV?</textPattern>"
+
+         ;; list
+         (q/string-condition :provider-id "PROV1") "<list><value>PROV1</value></list>"
+
+         (q/or-conds[(q/string-condition :provider-id "PROV1")
+                     (q/string-condition :provider-id "PROV2")]) "<list><value>PROV1</value><value>PROV2</value></list>"
+
+         ;; list with caseInsensitive attribute
+         (q/string-condition :provider-id "PROV1" true false) "<list><value caseInsensitive=\"N\">PROV1</value></list>"
+
+         (q/or-conds[(q/string-condition :provider-id "PROV1" true false)
+                     (q/string-condition :provider-id "PROV2" false false)]) "<list><value caseInsensitive=\"N\">PROV1</value><value caseInsensitive=\"y\">PROV2</value></list>"
+
+         ;; patternList
+         (q/string-condition :provider-id "PROV1") "<patternList><value>PROV1</value></patternList>"
+
+         (q/or-conds[(q/string-condition :provider-id "PROV1")
+                     (q/string-condition :provider-id "PROV2")]) "<patternList><value>PROV1</value><value>PROV2</value></patternList>"
+
+         (q/or-conds[(q/string-condition :provider-id "PROV1")
+                     (q/string-condition :provider-id "PROV2" false true)]) "<patternList><value>PROV1</value><textPattern>PROV2</textPattern></patternList>"
+
+         ;; patternList with caseInsensitive attribute
+         (q/string-condition :provider-id "PROV1" true false) "<patternList><value caseInsensitive=\"N\">PROV1</value></patternList>"
+
+         (q/or-conds[(q/string-condition :provider-id "PROV1" true false)
+                     (q/string-condition :provider-id "PROV2" false false)]) "<patternList><value caseInsensitive=\"N\">PROV1</value><value caseInsensitive=\"y\">PROV2</value></patternList>"
+
+         (q/or-conds[(q/string-condition :provider-id "PROV1" true true)
+                     (q/string-condition :provider-id "PROV2" false false)]) "<patternList><textPattern caseInsensitive=\"N\">PROV1</textPattern><value caseInsensitive=\"y\">PROV2</value></patternList>")))
 
 

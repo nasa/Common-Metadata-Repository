@@ -41,9 +41,6 @@
       <xs:element name='dataSetId' type='ListValueOrPattern'>
         <xs:annotation><xs:documentation>Select collections with the given Dataset IDs</xs:documentation></xs:annotation>
       </xs:element>
-      <xs:element name='ECHOInsertDate' type='DateRangeContainer'>
-        <xs:annotation><xs:documentation>Select collections with insert times within the given range.</xs:documentation></xs:annotation>
-      </xs:element>
       <xs:element name='ECHOLastUpdate' type='DateRangeContainer'>
         <xs:annotation><xs:documentation>Select collections with update times within the given range.</xs:documentation></xs:annotation>
       </xs:element>
@@ -71,26 +68,11 @@
       <xs:element name='spatial' type='spatial'>
         <xs:annotation><xs:documentation>Select collections intersecting the given spatial boundaries.</xs:documentation></xs:annotation>
       </xs:element>
-      <xs:element name='spatialKeywords' type='ListValueOrPattern'>
-        <xs:annotation><xs:documentation>Select collections with the given spatial keyword(s).</xs:documentation></xs:annotation>
-      </xs:element>
       <xs:element name='temporal' type='temporal'>
         <xs:annotation><xs:documentation>Select collections intersecting the given temporal boundaries.</xs:documentation></xs:annotation>
       </xs:element>
-      <xs:element name='temporalKeywords' type='ListValueOrPattern'>
-        <xs:annotation><xs:documentation>Select collections with the given temporal keyword(s).</xs:documentation></xs:annotation>
-      </xs:element>
-      <xs:element name='additionalAttributeNames' type='ListValueOrPattern'>
-        <xs:annotation><xs:documentation>Select collections with the given additional attribute name(s).</xs:documentation></xs:annotation>
-      </xs:element>
-      <xs:element name='additionalAttributes' type='additionalAttributes'>
-        <xs:annotation><xs:documentation>Select collections with the given additional attribute(s).</xs:documentation></xs:annotation>
-      </xs:element>
       <xs:element name='versionId' type='ListValueOrPattern'>
         <xs:annotation><xs:documentation>Select collections with the given version id(s).</xs:documentation></xs:annotation>
-      </xs:element>
-      <xs:element name='archiveCenter' type='ListValueOrPattern'>
-        <xs:annotation><xs:documentation>Select collections with the given archive center(s).</xs:documentation></xs:annotation>
       </xs:element>
       <xs:element name='difEntryId' type='ListValueOrPattern'>
         <xs:annotation><xs:documentation>Select collections with the given DIF entry ID(s).</xs:documentation></xs:annotation>
@@ -102,17 +84,6 @@
         <xs:annotation><xs:documentation>Select collections with the given two dimensional coordinate system name(s).</xs:documentation></xs:annotation>
       </xs:element>
     </xs:choice>
-    <xs:attribute name='negated'>
-      <xs:annotation><xs:documentation>Y|y to negate the search (i.e. select collections NOT matching the query).  N|n otherwise.  Default is N.</xs:documentation></xs:annotation>
-      <xs:simpleType>
-        <xs:restriction base='xs:string'>
-          <xs:enumeration value='y'/>
-          <xs:enumeration value='Y'/>
-          <xs:enumeration value='n'/>
-          <xs:enumeration value='N'/>
-        </xs:restriction>
-      </xs:simpleType>
-    </xs:attribute>
   </xs:complexType>
 
   <xs:complexType name='granuleCondition'>
@@ -131,9 +102,6 @@
       </xs:element>
       <xs:element name='dayNightFlag' type='dayNightFlag'>
         <xs:annotation><xs:documentation>Select granules with the given day/night flag value.</xs:documentation></xs:annotation>
-      </xs:element>
-      <xs:element name='ECHOInsertDate' type='DateRangeContainer'>
-        <xs:annotation><xs:documentation>Select granules with insert times within the given range.</xs:documentation></xs:annotation>
       </xs:element>
       <xs:element name='ECHOLastUpdate' type='DateRangeContainer'>
         <xs:annotation><xs:documentation>Select granules with update times within the given range.</xs:documentation></xs:annotation>
@@ -177,21 +145,6 @@
       <xs:element name='collectionVersionId' type='ListValueOrPattern'>
         <xs:annotation><xs:documentation>Select granules belonging to a collection with the given version ID.</xs:documentation></xs:annotation>
       </xs:element>
-      <xs:element name='PGEName' type='ListValueOrPattern'>
-        <xs:annotation><xs:documentation>Select granules with the given PGE name.</xs:documentation></xs:annotation>
-      </xs:element>
-      <xs:element name='PGEVersion' type='ListValueOrPattern'>
-        <xs:annotation><xs:documentation>Select granules with the given PGE version.</xs:documentation></xs:annotation>
-      </xs:element>
-      <xs:element name='providerInsertDate' type='providerInsertDate'>
-        <xs:annotation><xs:documentation>Select granules with the given provider insert date.</xs:documentation></xs:annotation>
-      </xs:element>
-      <xs:element name='providerProductionDate' type='providerProductionDate'>
-        <xs:annotation><xs:documentation>Select granules with the given provider production date.</xs:documentation></xs:annotation>
-      </xs:element>
-      <xs:element name='measuredParameters' type='measuredParameters'>
-        <xs:annotation><xs:documentation>Select granules with the given measured parameter(s).</xs:documentation></xs:annotation>
-      </xs:element>
       <xs:element name='collectionShortName' type='ListValueOrPattern'>
         <xs:annotation><xs:documentation>Select granules belonging to a collection with the given short name.</xs:documentation></xs:annotation>
       </xs:element>
@@ -205,17 +158,6 @@
         <xs:annotation><xs:documentation>Select granules with the given equator crossing date.</xs:documentation></xs:annotation>
       </xs:element>
     </xs:choice>
-    <xs:attribute name='negated'>
-      <xs:annotation><xs:documentation>Y|y to negate the search (i.e. select collections NOT matching the query).  N|n otherwise.  Default is N.</xs:documentation></xs:annotation>
-      <xs:simpleType>
-        <xs:restriction base='xs:string'>
-          <xs:enumeration value='y'/>
-          <xs:enumeration value='Y'/>
-          <xs:enumeration value='n'/>
-          <xs:enumeration value='N'/>
-        </xs:restriction>
-      </xs:simpleType>
-    </xs:attribute>
   </xs:complexType>
 
   <xs:complexType name='ValueListOrAll'>
