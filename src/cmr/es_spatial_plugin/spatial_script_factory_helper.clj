@@ -2,7 +2,6 @@
   "Contains functionality used by SpatialScriptFactory. Seperated into a typical Clojure namespace
   to make it more compatible with REPL development."
   (:require [clojure.string :as str]
-            [cmr.spatial.ring :as ring]
             [cmr.spatial.point :as point]
             [cmr.spatial.polygon :as poly]
             [cmr.spatial.derived :as d]

@@ -1,6 +1,5 @@
 (ns cmr.es-spatial-plugin.spatial-script-helper
-  (:require [cmr.spatial.ring :as ring]
-            [cmr.spatial.serialize :as srl]
+  (:require [cmr.spatial.serialize :as srl]
             [clojure.string :as s])
   (:import org.elasticsearch.index.fielddata.ScriptDocValues$Doubles
            org.elasticsearch.search.lookup.DocLookup

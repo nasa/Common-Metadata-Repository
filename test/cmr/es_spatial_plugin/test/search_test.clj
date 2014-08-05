@@ -9,7 +9,7 @@
             [clojurewerkz.elastisch.rest.document :as esd]
             [taoensso.timbre :as timbre]
             [cmr.spatial.polygon :as poly]
-            [cmr.spatial.ring :as r]
+            [cmr.spatial.ring-relations :as rr]
             [cmr.spatial.serialize :as srl]
             [clojure.string :as str]))
 
@@ -60,8 +60,8 @@
   (esi/create conn index-name :settings index-settings :mappings mappings))
 
 (defn make-poly
-  [& ords]
-  (poly/polygon [(apply r/ords->ring ords)]))
+  [coord-sys & ords]
+  (poly/polygon coord-sys [(apply rr/ords->ring coord-sys ords)]))
 
 (defn index-spatial
   "Indexes the shape and then returns it."
@@ -86,11 +86,11 @@
   (let [conn (connect)
         _ (recreate-index conn)
         idx (fn [shape-name & ords]
-              (index-spatial conn shape-name (apply make-poly ords)))
+              (index-spatial conn shape-name (apply make-poly :geodetic ords)))
         p1 (idx :p1 10 10, 30 30, 10 30, 10 10)
         p2 (idx :p2 -10 10, -10 30, -30 30, -10 10)]
 
     (is (= #{:p1}
-           (search-spatial conn (make-poly 12 18, 13 18, 13 22, 12 22, 12 18))))
+           (search-spatial conn (make-poly :geodetic 12 18, 13 18, 13 22, 12 22, 12 18))))
     (is (= #{:p2}
-           (search-spatial conn (make-poly -12 18, -12 22, -13 22, -13 18, -12 18))))))
+           (search-spatial conn (make-poly :geodetic -12 18, -12 22, -13 22, -13 18, -12 18))))))
