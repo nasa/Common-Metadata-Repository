@@ -152,12 +152,7 @@
 
            ;; Ignore case
            [c1-p1 c1-p2] "S1_v1" {:ignore-case true}
-           [] "S1_v1" {:ignore-case false})
-
-      (is (d/refs-match?
-            [c1-p1 c1-p2]
-            (search/find-refs :collection {:dif-entry-id "S1_V1"}))
-          "dif_entry_id should be an alias for entry id"))
+           [] "S1_v1" {:ignore-case false}))
 
     (testing "Entry title"
       (are [items v options]
@@ -208,7 +203,7 @@
 (deftest processing-level-search-test
   (let [[c1-p1 c2-p1 c3-p1 c4-p1] (for [n (range 1 5)]
                                     (d/ingest "PROV1" (dc/collection {})))
-        ;; include preocessing level id
+        ;; include processing level id
         [c1-p2 c2-p2 c3-p2 c4-p2] (for [n (range 1 5)]
                                     (d/ingest "PROV2" (dc/collection {:processing-level-id (str n "B")})))
         all-prov2-colls [c1-p2 c2-p2 c3-p2 c4-p2]]
@@ -295,4 +290,74 @@
               :errors [(msg/invalid-pattern-opt-setting-msg #{:concept-id :echo-collection-id :echo-granule-id})]}
              (search/find-refs :granule {:concept_id "C*" "options[concept_id]" {:pattern true}}))))))
 
+(deftest dif-entry-id-search-test
+  (let [coll1 (d/ingest "PROV1" (dc/collection {:short-name "S1"
+                                                :version-id "V1"}))
+        coll2 (d/ingest "PROV1" (dc/collection {:entry-id "S2"}) :dif)
+        coll3 (d/ingest "PROV2" (dc/collection {:associated-difs ["S3"]}))
+        coll4 (d/ingest "PROV2" (dc/collection {:associated-difs ["SL4" "DIF-1"]}))
+        coll5 (d/ingest "PROV2" (dc/collection {:entry-id "T2"}) :dif)]
+    (index/refresh-elastic-index)
+    (testing "dif entry id search"
+      (are [items id options]
+           (d/refs-match? items (search/find-refs :collection {:dif-entry-id id
+                                                               "options[dif-entry-id]" options}))
 
+           [coll1] "S1_V1" {}
+           [coll2] "S2" {}
+           [coll3] "S3" {}
+           [] "S1" {}
+           ;; Multiple values
+           [coll2 coll3] ["S2" "S3"] {}
+           [coll4] ["SL4" "DIF-1"] {}
+           [coll2 coll3] ["S2" "S3"] {:and false}
+           [] ["S2" "S3"] {:and true}
+
+           ;; Wildcards
+           [coll1 coll2 coll3 coll4] "S*" {:pattern true}
+           [] "S*" {:pattern false}
+           [] "S*" {}
+           [coll2 coll3] "S?" {:pattern true}
+           [] "*Q*" {:pattern true}
+
+           ;; Ignore case
+           [coll2] "s2" {:ignore-case true}
+           [] "s2" {:ignore-case false}))
+
+    (testing "options on entry-id and dif-entry-id are not interfering with each other."
+      (is (d/refs-match? []
+                         (search/find-refs :collection
+                                           {:entry-id "s2"
+                                            "options[entry-id][ignore-case]" "false"
+                                            :dif-entry-id "s2"
+                                            "options[dif-entry-id][ignore-case]" "true"})))
+      (is (d/refs-match? []
+                         (search/find-refs :collection
+                                           {:entry-id "s2"
+                                            "options[entry-id][ignore-case]" "true"
+                                            :dif-entry-id "s2"
+                                            "options[dif-entry-id][ignore-case]" "false"})))
+      (is (d/refs-match? []
+                         (search/find-refs :collection
+                                           {:entry-id "s2"
+                                            "options[entry-id][ignore-case]" "false"
+                                            :dif-entry-id "s2"
+                                            "options[dif-entry-id][ignore-case]" "false"})))
+      (is (d/refs-match? [coll2]
+                         (search/find-refs :collection
+                                           {:entry-id "s2"
+                                            "options[entry-id][ignore-case]" "true"
+                                            :dif-entry-id "s2"
+                                            "options[dif-entry-id][ignore-case]" "true"})))
+      (is (d/refs-match? [coll2]
+                         (search/find-refs :collection
+                                           {:entry-id "s2"
+                                            "options[entry-id][ignore-case]" "true"
+                                            :dif-entry-id "s2"
+                                            "options[dif-entry-id][ignore-case]" "true"})))
+      (is (d/refs-match? [coll2]
+                         (search/find-refs :collection
+                                           {:entry-id "s2"
+                                            "options[entry-id][ignore-case]" "true"
+                                            :dif-entry-id "S*"
+                                            "options[dif-entry-id][pattern]" "true"}))))))

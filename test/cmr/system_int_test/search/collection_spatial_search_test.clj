@@ -9,14 +9,15 @@
             [cmr.spatial.polygon :as poly]
             [cmr.spatial.point :as p]
             [cmr.spatial.mbr :as m]
-            [cmr.spatial.ring :as r]
+            [cmr.spatial.ring-relations :as rr]
             [cmr.spatial.derived :as derived]
             [cmr.spatial.codec :as codec]
             [clojure.string :as str]
             [cmr.spatial.dev.viz-helper :as viz-helper]
             [cmr.spatial.serialize :as srl]
             [cmr.common.dev.util :as dev-util]
-            [cmr.spatial.lr-binary-search :as lbs]))
+            [cmr.spatial.lr-binary-search :as lbs]
+            [cmr.umm.spatial :as umm-s]))
 
 (use-fixtures :each (ingest/reset-fixture "PROV1"))
 
@@ -24,17 +25,12 @@
   "Creates a single ring polygon with the given ordinates. Points must be in counter clockwise order.
   The polygon will be closed automatically."
   [& ords]
-  (let [polygon (derived/calculate-derived (poly/polygon [(apply r/ords->ring ords)]))
-        outer (-> polygon :rings first)]
-    (when (and (:contains-north-pole outer)
-               (:contains-south-pole outer))
-      (throw (Exception. "Polygon can not contain both north and south pole. Points are likely backwards.")))
-    polygon))
+  (poly/polygon [(apply umm-s/ords->ring ords)]))
 
 (defn search-poly
   "Returns a url encoded polygon for searching"
   [& ords]
-  (codec/url-encode (apply polygon ords)))
+  (codec/url-encode (umm-s/set-coordinate-system :geodetic (apply polygon ords))))
 
 (deftest spatial-search-test
   (let [make-coll (fn [et & shapes]
@@ -64,10 +60,10 @@
         normal-poly (make-coll "normal-poly" (polygon -20 -10, -10 -10, -10 10, -20 10, -20 -10))
 
         ;; polygon with holes
-        outer (r/ords->ring -5.26,-2.59, 11.56,-2.77, 10.47,8.71, -5.86,8.63, -5.26,-2.59)
-        hole1 (r/ords->ring 6.95,2.05, 2.98,2.06, 3.92,-0.08, 6.95,2.05)
-        hole2 (r/ords->ring 5.18,6.92, -1.79,7.01, -2.65,5, 4.29,5.05, 5.18,6.92)
-        polygon-with-holes  (make-coll "polygon-with-holes" (poly/polygon [outer hole1 hole2]))
+        outer (rr/ords->ring :geodetic -5.26,-2.59, 11.56,-2.77, 10.47,8.71, -5.86,8.63, -5.26,-2.59)
+        hole1 (rr/ords->ring :geodetic 6.95,2.05, 2.98,2.06, 3.92,-0.08, 6.95,2.05)
+        hole2 (rr/ords->ring :geodetic 5.18,6.92, -1.79,7.01, -2.65,5, 4.29,5.05, 5.18,6.92)
+        polygon-with-holes  (make-coll "polygon-with-holes" (poly/polygon :geodetic [outer hole1 hole2]))
 
         ;; Points
         north-pole (make-coll "north-pole" (p/point 0 90))

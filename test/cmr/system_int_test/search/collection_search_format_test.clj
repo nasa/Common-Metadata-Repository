@@ -15,8 +15,9 @@
             [cmr.spatial.point :as p]
             [cmr.spatial.mbr :as m]
             [cmr.spatial.line :as l]
-            [cmr.spatial.ring :as r]
-            [cmr.spatial.codec :as codec]))
+            [cmr.spatial.ring-relations :as rr]
+            [cmr.spatial.codec :as codec]
+            [cmr.umm.spatial :as umm-s]))
 
 (use-fixtures :each (ingest/reset-fixture "PROV1" "PROV2"))
 
@@ -140,10 +141,10 @@
         ru3 (dc/related-url "GET RELATED VISUALIZATION" "http://example.com/browse")
 
         ;; polygon with holes
-        outer (r/ords->ring -5.26,-2.59, 11.56,-2.77, 10.47,8.71, -5.86,8.63, -5.26,-2.59)
-        hole1 (r/ords->ring 6.95,2.05, 2.98,2.06, 3.92,-0.08, 6.95,2.05)
-        hole2 (r/ords->ring 5.18,6.92, -1.79,7.01, -2.65,5, 4.29,5.05, 5.18,6.92)
-        polygon-with-holes  (poly/polygon [outer hole1 hole2])
+        outer (umm-s/ords->ring -5.26,-2.59, 11.56,-2.77, 10.47,8.71, -5.86,8.63, -5.26,-2.59)
+        hole1 (umm-s/ords->ring 6.95,2.05, 2.98,2.06, 3.92,-0.08, 6.95,2.05)
+        hole2 (umm-s/ords->ring 5.18,6.92, -1.79,7.01, -2.65,5, 4.29,5.05, 5.18,6.92)
+        polygon-with-holes (poly/polygon [outer hole1 hole2])
 
         coll1 (d/ingest "PROV1"
                         (dc/collection {:entry-title "Dataset1"
@@ -160,7 +161,7 @@
                                         :spatial-coverage
                                         (dc/spatial :geodetic
                                                     :geodetic
-                                                    (poly/polygon [(r/ords->ring -70 20, 70 20, 70 30, -70 30, -70 20)])
+                                                    (poly/polygon [(umm-s/ords->ring -70 20, 70 20, 70 30, -70 30, -70 20)])
                                                     polygon-with-holes
                                                     (p/point 1 2)
                                                     (p/point -179.9 89.4)
@@ -175,8 +176,7 @@
                                         :summary "Summary of coll2"
                                         :beginning-date-time "2010-01-01T12:00:00Z"
                                         :ending-date-time "2010-01-11T12:00:00Z"
-                                        :related-urls [ru3]
-                                        }))]
+                                        :related-urls [ru3]}))]
 
     (index/refresh-elastic-index)
 
