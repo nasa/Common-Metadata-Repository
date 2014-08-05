@@ -65,15 +65,25 @@
     [(keyword concept-type)
      mime-type]))
 
+(defn- search-path-w-extension->mime-type
+  "Parses the search path with extension and returns the requested mime-type."
+  [path-name search-path-w-extension]
+  (let [extension-regex (re-pattern (format "^%s(?:\\.(.+))?$" path-name))
+        [_ extension]
+        (filter
+          identity
+          (re-matches extension-regex search-path-w-extension))]
+    (extension->mime-type extension)))
+
 (defn- get-search-results-format
   "Returns the requested search results format parsed from headers or from the URL extension"
   ([ext-mime-type headers]
    (get-search-results-format ext-mime-type headers supported-mime-types))
   ([ext-mime-type headers valid-mime-types]
-  (let [mime-type (or ext-mime-type (get headers "accept"))]
-    (mt/validate-request-mime-type mime-type valid-mime-types)
-    ;; set the default format to xml
-    (mt/mime-type->format mime-type :xml))))
+   (let [mime-type (or ext-mime-type (get headers "accept"))]
+     (mt/validate-request-mime-type mime-type valid-mime-types)
+     ;; set the default format to xml
+     (mt/mime-type->format mime-type :xml))))
 
 (defn- find-concepts
   "Invokes query service to find results and returns the response"
@@ -90,6 +100,19 @@
      :headers {"Content-Type" (str (mt/format->mime-type result-format) "; charset=utf-8")}
      :body results}))
 
+(defn- find-concepts-by-aql
+  "Invokes query service to parse the AQL query, find results and returns the response"
+  [context search-w-extension params headers aql]
+  (let [ext-mime-type (search-path-w-extension->mime-type "search" search-w-extension)
+        params (dissoc params :search-w-extension)
+        result-format (get-search-results-format ext-mime-type headers)
+        params (assoc params :result-format result-format)
+        _ (info (format "Searching for concepts in format %s with AQL: %s." result-format aql))
+        results (query-svc/find-concepts-by-aql context params aql)]
+    {:status 200
+     :headers {"Content-Type" (str (mt/format->mime-type result-format) "; charset=utf-8")}
+     :body results}))
+
 (defn- find-concept-by-cmr-concept-id
   "Invokes query service to find concept metadata by cmr concept id and returns the response"
   [context concept-id headers]
@@ -100,19 +123,10 @@
      :headers {"Content-Type" "application/xml; charset=utf-8"}
      :body (:metadata concept)}))
 
-(defn- parse-provider-holdings-w-extension
-  "Parses the provider-holdings-w-extension and returns the requested mime-type."
-  [provider-holdings-w-extension]
-  (let [[_ extension]
-        (filter
-          identity
-          (re-matches #"^provider_holdings(?:\.(.+))?$" provider-holdings-w-extension))]
-    (extension->mime-type extension)))
-
 (defn- get-provider-holdings
   "Invokes query service to retrieve provider holdings and returns the response"
   [context provider-holdings-w-extension params headers]
-  (let [ext-mime-type (parse-provider-holdings-w-extension provider-holdings-w-extension)
+  (let [ext-mime-type (search-path-w-extension->mime-type "provider_holdings" provider-holdings-w-extension)
         params (dissoc params :provider-holdings-w-extension)
         result-format (get-search-results-format ext-mime-type headers supported-provider-holdings-mime-types)
         params (assoc params :result-format result-format)
@@ -131,6 +145,10 @@
   "A regular expression that matches URLs including the provider holdings and a file extension."
   #"(?:provider_holdings)(?:\..+)?")
 
+(def search-w-extension-regex
+  "A regular expression that matches URLs including the search and a file extension."
+  #"(?:search)(?:\..+)?")
+
 (defn- build-routes [system]
   (routes
     (context (get-in system [:search-public-conf :relative-root-url]) []
@@ -146,6 +164,11 @@
           (find-concepts context concept-type-w-extension params headers query-string))
         (POST "/" {params :params headers :headers context :request-context body :body-copy}
           (find-concepts context concept-type-w-extension params headers body)))
+
+      ;; AQL search
+      (context ["/concepts/:search-w-extension" :search-w-extension search-w-extension-regex] [search-w-extension]
+        (POST "/" {params :params headers :headers context :request-context body :body-copy}
+          (find-concepts-by-aql context search-w-extension params headers body)))
 
       ;; Provider holdings
       (context ["/:provider-holdings-w-extension" :provider-holdings-w-extension provider-holdings-w-extension-regex] [provider-holdings-w-extension]

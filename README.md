@@ -450,6 +450,11 @@ Provider holdings for a list of providers
 
     curl "http://localhost:3003/provider_holdings.json?provider-id\[\]=PROV1&provider-id\[\]=PROV2"
 
+### Search with AQL
+Search collections or granules with AQL in POST request body.
+
+curl -i -XPOST http://localhost:3003/concepts/search -d '<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE query SYSTEM "https://api.echo.nasa.gov/echo/dtd/IIMSAQLQueryLanguage.dtd"><query><for value="collections"/><dataCenterId><all/></dataCenterId><where><collectionCondition><shortName><value>S1</value></shortName></collectionCondition></where></query>'
+
 ## Search Flow
 
 ### Stage 1: Convert to query model
