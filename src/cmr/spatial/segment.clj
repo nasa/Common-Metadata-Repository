@@ -253,6 +253,16 @@
       (when (and (m/covers-point? :cartesian mbr point) (m/covers-point? :cartesian vert-mbr point))
         point))))
 
+(defn- intersection-parallel
+  "Returns the intersection of two normal line segments that are parallel to each other"
+  [^LineSegment ls1 ^LineSegment ls2]
+  ;; They will only intersect if slope intercepts are the same.
+  (when (= (.b ls1) (.b ls2))
+    ;; Find the common intersecting mbr to find a common longitude.
+    (when-let [intersection-mbr (first (m/intersections (.mbr ls1) (.mbr ls2)))]
+      ;; Use the longitude to find a point
+      (p/point (:west intersection-mbr) (segment+lon->lat ls1 (:west intersection-mbr))))))
+
 (defn- intersection-normal
   "Returns the intersection of two normal line segments"
   [^LineSegment ls1 ^LineSegment ls2]
@@ -280,6 +290,9 @@
 
       (or ls1-vert? ls2-vert?)
       (intersection-one-vertical ls1 ls2)
+
+      (= (:m ls1) (:m ls2))
+      (intersection-parallel ls1 ls2)
 
       :else
       (intersection-normal ls1 ls2))))

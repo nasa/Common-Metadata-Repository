@@ -153,7 +153,7 @@
 
   (shape->lr
     [line]
-    ;; TODO performance enhancement. If a line has a vertical arc we could use that to define
+    ;; TODO performance enhancement. If a line has a vertical or horizontal arc we could use that to define
     ;; an LR that would be larger than just a point
     (m/point->mbr (first (:points line)))))
 

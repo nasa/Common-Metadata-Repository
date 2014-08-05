@@ -26,7 +26,6 @@
 
   )
 
-
 (defn display-segment
   [ls]
   (viz-helper/clear-geometries)
@@ -120,8 +119,52 @@
                (s/point-on-segment? ls1 point)
                (s/point-on-segment? ls2 point))))))
 
-;; TODO add a specific example test of line segments that should intersect. The above could miss
-;; line segments that must intersect.
+(deftest line-segment-example-intersections
+  (are [ords1 ords2 intersection-point]
+       (or (and (nil? intersection-point)
+                (nil? (s/intersection (apply s/ords->line-segment ords1)
+                                      (apply s/ords->line-segment ords2))))
+           (approx= intersection-point (s/intersection (apply s/ords->line-segment ords1)
+                                                       (apply s/ords->line-segment ords2))))
+
+       ;; T intersection
+       [3 5, 3 -5] [2 5, 4 5] (p/point 3 5)
+
+       ;; updside down T intersection
+       [3 5, 3 -5] [2 -5, 4 -5] (p/point 3 -5)
+
+       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+       ;; Parallel
+       ;; Different slope intercepts
+       [2 -2, 4 0] [2 -3, 4 -1] nil
+       ;; Matching slope interscepts but different ranges
+       [1 1, 2 2] [3 3, 4 4] nil
+
+       ;; Intersect at end point
+       [1 1, 2 2] [2 2, 4 4] (p/point 2 2)
+
+       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+       ;; both vertical
+       ;; with different longitudes
+       [-10 50 -10 80] [-11 50 -11 80] nil
+       ;; with different vertical ranges
+       [-10 50 -10 80] [-10 82 -10 85] nil
+       ;; intersecting
+       [-10 50 -10 80] [-10 60 -10 85] (p/point -10 60)
+
+       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+       ;; both horizontal
+       ;; with different latitudes
+       [10 5 40 5] [10 6 40 6] nil
+       ;; different ranges
+       [10 5 40 5] [50 5 60 5] nil
+       ;; intersecting
+       [10 5 40 5] [20 5 60 5] (p/point 20 5)
+
+       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+       ;; normal
+       [1 7 10 8] [1 8 10 7] (p/point 5.5 7.5)))
 
 
+;; TODO add subselect tests here
 
