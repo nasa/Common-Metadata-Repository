@@ -1,16 +1,16 @@
 (ns cmr.search.data.keywords-to-elastic
 "Contains functions for generating keyword search components for elastic.
 Keyword queries are done as follows:
- 1. The keywords string is split on special characters and whitespace to genrate a list of
-    keywords.
- 2. This keyword list is stored in the main query record.
+ 1. The keywords string is split on whitespace and lower-cased to generate a list of keywords.
+ 2. This keyword list is stored in the main query record to make it accesible during the final
+    query generation.
  3. The keyword list is used to construct a primary query by joining all the keywords with
     spaces.
  4. A query_string query is constructed from the primary query against the :keyword field.
     This query is included in the main query like any other parameter query.
  5. When the main query is converted to an elasticsearch query, if the keywords list is nil,
     then the query generation proceeds as before, resuing in a filtered query with a 'match_all'
-    as the primary query and the paramters conditions converted to elasticsearch queries that are
+    as the primary query and the parameters' conditions converted to elasticsearch queries that are
     embedded in the filter.
  6. If the keyword list is not nil, then a 'function score query' is contructed. This consists
     of two parts, a primary query (which is generated as before) and multiple filter queries.
@@ -65,10 +65,15 @@ for details on the function score query."
   "The boost to apply to the science keyword field"
   1.2)
 
+(def elastic-regex-special-chars-re
+  "Regex to match characters that need to be escaped for an elastic regexp query"
+  #"([\.\?\+\*\|\{\}\[\]\(\)\"\\])")
+
 (defn keyword-regexp-filter
   "Create a regexp filter for a given field and keyword"
   [field keyword]
-  (let [regex (str ".*" keyword ".*")]
+  (let [escaped-keyword (str/replace keyword elastic-regex-special-chars-re "\\$1")
+        regex (str ".*" escaped-keyword ".*")]
     {:regexp {field regex}}))
 
 (defn keyword-term-filter
@@ -83,7 +88,7 @@ for details on the function score query."
           :value keyword}})
 
 (defn keywords->name-filter
-  "Create a filter for keyword searches that checks for a loose match on one field or and
+  "Create a filter for keyword searches that checks for a loose match on one field or an
   exact match on another"
   [regex-field exact-field keywords boost]
   {:boost_factor boost

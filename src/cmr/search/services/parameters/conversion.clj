@@ -272,7 +272,8 @@
                    :page-num page-num
                    :pretty pretty
                    :condition (qm/and-conds conditions)
-                   :keywords (str/split (str/lower-case (:keyword params)) " ")
+                   :keywords (when (:keyword params)
+                               (str/split (str/lower-case (:keyword params)) #" "))
                    :sort-keys sort-keys
                    :result-format result-format})))))
 
