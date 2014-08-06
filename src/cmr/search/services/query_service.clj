@@ -26,6 +26,9 @@
             [cmr.search.services.parameters.converters.spatial]
             [cmr.search.services.parameters.converters.science-keyword]
 
+            ;; aql
+            [cmr.search.services.aql.conversion :as a]
+
             ;; Validation
             [cmr.search.validators.validation :as v]
             [cmr.search.validators.temporal]
@@ -170,3 +173,29 @@
                                collections)]
 
     (ph/provider-holdings->string (:result-format params) provider-holdings pretty?)))
+
+(deftracefn find-concepts-by-aql
+  "Executes a search for concepts using the given aql. The concepts will be returned with
+  concept id and native provider id."
+  [context params aql]
+  (let [[query-creation-time query] (u/time-execution
+                                      (->> aql
+                                           (a/aql->query params)
+                                           (validate-query context)
+                                           c2s/reduce-query))
+        [query-execution-time results] (u/time-execution
+                                         (->> query
+                                              (resolve-collection-query context)
+                                              (qe/execute-query context)))
+        [result-gen-time result-str] (u/time-execution
+                                       (search-results->response
+                                         context query (assoc results :took (+ query-creation-time
+                                                                               query-execution-time))))
+        total-took (+ query-creation-time query-execution-time result-gen-time)]
+    (debug "query-creation-time:" query-creation-time
+           "query-execution-time:" query-execution-time
+           "result-gen-time:" result-gen-time)
+    (info (format "Found %d %ss in %d ms in format %s with aql: %s."
+                  (:hits results) (:concept-type query) total-took (:result-format query) (pr-str params)))
+    result-str))
+
