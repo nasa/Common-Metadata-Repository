@@ -5,7 +5,8 @@
             [cmr.search.models.query :as qm]
             [cmr.search.data.datetime-helper :as h]
             [cmr.common.services.errors :as errors]
-            [cmr.search.data.messages :as m]))
+            [cmr.search.data.messages :as m]
+            [cmr.search.data.keywords-to-elastic :as k2e]))
 
 (def field-mappings
   "A map of fields in the query to the field name in elastic. Field names are excluded from this
@@ -38,83 +39,20 @@
     [condition concept-type]
     "Converts a query model condition into the equivalent elastic search filter"))
 
-(defn keyword-regexp-filter
-  "Create a regexp filter for a given field and keyword"
-  [field keyword]
-  (let [regex (str ".*" keyword ".*")]
-    {:regexp {field regex}}))
-
-(defn keyword-term-filter
-  "Create a term filter for a given field/value"
-  [field keyword]
-  {:term {field keyword}})
-
-(defn keyword-exact-match-filter
-  "Create a filter that checks for an exact match"
-  [field keyword]
-  {:term {:field field
-          :value keyword}})
-
-(defn keywords->name-filter
-  "Create a filter for keyword searches that checks for a loose match on one field or and
-  exact match on another"
-  [regex-field exact-field keywords boost]
-  {:boost_factor boost
-   :filter {:or [{:and (map (partial keyword-regexp-filter regex-field) keywords)}
-                 {:or (map (partial keyword-exact-match-filter exact-field) keywords)}]}})
-
-(defn science-keywords-or-filter
-  "Create an or filter containig the science keyword fields related to keyword searches"
-  [keywd]
-  (map (fn [field] {:term {(keyword (str (name field) ".lowercase")) keywd}})
-       [:category :topic :term :variable-level-1 :variable-level-1 :variable-level3]))
-
-(defn keywords->sk-filter
-  "Create a filter for keyword searches that checks science keywords"
-  [keywords boost]
-  {:boost_factor boost
-   :filter {:nested {:path :science-keywords
-                     :filter {:or (science-keywords-or-filter (str/join " " keywords))}}}})
-
-(defn keywords->boosted-term-filter
-  "Crete a boosted term filter for keyword searches"
-  [field keywords boost]
-  (let [keyword (str/join " " keywords)]
-    {:boost_factor boost
-     :filter (keyword-term-filter field keyword)}))
-
-(defn keywords->elastic-filters
-  "Create filters for keyword search"
-  [keywords]
-  [;; entry-title, short-name
-   (keywords->name-filter :long-name.lowercase :short-name.lowercase keywords 1.4)
-   ;; project (ECHO campaign)
-   (keywords->name-filter :project-ln.lowercase :project-sn.lowercase keywords 1.3)
-   ;; platform
-   (keywords->name-filter :platform-ln.lowercase :platform-sn.lowercase keywords 1.3)
-   ;; TODO - instrument
-   ;; need to add long name
-   ;; TODO - sensor
-   ;; need to add long name
-   ;; science keywords
-   (keywords->sk-filter keywords 1.2)
-   ;; spatial-keyword
-   (keywords->boosted-term-filter :spatial-keywords.lowercase keywords 1.1)
-   ;; TODO - temporal-keyword
-   ])
-
 (defn query->elastic
   "Converts a query model into an elastic search query"
   [query]
   (let [{:keys [concept-type condition keywords]} query
         core-query (condition->elastic condition concept-type)]
     (if-let [keywords (:keywords query)]
-      {:function_score {:functions (keywords->elastic-filters keywords)
+      ;; function_score query allows us to compute a custom relevance score for each document
+      ;; matched by the primary query. The final document relevance is given by multiplying
+      ;; a boosting term for each matching filter in a set of filters.
+      {:function_score {:functions (k2e/keywords->boosted-elastic-filters keywords)
                         :query {:filtered {:query (q/match-all)
                                            :filter core-query}}}}
       {:filtered {:query (q/match-all)
-                  :filter core-query}}
-      )))
+                  :filter core-query}})))
 
 (def sort-key-field->elastic-field
   "Submaps by concept type of the sort key fields given by the user to the exact elastic sort field to use.
@@ -189,10 +127,9 @@
   (condition->elastic
     [{:keys [field query-str]} concept-type]
     (let [field (query-field->elastic-field field concept-type)]
-      {:query {:simple_query_string {
-                                     :query query-str
-                                     :analyzer :whitespace
-                                     :fields [field]}}}))
+      {:query {:query_string {:query query-str
+                              :analyzer :whitespace
+                              :default_field field}}}))
 
   cmr.search.models.query.StringCondition
   (condition->elastic

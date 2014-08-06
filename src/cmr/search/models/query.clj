@@ -258,8 +258,6 @@
    max-value
    ])
 
-;(defrecord BoostedQuery
-
 (def default-sort-keys
   "The default sort keys by concept type."
   {:collection [{:field :entry-title
