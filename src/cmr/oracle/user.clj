@@ -3,17 +3,6 @@
   (:require [clojure.java.jdbc :as j]
             [cmr.oracle.connection :as conn]))
 
-;; TODO - need to decide which tablespaces to use
-; "create user %%CMR_USER%%
-; profile default
-; identified by %%CMR_PASSWORD%%
-; default tablespace %%DATA_TABLESPACE%%
-; temporary tablespace %%TEMP_TABLESPACE%%
-; quota unlimited on %%DATA_TABLESPACE%%
-; quota unlimited on %%INDEX_TABLESPACE%%
-; account unlock"
-
-
 (def create-user-sql-template
   "create user %%CMR_USER%%
   profile default
