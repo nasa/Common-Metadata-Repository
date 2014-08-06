@@ -146,7 +146,13 @@
         wide-south-cart (polygon :cartesian -70 -30, 70 -30, 70 -20, -70 -20, -70 -30)
         very-wide-cart (polygon :cartesian -179 40, -179 35, 179 35, 179 40, -179 40)
         very-tall-cart (polygon :cartesian -160 90, -160 -90, -150 -90, -150 90, -160 90)
-        ;very-tall-cart (polygon :cartesian -160 89, -160 -89, -150 -89, -150 89, -160 89)
+
+        ;; Cartesian With holes
+        outer-cart (rr/ords->ring :cartesian -5.26 -22.59 11.56 -22.77 10.47 -11.29 -5.86 -11.37 -5.26 -22.59)
+        hole1-cart (rr/ords->ring :cartesian 6.95 -17.95 2.98 -17.94 3.92 -20.08 6.95 -17.95)
+        hole2-cart (rr/ords->ring :cartesian 5.18 -13.08 -1.79 -12.99 -2.65 -15 4.29 -14.95 5.18 -13.08)
+        polygon-with-holes-cart (poly/polygon :cartesian [outer-cart hole1-cart hole2-cart])
+
 
         ;; points
         north-pole (p/point 90 0)
@@ -162,26 +168,29 @@
         ;search-area (assoc (p/point 0 0) :options {:id "point"})
 
         ]
-    (visual-interactive-search [touches-sp
-                                across-am-br
-                                touches-np
-                                normal-br1
-                                normal-br2
-                                wide-north
-                                wide-south
-                                across-am-poly
-                                on-np
-                                on-sp
-                                normal-poly
-                                polygon-with-holes
-                                wide-north-cart
-                                wide-south-cart
-                                very-wide-cart
-                                very-tall-cart
-                                north-pole
-                                south-pole
-                                normal-point
-                                am-point] search-area))
+    (visual-interactive-search [
+                                ; touches-sp
+                                ; across-am-br
+                                ; touches-np
+                                ; normal-br1
+                                ; normal-br2
+                                ; wide-north
+                                ; wide-south
+                                ; across-am-poly
+                                ; on-np
+                                ; on-sp
+                                ; normal-poly
+                                ; polygon-with-holes
+                                ; wide-north-cart
+                                ; wide-south-cart
+                                ; very-wide-cart
+                                ; very-tall-cart
+                                polygon-with-holes-cart
+                                ; north-pole
+                                ; south-pole
+                                ; normal-point
+                                ; am-point
+                                ] search-area))
 
 
 
