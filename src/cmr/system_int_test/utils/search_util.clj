@@ -17,7 +17,8 @@
             [cmr.umm.dif.collection :as dif-c]
             [cmr.system-int-test.data2.atom :as da]
             [cmr.system-int-test.data2.atom-json :as dj]
-            [cmr.system-int-test.data2.provider-holdings :as ph]))
+            [cmr.system-int-test.data2.provider-holdings :as ph]
+            [cmr.system-int-test.data2.aql :as aql]))
 
 (defn csv->tuples
   "Convert a comma-separated-value string into a set of tuples to be use with find-refs."
@@ -208,6 +209,20 @@
                                  :throw-exceptions false
                                  :connection-manager (url/conn-mgr)})]
       (parse-reference-response response))))
+
+(defn find-refs-with-aql
+  "Returns the references that are found by searching through POST request with aql for the given conditions"
+  ([concept-type conditions]
+   (find-refs-with-aql concept-type conditions {}))
+  ([concept-type conditions data-center-condition]
+   (get-search-failure-data
+     (let [response (client/post (url/aql-url)
+                                 {:accept "application/xml"
+                                  :content-type "application/x-www-form-urlencoded"
+                                  :body (aql/generate-aql concept-type data-center-condition conditions)
+                                  :throw-exceptions false
+                                  :connection-manager (url/conn-mgr)})]
+       (parse-reference-response response)))))
 
 (defn get-concept-by-concept-id
   "Returns the concept metadata by searching metadata-db using the given cmr concept id"
