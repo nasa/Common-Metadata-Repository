@@ -20,11 +20,11 @@
 (def string-field-mapping
   {:type "string" :index "not_analyzed"})
 
-;; Used for analyzed text fields
 (def text-field-mapping
-  {:type "string"
-   :index "analyzed"
-   :omit_norms "true"
+  "Used for analyzed text fields"
+  {:type "string" ; string type
+   :index "analyzed" ; these fields will be split into multiple terms using the analyzer
+   :omit_norms "true"; norms
    :analyzer "whitespace"
    :index_options "docs"})
 

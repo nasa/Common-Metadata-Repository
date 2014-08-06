@@ -10,9 +10,19 @@
 ;; and are therefore not used for keyword searches in the CMR:
 ;;    SuggestedUsage (ECHO10)
 ;;
-;; TODO - The following fields are not mentioned in the UMM documentation and should
-;; be inquired about
+;; TODO - The following field is not mentioned in the UMM documentation. A CMRInbox ticket
+;; (CRMIN-28) was created inquiring about it.
 ;;   :version-description
+
+;; Regex to split strings with special characters into multiple words for keyword searches
+(def keywords-separator-regex #"[!@#$%^&()\-=_+{}\[\]|;'.,\"/:<>?`~* ]")
+
+(defn prepare-keyword-field
+  [field-value]
+  "Convert a string to lowercase then separate it into keywords"
+  (when field-value
+    (let [field-value (str/lower-case field-value)]
+      (into [field-value] (str/split field-value keywords-separator-regex)))))
 
 
 ;; TODO - add :temporal-keyword
@@ -35,19 +45,19 @@
         science-keywords (sk/science-keywords->keywords collection)
         attrib-keywords (attrib/psas->keywords collection)
         all-fields (flatten (conj concept-id
-                                       entry-title
-                                       collection-data-type
-                                       short-name
-                                       long-name
-                                       two-d-coord-names
-                                       summary
-                                       version-id
-                                       processing-level-id
-                                       archive-centers
-                                       science-keywords
-                                       attrib-keywords
-                                       spatial-keywords
-                                       platform-short-names
-                                       platform-long-names))
-        split-fields (set (mapcat util/prepare-keyword-field all-fields))]
+                                  entry-title
+                                  collection-data-type
+                                  short-name
+                                  long-name
+                                  two-d-coord-names
+                                  summary
+                                  version-id
+                                  processing-level-id
+                                  archive-centers
+                                  science-keywords
+                                  attrib-keywords
+                                  spatial-keywords
+                                  platform-short-names
+                                  platform-long-names))
+        split-fields (set (mapcat prepare-keyword-field all-fields))]
     (str/join " " split-fields)))

@@ -100,7 +100,7 @@
                   :update-time "2014-02-24T22:20:56.000Z"
                   :associated-difs ["DIF-100" "DIF-101"]
                   :associated-difs.lowercase ["dif-100" "dif-101"]
-                  :keyword  "dc foo bar of dummy ac two long collection 1b new minimal v summary name york real valid a time one 1 sedac washington platform near"
+                  :keyword  "dc foo bar new york of dummy a minimal valid collection v 1 ac two summary of collection long collection 1b new minimal v sedac ac summary name york washington dc real valid platform two a time platform one one 1 sedac near_real_time washington platform long-name near"
                   :project-ln.lowercase ["dummy" "dummy" "dummy"]
                   :platform-ln.lowercase ["dummy" "dummy"]
                   :long-name.lowercase "long-name"}
