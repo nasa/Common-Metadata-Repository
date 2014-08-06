@@ -21,8 +21,8 @@
         elem-value (elem-key condition)
         {:keys [ignore-case pattern]} condition]
     (x/element elem-key {}
-               (if (and (sequential? elem-value) (> (count elem-value) 1))
-                 ;; a list with more than one value
+               (if (sequential? elem-value)
+                 ;; a list with at least one value
                  (if pattern
                    (x/element :patternList {}
                               (map (partial generate-value-element ignore-case pattern) elem-value))

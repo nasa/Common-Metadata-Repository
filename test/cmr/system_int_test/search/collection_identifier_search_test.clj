@@ -67,6 +67,7 @@
            [] "*Q*" {:pattern true}
 
            ;; Ignore case
+           all-prov1-colls "pRoV1" {}
            all-prov1-colls "pRoV1" {:ignore-case true}
            [] "prov1" {:ignore-case false}))
 
@@ -74,8 +75,8 @@
       (is (d/refs-match? all-prov1-colls (search/find-refs :collection {:provider-id "PROV1"}))))
 
     (testing "provider with aql"
-      (are [items p options]
-           (let [data-center-condition (merge {:dataCenterId p} options)]
+      (are [items provider-ids options]
+           (let [data-center-condition (merge {:dataCenterId provider-ids} options)]
              (d/refs-match? items (search/find-refs-with-aql :collection [] data-center-condition)))
 
            all-prov1-colls ["PROV1"] {}
@@ -95,6 +96,7 @@
            [] "%Q%" {:pattern true}
 
            ;; Ignore case
+           all-prov1-colls "pRoV1" {}
            all-prov1-colls "pRoV1" {:ignore-case true}
            [] "prov1" {:ignore-case false}))
 
@@ -122,6 +124,7 @@
            [] "*Q*" {:pattern true}
 
            ;; Ignore case
+           [c1-p1 c1-p2] "s1" {}
            [c1-p1 c1-p2] "s1" {:ignore-case true}
            [] "s1" {:ignore-case false}))
 
@@ -143,9 +146,12 @@
            [] "S%" {}
            [c1-p1 c1-p2] "%1" {:pattern true}
            [c1-p1 c1-p2] "_1" {:pattern true}
+           all-colls ["S%" "_1"] {:pattern true}
+           [c1-p1 c1-p2] ["X%" "_1"] {:pattern true}
            [] "%Q%" {:pattern true}
 
            ;; Ignore case
+           [c1-p1 c1-p2] "s1" {}
            [c1-p1 c1-p2] "s1" {:ignore-case true}
            [] "s1" {:ignore-case false}))
 
