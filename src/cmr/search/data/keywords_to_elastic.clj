@@ -35,8 +35,35 @@ Keyword queries are done as follows:
 
 See http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/query-dsl-function-score-query.html
 for details on the function score query."
-(:require [clojure.string :as str]
-          [cmr.search.services.parameters.converters.keyword :as k]))
+(:require [clojure.string :as str]))
+
+(def short-name-long-name-boost
+  "The boost to apply to the short-name/long-name component of the keyword matching"
+  1.4)
+
+(def project-boost
+  "The boost to apply to the campaign short name / long name fields"
+  1.3)
+
+(def platform-boost
+  "The boost to apply to the platform short name / long name"
+  1.3)
+
+(def instrument-boost
+  "The boost to apply to the instrument short name / long name"
+  1.2)
+
+(def sensor-boost
+  "The boost to apply to the sensor short name / long name"
+  1.2)
+
+(def spatial-keyword-boost
+  "The boost to apply to the spatial keyword"
+  1.1)
+
+(def science-keywords-boost
+  "The boost to apply to the science keyword field"
+  1.2)
 
 (defn keyword-regexp-filter
   "Create a regexp filter for a given field and keyword"
@@ -89,18 +116,18 @@ for details on the function score query."
   [;; entry-title, short-name
    (keywords->name-filter :long-name.lowercase
                           :short-name.lowercase keywords
-                          k/short-name-long-name-boost)
+                          short-name-long-name-boost)
    ;; project (ECHO campaign)
-   (keywords->name-filter :project-ln.lowercase :project-sn.lowercase keywords k/project-boost)
+   (keywords->name-filter :project-ln.lowercase :project-sn.lowercase keywords project-boost)
    ;; platform
-   (keywords->name-filter :platform-ln.lowercase :platform-sn.lowercase keywords k/platform-boost)
+   (keywords->name-filter :platform-ln.lowercase :platform-sn.lowercase keywords platform-boost)
    ;; TODO - instrument
    ;; need to add long name
    ;; TODO - sensor
    ;; need to add long name
    ;; science keywords
-   (keywords->sk-filter keywords k/science-keywords-boost)
+   (keywords->sk-filter keywords science-keywords-boost)
    ;; spatial-keyword
-   (keywords->boosted-term-filter :spatial-keywords.lowercase keywords k/spatial-keyword-boost)
+   (keywords->boosted-term-filter :spatial-keywords.lowercase keywords spatial-keyword-boost)
    ;; TODO - temporal-keyword
    ])
