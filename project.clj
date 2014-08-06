@@ -25,7 +25,7 @@
               projects)))
 
 (def create-checkouts-commands
-  (doall
+  (vec
     (apply concat ["do"
                    "shell" "mkdir" "checkouts,"]
            (map (fn [project-name]
@@ -38,9 +38,20 @@
   :url "***REMOVED***projects/CMR/repos/cmr-dev-system/browse"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies ~(concat '[[org.clojure/clojure "1.6.0"]
-                           [nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]]
-                         project-dependencies)
+
+  ;; Due to a stack overflow issue in the latest version of leiningen we can only list the top level
+  ;; libraries in the dependencies. Sub dependencies that are also under another project can't be
+  ;; included
+  ; :dependencies ~(concat '[[org.clojure/clojure "1.6.0"]]
+  ;                        project-dependencies)
+  :dependencies [[org.clojure/clojure "1.6.0"]
+                 [nasa-cmr/cmr-ingest-app "0.1.0-SNAPSHOT"]
+                 [nasa-cmr/cmr-bootstrap-app "0.1.0-SNAPSHOT"]
+                 [nasa-cmr/cmr-index-set-app "0.1.0-SNAPSHOT"]
+                 [nasa-cmr/cmr-es-spatial-plugin "0.1.0-SNAPSHOT"]
+                 [nasa-cmr/cmr-system-int-test "0.1.0-SNAPSHOT"]]
+
+
   :plugins [[lein-shell "0.4.0"]]
   :repl-options {:init-ns user}
 
@@ -63,7 +74,9 @@
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.4"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]
                         [pjstadig/humane-test-output "0.6.0"]
-                        [criterium "0.4.3"]]
+                        [criterium "0.4.3"]
+                        ;; Must be listed here as metadata db depends on it.
+                        [drift "1.5.2"]]
          :source-paths ["src" "dev" "test"]
          :injections [(require 'pjstadig.humane-test-output)
                       (pjstadig.humane-test-output/activate!)]}
