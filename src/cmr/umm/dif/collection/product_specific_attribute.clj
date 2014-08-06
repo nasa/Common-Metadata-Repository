@@ -11,7 +11,7 @@
   ;; DIF: Extended_Metadata.Group=AdditionalAttribute
   (when-let [ems (em/xml-elem->extended-metadatas xml-struct true)]
     (let [attribs (filter #(= ADDITIONAL_ATTRIBUTE_EXTERNAL_META_NAME (:group %)) ems)]
-      ;; TODO there is no way to validate the AdditionalAttributes through DIF schema.
+      ;; There is no way to validate the AdditionalAttributes through DIF schema.
       ;; For now, we just assume that the type always exist for DIF PSA.
       (seq (map (fn [attr]
                   (let [{:keys [name data-type description value]} attr

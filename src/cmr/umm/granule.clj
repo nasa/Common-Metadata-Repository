@@ -1,5 +1,5 @@
 (ns cmr.umm.granule
-  "Defines the UMM Granule record. TODO - add granule info to UMM Overview document.")
+  "Defines the UMM Granule record.")
 
 (defrecord CollectionRef
   [
