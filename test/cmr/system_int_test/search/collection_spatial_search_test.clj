@@ -72,6 +72,11 @@
         very-tall-cart (make-coll :cartesian "very-tall-cart" (polygon -160 90, -160 -90, -150 -90, -150 90, -160 90))
         normal-poly-cart (make-coll :cartesian "normal-poly-cart" (polygon 1.534 -16.52, 6.735 -14.102, 3.745 -9.735, -1.454 -11.802, 1.534 -16.52))
 
+        outer-cart (umm-s/ords->ring -5.26 -22.59 11.56 -22.77 10.47 -11.29 -5.86 -11.37 -5.26 -22.59)
+        hole1-cart (umm-s/ords->ring 6.95 -17.95 2.98 -17.94 3.92 -20.08 6.95 -17.95)
+        hole2-cart (umm-s/ords->ring 5.18 -13.08 -1.79 -12.99 -2.65 -15 4.29 -14.95 5.18 -13.08)
+        polygon-with-holes-cart (make-coll :cartesian "polygon-with-holes-cart" (poly/polygon [outer-cart hole1-cart hole2-cart]))
+
         ;; Points
         north-pole (make-coll :geodetic "north-pole" (p/point 0 90))
         south-pole (make-coll :geodetic "south-pole" (p/point 0 -90))
@@ -108,16 +113,20 @@
            ;;matches exact point on polygon
            [-5.26 -2.59] [whole-world polygon-with-holes]
 
-           ;; Matches a point
+           ;; Matches a granule point
            [10 22] [whole-world normal-point wide-north-cart]
 
            [-154.821 37.84] [whole-world very-wide-cart very-tall-cart]
 
            ;; Near but not inside the cartesian normal polygon
-           [-2.212,-12.44] [whole-world]
-           [0.103,-15.911] [whole-world]
+           ;; and also insid the polygon with holes (outside the holes)
+           [-2.212,-12.44] [whole-world polygon-with-holes-cart]
+           [0.103,-15.911] [whole-world polygon-with-holes-cart]
            ;; inside the cartesian normal polygon
-           [2.185,-11.161] [whole-world normal-poly-cart]))
+           [2.185,-11.161] [whole-world normal-poly-cart]
+
+           ;; inside a hole in the cartesian polygon
+           [4.496,-18.521] [whole-world]))
 
     (testing "bounding rectangle searches"
       (are [wnes items]
@@ -131,10 +140,15 @@
 
            [-23.43 5 25.54 -6.31] [whole-world polygon-with-holes normal-poly normal-brs]
 
-           ;; inside polygon with hole
+           ;; inside hole in geodetic
            [4.03,1.51,4.62,0.92] [whole-world]
            ;; corner points inside different holes
            [4.03,5.94,4.35,0.92] [whole-world polygon-with-holes]
+
+           ;; inside hole in cartesian polygon
+           [-0.54,-13.7,3.37,-14.45] [whole-world normal-poly-cart]
+           ;; inside different holes in cartesian polygon
+           [3.57,-14.38,3.84,-18.63] [whole-world normal-poly-cart polygon-with-holes-cart]
 
            ;; just under wide north polygon
            [-1.82,46.56,5.25,44.04] [whole-world]
@@ -144,7 +158,8 @@
            ;; vertical slice of earth
            [-10 90 10 -90] [whole-world on-np on-sp wide-north wide-south polygon-with-holes
                             normal-poly normal-brs north-pole south-pole normal-point
-                            very-wide-cart wide-north-cart wide-south-cart normal-poly-cart]
+                            very-wide-cart wide-north-cart wide-south-cart normal-poly-cart
+                            polygon-with-holes-cart]
 
            ;; crosses am
            [166.11,53.04,-166.52,-19.14] [whole-world across-am-poly across-am-br am-point very-wide-cart]
@@ -154,7 +169,7 @@
                               wide-north wide-south across-am-poly on-sp on-np normal-poly
                               polygon-with-holes north-pole south-pole normal-point am-point
                               very-wide-cart very-tall-cart wide-north-cart wide-south-cart
-                              normal-poly-cart]))
+                              normal-poly-cart polygon-with-holes-cart]))
 
     (testing "polygon searches"
       (are [ords items]
@@ -188,9 +203,9 @@
            [whole-world across-am-poly across-am-br am-point very-wide-cart]
 
            [-2.212 -12.44, 0.103 -15.911, 2.185 -11.161 -2.212 -12.44]
-           [whole-world normal-poly-cart]
+           [whole-world normal-poly-cart polygon-with-holes-cart]
 
-           ;; Related the polygon with the hole
+           ;; Related to the geodetic polygon with the holes
            ;; Inside holes
            [4.1,0.64,4.95,0.97,6.06,1.76,3.8,1.5,4.1,0.64] [whole-world]
            [1.41,5.12,3.49,5.52,2.66,6.11,0.13,6.23,1.41,5.12] [whole-world]
@@ -201,6 +216,23 @@
            ;; points inside both holes
            [4.44,0.66,5.4,1.35,2.66,6.11,0.13,6.23,4.44,0.66] [whole-world polygon-with-holes]
            ;; completely covers the polygon with holes
-           [-6.45,-3.74,12.34,-4.18,12,9.45,-6.69,9.2,-6.45,-3.74] [whole-world polygon-with-holes normal-brs]))))
+           [-6.45,-3.74,12.34,-4.18,12,9.45,-6.69,9.2,-6.45,-3.74] [whole-world polygon-with-holes normal-brs]
+
+           ;; Related to the cartesian polygon with the holes
+           ;; Inside holes
+           [-1.39,-14.32,2.08,-14.38,1.39,-13.43,-1.68,-13.8,-1.39,-14.32]
+           [whole-world normal-poly-cart]
+           ;; Partially inside a hole
+           [-1.39,-14.32,2.08,-14.38,1.64,-12.45,-1.68,-13.8,-1.39,-14.32]
+           [whole-world polygon-with-holes-cart normal-poly-cart]
+           ;; Covers a hole
+           [-3.24,-15.58,5.22,-15.16,6.05,-12.37,-1.98,-12.46,-3.24,-15.58]
+           [whole-world polygon-with-holes-cart normal-poly-cart]
+           ;; points inside both holes
+           [3.98,-18.64,5.08,-18.53,3.7,-13.78,-0.74,-13.84,3.98,-18.64]
+           [whole-world polygon-with-holes-cart normal-poly-cart]
+           ;; completely covers the polygon with holes
+           [-5.95,-23.41,12.75,-23.69,11.11,-10.38,-6.62,-10.89,-5.95,-23.41]
+           [whole-world polygon-with-holes-cart wide-south-cart normal-poly-cart]))))
 
 
