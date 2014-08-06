@@ -125,7 +125,9 @@
           ords :ords} :fields} elastic-result
         start-date (when start-date (str/replace (str start-date) #"\+0000" "Z"))
         end-date (when end-date (str/replace (str end-date) #"\+0000" "Z"))
-        atom-links (map #(json/decode % true) atom-links)]
+        atom-links (map (fn [link-str]
+                          (update-in (json/decode link-str true) [:size] #(when % (str %))))
+                        atom-links)]
     {:id concept-id
      :title granule-ur
      :collection-concept-id collection-concept-id
