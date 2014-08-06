@@ -31,4 +31,5 @@
            [] [{:dataSetId "Dataset2"} {:shortName "Long%"}] {}
            [] [{:dataSetId "Dataset2"} {:shortName "Long%" :pattern false}] {}
            [coll2 coll4] [{:dataSetId "Dataset2"} {:shortName "Long%" :pattern true}] {}
+           [] [{:dataSetId "Dataset1"} {:dataSetId "Dataset2"}] {}
            [coll1] [{:dataSetId "Dataset1"} {:shortName "SHORT"}] {:dataCenterId "PROV1"}))))
