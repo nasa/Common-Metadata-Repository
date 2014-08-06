@@ -131,9 +131,10 @@
      (approx= expected actual DELTA))
     ([expected actual delta]
      (when (contains? (ancestors (class actual)) clojure.lang.Sequential)
-       (every? (fn [[e v]]
-                 (approx= e v delta))
-               (map vector expected actual))))))
+       (and (= (count expected) (count actual))
+            (every? (fn [[e v]]
+                      (approx= e v delta))
+                    (map vector expected actual)))))))
 
 (defn rotation-direction
   "A helper function that determines the final rotation direction based on a set of angles in

@@ -19,6 +19,11 @@
   "Tolerance used for the determining if points are on the line."
   0.00000001)
 
+(def ^:const VERTICAL_TOLERANCE
+  "Tolerance used for the determining if a line is vertical."
+  0.00000001)
+
+
 (primitive-math/use-primitive-operators)
 
 (defrecord LineSegment
@@ -198,24 +203,38 @@
 (defn mbr->line-segments
   "Returns line segments representing the exerior of the MBR. The MBR must cover more than a single point"
   [mbr]
-  (cond
-    (m/single-point? mbr)
-    (errors/internal-error! "This function doesn't work for an MBR that's a single point.")
+  (let [{:keys [west north east south]} mbr]
+    (cond
+      (m/single-point? mbr)
+      (errors/internal-error! "This function doesn't work for an MBR that's a single point.")
 
-    (= (:west mbr) (:east mbr))
-    ;; zero width mbr
-    [(line-segment (p/point (:west mbr) (:north mbr)) (p/point (:east mbr) (:south mbr)))]
+      (= west east)
+      ;; zero width mbr
+      [(line-segment (p/point west north) (p/point east south))]
 
-    (= (:north mbr) (:south mbr))
-    ;; zero height mbr
-    [(line-segment (p/point (:west mbr) (:north mbr)) (p/point (:east mbr) (:south mbr)))]
+      (= north south)
+      ;; zero height mbr
+      (if (m/crosses-antimeridian? mbr)
+        [(line-segment (p/point west north) (p/point 180 north))
+         (line-segment (p/point -180 north) (p/point east north))]
+        [(line-segment (p/point west north) (p/point east south))])
 
-    :else
-    (let [[ul ur lr ll] (m/corner-points mbr)]
-      [(line-segment ul ur)
-       (line-segment ur lr)
-       (line-segment lr ll)
-       (line-segment ll ul)])))
+      (m/crosses-antimeridian? mbr)
+      (let [[ul ur lr ll] (m/corner-points mbr)
+            {:keys [north south]} mbr]
+        [(line-segment ul (p/point 180 north))
+         (line-segment (p/point -180 north) ur)
+         (line-segment ur lr)
+         (line-segment lr (p/point -180 south))
+         (line-segment (p/point 180 south) ll)
+         (line-segment ll ul)])
+
+      :else
+      (let [[ul ur lr ll] (m/corner-points mbr)]
+        [(line-segment ul ur)
+         (line-segment ur lr)
+         (line-segment lr ll)
+         (line-segment ll ul)]))))
 
 (defn- intersection-both-vertical
   "Returns the intersection point of two vertical line segments if they do intersect"
@@ -307,23 +326,18 @@
     (let [edges (mbr->line-segments mbr)]
       (filter identity (map (partial intersection ls) edges)))))
 
-;; TODO add tests for this
-(defn subselect
-  "Selects a smaller portion of the line segment using an mbr. Will return nil if the line segment
-  is not within the mbr"
+(defn subselect-not-across-am
+  "Helper for implementing subselect. Works on an mbr that does not cross the antimeridian"
   [ls mbr]
   (let [{:keys [point1 point2]} ls
         point1-in-mbr (m/covers-point? :cartesian mbr point1)
-        point2-in-mbr (m/covers-point? :cartesian mbr point2)
-        ;; helper function that removes points that are = to 1 and 2
-        ;; If the MBR covers the edges of the line segment then the points will be found as intersections
-        not-point1-or-2 #(and (not (approx= point1 % COVERS_TOLERANCE))
-                              (not (approx= point2 % COVERS_TOLERANCE)))]
+        point2-in-mbr (m/covers-point? :cartesian mbr point2)]
     (if (and point1-in-mbr point2-in-mbr)
       ;; Both points are in the mbr so there's no need to subselect
-      ls
+      {:line-segments [ls]}
       (let [intersection-points (mbr-intersections ls mbr)
-            intersection-points (filter not-point1-or-2 intersection-points)]
+            intersection-points (distinct (map (partial p/round-point 11)
+                                               intersection-points))]
         (cond
           (> (count intersection-points) 2)
           (errors/internal-error! (str "Found too many intersection points " (pr-str intersection-points)))
@@ -332,25 +346,31 @@
           nil ; no intersection at all
 
           (= (count intersection-points) 2)
-          (apply line-segment intersection-points)
+          {:line-segments [(apply line-segment intersection-points)]}
 
           ;; the number of intersection points must be 1 for any of the following conditions
           point2-in-mbr
-          (if (= point2 (first intersection-points))
-            ;; TODO handle the case where point 2 = the intersection point
-            (errors/internal-error! "TODO this case needs to be handled")
-            (line-segment point2 (first intersection-points)))
+          (if (approx= point2 (first intersection-points) COVERS_TOLERANCE)
+            {:points [point2]} ; Point 2 must exist on the edge of the mbr
+            {:line-segments [(line-segment point2 (first intersection-points))]})
 
           point1-in-mbr
-          (if (= point1 (first intersection-points))
-            ;; TODO handle the case where point 1 = the intersection point
-            (errors/internal-error! "TODO this case needs to be handled")
-            (line-segment point1 (first intersection-points)))
+          (if (approx= point1 (first intersection-points) COVERS_TOLERANCE)
+            {:points [point1]} ; Point 1 must exist on the edge of the mbr
+            {:line-segments [(line-segment point1 (first intersection-points))]})
 
           :else
-          ;; could be a corner of the MBR
-          ;; TODO handle this case
-          (errors/internal-error! "TODO this case needs to be handled"))))))
+          {:points intersection-points})))))
+
+(defn subselect
+  "Selects a smaller portion of the line segment using an mbr. Will return nil if the line segment
+  is not within the mbr. Subselecting a line segment with an mbr can result in multiple line segments
+  and points. The subselected data is returned as a map containing the keys :line-segments and
+  :points with sequences of line segments and points respectively."
+  [ls mbr]
+  (apply merge-with concat
+         (map (partial subselect-not-across-am ls)
+              (m/split-across-antimeridian mbr))))
 
 
 (extend-protocol d/DerivedCalculator

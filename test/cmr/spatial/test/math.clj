@@ -65,6 +65,11 @@
     (is (approx= 0.0001 0.0002 0.001))
     (is (not (approx= 0.0001 0.00021 0.0001)))
     (is (approx= 0.0001 0.00021 0.001)))
+  (testing "vectors"
+    (is (approx= [1] [1]))
+    (is (approx= [1] [1.0]))
+    (is (not (approx= [1] [1 2])))
+    (is (not (approx= [1] []))))
   (testing "vector and lazy sequence"
     (let [items [1 2 3.0000001]]
       (is (approx= items (map identity items)))

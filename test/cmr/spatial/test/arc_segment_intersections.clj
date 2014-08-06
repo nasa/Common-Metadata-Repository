@@ -22,7 +22,7 @@
   (sgen/print-failed-line-segments type ls))
 
 
-(defspec arc-segment-intersections-spec {:times 1000 :printer-fn print-failure}
+(defspec arc-segment-intersections-spec {:times 100 :printer-fn print-failure}
   (for-all [arc sgen/arcs
             ls sgen/line-segments]
     (let [intersections (asi/intersections ls arc)
@@ -44,6 +44,27 @@
              (every? (fn [point]
                        (some #(m/covers-point? :geodetic % point) arc-mbrs))
                      intersections))))))
+
+
+(deftest example-arc-line-segment-intersections
+  (are [ls-ords arc-ords intersection-ords]
+       (let [intersection-points (apply p/ords->points intersection-ords)
+             intersections (asi/intersections (apply s/ords->line-segment ls-ords)
+                                              (apply a/ords->arc arc-ords))]
+         (approx= intersection-points intersections))
+
+       ;; T intersection (vertical arc)
+       [2 5 4 5] [3 5, 3 -5] [3 5]
+
+       ;; line segment at north pole
+       [10 90 30 90] [0 90 10 85] [0 90]
+
+       ;; line segment at south pole
+       [10 -90 30 -90] [0 -90 10 -85] [0 -90]
+
+       ;; line segment along antimeridian
+       [180 10 180 20] [175 15 -175 15] [180.0 15.0547]))
+
 
 (comment
 

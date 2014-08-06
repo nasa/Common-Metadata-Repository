@@ -71,6 +71,11 @@
   "Tuples containing a latitude range from low to high"
   (gen/fmap sort (gen/tuple lats lats)))
 
+(defn print-failed-mbrs
+  [type & mbrs]
+  (doseq [br mbrs :let [{:keys [west north east south]} br]]
+    (println (pr-str (concat `(m/mbr) [west north east south])))))
+
 (def mbrs
   (gen/fmap
     (fn [[[south north] west east]]

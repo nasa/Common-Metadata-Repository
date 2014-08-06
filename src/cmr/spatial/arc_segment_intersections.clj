@@ -16,10 +16,20 @@
 (defn line-segment-arc-intersections-with-densification
   "Performs the intersection between a line segment and the arc using densification of the line segment"
   [ls arc mbrs]
-  (let [line-segments (filter identity (map (partial s/subselect ls) mbrs))
-        lines (mapv s/line-segment->line line-segments)
-        arcs (map (partial apply a/arc) (mapcat #(partition 2 1 (:points %)) lines))]
-    (mapcat (partial a/intersections arc) arcs)))
+
+  (let [; Subselect the line segment so that we'll only find intersections within the mbrs of the arc.
+        ;; Subselection can result in multiple line segments and points.
+        {:keys [line-segments points]} (apply merge-with concat (map (partial s/subselect ls) mbrs))
+        ;; We densify the line segments to see if they intersect the arcs
+        densified-lines (mapv s/line-segment->line line-segments)
+        ;; Convert the lines of multiple points into separate arcs.
+        densified-arcs (map (partial apply a/arc) (mapcat #(partition 2 1 (:points %)) densified-lines))]
+
+    (concat
+      ;; Return intersections of the densified arcs with the arc
+      (mapcat (partial a/intersections arc) densified-arcs)
+      ;; and any points that are on the original arc
+      (filter (partial a/point-on-arc? arc) points))))
 
 (defn- vertical-arc-line-segment-intersections
   "Determines the intersection points of a vertical arc and a line segment"

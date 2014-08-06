@@ -107,7 +107,7 @@
                 ;; The last distance should be less than or equal to the densification distance
                 (<= ^double (last distances) densification-dist))))))))
 
-(defspec line-segment-intersection-spec {:times 10000 :printer-fn sgen/print-failed-line-segments}
+(defspec line-segment-intersection-spec {:times 1000 :printer-fn sgen/print-failed-line-segments}
   (for-all [ls1 sgen/line-segments
             ls2 sgen/line-segments]
     (let [mbr1 (:mbr ls1)
@@ -165,6 +165,56 @@
        ;; normal
        [1 7 10 8] [1 8 10 7] (p/point 5.5 7.5)))
 
+(defn print-subselect-failure
+  [type ls mbr]
+  (sgen/print-failed-line-segments type ls)
+  (sgen/print-failed-mbrs type mbr))
 
-;; TODO add subselect tests here
+(defn approx-equal-within-magnitude
+  "Determines if two numbers are approximately equal within a certain percent of their magnitude.
+  This is useful for comparing lines since the b and the m values can be enormous for close to vertical lines"
+  [n1 n2 ^double percent-diff]
+  (let [avg-magnitude (avg [(abs n1) (abs n2)])
+        delta (* avg-magnitude (/ percent-diff 100.0))]
+    (approx= n1 n2 delta)))
+
+(defn valid-subselected-line-segment?
+  [ls mbr sub-ls]
+  (let [{:keys [point1 point2]} sub-ls
+        ls-mbr (:mbr ls)]
+    (and (or (and (s/vertical? ls) (s/vertical? sub-ls))
+             (and (approx-equal-within-magnitude (:m ls) (:m sub-ls) 0.01)
+                  (approx-equal-within-magnitude (:b ls) (:b sub-ls) 0.01)))
+         (m/covers-point? :cartesian mbr point1)
+         (m/covers-point? :cartesian mbr point2)
+         (m/covers-point? :cartesian ls-mbr point1)
+         (m/covers-point? :cartesian ls-mbr point2))))
+
+(defn valid-subselected-point?
+  [ls mbr point]
+  (let [ls-mbr (:mbr ls)]
+    (and (m/covers-point? :cartesian mbr point)
+         (m/covers-point? :cartesian ls-mbr point)
+         (s/point-on-segment? ls point))))
+
+(defspec subselect-spec {:times 1000 :printer-fn print-subselect-failure}
+  (for-all [ls sgen/line-segments
+            mbr sgen/mbrs]
+    (if-let [result (s/subselect ls mbr)]
+      (let [{:keys [points line-segments]} result]
+        (and (every? (partial valid-subselected-point? ls mbr) points)
+             (every? (partial valid-subselected-line-segment? ls mbr) line-segments)
+             ;; there must be at least one point or line segment if nil isn't returned.
+             (or (seq points) (seq line-segments))))
+      ;; No intersection
+      (let [{:keys [point1 point2]} ls]
+        (and ; The mbr shouldn't contain either line segment point
+             (not (m/covers-point? :cartesian mbr point1))
+             (not (m/covers-point? :cartesian mbr point2))
+             ;; The line segment shouldn't intersect any of the mbr sides.
+             (not (some #(s/intersection ls %)
+                        (s/mbr->line-segments mbr))))))))
+
+
+
 
