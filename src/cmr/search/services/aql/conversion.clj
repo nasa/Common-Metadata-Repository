@@ -159,8 +159,10 @@
   [concept-type xml-struct]
   (let [data-center-condition (xml-struct->data-center-condition concept-type xml-struct)
         where-conditions (xml-struct->where-conditions concept-type xml-struct)
-        conditions (remove nil? (concat [data-center-condition] where-conditions))]
-    (if (empty? conditions) nil (qm/and-conds conditions))))
+        conditions (if data-center-condition
+                     (cons data-center-condition where-conditions)
+                     where-conditions)]
+    (when (seq conditions) (qm/and-conds conditions))))
 
 (defn aql->query
   "Converts aql into a query model."
