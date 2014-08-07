@@ -39,10 +39,15 @@
   {:onlineOnly :boolean
    :temporal :temporal})
 
+(defn- condition->element-name
+  "Returns the AQL element name of the given condition"
+  [condition]
+  (first (remove #{:ignore-case :pattern} (keys condition))))
+
 (defn- condition->element-type
   "Returns the element type of the condition"
   [condition]
-  (let [elem-key (first (remove #{:ignore-case :pattern} (keys condition)))]
+  (let [elem-key (condition->element-name condition)]
     (get element-key-type-mapping elem-key :string)))
 
 (defmulti generate-element
@@ -52,7 +57,7 @@
 
 (defmethod generate-element :string
   [condition]
-  (let [elem-key (first (remove #{:ignore-case :pattern} (keys condition)))
+  (let [elem-key (condition->element-name condition)
         elem-value (elem-key condition)
         {:keys [ignore-case pattern]} condition]
     (x/element elem-key {}
@@ -69,7 +74,7 @@
 
 (defmethod generate-element :boolean
   [condition]
-  (let [elem-key (first (remove #{:ignore-case :pattern} (keys condition)))
+  (let [elem-key (condition->element-name condition)
         elem-value (elem-key condition)]
     (case elem-value
       true (x/element elem-key {:value "Y"})
@@ -78,7 +83,7 @@
 
 (defmethod generate-element :temporal
   [condition]
-  (let [elem-key (first (remove #{:ignore-case :pattern} (keys condition)))
+  (let [elem-key (condition->element-name condition)
         {:keys [start-date stop-date start-day end-day]} (elem-key condition)]
     (x/element :temporal {}
                (generate-date-element :startDate start-date)
