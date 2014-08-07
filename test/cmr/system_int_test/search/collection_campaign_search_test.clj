@@ -46,5 +46,33 @@
       (are [campaign-kvs items] (d/refs-match? items (search/find-refs :collection campaign-kvs))
            {"campaign[]" ["ESI" "EPI" "EVI"], "options[campaign][and]" "true"} [coll6]
            {"campaign[]" ["ESI" "EPI" "EVI"], "options[campaign][and]" "false"} [coll3 coll4 coll5 coll6]
-           {"campaign[]" ["ESI" "EPI" "EVI"]} [coll3 coll4 coll5 coll6]))))
+           {"campaign[]" ["ESI" "EPI" "EVI"]} [coll3 coll4 coll5 coll6]))
+
+    (testing "search campaign by AQL."
+      (are [items campaigns options]
+           (let [condition (merge {:CampaignShortName campaigns} options)]
+             (d/refs-match? items
+                            (search/find-refs-with-aql :collection [condition])))
+           [coll3 coll4 coll6] "ESI" {}
+           [coll5 coll6] "EVI" {}
+           [coll5 coll6] "EPI" {}
+           [coll3 coll4 coll6] "Esi" {}
+           [] "BLAH" {}
+
+           ;; Multiple values
+           [coll3 coll4 coll5 coll6] ["ESI" "EVI"] {}
+
+           ;; Wildcards
+           [coll3 coll4 coll5 coll6] "E%" {:pattern true}
+           [] "E%" {:pattern false}
+           [] "E%" {}
+           [coll3 coll4 coll5 coll6] "%I" {:pattern true}
+           [coll5 coll6] "EP_" {:pattern true}
+           [coll3 coll4 coll5 coll6] ["EP%" "ES_"] {:pattern true}
+           [] "%Q%" {:pattern true}
+
+           ;; Ignore case
+           [coll5 coll6] "epi" {}
+           [coll5 coll6] "epi" {:ignore-case true}
+           [] "epi" {:ignore-case false}))))
 

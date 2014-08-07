@@ -59,4 +59,13 @@
                          (search/find-refs :collection {:online-only "unset"}))))
     (testing "search by online only wrong value"
       (is (= {:status 422 :errors ["Parameter :downloadable must take value of true, false, or unset, but was wrong"]}
-             (search/find-refs :collection {:online-only "wrong"}))))))
+             (search/find-refs :collection {:online-only "wrong"}))))
+
+    (testing "search by online only with aql"
+      (are [items value]
+           (d/refs-match? items
+                          (search/find-refs-with-aql :collection [{:onlineOnly value}]))
+
+           ;; it is not possible to search onlineOnly false in AQL, so we don't have a test for that
+           [coll1 coll5] true
+           [coll1 coll5] nil))))
