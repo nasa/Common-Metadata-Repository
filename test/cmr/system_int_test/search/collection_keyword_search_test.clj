@@ -55,36 +55,16 @@
            "Laser" [coll5 coll7]
            "ABC place Hurricane" [coll2 coll5 coll6 coll9]
            "BLAH" []))
-    ; (testing "search by spatial keywords using wildcard *."
-    ;   (is (d/refs-match? [coll3 coll4 coll5 coll7]
-    ;                      (search/find-refs :collection
-    ;                                        {:spatial-keyword "D*"
-    ;                                         "options[spatial-keyword][pattern]" "true"}))))
-    ; (testing "search by spatial keywords using wildcard ?."
-    ;   (is (d/refs-match? [coll4 coll6]
-    ;                      (search/find-refs :collection
-    ;                                        {:spatial-keyword "L?"
-    ;                                         "options[spatial-keyword][pattern]" "true"}))))
-    ; (testing "search by spatial keywords case default is ignore case true."
-    ;   (is (d/refs-match? [coll5 coll7]
-    ;                      (search/find-refs :collection
-    ;                                        {:spatial-keyword "detroit"}))))
-    ; (testing "search by spatial keywords ignore case false."
-    ;   (is (d/refs-match? [coll7]
-    ;                      (search/find-refs :collection
-    ;                                        {:spatial-keyword "detroit"
-    ;                                         "options[spatial-keyword][ignore-case]" "false"}))))
-    ; (testing "search by spatial keywords ignore case true."
-    ;   (is (d/refs-match? [coll5 coll7]
-    ;                      (search/find-refs :collection
-    ;                                        {:spatial-keyword "detroit"
-    ;                                         "options[spatial-keyword][ignore-case]" "true"}))))
-    ; (testing "search by spatial keywords, options :or."
-    ;   (is (d/refs-match? [coll3 coll4]
-    ;                      (search/find-refs :collection {"spatial-keyword[]" ["DC" "LA"]
-    ;                                                     "options[spatial-keyword][or]" "true"}))))
-    ; (testing "search by spatial keywords, options :and."
-    ;   (is (d/refs-match? [coll4]
-    ;                      (search/find-refs :collection {"spatial-keyword[]" ["DC" "LA"]
-    ;                                                     "options[spatial-keyword][and]" "true"}))))))
-    ))
+    (testing "search by spatial keywords using wildcard *."
+      (are [keyword-str items] (d/refs-match? items (search/find-refs :collection {:keyword keyword-str}))
+           "A*C" [coll2 coll5]
+           "XY*" [coll2 coll13]
+           "*aser" [coll5 coll7]
+           "ABC p*ce Hurricane" [coll2 coll5 coll6 coll9]))
+
+    (testing "search by spatial keywords using wildcard ?."
+      (are [keyword-str items] (d/refs-match? items (search/find-refs :collection {:keyword keyword-str}))
+           "A?C" [coll2 coll5]
+           "XY?" [coll2 coll13]
+           "?aser" [coll5 coll7]
+           "ABC ?lace Hurricane" [coll2 coll5 coll6 coll9]))))
