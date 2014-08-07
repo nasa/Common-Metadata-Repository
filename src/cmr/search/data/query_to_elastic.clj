@@ -61,7 +61,8 @@
                 :provider :provider-id.lowercase
                 :platform :platform-sn.lowercase
                 :instrument :instrument-sn.lowercase
-                :sensor :sensor-sn.lowercase}
+                :sensor :sensor-sn.lowercase
+                :score :_score}
    :granule {:provider :provider-id.lowercase
              :entry-title :entry-title.lowercase
              :short-name :short-name.lowercase
@@ -74,7 +75,8 @@
              :instrument :instrument-sn.lowercase
              :sensor :sensor-sn.lowercase
              :project :project-refs.lowercase
-             :day-night-flag :day-night.lowercase}})
+             :day-night-flag :day-night.lowercase
+             :score :_score}})
 
 (defn query->sort-params
   "Converts a query into the elastic parameters for sorting results"

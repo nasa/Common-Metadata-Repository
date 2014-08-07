@@ -251,7 +251,8 @@
   (let [options (u/map-keys->kebab-case (get params :options {}))
         page-size (Integer. (get params :page-size qm/default-page-size))
         page-num (Integer. (get params :page-num qm/default-page-num))
-        sort-keys (parse-sort-key (:sort-key params))
+        sort-keys (or (parse-sort-key (:sort-key params))
+                      (when (:keyword params) [{:order :desc :field :score}]))
         pretty (get params :pretty false)
         result-format (get params :result-format (qm/default-result-format concept-type))
         params (dissoc params :options :page-size :page-num :sort-key :result-format :pretty)]

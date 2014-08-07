@@ -263,7 +263,8 @@
    ])
 
 (def default-sort-keys
-  "The default sort keys by concept type."
+  "The default sort keys by concept type. Collection default is more complicated in that it will
+  default so relevance score if a keywords search is executed."
   {:collection [{:field :entry-title
                  :order :asc}]
 
