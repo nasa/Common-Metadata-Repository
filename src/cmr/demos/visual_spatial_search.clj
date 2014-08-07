@@ -58,17 +58,24 @@
   [spatial-type ords]
   (apply p/point ords))
 
+(defmethod ords->shape :line
+  [spatial-type ords]
+  (apply l/ords->line-string :geodetic ords))
+
 (defn handle-search-area-moved
   "This is the VDD callback function. Everytime the search area is moved this will be called with the
   new ordinates of the search area. It removes the existing MBR and LR of the search area, recalculates
   and displays them. It then searches for matches and says the number of hits that match."
   [id-ords-str]
-  (println "Search area moved: " id-ords-str)
+  (println "Search area moved:" id-ords-str)
 
   (let [[id ords-str] (str/split id-ords-str #":")
         spatial-type (keyword id)
         ords (map #(Double. ^String %) (str/split ords-str #","))
         shape (ords->shape spatial-type ords)]
+
+        (println "shape:" (pr-str shape))
+        (println "encoded:" (pr-str (cmr.spatial.codec/url-encode shape)))
 
     (let [results (search/find-refs :granule {spatial-type (cmr.spatial.codec/url-encode
                                                              shape)})
@@ -152,6 +159,7 @@
         wide-south-cart (polygon :cartesian -70 -30, 70 -30, 70 -20, -70 -20, -70 -30)
         very-wide-cart (polygon :cartesian -179 40, -179 35, 179 35, 179 40, -179 40)
         very-tall-cart (polygon :cartesian -160 90, -160 -90, -150 -90, -150 90, -160 90)
+        normal-poly-cart (polygon :cartesian 1.534 -16.52, 6.735 -14.102, 3.745 -9.735, -1.454 -11.802, 1.534 -16.52)
 
         ;; Cartesian With holes
         outer-cart (rr/ords->ring :cartesian -5.26 -22.59 11.56 -22.77 10.47 -11.29 -5.86 -11.37 -5.26 -22.59)
@@ -165,40 +173,44 @@
         normal-point (p/point 10 22)
         am-point (p/point 180 22)
 
-        search-area (assoc (polygon :geodetic -6.45,-3.74,12.34,-4.18,12,9.45,-6.69,9.2,-6.45,-3.74)
-                            :options {:id "polygon"})
+        ;search-area (assoc (polygon :geodetic -6.45,-3.74,12.34,-4.18,12,9.45,-6.69,9.2,-6.45,-3.74)
+        ;                    :options {:id "polygon"})
 
         ;search-area (assoc (m/mbr -23.43 5 25.54 -6.31) :options {:id "bounding_box"})
 
         ;search-area (assoc (p/point 0 0) :options {:id "point"})
 
+        search-area (assoc (l/ords->line-string :geodetic -0.37 -14.07 4.75 1.27 25.13 -15.51) :options {:id "line"})
+
+
         ]
     (visual-interactive-search [
-                                ; touches-sp
-                                ; across-am-br
-                                ; touches-np
-                                ; normal-br1
-                                ; normal-br2
+                                touches-sp
+                                across-am-br
+                                touches-np
+                                normal-br1
+                                normal-br2
 
                                 normal-geod-line
                                 normal-cart-line
 
-                                ; wide-north
-                                ; wide-south
-                                ; across-am-poly
-                                ; on-np
-                                ; on-sp
-                                ; normal-poly
-                                ; polygon-with-holes
-                                ; wide-north-cart
-                                ; wide-south-cart
-                                ; very-wide-cart
-                                ; very-tall-cart
-                                ; polygon-with-holes-cart
-                                ; north-pole
-                                ; south-pole
-                                ; normal-point
-                                ; am-point
+                                wide-north
+                                wide-south
+                                across-am-poly
+                                on-np
+                                on-sp
+                                normal-poly
+                                polygon-with-holes
+                                wide-north-cart
+                                wide-south-cart
+                                very-wide-cart
+                                very-tall-cart
+                                normal-poly-cart
+                                polygon-with-holes-cart
+                                north-pole
+                                south-pole
+                                normal-point
+                                am-point
                                 ] search-area))
 
 
