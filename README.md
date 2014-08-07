@@ -220,7 +220,7 @@ Collection results are sorted by ascending entry title by default. One or more s
   * instrument
   * sensor
   * provider
-  * score - document relevance score, only valid with keyword search
+  * score - document relevance score, only valid with keyword search, defaults to descending
 
 Example of sorting by start_date in descending order: (Most recent data first)
 
