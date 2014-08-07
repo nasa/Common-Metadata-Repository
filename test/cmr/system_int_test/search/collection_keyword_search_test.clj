@@ -21,15 +21,13 @@
                                  :term "Term1"
                                  :variable-level-1 "Level1-1"
                                  :variable-level-2 "Level1-2"
-                                 :variable-level-3 "Level1-3"
-                                 :detailed-variable "Detail1"})
+                                 :variable-level-3 "Level1-3"})
         sk2 (dc/science-keyword {:category "Hurricane"
-                                 :topic "Popular"
+                                 :topic "Laser platform_SnA"
                                  :term "Extreme"
                                  :variable-level-1 "Level2-1"
                                  :variable-level-2 "Level2-2"
-                                 :variable-level-3 "Level2-3"
-                                 :detailed-variable "UNIVERSAL"})
+                                 :variable-level-3 "Level2-3"})
         tdcs1 (dc/two-d "XYZ")
         coll1 (d/ingest "CMR_PROV1" (dc/collection {}))
         coll2 (d/ingest "CMR_PROV1" (dc/collection {:entry-title "ABC!XYZ"}))
@@ -43,7 +41,8 @@
         coll10 (d/ingest "CMR_PROV2" (dc/collection {:spatial-keywords ["in out"]}))
         coll11 (d/ingest "CMR_PROV2" (dc/collection {:platforms [p1 p2]}))
         coll12 (d/ingest "CMR_PROV2" (dc/collection {:product-specific-attributes [psa1 psa2 psa3 psa4]}))
-        coll13 (d/ingest "CMR_PROV2" (dc/collection {:two-d-coordinate-systems [tdcs1]}))]
+        coll13 (d/ingest "CMR_PROV2" (dc/collection {:two-d-coordinate-systems [tdcs1]}))
+        coll14 (d/ingest "CMR_PROV2" (dc/collection {:long-name "platform_SnA laser"}))]
 
     (index/refresh-elastic-index)
 
@@ -52,19 +51,24 @@
            "ABC" [coll2 coll5]
            "XYZ" [coll2 coll13]
            "place" [coll6]
-           "Laser" [coll5 coll7]
+           "Laser" [coll5 coll7 coll9 coll14]
            "ABC place Hurricane" [coll2 coll5 coll6 coll9]
            "BLAH" []))
-    (testing "search by spatial keywords using wildcard *."
+    (testing "search by keywords using wildcard *."
       (are [keyword-str items] (d/refs-match? items (search/find-refs :collection {:keyword keyword-str}))
            "A*C" [coll2 coll5]
            "XY*" [coll2 coll13]
-           "*aser" [coll5 coll7]
+           "*aser" [coll5 coll7 coll9 coll14]
            "ABC p*ce Hurricane" [coll2 coll5 coll6 coll9]))
-
-    (testing "search by spatial keywords using wildcard ?."
+    (testing "search by keywords using wildcard ?."
       (are [keyword-str items] (d/refs-match? items (search/find-refs :collection {:keyword keyword-str}))
            "A?C" [coll2 coll5]
            "XY?" [coll2 coll13]
-           "?aser" [coll5 coll7]
-           "ABC ?lace Hurricane" [coll2 coll5 coll6 coll9]))))
+           "?aser" [coll5 coll7 coll9 coll14]
+           "ABC ?lace Hurricane" [coll2 coll5 coll6 coll9]))
+    (testing "sorted search by keywords."
+      (are [keyword-str items] (d/refs-match-order? items (search/find-refs :collection {:keyword keyword-str}))
+           "Laser platform_SnA" [coll14 coll11 coll9 coll5 coll7]
+           "La?er platform_SnA" [coll14 coll11 coll9 coll5 coll7]
+           "L*er platfor*_SnA" [coll14 coll11 coll9 coll5 coll7]
+           "L?s* plat?o*_SnA" [coll14 coll11 coll9 coll5 coll7]))))
