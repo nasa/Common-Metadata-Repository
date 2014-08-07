@@ -2,6 +2,7 @@
   "Contains functions for parsing and converting aql to query conditions"
   (:require [clojure.string :as s]
             [clojure.data.xml :as x]
+            [clojure.set :as set]
             [cmr.common.xml :as cx]
             [cmr.common.services.errors :as errors]
             [clj-time.core :as t]
@@ -52,11 +53,11 @@
              :temporal {:name :temporal :type :temporal}
              :additionalAttributes {:name :attribute :type :attribute}
              ;; orbit-number is not in UMM yet
-             :orbitNumber {:name :orbit-number :type :string}
+             :orbitNumber {:name :orbit-number :type :orbit-number}
              ;; :equator-cross-longitude is not in UMM yet
              :equatorCrossingLongitude {:name :equator-cross-longitude :type :num-range}
              ;; :equator-cross-date is not in UMM yet
-             :equatorCrossingDate {:name :equator-cross-date :type :datetime}
+             :equatorCrossingDate {:name :equator-crossing-date :type :equator-crossing-date}
              :TwoDCoordinateSystemName {:name :two-d-coordinate-system-name :type :string}}})
 
 (defn- elem-name->type
@@ -147,12 +148,29 @@
        :start-date start-date
        :end-date stop-date})))
 
+(defmethod element->condition :equator-crossing-date
+  [concept-type element]
+  (let [[start-date stop-date] (parse-date-range-element element)]
+    (qm/map->EquatorCrossingDateCondition {:start-date start-date
+                                           :end-date stop-date})))
+
 (defmethod element->condition :boolean
   [concept-type element]
   (let [condition-key (elem-name->condition-key concept-type (:tag element))
         value (get-in element [:attrs :value] "Y")]
     (qm/map->BooleanCondition {:field condition-key
                                :value (= "Y" value)})))
+
+(defmethod element->condition :orbit-number
+  [concept-type element]
+  (if-let [value (cx/double-at-path element [:value])]
+    (qm/map->OrbitNumberValueCondition {:value value})
+    (let [string-double-fn (fn [n] (when n (Double. n)))
+          range-val (-> (cx/attrs-at-path element [:range])
+                        (set/rename-keys {:lower :min-value :upper :max-value})
+                        (update-in [:min-value] string-double-fn)
+                        (update-in [:max-value] string-double-fn))]
+      (qm/map->OrbitNumberRangeCondition range-val))))
 
 (def aql-query-type->concept-type
   "Mapping of AQL query type to search concept type"
