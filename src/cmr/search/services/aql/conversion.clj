@@ -4,6 +4,7 @@
             [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
             [cmr.common.services.errors :as errors]
+            [clj-time.core :as t]
             [cmr.search.models.query :as qm]
             [cmr.search.services.parameters.conversion :as p]))
 
@@ -14,7 +15,7 @@
                 :versionId {:name :version-id :type :string}
                 :CampaignShortName {:name :project :type :string}
                 :dataSetId {:name :entry-title :type :string}
-                :ECHOLastUpdate {:name :update-since :type :datetime}
+                :ECHOLastUpdate {:name :updated-since :type :date-range}
                 :onlineOnly {:name :downloadable :type :boolean}
                 :ECHOCollectionID {:name :concept-id :type :string}
                 :processingLevel {:name :processing-level-id :type :string}
@@ -33,12 +34,12 @@
              :GranuleUR {:name :granule-ur :type :string}
              :collectionShortName {:name :short-name :type :collection-query}
              :collectionVersionId {:name :version-id :type :collection-query}
-             :browseOnly {:name :browsable :type :string}
+             :browseOnly {:name :browsable :type :boolean}
              :CampaignShortName {:name :project :type :string}
              :cloudCover {:name :cloud-cover :type :num-range}
              :dataSetId {:name :entry-title :type :collection-query}
              :dayNightFlag {:name :day-night :type :string}
-             :ECHOLastUpdate {:name :update-since :type :datetime}
+             :ECHOLastUpdate {:name :updated-since :type :date-range}
              :onlineOnly {:name :downloadable :type :boolean}
              :ECHOCollectionID {:name :collection-concept-id :type :string}
              :ECHOGranuleID {:name :concept-id :type :string}
@@ -91,6 +92,24 @@
   [concept-type key elem]
   (string-value-elem->condition concept-type key elem true))
 
+(defn- date-time-from-string
+  "Returns date-time from strings of year, month, day, etc. Returns nil if all strings are nil."
+  [year month day hour minute sec]
+  (when (and year month day hour minute sec)
+    (let [units (map (fn [unit] (if unit (Long. unit) 0)) [year month day hour minute sec])]
+      (apply t/date-time units))))
+
+(defn parse-date-range-element
+  "Returns start-date and stop-date in a vector by parsing the given data range element"
+  [element]
+  (let [{year :YYYY month :MM day :DD hour :HH minute :MI sec :SS}
+        (cx/attrs-at-path element [:startDate :Date])
+        start-date (date-time-from-string year month day hour minute sec)
+        {year :YYYY month :MM day :DD hour :HH minute :MI sec :SS}
+        (cx/attrs-at-path element [:stopDate :Date])
+        stop-date (date-time-from-string year month day hour minute sec)]
+    [start-date stop-date]))
+
 (defmulti element->condition
   "Converts a aql element into a condition"
   (fn [concept-type elem]
@@ -118,6 +137,22 @@
   (qm/or-conds
     [(element->condition concept-type (assoc element :tag :entry-id))
      (element->condition concept-type (assoc element :tag :associated-difs))]))
+
+(defmethod element->condition :date-range
+  [concept-type element]
+  (let [condition-key (elem-name->condition-key concept-type (:tag element))
+        [start-date stop-date] (parse-date-range-element element)]
+    (qm/map->DateRangeCondition
+      {:field condition-key
+       :start-date start-date
+       :end-date stop-date})))
+
+(defmethod element->condition :boolean
+  [concept-type element]
+  (let [condition-key (elem-name->condition-key concept-type (:tag element))
+        value (get-in element [:attrs :value] "Y")]
+    (qm/map->BooleanCondition {:field condition-key
+                               :value (= "Y" value)})))
 
 (def aql-query-type->concept-type
   "Mapping of AQL query type to search concept type"

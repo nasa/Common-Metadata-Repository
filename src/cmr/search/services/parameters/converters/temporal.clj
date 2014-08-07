@@ -6,7 +6,7 @@
             [cmr.search.models.query :as qm]
             [cmr.search.services.parameters.conversion :as p]))
 
-(defn- string->int-value
+(defn string->int-value
   "Return int value of the string value if it is not blank or nil if it is"
   [value]
   (when-not (s/blank? value) (Integer/parseInt value)))
