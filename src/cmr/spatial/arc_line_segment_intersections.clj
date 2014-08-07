@@ -23,7 +23,7 @@
         ;; We densify the line segments to see if they intersect the arcs
         densified-point-sets (mapv s/densify-line-segment line-segments)
         ;; Convert the lines of multiple points into separate arcs.
-        densified-arcs (map (partial apply a/arc) (mapcat #(partition 2 1 (:points %)) densified-point-sets))]
+        densified-arcs (map (partial apply a/arc) (mapcat (partial partition 2 1) densified-point-sets))]
 
     (concat
       ;; Return intersections of the densified arcs with the arc

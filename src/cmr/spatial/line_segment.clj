@@ -16,7 +16,7 @@
 
 (def ^:const COVERS_TOLERANCE
   "Tolerance used for the determining if points are on the line."
-  0.00000001)
+ 0.00001)
 
 (primitive-math/use-primitive-operators)
 

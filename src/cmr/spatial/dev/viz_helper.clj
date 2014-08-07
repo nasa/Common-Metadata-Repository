@@ -85,7 +85,7 @@
   (cmr-spatial->viz-geoms
     [ring]
     (let [{:keys [points mbr options]} ring]
-      [{:type :ring
+      [{:type :geodetic-ring
         :ords (p/points->ords points)
         :options options}]))
 
@@ -93,7 +93,7 @@
   (cmr-spatial->viz-geoms
     [arc]
     (let [{:keys [options]} arc]
-      [{:type :ring
+      [{:type :geodetic-ring
         :ords (a/arc->ords arc)
         :options options}]))
 
@@ -115,8 +115,8 @@
   LineString
   (cmr-spatial->viz-geoms
     [line]
-    (let [{:keys [points options]} line]
-      [{:type :ring ; a non-closed ring is a line
+    (let [{:keys [points options coordinate-system]} line]
+      [{:type (keyword (str (name coordinate-system) "-ring")) ; a non-closed ring is a line
         :ords (p/points->ords points)
         :options options}]))
 

@@ -31,7 +31,7 @@
   LineSegment
   (segment->mbrs
     [ls]
-    (:mbr ls))
+    [(:mbr ls)])
   (point-on-segment?
     [ls point]
     (s/point-on-segment? ls point)))
