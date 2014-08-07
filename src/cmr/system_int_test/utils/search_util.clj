@@ -220,6 +220,7 @@
                                  {:accept "application/xml"
                                   :content-type "application/x-www-form-urlencoded"
                                   :body (aql/generate-aql concept-type data-center-condition conditions)
+                                  :query-params {:page-size 100}
                                   :throw-exceptions false
                                   :connection-manager (url/conn-mgr)})]
        (parse-reference-response response)))))

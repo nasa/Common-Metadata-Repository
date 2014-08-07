@@ -2,7 +2,7 @@
   "Contains helper functions for converting granules into the expected map of parsed json results."
   (:require [cmr.spatial.polygon :as poly]
             [cmr.spatial.point :as p]
-            [cmr.spatial.line :as l]
+            [cmr.spatial.line-string :as l]
             [cmr.spatial.mbr :as m]
             [cheshire.core :as json]
             [cmr.common.util :as u]
@@ -19,7 +19,7 @@
 
 (defn json-lines->lines
   [lines]
-  (map (comp l/line atom/point-str->points) lines))
+  (map (comp l/line-string atom/point-str->points) lines))
 
 (defn json-boxes->bounding-rectangles
   [boxes]

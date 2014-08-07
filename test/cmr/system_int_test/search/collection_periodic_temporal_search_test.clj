@@ -89,7 +89,34 @@
                                          {"temporal[]" ["1998-01-15T00:00:00Z, 1999-03-15T00:00:00Z, 60, 90"
                                                         "2000-02-15T00:00:00Z, 2001-03-15T00:00:00Z, 40, 50"]
                                           :page_size 100})]
-        (is (d/refs-match? [coll2 coll6 coll14 coll16 coll17] references))))))
+        (is (d/refs-match? [coll2 coll6 coll14 coll16 coll17] references))))
+
+    (testing "search by temporal with aql"
+      (are [items start-date stop-date start-day end-day]
+           (d/refs-match? items (search/find-refs-with-aql :collection [{:temporal {:start-date start-date
+                                                                                    :stop-date stop-date
+                                                                                    :start-day start-day
+                                                                                    :end-day end-day}}]))
+
+           ;; search by both start-day and end-day
+           [coll2 coll3 coll6 coll7 coll10 coll11 coll16 coll17]
+           "2000-02-15T00:00:00Z" "2002-03-15T00:00:00Z" 32 90
+
+           ;; search by end-day."
+           [coll2 coll3 coll5 coll6 coll7 coll9 coll10 coll11 coll16 coll17]
+           "2000-02-15T00:00:00Z" "2002-03-15T00:00:00Z" nil 90
+
+           ;; search by start-day
+           [coll2 coll3 coll4 coll6 coll7 coll8 coll10 coll11 coll16 coll17 coll19]
+           "2000-02-15T00:00:00Z" "2002-03-15T00:00:00Z" 32 nil
+
+           ;;search by start-day without end_date
+           [coll2 coll3 coll4 coll6 coll7 coll8 coll10 coll11 coll12 coll13 coll15 coll16 coll17 coll18 coll19]
+           "2000-02-15T00:00:00Z" nil 32 nil
+
+           ;; search by start-day/end-day with date crossing year boundary
+           [coll3 coll4 coll5 coll6 coll7 coll8 coll9 coll10 coll16 coll17 coll19]
+           "2000-04-03T00:00:00Z" "2002-01-02T00:00:00Z" 93 2))))
 
 ;; Just some symbolic invalid temporal testing, more complete test coverage is in unit tests
 (deftest search-temporal-error-scenarios
