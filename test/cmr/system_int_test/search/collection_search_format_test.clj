@@ -14,7 +14,7 @@
             [cmr.spatial.polygon :as poly]
             [cmr.spatial.point :as p]
             [cmr.spatial.mbr :as m]
-            [cmr.spatial.line :as l]
+            [cmr.spatial.line-string :as l]
             [cmr.spatial.ring-relations :as rr]
             [cmr.spatial.codec :as codec]
             [cmr.umm.spatial :as umm-s]))
@@ -165,8 +165,8 @@
                                                     polygon-with-holes
                                                     (p/point 1 2)
                                                     (p/point -179.9 89.4)
-                                                    (l/ords->line 0 0, 0 1, 0 -90, 180 0)
-                                                    (l/ords->line 1 2, 3 4, 5 6, 7 8)
+                                                    (l/ords->line-string 0 0, 0 1, 0 -90, 180 0)
+                                                    (l/ords->line-string 1 2, 3 4, 5 6, 7 8)
                                                     (m/mbr -180 90 180 -90)
                                                     (m/mbr -10 20 30 -40))}))
         coll2 (d/ingest "PROV1"

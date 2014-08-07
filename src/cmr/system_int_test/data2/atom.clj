@@ -4,7 +4,7 @@
             [cmr.umm.related-url-helper :as ru]
             [cmr.spatial.polygon :as poly]
             [cmr.spatial.point :as p]
-            [cmr.spatial.line :as l]
+            [cmr.spatial.line-string :as l]
             [cmr.spatial.mbr :as m]
             [cmr.system-int-test.utils.url-helper :as url]
             [clojure.data.xml :as x]
@@ -60,7 +60,7 @@
 
 (defn xml-elem->lines
   [entry-elem]
-  (map (comp l/line point-str->points) (cx/strings-at-path entry-elem [:line])))
+  (map (comp l/line-string point-str->points) (cx/strings-at-path entry-elem [:line])))
 
 (defn xml-elem->bounding-rectangles
   [entry-elem]

@@ -8,6 +8,7 @@
             [cmr.system-int-test.data2.core :as d]
             [cmr.spatial.polygon :as poly]
             [cmr.spatial.point :as p]
+            [cmr.spatial.line-string :as l]
             [cmr.spatial.mbr :as m]
             [cmr.spatial.ring-relations :as rr]
             [cmr.spatial.derived :as derived]
@@ -41,6 +42,12 @@
                                                           coord-sys
                                                           coord-sys
                                                           shapes)})))
+
+        ;; Lines
+        normal-line (make-coll :geodetic "normal-line"
+                               (l/ords->line-string :geodetic 22.681 -8.839, 18.309 -11.426, 22.705 -6.557))
+        normal-line-cart (make-coll :cartesian "normal-line-cart"
+                                    (l/ords->line-string :cartesian 16.439 -13.463,  31.904 -13.607, 31.958 -10.401))
 
         ;; Bounding rectangles
         whole-world (make-coll :geodetic "whole-world" (m/mbr -180 90 180 -90))
@@ -126,7 +133,12 @@
            [2.185,-11.161] [whole-world normal-poly-cart]
 
            ;; inside a hole in the cartesian polygon
-           [4.496,-18.521] [whole-world]))
+           [4.496,-18.521] [whole-world]
+
+           ;; point on geodetic line
+           [20.0 -10.437310310746927] [whole-world normal-line]
+           ;; point on cartesian line
+           [20.0 -13.496157710960231] [whole-world normal-line-cart]))
 
     (testing "bounding rectangle searches"
       (are [wnes items]
@@ -164,12 +176,18 @@
            ;; crosses am
            [166.11,53.04,-166.52,-19.14] [whole-world across-am-poly across-am-br am-point very-wide-cart]
 
+           ;; Matches geodetic line
+           [17.67,-4,25.56,-6.94] [whole-world normal-line]
+
+           ;; Matches cartesian line
+           [23.59,-4,25.56,-15.47] [whole-world normal-line-cart]
+
            ;; whole world
            [-180 90 180 -90] [whole-world touches-np touches-sp across-am-br normal-brs
                               wide-north wide-south across-am-poly on-sp on-np normal-poly
                               polygon-with-holes north-pole south-pole normal-point am-point
                               very-wide-cart very-tall-cart wide-north-cart wide-south-cart
-                              normal-poly-cart polygon-with-holes-cart]))
+                              normal-poly-cart polygon-with-holes-cart normal-line normal-line-cart]))
 
     (testing "polygon searches"
       (are [ords items]
@@ -181,7 +199,7 @@
              matches?)
 
            [20.16,-13.7,21.64,12.43,12.47,11.84,-22.57,7.06,20.16,-13.7]
-           [whole-world normal-poly normal-brs polygon-with-holes]
+           [whole-world normal-poly normal-brs polygon-with-holes normal-line normal-line-cart]
 
            ;; Intersects 2nd of normal-brs
            [-16.79,-12.71,-6.32,-10.95,-5.74,-6.11,-15.18,-7.63,-16.79,-12.71]
@@ -204,6 +222,15 @@
 
            [-2.212 -12.44, 0.103 -15.911, 2.185 -11.161 -2.212 -12.44]
            [whole-world normal-poly-cart polygon-with-holes-cart]
+
+           ;; Interactions with lines
+           ;; Covers both lines
+           [15.42,-15.13,36.13,-14.29,25.98,-0.75,13.19,0.05,15.42,-15.13]
+           [whole-world normal-line normal-line-cart normal-brs]
+
+           ;; Intersects both lines
+           [23.33,-14.96,24.02,-14.69,19.73,-6.81,18.55,-6.73,23.33,-14.96]
+           [whole-world normal-line normal-line-cart]
 
            ;; Related to the geodetic polygon with the holes
            ;; Inside holes
