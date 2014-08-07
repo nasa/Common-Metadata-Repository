@@ -91,6 +91,40 @@
         am-point (make-coll :geodetic "am-point" (p/point 180 22))]
     (index/refresh-elastic-index)
 
+    (testing "line searches"
+      (are [ords items]
+           (let [found (search/find-refs
+                         :collection
+                         {:line (codec/url-encode (apply l/ords->line-string :geodetic ords))
+                          :page-size 50})
+                 matches? (d/refs-match? items found)]
+             (when-not matches?
+               (println "Expected:" (->> items (map :entry-title) sort pr-str))
+               (println "Actual:" (->> found :refs (map :name) sort pr-str)))
+             matches?)
+
+           ;; normal two points
+           [-24.28,-12.76,10,10] [whole-world polygon-with-holes normal-poly normal-brs]
+
+           ;; normal multiple points
+           [-0.37,-14.07,4.75,1.27,25.13,-15.51] [whole-world polygon-with-holes
+                                                  polygon-with-holes-cart normal-line-cart
+                                                  normal-line normal-poly-cart]
+           ;; across antimeridian
+           [-167.85,-9.08,171.69,43.24] [whole-world across-am-br across-am-poly very-wide-cart]
+
+           ;; across north pole
+           [0 85, 180 85] [whole-world north-pole on-np touches-np]
+
+           ;; across north pole where cartesian polygon touches it
+           [-155 85, 25 85] [whole-world north-pole on-np very-tall-cart]
+
+           ;; across south pole
+           [0 -85, 180 -85] [whole-world south-pole on-sp]
+
+           ;; across north pole where cartesian polygon touches it
+           [-155 -85, 25 -85] [whole-world south-pole on-sp touches-sp very-tall-cart]))
+
     (testing "point searches"
       (are [lon_lat items]
            (let [found (search/find-refs :collection {:point (codec/url-encode (apply p/point lon_lat))
