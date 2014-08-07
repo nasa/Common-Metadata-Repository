@@ -251,6 +251,8 @@
   (let [options (u/map-keys->kebab-case (get params :options {}))
         page-size (Integer. (get params :page-size qm/default-page-size))
         page-num (Integer. (get params :page-num qm/default-page-num))
+        ;; If there is no sort key specified and keyword parameter exists then we deafult to
+        ;; sorting by document relevance score
         sort-keys (or (parse-sort-key (:sort-key params))
                       (when (:keyword params) [{:order :desc :field :score}]))
         pretty (get params :pretty false)

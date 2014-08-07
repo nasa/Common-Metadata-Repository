@@ -65,6 +65,10 @@
   "The boost to apply to the science keyword field"
   1.2)
 
+(def temporal-keyword-boost
+  "The boost to apply to the temporal keyword field"
+  1.1)
+
 (def elastic-regex-wildcard-chars-re
   "Regex to match wildcard characters that need to be processed for elastic regexp query"
   #"([\?\*])")
@@ -124,7 +128,7 @@
 (defn keywords->boosted-elastic-filters
   "Create filters with boosting for the function score query used with keyword search"
   [keywords]
-  [;; entry-title, short-name
+  [;; long-name, short-name
    (keywords->name-filter :long-name.lowercase
                           :short-name.lowercase keywords
                           short-name-long-name-boost)
