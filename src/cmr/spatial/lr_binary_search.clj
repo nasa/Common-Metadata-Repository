@@ -11,12 +11,12 @@
             [cmr.spatial.derived :as d]
             [clojure.math.combinatorics :as combo]
             [pjstadig.assertions :as pj]
-            [cmr.spatial.segment :as s]
+            [cmr.spatial.line-segment :as s]
             [cmr.common.util :as util]
             [cmr.spatial.polygon :as poly]
             [cmr.spatial.relations :as relations]
             [cmr.spatial.ring-relations :as rr]
-            [cmr.spatial.arc-segment-intersections :as asi])
+            [cmr.spatial.arc-line-segment-intersections :as asi])
   (:import cmr.spatial.mbr.Mbr
            cmr.spatial.geodetic_ring.GeodeticRing
            cmr.spatial.cartesian_ring.CartesianRing
@@ -104,7 +104,7 @@
   arc to its opposite point."
   [ring]
   (a/midpoint (a/arc (first (:points ring))
-                     (a/midpoint (second (rr/lines ring))))))
+                     (a/midpoint (second (rr/segments ring))))))
 
 (defmulti ring->lr-search-points
   "Returns points that may potentially be in the ring to use to search for a LR."
@@ -126,7 +126,7 @@
   [arc ring]
   (let [{:keys [mbr contains-north-pole contains-south-pole]} ring
         ;; Find the intersections of the arc through the ring. It will intersect an even number of times.
-        intersections (mapcat (partial asi/intersections arc) (rr/lines ring))]
+        intersections (mapcat (partial asi/intersections arc) (rr/segments ring))]
     ;; Add pole to intersections if it contains a pole
     (concat intersections
             (when contains-north-pole [p/north-pole])

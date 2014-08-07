@@ -1,4 +1,4 @@
-(ns cmr.spatial.segment
+(ns cmr.spatial.line-segment
   "This contains functions for operating on cartesian line segments. These are defined as lines
   that exist in a two dimensional plane."
   (:require [cmr.spatial.math :refer :all]
@@ -9,7 +9,6 @@
             [cmr.spatial.point :as p]
             [cmr.spatial.messages :as msg]
             [cmr.common.services.errors :as errors]
-            [cmr.spatial.line :as l]
             [cmr.spatial.derived :as d]
             [cmr.common.util :as util])
   (:import cmr.spatial.point.Point
@@ -18,11 +17,6 @@
 (def ^:const COVERS_TOLERANCE
   "Tolerance used for the determining if points are on the line."
   0.00000001)
-
-(def ^:const VERTICAL_TOLERANCE
-  "Tolerance used for the determining if a line is vertical."
-  0.00000001)
-
 
 (primitive-math/use-primitive-operators)
 
@@ -157,15 +151,14 @@
                  b (- lon2 lon1)]
              (sqrt (+ (sq a) (sq b))))))
 
-(defn line-segment->line
-  "Creates an approximate geodetic line of the line segment by desifying the line segment. Optionally
-  accepts densification distance in degrees. Does no densification for vertical lines. The returned
-  line will not have derived fields calculated."
+(defn densify-line-segment
+  "Returns points along the line segment for approximating the segment in another coordinate system.
+  Optionally accepts densification distance in degrees. Does no densification for vertical lines."
   ([ls]
-   (line-segment->line ls 0.1))
+   (densify-line-segment ls 0.1))
   ([^LineSegment ls ^double densification-dist]
    (if (vertical? ls)
-     (l/line [(:point1 ls) (:point2 ls)])
+     [(:point1 ls) (:point2 ls)]
      (let [^Point p1 (.point1 ls)
            ^Point p2 (.point2 ls)
            lon1 (.lon p1)
@@ -194,11 +187,10 @@
            initial-lat lat1
            points (mapv #(p/point (+ initial-lon (* lon-diff (double %)))
                                   (+ initial-lat (* lat-diff (double %))))
-                        (range (inc num-points)))
-           points (if (not= (last points) p2)
-                    (conj points p2)
-                    points)]
-       (l/line points)))))
+                        (range (inc num-points)))]
+       (if (not= (last points) p2)
+         (conj points p2)
+         points)))))
 
 (defn mbr->line-segments
   "Returns line segments representing the exerior of the MBR. The MBR must cover more than a single point"
@@ -374,5 +366,5 @@
 
 
 (extend-protocol d/DerivedCalculator
-  cmr.spatial.segment.LineSegment
+  cmr.spatial.line_segment.LineSegment
   (calculate-derived ^LineSegment [^LineSegment a] a))

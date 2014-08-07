@@ -9,8 +9,8 @@
             [cmr.spatial.point :as p]
             [cmr.spatial.arc :as a]
             [cmr.spatial.mbr :as m]
-            [cmr.spatial.segment :as s]
-            [cmr.spatial.arc-segment-intersections :as asi]
+            [cmr.spatial.line-segment :as s]
+            [cmr.spatial.arc-line-segment-intersections :as asi]
             [cmr.spatial.test.generators :as sgen]
             [clojure.string :as str]
             [cmr.spatial.dev.viz-helper :as viz-helper]))
@@ -70,7 +70,7 @@
 
 (do
   (def arc  (cmr.spatial.arc/ords->arc -51.857142857142854 -83.99130434782609 -20.037037037037038 -68.97560975609755))
-  (def ls (cmr.spatial.segment/ords->line-segment -41.01298701298701 -86.98113207547169 40.01219512195122 63.992248062015506))
+  (def ls (cmr.spatial.line-segment/ords->line-segment -41.01298701298701 -86.98113207547169 40.01219512195122 63.992248062015506))
 
   (def intersections (asi/intersections ls arc))
 

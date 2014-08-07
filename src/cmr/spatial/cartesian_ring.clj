@@ -5,12 +5,12 @@
             [primitive-math]
             [cmr.spatial.mbr :as mbr]
             [cmr.spatial.conversion :as c]
-            [cmr.spatial.segment :as s]
+            [cmr.spatial.line-segment :as s]
             [cmr.spatial.derived :as d]
             [clojure.math.combinatorics :as combo]
             [cmr.spatial.validation :as v]
             [cmr.spatial.messages :as msg]
-            [cmr.spatial.arc-segment-intersections :as asi])
+            [cmr.spatial.arc-line-segment-intersections :as asi])
   (:import cmr.spatial.arc.Arc))
 (primitive-math/use-primitive-operators)
 

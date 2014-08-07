@@ -6,11 +6,12 @@
             [primitive-math]
             [cmr.spatial.mbr :as m]
             [cmr.spatial.conversion :as c]
-            [cmr.spatial.segment :as s]
-            [cmr.spatial.arc-segment-intersections :as asi]
+            [cmr.spatial.line-segment :as s]
+            [cmr.spatial.arc-line-segment-intersections :as asi]
             [cmr.spatial.cartesian-ring :as cr]
             [cmr.spatial.point :as p]
             [cmr.spatial.geodetic-ring :as gr]
+            [cmr.spatial.line-string :as ls]
             [clojure.math.combinatorics :as combo])
   (:import cmr.spatial.cartesian_ring.CartesianRing
            cmr.spatial.geodetic_ring.GeodeticRing
@@ -40,7 +41,7 @@
 
 (defprotocol RingFunctions
   "Contains functions on the different ring types"
-  (lines
+  (segments
     [ring]
     "Returns the line segments or arcs of the ring.")
   (covers-point?
@@ -58,7 +59,7 @@
 
 (extend-protocol RingFunctions
   CartesianRing
-  (lines
+  (segments
     [ring]
     (:line-segments ring))
   (covers-point?
@@ -75,7 +76,7 @@
     :cartesian)
 
   GeodeticRing
-  (lines
+  (segments
     [ring]
     (:arcs ring))
   (covers-point?
@@ -99,8 +100,8 @@
     ;; TODO performance improvement: this should use the multiple arc intersection algorithm to avoid O(N^2) intersections
     (some (fn [[line1 line2]]
             (seq (asi/intersections line1 line2)))
-          (for [ls1 (lines r1)
-                ls2 (lines r2)]
+          (for [ls1 (segments r1)
+                ls2 (segments r2)]
             [ls1 ls2]))
 
     ;; Are any of the points in ring 2 inside ring 1?
@@ -112,11 +113,11 @@
 (defn covers-ring?
   "Returns true if the ring covers the other ring."
   [ring1 ring2]
-  (let [ring1-lines (lines ring1)]
+  (let [ring1-lines (segments ring1)]
     (and (every? (partial covers-point? ring1) (:points ring2))
          (not-any? (fn [a1]
                      (some #(seq (asi/intersections a1 %)) ring1-lines))
-                   (lines ring2)))))
+                   (segments ring2)))))
 
 (defn br-intersections
   "Returns a lazy sequence of the points where the ring lines intersect the br"
@@ -124,9 +125,9 @@
   (when (m/intersects-br? (coordinate-system ring) (:mbr ring) br)
     (if (m/single-point? br)
       (let [point (p/point (:west br) (:north br))]
-        (when (some #(asi/intersects-point? % point) (lines ring))
+        (when (some #(asi/intersects-point? % point) (segments ring))
           [point]))
-      (let [lines (lines ring)
+      (let [lines (segments ring)
             mbr-lines (s/mbr->line-segments br)]
         (mapcat (partial apply asi/intersections)
                 (for [line1 lines
@@ -164,17 +165,40 @@
         (some (partial covers-point? ring) (m/corner-points br))
 
         ;; Do any of the sides intersect?
-        (let [lines (lines ring)
+        (let [lines (segments ring)
               mbr-lines (s/mbr->line-segments br)]
           (seq (mapcat (partial apply asi/intersections)
                        (for [ls1 lines
                              ls2 mbr-lines]
                          [ls1 ls2]))))))))
 
+(defn intersects-line-string?
+  "Returns true if the ring intersects the line"
+  [ring line]
+
+  (or ; line points are in ring
+      (some (partial covers-point? ring) (:points line))
+
+      ; line intersects ring arcs
+      (some (fn [[segment1 segment2]]
+              (seq (asi/intersections segment1 segment2)))
+            (for [ls1 (:segments line)
+                  ls2 (segments ring)]
+              [ls1 ls2]))))
+
+(defn covers-line-string?
+  "Returns true if the ring covers the line string."
+  [ring line]
+  (and (every? (partial covers-point? ring) (:points line))
+       (not-any? (fn [a1]
+                   (some #(seq (asi/intersections a1 %))
+                         (segments ring)))
+                 (:segments line))))
+
 (defn self-intersections
   "Returns the rings self intersections"
   [ring]
-  (let [lines (lines ring)
+  (let [lines (segments ring)
         ;; Finds the indexes of the lines in the list to test intersecting together.
         ;; Works by finding all combinations and rejecting the lines would be sequential.
         ;; (The first and second line naturally touch on a shared point for instance.)

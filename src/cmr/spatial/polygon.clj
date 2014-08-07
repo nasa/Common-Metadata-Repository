@@ -63,6 +63,12 @@
   (and (rr/intersects-ring? (boundary polygon) ring)
        (not-any? #(rr/covers-ring? % ring) (holes polygon))))
 
+(defn intersects-line-string?
+  "Returns true if the polygon intersects the line."
+  [polygon line]
+  (and (rr/intersects-line-string? (boundary polygon) line)
+       (not-any? #(rr/covers-line-string? % line) (holes polygon))))
+
 (defn intersects-polygon?
   "Returns true if the polygon intersects the other polygon"
   [poly1 poly2]
@@ -84,7 +90,6 @@
   (and (rr/intersects-br? (boundary polygon) br)
        (not-any? #(rr/covers-br? % br) (holes polygon))))
 
-
 (extend-protocol d/DerivedCalculator
   cmr.spatial.polygon.Polygon
   (calculate-derived
@@ -95,7 +100,6 @@
       (as-> polygon p
             (update-in p [:rings] (partial mapv d/calculate-derived))
             (assoc p :mbr (-> p :rings first :mbr))))))
-
 
 (extend-protocol v/SpatialValidation
   cmr.spatial.polygon.Polygon

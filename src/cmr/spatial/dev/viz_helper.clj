@@ -7,7 +7,8 @@
             [cmr.spatial.mbr :as m]
             [cmr.spatial.arc :as a]
             [cmr.spatial.geodetic-ring :as gr]
-            [cmr.spatial.segment :as s]
+            [cmr.spatial.line-segment :as s]
+            [cmr.spatial.line-string :as l]
             [cmr.spatial.derived :as d]
             [cmr.spatial.cartesian-ring :as cr]
             [cmr.spatial.math :refer :all])
@@ -16,7 +17,8 @@
            cmr.spatial.polygon.Polygon
            cmr.spatial.mbr.Mbr
            cmr.spatial.arc.Arc
-           cmr.spatial.segment.LineSegment
+           cmr.spatial.line_string.LineString
+           cmr.spatial.line_segment.LineSegment
            cmr.spatial.cartesian_ring.CartesianRing))
 
 (comment
@@ -109,6 +111,14 @@
                      hole-colors)]
 
       (mapcat cmr-spatial->viz-geoms (cons boundary holes))))
+
+  LineString
+  (cmr-spatial->viz-geoms
+    [line]
+    (let [{:keys [points options]} line]
+      [{:type :ring ; a non-closed ring is a line
+        :ords (p/points->ords points)
+        :options options}]))
 
   LineSegment
   (cmr-spatial->viz-geoms

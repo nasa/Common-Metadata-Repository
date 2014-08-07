@@ -1,15 +1,15 @@
-(ns cmr.spatial.arc-segment-intersections
+(ns cmr.spatial.arc-line-segment-intersections
   "Provides intersection functions for finding the intersection of spherical arcs and cartesian segments"
   (:require [cmr.spatial.point :as p]
             [cmr.spatial.arc :as a]
             [cmr.spatial.mbr :as m]
-            [cmr.spatial.segment :as s]
+            [cmr.spatial.line-segment :as s]
             [cmr.common.services.errors :as errors]
             [cmr.spatial.math :refer :all]
             [primitive-math]
             [pjstadig.assertions :as pj])
   (:import cmr.spatial.arc.Arc
-           cmr.spatial.segment.LineSegment
+           cmr.spatial.line_segment.LineSegment
            cmr.spatial.point.Point))
 (primitive-math/use-primitive-operators)
 
@@ -21,9 +21,9 @@
         ;; Subselection can result in multiple line segments and points.
         {:keys [line-segments points]} (apply merge-with concat (map (partial s/subselect ls) mbrs))
         ;; We densify the line segments to see if they intersect the arcs
-        densified-lines (mapv s/line-segment->line line-segments)
+        densified-point-sets (mapv s/densify-line-segment line-segments)
         ;; Convert the lines of multiple points into separate arcs.
-        densified-arcs (map (partial apply a/arc) (mapcat #(partition 2 1 (:points %)) densified-lines))]
+        densified-arcs (map (partial apply a/arc) (mapcat #(partition 2 1 (:points %)) densified-point-sets))]
 
     (concat
       ;; Return intersections of the densified arcs with the arc

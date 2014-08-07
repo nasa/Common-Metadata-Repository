@@ -17,7 +17,7 @@
             [cmr.spatial.math :refer :all]
             [cmr.spatial.polygon :as poly]
             [cmr.spatial.point :as p]
-            [cmr.spatial.line :as l]
+            [cmr.spatial.line-string :as l]
             [cmr.spatial.mbr :as m]
             [cmr.spatial.lr-binary-search :as lr]
             [clojure.set :as set]))
@@ -140,12 +140,12 @@
     (m/point->mbr point))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  cmr.spatial.line.Line
+  cmr.spatial.line_string.LineString
 
   (shape->stored-ords
     [line]
-    [{:type :line
-      :ords (map ordinate->stored (l/line->ords line))}])
+    [{:type (keyword (str (name (:coordinate-system line)) "-line-string"))
+      :ords (map ordinate->stored (l/line-string->ords line))}])
 
   (shape->mbr
     [line]
@@ -187,9 +187,13 @@
   [type ords]
   (apply p/point (map stored->ordinate ords)))
 
-(defmethod stored-ords->shape :line
+(defmethod stored-ords->shape :geodetic-line-string
   [type ords]
-  (apply l/ords->line (map stored->ordinate ords)))
+  (apply l/ords->line-string :geodetic (map stored->ordinate ords)))
+
+(defmethod stored-ords->shape :cartesian-line-string
+  [type ords]
+  (apply l/ords->line-string :cartesian (map stored->ordinate ords)))
 
 (def shape-type->integer
   "Converts a shape type into an integer for storage"
@@ -198,9 +202,10 @@
    :geodetic-hole 2
    :br 3
    :point 4
-   :line 5
+   :geodetic-line-string 5
    :cartesian-polygon 6
-   :cartesian-hole 7})
+   :cartesian-hole 7
+   :cartesian-line-string 8})
 
 (def integer->shape-type
   "Map of shape type integers to the equivalent keyword type"

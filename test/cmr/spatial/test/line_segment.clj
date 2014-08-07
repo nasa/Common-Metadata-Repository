@@ -1,4 +1,4 @@
-(ns cmr.spatial.test.segment
+(ns cmr.spatial.test.line-segment
   (:require [clojure.test :refer :all]
             [cmr.common.test.test-check-ext :refer [defspec]]
             [clojure.test.check.properties :refer [for-all]]
@@ -8,7 +8,7 @@
             [cmr.spatial.math :refer :all]
             [cmr.spatial.mbr :as m]
             [cmr.spatial.point :as p]
-            [cmr.spatial.segment :as s]
+            [cmr.spatial.line-segment :as s]
             [cmr.spatial.derived :as d]
 
             [cmr.spatial.test.generators :as sgen]
@@ -74,14 +74,13 @@
         (approx= (:lon point1) (s/segment+lat->lon ls (:lat point1)))
         (approx= (:lon point2) (s/segment+lat->lon ls (:lat point2)))))))
 
-(defspec line-segment->line-spec {:times 1000 :printer-fn sgen/print-failed-line-segments}
+(defspec densify-line-segment {:times 1000 :printer-fn sgen/print-failed-line-segments}
   (for-all [ls sgen/line-segments]
     (let [;; picked a larger amount to keep test fast since points may be very far apart
           densification-dist 5.0
           original-dist (s/distance ls)
           {:keys [point1 point2]} ls
-          line (s/line-segment->line ls densification-dist)
-          points (:points line)]
+          points (s/densify-line-segment ls densification-dist)]
       (and
         ;; every new point should be on the line segment
         (every? (partial s/point-on-segment? ls) points)

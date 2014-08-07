@@ -5,6 +5,8 @@
             [cmr.spatial.geodetic-ring :as gr]
             [cmr.spatial.cartesian-ring :as cr]
             [cmr.spatial.ring-relations :as rr]
+            [cmr.spatial.line-string :as ls]
+            [cmr.spatial.arc :as a]
             [cmr.spatial.polygon :as poly]
             [cmr.spatial.derived :as d]
             [cmr.spatial.math :refer :all])
@@ -12,6 +14,7 @@
            cmr.spatial.geodetic_ring.GeodeticRing
            cmr.spatial.cartesian_ring.CartesianRing
            cmr.spatial.mbr.Mbr
+           cmr.spatial.line_string.LineString
            cmr.spatial.polygon.Polygon))
 
 (defprotocol SpatialRelations
@@ -28,7 +31,8 @@
   (covers-br? [shape br] "Returns true if the shape covers the bounding rectangle.")
   (intersects-ring? [shape ring] "Returns true if the shape intersects the ring.")
   (intersects-polygon? [shape polygon] "Returns true if the shape intersects the polygon.")
-  (intersects-br? [shape br] "Returns true if the shape intersects the bounding rectangle."))
+  (intersects-br? [shape br] "Returns true if the shape intersects the bounding rectangle.")
+  (intersects-line-string? [shape line-string] "Returns true if the shape intersects the line string"))
 
 ;; Only certain functions are implemented here
 (extend-protocol SpatialRelations
@@ -67,6 +71,47 @@
     [point polygon]
     (poly/covers-point? polygon point))
 
+  (intersects-line-string?
+    [point line]
+    (ls/covers-point? line point))
+
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  cmr.spatial.line_string.LineString
+
+  (mbr
+    [line]
+    (:mbr line))
+
+  (contains-north-pole?
+    [line]
+    (ls/covers-point? line p/north-pole))
+
+  (contains-south-pole?
+    [line]
+    (ls/covers-point? line p/south-pole))
+
+  (covers-point?
+    [line point]
+    (ls/covers-point? line point))
+
+  ;; covers-br? not implemented. I'm not sure it would make sense to call that.
+
+  (intersects-ring?
+    [line ring]
+    (rr/intersects-line-string? ring line))
+
+  (intersects-br?
+    [line br]
+    (ls/intersects-br? line br))
+
+  (intersects-polygon?
+    [line polygon]
+    (poly/intersects-line-string? polygon line))
+
+  (intersects-line-string?
+    [l1 l2]
+    (ls/intersects-line-string? l1 l2))
+
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   cmr.spatial.mbr.Mbr
 
@@ -99,6 +144,10 @@
   (intersects-polygon?
     [br polygon]
     (poly/intersects-br? polygon br))
+
+  (intersects-line-string?
+    [br line]
+    (ls/intersects-br? line br))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   cmr.spatial.geodetic_ring.GeodeticRing
@@ -135,6 +184,10 @@
     [ring polygon]
     (poly/intersects-ring? polygon ring))
 
+  (intersects-line-string?
+    [ring line]
+    (rr/intersects-line-string? ring line))
+
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   cmr.spatial.cartesian_ring.CartesianRing
 
@@ -169,6 +222,10 @@
   (intersects-polygon?
     [ring polygon]
     (poly/intersects-ring? polygon ring))
+
+  (intersects-line-string?
+    [ring line]
+    (rr/intersects-line-string? ring line))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   cmr.spatial.polygon.Polygon
@@ -206,13 +263,18 @@
 
   (intersects-polygon?
     [poly1 poly2]
-    (poly/intersects-polygon? poly1 poly2)))
+    (poly/intersects-polygon? poly1 poly2))
+
+  (intersects-line-string?
+    [polygon line]
+    (poly/intersects-line-string? polygon line)))
 
 (def shape-type->intersects-fn
   "A map of spatial types to the intersect functions to use."
   {Point covers-point?
    Polygon intersects-polygon?
-   Mbr intersects-br?})
+   Mbr intersects-br?
+   LineString intersects-line-string?})
 
 (defn shape->intersects-fn
   "Creates a function for determining if another shape intersects this shape."

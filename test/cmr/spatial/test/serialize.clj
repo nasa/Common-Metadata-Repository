@@ -13,7 +13,7 @@
             [cmr.spatial.mbr :as m]
             [cmr.spatial.point :as p]
             [cmr.spatial.polygon :as poly]
-            [cmr.spatial.line :as l]
+            [cmr.spatial.line-string :as l]
             [cmr.spatial.geodetic-ring :as gr]
             [cmr.spatial.cartesian-ring :as cr]
             [cmr.spatial.test.generators :as sgen]
@@ -23,7 +23,7 @@
            cmr.spatial.polygon.Polygon
            cmr.spatial.point.Point
            cmr.spatial.mbr.Mbr
-           cmr.spatial.line.Line))
+           cmr.spatial.line_string.LineString))
 
 (defmulti round-shape
   "Rounds the shape as it would be rounded when stored so that we can compare items"
@@ -40,9 +40,9 @@
   [point]
   (p/round-point 7 point))
 
-(defmethod round-shape Line
+(defmethod round-shape LineString
   [line]
-  (l/line (map (partial p/round-point 7) (:points line))))
+  (l/line-string (:coordinate-system line) (map (partial p/round-point 7) (:points line))))
 
 (defmethod round-shape GeodeticRing
   [ring]

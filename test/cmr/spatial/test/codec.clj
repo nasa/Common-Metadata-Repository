@@ -13,7 +13,7 @@
             [cmr.spatial.mbr :as m]
             [cmr.spatial.point :as p]
             [cmr.spatial.polygon :as poly]
-            [cmr.spatial.line :as l]
+            [cmr.spatial.line-string :as l]
             [cmr.spatial.geodetic-ring :as gr]
             [cmr.spatial.test.generators :as sgen]
             [cmr.spatial.messages :as smesg]

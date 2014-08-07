@@ -10,11 +10,11 @@
             [cmr.spatial.geodetic-ring :as gr]
             [cmr.spatial.ring-relations :as rr]
             [cmr.spatial.polygon :as poly]
-            [cmr.spatial.line :as l]
+            [cmr.spatial.line-string :as l]
             [cmr.spatial.arc :as a]
             [cmr.spatial.derived :as d]
-            [cmr.spatial.segment :as s]
-            [cmr.spatial.arc-segment-intersections :as asi]
+            [cmr.spatial.line-segment :as s]
+            [cmr.spatial.arc-line-segment-intersections :as asi]
             [clojure.math.combinatorics :as combo]
             [cmr.spatial.dev.viz-helper :as viz-helper]))
 
@@ -107,7 +107,11 @@
   (println (pr-str (concat `(a/ords->arc) (a/arc->ords arc)))))
 
 (def lines
-  (ext-gen/model-gen l/line (gen/bind (gen/choose 2 20) non-antipodal-points)))
+  (gen/fmap (partial apply l/line-string)
+            (gen/bind coordinate-system
+                      (fn [coord-sys]
+                        (gen/tuple (gen/return coord-sys) (gen/bind (gen/choose 2 6) non-antipodal-points))))))
+
 
 (defn rings-invalid
   "Generates rings that are not valid but could be used for testing where validity is not important"
@@ -294,8 +298,8 @@
         (and
           ;; Checks that lines do not intersect
           (not-any? (fn [a1]
-                      (some (partial asi/intersects? a1) (rr/lines ring)))
-                    (rr/lines potential-ring))
+                      (some (partial asi/intersects? a1) (rr/segments ring)))
+                    (rr/segments potential-ring))
           ;; and that pole containment matches
           (or (and (not contains-np)
                    (not contains-sp)
