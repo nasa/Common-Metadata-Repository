@@ -70,7 +70,7 @@
         (s/horizontal? ls)
         ;; Use arc and latitude segment intersection implementation
         (let [lat (-> ls :point1 :lat)
-              [west east] (p/order-longitudes (get-in ls [:point1 :lon]) (get-in ls [:point2 :lon]))]
+              [west east] (sort (mapv :lon [(:point1 ls) (:point2 ls)]))]
           (a/lat-segment-intersections arc lat west east))
 
         (a/vertical? arc)

@@ -30,6 +30,20 @@
          "45.045"
          "45,a"
          "45,45,"))
+  (testing "invalid lines"
+    (are [s] (= {:errors [(smesg/shape-decode-msg :line s)]}
+                (c/url-decode :line s))
+         "foo"
+         "45"
+         "45,,45"
+         "45.045"
+         "45,a"
+         "45,45,"
+
+         ;; too few points
+         "1,1"
+         ;; odd number of ordinates
+         "1,1,2,2,3"))
   (testing "invalid polygons"
     (are [s] (= {:errors [(smesg/shape-decode-msg :polygon s)]}
                 (c/url-decode :polygon s))
@@ -76,3 +90,15 @@
   (for-all [shape sgen/mbrs]
     (= shape (c/url-decode :bounding-box (c/url-encode shape)))))
 
+(defspec line-encode-decode-test 100
+  (for-all [shape (gen/fmap #(assoc % :coordinate-system :geodetic)
+                            sgen/lines)]
+    (= shape (c/url-decode :line (c/url-encode shape)))))
+
+(comment
+(def l #cmr.spatial.line_string.LineString{:coordinate-system :geodetic, :points [#=(cmr.spatial.point/point -1.0 -1.0) #=(cmr.spatial.point/point -1.0 1.0)], :segments nil, :mbr nil})
+
+(c/url-decode :line (c/url-encode l))
+
+
+)

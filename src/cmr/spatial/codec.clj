@@ -3,6 +3,7 @@
   (:require [cmr.spatial.polygon :as poly]
             [cmr.spatial.point :as p]
             [cmr.spatial.geodetic-ring :as gr]
+            [cmr.spatial.line-string :as l]
             [cmr.spatial.ring-relations :as rr]
             [cmr.spatial.mbr :as mbr]
             [cmr.common.regex-builder :as rb]
@@ -37,6 +38,11 @@
     [{:keys [points]}]
     (encode-points points))
 
+  cmr.spatial.line_string.LineString
+  (url-encode
+    [{:keys [points]}]
+     (encode-points points))
+
   cmr.spatial.polygon.Polygon
   (url-encode
     [{:keys [rings]}]
@@ -64,6 +70,10 @@
 (def polygon-regex
   (let [point (rb/group rb/decimal-number "," rb/decimal-number)]
     (rb/compile-regex (rb/group point (rb/n-or-more-times 3 "," point)))))
+
+(def line-regex
+  (let [point (rb/group rb/decimal-number "," rb/decimal-number)]
+    (rb/compile-regex (rb/group point (rb/n-or-more-times 1 "," point)))))
 
 (def mbr-regex
   (let [captured-num (rb/capture rb/decimal-number)]
@@ -96,6 +106,13 @@
     (let [ordinates (map #(Double. ^String %) (str/split s #","))]
       (poly/polygon :geodetic [(apply rr/ords->ring :geodetic ordinates)]))
     {:errors [(smsg/shape-decode-msg :polygon s)]}))
+
+(defmethod url-decode :line
+  [type s]
+  (if-let [match (re-matches line-regex s)]
+    (let [ordinates (map #(Double. ^String %) (str/split s #","))]
+      (apply l/ords->line-string :geodetic ordinates))
+    {:errors [(smsg/shape-decode-msg :line s)]}))
 
 
 

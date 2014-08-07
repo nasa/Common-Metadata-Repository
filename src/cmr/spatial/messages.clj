@@ -23,17 +23,13 @@
           (u/double->string lat)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Ring validation messages
+;; Shapes with points validation messages
 
-(defn ring-point-invalid
+(defn shape-point-invalid
   [point-index point-error]
-  (format "Polygon boundary point %d had the following error: %s"
+  (format "Point %d had the following error: %s"
           (inc point-index)
           point-error))
-
-(defn ring-not-closed
-  []
-  "Polygon boundary was not closed. The last point must be equal to the first point.")
 
 (defn- point->human-readable
   "Converts a point into a human readable representation"
@@ -45,24 +41,31 @@
   [[i point]]
   (format "%d %s" (inc i) (point->human-readable point)))
 
-(defn ring-duplicate-points
+(defn duplicate-points
   "Takes a list of index point pairs that were considered duplicates or very close."
   [points-w-index]
   (pj/assert (>= (count points-w-index) 2))
 
   (let [point-msg-parts (map indexed-point->-msg-part points-w-index)]
-    (format (str "The polygon boundary contained duplicate points. "
+    (format (str "The shape contained duplicate points. "
                  "Points %s and %s were considered equivalent or very close.")
             (str/join ", " (drop-last point-msg-parts))
             (last point-msg-parts))))
 
-(defn ring-consecutive-antipodal-points
+(defn consecutive-antipodal-points
   "Takes a list of index point pairs that were considered consecutive antipodal points."
   [point1-w-index point2-w-index]
-  (format (str "The polygon boundary contained consecutive antipodal points. "
+  (format (str "The shape contained consecutive antipodal points. "
                "Points %s and %s are antipodal.")
           (indexed-point->-msg-part point1-w-index)
           (indexed-point->-msg-part point2-w-index)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Ring validation messages
+
+(defn ring-not-closed
+  []
+  "Polygon boundary was not closed. The last point must be equal to the first point.")
 
 (defn ring-self-intersections
   "Takes a list of points where the ring intersects itself"

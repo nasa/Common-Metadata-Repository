@@ -403,7 +403,8 @@
 (defn lat-segment-intersections
   "Returns the points where an arc intersects the latitude segment. The latitude segment is defined
   at lat between the lon-west and lon-east"
-  [arc lat lon-west lon-east]
+  [arc lat ^double lon-west ^double lon-east]
+  (pj/assert (< lon-west lon-east))
   ;; Find the points where the arc crosses that latitude (if any)
   (when-let [points (points-at-lat arc lat)]
     ;; See if those points are within the lon-west and east

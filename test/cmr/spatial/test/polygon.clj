@@ -20,5 +20,5 @@
   (testing "valid polygon"
     (is (nil? (seq (v/validate (poly/polygon :geodetic [(rr/ords->ring :geodetic 0 0, 1 0, 0 1, 0 0)]))))))
   (testing "invalid polygon"
-    (is (= [(msg/ring-point-invalid 1 (msg/point-lon-invalid 181))]
+    (is (= [(msg/shape-point-invalid 1 (msg/point-lon-invalid 181))]
            (v/validate (poly/polygon :geodetic [(rr/ords->ring :geodetic 0 0, 181 0, 0 1, 0 0)]))))))

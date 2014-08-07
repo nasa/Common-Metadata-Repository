@@ -45,6 +45,14 @@
                        (some #(m/covers-point? :geodetic % point) arc-mbrs))
                      intersections))))))
 
+(comment
+
+
+  (cmr.spatial.arc/ords->arc 161.33333333333334 -48.857142857142854 -100.8 56.90909090909091)
+  (cmr.spatial.line-segment/ords->line-segment -139.5 48.016949152542374 101.97297297297297 48.01960784313726)
+
+)
+
 
 (deftest example-arc-line-segment-intersections
   (are [ls-ords arc-ords intersection-ords]

@@ -6,7 +6,10 @@
             [cmr.spatial.arc :as a]
             [cmr.spatial.line-segment :as s]
             [cmr.spatial.arc-line-segment-intersections :as asi]
-            [cmr.spatial.derived :as d])
+            [cmr.spatial.derived :as d]
+            [cmr.spatial.validation :as v]
+            [cmr.spatial.points-validation-helpers :as pv]
+            [cmr.spatial.messages :as msg])
   (:import cmr.spatial.arc.Arc
            cmr.spatial.line_segment.LineSegment))
 (primitive-math/use-primitive-operators)
@@ -128,11 +131,19 @@
 (defn intersects-line-string?
   "Returns true if the line string instersects the other line string"
   [line1 line2]
-
   (some (fn [[s1 s2]]
           (seq (asi/intersections s1 s2)))
         (for [segment1 (:segments line1)
               segment2 (:segments line2)]
           [segment1 segment2])))
 
+(extend-protocol v/SpatialValidation
+  cmr.spatial.line_string.LineString
+  (validate
+    [line]
+    ;; Certain validations can only be run if earlier validations passed. Validations are grouped
+    ;; here so that subsequent validations won't run if earlier validations fail.
 
+    (or (seq (pv/points-in-shape-validation line))
+        (seq (concat (pv/duplicate-point-validation line)
+                     (pv/consecutive-antipodal-points-validation line))))))
