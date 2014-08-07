@@ -92,11 +92,11 @@
   [concept-type key elem]
   (string-value-elem->condition concept-type key elem true))
 
-(defn- date-time-from-string
+(defn- date-time-from-strings
   "Returns date-time from strings of year, month, day, etc. Returns nil if all strings are nil."
   [year month day hour minute sec]
-  (when (and year month day hour minute sec)
-    (let [units (map (fn [unit] (if unit (Long. unit) 0)) [year month day hour minute sec])]
+  (when (or year month day hour minute sec)
+    (let [units (map (fn [^String unit] (if unit (Long. unit) 0)) [year month day hour minute sec])]
       (apply t/date-time units))))
 
 (defn parse-date-range-element
@@ -104,10 +104,10 @@
   [element]
   (let [{year :YYYY month :MM day :DD hour :HH minute :MI sec :SS}
         (cx/attrs-at-path element [:startDate :Date])
-        start-date (date-time-from-string year month day hour minute sec)
+        start-date (date-time-from-strings year month day hour minute sec)
         {year :YYYY month :MM day :DD hour :HH minute :MI sec :SS}
         (cx/attrs-at-path element [:stopDate :Date])
-        stop-date (date-time-from-string year month day hour minute sec)]
+        stop-date (date-time-from-strings year month day hour minute sec)]
     [start-date stop-date]))
 
 (defmulti element->condition

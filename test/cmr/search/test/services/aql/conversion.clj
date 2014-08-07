@@ -88,11 +88,9 @@
 
 (defn- aql-date-range-elem->condition
   [aql-snippet]
-  (let [aql (str "<query><dataCenterId><all/></dataCenterId><where><collectionCondition>"
-                 (format "<ECHOLastUpdate>%s</ECHOLastUpdate></collectionCondition></where></query>"
-                         aql-snippet))
+  (let [aql (format "<ECHOLastUpdate>%s</ECHOLastUpdate>" aql-snippet)
         xml-struct (x/parse-str aql)]
-    (a/element->condition :collection (cx/element-at-path xml-struct [:where :collectionCondition :ECHOLastUpdate]))))
+    (a/element->condition :collection xml-struct)))
 
 (deftest aql-date-range-conversion-test
   (testing "date-range aql"
@@ -106,6 +104,14 @@
          "2001-12-03T01:02:03Z" nil
          "<startDate> <Date YYYY=\"2001\" MM=\"12\" DD=\"03\" HH=\"01\" MI=\"02\" SS=\"03\"/> </startDate>"
 
+         ;; Date with missing of optional attributes
+         "2001-12-03T00:00:00Z" nil
+         "<startDate> <Date YYYY=\"2001\" MM=\"12\" DD=\"03\"/> </startDate>"
+         "2001-12-03T01:00:00Z" nil
+         "<startDate> <Date YYYY=\"2001\" MM=\"12\" DD=\"03\" HH=\"01\"/> </startDate>"
+         "2001-12-03T01:02:00Z" nil
+         "<startDate> <Date YYYY=\"2001\" MM=\"12\" DD=\"03\" HH=\"01\" MI=\"02\"/> </startDate>"
+
          nil "2011-02-12T01:02:03Z"
          "<stopDate> <Date YYYY=\"2011\" MM=\"02\" DD=\"12\" HH=\"01\" MI=\"02\" SS=\"03\"/> </stopDate>"
 
@@ -115,17 +121,13 @@
 
 (defn- aql-boolean-elem->condition
   [aql-snippet]
-  (let [aql (str "<query><dataCenterId><all/></dataCenterId><where><collectionCondition>"
-                 (format "%s</collectionCondition></where></query>"
-                         aql-snippet))
-        xml-struct (x/parse-str aql)]
-    (a/element->condition :collection (cx/element-at-path xml-struct [:where :collectionCondition :onlineOnly]))))
+  (let [xml-struct (x/parse-str aql-snippet)]
+    (a/element->condition :collection xml-struct)))
 
 (deftest aql-boolean-conversion-test
   (testing "boolean aql"
     (are [value aql-snippet]
-         (= (q/map->BooleanCondition {:field :downloadable
-                                      :value value})
+         (= (q/map->BooleanCondition {:field :downloadable :value value})
             (aql-boolean-elem->condition aql-snippet))
 
          true "<onlineOnly value=\"Y\" />"

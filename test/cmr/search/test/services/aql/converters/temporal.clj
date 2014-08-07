@@ -10,11 +10,9 @@
 
 (defn- aql-temporal-elem->condition
   [aql-snippet]
-  (let [aql (str "<query><dataCenterId><all/></dataCenterId><where><collectionCondition>"
-                 (format "<temporal>%s</temporal></collectionCondition></where></query>"
-                         aql-snippet))
+  (let [aql (format "<temporal>%s</temporal>" aql-snippet)
         xml-struct (x/parse-str aql)]
-    (a/element->condition :collection (cx/element-at-path xml-struct [:where :collectionCondition :temporal]))))
+    (a/element->condition :collection xml-struct)))
 
 (deftest aql-temporal-conversion-test
   (testing "temporal aql"
@@ -28,8 +26,6 @@
                                       :date-range-condition date-range-condition
                                       :start-day start-day
                                       :end-day end-day})
-
-
            (aql-temporal-elem->condition aql-snippet)))
 
       "2001-12-03T01:02:03Z" nil nil nil
