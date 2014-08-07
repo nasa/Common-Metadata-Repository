@@ -12,6 +12,7 @@
             [cmr.spatial.polygon :as poly]
             [cmr.spatial.point :as p]
             [cmr.spatial.mbr :as m]
+            [cmr.spatial.line-string :as l]
             [cmr.spatial.ring-relations :as rr]
             [cmr.spatial.derived :as derived]
             [cmr.spatial.codec]
@@ -23,6 +24,7 @@
   (:import cmr.spatial.point.Point
            cmr.spatial.geodetic_ring.GeodeticRing
            cmr.spatial.mbr.Mbr
+           cmr.spatial.line_string.LineString
            cmr.spatial.polygon.Polygon))
 
 (defn polygon
@@ -127,6 +129,10 @@
         normal-br1 (m/mbr 10 10 20 0)
         normal-br2 (m/mbr -20 0 -10 -10)
 
+        ;; Lines
+        normal-geod-line (l/ords->line-string :geodetic 22.681,-8.839, 18.309,-11.426,  22.705,-6.557)
+        normal-cart-line (l/ords->line-string :cartesian 16.439,-13.463,  31.904,-13.607, 31.958,-10.401)
+
         ;; Polygons
         wide-north (polygon :geodetic -70 20, 70 20, 70 30, -70 30, -70 20)
         wide-south (polygon :geodetic -70 -30, 70 -30, 70 -20, -70 -20, -70 -30)
@@ -153,17 +159,16 @@
         hole2-cart (rr/ords->ring :cartesian 5.18 -13.08 -1.79 -12.99 -2.65 -15 4.29 -14.95 5.18 -13.08)
         polygon-with-holes-cart (poly/polygon :cartesian [outer-cart hole1-cart hole2-cart])
 
-
         ;; points
         north-pole (p/point 90 0)
         south-pole (p/point -90 0)
         normal-point (p/point 10 22)
         am-point (p/point 180 22)
 
-        ;search-area (assoc (polygon :geodetic -6.45,-3.74,12.34,-4.18,12,9.45,-6.69,9.2,-6.45,-3.74)
-        ;                   :options {:id "polygon"})
+        search-area (assoc (polygon :geodetic -6.45,-3.74,12.34,-4.18,12,9.45,-6.69,9.2,-6.45,-3.74)
+                            :options {:id "polygon"})
 
-        search-area (assoc (m/mbr -23.43 5 25.54 -6.31) :options {:id "bounding_box"})
+        ;search-area (assoc (m/mbr -23.43 5 25.54 -6.31) :options {:id "bounding_box"})
 
         ;search-area (assoc (p/point 0 0) :options {:id "point"})
 
@@ -174,6 +179,10 @@
                                 ; touches-np
                                 ; normal-br1
                                 ; normal-br2
+
+                                normal-geod-line
+                                normal-cart-line
+
                                 ; wide-north
                                 ; wide-south
                                 ; across-am-poly
@@ -185,7 +194,7 @@
                                 ; wide-south-cart
                                 ; very-wide-cart
                                 ; very-tall-cart
-                                polygon-with-holes-cart
+                                ; polygon-with-holes-cart
                                 ; north-pole
                                 ; south-pole
                                 ; normal-point
