@@ -5,7 +5,7 @@
             [cmr.spatial.point :as p]
             [cmr.spatial.mbr :as m]
             [cmr.spatial.geodetic-ring :as gr]
-            [cmr.spatial.line :as l]
+            [cmr.spatial.line-string :as l]
             [clojure.string :as str]))
 
 (defn- points-map->points-str
@@ -34,7 +34,7 @@
     (x/element :georss:point {} (shape->string point)))
 
 
-  cmr.spatial.line.Line
+  cmr.spatial.line_string.LineString
   (shape->string
     [line]
     (points-map->points-str line))
@@ -94,7 +94,7 @@
         points (map shape->string (get shapes-by-type cmr.spatial.point.Point))
         boxes (map shape->string (get shapes-by-type cmr.spatial.mbr.Mbr))
         polygons (map polygon->json (get shapes-by-type cmr.spatial.polygon.Polygon))
-        lines (map shape->string (get shapes-by-type cmr.spatial.line.Line))
+        lines (map shape->string (get shapes-by-type cmr.spatial.line_string.LineString))
         spatial {:points points
                  :boxes boxes
                  :polygons polygons
