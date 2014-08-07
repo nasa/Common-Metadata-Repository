@@ -30,7 +30,11 @@
    ;; flag to determine if the results should be pretty printed in the response
    pretty?
 
-   ;; keywords from the keyword parameter
+   ;; Keywords are included at the top level of the query so they can be used to construct the final
+   ;; resulting function_score query filters. The keyword condition uses these to construct
+   ;; the full text search on the :keyword field, but they are also needed for the filter sections
+   ;; that compute the score. Keeping them here is cleaner than having to search for the
+   ;; keyword condition and pull them from there.
    keywords
    ])
 
