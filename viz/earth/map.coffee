@@ -104,7 +104,7 @@ class window.Map extends Module
                     new DraggablePoint(g.lon, g.lat, g.options)
                   else
                     new Point(g.lon, g.lat, g.options)
-                when "ring"
+                when "geodetic-ring"
                   if g.options && g.options.draggable
                     DraggableRing.fromOrdinates(g.ords, g.options, window.vddSession)
                   else

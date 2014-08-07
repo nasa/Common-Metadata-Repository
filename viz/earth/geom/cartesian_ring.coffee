@@ -18,8 +18,6 @@ class window.CartesianRing extends Module
     # Remove last point if it does
     if @points[0].equals(@points[@points.length - 1])
       @points = @points[0..-2]
-    else
-      throw "Cartesian rings must be closed."
 
     this.addEventListener(p) for p in @points
 

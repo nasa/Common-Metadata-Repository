@@ -20,7 +20,7 @@ class window.Map extends Module
                   new Point(g.lon, g.lat, g.options)
                 when "cartesian-ring"
                   CartesianRing.fromOrdinates(g.ords, g.options)
-                when "ring"
+                when "geodetic-ring"
                   Ring.fromOrdinates(g.ords, g.options)
                 when "bounding-rectangle"
                   new BoundingRectangle(g.west, g.north, g.east, g.south, g.options)
