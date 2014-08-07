@@ -4,7 +4,7 @@
             [cmr.common.xml :as cx]
             [cmr.spatial.point :as p]
             [cmr.spatial.mbr :as mbr]
-            [cmr.spatial.line :as l]
+            [cmr.spatial.line-string :as l]
             [cmr.spatial.polygon :as poly]
             [cmr.spatial.geodetic-ring :as gr]
             [cmr.spatial.cartesian-ring :as cr]
@@ -30,7 +30,7 @@
 
 (defmethod parse-geometry :Line
   [element]
-  (l/line (map parse-geometry (:content element))))
+  (l/line-string (map parse-geometry (:content element))))
 
 (defmethod parse-geometry :Boundary
   [element]
@@ -95,7 +95,7 @@
                (x/element :EastBoundingCoordinate {} (util/double->string east))
                (x/element :SouthBoundingCoordinate {} (util/double->string south))))
 
-  cmr.spatial.line.Line
+  cmr.spatial.line_string.LineString
   (shape-to-xml
     [{:keys [points]}]
     (x/element :Line {} (map shape-to-xml points)))

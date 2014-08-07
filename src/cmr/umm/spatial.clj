@@ -3,8 +3,10 @@
   (:require [cmr.spatial.ring-relations :as rr]
             [cmr.spatial.point :as p]
             [cmr.spatial.polygon]
+            [cmr.spatial.line-string]
             [cmr.common.services.errors :as errors])
-  (:import cmr.spatial.polygon.Polygon))
+  (:import cmr.spatial.polygon.Polygon
+           cmr.spatial.line_string.LineString))
 
 ;; Represents a ring in which the coordinate system is not known at the time the data is constructed/
 ;; parsed. The coordinate system can be set at some later time and which will change the ring to a
@@ -41,6 +43,10 @@
       (assoc :coordinate-system coordinate-system)
       (update-in [:rings] (fn [rings]
                             (mapv (partial set-coordinate-system coordinate-system) rings)))))
+
+(defmethod set-coordinate-system LineString
+  [coordinate-system line]
+  (assoc line :coordinate-system coordinate-system))
 
 (defmethod set-coordinate-system GenericRing
   [coordinate-system {:keys [points]}]
