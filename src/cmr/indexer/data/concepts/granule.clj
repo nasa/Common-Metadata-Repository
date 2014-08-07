@@ -40,15 +40,8 @@
       (let [gsr (get-in parent-collection [:spatial-coverage :granule-spatial-representation])]
         ;; TODO Add support for all granule spatial representations and geometries
         (cond
-          (= gsr :geodetic)
+          (or (= gsr :geodetic) (= gsr :cartesian))
           (spatial/spatial->elastic-docs gsr granule)
-
-          (= gsr :cartesian)
-          (let [{supported true not-supported false}
-                (group-by (comp some? spatial/temporary-supported-cartesian-types type) geometries)]
-            (when (seq not-supported)
-              (info "Ignoring indexing spatial of spatial for non supported cartesian types: " (pr-str not-supported)))
-            (spatial/spatial->elastic-docs gsr (assoc-in granule [:spatial-coverage :geometries] supported)))
 
           :else
           (info "Ignoring indexing spatial of granule spatial representation of" gsr))))

@@ -23,16 +23,8 @@
       (let [sr (get-in collection [:spatial-coverage :spatial-representation])]
         ;; TODO Add support for all spatial representations and geometries
         (cond
-          (= sr :geodetic)
+          (or (= sr :geodetic) (= sr :cartesian))
           (spatial/spatial->elastic-docs sr collection)
-
-          (= sr :cartesian)
-          (let [{supported true not-supported false}
-                (group-by (comp some? spatial/temporary-supported-cartesian-types type) geometries)]
-            (when (seq not-supported)
-              (info "Ignoring indexing spatial of spatial for non supported cartesian types: "
-                    (pr-str not-supported)))
-            (spatial/spatial->elastic-docs sr (assoc-in collection [:spatial-coverage :geometries] supported)))
 
           :else
           (info "Ignoring indexing spatial of collection spatial representation of" sr))))

@@ -11,10 +11,6 @@
             [cmr.common.services.errors :as errors]
             [cmr.umm.spatial :as umm-s]))
 
-(def temporary-supported-cartesian-types
-  "A temporary list of the subset of spatial types that we support."
-  #{cmr.spatial.mbr.Mbr cmr.spatial.point.Point cmr.spatial.polygon.Polygon})
-
 (defn mbr->elastic-attribs
   [prefix mbr]
   (let [with-prefix #(->> %
