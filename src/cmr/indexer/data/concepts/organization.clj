@@ -5,6 +5,6 @@
   "Extract the archive organization/archive-centers from collection"
   [collection]
   (let [orgs (:organizations collection)]
-    (remove nil? (for [org orgs]
-                   (let [{:keys [type org-name]} org]
-                     (when (= :archive-center type) org-name))))))
+    (for [org orgs
+          :when (= :archive-center (:type org))]
+      (:org-name org))))
