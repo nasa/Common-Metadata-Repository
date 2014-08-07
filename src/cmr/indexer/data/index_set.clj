@@ -17,9 +17,24 @@
                           :number_of_replicas 1,
                           :refresh_interval "1s"}})
 
-;; TODO verify that all these options are necessary
 (def string-field-mapping
-  {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "no"})
+  {:type "string" :index "not_analyzed"})
+
+(def text-field-mapping
+  "Used for analyzed text fields"
+  {
+   :type "string"
+   ; these fields will be split into multiple terms using the analyzer
+   :index "analyzed"
+   ; Norms are metrics about fields that elastic can use to weigh certian fields more than
+   ; others when computing a document relevance. A typical example is field length - short
+   ; fields are weighted more heavily than long feilds. We don't need them for scoring.
+   :omit_norms "true"
+   ; split the text on whitespace, but don't do any stemmming, etc.
+   :analyzer "whitespace"
+   ; Don't bother storing term positions or term frequencies in this field
+   :index_options "docs"
+   })
 
 (def date-field-mapping
   {:type "date" :format "yyyy-MM-dd'T'HH:mm:ssZ||yyyy-MM-dd'T'HH:mm:ss.SSSZ"})
@@ -123,7 +138,7 @@
                 :_all {:enabled false},
                 :_id   {:path "concept-id"},
                 :_ttl {:enabled true},
-                :properties (merge {:concept-id            (stored string-field-mapping)
+                :properties (merge {:concept-id   (stored string-field-mapping)
                                     :entry-id           (stored string-field-mapping)
                                     :entry-id.lowercase string-field-mapping
                                     :entry-title           (stored string-field-mapping)
@@ -158,7 +173,7 @@
                                     :attributes attributes-field-mapping
                                     :science-keywords science-keywords-field-mapping
                                     :downloadable (stored bool-field-mapping)
-                                    ;; fields added for atom
+                                    ;; mappings added for atom
                                     :browsable (not-indexed (stored bool-field-mapping))
                                     :atom-links (not-indexed (stored string-field-mapping))
                                     :summary (not-indexed (stored string-field-mapping))
@@ -166,7 +181,12 @@
                                     :update-time (not-indexed (stored string-field-mapping))
                                     :associated-difs (stored string-field-mapping)
                                     :associated-difs.lowercase string-field-mapping
-                                    :coordinate-system (not-indexed (stored string-field-mapping))}
+                                    :coordinate-system (not-indexed (stored string-field-mapping))
+                                    ;; analyzed field for keyword searches
+                                    :keyword text-field-mapping
+                                    :long-name.lowercase string-field-mapping
+                                    :project-ln.lowercase string-field-mapping
+                                    :platform-ln.lowercase string-field-mapping}
                                    spatial-coverage-fields)}})
 
 (def granule-setting {:index {:number_of_shards 6,

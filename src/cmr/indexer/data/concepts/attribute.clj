@@ -1,7 +1,7 @@
 (ns cmr.indexer.data.concepts.attribute
   "Contains functions for converting attributes into a elastic documents"
   (:require [clj-time.format :as f]
-            [clojure.string :as s]
+            [clojure.string :as str]
             [cmr.umm.collection.product-specific-attribute :as coll-psa]
             [cmr.common.services.errors :as errors]))
 
@@ -56,7 +56,7 @@
                               #(coll-psa/parse-value type %))
                         (:values psa-ref))}
        {:name (:name psa-ref)
-        (str field-name ".lowercase") (map (comp s/lower-case
+        (str field-name ".lowercase") (map (comp str/lower-case
                                                  #(value->elastic-value type %)
                                                  #(coll-psa/parse-value type %))
                                            (:values psa-ref))}]
@@ -88,7 +88,7 @@
       [{:name name
         field-name (value->elastic-value data-type value)}
        {:name name
-        (str field-name ".lowercase") (s/lower-case (value->elastic-value data-type value))}]
+        (str field-name ".lowercase") (str/lower-case (value->elastic-value data-type value))}]
       {:name name
        field-name (value->elastic-value data-type value)})))
 
@@ -98,5 +98,16 @@
   (map psa->elastic-doc
        (filter :value ; only index those with a value
                (:product-specific-attributes collection))))
+
+(defn psa->keywords
+  "Converts a PSA into a vector of terms to be used in keyword searches"
+  [psa]
+  (let [{:keys [name data-type value]} psa]
+    [name (value->elastic-value data-type value)]))
+
+(defn psas->keywords
+  [collection]
+  "Converts the psas into a vector to be used in keyword searches"
+  (mapcat psa->keywords (filter :value (:product-specific-attributes collection))))
 
 
