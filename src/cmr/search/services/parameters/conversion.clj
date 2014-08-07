@@ -37,7 +37,8 @@
                 :downloadable :boolean
                 :polygon :polygon
                 :bounding-box :bounding-box
-                :point :point}
+                :point :point
+                :line :line}
    :granule {:granule-ur :string
              :concept-id :granule-concept-id
              :collection-concept-id :string
@@ -63,7 +64,8 @@
              :downloadable :boolean
              :polygon :polygon
              :bounding-box :bounding-box
-             :point :point}})
+             :point :point
+             :line :line}})
 
 (def always-case-sensitive
   "A set of parameters that will always be case sensitive"

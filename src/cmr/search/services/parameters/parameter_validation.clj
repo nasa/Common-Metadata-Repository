@@ -370,6 +370,13 @@
           (spatial-codec/url-decode :point)
           :errors))
 
+(defn line-validation
+  [concept-type params]
+  (some->> params
+          :line
+          (spatial-codec/url-decode :line)
+          :errors))
+
 (def parameter-validations
   "A list of the functions that can validate parameters. They all accept parameters as an argument
   and return a list of errors."
