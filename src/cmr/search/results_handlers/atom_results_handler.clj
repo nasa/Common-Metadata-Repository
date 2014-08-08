@@ -33,7 +33,8 @@
    "browsable"
    "coordinate-system"
    "ords-info"
-   "ords"])
+   "ords"
+   "_score"])
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:granule :atom]
   [concept-type result-format]
@@ -59,6 +60,7 @@
 (defn- collection-elastic-result->query-result-item
   [elastic-result]
   (let [{concept-id :_id
+         score :_score
          {[short-name] :short-name
           [version-id] :version-id
           [summary] :summary
@@ -82,6 +84,7 @@
         end-date (when end-date (str/replace (str end-date) #"\+0000" "Z"))
         atom-links (map #(json/decode % true) atom-links)]
     {:id concept-id
+     :score score
      :title entry-title
      :short-name short-name
      :version-id version-id
@@ -205,7 +208,7 @@
 (defn- collection-atom-reference->xml-element
   "Converts a collection search result atom reference into an XML element"
   [reference]
-  (let [{:keys [id title short-name version-id summary updated dataset-id collection-data-type
+  (let [{:keys [id score title short-name version-id summary updated dataset-id collection-data-type
                 processing-level-id original-format data-center archive-center start-date end-date
                 atom-links associated-difs online-access-flag browse-flag coordinate-system shapes]} reference]
     (x/element :entry {}
@@ -228,12 +231,13 @@
                (map atom-spatial/shape->xml-element shapes)
                (map #(x/element :echo:difId {} %) associated-difs)
                (x/element :echo:onlineAccessFlag {} online-access-flag)
-               (x/element :echo:browseFlag {} browse-flag))))
+               (x/element :echo:browseFlag {} browse-flag)
+               (when score (x/element :relevance:score {} score)))))
 
 (defn- granule-atom-reference->xml-element
   "Converts a granule search result atom reference into an XML element"
   [reference]
-  (let [{:keys [id title updated dataset-id producer-gran-id size original-format
+  (let [{:keys [id size title updated dataset-id producer-gran-id size original-format
                 data-center start-date end-date atom-links online-access-flag browse-flag
                 day-night cloud-cover coordinate-system shapes]} reference]
     (x/element :entry {}
@@ -286,9 +290,15 @@
 
         items (if (= :granule concept-type)
                 (append-collection-links context items)
-                items)]
+                items)
+        ;; add relence url to header attributes if our entries have scores
+        header-attributes ATOM_HEADER_ATTRIBUTES
+        header-attributes (if (:score (first items))
+                            (merge header-attributes
+                                   {:xmlns:relevance
+                                    "http://a9.com/-/opensearch/extensions/relevance/1.0/"}))]
     (xml-fn
-      (x/element :feed ATOM_HEADER_ATTRIBUTES
+      (x/element :feed header-attributes
                  (x/element :updated {} (str (time/now)))
                  (x/element :id {} (url/atom-request-url context concept-type result-format))
                  (x/element :title {:type "text"} (concept-type->atom-title concept-type))
