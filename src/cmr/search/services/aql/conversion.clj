@@ -2,10 +2,12 @@
   "Contains functions for parsing and converting aql to query conditions"
   (:require [clojure.string :as s]
             [clojure.data.xml :as x]
+            [clojure.java.io :as io]
             [clojure.set :as set]
             [cmr.common.xml :as cx]
             [cmr.common.util :as u]
             [cmr.common.services.errors :as errors]
+            [cmr.search.services.messages.common-messages :as msg]
             [clj-time.core :as t]
             [cmr.search.models.query :as qm]
             [cmr.search.services.parameters.conversion :as p]))
@@ -68,7 +70,7 @@
   [concept-type elem-name]
   (get-in aql-elem->converter-attrs [concept-type elem-name :name]))
 
-(defn- inheritance?
+(defn- inherited-condition?
   "Returns true if the given key of concept-type is inheritance"
   [concept-type condition-key]
   (let [key [concept-type condition-key]]
@@ -78,7 +80,10 @@
 
 (defn- update-values [m f & args]
   "update values in a map by applying the given function and args"
-  (reduce (fn [r [k v]] (assoc r k (apply f v args))) {} m))
+  (reduce (fn [r [k v]]
+            (assoc r k (apply f v args)))
+          {}
+          m))
 
 (defn- inheritance-condition
   "Returns the inheritance condition for the given key value and options"
@@ -95,16 +100,17 @@
    (string-value-elem->condition concept-type key elem false))
   ([concept-type key elem pattern?]
    (let [value (first (:content elem))
-         value (if pattern? (-> value
-                                (s/replace #"([^\\])(%)" "$1*")
-                                (s/replace #"([^\\])(_)" "$1?")
-                                (s/replace #"^%(.*)" "*$1")
-                                (s/replace #"^_(.*)" "?$1"))
+         value (if pattern?
+                 (-> value
+                     (s/replace #"([^\\])(%)" "$1*")
+                     (s/replace #"([^\\])(_)" "$1?")
+                     (s/replace #"^%(.*)" "*$1")
+                     (s/replace #"^_(.*)" "?$1"))
                  value)
          case-insensitive (get-in elem [:attrs :caseInsensitive])
          case-sensitive? (if (and case-insensitive (= "N" (s/upper-case case-insensitive))) true false)
          case-sensitive? (if (some? (p/always-case-sensitive key)) true case-sensitive?)]
-     (if (inheritance? concept-type key)
+     (if (inherited-condition? concept-type key)
        (inheritance-condition key value case-sensitive? pattern?)
        (qm/string-condition key value case-sensitive? pattern?)))))
 
@@ -183,7 +189,7 @@
 
 (defmethod element->condition :equator-crossing-date
   [concept-type element]
-  (let [[start-date stop-date] (parse-date-range-element element)]
+  (let [[start-date stop-date] (parse-date-range-element (cx/element-at-path element [:dateRange] ))]
     (qm/map->EquatorCrossingDateCondition {:start-date start-date
                                            :end-date stop-date})))
 
@@ -218,8 +224,9 @@
 (defn validate-aql
   "Validates the XML against the AQL schema."
   [xml]
-  ;; TODO: add validation later.
-  )
+  (when-let [errors (cx/validate-xml (io/resource "schema/IIMSAQLQueryLanguage.xsd")
+                                     (cx/remove-xml-processing-instructions xml))]
+    (errors/throw-service-errors :invalid-data (map msg/invalid-aql errors))))
 
 (defn- condition-elem-group->conditions
   "Convert a collectionCondition|granuleCondition element group to conditions"
