@@ -118,16 +118,20 @@
 
 (defn string-element->condition
   ([concept-type element]
-   (let [condition-key (elem-name->condition-key concept-type (:tag element))]
-     (string-element->condition concept-type condition-key (first (:content element)))))
-  ([concept-type key element]
+   (let [condition-key (elem-name->condition-key concept-type (:tag element))
+         operator (get-in element [:attrs :operator])]
+     (string-element->condition concept-type condition-key operator (first (:content element)))))
+  ([concept-type key operator element]
    (let [elem-type (:tag element)]
      (case elem-type
        :value (string-value-elem->condition concept-type key element)
        :textPattern (string-pattern-elem->condition concept-type key element)
        ;; list and patternList can be processed the same way below
-       (qm/or-conds
-         (map (partial string-element->condition concept-type key) (:content element)))))))
+       (if (= "AND" operator)
+         (qm/and-conds
+           (map (partial string-element->condition concept-type key operator) (:content element)))
+         (qm/or-conds
+           (map (partial string-element->condition concept-type key operator) (:content element))))))))
 
 (defmethod element->condition :string
   [concept-type element]
