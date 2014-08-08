@@ -54,7 +54,7 @@
              :temporal {:name :temporal :type :temporal}
              :additionalAttributes {:name :attribute :type :attribute}
              :orbitNumber {:name :orbit-number :type :orbit-number}
-             :equatorCrossingLongitude {:name :equator-crossing-longitude :type :num-range}
+             :equatorCrossingLongitude {:name :equator-crossing-longitude :type :equator-crossing-longitude}
              :equatorCrossingDate {:name :equator-crossing-date :type :equator-crossing-date}
              :TwoDCoordinateSystemName {:name :two-d-coordinate-system-name :type :string}}})
 
@@ -78,7 +78,7 @@
 
 (defn- update-values [m f & args]
   "update values in a map by applying the given function and args"
- (reduce (fn [r [k v]] (assoc r k (apply f v args))) {} m))
+  (reduce (fn [r [k v]] (assoc r k (apply f v args))) {} m))
 
 (defn- inheritance-condition
   "Returns the inheritance condition for the given key value and options"
@@ -130,6 +130,15 @@
         (cx/attrs-at-path element [:stopDate :Date])
         stop-date (date-time-from-strings year month day hour minute sec)]
     [start-date stop-date]))
+
+(defn- element->num-range
+  [concept-type element]
+  (let [string-double-fn (fn [n] (when n (Double. n)))
+        range-val (-> (cx/attrs-at-path element [:range])
+                      (set/rename-keys {:lower :min-value :upper :max-value})
+                      (update-in [:min-value] string-double-fn)
+                      (update-in [:max-value] string-double-fn))]
+    range-val))
 
 (defmulti element->condition
   "Converts a aql element into a condition"
@@ -189,12 +198,11 @@
   [concept-type element]
   (if-let [value (cx/double-at-path element [:value])]
     (qm/map->OrbitNumberValueCondition {:value value})
-    (let [string-double-fn (fn [n] (when n (Double. n)))
-          range-val (-> (cx/attrs-at-path element [:range])
-                        (set/rename-keys {:lower :min-value :upper :max-value})
-                        (update-in [:min-value] string-double-fn)
-                        (update-in [:max-value] string-double-fn))]
-      (qm/map->OrbitNumberRangeCondition range-val))))
+    (qm/map->OrbitNumberRangeCondition (element->num-range concept-type element))))
+
+(defmethod element->condition :equator-crossing-longitude
+  [concept-type element]
+  (qm/map->EquatorCrossingLongitudeCondition (element->num-range concept-type element)))
 
 (def aql-query-type->concept-type
   "Mapping of AQL query type to search concept type"
