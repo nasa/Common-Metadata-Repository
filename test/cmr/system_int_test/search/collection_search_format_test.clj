@@ -225,3 +225,15 @@
                                           {:format-as-ext? true})
                [:status :results]))))))
 
+(deftest atom-has-score-for-keyword-search
+  (let [coll1 (d/ingest "PROV1" (dc/collection {:long-name "ABC!XYZ"}))]
+
+    (index/refresh-elastic-index)
+
+    (testing "Atom has score for keyword search."
+      (are [keyword-str scores] (= scores
+                                   (map :score (get-in (search/find-concepts-atom :collection
+                                                                                  {:keyword keyword-str})
+                                                       [:results :entries])))
+           "ABC" [1.4]))))
+

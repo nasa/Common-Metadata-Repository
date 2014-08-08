@@ -83,26 +83,33 @@
 (defn- collection-xml-elem->entry
   "Retrns an atom entry from a parsed collection xml structure"
   [entry-elem]
-  {:id (cx/string-at-path entry-elem [:id])
-   :title (cx/string-at-path entry-elem [:title])
-   :updated (cx/string-at-path entry-elem [:updated])
-   :dataset-id (cx/string-at-path entry-elem [:datasetId])
-   :short-name (cx/string-at-path entry-elem [:shortName])
-   :version-id (cx/string-at-path entry-elem [:versionId])
-   :summary (cx/string-at-path entry-elem [:summary])
-   :original-format (cx/string-at-path entry-elem [:originalFormat])
-   :collection-data-type (cx/string-at-path entry-elem [:collectionDataType])
-   :data-center (cx/string-at-path entry-elem [:dataCenter])
-   :archive-center (cx/string-at-path entry-elem [:archiveCenter])
-   :processing-level-id (cx/string-at-path entry-elem [:processingLevelId])
-   :links (seq (map :attrs (cx/elements-at-path entry-elem [:link])))
-   :start (cx/string-at-path entry-elem [:start])
-   :end (cx/string-at-path entry-elem [:end])
-   :associated-difs (seq (cx/strings-at-path entry-elem [:difId]))
-   :online-access-flag (cx/string-at-path entry-elem [:onlineAccessFlag])
-   :browse-flag (cx/string-at-path entry-elem [:browseFlag])
-   :coordinate-system (cx/string-at-path entry-elem [:coordinateSystem])
-   :shapes (seq (xml-elem->shapes entry-elem))})
+  (let [res {:id (cx/string-at-path entry-elem [:id])
+             :title (cx/string-at-path entry-elem [:title])
+             :updated (cx/string-at-path entry-elem [:updated])
+             :dataset-id (cx/string-at-path entry-elem [:datasetId])
+             :short-name (cx/string-at-path entry-elem [:shortName])
+             :version-id (cx/string-at-path entry-elem [:versionId])
+             :summary (cx/string-at-path entry-elem [:summary])
+             :original-format (cx/string-at-path entry-elem [:originalFormat])
+             :collection-data-type (cx/string-at-path entry-elem [:collectionDataType])
+             :data-center (cx/string-at-path entry-elem [:dataCenter])
+             :archive-center (cx/string-at-path entry-elem [:archiveCenter])
+             :processing-level-id (cx/string-at-path entry-elem [:processingLevelId])
+             :links (seq (map :attrs (cx/elements-at-path entry-elem [:link])))
+             :start (cx/string-at-path entry-elem [:start])
+             :end (cx/string-at-path entry-elem [:end])
+             :associated-difs (seq (cx/strings-at-path entry-elem [:difId]))
+             :online-access-flag (cx/string-at-path entry-elem [:onlineAccessFlag])
+             :browse-flag (cx/string-at-path entry-elem [:browseFlag])
+             :coordinate-system (cx/string-at-path entry-elem [:coordinateSystem])
+             :shapes (seq (xml-elem->shapes entry-elem))
+             :score (cx/double-at-path entry-elem [:score])}]
+    ;; This is needed because many of the tests are comparing collections to this map and the
+    ;; collections won't have relevance scores, so if there is a :score => nil mapping,
+    ;; the comparisio will fail. So we must remove the mapping entirely for nil values.
+    (if (:score res)
+      res
+      (dissoc res :score))))
 
 (defn- granule-xml-elem->entry
   "Retrns an atom entry from a parsed granule xml structure"
