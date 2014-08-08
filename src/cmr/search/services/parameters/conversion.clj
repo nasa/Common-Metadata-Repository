@@ -38,7 +38,7 @@
                 :polygon :polygon
                 :bounding-box :bounding-box
                 :point :point
-                :keyword :keyword}
+                :keyword :keyword
                 :line :line}
    :granule {:granule-ur :string
              :concept-id :granule-concept-id
