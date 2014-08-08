@@ -52,13 +52,22 @@
 (defn- condition->element-name
   "Returns the AQL element name of the given condition"
   [condition]
-  (first (remove #{:ignore-case :pattern} (keys condition))))
+  (first (remove #{:ignore-case :pattern :or :and} (keys condition))))
 
 (defn- condition->element-type
   "Returns the element type of the condition"
   [condition]
   (let [elem-key (condition->element-name condition)]
     (get element-key-type-mapping elem-key :string)))
+
+(defn- condition->operator-option
+  "Returns the operator option of the condition"
+  [condition]
+  (let [operator (cond
+                   (:or condition) "OR"
+                   (:and condition) "AND"
+                   :else nil)]
+    (if operator {:operator operator} {})))
 
 (defmulti generate-element
   "Returns the xml element for the given element condition"
@@ -69,8 +78,9 @@
   [condition]
   (let [elem-key (condition->element-name condition)
         elem-value (elem-key condition)
-        {:keys [ignore-case pattern]} condition]
-    (x/element elem-key {}
+        {:keys [ignore-case pattern]} condition
+        operator-option (condition->operator-option condition)]
+    (x/element elem-key operator-option
                (if (sequential? elem-value)
                  ;; a list with at least one value
                  (if pattern
