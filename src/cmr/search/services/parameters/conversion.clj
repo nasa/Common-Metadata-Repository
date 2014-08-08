@@ -238,10 +238,18 @@
     (if (sequential? sort-key)
       (mapcat parse-sort-key sort-key)
       (let [[_ dir-char field] (re-find #"([\-+])?(.*)" sort-key)
-            direction (case dir-char
-                        "-" :desc
-                        "+" :asc
-                        :asc)
+            direction (cond
+                        (= dir-char "-")
+                        :desc
+
+                        (= dir-char "+")
+                        :asc
+
+                        :else
+                        ;; score sorts default to descending sort, everything else ascending
+                        (if (= "score" (str/lower-case sort-key))
+                          :desc
+                          :asc))
             field (keyword field)]
         [{:order direction
           :field (or (lp/param-aliases field)
