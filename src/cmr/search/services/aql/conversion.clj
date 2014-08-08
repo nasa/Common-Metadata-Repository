@@ -204,6 +204,12 @@
   [concept-type element]
   (qm/map->EquatorCrossingLongitudeCondition (element->num-range concept-type element)))
 
+(defmethod element->condition :num-range
+  [concept-type element]
+  (let [condition-key (elem-name->condition-key concept-type (:tag element))
+        numeric-range-map (assoc (element->num-range concept-type element) :field condition-key)]
+    (qm/map->NumericRangeCondition numeric-range-map)))
+
 (def aql-query-type->concept-type
   "Mapping of AQL query type to search concept type"
   {"collections" :collection
