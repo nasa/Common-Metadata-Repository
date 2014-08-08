@@ -1,6 +1,6 @@
 (ns cmr.search.services.parameters.conversion
   "Contains functions for parsing and converting query parameters to query conditions"
-  (:require [clojure.string :as s]
+  (:require [clojure.string :as str]
             [clojure.set :as set]
             [cmr.common.services.errors :as errors]
             [cmr.search.models.query :as qm]
@@ -38,6 +38,7 @@
                 :polygon :polygon
                 :bounding-box :bounding-box
                 :point :point
+                :keyword :keyword}
                 :line :line}
    :granule {:granule-ur :string
              :concept-id :granule-concept-id
@@ -118,6 +119,12 @@
   [concept-type param value options]
   (string-parameter->condition param value options))
 
+(defmethod parameter->condition :keyword
+  [concept-type param value options]
+  (let [pattern (pattern-field? param options)
+        keywords (str/lower-case value)]
+    (qm/text-condition :keyword keywords)))
+
 ;; Special case handler for concept-id. Concept id can refer to a granule or collection.
 ;; If it's a granule query with a collection concept id then we convert the parameter to :collection-concept-id
 (defmethod parameter->condition :granule-concept-id
@@ -170,7 +177,7 @@
     (qm/map->BooleanCondition {:field param
                                :value (= "true" value)})
 
-    (= "unset" (s/lower-case value))
+    (= "unset" (str/lower-case value))
     (qm/map->MatchAllCondition {})
 
     :else
@@ -203,7 +210,7 @@
           case-sensitive (case-sensitive-field? :collection-data-type options)
           pattern (pattern-field? :collection-data-type options)]
       (if (or (= "SCIENCE_QUALITY" value)
-              (and (= "SCIENCE_QUALITY" (s/upper-case value))
+              (and (= "SCIENCE_QUALITY" (str/upper-case value))
                    (not= "false" (get-in options [:collection-data-type :ignore-case]))))
         ; SCIENCE_QUALITY collection-data-type should match concepts with SCIENCE_QUALITY
         ; or the ones missing collection-data-type field
@@ -246,7 +253,10 @@
   (let [options (u/map-keys->kebab-case (get params :options {}))
         page-size (Integer. (get params :page-size qm/default-page-size))
         page-num (Integer. (get params :page-num qm/default-page-num))
-        sort-keys (parse-sort-key (:sort-key params))
+        ;; If there is no sort key specified and keyword parameter exists then we deafult to
+        ;; sorting by document relevance score
+        sort-keys (or (parse-sort-key (:sort-key params))
+                      (when (:keyword params) [{:order :desc :field :score}]))
         pretty (get params :pretty false)
         result-format (get params :result-format (qm/default-result-format concept-type))
         params (dissoc params :options :page-size :page-num :sort-key :result-format :pretty)]
@@ -267,6 +277,8 @@
                    :page-num page-num
                    :pretty pretty
                    :condition (qm/and-conds conditions)
+                   :keywords (when (:keyword params)
+                               (str/split (str/lower-case (:keyword params)) #" "))
                    :sort-keys sort-keys
                    :result-format result-format})))))
 

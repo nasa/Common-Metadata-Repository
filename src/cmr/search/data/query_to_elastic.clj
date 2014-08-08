@@ -1,11 +1,12 @@
 (ns cmr.search.data.query-to-elastic
   "Defines protocols and functions to map from a query model to elastic search query"
   (:require [clojurewerkz.elastisch.query :as q]
-            [clojure.string :as s]
+            [clojure.string :as str]
             [cmr.search.models.query :as qm]
             [cmr.search.data.datetime-helper :as h]
             [cmr.common.services.errors :as errors]
-            [cmr.search.data.messages :as m]))
+            [cmr.search.data.messages :as m]
+            [cmr.search.data.keywords-to-elastic :as k2e]))
 
 (def field-mappings
   "A map of fields in the query to the field name in elastic. Field names are excluded from this
@@ -41,9 +42,17 @@
 (defn query->elastic
   "Converts a query model into an elastic search query"
   [query]
-  (let [{:keys [concept-type condition]} query]
-    {:filtered {:query (q/match-all)
-                :filter (condition->elastic condition concept-type)}}))
+  (let [{:keys [concept-type condition keywords]} query
+        core-query (condition->elastic condition concept-type)]
+    (if-let [keywords (:keywords query)]
+      ;; function_score query allows us to compute a custom relevance score for each document
+      ;; matched by the primary query. The final document relevance is given by multiplying
+      ;; a boosting term for each matching filter in a set of filters.
+      {:function_score {:functions (k2e/keywords->boosted-elastic-filters keywords)
+                        :query {:filtered {:query (q/match-all)
+                                           :filter core-query}}}}
+      {:filtered {:query (q/match-all)
+                  :filter core-query}})))
 
 (def sort-key-field->elastic-field
   "Submaps by concept type of the sort key fields given by the user to the exact elastic sort field to use.
@@ -52,7 +61,8 @@
                 :provider :provider-id.lowercase
                 :platform :platform-sn.lowercase
                 :instrument :instrument-sn.lowercase
-                :sensor :sensor-sn.lowercase}
+                :sensor :sensor-sn.lowercase
+                :score :_score}
    :granule {:provider :provider-id.lowercase
              :entry-title :entry-title.lowercase
              :short-name :short-name.lowercase
@@ -65,7 +75,8 @@
              :instrument :instrument-sn.lowercase
              :sensor :sensor-sn.lowercase
              :project :project-refs.lowercase
-             :day-night-flag :day-night.lowercase}})
+             :day-night-flag :day-night.lowercase
+             :score :_score}})
 
 (defn query->sort-params
   "Converts a query into the elastic parameters for sorting results"
@@ -82,24 +93,24 @@
     (concat specified-sort [concept-id-sort])))
 
 (defn- range-condition->elastic
-    "Convert a range condition to an elastic search condition. Execution
-    should either by 'fielddata' or 'index'."
-    [field min-value max-value execution]
-    (cond
-      (and min-value max-value)
-      {:range {field {:gte min-value :lte max-value}
-               :execution execution}}
+  "Convert a range condition to an elastic search condition. Execution
+  should either by 'fielddata' or 'index'."
+  [field min-value max-value execution]
+  (cond
+    (and min-value max-value)
+    {:range {field {:gte min-value :lte max-value}
+             :execution execution}}
 
-      min-value
-      {:range {field {:gte min-value}
-               :execution execution}}
+    min-value
+    {:range {field {:gte min-value}
+             :execution execution}}
 
-      max-value
-      {:range {field {:lte max-value}
-               :execution execution}}
+    max-value
+    {:range {field {:lte max-value}
+             :execution execution}}
 
-      :else
-      (errors/internal-error! (m/nil-min-max-msg))))
+    :else
+    (errors/internal-error! (m/nil-min-max-msg))))
 
 (extend-protocol ConditionToElastic
   cmr.search.models.query.ConditionGroup
@@ -114,12 +125,20 @@
     {:nested {:path path
               :filter (condition->elastic condition concept-type)}})
 
+  cmr.search.models.query.TextCondition
+  (condition->elastic
+    [{:keys [field query-str]} concept-type]
+    (let [field (query-field->elastic-field field concept-type)]
+      {:query {:query_string {:query query-str
+                              :analyzer :whitespace
+                              :default_field field}}}))
+
   cmr.search.models.query.StringCondition
   (condition->elastic
     [{:keys [field value case-sensitive? pattern?]} concept-type]
     (let [field (query-field->elastic-field field concept-type)
           field (if case-sensitive? field (str (name field) ".lowercase"))
-          value (if case-sensitive? value (s/lower-case value))]
+          value (if case-sensitive? value (str/lower-case value))]
       (if pattern?
         {:query {:wildcard {field value}}}
         {:term {field value}})))
@@ -129,7 +148,7 @@
     [{:keys [field values case-sensitive?]} concept-type]
     (let [field (query-field->elastic-field field concept-type)
           field (if case-sensitive? field (str (name field) ".lowercase"))
-          values (if case-sensitive? values (map s/lower-case values))]
+          values (if case-sensitive? values (map str/lower-case values))]
       {:terms {field values
                :execution "bool"}}))
 
@@ -175,8 +194,8 @@
   cmr.search.models.query.StringRangeCondition
   (condition->elastic
     [{:keys [field start-value end-value]} concept-type]
-     (range-condition->elastic (query-field->elastic-field field concept-type)
-                               start-value end-value "index"))
+    (range-condition->elastic (query-field->elastic-field field concept-type)
+                              start-value end-value "index"))
 
   cmr.search.models.query.DateRangeCondition
   (condition->elastic

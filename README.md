@@ -202,6 +202,10 @@ The temporal datetime has to be in yyyy-MM-ddTHH:mm:ssZ format.
 
     curl "http://localhost:3003/collections?downloadable=true"
 
+#### Find collections by keyword search, case insensitive and support wild cards ? and *
+
+    curl "http://localhost:3003/collections?keyword="alpha beta g?mma"
+
 #### Sorting Collection Results
 
 Collection results are sorted by ascending entry title by default. One or more sort keys can be specified using the `sort_key[]` parameter. The order used impacts searching. Fields can be prepended with a `-` to sort in descending order. Ascending order is the default but `+` can be used to explicitly request ascending.
@@ -216,6 +220,7 @@ Collection results are sorted by ascending entry title by default. One or more s
   * instrument
   * sensor
   * provider
+  * score - document relevance score, only valid with keyword search, defaults to descending
 
 Example of sorting by start_date in descending order: (Most recent data first)
 
@@ -522,6 +527,37 @@ Executes this query for collections
           * echo_collection_id=C5-PROV1
         * NumericRange
           * cloud_cover=50
+
+### Document Scoring For Keyword Search
+
+When a keyword search is requested, matched docuements receive relevancy scores as follows:
+
+A series of filters are executed against each document. Each of these  has an associated boost
+value. The boost values of all the filters that match a given document are multiplied together
+to get the final document score. Docuemnts that match none of the filters have a default
+score of 1.0.
+
+The filters are case insensitive, support wildcards * and ?, and are given below:
+
+1. All keywords are conatained in the long-name field OR one of the keywords exactly matches
+the short-name field - weight 1.4
+
+2. All keywords are contained in the Project/long-name field OR one of the keywords
+exactly matches the Project/short-name field - weight 1.3
+
+3. All keywords are contained in the Platform/long-name field OR one of the keywords
+exaclty matches the Platform/short-name field - weight 1.3
+
+4. All keywords are contained in the Platform/Instrument/long-name field OR one of the keywords
+exactly matches the Platform/Instrument/short-name field - weight 1.2
+
+5. All keywords are contained in the Platform/Instrument/Sensor/long-name field OR one of the keywords exactly matches the Platform/Instrument/Sensor/short-name field - weight 1.2
+
+6. The keyword field is a single string that exactly matches the science-keyword field - weight 1.2
+
+7. The keyword field is a single string that exactly matches the spatial-keyword field - weight 1.1
+
+8. The keyword field is a single string that exactly matches the temporal-keyword field  - weight 1.1
 
 
 ### Normal path...

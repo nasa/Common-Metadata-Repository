@@ -29,6 +29,13 @@
 
    ;; flag to determine if the results should be pretty printed in the response
    pretty?
+
+   ;; Keywords are included at the top level of the query so they can be used to construct the final
+   ;; resulting function_score query filters. The keyword condition uses these to construct
+   ;; the full text search on the :keyword field, but they are also needed for the filter sections
+   ;; that compute the score. Keeping them here is cleaner than having to search for the
+   ;; keyword condition and pull them from there.
+   keywords
    ])
 
 (defrecord ConditionGroup
@@ -47,6 +54,16 @@
 
    ;; The nested condition
    condition
+   ])
+
+;; whitespace analyzed text query
+(defrecord TextCondition
+  [
+   ;; the field being searched
+   field
+
+   ;; the query string
+   query-str
    ])
 
 (defrecord StringCondition
@@ -246,7 +263,8 @@
    ])
 
 (def default-sort-keys
-  "The default sort keys by concept type."
+  "The default sort keys by concept type. Collection default is more complicated in that it will
+  default so relevance score if a keywords search is executed."
   {:collection [{:field :entry-title
                  :order :asc}]
 
@@ -265,14 +283,14 @@
   and root condition. If root condition is not provided it matches everything.
   If page-size, page-num, or result-format are not specified then they are given default values."
   [params]
-  (let [{:keys [concept-type page-size page-num condition sort-keys result-format pretty]} params
+  (let [{:keys [concept-type page-size page-num condition keywords sort-keys result-format pretty]} params
         page-size (or page-size default-page-size)
         page-num (or page-num default-page-num)
         condition (or condition (->MatchAllCondition))
         sort-keys (or sort-keys (default-sort-keys concept-type))
         result-format (or result-format (default-result-format concept-type))
         pretty (or pretty false)]
-    (->Query concept-type condition page-size page-num sort-keys result-format pretty)))
+    (->Query concept-type condition page-size page-num sort-keys result-format pretty keywords)))
 
 (defn numeric-value-condition
   "Creates a NumericValueCondition"
@@ -325,6 +343,10 @@
   "Combines conditions in an OR condition."
   [conditions]
   (group-conds :or conditions))
+
+(defn text-condition
+  [field query-str]
+  (->TextCondition field query-str))
 
 (defn string-condition
   ([field value]
