@@ -11,7 +11,7 @@
             [cmr.umm.echo10.related-url :as ru]
             [cmr.umm.echo10.granule.product-specific-attribute-ref :as psa]
             [cmr.umm.echo10.granule.orbit-calculated-spatial-domain :as ocsd]
-            [cmr.umm.xml-schema-validator :as v]
+            [cmr.common.xml :as v]
             [cmr.umm.echo10.core])
   (:import cmr.umm.granule.UmmGranule))
 

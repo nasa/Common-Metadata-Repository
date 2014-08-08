@@ -5,7 +5,7 @@
             [cmr.common.xml :as cx]
             [cmr.umm.dif.core :as dif-core]
             [cmr.umm.collection :as c]
-            [cmr.umm.xml-schema-validator :as v]
+            [cmr.common.xml :as v]
             [cmr.umm.dif.collection.project :as pj]
             [cmr.umm.dif.collection.related-url :as ru]
             [cmr.umm.dif.collection.science-keyword :as sk]

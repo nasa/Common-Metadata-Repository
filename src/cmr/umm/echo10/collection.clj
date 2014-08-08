@@ -4,7 +4,7 @@
             [clojure.java.io :as io]
             [cmr.common.xml :as cx]
             [cmr.umm.collection :as c]
-            [cmr.umm.xml-schema-validator :as v]
+            [cmr.common.xml :as v]
             [cmr.umm.echo10.collection.temporal :as t]
             [cmr.umm.echo10.collection.product-specific-attribute :as psa]
             [cmr.umm.echo10.collection.platform :as platform]
