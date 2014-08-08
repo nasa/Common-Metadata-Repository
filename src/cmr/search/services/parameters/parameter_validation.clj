@@ -80,7 +80,8 @@
                  :provider
                  :platform
                  :instrument
-                 :sensor}
+                 :sensor
+                 :score}
    :granule #{:granule-ur
               :producer-granule-id
               :readable-granule-name
