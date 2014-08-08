@@ -1,6 +1,7 @@
 (ns cmr.system-int-test.search.collection-multiple-conditions-aql-search-test
   "Integration test for collection AQL search with multiple conditions"
   (:require [clojure.test :refer :all]
+            [clojure.string :as s]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.index-util :as index]
@@ -31,5 +32,24 @@
            [] [{:dataSetId "Dataset2"} {:shortName "Long%"}] {}
            [] [{:dataSetId "Dataset2"} {:shortName "Long%" :pattern false}] {}
            [coll2 coll4] [{:dataSetId "Dataset2"} {:shortName "Long%" :pattern true}] {}
-           [] [{:dataSetId "Dataset1"} {:dataSetId "Dataset2"}] {}
-           [coll1] [{:dataSetId "Dataset1"} {:shortName "SHORT"}] {:dataCenterId "PROV1"}))))
+           [coll1] [{:dataSetId "Dataset1"} {:shortName "SHORT"}] {:dataCenterId "PROV1"}))
+
+    (testing "multiple collection conditions with aql"
+      (are [items aql-snippets]
+           (let [conditions (s/join (map #(format "<collectionCondition>%s</collectionCondition>" %)
+                                         aql-snippets))
+                 aql-string (str "<query><for value=\"collections\"/>"
+                                 "<dataCenterId><all/></dataCenterId> <where>"
+                                 (format "%s</where></query>" conditions))]
+             (d/refs-match? items
+                            (search/find-refs-with-aql aql-string)))
+
+           [coll1 coll3] ["<dataSetId><value>Dataset1</value></dataSetId>"
+                          "<shortName><value>SHORT</value></shortName>"]
+           [coll1 coll3] ["<dataSetId><value>Dataset1</value></dataSetId>"
+                          "<shortName><value caseInsensitive=\"Y\">SHORT</value></shortName>"]
+           [coll1] ["<dataSetId><value>Dataset1</value></dataSetId>"
+                    "<shortName><value caseInsensitive=\"N\">SHORT</value></shortName>"]
+           [coll2 coll4] ["<dataSetId><value>Dataset2</value></dataSetId>"
+                          "<shortName><textPattern>Long%</textPattern></shortName>"]
+           [] ["<dataSetId><value>Dataset1</value></dataSetId>" "<dataSetId><value>Dataset2</value></dataSetId>"]))))

@@ -50,5 +50,17 @@
                                                             :equator-crossing-end-date end-date}))
            "2011-02-01T12:00:00Z" "2011-02-02T12:00:01Z" [g1 g2 g3]
            "2011-02-03T12:00:00Z" nil [g6 g7 g8 g9]
-           nil "2011-02-02T12:00:10Z" [g1 g2 g3 g4]))))
+           nil "2011-02-02T12:00:10Z" [g1 g2 g3 g4]))
+
+    (testing "search by equator crossing date with aql"
+      (are [items start-date stop-date]
+           (d/refs-match? items
+                          (search/find-refs-with-aql :granule
+                                                     [{:equatorCrossingDate {:start-date start-date
+                                                                             :stop-date stop-date}}]))
+
+           [g1 g2 g3] "2011-02-01T12:00:00Z" "2011-02-02T12:00:01Z"
+           [g6 g7 g8 g9] "2011-02-03T12:00:00Z" nil
+           [g1 g2 g3 g4] nil "2011-02-02T12:00:10Z"
+           [g9] "2011-02-08T12:00:00-03:00" nil))))
 
