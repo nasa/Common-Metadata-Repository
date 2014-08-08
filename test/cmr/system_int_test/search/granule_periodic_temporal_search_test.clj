@@ -110,7 +110,34 @@
                                          {"temporal[]" ["1998-01-15T00:00:00Z, 1999-03-15T00:00:00Z, 60, 90"
                                                         "2000-02-15T00:00:00Z, 2001-03-15T00:00:00Z, 40, 50"]
                                           :page_size 100})]
-        (is (d/refs-match? [gran2 gran6 gran14 gran16 gran17] references))))))
+        (is (d/refs-match? [gran2 gran6 gran14 gran16 gran17] references))))
+
+    (testing "search by temporal with aql"
+      (are [items start-date stop-date start-day end-day]
+           (d/refs-match? items (search/find-refs-with-aql :granule [{:temporal {:start-date start-date
+                                                                                 :stop-date stop-date
+                                                                                 :start-day start-day
+                                                                                 :end-day end-day}}]))
+
+           ;; search by both start-day and end-day
+           [gran2 gran3 gran6 gran7 gran10 gran11 gran16 gran17]
+           "2000-02-15T00:00:00Z" "2002-03-15T00:00:00Z" 32 90
+
+           ;; search by end-day
+           [gran2 gran3 gran5 gran6 gran7 gran9 gran10 gran11 gran16 gran17]
+           "2000-02-15T00:00:00Z" "2002-03-15T00:00:00Z" nil 90
+
+           ;; search by start-day
+           [gran2 gran3 gran4 gran6 gran7 gran8 gran10 gran11 gran16 gran17 gran19]
+           "2000-02-15T00:00:00Z" "2002-03-15T00:00:00Z" 32 nil
+
+           ;;search by start-day without end_date
+           [gran2 gran3 gran4 gran6 gran7 gran8 gran10 gran11 gran12 gran13 gran15 gran16 gran17 gran18 gran19]
+           "2000-02-15T00:00:00Z" nil 32 nil
+
+           ;; search by start-day/end-day with date crossing year boundary
+           [gran3 gran4 gran5 gran6 gran7 gran8 gran9 gran10 gran16 gran17 gran19]
+           "2000-04-03T00:00:00Z" "2002-01-02T00:00:00Z" 93 2))))
 
 
 ;; Just some symbolic invalid temporal testing, more complete test coverage is in unit tests

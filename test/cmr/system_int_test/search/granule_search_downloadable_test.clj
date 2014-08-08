@@ -62,4 +62,13 @@
                          (search/find-refs :granule {:online-only "unset"}))))
     (testing "search by online only wrong value"
       (is (= {:status 422 :errors ["Parameter :downloadable must take value of true, false, or unset, but was wrong"]}
-             (search/find-refs :granule {:online-only "wrong"}))))))
+             (search/find-refs :granule {:online-only "wrong"}))))
+
+    (testing "search granule by online only with aql"
+      (are [items value]
+           (d/refs-match? items
+                          (search/find-refs-with-aql :granule [{:onlineOnly value}]))
+
+           ;; it is not possible to search onlineOnly false in AQL, so we don't have a test for that
+           [gran1 gran5] true
+           [gran1 gran5] nil))))

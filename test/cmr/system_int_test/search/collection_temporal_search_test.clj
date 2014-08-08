@@ -59,7 +59,21 @@
       (let [references (search/find-refs :collection
                                          {"temporal[]" ["2010-01-01T10:00:00Z,2010-01-10T12:00:00Z" "2009-02-22T10:00:00Z,2010-02-22T10:00:00Z"]
                                           "options[temporal][and]" "true"})]
-        (is (d/refs-match? [coll1] references))))))
+        (is (d/refs-match? [coll1] references))))
+
+    (testing "search by temporal date-range with aql"
+      (are [items start-date stop-date]
+           (d/refs-match? items (search/find-refs-with-aql :collection [{:temporal {:start-date start-date
+                                                                                    :stop-date stop-date}}]))
+
+           ;; search by temporal_start
+           [coll2 coll3 coll4 coll5 coll6 coll7 coll8] "2010-12-12T12:00:00Z" nil
+
+           ;; search by temporal_end
+           [coll1 coll2 coll3 coll4 coll6 coll7] nil "2010-12-12T12:00:00Z"
+
+           ;; search by temporal_range
+           [coll1] "2010-01-01T10:00:00Z" "2010-01-10T12:00:00Z"))))
 
 ;; Just some symbolic invalid temporal testing, more complete test coverage is in unit tests
 (deftest search-temporal-error-scenarios

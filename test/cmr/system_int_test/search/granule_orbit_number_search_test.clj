@@ -57,32 +57,28 @@
     (index/refresh-elastic-index)
 
     (testing "search by exact orbit number"
-      (let [references (search/find-refs :granule {:orbit-number "1"})]
-        (is (d/refs-match? [gran1 gran2 gran3] references))))
-    (testing "search by orbit number range"
-      (let [references (search/find-refs :granule {:orbit-number "1,2"})]
-        (is (d/refs-match? [gran1, gran2, gran3, gran4] references))))
-    (testing "search by orbit number range with rational numbers"
-      (let [references (search/find-refs :granule {:orbit-number "2,2.8"})]
-        (is (d/refs-match? [gran4, gran5] references))))
-    (testing "search by orbit number range with min and max rational numbers"
-      (let [references (search/find-refs :granule {:orbit-number "4.5,7.7"})]
-        (is (d/refs-match? [gran6 gran7] references))))
-    (testing "search by orbit number range inside"
-      (let [references (search/find-refs :granule {:orbit-number "8,9"})]
-        (is (d/refs-match? [gran7] references))))
-    (testing "search by unused orbit number returns nothing"
-      (let [references (search/find-refs :granule {:orbit-number "15"})]
-        (is (d/refs-match? [] references))))
-    (testing "search by unused orbit number range returns nothing"
-      (let [references (search/find-refs :granule {:orbit-number "17,18"})]
-        (is (d/refs-match? [] references))))
-    (testing "search by min value"
-      (let [references (search/find-refs :granule {:orbit-number "3.5,"})]
-        (is (d/refs-match? [gran5 gran6 gran7] references))))
-    (testing "search by max value"
-      (let [references (search/find-refs :granule {:orbit-number ",1"})]
-        (is (d/refs-match? [gran1 gran2 gran3] references))))
+      (are [items orbit-range]
+           (d/refs-match? items (search/find-refs :granule {:orbit-number orbit-range}))
+
+           ;; search by exact orbit number
+           [gran1 gran2 gran3] "1"
+           ;; search by orbit number range
+           [gran1, gran2, gran3, gran4] "1,2"
+           ;; search by orbit number range with rational numbers
+           [gran4, gran5] "2,2.8"
+           ;; search by orbit number range with min and max rational numbers
+           [gran6 gran7] "4.5,7.7"
+           ;; search by orbit number range inside
+           [gran7] "8,9"
+           ;; search by unused orbit number returns nothing
+           [] "15"
+           ;; search by unused orbit number range returns nothing
+           [] "17,18"
+           ;; search by min value
+           [gran5 gran6 gran7] "3.5,"
+           ;; search by max value
+           [gran1 gran2 gran3] ",1"))
+
     (testing "invalid orbit number range"
       (let [{:keys [status errors]} (search/find-refs :granule {:orbit-number "2,1"})]
         (is (= 422 status))
@@ -107,5 +103,30 @@
         (is (d/refs-match? [gran5 gran6 gran7] references))))
     (testing "catalog-rest-style-orbit-number max range"
       (let [references (search/find-refs :granule {"orbit-number[maxValue]" "1"})]
-        (is (d/refs-match? [gran1 gran2 gran3] references))))))
+        (is (d/refs-match? [gran1 gran2 gran3] references))))
+
+    (testing "search by orbit number with aql"
+      (are [items orbit-range]
+           (d/refs-match? items
+                          (search/find-refs-with-aql :granule
+                                                     [{:orbitNumber orbit-range}]))
+
+           ;; search by exact orbit number
+           [gran1 gran2 gran3] 1
+           ;; search by orbit number range
+           [gran1, gran2, gran3, gran4] [1 2]
+           ;; search by orbit number range with rational numbers
+           [gran4, gran5] [2 2.8]
+           ;; search by orbit number range with min and max rational numbers
+           [gran6 gran7] [4.5 7.7]
+           ;; search by orbit number range inside
+           [gran7] [8 9]
+           ;; search by unused orbit number returns nothing
+           [] 15
+           ;; search by unused orbit number range returns nothing
+           [] [17 18]
+           ;; search by min value
+           [gran5 gran6 gran7] [3.5 nil]
+           ;; search by max value
+           [gran1 gran2 gran3] [nil 1]))))
 

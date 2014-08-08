@@ -215,11 +215,13 @@
   ([concept-type conditions]
    (find-refs-with-aql concept-type conditions {}))
   ([concept-type conditions data-center-condition]
+   (find-refs-with-aql (aql/generate-aql concept-type data-center-condition conditions)))
+  ([aql-string]
    (get-search-failure-data
      (let [response (client/post (url/aql-url)
                                  {:accept "application/xml"
                                   :content-type "application/x-www-form-urlencoded"
-                                  :body (aql/generate-aql concept-type data-center-condition conditions)
+                                  :body aql-string
                                   :query-params {:page-size 100}
                                   :throw-exceptions false
                                   :connection-manager (url/conn-mgr)})]

@@ -47,4 +47,18 @@
     (testing "search for missing project."
       (let [references (search/find-refs :granule
                                          {"project" "LMN"})]
-        (is (d/refs-match? [] references))))))
+        (is (d/refs-match? [] references))))
+
+    (testing "search by campaign with aql"
+      (are [items campaigns options]
+           (let [condition (merge {:CampaignShortName campaigns} options)]
+             (d/refs-match? items (search/find-refs-with-aql :granule [condition])))
+
+           [gran2] "XYZ" {}
+           [gran1 gran2] "ABC" {}
+           [gran2 gran3] ["XYZ" "PDQ"] {}
+           [gran1 gran2] ["ABC" "LMN"] {}
+           [] "LMN" {}
+           [gran1 gran2] "abc" {}
+           [gran1 gran2] "abc" {:ignore-case true}
+           [] "abc" {:ignore-case false}))))

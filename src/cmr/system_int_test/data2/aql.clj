@@ -3,6 +3,7 @@
   (:require [clojure.string :as s]
             [clojure.data.xml :as x]
             [clj-time.core :as t]
+            [cmr.common.util :as u]
             [cmr.common.date-time-parser :as p]))
 
 (defn- generate-value-element
@@ -34,21 +35,41 @@
                                    :MI (str (t/minute dt))
                                    :SS (str (t/second dt))})))))
 
+(defn- generate-range-element
+  "Returns the xml element for the given range"
+  [[min-val max-val]]
+  (let [options (-> {:lower min-val :upper max-val}
+                    u/remove-nil-keys)]
+    (x/element :range options)))
+
 (def element-key-type-mapping
   "A mapping of AQL element key to its type, only keys with a type other than string are listed."
   {:onlineOnly :boolean
-   :temporal :temporal})
+   :temporal :temporal
+   :equatorCrossingDate :date-range
+   :equatorCrossingLongitude :range
+   :cloudCover :range
+   :orbitNumber :orbit-number})
 
 (defn- condition->element-name
   "Returns the AQL element name of the given condition"
   [condition]
-  (first (remove #{:ignore-case :pattern} (keys condition))))
+  (first (remove #{:ignore-case :pattern :or :and} (keys condition))))
 
 (defn- condition->element-type
   "Returns the element type of the condition"
   [condition]
   (let [elem-key (condition->element-name condition)]
     (get element-key-type-mapping elem-key :string)))
+
+(defn- condition->operator-option
+  "Returns the operator option of the condition"
+  [condition]
+  (let [operator (cond
+                   (:or condition) "OR"
+                   (:and condition) "AND"
+                   :else nil)]
+    (if operator {:operator operator} {})))
 
 (defmulti generate-element
   "Returns the xml element for the given element condition"
@@ -59,8 +80,9 @@
   [condition]
   (let [elem-key (condition->element-name condition)
         elem-value (elem-key condition)
-        {:keys [ignore-case pattern]} condition]
-    (x/element elem-key {}
+        {:keys [ignore-case pattern]} condition
+        operator-option (condition->operator-option condition)]
+    (x/element elem-key operator-option
                (if (sequential? elem-value)
                  ;; a list with at least one value
                  (if pattern
@@ -85,11 +107,35 @@
   [condition]
   (let [elem-key (condition->element-name condition)
         {:keys [start-date stop-date start-day end-day]} (elem-key condition)]
-    (x/element :temporal {}
+    (x/element elem-key {}
                (generate-date-element :startDate start-date)
                (generate-date-element :stopDate stop-date)
                (generate-attr-value-element :startDay start-day)
                (generate-attr-value-element :endDay end-day))))
+
+(defmethod generate-element :date-range
+  [condition]
+  (let [elem-key (condition->element-name condition)
+        {:keys [start-date stop-date]} (elem-key condition)]
+    (x/element elem-key {}
+               (generate-date-element :startDate start-date)
+               (generate-date-element :stopDate stop-date))))
+
+(defmethod generate-element :orbit-number
+  [condition]
+  (let [elem-key (condition->element-name condition)
+        value (elem-key condition)]
+    (x/element elem-key {}
+               (if (sequential? value)
+                 (generate-range-element value)
+                 (x/element :value {} (str value))))))
+
+(defmethod generate-element :range
+  [condition]
+  (let [elem-key (condition->element-name condition)
+        value (elem-key condition)]
+    (x/element elem-key {}
+               (generate-range-element value))))
 
 (defn- generate-data-center
   "Returns the dataCenter element for the data center condition"
