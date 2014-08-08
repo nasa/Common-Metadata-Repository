@@ -87,14 +87,6 @@
            all-colls ["PROV1" "PROV2"] {}
            all-prov1-colls ["PROV1" "PROV3"] {}
 
-           ;; Wildcards
-           all-colls "PROV%" {:pattern true}
-           [] "PROV%" {:pattern false}
-           [] "PROV%" {}
-           all-prov1-colls "%1" {:pattern true}
-           all-prov1-colls "P_OV1" {:pattern true}
-           [] "%Q%" {:pattern true}
-
            ;; Ignore case
            all-prov1-colls "pRoV1" {}
            all-prov1-colls "pRoV1" {:ignore-case true}
@@ -146,8 +138,8 @@
            [] "S%" {}
            [c1-p1 c1-p2] "%1" {:pattern true}
            [c1-p1 c1-p2] "_1" {:pattern true}
-           all-colls ["S%" "_1"] {:pattern true}
-           [c1-p1 c1-p2] ["X%" "_1"] {:pattern true}
+           all-colls "S%" {:pattern true}
+           [c1-p1 c1-p2] "_1" {:pattern true}
            [] "%Q%" {:pattern true}
 
            ;; Ignore case

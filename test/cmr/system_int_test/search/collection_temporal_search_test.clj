@@ -69,9 +69,6 @@
            ;; search by temporal_start
            [coll2 coll3 coll4 coll5 coll6 coll7 coll8] "2010-12-12T12:00:00Z" nil
 
-           ;; search by temporal_end
-           [coll1 coll2 coll3 coll4 coll6 coll7] nil "2010-12-12T12:00:00Z"
-
            ;; search by temporal_range
            [coll1] "2010-01-01T10:00:00Z" "2010-01-10T12:00:00Z"))))
 

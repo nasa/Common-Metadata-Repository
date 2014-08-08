@@ -102,10 +102,6 @@
            [coll2 coll3 coll6 coll7 coll10 coll11 coll16 coll17]
            "2000-02-15T00:00:00Z" "2002-03-15T00:00:00Z" 32 90
 
-           ;; search by end-day
-           [coll2 coll3 coll5 coll6 coll7 coll9 coll10 coll11 coll16 coll17]
-           "2000-02-15T00:00:00Z" "2002-03-15T00:00:00Z" nil 90
-
            ;; search by start-day
            [coll2 coll3 coll4 coll6 coll7 coll8 coll10 coll11 coll16 coll17 coll19]
            "2000-02-15T00:00:00Z" "2002-03-15T00:00:00Z" 32 nil

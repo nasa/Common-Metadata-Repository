@@ -220,10 +220,9 @@
    (get-search-failure-data
      (let [response (client/post (url/aql-url)
                                  {:accept "application/xml"
-                                  :content-type "application/x-www-form-urlencoded"
+                                  :content-type "application/xml"
                                   :body aql-string
                                   :query-params {:page-size 100}
-                                  :throw-exceptions false
                                   :connection-manager (url/conn-mgr)})]
        (parse-reference-response response)))))
 

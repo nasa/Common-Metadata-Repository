@@ -123,10 +123,6 @@
            [gran2 gran3 gran6 gran7 gran10 gran11 gran16 gran17]
            "2000-02-15T00:00:00Z" "2002-03-15T00:00:00Z" 32 90
 
-           ;; search by end-day
-           [gran2 gran3 gran5 gran6 gran7 gran9 gran10 gran11 gran16 gran17]
-           "2000-02-15T00:00:00Z" "2002-03-15T00:00:00Z" nil 90
-
            ;; search by start-day
            [gran2 gran3 gran4 gran6 gran7 gran8 gran10 gran11 gran16 gran17 gran19]
            "2000-02-15T00:00:00Z" "2002-03-15T00:00:00Z" 32 nil

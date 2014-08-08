@@ -100,8 +100,11 @@
 (defn refs-match?
   "Returns true if the references match the expected items"
   [items search-result]
-  (= (set (map item->ref items))
-     (set (:refs search-result))))
+  (let [result (= (set (map item->ref items))
+                  (set (:refs search-result)))]
+    (when (:status search-result)
+      (println (pr-str search-result)))
+    result))
 
 (defn refs-match-order?
   "Returns true if the references match the expected items in the order specified"
