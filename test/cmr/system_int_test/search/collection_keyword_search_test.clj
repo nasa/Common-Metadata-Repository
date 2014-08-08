@@ -71,4 +71,13 @@
            "Laser platform_SnA" [coll14 coll11 coll9 coll5 coll7]
            "La?er platform_SnA" [coll14 coll11 coll9 coll5 coll7]
            "L*er platfor*_SnA" [coll14 coll11 coll9 coll5 coll7]
-           "L?s* plat?o*_SnA" [coll14 coll11 coll9 coll5 coll7]))))
+           "L?s* plat?o*_SnA" [coll14 coll11 coll9 coll5 coll7]))
+    (testing "sorted search by keywords with sort keys."
+      (are [keyword-str sort-key items] (d/refs-match-order? items
+                                                              (search/find-refs
+                                                                :collection {:keyword keyword-str
+                                                                             :sort-key sort-key}))
+           "Laser platform_SnA" "-entry-title" [coll14 coll11 coll9 coll7 coll5]
+           "La?er platform_SnA" "score" [coll14 coll11 coll9 coll5 coll7]
+           "Laser platfor*_SnA" "+score" [coll5 coll7 coll9 coll11 coll14]
+           "L?s* plat?o*_SnA" "-score" [coll14 coll11 coll9 coll5 coll7]))))
