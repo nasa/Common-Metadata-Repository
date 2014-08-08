@@ -266,8 +266,17 @@
            (d/refs-match? items (search/find-refs :granule (make-catalog-rest-style-query min max)))
            0.2 nil [gran1 gran2 gran3]
            nil 0.7 [gran4 gran5]
-           -70.0 31.0 [gran1 gran2 gran4 gran5]))))
+           -70.0 31.0 [gran1 gran2 gran4 gran5]))
 
+    (testing "cloud cover granule search with aql"
+      (are [items cloud-cover]
+           (d/refs-match? items
+                          (search/find-refs-with-aql :granule
+                                                     [{:cloudCover cloud-cover}]))
+
+           [gran1 gran2 gran3] [0.2 nil]
+           [gran4 gran5] [nil 0.7]
+           [gran1 gran2 gran4 gran5] [-70.0 31.0]))))
 
 ;; exclude granules by echo_granule_id or concept_id (including parent concept_id) params
 (deftest exclude-granules-by-echo-granule-n-concept-ids

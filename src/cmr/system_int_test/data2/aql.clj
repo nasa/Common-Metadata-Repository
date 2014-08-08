@@ -48,6 +48,7 @@
    :temporal :temporal
    :equatorCrossingDate :date-range
    :equatorCrossingLongitude :range
+   :cloudCover :range
    :orbitNumber :orbit-number})
 
 (defn- condition->element-name
