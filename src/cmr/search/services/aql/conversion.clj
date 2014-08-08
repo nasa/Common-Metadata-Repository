@@ -2,7 +2,9 @@
   "Contains functions for parsing and converting aql to query conditions"
   (:require [clojure.string :as s]
             [clojure.data.xml :as x]
+            [clojure.set :as set]
             [cmr.common.xml :as cx]
+            [cmr.common.util :as u]
             [cmr.common.services.errors :as errors]
             [clj-time.core :as t]
             [cmr.search.models.query :as qm]
@@ -51,12 +53,9 @@
              :spatial {:name :spatial :type :spatial}
              :temporal {:name :temporal :type :temporal}
              :additionalAttributes {:name :attribute :type :attribute}
-             ;; orbit-number is not in UMM yet
-             :orbitNumber {:name :orbit-number :type :string}
-             ;; :equator-cross-longitude is not in UMM yet
-             :equatorCrossingLongitude {:name :equator-cross-longitude :type :num-range}
-             ;; :equator-cross-date is not in UMM yet
-             :equatorCrossingDate {:name :equator-cross-date :type :datetime}
+             :orbitNumber {:name :orbit-number :type :orbit-number}
+             :equatorCrossingLongitude {:name :equator-crossing-longitude :type :equator-crossing-longitude}
+             :equatorCrossingDate {:name :equator-crossing-date :type :equator-crossing-date}
              :TwoDCoordinateSystemName {:name :two-d-coordinate-system-name :type :string}}})
 
 (defn- elem-name->type
@@ -69,22 +68,44 @@
   [concept-type elem-name]
   (get-in aql-elem->converter-attrs [concept-type elem-name :name]))
 
+(defn- inheritance?
+  "Returns true if the given key of concept-type is inheritance"
+  [concept-type condition-key]
+  (let [key [concept-type condition-key]]
+    (get {[:granule :platform] true
+          [:granule :instrument] true
+          [:granule :sensor] true} key)))
+
+(defn- update-values [m f & args]
+  "update values in a map by applying the given function and args"
+  (reduce (fn [r [k v]] (assoc r k (apply f v args))) {} m))
+
+(defn- inheritance-condition
+  "Returns the inheritance condition for the given key value and options"
+  [key value case-sensitive? pattern?]
+  (let [ignore-case (when (= true case-sensitive?) false)
+        options (-> (u/remove-nil-keys {:ignore-case ignore-case :pattern pattern?})
+                    (update-values str))
+        options {key options}]
+    (p/parameter->condition :granule key value options)))
+
 (defn- string-value-elem->condition
   "Converts a string value element to query condition"
   ([concept-type key elem]
    (string-value-elem->condition concept-type key elem false))
   ([concept-type key elem pattern?]
    (let [value (first (:content elem))
+         value (if pattern? (-> value
+                                (s/replace #"([^\\])(%)" "$1*")
+                                (s/replace #"([^\\])(_)" "$1?")
+                                (s/replace #"^%(.*)" "*$1")
+                                (s/replace #"^_(.*)" "?$1"))
+                 value)
          case-insensitive (get-in elem [:attrs :caseInsensitive])
          case-sensitive? (if (and case-insensitive (= "N" (s/upper-case case-insensitive))) true false)
          case-sensitive? (if (some? (p/always-case-sensitive key)) true case-sensitive?)]
-     (if pattern?
-       (let [new-value (-> value
-                           (s/replace #"([^\\])(%)" "$1*")
-                           (s/replace #"([^\\])(_)" "$1?")
-                           (s/replace #"^%(.*)" "*$1")
-                           (s/replace #"^_(.*)" "?$1"))]
-         (qm/string-condition key new-value case-sensitive? pattern?))
+     (if (inheritance? concept-type key)
+       (inheritance-condition key value case-sensitive? pattern?)
        (qm/string-condition key value case-sensitive? pattern?)))))
 
 (defn- string-pattern-elem->condition
@@ -110,6 +131,15 @@
         stop-date (date-time-from-strings year month day hour minute sec)]
     [start-date stop-date]))
 
+(defn- element->num-range
+  [concept-type element]
+  (let [string-double-fn (fn [n] (when n (Double. n)))
+        range-val (-> (cx/attrs-at-path element [:range])
+                      (set/rename-keys {:lower :min-value :upper :max-value})
+                      (update-in [:min-value] string-double-fn)
+                      (update-in [:max-value] string-double-fn))]
+    range-val))
+
 (defmulti element->condition
   "Converts a aql element into a condition"
   (fn [concept-type elem]
@@ -117,16 +147,20 @@
 
 (defn string-element->condition
   ([concept-type element]
-   (let [condition-key (elem-name->condition-key concept-type (:tag element))]
-     (string-element->condition concept-type condition-key (first (:content element)))))
-  ([concept-type key element]
+   (let [condition-key (elem-name->condition-key concept-type (:tag element))
+         operator (get-in element [:attrs :operator])]
+     (string-element->condition concept-type condition-key operator (first (:content element)))))
+  ([concept-type key operator element]
    (let [elem-type (:tag element)]
      (case elem-type
        :value (string-value-elem->condition concept-type key element)
        :textPattern (string-pattern-elem->condition concept-type key element)
        ;; list and patternList can be processed the same way below
-       (qm/or-conds
-         (map (partial string-element->condition concept-type key) (:content element)))))))
+       (if (= "AND" operator)
+         (qm/and-conds
+           (map (partial string-element->condition concept-type key operator) (:content element)))
+         (qm/or-conds
+           (map (partial string-element->condition concept-type key operator) (:content element))))))))
 
 (defmethod element->condition :string
   [concept-type element]
@@ -147,12 +181,28 @@
        :start-date start-date
        :end-date stop-date})))
 
+(defmethod element->condition :equator-crossing-date
+  [concept-type element]
+  (let [[start-date stop-date] (parse-date-range-element element)]
+    (qm/map->EquatorCrossingDateCondition {:start-date start-date
+                                           :end-date stop-date})))
+
 (defmethod element->condition :boolean
   [concept-type element]
   (let [condition-key (elem-name->condition-key concept-type (:tag element))
         value (get-in element [:attrs :value] "Y")]
     (qm/map->BooleanCondition {:field condition-key
                                :value (= "Y" value)})))
+
+(defmethod element->condition :orbit-number
+  [concept-type element]
+  (if-let [value (cx/double-at-path element [:value])]
+    (qm/map->OrbitNumberValueCondition {:value value})
+    (qm/map->OrbitNumberRangeCondition (element->num-range concept-type element))))
+
+(defmethod element->condition :equator-crossing-longitude
+  [concept-type element]
+  (qm/map->EquatorCrossingLongitudeCondition (element->num-range concept-type element)))
 
 (def aql-query-type->concept-type
   "Mapping of AQL query type to search concept type"
