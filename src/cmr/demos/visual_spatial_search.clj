@@ -180,37 +180,38 @@
 
         ;search-area (assoc (p/point 0 0) :options {:id "point"})
 
-        search-area (assoc (l/ords->line-string :geodetic -0.37 -14.07 4.75 1.27 25.13 -15.51) :options {:id "line"})
+        search-area (assoc (l/ords->line-string :geodetic 0 0 10 10) :options {:id "line"})
 
 
         ]
     (visual-interactive-search [
-                                touches-sp
-                                across-am-br
-                                touches-np
-                                normal-br1
-                                normal-br2
+                                ; touches-sp
+                                ; across-am-br
+                                ; touches-np
+                                ; normal-br1
+                                ; normal-br2
 
                                 normal-geod-line
                                 normal-cart-line
 
-                                wide-north
-                                wide-south
-                                across-am-poly
-                                on-np
-                                on-sp
-                                normal-poly
-                                polygon-with-holes
+                                ; wide-north
+                                ; wide-south
+                                ; across-am-poly
+                                ; on-np
+                                ; on-sp
+                                ; normal-poly
+                                ; polygon-with-holes
                                 wide-north-cart
-                                wide-south-cart
-                                very-wide-cart
-                                very-tall-cart
-                                normal-poly-cart
+                                ; wide-south-cart
+                                ; very-wide-cart
+                                ; very-tall-cart
+                                ; normal-poly-cart
                                 polygon-with-holes-cart
-                                north-pole
-                                south-pole
-                                normal-point
-                                am-point
+
+                                ; north-pole
+                                ; south-pole
+                                ; normal-point
+                                ; am-point
                                 ] search-area))
 
 
