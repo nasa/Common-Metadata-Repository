@@ -73,4 +73,16 @@
     (testing "non-numeric value in catalog rest style range"
       (let [{:keys [status errors]} (search/find-refs :granule {"equator-crossing-longitude[maxValue]" "X"})]
         (is (= 422 status))
-        (is (= errors [(cm/invalid-msg java.lang.Double "X")]))))))
+        (is (= errors [(cm/invalid-msg java.lang.Double "X")]))))
+
+    (testing "search by orbit equator crossing with aql"
+      (are [items crossing-range]
+           (d/refs-match? items
+                          (search/find-refs-with-aql :granule
+                                                     [{:equatorCrossingLongitude crossing-range}]))
+
+           [] [10 20]
+           [gran2 gran3] [10 150.2]
+           [gran3 gran4 gran8] [130 -170]
+           [gran3 gran4] [120.5 nil]
+           [gran1 gran2 gran5 gran6 gran7 gran8] [nil 95.5]))))

@@ -39,7 +39,7 @@
   "Returns the xml element for the given range"
   [[min-val max-val]]
   (let [options (-> {:lower min-val :upper max-val}
-                     u/remove-nil-keys)]
+                    u/remove-nil-keys)]
     (x/element :range options)))
 
 (def element-key-type-mapping
@@ -47,6 +47,7 @@
   {:onlineOnly :boolean
    :temporal :temporal
    :equatorCrossingDate :date-range
+   :equatorCrossingLongitude :range
    :orbitNumber :orbit-number})
 
 (defn- condition->element-name
@@ -127,6 +128,13 @@
                (if (sequential? value)
                  (generate-range-element value)
                  (x/element :value {} (str value))))))
+
+(defmethod generate-element :range
+  [condition]
+  (let [elem-key (condition->element-name condition)
+        value (elem-key condition)]
+    (x/element elem-key {}
+               (generate-range-element value))))
 
 (defn- generate-data-center
   "Returns the dataCenter element for the data center condition"
