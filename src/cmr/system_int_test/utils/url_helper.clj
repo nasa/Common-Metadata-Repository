@@ -48,7 +48,7 @@
 
 (defn aql-url
   []
-  (format "http://localhost:%s/concepts/search" (transmit-config/search-port)))
+  (format "http://localhost:%s/concepts/search" 4003 #_(transmit-config/search-port)))
 
 (defn search-reset-url
   "Clear cache in search app. Only development team to use this functionality."

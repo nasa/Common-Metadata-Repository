@@ -56,8 +56,8 @@
            [coll1 coll2 coll4] ["platform_SnA" "platform_Sn A"] {}
            [coll6 coll7] ["platform_x"] {:ignore-case true}
            [coll7] ["platform_x"] {:ignore-case false}
-           [coll1 coll2 coll3] ["platform_Sn %"] {:pattern true}
-           [coll4 coll5] ["platform_Sn_"] {:pattern true}
+           [coll1 coll2 coll3] "platform_Sn %" {:pattern true}
+           [coll4 coll5] "platform_Sn_" {:pattern true}
            [coll1 coll2 coll3] ["platform_Sn B" "platform_Sn A"] {:or true}
            [coll2] ["platform_Sn B" "platform_Sn A"] {:and true}))))
 
@@ -116,8 +116,8 @@
            [coll1 coll2 coll4 coll6] ["instrument_SnA" "instrument_Sn A"] {}
            [coll7 coll8] ["instrument_x"] {:ignore-case true}
            [coll8] ["instrument_x"] {:ignore-case false}
-           [coll1 coll2 coll3 coll6] ["instrument_Sn %"] {:pattern true}
-           [coll4 coll5] ["instrument_Sn_"] {:pattern true}
+           [coll1 coll2 coll3 coll6] "instrument_Sn %" {:pattern true}
+           [coll4 coll5] "instrument_Sn_" {:pattern true}
            [coll1 coll2 coll3 coll6] ["instrument_Sn B" "instrument_Sn A"] {:or true}
            [coll2 coll6] ["instrument_Sn B" "instrument_Sn A"] {:and true}))))
 
@@ -185,8 +185,8 @@
            [coll1 coll2 coll4 coll6 coll7] ["sensor_SnA" "sensor_Sn A"] {}
            [coll8 coll9] ["sensor_x"] {:ignore-case true}
            [coll8] ["sensor_x"] {:ignore-case false}
-           [coll1 coll2 coll3 coll6 coll7] ["sensor_Sn %"] {:pattern true}
-           [coll4 coll5] ["sensor_Sn_"] {:pattern true}
+           [coll1 coll2 coll3 coll6 coll7] "sensor_Sn %" {:pattern true}
+           [coll4 coll5] "sensor_Sn_" {:pattern true}
            [coll1 coll2 coll3 coll6 coll7] ["sensor_Sn B" "sensor_Sn A"] {:or true}
            [coll2 coll6 coll7] ["sensor_Sn B" "sensor_Sn A"] {:and true}))))
 

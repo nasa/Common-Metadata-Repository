@@ -118,8 +118,9 @@
   (let [elem-key (condition->element-name condition)
         {:keys [start-date stop-date]} (elem-key condition)]
     (x/element elem-key {}
-               (generate-date-element :startDate start-date)
-               (generate-date-element :stopDate stop-date))))
+               (x/element "dateRange" {}
+                          (generate-date-element :startDate start-date)
+                          (generate-date-element :stopDate stop-date)))))
 
 (defmethod generate-element :orbit-number
   [condition]
@@ -156,6 +157,8 @@
                  (x/element :for {:value (format "%ss" (name concept-type))})
                  (generate-data-center data-center-condition)
                  (x/element :where {}
-                            (x/element condition-elem-name {}
-                                       (map generate-element conditions)))))))
+                            (map (fn [condition]
+                                   (x/element condition-elem-name {}
+                                              (generate-element condition)))
+                                 conditions))))))
 
