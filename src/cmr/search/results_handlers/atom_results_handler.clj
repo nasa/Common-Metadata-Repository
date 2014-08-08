@@ -237,7 +237,7 @@
 (defn- granule-atom-reference->xml-element
   "Converts a granule search result atom reference into an XML element"
   [reference]
-  (let [{:keys [id size title updated dataset-id producer-gran-id size original-format
+  (let [{:keys [id score title updated dataset-id producer-gran-id size original-format
                 data-center start-date end-date atom-links online-access-flag browse-flag
                 day-night cloud-cover coordinate-system shapes]} reference]
     (x/element :entry {}
@@ -296,7 +296,8 @@
         header-attributes (if (:score (first items))
                             (merge header-attributes
                                    {:xmlns:relevance
-                                    "http://a9.com/-/opensearch/extensions/relevance/1.0/"}))]
+                                    "http://a9.com/-/opensearch/extensions/relevance/1.0/"})
+                            header-attributes)]
     (xml-fn
       (x/element :feed header-attributes
                  (x/element :updated {} (str (time/now)))
