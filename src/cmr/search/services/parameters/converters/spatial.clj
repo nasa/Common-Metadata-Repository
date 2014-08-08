@@ -26,3 +26,7 @@
 (defmethod p/parameter->condition :point
   [concept-type param value options]
   (url-value->spatial-condition :point value))
+
+(defmethod p/parameter->condition :line
+  [concept-type param value options]
+  (url-value->spatial-condition :line value))
