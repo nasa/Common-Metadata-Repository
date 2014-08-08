@@ -4,6 +4,7 @@
             [clojure.data.xml :as x]
             [clojure.set :as set]
             [cmr.common.xml :as cx]
+            [cmr.common.util :as u]
             [cmr.common.services.errors :as errors]
             [clj-time.core :as t]
             [cmr.search.models.query :as qm]
@@ -52,11 +53,8 @@
              :spatial {:name :spatial :type :spatial}
              :temporal {:name :temporal :type :temporal}
              :additionalAttributes {:name :attribute :type :attribute}
-             ;; orbit-number is not in UMM yet
              :orbitNumber {:name :orbit-number :type :orbit-number}
-             ;; :equator-cross-longitude is not in UMM yet
-             :equatorCrossingLongitude {:name :equator-cross-longitude :type :num-range}
-             ;; :equator-cross-date is not in UMM yet
+             :equatorCrossingLongitude {:name :equator-crossing-longitude :type :num-range}
              :equatorCrossingDate {:name :equator-crossing-date :type :equator-crossing-date}
              :TwoDCoordinateSystemName {:name :two-d-coordinate-system-name :type :string}}})
 
@@ -70,22 +68,44 @@
   [concept-type elem-name]
   (get-in aql-elem->converter-attrs [concept-type elem-name :name]))
 
+(defn- inheritance?
+  "Returns true if the given key of concept-type is inheritance"
+  [concept-type condition-key]
+  (let [key [concept-type condition-key]]
+    (get {[:granule :platform] true
+          [:granule :instrument] true
+          [:granule :sensor] true} key)))
+
+(defn- update-values [m f & args]
+  "update values in a map by applying the given function and args"
+ (reduce (fn [r [k v]] (assoc r k (apply f v args))) {} m))
+
+(defn- inheritance-condition
+  "Returns the inheritance condition for the given key value and options"
+  [key value case-sensitive? pattern?]
+  (let [ignore-case (when (= true case-sensitive?) false)
+        options (-> (u/remove-nil-keys {:ignore-case ignore-case :pattern pattern?})
+                    (update-values str))
+        options {key options}]
+    (p/parameter->condition :granule key value options)))
+
 (defn- string-value-elem->condition
   "Converts a string value element to query condition"
   ([concept-type key elem]
    (string-value-elem->condition concept-type key elem false))
   ([concept-type key elem pattern?]
    (let [value (first (:content elem))
+         value (if pattern? (-> value
+                                (s/replace #"([^\\])(%)" "$1*")
+                                (s/replace #"([^\\])(_)" "$1?")
+                                (s/replace #"^%(.*)" "*$1")
+                                (s/replace #"^_(.*)" "?$1"))
+                 value)
          case-insensitive (get-in elem [:attrs :caseInsensitive])
          case-sensitive? (if (and case-insensitive (= "N" (s/upper-case case-insensitive))) true false)
          case-sensitive? (if (some? (p/always-case-sensitive key)) true case-sensitive?)]
-     (if pattern?
-       (let [new-value (-> value
-                           (s/replace #"([^\\])(%)" "$1*")
-                           (s/replace #"([^\\])(_)" "$1?")
-                           (s/replace #"^%(.*)" "*$1")
-                           (s/replace #"^_(.*)" "?$1"))]
-         (qm/string-condition key new-value case-sensitive? pattern?))
+     (if (inheritance? concept-type key)
+       (inheritance-condition key value case-sensitive? pattern?)
        (qm/string-condition key value case-sensitive? pattern?)))))
 
 (defn- string-pattern-elem->condition
