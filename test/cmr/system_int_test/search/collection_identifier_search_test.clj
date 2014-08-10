@@ -272,7 +272,7 @@
            [] "ET%" {:pattern false}
            [] "ET%" {}
            [c1-p1 c1-p2] "%1" {:pattern true}
-           [c1-p1 c1-p2] "?T1" {:pattern true}
+           [c1-p1 c1-p2] "_T1" {:pattern true}
            [] "%Q%" {:pattern true}
 
            ;; Ignore case
@@ -342,7 +342,7 @@
            all-prov2-colls "%B" {:pattern true}
            [] "B%" {:pattern false}
            [] "B%" {}
-           all-prov2-colls "?B" {:pattern true}
+           all-prov2-colls "_B" {:pattern true}
            [] "%Q%" {:pattern true}
 
            ;; Ignore case
@@ -505,7 +505,7 @@
            [coll1 coll2 coll3 coll4] "S%" {:pattern true}
            [] "S%" {:pattern false}
            [] "S%" {}
-           [coll2 coll3] "S?" {:pattern true}
+           [coll2 coll3] "S_" {:pattern true}
            [] "%Q%" {:pattern true}
 
            ;; Ignore case

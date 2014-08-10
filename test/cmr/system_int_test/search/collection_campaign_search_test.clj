@@ -68,7 +68,7 @@
            [] "E%" {}
            [coll3 coll4 coll5 coll6] "%I" {:pattern true}
            [coll5 coll6] "EP_" {:pattern true}
-           [coll3 coll4 coll5 coll6] "E?%" {:pattern true}
+           [coll3 coll4 coll5 coll6] "E_%" {:pattern true}
            [] "%Q%" {:pattern true}
 
            ;; Ignore case

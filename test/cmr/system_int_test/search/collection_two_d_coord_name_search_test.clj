@@ -57,7 +57,7 @@
            [coll1 coll4] ["one CALIPSO" "three Bravo"] {}
 
            ;; search by two d coordinate system name - wildcards
-           [coll3 coll4] "three *" {:pattern true}
+           [coll3 coll4] "three %" {:pattern true}
 
            ;; search by two d coordinate system name - no match
            [] "NO MATCH" {}

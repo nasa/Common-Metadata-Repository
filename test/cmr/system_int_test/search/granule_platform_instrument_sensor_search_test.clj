@@ -177,8 +177,8 @@
            [gran9 gran10] ["instrument-x"] {:ignore-case true}
            [gran9] ["instrument-x"] {:ignore-case false}
            ;; search by instrument, wildcards
-           [gran1 gran2 gran3 gran6] "instrument-Sn *" {:pattern true}
-           [gran4 gran5] "instrument-Sn?" {:pattern true}
+           [gran1 gran2 gran3 gran6] "instrument-Sn %" {:pattern true}
+           [gran4 gran5] "instrument-Sn_" {:pattern true}
            ;; search by instrument, options :or
            [gran1 gran2 gran3 gran6] ["instrument-Sn b" "instrument-Sn A"] {:or true}
            ;; search by instrument, options :and
@@ -274,8 +274,8 @@
            [gran10 gran11] ["sensor-x"] {:ignore-case true}
            [gran10] ["sensor-x"] {:ignore-case false}
            ;; search by sensor, wildcards
-           [gran1 gran2 gran3 gran6 gran7] "sensor-Sn *" {:pattern true}
-           [gran4 gran5] "sensor-Sn?" {:pattern true}
+           [gran1 gran2 gran3 gran6 gran7] "sensor-Sn %" {:pattern true}
+           [gran4 gran5] "sensor-Sn_" {:pattern true}
            ;; search by sensor, options :or
            [gran1 gran2 gran3 gran6 gran7] ["sensor-Sn b" "sensor-Sn A"] {:or true}
            ;; search by sensor, options :and
