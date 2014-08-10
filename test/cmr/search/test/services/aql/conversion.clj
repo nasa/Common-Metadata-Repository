@@ -4,13 +4,36 @@
             [cmr.common.xml :as cx]
             [cmr.common.date-time-parser :as dt-parser]
             [cmr.search.services.aql.conversion :as a]
-            [cmr.search.models.query :as q]))
+            [cmr.search.models.query :as q]
+            [cmr.search.services.aql.conversion :as c]))
 
 (defn- aql-string-elem->condition
   [aql-snippet]
   (let [aql (format "<query><dataCenterId>%s</dataCenterId></query>" aql-snippet)
         xml-struct (x/parse-str aql)]
     (a/element->condition :collection (cx/element-at-path xml-struct [:dataCenterId]))))
+
+(deftest aql-pattern-conversion
+  (are [aql expected]
+       (= expected (c/aql-pattern->cmr-pattern aql))
+       "" ""
+       "normal" "normal"
+       "_b_c_" "?b?c?"
+       "%b%c%" "*b*c*"
+       "%" "*"
+
+       ;; escaped
+       "ab\\_cd" "ab_cd"
+       "ab\\%cd" "ab%cd"
+
+       ;; cmr patterns in aql strings
+       "*a*b*" "\\*a\\*b\\*"
+       "*" "\\*"
+       "?a?b?" "\\?a\\?b\\?"
+       "?" "\\?"
+
+       ;; Everything combined together
+       "*?%\\%_\\_\\\\" "\\*\\?*%?_\\\\"))
 
 (deftest aql-string-conversion-test
   (testing "string aql"
@@ -28,18 +51,18 @@
          ["PROV1" true false] "<value caseInsensitive=\"n\">PROV1</value>"
 
          ;; textPattern
-         ["PROV*" false true] "<textPattern>PROV*</textPattern>"
+         ["PROV\\*" false true] "<textPattern>PROV*</textPattern>"
          ["P*" false true] "<textPattern>P%</textPattern>"
          ["*1" false true] "<textPattern>%1</textPattern>"
          ["?1" false true] "<textPattern>_1</textPattern>"
          ["PROV?" false true] "<textPattern>PROV_</textPattern>"
-         ["P\\%\\_R*V?" false true] "<textPattern>P\\%\\_R%V_</textPattern>"
+         ["P%_R*V?" false true] "<textPattern>P\\%\\_R%V_</textPattern>"
 
          ;; textPattern with caseInsensitive attribute
-         ["PROV?" false true] "<textPattern caseInsensitive=\"Y\">PROV?</textPattern>"
-         ["PROV?" false true] "<textPattern caseInsensitive=\"y\">PROV?</textPattern>"
-         ["PROV?" true true] "<textPattern caseInsensitive=\"N\">PROV?</textPattern>"
-         ["PROV?" true true] "<textPattern caseInsensitive=\"n\">PROV?</textPattern>")
+         ["PROV\\?" false true] "<textPattern caseInsensitive=\"Y\">PROV?</textPattern>"
+         ["PROV\\?" false true] "<textPattern caseInsensitive=\"y\">PROV?</textPattern>"
+         ["PROV\\?" true true] "<textPattern caseInsensitive=\"N\">PROV?</textPattern>"
+         ["PROV\\?" true true] "<textPattern caseInsensitive=\"n\">PROV?</textPattern>")
 
     (are [condition aql-snippet]
          (= condition

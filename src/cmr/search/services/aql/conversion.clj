@@ -71,28 +71,50 @@
   (get-in aql-elem->converter-attrs [concept-type elem-name :name]))
 
 (defn- inherited-condition?
-  "Returns true if the given key of concept-type is inheritance"
+  "Returns true if the concept type and condition key combination should result in a search that
+  will find matches in an item or it's parent. Some granule conditions will match a granule if its
+  parent collection contain the value"
   [concept-type condition-key]
   (let [key [concept-type condition-key]]
     (get {[:granule :platform] true
           [:granule :instrument] true
           [:granule :sensor] true} key)))
 
-(defn- update-values [m f & args]
+(defn- update-map-values [m f & args]
   "update values in a map by applying the given function and args"
-  (reduce (fn [r [k v]]
-            (assoc r k (apply f v args)))
-          {}
-          m))
+  (into {} (for [[k v] m] [k (apply f v args)])))
 
 (defn- inheritance-condition
   "Returns the inheritance condition for the given key value and options"
   [key value case-sensitive? pattern?]
   (let [ignore-case (when (= true case-sensitive?) false)
         options (-> (u/remove-nil-keys {:ignore-case ignore-case :pattern pattern?})
-                    (update-values str))
+                    (update-map-values str))
         options {key options}]
     (p/parameter->condition :granule key value options)))
+
+(defn aql-pattern->cmr-pattern
+  "Converts an AQL pattern of % for 0 to many characters and . for 1 character to the CMR style
+  pattern using * and ?. It handles escaping characters as well."
+  [value]
+  (-> value
+      ;; Escape * and ?
+      (s/replace "*" "\\*")
+      (s/replace "?" "\\?")
+
+      ;; Replace a non-escaped percent with *
+      (s/replace #"([^\\\\])(%)" "$1*")
+      ;; Replace a percent at the beginning of a string with *
+      (s/replace #"^%" "*")
+      ;; Replace any escaped percents with just percents
+      (s/replace "\\%" "%")
+
+      ;; Replace a non-escaped _ with ?
+      (s/replace #"([^\\])(_)" "$1?")
+      ;; Replace a _ at the beginning of a string with ?
+      (s/replace #"^_" "?")
+      ;; Replace any escaped _ with just _
+      (s/replace "\\_" "_")))
 
 (defn- string-value-elem->condition
   "Converts a string value element to query condition"
@@ -100,13 +122,7 @@
    (string-value-elem->condition concept-type key elem false))
   ([concept-type key elem pattern?]
    (let [value (first (:content elem))
-         value (if pattern?
-                 (-> value
-                     (s/replace #"([^\\])(%)" "$1*")
-                     (s/replace #"([^\\])(_)" "$1?")
-                     (s/replace #"^%(.*)" "*$1")
-                     (s/replace #"^_(.*)" "?$1"))
-                 value)
+         value (if pattern? (aql-pattern->cmr-pattern value) value)
          case-insensitive (get-in elem [:attrs :caseInsensitive])
          case-sensitive? (if (and case-insensitive (= "N" (s/upper-case case-insensitive))) true false)
          case-sensitive? (if (some? (p/always-case-sensitive key)) true case-sensitive?)]
