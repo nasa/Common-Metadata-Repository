@@ -4,7 +4,8 @@
             [cmr.common.config :as config]
             [cmr.transmit.config :as transmit-config]
             [cmr.elastic-utils.config :as es-config]
-            [clj-http.conn-mgr :as conn-mgr]))
+            [clj-http.conn-mgr :as conn-mgr]
+            [ring.util.codec :as codec]))
 
 (def search-public-protocol (config/config-value :search-public-protocol "http"))
 (def search-public-host (config/config-value :search-public-host "localhost"))
@@ -38,9 +39,9 @@
   [provider-id type native-id]
   (format "http://localhost:%s/providers/%s/%ss/%s"
           (transmit-config/ingest-port)
-          provider-id
+          (codec/url-encode provider-id)
           (name type)
-          native-id))
+          (codec/url-encode native-id)))
 
 (defn search-url
   [type]

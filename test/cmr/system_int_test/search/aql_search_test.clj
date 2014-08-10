@@ -56,6 +56,50 @@
                   </where>
                   </query>"))))))
 
+(deftest aql-pattern-search-test
+  (let [make-coll (fn [n entry-title]
+                    (d/ingest "PROV1" (dc/collection {:short-name entry-title
+                                                      :entry-title (str "coll" n)})))
+        coll1 (make-coll 1 "SHORT")
+        coll2 (make-coll 2 "SHO?RT")
+        coll3 (make-coll 3 "SHO*RT")
+        coll4 (make-coll 4 "SHO%RT")
+        coll5 (make-coll 5 "SHO_RT")
+        coll6 (make-coll 6 "SHO\\RT")
+        coll7 (make-coll 7 "*SHORT")
+        coll8 (make-coll 8 "?SHORT")
+        coll9 (make-coll 9 "%SHORT")
+        coll10 (make-coll 10 "_SHORT")
+        coll11 (make-coll 11 "\\SHORT")
+        all-colls [coll1 coll2 coll3 coll4 coll5 coll6 coll7 coll8 coll9 coll10 coll11]]
+    (index/refresh-elastic-index)
+    (are [search-str items]
+         (let [refs (search/find-refs-with-aql :collection [{:shortName search-str :pattern true}])
+               result (d/refs-match? items refs)]
+           (when-not result
+             (println "Expected:" (pr-str (map :entry-title items)))
+             (println "Actual:" (pr-str (map :name (:refs refs)))))
+           result)
+         ;; Exact matches
+         "SHORT" [coll1]
+         "SHO?RT" [coll2]
+         "SHO*RT" [coll3]
+         "SHO\\%RT" [coll4]
+         "SHO\\_RT" [coll5]
+         "SHO\\\\RT" [coll6]
+         "*SHORT" [coll7]
+         "?SHORT" [coll8]
+         "\\%SHORT" [coll9]
+         "\\_SHORT" [coll10]
+         "\\\\SHORT" [coll11]
+
+         ;; Using patterns
+         "%" all-colls
+         "SHO_RT" [coll2 coll3 coll4 coll5 coll6]
+         "SH%RT" [coll1 coll2 coll3 coll4 coll5 coll6]
+         "S%R_" [coll1 coll2 coll3 coll4 coll5 coll6])))
+
+
 (deftest aql-search-with-multiple-conditions
   (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset1"
                                                 :short-name "SHORT"}))
