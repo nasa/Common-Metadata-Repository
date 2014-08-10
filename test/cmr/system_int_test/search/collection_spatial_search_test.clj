@@ -128,7 +128,7 @@
     (testing "point searches"
       (are [lon_lat items]
            (let [found (search/find-refs :collection {:point (codec/url-encode (apply p/point lon_lat))
-                                                   :page-size 50})
+                                                      :page-size 50})
                  matches? (d/refs-match? items found)]
              (when-not matches?
                (println "Expected:" (->> items (map :entry-title) sort pr-str))
@@ -177,7 +177,7 @@
     (testing "bounding rectangle searches"
       (are [wnes items]
            (let [found (search/find-refs :collection {:bounding-box (codec/url-encode (apply m/mbr wnes))
-                                                   :page-size 50})
+                                                      :page-size 50})
                  matches? (d/refs-match? items found)]
              (when-not matches?
                (println "Expected:" (->> items (map :entry-title) sort pr-str))
@@ -294,6 +294,23 @@
            [whole-world polygon-with-holes-cart normal-poly-cart]
            ;; completely covers the polygon with holes
            [-5.95,-23.41,12.75,-23.69,11.11,-10.38,-6.62,-10.89,-5.95,-23.41]
-           [whole-world polygon-with-holes-cart wide-south-cart normal-poly-cart]))))
+           [whole-world polygon-with-holes-cart wide-south-cart normal-poly-cart]))
+
+    (testing "AQL spatial search"
+      (are [type ords items]
+           (let [refs (search/find-refs-with-aql :collection [{type ords}])
+                 result (d/refs-match? items refs)]
+             (when-not result
+               (println "Expected:" (pr-str (map :entry-title items)))
+               (println "Actual:" (pr-str (map :name (:refs refs)))))
+             result)
+           :polygon [20.16,-13.7,21.64,12.43,12.47,11.84,-22.57,7.06,20.16,-13.7]
+           [whole-world normal-poly normal-brs polygon-with-holes normal-line normal-line-cart]
+
+           :box [23.59,-4,25.56,-15.47] [whole-world normal-line-cart]
+           :point [17.73 2.21] [whole-world normal-brs]
+           :line [-0.37,-14.07,4.75,1.27,25.13,-15.51]
+           [whole-world polygon-with-holes polygon-with-holes-cart normal-line-cart normal-line
+            normal-poly-cart]))))
 
 

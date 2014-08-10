@@ -49,7 +49,11 @@
    :equatorCrossingDate :date-range
    :equatorCrossingLongitude :range
    :cloudCover :range
-   :orbitNumber :orbit-number})
+   :orbitNumber :orbit-number
+   :polygon :polygon
+   :box :box
+   :line :line
+   :point :point})
 
 (defn- condition->element-name
   "Returns the AQL element name of the given condition"
@@ -93,6 +97,43 @@
                  ;; a single value
                  (let [value (if (sequential? elem-value) (first elem-value) elem-value)]
                    (generate-value-element ignore-case pattern value))))))
+
+(defn point-elem
+  "Creates a AQL point element from a lon lat tuple"
+  [[lon lat]]
+  (x/element :IIMSPoint {:long lon :lat lat}))
+
+(defmethod generate-element :polygon
+  [condition]
+  (let [ords (:polygon condition)
+        point-pairs (partition 2 ords)]
+    (x/element :spatial {}
+               (x/element :IIMSPolygon {}
+                          (x/element :IIMSLRing {}
+                                     (map point-elem point-pairs))))))
+
+(defmethod generate-element :line
+  [condition]
+  (let [ords (:line condition)
+        point-pairs (partition 2 ords)]
+    (x/element :spatial {}
+               (x/element :IIMSLine {}
+                          (map point-elem point-pairs)))))
+
+(defmethod generate-element :box
+  [condition]
+  (let [[w n e s] (:box condition)]
+    (x/element :spatial {}
+               (x/element :IIMSBox {}
+                          ;; lower left
+                          (point-elem [w s])
+                          ;; upper right
+                          (point-elem [e n])))))
+
+(defmethod generate-element :point
+  [condition]
+  (let [point-pair (:point condition)]
+    (x/element :spatial {} (point-elem point-pair))))
 
 (defmethod generate-element :boolean
   [condition]
