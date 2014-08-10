@@ -29,6 +29,7 @@
             ;; aql
             [cmr.search.services.aql.conversion :as a]
             [cmr.search.services.aql.converters.temporal]
+            [cmr.search.services.aql.converters.spatial]
 
             ;; Validation
             [cmr.search.validators.validation :as v]

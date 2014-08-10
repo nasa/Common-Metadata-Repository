@@ -1,6 +1,6 @@
 (ns cmr.search.services.aql.conversion
   "Contains functions for parsing and converting aql to query conditions"
-  (:require [clojure.string :as s]
+  (:require [clojure.string :as str]
             [clojure.data.xml :as x]
             [clojure.java.io :as io]
             [clojure.set :as set]
@@ -10,7 +10,7 @@
             [cmr.search.services.messages.common-messages :as msg]
             [clj-time.core :as t]
             [cmr.search.models.query :as qm]
-            [cmr.search.services.parameters.conversion :as p]))
+            [cmr.search.services.parameters.conversion :as pc]))
 
 (def aql-elem->converter-attrs
   "A mapping of aql element names to query condition types based on concept-type"
@@ -26,14 +26,13 @@
                 :sensorName {:name :sensor :type :string}
                 :sourceName {:name :platform :type :string}
                 :instrumentShortName {:name :instrument :type :string}
-                ;; TODO spatial
-                :spatial {:name :spatial :type :spatial}
                 :temporal {:name :temporal :type :temporal}
                 :difEntryId {:name :dif-entry-id :type :dif-entry-id}
                 :entry-id {:name :entry-id :type :string}
                 :associated-difs {:name :associated-difs :type :string}
                 :scienceKeywords {:name :science-keywords :type :string}
-                :TwoDCoordinateSystemName {:name :two-d-coordinate-system-name :type :string}}
+                :TwoDCoordinateSystemName {:name :two-d-coordinate-system-name :type :string}
+                :spatial {:name :spatial :type :spatial}}
    :granule {:dataCenterId {:name :provider-id :type :collection-query}
              :GranuleUR {:name :granule-ur :type :string}
              :collectionShortName {:name :short-name :type :collection-query}
@@ -51,7 +50,6 @@
              :sensorName {:name :sensor :type :string}
              :sourceName {:name :platform :type :string}
              :instrumentShortName {:name :instrument :type :string}
-             ;; TODO spatial
              :spatial {:name :spatial :type :spatial}
              :temporal {:name :temporal :type :temporal}
              :additionalAttributes {:name :attribute :type :attribute}
@@ -91,7 +89,7 @@
         options (-> (u/remove-nil-keys {:ignore-case ignore-case :pattern pattern?})
                     (update-map-values str))
         options {key options}]
-    (p/parameter->condition :granule key value options)))
+    (pc/parameter->condition :granule key value options)))
 
 (defn aql-pattern->cmr-pattern
   "Converts an AQL pattern of % for 0 to many characters and . for 1 character to the CMR style
@@ -99,22 +97,22 @@
   [value]
   (-> value
       ;; Escape * and ?
-      (s/replace "*" "\\*")
-      (s/replace "?" "\\?")
+      (str/replace "*" "\\*")
+      (str/replace "?" "\\?")
 
       ;; Replace a non-escaped percent with *
-      (s/replace #"([^\\\\])(%)" "$1*")
+      (str/replace #"([^\\\\])(%)" "$1*")
       ;; Replace a percent at the beginning of a string with *
-      (s/replace #"^%" "*")
+      (str/replace #"^%" "*")
       ;; Replace any escaped percents with just percents
-      (s/replace "\\%" "%")
+      (str/replace "\\%" "%")
 
       ;; Replace a non-escaped _ with ?
-      (s/replace #"([^\\])(_)" "$1?")
+      (str/replace #"([^\\])(_)" "$1?")
       ;; Replace a _ at the beginning of a string with ?
-      (s/replace #"^_" "?")
+      (str/replace #"^_" "?")
       ;; Replace any escaped _ with just _
-      (s/replace "\\_" "_")))
+      (str/replace "\\_" "_")))
 
 (defn- string-value-elem->condition
   "Converts a string value element to query condition"
@@ -124,8 +122,8 @@
    (let [value (first (:content elem))
          value (if pattern? (aql-pattern->cmr-pattern value) value)
          case-insensitive (get-in elem [:attrs :caseInsensitive])
-         case-sensitive? (if (and case-insensitive (= "N" (s/upper-case case-insensitive))) true false)
-         case-sensitive? (if (some? (p/always-case-sensitive key)) true case-sensitive?)]
+         case-sensitive? (if (and case-insensitive (= "N" (str/upper-case case-insensitive))) true false)
+         case-sensitive? (if (some? (pc/always-case-sensitive key)) true case-sensitive?)]
      (if (inherited-condition? concept-type key)
        (inheritance-condition key value case-sensitive? pattern?)
        (qm/string-condition key value case-sensitive? pattern?)))))
@@ -183,10 +181,6 @@
            (map (partial string-element->condition concept-type key operator) (:content element)))
          (qm/or-conds
            (map (partial string-element->condition concept-type key operator) (:content element))))))))
-
-(defmethod element->condition :string
-  [concept-type element]
-  (string-element->condition concept-type element))
 
 (defmethod element->condition :dif-entry-id
   [concept-type element]
