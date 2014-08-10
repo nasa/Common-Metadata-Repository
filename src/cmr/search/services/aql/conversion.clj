@@ -182,6 +182,10 @@
          (qm/or-conds
            (map (partial string-element->condition concept-type key operator) (:content element))))))))
 
+(defmethod element->condition :string
+  [concept-type element]
+  (string-element->condition concept-type element))
+
 (defmethod element->condition :dif-entry-id
   [concept-type element]
   (qm/or-conds
@@ -196,6 +200,11 @@
       {:field condition-key
        :start-date start-date
        :end-date stop-date})))
+
+(defmethod element->condition :collection-query
+  [concept-type element]
+  (let [condition (element->condition :collection element)]
+    (qm/->CollectionQueryCondition condition)))
 
 (defmethod element->condition :equator-crossing-date
   [concept-type element]
