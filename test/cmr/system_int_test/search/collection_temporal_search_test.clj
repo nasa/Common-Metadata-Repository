@@ -31,7 +31,11 @@
                                                     :beginning-date-time "2010-12-12T12:00:00Z"}))
         coll8 (d/ingest "CMR_PROV2" (dc/collection {:entry-title "Dataset8"
                                                     :beginning-date-time "2011-12-13T12:00:00Z"}))
-        coll9 (d/ingest "CMR_PROV2" (dc/collection {:entry-title "Dataset9"}))]
+        coll9 (d/ingest "CMR_PROV2" (dc/collection {:entry-title "Dataset9"}))
+        coll10 (d/ingest "CMR_PROV1" (dc/collection {:entry-title "Dataset10"
+                                                     :single-date-time "2010-05-01T00:00:00Z"}))
+        coll11 (d/ingest "CMR_PROV1" (dc/collection {:entry-title "Dataset11"
+                                                     :single-date-time "1999-05-01T00:00:00Z"}))]
     (index/refresh-elastic-index)
 
     (testing "search by temporal_start."
@@ -41,7 +45,7 @@
     (testing "search by temporal_end."
       (let [references (search/find-refs :collection
                                          {"temporal[]" ",2010-12-12T12:00:00Z"})]
-        (is (d/refs-match? [coll1 coll2 coll3 coll4 coll6 coll7] references))))
+        (is (d/refs-match? [coll1 coll2 coll3 coll4 coll6 coll7 coll10 coll11] references))))
     (testing "search by temporal_range."
       (let [references (search/find-refs :collection
                                          {"temporal[]" "2010-01-01T10:00:00Z,2010-01-10T12:00:00Z"})]
@@ -70,7 +74,9 @@
            [coll2 coll3 coll4 coll5 coll6 coll7 coll8] "2010-12-12T12:00:00Z" nil
 
            ;; search by temporal_range
-           [coll1] "2010-01-01T10:00:00Z" "2010-01-10T12:00:00Z"))))
+           [coll1] "2010-01-01T10:00:00Z" "2010-01-10T12:00:00Z"
+           [coll2 coll6 coll10] "2010-04-01T10:00:00Z" "2010-06-10T12:00:00Z"))))
+
 
 ;; Just some symbolic invalid temporal testing, more complete test coverage is in unit tests
 (deftest search-temporal-error-scenarios

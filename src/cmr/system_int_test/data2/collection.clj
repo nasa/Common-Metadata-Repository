@@ -56,11 +56,16 @@
 (defn temporal
   "Return a temporal with range date time of the given date times"
   [attribs]
-  (let [{:keys [beginning-date-time ending-date-time]} attribs
+  (let [{:keys [beginning-date-time ending-date-time single-date-time]} attribs
         begin (when beginning-date-time (p/parse-datetime beginning-date-time))
-        end (when ending-date-time (p/parse-datetime ending-date-time))]
-    (when (or begin end)
-      (ct/temporal {:range-date-times [(c/->RangeDateTime begin end)]}))))
+        end (when ending-date-time (p/parse-datetime ending-date-time))
+        single (when single-date-time (p/parse-datetime single-date-time))]
+    (cond
+      (or begin end)
+      (ct/temporal {:range-date-times [(c/->RangeDateTime begin end)]})
+
+      single
+      (ct/temporal {:single-date-times [single]}))))
 
 (defn science-keyword
   [attribs]

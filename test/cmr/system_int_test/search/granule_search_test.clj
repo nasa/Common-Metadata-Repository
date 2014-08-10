@@ -60,7 +60,10 @@
       (is (d/refs-match?
             [gran1 gran2 gran3]
             (search/find-refs :granule {:provider "CMR_prov1"
-                                        "options[provider][ignore-case]" "true"}))))))
+                                        "options[provider][ignore-case]" "true"}))))
+    (testing "aql search"
+      (is (d/refs-match? [gran1 gran2 gran3]
+                         (search/find-refs-with-aql :granule [] {:dataCenterId "CMR_PROV1"}))))))
 
 (deftest search-by-dataset-id
   (let [coll1 (d/ingest "CMR_PROV1" (dc/collection {:entry-title "OneCollectionV1"}))
@@ -110,7 +113,10 @@
       (is (d/refs-match?
             [gran3]
             (search/find-refs :granule {:dataset-id "anotherCollectionV1"
-                                        "options[dataset-id][ignore-case]" "true"}))))))
+                                        "options[dataset-id][ignore-case]" "true"}))))
+    (testing "aql search"
+      (is (d/refs-match? [gran1 gran2 gran4]
+                         (search/find-refs-with-aql :granule [{:dataSetId "OneCollectionV1"}] {}))))))
 
 
 (def provider-granules
