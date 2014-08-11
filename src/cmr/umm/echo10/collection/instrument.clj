@@ -7,8 +7,9 @@
 (defn xml-elem->Instrument
   [instrument-elem]
   (let [short-name (cx/string-at-path instrument-elem [:ShortName])
+        long-name (cx/string-at-path instrument-elem [:LongName])
         sensors (sensor/xml-elem->Sensors instrument-elem)]
-    (c/->Instrument short-name sensors)))
+    (c/->Instrument short-name long-name sensors)))
 
 (defn xml-elem->Instruments
   [platform-element]
@@ -23,7 +24,8 @@
     (x/element
       :Instruments {}
       (for [instrument instruments]
-        (let [{:keys [short-name sensors]} instrument]
+        (let [{:keys [long-name short-name sensors]} instrument]
           (x/element :Instrument {}
                      (x/element :ShortName {} short-name)
+                     (when long-name (x/element :LongName {} long-name))
                      (sensor/generate-sensors sensors)))))))

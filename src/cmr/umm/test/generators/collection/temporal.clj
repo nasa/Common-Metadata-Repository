@@ -8,13 +8,13 @@
 
 ;; temporal attributes
 (def time-types
-  (ext-gen/string-alpha-numeric 1 80))
+  (ext-gen/string-alpha-numeric 1 10))
 
 (def date-types
-  (ext-gen/string-alpha-numeric 1 80))
+  (ext-gen/string-alpha-numeric 1 10))
 
 (def temporal-range-types
-  (ext-gen/string-alpha-numeric 1 80))
+  (ext-gen/string-alpha-numeric 1 10))
 
 (def precision-of-seconds
   gen/s-pos-int)
@@ -30,7 +30,7 @@
 
 ;; periodic-date-time attributes
 (def names
-  (ext-gen/string-alpha-numeric 1 30))
+  (ext-gen/string-alpha-numeric 1 10))
 
 (def duration-units
   (gen/elements ["DAY" "MONTH" "YEAR"]))

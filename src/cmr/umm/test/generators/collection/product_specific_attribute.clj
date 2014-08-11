@@ -7,16 +7,16 @@
             [cmr.umm.collection :as c]))
 
 (def names
-  (ext-gen/string-alpha-numeric 1 80))
+  (ext-gen/string-alpha-numeric 1 10))
 
 (def descriptions
-  (ext-gen/string-alpha-numeric 1 50))
+  (ext-gen/string-alpha-numeric 1 10))
 
 (def data-types
   (gen/elements c/product-specific-attribute-types))
 
 (def string-values
-  (ext-gen/string-alpha-numeric 1 80))
+  (ext-gen/string-alpha-numeric 1 10))
 
 (def float-values
   (gen/fmap double gen/ratio))

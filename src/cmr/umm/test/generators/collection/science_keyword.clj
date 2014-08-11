@@ -5,19 +5,19 @@
             [cmr.umm.collection :as c]))
 
 (def categories
-  (ext-gen/string-ascii 1 500))
+  (ext-gen/string-ascii 1 10))
 
 (def topics
-  (ext-gen/string-ascii 1 500))
+  (ext-gen/string-ascii 1 10))
 
 (def terms
-  (ext-gen/string-ascii 1 500))
+  (ext-gen/string-ascii 1 10))
 
 (def variable-levels
-  (gen/vector (ext-gen/string-ascii 1 500) 1 3))
+  (gen/vector (ext-gen/string-ascii 1 10) 1 3))
 
 (def detailed-variables
-  (ext-gen/optional (ext-gen/string-ascii 1 80)))
+  (ext-gen/optional (ext-gen/string-ascii 1 10)))
 
 (def science-keywords
   (gen/fmap

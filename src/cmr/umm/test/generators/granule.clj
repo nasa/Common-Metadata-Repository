@@ -11,7 +11,7 @@
 
 ;;; granule related
 (def granule-urs
-  (ext-gen/string-ascii 1 80))
+  (ext-gen/string-ascii 1 10))
 
 (def coll-refs-w-entry-title
   (ext-gen/model-gen g/collection-ref c/entry-titles))
@@ -28,7 +28,7 @@
 (def data-granules
   (ext-gen/model-gen
     g/map->DataGranule
-    (gen/hash-map :producer-gran-id (ext-gen/optional (ext-gen/string-ascii 1 128))
+    (gen/hash-map :producer-gran-id (ext-gen/optional (ext-gen/string-ascii 1 10))
                   :day-night (gen/elements ["DAY" "NIGHT" "BOTH" "UNSPECIFIED"])
                   :production-date-time ext-gen/date-time
                   :size (ext-gen/choose-double 0 1024))))
@@ -37,13 +37,13 @@
   (gen/fmap double gen/ratio))
 
 (def sensor-ref-short-names
-  (ext-gen/string-ascii 1 80))
+  (ext-gen/string-ascii 1 10))
 
 (def sensor-refs
   (ext-gen/model-gen g/->SensorRef sensor-ref-short-names))
 
 (def instrument-ref-short-names
-  (ext-gen/string-ascii 1 80))
+  (ext-gen/string-ascii 1 10))
 
 (def instrument-refs
   (ext-gen/model-gen g/->InstrumentRef
@@ -51,7 +51,7 @@
                      (ext-gen/nil-if-empty (gen/vector sensor-refs 0 4))))
 
 (def platform-ref-short-names
-  (ext-gen/string-ascii 1 80))
+  (ext-gen/string-ascii 1 10))
 
 (def platform-refs
   (ext-gen/model-gen g/->PlatformRef
@@ -72,7 +72,7 @@
       :temporal gt/temporal
       :orbit-calculated-spatial-domains (ext-gen/nil-if-empty (gen/vector ocsd/orbit-calculated-spatial-domains 0 5))
       :platform-refs (ext-gen/nil-if-empty (gen/vector platform-refs 0 4))
-      :project-refs (ext-gen/nil-if-empty (gen/vector (ext-gen/string-ascii 1 80) 0 3))
+      :project-refs (ext-gen/nil-if-empty (gen/vector (ext-gen/string-ascii 1 10) 0 3))
       :cloud-cover (ext-gen/optional cloud-cover-values)
       :related-urls (ext-gen/nil-if-empty (gen/vector c/related-url 0 5))
       :spatial-coverage (ext-gen/optional spatial-coverages)

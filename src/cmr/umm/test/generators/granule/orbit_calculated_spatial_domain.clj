@@ -9,7 +9,7 @@
   (ext-gen/choose-double -180 180))
 
 (def orbital-model-name
-  (ext-gen/string-ascii 1 80))
+  (ext-gen/string-ascii 1 10))
 
 (def orbit-number
   gen/int)

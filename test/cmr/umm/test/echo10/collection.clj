@@ -55,20 +55,19 @@
         umm-c/map->UmmCollection)))
 
 (defspec generate-collection-is-valid-xml-test 100
-  (for-all [collection (gen/no-shrink coll-gen/collections)]
+  (for-all [collection coll-gen/collections]
     (let [xml (echo10/umm->echo10-xml collection)]
       (and
         (> (count xml) 0)
         (= 0 (count (c/validate-xml xml)))))))
 
 (defspec generate-and-parse-collection-test 100
-  (for-all [collection (gen/no-shrink coll-gen/collections)]
+  (for-all [collection coll-gen/collections]
     (let [{{:keys [short-name version-id]} :product} collection
           xml (echo10/umm->echo10-xml collection)
           parsed (c/parse-collection xml)
           expected-parsed (umm->expected-parsed-echo10 collection)]
       (= parsed expected-parsed))))
-
 
 ;; This is a made-up include all fields collection xml sample for the parse collection test
 (def all-fields-collection-xml
@@ -165,9 +164,11 @@
         <Type>Spacecraft</Type>
         <Instruments>
           <Instrument>
+            <LongName>SAR long name</LongName>
             <ShortName>SAR</ShortName>
             <Sensors>
               <Sensor>
+                <LongName>SNA long name</LongName>
                 <ShortName>SNA</ShortName>
               </Sensor>
               <Sensor>
@@ -347,9 +348,10 @@
                         :type "Spacecraft"
                         :instruments [(umm-c/->Instrument
                                         "SAR"
-                                        [(umm-c/->Sensor "SNA")
-                                         (umm-c/->Sensor "SNB")])
-                                      (umm-c/->Instrument "MAR" nil)]})
+                                        "SAR long name"
+                                        [(umm-c/->Sensor "SNA" "SNA long name")
+                                         (umm-c/->Sensor "SNB" nil)])
+                                      (umm-c/->Instrument "MAR" nil nil)]})
                      (umm-c/map->Platform
                        {:short-name "RADARSAT-2"
                         :long-name "RADARSAT-LONG-2"

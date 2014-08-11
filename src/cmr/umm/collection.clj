@@ -73,11 +73,13 @@
 (defrecord Sensor
   [
    short-name
+   long-name
   ])
 
 (defrecord Instrument
   [
    short-name
+   long-name
    sensors
   ])
 

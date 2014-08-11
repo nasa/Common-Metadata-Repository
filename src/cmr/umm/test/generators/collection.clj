@@ -9,16 +9,16 @@
             [cmr.umm.test.generators.spatial :as spatial-gen]))
 
 (def short-names
-  (ext-gen/string-alpha-numeric 1 85))
+  (ext-gen/string-alpha-numeric 1 10))
 
 (def version-ids
-  (ext-gen/string-alpha-numeric 1 80))
+  (ext-gen/string-alpha-numeric 1 10))
 
 (def long-names
-  (ext-gen/string-alpha-numeric 1 1024))
+  (ext-gen/string-alpha-numeric 1 10))
 
 (def processing-level-ids
-  (ext-gen/string-alpha-numeric 1 80))
+  (ext-gen/string-alpha-numeric 1 10))
 
 (def collection-data-types
   (gen/elements ["SCIENCE_QUALITY" "NEAR_REAL_TIME" "OTHER"]))
@@ -35,36 +35,43 @@
   (ext-gen/model-gen c/->DataProviderTimestamps ext-gen/date-time ext-gen/date-time (ext-gen/optional ext-gen/date-time)))
 
 (def entry-ids
-  (ext-gen/string-alpha-numeric 1 85))
+  (ext-gen/string-alpha-numeric 1 10))
 
 (def entry-titles
-  (ext-gen/string-alpha-numeric 1 1030))
+  (ext-gen/string-alpha-numeric 1 10))
 
 (def summary
-  (ext-gen/string-alpha-numeric 1 4000))
+  (ext-gen/string-alpha-numeric 1 10))
+
+(def sensor-long-names
+  (ext-gen/string-ascii 1 10))
 
 (def sensor-short-names
-  (ext-gen/string-ascii 1 80))
+  (ext-gen/string-ascii 1 10))
 
 (def sensors
-  (ext-gen/model-gen c/->Sensor sensor-short-names))
+  (ext-gen/model-gen c/->Sensor sensor-short-names (ext-gen/optional sensor-long-names)))
+
+(def instrument-long-names
+  (ext-gen/string-ascii 1 10))
 
 (def instrument-short-names
-  (ext-gen/string-ascii 1 80))
+  (ext-gen/string-ascii 1 10))
 
 (def instruments
   (ext-gen/model-gen c/->Instrument
                      instrument-short-names
+                     (ext-gen/optional instrument-long-names)
                      (ext-gen/nil-if-empty (gen/vector sensors 0 4))))
 
 (def platform-short-names
-  (ext-gen/string-ascii 1 80))
+  (ext-gen/string-ascii 1 10))
 
 (def platform-long-names
-  (ext-gen/string-ascii 1 1024))
+  (ext-gen/string-ascii 1 10))
 
 (def platform-types
-  (ext-gen/string-ascii 1 80))
+  (ext-gen/string-ascii 1 10))
 
 (def platforms
   (ext-gen/model-gen c/->Platform
@@ -74,22 +81,22 @@
                      (ext-gen/nil-if-empty (gen/vector instruments 0 4))))
 
 (def campaign-short-names
-  (ext-gen/string-ascii 1 40))
+  (ext-gen/string-ascii 1 10))
 
 (def campaign-long-names
-  (ext-gen/string-ascii 1 80))
+  (ext-gen/string-ascii 1 10))
 
 (def campaigns
   (ext-gen/model-gen c/->Project campaign-short-names (ext-gen/optional campaign-long-names)))
 
 (def two-d-names
-  (ext-gen/string-ascii 1 80))
+  (ext-gen/string-ascii 1 10))
 
 (def two-d-coordinate-systems
   (ext-gen/model-gen c/->TwoDCoordinateSystem two-d-names))
 
 (def org-names
-  (ext-gen/string-ascii 1 80))
+  (ext-gen/string-ascii 1 10))
 
 (def archive-center-organizations
   (ext-gen/model-gen c/->Organization (gen/return :archive-center) org-names))
@@ -117,7 +124,7 @@
                                     :title description})))
             (gen/tuple related-url-types
                        ext-gen/file-url-string
-                       (ext-gen/string-ascii 1 80)
+                       (ext-gen/string-ascii 1 10)
                        gen/s-pos-int)))
 
 (def spatial-coverages
@@ -140,7 +147,7 @@
                 :product products
                 :data-provider-timestamps data-provider-timestamps
                 :temporal t/temporals
-                :spatial-keywords (ext-gen/nil-if-empty (gen/vector (ext-gen/string-alpha-numeric 1 80) 0 4))
+                :spatial-keywords (ext-gen/nil-if-empty (gen/vector (ext-gen/string-alpha-numeric 1 10) 0 4))
                 ;; DIF requires science-keyowrds to always exist, not ideal here for ECHO10. As science-keywords is optional for ECHO10
                 :science-keywords (gen/vector sk/science-keywords 1 3)
                 :platforms (ext-gen/nil-if-empty (gen/vector platforms 0 4))
@@ -148,7 +155,7 @@
                 :projects (ext-gen/nil-if-empty (gen/vector campaigns 0 4))
                 :two-d-coordinate-systems (ext-gen/nil-if-empty (gen/vector two-d-coordinate-systems 0 3))
                 :related-urls (ext-gen/nil-if-empty (gen/vector related-url 0 5))
-                :associated-difs (ext-gen/nil-if-empty (gen/vector (ext-gen/string-alpha-numeric 1 80) 0 4))
+                :associated-difs (ext-gen/nil-if-empty (gen/vector (ext-gen/string-alpha-numeric 1 10) 0 4))
                 :spatial-coverage (ext-gen/optional spatial-coverages))
               (ext-gen/optional processing-center-organizations)
               (ext-gen/optional archive-center-organizations)
