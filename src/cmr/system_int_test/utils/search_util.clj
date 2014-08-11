@@ -7,7 +7,7 @@
             [cmr.common.concepts :as cs]
             [cmr.common.mime-types :as mime-types]
             [cmr.system-int-test.utils.url-helper :as url]
-            [cmr.common.util :as u]
+            [cmr.common.util :as util]
             [camel-snake-kebab :as csk]
             [clojure.set :as set]
             [clojure.walk]
@@ -43,7 +43,7 @@
   "Converts search parameters to snake_case"
   [params]
   (->> params
-       (u/map-keys
+       (util/map-keys
          (fn [k]
            (let [k (if (keyword? k) (name k) k)]
              (-> k
@@ -94,7 +94,7 @@
           :or {:format-as-ext? false
                :snake-kebab? true}} options
          params (if snake-kebab?
-                  (params->snake_case (u/map-keys csk/->snake_case_keyword params))
+                  (params->snake_case (util/map-keys csk/->snake_case_keyword params))
                   params)
          [url accept] (if format-as-ext?
                         [(str (url/search-url concept-type) "." (mime-type->extension format))]
@@ -180,10 +180,11 @@
         hits (cx/long-at-path parsed [:hits])
         took (cx/long-at-path parsed [:took])
         refs (map (fn [ref-elem]
-                    {:id (cx/string-at-path ref-elem [:id])
-                     :name (cx/string-at-path ref-elem [:name])
-                     :revision-id (cx/long-at-path ref-elem [:revision-id])
-                     :location (cx/string-at-path ref-elem [:location])})
+                    (util/remove-nil-keys {:id (cx/string-at-path ref-elem [:id])
+                                           :name (cx/string-at-path ref-elem [:name])
+                                           :revision-id (cx/long-at-path ref-elem [:revision-id])
+                                           :location (cx/string-at-path ref-elem [:location])
+                                           :score (cx/double-at-path ref-elem [:score])}))
                   (cx/elements-at-path parsed [:references :reference]))]
     {:refs refs
      :hits hits
@@ -244,7 +245,7 @@
    (let [format-mime-type (mime-types/format->mime-type format-key)
          {:keys [format-as-ext?]
           :or {:format-as-ext? false}} options
-         params (params->snake_case (u/map-keys csk/->snake_case_keyword params))
+         params (params->snake_case (util/map-keys csk/->snake_case_keyword params))
          [url accept] (if format-as-ext?
                         [(str (url/provider-holdings-url) "." (mime-type->extension format-mime-type))]
                         [(url/provider-holdings-url) format-mime-type])

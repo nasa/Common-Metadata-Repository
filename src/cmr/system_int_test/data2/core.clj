@@ -101,7 +101,7 @@
   "Returns true if the references match the expected items"
   [items search-result]
   (let [result (= (set (map item->ref items))
-                  (set (:refs search-result)))]
+                  (set (map #(dissoc % :score) (:refs search-result))))]
     (when (:status search-result)
       (println (pr-str search-result)))
     result))
@@ -110,7 +110,7 @@
   "Returns true if the references match the expected items in the order specified"
   [items search-result]
   (= (map item->ref items)
-     (:refs search-result)))
+     (map #(dissoc % :score) (:refs search-result))))
 
 (defmacro record-fields
   "Returns the set of fields in a record type as keywords. The record type passed in must be a java
