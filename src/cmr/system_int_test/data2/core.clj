@@ -101,6 +101,8 @@
   "Returns true if the references match the expected items"
   [items search-result]
   (let [result (= (set (map item->ref items))
+                  ;; need to remove score because it won't be available in collections
+                  ;; to which we are comparing
                   (set (map #(dissoc % :score) (:refs search-result))))]
     (when (:status search-result)
       (println (pr-str search-result)))
@@ -110,6 +112,8 @@
   "Returns true if the references match the expected items in the order specified"
   [items search-result]
   (= (map item->ref items)
+     ;; need to remove score because it won't be available in collections
+     ;; to which we are comparing
      (map #(dissoc % :score) (:refs search-result))))
 
 (defmacro record-fields
