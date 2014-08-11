@@ -237,10 +237,49 @@
                                                        [:results :entries])))
            "ABC" [1.4]
            "ABC Foo" [1.0]))
+
     (testing "Atom has no score field for non-keyword search."
       (are [title-str scores] (= scores
-                                   (map :score (get-in (search/find-concepts-atom :collection
-                                                                                  {:entry-title title-str})
-                                                       [:results :entries])))
+                                 (map :score (get-in (search/find-concepts-atom :collection
+                                                                                {:entry-title title-str})
+                                                     [:results :entries])))
+           "Foo" [nil]))))
+
+(deftest reference-xml-has-score-for-keyword-search
+  (let [coll1 (d/ingest "PROV1" (dc/collection {:long-name "ABC!XYZ" :entry-title "Foo"}))]
+
+    (index/refresh-elastic-index)
+
+    (testing "XML has score for keyword search."
+      (are [keyword-str scores] (= scores
+                                   (map :score (:refs (search/find-refs :collection
+                                                                        {:keyword keyword-str}))))
+           "ABC" [1.4]
+           "ABC Foo" [1.0]))
+
+    (testing "XML has no score field for non-keyword search."
+      (are [title-str scores] (= scores
+                                 (map :score (:refs (search/find-refs :collection
+                                                                      {:entry-title title-str}))))
+           "Foo" [nil]))))
+
+(deftest json-atom-has-score-for-keyword-search
+  (let [coll1 (d/ingest "PROV1" (dc/collection {:long-name "ABC!XYZ" :entry-title "Foo"}))]
+
+    (index/refresh-elastic-index)
+
+    (testing "XML has score for keyword search."
+      (are [keyword-str scores] (= scores
+                                   (map :score (get-in (search/find-refs-json :collection
+                                                                              {:keyword keyword-str})
+                                                       [:feed :entry])))
+           "ABC" [1.4]
+           "ABC Foo" [1.0]))
+
+    (testing "XML has no score field for non-keyword search."
+      (are [title-str scores] (= scores
+                                 (map :score (get-in (search/find-refs-json :collection
+                                                                            {:entry-title title-str})
+                                                     [:feed :entry])))
            "Foo" [nil]))))
 
