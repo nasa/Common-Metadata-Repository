@@ -48,7 +48,7 @@
                (x/element :id {} concept-id)
                (x/element :location {} location)
                (x/element :revision-id {} (str revision-id))
-               (x/element :score {} score))))
+               (when score (x/element :score {} score)))))
 
 (defmethod qs/search-results->response :xml
   [context query results]
