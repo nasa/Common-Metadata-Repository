@@ -5,7 +5,7 @@
             [cmr.spatial.line-string :as l]
             [cmr.spatial.mbr :as m]
             [cheshire.core :as json]
-            [cmr.common.util :as u]
+            [cmr.common.util :as util]
             [clojure.string :as str]
             [cmr.system-int-test.data2.atom :as atom]))
 
@@ -39,36 +39,36 @@
 (defn- collection-json-entry->entry
   "Retrns an entry from a parsed collection json entry"
   [json-entry]
-  (let [json-entry (u/map-keys->kebab-case json-entry)
+  (let [json-entry (util/map-keys->kebab-case json-entry)
         {:keys [id title short-name version-id summary updated dataset-id collection-data-type
                 processing-level-id original-format data-center archive-center time-start time-end
                 links dif-ids online-access-flag browse-flag coordinate-system
                 shapes points boxes polygons lines]} json-entry]
-    {:id id
-     :title title
-     :summary summary
-     :updated updated
-     :dataset-id dataset-id
-     :short-name short-name
-     :version-id version-id
-     :original-format original-format
-     :collection-data-type collection-data-type
-     :data-center data-center
-     :archive-center archive-center
-     :processing-level-id processing-level-id
-     :links links
-     :start time-start
-     :end time-end
-     :associated-difs dif-ids
-     :online-access-flag (str online-access-flag)
-     :browse-flag (str browse-flag)
-     :coordinate-system coordinate-system
-     :shapes (json-geometry->shapes points boxes polygons lines)}))
+    (util/remove-nil-keys {:id id
+                           :title title
+                           :summary summary
+                           :updated updated
+                           :dataset-id dataset-id
+                           :short-name short-name
+                           :version-id version-id
+                           :original-format original-format
+                           :collection-data-type collection-data-type
+                           :data-center data-center
+                           :archive-center archive-center
+                           :processing-level-id processing-level-id
+                           :links links
+                           :start time-start
+                           :end time-end
+                           :associated-difs dif-ids
+                           :online-access-flag (str online-access-flag)
+                           :browse-flag (str browse-flag)
+                           :coordinate-system coordinate-system
+                           :shapes (json-geometry->shapes points boxes polygons lines)})))
 
 (defn- granule-json-entry->entry
   "Retrns an entry from a parsed granule json entry"
   [json-entry]
-  (let [json-entry (u/map-keys->kebab-case json-entry)
+  (let [json-entry (util/map-keys->kebab-case json-entry)
         {:keys [id title updated dataset-id producer-granule-id granule-size original-format
                 data-center links time-start time-end online-access-flag browse-flag day-night-flag
                 cloud-cover coordinate-system points boxes polygons lines]} json-entry]
