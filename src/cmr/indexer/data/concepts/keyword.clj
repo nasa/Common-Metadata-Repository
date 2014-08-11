@@ -32,7 +32,10 @@
   into a single string"
   (let [{:keys [concept-id]} collection
         {{:keys [short-name long-name version-id processing-level-id collection-data-type]} :product
-         :keys [entry-id entry-title summary spatial-keywords temporal-keywords associated-difs]} collection
+         :keys [entry-id entry-title summary spatial-keywords temporal-keywords associated-difs
+                projects]} collection
+        project-long-names (map :long-name projects)
+        project-short-names (map :short-name projects)
         platforms (:platforms collection)
         platform-short-names (map :short-name platforms)
         platform-long-names (map :long-name platforms)
@@ -61,6 +64,8 @@
                                   spatial-keywords
                                   temporal-keywords
                                   associated-difs
+                                  project-long-names
+                                  project-short-names
                                   platform-short-names
                                   platform-long-names
                                   instrument-short-names
