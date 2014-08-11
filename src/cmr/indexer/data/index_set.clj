@@ -188,7 +188,8 @@
                                     :project-ln.lowercase string-field-mapping
                                     :platform-ln.lowercase string-field-mapping
                                     :instrument-ln.lowercase string-field-mapping
-                                    :sensor-ln.lowercase string-field-mapping}
+                                    :sensor-ln.lowercase string-field-mapping
+                                    :temporal-keyword.lowercase string-field-mapping}
                                    spatial-coverage-fields)}})
 
 (def granule-setting {:index {:number_of_shards 6,

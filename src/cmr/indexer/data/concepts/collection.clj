@@ -37,7 +37,8 @@
   [context concept collection]
   (let [{:keys [concept-id provider-id revision-date format]} concept
         {{:keys [short-name long-name version-id processing-level-id collection-data-type]} :product
-         :keys [entry-id entry-title summary temporal related-urls spatial-keywords associated-difs]} collection
+         :keys [entry-id entry-title summary temporal related-urls spatial-keywords associated-difs
+                temporal-keywords]} collection
         platforms (:platforms collection)
         platform-short-names (map :short-name platforms)
         platform-long-names (remove nil? (map :long-name platforms))
@@ -109,6 +110,7 @@
             :platform-ln.lowercase (map str/lower-case platform-long-names)
             :instrument-ln.lowercase (map str/lower-case instrument-long-names)
             :sensor-ln.lowercase (map str/lower-case sensor-long-names)
-            :project-ln.lowercase (map str/lower-case project-long-names)}
+            :project-ln.lowercase (map str/lower-case project-long-names)
+            :temporal-keyword.lowercase (map str/lower-case temporal-keywords)}
            (spatial->elastic collection))))
 
