@@ -117,72 +117,91 @@
         pr6 (dg/platform-ref "platform-6" i5)
         pr7 (dg/platform-ref "platform-7" i6)
         pr8 (dg/platform-ref "platform-8" i7)
-        coll1 (d/ingest "CMR_PROV1" (dc/collection {}))
+        coll1 (d/ingest "CMR_PROV1" (dc/collection {:short-name "SHORT1"}))
         coll2 (d/ingest "CMR_PROV1" (dc/collection {:platforms [p0]}))
-        gran1 (d/ingest "CMR_PROV1" (dg/granule coll1 {:platform-refs [pr1]}))
-        gran2 (d/ingest "CMR_PROV1" (dg/granule coll1 {:platform-refs [pr1 pr2]}))
-        gran3 (d/ingest "CMR_PROV1" (dg/granule coll1 {:platform-refs [pr2]}))
-        gran4 (d/ingest "CMR_PROV1" (dg/granule coll1 {:platform-refs [pr3]}))
-        gran5 (d/ingest "CMR_PROV1" (dg/granule coll1 {:platform-refs [pr4]}))
-        gran6 (d/ingest "CMR_PROV1" (dg/granule coll1 {:platform-refs [pr5]}))
-        gran7 (d/ingest "CMR_PROV1" (dg/granule coll2 {}))
-        gran8 (d/ingest "CMR_PROV1" (dg/granule coll2 {:platform-refs [pr6]}))
-        gran9 (d/ingest "CMR_PROV1" (dg/granule coll2 {:platform-refs [pr7]}))
-        gran10 (d/ingest "CMR_PROV1" (dg/granule coll2 {:platform-refs [pr8]}))]
+        gran1 (d/ingest "CMR_PROV1" (dg/granule coll1 {:granule-ur "gran1" :platform-refs [pr1]}))
+        gran2 (d/ingest "CMR_PROV1" (dg/granule coll1 {:granule-ur "gran2" :platform-refs [pr1 pr2]}))
+        gran3 (d/ingest "CMR_PROV1" (dg/granule coll1 {:granule-ur "gran3" :platform-refs [pr2]}))
+        gran4 (d/ingest "CMR_PROV1" (dg/granule coll1 {:granule-ur "gran4" :platform-refs [pr3]}))
+        gran5 (d/ingest "CMR_PROV1" (dg/granule coll1 {:granule-ur "gran5" :platform-refs [pr4]}))
+        gran6 (d/ingest "CMR_PROV1" (dg/granule coll1 {:granule-ur "gran6" :platform-refs [pr5]}))
+        gran7 (d/ingest "CMR_PROV1" (dg/granule coll2 {:granule-ur "gran7" }))
+        gran8 (d/ingest "CMR_PROV1" (dg/granule coll2 {:granule-ur "gran8" :platform-refs [pr6]}))
+        gran9 (d/ingest "CMR_PROV1" (dg/granule coll2 {:granule-ur "gran9" :platform-refs [pr7]}))
+        gran10 (d/ingest "CMR_PROV1" (dg/granule coll2 {:granule-ur "gran10" :platform-refs [pr8]}))]
 
     (index/refresh-elastic-index)
 
+    (testing "collection resolving query simplifications"
+      ;; This is necessary to test some simplifications the collection query resolver is doing to pass collection ids found
+      ;; in top level collection id queries down to subconditions executing collection queries
+      (are [items params]
+           (d/refs-match? items
+                          (search/find-refs :granule params))
+           [gran1 gran2] {:instrument "instrument-Sn A"
+                          :platform "platform-1"
+                          :echo_collection_id (:concept-id coll1)}
+           [gran1 gran2] {:instrument "instrument-Sn A"
+                          :platform "platform-1"
+                          :provider "CMR_PROV1"
+                          :short-name "SHORT1"}
+           [] {:instrument "instrument-Sn A"
+               :provider "CMR_PROV2"}
+           [] {:instrument "instrument-Sn A"
+               :provider "CMR_PROV1"
+               :short-name "SHORT2"}))
+
     (testing "search by instrument"
-      (are [items instrument-sn options]
-           (let [params (merge {:instrument instrument-sn}
-                               (when options
-                                 {"options[instrument]" options}))]
-             (d/refs-match? items (search/find-refs :granule params)))
+        (are [items instrument-sn options]
+             (let [params (merge {:instrument instrument-sn}
+                                 (when options
+                                   {"options[instrument]" options}))]
+               (d/refs-match? items (search/find-refs :granule params)))
 
-           [gran1 gran2 gran6] "instrument-Sn A" {}
-           [gran4] "instrument-SnA" {}
-           [gran9 gran10] "instrument-x" {}
-           [] "BLAH" {}
+             [gran1 gran2 gran6] "instrument-Sn A" {}
+             [gran4] "instrument-SnA" {}
+             [gran9 gran10] "instrument-x" {}
+             [] "BLAH" {}
 
-           ;; search by instrument, multiple values
-           [gran1 gran2 gran4 gran6] ["instrument-SnA" "instrument-Sn A"] {}
-           ;; search by instrument, inheritance
-           [gran7] ["instrument-Inherit"] {}
-           ;; search by instrument, ignore case
-           [gran9 gran10] ["instrument-x"] {:ignore-case true}
-           [gran9] ["instrument-x"] {:ignore-case false}
-           ;; search by instrument, wildcards
-           [gran1 gran2 gran3 gran6] ["instrument-Sn *"] {:pattern true}
-           [gran4 gran5] ["instrument-Sn?"] {:pattern true}
-           ;; search by instrument, options :or
-           [gran1 gran2 gran3 gran6] ["instrument-Sn b" "instrument-Sn A"] {:or true}
-           ;; search by instrument, options :and
-           [gran2 gran6] ["instrument-Sn b" "instrument-Sn A"] {:and true}))
+             ;; search by instrument, multiple values
+             [gran1 gran2 gran4 gran6] ["instrument-SnA" "instrument-Sn A"] {}
+             ;; search by instrument, inheritance
+             [gran7] ["instrument-Inherit"] {}
+             ;; search by instrument, ignore case
+             [gran9 gran10] ["instrument-x"] {:ignore-case true}
+             [gran9] ["instrument-x"] {:ignore-case false}
+             ;; search by instrument, wildcards
+             [gran1 gran2 gran3 gran6] ["instrument-Sn *"] {:pattern true}
+             [gran4 gran5] ["instrument-Sn?"] {:pattern true}
+             ;; search by instrument, options :or
+             [gran1 gran2 gran3 gran6] ["instrument-Sn b" "instrument-Sn A"] {:or true}
+             ;; search by instrument, options :and
+             [gran2 gran6] ["instrument-Sn b" "instrument-Sn A"] {:and true}))
 
     (testing "search granules by instrument with aql"
-      (are [items instruments options]
-           (let [condition (merge {:instrumentShortName instruments} options)]
-             (d/refs-match? items (search/find-refs-with-aql :granule [condition])))
+        (are [items instruments options]
+             (let [condition (merge {:instrumentShortName instruments} options)]
+               (d/refs-match? items (search/find-refs-with-aql :granule [condition])))
 
-           [gran1 gran2 gran6] "instrument-Sn A" {}
-           [gran4] "instrument-SnA" {}
-           [gran9 gran10] "instrument-x" {}
-           [] "BLAH" {}
+             [gran1 gran2 gran6] "instrument-Sn A" {}
+             [gran4] "instrument-SnA" {}
+             [gran9 gran10] "instrument-x" {}
+             [] "BLAH" {}
 
-           ;; search by instrument, multiple values
-           [gran1 gran2 gran4 gran6] ["instrument-SnA" "instrument-Sn A"] {}
-           ;; search by instrument, inheritance
-           [gran7] ["instrument-Inherit"] {}
-           ;; search by instrument, ignore case
-           [gran9 gran10] ["instrument-x"] {:ignore-case true}
-           [gran9] ["instrument-x"] {:ignore-case false}
-           ;; search by instrument, wildcards
-           [gran1 gran2 gran3 gran6] "instrument-Sn %" {:pattern true}
-           [gran4 gran5] "instrument-Sn_" {:pattern true}
-           ;; search by instrument, options :or
-           [gran1 gran2 gran3 gran6] ["instrument-Sn b" "instrument-Sn A"] {:or true}
-           ;; search by instrument, options :and
-           [gran2 gran6] ["instrument-Sn b" "instrument-Sn A"] {:and true}))))
+             ;; search by instrument, multiple values
+             [gran1 gran2 gran4 gran6] ["instrument-SnA" "instrument-Sn A"] {}
+             ;; search by instrument, inheritance
+             [gran7] ["instrument-Inherit"] {}
+             ;; search by instrument, ignore case
+             [gran9 gran10] ["instrument-x"] {:ignore-case true}
+             [gran9] ["instrument-x"] {:ignore-case false}
+             ;; search by instrument, wildcards
+             [gran1 gran2 gran3 gran6] "instrument-Sn %" {:pattern true}
+             [gran4 gran5] "instrument-Sn_" {:pattern true}
+             ;; search by instrument, options :or
+             [gran1 gran2 gran3 gran6] ["instrument-Sn b" "instrument-Sn A"] {:or true}
+             ;; search by instrument, options :and
+             [gran2 gran6] ["instrument-Sn b" "instrument-Sn A"] {:and true}))))
 
 (deftest search-by-sensor-short-names
   (let [s0 (dc/sensor "sensor-Inherit")
