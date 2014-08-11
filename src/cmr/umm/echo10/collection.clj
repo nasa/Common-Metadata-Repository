@@ -78,6 +78,7 @@
        :product product
        :data-provider-timestamps data-provider-timestamps
        :spatial-keywords (seq (cx/strings-at-path xml-struct [:SpatialKeywords :Keyword]))
+       :temporal-keywords (seq (cx/strings-at-path xml-struct [:TemporalKeywords :Keyword]))
        :temporal (t/xml-elem->Temporal xml-struct)
        :science-keywords (sk/xml-elem->ScienceKeywords xml-struct)
        :platforms (platform/xml-elem->Platforms xml-struct)
@@ -104,8 +105,9 @@
      (let [{{:keys [short-name long-name version-id processing-level-id collection-data-type]} :product
             dataset-id :entry-title
             {:keys [insert-time update-time delete-time]} :data-provider-timestamps
-            :keys [organizations spatial-keywords temporal science-keywords platforms product-specific-attributes
-                   projects two-d-coordinate-systems related-urls spatial-coverage summary associated-difs]} collection
+            :keys [organizations spatial-keywords temporal-keywords temporal science-keywords
+                   platforms product-specific-attributes projects two-d-coordinate-systems
+                   related-urls spatial-coverage summary associated-difs]} collection
            emit-fn (if indent? x/indent-str x/emit-str)]
        (emit-fn
          (x/element :Collection {}
@@ -131,6 +133,10 @@
                       (x/element :SpatialKeywords {}
                                  (for [spatial-keyword spatial-keywords]
                                    (x/element :Keyword {} spatial-keyword))))
+                    (when temporal-keywords
+                      (x/element :TemporalKeywords {}
+                                 (for [temporal-keyword temporal-keywords]
+                                   (x/element :Keyword {} temporal-keyword))))
                     (t/generate-temporal temporal)
                     (sk/generate-science-keywords science-keywords)
                     (platform/generate-platforms platforms)

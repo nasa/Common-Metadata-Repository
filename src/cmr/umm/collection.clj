@@ -173,6 +173,8 @@
 
    spatial-keywords
 
+   temporal-keywords
+
    temporal
 
    science-keywords

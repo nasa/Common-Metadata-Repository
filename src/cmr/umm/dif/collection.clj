@@ -62,6 +62,7 @@
      :product (xml-elem->Product xml-struct)
      :data-provider-timestamps (xml-elem->DataProviderTimestamps xml-struct)
      ;:spatial-keywords (seq (cx/strings-at-path xml-struct [:Location]))
+     :temporal-keywords (seq (cx/strings-at-path xml-struct [:Data_Resolution :Temporal_Resolution]))
      :temporal (t/xml-elem->Temporal xml-struct)
      :science-keywords (sk/xml-elem->ScienceKeywords xml-struct)
      ;:platforms (platform/xml-elem->Platforms xml-struct)
@@ -92,7 +93,8 @@
      (let [{{:keys [version-id processing-level-id collection-data-type]} :product
             {:keys [insert-time update-time]} :data-provider-timestamps
             :keys [entry-id entry-title summary temporal organizations science-keywords platforms
-                   product-specific-attributes projects related-urls spatial-coverage]} collection
+                   product-specific-attributes projects related-urls spatial-coverage
+                   temporal-keywords]} collection
            ;; DIF only has range-date-times, so we ignore the temporal field if it is not of range-date-times
            temporal (when (seq (:range-date-times temporal)) temporal)
            emit-fn (if indent? x/indent-str x/emit-str)]
@@ -106,6 +108,9 @@
                     (sk/generate-science-keywords science-keywords)
                     (t/generate-temporal temporal)
                     (sc/generate-spatial-coverage spatial-coverage)
+                    (when (seq temporal-keywords)
+                      (for [tk temporal-keywords]
+                        (x/element :Data_Resolution {} (x/element :Temporal_Resolution {} tk))))
                     (when-not (empty? projects)
                       (pj/generate-projects projects))
                     (org/generate-data-center organizations)
