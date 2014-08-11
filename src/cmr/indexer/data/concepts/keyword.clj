@@ -30,7 +30,7 @@
   [collection]
   "Create a keyword field for keyword searches by concatenating several other fields
   into a single string"
-  (let [{:keys [concept-id ]} collection
+  (let [{:keys [concept-id]} collection
         {{:keys [short-name long-name version-id processing-level-id collection-data-type]} :product
          :keys [entry-id entry-title summary spatial-keywords associated-difs]} collection
         platforms (:platforms collection)
@@ -38,8 +38,10 @@
         platform-long-names (map :long-name platforms)
         instruments (mapcat :instruments platforms)
         instrument-short-names (keep :short-name instruments)
+        instrument-long-names (keep :long-name instruments)
         sensors (mapcat :sensors instruments)
         sensor-short-names (keep :short-name sensors)
+        sensor-long-names (keep :long-name sensors)
         two-d-coord-names (map :name (:two-d-coordinate-systems collection))
         archive-centers (org/extract-archive-centers collection)
         science-keywords (sk/science-keywords->keywords collection)
@@ -58,6 +60,11 @@
                                   attrib-keywords
                                   spatial-keywords
                                   platform-short-names
-                                  platform-long-names))
+                                  platform-long-names
+                                  instrument-short-names
+                                  instrument-long-names
+                                  sensor-short-names
+                                  sensor-long-names))
         split-fields (set (mapcat prepare-keyword-field all-fields))]
+
     (str/join " " split-fields)))

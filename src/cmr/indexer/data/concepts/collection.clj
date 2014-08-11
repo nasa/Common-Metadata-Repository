@@ -40,11 +40,13 @@
          :keys [entry-id entry-title summary temporal related-urls spatial-keywords associated-difs]} collection
         platforms (:platforms collection)
         platform-short-names (map :short-name platforms)
-        platform-long-names (map :long-name platforms)
+        platform-long-names (remove nil? (map :long-name platforms))
         instruments (mapcat :instruments platforms)
         instrument-short-names (remove nil? (map :short-name instruments))
+        instrument-long-names (remove nil? (map :long-name instruments))
         sensors (mapcat :sensors instruments)
         sensor-short-names (remove nil? (map :short-name sensors))
+        sensor-long-names (remove nil? (map :long-name sensors))
         project-short-names (map :short-name (:projects collection))
         project-long-names (map :long-name (:projects collection))
         two-d-coord-names (map :name (:two-d-coordinate-systems collection))
@@ -105,6 +107,8 @@
             :keyword (k/create-keywords-field collection)
             :long-name.lowercase (when long-name (str/lower-case long-name))
             :platform-ln.lowercase (map str/lower-case platform-long-names)
+            :instrument-ln.lowercase (map str/lower-case instrument-long-names)
+            :sensor-ln.lowercase (map str/lower-case sensor-long-names)
             :project-ln.lowercase (map str/lower-case project-long-names)}
            (spatial->elastic collection))))
 
