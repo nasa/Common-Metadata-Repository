@@ -75,7 +75,7 @@
 (deftracefn resolve-collection-query
   "Replace the collection query conditions in the query with conditions of collection-concept-ids."
   [context query]
-  (r/resolve-collection-query query context))
+  (r/resolve-collection-queries query context))
 
 (defmulti search-results->response
   "Converts query search results into a string response."
