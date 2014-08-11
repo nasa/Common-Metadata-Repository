@@ -60,6 +60,7 @@
                                   attrib-keywords
                                   spatial-keywords
                                   temporal-keywords
+                                  associated-difs
                                   platform-short-names
                                   platform-long-names
                                   instrument-short-names
