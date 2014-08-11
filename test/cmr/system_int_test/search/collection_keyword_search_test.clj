@@ -52,7 +52,8 @@
         coll15 (d/ingest "CMR_PROV2" (dc/collection {:entry-title "coll15" :processing-level-id "plid1"
                                                      :collection-data-type "cldt" :platforms [p1]
                                                      :summary "summary" :temporal-keywords ["tk1" "tk2"]}))
-        coll16 (d/ingest "CMR_PROV2" (dc/collection {:entry-id "entryid4"}) :dif)]
+        coll16 (d/ingest "CMR_PROV2" (dc/collection {:entry-id "entryid4"}) :dif)
+        coll17 (d/ingest "CMR_PROV2" (dc/collection {:associated-difs ["DIF-1" "DIF-2"]}))]
 
     (index/refresh-elastic-index)
 
@@ -65,7 +66,6 @@
                (println "Actual:" (map :name (:refs refs))))
              matches?)
            "ABC" [coll2 coll5]
-           "XYZ" [coll2 coll13]
            "place" [coll6]
            "Laser" [coll5 coll7 coll9 coll14]
            "ABC place Hurricane" [coll2 coll5 coll6 coll9]
@@ -100,13 +100,21 @@
            ;; temporal keywords
            "tk1" [coll15]
 
+           ;; spatial keywords
+           "in" [coll10]
+
+           ;; associated difs
+           "dif-1" [coll17]
+
+           ;; two d coord
+           "xyz" [coll2 coll13]
+
+           ;; archive center
+           "some" [coll6]
 
            ;; TODO
-           ;; spatial keywords
-           ;; associated dif
-           ;; two d coord
-           ;; archive center
            ;; attributes
+           "charlie" [coll12]
 
            ;; Platforms
            ;; - short name
@@ -138,11 +146,7 @@
            "Level2-2" [coll9]
            "Level2-3" [coll9]
            ;; - detailed-variable
-           "SUPER" [coll9]
-
-
-
-           ))
+           "SUPER" [coll9]))
 
     (testing "search by keywords using wildcard *."
       (are [keyword-str items]
