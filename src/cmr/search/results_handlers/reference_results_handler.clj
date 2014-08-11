@@ -18,7 +18,8 @@
   ["entry-title"
    "provider-id"
    "short-name"
-   "version-id"])
+   "version-id"
+   "_score"])
 
 (def concept-type->name-key
   "A map of the concept type to the key to use to extract the reference name field."
@@ -30,21 +31,24 @@
   (let [name-key (concept-type->name-key (:concept-type query))
         {concept-id :_id
          revision-id :_version
+         score :_score
          {[name-value] name-key} :fields} elastic-result]
     {:concept-id concept-id
      :revision-id revision-id
      :location (format "%s%s" (url/reference-root context) concept-id)
-     :name name-value}))
+     :name name-value
+     :score score}))
 
 (defn- reference->xml-element
   "Converts a search result reference into an XML element"
   [reference]
-  (let [{:keys [concept-id revision-id location name]} reference]
+  (let [{:keys [concept-id revision-id location name score]} reference]
     (x/element :reference {}
                (x/element :name {} name)
                (x/element :id {} concept-id)
                (x/element :location {} location)
-               (x/element :revision-id {} (str revision-id)))))
+               (x/element :revision-id {} (str revision-id))
+               (x/element :score {} score))))
 
 (defmethod qs/search-results->response :xml
   [context query results]

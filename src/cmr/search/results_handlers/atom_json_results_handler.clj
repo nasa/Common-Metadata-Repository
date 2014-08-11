@@ -7,7 +7,8 @@
             [clj-time.core :as time]
             [cmr.search.services.url-helper :as url]
             [cmr.search.results-handlers.atom-results-handler :as atom]
-            [cmr.search.results-handlers.atom-spatial-results-handler :as atom-spatial]))
+            [cmr.search.results-handlers.atom-spatial-results-handler :as atom-spatial]
+            [cmr.common.util :as util]))
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:collection :json]
   [concept-type result-format]
@@ -24,11 +25,12 @@
 (defn- collection-atom-reference->json
   "Converts a search result collection atom reference into json"
   [reference]
-  (let [{:keys [id title short-name version-id summary updated dataset-id collection-data-type
+  (let [{:keys [id score title short-name version-id summary updated dataset-id collection-data-type
                 processing-level-id original-format data-center archive-center start-date end-date
                 atom-links associated-difs online-access-flag browse-flag coordinate-system shapes]} reference
         shape-result (atom-spatial/shapes->json shapes)
         result (merge {:id id
+                       :score score
                        :title title
                        :summary summary
                        :updated updated
@@ -49,9 +51,7 @@
                        :coordinate_system coordinate-system}
                       shape-result)]
     ;; remove entries with nil value
-    (apply dissoc
-           result
-           (for [[k v] result :when (nil? v)] k))))
+    (util/remove-nil-keys result)))
 
 (defn- granule-atom-reference->json
   "Converts a search result granule atom reference into json"
@@ -78,9 +78,7 @@
                        :coordinate_system coordinate-system}
                       shape-result)]
     ;; remove entries with nil value
-    (apply dissoc
-           result
-           (for [[k v] result :when (nil? v)] k))))
+    (util/remove-nil-keys result)))
 
 (defmethod qs/search-results->response :json
   [context query results]
