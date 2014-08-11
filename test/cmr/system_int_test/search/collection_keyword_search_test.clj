@@ -14,8 +14,13 @@
         psa2 (dc/psa "bravo" :string "bf")
         psa3 (dc/psa "charlie" :string "foo")
         psa4 (dc/psa "case" :string "up")
-        p1 (dc/platform "platform_Sn B")
-        p2 (dc/platform "platform_SnA")
+        p1 (dc/platform "platform_Sn B" "platform_Ln B"
+                        (dc/instrument "isnA" "ilnA"
+                                       (dc/sensor "ssnA" "slnA")))
+        p2 (dc/platform "platform_SnA spoonA" "platform_LnA"
+                        (dc/instrument "isnB" "ilnB"
+                                       (dc/sensor "ssnB" "slnB")))
+        p3 (dc/platform "spoonA")
         sk1 (dc/science-keyword {:category "Cat1"
                                  :topic "Topic1"
                                  :term "Term1"
@@ -23,62 +28,111 @@
                                  :variable-level-2 "Level1-2"
                                  :variable-level-3 "Level1-3"})
         sk2 (dc/science-keyword {:category "Hurricane"
-                                 :topic "Laser platform_SnA"
+                                 :topic "Laser spoonA"
                                  :term "Extreme"
                                  :variable-level-1 "Level2-1"
                                  :variable-level-2 "Level2-2"
                                  :variable-level-3 "Level2-3"})
         tdcs1 (dc/two-d "XYZ")
-        coll1 (d/ingest "CMR_PROV1" (dc/collection {}))
-        coll2 (d/ingest "CMR_PROV1" (dc/collection {:entry-title "ABC!XYZ"}))
-        coll3 (d/ingest "CMR_PROV1" (dc/collection {:collection-data-type "Foo"}))
-        coll4 (d/ingest "CMR_PROV2" (dc/collection {:collection-data-type "Bar"}))
-        coll5 (d/ingest "CMR_PROV2" (dc/collection {:entry-title "ABC" :short-name "Space!Laser"}))
-        coll6 (d/ingest "CMR_PROV2" (dc/collection {:organizations [(dc/org :archive-center "Some&Place")]}))
-        coll7 (d/ingest "CMR_PROV2" (dc/collection {:version-id "Laser"}))
-        coll8 (d/ingest "CMR_PROV2" (dc/collection {:processing-level-id "PDQ123"}))
-        coll9 (d/ingest "CMR_PROV2" (dc/collection {:science-keywords [sk1 sk2]}))
-        coll10 (d/ingest "CMR_PROV2" (dc/collection {:spatial-keywords ["in out"]}))
-        coll11 (d/ingest "CMR_PROV2" (dc/collection {:platforms [p1 p2]}))
-        coll12 (d/ingest "CMR_PROV2" (dc/collection {:product-specific-attributes [psa1 psa2 psa3 psa4]}))
-        coll13 (d/ingest "CMR_PROV2" (dc/collection {:two-d-coordinate-systems [tdcs1]}))
-        coll14 (d/ingest "CMR_PROV2" (dc/collection {:long-name "platform_SnA laser"}))]
+        coll1 (d/ingest "CMR_PROV1" (dc/collection {:entry-title "coll1" }))
+        coll2 (d/ingest "CMR_PROV1" (dc/collection {:entry-title "coll2" :short-name "ABC!XYZ"}))
+        coll3 (d/ingest "CMR_PROV1" (dc/collection {:entry-title "coll3" :collection-data-type "Foo"}))
+        coll4 (d/ingest "CMR_PROV2" (dc/collection {:entry-title "coll4" :collection-data-type "Bar"}))
+        coll5 (d/ingest "CMR_PROV2" (dc/collection {:entry-title "coll5" :long-name "ABC" :short-name "Space!Laser"}))
+        coll6 (d/ingest "CMR_PROV2" (dc/collection {:entry-title "coll6" :organizations [(dc/org :archive-center "Some&Place")]}))
+        coll7 (d/ingest "CMR_PROV2" (dc/collection {:entry-title "coll7" :version-id "Laser"}))
+        coll8 (d/ingest "CMR_PROV2" (dc/collection {:entry-title "coll8" :processing-level-id "PDQ123"}))
+        coll9 (d/ingest "CMR_PROV2" (dc/collection {:entry-title "coll9" :science-keywords [sk1 sk2]}))
+        coll10 (d/ingest "CMR_PROV2" (dc/collection {:entry-title "coll10" :spatial-keywords ["in out"]}))
+        coll11 (d/ingest "CMR_PROV2" (dc/collection {:entry-title "coll11" :platforms [p2 p3]}))
+        coll12 (d/ingest "CMR_PROV2" (dc/collection {:entry-title "coll12" :product-specific-attributes [psa1 psa2 psa3 psa4]}))
+        coll13 (d/ingest "CMR_PROV2" (dc/collection {:entry-title "coll13" :two-d-coordinate-systems [tdcs1]}))
+        coll14 (d/ingest "CMR_PROV2" (dc/collection {:entry-title "coll14" :long-name "spoonA laser"}))
+        coll15 (d/ingest "CMR_PROV2" (dc/collection {:entry-title "coll15" :platforms [p1]}))]
 
     (index/refresh-elastic-index)
 
     (testing "search by keywords."
-      (are [keyword-str items] (d/refs-match? items (search/find-refs :collection {:keyword keyword-str}))
+      (are [keyword-str items]
+           (let [refs (search/find-refs :collection {:keyword keyword-str})
+                 matches? (d/refs-match? items refs)]
+             (when-not matches?
+               (println "Expected:" (map :entry-title items))
+               (println "Actual:" (map :name (:refs refs))))
+             matches?)
            "ABC" [coll2 coll5]
            "XYZ" [coll2 coll13]
            "place" [coll6]
            "Laser" [coll5 coll7 coll9 coll14]
            "ABC place Hurricane" [coll2 coll5 coll6 coll9]
-           "BLAH" []))
+           "BLAH" []
+
+           ;; Checking specific fields
+
+           ;; Platforms
+           ;; - short name
+           "platform_SnA" [coll11]
+           ;; - long name
+           "platform_ln" [coll15]
+
+           ;; Instruments
+           ;; - short name
+           "isnA" [coll15]
+           ;; - long name
+           "ilnB" [coll11]
+
+           ;; Sensors
+           ;; - short name
+           "ssnA" [coll15]
+           ;; - long name
+           "slnB" [coll11]))
+
     (testing "search by keywords using wildcard *."
-      (are [keyword-str items] (d/refs-match? items (search/find-refs :collection {:keyword keyword-str}))
+      (are [keyword-str items]
+           (let [refs (search/find-refs :collection {:keyword keyword-str})
+                 matches? (d/refs-match? items refs)]
+             (when-not matches?
+               (println "Expected:" (map :entry-title items))
+               (println "Actual:" (map :name (:refs refs))))
+             matches?)
            "A*C" [coll2 coll5]
            "XY*" [coll2 coll13]
            "*aser" [coll5 coll7 coll9 coll14]
            "ABC p*ce Hurricane" [coll2 coll5 coll6 coll9]))
     (testing "search by keywords using wildcard ?."
-      (are [keyword-str items] (d/refs-match? items (search/find-refs :collection {:keyword keyword-str}))
+      (are [keyword-str items]
+           (let [refs (search/find-refs :collection {:keyword keyword-str})
+                 matches? (d/refs-match? items refs)]
+             (when-not matches?
+               (println "Expected:" (map :entry-title items))
+               (println "Actual:" (map :name (:refs refs))))
+             matches?)
            "A?C" [coll2 coll5]
            "XY?" [coll2 coll13]
            "?aser" [coll5 coll7 coll9 coll14]
            "ABC ?lace Hurricane" [coll2 coll5 coll6 coll9]))
     (testing "sorted search by keywords."
-      (are [keyword-str items] (d/refs-match-order? items (search/find-refs :collection {:keyword keyword-str}))
-           "Laser platform_SnA" [coll14 coll11 coll9 coll5 coll7]
-           "La?er platform_SnA" [coll14 coll11 coll9 coll5 coll7]
-           "L*er platfor*_SnA" [coll14 coll11 coll9 coll5 coll7]
-           "L?s* plat?o*_SnA" [coll14 coll11 coll9 coll5 coll7]))
+      (are [keyword-str items]
+           (let [refs (search/find-refs :collection {:keyword keyword-str})
+                 matches? (d/refs-match-order? items refs)]
+             (when-not matches?
+               (println "Expected:" (map :entry-title items))
+               (println "Actual:" (map :name (:refs refs))))
+             matches?)
+           "Laser spoonA" [coll14 coll11 coll9 coll5 coll7]
+           "La?er spoonA" [coll14 coll11 coll9 coll5 coll7]
+           "L*er spo*A" [coll14 coll11 coll9 coll5 coll7]
+           "L?s* s?o*A" [coll14 coll11 coll9 coll5 coll7]))
     (testing "sorted search by keywords with sort keys."
       (are [keyword-str sort-key items]
-           (d/refs-match-order? items
-                                (search/find-refs
-                                  :collection {:keyword keyword-str
-                                               :sort-key sort-key}))
-           "Laser platform_SnA" "-entry-title" [coll14 coll11 coll9 coll7 coll5]
-           "La?er platform_SnA" "score" [coll14 coll11 coll9 coll5 coll7]
-           "Laser platfor*_SnA" "+score" [coll5 coll7 coll9 coll11 coll14]
-           "L?s* plat?o*_SnA" "-score" [coll14 coll11 coll9 coll5 coll7]))))
+           (let [refs (search/find-refs :collection {:keyword keyword-str :sort-key sort-key})
+                 matches? (d/refs-match-order? items refs)]
+             (when-not matches?
+               (println "Expected:" (map :entry-title items))
+               (println "Actual:" (map :name (:refs refs))))
+             matches?)
+           "Laser spoonA" "-entry-title" [coll9 coll7 coll5 coll14 coll11]
+           "La?er spoonA" "score" [coll14 coll11 coll9 coll5 coll7]
+           "Laser spo*A" "+score" [coll5 coll7 coll9 coll11 coll14]
+           "L?s* s?o*A" "-score" [coll14 coll11 coll9 coll5 coll7]))))
+
