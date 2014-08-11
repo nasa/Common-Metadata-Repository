@@ -101,7 +101,7 @@
 (deftest search-by-instrument-short-names
   (let [i0 (dc/instrument "instrument-Inherit")
         i01 (dc/instrument "instrument-ONE")
-        p0 (dc/platform "collection_platform" i0 i01)
+        p0 (dc/platform "collection_platform" nil i0 i01)
         i1 (dg/instrument-ref "instrument-Sn A")
         i2 (dg/instrument-ref "instrument-Sn b")
         i3 (dg/instrument-ref "instrument-SnA")
@@ -206,8 +206,8 @@
 (deftest search-by-sensor-short-names
   (let [s0 (dc/sensor "sensor-Inherit")
         s01 (dc/sensor "sensor-ONE")
-        i0 (dc/instrument "collection_instrument" s0 s01)
-        p0 (dc/platform "collection_platform" i0)
+        i0 (dc/instrument "collection_instrument" nil s0 s01)
+        p0 (dc/platform "collection_platform" "collection_platform" i0)
         s1 (dg/sensor-ref "sensor-Sn A")
         s2 (dg/sensor-ref "sensor-Sn b")
         s3 (dg/sensor-ref "sensor-SnA")

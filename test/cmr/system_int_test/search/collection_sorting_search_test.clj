@@ -133,6 +133,7 @@
                           (d/ingest "PROV1"
                                     (dc/collection
                                       {:platforms [(apply dc/platform (d/unique-str "platform")
+                                                          nil
                                                           (map dc/instrument instruments))]})))
         c1 (make-collection "c10" "c41")
         c2 (make-collection "c20" "c51")
@@ -156,7 +157,9 @@
                                     (dc/collection
                                       {:platforms [(dc/platform
                                                      (d/unique-str "platform")
+                                                     nil
                                                      (apply dc/instrument (d/unique-str "instrument")
+                                                            nil
                                                             (map dc/sensor sensors)))]})))
         c1 (make-collection "c10" "c41")
         c2 (make-collection "c20" "c51")
