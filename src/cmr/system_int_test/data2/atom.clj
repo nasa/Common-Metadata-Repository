@@ -12,7 +12,8 @@
             [clojure.string :as str]
             [clj-time.format :as f]
             [camel-snake-kebab :as csk]
-            [cmr.umm.spatial :as umm-s]))
+            [cmr.umm.spatial :as umm-s]
+            [cmr.common.util :as util]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Parsing the ATOM results
@@ -83,26 +84,31 @@
 (defn- collection-xml-elem->entry
   "Retrns an atom entry from a parsed collection xml structure"
   [entry-elem]
-  {:id (cx/string-at-path entry-elem [:id])
-   :title (cx/string-at-path entry-elem [:title])
-   :updated (cx/string-at-path entry-elem [:updated])
-   :dataset-id (cx/string-at-path entry-elem [:datasetId])
-   :short-name (cx/string-at-path entry-elem [:shortName])
-   :version-id (cx/string-at-path entry-elem [:versionId])
-   :summary (cx/string-at-path entry-elem [:summary])
-   :original-format (cx/string-at-path entry-elem [:originalFormat])
-   :collection-data-type (cx/string-at-path entry-elem [:collectionDataType])
-   :data-center (cx/string-at-path entry-elem [:dataCenter])
-   :archive-center (cx/string-at-path entry-elem [:archiveCenter])
-   :processing-level-id (cx/string-at-path entry-elem [:processingLevelId])
-   :links (seq (map :attrs (cx/elements-at-path entry-elem [:link])))
-   :start (cx/string-at-path entry-elem [:start])
-   :end (cx/string-at-path entry-elem [:end])
-   :associated-difs (seq (cx/strings-at-path entry-elem [:difId]))
-   :online-access-flag (cx/string-at-path entry-elem [:onlineAccessFlag])
-   :browse-flag (cx/string-at-path entry-elem [:browseFlag])
-   :coordinate-system (cx/string-at-path entry-elem [:coordinateSystem])
-   :shapes (seq (xml-elem->shapes entry-elem))})
+  (let [res {:id (cx/string-at-path entry-elem [:id])
+             :title (cx/string-at-path entry-elem [:title])
+             :updated (cx/string-at-path entry-elem [:updated])
+             :dataset-id (cx/string-at-path entry-elem [:datasetId])
+             :short-name (cx/string-at-path entry-elem [:shortName])
+             :version-id (cx/string-at-path entry-elem [:versionId])
+             :summary (cx/string-at-path entry-elem [:summary])
+             :original-format (cx/string-at-path entry-elem [:originalFormat])
+             :collection-data-type (cx/string-at-path entry-elem [:collectionDataType])
+             :data-center (cx/string-at-path entry-elem [:dataCenter])
+             :archive-center (cx/string-at-path entry-elem [:archiveCenter])
+             :processing-level-id (cx/string-at-path entry-elem [:processingLevelId])
+             :links (seq (map :attrs (cx/elements-at-path entry-elem [:link])))
+             :start (cx/string-at-path entry-elem [:start])
+             :end (cx/string-at-path entry-elem [:end])
+             :associated-difs (seq (cx/strings-at-path entry-elem [:difId]))
+             :online-access-flag (cx/string-at-path entry-elem [:onlineAccessFlag])
+             :browse-flag (cx/string-at-path entry-elem [:browseFlag])
+             :coordinate-system (cx/string-at-path entry-elem [:coordinateSystem])
+             :shapes (seq (xml-elem->shapes entry-elem))
+             :score (cx/double-at-path entry-elem [:score])}]
+    ;; This is needed because many of the tests are comparing collections to this map and the
+    ;; collections won't have relevance scores, so if there is a :score => nil mapping,
+    ;; the comparisio will fail. So we must remove the mapping entirely for nil values.
+    (util/remove-nil-keys res)))
 
 (defn- granule-xml-elem->entry
   "Retrns an atom entry from a parsed granule xml structure"
@@ -137,7 +143,7 @@
     (reset! parsed xml-struct)
     {:id (cx/string-at-path xml-struct [:id])
      :title (cx/string-at-path xml-struct [:title])
-     :entries (seq (map xml-elem-to-entry-fn
+     :entries (seq (keep xml-elem-to-entry-fn
                         (cx/elements-at-path xml-struct [:entry])))}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -193,26 +199,26 @@
         range-date-time (first (get-in collection [:temporal :range-date-times]))
         start (f/unparse (f/formatters :date-time-no-ms)(:beginning-date-time range-date-time))
         end (f/unparse (f/formatters :date-time-no-ms)(:ending-date-time range-date-time))]
-    {:id concept-id
-     :title entry-title
-     :summary summary
-     :updated (str update-time)
-     :dataset-id entry-title
-     :short-name short-name
-     :version-id version-id
-     :original-format "ECHO10"
-     :collection-data-type collection-data-type
-     :data-center (:provider-id (cu/parse-concept-id concept-id))
-     :archive-center archive-center
-     :processing-level-id processing-level-id
-     :start start
-     :end end
-     :links (related-urls->links related-urls)
-     :coordinate-system coordinate-system
-     :shapes (seq (get-in collection [:spatial-coverage :geometries]))
-     :associated-difs associated-difs
-     :online-access-flag (str (> (count (ru/downloadable-urls related-urls)) 0))
-     :browse-flag (str (> (count (ru/browse-urls related-urls)) 0))}))
+    (util/remove-nil-keys {:id concept-id
+                           :title entry-title
+                           :summary summary
+                           :updated (str update-time)
+                           :dataset-id entry-title
+                           :short-name short-name
+                           :version-id version-id
+                           :original-format "ECHO10"
+                           :collection-data-type collection-data-type
+                           :data-center (:provider-id (cu/parse-concept-id concept-id))
+                           :archive-center archive-center
+                           :processing-level-id processing-level-id
+                           :start start
+                           :end end
+                           :links (related-urls->links related-urls)
+                           :coordinate-system coordinate-system
+                           :shapes (seq (get-in collection [:spatial-coverage :geometries]))
+                           :associated-difs associated-difs
+                           :online-access-flag (str (> (count (ru/downloadable-urls related-urls)) 0))
+                           :browse-flag (str (> (count (ru/browse-urls related-urls)) 0))})))
 
 (defn collections->expected-atom
   "Returns the atom map of the collections"
