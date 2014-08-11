@@ -51,7 +51,7 @@
         coll14 (d/ingest "CMR_PROV2" (dc/collection {:entry-title "coll14" :long-name "spoonA laser"}))
         coll15 (d/ingest "CMR_PROV2" (dc/collection {:entry-title "coll15" :processing-level-id "plid1"
                                                      :collection-data-type "cldt" :platforms [p1]
-                                                     :summary "summary"}))
+                                                     :summary "summary" :temporal-keywords ["tk1" "tk2"]}))
         coll16 (d/ingest "CMR_PROV2" (dc/collection {:entry-id "entryid4"}) :dif)]
 
     (index/refresh-elastic-index)
@@ -97,9 +97,12 @@
            ;; summary
            "summary" [coll15]
 
+           ;; temporal keywords
+           "tk1" [coll15]
+
+
            ;; TODO
            ;; spatial keywords
-           ;; temporal keywords
            ;; associated dif
            ;; two d coord
            ;; archive center
