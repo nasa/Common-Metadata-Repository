@@ -26,7 +26,8 @@
                                  :term "Term1"
                                  :variable-level-1 "Level1-1"
                                  :variable-level-2 "Level1-2"
-                                 :variable-level-3 "Level1-3"})
+                                 :variable-level-3 "Level1-3"
+                                 :detailed-variable "SUPER DETAILED!"})
         sk2 (dc/science-keyword {:category "Hurricane"
                                  :topic "Laser spoonA"
                                  :term "Extreme"
@@ -35,7 +36,7 @@
                                  :variable-level-3 "Level2-3"})
         tdcs1 (dc/two-d "XYZ")
         coll1 (d/ingest "CMR_PROV1" (dc/collection {:entry-title "coll1" }))
-        coll2 (d/ingest "CMR_PROV1" (dc/collection {:entry-title "coll2" :short-name "ABC!XYZ"}))
+        coll2 (d/ingest "CMR_PROV1" (dc/collection {:entry-title "coll2" :short-name "ABC!XYZ" :version-id "V001"}))
         coll3 (d/ingest "CMR_PROV1" (dc/collection {:entry-title "coll3" :collection-data-type "Foo"}))
         coll4 (d/ingest "CMR_PROV2" (dc/collection {:entry-title "coll4" :collection-data-type "Bar"}))
         coll5 (d/ingest "CMR_PROV2" (dc/collection {:entry-title "coll5" :long-name "ABC" :short-name "Space!Laser"}))
@@ -48,7 +49,10 @@
         coll12 (d/ingest "CMR_PROV2" (dc/collection {:entry-title "coll12" :product-specific-attributes [psa1 psa2 psa3 psa4]}))
         coll13 (d/ingest "CMR_PROV2" (dc/collection {:entry-title "coll13" :two-d-coordinate-systems [tdcs1]}))
         coll14 (d/ingest "CMR_PROV2" (dc/collection {:entry-title "coll14" :long-name "spoonA laser"}))
-        coll15 (d/ingest "CMR_PROV2" (dc/collection {:entry-title "coll15" :platforms [p1]}))]
+        coll15 (d/ingest "CMR_PROV2" (dc/collection {:entry-title "coll15" :processing-level-id "plid1"
+                                                     :collection-data-type "cldt" :platforms [p1]
+                                                     :summary "summary"}))
+        coll16 (d/ingest "CMR_PROV2" (dc/collection {:entry-id "entryid4"}) :dif)]
 
     (index/refresh-elastic-index)
 
@@ -69,6 +73,38 @@
 
            ;; Checking specific fields
 
+           ;; entry title
+           "coll1" [coll1]
+
+           ;; entry id
+           "entryid4" [coll16]
+
+           ;; short name
+           "XYZ" [coll2 coll13]
+
+           ;; long name
+           "ABC" [coll5 coll2]
+
+           ;; version id
+           "V001" [coll2]
+
+           ;; processing level id
+           "plid1" [coll15]
+
+           ;; collection data type
+           "cldt" [coll15]
+
+           ;; summary
+           "summary" [coll15]
+
+           ;; TODO
+           ;; spatial keywords
+           ;; temporal keywords
+           ;; associated dif
+           ;; two d coord
+           ;; archive center
+           ;; attributes
+
            ;; Platforms
            ;; - short name
            "platform_SnA" [coll11]
@@ -85,7 +121,25 @@
            ;; - short name
            "ssnA" [coll15]
            ;; - long name
-           "slnB" [coll11]))
+           "slnB" [coll11]
+
+           ;; Science keywords
+           ;; - category
+           "Cat1" [coll9]
+           ;; - topic
+           "Topic1" [coll9]
+           ;; - term
+           "Term1" [coll9]
+           ;; - variable-levels
+           "Level2-1" [coll9]
+           "Level2-2" [coll9]
+           "Level2-3" [coll9]
+           ;; - detailed-variable
+           "SUPER" [coll9]
+
+
+
+           ))
 
     (testing "search by keywords using wildcard *."
       (are [keyword-str items]
