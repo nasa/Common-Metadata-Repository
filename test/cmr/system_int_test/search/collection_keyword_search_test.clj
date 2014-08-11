@@ -5,7 +5,8 @@
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.data2.core :as d]))
+            [cmr.system-int-test.data2.core :as d]
+            [cmr.search.data.keywords-to-elastic :as k2e]))
 
 (use-fixtures :each (ingest/reset-fixture "CMR_PROV1" "CMR_PROV2"))
 
@@ -14,13 +15,14 @@
         psa2 (dc/psa "bravo" :string "bf")
         psa3 (dc/psa "charlie" :string "foo")
         psa4 (dc/psa "case" :string "up")
-        p1 (dc/platform "platform_Sn B" "platform_Ln B"
+        p1 (dc/platform "platform_SnB" "platform_Ln B"
                         (dc/instrument "isnA" "ilnA"
                                        (dc/sensor "ssnA" "slnA")))
         p2 (dc/platform "platform_SnA spoonA" "platform_LnA"
                         (dc/instrument "isnB" "ilnB"
                                        (dc/sensor "ssnB" "slnB")))
         p3 (dc/platform "spoonA")
+        pr1 (dc/projects "project-short-name")
         sk1 (dc/science-keyword {:category "Cat1"
                                  :topic "Topic1"
                                  :term "Term1"
@@ -53,7 +55,10 @@
                                                      :collection-data-type "cldt" :platforms [p1]
                                                      :summary "summary" :temporal-keywords ["tk1" "tk2"]}))
         coll16 (d/ingest "CMR_PROV2" (dc/collection {:entry-id "entryid4"}) :dif)
-        coll17 (d/ingest "CMR_PROV2" (dc/collection {:associated-difs ["DIF-1" "DIF-2"]}))]
+        coll17 (d/ingest "CMR_PROV2" (dc/collection {:associated-difs ["DIF-1" "DIF-2"]}))
+        coll18 (d/ingest "CMR_PROV2" (dc/collection {:short-name "SNFoobar"}))
+        coll19 (d/ingest "CMR_PROV2" (dc/collection {:long-name "LNFoobar"}))
+        coll20 (d/ingest "CMR_PROV2" (dc/collection {:projects pr1}))]
 
     (index/refresh-elastic-index)
 
@@ -147,6 +152,44 @@
            "Level2-3" [coll9]
            ;; - detailed-variable
            "SUPER" [coll9]))
+
+    (testing "Boost on fields"
+      (are [keyword-str scores] (= scores
+                                   (map :score (:refs (search/find-refs :collection
+                                                                        {:keyword keyword-str}))))
+           ;; short-name
+           "SNFoobar" [k2e/short-name-long-name-boost]
+           ;; long-name
+           "LNFoobar" [k2e/short-name-long-name-boost]
+
+           ;; project short-name
+           (:short-name (first pr1)) [k2e/project-boost]
+           ;; project long-name
+           (:long-name (first pr1)) [k2e/project-boost]
+
+           ;; platform short-name
+           (:short-name p1) [k2e/platform-boost]
+           ;; platform long-name
+           (:long-name p1) [k2e/platform-boost]
+
+           ;; instrument short-name
+           (:short-name (first (:instruments p1))) [k2e/instrument-boost]
+           ;; instrument long-name
+           (:long-name (first (:instruments p1))) [k2e/instrument-boost]
+
+            ;; sensor short-name
+           (:short-name (first (:sensors (first (:instruments p1))))) [k2e/sensor-boost]
+           ;; sensor long-name
+           (:long-name (first (:sensors (first (:instruments p1))))) [k2e/sensor-boost]
+
+           ;; temporal-keywords
+           "tk1" [k2e/temporal-keyword-boost]
+
+           ;; spatial-keyword
+           "in out" [k2e/spatial-keyword-boost]
+
+           ;; science-keywords
+           (:category sk1) [k2e/science-keywords-boost]))
 
     (testing "search by keywords using wildcard *."
       (are [keyword-str items]
