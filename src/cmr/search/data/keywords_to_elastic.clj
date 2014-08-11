@@ -136,13 +136,14 @@
    (keywords->name-filter :project-ln.lowercase :project-sn.lowercase keywords project-boost)
    ;; platform
    (keywords->name-filter :platform-ln.lowercase :platform-sn.lowercase keywords platform-boost)
-   ;; TODO - instrument
-   ;; need to add long name
-   ;; TODO - sensor
-   ;; need to add long name
+   ;; instrument
+   (keywords->name-filter :instrument-ln.lowercase :instrument-sn.lowercase keywords instrument-boost)
+   ;; sensor
+   (keywords->name-filter :sensor-ln.lowercase :sensor-sn.lowercase keywords sensor-boost)
    ;; science keywords
    (keywords->sk-filter keywords science-keywords-boost)
    ;; spatial-keyword
-   (keywords->boosted-exact-match-filter :spatial-keywords.lowercase keywords spatial-keyword-boost)
-   ;; TODO - temporal-keyword
-   ])
+   (keywords->boosted-exact-match-filter :spatial-keyword.lowercase keywords spatial-keyword-boost)
+   ;; temporal-keyword
+   (keywords->boosted-exact-match-filter :temporal-keyword.lowercase keywords temporal-keyword-boost)])
+
