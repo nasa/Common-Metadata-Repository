@@ -1,6 +1,6 @@
 # cmr-mock-echo-app
 
-FIXME
+This mocks out the ECHO REST API. It's purpose is to make it easier to integration test the CMR system without having to run a full instance of ECHO. It won't mock it perfectly or completely. It will only implement the minimum necessary to enable integratino testing.
 
 ## Running
 
@@ -35,7 +35,7 @@ Content-Type: application/json;charset=utf-8
 #### User
 curl -i -H "Accept: application/json" -H "Echo-Token: XXXXXXXX" https://testbed.echo.nasa.gov/echo-rest/tokens/XXXXXXXXXX/token_info
 HTTP/1.1 200 OK
-{"token_info":{"client_id":"dev test","created":"2014-08-12T10:47:26Z","expires":"2014-09-11T10:47:26Z","guest":false,"token":"XXXXXXXXXX","user_guid":"C57E12C3-7A73-B269-AE9F-0721C0416714","user_name":"jagilman"}}
+{"token_info":{"client_id":"dev test","created":"2014-08-12T10:47:26Z","expires":"2014-09-11T10:47:26Z","guest":false,"token":"XXXXXXXXXX","user_guid":"XXXXXXXXX","user_name":"jagilman"}}
 
 
 ### Get Current SIDS

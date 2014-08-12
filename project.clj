@@ -1,6 +1,6 @@
 (defproject nasa-cmr/cmr-mock-echo-app "0.1.0-SNAPSHOT"
-  :description "FIXME: write description"
-  :url "http://example.com/FIXME"
+  :description "Mocks out the ECHO REST API."
+  :url "***REMOVED***projects/CMR/repos/cmr-mock-echo-app/browse"
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [nasa-cmr/cmr-system-trace-lib "0.1.0-SNAPSHOT"]
