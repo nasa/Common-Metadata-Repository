@@ -22,8 +22,7 @@
 
 (def text-field-mapping
   "Used for analyzed text fields"
-  {
-   :type "string"
+  {:type "string"
    ; these fields will be split into multiple terms using the analyzer
    :index "analyzed"
    ; Norms are metrics about fields that elastic can use to weigh certian fields more than
@@ -33,8 +32,7 @@
    ; split the text on whitespace, but don't do any stemmming, etc.
    :analyzer "whitespace"
    ; Don't bother storing term positions or term frequencies in this field
-   :index_options "docs"
-   })
+   :index_options "docs"})
 
 (def date-field-mapping
   {:type "date" :format "yyyy-MM-dd'T'HH:mm:ssZ||yyyy-MM-dd'T'HH:mm:ss.SSSZ"})
@@ -138,7 +136,8 @@
                 :_all {:enabled false},
                 :_id   {:path "concept-id"},
                 :_ttl {:enabled true},
-                :properties (merge {:concept-id   (stored string-field-mapping)
+                :properties (merge {:permitted-group-guids (stored string-field-mapping)
+                                    :concept-id   (stored string-field-mapping)
                                     :entry-id           (stored string-field-mapping)
                                     :entry-id.lowercase string-field-mapping
                                     :entry-title           (stored string-field-mapping)
