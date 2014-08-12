@@ -49,7 +49,7 @@
         sensor-short-names (remove nil? (map :short-name sensors))
         sensor-long-names (remove nil? (map :long-name sensors))
         project-short-names (map :short-name (:projects collection))
-        project-long-names (map :long-name (:projects collection))
+        project-long-names (remove nil? (map :long-name (:projects collection)))
         two-d-coord-names (map :name (:two-d-coordinate-systems collection))
         archive-center-val (org/extract-archive-centers collection)
         start-date (temporal/start-date :collection temporal)

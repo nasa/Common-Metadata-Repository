@@ -128,7 +128,7 @@
                                               :_version revision-id
                                               :_version_type "external"}))
                         (catch Exception e
-                          (error e (str "Skipping failed granule. Exception trying to convert concept to elastic doc:"
+                          (error e (str "Skipping failed catalog item. Exception trying to convert concept to elastic doc:"
                                         (pr-str concept))))))
                     parseable-batch)))))
 
