@@ -1,6 +1,7 @@
 (ns cmr.system-int-test.data2.collection
   "Contains data generators for example based testing in system integration tests."
   (:require [cmr.umm.collection :as c]
+            [cmr.common.util :as util]
             [cmr.system-int-test.data2.core :as d]
             [cmr.common.date-time-parser :as p]
             [cmr.umm.collection.temporal :as ct])
@@ -39,7 +40,7 @@
 
 (defn product
   [attribs]
-  (let [attribs (select-keys attribs (d/record-fields Product))
+  (let [attribs (select-keys attribs (util/record-fields Product))
         minimal-product {:short-name (d/unique-str "short-name")
                          :long-name (d/unique-str "long-name")
                          :version-id (d/unique-str "V")}]
@@ -47,7 +48,7 @@
 
 (defn data-provider-timestamps
   [attribs]
-  (let [attribs (select-keys attribs (d/record-fields DataProviderTimestamps))
+  (let [attribs (select-keys attribs (util/record-fields DataProviderTimestamps))
         attribs (into {} (for [[k v] attribs] [k (p/parse-datetime v)]))
         minimal-timestamps {:insert-time (d/make-datetime 10 false)
                             :update-time (d/make-datetime 18 false)}]
@@ -150,7 +151,7 @@
                        :entry-title (str (:long-name product) " " (:version-id product))
                        :product product
                        :data-provider-timestamps data-provider-timestamps}
-         attribs (select-keys attribs (concat (d/record-fields UmmCollection) [:concept-id :revision-id]))
+         attribs (select-keys attribs (concat (util/record-fields UmmCollection) [:concept-id :revision-id]))
          attribs (merge minimal-coll temporal attribs)]
      (c/map->UmmCollection attribs))))
 

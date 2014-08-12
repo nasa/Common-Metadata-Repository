@@ -117,13 +117,6 @@
       (println (pr-str search-result)))
     result))
 
-(defmacro record-fields
-  "Returns the set of fields in a record type as keywords. The record type passed in must be a java
-  class. Uses the getBasis function on record classes which returns a list of symbols of the fields of
-  the record."
-  [record-type]
-  `(map keyword  ( ~(symbol (str record-type "/getBasis")))))
-
 (def unique-num-atom
   (atom 0))
 
