@@ -73,12 +73,18 @@
             []
             validation-fns)))
 
+(defmacro record-fields
+  "Returns the set of fields in a record type as keywords. The record type passed in must be a java
+  class. Uses the getBasis function on record classes which returns a list of symbols of the fields of
+  the record."
+  [record-type]
+  `(map keyword  ( ~(symbol (str record-type "/getBasis")))))
+
 (defn remove-nil-keys
   "Removes keys mapping to nil values in a map.
   From http://stackoverflow.com/questions/3937661/remove-nil-values-from-a-map"
   [m]
   (apply dissoc m (for [[k v] m :when (nil? v)] k)))
-
 
 (defn map-keys [f m]
   "Maps f over the keys in map m and updates all keys with the result of f.

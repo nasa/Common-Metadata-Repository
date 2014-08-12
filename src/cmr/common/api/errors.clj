@@ -4,6 +4,7 @@
 (def type->http-status-code
   {:not-found 404
    :bad-request 400
+   :unauthorized 401
    :invalid-data 422
    :conflict 409})
 
