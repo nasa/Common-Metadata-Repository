@@ -6,6 +6,7 @@
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.mock-echo.api.routes :as routes]
             [cmr.common.api.web-server :as web]
+            [cmr.mock-echo.data.token-db :as token-db]
             [cmr.system-trace.context :as context]))
 
 (def DEFAULT_PORT 3000)
@@ -19,6 +20,7 @@
   "Returns a new instance of the whole application."
   []
   {:log (log/create-logger)
+   :token-db (token-db/create-db)
    :web (web/create-web-server DEFAULT_PORT routes/make-api)
    :zipkin (context/zipkin-config "mock-echo" false)})
 
