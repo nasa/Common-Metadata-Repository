@@ -65,6 +65,8 @@
                                              :version-id version-id
                                              :processing-level-id processing-level-id
                                              :collection-data-type collection-data-type}))
+        ;; AccessValue is optional in dif and hasn't be specified.
+        (dissoc :access-value)
         ;; There is no delete-time in DIF
         (assoc-in [:data-provider-timestamps :delete-time] nil)
         ;; DIF only has range-date-times

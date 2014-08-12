@@ -169,6 +169,9 @@
 
    product
 
+   ;; A decimal number. Restriction flag in echo10
+   access-value
+
    data-provider-timestamps
 
    spatial-keywords

@@ -145,6 +145,7 @@
                 :entry-title entry-titles
                 :summary summary
                 :product products
+                :access-value (ext-gen/choose-double -10 10)
                 :data-provider-timestamps data-provider-timestamps
                 :temporal t/temporals
                 :spatial-keywords (ext-gen/nil-if-empty (gen/vector (ext-gen/string-alpha-numeric 1 10) 0 4))

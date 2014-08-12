@@ -76,6 +76,7 @@
        :entry-title (cx/string-at-path xml-struct [:DataSetId])
        :summary (cx/string-at-path xml-struct [:Description])
        :product product
+       :access-value (cx/double-at-path xml-struct [:RestrictionFlag])
        :data-provider-timestamps data-provider-timestamps
        :spatial-keywords (seq (cx/strings-at-path xml-struct [:SpatialKeywords :Keyword]))
        :temporal-keywords (seq (cx/strings-at-path xml-struct [:TemporalKeywords :Keyword]))
@@ -104,6 +105,7 @@
     ([collection indent?]
      (let [{{:keys [short-name long-name version-id processing-level-id collection-data-type]} :product
             dataset-id :entry-title
+            restriction-flag :access-value
             {:keys [insert-time update-time delete-time]} :data-provider-timestamps
             :keys [organizations spatial-keywords temporal-keywords temporal science-keywords
                    platforms product-specific-attributes projects two-d-coordinate-systems
@@ -129,6 +131,8 @@
                     (when processing-level-id
                       (x/element :ProcessingLevelId {} processing-level-id))
                     (org/generate-archive-center organizations)
+                    (when restriction-flag
+                      (x/element :RestrictionFlag {} restriction-flag))
                     (when spatial-keywords
                       (x/element :SpatialKeywords {}
                                  (for [spatial-keyword spatial-keywords]
