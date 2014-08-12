@@ -1,11 +1,6 @@
 (ns cmr.search.runner
   (:require [cmr.search.system :as system]
-            [clojure.tools.cli :refer [cli]]
-            [clojure.edn :as edn]
-            [clojure.string :as string]
-            [cmr.common.api.web-server :as web]
-            [cmr.common.log :refer (debug info warn error)]
-            [cmr.search.api.routes :as routes])
+            [cmr.common.log :refer (debug info warn error)])
   (:gen-class))
 
 (defn -main
