@@ -9,14 +9,14 @@
             [cmr.system-int-test.data2.core :as d]))
 
 ;; total number of collections in PROV1
-(def prov1-collection-count 12)
+(def prov1-collection-count 5)
 
 ;; number of granule increment in each collection,
 ;; e.g. first collection has prov1-grans-increment-count number of granules
 ;; second collection has (2 * prov1-grans-increment-count) number of granules
 ;; third collection has (3 * prov1-grans-increment-count) number of granules and so on.
 (def prov1-grans-increment-count 2)
-(def prov2-collection-count 5)
+(def prov2-collection-count 3)
 (def prov2-grans-increment-count 3)
 
 (defn- collection-holding
