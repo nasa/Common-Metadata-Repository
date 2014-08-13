@@ -18,7 +18,8 @@
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.4"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]
                         [cheshire "5.3.1"]
-                        [clj-http "0.9.1"]]
+                        [clj-http "0.9.1"]
+                        [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]]
          :source-paths ["src" "dev" "test" "int_test"]}
    :integration-test {:test-paths ["int_test"]
                       :dependencies [[clj-http "0.9.1"]]}
