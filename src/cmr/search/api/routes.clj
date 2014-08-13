@@ -50,90 +50,97 @@
     "application/xml"
     "application/json"})
 
-(defn- parse-concept-type-w-extension
-  "Parses the concept type and extension (\"granules.echo10\") into a pair of concept type keyword
-  and mime type"
+(defn- concept-type-path-w-extension->concept-type
+  "Parses the concept type and extension (\"granules.echo10\") into the concept type"
   [concept-type-w-extension]
-  (let [[_ concept-type extension]
-        (filter
-          identity
-          (re-matches #"^(.+)s(?:\.(.+))?$" concept-type-w-extension))
-        mime-type (extension->mime-type extension)]
-    (when (and (nil? mime-type) (some? extension))
-      (svc-errors/throw-service-error
-        :bad-request (format "The URL extension [%s] is not supported." extension)))
-    [(keyword concept-type)
-     mime-type]))
+  (-> #"^([^s]+)s(?:\..+)?"
+      (re-matches concept-type-w-extension)
+      second
+      keyword))
 
-(defn- search-path-w-extension->mime-type
-  "Parses the search path with extension and returns the requested mime-type."
-  [path-name search-path-w-extension]
-  (let [extension-regex (re-pattern (format "^%s(?:\\.(.+))?$" path-name))
-        [_ extension]
-        (filter
-          identity
-          (re-matches extension-regex search-path-w-extension))]
-    (extension->mime-type extension)))
+(defn- path-w-extension->mime-type
+  "Parses the search path with extension and returns the requested mime-type or nil if no extension
+  was passed."
+  [search-path-w-extension]
+  (when-let [extension (second (re-matches #"[^.]+(?:\.(.+))$" search-path-w-extension))]
+    (or (extension->mime-type extension)
+        (svc-errors/throw-service-error
+          :bad-request (format "The URL extension [%s] is not supported." extension)))))
+
 
 (defn- get-search-results-format
   "Returns the requested search results format parsed from headers or from the URL extension"
-  ([ext-mime-type headers]
-   (get-search-results-format ext-mime-type headers supported-mime-types))
-  ([ext-mime-type headers valid-mime-types]
-   (let [mime-type (or ext-mime-type (get headers "accept"))]
+  ([path-w-extension headers]
+   (get-search-results-format path-w-extension headers supported-mime-types))
+  ([path-w-extension headers valid-mime-types]
+   (let [ext-mime-type (path-w-extension->mime-type path-w-extension)
+         mime-type (or ext-mime-type (get headers "accept"))]
      (mt/validate-request-mime-type mime-type valid-mime-types)
      ;; set the default format to xml
      (mt/mime-type->format mime-type :xml))))
 
+(defn- get-token
+  "Returns the token the user passed in the headers or parameters"
+  [params headers]
+  ;; TODO get the token
+  nil)
+
+(defn process-params
+  "Processes the parameters by removing unecessary keys and adding other keys like result format"
+  [params path-w-extension headers]
+  (-> params
+      (dissoc :path-w-extension)
+      (dissoc :token)
+      (assoc :result-format (get-search-results-format path-w-extension headers))))
+
 (defn- find-concepts
   "Invokes query service to find results and returns the response"
-  [context concept-type-w-extension params headers query-string]
-  (let [[concept-type ext-mime-type] (parse-concept-type-w-extension concept-type-w-extension)
-        params (dissoc params :concept-type-w-extension)
-        result-format (get-search-results-format ext-mime-type headers)
-        params (assoc params :result-format result-format)
-        context (assoc context :query-string query-string)
-        _ (info (format "Searching for %ss in format %s with params %s." (name concept-type) result-format (pr-str params)))
+  [context path-w-extension params headers query-string]
+  (let [concept-type (concept-type-path-w-extension->concept-type path-w-extension)
+        context (-> context
+                    (assoc :query-string query-string)
+                    (assoc :token (get-token params headers)))
+        params (process-params params path-w-extension headers)
+        _ (info (format "Searching for %ss in format %s with params %s."
+                        (name concept-type) (:result-format params) (pr-str params)))
         search-params (lp/process-legacy-psa params query-string)
         results (query-svc/find-concepts-by-parameters context concept-type search-params)]
     {:status 200
-     :headers {"Content-Type" (str (mt/format->mime-type result-format) "; charset=utf-8")}
+     :headers {"Content-Type" (str (mt/format->mime-type (:result-format params)) "; charset=utf-8")}
      :body results}))
 
 (defn- find-concepts-by-aql
   "Invokes query service to parse the AQL query, find results and returns the response"
-  [context search-w-extension params headers aql]
-  (let [ext-mime-type (search-path-w-extension->mime-type "search" search-w-extension)
-        params (dissoc params :search-w-extension)
-        result-format (get-search-results-format ext-mime-type headers)
-        params (assoc params :result-format result-format)
-        _ (info (format "Searching for concepts in format %s with AQL: %s." result-format aql))
+  [context path-w-extension params headers aql]
+  (let [context (assoc context :token (get-token params headers))
+        params (process-params params path-w-extension headers)
+        _ (info (format "Searching for concepts in format %s with AQL: %s."
+                        (:result-format params) aql))
         results (query-svc/find-concepts-by-aql context params aql)]
     {:status 200
-     :headers {"Content-Type" (str (mt/format->mime-type result-format) "; charset=utf-8")}
+     :headers {"Content-Type" (str (mt/format->mime-type (:result-format params)) "; charset=utf-8")}
      :body results}))
 
 (defn- find-concept-by-cmr-concept-id
   "Invokes query service to find concept metadata by cmr concept id and returns the response"
-  [context concept-id headers]
+  [context concept-id params headers]
   ;; Note: headers argument is reserved for ACL validation
   (info (format "Search for concept with cmr-concept-id [%s]" concept-id))
-  (let [concept (query-svc/find-concept-by-id context concept-id)]
+  (let [context (assoc context :token (get-token params headers))
+        concept (query-svc/find-concept-by-id context concept-id)]
     {:status 200
      :headers {"Content-Type" "application/xml; charset=utf-8"}
      :body (:metadata concept)}))
 
 (defn- get-provider-holdings
   "Invokes query service to retrieve provider holdings and returns the response"
-  [context provider-holdings-w-extension params headers]
-  (let [ext-mime-type (search-path-w-extension->mime-type "provider_holdings" provider-holdings-w-extension)
-        params (dissoc params :provider-holdings-w-extension)
-        result-format (get-search-results-format ext-mime-type headers supported-provider-holdings-mime-types)
-        params (assoc params :result-format result-format)
-        _ (info (format "Searching for provider holdings in format %s with params %s." result-format (pr-str params)))
+  [context path-w-extension params headers]
+  (let [context (assoc context :token (get-token params headers))
+        params (process-params params path-w-extension headers)
+        _ (info (format "Searching for provider holdings in format %s with params %s." (:result-format params) (pr-str params)))
         provider-holdings (query-svc/get-provider-holdings context params)]
     {:status 200
-     :headers {"Content-Type" (str (mt/format->mime-type result-format) "; charset=utf-8")}
+     :headers {"Content-Type" (str (mt/format->mime-type (:result-format params)) "; charset=utf-8")}
      :body provider-holdings}))
 
 (def concept-type-w-extension-regex
@@ -155,25 +162,25 @@
 
       ;; Retrieve by cmr concept id
       (context "/concepts/:cmr-concept-id" [cmr-concept-id]
-        (GET "/" {headers :headers context :request-context}
-          (find-concept-by-cmr-concept-id context cmr-concept-id headers)))
+        (GET "/" {params :params headers :headers context :request-context}
+          (find-concept-by-cmr-concept-id context cmr-concept-id params headers)))
 
       ;; Find concepts
-      (context ["/:concept-type-w-extension" :concept-type-w-extension concept-type-w-extension-regex] [concept-type-w-extension]
+      (context ["/:path-w-extension" :path-w-extension concept-type-w-extension-regex] [path-w-extension]
         (GET "/" {params :params headers :headers context :request-context query-string :query-string}
-          (find-concepts context concept-type-w-extension params headers query-string))
+          (find-concepts context path-w-extension params headers query-string))
         (POST "/" {params :params headers :headers context :request-context body :body-copy}
-          (find-concepts context concept-type-w-extension params headers body)))
+          (find-concepts context path-w-extension params headers body)))
 
       ;; AQL search
-      (context ["/concepts/:search-w-extension" :search-w-extension search-w-extension-regex] [search-w-extension]
+      (context ["/concepts/:path-w-extension" :path-w-extension search-w-extension-regex] [path-w-extension]
         (POST "/" {params :params headers :headers context :request-context body :body-copy}
-          (find-concepts-by-aql context search-w-extension params headers body)))
+          (find-concepts-by-aql context path-w-extension params headers body)))
 
       ;; Provider holdings
-      (context ["/:provider-holdings-w-extension" :provider-holdings-w-extension provider-holdings-w-extension-regex] [provider-holdings-w-extension]
+      (context ["/:path-w-extension" :path-w-extension provider-holdings-w-extension-regex] [path-w-extension]
         (GET "/" {params :params headers :headers context :request-context}
-          (get-provider-holdings context provider-holdings-w-extension params headers)))
+          (get-provider-holdings context path-w-extension params headers)))
 
       ;; reset operation available just for development purposes
       ;; clear the cache for search app
