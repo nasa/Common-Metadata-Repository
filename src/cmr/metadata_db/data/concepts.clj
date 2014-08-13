@@ -52,6 +52,10 @@
     [db concept-type provider-id concept-id revision-id]
     "Remove a revision of a concept from the database completely.")
 
+  (force-delete-concepts
+    [db provider-id concept-type concept-id-revision-id-tuples]
+    "Remove concept revisions given by concept-id/revision-id tuples.")
+
   (force-delete-by-params
     [db params]
     "Deletes concepts by the given parameters")
@@ -63,10 +67,12 @@
   (get-expired-concepts
     [db provider concept-type]
     "Returns concepts that have a delete-time before now and have not been deleted
-    for the given provider and concept-type."))
+    for the given provider and concept-type.")
 
-
-
+  (get-old-concept-revisions
+    [db provider concept-type limit]
+    "Returns concept-id and revision-id tuples for old revisions of concepts, up to 'limit'
+    concepts."))
 
 
 

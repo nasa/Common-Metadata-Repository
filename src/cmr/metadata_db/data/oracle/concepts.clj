@@ -193,10 +193,20 @@
                          `(>= :id ~min-id))
          stmt (select ['(min :id)]
                 (from table)
-                  (where params-clause))]
+                (where params-clause))]
      (-> (su/find-one conn stmt)
          vals
          first))))
+
+(defn- save-concepts-to-tmp-table
+  "Utility method to save a bunch of concepts to a temporary table."
+  [conn concept-id-revision-id-tuples]
+  (apply j/insert! conn
+                 "get_concepts_work_area"
+                 ["concept_id" "revision_id"]
+                 ;; set :transaction? false since we are already inside a transaction, and
+                 ;; we want the temp table to persist for the main select
+                 (concat concept-id-revision-id-tuples [:transaction? false])))
 
 (extend-protocol c/ConceptsStore
   OracleStore
@@ -267,12 +277,8 @@
           [conn db]
           ;; use a temporary table to insert our values so we can use a join to
           ;; pull everything in one select
-          (apply j/insert! conn
-                 "get_concepts_work_area"
-                 ["concept_id" "revision_id"]
-                 ;; set :transaction? false since we are already inside a transaction, and
-                 ;; we want the temp table to persist for the main select
-                 (concat concept-id-revision-id-tuples [:transaction? false]))
+          (save-concepts-to-tmp-table conn concept-id-revision-id-tuples)
+
           (let [table (tables/get-table-name provider-id concept-type)
                 stmt (su/build (select [:c.*]
                                  (from (as (keyword table) :c)
@@ -418,6 +424,23 @@
                            (where (find-params->sql-clause params))))]
       (j/execute! db stmt)))
 
+  (force-delete-concepts
+    [db provider-id concept-type concept-id-revision-id-tuples]
+    (let [table (tables/get-table-name provider-id concept-type)]
+      (j/with-db-transaction
+        [conn db]
+        ;; use a temporary table to insert our values so we can use them in our delete
+        (save-concepts-to-tmp-table conn concept-id-revision-id-tuples)
+
+        (let [stmt [(format "DELETE FROM %s t1 WHERE EXISTS
+                            (SELECT 1 FROM get_concepts_work_area tmp WHERE
+                            tmp.concept_id = t1.concept_id AND
+                            tmp.revision_id = t1.revision_id)"
+                            table)]]
+          (println (first stmt))))))
+
+
+
   (reset
     [this]
     (try
@@ -455,5 +478,35 @@
                           and   outer.revision_id = inner.revision_id"
                           table table table EXPIRED_CONCEPTS_BATCH_SIZE)]]
         (doall (map (partial db-result->concept-map concept-type conn provider)
-                    (sql-utils/query conn stmt)))))))
+                    (sql-utils/query conn stmt))))))
+
+  (get-old-concept-revisions
+    [this provider concept-type limit]
+    (j/with-db-transaction
+      [conn this]
+      (let [table (tables/get-table-name provider concept-type)
+            ;; This will return the concepts sorted by concept-id then by descending revision-id.
+            stmt [(format "select concept_id, revision_id from %s
+                          where concept_id in (select * from (select concept_id from %s group by
+                          concept_id having count(*) > 1) where rownum <= %d)
+                          group by concept_id, revision_id order by concept_id, revision_id desc"
+                          table
+                          table
+                          limit)]
+            result (sql-utils/query conn stmt)]
+        (:tuples (reduce (fn [val concept-map]
+                           (let [{:keys [concept_id revision_id]} concept-map
+                                 {:keys [used-concept-ids tuples]} val]
+                             ;; Taking advantage of the fact that the reivision-ids were sorted
+                             ;; in descending order, so the first time we encounter a concept-id
+                             ;; we can ignore that revision (it is the highest).
+                             (if (contains? used-concept-ids concept_id)
+                               {:used-concept-ids used-concept-ids
+                                :tuples (conj tuples [concept_id revision_id])}
+                               {:used-concept-ids (conj used-concept-ids concept_id)
+                                :tuples tuples})))
+                         {:used-concept-ids #{} :tuples []}
+                         result))))))
+
+
 

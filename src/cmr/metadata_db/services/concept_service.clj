@@ -22,6 +22,12 @@
             [clojure.set :as set]
             [clojure.string]))
 
+
+(def keep-revisions
+  "Number of revisions to keep by concept-type"
+  {:collection 10
+   :granule 1})
+
 ;;; utility methods
 
 (defn validate-providers-exist
@@ -374,3 +380,16 @@
                 tombstone (merge coll {:revision-id revision-id :deleted true :metadata ""})]
             (try-to-save db tombstone revision-id)))
         (recur)))))
+
+(defn delete-old-revisions
+  "Delete concepts to keep a fixed number of revisions around."
+  [db provider concept-type]
+  (loop []
+    (let [old-concepts (c/get-old-concept-revisions db provider concept-type 10)]
+      (when-not (empty? old-concepts)
+        (info "Deleting" (count old-concepts) "old concept revisions for provider" provider)
+        (c/force-delete-concepts db provider concept-type old-concepts)
+        #_(recur)))))
+
+
+

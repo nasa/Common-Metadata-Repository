@@ -12,11 +12,16 @@
             [cmr.metadata-db.services.concept-service :as srv]
             [clj-time.core :as ct]))
 
-(def job-key "jobs.expired.1")
+(def expired-job-key "jobs.expired.1")
+(def old-revisions-job-key "jobs.old.revisions.1")
 
 (def EXPIRED_CONCEPT_CLEANUP_INTERVAL
   "The number of seconds between jobs run to cleanup expired granules and collections"
   (* 3600 5))
+
+(def OLD_REVISIONS_CONCEPT_CLEANUP_INTERVAL
+  "The number of seconds between jobs run to cleanup old revisions of granules and collections"
+  (* 3600 12))
 
 (defn configure-quartz-system-properties
   [db]
@@ -40,22 +45,41 @@
       (error e "ExpiredConceptCleanupJob caught Exception.")))
   (info "Finished expired concepts cleanup."))
 
+(def-stateful-job OldRevisionConceptCleanupJob
+  [ctx]
+  (info "Executing old revision concepts cleanup.")
+  (try
+    (let [db (db-holder/get-db)]
+      (doseq [provider (provider-db/get-providers db)]
+        (srv/delete-old-revisions db provider :collection)
+        (srv/delete-old-revisions db provider :granule)))
+    (catch Throwable e
+      (error e "OldRevisionConceptCleanupJob caught Exception.")))
+  (info "Finished old revision concepts cleanup."))
+
+(defn start-job
+  "Start a quartzite job (stopping existing job first)."
+  [job-key job-type interval start-delay trigger-key]
+  ;; We delete existing jobs and recreate them
+  (when (qs/get-job job-key)
+    (qs/delete-job (jobs/key job-key)))
+  (let [job (jobs/build
+              (jobs/of-type job-type)
+              (jobs/with-identity (jobs/key job-key)))
+        trigger (t/build
+                  (t/with-identity (t/key trigger-key))
+                  (t/start-at (-> start-delay ct/seconds ct/from-now))
+                  (t/with-schedule (schedule
+                                     (with-interval-in-seconds interval))))]
+    (qs/schedule job trigger)))
+
 (defn start
   [db]
   (info "Starting expired concepts cleanup job")
   (configure-quartz-system-properties db)
   (qs/initialize)
   (qs/start)
-  ;; We delete exiting job and recreate it
-  (when (qs/get-job job-key)
-    (qs/delete-job (jobs/key job-key)))
-  (let [job (jobs/build
-              (jobs/of-type ExpiredConceptCleanupJob)
-              (jobs/with-identity (jobs/key job-key)))
-        trigger (t/build
-                  (t/with-identity (t/key "triggers.1"))
-                  (t/start-at (-> 5 ct/seconds ct/from-now))
-                  (t/with-schedule (schedule
-                                     (with-interval-in-seconds EXPIRED_CONCEPT_CLEANUP_INTERVAL))))]
-    (qs/schedule job trigger))
-  (info "Expired concepts cleanup job started."))
+  (start-job expired-job-key ExpiredConceptCleanupJob EXPIRED_CONCEPT_CLEANUP_INTERVAL 5 "triggers.1")
+  (info "Expired concepts cleanup job started.")
+  (start-job old-revisions-job-key OldRevisionConceptCleanupJob OLD_REVISIONS_CONCEPT_CLEANUP_INTERVAL 10 "triggers.2")
+  (info "Old revision concepts cleanup job started."))

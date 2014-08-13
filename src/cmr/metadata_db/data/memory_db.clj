@@ -156,6 +156,11 @@
                           (= revision-id (:revision-id c)))))
               %)))
 
+  (force-delete-concepts
+    [db provider-id concept-type concept-id-revision-id-tuples]
+    ;; TODO implement this
+    )
+
   (reset
     [db]
     (reset! concepts-atom [])
@@ -172,6 +177,11 @@
                (some? delete-time)
                (t/before? delete-time (t/now)))))
       @concepts-atom))
+
+  (get-old-concept-revisions
+  [db provider concept-type limit]
+  ;; TODO impelement this
+  )
 
   providers/ProvidersStore
 
