@@ -30,8 +30,7 @@
   "Returns a new instance of the whole application."
   []
   (let [metadata-db (-> (mdb-system/create-system "metadata-db-in-bootstrap-pool")
-                        (dissoc :log :web)
-                        (assoc :skip-background-jobs true))
+                        (dissoc :log :web :scheduler))
         indexer (-> (idx-system/create-system)
                     (dissoc :log :web)
                     ;; Setting the parent-collection-cache to cache parent collection umm
