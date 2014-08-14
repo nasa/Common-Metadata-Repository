@@ -16,6 +16,7 @@
                  [org.clojure/core.cache "0.6.3"]
                  [org.clojure/data.codec "0.1.0"]
                  [com.novemberain/pantomime "2.1.0"]
+                 [clojurewerkz/quartzite "1.2.0"]
 
                  ;; Needed for GzipHandler
                  [org.eclipse.jetty/jetty-servlets "7.6.8.v20121106"]]

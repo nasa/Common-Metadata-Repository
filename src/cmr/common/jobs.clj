@@ -1,0 +1,175 @@
+(ns cmr.common.jobs
+  "Defines a job scheduler that wraps quartz for defining a job."
+  (:require [cmr.common.log :as log :refer (debug info warn error)]
+            [cmr.common.lifecycle :as l]
+            [cmr.common.services.errors :as errors]
+            [clj-time.core :as t]
+            ;; quartzite dependencies
+            [clojurewerkz.quartzite.scheduler :as qs]
+            [clojurewerkz.quartzite.triggers :as qt]
+            [clojurewerkz.quartzite.jobs :as qj]
+            [clojurewerkz.quartzite.stateful :as qst]
+            [clojurewerkz.quartzite.schedule.calendar-interval :as qcal]
+            [clojurewerkz.quartzite.conversion :as qc]))
+
+(def system-holder
+  "A container that allows access to the system for jobs"
+  (atom nil))
+
+(defn defjob*
+  "The function that does the bulk of the work for the def job macros."
+  [qtype-fn jtype args body]
+  (when (not= 2 (count args))
+    (throw (Exception. "defjob expects two arguments of job-context and system")))
+  (let [[job-context-sym system-sym] args
+        job-name (name jtype)]
+    `(~qtype-fn
+       ~jtype
+       [~job-context-sym]
+       (info ~(str job-name " starting."))
+       (try
+         (let [~system-sym (deref system-holder)]
+           ~@body)
+         (catch Throwable e#
+           (error e# ~(str job-name " caught exception."))))
+       (info ~(str job-name " complete.")))))
+
+(defmacro defjob
+  "Wrapper for quartzite defjob that adds a few extras. The code in defjob should take two
+  arguments for the quartz job context and the system. It will automatically log when the
+  job starts and stops and catch any exceptions and log them.
+
+  Example:
+  (defjob CleanupJob
+  [ctx system]
+  (do-some-cleanup system))
+  "
+  [jtype args & body]
+  (defjob* `qj/defjob jtype args body))
+
+(defmacro def-stateful-job
+  "Defines a job that can only run a single instance at a time across a clustered set of applications
+  running quartz. The job will be persisted in the database. Has the same other extras as defjob.
+
+  Example:
+  (def-stateful-job CleanupJob
+  [ctx system]
+  (do-some-cleanup system))
+  "
+  [jtype args & body]
+  (defjob* `qst/def-stateful-job jtype args body))
+
+(def quartz-clustering-properties
+  "A list of quartz properties that will allow it to run in a clustered mode. The property names
+  will all start with 'org.quartz.' which is elided for brevity."
+
+  {;; Main scheduler properties
+   "scheduler.instanceName"  "CMRScheduler"
+   "scheduler.instanceId"  "AUTO"
+   ;; Thread pool
+   "threadPool.class"  "org.quartz.simpl.SimpleThreadPool"
+   "threadPool.threadCount"  "25"
+   "threadPool.threadPriority"  "5"
+   ;; Job Store
+   "jobStore.misfireThreshold"  "60000"
+   "jobStore.class"  "org.quartz.impl.jdbcjobstore.JobStoreTX"
+   "jobStore.driverDelegateClass"  "org.quartz.impl.jdbcjobstore.oracle.OracleDelegate"
+   "jobStore.useProperties"  "false"
+   "jobStore.dataSource"  "myDS"
+   "jobStore.tablePrefix"  "QRTZ_"
+   "jobStore.isClustered"  "true"
+   "jobStore.clusterCheckinInterval"  "20000"
+
+   ;; Data sources
+   "dataSource.myDS.driver"  "oracle.jdbc.driver.OracleDriver"
+   "dataSource.myDS.maxConnections"  "5"
+   "dataSource.myDS.validationQuery" "select 0 from dual"})
+
+(defn- configure-quartz-clustering-system-properties
+  "Configures system properties so that quartz can use the database. This is only needed when an
+  application is going to run jobs that should only be run on a single instance at any given time."
+  [db]
+  ;; Configure the static properties
+  (doseq [[k v] quartz-clustering-properties]
+    (System/setProperty (str "org.quartz." k) v))
+
+  (let [{{:keys [subprotocol subname user password]} :spec} db]
+    (System/setProperty
+      "org.quartz.dataSource.myDS.URL"
+      (str "jdbc:" subprotocol ":" subname))
+    (System/setProperty "org.quartz.dataSource.myDS.user" user)
+    (System/setProperty "org.quartz.dataSource.myDS.password" password)))
+
+(defn- schedule-job
+  "Schedules a quartzite job (stopping existing job first)."
+  [^Class job-type interval start-delay]
+  (let [job-key (str (.getSimpleName job-type) ".job")
+        trigger-key (str job-key ".trigger")
+        job (qj/build
+              (qj/of-type job-type)
+              (qj/with-identity (qj/key job-key)))
+        trigger (qt/build
+                  (qt/with-identity (qt/key trigger-key))
+                  ;; Set start delay
+                  (qt/start-at (-> start-delay t/seconds t/from-now))
+                  ;; Set interval
+                  (qt/with-schedule (qcal/schedule (qcal/with-interval-in-seconds interval))))]
+    ;; We delete existing jobs and recreate them
+    (when (qs/get-job job-key)
+      (qs/delete-job (qj/key job-key)))
+    (qs/schedule job trigger)))
+
+(defrecord JobScheduler
+  [
+   ;; A list of maps containing job-type, interval, and optionally start-delay
+   jobs
+   ;; True or false to indicate it should run in clustered mode.
+   clustered?
+   ;; true or false to indicate it's running
+   running?
+   ]
+
+  l/Lifecycle
+
+  (start
+    [this system]
+    (when (:running? this)
+      (errors/internal-error! "Job scheduler already running"))
+    (if-let [jobs (:jobs this)]
+      (do
+        (reset! system-holder system)
+
+        (when (:clustered? system)
+          (configure-quartz-clustering-system-properties (:db system)))
+
+        ;; Start quartz
+        (qs/initialize)
+        (qs/start)
+
+        ;; schedule all the jobs
+        (doseq [{:keys [job-type interval start-delay]} jobs]
+          (schedule-job job-type interval (or start-delay 5)))
+
+        (assoc this :running? true))
+      (errors/internal-error! "No jobs to schedule.")))
+
+  (stop
+    [this system]
+    (when (:running? this)
+      ;; Shutdown and wait for jobs to complete
+      (qs/shutdown true)
+      (assoc this :running? false))))
+
+
+(defn create-scheduler
+  "Starts the quartz job processing. It will look for a sequence in :jobs in the system containing
+  a :job-type (a class), :interval keys and optionally :start-delay"
+  [jobs]
+  (->JobScheduler jobs false false))
+
+(defn create-clustered-scheduler
+  "Starts the quartz job processing in clustered mode. The system should contain :jobs as described
+  in start."
+  [jobs]
+  (->JobScheduler jobs true false))
+
