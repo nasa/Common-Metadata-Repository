@@ -33,10 +33,10 @@ lein do clean, install, clean
 cd ../cmr-es-spatial-plugin
 lein do clean, install, clean
 
-cd ../cmr-ingest-app
+cd ../cmr-mock-echo-app
 lein do clean, install, clean
 
-cd ../cmr-search-app
+cd ../cmr-metadata-db-app
 lein do clean, install, clean
 
 cd ../cmr-indexer-app
@@ -45,7 +45,10 @@ lein do clean, install, clean
 cd ../cmr-index-set-app
 lein do clean, install, clean
 
-cd ../cmr-metadata-db-app
+cd ../cmr-ingest-app
+lein do clean, install, clean
+
+cd ../cmr-search-app
 lein do clean, install, clean
 
 cd ../cmr-bootstrap-app

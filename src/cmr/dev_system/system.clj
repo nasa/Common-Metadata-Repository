@@ -6,6 +6,7 @@
             [cmr.search.system :as search-system]
             [cmr.ingest.system :as ingest-system]
             [cmr.index-set.system :as index-set-system]
+            [cmr.mock-echo.system :as mock-echo-system]
             [cmr.metadata-db.data.memory-db :as memory]
             [cmr.index-set.data.elasticsearch :as es-index]
             [cmr.search.data.elastic-search-index :as es-search]
@@ -28,11 +29,13 @@
    :search {:start search-system/start
             :stop search-system/stop}
    :bootstrap {:start bootstrap-system/start
-               :stop bootstrap-system/stop}})
+               :stop bootstrap-system/stop}
+   :mock-echo {:start mock-echo-system/start
+               :stop mock-echo-system/stop}})
 
 (def app-startup-order
   "Defines the order in which applications should be started"
-  [:metadata-db :index-set :indexer :ingest :search :bootstrap])
+  [:mock-echo :metadata-db :index-set :indexer :ingest :search :bootstrap])
 
 (def in-memory-elastic-port 9206)
 
@@ -66,8 +69,10 @@
 
   (let [in-memory-db (memory/create-db)]
     ;; Memory DB configured to run in memory
-    {:apps {:metadata-db (assoc (mdb-system/create-system)
-                                :db in-memory-db)
+    {:apps {:mock-echo (mock-echo-system/create-system)
+            :metadata-db (-> (mdb-system/create-system)
+                             (assoc :db in-memory-db)
+                             (dissoc :scheduler))
             ;; Bootstrap is not enabled for in-memory dev system
             :indexer (indexer-system/create-system)
             :index-set (index-set-system/create-system)
@@ -84,7 +89,8 @@
 
 (defmethod create-system :external-dbs
   [type]
-  {:apps {:metadata-db (mdb-system/create-system)
+  {:apps {:mock-echo (mock-echo-system/create-system)
+          :metadata-db (mdb-system/create-system)
           :bootstrap (bootstrap-system/create-system)
           :indexer (indexer-system/create-system)
           :index-set (index-set-system/create-system)

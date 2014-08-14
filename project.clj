@@ -15,7 +15,8 @@
    :cmr-system-trace-lib "0.1.0-SNAPSHOT"
    :cmr-elastic-utils-lib "0.1.0-SNAPSHOT"
    :cmr-system-int-test "0.1.0-SNAPSHOT"
-   :cmr-oracle-lib "0.1.0-SNAPSHOT"})
+   :cmr-oracle-lib "0.1.0-SNAPSHOT"
+   :cmr-mock-echo-app "0.1.0-SNAPSHOT"})
 
 (def project-dependencies
   "A list of other projects as maven dependencies"
@@ -48,6 +49,7 @@
                  [nasa-cmr/cmr-ingest-app "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-bootstrap-app "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-index-set-app "0.1.0-SNAPSHOT"]
+                 [nasa-cmr/cmr-mock-echo-app "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-es-spatial-plugin "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-system-int-test "0.1.0-SNAPSHOT"]]
 
