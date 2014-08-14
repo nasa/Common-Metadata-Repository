@@ -33,8 +33,7 @@
   "Returns a new instance of the whole application."
   []
   (let [metadata-db (-> (mdb-system/create-system "metadata-db-in-search-app-pool")
-                        (dissoc :log :web)
-                        (assoc :skip-background-jobs true))
+                        (dissoc :log :web :scheduler))
         sys {:log (log/create-logger)
 
              ;; An embedded version of the metadata db app to allow quick retrieval of data
