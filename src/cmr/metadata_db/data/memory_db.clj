@@ -158,7 +158,7 @@
 
   (force-delete-concepts
     [db provider-id concept-type concept-id-revision-id-tuples]
-    ;; TODO implement this
+    ;; NOTE - this is not needed for in-memory db
     )
 
   (reset
@@ -178,9 +178,14 @@
                (t/before? delete-time (t/now)))))
       @concepts-atom))
 
+  (get-tombstoned-concept-revisions
+  [db provider concept-type limit]
+  ;; NOTE - this is not needed for in-memory db
+  )
+
   (get-old-concept-revisions
   [db provider concept-type max-versions limit]
-  ;; TODO impelement this
+  ;; NOTE - this is not needed for in-memory db
   )
 
   providers/ProvidersStore

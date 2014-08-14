@@ -69,6 +69,11 @@
     "Returns concepts that have a delete-time before now and have not been deleted
     for the given provider and concept-type.")
 
+  (get-tombstoned-concept-revisions
+    [db provider concept-type limit]
+    "Returns concpet-id and revision-id tuples for concept revisions that are get-tombstones
+    or older than a tombstone for the same concept-id.")
+
   (get-old-concept-revisions
     [db provider concept-type max-revisions limit]
     "Returns concept-id and revision-id tuples for old (more than 'max-revisions'

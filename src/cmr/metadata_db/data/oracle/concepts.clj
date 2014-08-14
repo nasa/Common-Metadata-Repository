@@ -485,6 +485,27 @@
         (doall (map (partial db-result->concept-map concept-type conn provider)
                     (sql-utils/query conn stmt))))))
 
+  (get-tombstoned-concept-revisions
+    [this provider concept-type limit]
+    (j/with-db-transaction
+      [conn this]
+      (let [table (tables/get-table-name provider concept-type)
+            ;; This will return the concepts-id/revision pairs for tombstones and revisions
+            ;; older than the tombstone - up to 'limit' concepts.
+            stmt [(format "select t1.concept_id, t1.revision_id from %s t1 inner join
+                          (select * from
+                          (select concept_id, revision_id from %s where DELETED = 1)
+                          where rownum < %d) t2
+                          on t1.concept_id = t2.concept_id and t1.REVISION_ID <= t2.revision_id"
+                          table
+                          table
+                          limit)]
+            result (sql-utils/query conn stmt)]
+        ;; create tuples of concept-id/revision-id to remove
+        (map (fn [{:keys [concept_id revision_id]}]
+               [concept_id revision_id])
+             result))))
+
   (get-old-concept-revisions
     [this provider concept-type max-revisions limit]
     (j/with-db-transaction
