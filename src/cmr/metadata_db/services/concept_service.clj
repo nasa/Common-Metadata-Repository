@@ -28,6 +28,10 @@
   {:collection 10
    :granule 1})
 
+(def concept-truncation-batch-size
+  "Maximum number of concepts to process in each iteration of the delete old concepts job."
+  1000)
+
 ;;; utility methods
 
 (defn validate-providers-exist
@@ -385,11 +389,15 @@
   "Delete concepts to keep a fixed number of revisions around."
   [db provider concept-type]
   (loop []
-    (let [old-concepts (c/get-old-concept-revisions db provider concept-type 10)]
+    (let [old-concepts (c/get-old-concept-revisions db
+                                                    provider
+                                                    concept-type
+                                                    (get keep-revisions concept-type)
+                                                    concept-truncation-batch-size)]
       (when-not (empty? old-concepts)
         (info "Deleting" (count old-concepts) "old concept revisions for provider" provider)
         (c/force-delete-concepts db provider concept-type old-concepts)
-        #_(recur)))))
+        (recur)))))
 
 
 

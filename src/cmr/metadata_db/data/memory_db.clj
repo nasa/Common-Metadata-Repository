@@ -179,7 +179,7 @@
       @concepts-atom))
 
   (get-old-concept-revisions
-  [db provider concept-type limit]
+  [db provider concept-type max-versions limit]
   ;; TODO impelement this
   )
 

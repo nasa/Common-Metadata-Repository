@@ -62,6 +62,12 @@
     :else
     (max num1 num2)))
 
+
+(defn- truncate-highest
+  "Return a sequence with the highest drop-max values removed from the input sequence."
+  [values drop-max]
+  (drop-last drop-max (sort values)))
+
 (defn blob->input-stream
   "Convert a BLOB to an InputStream"
   [^Blob blob]
@@ -202,11 +208,11 @@
   "Utility method to save a bunch of concepts to a temporary table."
   [conn concept-id-revision-id-tuples]
   (apply j/insert! conn
-                 "get_concepts_work_area"
-                 ["concept_id" "revision_id"]
-                 ;; set :transaction? false since we are already inside a transaction, and
-                 ;; we want the temp table to persist for the main select
-                 (concat concept-id-revision-id-tuples [:transaction? false])))
+         "get_concepts_work_area"
+         ["concept_id" "revision_id"]
+         ;; set :transaction? false since we are already inside a transaction, and
+         ;; we want the temp table to persist for the main select
+         (concat concept-id-revision-id-tuples [:transaction? false])))
 
 (extend-protocol c/ConceptsStore
   OracleStore
@@ -437,9 +443,7 @@
                             tmp.concept_id = t1.concept_id AND
                             tmp.revision_id = t1.revision_id)"
                             table)]]
-          (println (first stmt))))))
-
-
+          (j/execute! conn stmt)))))
 
   (reset
     [this]
@@ -481,32 +485,32 @@
                     (sql-utils/query conn stmt))))))
 
   (get-old-concept-revisions
-    [this provider concept-type limit]
+    [this provider concept-type max-revisions limit]
     (j/with-db-transaction
       [conn this]
       (let [table (tables/get-table-name provider concept-type)
             ;; This will return the concepts sorted by concept-id then by descending revision-id.
             stmt [(format "select concept_id, revision_id from %s
                           where concept_id in (select * from (select concept_id from %s group by
-                          concept_id having count(*) > 1) where rownum <= %d)
-                          group by concept_id, revision_id order by concept_id, revision_id desc"
+                          concept_id having count(*) > %d) where rownum <= %d)"
                           table
                           table
+                          max-revisions
                           limit)]
-            result (sql-utils/query conn stmt)]
-        (:tuples (reduce (fn [val concept-map]
-                           (let [{:keys [concept_id revision_id]} concept-map
-                                 {:keys [used-concept-ids tuples]} val]
-                             ;; Taking advantage of the fact that the reivision-ids were sorted
-                             ;; in descending order, so the first time we encounter a concept-id
-                             ;; we can ignore that revision (it is the highest).
-                             (if (contains? used-concept-ids concept_id)
-                               {:used-concept-ids used-concept-ids
-                                :tuples (conj tuples [concept_id revision_id])}
-                               {:used-concept-ids (conj used-concept-ids concept_id)
-                                :tuples tuples})))
-                         {:used-concept-ids #{} :tuples []}
-                         result))))))
-
-
-
+            result (sql-utils/query conn stmt)
+            ;; create a map of concept-ids to vectors of all returned revisions
+            concept-id-rev-ids-map (reduce (fn [memo concept-map]
+                                             (let [{:keys [concept_id revision_id]} concept-map]
+                                               (if-let [rev-ids (get memo concept_id)]
+                                                 (assoc memo concept_id (conj rev-ids revision_id))
+                                                 (assoc memo concept_id [revision_id]))))
+                                           {}
+                                           result)]
+        ;; generate tuples
+        (reduce-kv (fn [memo concept-id rev-ids]
+                     (apply merge memo (map (fn [revision-id]
+                                              [concept-id revision-id])
+                                            ;; only add tuples for old revisions
+                                            (truncate-highest rev-ids max-revisions))))
+                   []
+                   concept-id-rev-ids-map)))))

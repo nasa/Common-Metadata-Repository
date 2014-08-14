@@ -70,9 +70,9 @@
     for the given provider and concept-type.")
 
   (get-old-concept-revisions
-    [db provider concept-type limit]
-    "Returns concept-id and revision-id tuples for old revisions of concepts, up to 'limit'
-    concepts."))
+    [db provider concept-type max-revisions limit]
+    "Returns concept-id and revision-id tuples for old (more than 'max-revisions'
+    old) revisions of concepts, up to 'limit' concepts."))
 
 
 
