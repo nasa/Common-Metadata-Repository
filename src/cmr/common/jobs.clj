@@ -12,10 +12,6 @@
             [clojurewerkz.quartzite.schedule.calendar-interval :as qcal]
             [clojurewerkz.quartzite.conversion :as qc]))
 
-(def system-holder
-  "A container that allows access to the system for jobs"
-  (atom nil))
-
 (defn defjob*
   "The function that does the bulk of the work for the def job macros."
   [qtype-fn jtype args body]
@@ -28,7 +24,10 @@
        [~job-context-sym]
        (info ~(str job-name " starting."))
        (try
-         (let [~system-sym (deref system-holder)]
+         (let [system-holder-var-name# (get (qc/from-job-data ~job-context-sym)
+                                            "system-holder-var-name")
+               system-holder# (-> system-holder-var-name# symbol find-var var-get)
+               ~system-sym (deref system-holder#)]
            ~@body)
          (catch Throwable e#
            (error e# ~(str job-name " caught exception."))))
@@ -102,11 +101,16 @@
 
 (defn- schedule-job
   "Schedules a quartzite job (stopping existing job first)."
-  [^Class job-type interval start-delay]
-  (let [job-key (str (.getSimpleName job-type) ".job")
+  [system-holder-var-name job]
+  (let [{:keys [^Class job-type job-key interval start-delay]} job
+        ;; Defaults
+        start-delay (or start-delay 5)
+        job-key (or job-key (str (.getSimpleName job-type) ".job"))
+
         trigger-key (str job-key ".trigger")
         job (qj/build
               (qj/of-type job-type)
+              (qj/using-job-data {"system-holder-var-name" system-holder-var-name})
               (qj/with-identity (qj/key job-key)))
         trigger (qt/build
                   (qt/with-identity (qt/key trigger-key))
@@ -121,6 +125,11 @@
 
 (defrecord JobScheduler
   [
+   ;; A var that will point to an atom to use to contain the system.
+   ;; Jobs need access to the system. There can be multiple systems running at once so there needs
+   ;; to be a separate var per system as a way for jobs to access it at run time.
+   system-holder-var
+
    ;; A list of maps containing job-type, interval, and optionally start-delay
    jobs
    ;; True or false to indicate it should run in clustered mode.
@@ -137,18 +146,21 @@
       (errors/internal-error! "Job scheduler already running"))
     (if-let [jobs (:jobs this)]
       (do
-        (reset! system-holder system)
+        (let [system-holder-var (:system-holder-var this)
+              system-holder (-> system-holder-var find-var var-get)
+              system-holder-var-name (str (namespace system-holder-var) "/"
+                                          (name system-holder-var))]
+          (reset! system-holder system)
 
-        (when (:clustered? system)
-          (configure-quartz-clustering-system-properties (:db system)))
+          (when (:clustered? system)
+            (configure-quartz-clustering-system-properties (:db system)))
 
-        ;; Start quartz
-        (qs/initialize)
-        (qs/start)
+          ;; Start quartz
+          (qs/initialize)
+          (qs/start)
 
-        ;; schedule all the jobs
-        (doseq [{:keys [job-type interval start-delay]} jobs]
-          (schedule-job job-type interval (or start-delay 5)))
+          ;; schedule all the jobs
+          (doseq [job jobs] (schedule-job system-holder-var-name job)))
 
         (assoc this :running? true))
       (errors/internal-error! "No jobs to schedule.")))
@@ -163,13 +175,15 @@
 
 (defn create-scheduler
   "Starts the quartz job processing. It will look for a sequence in :jobs in the system containing
-  a :job-type (a class), :interval keys and optionally :start-delay"
-  [jobs]
-  (->JobScheduler jobs false false))
+  a :job-type (a class), :interval keys and optionally :start-delay and :job-key. The job-key can be
+  set to override the default in cases where you want multiple instances of a job to run with the
+  same type."
+  [system-holder-var jobs]
+  (->JobScheduler system-holder-var jobs false false))
 
 (defn create-clustered-scheduler
   "Starts the quartz job processing in clustered mode. The system should contain :jobs as described
   in start."
-  [jobs]
-  (->JobScheduler jobs true false))
+  [system-holder-var jobs]
+  (->JobScheduler system-holder-var jobs true false))
 

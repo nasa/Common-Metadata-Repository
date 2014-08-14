@@ -90,11 +90,14 @@
   "Maps f over the keys in map m and updates all keys with the result of f.
   This is a recommended function from the Camel Snake Kebab library."
   (when m
-    (letfn [(mapper [[k v]]
-                    [(f k)
-                     (if (map? v)
-                       (map-keys f v)
-                       v)])]
+    (letfn [(handle-value [v]
+                          (cond
+                            (map? v) (map-keys f v)
+                            (vector? v) (mapv handle-value v)
+                            (seq? v) (map handle-value v)
+                            :else v))
+            (mapper [[k v]]
+                    [(f k) (handle-value v)])]
       (into {} (map mapper m)))))
 
 (defn map-keys->snake_case
