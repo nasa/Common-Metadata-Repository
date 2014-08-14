@@ -26,7 +26,7 @@
 (def num-revisions-to-keep-per-concept-type
   "Number of revisions to keep by concept-type. If a concept instance has more than the number
   of revisions here the oldest ones will be deleted."
-  {:collection 2
+  {:collection 10
    :granule 1})
 
 (def concept-truncation-batch-size
