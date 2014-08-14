@@ -21,10 +21,10 @@
       (srv/delete-expired-concepts db provider :granule))))
 
 (def-stateful-job OldRevisionConceptCleanupJob
-  [ctx]
+  [ctx system]
   (info "Executing old revision concepts cleanup.")
   (try
-    (let [db (db-holder/get-db)]
+    (let [db (:db system)]
       (doseq [provider (provider-db/get-providers db)]
         (srv/delete-old-revisions db provider :collection)
         (srv/delete-old-revisions db provider :granule)))
