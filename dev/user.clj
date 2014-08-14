@@ -21,7 +21,9 @@
   []
   (let [s (system/create-system)
         ;; uncomment to test the memory db
-        ; s (assoc s :db (memory/create-db))
+         ; s (-> s
+         ;       (assoc :db (memory/create-db))
+         ;       (dissoc :scheduler))
         ]
     (alter-var-root #'system
                     (constantly

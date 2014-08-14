@@ -8,9 +8,9 @@
             [cmr.common.api.web-server :as web]
             [cmr.system-trace.context :as context]
             [cmr.oracle.connection :as oracle]
-            [cmr.metadata-db.db-holder :as db-holder]
             [cmr.metadata-db.api.routes :as routes]
-            [cmr.metadata-db.services.jobs :as jobs]
+            [cmr.metadata-db.services.jobs :as mdb-jobs]
+            [cmr.common.jobs :as jobs]
             [cmr.oracle.config :as oracle-config]
             [cmr.metadata-db.config :as config]))
 
@@ -19,7 +19,7 @@
 (def
   ^{:doc "Defines the order to start the components."
     :private true}
-  component-order [:db :log :web])
+  component-order [:db :log :web :scheduler])
 
 (defn create-system
   "Returns a new instance of the whole application."
@@ -32,7 +32,8 @@
     :log (log/create-logger)
     :web (web/create-web-server (config/app-port) routes/make-api)
     :zipkin (context/zipkin-config "Metadata DB" false)
-    :parallel-chunk-size (config/parallel-chunk-size)}))
+    :parallel-chunk-size (config/parallel-chunk-size)
+    :scheduler (jobs/create-clustered-scheduler mdb-jobs/jobs)}))
 
 (defn start
   "Performs side effects to initialize the system, acquire resources,
@@ -45,12 +46,6 @@
                                this
                                component-order)
         db (:db started-system)]
-
-    (db-holder/set-db! db)
-
-    (when-not (or (re-find #"MemoryDB" (str (type db)))
-                  (:skip-background-jobs started-system))
-      (jobs/start db))
 
     (info "Metadata DB started")
     started-system))
