@@ -57,7 +57,7 @@
       (error e "OldRevisionConceptCleanupJob caught Exception.")))
   (info "Finished old revision concepts cleanup."))
 
-(defn start-job
+(defn schedule-job
   "Start a quartzite job (stopping existing job first)."
   [job-key job-type interval start-delay trigger-key]
   ;; We delete existing jobs and recreate them
@@ -79,7 +79,5 @@
   (configure-quartz-system-properties db)
   (qs/initialize)
   (qs/start)
-  (start-job expired-job-key ExpiredConceptCleanupJob EXPIRED_CONCEPT_CLEANUP_INTERVAL 5 "triggers.1")
-  (info "Expired concepts cleanup job started.")
-  (start-job old-revisions-job-key OldRevisionConceptCleanupJob OLD_REVISIONS_CONCEPT_CLEANUP_INTERVAL 10 "triggers.2")
-  (info "Old revision concepts cleanup job started."))
+  (schedule-job expired-job-key ExpiredConceptCleanupJob EXPIRED_CONCEPT_CLEANUP_INTERVAL 5 "triggers.1")
+  (schedule-job old-revisions-job-key OldRevisionConceptCleanupJob OLD_REVISIONS_CONCEPT_CLEANUP_INTERVAL 10 "triggers.2"))

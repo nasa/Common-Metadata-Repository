@@ -64,9 +64,9 @@
 
 
 (defn- truncate-highest
-  "Return a sequence with the highest drop-max values removed from the input sequence."
-  [values drop-max]
-  (drop-last drop-max (sort values)))
+  "Return a sequence with the highest top-n values removed from the input sequence."
+  [values top-n]
+  (drop-last top-n (sort values)))
 
 (defn blob->input-stream
   "Convert a BLOB to an InputStream"
@@ -205,7 +205,8 @@
          first))))
 
 (defn- save-concepts-to-tmp-table
-  "Utility method to save a bunch of concepts to a temporary table."
+  "Utility method to save a bunch of concepts to a temporary table. Must be called from within
+  a transaction."
   [conn concept-id-revision-id-tuples]
   (apply j/insert! conn
          "get_concepts_work_area"
@@ -489,7 +490,10 @@
     (j/with-db-transaction
       [conn this]
       (let [table (tables/get-table-name provider concept-type)
-            ;; This will return the concepts sorted by concept-id then by descending revision-id.
+            ;; This will return the concepts that have more than 'max-revisions' revisions.
+            ;; Note: the 'where rownum' clause limits the number of concept-ids that are returned,
+            ;; not the number of concept-id/revision-id pairs. All revisions are returned for
+            ;; each returned concept-id.
             stmt [(format "select concept_id, revision_id from %s
                           where concept_id in (select * from (select concept_id from %s group by
                           concept_id having count(*) > %d) where rownum <= %d)"
@@ -501,12 +505,10 @@
             ;; create a map of concept-ids to vectors of all returned revisions
             concept-id-rev-ids-map (reduce (fn [memo concept-map]
                                              (let [{:keys [concept_id revision_id]} concept-map]
-                                               (if-let [rev-ids (get memo concept_id)]
-                                                 (assoc memo concept_id (conj rev-ids revision_id))
-                                                 (assoc memo concept_id [revision_id]))))
+                                               (update-in memo [concept_id] conj revision_id)))
                                            {}
                                            result)]
-        ;; generate tuples
+        ;; generate tuples of concpet-id/revision-id to remove
         (reduce-kv (fn [memo concept-id rev-ids]
                      (apply merge memo (map (fn [revision-id]
                                               [concept-id revision-id])
