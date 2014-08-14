@@ -20,6 +20,12 @@
    :headers {"Content-type" "application/json"}
    :body (prepare-body body)})
 
+(defn status-created
+  [body]
+  {:status 201
+   :headers {"Content-type" "application/json"}
+   :body (prepare-body body)})
+
 (defn require-sys-admin-token
   [headers]
   (when-not (get headers "echo-token")

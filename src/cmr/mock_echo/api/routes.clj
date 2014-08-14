@@ -11,19 +11,25 @@
             [cmr.common.services.errors :as svc-errors]
             [cmr.system-trace.http :as http-trace]
             [cmr.mock-echo.api.tokens :as token-api]
+            [cmr.mock-echo.api.providers :as providers-api]
+            [cmr.mock-echo.api.acls :as acls-api]
             [cmr.mock-echo.data.token-db :as token-db]
             [cmr.mock-echo.data.provider-db :as provider-db]
-            [cmr.mock-echo.api.providers :as providers-api]))
+            [cmr.mock-echo.data.acl-db :as acl-db]))
 
 (defn- build-routes [system]
   (routes
+
     (POST "/reset" {context :request-context}
       (token-db/reset context)
       (provider-db/reset context)
+      (acl-db/reset context)
       {:status 200})
 
+    ;; Add routes
     (token-api/build-routes system)
     (providers-api/build-routes system)
+    (acls-api/build-routes system)
 
     (route/not-found "Not Found")))
 

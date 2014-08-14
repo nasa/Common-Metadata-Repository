@@ -6,10 +6,10 @@
             [cmr.mock-echo.api.api-helpers :as ah]
             [cmr.common.services.errors :as svc-errors]))
 
-(defn create-acls
+(defn create-acl
   [context body]
-  (let [acls (json/decode body true)]
-    (acl-db/create-acls context acls)))
+  (let [acl (json/decode body true)]
+    (acl-db/create-acl context (json/decode body true))))
 
 (defn get-acls
   [context params]
@@ -31,31 +31,12 @@
 (defn build-routes [system]
   (routes
     (context "/acls" []
-      ;; Create a bunch of acls all at once
-      ;; This is used for adding test data.
+      ;; Creates one ACL
       (POST "/" {params :params context :request-context body :body}
-        (create-acls context (slurp body))
+        (create-acl context (slurp body))
         {:status 201})
 
       ;; Mimics echo-rest retrieval of acls
       (GET "/" {context :request-context params :params}
         (ah/status-ok (get-acls context params))))))
 
-
-(comment
-
-  (do
-    (require '[cmr.transmit.echo.acls :as p])
-    (require '[cmr.transmit.echo.mock :as m])
-
-    (m/create-acls {:system user/system} {"guid1" "PROV1"
-                                               "guid2" "PROV2"}))
-
-  (get-acls {:system user/system})
-
-  (p/get-acl-guid-id-map {:system user/system})
-
-
-
-
-  )

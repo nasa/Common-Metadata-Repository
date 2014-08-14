@@ -15,11 +15,11 @@
   [context]
   (reset! (context->acl-db context) initial-db-state))
 
-(defn create-acls
-  [context acls]
+(defn create-acl
+  [context acl]
   (-> context
       context->acl-db
-      (swap! assoc :acls acls)))
+      (swap! update-in [:acls] conj acl)))
 
 (defn get-acls
   [context]
