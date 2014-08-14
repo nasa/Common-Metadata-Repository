@@ -31,7 +31,7 @@
 
 (def concept-truncation-batch-size
   "Maximum number of concepts to process in each iteration of the delete old concepts job."
-  5000)
+  50000)
 
 ;;; utility methods
 
