@@ -21,6 +21,10 @@
     :private true}
   component-order [:db :log :web :scheduler])
 
+(def system-holder
+  "Required for jobs"
+  (atom nil))
+
 (defn create-system
   "Returns a new instance of the whole application."
   ([]
@@ -33,7 +37,7 @@
     :web (web/create-web-server (config/app-port) routes/make-api)
     :zipkin (context/zipkin-config "Metadata DB" false)
     :parallel-chunk-size (config/parallel-chunk-size)
-    :scheduler (jobs/create-clustered-scheduler mdb-jobs/jobs)}))
+    :scheduler (jobs/create-clustered-scheduler `system-holder mdb-jobs/jobs)}))
 
 (defn start
   "Performs side effects to initialize the system, acquire resources,
