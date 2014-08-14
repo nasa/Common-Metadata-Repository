@@ -490,7 +490,7 @@
     (j/with-db-transaction
       [conn this]
       (let [table (tables/get-table-name provider concept-type)
-            ;; This will return the concepts-id/revision pairs for tombstones and revisions
+            ;; This will return the concept-id/revision-id pairs for tombstones and revisions
             ;; older than the tombstone - up to 'limit' concepts.
             stmt [(format "select t1.concept_id, t1.revision_id from %s t1 inner join
                           (select * from
