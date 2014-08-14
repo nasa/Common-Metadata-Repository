@@ -11,7 +11,8 @@
             [cmr.common.api.web-server :as web]
             [cmr.mock-echo.api.routes :as routes]
             [cmr.common.dev.repeat-last-request :as repeat-last-request :refer (repeat-last-request)]
-            [cmr.common.dev.util :as d]))
+            [cmr.common.dev.util :as d]
+            [cmr.transmit.config :as transmit-config]))
 
 (def system nil)
 
@@ -20,7 +21,9 @@
   []
   (let [web-server (web/create-web-server system/DEFAULT_PORT
                                           (repeat-last-request/wrap-api routes/make-api))
-        s (assoc (system/create-system) :web web-server)]
+        s (-> (system/create-system)
+              (assoc :web web-server)
+              (transmit-config/system-with-connections [:echo-rest]))]
     (alter-var-root #'system
                     (constantly
                       (system/start s))))
