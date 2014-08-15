@@ -28,7 +28,8 @@
    (let [conn (config/context->app-connection context :echo-rest)
          url (format "%s%s" (conn/root-url conn) url-path)
          params (merge (request-options conn) options)
-         _ (debug "Making ECHO GET Request" url (pr-str params))
+         ;; Uncoment to log requests
+         ; _ (debug "Making ECHO GET Request" url (pr-str params))
          response (client/get url params)
          {:keys [status body headers]} response
          parsed (if (.startsWith ^String (get headers "Content-Type") "application/json")
@@ -44,7 +45,8 @@
    (let [conn (config/context->app-connection context :echo-rest)
          url (format "%s%s" (conn/root-url conn) url-path)
          params (merge (post-options conn body-obj) options)
-         _ (debug "Making ECHO POST Request" url (pr-str params))
+         ;; Uncoment to log requests
+         ; _ (debug "Making ECHO POST Request" url (pr-str params))
          response (client/post url params)
          {:keys [status body headers]} response
          parsed (if (.startsWith ^String (get headers "Content-Type" "") "application/json")
