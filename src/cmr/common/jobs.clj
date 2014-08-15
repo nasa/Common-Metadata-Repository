@@ -152,7 +152,7 @@
                                           (name system-holder-var))]
           (reset! system-holder system)
 
-          (when (:clustered? system)
+          (when (:clustered? this)
             (configure-quartz-clustering-system-properties (:db system)))
 
           ;; Start quartz
