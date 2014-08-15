@@ -3,6 +3,8 @@
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.api.web-server :as web]
             [cmr.common.cache :as cache]
+            [cmr.acl.acl-cache :as ac]
+            [cmr.common.jobs :as jobs]
             [cmr.search.api.routes :as routes]
             [cmr.search.data.elastic-search-index :as idx]
             [cmr.system-trace.context :as context]
@@ -27,7 +29,11 @@
 (def
   ^{:doc "Defines the order to start the components."
     :private true}
-  component-order [:log :search-index :web])
+  component-order [:log :search-index :web :scheduler])
+
+(def system-holder
+  "Required for jobs"
+  (atom nil))
 
 (defn create-system
   "Returns a new instance of the whole application."
@@ -43,8 +49,12 @@
              :web (web/create-web-server (transmit-config/search-port) routes/make-api)
              :cache (cache/create-cache)
              :zipkin (context/zipkin-config "Search" false)
-             :search-public-conf search-public-conf}]
-    (transmit-config/system-with-connections sys [:index-set])))
+             :search-public-conf search-public-conf
+             :acl-cache (ac/create-acl-cache)
+             :scheduler (jobs/create-scheduler
+                          `system-holder
+                          [(ac/refresh-acl-cache-job "search-acl-cache-refresh")])}]
+    (transmit-config/system-with-connections sys [:index-set :echo-rest])))
 
 (defn start
   "Performs side effects to initialize the system, acquire resources,

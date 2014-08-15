@@ -75,7 +75,7 @@
     [collection-ids (qm/group-conds operation resolved-conditions)]))
 
 (defn resolve-collection-queries
-  [query context]
+  [context query]
   (let [query (merge-collection-queries query)]
     (second (resolve-collection-query query context))))
 

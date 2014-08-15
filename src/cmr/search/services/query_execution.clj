@@ -4,7 +4,9 @@
             [cmr.search.services.transformer :as t]
             [cmr.search.models.results :as results]
             [cmr.search.data.elastic-results-to-query-results :as rc]
-            [cmr.common.log :refer (debug info warn error)])
+            [cmr.common.log :refer (debug info warn error)]
+            [cmr.search.services.collection-query-resolver :as r]
+            [cmr.search.services.acl-service :as acl-service])
   (:import cmr.search.models.query.StringsCondition
            cmr.search.models.query.StringCondition))
 
@@ -58,6 +60,13 @@
 
 (defmethod execute-query :direct-transformer
   [context query]
+  ;; TODO enforce ACLs here
+  ;; This can probably be done by adding a fast XPath or parsing the items being returned in parallel
+  ;; and enforcing the data when it is returned.
+  ;; Note that every format will need to support the minimum of entry-title, shortname, version-id
+  ;; and access-value to allow enforcing ACLS. DIF does not currently have a spot for access value
+  ;; so we'll have to add one.
+
   (let [{:keys [result-format pretty?]} query
         concept-ids (query->concept-ids query)
         tresults (t/get-latest-formatted-concepts context concept-ids result-format true)
@@ -68,6 +77,8 @@
 (defmethod execute-query :elastic
   [context query]
   (->> query
+       (acl-service/add-acl-conditions-to-query context)
+       (r/resolve-collection-queries context)
        (idx/execute-query context)
        (rc/elastic-results->query-results context query)))
 

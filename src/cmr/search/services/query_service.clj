@@ -49,7 +49,6 @@
 
             [cmr.search.services.parameters.legacy-parameters :as lp]
             [cmr.search.services.parameters.parameter-validation :as pv]
-            [cmr.search.services.collection-query-resolver :as r]
             [cmr.search.services.query-execution :as qe]
             [cmr.search.services.provider-holdings :as ph]
             [cmr.search.data.complex-to-simple :as c2s]
@@ -59,6 +58,7 @@
             [cmr.common.services.errors :as err]
             [cmr.common.util :as u]
             [cmr.common.cache :as cache]
+            [cmr.acl.acl-cache :as acl-cache]
             [camel-snake-kebab :as csk]
             [cheshire.core :as json]
             [cmr.common.log :refer (debug info warn error)]))
@@ -71,11 +71,6 @@
     (when-not (empty? errors)
       (err/throw-service-errors :invalid-data errors))
     query))
-
-(deftracefn resolve-collection-query
-  "Replace the collection query conditions in the query with conditions of collection-concept-ids."
-  [context query]
-  (r/resolve-collection-queries query context))
 
 (defmulti search-results->response
   "Converts query search results into a string response."
@@ -111,10 +106,7 @@
                                            (p/parameters->query concept-type)
                                            (validate-query context)
                                            c2s/reduce-query))
-        [query-execution-time results] (u/time-execution
-                                         (->> query
-                                              (resolve-collection-query context)
-                                              (qe/execute-query context)))
+        [query-execution-time results] (u/time-execution (qe/execute-query context query))
         [result-gen-time result-str] (u/time-execution
                                        (search-results->response
                                          context query (assoc results :took (+ query-creation-time
@@ -130,6 +122,9 @@
 (deftracefn find-concept-by-id
   "Executes a search to metadata-db and returns the concept with the given cmr-concept-id."
   [context concept-id]
+  ;; TODO enforce ACLs here
+  ;; This could be done by converting it into a query for a single item (one concept id)
+  ;; It should still be fast because it will use the direct query approach.
   (let [mdb-context (t/context->metadata-db-context context)
         concept (meta-db/get-concept mdb-context concept-id nil)]
     (when (:deleted concept)
@@ -141,7 +136,9 @@
 (deftracefn reset
   "Clear the cache for search app"
   [context]
-  (cache/reset-cache (-> context :system :cache)))
+  ;; TODO enforce ingest management ACL here.
+  (cache/reset-cache (-> context :system :cache))
+  (acl-cache/reset context))
 
 (deftracefn get-collections-by-providers
   "Returns all collections found by the given provider ids"
@@ -152,14 +149,17 @@
                          :condition query-condition
                          :page-size :unlimited
                          :result-format :core-fields})
-        results (->> query
-                     (resolve-collection-query context)
-                     (qe/execute-query context))]
+        results (qe/execute-query context query)]
     (:items results)))
 
 (deftracefn get-provider-holdings
   "Executes elasticsearch search to get provider holdings"
   [context params]
+  ;; TODO enforce ACLs here?
+  ;; Note: due to the way get-collections-by-providers works that it will limit it to collections
+  ;; that the user has access to.
+  ;; Q: should granule counts be limited to what user has permission to see?
+
   (let [{provider-ids :provider-id legacy-provider-ids :provider_id pretty? :pretty} params
         provider-ids (or provider-ids legacy-provider-ids)
         ;; make sure provider-ids is sequential
@@ -180,15 +180,13 @@
   "Executes a search for concepts using the given aql. The concepts will be returned with
   concept id and native provider id."
   [context params aql]
+  ;; TODO enforce acls here
   (let [[query-creation-time query] (u/time-execution
                                       (->> aql
                                            (a/aql->query params)
                                            (validate-query context)
                                            c2s/reduce-query))
-        [query-execution-time results] (u/time-execution
-                                         (->> query
-                                              (resolve-collection-query context)
-                                              (qe/execute-query context)))
+        [query-execution-time results] (u/time-execution (qe/execute-query context query))
         [result-gen-time result-str] (u/time-execution
                                        (search-results->response
                                          context query (assoc results :took (+ query-creation-time

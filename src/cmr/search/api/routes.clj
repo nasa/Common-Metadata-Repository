@@ -86,7 +86,7 @@
   nil)
 
 (defn process-params
-  "Processes the parameters by removing unecessary keys and adding other keys like result format"
+  "Processes the parameters by removing unecessary keys and adding other keys like result format."
   [params path-w-extension headers]
   (-> params
       (dissoc :path-w-extension)
@@ -185,7 +185,8 @@
       ;; reset operation available just for development purposes
       ;; clear the cache for search app
       (POST "/reset" {:keys [request-context]}
-        (r/created (query-svc/reset request-context))))
+        (query-svc/reset request-context)
+        {:status 200}))
     (route/not-found "Not Found")))
 
 ;; Copies the body into a new attributed called :body-copy so that after a post of form content type
