@@ -103,4 +103,9 @@ git tag -a $1 -m "Tagging at the end of the sprint"
 git push --tags
 cd ..
 
+cd cmr-acl-lib
+git tag -a $1 -m "Tagging at the end of the sprint"
+git push --tags
+cd ..
+
 cd cmr-dev-system

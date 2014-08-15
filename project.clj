@@ -7,6 +7,7 @@
    :cmr-metadata-db-app "0.1.0-SNAPSHOT"
    :cmr-index-set-app "0.1.0-SNAPSHOT"
    :cmr-common-lib "0.1.1-SNAPSHOT"
+   :cmr-acl-lib "0.1.0-SNAPSHOT"
    :cmr-transmit-lib "0.1.0-SNAPSHOT"
    :cmr-spatial-lib "0.1.0-SNAPSHOT"
    :cmr-vdd-spatial-viz "0.1.0-SNAPSHOT"

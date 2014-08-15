@@ -30,6 +30,9 @@ lein do clean, install, clean
 cd ../cmr-transmit-lib
 lein do clean, install, clean
 
+cd ../cmr-acl-lib
+lein do clean, install, clean
+
 cd ../cmr-es-spatial-plugin
 lein do clean, install, clean
 
