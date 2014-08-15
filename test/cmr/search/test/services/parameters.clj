@@ -16,22 +16,22 @@
            (lp/replace-parameter-aliases {:dataset-id "foo"}))))
   (testing "with multiples params aliasing to same key"
     (let [params {:dataset-id "foo"
-                  :echo-granule-id ["G1000000002-CMR_PROV1" "G1000000003-CMR_PROV1" "G1000000004-CMR_PROV1"
-                                    "G1000000005-CMR_PROV2" "G1000000006-CMR_PROV2"],
+                  :echo-granule-id ["G1000000002-PROV1" "G1000000003-PROV1" "G1000000004-PROV1"
+                                    "G1000000005-PROV2" "G1000000006-PROV2"],
                   :updated-since ["2014-05-16T15:09:37.829Z"],
                   :campaign "E*",
                   :options {:dataset-id {:ignore-case "true"} :campaign {:pattern "true"}}
-                  :exclude {:concept-id ["G1000000006-CMR_PROV2"],
-                            :echo-granule-id ["G1000000006-CMR_PROV2"]
-                            :echo-collection-id "C1000000002-CMR_PROV2"}}
+                  :exclude {:concept-id ["G1000000006-PROV2"],
+                            :echo-granule-id ["G1000000006-PROV2"]
+                            :echo-collection-id "C1000000002-PROV2"}}
           expected {:entry-title "foo",
-                    :concept-id ["G1000000002-CMR_PROV1" "G1000000003-CMR_PROV1" "G1000000004-CMR_PROV1"
-                                 "G1000000005-CMR_PROV2" "G1000000006-CMR_PROV2"],
+                    :concept-id ["G1000000002-PROV1" "G1000000003-PROV1" "G1000000004-PROV1"
+                                 "G1000000005-PROV2" "G1000000006-PROV2"],
                     :updated-since ["2014-05-16T15:09:37.829Z"],
                     :project "E*",
                     :options {:entry-title {:ignore-case "true"} :project {:pattern "true"}}
                     :exclude
-                    {:concept-id ["G1000000006-CMR_PROV2" "C1000000002-CMR_PROV2" "G1000000006-CMR_PROV2"]}}]
+                    {:concept-id ["G1000000006-PROV2" "C1000000002-PROV2" "G1000000006-PROV2"]}}]
       (is (= expected
              (lp/replace-parameter-aliases params))))))
 

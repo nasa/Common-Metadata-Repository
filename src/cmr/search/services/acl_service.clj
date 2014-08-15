@@ -15,9 +15,7 @@
 
 (defmethod add-acl-conditions-to-query :collection
   [context query]
-  ;; TODO update all collection tests then put this back the way it was.
-  query
-  #_(let [{:keys [token]} context
+  (let [{:keys [token]} context
         group-ids (if token
                     []; TODO implement this
                     ["guest"])
