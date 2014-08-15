@@ -17,7 +17,8 @@
   [context query]
   (let [{:keys [token]} context
         group-ids (if token
-                    []; TODO implement this
+                    (map #(if (keyword? %) (name %) %)
+                         (echo-tokens/get-current-sids context token))
                     ["guest"])
         acl-cond (qm/string-conditions :permitted-group-ids group-ids true)]
     (update-in query [:condition] #(qm/and-conds [acl-cond %]))))

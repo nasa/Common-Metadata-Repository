@@ -82,8 +82,8 @@
 (defn- get-token
   "Returns the token the user passed in the headers or parameters"
   [params headers]
-  ;; TODO get the token
-  nil)
+  (or (:token params)
+      (get headers "echo-token")))
 
 (defn process-params
   "Processes the parameters by removing unecessary keys and adding other keys like result format."
