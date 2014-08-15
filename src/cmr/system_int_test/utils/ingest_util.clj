@@ -9,7 +9,8 @@
             [cmr.umm.echo10.granule :as g]
             [cmr.umm.echo10.core :as echo10]
             [cmr.system-int-test.utils.url-helper :as url]
-            [cmr.system-int-test.utils.index-util :as index]))
+            [cmr.system-int-test.utils.index-util :as index]
+            [cmr.system-int-test.utils.echo-util :as echo-util]))
 
 
 (defn create-provider
@@ -86,6 +87,7 @@
 (defn reset
   "Resets the database and the elastic indexes"
   []
+  (echo-util/reset)
   (client/post (url/mdb-reset-url) {:connection-manager (url/conn-mgr)})
   (client/post (url/indexer-reset-url) {:connection-manager (url/conn-mgr)})
   (client/post (url/search-reset-url) {:connection-manager (url/conn-mgr)})
@@ -94,14 +96,28 @@
 ;;; fixture - each test to call this fixture
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; DEPRECATED
 (defn reset-fixture
   "Creates a database fixture function to reset the database after every test.
   Optionally accepts a list of provider-ids to create before the test"
-  [& provider-ids]
+  [& providers]
   (fn [f]
     (try
       (reset)
-      (doseq [pid provider-ids] (create-provider pid))
+      (doseq [pid providers] (create-provider pid))
+      (f)
+      (finally
+        (reset)))))
+
+;; TODO rename this to reset-fixture and move all tests over.
+(defn reset-fixture-new
+  "New version of reset fixture that works with ECHO."
+  [provider-guid-id-map]
+  (fn [f]
+    (try
+      (reset)
+      (doseq [pid (vals provider-guid-id-map)] (create-provider pid))
+      (echo-util/create-providers provider-guid-id-map)
       (f)
       (finally
         (reset)))))
