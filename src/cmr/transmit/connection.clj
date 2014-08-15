@@ -7,22 +7,21 @@
 
 (defn create-app-connection
   "Creates a 'connection' to an application"
-  [host port]
-  {:host host
-   :port port
-   ;; pooling connection manager for persistent http connections.
-   :conn-mgr (conn-mgr/make-reusable-conn-manager
-               {;; Maximum number of threads that will be used for connecting.
-                ;; Very important that this matches the maximum number of threads that will be running
-                :threads web-server/MAX_THREADS
-                ;; Maximum number of simultaneous connections per host
-                :default-per-route 10})})
+  [conn-info]
+  ;; pooling connection manager for persistent http connections.
+  (assoc conn-info
+         :conn-mgr (conn-mgr/make-reusable-conn-manager
+                     {;; Maximum number of threads that will be used for connecting.
+                      ;; Very important that this matches the maximum number of threads that will be running
+                      :threads web-server/MAX_THREADS
+                      ;; Maximum number of simultaneous connections per host
+                      :default-per-route 10})))
 
 (defn root-url
   "Returns the root url for a connection"
   [connection]
-  (let [{:keys [host port]} connection]
-    (format "http://%s:%s" host port)))
+  (let [{:keys [protocol host port context]} connection]
+    (format "%s://%s:%s%s" protocol host port context)))
 
 (defn conn-mgr
   "Returns the connection manager from a connection"

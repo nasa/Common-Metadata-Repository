@@ -21,6 +21,12 @@
 
 (def bootstrap-port (cfg/config-value-fn :bootstrap-port 3006 parse-port))
 
+(def echo-system-token (cfg/config-value-fn :echo-system-token "mock-echo-system-token"))
+
+(def default-conn-info
+  "The default values for connections."
+  {:protocol "http"
+   :context ""})
 
 (defn app-conn-info
   "Returns the current application connection information as a map by application name"
@@ -36,7 +42,17 @@
    :index-set {:host (cfg/config-value :index-set-host "localhost")
                :port (index-set-port)}
    :bootstrap {:host (cfg/config-value :bootstrap-host "localhost")
-               :port (bootstrap-port)}})
+               :port (bootstrap-port)}
+   :echo-rest
+   {:protocol "http"
+    :host (cfg/config-value :echo-rest-host "localhost")
+    :port (cfg/config-value :echo-rest-port "3000" parse-port)
+    :context ""}
+   #_{:protocol "https"
+      :host (cfg/config-value :echo-rest-host "api.echo.nasa.gov")
+      ; :host (cfg/config-value :echo-rest-host "testbed.echo.nasa.gov")
+      :port (cfg/config-value :echo-rest-port "443" parse-port)
+      :context "/echo-rest"}})
 
 (defn app-connection-system-key-name
   "The name of the app connection in the system"
@@ -52,12 +68,12 @@
   "Adds connection keys to the system for the given applications. They will be added in a way
   that can be retrieved with the context->app-connection function."
   [system app-names]
-  (let [conn-info (app-conn-info)]
+  (let [conn-info-map (app-conn-info)]
     (reduce (fn [sys app-name]
-              (let [{:keys [host port]} (conn-info app-name)]
+              (let [conn-info (merge default-conn-info (conn-info-map app-name))]
                 (assoc sys
                        (app-connection-system-key-name app-name)
-                       (conn/create-app-connection host port))))
+                       (conn/create-app-connection conn-info))))
             system
             app-names)))
 
