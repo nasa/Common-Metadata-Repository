@@ -21,6 +21,8 @@
 
 (def bootstrap-port (cfg/config-value-fn :bootstrap-port 3006 parse-port))
 
+(def echo-rest-port (cfg/config-value-fn :echo-rest-port 3007 parse-port))
+
 (def echo-system-token (cfg/config-value-fn :echo-system-token "mock-echo-system-token"))
 
 (def default-conn-info
@@ -43,16 +45,10 @@
                :port (index-set-port)}
    :bootstrap {:host (cfg/config-value :bootstrap-host "localhost")
                :port (bootstrap-port)}
-   :echo-rest
-   {:protocol "http"
-    :host (cfg/config-value :echo-rest-host "localhost")
-    :port (cfg/config-value :echo-rest-port "3000" parse-port)
-    :context ""}
-   #_{:protocol "https"
-      :host (cfg/config-value :echo-rest-host "api.echo.nasa.gov")
-      ; :host (cfg/config-value :echo-rest-host "testbed.echo.nasa.gov")
-      :port (cfg/config-value :echo-rest-port "443" parse-port)
-      :context "/echo-rest"}})
+   :echo-rest {:protocol "http"
+               :host (cfg/config-value :echo-rest-host "localhost")
+               :port (echo-rest-port)
+               :context ""}})
 
 (defn app-connection-system-key-name
   "The name of the app connection in the system"

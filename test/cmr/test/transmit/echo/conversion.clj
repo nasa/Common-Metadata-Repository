@@ -43,4 +43,12 @@
   (testing "echo -> cmr"
     (is (= example-acl-cleaned-up (c/echo-acl->cmr-acl example-echo-acl))))
   (testing "cmr -> echo"
-    (is (= example-echo-acl (c/cmr-acl->echo-acl example-acl-cleaned-up)))))
+    (is (= example-echo-acl (c/cmr-acl->echo-acl example-acl-cleaned-up))))
+
+  (testing "sids by themselves"
+    (are [cmr-sid echo-sid]
+         (and (= cmr-sid (c/echo-sid->cmr-sid echo-sid))
+              (= echo-sid (c/cmr-sid->echo-sid cmr-sid)))
+         :guest {:sid {:user_authorization_type_sid {:user_authorization_type "GUEST"}}}
+         :registered {:sid {:user_authorization_type_sid {:user_authorization_type "REGISTERED"}}}
+         "group-guid" {:sid {:group_sid {:group_guid "group-guid"}}})))
