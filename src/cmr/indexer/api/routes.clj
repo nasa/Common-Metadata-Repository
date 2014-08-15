@@ -36,7 +36,8 @@
     ;; reset operation available just for development purposes
     ;; delete configured elastic indexes and create them back
     (POST "/reset" {:keys [request-context]}
-      (r/created (index-svc/reset-indexes request-context)))
+      (index-svc/reset-indexes request-context)
+      {:status 200})
 
     (context "/:concept-id/:revision-id" [concept-id revision-id]
       (DELETE "/" {request-context :request-context params :params}

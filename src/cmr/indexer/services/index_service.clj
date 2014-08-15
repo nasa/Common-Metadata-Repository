@@ -10,6 +10,7 @@
             [cheshire.core :as cheshire]
             [cmr.indexer.data.index-set :as idx-set]
             [cmr.common.cache :as cache]
+            [cmr.acl.acl-cache :as acl-cache]
             [cmr.common.services.errors :as errors]
             [cmr.system-trace.core :refer [deftracefn]]))
 
@@ -71,6 +72,8 @@
   [context]
   (cache/reset-cache (-> context :system :cache))
   (es/reset-es-store context)
-  (cache/reset-cache (-> context :system :cache)))
+  (cache/reset-cache (-> context :system :cache))
+  (acl-cache/reset context))
+
 
 

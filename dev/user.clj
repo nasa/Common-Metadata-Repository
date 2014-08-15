@@ -8,7 +8,8 @@
             [cmr.common.api.web-server :as web]
             [cmr.indexer.api.routes :as routes]
             [cmr.common.dev.repeat-last-request :as repeat-last-request :refer (repeat-last-request)]
-            [cmr.transmit.config :as transmit-config])
+            [cmr.transmit.config :as transmit-config]
+            [cmr.common.dev.util :as d])
   (:use [clojure.test :only [run-all-tests]]
         [clojure.repl]
         [alex-and-georges.debug-repl]))
@@ -27,7 +28,8 @@
         s (assoc s :web web-server)]
     (alter-var-root #'system
                     (constantly
-                      (system/start s)))))
+                      (system/start s))))
+  (d/touch-user-clj))
 
 (defn stop
   "Shuts down and destroys the current development system."

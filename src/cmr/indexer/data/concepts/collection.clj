@@ -14,7 +14,8 @@
             [cmr.indexer.data.concepts.science-keyword :as sk]
             [cmr.indexer.data.concepts.spatial :as spatial]
             [cmr.indexer.data.concepts.keyword :as k]
-            [cmr.indexer.data.concepts.organization :as org])
+            [cmr.indexer.data.concepts.organization :as org]
+            [cmr.acl.core :as acl])
   (:import cmr.spatial.mbr.Mbr))
 
 (defn spatial->elastic
@@ -60,8 +61,11 @@
         browsable (not (empty? (ru/browse-urls related-urls)))
         update-time (get-in collection [:data-provider-timestamps :update-time])
         update-time (f/unparse (f/formatters :date-time) update-time)
-        spatial-representation (get-in collection [:spatial-coverage :spatial-representation])]
+        spatial-representation (get-in collection [:spatial-coverage :spatial-representation])
+        permitted-group-ids (acl/get-coll-permitted-group-ids context provider-id collection)
+        _ (debug "permitted-group-ids" (pr-str permitted-group-ids) "for coll" entry-title)]
     (merge {:concept-id concept-id
+            :permitted-group-ids permitted-group-ids
             :entry-id entry-id
             :entry-id.lowercase (str/lower-case entry-id)
             :entry-title entry-title

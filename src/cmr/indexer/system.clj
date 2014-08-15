@@ -8,6 +8,8 @@
             [cmr.common.api.web-server :as web]
             [cmr.indexer.data.elasticsearch :as es]
             [cmr.common.cache :as cache]
+            [cmr.acl.acl-cache :as ac]
+            [cmr.common.jobs :as jobs]
             [cmr.indexer.api.routes :as routes]
             [cmr.transmit.config :as transmit-config]
             [clojure.string :as str]
@@ -23,7 +25,11 @@
 (def
   ^{:doc "Defines the order to start the components."
     :private true}
-  component-order [:log :db :web])
+  component-order [:log :db :web :scheduler])
+
+(def system-holder
+  "Required for jobs"
+  (atom nil))
 
 (defn create-system
   "Returns a new instance of the whole application."
@@ -37,8 +43,12 @@
              ;; it is not nil. The bootstrap app will initialize this.
              :parent-collection-cache nil
              :cache (cache/create-cache)
-             :zipkin (context/zipkin-config "Indexer" false)}]
-    (transmit-config/system-with-connections sys [:metadata-db :index-set])))
+             :zipkin (context/zipkin-config "Indexer" false)
+             :acl-cache (ac/create-acl-cache)
+             :scheduler (jobs/create-scheduler
+                          `system-holder
+                          [(ac/refresh-acl-cache-job "indexer-acl-cache-refresh")])}]
+    (transmit-config/system-with-connections sys [:metadata-db :index-set :echo-rest])))
 
 (defn start
   "Performs side effects to initialize the system, acquire resources,
@@ -50,6 +60,7 @@
                                             #(when % (lifecycle/start % system))))
                                this
                                component-order)]
+
     (info "System started")
     started-system))
 

@@ -136,7 +136,7 @@
                 :_all {:enabled false},
                 :_id   {:path "concept-id"},
                 :_ttl {:enabled true},
-                :properties (merge {:permitted-group-guids (stored string-field-mapping)
+                :properties (merge {:permitted-group-ids (stored string-field-mapping)
                                     :concept-id   (stored string-field-mapping)
                                     :entry-id           (stored string-field-mapping)
                                     :entry-id.lowercase string-field-mapping
