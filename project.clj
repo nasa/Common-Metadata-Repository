@@ -13,15 +13,29 @@
                  [ring/ring-json "0.3.1"]
                  [clj-http "0.9.0"]
                  [org.clojure/tools.reader "0.8.4"]
-                 [org.clojure/tools.cli "0.3.1"]]
-  :plugins []
+                 [org.clojure/tools.cli "0.3.1"]
+
+                 ;; Database related
+                 [org.quartz-scheduler/quartz-oracle "2.1.7"]
+                 [nasa-cmr/cmr-oracle-lib "0.1.0-SNAPSHOT"]
+
+                 ]
+  :plugins [[lein-test-out "0.3.1"]
+            [drift "1.5.2"]
+            [lein-exec "0.3.2"]]
+
   :repl-options {:init-ns user}
   :profiles
   {:dev {:dependencies [[ring-mock "0.1.5"]
                         [org.clojure/tools.namespace "0.2.4"]
-                        [org.clojars.gjahad/debug-repl "0.3.3"]]
+                        [org.clojars.gjahad/debug-repl "0.3.3"]
+                        [drift "1.5.2"]]
          :source-paths ["src" "dev" "test"]}
    :uberjar {:main cmr.ingest.runner
-             :aot :all}})
+             :aot :all}}
+
+  ;; Database migrations run by executing "lein migrate"
+  :aliases {"create-user" ["exec" "-p" "./support/create_user.clj"]
+            "drop-user" ["exec" "-p" "./support/drop_user.clj"]})
 
 
