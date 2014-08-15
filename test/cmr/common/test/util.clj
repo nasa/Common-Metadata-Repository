@@ -110,13 +110,13 @@
           expected {:foo [1 2 "d" 8 3 4]}]
       (is (= expected
              (util/rename-keys-with params param-aliases merge-fn))))
-    (let [params {:concept-id ["G9000000009-CMR_PROV2"],
-                  :echo-granule-id ["G1000000006-CMR_PROV2"]
-                  :echo-collection-id "C1000000002-CMR_PROV2"}
+    (let [params {:concept-id ["G9000000009-PROV2"],
+                  :echo-granule-id ["G1000000006-PROV2"]
+                  :echo-collection-id "C1000000002-PROV2"}
           param-aliases {:echo-granule-id :concept-id :echo-collection-id :concept-id :dummy-key :replace-key}
           merge-fn #(concat (if (sequential? %1) %1 [%1])
                             (if (sequential? %2) %2 [%2]))
-          expected {:concept-id ["G9000000009-CMR_PROV2" "C1000000002-CMR_PROV2" "G1000000006-CMR_PROV2"]}]
+          expected {:concept-id ["G9000000009-PROV2" "C1000000002-PROV2" "G1000000006-PROV2"]}]
       (is (= expected
              (util/rename-keys-with params param-aliases merge-fn))))))
 
