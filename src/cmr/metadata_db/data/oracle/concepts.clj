@@ -62,6 +62,13 @@
     :else
     (max num1 num2)))
 
+
+(defn- truncate-highest
+  "Return a sequence with the highest top-n values removed from the input sequence. The
+  originall order of the sequence may not be preserved."
+  [values top-n]
+  (drop-last top-n (sort values)))
+
 (defn blob->input-stream
   "Convert a BLOB to an InputStream"
   [^Blob blob]
@@ -193,10 +200,21 @@
                          `(>= :id ~min-id))
          stmt (select ['(min :id)]
                 (from table)
-                  (where params-clause))]
+                (where params-clause))]
      (-> (su/find-one conn stmt)
          vals
          first))))
+
+(defn- save-concepts-to-tmp-table
+  "Utility method to save a bunch of concepts to a temporary table. Must be called from within
+  a transaction."
+  [conn concept-id-revision-id-tuples]
+  (apply j/insert! conn
+         "get_concepts_work_area"
+         ["concept_id" "revision_id"]
+         ;; set :transaction? false since we are already inside a transaction, and
+         ;; we want the temp table to persist for the main select
+         (concat concept-id-revision-id-tuples [:transaction? false])))
 
 (extend-protocol c/ConceptsStore
   OracleStore
@@ -267,12 +285,8 @@
           [conn db]
           ;; use a temporary table to insert our values so we can use a join to
           ;; pull everything in one select
-          (apply j/insert! conn
-                 "get_concepts_work_area"
-                 ["concept_id" "revision_id"]
-                 ;; set :transaction? false since we are already inside a transaction, and
-                 ;; we want the temp table to persist for the main select
-                 (concat concept-id-revision-id-tuples [:transaction? false]))
+          (save-concepts-to-tmp-table conn concept-id-revision-id-tuples)
+
           (let [table (tables/get-table-name provider-id concept-type)
                 stmt (su/build (select [:c.*]
                                  (from (as (keyword table) :c)
@@ -418,6 +432,21 @@
                            (where (find-params->sql-clause params))))]
       (j/execute! db stmt)))
 
+  (force-delete-concepts
+    [db provider-id concept-type concept-id-revision-id-tuples]
+    (let [table (tables/get-table-name provider-id concept-type)]
+      (j/with-db-transaction
+        [conn db]
+        ;; use a temporary table to insert our values so we can use them in our delete
+        (save-concepts-to-tmp-table conn concept-id-revision-id-tuples)
+
+        (let [stmt [(format "DELETE FROM %s t1 WHERE EXISTS
+                            (SELECT 1 FROM get_concepts_work_area tmp WHERE
+                            tmp.concept_id = t1.concept_id AND
+                            tmp.revision_id = t1.revision_id)"
+                            table)]]
+          (j/execute! conn stmt)))))
+
   (reset
     [this]
     (try
@@ -455,5 +484,57 @@
                           and   outer.revision_id = inner.revision_id"
                           table table table EXPIRED_CONCEPTS_BATCH_SIZE)]]
         (doall (map (partial db-result->concept-map concept-type conn provider)
-                    (sql-utils/query conn stmt)))))))
+                    (sql-utils/query conn stmt))))))
 
+  (get-tombstoned-concept-revisions
+    [this provider concept-type limit]
+    (j/with-db-transaction
+      [conn this]
+      (let [table (tables/get-table-name provider concept-type)
+            ;; This will return the concept-id/revision-id pairs for tombstones and revisions
+            ;; older than the tombstone - up to 'limit' concepts.
+            stmt [(format "select t1.concept_id, t1.revision_id from %s t1 inner join
+                          (select * from
+                          (select concept_id, revision_id from %s where DELETED = 1)
+                          where rownum < %d) t2
+                          on t1.concept_id = t2.concept_id and t1.REVISION_ID <= t2.revision_id"
+                          table
+                          table
+                          limit)]
+            result (sql-utils/query conn stmt)]
+        ;; create tuples of concept-id/revision-id to remove
+        (map (fn [{:keys [concept_id revision_id]}]
+               [concept_id revision_id])
+             result))))
+
+  (get-old-concept-revisions
+    [this provider concept-type max-revisions limit]
+    (j/with-db-transaction
+      [conn this]
+      (let [table (tables/get-table-name provider concept-type)
+            ;; This will return the concepts that have more than 'max-revisions' revisions.
+            ;; Note: the 'where rownum' clause limits the number of concept-ids that are returned,
+            ;; not the number of concept-id/revision-id pairs. All revisions are returned for
+            ;; each returned concept-id.
+            stmt [(format "select concept_id, revision_id from %s
+                          where concept_id in (select * from (select concept_id from %s group by
+                          concept_id having count(*) > %d) where rownum <= %d)"
+                          table
+                          table
+                          max-revisions
+                          limit)]
+            result (sql-utils/query conn stmt)
+            ;; create a map of concept-ids to vectors of all returned revisions
+            concept-id-rev-ids-map (reduce (fn [memo concept-map]
+                                             (let [{:keys [concept_id revision_id]} concept-map]
+                                               (update-in memo [concept_id] conj revision_id)))
+                                           {}
+                                           result)]
+        ;; generate tuples of concept-id/revision-id to remove
+        (reduce-kv (fn [memo concept-id rev-ids]
+                     (apply merge memo (map (fn [revision-id]
+                                              [concept-id revision-id])
+                                            ;; only add tuples for old revisions
+                                            (truncate-highest rev-ids max-revisions))))
+                   []
+                   concept-id-rev-ids-map)))))

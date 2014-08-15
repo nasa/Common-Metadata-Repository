@@ -22,6 +22,17 @@
             [clojure.set :as set]
             [clojure.string]))
 
+
+(def num-revisions-to-keep-per-concept-type
+  "Number of revisions to keep by concept-type. If a concept instance has more than the number
+  of revisions here the oldest ones will be deleted."
+  {:collection 10
+   :granule 1})
+
+(def concept-truncation-batch-size
+  "Maximum number of concepts to process in each iteration of the delete old concepts job."
+  50000)
+
 ;;; utility methods
 
 (defn validate-providers-exist
@@ -367,10 +378,45 @@
   [db provider concept-type]
   (loop []
     (let [expired-concepts (c/get-expired-concepts db provider concept-type)]
-      (when-not (empty? expired-concepts)
+      (when (seq expired-concepts)
         (info "Deleting expired" (name concept-type) "concepts: " (map :concept-id expired-concepts))
         (doseq [coll expired-concepts]
           (let [revision-id (inc (:revision-id coll))
                 tombstone (merge coll {:revision-id revision-id :deleted true :metadata ""})]
             (try-to-save db tombstone revision-id)))
         (recur)))))
+
+(defn delete-old-revisions
+  "Delete concepts to keep a fixed number of revisions around as well as tombstoned versions
+  and earlier."
+  [db provider concept-type]
+  (let [concept-type-name (str (name concept-type) "s")]
+    (info "Starting deletion of tombstoned" concept-type-name "for provider" provider)
+    (loop []
+      (let [tombstoned-concept-id-revision-id-tuples
+            (c/get-tombstoned-concept-revisions db
+                                                provider
+                                                concept-type
+                                                concept-truncation-batch-size)]
+        (when (seq tombstoned-concept-id-revision-id-tuples)
+          (info "Deleting" (count tombstoned-concept-id-revision-id-tuples)
+                "tombstoned concept revisions for provider" provider)
+          (c/force-delete-concepts db provider concept-type tombstoned-concept-id-revision-id-tuples)
+          (recur))))
+    (info "Starting deletion of old" concept-type-name "for provider" provider)
+    (loop []
+      (let [old-concept-id-revision-id-tuples
+            (c/get-old-concept-revisions db
+                                         provider
+                                         concept-type
+                                         (get num-revisions-to-keep-per-concept-type
+                                              concept-type)
+                                         concept-truncation-batch-size)]
+        (when (seq old-concept-id-revision-id-tuples)
+          (info "Deleting" (count old-concept-id-revision-id-tuples)
+                "old concept revisions for provider" provider)
+          (c/force-delete-concepts db provider concept-type old-concept-id-revision-id-tuples)
+          (recur))))))
+
+
+
