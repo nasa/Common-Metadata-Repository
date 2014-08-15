@@ -4,24 +4,21 @@
             [cmr.search.services.aql.conversion :as a]
             [cmr.search.models.query :as qm]))
 
-(defn- any-keyword-element->condition
-  "Returns the query condition for the given anyKeyword element"
+(defmulti keyword-element->condition
+  "Returns the query condition of the given keyword element"
+  (fn [concept-type keyword-elem]
+    (:tag keyword-elem)))
+
+(defmethod keyword-element->condition :anyKeyword
   [concept-type keyword-elem]
   (qm/or-conds
-    [(a/string-element->condition concept-type (assoc keyword-elem :tag :categoryKeyword))
-     (a/string-element->condition concept-type (assoc keyword-elem :tag :topicKeyword))
-     (a/string-element->condition concept-type (assoc keyword-elem :tag :termKeyword))
-     (a/string-element->condition concept-type (assoc keyword-elem :tag :variableLevel1Keyword))
-     (a/string-element->condition concept-type (assoc keyword-elem :tag :variableLevel2Keyword))
-     (a/string-element->condition concept-type (assoc keyword-elem :tag :variableLevel3Keyword))
-     (a/string-element->condition concept-type (assoc keyword-elem :tag :detailedVariableKeyword))]))
+    (map #(a/string-element->condition concept-type (assoc keyword-elem :tag %))
+         [:categoryKeyword :topicKeyword :termKeyword :variableLevel1Keyword
+          :variableLevel2Keyword :variableLevel3Keyword :detailedVariableKeyword])))
 
-(defn- keyword-element->condition
-  "Returns the query condition of the given keyword element"
+(defmethod keyword-element->condition :default
   [concept-type keyword-elem]
-  (if (= :anyKeyword (:tag keyword-elem))
-    (any-keyword-element->condition concept-type keyword-elem)
-    (a/string-element->condition concept-type keyword-elem)))
+  (a/string-element->condition concept-type keyword-elem))
 
 (defn- science-keyword-element->conditions
   "Returns the query conditions of the given scienceKeyword element"
