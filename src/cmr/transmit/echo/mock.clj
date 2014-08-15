@@ -25,3 +25,17 @@
   (let [[status] (r/rest-post context "/acls" (c/cmr-acl->echo-acl acl))]
     (when-not (= status 201)
       (r/unexpected-status-error! status nil))))
+
+(defn login-with-group-access
+  "Logs into mock echo and returns the token. The group guids passed in will be returned as a part
+  of the current_sids of the user"
+  [context username password group-guids]
+  (let [token-info {:token {:username username
+                            :password password
+                            :client_id "CMR Internal"
+                            :user_ip_address "127.0.0.1"
+                            :group_guids group-guids}}
+        [status parsed body] (r/rest-post context "/tokens" token-info)]
+    (if (= 201 status)
+      (get-in parsed [:token :id])
+      (r/unexpected-status-error! status body))))
