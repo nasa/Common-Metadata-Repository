@@ -8,7 +8,7 @@
             [cmr.system-int-test.data2.core :as d]
             [cmr.search.data.keywords-to-elastic :as k2e]))
 
-(use-fixtures :each (ingest/reset-fixture "CMR_PROV1" "CMR_PROV2"))
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
 (deftest search-by-keywords
   (let [psa1 (dc/psa "alpha" :string "ab")
@@ -37,28 +37,28 @@
                                  :variable-level-2 "Level2-2"
                                  :variable-level-3 "Level2-3"})
         tdcs1 (dc/two-d "XYZ")
-        coll1 (d/ingest "CMR_PROV1" (dc/collection {:entry-title "coll1" }))
-        coll2 (d/ingest "CMR_PROV1" (dc/collection {:entry-title "coll2" :short-name "ABC!XYZ" :version-id "V001"}))
-        coll3 (d/ingest "CMR_PROV1" (dc/collection {:entry-title "coll3" :collection-data-type "Foo"}))
-        coll4 (d/ingest "CMR_PROV2" (dc/collection {:entry-title "coll4" :collection-data-type "Bar"}))
-        coll5 (d/ingest "CMR_PROV2" (dc/collection {:entry-title "coll5" :long-name "ABC" :short-name "Space!Laser"}))
-        coll6 (d/ingest "CMR_PROV2" (dc/collection {:entry-title "coll6" :organizations [(dc/org :archive-center "Some&Place")]}))
-        coll7 (d/ingest "CMR_PROV2" (dc/collection {:entry-title "coll7" :version-id "Laser"}))
-        coll8 (d/ingest "CMR_PROV2" (dc/collection {:entry-title "coll8" :processing-level-id "PDQ123"}))
-        coll9 (d/ingest "CMR_PROV2" (dc/collection {:entry-title "coll9" :science-keywords [sk1 sk2]}))
-        coll10 (d/ingest "CMR_PROV2" (dc/collection {:entry-title "coll10" :spatial-keywords ["in out"]}))
-        coll11 (d/ingest "CMR_PROV2" (dc/collection {:entry-title "coll11" :platforms [p2 p3]}))
-        coll12 (d/ingest "CMR_PROV2" (dc/collection {:entry-title "coll12" :product-specific-attributes [psa1 psa2 psa3 psa4]}))
-        coll13 (d/ingest "CMR_PROV2" (dc/collection {:entry-title "coll13" :two-d-coordinate-systems [tdcs1]}))
-        coll14 (d/ingest "CMR_PROV2" (dc/collection {:entry-title "coll14" :long-name "spoonA laser"}))
-        coll15 (d/ingest "CMR_PROV2" (dc/collection {:entry-title "coll15" :processing-level-id "plid1"
+        coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1" }))
+        coll2 (d/ingest "PROV1" (dc/collection {:entry-title "coll2" :short-name "ABC!XYZ" :version-id "V001"}))
+        coll3 (d/ingest "PROV1" (dc/collection {:entry-title "coll3" :collection-data-type "Foo"}))
+        coll4 (d/ingest "PROV2" (dc/collection {:entry-title "coll4" :collection-data-type "Bar"}))
+        coll5 (d/ingest "PROV2" (dc/collection {:entry-title "coll5" :long-name "ABC" :short-name "Space!Laser"}))
+        coll6 (d/ingest "PROV2" (dc/collection {:entry-title "coll6" :organizations [(dc/org :archive-center "Some&Place")]}))
+        coll7 (d/ingest "PROV2" (dc/collection {:entry-title "coll7" :version-id "Laser"}))
+        coll8 (d/ingest "PROV2" (dc/collection {:entry-title "coll8" :processing-level-id "PDQ123"}))
+        coll9 (d/ingest "PROV2" (dc/collection {:entry-title "coll9" :science-keywords [sk1 sk2]}))
+        coll10 (d/ingest "PROV2" (dc/collection {:entry-title "coll10" :spatial-keywords ["in out"]}))
+        coll11 (d/ingest "PROV2" (dc/collection {:entry-title "coll11" :platforms [p2 p3]}))
+        coll12 (d/ingest "PROV2" (dc/collection {:entry-title "coll12" :product-specific-attributes [psa1 psa2 psa3 psa4]}))
+        coll13 (d/ingest "PROV2" (dc/collection {:entry-title "coll13" :two-d-coordinate-systems [tdcs1]}))
+        coll14 (d/ingest "PROV2" (dc/collection {:entry-title "coll14" :long-name "spoonA laser"}))
+        coll15 (d/ingest "PROV2" (dc/collection {:entry-title "coll15" :processing-level-id "plid1"
                                                      :collection-data-type "cldt" :platforms [p1]
                                                      :summary "summary" :temporal-keywords ["tk1" "tk2"]}))
-        coll16 (d/ingest "CMR_PROV2" (dc/collection {:entry-id "entryid4"}) :dif)
-        coll17 (d/ingest "CMR_PROV2" (dc/collection {:associated-difs ["DIF-1" "DIF-2"]}))
-        coll18 (d/ingest "CMR_PROV2" (dc/collection {:short-name "SNFoobar"}))
-        coll19 (d/ingest "CMR_PROV2" (dc/collection {:long-name "LNFoobar"}))
-        coll20 (d/ingest "CMR_PROV2" (dc/collection {:projects pr1}))]
+        coll16 (d/ingest "PROV2" (dc/collection {:entry-id "entryid4"}) :dif)
+        coll17 (d/ingest "PROV2" (dc/collection {:associated-difs ["DIF-1" "DIF-2"]}))
+        coll18 (d/ingest "PROV2" (dc/collection {:short-name "SNFoobar"}))
+        coll19 (d/ingest "PROV2" (dc/collection {:long-name "LNFoobar"}))
+        coll20 (d/ingest "PROV2" (dc/collection {:projects pr1}))]
 
     (index/refresh-elastic-index)
 

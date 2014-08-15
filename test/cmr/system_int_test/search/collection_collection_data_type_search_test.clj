@@ -7,13 +7,13 @@
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.core :as d]))
 
-(use-fixtures :each (ingest/reset-fixture "CMR_PROV1"))
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
 (deftest search-by-collection-data-type
-  (let [coll1 (d/ingest "CMR_PROV1" (dc/collection {:collection-data-type "NEAR_REAL_TIME"}))
-        coll2 (d/ingest "CMR_PROV1" (dc/collection {:collection-data-type "SCIENCE_QUALITY"}))
-        coll3 (d/ingest "CMR_PROV1" (dc/collection {:collection-data-type "OTHER"}))
-        coll4 (d/ingest "CMR_PROV1" (dc/collection {}))]
+  (let [coll1 (d/ingest "PROV1" (dc/collection {:collection-data-type "NEAR_REAL_TIME"}))
+        coll2 (d/ingest "PROV1" (dc/collection {:collection-data-type "SCIENCE_QUALITY"}))
+        coll3 (d/ingest "PROV1" (dc/collection {:collection-data-type "OTHER"}))
+        coll4 (d/ingest "PROV1" (dc/collection {}))]
 
     (index/refresh-elastic-index)
 

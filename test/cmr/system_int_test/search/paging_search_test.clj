@@ -21,7 +21,7 @@
     (d2c/ingest "PROV2" (dc/collection)))
   (index/refresh-elastic-index))
 
-(use-fixtures :each (ingest/reset-fixture "PROV1" "PROV2"))
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
 (deftest search-with-page-size
   (create-collections)

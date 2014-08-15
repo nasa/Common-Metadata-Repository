@@ -10,7 +10,7 @@
             [clj-time.format :as f]
             [cmr.system-int-test.data2.core :as d]))
 
-(use-fixtures :each (ingest/reset-fixture "CMR_PROV1" "CMR_PROV2"))
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
 (defn now-time-str
   []
@@ -21,15 +21,15 @@
 #_(deftest search-colls-by-revision-date
   (let [chkpt1-tz (now-time-str)
         _ (Thread/sleep 1000)
-        coll1 (d/ingest "CMR_PROV1" (dc/collection {}))
-        coll2 (d/ingest "CMR_PROV1" (dc/collection {}))
-        coll3 (d/ingest "CMR_PROV1" (dc/collection {}))
-        coll4 (d/ingest "CMR_PROV1" (dc/collection {}))
+        coll1 (d/ingest "PROV1" (dc/collection {}))
+        coll2 (d/ingest "PROV1" (dc/collection {}))
+        coll3 (d/ingest "PROV1" (dc/collection {}))
+        coll4 (d/ingest "PROV1" (dc/collection {}))
         _ (Thread/sleep 1000)
         chkpt2-tz (now-time-str)
         _ (Thread/sleep 1000)
-        coll5 (d/ingest "CMR_PROV1" (dc/collection {}))
-        coll6 (d/ingest "CMR_PROV2" (dc/collection {}))
+        coll5 (d/ingest "PROV1" (dc/collection {}))
+        coll6 (d/ingest "PROV2" (dc/collection {}))
         _ (Thread/sleep 1000)
         chkpt3-tz (now-time-str)]
     (index/refresh-elastic-index)
@@ -60,14 +60,14 @@
 #_(deftest search-grans-by-revision-date
   (let [chkpt1-tz (now-time-str)
         _ (Thread/sleep 1000)
-        coll1 (d/ingest "CMR_PROV1" (dc/collection {}))
-        gran1 (d/ingest "CMR_PROV1" (dg/granule coll1 {}))
-        gran2 (d/ingest "CMR_PROV1" (dg/granule coll1 {}))
-        gran3 (d/ingest "CMR_PROV1" (dg/granule coll1 {}))
+        coll1 (d/ingest "PROV1" (dc/collection {}))
+        gran1 (d/ingest "PROV1" (dg/granule coll1 {}))
+        gran2 (d/ingest "PROV1" (dg/granule coll1 {}))
+        gran3 (d/ingest "PROV1" (dg/granule coll1 {}))
         _ (Thread/sleep 1000)
         chkpt2-tz (now-time-str)
         _ (Thread/sleep 1000)
-        gran4 (d/ingest "CMR_PROV1" (dg/granule coll1 {}))]
+        gran4 (d/ingest "PROV1" (dg/granule coll1 {}))]
     (index/refresh-elastic-index)
 
     (testing "search for granules ingested into system after chkpt1 - single value str"

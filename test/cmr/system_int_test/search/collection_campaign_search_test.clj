@@ -7,16 +7,16 @@
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.core :as d]))
 
-(use-fixtures :each (ingest/reset-fixture "CMR_PROV1" "CMR_PROV2"))
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
 (deftest search-by-campaign-short-names
-  (let [coll1 (d/ingest "CMR_PROV1" (dc/collection {}))
-        coll2 (d/ingest "CMR_PROV1" (dc/collection {:projects []}))
-        coll3 (d/ingest "CMR_PROV1" (dc/collection {:projects (dc/projects "ESI")}))
+  (let [coll1 (d/ingest "PROV1" (dc/collection {}))
+        coll2 (d/ingest "PROV1" (dc/collection {:projects []}))
+        coll3 (d/ingest "PROV1" (dc/collection {:projects (dc/projects "ESI")}))
 
-        coll4 (d/ingest "CMR_PROV2" (dc/collection {:projects (dc/projects "ESI" "Esi")}))
-        coll5 (d/ingest "CMR_PROV2" (dc/collection {:projects (dc/projects "EVI" "EPI")}))
-        coll6 (d/ingest "CMR_PROV2" (dc/collection {:projects (dc/projects "ESI" "EVI" "EPI")}))]
+        coll4 (d/ingest "PROV2" (dc/collection {:projects (dc/projects "ESI" "Esi")}))
+        coll5 (d/ingest "PROV2" (dc/collection {:projects (dc/projects "EVI" "EPI")}))
+        coll6 (d/ingest "PROV2" (dc/collection {:projects (dc/projects "ESI" "EVI" "EPI")}))]
 
     (index/refresh-elastic-index)
 

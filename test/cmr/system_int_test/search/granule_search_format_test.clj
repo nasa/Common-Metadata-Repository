@@ -20,21 +20,21 @@
             [cmr.umm.core :as umm]
             [cmr.umm.spatial :as umm-s]))
 
-(use-fixtures :each (ingest/reset-fixture "CMR_PROV1"))
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
 (comment
 
   (ingest/reset)
-  (ingest/create-provider "CMR_PROV1")
+  (ingest/create-provider "PROV1")
 
   )
 
 (deftest search-granules-in-xml-metadata
   ;; TODO we can add additional formats here later such as iso
-  (let [coll1 (d/ingest "CMR_PROV1" (dc/collection))
-        coll2 (d/ingest "CMR_PROV1" (dc/collection))
-        gran1 (d/ingest "CMR_PROV1" (dg/granule coll1 {:granule-ur "g1"}))
-        gran2 (d/ingest "CMR_PROV1" (dg/granule coll2 {:granule-ur "g2"}))
+  (let [coll1 (d/ingest "PROV1" (dc/collection))
+        coll2 (d/ingest "PROV1" (dc/collection))
+        gran1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "g1"}))
+        gran2 (d/ingest "PROV1" (dg/granule coll2 {:granule-ur "g2"}))
         all-granules [gran1 gran2]]
     (index/refresh-elastic-index)
     (testing "echo10"
@@ -86,9 +86,9 @@
   (let [ru1 (dc/related-url "GET DATA" "http://example.com")
         ru2 (dc/related-url "GET DATA" "http://example2.com")
         ru3 (dc/related-url "GET RELATED VISUALIZATION" "http://example.com/browse")
-        coll1 (d/ingest "CMR_PROV1" (dc/collection {}))
-        coll2 (d/ingest "CMR_PROV1" (dc/collection {}))
-        gran1 (d/ingest "CMR_PROV1" (dg/granule coll1 {:granule-ur "Granule1"
+        coll1 (d/ingest "PROV1" (dc/collection {}))
+        coll2 (d/ingest "PROV1" (dc/collection {}))
+        gran1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule1"
                                                        :beginning-date-time "2010-01-01T12:00:00Z"
                                                        :ending-date-time "2010-01-11T12:00:00Z"
                                                        :producer-gran-id "Granule #1"
@@ -96,7 +96,7 @@
                                                        :size 100
                                                        :cloud-cover 50
                                                        :related-urls [ru1 ru2 ru3]}))
-        gran2 (d/ingest "CMR_PROV1" (dg/granule coll2 {:granule-ur "Granule2"
+        gran2 (d/ingest "PROV1" (dg/granule coll2 {:granule-ur "Granule2"
                                                        :beginning-date-time "2011-01-01T12:00:00Z"
                                                        :ending-date-time "2011-01-11T12:00:00Z"
                                                        :producer-gran-id "Granule #2"
@@ -104,7 +104,7 @@
                                                        :size 80
                                                        :cloud-cover 30
                                                        :related-urls [ru1]}))
-        gran3 (d/ingest "CMR_PROV1" (dg/granule coll2 {:granule-ur "Granule3"
+        gran3 (d/ingest "PROV1" (dg/granule coll2 {:granule-ur "Granule3"
                                                        :beginning-date-time "2012-01-01T12:00:00Z"
                                                        :ending-date-time "2012-01-11T12:00:00Z"
                                                        :producer-gran-id "Granule #3"
@@ -146,13 +146,13 @@
         ru3 (dc/related-url "GET RELATED VISUALIZATION" "http://example.com/browse")
         ru4 (dc/related-url "ALGORITHM INFO" "http://inherited.com")
         ru5 (dc/related-url "GET RELATED VISUALIZATION" "http://inherited.com/browse")
-        coll1 (d/ingest "CMR_PROV1" (dc/collection {:entry-title "Dataset1"
+        coll1 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset1"
                                                     :spatial-coverage (dc/spatial :geodetic)}))
-        coll2 (d/ingest "CMR_PROV1" (dc/collection {:entry-title "Dataset2"
+        coll2 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset2"
                                                     :related-urls [ru4 ru5]}))
 
         make-gran (fn [coll attribs]
-                    (d/ingest "CMR_PROV1" (dg/granule coll attribs)))
+                    (d/ingest "PROV1" (dg/granule coll attribs)))
 
         ;; polygon with holes
         outer (umm-s/ords->ring -5.26,-2.59, 11.56,-2.77, 10.47,8.71, -5.86,8.63, -5.26,-2.59)

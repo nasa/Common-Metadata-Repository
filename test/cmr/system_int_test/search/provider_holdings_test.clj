@@ -55,7 +55,7 @@
     {"PROV1" prov1-holdings
      "PROV2" prov2-holdings}))
 
-(use-fixtures :each (ingest/reset-fixture "PROV1" "PROV2"))
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
 (deftest retrieve-provider-holdings
   (let [all-holdings (create-holdings)

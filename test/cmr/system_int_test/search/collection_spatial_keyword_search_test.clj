@@ -7,17 +7,17 @@
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.core :as d]))
 
-(use-fixtures :each (ingest/reset-fixture "CMR_PROV1" "CMR_PROV2"))
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
 (deftest search-by-spatial-keywords
-  (let [coll1 (d/ingest "CMR_PROV1" (dc/collection {}))
-        coll2 (d/ingest "CMR_PROV1" (dc/collection {:spatial-keywords []}))
-        coll3 (d/ingest "CMR_PROV1" (dc/collection {:spatial-keywords ["DC"]}))
+  (let [coll1 (d/ingest "PROV1" (dc/collection {}))
+        coll2 (d/ingest "PROV1" (dc/collection {:spatial-keywords []}))
+        coll3 (d/ingest "PROV1" (dc/collection {:spatial-keywords ["DC"]}))
 
-        coll4 (d/ingest "CMR_PROV2" (dc/collection {:spatial-keywords ["DC" "LA"]}))
-        coll5 (d/ingest "CMR_PROV2" (dc/collection {:spatial-keywords ["Detroit"]}))
-        coll6 (d/ingest "CMR_PROV2" (dc/collection {:spatial-keywords ["LL"]}))
-        coll7 (d/ingest "CMR_PROV2" (dc/collection {:spatial-keywords ["detroit"]}))]
+        coll4 (d/ingest "PROV2" (dc/collection {:spatial-keywords ["DC" "LA"]}))
+        coll5 (d/ingest "PROV2" (dc/collection {:spatial-keywords ["Detroit"]}))
+        coll6 (d/ingest "PROV2" (dc/collection {:spatial-keywords ["LL"]}))
+        coll7 (d/ingest "PROV2" (dc/collection {:spatial-keywords ["detroit"]}))]
 
     (index/refresh-elastic-index)
 

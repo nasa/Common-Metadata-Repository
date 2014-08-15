@@ -11,32 +11,32 @@
             [cmr.search.services.messages.orbit-number-messages :as on-m]
             [cmr.common.services.messages :as cm]))
 
-(use-fixtures :each (ingest/reset-fixture "CMR_PROV1"))
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
 (deftest search-by-granule-orbit-equator-crossing-longitude
-  (let [coll1 (d/ingest "CMR_PROV1" (dc/collection {}))
-        gran1 (d/ingest "CMR_PROV1"
+  (let [coll1 (d/ingest "PROV1" (dc/collection {}))
+        gran1 (d/ingest "PROV1"
                         (dg/granule coll1
                                     {:orbit-calculated-spatial-domains [ {:equator-crossing-longitude 0}]}))
-        gran2 (d/ingest "CMR_PROV1"
+        gran2 (d/ingest "PROV1"
                         (dg/granule coll1
                                     {:orbit-calculated-spatial-domains [{:equator-crossing-longitude 90}]}))
-        gran3 (d/ingest "CMR_PROV1"
+        gran3 (d/ingest "PROV1"
                         (dg/granule coll1
                                     {:orbit-calculated-spatial-domains [{:equator-crossing-longitude 135}]}))
-        gran4 (d/ingest "CMR_PROV1"
+        gran4 (d/ingest "PROV1"
                         (dg/granule coll1
                                     {:orbit-calculated-spatial-domains [{:equator-crossing-longitude 180}]}))
-        gran5 (d/ingest "CMR_PROV1"
+        gran5 (d/ingest "PROV1"
                         (dg/granule coll1
                                     {:orbit-calculated-spatial-domains [{:equator-crossing-longitude -45}]}))
-        gran6 (d/ingest "CMR_PROV1"
+        gran6 (d/ingest "PROV1"
                         (dg/granule coll1
                                     {:orbit-calculated-spatial-domains [{:equator-crossing-longitude -90}]}))
-        gran7 (d/ingest "CMR_PROV1"
+        gran7 (d/ingest "PROV1"
                         (dg/granule coll1
                                     {:orbit-calculated-spatial-domains [{:equator-crossing-longitude -135}]}))
-        gran8 (d/ingest "CMR_PROV1"
+        gran8 (d/ingest "PROV1"
                         (dg/granule coll1
                                     {:orbit-calculated-spatial-domains [{:equator-crossing-longitude -180}]}))]
     (index/refresh-elastic-index)

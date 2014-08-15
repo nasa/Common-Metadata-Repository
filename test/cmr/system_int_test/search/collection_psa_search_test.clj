@@ -13,7 +13,7 @@
             [cmr.search.services.messages.attribute-messages :as am]
             [clj-http.client :as client]))
 
-(use-fixtures :each (ingest/reset-fixture "PROV1"))
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
 ;; These are for boolean, datetime_string, time_string, and date_string attribute types which are all indexed and searchable as strings.
 (deftest indexed-as-string-psas-search-test

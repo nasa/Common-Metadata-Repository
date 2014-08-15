@@ -20,7 +20,7 @@
             [cmr.spatial.lr-binary-search :as lbs]
             [cmr.umm.spatial :as umm-s]))
 
-(use-fixtures :each (ingest/reset-fixture "PROV1"))
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
 (defn polygon
   "Creates a single ring polygon with the given ordinates. Points must be in counter clockwise order.

@@ -9,17 +9,17 @@
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.core :as d]))
 
-(use-fixtures :each (ingest/reset-fixture "CMR_PROV1"))
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
 (deftest retrieve-granule-by-cmr-concept-id
-  (let [coll1 (d/ingest "CMR_PROV1" (dc/collection {}))
-        gran1 (d/ingest "CMR_PROV1" (dg/granule coll1 {:granule-ur "Granule1"
+  (let [coll1 (d/ingest "PROV1" (dc/collection {}))
+        gran1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule1"
                                                        :project-refs ["ABC"]}))
-        gran1 (d/ingest "CMR_PROV1" (dg/granule coll1 {:granule-ur "Granule1"
+        gran1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule1"
                                                        :project-refs ["KLM"]}))
         umm-gran (dg/granule coll1 {:granule-ur "Granule1"
                                     :project-refs ["XYZ"]})
-        gran1 (d/ingest "CMR_PROV1" umm-gran)]
+        gran1 (d/ingest "PROV1" umm-gran)]
     (index/refresh-elastic-index)
     (testing "retrieval by granule cmr-concept-id returns the latest revision."
       (let [response (search/get-concept-by-concept-id (:concept-id gran1))
@@ -28,7 +28,7 @@
                        :collection-concept-id)
                parsed-granule))))
     (testing "retrieval by granule cmr-concept-id, not found."
-      (let [response (search/get-concept-by-concept-id "G1111-CMR_PROV1")]
+      (let [response (search/get-concept-by-concept-id "G1111-PROV1")]
         (is (= 404 (:status response)))
-        (re-find #"Failed to retrieve concept G1111-CMR_PROV1 from metadata-db:" (:body response))
-        (re-find #"Concept with concept-id \[G1111-CMR_PROV1\] does not exist" (:body response))))))
+        (re-find #"Failed to retrieve concept G1111-PROV1 from metadata-db:" (:body response))
+        (re-find #"Concept with concept-id \[G1111-PROV1\] does not exist" (:body response))))))

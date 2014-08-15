@@ -7,45 +7,45 @@
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.core :as d]))
 
-(use-fixtures :each (ingest/reset-fixture "CMR_PROV1" "CMR_PROV2"))
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
 (deftest search-by-periodic-temporal
-  (let [coll1 (d/ingest "CMR_PROV1" (dc/collection {:beginning-date-time "2000-01-01T12:00:00Z"
+  (let [coll1 (d/ingest "PROV1" (dc/collection {:beginning-date-time "2000-01-01T12:00:00Z"
                                                     :ending-date-time "2000-02-14T12:00:00Z"}))
-        coll2 (d/ingest "CMR_PROV1" (dc/collection {:beginning-date-time "2000-02-14T12:00:00Z"
+        coll2 (d/ingest "PROV1" (dc/collection {:beginning-date-time "2000-02-14T12:00:00Z"
                                                     :ending-date-time "2000-02-15T12:00:00Z"}))
-        coll3 (d/ingest "CMR_PROV1" (dc/collection {:beginning-date-time "2000-03-15T12:00:00Z"
+        coll3 (d/ingest "PROV1" (dc/collection {:beginning-date-time "2000-03-15T12:00:00Z"
                                                     :ending-date-time "2000-04-15T12:00:00Z"}))
-        coll4 (d/ingest "CMR_PROV1" (dc/collection {:beginning-date-time "2000-04-01T12:00:00Z"
+        coll4 (d/ingest "PROV1" (dc/collection {:beginning-date-time "2000-04-01T12:00:00Z"
                                                     :ending-date-time "2000-04-15T12:00:00Z"}))
-        coll5 (d/ingest "CMR_PROV1" (dc/collection {:beginning-date-time "2001-01-01T12:00:00Z"
+        coll5 (d/ingest "PROV1" (dc/collection {:beginning-date-time "2001-01-01T12:00:00Z"
                                                     :ending-date-time "2001-01-31T12:00:00Z"}))
-        coll6 (d/ingest "CMR_PROV1" (dc/collection {:beginning-date-time "2001-01-01T12:00:00Z"
+        coll6 (d/ingest "PROV1" (dc/collection {:beginning-date-time "2001-01-01T12:00:00Z"
                                                     :ending-date-time "2001-02-14T12:00:00Z"}))
-        coll7 (d/ingest "CMR_PROV1" (dc/collection {:beginning-date-time "2001-03-15T12:00:00Z"
+        coll7 (d/ingest "PROV1" (dc/collection {:beginning-date-time "2001-03-15T12:00:00Z"
                                                     :ending-date-time "2001-04-15T12:00:00Z"}))
-        coll8 (d/ingest "CMR_PROV1" (dc/collection {:beginning-date-time "2001-04-01T12:00:00Z"
+        coll8 (d/ingest "PROV1" (dc/collection {:beginning-date-time "2001-04-01T12:00:00Z"
                                                     :ending-date-time "2001-04-15T12:00:00Z"}))
-        coll9 (d/ingest "CMR_PROV1" (dc/collection {:beginning-date-time "2002-01-01T12:00:00Z"
+        coll9 (d/ingest "PROV1" (dc/collection {:beginning-date-time "2002-01-01T12:00:00Z"
                                                     :ending-date-time "2002-01-31T12:00:00Z"}))
-        coll10 (d/ingest "CMR_PROV1" (dc/collection {:beginning-date-time "2002-01-01T12:00:00Z"
+        coll10 (d/ingest "PROV1" (dc/collection {:beginning-date-time "2002-01-01T12:00:00Z"
                                                      :ending-date-time "2002-02-14T12:00:00Z"}))
-        coll11 (d/ingest "CMR_PROV1" (dc/collection {:beginning-date-time "2002-03-14T12:00:00Z"
+        coll11 (d/ingest "PROV1" (dc/collection {:beginning-date-time "2002-03-14T12:00:00Z"
                                                      :ending-date-time "2002-04-15T12:00:00Z"}))
-        coll12 (d/ingest "CMR_PROV1" (dc/collection {:beginning-date-time "2002-03-15T12:00:00Z"
+        coll12 (d/ingest "PROV1" (dc/collection {:beginning-date-time "2002-03-15T12:00:00Z"
                                                      :ending-date-time "2002-04-15T12:00:00Z"}))
-        coll13 (d/ingest "CMR_PROV1" (dc/collection {:beginning-date-time "2002-04-01T12:00:00Z"
+        coll13 (d/ingest "PROV1" (dc/collection {:beginning-date-time "2002-04-01T12:00:00Z"
                                                      :ending-date-time "2002-04-15T12:00:00Z"}))
-        coll14 (d/ingest "CMR_PROV1" (dc/collection {:beginning-date-time "1999-02-15T12:00:00Z"
+        coll14 (d/ingest "PROV1" (dc/collection {:beginning-date-time "1999-02-15T12:00:00Z"
                                                      :ending-date-time "1999-03-15T12:00:00Z"}))
-        coll15 (d/ingest "CMR_PROV1" (dc/collection {:beginning-date-time "2003-02-15T12:00:00Z"
+        coll15 (d/ingest "PROV1" (dc/collection {:beginning-date-time "2003-02-15T12:00:00Z"
                                                      :ending-date-time "2003-03-15T12:00:00Z"}))
-        coll16 (d/ingest "CMR_PROV2" (dc/collection {:beginning-date-time "1999-02-15T12:00:00Z"}))
-        coll17 (d/ingest "CMR_PROV2" (dc/collection {:beginning-date-time "2001-02-15T12:00:00Z"}))
-        coll18 (d/ingest "CMR_PROV2" (dc/collection {:beginning-date-time "2002-03-15T12:00:00Z"}))
-        coll19 (d/ingest "CMR_PROV2" (dc/collection {:beginning-date-time "2001-11-15T12:00:00Z"
+        coll16 (d/ingest "PROV2" (dc/collection {:beginning-date-time "1999-02-15T12:00:00Z"}))
+        coll17 (d/ingest "PROV2" (dc/collection {:beginning-date-time "2001-02-15T12:00:00Z"}))
+        coll18 (d/ingest "PROV2" (dc/collection {:beginning-date-time "2002-03-15T12:00:00Z"}))
+        coll19 (d/ingest "PROV2" (dc/collection {:beginning-date-time "2001-11-15T12:00:00Z"
                                                      :ending-date-time "2001-12-15T12:00:00Z"}))
-        coll20 (d/ingest "CMR_PROV2" (dc/collection {}))]
+        coll20 (d/ingest "PROV2" (dc/collection {}))]
     (index/refresh-elastic-index)
 
     (testing "search by both start-day and end-day."

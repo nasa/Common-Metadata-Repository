@@ -12,7 +12,7 @@
             ))
 
 
-(use-fixtures :each (ingest/reset-fixture "PROV1"))
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
 ;;; Verify a new granule is ingested successfully.
 (deftest granule-ingest-test

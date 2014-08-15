@@ -11,23 +11,23 @@
             [cmr.search.validators.messages :as vmsg]
             [cmr.system-int-test.data2.core :as d]))
 
-(use-fixtures :each (ingest/reset-fixture "CMR_PROV1" "CMR_PROV2" "CMR_T_PROV"))
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2" "provguid3" "CMR_T_PROV"}))
 
 (comment
   (ingest/reset)
-  (doseq [p ["CMR_PROV1" "CMR_PROV2" "CMR_T_PROV"]]
+  (doseq [p ["PROV1" "PROV2" "CMR_T_PROV"]]
     (ingest/create-provider p))
 
   )
 
 (deftest search-by-provider-id
-  (let [coll1 (d/ingest "CMR_PROV1" (dc/collection {}))
-        coll2 (d/ingest "CMR_PROV2" (dc/collection {}))
-        gran1 (d/ingest "CMR_PROV1" (dg/granule coll1 {:granule-ur "Granule1"}))
-        gran2 (d/ingest "CMR_PROV1" (dg/granule coll1 {:granule-ur "Granule2"}))
-        gran3 (d/ingest "CMR_PROV1" (dg/granule coll1 {:granule-ur "Granule3"}))
-        gran4 (d/ingest "CMR_PROV2" (dg/granule coll2 {:granule-ur "Granule4"}))
-        gran5 (d/ingest "CMR_PROV2" (dg/granule coll2 {:granule-ur "Granule5"}))]
+  (let [coll1 (d/ingest "PROV1" (dc/collection {}))
+        coll2 (d/ingest "PROV2" (dc/collection {}))
+        gran1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule1"}))
+        gran2 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule2"}))
+        gran3 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule3"}))
+        gran4 (d/ingest "PROV2" (dg/granule coll2 {:granule-ur "Granule4"}))
+        gran5 (d/ingest "PROV2" (dg/granule coll2 {:granule-ur "Granule5"}))]
     (index/refresh-elastic-index)
     (testing "search by non-existent provider id."
       (is (d/refs-match?
@@ -36,45 +36,45 @@
     (testing "search by existing provider id."
       (is (d/refs-match?
             [gran1 gran2 gran3]
-            (search/find-refs :granule {:provider "CMR_PROV1"}))))
+            (search/find-refs :granule {:provider "PROV1"}))))
     (testing "search by provider id using wildcard *."
       (is (d/refs-match?
             [gran1 gran2 gran3 gran4 gran5]
-            (search/find-refs :granule {:provider "CMR_PRO*"
+            (search/find-refs :granule {:provider "PRO*"
                                         "options[provider][pattern]" "true"}))))
     (testing "search by provider id using wildcard ?."
       (is (d/refs-match?
             [gran1 gran2 gran3 gran4 gran5]
-            (search/find-refs :granule {:provider "CMR_PROV?"
+            (search/find-refs :granule {:provider "PROV?"
                                         "options[provider][pattern]" "true"}))))
     (testing "search by provider id defaut is ignroe case true."
       (is (d/refs-match?
             [gran1 gran2 gran3]
-            (search/find-refs :granule {:provider "CMR_prov1"}))))
+            (search/find-refs :granule {:provider "PROV1"}))))
     (testing "search by provider id ignore case false"
       (is (d/refs-match?
             []
-            (search/find-refs :granule {:provider "CMR_prov1"
+            (search/find-refs :granule {:provider "prov1"
                                         "options[provider][ignore-case]" "false"}))))
     (testing "search by provider id ignore case true."
       (is (d/refs-match?
             [gran1 gran2 gran3]
-            (search/find-refs :granule {:provider "CMR_prov1"
+            (search/find-refs :granule {:provider "prov1"
                                         "options[provider][ignore-case]" "true"}))))
     (testing "aql search"
       (is (d/refs-match? [gran1 gran2 gran3]
-                         (search/find-refs-with-aql :granule [] {:dataCenterId "CMR_PROV1"}))))))
+                         (search/find-refs-with-aql :granule [] {:dataCenterId "PROV1"}))))))
 
 (deftest search-by-dataset-id
-  (let [coll1 (d/ingest "CMR_PROV1" (dc/collection {:entry-title "OneCollectionV1"}))
-        coll2 (d/ingest "CMR_PROV1" (dc/collection {:entry-title "AnotherCollectionV1"}))
-        coll3 (d/ingest "CMR_PROV2" (dc/collection {:entry-title "OneCollectionV1"}))
-        coll4 (d/ingest "CMR_PROV2" (dc/collection {:entry-title "OtherCollectionV1"}))
-        gran1 (d/ingest "CMR_PROV1" (dg/granule coll1 {:granule-ur "Granule1"}))
-        gran2 (d/ingest "CMR_PROV1" (dg/granule coll1 {:granule-ur "Granule2"}))
-        gran3 (d/ingest "CMR_PROV1" (dg/granule coll2 {:granule-ur "Granule3"}))
-        gran4 (d/ingest "CMR_PROV2" (dg/granule coll3 {:granule-ur "Granule4"}))
-        gran5 (d/ingest "CMR_PROV2" (dg/granule coll4 {:granule-ur "Granule5"}))]
+  (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "OneCollectionV1"}))
+        coll2 (d/ingest "PROV1" (dc/collection {:entry-title "AnotherCollectionV1"}))
+        coll3 (d/ingest "PROV2" (dc/collection {:entry-title "OneCollectionV1"}))
+        coll4 (d/ingest "PROV2" (dc/collection {:entry-title "OtherCollectionV1"}))
+        gran1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule1"}))
+        gran2 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule2"}))
+        gran3 (d/ingest "PROV1" (dg/granule coll2 {:granule-ur "Granule3"}))
+        gran4 (d/ingest "PROV2" (dg/granule coll3 {:granule-ur "Granule4"}))
+        gran5 (d/ingest "PROV2" (dg/granule coll4 {:granule-ur "Granule5"}))]
     (index/refresh-elastic-index)
     (testing "search by non-existent dataset id."
       (is (d/refs-match?
@@ -86,7 +86,7 @@
         (let [ref (first refs)
               {:keys [name id location]} ref]
           (is (= "Granule3" name))
-          (is (re-matches #"G[0-9]+-CMR_PROV1" id)))))
+          (is (re-matches #"G[0-9]+-PROV1" id)))))
     (testing "search by multiple dataset ids."
       (is (d/refs-match?
             [gran3 gran5]
@@ -120,14 +120,14 @@
 
 
 (def provider-granules
-  {"CMR_PROV1" [{:entry-title "OneCollectionV1"
+  {"PROV1" [{:entry-title "OneCollectionV1"
                  :granule-ur "Granule1"}
                 {:entry-title "OneCollectionV1"
                  :granule-ur "Granule2"}
                 {:entry-title "AnotherCollectionV1"
                  :granule-ur "Granule3"}]
 
-   "CMR_PROV2" [{:entry-title "OneCollectionV1"
+   "PROV2" [{:entry-title "OneCollectionV1"
                  :granule-ur "Granule4"}
                 {:entry-title "OtherCollectionV1"
                  :granule-ur "Granule5"}]
@@ -142,15 +142,15 @@
                   :granule-ur "sampleur3"}]})
 
 (deftest search-by-granule-ur
-  (let [coll1 (d/ingest "CMR_PROV1" (dc/collection {}))
-        coll2 (d/ingest "CMR_PROV2" (dc/collection {}))
-        gran1 (d/ingest "CMR_PROV1" (dg/granule coll1 {:granule-ur "Granule1"}))
-        gran2 (d/ingest "CMR_PROV1" (dg/granule coll1 {:granule-ur "Granule2"}))
-        gran3 (d/ingest "CMR_PROV1" (dg/granule coll1 {:granule-ur "Granule3"}))
-        gran4 (d/ingest "CMR_PROV2" (dg/granule coll2 {:granule-ur "Granule3"}))
-        gran5 (d/ingest "CMR_PROV2" (dg/granule coll2 {:granule-ur "SampleUR1"}))
-        gran6 (d/ingest "CMR_PROV2" (dg/granule coll2 {:granule-ur "SampleUR2"}))
-        gran7 (d/ingest "CMR_PROV2" (dg/granule coll2 {:granule-ur "sampleur3"}))]
+  (let [coll1 (d/ingest "PROV1" (dc/collection {}))
+        coll2 (d/ingest "PROV2" (dc/collection {}))
+        gran1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule1"}))
+        gran2 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule2"}))
+        gran3 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule3"}))
+        gran4 (d/ingest "PROV2" (dg/granule coll2 {:granule-ur "Granule3"}))
+        gran5 (d/ingest "PROV2" (dg/granule coll2 {:granule-ur "SampleUR1"}))
+        gran6 (d/ingest "PROV2" (dg/granule coll2 {:granule-ur "SampleUR2"}))
+        gran7 (d/ingest "PROV2" (dg/granule coll2 {:granule-ur "sampleur3"}))]
     (index/refresh-elastic-index)
     (testing "search by non-existent granule ur."
       (is (d/refs-match?
@@ -162,7 +162,7 @@
         (let [ref (first refs)
               {:keys [name id location]} ref]
           (is (= "Granule1" name))
-          (is (re-matches #"G[0-9]+-CMR_PROV1" id)))))
+          (is (re-matches #"G[0-9]+-PROV1" id)))))
     (testing "search by multiple granule urs."
       (is (d/refs-match?
             [gran1 gran2]
@@ -215,14 +215,14 @@
 
 
 (deftest search-by-cloud-cover
-  (let [coll1 (d/ingest "CMR_PROV1" (dc/collection {}))
-        coll2 (d/ingest "CMR_PROV2" (dc/collection {}))
-        gran1 (d/ingest "CMR_PROV1" (dg/granule coll1 {:cloud-cover 0.8}))
-        gran2 (d/ingest "CMR_PROV1" (dg/granule coll1 {:cloud-cover 30.0}))
-        gran3 (d/ingest "CMR_PROV1" (dg/granule coll1 {:cloud-cover 120}))
-        gran4 (d/ingest "CMR_PROV2" (dg/granule coll2 {:cloud-cover -60.0}))
-        gran5 (d/ingest "CMR_PROV2" (dg/granule coll2 {:cloud-cover 0.0}))
-        gran6 (d/ingest "CMR_PROV2" (dg/granule coll2 {:granule-ur "sampleur3"}))]
+  (let [coll1 (d/ingest "PROV1" (dc/collection {}))
+        coll2 (d/ingest "PROV2" (dc/collection {}))
+        gran1 (d/ingest "PROV1" (dg/granule coll1 {:cloud-cover 0.8}))
+        gran2 (d/ingest "PROV1" (dg/granule coll1 {:cloud-cover 30.0}))
+        gran3 (d/ingest "PROV1" (dg/granule coll1 {:cloud-cover 120}))
+        gran4 (d/ingest "PROV2" (dg/granule coll2 {:cloud-cover -60.0}))
+        gran5 (d/ingest "PROV2" (dg/granule coll2 {:cloud-cover 0.0}))
+        gran6 (d/ingest "PROV2" (dg/granule coll2 {:granule-ur "sampleur3"}))]
     (index/refresh-elastic-index)
     (testing "search granules with lower bound cloud-cover value"
       (are [cc-search items] (d/refs-match? items (search/find-refs :granule cc-search))
@@ -286,12 +286,12 @@
 
 ;; exclude granules by echo_granule_id or concept_id (including parent concept_id) params
 (deftest exclude-granules-by-echo-granule-n-concept-ids
-  (let [coll1 (d/ingest "CMR_PROV1" (dc/collection {}))
-        coll2 (d/ingest "CMR_PROV2" (dc/collection {}))
-        gran1 (d/ingest "CMR_PROV1" (dg/granule coll1 {:cloud-cover 0.8}))
-        gran2 (d/ingest "CMR_PROV1" (dg/granule coll1 {:cloud-cover 30.0}))
-        gran3 (d/ingest "CMR_PROV1" (dg/granule coll1 {:cloud-cover 120}))
-        gran4 (d/ingest "CMR_PROV2" (dg/granule coll2 {:cloud-cover -60.0}))
+  (let [coll1 (d/ingest "PROV1" (dc/collection {}))
+        coll2 (d/ingest "PROV2" (dc/collection {}))
+        gran1 (d/ingest "PROV1" (dg/granule coll1 {:cloud-cover 0.8}))
+        gran2 (d/ingest "PROV1" (dg/granule coll1 {:cloud-cover 30.0}))
+        gran3 (d/ingest "PROV1" (dg/granule coll1 {:cloud-cover 120}))
+        gran4 (d/ingest "PROV2" (dg/granule coll2 {:cloud-cover -60.0}))
         coll1-cid (get-in coll1 [:concept-id])
         coll2-cid (get-in coll2 [:concept-id])
         gran1-cid (get-in gran1 [:concept-id])
@@ -327,13 +327,13 @@
 
 ;; Find granules by echo_granule_id, echo_collection_id and concept_id params
 (deftest search-by-concept-id
-  (let [coll1 (d/ingest "CMR_PROV1" (dc/collection))
-        coll2 (d/ingest "CMR_PROV2" (dc/collection))
-        gran1 (d/ingest "CMR_PROV1" (dg/granule coll1))
-        gran2 (d/ingest "CMR_PROV1" (dg/granule coll1))
-        gran3 (d/ingest "CMR_PROV1" (dg/granule coll1))
-        gran4 (d/ingest "CMR_PROV2" (dg/granule coll2))
-        gran5 (d/ingest "CMR_PROV2" (dg/granule coll2))
+  (let [coll1 (d/ingest "PROV1" (dc/collection))
+        coll2 (d/ingest "PROV2" (dc/collection))
+        gran1 (d/ingest "PROV1" (dg/granule coll1))
+        gran2 (d/ingest "PROV1" (dg/granule coll1))
+        gran3 (d/ingest "PROV1" (dg/granule coll1))
+        gran4 (d/ingest "PROV2" (dg/granule coll2))
+        gran5 (d/ingest "PROV2" (dg/granule coll2))
         coll1-cid (get-in coll1 [:concept-id])
         coll2-cid (get-in coll2 [:concept-id])
         gran1-cid (get-in gran1 [:concept-id])
@@ -411,7 +411,7 @@
            ;; Multiple values
            [gran1 gran2 gran3 gran4 gran5] [gran1-cid gran2-cid gran3-cid gran4-cid gran5-cid] {}
            ;; an non existant granule along with existing granules
-           [gran1 gran5] [gran1-cid "G555-CMR_PROV1" "G555-NON_EXIST" gran5-cid] {}
+           [gran1 gran5] [gran1-cid "G555-PROV1" "G555-NON_EXIST" gran5-cid] {}
            [] [gran1-cid gran5-cid] {:and true}))
     (testing "Search with wildcards in concept_id param not supported."
       (is (= {:status 422

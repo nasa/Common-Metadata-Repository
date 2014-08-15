@@ -7,7 +7,7 @@
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.core :as d]))
 
-(use-fixtures :each (ingest/reset-fixture "CMR_PROV1"))
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
 (deftest search-by-two-d-coord-name
   (let [two-d1 (dc/two-d "one CALIPSO")
@@ -15,12 +15,12 @@
         two-d3 (dc/two-d "three CALIPSO")
         two-d4 (dc/two-d "three Bravo")
         two-d5 (dc/two-d "four Bravo")
-        coll1 (d/ingest "CMR_PROV1" (dc/collection {:two-d-coordinate-systems [two-d1]}))
-        coll2 (d/ingest "CMR_PROV1" (dc/collection {:two-d-coordinate-systems [two-d2]}))
-        coll3 (d/ingest "CMR_PROV1" (dc/collection {:two-d-coordinate-systems [two-d3]}))
-        coll4 (d/ingest "CMR_PROV1" (dc/collection {:two-d-coordinate-systems [two-d4]}))
-        coll5 (d/ingest "CMR_PROV1" (dc/collection {:two-d-coordinate-systems [two-d2 two-d5]}))
-        coll6 (d/ingest "CMR_PROV1" (dc/collection {}))]
+        coll1 (d/ingest "PROV1" (dc/collection {:two-d-coordinate-systems [two-d1]}))
+        coll2 (d/ingest "PROV1" (dc/collection {:two-d-coordinate-systems [two-d2]}))
+        coll3 (d/ingest "PROV1" (dc/collection {:two-d-coordinate-systems [two-d3]}))
+        coll4 (d/ingest "PROV1" (dc/collection {:two-d-coordinate-systems [two-d4]}))
+        coll5 (d/ingest "PROV1" (dc/collection {:two-d-coordinate-systems [two-d2 two-d5]}))
+        coll6 (d/ingest "PROV1" (dc/collection {}))]
     (index/refresh-elastic-index)
 
     (testing "two d coordinate search by parameters"

@@ -10,7 +10,7 @@
             [cmr.system-int-test.data2.core :as d]))
 
 
-(use-fixtures :each (ingest/reset-fixture "PROV1" "PROV2"))
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
 
 (deftest identifier-search-test

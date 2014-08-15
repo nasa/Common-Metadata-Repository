@@ -8,19 +8,19 @@
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.core :as d]))
 
-(use-fixtures :each (ingest/reset-fixture "CMR_PROV1"))
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
 (deftest search-granule-by-downloadable
   (let [ru1 (dc/related-url "GET DATA")
         ru2 (dc/related-url "GET RELATED VISUALIZATION")
         ru3 (dc/related-url nil)
-        coll (d/ingest "CMR_PROV1" (dc/collection {}))
-        gran1 (d/ingest "CMR_PROV1" (dg/granule coll {:related-urls [ru1]}))
-        gran2 (d/ingest "CMR_PROV1" (dg/granule coll {:related-urls [ru2]}))
-        gran3 (d/ingest "CMR_PROV1" (dg/granule coll {:related-urls [ru3]}))
-        gran4 (d/ingest "CMR_PROV1" (dg/granule coll {:related-urls [ru2 ru3]}))
-        gran5 (d/ingest "CMR_PROV1" (dg/granule coll {:related-urls [ru1 ru2]}))
-        gran6 (d/ingest "CMR_PROV1" (dg/granule coll {}))]
+        coll (d/ingest "PROV1" (dc/collection {}))
+        gran1 (d/ingest "PROV1" (dg/granule coll {:related-urls [ru1]}))
+        gran2 (d/ingest "PROV1" (dg/granule coll {:related-urls [ru2]}))
+        gran3 (d/ingest "PROV1" (dg/granule coll {:related-urls [ru3]}))
+        gran4 (d/ingest "PROV1" (dg/granule coll {:related-urls [ru2 ru3]}))
+        gran5 (d/ingest "PROV1" (dg/granule coll {:related-urls [ru1 ru2]}))
+        gran6 (d/ingest "PROV1" (dg/granule coll {}))]
 
     (index/refresh-elastic-index)
 
@@ -41,13 +41,13 @@
   (let [ru1 (dc/related-url "GET DATA")
         ru2 (dc/related-url "GET RELATED VISUALIZATION")
         ru3 (dc/related-url nil)
-        coll (d/ingest "CMR_PROV1" (dc/collection {}))
-        gran1 (d/ingest "CMR_PROV1" (dg/granule coll {:related-urls [ru1]}))
-        gran2 (d/ingest "CMR_PROV1" (dg/granule coll {:related-urls [ru2]}))
-        gran3 (d/ingest "CMR_PROV1" (dg/granule coll {:related-urls [ru3]}))
-        gran4 (d/ingest "CMR_PROV1" (dg/granule coll {:related-urls [ru2 ru3]}))
-        gran5 (d/ingest "CMR_PROV1" (dg/granule coll {:related-urls [ru1 ru2]}))
-        gran6 (d/ingest "CMR_PROV1" (dg/granule coll {}))]
+        coll (d/ingest "PROV1" (dc/collection {}))
+        gran1 (d/ingest "PROV1" (dg/granule coll {:related-urls [ru1]}))
+        gran2 (d/ingest "PROV1" (dg/granule coll {:related-urls [ru2]}))
+        gran3 (d/ingest "PROV1" (dg/granule coll {:related-urls [ru3]}))
+        gran4 (d/ingest "PROV1" (dg/granule coll {:related-urls [ru2 ru3]}))
+        gran5 (d/ingest "PROV1" (dg/granule coll {:related-urls [ru1 ru2]}))
+        gran6 (d/ingest "PROV1" (dg/granule coll {}))]
 
     (index/refresh-elastic-index)
 

@@ -9,7 +9,7 @@
             [cmr.system-int-test.data2.core :as d]
             [cmr.common.services.messages :as cm]))
 
-(use-fixtures :each (ingest/reset-fixture "PROV1"))
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
 (deftest invalid-equator-crossing-dates
   (are [v]

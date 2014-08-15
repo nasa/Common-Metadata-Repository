@@ -8,7 +8,7 @@
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.core :as d]))
 
-(use-fixtures :each (ingest/reset-fixture "CMR_PROV1"))
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
 (deftest search-by-platform-short-names
   (let [p0 (dc/platform "platform-Inherit")
@@ -26,17 +26,17 @@
         pr5 (dg/platform-ref "platform-ONE")
         pr6 (dg/platform-ref "platform-x")
         pr7 (dg/platform-ref "PLATform-X")
-        coll1 (d/ingest "CMR_PROV1" (dc/collection {:platforms [p1 p2 p3 p4]}))
-        coll2 (d/ingest "CMR_PROV1" (dc/collection {:platforms [p0 p01]}))
-        gran1 (d/ingest "CMR_PROV1" (dg/granule coll1 {:platform-refs [pr1]}))
-        gran2 (d/ingest "CMR_PROV1" (dg/granule coll1 {:platform-refs [pr1 pr2]}))
-        gran3 (d/ingest "CMR_PROV1" (dg/granule coll1 {:platform-refs [pr2]}))
-        gran4 (d/ingest "CMR_PROV1" (dg/granule coll1 {:platform-refs [pr3]}))
-        gran5 (d/ingest "CMR_PROV1" (dg/granule coll1 {:platform-refs [pr4]}))
-        gran6 (d/ingest "CMR_PROV1" (dg/granule coll2 {}))
-        gran7 (d/ingest "CMR_PROV1" (dg/granule coll2 {:platform-refs [pr5]}))
-        gran8 (d/ingest "CMR_PROV1" (dg/granule coll2 {:platform-refs [pr6]}))
-        gran9 (d/ingest "CMR_PROV1" (dg/granule coll2 {:platform-refs [pr7]}))]
+        coll1 (d/ingest "PROV1" (dc/collection {:platforms [p1 p2 p3 p4]}))
+        coll2 (d/ingest "PROV1" (dc/collection {:platforms [p0 p01]}))
+        gran1 (d/ingest "PROV1" (dg/granule coll1 {:platform-refs [pr1]}))
+        gran2 (d/ingest "PROV1" (dg/granule coll1 {:platform-refs [pr1 pr2]}))
+        gran3 (d/ingest "PROV1" (dg/granule coll1 {:platform-refs [pr2]}))
+        gran4 (d/ingest "PROV1" (dg/granule coll1 {:platform-refs [pr3]}))
+        gran5 (d/ingest "PROV1" (dg/granule coll1 {:platform-refs [pr4]}))
+        gran6 (d/ingest "PROV1" (dg/granule coll2 {}))
+        gran7 (d/ingest "PROV1" (dg/granule coll2 {:platform-refs [pr5]}))
+        gran8 (d/ingest "PROV1" (dg/granule coll2 {:platform-refs [pr6]}))
+        gran9 (d/ingest "PROV1" (dg/granule coll2 {:platform-refs [pr7]}))]
 
     (index/refresh-elastic-index)
 
@@ -117,18 +117,18 @@
         pr6 (dg/platform-ref "platform-6" i5)
         pr7 (dg/platform-ref "platform-7" i6)
         pr8 (dg/platform-ref "platform-8" i7)
-        coll1 (d/ingest "CMR_PROV1" (dc/collection {:short-name "SHORT1"}))
-        coll2 (d/ingest "CMR_PROV1" (dc/collection {:platforms [p0]}))
-        gran1 (d/ingest "CMR_PROV1" (dg/granule coll1 {:granule-ur "gran1" :platform-refs [pr1]}))
-        gran2 (d/ingest "CMR_PROV1" (dg/granule coll1 {:granule-ur "gran2" :platform-refs [pr1 pr2]}))
-        gran3 (d/ingest "CMR_PROV1" (dg/granule coll1 {:granule-ur "gran3" :platform-refs [pr2]}))
-        gran4 (d/ingest "CMR_PROV1" (dg/granule coll1 {:granule-ur "gran4" :platform-refs [pr3]}))
-        gran5 (d/ingest "CMR_PROV1" (dg/granule coll1 {:granule-ur "gran5" :platform-refs [pr4]}))
-        gran6 (d/ingest "CMR_PROV1" (dg/granule coll1 {:granule-ur "gran6" :platform-refs [pr5]}))
-        gran7 (d/ingest "CMR_PROV1" (dg/granule coll2 {:granule-ur "gran7" }))
-        gran8 (d/ingest "CMR_PROV1" (dg/granule coll2 {:granule-ur "gran8" :platform-refs [pr6]}))
-        gran9 (d/ingest "CMR_PROV1" (dg/granule coll2 {:granule-ur "gran9" :platform-refs [pr7]}))
-        gran10 (d/ingest "CMR_PROV1" (dg/granule coll2 {:granule-ur "gran10" :platform-refs [pr8]}))]
+        coll1 (d/ingest "PROV1" (dc/collection {:short-name "SHORT1"}))
+        coll2 (d/ingest "PROV1" (dc/collection {:platforms [p0]}))
+        gran1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "gran1" :platform-refs [pr1]}))
+        gran2 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "gran2" :platform-refs [pr1 pr2]}))
+        gran3 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "gran3" :platform-refs [pr2]}))
+        gran4 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "gran4" :platform-refs [pr3]}))
+        gran5 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "gran5" :platform-refs [pr4]}))
+        gran6 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "gran6" :platform-refs [pr5]}))
+        gran7 (d/ingest "PROV1" (dg/granule coll2 {:granule-ur "gran7" }))
+        gran8 (d/ingest "PROV1" (dg/granule coll2 {:granule-ur "gran8" :platform-refs [pr6]}))
+        gran9 (d/ingest "PROV1" (dg/granule coll2 {:granule-ur "gran9" :platform-refs [pr7]}))
+        gran10 (d/ingest "PROV1" (dg/granule coll2 {:granule-ur "gran10" :platform-refs [pr8]}))]
 
     (index/refresh-elastic-index)
 
@@ -143,12 +143,12 @@
                           :echo_collection_id (:concept-id coll1)}
            [gran1 gran2] {:instrument "instrument-Sn A"
                           :platform "platform-1"
-                          :provider "CMR_PROV1"
+                          :provider "PROV1"
                           :short-name "SHORT1"}
            [] {:instrument "instrument-Sn A"
-               :provider "CMR_PROV2"}
+               :provider "PROV2"}
            [] {:instrument "instrument-Sn A"
-               :provider "CMR_PROV1"
+               :provider "PROV1"
                :short-name "SHORT2"}))
 
     (testing "search by instrument"
@@ -232,19 +232,19 @@
         p7 (dg/platform-ref "platform-7" i6)
         p8 (dg/platform-ref "platform-8" i7)
         p9 (dg/platform-ref "platform-9" i8)
-        coll1 (d/ingest "CMR_PROV1" (dc/collection {}))
-        coll2 (d/ingest "CMR_PROV1" (dc/collection {:platforms [p0]}))
-        gran1 (d/ingest "CMR_PROV1" (dg/granule coll1 {:platform-refs [p1]}))
-        gran2 (d/ingest "CMR_PROV1" (dg/granule coll1 {:platform-refs [p1 p2]}))
-        gran3 (d/ingest "CMR_PROV1" (dg/granule coll1 {:platform-refs [p2]}))
-        gran4 (d/ingest "CMR_PROV1" (dg/granule coll1 {:platform-refs [p3]}))
-        gran5 (d/ingest "CMR_PROV1" (dg/granule coll1 {:platform-refs [p4]}))
-        gran6 (d/ingest "CMR_PROV1" (dg/granule coll1 {:platform-refs [p5]}))
-        gran7 (d/ingest "CMR_PROV1" (dg/granule coll1 {:platform-refs [p6]}))
-        gran8 (d/ingest "CMR_PROV1" (dg/granule coll2 {}))
-        gran9 (d/ingest "CMR_PROV1" (dg/granule coll2 {:platform-refs [p7]}))
-        gran10 (d/ingest "CMR_PROV1" (dg/granule coll2 {:platform-refs [p8]}))
-        gran11 (d/ingest "CMR_PROV1" (dg/granule coll2 {:platform-refs [p9]}))]
+        coll1 (d/ingest "PROV1" (dc/collection {}))
+        coll2 (d/ingest "PROV1" (dc/collection {:platforms [p0]}))
+        gran1 (d/ingest "PROV1" (dg/granule coll1 {:platform-refs [p1]}))
+        gran2 (d/ingest "PROV1" (dg/granule coll1 {:platform-refs [p1 p2]}))
+        gran3 (d/ingest "PROV1" (dg/granule coll1 {:platform-refs [p2]}))
+        gran4 (d/ingest "PROV1" (dg/granule coll1 {:platform-refs [p3]}))
+        gran5 (d/ingest "PROV1" (dg/granule coll1 {:platform-refs [p4]}))
+        gran6 (d/ingest "PROV1" (dg/granule coll1 {:platform-refs [p5]}))
+        gran7 (d/ingest "PROV1" (dg/granule coll1 {:platform-refs [p6]}))
+        gran8 (d/ingest "PROV1" (dg/granule coll2 {}))
+        gran9 (d/ingest "PROV1" (dg/granule coll2 {:platform-refs [p7]}))
+        gran10 (d/ingest "PROV1" (dg/granule coll2 {:platform-refs [p8]}))
+        gran11 (d/ingest "PROV1" (dg/granule coll2 {:platform-refs [p9]}))]
 
     (index/refresh-elastic-index)
 

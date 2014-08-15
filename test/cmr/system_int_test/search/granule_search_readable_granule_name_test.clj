@@ -8,20 +8,20 @@
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.core :as d]))
 
-(use-fixtures :each (ingest/reset-fixture "CMR_PROV1"))
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
 (deftest search-by-producer-granule-id
-  (let [coll1 (d/ingest "CMR_PROV1" (dc/collection {}))
-        coll2 (d/ingest "CMR_PROV1" (dc/collection {}))
-        gran1 (d/ingest "CMR_PROV1" (dg/granule coll1 {:granule-ur "Granule1"
+  (let [coll1 (d/ingest "PROV1" (dc/collection {}))
+        coll2 (d/ingest "PROV1" (dc/collection {}))
+        gran1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule1"
                                                        :producer-gran-id "SpecialOne"}))
-        gran2 (d/ingest "CMR_PROV1" (dg/granule coll1 {:granule-ur "Granule2"
+        gran2 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule2"
                                                        :producer-gran-id "SpecialTwo"}))
-        gran3 (d/ingest "CMR_PROV1" (dg/granule coll1 {:granule-ur "SpecialOne"
+        gran3 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "SpecialOne"
                                                        :producer-gran-id "NotSoSpecial"}))
-        gran4 (d/ingest "CMR_PROV1" (dg/granule coll2 {:granule-ur "Granule44"
+        gran4 (d/ingest "PROV1" (dg/granule coll2 {:granule-ur "Granule44"
                                                        :producer-gran-id "SuperSpecial"}))
-        gran5 (d/ingest "CMR_PROV1" (dg/granule coll2 {:granule-ur "SuperSpecial"
+        gran5 (d/ingest "PROV1" (dg/granule coll2 {:granule-ur "SuperSpecial"
                                                        :producer-gran-id "Granule2"}))]
     (index/refresh-elastic-index)
     (testing "search by non-existent readable granule name."

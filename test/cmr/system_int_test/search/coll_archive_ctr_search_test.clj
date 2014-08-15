@@ -7,19 +7,19 @@
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.core :as d]))
 
-(use-fixtures :each (ingest/reset-fixture "CMR_PROV1" "CMR_PROV2"))
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
 (deftest search-colls-by-archive-center-names
-  (let [coll1 (d/ingest "CMR_PROV1" (dc/collection {}))
-        coll2 (d/ingest "CMR_PROV1" (dc/collection {:organizations []}))
-        coll3 (d/ingest "CMR_PROV1" (dc/collection {:organizations [(dc/org :processing-center "Larc")]}))
-        coll4 (d/ingest "CMR_PROV1" (dc/collection {:organizations [(dc/org :archive-center "Larc")]}))
+  (let [coll1 (d/ingest "PROV1" (dc/collection {}))
+        coll2 (d/ingest "PROV1" (dc/collection {:organizations []}))
+        coll3 (d/ingest "PROV1" (dc/collection {:organizations [(dc/org :processing-center "Larc")]}))
+        coll4 (d/ingest "PROV1" (dc/collection {:organizations [(dc/org :archive-center "Larc")]}))
 
-        coll5 (d/ingest "CMR_PROV2" (dc/collection {:organizations [(dc/org :archive-center "SEDAC AC")
+        coll5 (d/ingest "PROV2" (dc/collection {:organizations [(dc/org :archive-center "SEDAC AC")
                                                                     (dc/org :processing-center "SEDAC PC")]}))
-        coll6 (d/ingest "CMR_PROV2" (dc/collection {:organizations [(dc/org :archive-center "Larc")]}))
+        coll6 (d/ingest "PROV2" (dc/collection {:organizations [(dc/org :archive-center "Larc")]}))
 
-        coll7 (d/ingest "CMR_PROV2" (dc/collection {:organizations [(dc/org :archive-center "Sedac AC")
+        coll7 (d/ingest "PROV2" (dc/collection {:organizations [(dc/org :archive-center "Sedac AC")
                                                                     (dc/org :processing-center "Sedac")]}))]
 
     (index/refresh-elastic-index)

@@ -7,7 +7,7 @@
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.core :as d]))
 
-(use-fixtures :each (ingest/reset-fixture "CMR_PROV1" "CMR_PROV2"))
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
 (deftest search-by-platform-short-names
   (let [p1 (dc/platform "platform_Sn A")
@@ -16,14 +16,14 @@
         p4 (dc/platform "platform_Snx")
         p5 (dc/platform "PLATFORM_X")
         p6 (dc/platform "platform_x")
-        coll1 (d/ingest "CMR_PROV1" (dc/collection {:platforms [p1]}))
-        coll2 (d/ingest "CMR_PROV1" (dc/collection {:platforms [p1 p2]}))
-        coll3 (d/ingest "CMR_PROV1" (dc/collection {:platforms [p2]}))
-        coll4 (d/ingest "CMR_PROV2" (dc/collection {:platforms [p3]}))
-        coll5 (d/ingest "CMR_PROV2" (dc/collection {:platforms [p4]}))
-        coll6 (d/ingest "CMR_PROV2" (dc/collection {:platforms [p5]}))
-        coll7 (d/ingest "CMR_PROV2" (dc/collection {:platforms [p6]}))
-        coll8 (d/ingest "CMR_PROV2" (dc/collection {}))]
+        coll1 (d/ingest "PROV1" (dc/collection {:platforms [p1]}))
+        coll2 (d/ingest "PROV1" (dc/collection {:platforms [p1 p2]}))
+        coll3 (d/ingest "PROV1" (dc/collection {:platforms [p2]}))
+        coll4 (d/ingest "PROV2" (dc/collection {:platforms [p3]}))
+        coll5 (d/ingest "PROV2" (dc/collection {:platforms [p4]}))
+        coll6 (d/ingest "PROV2" (dc/collection {:platforms [p5]}))
+        coll7 (d/ingest "PROV2" (dc/collection {:platforms [p6]}))
+        coll8 (d/ingest "PROV2" (dc/collection {}))]
 
     (index/refresh-elastic-index)
 
@@ -75,15 +75,15 @@
         p5 (dc/platform "platform_5" nil i1 i2)
         p6 (dc/platform "platform_6" nil i5)
         p7 (dc/platform "platform_7" nil i6)
-        coll1 (d/ingest "CMR_PROV1" (dc/collection {:platforms [p1]}))
-        coll2 (d/ingest "CMR_PROV1" (dc/collection {:platforms [p1 p2]}))
-        coll3 (d/ingest "CMR_PROV1" (dc/collection {:platforms [p2]}))
-        coll4 (d/ingest "CMR_PROV2" (dc/collection {:platforms [p3]}))
-        coll5 (d/ingest "CMR_PROV2" (dc/collection {:platforms [p4]}))
-        coll6 (d/ingest "CMR_PROV2" (dc/collection {:platforms [p5]}))
-        coll7 (d/ingest "CMR_PROV2" (dc/collection {:platforms [p6]}))
-        coll8 (d/ingest "CMR_PROV2" (dc/collection {:platforms [p7]}))
-        coll9 (d/ingest "CMR_PROV2" (dc/collection {}))]
+        coll1 (d/ingest "PROV1" (dc/collection {:platforms [p1]}))
+        coll2 (d/ingest "PROV1" (dc/collection {:platforms [p1 p2]}))
+        coll3 (d/ingest "PROV1" (dc/collection {:platforms [p2]}))
+        coll4 (d/ingest "PROV2" (dc/collection {:platforms [p3]}))
+        coll5 (d/ingest "PROV2" (dc/collection {:platforms [p4]}))
+        coll6 (d/ingest "PROV2" (dc/collection {:platforms [p5]}))
+        coll7 (d/ingest "PROV2" (dc/collection {:platforms [p6]}))
+        coll8 (d/ingest "PROV2" (dc/collection {:platforms [p7]}))
+        coll9 (d/ingest "PROV2" (dc/collection {}))]
 
     (index/refresh-elastic-index)
 
@@ -143,16 +143,16 @@
         p6 (dc/platform "platform_6" nil i1 i2)
         p7 (dc/platform "platform_7" nil i6)
         p8 (dc/platform "platform_8" nil i7)
-        coll1 (d/ingest "CMR_PROV1" (dc/collection {:platforms [p1]}))
-        coll2 (d/ingest "CMR_PROV1" (dc/collection {:platforms [p1 p2]}))
-        coll3 (d/ingest "CMR_PROV1" (dc/collection {:platforms [p2]}))
-        coll4 (d/ingest "CMR_PROV2" (dc/collection {:platforms [p3]}))
-        coll5 (d/ingest "CMR_PROV2" (dc/collection {:platforms [p4]}))
-        coll6 (d/ingest "CMR_PROV2" (dc/collection {:platforms [p5]}))
-        coll7 (d/ingest "CMR_PROV2" (dc/collection {:platforms [p6]}))
-        coll8 (d/ingest "CMR_PROV2" (dc/collection {:platforms [p7]}))
-        coll9 (d/ingest "CMR_PROV2" (dc/collection {:platforms [p8]}))
-        coll10 (d/ingest "CMR_PROV2" (dc/collection {}))]
+        coll1 (d/ingest "PROV1" (dc/collection {:platforms [p1]}))
+        coll2 (d/ingest "PROV1" (dc/collection {:platforms [p1 p2]}))
+        coll3 (d/ingest "PROV1" (dc/collection {:platforms [p2]}))
+        coll4 (d/ingest "PROV2" (dc/collection {:platforms [p3]}))
+        coll5 (d/ingest "PROV2" (dc/collection {:platforms [p4]}))
+        coll6 (d/ingest "PROV2" (dc/collection {:platforms [p5]}))
+        coll7 (d/ingest "PROV2" (dc/collection {:platforms [p6]}))
+        coll8 (d/ingest "PROV2" (dc/collection {:platforms [p7]}))
+        coll9 (d/ingest "PROV2" (dc/collection {:platforms [p8]}))
+        coll10 (d/ingest "PROV2" (dc/collection {}))]
 
     (index/refresh-elastic-index)
 

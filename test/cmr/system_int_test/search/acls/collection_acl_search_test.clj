@@ -11,10 +11,10 @@
             [cmr.system-int-test.utils.echo-util :as e]))
 
 
-(use-fixtures :each (ingest/reset-fixture-new {"provguid1" "PROV1" "provguid2" "PROV2"}))
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"} false))
 
 ;; TODO uncomment this once we convert all the collection tests to handle acls.
-#_(deftest collection-search-with-acls-test
+(deftest collection-search-with-acls-test
   ;; Grant permissions before creating data
   ;; Grant guests permission to coll1
   (e/grant-guest (e/coll-catalog-item-id "provguid1" ["coll1"]))

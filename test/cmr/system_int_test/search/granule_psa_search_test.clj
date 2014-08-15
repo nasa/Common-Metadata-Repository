@@ -12,7 +12,7 @@
             [cmr.search.services.messages.attribute-messages :as am]
             [clj-http.client :as client]))
 
-(use-fixtures :each (ingest/reset-fixture "PROV1"))
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
 (comment
   (ingest/create-provider "PROV1")

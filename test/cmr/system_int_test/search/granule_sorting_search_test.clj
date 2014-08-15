@@ -11,7 +11,7 @@
             [cmr.search.services.messages.common-messages :as msg]))
 
 
-(use-fixtures :each (ingest/reset-fixture "PROV1" "PROV2"))
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
 (deftest invalid-sort-key-test
   (is (= {:status 422

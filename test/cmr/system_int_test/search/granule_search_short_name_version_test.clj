@@ -8,23 +8,23 @@
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.core :as d]))
 
-(use-fixtures :each (ingest/reset-fixture "CMR_PROV1" "CMR_PROV2"))
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
 (deftest search-by-short-name
-  (let [coll1 (d/ingest "CMR_PROV1" (dc/collection {:short-name "OneShort"}))
-        coll2 (d/ingest "CMR_PROV1" (dc/collection {:short-name "OnlyShort"}))
-        coll3 (d/ingest "CMR_PROV1" (dc/collection {:short-name "OneShort"}))
-        coll4 (d/ingest "CMR_PROV2" (dc/collection {:short-name "AnotherS"}))
-        coll5 (d/ingest "CMR_PROV2" (dc/collection {:short-name "AnotherT"}))
-        coll6 (d/ingest "CMR_PROV2" (dc/collection {:short-name "AnotherST"}))
-        coll7 (d/ingest "CMR_PROV2" (dc/collection {:short-name "OneShort"}))
-        gran1 (d/ingest "CMR_PROV1" (dg/granule coll1 {:granule-ur "Granule1"}))
-        gran2 (d/ingest "CMR_PROV1" (dg/granule coll2 {:granule-ur "Granule2"}))
-        gran3 (d/ingest "CMR_PROV1" (dg/granule coll3 {:granule-ur "Granule3"}))
-        gran4 (d/ingest "CMR_PROV2" (dg/granule coll4 {:granule-ur "Granule4"}))
-        gran5 (d/ingest "CMR_PROV2" (dg/granule coll5 {:granule-ur "Granule5"}))
-        gran6 (d/ingest "CMR_PROV2" (dg/granule coll6 {:granule-ur "Granule6"}))
-        gran7 (d/ingest "CMR_PROV2" (dg/granule coll7 {:granule-ur "Granule7"}))]
+  (let [coll1 (d/ingest "PROV1" (dc/collection {:short-name "OneShort"}))
+        coll2 (d/ingest "PROV1" (dc/collection {:short-name "OnlyShort"}))
+        coll3 (d/ingest "PROV1" (dc/collection {:short-name "OneShort"}))
+        coll4 (d/ingest "PROV2" (dc/collection {:short-name "AnotherS"}))
+        coll5 (d/ingest "PROV2" (dc/collection {:short-name "AnotherT"}))
+        coll6 (d/ingest "PROV2" (dc/collection {:short-name "AnotherST"}))
+        coll7 (d/ingest "PROV2" (dc/collection {:short-name "OneShort"}))
+        gran1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule1"}))
+        gran2 (d/ingest "PROV1" (dg/granule coll2 {:granule-ur "Granule2"}))
+        gran3 (d/ingest "PROV1" (dg/granule coll3 {:granule-ur "Granule3"}))
+        gran4 (d/ingest "PROV2" (dg/granule coll4 {:granule-ur "Granule4"}))
+        gran5 (d/ingest "PROV2" (dg/granule coll5 {:granule-ur "Granule5"}))
+        gran6 (d/ingest "PROV2" (dg/granule coll6 {:granule-ur "Granule6"}))
+        gran7 (d/ingest "PROV2" (dg/granule coll7 {:granule-ur "Granule7"}))]
     (index/refresh-elastic-index)
     (testing "search by non-existent short name."
       (is (d/refs-match?
@@ -36,7 +36,7 @@
         (let [ref (first refs)
               {:keys [name id location]} ref]
           (is (= "Granule2" name))
-          (is (re-matches #"G[0-9]+-CMR_PROV1" id)))))
+          (is (re-matches #"G[0-9]+-PROV1" id)))))
     (testing "search by multiple short names."
       (is (d/refs-match?
             [gran4 gran5]
@@ -66,20 +66,20 @@
                                         "options[short_name][ignore-case]" "true"}))))))
 
 (deftest search-by-version
-  (let [coll1 (d/ingest "CMR_PROV1" (dc/collection {:version-id "1"}))
-        coll2 (d/ingest "CMR_PROV1" (dc/collection {:version-id "1"}))
-        coll3 (d/ingest "CMR_PROV1" (dc/collection {:version-id "2"}))
-        coll4 (d/ingest "CMR_PROV2" (dc/collection {:version-id "R3"}))
-        coll5 (d/ingest "CMR_PROV2" (dc/collection {:version-id "1"}))
-        coll6 (d/ingest "CMR_PROV2" (dc/collection {:version-id "20"}))
-        coll7 (d/ingest "CMR_PROV2" (dc/collection {:version-id "200"}))
-        gran1 (d/ingest "CMR_PROV1" (dg/granule coll1 {:granule-ur "Granule1"}))
-        gran2 (d/ingest "CMR_PROV1" (dg/granule coll2 {:granule-ur "Granule2"}))
-        gran3 (d/ingest "CMR_PROV1" (dg/granule coll3 {:granule-ur "Granule3"}))
-        gran4 (d/ingest "CMR_PROV2" (dg/granule coll4 {:granule-ur "Granule4"}))
-        gran5 (d/ingest "CMR_PROV2" (dg/granule coll5 {:granule-ur "Granule5"}))
-        gran6 (d/ingest "CMR_PROV2" (dg/granule coll6 {:granule-ur "Granule6"}))
-        gran7 (d/ingest "CMR_PROV2" (dg/granule coll7 {:granule-ur "Granule7"}))]
+  (let [coll1 (d/ingest "PROV1" (dc/collection {:version-id "1"}))
+        coll2 (d/ingest "PROV1" (dc/collection {:version-id "1"}))
+        coll3 (d/ingest "PROV1" (dc/collection {:version-id "2"}))
+        coll4 (d/ingest "PROV2" (dc/collection {:version-id "R3"}))
+        coll5 (d/ingest "PROV2" (dc/collection {:version-id "1"}))
+        coll6 (d/ingest "PROV2" (dc/collection {:version-id "20"}))
+        coll7 (d/ingest "PROV2" (dc/collection {:version-id "200"}))
+        gran1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule1"}))
+        gran2 (d/ingest "PROV1" (dg/granule coll2 {:granule-ur "Granule2"}))
+        gran3 (d/ingest "PROV1" (dg/granule coll3 {:granule-ur "Granule3"}))
+        gran4 (d/ingest "PROV2" (dg/granule coll4 {:granule-ur "Granule4"}))
+        gran5 (d/ingest "PROV2" (dg/granule coll5 {:granule-ur "Granule5"}))
+        gran6 (d/ingest "PROV2" (dg/granule coll6 {:granule-ur "Granule6"}))
+        gran7 (d/ingest "PROV2" (dg/granule coll7 {:granule-ur "Granule7"}))]
     (index/refresh-elastic-index)
     (testing "search by non-existent version."
       (is (d/refs-match?
@@ -91,7 +91,7 @@
         (let [ref (first refs)
               {:keys [name id location]} ref]
           (is (= "Granule3" name))
-          (is (re-matches #"G[0-9]+-CMR_PROV1" id)))))
+          (is (re-matches #"G[0-9]+-PROV1" id)))))
     (testing "search by multiple versions."
       (is (d/refs-match?
             [gran3 gran4]

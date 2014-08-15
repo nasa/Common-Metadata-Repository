@@ -8,32 +8,32 @@
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.core :as d]))
 
-(use-fixtures :each (ingest/reset-fixture "CMR_PROV1"))
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
 (deftest search-by-temporal
-  (let [coll1 (d/ingest "CMR_PROV1" (dc/collection {}))
-        gran1 (d/ingest "CMR_PROV1" (dg/granule coll1 {:granule-ur "Granule1"
+  (let [coll1 (d/ingest "PROV1" (dc/collection {}))
+        gran1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule1"
                                                        :beginning-date-time "2010-01-01T12:00:00Z"
                                                        :ending-date-time "2010-01-11T12:00:00Z"}))
-        gran2 (d/ingest "CMR_PROV1" (dg/granule coll1 {:granule-ur "Granule2"
+        gran2 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule2"
                                                        :beginning-date-time "2010-01-31T12:00:00Z"
                                                        :ending-date-time "2010-12-12T12:00:00Z"}))
-        gran3 (d/ingest "CMR_PROV1" (dg/granule coll1 {:granule-ur "Granule3"
+        gran3 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule3"
                                                        :beginning-date-time "2010-12-03T12:00:00Z"
                                                        :ending-date-time "2010-12-20T12:00:00Z"}))
-        gran4 (d/ingest "CMR_PROV1" (dg/granule coll1 {:granule-ur "Granule4"
+        gran4 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule4"
                                                        :beginning-date-time "2010-12-12T12:00:00Z"
                                                        :ending-date-time "2011-01-03T12:00:00Z"}))
-        gran5 (d/ingest "CMR_PROV1" (dg/granule coll1 {:granule-ur "Granule5"
+        gran5 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule5"
                                                        :beginning-date-time "2011-02-01T12:00:00Z"
                                                        :ending-date-time "2011-03-01T12:00:00Z"}))
-        gran6 (d/ingest "CMR_PROV1" (dg/granule coll1 {:granule-ur "Granule6"
+        gran6 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule6"
                                                        :beginning-date-time "2010-01-30T12:00:00Z"}))
-        gran7 (d/ingest "CMR_PROV1" (dg/granule coll1 {:granule-ur "Granule7"
+        gran7 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule7"
                                                        :beginning-date-time "2010-12-12T12:00:00Z"}))
-        gran8 (d/ingest "CMR_PROV1" (dg/granule coll1 {:granule-ur "Granule8"
+        gran8 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule8"
                                                        :beginning-date-time "2011-12-13T12:00:00Z"}))
-        gran9 (d/ingest "CMR_PROV1" (dg/granule coll1 {:granule-ur "Granule9"}))]
+        gran9 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule9"}))]
     (index/refresh-elastic-index)
 
     (testing "search by temporal_start."

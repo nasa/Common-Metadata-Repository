@@ -7,18 +7,18 @@
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.core :as d]))
 
-(use-fixtures :each (ingest/reset-fixture "CMR_PROV1"))
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
 (deftest search-collection-by-downloadable
   (let [ru1 (dc/related-url "GET DATA")
         ru2 (dc/related-url "GET RELATED VISUALIZATION")
         ru3 (dc/related-url nil)
-        coll1 (d/ingest "CMR_PROV1" (dc/collection {:related-urls [ru1]}))
-        coll2 (d/ingest "CMR_PROV1" (dc/collection {:related-urls [ru2]}))
-        coll3 (d/ingest "CMR_PROV1" (dc/collection {:related-urls [ru3]}))
-        coll4 (d/ingest "CMR_PROV1" (dc/collection {:related-urls [ru2 ru3]}))
-        coll5 (d/ingest "CMR_PROV1" (dc/collection {:related-urls [ru1 ru2]}))
-        coll6 (d/ingest "CMR_PROV1" (dc/collection {}))]
+        coll1 (d/ingest "PROV1" (dc/collection {:related-urls [ru1]}))
+        coll2 (d/ingest "PROV1" (dc/collection {:related-urls [ru2]}))
+        coll3 (d/ingest "PROV1" (dc/collection {:related-urls [ru3]}))
+        coll4 (d/ingest "PROV1" (dc/collection {:related-urls [ru2 ru3]}))
+        coll5 (d/ingest "PROV1" (dc/collection {:related-urls [ru1 ru2]}))
+        coll6 (d/ingest "PROV1" (dc/collection {}))]
 
     (index/refresh-elastic-index)
 
@@ -39,12 +39,12 @@
   (let [ru1 (dc/related-url "GET DATA")
         ru2 (dc/related-url "GET RELATED VISUALIZATION")
         ru3 (dc/related-url nil)
-        coll1 (d/ingest "CMR_PROV1" (dc/collection {:related-urls [ru1]}))
-        coll2 (d/ingest "CMR_PROV1" (dc/collection {:related-urls [ru2]}))
-        coll3 (d/ingest "CMR_PROV1" (dc/collection {:related-urls [ru3]}))
-        coll4 (d/ingest "CMR_PROV1" (dc/collection {:related-urls [ru2 ru3]}))
-        coll5 (d/ingest "CMR_PROV1" (dc/collection {:related-urls [ru1 ru2]}))
-        coll6 (d/ingest "CMR_PROV1" (dc/collection {}))]
+        coll1 (d/ingest "PROV1" (dc/collection {:related-urls [ru1]}))
+        coll2 (d/ingest "PROV1" (dc/collection {:related-urls [ru2]}))
+        coll3 (d/ingest "PROV1" (dc/collection {:related-urls [ru3]}))
+        coll4 (d/ingest "PROV1" (dc/collection {:related-urls [ru2 ru3]}))
+        coll5 (d/ingest "PROV1" (dc/collection {:related-urls [ru1 ru2]}))
+        coll6 (d/ingest "PROV1" (dc/collection {}))]
 
     (index/refresh-elastic-index)
 

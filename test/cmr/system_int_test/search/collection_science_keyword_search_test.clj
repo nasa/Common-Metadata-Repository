@@ -7,7 +7,7 @@
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.core :as d]))
 
-(use-fixtures :each (ingest/reset-fixture "CMR_PROV1" "CMR_PROV2"))
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
 (deftest search-by-science-keywords
   (let [sk1 (dc/science-keyword {:category "Cat1"
@@ -40,17 +40,17 @@
         sk7 (dc/science-keyword {:category "upcase"
                                  :topic "Cool"
                                  :term "Mild"})
-        coll1 (d/ingest "CMR_PROV1" (dc/collection {:science-keywords [sk1]}))
-        coll2 (d/ingest "CMR_PROV1" (dc/collection {:science-keywords [sk2]}))
-        coll3 (d/ingest "CMR_PROV1" (dc/collection {:science-keywords [sk3]}))
-        coll4 (d/ingest "CMR_PROV1" (dc/collection {:science-keywords [sk4]}))
-        coll5 (d/ingest "CMR_PROV1" (dc/collection {:science-keywords [sk5]}))
-        coll6 (d/ingest "CMR_PROV1" (dc/collection {:science-keywords [sk3 sk5]}))
-        coll7 (d/ingest "CMR_PROV2" (dc/collection {:science-keywords [sk4 sk5]}))
-        coll8 (d/ingest "CMR_PROV2" (dc/collection {:science-keywords [sk6]}))
-        coll9 (d/ingest "CMR_PROV2" (dc/collection {:science-keywords [sk7]}))
+        coll1 (d/ingest "PROV1" (dc/collection {:science-keywords [sk1]}))
+        coll2 (d/ingest "PROV1" (dc/collection {:science-keywords [sk2]}))
+        coll3 (d/ingest "PROV1" (dc/collection {:science-keywords [sk3]}))
+        coll4 (d/ingest "PROV1" (dc/collection {:science-keywords [sk4]}))
+        coll5 (d/ingest "PROV1" (dc/collection {:science-keywords [sk5]}))
+        coll6 (d/ingest "PROV1" (dc/collection {:science-keywords [sk3 sk5]}))
+        coll7 (d/ingest "PROV2" (dc/collection {:science-keywords [sk4 sk5]}))
+        coll8 (d/ingest "PROV2" (dc/collection {:science-keywords [sk6]}))
+        coll9 (d/ingest "PROV2" (dc/collection {:science-keywords [sk7]}))
 
-        coll10 (d/ingest "CMR_PROV2" (dc/collection {}))]
+        coll10 (d/ingest "PROV2" (dc/collection {}))]
 
     (index/refresh-elastic-index)
 

@@ -8,17 +8,17 @@
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.core :as d]))
 
-(use-fixtures :each (ingest/reset-fixture "CMR_PROV1"))
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
 (deftest search-with-post
-  (let [coll1 (d/ingest "CMR_PROV1" (dc/collection {:short-name "OneShort"}))
-        coll2 (d/ingest "CMR_PROV1" (dc/collection {:short-name "OnlyShort"
+  (let [coll1 (d/ingest "PROV1" (dc/collection {:short-name "OneShort"}))
+        coll2 (d/ingest "PROV1" (dc/collection {:short-name "OnlyShort"
                                                     :entry-title "Dataset2"}))
-        coll3 (d/ingest "CMR_PROV1" (dc/collection {:short-name "With Space"}))
-        coll4 (d/ingest "CMR_PROV1" (dc/collection {:entry-title "Dataset4"}))
-        gran1 (d/ingest "CMR_PROV1" (dg/granule coll1 {:granule-ur "Granule1"}))
-        gran2 (d/ingest "CMR_PROV1" (dg/granule coll2 {:granule-ur "Granule2"}))
-        gran3 (d/ingest "CMR_PROV1" (dg/granule coll3 {:granule-ur "Granule 3"}))]
+        coll3 (d/ingest "PROV1" (dc/collection {:short-name "With Space"}))
+        coll4 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset4"}))
+        gran1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule1"}))
+        gran2 (d/ingest "PROV1" (dg/granule coll2 {:granule-ur "Granule2"}))
+        gran3 (d/ingest "PROV1" (dg/granule coll3 {:granule-ur "Granule 3"}))]
 
     (index/refresh-elastic-index)
 
@@ -75,10 +75,10 @@
 (deftest search-with-post-legacy-style-range
   (let [psa1 (dc/psa "alpha" :string)
         psa2 (dc/psa "bravo" :string)
-        coll1 (d/ingest "CMR_PROV1" (dc/collection {:product-specific-attributes [psa1 psa2]}))
-        gran1 (d/ingest "CMR_PROV1" (dg/granule coll1 {:product-specific-attributes [(dg/psa "alpha" ["ab" "bc"])
+        coll1 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2]}))
+        gran1 (d/ingest "PROV1" (dg/granule coll1 {:product-specific-attributes [(dg/psa "alpha" ["ab" "bc"])
                                                                                      (dg/psa "bravo" ["cd" "bf"])]}))
-        gran2 (d/ingest "CMR_PROV1" (dg/granule coll1 {:product-specific-attributes [(dg/psa "bravo" ["ab"])]}))]
+        gran2 (d/ingest "PROV1" (dg/granule coll1 {:product-specific-attributes [(dg/psa "bravo" ["ab"])]}))]
 
     (index/refresh-elastic-index)
 

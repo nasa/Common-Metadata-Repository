@@ -15,7 +15,7 @@
             [cmr.system-int-test.utils.search-util :as search]))
 
 
-(use-fixtures :each (ingest/reset-fixture "PROV1"))
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
 ;;; tests
 ;;; ensure metadata, indexer and ingest apps are accessable on ports 3001, 3004 and 3002 resp;

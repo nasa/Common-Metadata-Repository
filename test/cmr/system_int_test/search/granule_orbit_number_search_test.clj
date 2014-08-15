@@ -11,43 +11,43 @@
             [cmr.search.services.messages.orbit-number-messages :as on-m]
             [cmr.common.services.messages :as cm]))
 
-(use-fixtures :each (ingest/reset-fixture "CMR_PROV1"))
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
 (deftest search-by-granule-orbit-number
-  (let [coll1 (d/ingest "CMR_PROV1" (dc/collection {}))
-        gran1 (d/ingest "CMR_PROV1"
+  (let [coll1 (d/ingest "PROV1" (dc/collection {}))
+        gran1 (d/ingest "PROV1"
                         (dg/granule coll1
                                     {:orbit-calculated-spatial-domains [ {:orbit-number  1
                                                                           :start-orbit-number 1.0
                                                                           :stop-orbit-number 1.0
                                                                           :equator-crossing-date-time "2011-02-01T12:00:00Z"}]}))
-        gran2 (d/ingest "CMR_PROV1"
+        gran2 (d/ingest "PROV1"
                         (dg/granule coll1
                                     {:orbit-calculated-spatial-domains [{:orbit-number  1
                                                                          :equator-crossing-date-time "2011-02-01T12:00:00Z"}]}))
-        gran3 (d/ingest "CMR_PROV1"
+        gran3 (d/ingest "PROV1"
                         (dg/granule coll1
                                     {:orbit-calculated-spatial-domains [{:start-orbit-number 1.0
                                                                          :stop-orbit-number 1.0
                                                                          :equator-crossing-date-time "2011-02-01T12:00:00Z"}]}))
-        gran4 (d/ingest "CMR_PROV1"
+        gran4 (d/ingest "PROV1"
                         (dg/granule coll1
                                     {:orbit-calculated-spatial-domains [{:orbit-number  2
                                                                          :start-orbit-number 2.0
                                                                          :stop-orbit-number 3.0
                                                                          :equator-crossing-date-time "2011-02-01T12:00:00Z"}]}))
-        gran5 (d/ingest "CMR_PROV1"
+        gran5 (d/ingest "PROV1"
                         (dg/granule coll1
                                     {:orbit-calculated-spatial-domains [{:start-orbit-number 2.7
                                                                          :stop-orbit-number 3.5
                                                                          :equator-crossing-longitude 0
                                                                          :equator-crossing-date-time "2011-02-01T12:00:00Z"}]}))
-        gran6 (d/ingest "CMR_PROV1"
+        gran6 (d/ingest "PROV1"
                         (dg/granule coll1
                                     {:orbit-calculated-spatial-domains [{:start-orbit-number 4.0
                                                                          :stop-orbit-number 5.0
                                                                          :equator-crossing-date-time "2011-02-01T12:00:00Z"}]}))
-        gran7 (d/ingest "CMR_PROV1"
+        gran7 (d/ingest "PROV1"
                         (dg/granule coll1
                                     {:orbit-calculated-spatial-domains [{:orbital-model-name "OrbitalModelName"
                                                                          :start-orbit-number 7.0

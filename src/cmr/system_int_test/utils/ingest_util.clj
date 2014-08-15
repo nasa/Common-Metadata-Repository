@@ -96,28 +96,27 @@
 ;;; fixture - each test to call this fixture
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; DEPRECATED
 (defn reset-fixture
-  "Creates a database fixture function to reset the database after every test.
-  Optionally accepts a list of provider-ids to create before the test"
-  [& providers]
-  (fn [f]
-    (try
-      (reset)
-      (doseq [pid providers] (create-provider pid))
-      (f)
-      (finally
-        (reset)))))
-
-;; TODO rename this to reset-fixture and move all tests over.
-(defn reset-fixture-new
   "New version of reset fixture that works with ECHO."
-  [provider-guid-id-map]
-  (fn [f]
-    (try
-      (reset)
-      (doseq [pid (vals provider-guid-id-map)] (create-provider pid))
-      (echo-util/create-providers provider-guid-id-map)
-      (f)
-      (finally
-        (reset)))))
+  ([provider-guid-id-map]
+   (reset-fixture provider-guid-id-map true))
+  ([provider-guid-id-map grant-all]
+   (fn [f]
+     (try
+       (reset)
+       ;; Create the providers in metadata db
+       (doseq [provider-id (vals provider-guid-id-map)]
+         (create-provider provider-id))
+
+       ;; Create the providers in mock echo.
+       (echo-util/create-providers provider-guid-id-map)
+
+       ;; Optionally grant permission to provider data
+       (when grant-all
+         (doseq [provider-guid (keys provider-guid-id-map)]
+           (echo-util/grant [echo-util/guest-ace
+                             echo-util/registered-user-ace]
+                            (echo-util/coll-catalog-item-id provider-guid))))
+       (f)
+       (finally
+         (reset))))))

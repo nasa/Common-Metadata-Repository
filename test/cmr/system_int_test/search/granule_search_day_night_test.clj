@@ -8,22 +8,22 @@
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.core :as d]))
 
-(use-fixtures :each (ingest/reset-fixture "CMR_PROV1" "CMR_PROV2"))
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
 
 (deftest search-by-day-night
-  (let [coll1 (d/ingest "CMR_PROV1" (dc/collection {}))
-        coll2 (d/ingest "CMR_PROV2" (dc/collection {}))
-        gran1 (d/ingest "CMR_PROV1" (dg/granule coll1 {:day-night "DAY"}))
-        gran2 (d/ingest "CMR_PROV1" (dg/granule coll1 {:day-night "NIGHT"}))
-        gran3 (d/ingest "CMR_PROV1" (dg/granule coll1 {:day-night "BOTH"}))
-        gran4 (d/ingest "CMR_PROV2" (dg/granule coll2 {:day-night "UNSPECIFIED"}))
-        gran5 (d/ingest "CMR_PROV2" (dg/granule coll2 {:day-night "DAY"}))
-        gran6 (d/ingest "CMR_PROV2" (dg/granule coll2 {:day-night "DAY"}))
-        gran7 (d/ingest "CMR_PROV2" (dg/granule coll2 {:day-night "BOTH"}))
-        gran8 (d/ingest "CMR_PROV2" (dg/granule coll2 {:day-night "BOTH"}))
-        gran9 (d/ingest "CMR_PROV2" (dg/granule coll2 {:day-night "BOTH"}))
-        gran10 (d/ingest "CMR_PROV2" (dg/granule coll2 {:day-night "UNSPECIFIED"}))]
+  (let [coll1 (d/ingest "PROV1" (dc/collection {}))
+        coll2 (d/ingest "PROV2" (dc/collection {}))
+        gran1 (d/ingest "PROV1" (dg/granule coll1 {:day-night "DAY"}))
+        gran2 (d/ingest "PROV1" (dg/granule coll1 {:day-night "NIGHT"}))
+        gran3 (d/ingest "PROV1" (dg/granule coll1 {:day-night "BOTH"}))
+        gran4 (d/ingest "PROV2" (dg/granule coll2 {:day-night "UNSPECIFIED"}))
+        gran5 (d/ingest "PROV2" (dg/granule coll2 {:day-night "DAY"}))
+        gran6 (d/ingest "PROV2" (dg/granule coll2 {:day-night "DAY"}))
+        gran7 (d/ingest "PROV2" (dg/granule coll2 {:day-night "BOTH"}))
+        gran8 (d/ingest "PROV2" (dg/granule coll2 {:day-night "BOTH"}))
+        gran9 (d/ingest "PROV2" (dg/granule coll2 {:day-night "BOTH"}))
+        gran10 (d/ingest "PROV2" (dg/granule coll2 {:day-night "UNSPECIFIED"}))]
     (index/refresh-elastic-index)
     (testing "search by invalid day-night-flag."
       (let [refs (search/find-refs :granule {:day-night-flag "FAKE"})]

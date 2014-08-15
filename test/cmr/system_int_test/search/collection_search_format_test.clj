@@ -19,7 +19,7 @@
             [cmr.spatial.codec :as codec]
             [cmr.umm.spatial :as umm-s]))
 
-(use-fixtures :each (ingest/reset-fixture "PROV1" "PROV2"))
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
 ;; Tests that we can ingest and find items in different formats
 (deftest multi-format-search-test
