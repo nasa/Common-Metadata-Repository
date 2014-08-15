@@ -529,7 +529,7 @@
                                                (update-in memo [concept_id] conj revision_id)))
                                            {}
                                            result)]
-        ;; generate tuples of concpet-id/revision-id to remove
+        ;; generate tuples of concept-id/revision-id to remove
         (reduce-kv (fn [memo concept-id rev-ids]
                      (apply merge memo (map (fn [revision-id]
                                               [concept-id revision-id])

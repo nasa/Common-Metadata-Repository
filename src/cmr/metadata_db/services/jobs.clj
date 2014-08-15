@@ -11,7 +11,7 @@
 
 (def OLD_REVISIONS_CONCEPT_CLEANUP_INTERVAL
   "The number of seconds between jobs run to cleanup old revisions of granules and collections"
-  (* 3600 12))
+  (* 3600 6))
 
 (def-stateful-job ExpiredConceptCleanupJob
   [ctx system]
@@ -22,15 +22,10 @@
 
 (def-stateful-job OldRevisionConceptCleanupJob
   [ctx system]
-  (info "Executing old revision concepts cleanup.")
-  (try
-    (let [db (:db system)]
-      (doseq [provider (provider-db/get-providers db)]
-        (srv/delete-old-revisions db provider :collection)
-        (srv/delete-old-revisions db provider :granule)))
-    (catch Throwable e
-      (error e "OldRevisionConceptCleanupJob caught Exception.")))
-  (info "Finished old revision concepts cleanup."))
+  (let [db (:db system)]
+    (doseq [provider (provider-db/get-providers db)]
+      (srv/delete-old-revisions db provider :collection)
+      (srv/delete-old-revisions db provider :granule))))
 
 (def jobs
   "A list of the jobs for metadata db"
