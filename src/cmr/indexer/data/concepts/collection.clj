@@ -62,8 +62,7 @@
         update-time (get-in collection [:data-provider-timestamps :update-time])
         update-time (f/unparse (f/formatters :date-time) update-time)
         spatial-representation (get-in collection [:spatial-coverage :spatial-representation])
-        permitted-group-ids (acl/get-coll-permitted-group-ids context provider-id collection)
-        _ (debug "permitted-group-ids" (pr-str permitted-group-ids) "for coll" entry-title)]
+        permitted-group-ids (acl/get-coll-permitted-group-ids context provider-id collection)]
     (merge {:concept-id concept-id
             :permitted-group-ids permitted-group-ids
             :entry-id entry-id
