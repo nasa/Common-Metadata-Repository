@@ -34,6 +34,17 @@
   []
   (tokens/login-guest (context)))
 
+(defn login
+  "Logs in as the specified user and returns the token. No password needed because mock echo
+  doesn't enforce passwords. Group guids can be optionally specified. The logged in user will
+  be in the given groups."
+  ([user]
+   (login user nil))
+  ([user group-guids]
+   (if group-guids
+     (mock/login-with-group-access (context) user "password" group-guids)
+     (tokens/login (context) user "password"))))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ACL related
@@ -62,33 +73,36 @@
     (mock/create-acl (context) acl)))
 
 (def guest-ace
-  "TODO"
+  "A CMR style access control entry granting guests read access."
   {:permissions [:read]
    :user-type :guest})
 
 (def registered-user-ace
-  "TODO"
+  "A CMR style access control entry granting registered users read access."
   {:permissions [:read]
    :user-type :registered})
 
 (defn group-ace
-  "TODO"
+  "A CMR style access control entry granting users in a specific group read access."
   [group-guid]
   {:permissions [:read]
    :group-guid group-guid})
 
 (defn grant-guest
-  "TODO"
+  "Creates an ACL in mock echo granting guests access to catalog items identified by the
+  catalog-item-identity"
   [catalog-item-identity]
   (grant [guest-ace] catalog-item-identity))
 
 (defn grant-registered-users
-  "TODO"
+  "Creates an ACL in mock echo granting all registered users access to catalog items identified by the
+  catalog-item-identity"
   [catalog-item-identity]
   (grant [registered-user-ace] catalog-item-identity))
 
 (defn grant-group
-  "TODO"
+  "Creates an ACL in mock echo granting users in the group access to catalog items identified by the
+  catalog-item-identity"
   [group-guid catalog-item-identity]
   (grant [(group-ace group-guid)] catalog-item-identity))
 

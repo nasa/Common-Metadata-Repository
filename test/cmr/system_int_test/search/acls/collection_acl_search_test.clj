@@ -25,11 +25,12 @@
   (e/grant-guest (e/coll-catalog-item-id "provguid1" ["coll4"] {:min-value 4 :max-value 6}))
   ;; all collections in prov2 granted to guests
   (e/grant-guest (e/coll-catalog-item-id "provguid2"))
+  ;; grant registered users permission to coll2 and coll4
+  (e/grant-registered-users (e/coll-catalog-item-id "provguid1" ["coll2" "coll4"]))
+  ;; grant specific group permission to coll3 and coll6
+  (e/grant-group "group-guid1" (e/coll-catalog-item-id "provguid1" ["coll3"]))
+  (e/grant-group "group-guid2" (e/coll-catalog-item-id "provguid2" ["coll6"]))
 
-
-  ;; TODO
-  ;; grant registered users permission to coll2
-  ;; grant specific group permission to coll3
 
   (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}))
         coll2 (d/ingest "PROV1" (dc/collection {:entry-title "coll2"}))
@@ -44,7 +45,9 @@
         coll7 (d/ingest "PROV2" (dc/collection {:entry-title "coll7"}))
 
         guest-token (e/login-guest)
-        ]
+        user1-token (e/login "user1")
+        user2-token (e/login "user2" ["group-guid1"])
+        user3-token (e/login "user3" ["group-guid1" "group-guid2"])]
 
     (index/refresh-elastic-index)
 
@@ -57,18 +60,18 @@
          ;; login and use guest token
          guest-token [coll1 coll4 coll6 coll7]
 
-
-         ;; TODO
          ;; test searching as a user
-         ;; test searching as a user in a group
-         ;; test searching as a user in a group
-         )))
+         user1-token [coll2 coll4]
+
+         ;; Test searching with users in groups
+         user2-token [coll2 coll4 coll3]
+         user3-token [coll2 coll4 coll3 coll6])))
 
 ;; TODO add test that ACLs can change and then we reindex the collections and we find the right data
 
 ;; TODO bulk indexing should also index permitted group ids
 
-;; TODO add aql acl search test. AQL must be implemented in another method
+;; TODO add aql acl search test.
 
 ;; TODO add test of retrieving collections with ECHO10 data. This has to be manually implemented
 ;; with the collections as they are retrieved.
