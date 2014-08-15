@@ -1,6 +1,7 @@
 (ns cmr.system-int-test.utils.echo-util
   "Contains helper functions for working with the echo mock"
   (:require [cmr.transmit.echo.mock :as mock]
+            [cmr.transmit.echo.tokens :as tokens]
             [cmr.transmit.config :as config]))
 
 (def context-atom
@@ -24,6 +25,14 @@
   "Creates the providers in the mock echo."
   [provider-guid-id-map]
   (mock/create-providers (context) provider-guid-id-map))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Token related
+
+(defn login-guest
+  "Logs in as a guest and returns the token"
+  []
+  (tokens/login-guest (context)))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

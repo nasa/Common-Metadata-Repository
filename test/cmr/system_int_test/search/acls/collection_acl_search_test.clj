@@ -13,7 +13,10 @@
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"} false))
 
-;; TODO uncomment this once we convert all the collection tests to handle acls.
+;; TODO add test for searching with an invalid security token.
+
+;; TODO add test of passing token through header
+
 (deftest collection-search-with-acls-test
   ;; Grant permissions before creating data
   ;; Grant guests permission to coll1
@@ -38,18 +41,21 @@
 
         ;; PROV2
         coll6 (d/ingest "PROV2" (dc/collection {:entry-title "coll6"}))
-        coll7 (d/ingest "PROV2" (dc/collection {:entry-title "coll7"}))]
+        coll7 (d/ingest "PROV2" (dc/collection {:entry-title "coll7"}))
+
+        guest-token (e/login-guest)
+        ]
 
     (index/refresh-elastic-index)
 
     (are [token items]
-         (d/refs-match? items (search/find-refs :collection {:token token}))
+         (d/refs-match? items (search/find-refs :collection (when token {:token token})))
 
          ;; not logged in should be guest
          nil [coll1 coll4 coll6 coll7]
 
-         ;; TODO login and use guest token
-         ; guest-token [coll1 coll4 coll6 coll7]
+         ;; login and use guest token
+         guest-token [coll1 coll4 coll6 coll7]
 
 
          ;; TODO
