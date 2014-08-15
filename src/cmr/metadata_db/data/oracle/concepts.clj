@@ -64,7 +64,8 @@
 
 
 (defn- truncate-highest
-  "Return a sequence with the highest top-n values removed from the input sequence."
+  "Return a sequence with the highest top-n values removed from the input sequence. The
+  originall order of the sequence may not be preserved."
   [values top-n]
   (drop-last top-n (sort values)))
 
