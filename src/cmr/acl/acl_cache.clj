@@ -10,25 +10,19 @@
             [cmr.common.log :as log :refer (debug info warn error)]
             [clojure.walk :as w]))
 
+(def initial-cache-state
+  {:acls nil
+   :last-updated nil})
+
 (defn create-acl-cache
   "Creates a new empty ACL cache. The cache itself is just an atom with a map."
   []
-  (atom {:acls nil
-         :last-updated nil}))
+  (atom initial-cache-state))
 
 (defn- context->acl-cache
   "Gets the acl cache from the context"
   [context]
   (get-in context [:system :acl-cache]))
-
-(defn get-acls
-  "Gets the current cached acls."
-  [context]
-  (if-let [acls (-> context context->acl-cache deref :acls)]
-    acls
-    ;; We treat acls not being in the cache as an internal error. We want every request to be fast.
-    ;; This could be changed to actually refresh the acl cache.
-    (errors/internal-error! "ACLS were not in cache.")))
 
 (defn- set-acl-provider-id
   "Sets the provider-id in the acl to replace the provider guid"
@@ -40,6 +34,13 @@
                    (assoc :provider-id (provider-guid-id-map (:provider-guid cii)))
                    (dissoc :provider-guid)))))
 
+(defn reset
+  "Resets the cache back to it's initial state"
+  [context]
+  (-> context
+      context->acl-cache
+      (reset! initial-cache-state)))
+
 (defn refresh-acl-cache
   "Refreshes the acls stored in the cache. This should be called from a background job on a timer
   to keep the cache fresh. This will throw an exception if there is a problem fetching ACLs. The
@@ -50,6 +51,17 @@
         acls (mapv (partial set-acl-provider-id provider-guid-id-map)
                    (echo-acls/get-acls-by-type context "CATALOG_ITEM"))]
     (reset! acl-cache-atom {:acls acls :last-updated (t/now)})))
+
+(defn get-acls
+  "Gets the current cached acls."
+  [context]
+  (let [acl-cache-atom (context->acl-cache context)]
+    (when-not (-> acl-cache-atom deref :acls)
+      (info "No acls found in cache. Manually triggering acl cache refresh")
+      (refresh-acl-cache context))
+    (if-let [acls (-> context context->acl-cache deref :acls)]
+      acls
+      (errors/internal-error! "ACLS were not in cache."))))
 
 ;; TODO we need a way to manually trigger this from integration tests.
 ;; Add an endpoint to search and indexer for refreshing the acl cache.
