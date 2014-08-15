@@ -135,7 +135,47 @@
            :variable-level-3 "LevEL1-3" [coll1]
            :detailed-variable "DetAIL1" [coll1]
            :category "TORNADO" [coll5 coll6 coll7]
-           :category "Upcase" [coll8 coll9]))))
+           :category "Upcase" [coll8 coll9]))
+
+    (testing "search collections by science keywords with aql"
+      (are [items science-keywords options]
+           (let [condition (merge {:scienceKeywords science-keywords} options)]
+             (d/refs-match? items (search/find-refs-with-aql :collection [condition])))
+
+           [coll1] [{:category "Cat1"}] {}
+           [coll1] [{:topic "Topic1"}] {}
+           [coll1] [{:term "Term1"}] {}
+           [coll1] [{:variable-level-1 "Level1-1"}] {}
+           [coll1] [{:variable-level-2 "Level1-2"}] {}
+           [coll1] [{:variable-level-3 "Level1-3"}] {}
+           [coll1] [{:detailed-variable "Detail1"}] {}
+           [coll5 coll6 coll7] [{:category "Tornado"}] {}
+           [coll2 coll3 coll4 coll6 coll7] [{:any "UNIVERSAL"}] {}
+           [] [{:category "BLAH"}] {}
+
+           [coll2] [{:category "Hurricane"
+                     :topic "Popular"
+                     :term "Extreme"}] {}
+           [coll2 coll6] [{:category "Hurricane"
+                           :topic "Popular"}
+                          {:term "Extreme"}] {}
+           [coll2 coll6] [{:category "Hurricane"
+                           :topic "Popular"}
+                          {:term "Extreme"}] {:and true}
+           [coll2 coll3 coll5 coll6 coll7] [{:category "Hurricane"
+                                             :topic "Popular"}
+                                            {:term "Extreme"}] {:or true}
+
+           ;; case sensitivity
+           [coll1] [{:category "cat1"}] {}
+           [] [{:category "cat1" :ignore-case false}] {}
+           [coll1] [{:category "cat1"} {:term "extreme" :ignore-case false}] {:or true}
+
+           ;; pattern
+           [coll1] [{:category "C%" :pattern true}] {}
+           [] [{:category "C%" :pattern false}] {}
+           [] [{:category "C%"}] {}
+           [coll1] [{:category "Cat_" :pattern true}] {}))))
 
 (deftest search-science-keywords-error-scenarios
   (testing "search by invalid format."
