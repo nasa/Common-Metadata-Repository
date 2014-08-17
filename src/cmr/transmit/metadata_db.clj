@@ -6,11 +6,10 @@
             [cheshire.core :as cheshire]
             [clojure.walk :as walk]
             [cmr.system-trace.http :as ch]
-            [cmr.system-trace.core :refer [deftracefn]]
             [cmr.transmit.connection :as conn]
             [cmr.common.log :refer (debug info warn error)]))
 
-(deftracefn get-concept
+(defn get-concept
   "Retrieve the concept with the given concept and revision-id"
   [context concept-id revision-id]
   (let [conn (config/context->app-connection context :metadata-db)
@@ -25,7 +24,7 @@
         :not-found
         (str "Failed to retrieve concept " concept-id "/" revision-id " from metadata-db: " (:body response))))))
 
-(deftracefn get-latest-concept
+(defn get-latest-concept
   "Retrieve the latest version of the concept"
   [context concept-id]
   (let [conn (config/context->app-connection context :metadata-db)
@@ -40,7 +39,7 @@
         :not-found
         (str "Failed to retrieve concept " concept-id " from metadata-db: " (:body response))))))
 
-(deftracefn get-concept-id
+(defn get-concept-id
   "Return a distinct identifier for the given arguments."
   [context concept-type provider-id native-id]
   (let [conn (config/context->app-connection context :metadata-db)
@@ -64,7 +63,7 @@
             err-msg (str "Concept id fetch failed. MetadataDb app response status code: "  status)]
         (errors/internal-error! (str err-msg  " " errors-str))))))
 
-(deftracefn get-concept-revisions
+(defn get-concept-revisions
   "Search metadata db and return the concepts given by the concept-id, revision-id tuples."
   ([context concept-tuples]
    (get-concept-revisions context concept-tuples false))
@@ -95,7 +94,7 @@
                                     " "
                                     response))))))
 
-(deftracefn get-latest-concepts
+(defn get-latest-concepts
   "Search metadata db and return the latest-concepts given by the concept-id list"
   ([context concept-ids]
    (get-latest-concepts context concept-ids false))
@@ -126,33 +125,42 @@
                                     " "
                                     response))))))
 
-(deftracefn get-collection-concept-id
-  "Search metadata db and return the collection-concept-id that matches the search params"
-  [context search-params]
+(defn find-collections
+  "Searches metadata db for concepts matching the given parameters."
+  [context params]
   (let [conn (config/context->app-connection context :metadata-db)
         request-url (str (conn/root-url conn) "/concepts/search/collections")
         response (client/get request-url {:accept :json
-                                          :query-params search-params
+                                          :query-params params
                                           :headers (ch/context->http-headers context)
                                           :throw-exceptions false
                                           :connection-manager (conn/conn-mgr conn)})
-        status (:status response)
-        body (cheshire/decode (:body response))]
+        {:keys [status body]} response]
     (case status
-      404
-      (let [err-msg (str "Unable to find collection-concept-id for search params: " search-params)]
-        (errors/throw-service-error :not-found err-msg))
-
-      200
-      (get (first body) "concept-id")
-
+      404 (errors/throw-service-error
+          :not-found (str "Unable to find collections for search params: " (pr-str params))))
+      200 (cheshire/decode body true)
       ;; default
-      (let [errors-str (cheshire/generate-string (flatten (get body "errors")))
-            err-msg (str "Collection concept id fetch failed. MetadataDb app response status code: "  status)]
-        (errors/internal-error! (str err-msg  " " errors-str))))))
+      (errors/internal-error!
+        (format "Collection search failed. status: %s body: %s"
+             status body))))
 
+(defn get-providers
+  "Returns the list of provider ids configured in the metadata db"
+  [context]
+  (let [conn (config/context->app-connection context :metadata-db)
+        request-url (str (conn/root-url conn) "/providers")
+        response (client/get request-url {:accept :json
+                                          :headers (ch/context->http-headers context)
+                                          :throw-exceptions false
+                                          :connection-manager (conn/conn-mgr conn)})
+        {:keys [status body]} response]
+    (case status
+      200 (-> body (cheshire/decode true) :providers)
+      ;; default
+      (errors/internal-error! (format "Failed to get providers status: %s body: %s" status body)))))
 
-(deftracefn save-concept
+(defn save-concept
   "Saves a concept in metadata db and index."
   [context concept]
   (let [conn (config/context->app-connection context :metadata-db)
@@ -182,7 +190,7 @@
                                    " "
                                    response)))))
 
-(deftracefn delete-concept
+(defn delete-concept
   "Delete a concept from metatdata db."
   [context concept-id]
   (let [conn (config/context->app-connection context :metadata-db)
