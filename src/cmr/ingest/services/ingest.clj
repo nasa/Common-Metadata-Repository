@@ -8,6 +8,7 @@
             [cmr.common.services.errors :as serv-errors]
             [cmr.common.services.messages :as cmsg]
             [cmr.common.date-time-parser :as p]
+            [cmr.common.util :as util]
             [cmr.umm.core :as umm]
             [clojure.string :as string]
             [cmr.system-trace.core :refer [deftracefn]]))
@@ -33,9 +34,9 @@
   (let [granule (umm/parse-concept concept)
         {:keys [collection-ref granule-ur]
          {:keys [delete-time]} :data-provider-timestamps} granule
-        params (merge {:provider-id (:provider-id concept)} collection-ref)
-        params (into {} (remove (comp empty? second) params))
-        parent-collection-id (mdb/get-collection-concept-id context params)]
+        params (util/remove-nil-keys (merge {:provider-id (:provider-id concept)}
+                                            collection-ref))
+        parent-collection-id (-> (mdb/find-collections context params) first :concept-id)]
     (when-not parent-collection-id
       (cmsg/data-error :not-found
                        msg/parent-collection-does-not-exist

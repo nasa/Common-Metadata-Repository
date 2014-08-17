@@ -7,21 +7,27 @@
             [cmr.common.api.web-server :as web]
             [cmr.system-trace.context :as context]
             [cmr.ingest.api.routes :as routes]
-            [cmr.transmit.config :as transmit-config]))
+            [cmr.transmit.config :as transmit-config]
+            [cmr.oracle.config :as oracle-config]
+            [cmr.ingest.config :as config]
+            [cmr.oracle.connection :as oracle]))
 
 (def
   ^{:doc "Defines the order to start the components."
     :private true}
-  component-order [:log :web])
+  component-order [:log :db :web])
 
 
 (defn create-system
   "Returns a new instance of the whole application."
-  []
-  (let [sys {:log (log/create-logger)
-             :web (web/create-web-server (transmit-config/ingest-port) routes/make-api)
-             :zipkin (context/zipkin-config "Ingest" false)}]
-    (transmit-config/system-with-connections sys [:metadata-db :indexer])))
+  ([]
+   (create-system "ingest"))
+  ([connection-pool-name]
+   (let [sys {:log (log/create-logger)
+              :web (web/create-web-server (transmit-config/ingest-port) routes/make-api)
+              :db (oracle/create-db (config/db-spec connection-pool-name))
+              :zipkin (context/zipkin-config "Ingest" false)}]
+     (transmit-config/system-with-connections sys [:metadata-db :indexer]))))
 
    (defn start
      "Performs side effects to initialize the system, acquire resources,
