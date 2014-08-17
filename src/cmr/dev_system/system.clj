@@ -5,6 +5,7 @@
             [cmr.indexer.system :as indexer-system]
             [cmr.search.system :as search-system]
             [cmr.ingest.system :as ingest-system]
+            [cmr.ingest.data.provider-acl-hash :as ingest-data]
             [cmr.index-set.system :as index-set-system]
             [cmr.mock-echo.system :as mock-echo-system]
             [cmr.metadata-db.data.memory-db :as memory]
@@ -66,9 +67,8 @@
 
   ;; Sets a bit of global state for the application and system integration tests that will know how to talk to elastic
   (config/set-config-value! :elastic-port in-memory-elastic-port-for-connection)
-
+  ;; The same in memory db is used for metadata db by itself and in search so they contain the same data
   (let [in-memory-db (memory/create-db)]
-    ;; Memory DB configured to run in memory
     {:apps {:mock-echo (mock-echo-system/create-system)
             :metadata-db (-> (mdb-system/create-system)
                              (assoc :db in-memory-db)
@@ -76,7 +76,8 @@
             ;; Bootstrap is not enabled for in-memory dev system
             :indexer (indexer-system/create-system)
             :index-set (index-set-system/create-system)
-            :ingest (ingest-system/create-system)
+            :ingest (-> (ingest-system/create-system)
+                        (assoc :db (ingest-data/create-in-memory-acl-hash-store)))
             :search (assoc-in (search-system/create-system)
                               [:metadata-db :db]
                               in-memory-db)}
