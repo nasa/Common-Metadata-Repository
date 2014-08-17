@@ -1,7 +1,7 @@
 (ns cmr.ingest.data.provider-acl-hash
   "Stores and retrieves the hashes of the ACLs for a provider."
-  (:require [sqlingvo.core :as s :refer [insert values select from where with order-by desc delete as]]
-            [cmr.oracle.connection]
+  (:require [cmr.oracle.connection]
+            [cmr.common.lifecycle :as lifecycle]
             [clojure.java.jdbc :as j]
             [clojure.edn :as edn]))
 
@@ -12,13 +12,27 @@
 
 (defrecord InMemoryAclHashStore
   [data-atom]
+
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   AclHashStore
+
   (save-acl-hash
     [this acl-hash]
     (reset! (:data-atom this) acl-hash))
+
   (get-acl-hash
     [this]
-    (-> this :data-atom deref)))
+    (-> this :data-atom deref))
+
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  lifecycle/Lifecycle
+
+  (start
+    [this system]
+    this)
+  (stop
+    [this system]
+    this))
 
 (defn create-in-memory-acl-hash-store
   []
