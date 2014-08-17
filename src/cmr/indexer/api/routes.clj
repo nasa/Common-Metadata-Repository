@@ -25,24 +25,32 @@
     false
     true))
 
+;; Note for future. We should cleanup this API. It's not very well layed out.
 (defn- build-routes [system]
   (routes
 
-    (POST "/" {body :body request-context :request-context params :params}
+    ;; Index a concept
+    (POST "/" {body :body context :request-context params :params}
       (let [{:keys [concept-id revision-id]} (walk/keywordize-keys body)
             ignore-conflict (ignore-conflict? params)]
-        (r/created (index-svc/index-concept request-context concept-id revision-id ignore-conflict))))
+        (r/created (index-svc/index-concept context concept-id revision-id ignore-conflict))))
 
     ;; reset operation available just for development purposes
     ;; delete configured elastic indexes and create them back
-    (POST "/reset" {:keys [request-context]}
-      (index-svc/reset-indexes request-context)
+    (POST "/reset" {:keys [context]}
+      (index-svc/reset-indexes context)
       {:status 200})
 
+    (context "/reindex-provider-collections/:provider-id" [provider-id]
+      (POST "/" {context :request-context}
+        (index-svc/reindex-provider-collections context provider-id)
+        {:status 200}))
+
+    ;; Unindex a concept
     (context "/:concept-id/:revision-id" [concept-id revision-id]
-      (DELETE "/" {request-context :request-context params :params}
+      (DELETE "/" {context :request-context params :params}
         (let [ignore-conflict (ignore-conflict? params)]
-          (index-svc/delete-concept request-context concept-id revision-id ignore-conflict)
+          (index-svc/delete-concept context concept-id revision-id ignore-conflict)
           (r/response nil))))
 
     (route/not-found "Not Found")))
