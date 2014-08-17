@@ -348,14 +348,14 @@
   <xs:complexType name='scienceKeyword'>
     <xs:annotation><xs:documentation>A science keyword.</xs:documentation></xs:annotation>
     <xs:sequence>
-      <xs:element name='categoryKeyword' type='ValueOrList' minOccurs='0' maxOccurs='1'/>
-      <xs:element name='topicKeyword' type='ValueOrList' minOccurs='0' maxOccurs='1'/>
-      <xs:element name='termKeyword' type='ValueOrList' minOccurs='0' maxOccurs='1'/>
-      <xs:element name='variableLevel1Keyword' type='ValueOrList' minOccurs='0' maxOccurs='1'/>
-      <xs:element name='variableLevel2Keyword' type='ValueOrList' minOccurs='0' maxOccurs='1'/>
-      <xs:element name='variableLevel3Keyword' type='ValueOrList' minOccurs='0' maxOccurs='1'/>
-      <xs:element name='detailedVariableKeyword' type='ValueOrList' minOccurs='0' maxOccurs='1'/>
-      <xs:element name='anyKeyword' type='ValueOrList' minOccurs='0' maxOccurs='1'/>
+      <xs:element name='categoryKeyword' type='ValueOrPattern' minOccurs='0' maxOccurs='1'/>
+      <xs:element name='topicKeyword' type='ValueOrPattern' minOccurs='0' maxOccurs='1'/>
+      <xs:element name='termKeyword' type='ValueOrPattern' minOccurs='0' maxOccurs='1'/>
+      <xs:element name='variableLevel1Keyword' type='ValueOrPattern' minOccurs='0' maxOccurs='1'/>
+      <xs:element name='variableLevel2Keyword' type='ValueOrPattern' minOccurs='0' maxOccurs='1'/>
+      <xs:element name='variableLevel3Keyword' type='ValueOrPattern' minOccurs='0' maxOccurs='1'/>
+      <xs:element name='detailedVariableKeyword' type='ValueOrPattern' minOccurs='0' maxOccurs='1'/>
+      <xs:element name='anyKeyword' type='ValueOrPattern' minOccurs='0' maxOccurs='1'/>
     </xs:sequence>
   </xs:complexType>
 

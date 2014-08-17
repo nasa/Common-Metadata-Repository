@@ -30,7 +30,14 @@
                 :difEntryId {:name :dif-entry-id :type :dif-entry-id}
                 :entry-id {:name :entry-id :type :string}
                 :associated-difs {:name :associated-difs :type :string}
-                :scienceKeywords {:name :science-keywords :type :string}
+                :scienceKeywords {:name :science-keywords :type :science-keywords}
+                :categoryKeyword {:name :category :type :string}
+                :topicKeyword {:name :topic :type :string}
+                :termKeyword {:name :term :type :string}
+                :variableLevel1Keyword {:name :variable-level-1 :type :string}
+                :variableLevel2Keyword {:name :variable-level-2 :type :string}
+                :variableLevel3Keyword {:name :variable-level-3 :type :string}
+                :detailedVariableKeyword {:name :detailed-variable :type :string}
                 :TwoDCoordinateSystemName {:name :two-d-coordinate-system-name :type :string}
                 :spatial {:name :spatial :type :spatial}}
    :granule {:dataCenterId {:name :provider-id :type :collection-query}
@@ -208,7 +215,7 @@
 
 (defmethod element->condition :equator-crossing-date
   [concept-type element]
-  (let [[start-date stop-date] (parse-date-range-element (cx/element-at-path element [:dateRange] ))]
+  (let [[start-date stop-date] (parse-date-range-element (cx/element-at-path element [:dateRange]))]
     (qm/map->EquatorCrossingDateCondition {:start-date start-date
                                            :end-date stop-date})))
 
