@@ -42,6 +42,26 @@
                     u/remove-nil-keys)]
     (x/element :range options)))
 
+(defn- generate-keyword-element
+  "Returns the xml element for the given key, value and options"
+  [key value ignore-case pattern]
+  (when value (x/element key {}
+                         (generate-value-element ignore-case pattern value))))
+
+(defn- generate-science-keyword-element
+  [science-keyword]
+  (let [{:keys [category topic term variable-level-1 variable-level-2 variable-level-3
+                detailed-variable any ignore-case pattern]} science-keyword]
+    (x/element :scienceKeyword {}
+               (generate-keyword-element :categoryKeyword category ignore-case pattern)
+               (generate-keyword-element :topicKeyword topic ignore-case pattern)
+               (generate-keyword-element :termKeyword term ignore-case pattern)
+               (generate-keyword-element :variableLevel1Keyword variable-level-1 ignore-case pattern)
+               (generate-keyword-element :variableLevel2Keyword variable-level-2 ignore-case pattern)
+               (generate-keyword-element :variableLevel3Keyword variable-level-3 ignore-case pattern)
+               (generate-keyword-element :detailedVariableKeyword detailed-variable ignore-case pattern)
+               (generate-keyword-element :anyKeyword any ignore-case pattern))))
+
 (def element-key-type-mapping
   "A mapping of AQL element key to its type, only keys with a type other than string are listed."
   {:onlineOnly :boolean
@@ -50,6 +70,7 @@
    :equatorCrossingLongitude :range
    :cloudCover :range
    :orbitNumber :orbit-number
+   :scienceKeywords :science-keywords
    :polygon :polygon
    :box :box
    :line :line
@@ -97,6 +118,14 @@
                  ;; a single value
                  (let [value (if (sequential? elem-value) (first elem-value) elem-value)]
                    (generate-value-element ignore-case pattern value))))))
+
+(defmethod generate-element :science-keywords
+  [condition]
+  (let [elem-key (condition->element-name condition)
+        science-keywords (elem-key condition)
+        operator-option (condition->operator-option condition)]
+    (x/element elem-key operator-option
+               (map generate-science-keyword-element science-keywords))))
 
 (defn point-elem
   "Creates a AQL point element from a lon lat tuple"
