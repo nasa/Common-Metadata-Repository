@@ -151,6 +151,7 @@ curl -v -XPOST -H "Content-Type: application/json" -d '["C1-PROV1", "C2-PROV1"]'
 Supported combinations of concept type and parameters:
   * colllections, provider-id, short-name, version-id
   * colllections, provider-id, entry-title
+  * collections, provider-id
 
 __Example Curl:__
 curl "http://localhost:3001/concepts/search/collections?provider-id=PROV1&short-name=s&version-id=1"
