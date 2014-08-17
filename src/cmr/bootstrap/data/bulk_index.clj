@@ -58,17 +58,10 @@
         num-collections (index/bulk-index {:system (:indexer system)} concept-batches)]
     (info "Indexed" num-collections "collection(s) for provider" provider-id)))
 
-(defn- unindex-provider
-  "Remove all records from elastic related to the given provider including indexes."
-  [system provider-id]
-  ;; FIXME - Implement this when done with bulk migration
-  )
-
 (defn- index-provider
   "Bulk index a provider."
   [system provider-id]
   (info "Indexing provider" provider-id)
-  (unindex-provider system provider-id)
   (index-provider-collections system provider-id)
   (index-granules-for-provider system provider-id)
   (info "Indexing of provider" provider-id "completed."))
