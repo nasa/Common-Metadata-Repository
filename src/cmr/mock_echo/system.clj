@@ -11,7 +11,7 @@
             [cmr.mock-echo.data.acl-db :as acl-db]
             [cmr.system-trace.context :as context]))
 
-(def DEFAULT_PORT 3007)
+(def DEFAULT_PORT 3008)
 
 (def
   ^{:doc "Defines the order to start the components."
