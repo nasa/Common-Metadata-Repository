@@ -37,6 +37,12 @@
         status (:status response)]
     (is (some #{200 404} [status]))))
 
+(defn reindex-collection-permitted-groups
+  "Tells ingest to run the reindex-collection-permitted-groups job"
+  []
+  (let [response (client/post (url/reindex-collection-permitted-groups-url))]
+    (is (= 200 (:status response)))))
+
 (defn ingest-concept
   "Ingest a concept and return a map with status, concept-id, and revision-id"
   [{:keys [metadata format concept-type concept-id revision-id provider-id native-id] :as concept}]

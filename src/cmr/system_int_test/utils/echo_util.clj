@@ -72,6 +72,11 @@
              :catalog-item-identity catalog-item-identity}]
     (mock/create-acl (context) acl)))
 
+(defn ungrant
+  "Removes the acl"
+  [acl]
+  (mock/delete-acl (context) (:id acl)))
+
 (def guest-ace
   "A CMR style access control entry granting guests read access."
   {:permissions [:read]

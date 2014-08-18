@@ -15,8 +15,6 @@
 
 ;; TODO add test for searching with an invalid security token.
 
-;; TODO add test of passing token through header
-
 (deftest collection-search-with-acls-test
   ;; Grant permissions before creating data
   ;; Grant guests permission to coll1
@@ -51,27 +49,69 @@
 
     (index/refresh-elastic-index)
 
-    (are [token items]
-         (d/refs-match? items (search/find-refs :collection (when token {:token token})))
+    (testing "parameter search acl enforcement"
+     (are [token items]
+             (d/refs-match? items (search/find-refs :collection (when token {:token token})))
 
-         ;; not logged in should be guest
-         nil [coll1 coll4 coll6 coll7]
+             ;; not logged in should be guest
+             nil [coll1 coll4 coll6 coll7]
 
-         ;; login and use guest token
-         guest-token [coll1 coll4 coll6 coll7]
+             ;; login and use guest token
+             guest-token [coll1 coll4 coll6 coll7]
 
-         ;; test searching as a user
-         user1-token [coll2 coll4]
+             ;; test searching as a user
+             user1-token [coll2 coll4]
 
-         ;; Test searching with users in groups
-         user2-token [coll2 coll4 coll3]
-         user3-token [coll2 coll4 coll3 coll6])))
+             ;; Test searching with users in groups
+             user2-token [coll2 coll4 coll3]
+             user3-token [coll2 coll4 coll3 coll6]))
+    (testing "token can be sent through a header"
+      (is (d/refs-match? [coll2 coll4]
+                         (search/find-refs :collection {} {:headers {"Echo-Token" user1-token}}))))
+    (testing "aql search parameter enforcement"
+      (is (d/refs-match? [coll2 coll4]
+                         (search/find-refs-with-aql :collection [] {} {:headers {"Echo-Token" user1-token}}))))
+    (testing "Retrieve collection metadata acl enforcement"
+      ;; TODO test that we can retrieve the items directly and ACLs are enforced
+      )
+    (testing "Direct transformer retrieval acl enforcement"
+      ;; TODO test that the transformer type queries will enforce ACLs
+      ;; TODO ingest some diff collections above so we can test it with them
+      )))
 
-;; TODO add test that ACLs can change and then we reindex the collections and we find the right data
 
-;; TODO bulk indexing should also index permitted group ids
+;; This tests that when acls change after collections have been indexed that collections will be
+;; reindexed when ingest detects the acl hash has change.
+(deftest acl-change-test
+  (let [acl1 (e/grant-guest (e/coll-catalog-item-id "provguid1" ["coll1"]))
+        acl2 (e/grant-guest (e/coll-catalog-item-id "provguid2" ["coll3"]))
+        coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}))
+        coll2 (d/ingest "PROV1" (dc/collection {:entry-title "coll2"}))
+        coll3 (d/ingest "PROV2" (dc/collection {:entry-title "coll3"}))
+        coll4 (d/ingest "PROV2" (dc/collection {:entry-title "coll4"}))]
 
-;; TODO add aql acl search test.
+    (index/refresh-elastic-index)
+    (ingest/reindex-collection-permitted-groups)
+    (index/refresh-elastic-index)
 
-;; TODO add test of retrieving collections with ECHO10 data. This has to be manually implemented
-;; with the collections as they are retrieved.
+    ;; before acls change
+    (is (d/refs-match? [coll1 coll3] (search/find-refs :collection {})))
+
+    ;; Grant collection 2
+    (e/grant-guest (e/coll-catalog-item-id "provguid1" ["coll2"]))
+    ;; Ungrant collection 3
+    (e/ungrant acl2)
+    ;; Grant collection 4
+    (e/grant-guest (e/coll-catalog-item-id "provguid2" ["coll4"]))
+
+    ;; Try searching again before the reindexing
+    (is (d/refs-match? [coll1 coll3] (search/find-refs :collection {})))
+
+    ;; Reindex collection permitted groups
+    (ingest/reindex-collection-permitted-groups)
+    (index/refresh-elastic-index)
+
+    ;; Try searching again
+    (is (d/refs-match? [coll1 coll2 coll4] (search/find-refs :collection {})))))
+
+
