@@ -28,6 +28,7 @@
       (let [current-hash (get current-provider-id-acl-hashes provider-id)
             saved-hash (get provider-id-acl-hashes provider-id)]
         (when (not= current-hash saved-hash)
+          (info "Provider" provider-id "ACLs have changed. Reindexing collections")
           (indexer/reindex-provider-collections context provider-id))))
     (pah/save-provider-id-acl-hashes context current-provider-id-acl-hashes)))
 
