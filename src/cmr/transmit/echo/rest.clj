@@ -37,6 +37,20 @@
                   nil)]
      [status parsed body])))
 
+(defn rest-delete
+  "Makes a delete request on echo-rest. Returns a tuple of status and body"
+  ([context url-path]
+   (rest-delete context url-path {}))
+  ([context url-path options]
+   (let [conn (config/context->app-connection context :echo-rest)
+         url (format "%s%s" (conn/root-url conn) url-path)
+         params (merge (request-options conn) options)
+         ;; Uncoment to log requests
+         ; _ (debug "Making ECHO DELETE Request" url (pr-str params))
+         response (client/delete url params)
+         {:keys [status body]} response]
+     [status body])))
+
 (defn rest-post
   "Makes a post request to echo-rest. Returns a tuple of status, the parsed body, and the body."
   ([context url-path body-obj]

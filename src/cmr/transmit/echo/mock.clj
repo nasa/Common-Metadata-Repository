@@ -20,11 +20,18 @@
       (r/unexpected-status-error! status nil))))
 
 (defn create-acl
-  "Creates an ACL in mock echo. Takes cmr style acls."
+  "Creates an ACL in mock echo. Takes cmr style acls. Returns the acl with the guid"
   [context acl]
-  (let [[status] (r/rest-post context "/acls" (c/cmr-acl->echo-acl acl))]
-    (when-not (= status 201)
-      (r/unexpected-status-error! status nil))))
+  (let [[status acl body] (r/rest-post context "/acls" (c/cmr-acl->echo-acl acl))]
+    (if (= status 201)
+      acl
+      (r/unexpected-status-error! status body))))
+
+(defn delete-acl
+  [context guid]
+  (let [[status body] (r/rest-delete context (str "/acls/" guid))]
+    (when-not (= status 200)
+      (r/unexpected-status-error! status body))))
 
 (defn login-with-group-access
   "Logs into mock echo and returns the token. The group guids passed in will be returned as a part
