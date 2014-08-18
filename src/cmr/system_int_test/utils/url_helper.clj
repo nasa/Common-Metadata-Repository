@@ -35,6 +35,11 @@
   [provider-id]
   (format "http://localhost:%s/providers/%s" (transmit-config/metadata-db-port) provider-id))
 
+(defn reindex-collection-permitted-groups-url
+  []
+  (format "http://localhost:%s/reindex-collection-permitted-groups"
+          (transmit-config/ingest-port)))
+
 (defn ingest-url
   [provider-id type native-id]
   (format "http://localhost:%s/providers/%s/%ss/%s"
