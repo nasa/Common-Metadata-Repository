@@ -2,7 +2,7 @@
 
 (def initial-db-state
   {:last-id 0
-   :acls []})
+   :acls {}})
 
 (defn create-db
   []
@@ -26,14 +26,23 @@
 
 (defn create-acl
   [context acl]
-  (let [acl (assoc acl :id (next-guid context))]
+  (let [guid (next-guid context)
+        acl (assoc acl :id guid)]
     (-> context
         context->acl-db
-        (swap! update-in [:acls] conj acl))))
+        (swap! update-in [:acls] assoc guid acl))
+    acl))
+
+(defn delete-acl
+  [context guid]
+  (-> context
+      context->acl-db
+      (swap! update-in [:acls] dissoc guid)))
 
 (defn get-acls
   [context]
   (-> context
       context->acl-db
       deref
-      :acls))
+      :acls
+      vals))

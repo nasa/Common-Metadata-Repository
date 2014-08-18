@@ -15,7 +15,6 @@
   (let [providers (provider-db/get-providers context)]
     providers))
 
-
 (defn build-routes [system]
   (routes
     (context "/providers" []
