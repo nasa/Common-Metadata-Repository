@@ -126,7 +126,7 @@
                           (merge elastic-doc {:_index index-name
                                               :_type type
                                               :_version revision-id
-                                              :_version_type "external"}))
+                                              :_version_type "external_gte"}))
                         (catch Exception e
                           (error e (str "Skipping failed catalog item. Exception trying to convert concept to elastic doc:"
                                         (pr-str concept))))))
