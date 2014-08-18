@@ -37,8 +37,8 @@
 
     ;; reset operation available just for development purposes
     ;; delete configured elastic indexes and create them back
-    (POST "/reset" {:keys [context]}
-      (index-svc/reset-indexes context)
+    (POST "/reset" {:keys [request-context]}
+      (index-svc/reset-indexes request-context)
       {:status 200})
 
     (context "/reindex-provider-collections/:provider-id" [provider-id]
