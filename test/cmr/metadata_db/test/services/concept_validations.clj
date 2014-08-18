@@ -34,9 +34,6 @@
            (v/find-params-validation {:concept-type "foo"
                                       :entry-title "e"
                                       :provider-id "p"}))))
-  (testing "missing parameters"
-    (is (= [(msg/find-not-supported :collection [:provider-id])]
-           (v/find-params-validation {:concept-type :collection :provider-id "p"}))))
   (testing "extra parameters"
     (is (= [(msg/find-not-supported :collection [:short-name :provider-id :entry-title])]
            (v/find-params-validation {:concept-type :collection
