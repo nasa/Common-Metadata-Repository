@@ -93,6 +93,7 @@
    (let [{:keys [format-as-ext? snake-kebab?]
           :or {:format-as-ext? false
                :snake-kebab? true}} options
+         headers (get options :headers {})
          params (if snake-kebab?
                   (params->snake_case (util/map-keys csk/->snake_case_keyword params))
                   params)
@@ -100,6 +101,7 @@
                         [(str (url/search-url concept-type) "." (mime-type->extension format))]
                         [(url/search-url concept-type) format])
          response (client/get url {:accept accept
+                                   :headers headers
                                    :query-params params
                                    :connection-manager (url/conn-mgr)})]
      (is (= 200 (:status response)))
@@ -211,21 +213,28 @@
                                  :connection-manager (url/conn-mgr)})]
       (parse-reference-response response))))
 
+(defn find-refs-with-aql-string
+  ([aql]
+   (find-refs-with-aql-string aql {}))
+  ([aql options]
+   (get-search-failure-data
+     (let [response (client/post (url/aql-url)
+                                 (merge {:accept "application/xml"
+                                         :content-type "application/xml"
+                                         :body aql
+                                         :query-params {:page-size 100}
+                                         :connection-manager (url/conn-mgr)}
+                                        options))]
+       (parse-reference-response response)))))
+
 (defn find-refs-with-aql
   "Returns the references that are found by searching through POST request with aql for the given conditions"
   ([concept-type conditions]
    (find-refs-with-aql concept-type conditions {}))
   ([concept-type conditions data-center-condition]
-   (find-refs-with-aql (aql/generate-aql concept-type data-center-condition conditions)))
-  ([aql-string]
-   (get-search-failure-data
-     (let [response (client/post (url/aql-url)
-                                 {:accept "application/xml"
-                                  :content-type "application/xml"
-                                  :body aql-string
-                                  :query-params {:page-size 100}
-                                  :connection-manager (url/conn-mgr)})]
-       (parse-reference-response response)))))
+   (find-refs-with-aql concept-type conditions data-center-condition {}))
+  ([concept-type conditions data-center-condition options]
+   (find-refs-with-aql-string (aql/generate-aql concept-type data-center-condition conditions) options)))
 
 (defn get-concept-by-concept-id
   "Returns the concept metadata by searching metadata-db using the given cmr concept id"

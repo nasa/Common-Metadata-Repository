@@ -17,15 +17,15 @@
   (testing "invalid against AQL schema"
     (is (= {:errors [(msg/invalid-aql "Line 1 - cvc-elt.1: Cannot find the declaration of element 'foo'.")]
             :status 422}
-           (search/find-refs-with-aql "<foo/>")))
+           (search/find-refs-with-aql-string "<foo/>")))
     (is (= {:errors [(msg/invalid-aql "Line 1 - Content is not allowed in prolog.")]
             :status 422}
-           (search/find-refs-with-aql "not even valid xml")))
+           (search/find-refs-with-aql-string "not even valid xml")))
     (is (= {:errors [(msg/invalid-aql (str "Line 7 - cvc-complex-type.2.4.a: Invalid content was "
                                            "found starting with element 'dataSetId'. One of "
                                            "'{granuleCondition, collectionCondition}' is expected."))]
             :status 422}
-           (search/find-refs-with-aql
+           (search/find-refs-with-aql-string
              "<query>
              <for value=\"collections\"/>
              <dataCenterId>
@@ -39,7 +39,7 @@
              </query>"))))
   (testing "Valid AQL"
     (is (nil? (:status
-                (search/find-refs-with-aql
+                (search/find-refs-with-aql-string
                   "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
                   <!DOCTYPE query SYSTEM \"https://api.echo.nasa.gov/echo/dtd/IIMSAQLQueryLanguage.dtd\">
                   <query>
@@ -132,7 +132,7 @@
                                  "<dataCenterId><all/></dataCenterId> <where>"
                                  (format "%s</where></query>" conditions))]
              (d/refs-match? items
-                            (search/find-refs-with-aql aql-string)))
+                            (search/find-refs-with-aql-string aql-string)))
 
            [coll1 coll3] ["<dataSetId><value>Dataset1</value></dataSetId>"
                           "<shortName><value>SHORT</value></shortName>"]

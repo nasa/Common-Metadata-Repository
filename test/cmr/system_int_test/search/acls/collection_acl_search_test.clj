@@ -66,12 +66,11 @@
              user2-token [coll2 coll4 coll3]
              user3-token [coll2 coll4 coll3 coll6]))
     (testing "token can be sent through a header"
-      ;; TODO add test of passing token through header
-      )
-
+      (is (d/refs-match? [coll2 coll4]
+                         (search/find-refs :collection {} {:headers {"Echo-Token" user1-token}}))))
     (testing "aql search parameter enforcement"
-      ;; TODO add aql acl search test.
-      )
+      (is (d/refs-match? [coll2 coll4]
+                         (search/find-refs-with-aql :collection [] {} {:headers {"Echo-Token" user1-token}}))))
     (testing "Retrieve collection metadata acl enforcement"
       ;; TODO test that we can retrieve the items directly and ACLs are enforced
       )
@@ -84,9 +83,6 @@
 ;; This tests that when acls change after collections have been indexed that collections will be
 ;; reindexed when ingest detects the acl hash has change.
 (deftest acl-change-test
-  ;; Grant permissions before creating data
-  ;; Grant guests permission to coll1 and coll3
-
   (let [acl1 (e/grant-guest (e/coll-catalog-item-id "provguid1" ["coll1"]))
         acl2 (e/grant-guest (e/coll-catalog-item-id "provguid2" ["coll3"]))
         coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}))
@@ -94,6 +90,8 @@
         coll3 (d/ingest "PROV2" (dc/collection {:entry-title "coll3"}))
         coll4 (d/ingest "PROV2" (dc/collection {:entry-title "coll4"}))]
 
+    (index/refresh-elastic-index)
+    (ingest/reindex-collection-permitted-groups)
     (index/refresh-elastic-index)
 
     ;; before acls change
