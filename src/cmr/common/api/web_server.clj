@@ -46,26 +46,30 @@
 
   (start
     [this system]
-    (let [{:keys [port routes-fn use-compression?]} this
-          routes (routes-fn system)
-          ^Server server (jetty/run-jetty routes {:port port
-                                                  :join? false
-                                                  :min-threads MIN_THREADS
-                                                  :max-threads MAX_THREADS})]
+    (try
+      (let [{:keys [port routes-fn use-compression?]} this
+            routes (routes-fn system)
+            ^Server server (jetty/run-jetty routes {:port port
+                                                    :join? false
+                                                    :min-threads MIN_THREADS
+                                                    :max-threads MAX_THREADS})]
 
-      (when use-compression?
-        ;; Create a GZIP handler to handle compression of responses
-        (let [new-handler (doto (GzipHandler.)
-                            (.setHandler (.getHandler server))
-                            (.setMinGzipSize MIN_GZIP_SIZE))]
-          ;; Replace the existing handler with the gzip handler
-          (doto server
-            (.stop)
-            (.setHandler new-handler)
-            (.start))))
+        (when use-compression?
+          ;; Create a GZIP handler to handle compression of responses
+          (let [new-handler (doto (GzipHandler.)
+                              (.setHandler (.getHandler server))
+                              (.setMinGzipSize MIN_GZIP_SIZE))]
+            ;; Replace the existing handler with the gzip handler
+            (doto server
+              (.stop)
+              (.setHandler new-handler)
+              (.start))))
 
-      (info "Jetty started on port" port)
-      (assoc this :server server)))
+        (info "Jetty started on port" port)
+        (assoc this :server server))
+      (catch Exception e
+        (info "Failed to start jetty on port" port)
+        (throw e))))
 
   (stop
     [this system]
