@@ -30,6 +30,7 @@
 (defn context->http-headers
   "Converts a request context into a map of HTTP headers that need to be sent."
   [context]
-  (let [{:keys [span-id trace-id]} (c/context->trace-info context)]
+  (if-let [{:keys [span-id trace-id]} (c/context->trace-info context)]
     {TRACE_ID_HEADER (str trace-id)
-     SPAN_ID_HEADER (str span-id)}))
+     SPAN_ID_HEADER (str span-id)}
+    {}))
