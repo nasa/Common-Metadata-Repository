@@ -138,12 +138,12 @@
         {:keys [status body]} response]
     (case status
       404 (errors/throw-service-error
-          :not-found (str "Unable to find collections for search params: " (pr-str params))))
+            :not-found (str "Unable to find collections for search params: " (pr-str params)))
       200 (cheshire/decode body true)
       ;; default
       (errors/internal-error!
         (format "Collection search failed. status: %s body: %s"
-             status body))))
+                status body)))))
 
 (defn get-providers
   "Returns the list of provider ids configured in the metadata db"
