@@ -65,6 +65,10 @@
   [type concept-id]
   (format "http://localhost:%s/concepts/%s" (transmit-config/search-port) concept-id))
 
+(defn bulk-index-provider-url
+  []
+  (format "http://localhost:%s/bulk_index/providers" (transmit-config/bootstrap-port)))
+
 (defn elastic-refresh-url
   []
   (str (elastic-root) "/_refresh"))

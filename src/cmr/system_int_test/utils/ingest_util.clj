@@ -42,7 +42,7 @@
   [{:keys [metadata format concept-type concept-id revision-id provider-id native-id] :as concept}]
   (let [headers (merge {}
                        (when concept-id {"concept-id" concept-id})
-                       (when concept-id {"revision-id" revision-id}))
+                       (when revision-id {"revision-id" revision-id}))
         response (client/request
                    {:method :put
                     :url (url/ingest-url provider-id concept-type native-id)
