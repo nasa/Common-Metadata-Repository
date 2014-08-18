@@ -1,24 +1,39 @@
 (ns cmr.ingest.services.jobs
   "This contains the scheduled jobs for the ingest application."
   (:require [cmr.common.jobs :as jobs :refer [def-stateful-job defjob]]
-            [cmr.transmit.metadata-db :as mdb]))
+            [cmr.transmit.metadata-db :as mdb]
+            [cmr.transmit.echo.acls :as echo-acls]
+            [cmr.ingest.data.provider-acl-hash :as pah]
+            [cmr.ingest.data.indexer :as indexer]
+            [cmr.common.log :refer (debug info warn error)]))
 
-(defn reindex-collection-permitted-groups-job
-  "The implementation of the detect and reindex job"
+(defn acls->provider-id-hashes
+  "Converts acls to a map of provider-ids to hashes of the ACLs."
+  [acls]
+  (let [provider-id-to-acls (group-by (comp :provider-id :catalog-item-identity) acls)]
+    (into {}
+          (for [[provider-id provider-acls] provider-id-to-acls]
+            ;; Convert them to a set so hash is consistent without order
+            [provider-id (hash (set provider-acls))]))))
+
+(defn reindex-collection-permitted-groups
+  "Reindexes all collections in a provider if the acls have changed. This is necessary because
+  the groups that have permission to find collections are indexed with the collections."
   [context]
+  (let [providers (mdb/get-providers context)
+        provider-id-acl-hashes (or (pah/get-provider-id-acl-hashes context) {})
+        current-provider-id-acl-hashes (acls->provider-id-hashes
+                                         (echo-acls/get-acls-by-type context "CATALOG_ITEM"))]
+    (doseq [provider-id providers]
+      (let [current-hash (get current-provider-id-acl-hashes provider-id)
+            saved-hash (get provider-id-acl-hashes provider-id)]
+        (when (not= current-hash saved-hash)
+          (indexer/reindex-provider-collections context provider-id))))
+    (pah/save-provider-id-acl-hashes context current-provider-id-acl-hashes)))
 
-  ;; TODO
-  ;; Get all providers from metadata db
-  ;; For each provider
-  ;; get the cached provider acl hash
-  ;; Get the acls for the provider.
-  ;; - we won't use the cache here. We'll get the latest acls
-  ;; If the acl hash is different
-  ;; - Send a command to the indexer to reindex all collections in a provider
-  ;; -- Note the indexer will need to clear it's acl cache so that it will get the most recent acls
-  ;; - Store the updated acl hash
-
-  (let [providers (mdb/get-providers context)]
-    )
-
-  )
+;; Periodically checks the acls for a provider. When they change reindexes all the collections in a
+;; provider.
+(def-stateful-job ReindexCollectionPermittedGroups
+  [ctx system]
+  (let [context {:system system}]
+    (reindex-collection-permitted-groups context)))

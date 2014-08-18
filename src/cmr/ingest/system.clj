@@ -27,7 +27,7 @@
               :web (web/create-web-server (transmit-config/ingest-port) routes/make-api)
               :db (oracle/create-db (config/db-spec connection-pool-name))
               :zipkin (context/zipkin-config "Ingest" false)}]
-     (transmit-config/system-with-connections sys [:metadata-db :indexer]))))
+     (transmit-config/system-with-connections sys [:metadata-db :indexer :echo-rest]))))
 
    (defn start
      "Performs side effects to initialize the system, acquire resources,

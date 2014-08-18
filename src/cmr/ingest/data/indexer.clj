@@ -9,6 +9,23 @@
             [cmr.transmit.config :as transmit-config]
             [cmr.transmit.connection :as transmit-conn]))
 
+(deftracefn reindex-provider-collections
+  "Reindexes all the collections in the provider"
+  [context provider-id]
+  (let [conn (transmit-config/context->app-connection context :indexer)
+        url (format "%s/reindex-provider-collections/%s"
+                    (transmit-conn/root-url conn)
+                    provider-id)
+        response (client/post url {:content-type :json
+                                   :throw-exceptions false
+                                   :accept :json
+                                   :headers (ch/context->http-headers context)
+                                   :connection-manager (transmit-conn/conn-mgr conn)})
+        status (:status response)]
+    (when-not (= 200 status)
+      (errors/internal-error!
+        (str "Unexpected status"  status  " " (:body response))))))
+
 (deftracefn index-concept
   "Forward newly created concept for indexer app consumption."
   [context concept-id revision-id]

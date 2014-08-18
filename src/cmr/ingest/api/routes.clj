@@ -12,7 +12,8 @@
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.api.errors :as errors]
             [cmr.ingest.services.ingest :as ingest]
-            [cmr.system-trace.http :as http-trace]))
+            [cmr.system-trace.http :as http-trace]
+            [cmr.ingest.services.jobs :as jobs]))
 
 (defn- set-concept-id
   "Set concept-id in concept if it is passed in the header"
@@ -24,6 +25,9 @@
 
 (defn- build-routes [system]
   (routes
+    (POST "/reindex-collection-permitted-groups" {:keys [headers request-context]}
+      (jobs/reindex-collection-permitted-groups request-context)
+      {:status 200})
     (context "/providers/:provider-id" [provider-id]
       (context ["/collections/:native-id" :native-id #".*$"] [native-id]
         (PUT "/" {:keys [body content-type headers request-context]}
