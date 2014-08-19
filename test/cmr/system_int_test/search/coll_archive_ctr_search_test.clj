@@ -16,11 +16,11 @@
         coll4 (d/ingest "PROV1" (dc/collection {:organizations [(dc/org :archive-center "Larc")]}))
 
         coll5 (d/ingest "PROV2" (dc/collection {:organizations [(dc/org :archive-center "SEDAC AC")
-                                                                    (dc/org :processing-center "SEDAC PC")]}))
+                                                                (dc/org :processing-center "SEDAC PC")]}))
         coll6 (d/ingest "PROV2" (dc/collection {:organizations [(dc/org :archive-center "Larc")]}))
 
         coll7 (d/ingest "PROV2" (dc/collection {:organizations [(dc/org :archive-center "Sedac AC")
-                                                                    (dc/org :processing-center "Sedac")]}))]
+                                                                (dc/org :processing-center "Sedac")]}))]
 
     (index/refresh-elastic-index)
 
@@ -42,5 +42,26 @@
       (are [kvs items] (d/refs-match? items (search/find-refs :collection kvs))
            {"archive-center[]" ["SEDAC AC" "Larc"], "options[archive-center][and]" "true"} []
            {"archive-center[]" ["SEDAC AC" "Larc" "Sedac AC"], "options[archive-center][and]" "false"} [coll4 coll5 coll6 coll7]
-           {"archive-center[]" ["SEDAC AC" "Larc" "Sedac AC"]} [coll4 coll5 coll6 coll7]))))
+           {"archive-center[]" ["SEDAC AC" "Larc" "Sedac AC"]} [coll4 coll5 coll6 coll7]))
+
+    (testing "search collections by archive center with AQL."
+      (are [items centers options]
+           (let [condition (merge {:archiveCenter centers} options)]
+             (d/refs-match? items
+                            (search/find-refs-with-aql :collection [condition])))
+           [coll4 coll6] "Larc" {}
+           [coll5 coll7] "SEDAC AC" {}
+           [] "SEDAC PC" {}
+           [] "BLAH" {}
+           [coll4 coll5 coll6 coll7] ["SEDAC AC" "Larc"] {}
+
+           ;; Wildcards
+           [coll5 coll7] "S%" {:pattern true}
+           [coll5 coll7] "SEDAC _C" {:pattern true}
+           [] "%Q%" {:pattern true}
+
+           ;; Ignore case
+           [coll5 coll7] "sedac ac" {}
+           [coll5 coll7] "sedac ac" {:ignore-case true}
+           [] "sedac ac" {:ignore-case false}))))
 
