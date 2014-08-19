@@ -91,6 +91,4 @@
                    (let [[provider-id collection-id] (<!! channel)]
                      (index-granules-for-collection system provider-id collection-id))
                    (catch Throwable e
-                     (error e (.getMessage e)))))))
-  )
-
+                     (error e (.getMessage e))))))))

@@ -9,13 +9,7 @@
   "Bulk index all the collections and granules for a provider."
   [system provider-id synchronous]
   (if synchronous
-    (try
-      (let [resource-map {:system (:indexer system)
-                          :metadata-db {:db (:db system)}}]
-        (bulk/index-provider (merge system resource-map) provider-id))
-      (catch  Throwable e
-        (error e (.getMessage e))
-        (errors/throw-service-error :invalid-data (.getMessage e))))
+    (bulk/index-provider system provider-id)
     (let [channel (:provider-index-channel system)]
       (info "Adding provider" provider-id "to provider index channel")
       (go (>! channel provider-id)))))
@@ -24,13 +18,7 @@
   "Bulk index all the granules in a collection"
   [system provider-id collection-id synchronous]
   (if synchronous
-    (try
-      (let [resource-map {:system (:indexer system)
-                          :metadata-db {:db (:db system)}}]
-        (bulk/index-granules-for-collection (merge system resource-map) provider-id collection-id))
-      (catch  Throwable e
-        (error e (.getMessage e))
-        (errors/throw-service-error :invalid-data (.getMessage e))))
+    (bulk/index-granules-for-collection system provider-id collection-id)
     (let [channel (:collection-index-channel system)]
       (info "Adding collection" collection-id "to collection index channel")
       (go (>! channel [provider-id collection-id])))))
