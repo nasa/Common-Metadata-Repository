@@ -66,13 +66,15 @@
   and start it running. Returns an updated instance of the system."
   [this]
   (info "bootstrap System starting")
-  (let [started-system (reduce (fn [system component-name]
+  (let [;; Need to start indexer first so the connection will be in the context of synchronous
+        ;; bulk index requests
+        started-system (update-in this [:indexer] idx-system/start)
+        started-system (reduce (fn [system component-name]
                                  (update-in system [component-name]
                                             #(lifecycle/start % system)))
-                               this
+                               started-system
                                component-order)
-        started-system (update-in started-system [:metadata-db] mdb-system/start)
-        started-system (update-in started-system [:indexer] idx-system/start)]
+        started-system (update-in started-system [:metadata-db] mdb-system/start)]
 
     (oracle/test-db-connection! (:db started-system))
     (bm/handle-copy-requests started-system)

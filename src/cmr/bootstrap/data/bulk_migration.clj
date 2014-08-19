@@ -199,7 +199,7 @@
       (info result))))
 
 (defn copy-single-collection
-  "Delete a collection form the provider's collection table and all associated granules and
+  "Delete a collection from the provider's collection table and all associated granules and
   then copy the data from the catalog-rest db."
   [system provider-id collection-id]
   (let [dataset-record-id (get-dataset-record-id-for-collection system provider-id collection-id)]

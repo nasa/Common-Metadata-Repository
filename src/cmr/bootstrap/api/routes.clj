@@ -32,22 +32,30 @@
 
 (defn- bulk-index-provider
   "Index all the collections and granules for a given provider."
-  [context provider-id-map]
+  [context provider-id-map params]
   (let [provider-id (get provider-id-map "provider_id")
-        system (:system context)]
-    (bulk/index-provider system provider-id)
+        synchronous (:synchronous params)
+        system (:system context)
+        result (bulk/index-provider system provider-id synchronous)
+        msg (if synchronous
+              result
+              (str "Processing provider " provider-id " for bulk indexing."))]
     {:status 202
-     :body {:message (str "Processing provider " provider-id " for bulk indexing.")}}))
+     :body {:message msg}}))
 
 (defn- bulk-index-collection
   "Index all the granules in a collection"
-  [context provider-id-collection-map]
+  [context provider-id-collection-map params]
   (let [provider-id (get provider-id-collection-map "provider_id")
         collection-id (get provider-id-collection-map "collection_id")
-        system (:system context)]
-    (bulk/index-collection system provider-id collection-id)
+        synchronous (:synchronous params)
+        system (:system context)
+        result (bulk/index-collection system provider-id collection-id synchronous)
+        msg (if synchronous
+              result
+              (str "Processing collection " collection-id " for bulk indexing."))]
     {:status 202
-     :body {:message (str "Processing collection " collection-id " for bulk indexing.")}}))
+     :body {:message msg}}))
 
 (defn- build-routes [system]
   (routes
@@ -58,11 +66,11 @@
         (migrate-collection request-context body)))
 
     (context "/bulk_index" []
-      (POST "/providers" {:keys [request-context body]}
-        (bulk-index-provider request-context body))
+      (POST "/providers" {:keys [request-context body params]}
+        (bulk-index-provider request-context body params))
 
-      (POST "/collections" {:keys [request-context body]}
-        (bulk-index-collection request-context body)))))
+      (POST "/collections" {:keys [request-context body params]}
+        (bulk-index-collection request-context body params)))))
 
 (defn make-api [system]
   (-> (build-routes system)
