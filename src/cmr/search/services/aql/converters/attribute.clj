@@ -50,6 +50,16 @@
   [attrib-name value-elem]
   (attrib-value->condition :string attrib-name (first (:content value-elem))))
 
+(defmethod attrib-value-element->condition :textPattern
+  [attrib-name value-elem]
+  (let [value (->> (first (:content value-elem))
+                   a/aql-pattern->cmr-pattern)]
+    (qm/map->AttributeValueCondition
+      {:type :string
+       :name attrib-name
+       :value value
+       :pattern? true})))
+
 (defmethod attrib-value-element->condition :list
   [attrib-name value-elem]
   (let [values (cx/strings-at-path value-elem [:value])

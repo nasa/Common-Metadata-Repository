@@ -252,6 +252,7 @@
    type
    name
    value
+   pattern?
    ])
 
 (defrecord AttributeRangeCondition
