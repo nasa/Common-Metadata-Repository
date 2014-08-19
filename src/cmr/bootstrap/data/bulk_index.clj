@@ -25,7 +25,7 @@
         collections (db/find-concepts db params)]
     (map :concept-id collections)))
 
-(defn- index-granules-for-collection
+(defn index-granules-for-collection
   "Index the granules for the given collection."
   [system provider-id collection-id]
   (info "Indexing granule data for collection" collection-id)
@@ -35,7 +35,8 @@
                 :parent-collection-id collection-id}
         concept-batches (db/find-concepts-in-batches db params (:db-batch-size system))
         num-granules (index/bulk-index {:system (:indexer system)} concept-batches)]
-        (info "Indexed" num-granules "granule(s) for provider" provider-id "collection" collection-id)))
+    (info "Indexed" num-granules "granule(s) for provider" provider-id "collection" collection-id)
+    num-granules))
 
 (defn- index-granules-for-provider
   "Index the granule data for every collection for a given provider."
@@ -46,7 +47,8 @@
                 :provider-id provider-id}
         concept-batches (db/find-concepts-in-batches db params (:db-batch-size system))
         num-granules (index/bulk-index {:system (:indexer system)} concept-batches)]
-        (info "Indexed" num-granules "granule(s) for provider" provider-id)))
+    (info "Indexed" num-granules "granule(s) for provider" provider-id)
+    num-granules))
 
 (defn- index-provider-collections
   "Index all the collections concepts for a given provider."
@@ -56,15 +58,20 @@
                 :provider-id provider-id}
         concept-batches (db/find-concepts-in-batches db params (:db-batch-size system))
         num-collections (index/bulk-index {:system (:indexer system)} concept-batches)]
-    (info "Indexed" num-collections "collection(s) for provider" provider-id)))
+    (info "Indexed" num-collections "collection(s) for provider" provider-id)
+    num-collections))
 
-(defn- index-provider
+(defn index-provider
   "Bulk index a provider."
   [system provider-id]
   (info "Indexing provider" provider-id)
-  (index-provider-collections system provider-id)
-  (index-granules-for-provider system provider-id)
-  (info "Indexing of provider" provider-id "completed."))
+  (let [col-count (index-provider-collections system provider-id)
+        gran-count (index-granules-for-provider system provider-id)]
+    (info "Indexing of provider" provider-id "completed.")
+    (format "Indexed %d collections containing %d granules for provider %s"
+            col-count
+            gran-count
+            provider-id)))
 
 ;; Background task to handle provider bulk index requests
 (defn handle-bulk-index-requests
@@ -84,6 +91,4 @@
                    (let [[provider-id collection-id] (<!! channel)]
                      (index-granules-for-collection system provider-id collection-id))
                    (catch Throwable e
-                     (error e (.getMessage e)))))))
-  )
-
+                     (error e (.getMessage e))))))))
