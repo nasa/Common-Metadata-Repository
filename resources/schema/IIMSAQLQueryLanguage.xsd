@@ -450,7 +450,7 @@
       <xs:element name='textPattern' type='textPattern'/>
       <xs:element name='range' type='range'/>
       <xs:element name='dateRange' type='dateRange'/>
-      <xs:element name='Date' type='DateContainerType'/>
+      <xs:element name='Date' type='DateElementType'/>
       <xs:element name='int' type='xs:integer'/>
       <xs:element name='intRange' type='intRange'/>
       <xs:element name='float' type='xs:float'/>

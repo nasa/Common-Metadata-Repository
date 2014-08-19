@@ -140,7 +140,7 @@
   [concept-type key elem]
   (string-value-elem->condition concept-type key elem true))
 
-(defn- date-time-from-strings
+(defn date-time-from-strings
   "Returns date-time from strings of year, month, day, etc. Returns nil if all strings are nil."
   [year month day hour minute sec]
   (when (or year month day hour minute sec)
