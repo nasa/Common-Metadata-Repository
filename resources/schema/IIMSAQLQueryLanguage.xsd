@@ -68,14 +68,23 @@
       <xs:element name='spatial' type='spatial'>
         <xs:annotation><xs:documentation>Select collections intersecting the given spatial boundaries.</xs:documentation></xs:annotation>
       </xs:element>
+      <xs:element name='spatialKeywords' type='ListValueOrPattern'>
+        <xs:annotation><xs:documentation>Select collections with the given spatial keyword(s).</xs:documentation></xs:annotation>
+      </xs:element>
       <xs:element name='temporal' type='temporal'>
         <xs:annotation><xs:documentation>Select collections intersecting the given temporal boundaries.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name='additionalAttributeNames' type='ListValueOrPattern'>
+        <xs:annotation><xs:documentation>Select collections with the given additional attribute name(s).</xs:documentation></xs:annotation>
       </xs:element>
       <xs:element name='additionalAttributes' type='additionalAttributes'>
         <xs:annotation><xs:documentation>Select collections with the given additional attribute(s).</xs:documentation></xs:annotation>
       </xs:element>
       <xs:element name='versionId' type='ListValueOrPattern'>
         <xs:annotation><xs:documentation>Select collections with the given version id(s).</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name='archiveCenter' type='ListValueOrPattern'>
+        <xs:annotation><xs:documentation>Select collections with the given archive center(s).</xs:documentation></xs:annotation>
       </xs:element>
       <xs:element name='difEntryId' type='ListValueOrPattern'>
         <xs:annotation><xs:documentation>Select collections with the given DIF entry ID(s).</xs:documentation></xs:annotation>

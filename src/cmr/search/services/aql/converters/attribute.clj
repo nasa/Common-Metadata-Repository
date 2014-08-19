@@ -135,4 +135,7 @@
         attrib-condition (if (= "OR" operator)
                            (qm/or-conds conditions)
                            (qm/and-conds conditions))]
-    (qm/or-conds [attrib-condition (qm/->CollectionQueryCondition attrib-condition)])))
+    (if (= :granule concept-type)
+      ;; Granule attribute queries will inherit values from their parent collections.
+      (qm/or-conds [attrib-condition (qm/->CollectionQueryCondition attrib-condition)])
+      attrib-condition)))
