@@ -61,6 +61,21 @@
            "string,alpha,c" []
            "string,bravo,bf" [coll1 coll2]))
 
+    (testing "search collections by additionalAttributes string value with aql"
+      (are [items additional-attribs]
+           (let [condition {:additionalAttributes additional-attribs}]
+             (d/refs-match? items (search/find-refs-with-aql :collection [condition])))
+
+           [coll1] [{:type :string :name "alpha" :value "ab"}]
+           [coll1] [{:type :string :name "alpha" :value "AB"}]
+           [] [{:type :string :name "alpha" :value "c"}]
+           [coll1 coll2] [{:type :string :name "bravo" :value "bf"}]
+           [coll3] [{:type :string :name "case" :value "UP"}]
+           [coll3] [{:type :string :name "case" :value "up"}]
+           [coll1] [{:type :string :name "alpha" :value ["ab" "cd"]}]
+           [coll1] [{:type :string :name "alpha" :value "a%" :pattern true}]
+           [coll1] [{:type :string :name "alpha" :value "a_" :pattern true}]))
+
     (testing "searching with multiple attribute conditions"
       (are [v items operation]
            (d/refs-match?
@@ -97,6 +112,20 @@
            ; and is the default
            ["string,alpha,ab" "string,bravo,,bc"] [] nil ))
 
+    (testing "search collections by additionalAttributes multiple string values with aql"
+      (are [items additional-attribs options]
+           (let [condition (merge {:additionalAttributes additional-attribs} options)]
+             (d/refs-match? items (search/find-refs-with-aql :collection [condition])))
+
+           [coll1] [{:type :string :name "alpha" :value "ab"}
+                    {:type :range :name "bravo" :value [nil "bc"]}] {:or true}
+           [] [{:type :string :name "alpha" :value "ab"}
+               {:type :range :name "bravo" :value [nil "bc"]}] {:and true}
+           [] [{:type :string :name "alpha" :value "ab"}
+               {:type :range :name "bravo" :value [nil "bc"]}] {}
+           [coll1] [{:type :string :name "alpha" :value "ab"}
+                    {:type :range :name "bravo" :value ["bc" nil]}] {:and true}))
+
     (testing "search by range"
       (are [v items]
            (d/refs-match? items (search/find-refs :collection {"attribute[]" v}))
@@ -129,7 +158,18 @@
            "string,bravo,bc," [coll1 coll2]
 
            ;; only max range provided
-           "string,bravo,,bg" [coll1 coll2]))))
+           "string,bravo,,bg" [coll1 coll2]))
+
+    (testing "search collections by additionalAttributes string range with aql"
+      (are [items additional-attribs]
+           (let [condition {:additionalAttributes additional-attribs}]
+             (d/refs-match? items (search/find-refs-with-aql :collection [condition])))
+
+           [coll1] [{:type :range :name "alpha" :value ["aa" "ac"]}]
+           [coll1] [{:type :range :name "alpha" :value ["ab" "ac"]}]
+           [coll1] [{:type :range :name "alpha" :value ["aa" "ab"]}]
+           [coll1 coll2] [{:type :range :name "bravo" :value ["bc" nil]}]
+           [coll1 coll2] [{:type :range :name "bravo" :value [nil "bg"]}]))))
 
 (deftest float-psas-search-test
   (let [psa1 (dc/psa "alpha" :float 10)
@@ -154,6 +194,16 @@
            "float,alpha,11" []
            "float,bravo,-12" [coll1 coll2]
            "float,charlie,45" [coll2]))
+
+    (testing "search collections by additionalAttributes float value with aql"
+      (are [items additional-attribs]
+           (let [condition {:additionalAttributes additional-attribs}]
+             (d/refs-match? items (search/find-refs-with-aql :collection [condition])))
+
+           [coll1] [{:type :float :name "alpha" :value 10}]
+           [] [{:type :float :name "alpha" :value 11}]
+           [coll1 coll2] [{:type :float :name "bravo" :value -12}]
+           [coll2] [{:type :float :name "charlie" :value 45}]))
 
     (testing "search by range"
       (are [v items]
@@ -189,7 +239,19 @@
 
            ;; only max range provided
            "float,bravo,,13.6" [coll1 coll2]
-           "float,charlie,44,45.1" [coll2]))))
+           "float,charlie,44,45.1" [coll2]))
+
+    (testing "search collections by additionalAttributes float range with aql"
+      (are [items additional-attribs]
+           (let [condition {:additionalAttributes additional-attribs}]
+             (d/refs-match? items (search/find-refs-with-aql :collection [condition])))
+
+           [coll1] [{:type :floatRange :name "alpha" :value [9.2 11]}]
+           [coll1] [{:type :floatRange :name "alpha" :value [10.0 10.6]}]
+           [coll1] [{:type :floatRange :name "alpha" :value [9.2 10.0]}]
+           [coll1 coll2] [{:type :floatRange :name "bravo" :value [-120 nil]}]
+           [coll1 coll2] [{:type :floatRange :name "bravo" :value [nil 13.6]}]
+           [coll2] [{:type :floatRange :name "charlie" :value [44 45.1]}]))))
 
 (deftest int-psas-search-test
   (let [psa1 (dc/psa "alpha" :int 10)
@@ -212,6 +274,15 @@
            "int,alpha,10" [coll1]
            "int,alpha,11" []
            "int,bravo,-12" [coll1 coll2]))
+
+    (testing "search collections by additionalAttributes int value with aql"
+      (are [items additional-attribs]
+           (let [condition {:additionalAttributes additional-attribs}]
+             (d/refs-match? items (search/find-refs-with-aql :collection [condition])))
+
+           [coll1] [{:type :int :name "alpha" :value 10}]
+           [] [{:type :int :name "alpha" :value 11}]
+           [coll1 coll2] [{:type :int :name "bravo" :value -12}]))
 
     (testing "search by range"
       (are [v items]
@@ -249,7 +320,19 @@
            "int,bravo,,12" [coll1 coll2]
 
            ;; range inheritance
-           "int,charlie,44,46" [coll2]))))
+           "int,charlie,44,46" [coll2]))
+
+    (testing "search collections by additionalAttributes int range with aql"
+      (are [items additional-attribs]
+           (let [condition {:additionalAttributes additional-attribs}]
+             (d/refs-match? items (search/find-refs-with-aql :collection [condition])))
+
+           [coll1] [{:type :intRange :name "alpha" :value [9 11]}]
+           [coll1] [{:type :intRange :name "alpha" :value [10 11]}]
+           [coll1] [{:type :intRange :name "alpha" :value [9 10]}]
+           [coll1 coll2] [{:type :intRange :name "bravo" :value [-120 nil]}]
+           [coll1 coll2] [{:type :intRange :name "bravo" :value [nil 12]}]
+           [coll2] [{:type :intRange :name "charlie" :value [44 46]}]))))
 
 (deftest datetime-psas-search-test
   (let [psa1 (dc/psa "alpha" :datetime (d/make-datetime 10 false))
@@ -276,6 +359,17 @@
            "datetime,alpha," 11 []
            "datetime,alpha," 10 [coll1]
            "datetime,charlie," 45 [coll2]))
+
+    (testing "search collections by additionalAttributes datetime value with aql"
+      (are [items additional-attribs]
+           (let [value (map #(update-in % [:value] d/make-datetime) additional-attribs)
+                 condition {:additionalAttributes value}]
+             (d/refs-match? items (search/find-refs-with-aql :collection [condition])))
+
+           [coll1, coll2] [{:type :date :name "bravo" :value 14}]
+           [] [{:type :date :name "alpha" :value 11}]
+           [coll1] [{:type :date :name "alpha" :value 10}]
+           [coll2] [{:type :date :name "charlie" :value 45}]))
 
     (testing "search by range"
       (are [v min-n max-n items]
@@ -319,8 +413,21 @@
            ;; only max range provided
            "datetime,bravo," nil 17 [coll1 coll2]
 
-           "datetime,charlie," 44 45 [coll2]))))
+           "datetime,charlie," 44 45 [coll2]))
 
+    (testing "search collections by additionalAttributes date range with aql"
+      (are [items additional-attribs]
+           (let [value-fn (fn [v] (map d/make-datetime v))
+                 value (map #(update-in % [:value] value-fn) additional-attribs)
+                 condition {:additionalAttributes value}]
+             (d/refs-match? items (search/find-refs-with-aql :collection [condition])))
+
+           [coll1] [{:type :dateRange :name "alpha" :value [9 11]}]
+           [coll1] [{:type :dateRange :name "alpha" :value [10 11]}]
+           [coll1] [{:type :dateRange :name "alpha" :value [9 10]}]
+           [coll1 coll2] [{:type :dateRange :name "bravo" :value [10 nil]}]
+           [coll1 coll2] [{:type :dateRange :name "bravo" :value [nil 17]}]
+           [coll2] [{:type :dateRange :name "charlie" :value [44 45]}]))))
 
 (deftest time-psas-search-test
   (let [psa1 (dc/psa "alpha" :time (d/make-time 10 false))
@@ -347,6 +454,17 @@
            "time,alpha," 11 []
            "time,bravo," 23 [coll1 coll2]
            "time,charlie," 45 [coll2]))
+
+    (testing "search collections by additionalAttributes time value with aql"
+      (are [items additional-attribs]
+           (let [value (map #(update-in % [:value] d/make-time) additional-attribs)
+                 condition {:additionalAttributes value}]
+             (d/refs-match? items (search/find-refs-with-aql :collection [condition])))
+
+           [coll1] [{:type :time :name "alpha" :value 10}]
+           [] [{:type :time :name "alpha" :value 11}]
+           [coll1 coll2] [{:type :time :name "bravo" :value 23}]
+           [coll2] [{:type :time :name "charlie" :value 45}]))
 
     (testing "search by range"
       (are [v min-n max-n items]
@@ -390,7 +508,21 @@
            ;; only max range provided
            "time,bravo," nil 24 [coll1 coll2]
 
-           "time,charlie," 44 45 [coll2]))))
+           "time,charlie," 44 45 [coll2]))
+
+    (testing "search collections by additionalAttributes time range with aql"
+      (are [items additional-attribs]
+           (let [value-fn (fn [v] (map d/make-time v))
+                 value (map #(update-in % [:value] value-fn) additional-attribs)
+                 condition {:additionalAttributes value}]
+             (d/refs-match? items (search/find-refs-with-aql :collection [condition])))
+
+           [coll1] [{:type :timeRange :name "alpha" :value [9 11]}]
+           [coll1] [{:type :timeRange :name "alpha" :value [10 11]}]
+           [coll1] [{:type :timeRange :name "alpha" :value [9 10]}]
+           [coll1 coll2] [{:type :timeRange :name "bravo" :value [20 nil]}]
+           [coll1 coll2] [{:type :timeRange :name "bravo" :value [nil 24]}]
+           [coll2] [{:type :timeRange :name "charlie" :value [44 45]}]))))
 
 (deftest date-psas-search-test
   (let [psa1 (dc/psa "alpha" :date (d/make-date 10 false))

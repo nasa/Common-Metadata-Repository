@@ -14,10 +14,6 @@
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
-(comment
-  (ingest/create-provider "PROV1")
-  )
-
 (deftest invalid-psa-searches
   (are [v error]
        (= {:status 422 :errors [error]}
@@ -76,14 +72,27 @@
         gran7 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes [(dg/psa "ds" ["2012-01-01"])]}))
         gran8 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes [(dg/psa "ds" ["2012-01-02"])]}))]
     (index/refresh-elastic-index)
-    (are [v items]
-         (d/refs-match? items (search/find-refs :granule {"attribute[]" v}))
-         "string,bool,true" [gran1]
-         "string,bool,false" [gran2]
 
-         "string,dts,2012-01-01T01:02:03Z" [gran3]
-         "string,ts,01:02:03Z" [gran5]
-         "string,ds,2012-01-01" [gran7])))
+    (testing "granule psa search by string value"
+      (are [v items]
+           (d/refs-match? items (search/find-refs :granule {"attribute[]" v}))
+           "string,bool,true" [gran1]
+           "string,bool,false" [gran2]
+
+           "string,dts,2012-01-01T01:02:03Z" [gran3]
+           "string,ts,01:02:03Z" [gran5]
+           "string,ds,2012-01-01" [gran7]))
+
+    (testing "search granules by additionalAttributes with aql"
+      (are [items additional-attribs]
+           (let [condition {:additionalAttributes additional-attribs}]
+             (d/refs-match? items (search/find-refs-with-aql :granule [condition])))
+
+           [gran1] [{:name "bool" :type :string :value "true"}]
+           [gran2] [{:name "bool" :type :string :value "false"}]
+           [gran3] [{:name "dts" :type :string :value "2012-01-01T01:02:03Z"}]
+           [gran5] [{:name "ts" :type :string :value "01:02:03Z"}]
+           [gran7] [{:name "ds" :type :string :value "2012-01-01"}]))))
 
 (deftest string-psas-search-test
   (let [psa1 (dc/psa "alpha" :string)
@@ -128,45 +137,29 @@
            ;; tests by value inheritance
            "string,charlie,foo" [gran3 gran4]))
 
-    (client/generate-query-string [["attribute[][name]" "alpha"]
-                                   ["attribute[][type]" "string"]
-                                   ["attribute[][value]" "aa"]
-                                   ["attribute[][maxValue]" "ab"]])
+    (testing "search granules by additionalAttributes string value with aql"
+      (are [items additional-attribs]
+           (let [condition {:additionalAttributes additional-attribs}]
+             (d/refs-match? items (search/find-refs-with-aql :granule [condition])))
 
-    (testing "searching with multiple attribute conditions"
-      (are [v items operation]
-           (d/refs-match?
-             items
-             (search/find-refs
-               :granule
-               (merge
-                 {"attribute[]" v}
-                 (when operation
-                   {"options[attribute][or]" (= operation :or)}))))
+           [gran1] [{:type :string :name "alpha" :value "ab"}]
+           [gran1] [{:type :string :name "alpha" :value "AB"}]
+           [] [{:type :string :name "alpha" :value "c"}]
+           [gran1 gran3] [{:type :string :name "bravo" :value "bf"}]
+           [gran5] [{:type :string :name "case" :value "UP"}]
+           [gran5] [{:type :string :name "case" :value "up"}]
 
-           ["string,alpha,ab" "string,bravo,,bc"] [gran1 gran2 gran3] :or
-           ["string,alpha,ab" "string,bravo,,bc"] [] :and
-           ["string,alpha,ab" "string,bravo,bc,"] [gran1] :and
-           ; and is the default
-           ["string,alpha,ab" "string,bravo,,bc"] [] nil ))
-    (testing "searching with multiple attribute conditions catalog-rest style"
-      (are [v items operation]
-           (let [query (mapcat search/csv->tuples v)
-                 query (if operation
-                         (merge query ["options[attribute][or]" (= operation :or)])
-                         query)]
-             (d/refs-match?
-               items
-               (search/find-refs
-                 :granule
-                 query
-                 {:snake-kebab? false})))
+           ;; tests by value inheritance
+           [gran3 gran4] [{:type :string :name "charlie" :value "FoO"}]
+           [gran3 gran4] [{:type :string :name "charlie" :value "Foo"}]
 
-           ["string,alpha,ab" "string,bravo,,bc"] [gran1 gran2 gran3] :or
-           ["string,alpha,ab" "string,bravo,,bc"] [] :and
-           ["string,alpha,ab" "string,bravo,bc,"] [gran1] :and
-           ; and is the default
-           ["string,alpha,ab" "string,bravo,,bc"] [] nil ))
+           ;; tests list
+           [gran1] [{:type :string :name "alpha" :value ["ab" "bc"]}]
+           [gran1 gran3] [{:type :string :name "bravo" :value ["aa" "bf"]}]
+
+           ;; tests pattern
+           [gran2 gran3] [{:type :string :name "bravo" :value "a%" :pattern true}]
+           [gran2 gran3] [{:type :string :name "bravo" :value "a_" :pattern true}]))
 
     (testing "search by range"
       (are [v items]
@@ -206,7 +199,68 @@
            "string,bravo,,bc" [gran2 gran3]
 
            ;; Range value inheritance
-           "string,charlie,foa,foz" [gran3 gran4]))))
+           "string,charlie,foa,foz" [gran3 gran4]))
+
+    (testing "search granules by additionalAttributes string range with aql"
+      (are [items additional-attribs]
+           (let [condition {:additionalAttributes additional-attribs}]
+             (d/refs-match? items (search/find-refs-with-aql :granule [condition])))
+
+           [gran1] [{:type :range :name "alpha" :value ["aa" "ac"]}]
+           [gran1] [{:type :range :name "alpha" :value ["ab" "ac"]}]
+           [gran1] [{:type :range :name "alpha" :value ["aa" "ab"]}]
+           [gran1 gran3] [{:type :range :name "bravo" :value ["bc" nil]}]
+           [gran2 gran3] [{:type :range :name "bravo" :value [nil "bc"]}]
+           [gran3 gran4] [{:type :range :name "charlie" :value ["foa" "foz"]}]))
+
+    (testing "searching with multiple attribute conditions"
+      (are [v items operation]
+           (d/refs-match?
+             items
+             (search/find-refs
+               :granule
+               (merge
+                 {"attribute[]" v}
+                 (when operation
+                   {"options[attribute][or]" (= operation :or)}))))
+
+           ["string,alpha,ab" "string,bravo,,bc"] [gran1 gran2 gran3] :or
+           ["string,alpha,ab" "string,bravo,,bc"] [] :and
+           ["string,alpha,ab" "string,bravo,bc,"] [gran1] :and
+           ; and is the default
+           ["string,alpha,ab" "string,bravo,,bc"] [] nil ))
+    (testing "searching with multiple attribute conditions catalog-rest style"
+      (are [v items operation]
+           (let [query (mapcat search/csv->tuples v)
+                 query (if operation
+                         (merge query ["options[attribute][or]" (= operation :or)])
+                         query)]
+             (d/refs-match?
+               items
+               (search/find-refs
+                 :granule
+                 query
+                 {:snake-kebab? false})))
+
+           ["string,alpha,ab" "string,bravo,,bc"] [gran1 gran2 gran3] :or
+           ["string,alpha,ab" "string,bravo,,bc"] [] :and
+           ["string,alpha,ab" "string,bravo,bc,"] [gran1] :and
+           ; and is the default
+           ["string,alpha,ab" "string,bravo,,bc"] [] nil ))
+
+    (testing "search granules by additionalAttributes multiple string values with aql"
+      (are [items additional-attribs options]
+           (let [condition (merge {:additionalAttributes additional-attribs} options)]
+             (d/refs-match? items (search/find-refs-with-aql :granule [condition])))
+
+           [gran1 gran2 gran3] [{:type :string :name "alpha" :value "ab"}
+                                {:type :range :name "bravo" :value [nil "bc"]}] {:or true}
+           [] [{:type :string :name "alpha" :value "ab"}
+               {:type :range :name "bravo" :value [nil "bc"]}] {:and true}
+           [] [{:type :string :name "alpha" :value "ab"}
+               {:type :range :name "bravo" :value [nil "bc"]}] {}
+           [gran1] [{:type :string :name "alpha" :value "ab"}
+                    {:type :range :name "bravo" :value ["bc" nil]}] {:and true}))))
 
 (deftest float-psas-search-test
   (let [psa1 (dc/psa "alpha" :float)
@@ -238,6 +292,16 @@
            "float,alpha,10" []
            "float,bravo,-12" [gran1]
            "float,charlie,45" [gran3 gran4]))
+
+    (testing "search granules by additionalAttributes float value with aql"
+      (are [items additional-attribs]
+           (let [condition {:additionalAttributes additional-attribs}]
+             (d/refs-match? items (search/find-refs-with-aql :granule [condition])))
+
+           [gran2 gran3] [{:type :float :name "bravo" :value 123}]
+           [] [{:type :float :name "alpha" :value 10}]
+           [gran1] [{:type :float :name "bravo" :value -12}]
+           [gran3 gran4] [{:type :float :name "charlie" :value 45}]))
 
     (testing "search by range"
       (are [v items]
@@ -272,7 +336,19 @@
 
            ;; only max range provided
            "float,bravo,,13.6" [gran1 gran2]
-           "float,charlie,44,45.1" [gran3 gran4]))))
+           "float,charlie,44,45.1" [gran3 gran4]))
+
+    (testing "search granules by additionalAttributes float range with aql"
+      (are [items additional-attribs]
+           (let [condition {:additionalAttributes additional-attribs}]
+             (d/refs-match? items (search/find-refs-with-aql :granule [condition])))
+
+           [gran1] [{:type :floatRange :name "alpha" :value [10.2 11]}]
+           [gran1] [{:type :floatRange :name "alpha" :value [10.5 10.6]}]
+           [gran1] [{:type :floatRange :name "alpha" :value [10 10.5]}]
+           [gran2 gran3] [{:type :floatRange :name "bravo" :value [120 nil]}]
+           [gran1 gran2] [{:type :floatRange :name "bravo" :value [nil 13.6]}]
+           [gran3 gran4] [{:type :floatRange :name "charlie" :value [44 45.1]}]))))
 
 (deftest int-psas-search-test
   (let [psa1 (dc/psa "alpha" :int)
@@ -306,6 +382,17 @@
            "int,bravo,-12" [gran1]
            ;; inherited from collection
            "int,charlie,45" [gran3 gran4]))
+
+    (testing "search granules by additionalAttributes int value with aql"
+      (are [items additional-attribs]
+           (let [condition {:additionalAttributes additional-attribs}]
+             (d/refs-match? items (search/find-refs-with-aql :granule [condition])))
+
+           [gran2 gran3] [{:type :int :name "bravo" :value 123}]
+           [] [{:type :int :name "alpha" :value 11}]
+           [gran1] [{:type :int :name "bravo" :value -12}]
+           ;; inherited from collection
+           [gran3 gran4] [{:type :int :name "charlie" :value 45}]))
 
     (testing "search by range"
       (are [v items]
@@ -344,7 +431,20 @@
            "int,bravo,,12" [gran1 gran2]
 
            ;; range inheritance
-           "int,charlie,44,46" [gran3,gran4]))))
+           "int,charlie,44,46" [gran3,gran4]))
+
+    (testing "search granules by additionalAttributes int range with aql"
+      (are [items additional-attribs]
+           (let [condition {:additionalAttributes additional-attribs}]
+             (d/refs-match? items (search/find-refs-with-aql :granule [condition])))
+
+           [gran1] [{:type :intRange :name "alpha" :value [9 11]}]
+           [gran1] [{:type :intRange :name "alpha" :value [10 11]}]
+           [gran1] [{:type :intRange :name "alpha" :value [9 10]}]
+           [gran2 gran3] [{:type :intRange :name "bravo" :value [120 nil]}]
+           [gran1 gran2] [{:type :intRange :name "bravo" :value [nil 12]}]
+           ;; range inheritance
+           [gran3 gran4] [{:type :intRange :name "charlie" :value [44 46]}]))))
 
 (deftest datetime-psas-search-test
   (let [psa1 (dc/psa "alpha" :datetime)
@@ -389,6 +489,17 @@
            "datetime,bravo," 0 [gran1]
            "datetime,charlie," 45 [gran3 gran4]))
 
+    (testing "search granules by additionalAttributes datetime value with aql"
+      (are [items additional-attribs]
+           (let [value (map #(update-in % [:value] d/make-datetime) additional-attribs)
+                 condition {:additionalAttributes value}]
+             (d/refs-match? items (search/find-refs-with-aql :granule [condition])))
+
+           [gran2 gran3] [{:type :date :name "bravo" :value 123}]
+           [] [{:type :date :name "alpha" :value 11}]
+           [gran1] [{:type :date :name "bravo" :value 0}]
+           [gran3 gran4] [{:type :date :name "charlie" :value 45}]))
+
     (testing "search by range"
       (are [v min-n max-n items]
            (let [min-v (d/make-datetime min-n)
@@ -431,7 +542,22 @@
            ;; only max range provided
            "datetime,bravo," nil 12 [gran1 gran2]
 
-           "datetime,charlie," 44 45 [gran3 gran4]))))
+           "datetime,charlie," 44 45 [gran3 gran4]))
+
+    (testing "search granules by additionalAttributes date range with aql"
+      (are [items additional-attribs]
+           (let [value-fn (fn [v] (map d/make-datetime v))
+                 value (map #(update-in % [:value] value-fn) additional-attribs)
+                 condition {:additionalAttributes value}]
+             (d/refs-match? items (search/find-refs-with-aql :granule [condition])))
+
+           [gran1] [{:type :dateRange :name "alpha" :value [9 11]}]
+           [gran1] [{:type :dateRange :name "alpha" :value [10 11]}]
+           [gran1] [{:type :dateRange :name "alpha" :value [9 10]}]
+           [gran2 gran3] [{:type :dateRange :name "bravo" :value [120 nil]}]
+           [gran1 gran2] [{:type :dateRange :name "bravo" :value [nil 12]}]
+           ;; range inheritance
+           [gran3 gran4] [{:type :dateRange :name "charlie" :value [44 45]}]))))
 
 (deftest time-psas-search-test
   (let [psa1 (dc/psa "alpha" :time)
@@ -476,6 +602,17 @@
            "time,bravo," 0 [gran1]
            "time,charlie," 45 [gran3 gran4]))
 
+    (testing "search granules by additionalAttributes time value with aql"
+      (are [items additional-attribs]
+           (let [value (map #(update-in % [:value] d/make-time) additional-attribs)
+                 condition {:additionalAttributes value}]
+             (d/refs-match? items (search/find-refs-with-aql :granule [condition])))
+
+           [gran2 gran3] [{:type :time :name "bravo" :value 23}]
+           [] [{:type :time :name "alpha" :value 11}]
+           [gran1] [{:type :time :name "bravo" :value 0}]
+           [gran3 gran4] [{:type :time :name "charlie" :value 45}]))
+
     (testing "search by range"
       (are [v min-n max-n items]
            (let [min-v (d/make-time min-n)
@@ -518,7 +655,22 @@
            ;; only max range provided
            "time,bravo," nil 12 [gran1 gran2]
 
-           "time,charlie," 44 45 [gran3 gran4]))))
+           "time,charlie," 44 45 [gran3 gran4]))
+
+    (testing "search granules by additionalAttributes time range with aql"
+      (are [items additional-attribs]
+           (let [value-fn (fn [v] (map d/make-time v))
+                 value (map #(update-in % [:value] value-fn) additional-attribs)
+                 condition {:additionalAttributes value}]
+             (d/refs-match? items (search/find-refs-with-aql :granule [condition])))
+
+           [gran1] [{:type :timeRange :name "alpha" :value [9 11]}]
+           [gran1] [{:type :timeRange :name "alpha" :value [10 11]}]
+           [gran1] [{:type :timeRange :name "alpha" :value [9 10]}]
+           [gran2 gran3] [{:type :timeRange :name "bravo" :value [20 nil]}]
+           [gran1 gran2] [{:type :timeRange :name "bravo" :value [nil 12]}]
+           ;; range inheritance
+           [gran3 gran4] [{:type :timeRange :name "charlie" :value [44 45]}]))))
 
 (deftest date-psas-search-test
   (let [psa1 (dc/psa "alpha" :date)
@@ -606,8 +758,4 @@
            "date,bravo," nil 12 [gran1 gran2]
 
            "date,charlie," 44 45 [gran3 gran4]))))
-
-
-
-
 
