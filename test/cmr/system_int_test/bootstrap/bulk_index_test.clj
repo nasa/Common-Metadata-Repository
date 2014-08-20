@@ -23,7 +23,7 @@
 ;; 5. Waits for the bulk indexing and granule ingest to complete.
 ;; 6. Searches for all of the saved/ingested concepts by concept-id.
 ;; 7. Verifies that the concepts returned by search have the expected revision ids.
-(deftest bulk-index-after-ingest
+#_(deftest bulk-index-after-ingest
   ;; only run this test with the external db
   (when (= (type (get-in user/system [:apps :metadata-db :db]))
            cmr.oracle.connection.OracleStore)
