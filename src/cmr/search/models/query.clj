@@ -247,6 +247,12 @@
   "A list of valid additional attribute search types"
   [:float :int :string :date :time :datetime])
 
+(defrecord AttributeNameCondition
+  [
+   name
+   pattern?
+   ])
+
 (defrecord AttributeValueCondition
   [
    type

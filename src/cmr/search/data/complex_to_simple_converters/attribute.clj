@@ -30,8 +30,7 @@
 
 (defmethod value-condition->value-filter :string
   [{:keys [type value pattern?]}]
-  (let [pattern? (if (= true pattern?) true false)]
-    (qm/string-condition (type->field-name type) value false pattern?)))
+  (qm/string-condition (type->field-name type) value false pattern?))
 
 (defn- date-value-condition->value-filter
   "Helper function for any date related attribute fields"
@@ -84,6 +83,13 @@
   [condition]
   (date-range-condition->range-filter condition))
 
+(extend-protocol c2s/ComplexQueryToSimple
+  cmr.search.models.query.AttributeNameCondition
+  (c2s/reduce-query
+    [condition]
+    (let [{:keys [name pattern?]} condition
+          name-cond (qm/string-condition :name name true pattern?)]
+      (qm/nested-condition :attributes name-cond))))
 
 (extend-protocol c2s/ComplexQueryToSimple
   cmr.search.models.query.AttributeValueCondition

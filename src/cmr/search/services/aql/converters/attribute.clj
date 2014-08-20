@@ -52,8 +52,7 @@
 
 (defmethod attrib-value-element->condition :textPattern
   [attrib-name value-elem]
-  (let [value (->> (first (:content value-elem))
-                   a/aql-pattern->cmr-pattern)]
+  (let [value (-> value-elem :content first a/aql-pattern->cmr-pattern)]
     (qm/map->AttributeValueCondition
       {:type :string
        :name attrib-name

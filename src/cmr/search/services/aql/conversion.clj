@@ -28,8 +28,7 @@
                 :instrumentShortName {:name :instrument :type :string}
                 :spatialKeywords {:name :spatial-keyword :type :string}
                 :archiveCenter {:name :archive-center :type :string}
-                ;; TODO: need to add additional-attrib-name to collection index
-                :additionalAttributeNames {:name :additional-attrib-name :type :string}
+                :additionalAttributeNames {:name :attribute-name :type :attribute-name}
                 :temporal {:name :temporal :type :temporal}
                 :additionalAttributes {:name :attribute :type :attribute}
                 :difEntryId {:name :dif-entry-id :type :dif-entry-id}
