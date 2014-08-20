@@ -204,7 +204,7 @@ The temporal datetime has to be in yyyy-MM-ddTHH:mm:ssZ format.
 
 #### Find collections by keyword search, case insensitive and support wild cards ? and *
 
-    curl "http://localhost:3003/collections?keyword="alpha beta g?mma"
+    curl "http://localhost:3003/collections?keyword=alpha%20beta%20g?mma"
 
 #### Sorting Collection Results
 
