@@ -78,7 +78,7 @@
         (is (d/refs-match? [c1-echo] refs))
         (testing "Location allows retrieval of native XML"
           (let [response (client/get location
-                                     {:accept :xml
+                                     {:accept :application/echo10+xml
                                       :connection-manager (url/conn-mgr)})]
             (is (= (umm/umm->xml c1-echo :echo10) (:body response))))))
 

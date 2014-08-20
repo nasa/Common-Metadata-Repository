@@ -72,7 +72,7 @@
 
         (testing "Location allows granule native format retrieval"
           (let [response (client/get location
-                                     {:accept :xml
+                                     {:accept :application/echo10+xml
                                       :connection-manager (url/conn-mgr)})]
             (is (= (umm/umm->xml gran1 :echo10) (:body response))))))
 
