@@ -14,14 +14,15 @@
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
-;; This test performs the follwing steps:
+;; This test verifies that the bulk indexer can run concurrently with ingest and indexing of items.
+;; This test performs the following steps:
 ;; 1. Saves ten collections in metadata db.
 ;; 2. Saves three granules for each of those collections in metadata db.
 ;; 3. Ingests ten granules five times each in a separate thread.
 ;; 4. Concurrently executes a bulk index operation for the provider.
 ;; 5. Waits for the bulk indexing and granule ingest to complete.
 ;; 6. Searches for all of the saved/ingested concepts by concept-id.
-;; 7. Verifies that the concepts returned by searh have the expected revision ids.
+;; 7. Verifies that the concepts returned by search have the expected revision ids.
 (deftest bulk-index-after-ingest
   ;; only run this test with the external db
   (when (= (type (get-in user/system [:apps :metadata-db :db]))
