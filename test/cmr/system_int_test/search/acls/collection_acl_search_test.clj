@@ -13,6 +13,16 @@
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"} false))
 
+(comment
+  (ingest/reset)
+  (ingest/create-provider "PROV1")
+  (ingest/create-provider "PROV2")
+  (e/create-providers {"provguid1" "PROV1" "provguid2" "PROV2"})
+
+)
+
+;; TODO add caching of sids information from token
+
 ;; TODO add test for searching with an invalid security token.
 
 (deftest collection-search-with-acls-test
@@ -25,9 +35,9 @@
   (e/grant-guest (e/coll-catalog-item-id "provguid2"))
   ;; grant registered users permission to coll2 and coll4
   (e/grant-registered-users (e/coll-catalog-item-id "provguid1" ["coll2" "coll4"]))
-  ;; grant specific group permission to coll3 and coll6
+  ;; grant specific group permission to coll3, coll6, and coll8
   (e/grant-group "group-guid1" (e/coll-catalog-item-id "provguid1" ["coll3"]))
-  (e/grant-group "group-guid2" (e/coll-catalog-item-id "provguid2" ["coll6"]))
+  (e/grant-group "group-guid2" (e/coll-catalog-item-id "provguid2" ["coll6" "coll8"]))
 
 
   (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}))
@@ -41,7 +51,14 @@
         ;; PROV2
         coll6 (d/ingest "PROV2" (dc/collection {:entry-title "coll6"}))
         coll7 (d/ingest "PROV2" (dc/collection {:entry-title "coll7"}))
+        ;; A dif collection
+        coll8 (d/ingest "PROV2" (dc/collection {:entry-title "coll8"
+                                                :entry-id "S8"
+                                                :short-name "S8"
+                                                :version-id "V8"
+                                                :long-name "coll8"}) :dif)
 
+        all-colls [coll1 coll2 coll3 coll4 coll5 coll6 coll7 coll8]
         guest-token (e/login-guest)
         user1-token (e/login "user1")
         user2-token (e/login "user2" ["group-guid1"])
@@ -50,21 +67,21 @@
     (index/refresh-elastic-index)
 
     (testing "parameter search acl enforcement"
-     (are [token items]
-             (d/refs-match? items (search/find-refs :collection (when token {:token token})))
+      (are [token items]
+           (d/refs-match? items (search/find-refs :collection (when token {:token token})))
 
-             ;; not logged in should be guest
-             nil [coll1 coll4 coll6 coll7]
+           ;; not logged in should be guest
+           nil [coll1 coll4 coll6 coll7 coll8]
 
-             ;; login and use guest token
-             guest-token [coll1 coll4 coll6 coll7]
+           ;; login and use guest token
+           guest-token [coll1 coll4 coll6 coll7 coll8]
 
-             ;; test searching as a user
-             user1-token [coll2 coll4]
+           ;; test searching as a user
+           user1-token [coll2 coll4]
 
-             ;; Test searching with users in groups
-             user2-token [coll2 coll4 coll3]
-             user3-token [coll2 coll4 coll3 coll6]))
+           ;; Test searching with users in groups
+           user2-token [coll2 coll4 coll3]
+           user3-token [coll2 coll4 coll3 coll6 coll8]))
     (testing "token can be sent through a header"
       (is (d/refs-match? [coll2 coll4]
                          (search/find-refs :collection {} {:headers {"Echo-Token" user1-token}}))))
@@ -75,9 +92,22 @@
       ;; TODO test that we can retrieve the items directly and ACLs are enforced
       )
     (testing "Direct transformer retrieval acl enforcement"
-      ;; TODO test that the transformer type queries will enforce ACLs
-      ;; TODO ingest some diff collections above so we can test it with them
-      )))
+      (testing "registered user"
+        (d/assert-metadata-results-match
+          :echo10 [coll2 coll4]
+          (search/find-metadata :collection :echo10 {:token user1-token
+                                                     :concept-id (conj (map :concept-id all-colls)
+                                                                       "C9999-PROV1")})))
+      (testing "guest access"
+        (d/assert-metadata-results-match
+          :echo10 [coll1 coll4 coll6 coll7 coll8]
+          (search/find-metadata :collection :echo10 {:token guest-token
+                                                     :concept-id (map :concept-id all-colls)})))
+      (testing "user in groups"
+        (d/assert-metadata-results-match
+          :echo10 [coll4 coll6 coll3 coll8 coll2]
+          (search/find-metadata :collection :echo10 {:token user3-token
+                                                     :concept-id (map :concept-id all-colls)}))))))
 
 
 ;; This tests that when acls change after collections have been indexed that collections will be
