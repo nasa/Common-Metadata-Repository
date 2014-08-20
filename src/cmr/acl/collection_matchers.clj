@@ -10,11 +10,7 @@
 (defn coll-matches-collection-id?
   "Returns true if the collection matches the collection id"
   [coll collection-id]
-  (let [{:keys [data-set-id short-name version]} collection-id
-        {:keys [entry-title product access-value]} coll]
-    (or (= data-set-id entry-title)
-        (and (= short-name (:short-name product))
-             (= version (:version-id product))))))
+  (= (:data-set-id collection-id) (:entry-title coll)))
 
 (defn coll-matches-access-value-filter
   "Returns true if the collection matches the access-value filter"
