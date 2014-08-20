@@ -67,6 +67,10 @@
         (svc-errors/throw-service-error
           :bad-request (format "The URL extension [%s] is not supported." extension)))))
 
+(defn- path-w-extension->concept-id
+  "Parses the path-w-extension to remove the concept id from the beginning"
+  [path-w-extension]
+  (second (re-matches #"([^\.]+)(?:\..+)?" path-w-extension)))
 
 (defn- get-search-results-format
   "Returns the requested search results format parsed from headers or from the URL extension"
@@ -123,11 +127,12 @@
 
 (defn- find-concept-by-cmr-concept-id
   "Invokes query service to find concept metadata by cmr concept id and returns the response"
-  [context concept-id params headers]
-  ;; Note: headers argument is reserved for ACL validation
-  (info (format "Search for concept with cmr-concept-id [%s]" concept-id))
+  [context path-w-extension params headers]
   (let [context (assoc context :token (get-token params headers))
-        concept (query-svc/find-concept-by-id context concept-id)]
+        result-format (get-search-results-format path-w-extension headers)
+        concept-id (path-w-extension->concept-id path-w-extension)
+        _ (info (format "Search for concept with cmr-concept-id [%s]" concept-id))
+        concept (query-svc/find-concept-by-id context result-format concept-id)]
     {:status 200
      :headers {"Content-Type" "application/xml; charset=utf-8"}
      :body (:metadata concept)}))
@@ -148,6 +153,10 @@
   extension."
   #"(?:(?:granules)|(?:collections))(?:\..+)?")
 
+(def concept-id-w-extension-regex
+  "A regular expression matching URLs including a concept id along with a file extension"
+  #"(?:[A-Z][0-9]+-[0-9A-Z_]+)(?:\..+)?")
+
 (def provider-holdings-w-extension-regex
   "A regular expression that matches URLs including the provider holdings and a file extension."
   #"(?:provider_holdings)(?:\..+)?")
@@ -161,9 +170,9 @@
     (context (get-in system [:search-public-conf :relative-root-url]) []
 
       ;; Retrieve by cmr concept id
-      (context "/concepts/:cmr-concept-id" [cmr-concept-id]
+      (context ["/concepts/:path-w-extension" :path-w-extension concept-id-w-extension-regex] [path-w-extension]
         (GET "/" {params :params headers :headers context :request-context}
-          (find-concept-by-cmr-concept-id context cmr-concept-id params headers)))
+          (find-concept-by-cmr-concept-id context path-w-extension params headers)))
 
       ;; Find concepts
       (context ["/:path-w-extension" :path-w-extension concept-type-w-extension-regex] [path-w-extension]

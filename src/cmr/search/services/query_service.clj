@@ -124,22 +124,19 @@
 
 (deftracefn find-concept-by-id
   "Executes a search to metadata-db and returns the concept with the given cmr-concept-id."
-  [context concept-id]
-  ;; TODO enforce ACLs here
-  ;; This could be done by converting it into a query for a single item (one concept id)
-  ;; It should still be fast because it will use the direct query approach.
-  (let [mdb-context (t/context->metadata-db-context context)
-        concept (meta-db/get-concept mdb-context concept-id nil)]
-    (when (:deleted concept)
+  [context result-format concept-id]
+  (let [concepts (t/get-latest-formatted-concepts context [concept-id] result-format)]
+    (when-not (seq concepts)
       (err/throw-service-error
         :not-found
-        (format "Concept with concept-id: %s has been deleted" concept-id)))
-    concept))
+        (format "Concept with concept-id: %s could not be found" concept-id)))
+    (first concepts)))
 
 (deftracefn reset
   "Clear the cache for search app"
   [context]
   ;; TODO enforce ingest management ACL here.
+  ;; File issue for this
   (cache/reset-cache (-> context :system :cache))
   (acl-cache/reset context))
 
