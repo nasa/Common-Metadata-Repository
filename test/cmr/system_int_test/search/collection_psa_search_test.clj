@@ -76,6 +76,21 @@
            [coll1] [{:type :string :name "alpha" :value "a%" :pattern true}]
            [coll1] [{:type :string :name "alpha" :value "a_" :pattern true}]))
 
+    (testing "search collections by additionalAttributeNames with AQL."
+      (are [items attrib-names options]
+           (let [condition (merge {:additionalAttributeNames attrib-names} options)]
+             (d/refs-match? items
+                            (search/find-refs-with-aql :collection [condition])))
+           [coll1] "alpha" {}
+           [coll1 coll2] "bravo" {}
+           [coll2] "charlie" {}
+           [coll3] "case" {}
+           [] "BLAH" {}
+           [coll1 coll3] ["alpha" "case"] {}
+           [coll1 coll2 coll3] ["alpha" "charlie" "case"] {}
+           [coll2 coll3] "c%" {:pattern true}
+           [coll3] "cas_" {:pattern true}))
+
     (testing "searching with multiple attribute conditions"
       (are [v items operation]
            (d/refs-match?
