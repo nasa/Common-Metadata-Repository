@@ -58,7 +58,8 @@
         coll17 (d/ingest "PROV2" (dc/collection {:associated-difs ["DIF-1" "DIF-2"]}))
         coll18 (d/ingest "PROV2" (dc/collection {:short-name "SNFoobar"}))
         coll19 (d/ingest "PROV2" (dc/collection {:long-name "LNFoobar"}))
-        coll20 (d/ingest "PROV2" (dc/collection {:projects pr1}))]
+        coll20 (d/ingest "PROV2" (dc/collection {:projects pr1}))
+        coll21 (d/ingest "PROV2" (dc/collection {:entry-title "coll21" :long-name "ABC!"}))]
 
     (index/refresh-elastic-index)
 
@@ -70,11 +71,12 @@
                (println "Expected:" (map :entry-title items))
                (println "Actual:" (map :name (:refs refs))))
              matches?)
-           "ABC" [coll2 coll5]
+           "ABC" [coll2 coll5 coll21]
            "place" [coll6]
            "Laser" [coll5 coll7 coll9 coll14]
-           "ABC place Hurricane" [coll2 coll5 coll6 coll9]
+           "ABC place Hurricane" [coll2 coll5 coll6 coll9 coll21]
            "BLAH" []
+           "abc!" [coll21]
 
            ;; Checking specific fields
 
@@ -88,7 +90,7 @@
            "XYZ" [coll2 coll13]
 
            ;; long name
-           "ABC" [coll5 coll2]
+           "ABC" [coll5 coll2 coll21]
 
            ;; version id
            "V001" [coll2]
@@ -199,10 +201,10 @@
                (println "Expected:" (map :entry-title items))
                (println "Actual:" (map :name (:refs refs))))
              matches?)
-           "A*C" [coll2 coll5]
+           "A*C" [coll2 coll5 coll21]
            "XY*" [coll2 coll13]
            "*aser" [coll5 coll7 coll9 coll14]
-           "ABC p*ce Hurricane" [coll2 coll5 coll6 coll9]))
+           "ABC p*ce Hurricane" [coll2 coll5 coll6 coll9 coll21]))
     (testing "search by keywords using wildcard ?."
       (are [keyword-str items]
            (let [refs (search/find-refs :collection {:keyword keyword-str})
@@ -211,10 +213,10 @@
                (println "Expected:" (map :entry-title items))
                (println "Actual:" (map :name (:refs refs))))
              matches?)
-           "A?C" [coll2 coll5]
+           "A?C" [coll2 coll5 coll21]
            "XY?" [coll2 coll13]
            "?aser" [coll5 coll7 coll9 coll14]
-           "ABC ?lace Hurricane" [coll2 coll5 coll6 coll9]))
+           "ABC ?lace Hurricane" [coll2 coll5 coll6 coll9 coll21]))
     (testing "sorted search by keywords."
       (are [keyword-str items]
            (let [refs (search/find-refs :collection {:keyword keyword-str})
