@@ -13,26 +13,26 @@
 (deftest search-by-temporal
   (let [coll1 (d/ingest "PROV1" (dc/collection {}))
         gran1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule1"
-                                                       :beginning-date-time "2010-01-01T12:00:00Z"
-                                                       :ending-date-time "2010-01-11T12:00:00Z"}))
+                                                   :beginning-date-time "2010-01-01T12:00:00Z"
+                                                   :ending-date-time "2010-01-11T12:00:00Z"}))
         gran2 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule2"
-                                                       :beginning-date-time "2010-01-31T12:00:00Z"
-                                                       :ending-date-time "2010-12-12T12:00:00Z"}))
+                                                   :beginning-date-time "2010-01-31T12:00:00Z"
+                                                   :ending-date-time "2010-12-12T12:00:00Z"}))
         gran3 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule3"
-                                                       :beginning-date-time "2010-12-03T12:00:00Z"
-                                                       :ending-date-time "2010-12-20T12:00:00Z"}))
+                                                   :beginning-date-time "2010-12-03T12:00:00Z"
+                                                   :ending-date-time "2010-12-20T12:00:00Z"}))
         gran4 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule4"
-                                                       :beginning-date-time "2010-12-12T12:00:00Z"
-                                                       :ending-date-time "2011-01-03T12:00:00Z"}))
+                                                   :beginning-date-time "2010-12-12T12:00:00Z"
+                                                   :ending-date-time "2011-01-03T12:00:00Z"}))
         gran5 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule5"
-                                                       :beginning-date-time "2011-02-01T12:00:00Z"
-                                                       :ending-date-time "2011-03-01T12:00:00Z"}))
+                                                   :beginning-date-time "2011-02-01T12:00:00Z"
+                                                   :ending-date-time "2011-03-01T12:00:00Z"}))
         gran6 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule6"
-                                                       :beginning-date-time "2010-01-30T12:00:00Z"}))
+                                                   :beginning-date-time "2010-01-30T12:00:00Z"}))
         gran7 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule7"
-                                                       :beginning-date-time "2010-12-12T12:00:00Z"}))
+                                                   :beginning-date-time "2010-12-12T12:00:00Z"}))
         gran8 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule8"
-                                                       :beginning-date-time "2011-12-13T12:00:00Z"}))
+                                                   :beginning-date-time "2011-12-13T12:00:00Z"}))
         gran9 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule9"}))]
     (index/refresh-elastic-index)
 
@@ -65,7 +65,16 @@
       (let [references (search/find-refs :granule
                                          {"temporal[]" ["2010-01-01T10:00:00Z,2010-01-10T12:00:00Z" "2009-02-22T10:00:00Z,2010-02-22T10:00:00Z"]
                                           "options[temporal][and]" "true"})]
-        (is (d/refs-match? [gran1] references))))))
+        (is (d/refs-match? [gran1] references))))
+
+    (testing "search granules by temporal with aql"
+      (are [items start-date stop-date]
+           (d/refs-match? items (search/find-refs-with-aql :granule [{:temporal {:start-date start-date
+                                                                                 :stop-date stop-date}}]))
+
+           [gran2 gran3 gran4 gran5 gran6 gran7 gran8] "2010-12-12T12:00:00Z" nil
+           [gran1] "2010-01-01T10:00:00Z" "2010-01-10T12:00:00Z"
+           [gran1] "2010-01-01T10:00:00" "2010-01-10T12:00:00.123Z"))))
 
 ;; Just some symbolic invalid temporal testing, more complete test coverage is in unit tests
 (deftest search-temporal-error-scenarios

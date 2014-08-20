@@ -22,25 +22,40 @@
   [elem-name value]
   (when value (x/element elem-name {:value (str value)})))
 
-(defn- generate-date-element
+(defn generate-date-element
+  "Returns the xml element for the given date string"
+  [value]
+  (when value
+    (let [dt (p/parse-datetime value)]
+      (x/element :Date {:YYYY (str (t/year dt))
+                        :MM (str (t/month dt))
+                        :DD (str (t/day dt))
+                        :HH (str (t/hour dt))
+                        :MI (str (t/minute dt))
+                        :SS (str (t/second dt))}))))
+
+(defn generate-named-date-element
   "Returns the xml element for the given name and value string"
   [elem-name value]
   (when value
-    (let [dt (p/parse-datetime value)]
-      (x/element elem-name {}
-                 (x/element :Date {:YYYY (str (t/year dt))
-                                   :MM (str (t/month dt))
-                                   :DD (str (t/day dt))
-                                   :HH (str (t/hour dt))
-                                   :MI (str (t/minute dt))
-                                   :SS (str (t/second dt))})))))
+    (x/element elem-name {}
+               (generate-date-element value))))
 
-(defn- generate-range-element
+(defn generate-date-range-value-element
+  "Returns the xml element for date range value of start-date and stop-date"
+  [start-date stop-date]
+  (x/element "dateRange" {}
+             (generate-named-date-element :startDate start-date)
+             (generate-named-date-element :stopDate stop-date)))
+
+(defn generate-range-element
   "Returns the xml element for the given range"
-  [[min-val max-val]]
-  (let [options (-> {:lower min-val :upper max-val}
-                    u/remove-nil-keys)]
-    (x/element :range options)))
+  ([range-value]
+   (generate-range-element :range range-value))
+  ([range-elem-name [min-val max-val]]
+   (let [options (-> {:lower min-val :upper max-val}
+                     u/remove-nil-keys)]
+     (x/element range-elem-name options))))
 
 (defn- generate-keyword-element
   "Returns the xml element for the given key, value and options"
@@ -62,6 +77,19 @@
                (generate-keyword-element :detailedVariableKeyword detailed-variable ignore-case pattern)
                (generate-keyword-element :anyKeyword any ignore-case pattern))))
 
+(defn generate-string-value-element
+  "Returns the xml element for string type of values"
+  [elem-value ignore-case pattern]
+  (if (sequential? elem-value)
+    ;; a list with at least one value
+    (if pattern
+      (x/element :patternList {}
+                 (map (partial generate-value-element ignore-case pattern) elem-value))
+      (x/element :list {}
+                 (map (partial generate-value-element ignore-case pattern) elem-value)))
+    ;; a single value
+    (generate-value-element ignore-case pattern elem-value)))
+
 (def element-key-type-mapping
   "A mapping of AQL element key to its type, only keys with a type other than string are listed."
   {:onlineOnly :boolean
@@ -70,13 +98,15 @@
    :equatorCrossingLongitude :range
    :cloudCover :range
    :orbitNumber :orbit-number
+   :dayNightFlag :day-night
    :scienceKeywords :science-keywords
+   :additionalAttributes :additional-attributes
    :polygon :polygon
    :box :box
    :line :line
    :point :point})
 
-(defn- condition->element-name
+(defn condition->element-name
   "Returns the AQL element name of the given condition"
   [condition]
   (first (remove #{:ignore-case :pattern :or :and} (keys condition))))
@@ -87,7 +117,7 @@
   (let [elem-key (condition->element-name condition)]
     (get element-key-type-mapping elem-key :string)))
 
-(defn- condition->operator-option
+(defn condition->operator-option
   "Returns the operator option of the condition"
   [condition]
   (let [operator (cond
@@ -108,16 +138,7 @@
         {:keys [ignore-case pattern]} condition
         operator-option (condition->operator-option condition)]
     (x/element elem-key operator-option
-               (if (sequential? elem-value)
-                 ;; a list with at least one value
-                 (if pattern
-                   (x/element :patternList {}
-                              (map (partial generate-value-element ignore-case pattern) elem-value))
-                   (x/element :list {}
-                              (map (partial generate-value-element ignore-case pattern) elem-value)))
-                 ;; a single value
-                 (let [value (if (sequential? elem-value) (first elem-value) elem-value)]
-                   (generate-value-element ignore-case pattern value))))))
+               (generate-string-value-element elem-value ignore-case pattern))))
 
 (defmethod generate-element :science-keywords
   [condition]
@@ -178,8 +199,8 @@
   (let [elem-key (condition->element-name condition)
         {:keys [start-date stop-date start-day end-day]} (elem-key condition)]
     (x/element elem-key {}
-               (generate-date-element :startDate start-date)
-               (generate-date-element :stopDate stop-date)
+               (generate-named-date-element :startDate start-date)
+               (generate-named-date-element :stopDate stop-date)
                (generate-attr-value-element :startDay start-day)
                (generate-attr-value-element :endDay end-day))))
 
@@ -188,9 +209,7 @@
   (let [elem-key (condition->element-name condition)
         {:keys [start-date stop-date]} (elem-key condition)]
     (x/element elem-key {}
-               (x/element "dateRange" {}
-                          (generate-date-element :startDate start-date)
-                          (generate-date-element :stopDate stop-date)))))
+               (generate-date-range-value-element start-date stop-date))))
 
 (defmethod generate-element :orbit-number
   [condition]
@@ -200,6 +219,13 @@
                (if (sequential? value)
                  (generate-range-element value)
                  (x/element :value {} (str value))))))
+
+(defmethod generate-element :day-night
+  [condition]
+  (let [elem-key (condition->element-name condition)
+        value (elem-key condition)
+        value-option (if (empty? value) {} {:value value})]
+    (x/element elem-key value-option)))
 
 (defmethod generate-element :range
   [condition]

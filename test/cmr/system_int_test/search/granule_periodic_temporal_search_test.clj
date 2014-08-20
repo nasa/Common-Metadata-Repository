@@ -112,7 +112,7 @@
                                           :page_size 100})]
         (is (d/refs-match? [gran2 gran6 gran14 gran16 gran17] references))))
 
-    (testing "search by temporal with aql"
+    (testing "search granules by periodic temporal with aql"
       (are [items start-date stop-date start-day end-day]
            (d/refs-match? items (search/find-refs-with-aql :granule [{:temporal {:start-date start-date
                                                                                  :stop-date stop-date

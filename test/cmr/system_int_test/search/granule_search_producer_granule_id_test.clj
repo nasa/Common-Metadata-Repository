@@ -21,39 +21,45 @@
 
     (index/refresh-elastic-index)
 
-    (testing "search by non-existent producer granule id."
-      (let [references (search/find-refs :granule {:producer-granule-id "NON_EXISTENT"})]
-        (is (d/refs-match? [] references))))
-    (testing "search by existing producer granule id."
-      (let [references (search/find-refs :granule {:producer-granule-id "Granule1"})]
-        (is (d/refs-match? [gran1] references))))
-    (testing "search by multiple producer granule ids."
-      (let [references (search/find-refs :granule {"producer-granule-id[]" ["Granule1", "Granule2"]})]
-        (is (d/refs-match? [gran1 gran2] references))))
-    (testing "search by producer granule id across different providers."
-      (let [references (search/find-refs :granule {:producer-granule-id "SpecialOne"})]
-        (is (d/refs-match? [gran3 gran4] references))))
-    (testing "search by producer granule id using wildcard *."
-      (let [references (search/find-refs :granule
-                                         {:producer-granule-id "Gran*"
-                                          "options[producer-granule-id][pattern]" "true"})]
-        (is (d/refs-match? [gran1 gran2 gran5] references))))
-    (testing "search by producer granule id using wildcard ?."
-      (let [references (search/find-refs :granule
-                                         {:producer-granule-id "Granule?"
-                                          "options[producer-granule-id][pattern]" "true"})]
-        (is (d/refs-match? [gran1 gran2] references))))
-    (testing "search by producer granule id default is ignore case true."
-      (let [references (search/find-refs :granule {:producer-granule-id "granule1"})]
-        (is (d/refs-match? [gran1] references))))
-    (testing "search by producer granule id ignore case false."
-      (let [references (search/find-refs :granule
-                                         {:producer-granule-id "granule1"
-                                          "options[producer-granule-id][ignore-case]" "false"})]
-        (is (d/refs-match? [] references))))
-    (testing "search by producer granule id ignore case true."
-      (let [references (search/find-refs :granule
-                                         {:producer-granule-id "granule1"
-                                          "options[producer-granule-id][ignore-case]" "true"})]
-        (is (d/refs-match? [gran1] references))))))
+    (testing "search by producer granule id."
+      (are [items ids options]
+           (let [params (merge {:producer-granule-id ids}
+                               (when options
+                                 {"options[producer-granule-id]" options}))]
+             (d/refs-match? items (search/find-refs :granule params)))
+
+           [] "NON_EXISTENT" {}
+           [gran1] "Granule1" {}
+           [gran1 gran2] ["Granule1", "Granule2"] {}
+           ;search by producer granule id across different providers
+           [gran3 gran4] "SpecialOne" {}
+
+           ;; pattern
+           [gran1 gran2 gran5] "Gran*" {:pattern true}
+           [gran1 gran2] "Granule?" {:pattern true}
+
+           ;; ignore case
+           [] "granule1" {:ignore-case false}
+           [gran1] "granule1" {:ignore-case true}
+           [gran1] "granule1" {}))
+
+    (testing "search by producer granule id with aql"
+      (are [items ids options]
+           (let [condition (merge {:ProducerGranuleID ids} options)]
+             (d/refs-match? items (search/find-refs-with-aql :granule [condition])))
+
+           [] "NON_EXISTENT" {}
+           [gran1] "Granule1" {}
+           [gran1 gran2] ["Granule1", "Granule2"] {}
+           ;search by producer granule id across different providers
+           [gran3 gran4] "SpecialOne" {}
+
+           ;; pattern
+           [gran1 gran2 gran5] "Gran%" {:pattern true}
+           [gran1 gran2] "Granule_" {:pattern true}
+
+           ;; ignore case
+           [] "granule1" {:ignore-case false}
+           [gran1] "granule1" {:ignore-case true}
+           [gran1] "granule1" {}))))
 

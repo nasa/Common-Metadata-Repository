@@ -18,7 +18,8 @@
             [cmr.system-int-test.data2.atom :as da]
             [cmr.system-int-test.data2.atom-json :as dj]
             [cmr.system-int-test.data2.provider-holdings :as ph]
-            [cmr.system-int-test.data2.aql :as aql]))
+            [cmr.system-int-test.data2.aql :as aql]
+            [cmr.system-int-test.data2.aql-additional-attribute]))
 
 (defn csv->tuples
   "Convert a comma-separated-value string into a set of tuples to be use with find-refs."

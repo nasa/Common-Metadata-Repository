@@ -26,44 +26,56 @@
         gran6 (d/ingest "PROV2" (dg/granule coll6 {:granule-ur "Granule6"}))
         gran7 (d/ingest "PROV2" (dg/granule coll7 {:granule-ur "Granule7"}))]
     (index/refresh-elastic-index)
-    (testing "search by non-existent short name."
-      (is (d/refs-match?
-            []
-            (search/find-refs :granule {:short_name "NON_EXISTENT"}))))
-    (testing "search by existing short name."
+
+    (testing "search granule by short name."
+      (are [items names options]
+           (let [params (merge {:short-name names}
+                               (when options
+                                 {"options[short-name]" options}))]
+             (d/refs-match? items (search/find-refs :granule params)))
+
+           [] "NON_EXISTENT" {}
+           [gran2] "OnlyShort" {}
+           [gran4 gran5] ["AnotherS", "AnotherT"] {}
+           ;search across different providers
+           [gran1 gran3 gran7] "OneShort" {}
+
+           ;; pattern
+           [gran4 gran5 gran6] "Ano*" {:pattern true}
+           [gran4 gran5] "Another?" {:pattern true}
+
+           ;; ignore case
+           [] "onlyShort" {:ignore-case false}
+           [gran2] "onlyShort" {:ignore-case true}
+           [gran2] "onlyShort" {}))
+
+    (testing "search by existing short name, verify result."
       (let [{:keys [refs]} (search/find-refs :granule {:short_name "OnlyShort"})]
         (is (= 1 (count refs)))
         (let [ref (first refs)
               {:keys [name id location]} ref]
           (is (= "Granule2" name))
           (is (re-matches #"G[0-9]+-PROV1" id)))))
-    (testing "search by multiple short names."
-      (is (d/refs-match?
-            [gran4 gran5]
-            (search/find-refs :granule {"short_name[]" ["AnotherS", "AnotherT"]}))))
-    (testing "search by short name across different providers."
-      (is (d/refs-match?
-            [gran1 gran3 gran7]
-            (search/find-refs :granule {:short_name "OneShort"}))))
-    (testing "search by short name using wildcard *."
-      (is (d/refs-match?
-            [gran4 gran5 gran6]
-            (search/find-refs :granule {:short_name "Ano*"
-                                        "options[short_name][pattern]" "true"}))))
-    (testing "search by short name default is ignore case true."
-      (is (d/refs-match?
-            [gran2]
-            (search/find-refs :granule {:short_name "onlyShort"}))))
-    (testing "search by short name ignore case false."
-      (is (d/refs-match?
-            []
-            (search/find-refs :granule {:short_name "onlyShort"
-                                        "options[short_name][ignore-case]" "false"}))))
-    (testing "search by short name ignore case true."
-      (is (d/refs-match?
-            [gran2]
-            (search/find-refs :granule {:short_name "onlyShort"
-                                        "options[short_name][ignore-case]" "true"}))))))
+
+    (testing "search granule by short name with aql"
+      (are [items names options]
+           (let [condition (merge {:collectionShortName names} options)]
+             (d/refs-match? items (search/find-refs-with-aql :granule [condition])))
+
+           [] "NON_EXISTENT" {}
+           [gran2] "OnlyShort" {}
+           [gran4 gran5] ["AnotherS", "AnotherT"] {}
+           ;search across different providers
+           [gran1 gran3 gran7] "OneShort" {}
+
+           ;; pattern
+           [gran4 gran5 gran6] "Ano%" {:pattern true}
+           [gran4 gran5] "Another_" {:pattern true}
+
+           ;; ignore case
+           [] "onlyShort" {:ignore-case false}
+           [gran2] "onlyShort" {:ignore-case true}
+           [gran2] "onlyShort" {}))))
 
 (deftest search-by-version
   (let [coll1 (d/ingest "PROV1" (dc/collection {:version-id "1"}))
@@ -81,46 +93,54 @@
         gran6 (d/ingest "PROV2" (dg/granule coll6 {:granule-ur "Granule6"}))
         gran7 (d/ingest "PROV2" (dg/granule coll7 {:granule-ur "Granule7"}))]
     (index/refresh-elastic-index)
-    (testing "search by non-existent version."
-      (is (d/refs-match?
-            []
-            (search/find-refs :granule {:version "NON_EXISTENT"}))))
-    (testing "search by existing version."
+
+    (testing "search granule by version id"
+      (are [items versions options]
+           (let [params (merge {:version versions}
+                               (when options
+                                 {"options[version]" options}))]
+             (d/refs-match? items (search/find-refs :granule params)))
+
+           [] "NON_EXISTENT" {}
+           [gran3] "2" {}
+           [gran3 gran4] ["2", "R3"] {}
+           ;search across different providers
+           [gran1 gran2 gran5] "1" {}
+
+           ;; pattern
+           [gran3 gran6 gran7] "2*" {:pattern true}
+           [gran6] "2?" {:pattern true}
+
+           ;; ignore case
+           [] "r3" {:ignore-case false}
+           [gran4] "r3" {:ignore-case true}
+           [gran4] "r3" {}))
+
+
+    (testing "search by existing version, verify result."
       (let [{:keys [refs]} (search/find-refs :granule {:version "2"})]
         (is (= 1 (count refs)))
         (let [ref (first refs)
               {:keys [name id location]} ref]
           (is (= "Granule3" name))
           (is (re-matches #"G[0-9]+-PROV1" id)))))
-    (testing "search by multiple versions."
-      (is (d/refs-match?
-            [gran3 gran4]
-            (search/find-refs :granule {"version[]" ["2", "R3"]}))))
-    (testing "search by version across different providers."
-      (is (d/refs-match?
-            [gran1 gran2 gran5]
-            (search/find-refs :granule {:version "1"}))))
-    (testing "search by version using wildcard *."
-      (is (d/refs-match?
-            [gran3 gran6 gran7]
-            (search/find-refs :granule {:version "2*"
-                                        "options[version][pattern]" "true"}))))
-    (testing "search by version using wildcard ?."
-      (is (d/refs-match?
-            [gran6]
-            (search/find-refs :granule {:version "2?"
-                                        "options[version][pattern]" "true"}))))
-    (testing "search by version default is ignore case true."
-      (is (d/refs-match?
-            [gran4]
-            (search/find-refs :granule {:version "r3"}))))
-    (testing "search by version ignore case false."
-      (is (d/refs-match?
-            []
-            (search/find-refs :granule {:version "r3"
-                                        "options[version][ignore-case]" "false"}))))
-    (testing "search by version ignore case true."
-      (is (d/refs-match?
-            [gran4]
-            (search/find-refs :granule {:version "r3"
-                                        "options[version][ignore-case]" "true"}))))))
+
+    (testing "search granule by version id with aql"
+      (are [items versions options]
+           (let [condition (merge {:collectionVersionId versions} options)]
+             (d/refs-match? items (search/find-refs-with-aql :granule [condition])))
+
+           [] "NON_EXISTENT" {}
+           [gran3] "2" {}
+           [gran3 gran4] ["2", "R3"] {}
+           ;search across different providers
+           [gran1 gran2 gran5] "1" {}
+
+           ;; pattern
+           [gran3 gran6 gran7] "2%" {:pattern true}
+           [gran6] "2_" {:pattern true}
+
+           ;; ignore case
+           [] "r3" {:ignore-case false}
+           [gran4] "r3" {:ignore-case true}
+           [gran4] "r3" {}))))
