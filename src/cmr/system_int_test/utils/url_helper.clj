@@ -72,7 +72,7 @@
 
 (defn bulk-index-provider-url
   []
-  (format "http://localhost:%s/bulk_index/providers" (transmit-config/bootstrap-port)))
+  (format "http://localhost:%s/bulk_index/providers?synchronous=true" (transmit-config/bootstrap-port)))
 
 (defn elastic-refresh-url
   []
@@ -86,6 +86,11 @@
    (if revision-id
      (format "http://localhost:%s/concepts/%s/%s" (transmit-config/metadata-db-port) concept-id revision-id)
      (format "http://localhost:%s/concepts/%s" (transmit-config/metadata-db-port) concept-id))))
+
+(defn mdb-concepts-url
+  "URL to concept operations in mdb."
+  []
+  (format "http://localhost:%s/concepts" (transmit-config/metadata-db-port)))
 
 (defn mdb-reset-url
   "Force delete all concepts from mdb."

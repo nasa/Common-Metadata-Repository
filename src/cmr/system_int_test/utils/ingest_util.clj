@@ -61,6 +61,20 @@
         body (json/decode (:body response) true)]
     (assoc body :status (:status response))))
 
+(defn save-concept
+  "Save a concept to the metadata db and return a map with status, concept-id, and revision-id"
+  [concept]
+  (let [response (client/request
+                   {:method :post
+                    :url (url/mdb-concepts-url)
+                    :body  (json/generate-string concept)
+                    :content-type :json
+                    :accept :json
+                    :throw-exceptions false
+                    :connection-manager (url/conn-mgr)})
+        body (json/decode (:body response) true)]
+    (assoc body :status (:status response))))
+
 (defn delete-concept
   "Delete a given concept."
   [{:keys [provider-id concept-type native-id] :as concept}]
