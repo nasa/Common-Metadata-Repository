@@ -6,6 +6,7 @@
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.mime-types :as mt]
             [cmr.common.services.errors :as errors]
+            [cmr.search.services.acl-service :as acl-service]
             [cmr.common.util :as u]))
 
 (defn context->metadata-db-context
@@ -34,7 +35,8 @@
       value-map)))
 
 (deftracefn get-formatted-concept-revisions
-  "Get concepts with given concept-id, revision-id pairs in a given format."
+  "Get concepts with given concept-id, revision-id pairs in a given format. Does not apply acls to
+  the concepts found."
   [context concepts-tuples format allow-missing?]
   (info "Transforming" (count concepts-tuples) "concept(s) to" format)
   (let [mdb-context (context->metadata-db-context context)
@@ -46,13 +48,16 @@
     values))
 
 (deftracefn get-latest-formatted-concepts
-  "Get latest version of concepts with given concept-ids in a given format."
-  [context concept-ids format allow-missing?]
+  "Get latest version of concepts with given concept-ids in a given format. Applies ACLs to the concepts
+  found."
+  [context concept-ids format]
   (info "Getting latest version of" (count concept-ids) "concept(s) in" format "format")
   (let [mdb-context (context->metadata-db-context context)
         [t1 concepts] (u/time-execution
-                        (metadata-db/get-latest-concepts mdb-context concept-ids allow-missing?))
-        [t2 values] (u/time-execution (mapv #(concept->value-map % format) concepts))]
+                        (metadata-db/get-latest-concepts mdb-context concept-ids true))
+        [t2 concepts] (u/time-execution (acl-service/filter-concepts context concepts))
+        [t3 values] (u/time-execution (mapv #(concept->value-map % format) concepts))]
     (debug "get-latest-concepts time:" t1
-           "concept->value-map time:" t2)
+           "acl-filter-concepts time:" t2
+           "concept->value-map time:" t3)
     values))
