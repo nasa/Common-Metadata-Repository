@@ -33,11 +33,7 @@
   "A helper for converting elastic results into metadata results."
   [context query elastic-results]
   (let [hits (get-in elastic-results [:hits :total])
-
-        ;; TODO - big temporary hack here. All the revision ids indexed in workload were found to be 2 when metadata-db has 1.
-        ;; See https://bugs.earthdata.nasa.gov/browse/CMR-609
-        tuples (map #(vector (:_id %) 1 #_(:_version %))
-                    (get-in elastic-results [:hits :hits]))
+        tuples (map #(vector (:_id %) (:_version %)) (get-in elastic-results [:hits :hits]))
         [req-time tresults] (u/time-execution
                               (t/get-formatted-concept-revisions context tuples (:result-format query) false))
         items (map #(select-keys % [:concept-id :revision-id :collection-concept-id :metadata]) tresults)]
