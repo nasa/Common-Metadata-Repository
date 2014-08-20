@@ -1,7 +1,8 @@
 (ns cmr.transmit.echo.tokens
   "Contains functions for working with tokens using the echo-rest api."
   (:require [cmr.transmit.echo.rest :as r]
-            [cmr.transmit.echo.conversion :as c]))
+            [cmr.transmit.echo.conversion :as c]
+            [cmr.common.services.errors :as errors]))
 
 (defn login
   "Logs into ECHO and returns the token"
@@ -28,5 +29,8 @@
   (let [[status sids body] (r/rest-get context (format "/tokens/%s/current_sids" token))]
     (case status
       200 (mapv c/echo-sid->cmr-sid sids)
+      401 (errors/throw-service-error
+            :unauthorized
+            (format "Token %s does not exist" token))
       (r/unexpected-status-error! status body))))
 
