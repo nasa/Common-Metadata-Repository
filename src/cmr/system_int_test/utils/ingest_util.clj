@@ -48,13 +48,27 @@
   [{:keys [metadata format concept-type concept-id revision-id provider-id native-id] :as concept}]
   (let [headers (merge {}
                        (when concept-id {"concept-id" concept-id})
-                       (when concept-id {"revision-id" revision-id}))
+                       (when revision-id {"revision-id" revision-id}))
         response (client/request
                    {:method :put
                     :url (url/ingest-url provider-id concept-type native-id)
                     :body  metadata
                     :content-type format
                     :headers headers
+                    :accept :json
+                    :throw-exceptions false
+                    :connection-manager (url/conn-mgr)})
+        body (json/decode (:body response) true)]
+    (assoc body :status (:status response))))
+
+(defn save-concept
+  "Save a concept to the metadata db and return a map with status, concept-id, and revision-id"
+  [concept]
+  (let [response (client/request
+                   {:method :post
+                    :url (url/mdb-concepts-url)
+                    :body  (json/generate-string concept)
+                    :content-type :json
                     :accept :json
                     :throw-exceptions false
                     :connection-manager (url/conn-mgr)})
