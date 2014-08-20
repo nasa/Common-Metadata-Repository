@@ -239,11 +239,15 @@
 
 (defn get-concept-by-concept-id
   "Returns the concept metadata by searching metadata-db using the given cmr concept id"
-  [concept-id]
-  (let [concept-type (cs/concept-prefix->concept-type (subs concept-id 0 1))]
-    (client/get (url/retrieve-concept-url concept-type concept-id)
-                {:throw-exceptions false
-                 :connection-manager (url/conn-mgr)})))
+  ([concept-id]
+   (get-concept-by-concept-id concept-id {}))
+  ([concept-id options]
+   (let [concept-type (cs/concept-prefix->concept-type (subs concept-id 0 1))]
+     (client/get (url/retrieve-concept-url concept-type concept-id)
+                 (merge {:accept "application/echo10+xml"
+                         :throw-exceptions false
+                         :connection-manager (url/conn-mgr)}
+                        options)))))
 
 (defn provider-holdings-in-format
   "Returns the provider holdings."

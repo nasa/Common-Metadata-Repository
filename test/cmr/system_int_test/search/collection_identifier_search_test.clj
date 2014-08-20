@@ -511,3 +511,18 @@
            ;; Ignore case
            [coll2] "s2" {:ignore-case true}
            [] "s2" {:ignore-case false}))))
+
+
+(deftest search-with-slashes-in-dataset-id
+  (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset1"}))
+        coll2 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset/With/Slashes"}))
+        coll3 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset3"}))
+        coll4 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset/With/More/Slashes"}))
+        coll5 (d/ingest "PROV1" (dc/collection {}))]
+
+    (index/refresh-elastic-index)
+
+    (testing "search for dataset with slashes"
+      (are [dataset-id items] (d/refs-match? items (search/find-refs :collection {:dataset-id dataset-id}))
+           "Dataset/With/Slashes" [coll2]
+           "BLAH" []))))

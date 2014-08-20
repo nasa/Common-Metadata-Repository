@@ -19,11 +19,14 @@
   (ingest/create-provider "PROV2")
   (e/create-providers {"provguid1" "PROV1" "provguid2" "PROV2"})
 
-)
+  )
 
 ;; TODO add caching of sids information from token
+;; We could test that it's in place and working by checking that logging out and searching again still works.
 
-;; TODO add test for searching with an invalid security token.
+(deftest invalid-security-token-test
+  (is (= {:errors ["Token ABC123 does not exist"], :status 401}
+         (search/find-refs :collection {:token "ABC123"}))))
 
 (deftest collection-search-with-acls-test
   ;; Grant permissions before creating data
@@ -88,9 +91,6 @@
     (testing "aql search parameter enforcement"
       (is (d/refs-match? [coll2 coll4]
                          (search/find-refs-with-aql :collection [] {} {:headers {"Echo-Token" user1-token}}))))
-    (testing "Retrieve collection metadata acl enforcement"
-      ;; TODO test that we can retrieve the items directly and ACLs are enforced
-      )
     (testing "Direct transformer retrieval acl enforcement"
       (testing "registered user"
         (d/assert-metadata-results-match
