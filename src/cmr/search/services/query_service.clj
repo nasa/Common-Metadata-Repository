@@ -31,6 +31,8 @@
             [cmr.search.services.aql.converters.temporal]
             [cmr.search.services.aql.converters.spatial]
             [cmr.search.services.aql.converters.science-keywords]
+            [cmr.search.services.aql.converters.attribute]
+            [cmr.search.services.aql.converters.attribute-name]
 
             ;; Validation
             [cmr.search.validators.validation :as v]

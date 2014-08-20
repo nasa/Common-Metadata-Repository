@@ -68,11 +68,23 @@
       <xs:element name='spatial' type='spatial'>
         <xs:annotation><xs:documentation>Select collections intersecting the given spatial boundaries.</xs:documentation></xs:annotation>
       </xs:element>
+      <xs:element name='spatialKeywords' type='ListValueOrPattern'>
+        <xs:annotation><xs:documentation>Select collections with the given spatial keyword(s).</xs:documentation></xs:annotation>
+      </xs:element>
       <xs:element name='temporal' type='temporal'>
         <xs:annotation><xs:documentation>Select collections intersecting the given temporal boundaries.</xs:documentation></xs:annotation>
       </xs:element>
+      <xs:element name='additionalAttributeNames' type='ListValueOrPattern'>
+        <xs:annotation><xs:documentation>Select collections with the given additional attribute name(s).</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name='additionalAttributes' type='additionalAttributes'>
+        <xs:annotation><xs:documentation>Select collections with the given additional attribute(s).</xs:documentation></xs:annotation>
+      </xs:element>
       <xs:element name='versionId' type='ListValueOrPattern'>
         <xs:annotation><xs:documentation>Select collections with the given version id(s).</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name='archiveCenter' type='ListValueOrPattern'>
+        <xs:annotation><xs:documentation>Select collections with the given archive center(s).</xs:documentation></xs:annotation>
       </xs:element>
       <xs:element name='difEntryId' type='ListValueOrPattern'>
         <xs:annotation><xs:documentation>Select collections with the given DIF entry ID(s).</xs:documentation></xs:annotation>
@@ -475,67 +487,6 @@
     </xs:sequence>
   </xs:complexType>
 
-  <xs:complexType name='providerProductionDate'>
-    <xs:annotation><xs:documentation>Date range of provider production date.</xs:documentation></xs:annotation>
-    <xs:sequence>
-      <xs:element name='dateRange' type='dateRange'/>
-    </xs:sequence>
-  </xs:complexType>
-
-  <xs:complexType name='measuredParameters'>
-    <xs:annotation><xs:documentation>One or more measured parameters and an operator indicating whether to AND or OR multiple values.</xs:documentation></xs:annotation>
-    <xs:sequence>
-      <xs:element name='measuredParameter' type='measuredParameter' maxOccurs='unbounded'/>
-    </xs:sequence>
-    <xs:attribute name='operator'>
-      <xs:annotation><xs:documentation>AND or OR.</xs:documentation></xs:annotation>
-      <xs:simpleType>
-        <xs:restriction base='xs:string'>
-          <xs:enumeration value='AND'/>
-          <xs:enumeration value='OR'/>
-        </xs:restriction>
-      </xs:simpleType>
-    </xs:attribute>
-  </xs:complexType>
-
-  <xs:complexType name='measuredParameter'>
-    <xs:annotation><xs:documentation>A measured parameter</xs:documentation></xs:annotation>
-    <xs:sequence>
-      <xs:element name='measuredParameterName' type='xs:string'/>
-      <xs:element name='automaticQualityFlag' type='ListValueOrPattern' minOccurs='0' maxOccurs='1'/>
-      <xs:element name='operationalQualityFlag' type='ListValueOrPattern' minOccurs='0' maxOccurs='1'/>
-      <xs:element name='scienceQualityFlag' type='ListValueOrPattern' minOccurs='0' maxOccurs='1'/>
-      <xs:element name='QAPercentMissingData' type='PercentRanges' minOccurs='0' maxOccurs='1'/>
-      <xs:element name='QAPercentOutOfBoundsData' type='PercentRanges' minOccurs='0' maxOccurs='1'/>
-      <xs:element name='QAPercentInterpolatedData' type='PercentRanges' minOccurs='0' maxOccurs='1'/>
-      <xs:element name='QAPercentCloudCover' type='PercentRanges' minOccurs='0' maxOccurs='1'/>
-    </xs:sequence>
-  </xs:complexType>
-
-  <xs:complexType name='PercentRange'>
-    <xs:attribute name='lower' use='optional'>
-      <xs:simpleType>
-        <xs:restriction base='xs:decimal'>
-          <xs:minInclusive value='0'/>
-        </xs:restriction>
-      </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute name='upper' use='optional'>
-      <xs:simpleType>
-        <xs:restriction base='xs:decimal'>
-          <xs:maxInclusive value='100'/>
-        </xs:restriction>
-      </xs:simpleType>
-    </xs:attribute>
-  </xs:complexType>
-
-  <xs:complexType name='PercentRanges'>
-    <xs:annotation><xs:documentation>One or more percent ranges.</xs:documentation></xs:annotation>
-    <xs:sequence>
-      <xs:element name='range' type='range'/>
-    </xs:sequence>
-  </xs:complexType>
-
   <xs:complexType name='TwoDCoordinateSystem'>
     <xs:sequence>
       <xs:element name='TwoDCoordinateSystemName' type='ListValueOrPattern'>
@@ -691,17 +642,17 @@
     <xs:annotation><xs:documentation>A time value.</xs:documentation></xs:annotation>
     <xs:attribute name='HH' use='required'>
       <xs:simpleType>
-        <xs:restriction base='xs:string'><xs:pattern value='[0-2][0-9]'/></xs:restriction>
+        <xs:restriction base='xs:string'><xs:pattern value='[0-9]{1,2}'/></xs:restriction>
       </xs:simpleType>
     </xs:attribute>
     <xs:attribute name='MI' use='required'>
       <xs:simpleType>
-        <xs:restriction base='xs:string'><xs:pattern value='[0-5][0-9]'/></xs:restriction>
+        <xs:restriction base='xs:string'><xs:pattern value='[0-9]{1,2}'/></xs:restriction>
       </xs:simpleType>
     </xs:attribute>
     <xs:attribute name='SS' use='required'>
       <xs:simpleType>
-        <xs:restriction base='xs:string'><xs:pattern value='[0-5][0-9]'/></xs:restriction>
+        <xs:restriction base='xs:string'><xs:pattern value='[0-9]{1,2}'/></xs:restriction>
       </xs:simpleType>
     </xs:attribute>
   </xs:complexType>

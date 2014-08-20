@@ -26,7 +26,11 @@
                 :sensorName {:name :sensor :type :string}
                 :sourceName {:name :platform :type :string}
                 :instrumentShortName {:name :instrument :type :string}
+                :spatialKeywords {:name :spatial-keyword :type :string}
+                :archiveCenter {:name :archive-center :type :string}
+                :additionalAttributeNames {:name :attribute-name :type :attribute-name}
                 :temporal {:name :temporal :type :temporal}
+                :additionalAttributes {:name :attribute :type :attribute}
                 :difEntryId {:name :dif-entry-id :type :dif-entry-id}
                 :entry-id {:name :entry-id :type :string}
                 :associated-difs {:name :associated-difs :type :string}
@@ -40,15 +44,15 @@
                 :detailedVariableKeyword {:name :detailed-variable :type :string}
                 :TwoDCoordinateSystemName {:name :two-d-coordinate-system-name :type :string}
                 :spatial {:name :spatial :type :spatial}}
-   :granule {:dataCenterId {:name :provider-id :type :collection-query}
+   :granule {:dataCenterId {:name :provider-id :type :collection-query :coll-tag :dataCenterId}
              :GranuleUR {:name :granule-ur :type :string}
-             :collectionShortName {:name :short-name :type :collection-query}
-             :collectionVersionId {:name :version-id :type :collection-query}
+             :collectionShortName {:name :short-name :type :collection-query :coll-tag :shortName}
+             :collectionVersionId {:name :version-id :type :collection-query :coll-tag :versionId}
              :browseOnly {:name :browsable :type :boolean}
              :CampaignShortName {:name :project :type :string}
              :cloudCover {:name :cloud-cover :type :num-range}
-             :dataSetId {:name :entry-title :type :collection-query}
-             :dayNightFlag {:name :day-night :type :string}
+             :dataSetId {:name :entry-title :type :collection-query :coll-tag :dataSetId}
+             :dayNightFlag {:name :day-night :type :day-night}
              :ECHOLastUpdate {:name :updated-since :type :date-range}
              :onlineOnly {:name :downloadable :type :boolean}
              :ECHOCollectionID {:name :collection-concept-id :type :string}
@@ -210,7 +214,8 @@
 
 (defmethod element->condition :collection-query
   [concept-type element]
-  (let [condition (element->condition :collection element)]
+  (let [coll-elem-name (get-in aql-elem->converter-attrs [concept-type (:tag element) :coll-tag])
+        condition (element->condition :collection (assoc element :tag coll-elem-name))]
     (qm/->CollectionQueryCondition condition)))
 
 (defmethod element->condition :equator-crossing-date
@@ -231,6 +236,11 @@
   (if-let [value (cx/double-at-path element [:value])]
     (qm/map->OrbitNumberValueCondition {:value value})
     (qm/map->OrbitNumberRangeCondition (element->num-range concept-type element))))
+
+(defmethod element->condition :day-night
+  [concept-type element]
+  (let [value (get-in element [:attrs :value] "DAY")]
+    (qm/string-condition :day-night value)))
 
 (defmethod element->condition :equator-crossing-longitude
   [concept-type element]

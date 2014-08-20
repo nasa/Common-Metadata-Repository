@@ -50,6 +50,15 @@
   [attrib-name value-elem]
   (attrib-value->condition :string attrib-name (first (:content value-elem))))
 
+(defmethod attrib-value-element->condition :textPattern
+  [attrib-name value-elem]
+  (let [value (-> value-elem :content first a/aql-pattern->cmr-pattern)]
+    (qm/map->AttributeValueCondition
+      {:type :string
+       :name attrib-name
+       :value value
+       :pattern? true})))
+
 (defmethod attrib-value-element->condition :list
   [attrib-name value-elem]
   (let [values (cx/strings-at-path value-elem [:value])
@@ -125,4 +134,7 @@
         attrib-condition (if (= "OR" operator)
                            (qm/or-conds conditions)
                            (qm/and-conds conditions))]
-    (qm/or-conds [attrib-condition (qm/->CollectionQueryCondition attrib-condition)])))
+    (if (= :granule concept-type)
+      ;; Granule attribute queries will inherit values from their parent collections.
+      (qm/or-conds [attrib-condition (qm/->CollectionQueryCondition attrib-condition)])
+      attrib-condition)))
