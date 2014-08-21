@@ -182,7 +182,6 @@
   "Executes a search for concepts using the given aql. The concepts will be returned with
   concept id and native provider id."
   [context params aql]
-  ;; TODO enforce acls here
   (let [[query-creation-time query] (u/time-execution
                                       (->> aql
                                            (a/aql->query params)

@@ -60,13 +60,6 @@
 
 (defmethod execute-query :direct-transformer
   [context query]
-  ;; TODO enforce ACLs here
-  ;; This can probably be done by adding a fast XPath or parsing the items being returned in parallel
-  ;; and enforcing the data when it is returned.
-  ;; Note that every format will need to support the minimum of entry-title, shortname, version-id
-  ;; and access-value to allow enforcing ACLS. DIF does not currently have a spot for access value
-  ;; so we'll have to add one.
-
   (let [{:keys [result-format pretty?]} query
         concept-ids (query->concept-ids query)
         tresults (t/get-latest-formatted-concepts context concept-ids result-format)
