@@ -81,8 +81,8 @@
 (deftracefn reset-indexes
   "Delegate reset elastic indices operation to index-set app"
   [context]
-  (cache/reset-cache (-> context :system :cache))
+  (cache/reset-cache (-> context :system :caches :general))
   (es/reset-es-store context)
-  (cache/reset-cache (-> context :system :cache))
+  (cache/reset-cache (-> context :system :caches :general))
   (acl-cache/reset context))
 

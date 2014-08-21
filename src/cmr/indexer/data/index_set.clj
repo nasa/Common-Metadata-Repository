@@ -328,7 +328,7 @@
 (defn get-concept-type-index-names
   "Fetch index names associated with concepts."
   [context]
-  (let [cache-atom (-> context :system :cache)]
+  (let [cache-atom (-> context :system :caches :general)]
     (cache/cache-lookup cache-atom :concept-indices (partial fetch-concept-type-index-names context))))
 
 (defn get-concept-index-name
@@ -354,7 +354,7 @@
 (defn get-concept-mapping-types
   "Fetch mapping types associated with concepts."
   [context]
-  (let [cache-atom (-> context :system :cache)]
+  (let [cache-atom (-> context :system :caches :general)]
     (cache/cache-lookup cache-atom :concept-mapping-types (partial fetch-concept-mapping-types context))))
 
 

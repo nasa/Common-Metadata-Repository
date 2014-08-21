@@ -42,9 +42,9 @@
              ;; This cache is used to cache parent collection umm models of granules if
              ;; it is not nil. The bootstrap app will initialize this.
              :parent-collection-cache nil
-             :cache (cache/create-cache)
              :zipkin (context/zipkin-config "Indexer" false)
-             :acl-cache (ac/create-acl-cache)
+             :caches {:acls (ac/create-acl-cache)
+                      :general (cache/create-cache)}
              :scheduler (jobs/create-scheduler
                           `system-holder
                           [(ac/refresh-acl-cache-job "indexer-acl-cache-refresh")])}]
