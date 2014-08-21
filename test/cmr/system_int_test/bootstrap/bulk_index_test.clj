@@ -11,11 +11,11 @@
             [cmr.common.config :as config]
             [clj-time.core :as t]))
 
+
+
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 ;; only run this test with the external db
 (when (nil? (config/config-value :elastic-port nil))
-
-  (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
-
   ;; This test runs bulk index with some concepts in mdb that are good, and some that are
   ;; deleted, and some that have not yet been deleted, but have an expired deletion date.
   (deftest bulk-index-with-some-deleted
@@ -61,23 +61,26 @@
 
       (testing "Expired documents are not indexed during bulk indexing and deleted documents
                get deleted."
-        (are [search expected]
-             (d/refs-match? expected (search/find-refs :collection search))
-             {:concept-id (:concept-id coll1)} [umm1]
-             {:concept-id (:concept-id coll2)} []
-             {:concept-id (:concept-id coll3)} []))))
+               (are [search expected]
+                    (d/refs-match? expected (search/find-refs :collection search))
+                    {:concept-id (:concept-id coll1)} [umm1]
+                    {:concept-id (:concept-id coll2)} []
+                    {:concept-id (:concept-id coll3)} [])))))
 
 
 
-  ;; This test verifies that the bulk indexer can run concurrently with ingest and indexing of items.
-  ;; This test performs the following steps:
-  ;; 1. Saves ten collections in metadata db.
-  ;; 2. Saves three granules for each of those collections in metadata db.
-  ;; 3. Ingests ten granules five times each in a separate thread.
-  ;; 4. Concurrently executes a bulk index operation for the provider.
-  ;; 5. Waits for the bulk indexing and granule ingest to complete.
-  ;; 6. Searches for all of the saved/ingested concepts by concept-id.
-  ;; 7. Verifies that the concepts returned by search have the expected revision ids.
+;; This test verifies that the bulk indexer can run concurrently with ingest and indexing of items.
+;; This test performs the following steps:
+;; 1. Saves ten collections in metadata db.
+;; 2. Saves three granules for each of those collections in metadata db.
+;; 3. Ingests ten granules five times each in a separate thread.
+;; 4. Concurrently executes a bulk index operation for the provider.
+;; 5. Waits for the bulk indexing and granule ingest to complete.
+;; 6. Searches for all of the saved/ingested concepts by concept-id.
+;; 7. Verifies that the concepts returned by search have the expected revision ids.
+
+;; only run this test with the external db
+(when (nil? (config/config-value :elastic-port nil))
   (deftest bulk-index-after-ingest
     (let [collections (for [x (range 1 11)]
                         (let [cmap {:short-name (str "short-name" x)
