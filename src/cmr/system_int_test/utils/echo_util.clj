@@ -45,6 +45,11 @@
      (mock/login-with-group-access (context) user "password" group-guids)
      (tokens/login (context) user "password"))))
 
+(defn logout
+  "Logs out the specified token."
+  [token]
+  (tokens/logout (context) token))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ACL related

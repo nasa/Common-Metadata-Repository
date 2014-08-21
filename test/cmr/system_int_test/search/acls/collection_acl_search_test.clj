@@ -144,4 +144,27 @@
     ;; Try searching again
     (is (d/refs-match? [coll1 coll2 coll4] (search/find-refs :collection {})))))
 
+;; Verifies that tokens are cached by checking that a logged out token still works after it was used.
+;; This isn't the desired behavior. It's just a side effect that shows it's working.
+(deftest cache-token-test
+  (let [acl1 (e/grant-registered-users (e/coll-catalog-item-id "provguid1" ["coll1"]))
+        coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}))
+        user1-token (e/login "user1")
+        user2-token (e/login "user2")]
+
+    (index/refresh-elastic-index)
+
+    ;; A logged out token is normally not useful
+    (e/logout user2-token)
+    (is (= {:errors ["Token ABC-2 does not exist"], :status 401}
+         (search/find-refs :collection {:token user2-token})))
+
+    ;; Use user1-token so it will be cached
+    (is (d/refs-match? [coll1] (search/find-refs :collection {:token user1-token})))
+
+    ;; logout
+    (e/logout user1-token)
+    ;; The token should be cached
+    (is (d/refs-match? [coll1] (search/find-refs :collection {:token user1-token})))))
+
 

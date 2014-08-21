@@ -22,7 +22,7 @@
   (search/get-concept-by-concept-id "C1200000000-PROV1"
                                     {:query-params {:token user1-token}})
 
-  (get-in user/system [:apps :search :acl-cache])
+  (get-in user/system [:apps :search :caches :acls])
 
 )
 
