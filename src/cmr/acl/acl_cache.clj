@@ -50,11 +50,6 @@
       acls
       (errors/internal-error! "ACLS were not in cache."))))
 
-;; TODO we need a way to manually trigger this from integration tests.
-;; Add an endpoint to search and indexer for refreshing the acl cache.
-;; We could make it part of the refresh call that the cache is cleared and then allow a search hitting
-;; a null cache to trigger it being refreshed.
-
 (defjob RefreshAclCacheJob
   [ctx system]
   (refresh-acl-cache {:system system}))
