@@ -4,6 +4,7 @@
             [clj-time.core :as t]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.concepts :as cs]
+            [cmr.common.date-time-parser :as date]
             [cmr.transmit.metadata-db :as meta-db]
             [cmr.indexer.data.elasticsearch :as es]
             [cmr.umm.core :as umm]
@@ -14,6 +15,18 @@
             [cmr.common.services.errors :as errors]
             [cmr.system-trace.core :refer [deftracefn]]))
 
+(defn filter-expired-concepts
+  "Remove concepts that have an expired delete-time."
+  [batch]
+  (filter (fn [concept]
+            (let [delete-time-str (get-in concept [:extra-fields :delete-time])
+                  delete-time (when delete-time-str
+                                (date/parse-datetime delete-time-str))]
+              (or (nil? delete-time)
+                  (t/after? delete-time (t/now)))))
+          batch))
+
+
 (deftracefn bulk-index
   "Index many concepts at once using the elastic bulk api. The concepts to be indexed are passed
   directly to this function - it does not retrieve them from metadata db. The bulk API is
@@ -21,7 +34,7 @@
   of concepts that have been indexed"
   [context concept-batches]
   (reduce (fn [num-indexed batch]
-            (let [batch (es/prepare-batch context batch)]
+            (let [batch (es/prepare-batch context (filter-expired-concepts batch))]
               (es/bulk-index context batch)
               (+ num-indexed (count batch))))
           0
@@ -85,4 +98,3 @@
   (es/reset-es-store context)
   (cache/reset-cache (-> context :system :caches :general))
   (acl-cache/reset context))
-

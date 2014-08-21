@@ -8,9 +8,13 @@
 (defn index-operation
   "Takes a document map and extracts the keys/values related to indexing instructions and
   constructs a map that describes how to index the document. This map directly corresponds
-  to the indexing maps in the Elasticsearch bulk API."
+  to the indexing maps in the Elasticsearch bulk API.
+
+  If the document has a 'deleted' flag = true, then a delete operation is created instead."
   [doc]
-  {"index" (select-keys doc special-operation-keys)})
+  (if (:deleted doc)
+    {"delete" (select-keys doc special-operation-keys)}
+    {"index" (select-keys doc special-operation-keys)}))
 
 (defn bulk-index
   "generates the content for a bulk insert operation.  Elasticsearch's bulk operations take a
@@ -18,6 +22,6 @@
   that the document will contain the index information. It extracts the index keys from each document
   and returns a sequence of index info, document, index info, document..., etc."
   ([documents]
-     (let [operations (map index-operation documents)
-           documents  (map #(apply dissoc % special-operation-keys) documents)]
-       (interleave operations documents))))
+   (let [operations (map index-operation documents)
+         documents  (map #(apply dissoc % special-operation-keys) documents)]
+     (interleave operations documents))))
