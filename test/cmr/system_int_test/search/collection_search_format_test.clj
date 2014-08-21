@@ -9,6 +9,7 @@
             [cmr.system-int-test.data2.core :as d]
             [cmr.system-int-test.data2.atom :as da]
             [cmr.system-int-test.utils.url-helper :as url]
+            [cheshire.core :as json]
             [clj-http.client :as client]
             [cmr.umm.core :as umm]
             [cmr.spatial.polygon :as poly]
@@ -71,6 +72,33 @@
         (d/assert-metadata-results-match
           :dif all-colls
           (search/find-metadata :collection :dif {} {:format-as-ext? true}))))
+
+    (testing "Get by concept id in formats"
+      (testing "supported formats"
+        (are [mime-type format-key format-as-ext?]
+             (let [response (search/get-concept-by-concept-id
+                              (:concept-id c1-echo)
+                              {:format-as-ext? format-as-ext? :accept mime-type})]
+               (= (umm/umm->xml c1-echo format-key) (:body response)))
+             "application/dif+xml" :dif false
+             "application/dif+xml" :dif true
+             "application/echo10+xml" :echo10 false
+             "application/echo10+xml" :echo10 true))
+      (testing "default format"
+        (let [response (search/get-concept-by-concept-id (:concept-id c1-echo) {:accept nil})]
+               (is (= (umm/umm->xml c1-echo :echo10) (:body response)))))
+      (testing "unsupported formats"
+        (are [mime-type]
+             (let [response (search/get-concept-by-concept-id
+                              (:concept-id c1-echo)
+                              {:format-as-ext? true :accept mime-type})
+                   parsed (json/decode (:body response) true)]
+               (and (= 400 (:status response))
+                    (= {:errors [(str "The mime type [" mime-type "] is not supported.")]} parsed)))
+             "application/atom+xml"
+             "application/json"
+             "text/csv"
+             "application/xml")))
 
     (testing "Retrieving results as XML References"
       (let [refs (search/find-refs :collection {:short-name "S1"})

@@ -242,12 +242,17 @@
   ([concept-id]
    (get-concept-by-concept-id concept-id {}))
   ([concept-id options]
-   (let [concept-type (cs/concept-prefix->concept-type (subs concept-id 0 1))]
-     (client/get (url/retrieve-concept-url concept-type concept-id)
-                 (merge {:accept "application/echo10+xml"
-                         :throw-exceptions false
-                         :connection-manager (url/conn-mgr)}
-                        options)))))
+   (let [format-as-ext? (:format-as-ext? options)
+         concept-type (cs/concept-prefix->concept-type (subs concept-id 0 1))
+         format-mime-type (or (:accept options) "application/echo10+xml")
+         url (url/retrieve-concept-url concept-type concept-id)
+         url (if format-as-ext?
+               (str url "." (mime-type->extension format-mime-type))
+               url)]
+     (client/get url (merge {:accept (when-not format-as-ext? format-mime-type)
+                             :throw-exceptions false
+                             :connection-manager (url/conn-mgr)}
+                            options)))))
 
 (defn provider-holdings-in-format
   "Returns the provider holdings."
