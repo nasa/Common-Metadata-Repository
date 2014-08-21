@@ -157,11 +157,6 @@
 (deftracefn get-provider-holdings
   "Executes elasticsearch search to get provider holdings"
   [context params]
-  ;; TODO enforce ACLs here?
-  ;; Note: due to the way get-collections-by-providers works that it will limit it to collections
-  ;; that the user has access to.
-  ;; Q: should granule counts be limited to what user has permission to see?
-
   (let [{provider-ids :provider-id legacy-provider-ids :provider_id pretty? :pretty} params
         provider-ids (or provider-ids legacy-provider-ids)
         ;; make sure provider-ids is sequential

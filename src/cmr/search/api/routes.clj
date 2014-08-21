@@ -50,6 +50,11 @@
     "application/xml"
     "application/json"})
 
+(def supported-concept-id-retrieval-mime-types
+  #{"*/*"
+    "application/echo10+xml"
+    "application/dif+xml"})
+
 (defn- concept-type-path-w-extension->concept-type
   "Parses the concept type and extension (\"granules.echo10\") into the concept type"
   [concept-type-w-extension]
@@ -74,11 +79,11 @@
 
 (defn- get-search-results-format
   "Returns the requested search results format parsed from headers or from the URL extension"
-  ([path-w-extension headers]
-   (get-search-results-format path-w-extension headers supported-mime-types))
-  ([path-w-extension headers valid-mime-types]
+  ([path-w-extension headers default-mime-type]
+   (get-search-results-format path-w-extension headers supported-mime-types default-mime-type))
+  ([path-w-extension headers valid-mime-types default-mime-type]
    (let [ext-mime-type (path-w-extension->mime-type path-w-extension)
-         mime-type (or ext-mime-type (get headers "accept"))]
+         mime-type (or ext-mime-type (get headers "accept") default-mime-type)]
      (mt/validate-request-mime-type mime-type valid-mime-types)
      ;; set the default format to xml
      (mt/mime-type->format mime-type :xml))))
@@ -91,11 +96,11 @@
 
 (defn process-params
   "Processes the parameters by removing unecessary keys and adding other keys like result format."
-  [params path-w-extension headers]
+  [params path-w-extension headers default-mime-type]
   (-> params
       (dissoc :path-w-extension)
       (dissoc :token)
-      (assoc :result-format (get-search-results-format path-w-extension headers))))
+      (assoc :result-format (get-search-results-format path-w-extension headers default-mime-type))))
 
 (defn- find-concepts
   "Invokes query service to find results and returns the response"
@@ -104,7 +109,7 @@
         context (-> context
                     (assoc :query-string query-string)
                     (assoc :token (get-token params headers)))
-        params (process-params params path-w-extension headers)
+        params (process-params params path-w-extension headers "application/xml")
         _ (info (format "Searching for %ss in format %s with params %s."
                         (name concept-type) (:result-format params) (pr-str params)))
         search-params (lp/process-legacy-psa params query-string)
@@ -117,7 +122,7 @@
   "Invokes query service to parse the AQL query, find results and returns the response"
   [context path-w-extension params headers aql]
   (let [context (assoc context :token (get-token params headers))
-        params (process-params params path-w-extension headers)
+        params (process-params params path-w-extension headers "application/xml")
         _ (info (format "Searching for concepts in format %s with AQL: %s."
                         (:result-format params) aql))
         results (query-svc/find-concepts-by-aql context params aql)]
@@ -129,7 +134,9 @@
   "Invokes query service to find concept metadata by cmr concept id and returns the response"
   [context path-w-extension params headers]
   (let [context (assoc context :token (get-token params headers))
-        result-format (get-search-results-format path-w-extension headers)
+        result-format (get-search-results-format path-w-extension headers
+                                                 supported-concept-id-retrieval-mime-types
+                                                 "application/echo10+xml")
         concept-id (path-w-extension->concept-id path-w-extension)
         _ (info (format "Search for concept with cmr-concept-id [%s]" concept-id))
         concept (query-svc/find-concept-by-id context result-format concept-id)]
@@ -141,7 +148,7 @@
   "Invokes query service to retrieve provider holdings and returns the response"
   [context path-w-extension params headers]
   (let [context (assoc context :token (get-token params headers))
-        params (process-params params path-w-extension headers)
+        params (process-params params path-w-extension headers "application/json")
         _ (info (format "Searching for provider holdings in format %s with params %s." (:result-format params) (pr-str params)))
         provider-holdings (query-svc/get-provider-holdings context params)]
     {:status 200
