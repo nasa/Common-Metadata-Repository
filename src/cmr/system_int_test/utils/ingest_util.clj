@@ -75,6 +75,21 @@
         body (json/decode (:body response) true)]
     (assoc body :status (:status response))))
 
+(defn tombstone-concept
+  "Create a tombstone in mdb for the concept, but don't delete it from elastic."
+  [concept]
+  (let [{:keys [concept-id revision-id]} concept
+        response (client/request
+                   {:method :delete
+                    :url (str (url/mdb-concepts-url) "/" concept-id "/" revision-id)
+                    :body  (json/generate-string concept)
+                    :content-type :json
+                    :accept :json
+                    :throw-exceptions false
+                    :connection-manager (url/conn-mgr)})
+        body (json/decode (:body response) true)]
+    (assoc body :status (:status response))))
+
 (defn delete-concept
   "Delete a given concept."
   [{:keys [provider-id concept-type native-id] :as concept}]
