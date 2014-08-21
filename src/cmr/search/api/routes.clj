@@ -22,6 +22,11 @@
             [cmr.search.results-handlers.metadata-results-handler]
             [cmr.search.results-handlers.all-collections-results-handler]))
 
+(def TOKEN_HEADER "echo-token")
+(def BROWSER_CLIENT_ID "browser")
+(def CURL_CLIENT_ID "curl")
+(def UNKNOWN_CLIENT_ID "unknown")
+
 (def extension->mime-type
   "A map of URL file extensions to the mime type they represent."
   {"json" "application/json"
@@ -88,11 +93,6 @@
      ;; set the default format to xml
      (mt/mime-type->format mime-type :xml))))
 
-(defn- get-token
-  "Returns the token the user passed in the headers or parameters"
-  [params headers]
-  (or (:token params)
-      (get headers "echo-token")))
 
 (defn process-params
   "Processes the parameters by removing unecessary keys and adding other keys like result format."
@@ -102,16 +102,42 @@
       (dissoc :token)
       (assoc :result-format (get-search-results-format path-w-extension headers default-mime-type))))
 
+(defn- get-token
+  "Returns the token the user passed in the headers or parameters"
+  [params headers]
+  (or (:token params)
+      (get headers "echo-token")))
+
+(defn- get-client-id
+  "Gets the client id passed by the client or tries to determine it from other headers"
+  [headers]
+  (or (get headers "client-id")
+      (when-let [user-agent (get headers "user-agent")]
+        (cond
+          (or (re-find #"^Mozilla.*" user-agent) (re-find #"^Opera.*" user-agent))
+          BROWSER_CLIENT_ID
+          (re-find #"^curl.*" user-agent)
+          CURL_CLIENT_ID))
+      UNKNOWN_CLIENT_ID))
+
+(defn process-context-info
+  "Adds information to the context including the current token and the client id"
+  [context params headers]
+  (println (pr-str headers))
+  (-> context
+      (assoc :token (get-token params headers))
+      (assoc :client-id (get-client-id headers))))
+
 (defn- find-concepts
   "Invokes query service to find results and returns the response"
   [context path-w-extension params headers query-string]
   (let [concept-type (concept-type-path-w-extension->concept-type path-w-extension)
         context (-> context
-                    (assoc :query-string query-string)
-                    (assoc :token (get-token params headers)))
+                    (process-context-info params headers)
+                    (assoc :query-string query-string))
         params (process-params params path-w-extension headers "application/xml")
-        _ (info (format "Searching for %ss in format %s with params %s."
-                        (name concept-type) (:result-format params) (pr-str params)))
+        _ (info (format "Searching for %ss from client %s in format %s with params %s."
+                        (name concept-type) (:client-id context) (:result-format params) (pr-str params)))
         search-params (lp/process-legacy-psa params query-string)
         results (query-svc/find-concepts-by-parameters context concept-type search-params)]
     {:status 200
@@ -121,10 +147,10 @@
 (defn- find-concepts-by-aql
   "Invokes query service to parse the AQL query, find results and returns the response"
   [context path-w-extension params headers aql]
-  (let [context (assoc context :token (get-token params headers))
+  (let [context (process-context-info context params headers)
         params (process-params params path-w-extension headers "application/xml")
-        _ (info (format "Searching for concepts in format %s with AQL: %s."
-                        (:result-format params) aql))
+        _ (info (format "Searching for concepts from client %s in format %s with AQL: %s."
+                        (:client-id context) (:result-format params) aql))
         results (query-svc/find-concepts-by-aql context params aql)]
     {:status 200
      :headers {"Content-Type" (str (mt/format->mime-type (:result-format params)) "; charset=utf-8")}
@@ -133,7 +159,7 @@
 (defn- find-concept-by-cmr-concept-id
   "Invokes query service to find concept metadata by cmr concept id and returns the response"
   [context path-w-extension params headers]
-  (let [context (assoc context :token (get-token params headers))
+  (let [context (process-context-info context params headers)
         result-format (get-search-results-format path-w-extension headers
                                                  supported-concept-id-retrieval-mime-types
                                                  "application/echo10+xml")
@@ -147,9 +173,10 @@
 (defn- get-provider-holdings
   "Invokes query service to retrieve provider holdings and returns the response"
   [context path-w-extension params headers]
-  (let [context (assoc context :token (get-token params headers))
+  (let [context (process-context-info context params headers)
         params (process-params params path-w-extension headers "application/json")
-        _ (info (format "Searching for provider holdings in format %s with params %s." (:result-format params) (pr-str params)))
+        _ (info (format "Searching for provider holdings from client %s in format %s with params %s."
+                        (:client-id context) (:result-format params) (pr-str params)))
         provider-holdings (query-svc/get-provider-holdings context params)]
     {:status 200
      :headers {"Content-Type" (str (mt/format->mime-type (:result-format params)) "; charset=utf-8")}
