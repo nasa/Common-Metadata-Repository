@@ -3,6 +3,7 @@
   (:require [cmr.transmit.echo.tokens :as echo-tokens]
             [cmr.search.models.query :as qm]
             [cmr.acl.acl-cache :as ac]
+            [cmr.common.cache :as cache]
             [clojure.string :as str]
             [cmr.acl.collection-matchers :as coll-matchers]))
 
@@ -10,9 +11,10 @@
   "Returns the security identifiers (group guids and :guest or :registered) of the user identified
   by the token in the context."
   [context]
-  (let [{:keys [token]} context]
+  (let [{:keys [token]} context
+        token-sid-cache (get-in context [:system :caches :token-sid])]
     (if token
-      (echo-tokens/get-current-sids context token)
+      (cache/cache-lookup token-sid-cache token #(echo-tokens/get-current-sids context token))
       [:guest])))
 
 (defmulti add-acl-conditions-to-query

@@ -3,6 +3,7 @@
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.api.web-server :as web]
             [cmr.common.cache :as cache]
+            [clojure.core.cache :as clj-cache]
             [cmr.acl.acl-cache :as ac]
             [cmr.common.jobs :as jobs]
             [cmr.search.api.routes :as routes]
@@ -14,6 +15,10 @@
             [cmr.elastic-utils.config :as es-config]))
 
 ;; Design based on http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts
+
+(def TOKEN_CACHE_TIME
+  "The number of milliseconds token information will be cached for."
+  (* 5 60 1000))
 
 (def search-public-protocol (cfg/config-value :search-public-protocol "http"))
 (def search-public-host (cfg/config-value :search-public-host "localhost"))
@@ -47,10 +52,11 @@
              :metadata-db metadata-db
              :search-index (idx/create-elastic-search-index (es-config/elastic-config))
              :web (web/create-web-server (transmit-config/search-port) routes/make-api)
-             :cache (cache/create-cache)
+             :caches {:index-names (cache/create-cache)
+                      :acls (ac/create-acl-cache)
+                      :token-sid (cache/create-cache (clj-cache/ttl-cache-factory {} :ttl TOKEN_CACHE_TIME))}
              :zipkin (context/zipkin-config "Search" false)
              :search-public-conf search-public-conf
-             :acl-cache (ac/create-acl-cache)
              :scheduler (jobs/create-scheduler
                           `system-holder
                           [(ac/refresh-acl-cache-job "search-acl-cache-refresh")])}]

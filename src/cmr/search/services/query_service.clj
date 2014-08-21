@@ -137,7 +137,9 @@
   [context]
   ;; TODO enforce ingest management ACL here.
   ;; File issue for this
-  (cache/reset-cache (-> context :system :cache))
+  (doseq [[cache-name cache] (get-in context [:system :caches])
+          :when (not= cache-name :acls)]
+    (cache/reset-cache cache))
   (acl-cache/reset context))
 
 (deftracefn get-collections-by-providers

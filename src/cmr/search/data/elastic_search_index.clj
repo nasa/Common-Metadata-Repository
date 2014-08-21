@@ -29,8 +29,8 @@
 (defn- get-granule-index-names
   "Fetch index names associated with concepts."
   [context]
-  (let [cache-atom (-> context :system :cache)
-        index-names (cache/cache-lookup cache-atom :concept-indices
+  (let [index-cache (-> context :system :caches :index-names)
+        index-names (cache/cache-lookup index-cache :concept-indices
                                         (partial fetch-concept-type-index-names context))]
     (get index-names :granule)))
 
