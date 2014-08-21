@@ -6,7 +6,8 @@
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.granule :as dg]
-            [cmr.system-int-test.data2.core :as d]))
+            [cmr.system-int-test.data2.core :as d]
+            [cmr.system-int-test.utils.echo-util :as e]))
 
 ;; total number of collections in PROV1
 (def prov1-collection-count 5)
@@ -55,57 +56,79 @@
     {"PROV1" prov1-holdings
      "PROV2" prov2-holdings}))
 
-(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"} false))
 
 (deftest retrieve-provider-holdings
+
+  ;; Grant all holdings to registered users
+  (e/grant-registered-users (e/coll-catalog-item-id "provguid1"))
+  (e/grant-registered-users (e/coll-catalog-item-id "provguid2"))
+
+  ;; Grant provider 1 holdings to guests
+  (e/grant-guest (e/coll-catalog-item-id "provguid1"))
+
   (let [all-holdings (create-holdings)
-        expected-all-holdings (set (flatten (vals all-holdings)))]
+        expected-all-holdings (set (flatten (vals all-holdings)))
+        guest-token (e/login-guest)
+        user-token (e/login "user1")]
     (testing "retrieve provider holdings in xml"
-      (let [response (search/provider-holdings-in-format :xml)]
+      (let [response (search/provider-holdings-in-format :xml {:token user-token})]
         (is (= 200 (:status response)))
         (is (= expected-all-holdings
                (set (:results response))))))
     (testing "retrieve provider holdings for list of providers in xml"
-      (let [response (search/provider-holdings-in-format :xml {:provider_id "PROV1"})]
+      (let [response (search/provider-holdings-in-format :xml {:provider_id "PROV1"
+                                                               :token user-token})]
         (is (= 200 (:status response)))
         (is (= (set (get all-holdings "PROV1"))
                (set (:results response)))))
-      (let [response (search/provider-holdings-in-format :xml {:provider_id ["PROV1" "PROV2"]})]
+      (let [response (search/provider-holdings-in-format :xml {:provider_id ["PROV1" "PROV2"]
+                                                               :token user-token})]
         (is (= 200 (:status response)))
         (is (= expected-all-holdings
                (set (:results response))))))
+    (testing "retrieve provider holdings applies acls"
+      ;; Guests only have access to provider 1
+      (let [response (search/provider-holdings-in-format :xml {:token guest-token})]
+        (is (= 200 (:status response)))
+        (is (= (set (get all-holdings "PROV1"))
+               (set (:results response))))))
     (testing "as extension"
       (is (= (select-keys
-               (search/provider-holdings-in-format :xml {:provider_id "PROV1"})
+               (search/provider-holdings-in-format :xml {:provider_id "PROV1"
+                                                         :token user-token})
                [:status :results])
              (select-keys
                (search/provider-holdings-in-format :xml
-                                                   {:provider_id "PROV1"}
+                                                   {:provider_id "PROV1"
+                                                    :token user-token}
                                                    {:format-as-ext? true})
                [:status :results]))))
-
-
     (testing "retrieve provider holdings in JSON"
-      (let [response (search/provider-holdings-in-format :json)]
+      (let [response (search/provider-holdings-in-format :json {:token user-token})]
         (is (= 200 (:status response)))
         (is (= expected-all-holdings
                (set (:results response))))))
     (testing "retrieve provider holdings for list of providers in JSON"
-      (let [response (search/provider-holdings-in-format :json {:provider_id "PROV1"})]
+      (let [response (search/provider-holdings-in-format :json {:provider_id "PROV1"
+                                                                :token user-token})]
         (is (= 200 (:status response)))
         (is (= (set (get all-holdings "PROV1"))
                (set (:results response)))))
-      (let [response (search/provider-holdings-in-format :json {:provider_id ["PROV1" "PROV2"]})]
+      (let [response (search/provider-holdings-in-format :json {:provider_id ["PROV1" "PROV2"]
+                                                                :token user-token})]
         (is (= 200 (:status response)))
         (is (= expected-all-holdings
                (set (:results response))))))
     (testing "as extension"
       (is (= (select-keys
-               (search/provider-holdings-in-format :json {:provider_id "PROV1"})
+               (search/provider-holdings-in-format :json {:provider_id "PROV1"
+                                                          :token user-token})
                [:status :results])
              (select-keys
                (search/provider-holdings-in-format :json
-                                                   {:provider_id "PROV1"}
+                                                   {:provider_id "PROV1"
+                                                    :token user-token}
                                                    {:format-as-ext? true})
                [:status :results]))))))
 
