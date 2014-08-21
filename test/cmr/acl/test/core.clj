@@ -8,7 +8,7 @@
   [& acls]
   (let [acl-cache (ac/create-acl-cache)]
     (swap! acl-cache assoc :acls acls)
-    {:system {:acl-cache acl-cache}}))
+    {:system {:caches {:acls acl-cache}}}))
 
 (defn group-ace
   [group-guid & permissions]

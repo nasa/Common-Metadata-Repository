@@ -21,7 +21,7 @@
 (defn- context->acl-cache
   "Gets the acl cache from the context"
   [context]
-  (get-in context [:system :acl-cache]))
+  (get-in context [:system :caches :acls]))
 
 (defn reset
   "Resets the cache back to it's initial state"
