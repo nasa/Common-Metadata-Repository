@@ -102,8 +102,6 @@
                               (l/ords->line-string :cartesian 16.439,-13.463,  31.904,-13.607)])
 
 
-  ;; todo multiple point lines
-
   (a/point-at-lon (a/ords->arc 22.681,-8.839, 18.309,-11.426) 20.0)
   (s/segment+lon->lat (s/ords->line-segment 16.439,-13.463,  31.904,-13.607) 20.0)
 

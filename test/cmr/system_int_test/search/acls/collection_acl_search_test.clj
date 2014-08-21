@@ -21,9 +21,6 @@
 
   )
 
-;; TODO add caching of sids information from token
-;; We could test that it's in place and working by checking that logging out and searching again still works.
-
 (deftest invalid-security-token-test
   (is (= {:errors ["Token ABC123 does not exist"], :status 401}
          (search/find-refs :collection {:token "ABC123"}))))

@@ -28,8 +28,7 @@
   (echo10/umm->echo10-xml (gh/granule field-values)))
 
 (defn update-granule
-  "Update granule (given or the default one) through CMR metadata API.
-  TODO Returns cmr-granule id eventually"
+  "Update granule (given or the default one) through CMR metadata API."
   ([provider-id]
    (update-granule provider-id {}))
   ([provider-id granule]
