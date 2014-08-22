@@ -135,8 +135,7 @@
 (deftracefn reset
   "Clear the cache for search app"
   [context]
-  ;; TODO enforce ingest management ACL here.
-  ;; File issue for this
+  ;; TODO enforce ingest management ACL here. - CMR-678
   (doseq [[cache-name cache] (get-in context [:system :caches])
           :when (not= cache-name :acls)]
     (cache/reset-cache cache))
