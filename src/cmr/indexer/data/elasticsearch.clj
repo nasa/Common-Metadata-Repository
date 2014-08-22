@@ -112,21 +112,30 @@
       (filter identity
               (pmap (fn [concept]
                       (try
-                        (let [umm-concept (umm/parse-concept concept)
-                              concept-id (:concept-id concept)
-                              delete-time (get-in umm-concept [:data-provider-timestamps :delete-time])
-                              ttl (when delete-time (t/in-millis (t/interval (t/now) delete-time)))
-                              revision-id (:revision-id concept)
-                              index-name (idx-set/get-concept-index-name context concept-id revision-id concept)
+                        (let [concept-id (:concept-id concept)
                               type (name (concept->type concept))
-                              elastic-doc (concept->elastic-doc context concept umm-concept)
-                              elastic-doc (if ttl
-                                            (assoc elastic-doc :_ttl ttl)
-                                            elastic-doc)]
-                          (merge elastic-doc {:_index index-name
-                                              :_type type
-                                              :_version revision-id
-                                              :_version_type "external_gte"}))
+                              revision-id (:revision-id concept)
+                              index-name (idx-set/get-concept-index-name
+                                           context concept-id revision-id concept)]
+                          (if (:deleted concept)
+                            (merge concept {:_id concept-id
+                                            :_index index-name
+                                            :_type type
+                                            :_version revision-id
+                                            :_version_type "external_gte"})
+                            (let [umm-concept (umm/parse-concept concept)
+                                  delete-time (get-in umm-concept
+                                                      [:data-provider-timestamps :delete-time])
+                                  ttl (when delete-time (t/in-millis (t/interval (t/now)
+                                                                                 delete-time)))
+                                  elastic-doc (concept->elastic-doc context concept umm-concept)
+                                  elastic-doc (if ttl
+                                                (assoc elastic-doc :_ttl ttl)
+                                                elastic-doc)]
+                              (merge elastic-doc {:_index index-name
+                                                  :_type type
+                                                  :_version revision-id
+                                                  :_version_type "external_gte"}))))
                         (catch Exception e
                           (error e (str "Skipping failed catalog item. Exception trying to convert concept to elastic doc:"
                                         (pr-str concept))))))
@@ -137,8 +146,17 @@
   [context docs]
   (let [bulk-operations (cmr-bulk/bulk-index docs)
         conn (context->conn context)
-        response (bulk/bulk conn bulk-operations)]
-    (when (:errors response)
+        response (bulk/bulk conn bulk-operations)
+        ;; we don't care about version conflicts or deletes that aren't found
+        bad-errors (some (fn [item]
+                           (let [status (if (:index item)
+                                          (get-in item [:index :status])
+                                          (get-in item [:delete :status]))]
+                             (and (> status 399)
+                                  (not= 409 status)
+                                  (not= 404 status))))
+                         (:items response))]
+    (when bad-errors
       (errors/internal-error! (format "Bulk indexing failed with response %s" response)))))
 
 (deftracefn save-document-in-elastic
