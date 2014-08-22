@@ -145,8 +145,10 @@
         search-params (lp/process-legacy-psa params query-string)
         results (query-svc/find-concepts-by-parameters context concept-type search-params)]
     {:status 200
-     :headers {"Content-Type" (str (mt/format->mime-type (:result-format params)) "; charset=utf-8")}
-     :body results}))
+     :headers {"Content-Type" (str (mt/format->mime-type (:result-format params)) "; charset=utf-8")
+               "CMR-Hits" (str (:hits results))
+               "CMR-Took" (str (:took results))}
+     :body (:results results)}))
 
 (defn- find-concepts-by-aql
   "Invokes query service to parse the AQL query, find results and returns the response"
@@ -157,8 +159,10 @@
                         (:client-id context) (:result-format params) aql))
         results (query-svc/find-concepts-by-aql context params aql)]
     {:status 200
-     :headers {"Content-Type" (str (mt/format->mime-type (:result-format params)) "; charset=utf-8")}
-     :body results}))
+     :headers {"Content-Type" (str (mt/format->mime-type (:result-format params)) "; charset=utf-8")
+               "CMR-Hits" (str (:hits results))
+               "CMR-Took" (str (:took results))}
+     :body (:results results)}))
 
 (defn- find-concept-by-cmr-concept-id
   "Invokes query service to find concept metadata by cmr concept id and returns the response"
