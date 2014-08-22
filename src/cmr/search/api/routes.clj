@@ -27,6 +27,10 @@
 (def CURL_CLIENT_ID "curl")
 (def UNKNOWN_CLIENT_ID "unknown")
 
+(def supported-content-types
+  "The content types supported by search"
+  #{"application/x-www-form-urlencoded"})
+
 (def extension->mime-type
   "A map of URL file extensions to the mime type they represent."
   {"json" "application/json"
@@ -232,7 +236,7 @@
         {:status 200}))
     (route/not-found "Not Found")))
 
-;; Copies the body into a new attributed called :body-copy so that after a post of form content type
+;; Copies the body into a new attribute called :body-copy so that after a post of form content type
 ;; the original body can still be read. The default ring params reads the body and parses it and we
 ;; don't have access to it.
 (defn copy-of-body-handler
@@ -243,11 +247,23 @@
                 :body-copy body
                 :body (java.io.ByteArrayInputStream. (.getBytes body)))))))
 
+;; Validates the content type of the request.
+(defn content-type-handler
+  [f]
+  (fn [request]
+    (println request)
+    (let [content-type (get-in request [:headers "content-type"])]
+      (if (get supported-content-types content-type)
+        (f request)
+        (svc-errors/throw-service-error :bad-request
+                                        (str "Unsupported content type [" content-type "]"))))))
+
 (defn make-api [system]
   (-> (build-routes system)
       (http-trace/build-request-context-handler system)
-      errors/exception-handler
       handler/site
       copy-of-body-handler
+      content-type-handler
+      errors/exception-handler
       ring-json/wrap-json-body
       ring-json/wrap-json-response))
