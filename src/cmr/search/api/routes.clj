@@ -127,7 +127,6 @@
 (defn process-context-info
   "Adds information to the context including the current token and the client id"
   [context params headers]
-  (println (pr-str headers))
   (-> context
       (assoc :token (get-token params headers))
       (assoc :client-id (get-client-id headers))))
