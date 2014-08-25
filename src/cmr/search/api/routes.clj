@@ -2,6 +2,7 @@
   (:require [compojure.handler :as handler]
             [compojure.route :as route]
             [compojure.core :refer :all]
+            [clojure.string :as str]
             [ring.util.response :as r]
             [ring.util.codec :as codec]
             [ring.middleware.json :as ring-json]
@@ -147,16 +148,21 @@
 (defn- find-concepts
   "Invokes query service to find results and returns the response"
   [context path-w-extension params headers query-string]
-  (let [concept-type (concept-type-path-w-extension->concept-type path-w-extension)
-        context (-> context
-                    (process-context-info params headers)
-                    (assoc :query-string query-string))
-        params (process-params params path-w-extension headers "application/xml")
-        _ (info (format "Searching for %ss from client %s in format %s with params %s."
-                        (name concept-type) (:client-id context) (:result-format params) (pr-str params)))
-        search-params (lp/process-legacy-psa params query-string)
-        results (query-svc/find-concepts-by-parameters context concept-type search-params)]
-    (search-response params results)))
+  (println headers)
+  (if (= "application/x-www-form-urlencoded" (get headers (str/lower-case CONTENT_TYPE_HEADER)))
+    (let [concept-type (concept-type-path-w-extension->concept-type path-w-extension)
+          context (-> context
+                      (process-context-info params headers)
+                      (assoc :query-string query-string))
+          params (process-params params path-w-extension headers "application/xml")
+          _ (info (format "Searching for %ss from client %s in format %s with params %s."
+                          (name concept-type) (:client-id context) (:result-format params)
+                          (pr-str params)))
+          search-params (lp/process-legacy-psa params query-string)
+          results (query-svc/find-concepts-by-parameters context concept-type search-params)]
+      (search-response params results))
+    {:status 415
+     :body (str "Unsupported content type [" (get headers (str/lower-case CONTENT_TYPE_HEADER)) "]")}))
 
 (defn- find-concepts-by-aql
   "Invokes query service to parse the AQL query, find results and returns the response"
@@ -220,14 +226,14 @@
         (GET "/" {params :params headers :headers context :request-context}
           (find-concept-by-cmr-concept-id context path-w-extension params headers)))
 
-      ;; Find concepts
+      ;; Find concepts - form encoded
       (context ["/:path-w-extension" :path-w-extension concept-type-w-extension-regex] [path-w-extension]
         (GET "/" {params :params headers :headers context :request-context query-string :query-string}
           (find-concepts context path-w-extension params headers query-string))
         (POST "/" {params :params headers :headers context :request-context body :body-copy}
           (find-concepts context path-w-extension params headers body)))
 
-      ;; AQL search
+      ;; AQL search - xml
       (context ["/concepts/:path-w-extension" :path-w-extension search-w-extension-regex] [path-w-extension]
         (POST "/" {params :params headers :headers context :request-context body :body-copy}
           (find-concepts-by-aql context path-w-extension params headers body)))
