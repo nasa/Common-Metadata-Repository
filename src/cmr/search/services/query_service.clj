@@ -105,10 +105,7 @@
     (debug "query-creation-time:" query-creation-time
            "query-execution-time:" query-execution-time
            "result-gen-time:" result-gen-time)
-    (info (format "Found %d %ss in %d ms in format %s with params %s."
-                  (:hits results) (name concept-type) total-took (:result-format query) (pr-str params)))
     {:results result-str :hits (:hits results) :took took :total-took total-took}))
-
 
 (deftracefn find-concepts-by-parameters
   "Executes a search for concepts using the given parameters. The concepts will be returned with
