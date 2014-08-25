@@ -148,20 +148,23 @@
 (defn- find-concepts
   "Invokes query service to find results and returns the response"
   [context path-w-extension params headers query-string]
-  (if (= "application/x-www-form-urlencoded" (get headers (str/lower-case CONTENT_TYPE_HEADER)))
-    (let [concept-type (concept-type-path-w-extension->concept-type path-w-extension)
-          context (-> context
-                      (process-context-info params headers)
-                      (assoc :query-string query-string))
-          params (process-params params path-w-extension headers "application/xml")
-          _ (info (format "Searching for %ss from client %s in format %s with params %s."
-                          (name concept-type) (:client-id context) (:result-format params)
-                          (pr-str params)))
-          search-params (lp/process-legacy-psa params query-string)
-          results (query-svc/find-concepts-by-parameters context concept-type search-params)]
-      (search-response params results))
-    {:status 415
-     :body (str "Unsupported content type [" (get headers (str/lower-case CONTENT_TYPE_HEADER)) "]")}))
+  (let [content-type-header (get headers (str/lower-case CONTENT_TYPE_HEADER))]
+    (if (or (nil? content-type-header)
+            (= "application/x-www-form-urlencoded" content-type-header))
+      (let [concept-type (concept-type-path-w-extension->concept-type path-w-extension)
+            context (-> context
+                        (process-context-info params headers)
+                        (assoc :query-string query-string))
+            params (process-params params path-w-extension headers "application/xml")
+            _ (info (format "Searching for %ss from client %s in format %s with params %s."
+                            (name concept-type) (:client-id context) (:result-format params)
+                            (pr-str params)))
+            search-params (lp/process-legacy-psa params query-string)
+            results (query-svc/find-concepts-by-parameters context concept-type search-params)]
+        (search-response params results))
+      {:status 415
+       :body (str "Unsupported content type ["
+                  (get headers (str/lower-case CONTENT_TYPE_HEADER)) "]")})))
 
 (defn- find-concepts-by-aql
   "Invokes query service to parse the AQL query, find results and returns the response"
