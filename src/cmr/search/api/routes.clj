@@ -148,7 +148,6 @@
 (defn- find-concepts
   "Invokes query service to find results and returns the response"
   [context path-w-extension params headers query-string]
-  (println headers)
   (if (= "application/x-www-form-urlencoded" (get headers (str/lower-case CONTENT_TYPE_HEADER)))
     (let [concept-type (concept-type-path-w-extension->concept-type path-w-extension)
           context (-> context
