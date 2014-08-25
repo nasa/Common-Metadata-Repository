@@ -28,16 +28,16 @@
 (deftest collection-search-with-acls-test
   ;; Grant permissions before creating data
   ;; Grant guests permission to coll1
-  (e/grant-guest (e/coll-catalog-item-id "provguid1" ["coll1"]))
+  (e/grant-guest (e/coll-catalog-item-id "provguid1" (e/coll-id ["coll1"])))
   ;; restriction flag acl grants matches coll4
-  (e/grant-guest (e/coll-catalog-item-id "provguid1" ["coll4"] {:min-value 4 :max-value 6}))
+  (e/grant-guest (e/coll-catalog-item-id "provguid1" (e/coll-id ["coll4"] {:min-value 4 :max-value 6})))
   ;; all collections in prov2 granted to guests
   (e/grant-guest (e/coll-catalog-item-id "provguid2"))
   ;; grant registered users permission to coll2 and coll4
-  (e/grant-registered-users (e/coll-catalog-item-id "provguid1" ["coll2" "coll4"]))
+  (e/grant-registered-users (e/coll-catalog-item-id "provguid1" (e/coll-id ["coll2" "coll4"])))
   ;; grant specific group permission to coll3, coll6, and coll8
-  (e/grant-group "group-guid1" (e/coll-catalog-item-id "provguid1" ["coll3"]))
-  (e/grant-group "group-guid2" (e/coll-catalog-item-id "provguid2" ["coll6" "coll8"]))
+  (e/grant-group "group-guid1" (e/coll-catalog-item-id "provguid1" (e/coll-id ["coll3"])))
+  (e/grant-group "group-guid2" (e/coll-catalog-item-id "provguid2" (e/coll-id ["coll6" "coll8"])))
 
 
   (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}))
@@ -110,8 +110,8 @@
 ;; This tests that when acls change after collections have been indexed that collections will be
 ;; reindexed when ingest detects the acl hash has change.
 (deftest acl-change-test
-  (let [acl1 (e/grant-guest (e/coll-catalog-item-id "provguid1" ["coll1"]))
-        acl2 (e/grant-guest (e/coll-catalog-item-id "provguid2" ["coll3"]))
+  (let [acl1 (e/grant-guest (e/coll-catalog-item-id "provguid1" (e/coll-id ["coll1"])))
+        acl2 (e/grant-guest (e/coll-catalog-item-id "provguid2" (e/coll-id ["coll3"])))
         coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}))
         coll2 (d/ingest "PROV1" (dc/collection {:entry-title "coll2"}))
         coll3 (d/ingest "PROV2" (dc/collection {:entry-title "coll3"}))
@@ -125,11 +125,11 @@
     (is (d/refs-match? [coll1 coll3] (search/find-refs :collection {})))
 
     ;; Grant collection 2
-    (e/grant-guest (e/coll-catalog-item-id "provguid1" ["coll2"]))
+    (e/grant-guest (e/coll-catalog-item-id "provguid1" (e/coll-id ["coll2"])))
     ;; Ungrant collection 3
     (e/ungrant acl2)
     ;; Grant collection 4
-    (e/grant-guest (e/coll-catalog-item-id "provguid2" ["coll4"]))
+    (e/grant-guest (e/coll-catalog-item-id "provguid2" (e/coll-id ["coll4"])))
 
     ;; Try searching again before the reindexing
     (is (d/refs-match? [coll1 coll3] (search/find-refs :collection {})))
@@ -144,7 +144,7 @@
 ;; Verifies that tokens are cached by checking that a logged out token still works after it was used.
 ;; This isn't the desired behavior. It's just a side effect that shows it's working.
 (deftest cache-token-test
-  (let [acl1 (e/grant-registered-users (e/coll-catalog-item-id "provguid1" ["coll1"]))
+  (let [acl1 (e/grant-registered-users (e/coll-catalog-item-id "provguid1" (e/coll-id ["coll1"])))
         coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}))
         user1-token (e/login "user1")
         user2-token (e/login "user2")]

@@ -54,21 +54,52 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ACL related
 
+(defn coll-id
+  "Creates an ACL collection identifier"
+  ([entry-titles]
+   (coll-id entry-titles nil))
+  ([entry-titles access-value-filter]
+   {:entry-titles entry-titles
+    :access-value access-value-filter}))
+
+(defn gran-id
+  "Creates an ACL granule identifier"
+  ([gran-ur-patterns]
+   (gran-id gran-ur-patterns nil))
+  ([gran-ur-patterns access-value-filter]
+   {:granule-ur-patterns gran-ur-patterns
+    :access-value access-value-filter}))
+
+(defn catalog-item-id
+  "Creates a catalog item identity"
+  ([provider-guid]
+   (catalog-item-id provider-guid nil))
+  ([provider-guid coll-identifier]
+   (catalog-item-id provider-guid coll-identifier nil))
+  ([provider-guid coll-identifier gran-identifier]
+   {:provider-guid provider-guid
+    :collection-identifier coll-identifier
+    :granule-identifier gran-identifier}))
+
 (defn coll-catalog-item-id
   "Creates a collection applicable catalog item identity"
   ([provider-guid]
-   (coll-catalog-item-id provider-guid []))
-  ([provider-guid entry-titles]
-   (coll-catalog-item-id provider-guid entry-titles nil))
-  ([provider-guid entry-titles access-value-filter]
-   (merge-with
-     merge
-     {:provider-guid provider-guid
-      :collection-applicable true}
-     (when (seq entry-titles)
-       {:collection-identifier {:entry-titles entry-titles}})
-     (when access-value-filter
-       {:collection-identifier {:access-value access-value-filter}}))))
+   (coll-catalog-item-id provider-guid nil))
+  ([provider-guid coll-identifier]
+   (coll-catalog-item-id provider-guid coll-identifier nil))
+  ([provider-guid coll-identifier gran-identifier]
+   (assoc (catalog-item-id provider-guid coll-identifier gran-identifier)
+          :collection-applicable true)))
+
+(defn gran-catalog-item-id
+  "Creates a granule applicable catalog item identity"
+  ([provider-guid]
+   (gran-catalog-item-id provider-guid nil))
+  ([provider-guid coll-identifier]
+   (gran-catalog-item-id provider-guid coll-identifier nil))
+  ([provider-guid coll-identifier gran-identifier]
+   (assoc (catalog-item-id provider-guid coll-identifier gran-identifier)
+          :granule-applicable true)))
 
 (defn grant
   "Creates an ACL in mock echo with the id, access control entries, and catalog item identity"
