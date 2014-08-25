@@ -27,10 +27,6 @@
 (def CURL_CLIENT_ID "curl")
 (def UNKNOWN_CLIENT_ID "unknown")
 
-(def supported-content-types
-  "The content types supported by search"
-  #{"application/x-www-form-urlencoded"})
-
 (def extension->mime-type
   "A map of URL file extensions to the mime type they represent."
   {"json" "application/json"
@@ -247,23 +243,10 @@
                 :body-copy body
                 :body (java.io.ByteArrayInputStream. (.getBytes body)))))))
 
-;; Validates the content type of the request.
-(defn content-type-handler
-  [f]
-  (fn [request]
-    (println request)
-    (let [content-type (get-in request [:headers "content-type"])]
-      (if (get supported-content-types content-type)
-        (f request)
-        (svc-errors/throw-service-error :bad-request
-                                        (str "Unsupported content type [" content-type "]"))))))
-
 (defn make-api [system]
   (-> (build-routes system)
       (http-trace/build-request-context-handler system)
       handler/site
       copy-of-body-handler
-      content-type-handler
       errors/exception-handler
-      ring-json/wrap-json-body
       ring-json/wrap-json-response))
