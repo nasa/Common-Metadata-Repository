@@ -48,7 +48,7 @@
    :echo-rest {:protocol "http"
                :host (cfg/config-value :echo-rest-host "localhost")
                :port (echo-rest-port)
-               :context ""}})
+               :context (cfg/config-value :echo-rest-context "")}})
 
 (defn app-connection-system-key-name
   "The name of the app connection in the system"
