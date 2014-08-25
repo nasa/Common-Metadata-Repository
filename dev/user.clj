@@ -15,6 +15,8 @@
 
 (def system nil)
 
+(def system-type #_:external-dbs :in-memory)
+
 
 (defn start
   "Starts the current development system."
@@ -22,7 +24,7 @@
   (config/reset-config-values)
   (data/reset-uniques)
 
-  (let [s (system/create-system #_:external-dbs :in-memory)]
+  (let [s (system/create-system system-type)]
     (alter-var-root #'system
                     (constantly
                       (system/start s))))
