@@ -107,7 +107,7 @@
            "result-gen-time:" result-gen-time)
     (info (format "Found %d %ss in %d ms in format %s with params %s."
                   (:hits results) (name concept-type) total-took (:result-format query) (pr-str params)))
-    {:results result-str :hits (:hits results) :took took}))
+    {:results result-str :hits (:hits results) :took took :total-took total-took}))
 
 
 (deftracefn find-concepts-by-parameters
@@ -125,8 +125,12 @@
                                            (pv/validate-parameters concept-type)
                                            (p/parameters->query concept-type)
                                            (validate-query context)
-                                           c2s/reduce-query))]
-    (find-concepts context concept-type params query-creation-time query)))
+                                           c2s/reduce-query))
+        results (find-concepts context concept-type params query-creation-time query)]
+    (info (format "Found %d %ss in %d ms in format %s with params %s."
+                  (:hits results) (name concept-type) (:total-took results) (:result-format query)
+                  (pr-str params)))
+    results))
 
 (deftracefn find-concepts-by-aql
   "Executes a search for concepts using the given aql. The concepts will be returned with
@@ -137,8 +141,12 @@
                                            (a/aql->query params)
                                            (validate-query context)
                                            c2s/reduce-query))
-        concept-type (:concept-type query)]
-    (find-concepts context concept-type params query-creation-time query)))
+        concept-type (:concept-type query)
+        results (find-concepts context concept-type params query-creation-time query)]
+    (info (format "Found %d %ss in %d ms in format %s with aql: %s."
+                  (:hits results) (name concept-type) (:total-took results) (:result-format query)
+                  (pr-str params)))
+    results))
 
 (deftracefn find-concept-by-id
   "Executes a search to metadata-db and returns the concept with the given cmr-concept-id."
