@@ -10,13 +10,18 @@
             [cmr.transmit.config :as transmit-config]
             [cmr.oracle.config :as oracle-config]
             [cmr.ingest.config :as config]
+            [cmr.ingest.services.jobs :as ingest-jobs]
+            [cmr.common.jobs :as jobs]
             [cmr.oracle.connection :as oracle]))
 
 (def
   ^{:doc "Defines the order to start the components."
     :private true}
-  component-order [:log :db :web])
+  component-order [:log :db :web :scheduler])
 
+(def system-holder
+  "Required for jobs"
+  (atom nil))
 
 (defn create-system
   "Returns a new instance of the whole application."
@@ -26,7 +31,8 @@
    (let [sys {:log (log/create-logger)
               :web (web/create-web-server (transmit-config/ingest-port) routes/make-api)
               :db (oracle/create-db (config/db-spec connection-pool-name))
-              :zipkin (context/zipkin-config "Ingest" false)}]
+              :zipkin (context/zipkin-config "Ingest" false)
+              :scheduler (jobs/create-clustered-scheduler `system-holder ingest-jobs/jobs)}]
      (transmit-config/system-with-connections sys [:metadata-db :indexer :echo-rest]))))
 
    (defn start

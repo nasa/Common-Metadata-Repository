@@ -7,6 +7,10 @@
             [cmr.ingest.data.indexer :as indexer]
             [cmr.common.log :refer (debug info warn error)]))
 
+(def REINDEX_COLLECTION_PERMITTED_GROUPS_INTERVAL
+  "The number of seconds between jobs to check for ACL changes and reindex collections."
+  3600)
+
 (defn acls->provider-id-hashes
   "Converts acls to a map of provider-ids to hashes of the ACLs."
   [acls]
@@ -38,3 +42,8 @@
   [ctx system]
   (let [context {:system system}]
     (reindex-collection-permitted-groups context)))
+
+(def jobs
+  "A list of jobs for ingest"
+  [{:job-type ReindexCollectionPermittedGroups
+    :interval REINDEX_COLLECTION_PERMITTED_GROUPS_INTERVAL}])
