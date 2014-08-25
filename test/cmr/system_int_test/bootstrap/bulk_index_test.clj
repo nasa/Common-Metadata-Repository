@@ -11,11 +11,19 @@
             [cmr.common.config :as config]
             [clj-time.core :as t]))
 
-
+(defn runnable-env?
+  []
+  (try
+    (some-> 'user/system-type
+            find-var
+            var-get
+            (= :external-dbs))
+    (catch Exception e
+      false)))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 ;; only run this test with the external db
-(when (nil? (config/config-value :elastic-port nil))
+(when (runnable-env?)
   ;; This test runs bulk index with some concepts in mdb that are good, and some that are
   ;; deleted, and some that have not yet been deleted, but have an expired deletion date.
   (deftest bulk-index-with-some-deleted
@@ -80,7 +88,7 @@
 ;; 7. Verifies that the concepts returned by search have the expected revision ids.
 
 ;; only run this test with the external db
-(when (nil? (config/config-value :elastic-port nil))
+(when (runnable-env?)
   (deftest bulk-index-after-ingest
     (let [collections (for [x (range 1 11)]
                         (let [cmap {:short-name (str "short-name" x)
