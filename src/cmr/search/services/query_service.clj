@@ -93,9 +93,23 @@
                                         (map csk/->kebab-case % )
                                         (csk/->kebab-case %))))))
 
+(defn- find-concepts
+  "Common functionality for find-concepts-by-parameters and find-concepts-by-aql."
+  [context concept-type params query-creation-time query]
+  (let [[query-execution-time results] (u/time-execution (qe/execute-query context query))
+        took (+ query-creation-time query-execution-time)
+        [result-gen-time result-str] (u/time-execution
+                                       (search-results->response
+                                         context query (assoc results :took took)))
+        total-took (+ query-creation-time query-execution-time result-gen-time)]
+    (debug "query-creation-time:" query-creation-time
+           "query-execution-time:" query-execution-time
+           "result-gen-time:" result-gen-time)
+    {:results result-str :hits (:hits results) :took took :total-took total-took}))
+
 (deftracefn find-concepts-by-parameters
   "Executes a search for concepts using the given parameters. The concepts will be returned with
-  concept id and native provider id."
+  concept id and native provider id along with hit count and timing info."
   [context concept-type params]
   (let [[query-creation-time query] (u/time-execution
                                       (->> params
@@ -109,18 +123,27 @@
                                            (p/parameters->query concept-type)
                                            (validate-query context)
                                            c2s/reduce-query))
-        [query-execution-time results] (u/time-execution (qe/execute-query context query))
-        [result-gen-time result-str] (u/time-execution
-                                       (search-results->response
-                                         context query (assoc results :took (+ query-creation-time
-                                                                               query-execution-time))))
-        total-took (+ query-creation-time query-execution-time result-gen-time)]
-    (debug "query-creation-time:" query-creation-time
-           "query-execution-time:" query-execution-time
-           "result-gen-time:" result-gen-time)
+        results (find-concepts context concept-type params query-creation-time query)]
     (info (format "Found %d %ss in %d ms in format %s with params %s."
-                  (:hits results) (name concept-type) total-took (:result-format query) (pr-str params)))
-    result-str))
+                  (:hits results) (name concept-type) (:total-took results) (:result-format query)
+                  (pr-str params)))
+    results))
+
+(deftracefn find-concepts-by-aql
+  "Executes a search for concepts using the given aql. The concepts will be returned with
+  concept id and native provider id along with hit count and timing info."
+  [context params aql]
+  (let [[query-creation-time query] (u/time-execution
+                                      (->> aql
+                                           (a/aql->query params)
+                                           (validate-query context)
+                                           c2s/reduce-query))
+        concept-type (:concept-type query)
+        results (find-concepts context concept-type params query-creation-time query)]
+    (info (format "Found %d %ss in %d ms in format %s with aql: %s."
+                  (:hits results) (name concept-type) (:total-took results) (:result-format query)
+                  (pr-str params)))
+    results))
 
 (deftracefn find-concept-by-id
   "Executes a search to metadata-db and returns the concept with the given cmr-concept-id."
@@ -135,8 +158,7 @@
 (deftracefn reset
   "Clear the cache for search app"
   [context]
-  ;; TODO enforce ingest management ACL here.
-  ;; File issue for this
+  ;; TODO enforce ingest management ACL here. - CMR-678
   (doseq [[cache-name cache] (get-in context [:system :caches])
           :when (not= cache-name :acls)]
     (cache/reset-cache cache))
@@ -173,25 +195,5 @@
 
     (ph/provider-holdings->string (:result-format params) provider-holdings pretty?)))
 
-(deftracefn find-concepts-by-aql
-  "Executes a search for concepts using the given aql. The concepts will be returned with
-  concept id and native provider id."
-  [context params aql]
-  (let [[query-creation-time query] (u/time-execution
-                                      (->> aql
-                                           (a/aql->query params)
-                                           (validate-query context)
-                                           c2s/reduce-query))
-        [query-execution-time results] (u/time-execution (qe/execute-query context query))
-        [result-gen-time result-str] (u/time-execution
-                                       (search-results->response
-                                         context query (assoc results :took (+ query-creation-time
-                                                                               query-execution-time))))
-        total-took (+ query-creation-time query-execution-time result-gen-time)]
-    (debug "query-creation-time:" query-creation-time
-           "query-execution-time:" query-execution-time
-           "result-gen-time:" result-gen-time)
-    (info (format "Found %d %ss in %d ms in format %s with aql: %s."
-                  (:hits results) (:concept-type query) total-took (:result-format query) (pr-str params)))
-    result-str))
+
 
