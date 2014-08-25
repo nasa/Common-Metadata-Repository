@@ -23,6 +23,9 @@
             [cmr.search.results-handlers.all-collections-results-handler]))
 
 (def TOKEN_HEADER "echo-token")
+(def CONTENT_TYPE_HEADER "Content-Type")
+(def HITS_HEADER "CMR-Hits")
+(def TOOK_HEADER "CMR-Took")
 (def BROWSER_CLIENT_ID "browser")
 (def CURL_CLIENT_ID "curl")
 (def UNKNOWN_CLIENT_ID "unknown")
@@ -59,6 +62,13 @@
   #{"*/*"
     "application/echo10+xml"
     "application/dif+xml"})
+
+(defn- search-response-headers
+  "Generate headers for search response."
+  [content-type results]
+  {CONTENT_TYPE_HEADER (str content-type "; charset=utf-8")
+   HITS_HEADER (str (:hits results))
+   TOOK_HEADER (str (:took results))})
 
 (defn- concept-type-path-w-extension->concept-type
   "Parses the concept type and extension (\"granules.echo10\") into the concept type"
@@ -127,6 +137,13 @@
       (assoc :token (get-token params headers))
       (assoc :client-id (get-client-id headers))))
 
+(defn- search-response
+  "Generate the response map for finding concepts by params or AQL."
+  [params results]
+  {:status 200
+   :headers (search-response-headers (mt/format->mime-type (:result-format params)) results)
+   :body (:results results)})
+
 (defn- find-concepts
   "Invokes query service to find results and returns the response"
   [context path-w-extension params headers query-string]
@@ -139,9 +156,7 @@
                         (name concept-type) (:client-id context) (:result-format params) (pr-str params)))
         search-params (lp/process-legacy-psa params query-string)
         results (query-svc/find-concepts-by-parameters context concept-type search-params)]
-    {:status 200
-     :headers {"Content-Type" (str (mt/format->mime-type (:result-format params)) "; charset=utf-8")}
-     :body results}))
+    (search-response params results)))
 
 (defn- find-concepts-by-aql
   "Invokes query service to parse the AQL query, find results and returns the response"
@@ -151,9 +166,7 @@
         _ (info (format "Searching for concepts from client %s in format %s with AQL: %s."
                         (:client-id context) (:result-format params) aql))
         results (query-svc/find-concepts-by-aql context params aql)]
-    {:status 200
-     :headers {"Content-Type" (str (mt/format->mime-type (:result-format params)) "; charset=utf-8")}
-     :body results}))
+    (search-response params results)))
 
 (defn- find-concept-by-cmr-concept-id
   "Invokes query service to find concept metadata by cmr concept id and returns the response"
@@ -166,7 +179,7 @@
         _ (info (format "Search for concept with cmr-concept-id [%s]" concept-id))
         concept (query-svc/find-concept-by-id context result-format concept-id)]
     {:status 200
-     :headers {"Content-Type" "application/xml; charset=utf-8"}
+     :headers {CONTENT_TYPE_HEADER "application/xml; charset=utf-8"}
      :body (:metadata concept)}))
 
 (defn- get-provider-holdings
@@ -178,7 +191,7 @@
                         (:client-id context) (:result-format params) (pr-str params)))
         provider-holdings (query-svc/get-provider-holdings context params)]
     {:status 200
-     :headers {"Content-Type" (str (mt/format->mime-type (:result-format params)) "; charset=utf-8")}
+     :headers {CONTENT_TYPE_HEADER (str (mt/format->mime-type (:result-format params)) "; charset=utf-8")}
      :body provider-holdings}))
 
 (def concept-type-w-extension-regex
