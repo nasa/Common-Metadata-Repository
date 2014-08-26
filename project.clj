@@ -14,6 +14,7 @@
                  [clj-http "0.9.0"]
                  [org.clojure/tools.reader "0.8.4"]
                  [org.clojure/tools.cli "0.3.1"]
+                 [drift "1.5.2"]
 
                  ;; Database related
                  [org.quartz-scheduler/quartz-oracle "2.1.7"]
@@ -28,8 +29,7 @@
   :profiles
   {:dev {:dependencies [[ring-mock "0.1.5"]
                         [org.clojure/tools.namespace "0.2.4"]
-                        [org.clojars.gjahad/debug-repl "0.3.3"]
-                        [drift "1.5.2"]]
+                        [org.clojars.gjahad/debug-repl "0.3.3"]]
          :source-paths ["src" "dev" "test"]}
    :uberjar {:main cmr.ingest.runner
              :aot :all}}
