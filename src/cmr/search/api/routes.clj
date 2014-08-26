@@ -102,8 +102,7 @@
          mime-type (or ext-mime-type (get headers "accept") default-mime-type)]
      (mt/validate-request-mime-type mime-type valid-mime-types)
      ;; set the default format to xml
-     (mt/mime-type->format mime-type :xml))))
-
+     (mt/mime-type->format mime-type default-mime-type))))
 
 (defn process-params
   "Processes the parameters by removing unecessary keys and adding other keys like result format."
