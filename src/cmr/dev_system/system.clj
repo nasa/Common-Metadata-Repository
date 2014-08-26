@@ -77,7 +77,8 @@
             :indexer (indexer-system/create-system)
             :index-set (index-set-system/create-system)
             :ingest (-> (ingest-system/create-system)
-                        (assoc :db (ingest-data/create-in-memory-acl-hash-store)))
+                        (assoc :db (ingest-data/create-in-memory-acl-hash-store))
+                        (dissoc :scheduler))
             :search (assoc-in (search-system/create-system)
                               [:metadata-db :db]
                               in-memory-db)}
