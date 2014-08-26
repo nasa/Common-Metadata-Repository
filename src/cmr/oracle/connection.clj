@@ -23,9 +23,15 @@
 (defn test-db-connection!
   "Tests the database connection. Throws an exception if unable to execute some sql."
   [oracle-store]
-  (when-not (= [{:a 1M}]
-               (j/query oracle-store "select 1 a from dual"))
-    (throw (Exception. "Could not select data from database."))))
+  (try
+    (when-not (= [{:a 1M}]
+                 (j/query oracle-store "select 1 a from dual"))
+      (throw (Exception. "Could not select data from database.")))
+    (catch Exception e
+      (info "Database conn info" (pr-str (-> oracle-store
+                                             :spec
+                                             (assoc :password "*****"))))
+      (throw e))))
 
 (defn pool
   [spec]
