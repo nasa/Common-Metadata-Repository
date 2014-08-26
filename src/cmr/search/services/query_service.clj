@@ -190,7 +190,7 @@
         ;; get a mapping of collection to granule count
         collection-granule-count (idx/get-collection-granule-counts context provider-ids)
         ;; combine the granule count into collections to form provider holdings
-        provider-holdings (map #(assoc % :granule-count (get collection-granule-count (:concept-id %)))
+        provider-holdings (map #(assoc % :granule-count (get collection-granule-count (:concept-id %) 0))
                                collections)]
 
     (ph/provider-holdings->string (:result-format params) provider-holdings pretty?)))

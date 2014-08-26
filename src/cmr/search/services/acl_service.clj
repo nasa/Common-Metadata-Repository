@@ -40,11 +40,14 @@
     (= sid (:user-type ace))
     (= sid (:group-guid ace))))
 
-(defn- acl-matches-sids?
+(defn- acl-matches-sids-and-permission?
   "Returns true if the acl is applicable to any of the sids."
-  [sids acl]
+  [sids permission acl]
   (some (fn [sid]
-          (some (partial ace-matches-sid? sid) (:aces acl)))
+          (some (fn [ace]
+                  (and (ace-matches-sid? sid ace)
+                       (some #(= % permission) (:permissions ace))))
+                (:aces acl)))
         sids))
 
 (defn- get-acls-applicable-to-token
@@ -52,7 +55,7 @@
   [context]
   (let [acls (ac/get-acls context)
         sids (context->sids context)]
-    (filter (partial acl-matches-sids? sids) acls)))
+    (filter (partial acl-matches-sids-and-permission? sids :read) acls)))
 
 (defmulti extract-access-value
   "Extracts access value (aka. restriction flag) from the concept."
@@ -95,7 +98,6 @@
         coll-acls (filter (comp :collection-applicable :catalog-item-identity) acls)]
     ;; This assumes collection concepts for now.
     (filter (partial acls-match-concept? coll-acls) concepts)))
-
 
 (comment
   ;; example concept

@@ -19,8 +19,8 @@
   concept-id, revision-id, and possibly collection-concept-id"
   [concept format]
   (let [collection-concept-id (get-in concept [:extra-fields :parent-collection-id])
-        concept-format (mt/mime-type->format (:format concept) :fail)
-        _ (when (= concept-format :fail)
+        concept-format (mt/mime-type->format (:format concept))
+        _ (when-not concept-format
             (errors/internal-error! "Did not recognize concept format" (pr-str (:format concept))))
         value-map (if (= format concept-format)
                     (select-keys concept [:metadata :concept-id :revision-id])
