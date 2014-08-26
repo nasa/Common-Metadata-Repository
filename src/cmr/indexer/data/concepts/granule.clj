@@ -69,6 +69,7 @@
         browsable (not (empty? (ru/browse-urls related-urls)))
         update-time (get-in umm-granule [:data-provider-timestamps :update-time])
         update-time (f/unparse (f/formatters :date-time) update-time)
+        {:keys [short-name version-id]} (:product parent-collection)
         granule-spatial-representation (get-in parent-collection [:spatial-coverage :granule-spatial-representation])]
     (merge {:concept-id concept-id
             :collection-concept-id parent-collection-id
@@ -79,8 +80,8 @@
             :coordinate-system (when granule-spatial-representation (csk/->SNAKE_CASE_STRING granule-spatial-representation))
 
             :entry-title.lowercase (s/lower-case (:entry-title parent-collection))
-            :short-name.lowercase (s/lower-case (get-in parent-collection [:product :short-name]))
-            :version-id.lowercase (s/lower-case (get-in parent-collection [:product :version-id]))
+            :short-name.lowercase (when short-name (s/lower-case short-name))
+            :version-id.lowercase (when version-id (s/lower-case version-id))
 
             :provider-id provider-id
             :provider-id.lowercase (s/lower-case provider-id)

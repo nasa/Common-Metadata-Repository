@@ -72,9 +72,9 @@
             :provider-id provider-id
             :provider-id.lowercase (str/lower-case provider-id)
             :short-name short-name
-            :short-name.lowercase (str/lower-case short-name)
+            :short-name.lowercase (when short-name (str/lower-case short-name))
             :version-id version-id
-            :version-id.lowercase (str/lower-case version-id)
+            :version-id.lowercase (when version-id (str/lower-case version-id))
             :revision-date revision-date
             :processing-level-id processing-level-id
             :processing-level-id.lowercase (when processing-level-id (str/lower-case processing-level-id))
