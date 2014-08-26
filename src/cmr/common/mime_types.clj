@@ -26,17 +26,19 @@
    :csv "text/csv"
    :atom "application/atom+xml"})
 
+(defn- base-mime-type
+  [mime-type]
+  (str (mt/base-type (mt/parse mime-type))))
+
 (defn mime-type->format
   "Converts a mime-type into the format requested."
   ([mime-type]
-   (mime-type->format mime-type :json))
-  ([mime-type default-format]
+   (mime-type->format mime-type "application/json"))
+  ([mime-type default-mime-type]
    (if mime-type
-     (if-let [format (get base-mime-type-to-format
-                          (str (mt/base-type (mt/parse mime-type))))]
-       format
-       default-format)
-     default-format)))
+     (or (get base-mime-type-to-format (base-mime-type mime-type))
+         (get base-mime-type-to-format (base-mime-type default-mime-type)))
+     (get base-mime-type-to-format (base-mime-type default-mime-type)))))
 
 (defn validate-request-mime-type
   "Validates the requested mime type is supported."
