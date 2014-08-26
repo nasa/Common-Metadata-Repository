@@ -44,9 +44,9 @@
   "Reindexes all the collections in a provider."
   [context provider-id]
 
-  ;; Clear the ACL cache.
+  ;; Refresh the ACL cache.
   ;; We want the latest permitted groups to be indexed with the collections
-  (acl-cache/reset context)
+  (acl-cache/refresh-acl-cache context)
 
   (let [collections (meta-db/find-collections context {:provider-id provider-id})]
     (bulk-index context [collections])))
