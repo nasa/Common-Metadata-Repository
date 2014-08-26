@@ -33,3 +33,14 @@
     :interval EXPIRED_CONCEPT_CLEANUP_INTERVAL}
    {:job-type OldRevisionConceptCleanupJob
     :interval OLD_REVISIONS_CONCEPT_CLEANUP_INTERVAL}])
+
+(comment
+
+  ;; Manually trigger old revision cleanup job
+  (let [db (get-in user/system [:apps :metadata-db :db])]
+    (doseq [provider (provider-db/get-providers db)]
+      (srv/delete-old-revisions db provider :collection)
+      (srv/delete-old-revisions db provider :granule)))
+
+
+)

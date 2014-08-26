@@ -28,8 +28,7 @@
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.4"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]
                         [cheshire "5.3.1"]
-                        [clj-http "0.9.1"]
-                        [drift "1.5.2"]]
+                        [clj-http "0.9.1"]]
          :source-paths ["src" "dev" "test" "int_test"]}
    :integration-test {:test-paths ["int_test"]
                       :dependencies [[clj-http "0.9.1"]]}
