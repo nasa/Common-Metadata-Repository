@@ -16,14 +16,24 @@ To start a web server for the application, run:
 
 ### Index a concept
 
-curl -i -XPOST -H "Content-Type: application/json" http://localhost:3004 -d '{"concept-id": "C1234-PROV1", "revision-id": "1"}'
+    curl -i -XPOST -H "Content-Type: application/json" http://localhost:3004 -d '{"concept-id": "C1234-PROV1", "revision-id": "1"}'
 
 ### Delete a concept
 
-curl -i -XDELETE -H "Content-Type: application/json" http://localhost:3004/C1234-PROV1/2
+    curl -i -XDELETE -H "Content-Type: application/json" http://localhost:3004/C1234-PROV1/2
 
 ## Reset elastic and cache
-curl -i -XPOST -H "Content-Type: application/json" http://localhost:3004/reset
+
+*WARNING - this endpoint drops all data from the index.*
+
+Every CMR application has a reset function to reset it back to it's initial state. This will reset the indexes back to their initial state and also clear the cache.
+
+    curl -i -XPOST http://localhost:3004/reset
+
+### Clear the cache cache
+
+    curl -i -XPOST http://localhost:3003/clear-cache
+
 
 ### Ignore version conflict
 
