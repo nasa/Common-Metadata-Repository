@@ -127,7 +127,7 @@
          "SHORT" {:page-size 1} [coll1]
          "SHORT" {:page-size 1 :page-num 3} [coll3]
          ; TODO - enable this test when sort-key is supported
-         ;"SHORT" {:sort-key :entry-title} [coll2]
+         ;"SHORT" {:sort-key :entry-title} [coll1 coll2 coll3 coll4]
          "SHORT" {} [coll1 coll2 coll3 coll4])))
 
 
