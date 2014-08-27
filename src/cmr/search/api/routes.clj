@@ -244,10 +244,14 @@
         (GET "/" {params :params headers :headers context :request-context}
           (get-provider-holdings context path-w-extension params headers)))
 
-      ;; reset operation available just for development purposes
-      ;; clear the cache for search app
+      ;; Resets the application back to it's initial state.
       (POST "/reset" {:keys [request-context]}
-        (query-svc/reset request-context)
+        (query-svc/clear-cache request-context)
+        {:status 200})
+
+      ;; Clears the cache.
+      (POST "/clear-cache" {:keys [request-context]}
+        (query-svc/clear-cache request-context)
         {:status 200}))
     (route/not-found "Not Found")))
 
