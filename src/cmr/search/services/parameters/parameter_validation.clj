@@ -379,7 +379,7 @@
            :errors))
 
 (defn unrecognized-aql-params-validation
-  [_ params]
+  [concept-type params]
   (map #(str "Parameter [" (csk/->snake_case_string % )"] was not recognized.")
        (set/difference (set (keys params))
                        (set [:page-size :page-num :sort-key :result-format :pretty :options]))))
@@ -430,8 +430,8 @@
   "Validates the query parameters passed in with an AQL search.
   Throws exceptions to send to the user. Returns parameters if validation
   was successful so it can be chained with other calls."
-  [params]
-  (let [errors (mapcat #(% {} params) aql-parameter-validations)]
+  [concept-type params]
+  (let [errors (mapcat #(% concept-type params) aql-parameter-validations)]
     (when (seq errors)
       (err/throw-service-errors :invalid-data errors)))
   params)
