@@ -61,6 +61,16 @@
   []
   (format "http://localhost:%s/reset" (transmit-config/search-port)))
 
+(defn search-clear-cache-url
+  "Clear cache in search app."
+  []
+  (format "http://localhost:%s/clear-cache" (transmit-config/search-port)))
+
+(defn indexer-clear-cache-url
+  "Clear cache in indexer app."
+  []
+  (format "http://localhost:%s/clear-cache" (transmit-config/indexer-port)))
+
 (defn provider-holdings-url
   "Returns the URL for retrieving provider holdings."
   []
