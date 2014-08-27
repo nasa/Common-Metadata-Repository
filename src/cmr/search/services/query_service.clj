@@ -155,9 +155,10 @@
         (format "Concept with concept-id: %s could not be found" concept-id)))
     (first concepts)))
 
-(deftracefn reset
+(deftracefn clear-cache
   "Clear the cache for search app"
   [context]
+  (info "Clearing the search application cache")
   ;; TODO enforce ingest management ACL here. - CMR-678
   (doseq [[cache-name cache] (get-in context [:system :caches])
           :when (not= cache-name :acls)]
