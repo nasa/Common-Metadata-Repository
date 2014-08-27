@@ -353,30 +353,36 @@
 (defn polygon-validation
   [concept-type params]
   (some->> params
-          :polygon
-          (spatial-codec/url-decode :polygon)
-          :errors))
+           :polygon
+           (spatial-codec/url-decode :polygon)
+           :errors))
 
 (defn bounding-box-validation
   [concept-type params]
   (some->> params
-          :bounding-box
-          (spatial-codec/url-decode :bounding-box)
-          :errors))
+           :bounding-box
+           (spatial-codec/url-decode :bounding-box)
+           :errors))
 
 (defn point-validation
   [concept-type params]
   (some->> params
-          :point
-          (spatial-codec/url-decode :point)
-          :errors))
+           :point
+           (spatial-codec/url-decode :point)
+           :errors))
 
 (defn line-validation
   [concept-type params]
   (some->> params
-          :line
-          (spatial-codec/url-decode :line)
-          :errors))
+           :line
+           (spatial-codec/url-decode :line)
+           :errors))
+
+(defn unrecognized-aql-params-validation
+  [_ params]
+  (map #(str "Parameter [" (csk/->snake_case_string % )"] was not recognized.")
+       (set/difference (set (keys params))
+                       (set [:page-size :page-num :sort-key :result-format :pretty :options]))))
 
 (def parameter-validations
   "A list of the functions that can validate parameters. They all accept parameters as an argument
@@ -403,11 +409,29 @@
    bounding-box-validation
    point-validation])
 
+(def aql-parameter-validations
+  "A list of functions that can validate the query parameters passed in with an AQL search.
+  They all accept parameters as an argument and return a list of errors."
+  [page-size-validation
+   page-num-validation
+   sort-key-validation
+   unrecognized-aql-params-validation])
+
 (defn validate-parameters
   "Validates parameters. Throws exceptions to send to the user. Returns parameters if validation
   was successful so it can be chained with other calls."
   [concept-type params]
   (let [errors (mapcat #(% concept-type params) parameter-validations)]
+    (when (seq errors)
+      (err/throw-service-errors :invalid-data errors)))
+  params)
+
+(defn validate-aql-parameters
+  "Validates the query parameters passed in with an AQL search.
+  Throws exceptions to send to the user. Returns parameters if validation
+  was successful so it can be chained with other calls."
+  [params]
+  (let [errors (mapcat #(% {} params) aql-parameter-validations)]
     (when (seq errors)
       (err/throw-service-errors :invalid-data errors)))
   params)
