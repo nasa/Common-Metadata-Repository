@@ -99,10 +99,8 @@
               :instrument
               :sensor
               :project
-              :day-night-flag
+              :day-night
               :downloadable
-              :online-only
-              :browse-only
               :browsable}})
 
 (defn sort-key-validation

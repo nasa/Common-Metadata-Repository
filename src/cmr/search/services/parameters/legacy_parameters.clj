@@ -18,7 +18,8 @@
    :echo-granule-id :concept-id
    :online-only :downloadable
    :provider-id :provider
-   :day-night-flag :day-night})
+   :day-night-flag :day-night
+   :browse-only :browsable})
 
 (defn merger
   "Make a sequence from supplied values."
@@ -26,13 +27,34 @@
   (let [make-seq #(if (sequential? %) % [%])]
     (concat (make-seq v1) (make-seq v2))))
 
+(defn- replace-lagacy-sort-key
+  "Replace legacy sort key with CMR version."
+  [sort-key]
+  (reduce (fn [memo, legacy-param]
+            (s/replace memo
+                       (name legacy-param)
+                       (name (legacy-param param-aliases))))
+          sort-key
+          (keys param-aliases)))
+
+(defn- replace-legacy-sort-keys
+  "Replace legacy sort keys with CMR versions."
+  [params]
+  (if-let [sort-key (:sort-key params)]
+    (assoc params :sort-key
+           (if (sequential? sort-key)
+             (map replace-lagacy-sort-key sort-key)
+             (replace-lagacy-sort-key sort-key)))
+    params))
+
 (defn replace-parameter-aliases
   "Walk the request params tree to replace aliases of parameter names."
   [params]
-  (w/postwalk #(if (map? %)
-                 (cu/rename-keys-with % param-aliases merger)
-                 %)
-              params))
+  (->> params
+       (w/postwalk #(if (map? %)
+                      (cu/rename-keys-with % param-aliases merger)
+                      %))
+       replace-legacy-sort-keys))
 
 (defn- psa-pre-validation
   "Check to see if the client has specified BOTH legacy format psa parameters and the current csv
@@ -173,10 +195,10 @@
   "Handle legacy styled science keywords or options."
   [concept-type params]
   (if-let [or-value (get-in params [:science-keywords :or])]
-      (-> params
-          (incubator/dissoc-in [:science-keywords :or])
-          (assoc-in [:options :science-keywords :or] or-value))
-      params))
+    (-> params
+        (incubator/dissoc-in [:science-keywords :or])
+        (assoc-in [:options :science-keywords :or] or-value))
+    params))
 
 (comment
   ;;;;;;;;;;
