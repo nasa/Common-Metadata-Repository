@@ -268,3 +268,17 @@
          "online_only" [g2 g1]
          "-downloadable" [g1 g2]
          "-online_only" [g1 g2])))
+
+(deftest granule-browse-only-sorting-test
+  (let [ru1 (dc/related-url "GET RELATED VISUALIZATION")
+        coll (d/ingest "PROV1" (dc/collection {}))
+        g1 (d/ingest "PROV1" (dg/granule coll {:related-urls [ru1]}))
+        g2 (d/ingest "PROV1" (dg/granule coll {}))]
+    (index/refresh-elastic-index)
+    (are [sort-key items]
+         (d/refs-match-order? items
+                              (search/find-refs :granule {:page-size 20
+                                                          :sort-key sort-key}))
+
+         "browse_only" [g2 g1]
+         "-browse_only" [g1 g2])))
