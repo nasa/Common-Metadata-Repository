@@ -13,8 +13,8 @@
             [cmr.system-int-test.utils.echo-util :as echo-util]))
 
 
-(defn create-provider
-  "Create the provider with the given provider id"
+(defn create-mdb-provider
+  "Create the provider with the given provider id in the metadata db"
   [provider-id]
   (client/post (url/create-provider-url)
                {:body (format "{\"provider-id\": \"%s\"}" provider-id)
@@ -128,30 +128,38 @@
   (client/post (url/search-reset-url) {:connection-manager (url/conn-mgr)})
   (index/refresh-elastic-index))
 
+(defn clear-caches
+  []
+  (client/post (url/indexer-clear-cache-url) {:connection-manager (url/conn-mgr)})
+  (client/post (url/search-clear-cache-url) {:connection-manager (url/conn-mgr)}))
+
 ;;; fixture - each test to call this fixture
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn create-provider
+  ([provider-guid provider-id]
+   (create-provider provider-guid provider-id true))
+  ([provider-guid provider-id grant-all?]
+   (create-mdb-provider provider-id)
+   (echo-util/create-providers {provider-guid provider-id})
+
+   (when grant-all?
+     (echo-util/grant [echo-util/guest-ace
+                       echo-util/registered-user-ace]
+                      (assoc (echo-util/catalog-item-id provider-guid)
+                             :collection-applicable true
+                             :granule-applicable true)))))
 
 (defn reset-fixture
   "New version of reset fixture that works with ECHO."
   ([provider-guid-id-map]
    (reset-fixture provider-guid-id-map true))
-  ([provider-guid-id-map grant-all]
+  ([provider-guid-id-map grant-all?]
    (fn [f]
      (try
        (reset)
-       ;; Create the providers in metadata db
-       (doseq [provider-id (vals provider-guid-id-map)]
-         (create-provider provider-id))
-
-       ;; Create the providers in mock echo.
-       (echo-util/create-providers provider-guid-id-map)
-
-       ;; Optionally grant permission to provider data
-       (when grant-all
-         (doseq [provider-guid (keys provider-guid-id-map)]
-           (echo-util/grant [echo-util/guest-ace
-                             echo-util/registered-user-ace]
-                            (echo-util/coll-catalog-item-id provider-guid))))
+       (doseq [[provider-guid provider-id] provider-guid-id-map]
+         (create-provider provider-guid provider-id grant-all?))
        (f)
        (finally
          (reset))))))
