@@ -133,9 +133,7 @@
   "Executes a search for concepts using the given aql. The concepts will be returned with
   concept id and native provider id along with hit count and timing info."
   [context params aql]
-  (let [params (->> params
-                    sanitize-params
-                    (pv/validate-aql-parameters))
+  (let [params (sanitize-params params)
         [query-creation-time query] (u/time-execution
                                       (->> aql
                                            (a/aql->query params)
