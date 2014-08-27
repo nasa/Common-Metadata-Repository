@@ -22,6 +22,16 @@ Provides a public search API for concepts in the CMR.
   * The response headers include CMR-Hits and CMR-Took which indicate the number of result hits
      and the time to build and execute the query, respectively.
 
+### Clear the cache cache
+
+    curl -i -XPOST http://localhost:3003/clear-cache
+
+### Reset the application to the initial state
+
+Every CMR application has a reset function to reset it back to it's initial state. Currently this only clears the cache so it is effectively the the same as the clear-cache endpoint.
+
+    curl -i -XPOST http://localhost:3003/reset
+
 ### Search for Collections
 
 #### Find all collections
@@ -438,12 +448,11 @@ Example of sorting by start_date in descending order: (Most recent data first)
 
 
 ### Retrieve concept with a given cmr-concept-id
+
     curl -i "http://localhost:3003/concepts/G100000-PROV1"
 
-### Reset cache
-    curl -i -XPOST -H "Content-Type: application/json" http://localhost:3003/reset
-
 ### Search with POST
+
 Search collections or granules with query parameters encoded form in POST request body.
 
     curl -i -XPOST http://localhost:3003/collections -d "dataset_id[]=Example%20DatasetId&dataset_id[]=Dataset2"
