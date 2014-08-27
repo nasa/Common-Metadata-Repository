@@ -41,6 +41,10 @@
       (index-svc/reset-indexes request-context)
       {:status 200})
 
+    (POST "/clear-cache" {:keys [request-context]}
+      (index-svc/clear-cache request-context)
+      {:status 200})
+
     (context "/reindex-provider-collections/:provider-id" [provider-id]
       (POST "/" {context :request-context}
         (index-svc/reindex-provider-collections context provider-id)

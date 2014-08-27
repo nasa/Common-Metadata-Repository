@@ -91,10 +91,16 @@
         {:term {:collection-concept-id id}}))))
 
 
+(deftracefn clear-cache
+  "Delegate reset elastic indices operation to index-set app"
+  [context]
+  (info "Clearing the indexer application cache")
+  (cache/reset-cache (-> context :system :caches :general))
+  (acl-cache/reset context))
+
 (deftracefn reset-indexes
   "Delegate reset elastic indices operation to index-set app"
   [context]
-  (cache/reset-cache (-> context :system :caches :general))
+  (clear-cache context)
   (es/reset-es-store context)
-  (cache/reset-cache (-> context :system :caches :general))
-  (acl-cache/reset context))
+  (clear-cache context))
