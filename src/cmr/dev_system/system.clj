@@ -14,7 +14,9 @@
             [cmr.common.lifecycle :as lifecycle]
             [cmr.spatial.dev.viz-helper :as viz-helper]
             [cmr.elastic-utils.embedded-elastic-server :as elastic-server]
-            [cmr.common.config :as config]))
+            [cmr.common.config :as config]
+            [cmr.dev-system.control :as control]
+            [cmr.common.api.web-server :as web]))
 
 
 (def app-control-functions
@@ -68,7 +70,8 @@
   ;; Sets a bit of global state for the application and system integration tests that will know how to talk to elastic
   (config/set-config-value! :elastic-port in-memory-elastic-port-for-connection)
   ;; The same in memory db is used for metadata db by itself and in search so they contain the same data
-  (let [in-memory-db (memory/create-db)]
+  (let [in-memory-db (memory/create-db)
+        control-server (web/create-web-server 2999 control/make-api)]
     {:apps {:mock-echo (mock-echo-system/create-system)
             :metadata-db (-> (mdb-system/create-system)
                              (assoc :db in-memory-db)
@@ -82,33 +85,37 @@
             :search (assoc-in (search-system/create-system)
                               [:metadata-db :db]
                               in-memory-db)}
-     :components {:elastic-server (elastic-server/create-server
-                                    in-memory-elastic-port
-                                    (+ in-memory-elastic-port 10)
-                                    "es_data/dev_system")
-                  ; :vdd-server (viz-helper/create-viz-server)
-                  }}))
+     :pre-components {:elastic-server (elastic-server/create-server
+                                        in-memory-elastic-port
+                                        (+ in-memory-elastic-port 10)
+                                        "es_data/dev_system")}
+     :post-components {:control-server control-server
+                       ; :vdd-server (viz-helper/create-viz-server)
+                       }}))
 
 (defmethod create-system :external-dbs
   [type]
-  {:apps {:mock-echo (mock-echo-system/create-system)
-          :metadata-db (mdb-system/create-system)
-          :bootstrap (bootstrap-system/create-system)
-          :indexer (indexer-system/create-system)
-          :index-set (index-set-system/create-system)
-          :ingest (ingest-system/create-system)
-          :search (search-system/create-system)}
-   :components {
-                ; :vdd-server (viz-helper/create-viz-server)
-                }})
+  (let [control-server (web/create-web-server 2999 control/make-api)]
+    {:apps {:mock-echo (mock-echo-system/create-system)
+            :metadata-db (mdb-system/create-system)
+            :bootstrap (bootstrap-system/create-system)
+            :indexer (indexer-system/create-system)
+            :index-set (index-set-system/create-system)
+            :ingest (ingest-system/create-system)
+            :search (search-system/create-system)}
+     :pre-components {}
+     :post-components {
+                       ; :vdd-server (viz-helper/create-viz-server)
+                       :control-server control-server
+                       }}))
 
 (defn- stop-components
-  [system]
+  [system components-key]
   (reduce (fn [system component]
-            (update-in system [:components component]
+            (update-in system [components-key component]
                        #(lifecycle/stop % system)))
           system
-          (keys (:components system))))
+          (keys (components-key system))))
 
 (defn- stop-apps
   [system]
@@ -119,16 +126,16 @@
           (reverse app-startup-order)))
 
 (defn- start-components
-  [system]
+  [system components-key]
   (reduce (fn [system component]
-            (update-in system [:components component]
+            (update-in system [components-key component]
                        #(try
                           (lifecycle/start % system)
                           (catch Exception e
                             (stop-components (stop-apps system))
                             (throw e)))))
           system
-          (keys (:components system))))
+          (keys (components-key system))))
 
 (defn- start-apps
   [system]
@@ -152,8 +159,10 @@
   (info "System starting")
 
   (-> this
-      start-components
-      start-apps))
+      (start-components :pre-components)
+      start-apps
+      (start-components :post-components)
+      ))
 
 
 (defn stop
@@ -163,5 +172,6 @@
   (info "System shutting down")
 
   (-> this
+      (stop-components :post-components)
       stop-apps
-      stop-components))
+      (stop-components :pre-components)))
