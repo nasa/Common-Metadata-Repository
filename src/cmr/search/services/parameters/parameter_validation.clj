@@ -102,7 +102,8 @@
               :day-night-flag
               :downloadable
               :online-only
-              :browse-only}})
+              :browse-only
+              :browsable}})
 
 (defn sort-key-validation
   "Validates the sort-key parameter if present"
