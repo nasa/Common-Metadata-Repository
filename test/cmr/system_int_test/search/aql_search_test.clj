@@ -100,35 +100,29 @@
          "S%R_" [coll1 coll2 coll3 coll4 coll5 coll6])))
 
 (deftest aql-search-with-query-parameters
-  (let [make-coll (fn [n entry-title]
-                    (d/ingest "PROV1" (dc/collection {:short-name entry-title
-                                                      :entry-title (str "coll" n)})))
-        coll1 (make-coll 1 "SHORT")
-        coll2 (make-coll 2 "SHORT")
-        coll3 (make-coll 3 "SHORT")
-        coll4 (make-coll 4 "SHORT")]
+  (let [make-coll (fn [n]
+                    (d/ingest "PROV1" (dc/collection {:entry-title (str n)})))
+        coll1 (make-coll 1)
+        coll2 (make-coll 2)
+        coll3 (make-coll 3)
+        coll4 (make-coll 4)]
     (index/refresh-elastic-index)
     ;; invalid query parameter
     (is (= {:errors ["Parameter [foo] was not recognized."]
             :status 422}
-           (search/find-refs-with-aql :collection
-                                      [{:shortName "SHORT"}]
-                                      {}
-                                      {:query-params {:foo true}})))
-    (are [search-str params items]
-         (let [refs (search/find-refs-with-aql :collection [{:shortName search-str}]
+           (search/find-refs-with-aql :collection [] {} {:query-params {:foo true}})))
+    (are [params items]
+         (let [refs (search/find-refs-with-aql :collection []
                                                {} {:query-params params})
                result (d/refs-match? items refs)]
            (when-not result
              (println "Expected:" (pr-str (map :entry-title items)))
              (println "Actual:" (pr-str (map :name (:refs refs)))))
            result)
-         ;; Exact matches
-         "SHORT" {:page-size 1} [coll1]
-         "SHORT" {:page-size 1 :page-num 3} [coll3]
-         ; TODO - enable this test when sort-key is supported
-         ;"SHORT" {:sort-key :entry-title} [coll1 coll2 coll3 coll4]
-         "SHORT" {} [coll1 coll2 coll3 coll4])))
+
+         {:page-size 1} [coll1]
+         {:page-size 1 :page-num 3} [coll3]
+         {} [coll1 coll2 coll3 coll4])))
 
 
 (deftest aql-search-with-multiple-conditions
