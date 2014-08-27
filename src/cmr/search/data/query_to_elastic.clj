@@ -80,6 +80,7 @@
              :sensor :sensor-sn.lowercase
              :project :project-refs.lowercase
              :day-night-flag :day-night.lowercase
+             :browse-only :browsable
              :score :_score}})
 
 (defn query->sort-params
