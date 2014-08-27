@@ -99,6 +99,31 @@
          "SH%RT" [coll1 coll2 coll3 coll4 coll5 coll6]
          "S%R_" [coll1 coll2 coll3 coll4 coll5 coll6])))
 
+(deftest aql-search-with-query-parameters
+  (let [make-coll (fn [n]
+                    (d/ingest "PROV1" (dc/collection {:entry-title (str n)})))
+        coll1 (make-coll 1)
+        coll2 (make-coll 2)
+        coll3 (make-coll 3)
+        coll4 (make-coll 4)]
+    (index/refresh-elastic-index)
+    ;; invalid query parameter
+    (is (= {:errors ["Parameter [foo] was not recognized."]
+            :status 422}
+           (search/find-refs-with-aql :collection [] {} {:query-params {:foo true}})))
+    (are [params items]
+         (let [refs (search/find-refs-with-aql :collection []
+                                               {} {:query-params params})
+               result (d/refs-match? items refs)]
+           (when-not result
+             (println "Expected:" (pr-str (map :entry-title items)))
+             (println "Actual:" (pr-str (map :name (:refs refs)))))
+           result)
+
+         {:page-size 1} [coll1]
+         {:page-size 1 :page-num 3} [coll3]
+         {} [coll1 coll2 coll3 coll4])))
+
 
 (deftest aql-search-with-multiple-conditions
   (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset1"
