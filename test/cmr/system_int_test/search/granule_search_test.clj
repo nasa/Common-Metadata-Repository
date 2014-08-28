@@ -365,8 +365,7 @@
            ;; Multiple values
            [gran1 gran2 gran3 gran4 gran5] [gran1-cid gran2-cid gran3-cid gran4-cid gran5-cid] {}
            [gran1 gran5] [gran1-cid gran5-cid] {:and false}
-           [] [gran1-cid gran5-cid] {:and true}
-           [] (s/lower-case gran1-cid) {:ignore-case false}))
+           [] [gran1-cid gran5-cid] {:and true}))
 
     (testing "search granule by echo granule id with aql"
       (are [items ids options]
@@ -376,8 +375,7 @@
            [gran1] gran1-cid {}
            [gran5] gran5-cid {}
            ;; Multiple values
-           [gran1 gran2 gran3 gran4 gran5] [gran1-cid gran2-cid gran3-cid gran4-cid gran5-cid] {}
-           [] (s/lower-case gran1-cid) {:ignore-case false}))
+           [gran1 gran2 gran3 gran4 gran5] [gran1-cid gran2-cid gran3-cid gran4-cid gran5-cid] {}))
 
     (testing "echo granule id search - disallow ignore case"
       (is (= {:status 422
