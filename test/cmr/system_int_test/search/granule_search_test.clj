@@ -16,7 +16,7 @@
 (comment
   (ingest/reset)
   (doseq [p ["PROV1" "PROV2" "CMR_T_PROV"]]
-    (ingest/create-provider p))
+    (ingest/create-provider (str "guid-" p) p))
 
   )
 

@@ -25,7 +25,7 @@
 (comment
 
   (ingest/reset)
-  (ingest/create-provider "PROV1")
+  (ingest/create-provider "provguid1" "PROV1")
 
   )
 

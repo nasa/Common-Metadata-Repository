@@ -20,7 +20,7 @@
     ;; The CI script must set this environment variable to make those work.
     (config/set-config-value! :colls-with-separate-indexes "C1-SEP_PROV1,C2-SEP_PROV1")
     (ingest/reset)
-    (ingest/create-provider "SEP_PROV1")
+    (ingest/create-provider "provguid1" "SEP_PROV1")
     (f)
     (finally
       (ingest/reset))))

@@ -86,7 +86,7 @@
 (comment
 
   (ingest/reset)
-  (ingest/create-provider "PROV1")
+  (ingest/create-provider "provguid1" "PROV1")
   (def coll1 (d/ingest "PROV1" (dc/collection)))
   (ingest/delete-concept coll1)
   (get-in user/system [:apps :metadata-db :db])

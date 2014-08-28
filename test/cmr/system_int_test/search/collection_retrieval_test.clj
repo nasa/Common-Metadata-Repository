@@ -13,9 +13,8 @@
 
 (comment
   (ingest/reset)
-  (ingest/create-provider "PROV1")
-  (ingest/create-provider "PROV2")
-  (e/create-providers {"provguid1" "PROV1" "provguid2" "PROV2"})
+  (ingest/create-provider "provguid1" "PROV1")
+  (ingest/create-provider "provguid2" "PROV2")
 
   (def user1-token (e/login "user1"))
 
