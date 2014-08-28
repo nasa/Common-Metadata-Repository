@@ -1,5 +1,5 @@
-(ns cmr.system-int-test.search.granule-search-browse-only-test
-  "Integration tests for searching by browse_only"
+(ns cmr.system-int-test.search.granule-search-browsable-test
+  "Integration tests for searching by browsable"
   (:require [clojure.test :refer :all]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.search-util :as search]
@@ -10,7 +10,7 @@
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
-(deftest search-granule-by-browse-only
+(deftest search-granule-by-browsable-or-browse-only
   (let [ru1 (dc/related-url "GET DATA")
         ru2 (dc/related-url "GET RELATED VISUALIZATION")
         ru3 (dc/related-url nil)
@@ -26,43 +26,30 @@
 
     (are [value items]
          (d/refs-match? items
+                              (search/find-refs :granule {:browsable value}))
+
+         true [g2 g4 g5]
+         false [g1 g3 g6]
+         "unset" [g1 g2 g3 g4 g5 g6])
+
+    (are [value items]
+         (d/refs-match? items
                               (search/find-refs :granule {:browse-only value}))
 
          true [g2 g4 g5]
-         false [g1 g3 g6])))
+         false [g1 g3 g6]
+         "unset" [g1 g2 g3 g4 g5 g6])
 
-(deftest search-granule-by-online-only
-  (let [ru1 (dc/related-url "GET DATA")
-        ru2 (dc/related-url "GET RELATED VISUALIZATION")
-        ru3 (dc/related-url nil)
-        coll (d/ingest "PROV1" (dc/collection {}))
-        gran1 (d/ingest "PROV1" (dg/granule coll {:related-urls [ru1]}))
-        gran2 (d/ingest "PROV1" (dg/granule coll {:related-urls [ru2]}))
-        gran3 (d/ingest "PROV1" (dg/granule coll {:related-urls [ru3]}))
-        gran4 (d/ingest "PROV1" (dg/granule coll {:related-urls [ru2 ru3]}))
-        gran5 (d/ingest "PROV1" (dg/granule coll {:related-urls [ru1 ru2]}))
-        gran6 (d/ingest "PROV1" (dg/granule coll {}))]
-
-    (index/refresh-elastic-index)
-
-    (testing "search by online only true."
-      (is (d/refs-match? [gran1 gran5]
-                         (search/find-refs :granule {:online-only true}))))
-    (testing "search by online only false."
-      (is (d/refs-match? [gran2 gran3 gran4 gran6]
-                         (search/find-refs :granule {:online-only false}))))
-    (testing "search by online only unset."
-      (is (d/refs-match? [gran1 gran2 gran3 gran4 gran5 gran6]
-                         (search/find-refs :granule {:online-only "unset"}))))
-    (testing "search by online only wrong value"
-      (is (= {:status 422 :errors ["Parameter :downloadable must take value of true, false, or unset, but was wrong"]}
-             (search/find-refs :granule {:online-only "wrong"}))))
-
-    (testing "search granule by online only with aql"
+    (testing "search granule by browse_only with aql"
       (are [items value]
            (d/refs-match? items
-                          (search/find-refs-with-aql :granule [{:onlineOnly value}]))
+                          (search/find-refs-with-aql :granule [{:browseOnly value}]))
 
-           ;; it is not possible to search onlineOnly false in AQL, so we don't have a test for that
-           [gran1 gran5] true
-           [gran1 gran5] nil))))
+           ;; it is not possible to search browseOnly false in AQL, so we don't have a test for that
+           [g2 g4 g5] true
+           [g2 g4 g5] nil))
+
+    (testing "search by browsable wrong value"
+      (is (= {:status 422 :errors ["Parameter :browsable must take value of true, false, or unset, but was wrong"]}
+             (search/find-refs :granule {:browsable "wrong"}))))))
+
