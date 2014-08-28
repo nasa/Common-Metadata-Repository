@@ -134,6 +134,19 @@
                 :from from
                 :fields fields)))
 
+(defn get-collection-permitted-groups
+  "Useful for debugging only. Gets collections along with their currently permitted groups"
+  [context]
+  (let [index-info (concept-type->index-info context :collection nil)
+        results (esd/search (context->conn context)
+                (:index-name index-info)
+                [(:type-name index-info)]
+                :query (q/match-all)
+                :size 10000
+                :fields ["permitted-group-ids"])]
+    (into {} (for [hit (get-in results [:hits :hits])]
+               [(:_id hit) (get-in hit [:fields :permitted-group-ids])]))))
+
 (defn execute-query
   "Executes a query to find concepts. Returns concept id, native id, and revision id."
   [context query]

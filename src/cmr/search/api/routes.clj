@@ -170,8 +170,9 @@
   [context path-w-extension params headers aql]
   (let [context (process-context-info context params headers)
         params (process-params params path-w-extension headers "application/xml")
-        _ (info (format "Searching for concepts from client %s in format %s with AQL: %s."
-                        (:client-id context) (:result-format params) aql))
+        _ (info (format "Searching for concepts from client %s in format %s with AQL: %s and query
+                        parameters %s."
+                        (:client-id context) (:result-format params) aql params))
         results (query-svc/find-concepts-by-aql context params aql)]
     (search-response params results)))
 

@@ -10,7 +10,8 @@
             [cmr.search.services.messages.common-messages :as msg]
             [clj-time.core :as t]
             [cmr.search.models.query :as qm]
-            [cmr.search.services.parameters.conversion :as pc]))
+            [cmr.search.services.parameters.conversion :as pc]
+            [cmr.search.services.parameters.parameter-validation :as pv]))
 
 (def aql-elem->converter-attrs
   "A mapping of aql element names to query condition types based on concept-type"
@@ -299,15 +300,16 @@
     (when (seq conditions) (qm/and-conds conditions))))
 
 (defn aql->query
-  "Converts aql into a query model."
+  "Validates parameters and converts aql into a query model."
   [params aql]
   (validate-aql aql)
-  (let [page-size (Integer. (get params :page-size qm/default-page-size))
+  (let [xml-struct (x/parse-str aql)
+        concept-type (get-concept-type xml-struct)
+        params (pv/validate-aql-parameters concept-type params)
+        page-size (Integer. (get params :page-size qm/default-page-size))
         page-num (Integer. (get params :page-num qm/default-page-num))
         pretty (get params :pretty false)
         result-format (:result-format params)
-        xml-struct (x/parse-str aql)
-        concept-type (get-concept-type xml-struct)
         condition (xml-struct->query-condition concept-type xml-struct)]
     (qm/query {:concept-type concept-type
                :page-size page-size

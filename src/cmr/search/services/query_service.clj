@@ -133,7 +133,8 @@
   "Executes a search for concepts using the given aql. The concepts will be returned with
   concept id and native provider id along with hit count and timing info."
   [context params aql]
-  (let [[query-creation-time query] (u/time-execution
+  (let [params (sanitize-params params)
+        [query-creation-time query] (u/time-execution
                                       (->> aql
                                            (a/aql->query params)
                                            (validate-query context)
@@ -142,7 +143,7 @@
         results (find-concepts context concept-type params query-creation-time query)]
     (info (format "Found %d %ss in %d ms in format %s with aql: %s."
                   (:hits results) (name concept-type) (:total-took results) (:result-format query)
-                  (pr-str params)))
+                  aql))
     results))
 
 (deftracefn find-concept-by-id
