@@ -278,7 +278,7 @@
 (defn validate-xml
   "Validates the XML against the ISO schema."
   [xml]
-  (v/validate-xml (io/resource "schema/iso/schema/1.0/ISO19115-2_EOS.xsd") xml))
+  (v/validate-xml (io/resource "schema/iso_mends/schema/1.0/ISO19115-2_EOS.xsd") xml))
 
 (comment
 
