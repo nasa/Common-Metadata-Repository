@@ -281,4 +281,6 @@
                                                           :sort-key sort-key}))
 
          "browse_only" [g2 g1]
-         "-browse_only" [g1 g2])))
+         "-browse_only" [g1 g2]
+         "browsable" [g2 g1]
+         "-browsable" [g1 g2])))
