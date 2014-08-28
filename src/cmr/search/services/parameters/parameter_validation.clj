@@ -99,9 +99,9 @@
               :instrument
               :sensor
               :project
-              :day-night-flag
+              :day-night
               :downloadable
-              :online-only}})
+              :browsable}})
 
 (defn sort-key-validation
   "Validates the sort-key parameter if present"
