@@ -1,0 +1,699 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mai:MI_Metadata xmlns:gco="http://www.isotc211.org/2005/gco"
+                 xmlns:gml="http://www.opengis.net/gml/3.2"
+                 xmlns:xlink="http://www.w3.org/1999/xlink"
+                 xmlns:cat="http://www.isotc211.org/2005/cat/1.0/2013-06-24"
+                 xmlns:cit="http://www.isotc211.org/2005/cit/1.0/2013-06-24"
+                 xmlns:gcx="http://www.isotc211.org/2005/gcx/1.0/2013-06-24"
+                 xmlns:gex="http://www.isotc211.org/2005/gex/1.0/2013-06-24"
+                 xmlns:lan="http://www.isotc211.org/2005/lan/1.0/2013-06-24"
+                 xmlns:srv="http://www.isotc211.org/2005/srv/2.0/2013-06-24"
+                 xmlns:mac="http://www.isotc211.org/2005/mac/1.0/2013-06-24"
+                 xmlns:mas="http://www.isotc211.org/2005/mas/1.0/2013-06-24"
+                 xmlns:mdb="http://www.isotc211.org/2005/mdb/1.0/2013-06-24"
+                 xmlns:mcc="http://www.isotc211.org/2005/mcc/1.0/2013-06-24"
+                 xmlns:mco="http://www.isotc211.org/2005/mco/1.0/2013-06-24"
+                 xmlns:mda="http://www.isotc211.org/2005/mda/1.0/2013-06-24"
+                 xmlns:mdt="http://www.isotc211.org/2005/mdt/1.0/2013-06-24"
+                 xmlns:mex="http://www.isotc211.org/2005/mex/1.0/2013-06-24"
+                 xmlns:mil="http://www.isotc211.org/2005/mil/1.0/2013-06-24"
+                 xmlns:mrl="http://www.isotc211.org/2005/mrl/1.0/2013-06-24"
+                 xmlns:mmd="http://www.isotc211.org/2005/mmd/1.0/2013-06-24"
+                 xmlns:mmi="http://www.isotc211.org/2005/mmi/1.0/2013-06-24"
+                 xmlns:mpc="http://www.isotc211.org/2005/mpc/1.0/2013-06-24"
+                 xmlns:mrc="http://www.isotc211.org/2005/mrc/1.0/2013-06-24"
+                 xmlns:mrd="http://www.isotc211.org/2005/mrd/1.0/2013-06-24"
+                 xmlns:mri="http://www.isotc211.org/2005/mri/1.0/2013-06-24"
+                 xmlns:mrs="http://www.isotc211.org/2005/mrs/1.0/2013-06-24"
+                 xmlns:msr="http://www.isotc211.org/2005/msr/1.0/2013-06-24"
+                 xmlns:mai="http://www.isotc211.org/2005/mai/1.0/2013-06-24"
+                 xmlns:mdq="http://www.isotc211.org/2005/mdq/1.0/2013-06-24"
+                 xmlns:eos="http://earthdata.nasa.gov/schema/eos"
+                 xmlns:dqm="http://www.isotc211.org/2005/dqm/1.0/2013-06-24"
+                 xmlns:mic="http://www.isotc211.org/2005/mic/1.0/2013-06-24"
+                 xmlns:mis="http://www.isotc211.org/2005/mis/1.0/2013-06-24"
+                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><!--Other Properties all:2,ci:1,ii:0,si:0,pli:0,pri:0,qi:1,gi:0,ci:0,dk:0--><mdb:metadataIdentifier>
+      <mcc:MD_Identifier>
+         <mcc:code>
+            <gco:CharacterString>gov.nasa.echo:</gco:CharacterString>
+         </mcc:code>
+         <mcc:codeSpace>
+            <gco:CharacterString>gov.nasa.echo</gco:CharacterString>
+         </mcc:codeSpace>
+      </mcc:MD_Identifier>
+   </mdb:metadataIdentifier>
+   <mdb:defaultLocale>
+      <lan:PT_Locale>
+         <lan:language>
+            <lan:LanguageCode codeList="codeListLocation#LanguageCode" codeListValue="anyValidURI">eng</lan:LanguageCode>
+         </lan:language>
+         <lan:characterEncoding>
+            <lan:MD_CharacterSetCode codeList="codeListLocation#MD_CharacterSetCode"
+                                     codeListValue="anyValidURI">utf8</lan:MD_CharacterSetCode>
+         </lan:characterEncoding>
+      </lan:PT_Locale>
+   </mdb:defaultLocale>
+   <mdb:metadataScope>
+      <mdb:MD_MetadataScope>
+         <mdb:resourceScope>
+            <mcc:MD_ScopeCode codeList="codeListLocation#MD_ScopeCode" codeListValue="dataset">dataset</mcc:MD_ScopeCode>
+         </mdb:resourceScope>
+      </mdb:MD_MetadataScope>
+   </mdb:metadataScope>
+   <mdb:contact gco:nilReason="missing"/>
+   <mdb:dateInfo>
+      <cit:CI_Date>
+         <cit:date>
+            <gco:DateTime>2014-05-06T16:12:31.447-06:00</gco:DateTime>
+         </cit:date>
+         <cit:dateType>
+            <cit:CI_DateTypeCode codeList="codeListLocation#CI_DateTypeCode" codeListValue="creation">creation</cit:CI_DateTypeCode>
+         </cit:dateType>
+      </cit:CI_Date>
+   </mdb:dateInfo>
+   <mdb:metadataStandard>
+      <cit:CI_Citation>
+         <cit:title>
+            <gco:CharacterString>ISO 19115-1 Geographic Information - Metadata Part 1 Fundamentals</gco:CharacterString>
+         </cit:title>
+         <cit:edition>
+            <gco:CharacterString>ISO/FDIS 19115-1:2013(E)</gco:CharacterString>
+         </cit:edition>
+      </cit:CI_Citation>
+   </mdb:metadataStandard>
+   <mdb:identificationInfo>
+      <mri:MD_DataIdentification>
+         <mri:citation>
+            <cit:CI_Citation>
+               <cit:title gco:nilReason="missing"/>
+               <cit:date>
+                  <cit:CI_Date>
+                     <cit:date>
+                        <gco:DateTime>T00:00:00</gco:DateTime>
+                     </cit:date>
+                     <cit:dateType>
+                        <cit:CI_DateTypeCode codeList="codeListLocation#CI_DateTypeCode" codeListValue="revision">revision</cit:CI_DateTypeCode>
+                     </cit:dateType>
+                  </cit:CI_Date>
+               </cit:date>
+               <cit:date>
+                  <cit:CI_Date>
+                     <cit:date>
+                        <gco:DateTime>T00:00:00</gco:DateTime>
+                     </cit:date>
+                     <cit:dateType>
+                        <cit:CI_DateTypeCode codeList="codeListLocation#CI_DateTypeCode" codeListValue="creation">creation</cit:CI_DateTypeCode>
+                     </cit:dateType>
+                  </cit:CI_Date>
+               </cit:date>
+               <cit:edition gco:nilReason="missing"/>
+               <cit:identifier>
+                  <mcc:MD_Identifier>
+                     <mcc:code gco:nilReason="missing"/>
+                  </mcc:MD_Identifier>
+               </cit:identifier>
+               <cit:identifier>
+                  <mcc:MD_Identifier>
+                     <mcc:code gco:nilReason="missing"/>
+                  </mcc:MD_Identifier>
+               </cit:identifier>
+            </cit:CI_Citation>
+         </mri:citation>
+         <mri:abstract>
+            <gco:CharacterString>Version Description:</gco:CharacterString>
+         </mri:abstract>
+         <mri:purpose gco:nilReason="missing"/>
+         <mri:extent>
+            <gex:EX_Extent id="boundingExtent">
+               <gex:description gco:nilReason=""/>
+            </gex:EX_Extent>
+         </mri:extent>
+         <mri:processingLevel>
+            <mcc:MD_Identifier>
+               <mcc:code>
+                  <gco:CharacterString/>
+               </mcc:code>
+               <mcc:description>
+                  <gco:CharacterString/>
+               </mcc:description>
+            </mcc:MD_Identifier>
+         </mri:processingLevel>
+         <mri:resourceConstraints>
+            <mco:MD_LegalConstraints>
+               <mco:useLimitation gco:nilReason="missing"/>
+               <mco:otherConstraints>
+                  <gco:CharacterString>Collection Restriction Flag:</gco:CharacterString>
+               </mco:otherConstraints>
+            </mco:MD_LegalConstraints>
+         </mri:resourceConstraints>
+         <mri:defaultLocale>
+            <lan:PT_Locale>
+               <lan:language>
+                  <lan:LanguageCode codeList="codeListLocation#LanguageCode" codeListValue="anyValidURI">eng</lan:LanguageCode>
+               </lan:language>
+               <lan:characterEncoding>
+                  <lan:MD_CharacterSetCode codeList="codeListLocation#MD_CharacterSetCode"
+                                           codeListValue="anyValidURI">utf8</lan:MD_CharacterSetCode>
+               </lan:characterEncoding>
+            </lan:PT_Locale>
+         </mri:defaultLocale>
+         <mri:supplementalInformation>
+            <gco:CharacterString/>
+         </mri:supplementalInformation>
+      </mri:MD_DataIdentification>
+   </mdb:identificationInfo>
+   <mdb:contentInfo>
+      <mrc:MD_CoverageDescription>
+         <mrc:attributeDescription/>
+         <mrc:attributeGroup>
+            <mrc:MD_AttributeGroup>
+               <mrc:contentType>
+                  <mrc:MD_CoverageContentTypeCode codeList="codeListLocation#MD_CoverageContentTypeCode"
+                                                  codeListValue="physicalMeasurement">physicalMeasurement</mrc:MD_CoverageContentTypeCode>
+               </mrc:contentType>
+               <mrc:attribute>
+                  <mrc:MD_Band>
+                     <mrc:sequenceIdentifier>
+                        <gco:MemberName>
+                           <gco:aName>
+                              <gco:CharacterString>/Granule/MeasuredParameters/MeasuredParameter[1]/ParameterName</gco:CharacterString>
+                           </gco:aName>
+                           <gco:attributeType gco:nilReason="unknown"/>
+                        </gco:MemberName>
+                     </mrc:sequenceIdentifier>
+                  </mrc:MD_Band>
+               </mrc:attribute>
+               <mrc:attribute>
+                  <mrc:MD_Band>
+                     <mrc:sequenceIdentifier>
+                        <gco:MemberName>
+                           <gco:aName>
+                              <gco:CharacterString>/Granule/MeasuredParameters/MeasuredParameter[2]/ParameterName</gco:CharacterString>
+                           </gco:aName>
+                           <gco:attributeType gco:nilReason="unknown"/>
+                        </gco:MemberName>
+                     </mrc:sequenceIdentifier>
+                  </mrc:MD_Band>
+               </mrc:attribute>
+            </mrc:MD_AttributeGroup>
+         </mrc:attributeGroup>
+      </mrc:MD_CoverageDescription>
+   </mdb:contentInfo>
+   <mdb:contentInfo>
+      <mrc:MD_CoverageDescription>
+         <mrc:attributeDescription gco:nilReason="missing"/>
+         <mrc:attributeGroup>
+            <mrc:MD_AttributeGroup>
+               <mrc:contentType>
+                  <mrc:MD_CoverageContentTypeCode codeList="codeListLocation#MD_CoverageContentTypeCode"
+                                                  codeListValue="physicalMeasurement">physicalMeasurement</mrc:MD_CoverageContentTypeCode>
+               </mrc:contentType>
+               <mrc:attribute>
+                  <mrc:MD_SampleDimension>
+                     <mrc:otherPropertyType>
+                        <gco:RecordType xlink:href="http://www.echo.nasa.gov/ingest/schemas/operations/Collection.xsd#xpointer(//element[@name='AdditionalAttributes'])">Echo Additional Attributes</gco:RecordType>
+                     </mrc:otherPropertyType>
+                     <mrc:otherProperty>
+                        <gco:Record>
+                           <eos:AdditionalAttributes>
+                              <eos:AdditionalAttribute>
+                                 <eos:reference>
+                                    <eos:EOS_AdditionalAttributeDescription>
+                                       <eos:type>
+                                          <eos:EOS_AdditionalAttributeTypeCode codeList="http://earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeTypeCode"
+                                                                               codeListValue="contentInformation">contentInformation</eos:EOS_AdditionalAttributeTypeCode>
+                                       </eos:type>
+                                       <eos:name>
+                                          <gco:CharacterString>contentInformation</gco:CharacterString>
+                                       </eos:name>
+                                    </eos:EOS_AdditionalAttributeDescription>
+                                 </eos:reference>
+                                 <eos:value>
+                                    <gco:CharacterString>/*/AdditionalAttributes[1]/AdditionalAttribute[contentInformation]/Values[1]/Value[1]</gco:CharacterString>
+                                 </eos:value>
+                                 <eos:value>
+                                    <gco:CharacterString>/*/AdditionalAttributes[1]/AdditionalAttribute[contentInformation]/Values[1]/Value[2]</gco:CharacterString>
+                                 </eos:value>
+                                 <eos:value>
+                                    <gco:CharacterString>/*/AdditionalAttributes[1]/AdditionalAttribute[contentInformation]/Values[1]/Value[3]</gco:CharacterString>
+                                 </eos:value>
+                                 <eos:value>
+                                    <gco:CharacterString>/*/AdditionalAttributes[1]/AdditionalAttribute[contentInformation]/Values[1]/Value[4]</gco:CharacterString>
+                                 </eos:value>
+                              </eos:AdditionalAttribute>
+                           </eos:AdditionalAttributes>
+                        </gco:Record>
+                     </mrc:otherProperty>
+                  </mrc:MD_SampleDimension>
+               </mrc:attribute>
+            </mrc:MD_AttributeGroup>
+         </mrc:attributeGroup>
+      </mrc:MD_CoverageDescription>
+   </mdb:contentInfo>
+   <mdb:distributionInfo>
+      <mrd:MD_Distribution>
+         <mrd:distributor>
+            <mrd:MD_Distributor>
+               <mrd:distributorContact gco:nilReason="missing"/>
+               <mrd:distributionOrderProcess>
+                  <mrd:MD_StandardOrderProcess>
+                     <mrd:fees gco:nilReason="missing"/>
+                  </mrd:MD_StandardOrderProcess>
+               </mrd:distributionOrderProcess>
+               <mrd:distributorTransferOptions>
+                  <mrd:MD_DigitalTransferOptions/>
+               </mrd:distributorTransferOptions>
+            </mrd:MD_Distributor>
+         </mrd:distributor>
+      </mrd:MD_Distribution>
+   </mdb:distributionInfo>
+   <mdb:dataQualityInfo>
+      <mdq:DQ_DataQuality>
+         <mdq:scope>
+            <mcc:MD_Scope>
+               <mcc:level>
+                  <mcc:MD_ScopeCode codeList="codeListLocation#MD_ScopeCode" codeListValue="dataset">dataset</mcc:MD_ScopeCode>
+               </mcc:level>
+            </mcc:MD_Scope>
+         </mdq:scope>
+         <mdq:report>
+            <mdq:DQ_QuantitativeAttributeAccuracy>
+               <mdq:measure>
+                  <mdq:DQ_MeasureReference>
+                     <mdq:nameOfMeasure>
+                        <gco:CharacterString>qualityInformation</gco:CharacterString>
+                     </mdq:nameOfMeasure>
+                  </mdq:DQ_MeasureReference>
+               </mdq:measure>
+               <mdq:result>
+                  <mdq:DQ_QuantitativeResult>
+                     <mdq:value>
+                        <gco:Record>
+                           <eos:AdditionalAttributes>
+                              <eos:AdditionalAttribute>
+                                 <eos:reference>
+                                    <eos:EOS_AdditionalAttributeDescription>
+                                       <eos:type>
+                                          <eos:EOS_AdditionalAttributeTypeCode codeList="http://earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeTypeCode"
+                                                                               codeListValue="qualityInformation">qualityInformation</eos:EOS_AdditionalAttributeTypeCode>
+                                       </eos:type>
+                                       <eos:name>
+                                          <gco:CharacterString>qualityInformation</gco:CharacterString>
+                                       </eos:name>
+                                    </eos:EOS_AdditionalAttributeDescription>
+                                 </eos:reference>
+                                 <eos:value>
+                                    <gco:CharacterString>/*/AdditionalAttributes[1]/AdditionalAttribute[qualityInformation]/Values[1]/Value[1]</gco:CharacterString>
+                                 </eos:value>
+                                 <eos:value>
+                                    <gco:CharacterString>/*/AdditionalAttributes[1]/AdditionalAttribute[qualityInformation]/Values[1]/Value[2]</gco:CharacterString>
+                                 </eos:value>
+                                 <eos:value>
+                                    <gco:CharacterString>/*/AdditionalAttributes[1]/AdditionalAttribute[qualityInformation]/Values[1]/Value[3]</gco:CharacterString>
+                                 </eos:value>
+                                 <eos:value>
+                                    <gco:CharacterString>/*/AdditionalAttributes[1]/AdditionalAttribute[qualityInformation]/Values[1]/Value[4]</gco:CharacterString>
+                                 </eos:value>
+                              </eos:AdditionalAttribute>
+                           </eos:AdditionalAttributes>
+                        </gco:Record>
+                     </mdq:value>
+                     <mdq:valueUnit gco:nilReason="missing"/>
+                     <mdq:valueType>
+                        <gco:RecordType xlink:href="http://www.echo.nasa.gov/ingest/schemas/operations/Collection.xsd#xpointer(//element[@name='AdditionalAttributes'])">Echo Additional Attributes</gco:RecordType>
+                     </mdq:valueType>
+                  </mdq:DQ_QuantitativeResult>
+               </mdq:result>
+            </mdq:DQ_QuantitativeAttributeAccuracy>
+         </mdq:report>
+      </mdq:DQ_DataQuality>
+   </mdb:dataQualityInfo>
+   <mdb:dataQualityInfo>
+      <mdq:DQ_DataQuality>
+         <mdq:scope>
+            <mcc:MD_Scope>
+               <mcc:level>
+                  <mcc:MD_ScopeCode codeList="codeListLocation#MD_ScopeCode" codeListValue="attribute">attribute</mcc:MD_ScopeCode>
+               </mcc:level>
+               <mcc:levelDescription>
+                  <mcc:MD_ScopeDescription>
+                     <mcc:attributes>
+                        <gco:CharacterString>/Granule/MeasuredParameters/MeasuredParameter[1]/ParameterName</gco:CharacterString>
+                     </mcc:attributes>
+                  </mcc:MD_ScopeDescription>
+               </mcc:levelDescription>
+            </mcc:MD_Scope>
+         </mdq:scope>
+         <mdq:report>
+            <mdq:DQ_QuantitativeAttributeAccuracy>
+               <mdq:measure>
+                  <mdq:DQ_MeasureReference>
+                     <mdq:nameOfMeasure>
+                        <gco:CharacterString>QAPercentMissingData</gco:CharacterString>
+                     </mdq:nameOfMeasure>
+                  </mdq:DQ_MeasureReference>
+               </mdq:measure>
+               <mdq:result>
+                  <mdq:DQ_QuantitativeResult>
+                     <mdq:value>
+                        <gco:Record xsi:type="gco:Real_PropertyType">
+                           <gco:Real>/Granule/MeasuredParameters/MeasuredParameter[1]/QAStats/QAPercentMissingData</gco:Real>
+                        </gco:Record>
+                     </mdq:value>
+                     <mdq:valueUnit gco:nilReason="missing"/>
+                  </mdq:DQ_QuantitativeResult>
+               </mdq:result>
+            </mdq:DQ_QuantitativeAttributeAccuracy>
+         </mdq:report>
+         <mdq:report>
+            <mdq:DQ_QuantitativeAttributeAccuracy>
+               <mdq:measure>
+                  <mdq:DQ_MeasureReference>
+                     <mdq:nameOfMeasure>
+                        <gco:CharacterString>QAPercentOutOfBoundsData</gco:CharacterString>
+                     </mdq:nameOfMeasure>
+                  </mdq:DQ_MeasureReference>
+               </mdq:measure>
+               <mdq:result>
+                  <mdq:DQ_QuantitativeResult>
+                     <mdq:value>
+                        <gco:Record xsi:type="gco:Real_PropertyType">
+                           <gco:Real>/Granule/MeasuredParameters/MeasuredParameter[1]/QAStats/QAPercentOutOfBoundsData</gco:Real>
+                        </gco:Record>
+                     </mdq:value>
+                     <mdq:valueUnit gco:nilReason="missing"/>
+                  </mdq:DQ_QuantitativeResult>
+               </mdq:result>
+            </mdq:DQ_QuantitativeAttributeAccuracy>
+         </mdq:report>
+         <mdq:report>
+            <mdq:DQ_QuantitativeAttributeAccuracy>
+               <mdq:measure>
+                  <mdq:DQ_MeasureReference>
+                     <mdq:nameOfMeasure>
+                        <gco:CharacterString>QAPercentInterpolatedData</gco:CharacterString>
+                     </mdq:nameOfMeasure>
+                  </mdq:DQ_MeasureReference>
+               </mdq:measure>
+               <mdq:result>
+                  <mdq:DQ_QuantitativeResult>
+                     <mdq:value>
+                        <gco:Record xsi:type="gco:Real_PropertyType">
+                           <gco:Real>/Granule/MeasuredParameters/MeasuredParameter[1]/QAStats/QAPercentInterpolatedData</gco:Real>
+                        </gco:Record>
+                     </mdq:value>
+                     <mdq:valueUnit gco:nilReason="missing"/>
+                  </mdq:DQ_QuantitativeResult>
+               </mdq:result>
+            </mdq:DQ_QuantitativeAttributeAccuracy>
+         </mdq:report>
+         <mdq:report>
+            <mdq:DQ_QuantitativeAttributeAccuracy>
+               <mdq:measure>
+                  <mdq:DQ_MeasureReference>
+                     <mdq:nameOfMeasure>
+                        <gco:CharacterString>QAPercentCloudCover</gco:CharacterString>
+                     </mdq:nameOfMeasure>
+                  </mdq:DQ_MeasureReference>
+               </mdq:measure>
+               <mdq:result>
+                  <mdq:DQ_QuantitativeResult>
+                     <mdq:value>
+                        <gco:Record xsi:type="gco:Real_PropertyType">
+                           <gco:Real>/Granule/MeasuredParameters/MeasuredParameter[1]/QAStats/QAPercentCloudCover</gco:Real>
+                        </gco:Record>
+                     </mdq:value>
+                     <mdq:valueUnit gco:nilReason="missing"/>
+                  </mdq:DQ_QuantitativeResult>
+               </mdq:result>
+            </mdq:DQ_QuantitativeAttributeAccuracy>
+         </mdq:report>
+         <mdq:report>
+            <mdq:DQ_QuantitativeAttributeAccuracy>
+               <mdq:measure>
+                  <mdq:DQ_MeasureReference>
+                     <mdq:nameOfMeasure>
+                        <gco:CharacterString>AutomaticQualityFlag</gco:CharacterString>
+                     </mdq:nameOfMeasure>
+                     <mdq:measureDescription>
+                        <gco:CharacterString>/Granule/MeasuredParameters/MeasuredParameter[1]/QAFlags/AutomaticQualityFlagExplanation</gco:CharacterString>
+                     </mdq:measureDescription>
+                  </mdq:DQ_MeasureReference>
+               </mdq:measure>
+               <mdq:result>
+                  <mdq:DQ_QuantitativeResult>
+                     <mdq:value>
+                        <gco:Record xsi:type="gco:CharacterString_PropertyType">
+                           <gco:CharacterString>/Granule/MeasuredParameters/MeasuredParameter[1]/QAFlags/AutomaticQualityFlag</gco:CharacterString>
+                        </gco:Record>
+                     </mdq:value>
+                     <mdq:valueUnit gco:nilReason="missing"/>
+                  </mdq:DQ_QuantitativeResult>
+               </mdq:result>
+            </mdq:DQ_QuantitativeAttributeAccuracy>
+         </mdq:report>
+         <mdq:report>
+            <mdq:DQ_QuantitativeAttributeAccuracy>
+               <mdq:measure>
+                  <mdq:DQ_MeasureReference>
+                     <mdq:nameOfMeasure>
+                        <gco:CharacterString>OperationalQualityFlag</gco:CharacterString>
+                     </mdq:nameOfMeasure>
+                     <mdq:measureDescription>
+                        <gco:CharacterString>/Granule/MeasuredParameters/MeasuredParameter[1]/QAFlags/OperationalQualityFlagExplanation</gco:CharacterString>
+                     </mdq:measureDescription>
+                  </mdq:DQ_MeasureReference>
+               </mdq:measure>
+               <mdq:result>
+                  <mdq:DQ_QuantitativeResult>
+                     <mdq:value>
+                        <gco:Record xsi:type="gco:CharacterString_PropertyType">
+                           <gco:CharacterString>/Granule/MeasuredParameters/MeasuredParameter[1]/QAFlags/OperationalQualityFlag</gco:CharacterString>
+                        </gco:Record>
+                     </mdq:value>
+                     <mdq:valueUnit gco:nilReason="missing"/>
+                  </mdq:DQ_QuantitativeResult>
+               </mdq:result>
+            </mdq:DQ_QuantitativeAttributeAccuracy>
+         </mdq:report>
+         <mdq:report>
+            <mdq:DQ_QuantitativeAttributeAccuracy>
+               <mdq:measure>
+                  <mdq:DQ_MeasureReference>
+                     <mdq:nameOfMeasure>
+                        <gco:CharacterString>ScienceQualityFlag</gco:CharacterString>
+                     </mdq:nameOfMeasure>
+                     <mdq:measureDescription>
+                        <gco:CharacterString>/Granule/MeasuredParameters/MeasuredParameter[1]/QAFlags/ScienceQualityFlagExplanation</gco:CharacterString>
+                     </mdq:measureDescription>
+                  </mdq:DQ_MeasureReference>
+               </mdq:measure>
+               <mdq:result>
+                  <mdq:DQ_QuantitativeResult>
+                     <mdq:value>
+                        <gco:Record xsi:type="gco:CharacterString_PropertyType">
+                           <gco:CharacterString>/Granule/MeasuredParameters/MeasuredParameter[1]/QAFlags/ScienceQualityFlag</gco:CharacterString>
+                        </gco:Record>
+                     </mdq:value>
+                     <mdq:valueUnit gco:nilReason="missing"/>
+                  </mdq:DQ_QuantitativeResult>
+               </mdq:result>
+            </mdq:DQ_QuantitativeAttributeAccuracy>
+         </mdq:report>
+      </mdq:DQ_DataQuality>
+   </mdb:dataQualityInfo>
+   <mdb:dataQualityInfo>
+      <mdq:DQ_DataQuality>
+         <mdq:scope>
+            <mcc:MD_Scope>
+               <mcc:level>
+                  <mcc:MD_ScopeCode codeList="codeListLocation#MD_ScopeCode" codeListValue="attribute">attribute</mcc:MD_ScopeCode>
+               </mcc:level>
+               <mcc:levelDescription>
+                  <mcc:MD_ScopeDescription>
+                     <mcc:attributes>
+                        <gco:CharacterString>/Granule/MeasuredParameters/MeasuredParameter[2]/ParameterName</gco:CharacterString>
+                     </mcc:attributes>
+                  </mcc:MD_ScopeDescription>
+               </mcc:levelDescription>
+            </mcc:MD_Scope>
+         </mdq:scope>
+         <mdq:report>
+            <mdq:DQ_QuantitativeAttributeAccuracy>
+               <mdq:measure>
+                  <mdq:DQ_MeasureReference>
+                     <mdq:nameOfMeasure>
+                        <gco:CharacterString>QAPercentMissingData</gco:CharacterString>
+                     </mdq:nameOfMeasure>
+                  </mdq:DQ_MeasureReference>
+               </mdq:measure>
+               <mdq:result>
+                  <mdq:DQ_QuantitativeResult>
+                     <mdq:value>
+                        <gco:Record xsi:type="gco:Real_PropertyType">
+                           <gco:Real>/Granule/MeasuredParameters/MeasuredParameter[2]/QAStats/QAPercentMissingData</gco:Real>
+                        </gco:Record>
+                     </mdq:value>
+                     <mdq:valueUnit gco:nilReason="missing"/>
+                  </mdq:DQ_QuantitativeResult>
+               </mdq:result>
+            </mdq:DQ_QuantitativeAttributeAccuracy>
+         </mdq:report>
+         <mdq:report>
+            <mdq:DQ_QuantitativeAttributeAccuracy>
+               <mdq:measure>
+                  <mdq:DQ_MeasureReference>
+                     <mdq:nameOfMeasure>
+                        <gco:CharacterString>QAPercentOutOfBoundsData</gco:CharacterString>
+                     </mdq:nameOfMeasure>
+                  </mdq:DQ_MeasureReference>
+               </mdq:measure>
+               <mdq:result>
+                  <mdq:DQ_QuantitativeResult>
+                     <mdq:value>
+                        <gco:Record xsi:type="gco:Real_PropertyType">
+                           <gco:Real>/Granule/MeasuredParameters/MeasuredParameter[2]/QAStats/QAPercentOutOfBoundsData</gco:Real>
+                        </gco:Record>
+                     </mdq:value>
+                     <mdq:valueUnit gco:nilReason="missing"/>
+                  </mdq:DQ_QuantitativeResult>
+               </mdq:result>
+            </mdq:DQ_QuantitativeAttributeAccuracy>
+         </mdq:report>
+         <mdq:report>
+            <mdq:DQ_QuantitativeAttributeAccuracy>
+               <mdq:measure>
+                  <mdq:DQ_MeasureReference>
+                     <mdq:nameOfMeasure>
+                        <gco:CharacterString>QAPercentInterpolatedData</gco:CharacterString>
+                     </mdq:nameOfMeasure>
+                  </mdq:DQ_MeasureReference>
+               </mdq:measure>
+               <mdq:result>
+                  <mdq:DQ_QuantitativeResult>
+                     <mdq:value>
+                        <gco:Record xsi:type="gco:Real_PropertyType">
+                           <gco:Real>/Granule/MeasuredParameters/MeasuredParameter[2]/QAStats/QAPercentInterpolatedData</gco:Real>
+                        </gco:Record>
+                     </mdq:value>
+                     <mdq:valueUnit gco:nilReason="missing"/>
+                  </mdq:DQ_QuantitativeResult>
+               </mdq:result>
+            </mdq:DQ_QuantitativeAttributeAccuracy>
+         </mdq:report>
+         <mdq:report>
+            <mdq:DQ_QuantitativeAttributeAccuracy>
+               <mdq:measure>
+                  <mdq:DQ_MeasureReference>
+                     <mdq:nameOfMeasure>
+                        <gco:CharacterString>QAPercentCloudCover</gco:CharacterString>
+                     </mdq:nameOfMeasure>
+                  </mdq:DQ_MeasureReference>
+               </mdq:measure>
+               <mdq:result>
+                  <mdq:DQ_QuantitativeResult>
+                     <mdq:value>
+                        <gco:Record xsi:type="gco:Real_PropertyType">
+                           <gco:Real>/Granule/MeasuredParameters/MeasuredParameter[2]/QAStats/QAPercentCloudCover</gco:Real>
+                        </gco:Record>
+                     </mdq:value>
+                     <mdq:valueUnit gco:nilReason="missing"/>
+                  </mdq:DQ_QuantitativeResult>
+               </mdq:result>
+            </mdq:DQ_QuantitativeAttributeAccuracy>
+         </mdq:report>
+         <mdq:report>
+            <mdq:DQ_QuantitativeAttributeAccuracy>
+               <mdq:measure>
+                  <mdq:DQ_MeasureReference>
+                     <mdq:nameOfMeasure>
+                        <gco:CharacterString>AutomaticQualityFlag</gco:CharacterString>
+                     </mdq:nameOfMeasure>
+                     <mdq:measureDescription>
+                        <gco:CharacterString>/Granule/MeasuredParameters/MeasuredParameter[2]/QAFlags/AutomaticQualityFlagExplanation</gco:CharacterString>
+                     </mdq:measureDescription>
+                  </mdq:DQ_MeasureReference>
+               </mdq:measure>
+               <mdq:result>
+                  <mdq:DQ_QuantitativeResult>
+                     <mdq:value>
+                        <gco:Record xsi:type="gco:CharacterString_PropertyType">
+                           <gco:CharacterString>/Granule/MeasuredParameters/MeasuredParameter[2]/QAFlags/AutomaticQualityFlag</gco:CharacterString>
+                        </gco:Record>
+                     </mdq:value>
+                     <mdq:valueUnit gco:nilReason="missing"/>
+                  </mdq:DQ_QuantitativeResult>
+               </mdq:result>
+            </mdq:DQ_QuantitativeAttributeAccuracy>
+         </mdq:report>
+         <mdq:report>
+            <mdq:DQ_QuantitativeAttributeAccuracy>
+               <mdq:measure>
+                  <mdq:DQ_MeasureReference>
+                     <mdq:nameOfMeasure>
+                        <gco:CharacterString>OperationalQualityFlag</gco:CharacterString>
+                     </mdq:nameOfMeasure>
+                     <mdq:measureDescription>
+                        <gco:CharacterString>/Granule/MeasuredParameters/MeasuredParameter[2]/QAFlags/OperationalQualityFlagExplanation</gco:CharacterString>
+                     </mdq:measureDescription>
+                  </mdq:DQ_MeasureReference>
+               </mdq:measure>
+               <mdq:result>
+                  <mdq:DQ_QuantitativeResult>
+                     <mdq:value>
+                        <gco:Record xsi:type="gco:CharacterString_PropertyType">
+                           <gco:CharacterString>/Granule/MeasuredParameters/MeasuredParameter[2]/QAFlags/OperationalQualityFlag</gco:CharacterString>
+                        </gco:Record>
+                     </mdq:value>
+                     <mdq:valueUnit gco:nilReason="missing"/>
+                  </mdq:DQ_QuantitativeResult>
+               </mdq:result>
+            </mdq:DQ_QuantitativeAttributeAccuracy>
+         </mdq:report>
+         <mdq:report>
+            <mdq:DQ_QuantitativeAttributeAccuracy>
+               <mdq:measure>
+                  <mdq:DQ_MeasureReference>
+                     <mdq:nameOfMeasure>
+                        <gco:CharacterString>ScienceQualityFlag</gco:CharacterString>
+                     </mdq:nameOfMeasure>
+                     <mdq:measureDescription>
+                        <gco:CharacterString>/Granule/MeasuredParameters/MeasuredParameter[2]/QAFlags/ScienceQualityFlagExplanation</gco:CharacterString>
+                     </mdq:measureDescription>
+                  </mdq:DQ_MeasureReference>
+               </mdq:measure>
+               <mdq:result>
+                  <mdq:DQ_QuantitativeResult>
+                     <mdq:value>
+                        <gco:Record xsi:type="gco:CharacterString_PropertyType">
+                           <gco:CharacterString>/Granule/MeasuredParameters/MeasuredParameter[2]/QAFlags/ScienceQualityFlag</gco:CharacterString>
+                        </gco:Record>
+                     </mdq:value>
+                     <mdq:valueUnit gco:nilReason="missing"/>
+                  </mdq:DQ_QuantitativeResult>
+               </mdq:result>
+            </mdq:DQ_QuantitativeAttributeAccuracy>
+         </mdq:report>
+      </mdq:DQ_DataQuality>
+   </mdb:dataQualityInfo>
+   <mdb:resourceLineage>
+      <mrl:LI_Lineage>
+         <mrl:processStep>
+            <mil:LE_ProcessStep>
+               <mrl:description gco:nilReason="unknown"/>
+            </mil:LE_ProcessStep>
+         </mrl:processStep>
+      </mrl:LI_Lineage>
+   </mdb:resourceLineage>
+   <mdb:metadataMaintenance>
+      <mmi:MD_MaintenanceInformation>
+         <mmi:maintenanceAndUpdateFrequency>
+            <mmi:MD_MaintenanceFrequencyCode codeList="codeListLocation#MD_MaintenanceFrequencyCode"
+                                             codeListValue="irregular">irregular</mmi:MD_MaintenanceFrequencyCode>
+         </mmi:maintenanceAndUpdateFrequency>
+         <mmi:maintenanceNote>
+            <gco:CharacterString>Translated from ECHO using ECHOToISO19115-3.xsl Version: 0.8 (May 6, 2014)</gco:CharacterString>
+         </mmi:maintenanceNote>
+      </mmi:MD_MaintenanceInformation>
+   </mdb:metadataMaintenance>
+</mai:MI_Metadata>

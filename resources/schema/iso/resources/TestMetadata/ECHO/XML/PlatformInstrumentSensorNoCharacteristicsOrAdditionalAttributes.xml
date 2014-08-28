@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Granule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../schema%20201111/Granule.xsd">
+  <!-- 
+    This record is part of the test of the ECHO > ISO acquisition information transform.
+    It includes a platform, two instruments (one with OperationModes and one without, and a sensor with no characteristics
+    The first instrument requires extensins, the second not.
+  -->
+  <GranuleUR>PlatformInstrumentSensorNoCharacteristicsOrAdditionalAttributes</GranuleUR>
+  <InsertTime>2014-03-13T11:50:00</InsertTime>
+  <LastUpdate>2014-03-13T11:50:00</LastUpdate>
+  <DeleteTime>2014-03-13T11:50:00</DeleteTime>
+  <Collection>
+    <ShortName>PlatformInstrumentSensorTest</ShortName>
+    <VersionId>1.0</VersionId>
+  </Collection>
+  <Platforms>
+    <Platform>
+      <ShortName>/*//Platform/ShortName</ShortName>
+      <Instruments>
+        <Instrument>
+          <ShortName>/*//Platform//Instrument/ShortName</ShortName>
+          <Characteristics/>
+          <Sensors>
+            <Sensor>
+              <ShortName>/*//Platform//Instrument//Sensor/ShortName</ShortName>
+              <Characteristics/>
+            </Sensor>
+            <Sensor>
+              <ShortName>/*//Platform//Instrument//Sensor[2]/ShortName</ShortName>
+              <Characteristics/>
+            </Sensor>
+          </Sensors>
+          <OperationModes/>
+        </Instrument>
+        <Instrument>
+          <ShortName>/*//Platform//Instrument[2]/ShortName</ShortName>
+          <Characteristics/>
+          <Sensors>
+            <Sensor>
+              <ShortName>/*//Platform//Instrument[2]//Sensor/ShortName</ShortName>
+              <Characteristics/>
+            </Sensor>
+            <Sensor>
+              <ShortName>/*//Platform//Instrument[2]//Sensor[2]/ShortName</ShortName>
+              <Characteristics/>
+            </Sensor>
+          </Sensors>
+          <OperationModes>
+            <OperationMode>/Granule//Platform//Instrument/OperationModes/OperationMode</OperationMode>
+          </OperationModes>
+        </Instrument>
+      </Instruments>
+    </Platform>
+  </Platforms>
+
+</Granule>

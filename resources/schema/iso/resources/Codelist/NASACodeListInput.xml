@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<codeLists>
+    <codeList>
+        <description>identification of when a given event occurred</description>
+        <identifier codeSpace="ISOTC211/19115">EOS_AdditionalAttributeTypeCode</identifier>
+        <value>geographicIdentifier</value>
+        <value>qualityInformation</value>
+        <value>instrumentInformation</value>
+        <value>sensorInformation</value>
+        <value>contentInformation</value>
+        <value>platformInformation</value>
+        <value>citation.identifier</value>
+        <value>descriptiveKeyword</value>
+        <value>processingInformation</value>
+    </codeList>
+    <codeList>
+        <description>identification of when a given event occurred</description>
+        <identifier codeSpace="ISOTC211/19115">EOS_AdditionalAttributeDataTypeCode</identifier>
+        <value>string</value>
+        <value>float</value>
+        <value>int</value>
+        <value>boolean</value>
+        <value>date</value>
+        <value>time</value>
+        <value>dateTime</value>
+        <value>dateString</value>
+        <value>timeString</value>
+        <value>dateTimeString</value>
+    </codeList>
+</codeLists>

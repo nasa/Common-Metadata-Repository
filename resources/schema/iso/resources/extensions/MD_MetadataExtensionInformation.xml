@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gmd:MD_MetadataExtensionInformation  xsi:schemaLocation="http://www.isotc211.org/2005/gmi http://www.ngdc.noaa.gov/metadata/published/xsd/schema.xsd" xmlns:gco="http://www.isotc211.org/2005/gco" xmlns:gmd="http://www.isotc211.org/2005/gmd" xmlns:gml="http://www.opengis.net/gml" xmlns:gts="http://www.isotc211.org/2005/gts" xmlns:gmi="http://www.isotc211.org/2005/gmi" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <gmd:extendedElementInformation>
+        <gmd:MD_ExtendedElementInformation>
+            <gmd:name>
+                <gco:CharacterString>instrument</gco:CharacterString>
+            </gmd:name>
+            <gmd:definition>
+                <gco:CharacterString>A keyword which gives a standard name for an instrument.</gco:CharacterString>
+            </gmd:definition>
+            <gmd:dataType>
+                <gmd:MD_DatatypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_DatatypeCode"
+                    codeListValue="codelistElement">codelistElement</gmd:MD_DatatypeCode>
+            </gmd:dataType>
+            <gmd:parentEntity>
+                <gco:CharacterString>MD_KeywordTypeCode</gco:CharacterString>
+            </gmd:parentEntity>
+            <gmd:rule><gco:CharacterString>This extends the MD_KeywordTypeCode codeList to include instrument.</gco:CharacterString></gmd:rule>
+            <gmd:rationale>
+                <gco:CharacterString>This is a keyword type currently used by the NASA Global Change Master Directory (GCMD). There is
+                    currently no codeList element for this keyword type.</gco:CharacterString>
+            </gmd:rationale>
+            <gmd:source>
+                <gmd:CI_ResponsibleParty>
+                    <gmd:organisationName>
+                        <gco:CharacterString>DOC/NOAA/NESDIS/NGDC > National Geophysical Data Center, NESDIS, NOAA, U.S. Department of
+                            Commerce</gco:CharacterString>
+                    </gmd:organisationName>
+                    <gmd:contactInfo>
+                        <gmd:CI_Contact>
+                            <gmd:address>
+                                <gmd:CI_Address>
+                                    <gmd:electronicMailAddress>
+                                        <gco:CharacterString>ngdc.geospatial@noaa.gov</gco:CharacterString>
+                                    </gmd:electronicMailAddress>
+                                </gmd:CI_Address>
+                            </gmd:address>
+                        </gmd:CI_Contact>
+                    </gmd:contactInfo>
+                    <gmd:role>
+                        <gmd:CI_RoleCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode"
+                            codeListValue="originator">originator</gmd:CI_RoleCode>
+                    </gmd:role>
+                </gmd:CI_ResponsibleParty>
+            </gmd:source>
+        </gmd:MD_ExtendedElementInformation>
+    </gmd:extendedElementInformation>
+    <gmd:extendedElementInformation>
+        <gmd:MD_ExtendedElementInformation>
+            <gmd:name>
+                <gco:CharacterString>dataCenter</gco:CharacterString>
+            </gmd:name>
+            <gmd:definition>
+                <gco:CharacterString>A keyword which gives a standard name for a data center.</gco:CharacterString>
+            </gmd:definition>
+            <gmd:dataType>
+                <gmd:MD_DatatypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_DatatypeCode"
+                    codeListValue="codelistElement">codelistElement</gmd:MD_DatatypeCode>
+            </gmd:dataType>
+            <gmd:parentEntity>
+                <gco:CharacterString>MD_KeywordTypeCode</gco:CharacterString>
+            </gmd:parentEntity>
+            <gmd:rule><gco:CharacterString>This extends the MD_KeywordTypeCode codeList to include dataCenter.</gco:CharacterString></gmd:rule>
+            <gmd:rationale>
+                <gco:CharacterString>This is a keyword type currently used by the NASA Global Change Master Directory (GCMD). There is
+                    currently no codeList element for this keyword type.</gco:CharacterString>
+            </gmd:rationale>
+            <gmd:source>
+                <gmd:CI_ResponsibleParty>
+                    <gmd:organisationName>
+                        <gco:CharacterString>DOC/NOAA/NESDIS/NGDC > National Geophysical Data Center, NESDIS, NOAA, U.S. Department of
+                            Commerce</gco:CharacterString>
+                    </gmd:organisationName>
+                    <gmd:contactInfo>
+                        <gmd:CI_Contact>
+                            <gmd:address>
+                                <gmd:CI_Address>
+                                    <gmd:electronicMailAddress>
+                                        <gco:CharacterString>ngdc.geospatial@noaa.gov</gco:CharacterString>
+                                    </gmd:electronicMailAddress>
+                                </gmd:CI_Address>
+                            </gmd:address>
+                        </gmd:CI_Contact>
+                    </gmd:contactInfo>
+                    <gmd:role>
+                        <gmd:CI_RoleCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode"
+                            codeListValue="originator">originator</gmd:CI_RoleCode>
+                    </gmd:role>
+                </gmd:CI_ResponsibleParty>
+            </gmd:source>
+        </gmd:MD_ExtendedElementInformation>
+    </gmd:extendedElementInformation>
+    <gmd:extendedElementInformation>
+        <gmd:MD_ExtendedElementInformation>
+            <gmd:name>
+                <gco:CharacterString>platform</gco:CharacterString>
+            </gmd:name>
+            <gmd:definition>
+                <gco:CharacterString>A keyword which gives a standard name for a platform.</gco:CharacterString>
+            </gmd:definition>
+            <gmd:dataType>
+                <gmd:MD_DatatypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_DatatypeCode"
+                    codeListValue="codelistElement">codelistElement</gmd:MD_DatatypeCode>
+            </gmd:dataType>
+            <gmd:parentEntity>
+                <gco:CharacterString>MD_KeywordTypeCode</gco:CharacterString>
+            </gmd:parentEntity>
+            <gmd:rule><gco:CharacterString>This extends the MD_KeywordTypeCode codeList to include platform</gco:CharacterString></gmd:rule>
+            <gmd:rationale>
+                <gco:CharacterString>This is a keyword type currently used by the NASA Global Change Master Directory (GCMD). There is
+                    currently no codeList element for this keyword type.</gco:CharacterString>
+            </gmd:rationale>
+            <gmd:source>
+                <gmd:CI_ResponsibleParty>
+                    <gmd:organisationName>
+                        <gco:CharacterString>DOC/NOAA/NESDIS/NGDC > National Geophysical Data Center, NESDIS, NOAA, U.S. Department of
+                            Commerce</gco:CharacterString>
+                    </gmd:organisationName>
+                    <gmd:contactInfo>
+                        <gmd:CI_Contact>
+                            <gmd:address>
+                                <gmd:CI_Address>
+                                    <gmd:electronicMailAddress>
+                                        <gco:CharacterString>ngdc.geospatial@noaa.gov</gco:CharacterString>
+                                    </gmd:electronicMailAddress>
+                                </gmd:CI_Address>
+                            </gmd:address>
+                        </gmd:CI_Contact>
+                    </gmd:contactInfo>
+                    <gmd:role>
+                        <gmd:CI_RoleCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode"
+                            codeListValue="originator">originator</gmd:CI_RoleCode>
+                    </gmd:role>
+                </gmd:CI_ResponsibleParty>
+            </gmd:source>
+        </gmd:MD_ExtendedElementInformation>
+    </gmd:extendedElementInformation>
+    <gmd:extendedElementInformation>
+        <gmd:MD_ExtendedElementInformation>
+            <gmd:name>
+                <gco:CharacterString>project</gco:CharacterString>
+            </gmd:name>
+            <gmd:definition>
+                <gco:CharacterString>A keyword which gives a standard name for a project.</gco:CharacterString>
+            </gmd:definition>
+            <gmd:dataType>
+                <gmd:MD_DatatypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_DatatypeCode"
+                    codeListValue="codelistElement">codelistElement</gmd:MD_DatatypeCode>
+            </gmd:dataType>
+            <gmd:parentEntity>
+                <gco:CharacterString>MD_KeywordTypeCode</gco:CharacterString>
+            </gmd:parentEntity>
+            <gmd:rule><gco:CharacterString>This extends the MD_KeywordTypeCode codeList to include project.</gco:CharacterString></gmd:rule>
+            <gmd:rationale>
+                <gco:CharacterString>This is a keyword type currently used by the NASA Global Change Master Directory (GCMD). There is
+                    currently no codeList element for this keyword type.</gco:CharacterString>
+            </gmd:rationale>
+            <gmd:source>
+                <gmd:CI_ResponsibleParty>
+                    <gmd:organisationName>
+                        <gco:CharacterString>DOC/NOAA/NESDIS/NGDC > National Geophysical Data Center, NESDIS, NOAA, U.S. Department of
+                            Commerce</gco:CharacterString>
+                    </gmd:organisationName>
+                    <gmd:contactInfo>
+                        <gmd:CI_Contact>
+                            <gmd:address>
+                                <gmd:CI_Address>
+                                    <gmd:electronicMailAddress>
+                                        <gco:CharacterString>ngdc.geospatial@noaa.gov</gco:CharacterString>
+                                    </gmd:electronicMailAddress>
+                                </gmd:CI_Address>
+                            </gmd:address>
+                        </gmd:CI_Contact>
+                    </gmd:contactInfo>
+                    <gmd:role>
+                        <gmd:CI_RoleCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode"
+                            codeListValue="originator">originator</gmd:CI_RoleCode>
+                    </gmd:role>
+                </gmd:CI_ResponsibleParty>
+            </gmd:source>
+        </gmd:MD_ExtendedElementInformation>
+    </gmd:extendedElementInformation>
+	</gmd:MD_MetadataExtensionInformation>
+
