@@ -93,6 +93,7 @@
 (def element-key-type-mapping
   "A mapping of AQL element key to its type, only keys with a type other than string are listed."
   {:onlineOnly :boolean
+   :browseOnly :boolean
    :temporal :temporal
    :equatorCrossingDate :date-range
    :equatorCrossingLongitude :range
