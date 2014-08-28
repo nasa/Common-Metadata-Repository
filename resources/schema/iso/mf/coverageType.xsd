@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema targetNamespace="http://eden.ign.fr/xsd/metafor/20050620/mf" xmlns:gco="http://www.isotc211.org/2005/gco" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:mf="http://eden.ign.fr/xsd/metafor/20050620/mf">
+	<!-- ================================== Imports ================================== -->
+	<xs:import namespace="http://www.isotc211.org/2005/gco" schemaLocation="../../gco/1.0/gco.xsd"/>
+	<!-- ########################################################################### -->
+	<!-- ########################################################################### -->
+	<!-- ================================== Classes ================================= -->
+	<!--====================================-->
+	<!--Couleur RVB-->
+	<xs:complexType name="RGBColour">
+		<xs:sequence>
+			<xs:element name="red" type="gco:Integer_PropertyType"/>
+			<xs:element name="green" type="gco:Integer_PropertyType"/>
+			<xs:element name="blue" type="gco:Integer_PropertyType"/>
+		</xs:sequence>
+	</xs:complexType>
+	<!--====================================-->
+	<!--Echelle de gris-->
+	<xs:complexType name="mono">
+		<xs:sequence>
+			<xs:element name="measure" type="gco:Integer_PropertyType"/>
+		</xs:sequence>
+	</xs:complexType>
+	<!--====================================-->
+	<!--Code couleur-->
+	<xs:complexType name="colourCoded">
+		<xs:sequence>
+			<xs:element name="measure" type="gco:Integer_PropertyType"/>
+		</xs:sequence>
+	</xs:complexType>
+	<!--====================================-->
+	<!--Land cover-->
+	<xs:complexType name="LandCover">
+		<xs:sequence>
+			<xs:element name="measure" type="gco:Integer_PropertyType"/>
+		</xs:sequence>
+	</xs:complexType>
+	<!--====================================-->
+	<!--=======EOF=======-->
+</xs:schema>

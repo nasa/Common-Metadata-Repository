@@ -1,0 +1,93 @@
+Initializing Schema Quality Checker. Please wait ...
+SchemaQualityChecker has been initialized
+D:\mpescher\EXPERTISE\GeneXSD\FrenchProject\UMLmodels\ProfilDNG3D\Schema-Essais\METAFOR-v10\gml\base\coverage.xsd (file 1 of 1) now being read ...
+ERROR
+ file = file:D:/mpescher/EXPERTISE/GeneXSD/FrenchProject/UMLmodels/ProfilDNG3D/Schema-Essais/METAFOR-v10/gml/base/valueObjects.xsd line 117 column 102
+SEVERITY: 1
+ERROR TYPE: 2
+MESSAGE 
+SUBSTITUTION GROUP ERROR :
+The type of the element declaration, element http://www.opengis.net/gml:CategoryExtent, is a valid derivation of the type of the substitution group head, element http://www.opengis.net/gml:AbstractValue [ located at file:D:/mpescher/EXPERTISE/GeneXSD/FrenchProject/UMLmodels/ProfilDNG3D/Schema-Essais/METAFOR-v10/gml/base/valueObjects.xsd ]. However,  the value of the "finalDefault" attribute of the schema element where element http://www.opengis.net/gml:AbstractValue [ located at file:D:/mpescher/EXPERTISE/GeneXSD/FrenchProject/UMLmodels/ProfilDNG3D/Schema-Essais/METAFOR-v10/gml/base/valueObjects.xsd ] is defined makes this substitution impermissable. Action: relax the "final" attribute on element http://www.opengis.net/gml:AbstractValue [ located at file:D:/mpescher/EXPERTISE/GeneXSD/FrenchProject/UMLmodels/ProfilDNG3D/Schema-Essais/METAFOR-v10/gml/base/valueObjects.xsd ]. You may alter "finalDefault" attribute on schema and add that existing value to all the other element declarations in the schema.
+
+   ------------------------------------------------------------------------ 
+ERROR
+ file = file:D:/mpescher/EXPERTISE/GeneXSD/FrenchProject/UMLmodels/ProfilDNG3D/Schema-Essais/METAFOR-v10/gml/base/valueObjects.xsd line 125 column 96
+SEVERITY: 1
+ERROR TYPE: 2
+MESSAGE 
+SUBSTITUTION GROUP ERROR :
+The type of the element declaration, element http://www.opengis.net/gml:CountExtent, is a valid derivation of the type of the substitution group head, element http://www.opengis.net/gml:AbstractValue [ located at file:D:/mpescher/EXPERTISE/GeneXSD/FrenchProject/UMLmodels/ProfilDNG3D/Schema-Essais/METAFOR-v10/gml/base/valueObjects.xsd ]. However,  the value of the "finalDefault" attribute of the schema element where element http://www.opengis.net/gml:AbstractValue [ located at file:D:/mpescher/EXPERTISE/GeneXSD/FrenchProject/UMLmodels/ProfilDNG3D/Schema-Essais/METAFOR-v10/gml/base/valueObjects.xsd ] is defined makes this substitution impermissable. Action: relax the "final" attribute on element http://www.opengis.net/gml:AbstractValue [ located at file:D:/mpescher/EXPERTISE/GeneXSD/FrenchProject/UMLmodels/ProfilDNG3D/Schema-Essais/METAFOR-v10/gml/base/valueObjects.xsd ]. You may alter "finalDefault" attribute on schema and add that existing value to all the other element declarations in the schema.
+
+   ------------------------------------------------------------------------ 
+ERROR
+ file = file:D:/mpescher/EXPERTISE/GeneXSD/FrenchProject/UMLmodels/ProfilDNG3D/Schema-Essais/METAFOR-v10/gml/base/valueObjects.xsd line 131 column 102
+SEVERITY: 1
+ERROR TYPE: 2
+MESSAGE 
+SUBSTITUTION GROUP ERROR :
+The type of the element declaration, element http://www.opengis.net/gml:QuantityExtent, is a valid derivation of the type of the substitution group head, element http://www.opengis.net/gml:AbstractValue [ located at file:D:/mpescher/EXPERTISE/GeneXSD/FrenchProject/UMLmodels/ProfilDNG3D/Schema-Essais/METAFOR-v10/gml/base/valueObjects.xsd ]. However,  the value of the "finalDefault" attribute of the schema element where element http://www.opengis.net/gml:AbstractValue [ located at file:D:/mpescher/EXPERTISE/GeneXSD/FrenchProject/UMLmodels/ProfilDNG3D/Schema-Essais/METAFOR-v10/gml/base/valueObjects.xsd ] is defined makes this substitution impermissable. Action: relax the "final" attribute on element http://www.opengis.net/gml:AbstractValue [ located at file:D:/mpescher/EXPERTISE/GeneXSD/FrenchProject/UMLmodels/ProfilDNG3D/Schema-Essais/METAFOR-v10/gml/base/valueObjects.xsd ]. You may alter "finalDefault" attribute on schema and add that existing value to all the other element declarations in the schema.
+
+   ------------------------------------------------------------------------ 
+ERROR
+ file = file:D:/mpescher/EXPERTISE/GeneXSD/FrenchProject/UMLmodels/ProfilDNG3D/Schema-Essais/METAFOR-v10/gml/base/valueObjects.xsd line 18 column 113
+SEVERITY: 1
+ERROR TYPE: 2
+MESSAGE 
+SUBSTITUTION GROUP ERROR :
+The type of the element declaration, element http://www.opengis.net/gml:BooleanList, is a valid derivation of the type of the substitution group head, element http://www.opengis.net/gml:AbstractScalarValueList [ located at file:D:/mpescher/EXPERTISE/GeneXSD/FrenchProject/UMLmodels/ProfilDNG3D/Schema-Essais/METAFOR-v10/gml/base/valueObjects.xsd ]. However,  the value of the "finalDefault" attribute of the schema element where element http://www.opengis.net/gml:AbstractScalarValueList [ located at file:D:/mpescher/EXPERTISE/GeneXSD/FrenchProject/UMLmodels/ProfilDNG3D/Schema-Essais/METAFOR-v10/gml/base/valueObjects.xsd ] is defined makes this substitution impermissable. Action: relax the "final" attribute on element http://www.opengis.net/gml:AbstractScalarValueList [ located at file:D:/mpescher/EXPERTISE/GeneXSD/FrenchProject/UMLmodels/ProfilDNG3D/Schema-Essais/METAFOR-v10/gml/base/valueObjects.xsd ]. You may alter "finalDefault" attribute on schema and add that existing value to all the other element declarations in the schema.
+
+   ------------------------------------------------------------------------ 
+ERROR
+ file = file:D:/mpescher/EXPERTISE/GeneXSD/FrenchProject/UMLmodels/ProfilDNG3D/Schema-Essais/METAFOR-v10/gml/base/valueObjects.xsd line 28 column 115
+SEVERITY: 1
+ERROR TYPE: 2
+MESSAGE 
+SUBSTITUTION GROUP ERROR :
+The type of the element declaration, element http://www.opengis.net/gml:CategoryList, is a valid derivation of the type of the substitution group head, element http://www.opengis.net/gml:AbstractScalarValueList [ located at file:D:/mpescher/EXPERTISE/GeneXSD/FrenchProject/UMLmodels/ProfilDNG3D/Schema-Essais/METAFOR-v10/gml/base/valueObjects.xsd ]. However,  the value of the "finalDefault" attribute of the schema element where element http://www.opengis.net/gml:AbstractScalarValueList [ located at file:D:/mpescher/EXPERTISE/GeneXSD/FrenchProject/UMLmodels/ProfilDNG3D/Schema-Essais/METAFOR-v10/gml/base/valueObjects.xsd ] is defined makes this substitution impermissable. Action: relax the "final" attribute on element http://www.opengis.net/gml:AbstractScalarValueList [ located at file:D:/mpescher/EXPERTISE/GeneXSD/FrenchProject/UMLmodels/ProfilDNG3D/Schema-Essais/METAFOR-v10/gml/base/valueObjects.xsd ]. You may alter "finalDefault" attribute on schema and add that existing value to all the other element declarations in the schema.
+
+   ------------------------------------------------------------------------ 
+ERROR
+ file = file:D:/mpescher/EXPERTISE/GeneXSD/FrenchProject/UMLmodels/ProfilDNG3D/Schema-Essais/METAFOR-v10/gml/base/valueObjects.xsd line 38 column 111
+SEVERITY: 1
+ERROR TYPE: 2
+MESSAGE 
+SUBSTITUTION GROUP ERROR :
+The type of the element declaration, element http://www.opengis.net/gml:CountList, is a valid derivation of the type of the substitution group head, element http://www.opengis.net/gml:AbstractScalarValueList [ located at file:D:/mpescher/EXPERTISE/GeneXSD/FrenchProject/UMLmodels/ProfilDNG3D/Schema-Essais/METAFOR-v10/gml/base/valueObjects.xsd ]. However,  the value of the "finalDefault" attribute of the schema element where element http://www.opengis.net/gml:AbstractScalarValueList [ located at file:D:/mpescher/EXPERTISE/GeneXSD/FrenchProject/UMLmodels/ProfilDNG3D/Schema-Essais/METAFOR-v10/gml/base/valueObjects.xsd ] is defined makes this substitution impermissable. Action: relax the "final" attribute on element http://www.opengis.net/gml:AbstractScalarValueList [ located at file:D:/mpescher/EXPERTISE/GeneXSD/FrenchProject/UMLmodels/ProfilDNG3D/Schema-Essais/METAFOR-v10/gml/base/valueObjects.xsd ]. You may alter "finalDefault" attribute on schema and add that existing value to all the other element declarations in the schema.
+
+   ------------------------------------------------------------------------ 
+ERROR
+ file = file:D:/mpescher/EXPERTISE/GeneXSD/FrenchProject/UMLmodels/ProfilDNG3D/Schema-Essais/METAFOR-v10/gml/base/valueObjects.xsd line 48 column 118
+SEVERITY: 1
+ERROR TYPE: 2
+MESSAGE 
+SUBSTITUTION GROUP ERROR :
+The type of the element declaration, element http://www.opengis.net/gml:QuantityList, is a valid derivation of the type of the substitution group head, element http://www.opengis.net/gml:AbstractScalarValueList [ located at file:D:/mpescher/EXPERTISE/GeneXSD/FrenchProject/UMLmodels/ProfilDNG3D/Schema-Essais/METAFOR-v10/gml/base/valueObjects.xsd ]. However,  the value of the "finalDefault" attribute of the schema element where element http://www.opengis.net/gml:AbstractScalarValueList [ located at file:D:/mpescher/EXPERTISE/GeneXSD/FrenchProject/UMLmodels/ProfilDNG3D/Schema-Essais/METAFOR-v10/gml/base/valueObjects.xsd ] is defined makes this substitution impermissable. Action: relax the "final" attribute on element http://www.opengis.net/gml:AbstractScalarValueList [ located at file:D:/mpescher/EXPERTISE/GeneXSD/FrenchProject/UMLmodels/ProfilDNG3D/Schema-Essais/METAFOR-v10/gml/base/valueObjects.xsd ]. You may alter "finalDefault" attribute on schema and add that existing value to all the other element declarations in the schema.
+
+   ------------------------------------------------------------------------ 
+ERROR
+ file = file:D:/mpescher/EXPERTISE/GeneXSD/FrenchProject/UMLmodels/ProfilDNG3D/Schema-Essais/METAFOR-v10/gml/base/valueObjects.xsd line 49 column 103
+SEVERITY: 1
+ERROR TYPE: 2
+MESSAGE 
+SUBSTITUTION GROUP ERROR : the type of the element declaration,element http://www.opengis.net/gml:AbstractValue, is not compatible with the type of its substitution group head.
+
+
+   ------------------------------------------------------------------------ 
+ERROR
+ file = file:D:/mpescher/EXPERTISE/GeneXSD/FrenchProject/UMLmodels/ProfilDNG3D/Schema-Essais/METAFOR-v10/gml/base/valueObjects.xsd line 50 column 108
+SEVERITY: 1
+ERROR TYPE: 2
+MESSAGE 
+SUBSTITUTION GROUP ERROR :
+The type of the element declaration, element http://www.opengis.net/gml:AbstractScalarValue, is a valid derivation of the type of the substitution group head, element http://www.opengis.net/gml:AbstractValue [ located at file:D:/mpescher/EXPERTISE/GeneXSD/FrenchProject/UMLmodels/ProfilDNG3D/Schema-Essais/METAFOR-v10/gml/base/valueObjects.xsd ]. However,  the value of the "finalDefault" attribute of the schema element where element http://www.opengis.net/gml:AbstractValue [ located at file:D:/mpescher/EXPERTISE/GeneXSD/FrenchProject/UMLmodels/ProfilDNG3D/Schema-Essais/METAFOR-v10/gml/base/valueObjects.xsd ] is defined makes this substitution impermissable. Action: relax the "final" attribute on element http://www.opengis.net/gml:AbstractValue [ located at file:D:/mpescher/EXPERTISE/GeneXSD/FrenchProject/UMLmodels/ProfilDNG3D/Schema-Essais/METAFOR-v10/gml/base/valueObjects.xsd ]. You may alter "finalDefault" attribute on schema and add that existing value to all the other element declarations in the schema.
+
+   ------------------------------------------------------------------------ 
+ERROR
+ file = file:D:/mpescher/EXPERTISE/GeneXSD/FrenchProject/UMLmodels/ProfilDNG3D/Schema-Essais/METAFOR-v10/gml/base/valueObjects.xsd line 51 column 112
+SEVERITY: 1
+ERROR TYPE: 2
+MESSAGE 
+SUBSTITUTION GROUP ERROR :
+The type of the element declaration, element http://www.opengis.net/gml:AbstractScalarValueList, is a valid derivation of the type of the substitution group head, element http://www.opengis.net/gml:AbstractValue [ located at file:D:/mpescher/EXPERTISE/GeneXSD/FrenchProject/UMLmodels/ProfilDNG3D/Schema-Essais/METAFOR-v10/gml/base/valueObjects.xsd ]. However,  the value of the "finalDefault" attribute of the schema element where element http://www.opengis.net/gml:AbstractValue [ located at file:D:/mpescher/EXPERTISE/GeneXSD/FrenchProject/UMLmodels/ProfilDNG3D/Schema-Essais/METAFOR-v10/gml/base/valueObjects.xsd ] is defined makes this substitution impermissable. Action: relax the "final" attribute on element http://www.opengis.net/gml:AbstractValue [ located at file:D:/mpescher/EXPERTISE/GeneXSD/FrenchProject/UMLmodels/ProfilDNG3D/Schema-Essais/METAFOR-v10/gml/base/valueObjects.xsd ]. You may alter "finalDefault" attribute on schema and add that existing value to all the other element declarations in the schema.
+
+   ------------------------------------------------------------------------ 

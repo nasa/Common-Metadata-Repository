@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Granule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../schema%20201111/Granule.xsd">
+  <!-- This is a test file for testing QAFlags, DayNightFlag -->
+  <DataGranule>
+    <DayNightFlag>/Granule/DataGranule/DayNightFlag</DayNightFlag>
+  </DataGranule>
+  <MeasuredParameters>
+    <MeasuredParameter>
+      <ParameterName>AllFlags</ParameterName>
+      <QAStats>
+        <QAPercentMissingData>/Granule/MeasuredParameters/MeasuredParameter[1]/QAStats/QAPercentMissingData</QAPercentMissingData>
+        <QAPercentOutOfBoundsData>/Granule/MeasuredParameters/MeasuredParameter[1]/QAStats/QAPercentOutOfBoundsData</QAPercentOutOfBoundsData>
+        <QAPercentInterpolatedData>/Granule/MeasuredParameters/MeasuredParameter[1]/QAStats/QAPercentInterpolatedData</QAPercentInterpolatedData>
+        <QAPercentCloudCover>/Granule/MeasuredParameters/MeasuredParameter[1]/QAStats/QAPercentCloudCover</QAPercentCloudCover>
+      </QAStats>
+      <QAFlags>
+        <AutomaticQualityFlag>/Granule/MeasuredParameters/MeasuredParameter[1]/QAFlags/AutomaticQualityFlag</AutomaticQualityFlag>
+        <AutomaticQualityFlagExplanation>/Granule/MeasuredParameters/MeasuredParameter[1]/QAFlags/AutomaticQualityFlagExplanation</AutomaticQualityFlagExplanation>
+        <OperationalQualityFlag>/Granule/MeasuredParameters/MeasuredParameter[1]/QAFlags/OperationalQualityFlag</OperationalQualityFlag>
+        <OperationalQualityFlagExplanation>/Granule/MeasuredParameters/MeasuredParameter[1]/QAFlags/OperationalQualityFlagExplanation</OperationalQualityFlagExplanation>
+        <ScienceQualityFlag>/Granule/MeasuredParameters/MeasuredParameter[1]/QAFlags/ScienceQualityFlag</ScienceQualityFlag>
+        <ScienceQualityFlagExplanation>/Granule/MeasuredParameters/MeasuredParameter[1]/QAFlags/ScienceQualityFlagExplanation</ScienceQualityFlagExplanation>
+      </QAFlags>
+    </MeasuredParameter>
+    <MeasuredParameter>
+      <ParameterName>NoFlags</ParameterName>
+      <QAStats>
+        <QAPercentMissingData>/Granule/MeasuredParameters/MeasuredParameter[2]/QAStats/QAPercentMissingData</QAPercentMissingData>
+        <QAPercentOutOfBoundsData>/Granule/MeasuredParameters/MeasuredParameter[2]/QAStats/QAPercentOutOfBoundsData</QAPercentOutOfBoundsData>
+        <QAPercentInterpolatedData>/Granule/MeasuredParameters/MeasuredParameter[2]/QAStats/QAPercentInterpolatedData</QAPercentInterpolatedData>
+        <QAPercentCloudCover>/Granule/MeasuredParameters/MeasuredParameter[2]/QAStats/QAPercentCloudCover</QAPercentCloudCover>
+      </QAStats>
+      <QAFlags>
+        <AutomaticQualityFlagExplanation>/Granule/MeasuredParameters/MeasuredParameter[2]/QAFlags/AutomaticQualityFlagExplanation</AutomaticQualityFlagExplanation>
+        <OperationalQualityFlagExplanation>/Granule/MeasuredParameters/MeasuredParameter[2]/QAFlags/OperationalQualityFlagExplanation</OperationalQualityFlagExplanation>
+        <ScienceQualityFlagExplanation>/Granule/MeasuredParameters/MeasuredParameter[2]/QAFlags/ScienceQualityFlagExplanation</ScienceQualityFlagExplanation>
+      </QAFlags>
+    </MeasuredParameter>
+  </MeasuredParameters>
+</Granule>

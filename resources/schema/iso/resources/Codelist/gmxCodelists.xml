@@ -1,4 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+	Edit: 20100305 AMilan, removed extra dash in ===MX_ScopeCode=== comment -->
+<!--
+	Edit: 20100521 Darmel, added 'sponsor' to === CI_RoleCode === -->
+
+<!--
+	Edit: 20100730 Darmel, added 'sciencePaper', 'userGuide', and 'dataDictionary' to === DS_InitiativeTypeCode ===
+	Edit: 20100730 Darmel, added 'referenceInformation', 'auxilliaryData', and 'dataQuality' to === MD_CoverageContentTypeCode ===
+	Edit: 20100730 Darmel, added 'scienceParty' to === CI_RoleCode ===
+	Edit: 20100730 Darmel, replaced 'wha' with 'who' in CI_RoleCode codelist item 'processor'
+	Edit: 20100730 Darmel, added === MI_BandDefinition ===, === MI_ContextCode ===, === MI_GeometryTypeCode ===,
+								 === MI_ObjectiveTypeCode ===, === MI_OperationTypeCode ===, === MI_PolarizationOrientationCode ===,
+								 === MI_PriorityCode ===, === MI_SequenceCode ===, === MI_TransferFunctionTypeCode ===,
+								 and === MI_TriggerCode === from ISO 19115-2 -->
+<!--
+	Edit: 20100811 Darmel, added 'dataCenter', 'project', 'instrument', and 'platform' to === MD_KeywordTypeCode === -->
+
+<!--
+	Edit: 20100819 Darmel, added 'modelResult' to === MD_CoverageContentTypeCode ===-->
 <!-- 
 CORRECTIONS referenced by 2008-09-11 #NN
 AUTHOR : IGN (France) contact: nicolas.lesage@ign.fr
@@ -8,7 +27,9 @@ DESCRIPTION :
 #02: 'MD_MaintenanceFrequencyCode_quartely' replaced by 'MD_MaintenanceFrequencyCode_quarterly'
 #03: 'quartely' replaced by 'quarterly'
 -->
-<CT_CodelistCatalogue xmlns="http://www.isotc211.org/2005/gmx" xmlns:gco="http://www.isotc211.org/2005/gco" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.isotc211.org/2005/gmx ../../gmx/gmx.xsd http://www.isotc211.org/2005/gco ../../gco/gco.xsd http://www.opengis.net/gml/3.2 ../../gml/gml.xsd http://www.w3.org/1999/xlink ../../xlink/xlinks.xsd">
+<CT_CodelistCatalogue xmlns="http://www.isotc211.org/2005/gmx" xmlns:gco="http://www.isotc211.org/2005/gco" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:xlink="http://www.w3.org/1999/xlink"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.isotc211.org/2005/gmx ../../gmx/gmx.xsd http://www.isotc211.org/2005/gco ../../gco/gco.xsd http://www.opengis.net/gml ../../gml/gml.xsd http://www.w3.org/1999/xlink ../../xlink/xlinks.xsd">
 	<!--=====Catalogue description=====-->
 	<name>
 		<gco:CharacterString>gmxCodelists</gco:CharacterString>
@@ -109,13 +130,15 @@ DESCRIPTION :
 			</codeEntry>
 			<codeEntry>
 				<CodeDefinition gml:id="CI_PresentationFormCode_imageDigital">
-					<gml:description>likeness of natural or man-made features, objects, and activities acquired through the sensing of visual or any other segment of the electromagnetic spectrum by sensors, such as thermal infrared, and high resolution radar and stored in digital format</gml:description>
+					<gml:description>likeness of natural or man-made features, objects, and activities acquired through the sensing of visual or any other segment of the electromagnetic spectrum by sensors, such as thermal infrared, and
+						high resolution radar and stored in digital format</gml:description>
 					<gml:identifier codeSpace="ISOTC211/19115">documentHardcopy</gml:identifier>
 				</CodeDefinition>
 			</codeEntry>
 			<codeEntry>
 				<CodeDefinition gml:id="CI_PresentationFormCode_imageHardcopy">
-					<gml:description>likeness of natural or man-made features, objects, and activities acquired through the sensing of visual or any other segment of the electromagnetic spectrum by sensors, such as thermal infrared, and high resolution radar and reproduced on paper, photographic material, or other media for use directly by the human user</gml:description>
+					<gml:description>likeness of natural or man-made features, objects, and activities acquired through the sensing of visual or any other segment of the electromagnetic spectrum by sensors, such as thermal infrared, and
+						high resolution radar and reproduced on paper, photographic material, or other media for use directly by the human user</gml:description>
 					<gml:identifier codeSpace="ISOTC211/19115">imageHardcopy</gml:identifier>
 				</CodeDefinition>
 			</codeEntry>
@@ -205,6 +228,12 @@ DESCRIPTION :
 				</CodeDefinition>
 			</codeEntry>
 			<codeEntry>
+				<CodeDefinition gml:id="CI_RoleCode_sponsor">
+					<gml:description>party that sponsors the resource</gml:description>
+					<gml:identifier codeSpace="ISOTC211/19115">sponsor</gml:identifier>
+				</CodeDefinition>
+			</codeEntry>
+			<codeEntry>
 				<CodeDefinition gml:id="CI_RoleCode_user">
 					<gml:description>party who uses the resource</gml:description>
 					<gml:identifier codeSpace="ISOTC211/19115">user</gml:identifier>
@@ -236,7 +265,7 @@ DESCRIPTION :
 			</codeEntry>
 			<codeEntry>
 				<CodeDefinition gml:id="CI_RoleCode_processor">
-					<gml:description>party wha has processed the data in a manner such that the resource has been modified</gml:description>
+					<gml:description>party who has processed the data in a manner such that the resource has been modified</gml:description>
 					<gml:identifier codeSpace="ISOTC211/19115">processor</gml:identifier>
 				</CodeDefinition>
 			</codeEntry>
@@ -250,6 +279,12 @@ DESCRIPTION :
 				<CodeDefinition gml:id="CI_RoleCode_author">
 					<gml:description>party who authored the resource</gml:description>
 					<gml:identifier codeSpace="ISOTC211/19115">author</gml:identifier>
+				</CodeDefinition>
+			</codeEntry>
+			<codeEntry>
+				<CodeDefinition gml:id="CI_RoleCode_scienceParty">
+					<gml:description>party who conducted the research</gml:description>
+					<gml:identifier codeSpace="ISOTC211/19115">scienceParty</gml:identifier>
 				</CodeDefinition>
 			</codeEntry>
 		</CodeListDictionary>
@@ -334,6 +369,12 @@ DESCRIPTION :
 				</CodeDefinition>
 			</codeEntry>
 			<codeEntry>
+				<CodeDefinition gml:id="DS_InitiativeTypeCode_dataDictionary">
+					<gml:description>element and entity definitions</gml:description>
+					<gml:identifier codeSpace="ISOTC211/19115">dataDictionary</gml:identifier>
+				</CodeDefinition>
+			</codeEntry>
+			<codeEntry>
 				<CodeDefinition gml:id="DS_InitiativeTypeCode_exercise">
 					<gml:description>specific performance of a function or group of functions</gml:description>
 					<gml:identifier codeSpace="ISOTC211/19115">exercise</gml:identifier>
@@ -394,6 +435,12 @@ DESCRIPTION :
 				</CodeDefinition>
 			</codeEntry>
 			<codeEntry>
+				<CodeDefinition gml:id="DS_InitiativeTypeCode_sciencePaper">
+					<gml:description>document based on an experiment or research</gml:description>
+					<gml:identifier codeSpace="ISOTC211/19115">sciencePaper</gml:identifier>
+				</CodeDefinition>
+			</codeEntry>
+			<codeEntry>
 				<CodeDefinition gml:id="DS_InitiativeTypeCode_study">
 					<gml:description>examination or investigation</gml:description>
 					<gml:identifier codeSpace="ISOTC211/19115">study</gml:identifier>
@@ -409,6 +456,12 @@ DESCRIPTION :
 				<CodeDefinition gml:id="DS_InitiativeTypeCode_trial">
 					<gml:description>process of testing to discover or demonstrate something</gml:description>
 					<gml:identifier codeSpace="ISOTC211/19115">trial</gml:identifier>
+				</CodeDefinition>
+			</codeEntry>
+			<codeEntry>
+				<CodeDefinition gml:id="DS_InitiativeTypeCode_userGuide">
+					<gml:description>operating manual for users</gml:description>
+					<gml:identifier codeSpace="ISOTC211/19115">userGuide</gml:identifier>
 				</CodeDefinition>
 			</codeEntry>
 		</CodeListDictionary>
@@ -672,7 +725,31 @@ DESCRIPTION :
 					<gml:identifier codeSpace="ISOTC211/19115">physicalMeasurement</gml:identifier>
 				</CodeDefinition>
 			</codeEntry>
-		</CodeListDictionary>
+			<codeEntry>
+				<CodeDefinition gml:id="MD_CoverageContentTypeCode_referenceInformation">
+					<gml:description>value of parameters used to locate physical measurements</gml:description>
+					<gml:identifier codeSpace="ISOTC211/19115">referenceInformation</gml:identifier>
+				</CodeDefinition>
+			</codeEntry>
+			<codeEntry>
+				<CodeDefinition gml:id="MD_CoverageContentTypeCode_auxilliaryData">
+					<gml:description>values of extraneous data that are not part of the physical measurement</gml:description>
+					<gml:identifier codeSpace="ISOTC211/19115">auxilliaryData</gml:identifier>
+				</CodeDefinition>
+			</codeEntry>
+			<codeEntry>
+				<CodeDefinition gml:id="MD_CoverageContentTypeCode_qualityInformation">
+					<gml:description>values based on data quality</gml:description>
+					<gml:identifier codeSpace="ISOTC211/19115">qualityInformation</gml:identifier>
+				</CodeDefinition>
+			</codeEntry>
+			<codeEntry>
+				<CodeDefinition gml:id="MD_CoverageContentTypeCode_modelResult">
+					<gml:description>values of data from a model</gml:description>
+					<gml:identifier codeSpace="ISOTC211/19115">modelResult</gml:identifier>
+				</CodeDefinition>
+			</codeEntry>
+			</CodeListDictionary>
 	</codelistItem>
 	<!--=== MD_DatatypeCode ===-->
 	<codelistItem>
@@ -936,7 +1013,8 @@ DESCRIPTION :
 			</codeEntry>
 			<codeEntry>
 				<CodeDefinition gml:id="MD_ImagingConditionCode_terrainMasking">
-					<gml:description>the absence of collection data of a given point or area caused by the relative location of topographic features which obstruct the collection path between the collector(s) and the subject(s) of interest</gml:description>
+					<gml:description>the absence of collection data of a given point or area caused by the relative location of topographic features which obstruct the collection path between the collector(s) and the subject(s) of
+						interest</gml:description>
 					<gml:identifier codeSpace="ISOTC211/19115">terrainMasking</gml:identifier>
 				</CodeDefinition>
 			</codeEntry>
@@ -948,15 +1026,39 @@ DESCRIPTION :
 			<gml:description>methods used to group similar keywords</gml:description>
 			<gml:identifier codeSpace="ISOTC211/19115">MD_KeywordTypeCode</gml:identifier>
 			<codeEntry>
+				<CodeDefinition gml:id="MD_KeywordTypeCode_dataCenter">
+					<gml:description>keyword identifies a data center related to the resource</gml:description>
+					<gml:identifier codeSpace="ISOTC211/19115">dataCenter</gml:identifier>
+				</CodeDefinition>
+			</codeEntry>
+			<codeEntry>
 				<CodeDefinition gml:id="MD_KeywordTypeCode_discipline">
 					<gml:description>keyword identifies a branch of instruction or specialized learning</gml:description>
 					<gml:identifier codeSpace="ISOTC211/19115">discipline</gml:identifier>
 				</CodeDefinition>
 			</codeEntry>
 			<codeEntry>
+				<CodeDefinition gml:id="MD_KeywordTypeCode_instrument">
+					<gml:description>keyword identifies the instrument used to collect the resource</gml:description>
+					<gml:identifier codeSpace="ISOTC211/19115">instrument</gml:identifier>
+				</CodeDefinition>
+			</codeEntry>
+			<codeEntry>
 				<CodeDefinition gml:id="MD_KeywordTypeCode_place">
 					<gml:description>keyword identifies a location</gml:description>
 					<gml:identifier codeSpace="ISOTC211/19115">place</gml:identifier>
+				</CodeDefinition>
+			</codeEntry>
+			<codeEntry>
+				<CodeDefinition gml:id="MD_KeywordTypeCode_platform">
+					<gml:description>keyword identifies the platform used to collect the resource</gml:description>
+					<gml:identifier codeSpace="ISOTC211/19115">platform</gml:identifier>
+				</CodeDefinition>
+			</codeEntry>
+			<codeEntry>
+				<CodeDefinition gml:id="MD_KeywordTypeCode_project">
+					<gml:description>keyword identifies a project related to the resource</gml:description>
+					<gml:identifier codeSpace="ISOTC211/19115">project</gml:identifier>
 				</CodeDefinition>
 			</codeEntry>
 			<codeEntry>
@@ -1017,7 +1119,7 @@ DESCRIPTION :
 			<codeEntry>
 				<!-- CHANGE 2008-09-11 #02 -->
 				<CodeDefinition gml:id="MD_MaintenanceFrequencyCode_quarterly">
-				<!-- CHANGE 2008-09-11 #02
+					<!-- CHANGE 2008-09-11 #02
 				<CodeDefinition gml:id="MD_MaintenanceFrequencyCode_quartely">
 				-->
 					<gml:description>data is updated every three months</gml:description>
@@ -1095,7 +1197,7 @@ DESCRIPTION :
 			</codeEntry>
 			<codeEntry>
 				<CodeDefinition gml:id="MD_MediumFormatCode_iso9660">
-					<gml:description>information processing   volume and file structure of CD-ROM</gml:description>
+					<gml:description>information processing volume and file structure of CD-ROM</gml:description>
 					<gml:identifier codeSpace="ISOTC211/19115">iso9660</gml:identifier>
 				</CodeDefinition>
 			</codeEntry>
@@ -1346,7 +1448,8 @@ DESCRIPTION :
 			<gml:identifier codeSpace="ISOTC211/19115">MD_RestrictionCode</gml:identifier>
 			<codeEntry>
 				<CodeDefinition gml:id="MD_RestrictionCode_copyright">
-					<gml:description>exclusive right to the publication, production, or sale of the rights to a literary, dramatic, musical, or artistic work, or to the use of a commercial print or label, granted by law for a specified period of time to an author, composer, artist, distributor</gml:description>
+					<gml:description>exclusive right to the publication, production, or sale of the rights to a literary, dramatic, musical, or artistic work, or to the use of a commercial print or label, granted by law for a specified
+						period of time to an author, composer, artist, distributor</gml:description>
 					<gml:identifier codeSpace="ISOTC211/19115">copyright</gml:identifier>
 				</CodeDefinition>
 			</codeEntry>
@@ -1543,7 +1646,8 @@ DESCRIPTION :
 	<!--=== MD_TopicCategoryCode ===-->
 	<codelistItem>
 		<CodeListDictionary gml:id="MD_TopicCategoryCode">
-			<gml:description>high-level geographic data thematic classification to assist in the grouping and search of available geographic data sets. Can be used to group keywords as well. Listed examples are not exhaustive.</gml:description>
+			<gml:description>high-level geographic data thematic classification to assist in the grouping and search of available geographic data sets. Can be used to group keywords as well. Listed examples are not
+				exhaustive.</gml:description>
 			<gml:identifier codeSpace="ISOTC211/19115">MD_TopicCategoryCode</gml:identifier>
 			<codeEntry>
 				<CodeDefinition gml:id="MD_TopicCategoryCode_farming">
@@ -1571,7 +1675,8 @@ DESCRIPTION :
 			</codeEntry>
 			<codeEntry>
 				<CodeDefinition gml:id="MD_TopicCategoryCode_economy">
-					<gml:description>economic activities, conditions and employment. Examples: production, labour, revenue, commerce, industry, tourism and ecotourism, forestry, fisheries, commercial or subsistence hunting, exploration and exploitation of resources such as minerals, oil and gas</gml:description>
+					<gml:description>economic activities, conditions and employment. Examples: production, labour, revenue, commerce, industry, tourism and ecotourism, forestry, fisheries, commercial or subsistence hunting, exploration and
+						exploitation of resources such as minerals, oil and gas</gml:description>
 					<gml:identifier codeSpace="ISOTC211/19115">economy</gml:identifier>
 				</CodeDefinition>
 			</codeEntry>
@@ -1583,13 +1688,15 @@ DESCRIPTION :
 			</codeEntry>
 			<codeEntry>
 				<CodeDefinition gml:id="MD_TopicCategoryCode_environment">
-					<gml:description>environmental resources, protection and conservation. Examples: environmental pollution, waste storage and treatment, environmental impact assessment, monitoring environmental risk, nature reserves, landscape</gml:description>
+					<gml:description>environmental resources, protection and conservation. Examples: environmental pollution, waste storage and treatment, environmental impact assessment, monitoring environmental risk, nature reserves,
+						landscape</gml:description>
 					<gml:identifier codeSpace="ISOTC211/19115">environment</gml:identifier>
 				</CodeDefinition>
 			</codeEntry>
 			<codeEntry>
 				<CodeDefinition gml:id="MD_TopicCategoryCode_geoscientificInformation">
-					<gml:description>information pertaining to earth sciences. Examples: geophysical features and processes, geology, minerals, sciences dealing with the composition, structure and origin of the earth s rocks, risks of earthquakes, volcanic activity, landslides, gravity information, soils, permafrost, hydrogeology, erosion</gml:description>
+					<gml:description>information pertaining to earth sciences. Examples: geophysical features and processes, geology, minerals, sciences dealing with the composition, structure and origin of the earth s rocks, risks of
+						earthquakes, volcanic activity, landslides, gravity information, soils, permafrost, hydrogeology, erosion</gml:description>
 					<gml:identifier codeSpace="ISOTC211/19115">geoscientificInformation</gml:identifier>
 				</CodeDefinition>
 			</codeEntry>
@@ -1613,7 +1720,8 @@ DESCRIPTION :
 			</codeEntry>
 			<codeEntry>
 				<CodeDefinition gml:id="MD_TopicCategoryCode_inlandWaters">
-					<gml:description>inland water features, drainage systems and their characteristics. Examples: rivers and glaciers, salt lakes, water utilization plans, dams, currents, floods, water quality, hydrographic charts</gml:description>
+					<gml:description>inland water features, drainage systems and their characteristics. Examples: rivers and glaciers, salt lakes, water utilization plans, dams, currents, floods, water quality, hydrographic
+						charts</gml:description>
 					<gml:identifier codeSpace="ISOTC211/19115">inlandWaters</gml:identifier>
 				</CodeDefinition>
 			</codeEntry>
@@ -1637,7 +1745,8 @@ DESCRIPTION :
 			</codeEntry>
 			<codeEntry>
 				<CodeDefinition gml:id="MD_TopicCategoryCode_society">
-					<gml:description>characteristics of society and cultures. Examples: settlements, anthropology, archaeology, education, traditional beliefs, manners and customs, demographic data, recreational areas and activities, social impact assessments, crime and justice, census information</gml:description>
+					<gml:description>characteristics of society and cultures. Examples: settlements, anthropology, archaeology, education, traditional beliefs, manners and customs, demographic data, recreational areas and activities, social
+						impact assessments, crime and justice, census information</gml:description>
 					<gml:identifier codeSpace="ISOTC211/19115">society</gml:identifier>
 				</CodeDefinition>
 			</codeEntry>
@@ -1649,13 +1758,15 @@ DESCRIPTION :
 			</codeEntry>
 			<codeEntry>
 				<CodeDefinition gml:id="MD_TopicCategoryCode_transportation">
-					<gml:description>means and aids for conveying persons and/or goods. Examples: roads, airports/airstrips, shipping routes, tunnels, nautical charts, vehicle or vessel location, aeronautical charts, railways</gml:description>
+					<gml:description>means and aids for conveying persons and/or goods. Examples: roads, airports/airstrips, shipping routes, tunnels, nautical charts, vehicle or vessel location, aeronautical charts,
+						railways</gml:description>
 					<gml:identifier codeSpace="ISOTC211/19115">transportation</gml:identifier>
 				</CodeDefinition>
 			</codeEntry>
 			<codeEntry>
 				<CodeDefinition gml:id="MD_TopicCategoryCode_utilitiesCommunication">
-					<gml:description>energy, water and waste systems and communications infrastructure and services. Examples: hydroelectricity, geothermal, solar and nuclear sources of energy, water purification and distribution, sewage collection and disposal, electricity and gas distribution, data communication, telecommunication, radio, communication networks</gml:description>
+					<gml:description>energy, water and waste systems and communications infrastructure and services. Examples: hydroelectricity, geothermal, solar and nuclear sources of energy, water purification and distribution, sewage
+						collection and disposal, electricity and gas distribution, data communication, telecommunication, radio, communication networks</gml:description>
 					<gml:identifier codeSpace="ISOTC211/19115">utilitiesCommunication</gml:identifier>
 				</CodeDefinition>
 			</codeEntry>
@@ -1674,7 +1785,7 @@ DESCRIPTION :
 			</codeEntry>
 			<codeEntry>
 				<CodeDefinition gml:id="MD_TopologyLevelCode_topology1D">
-					<gml:description>1-dimensional topological complex --  commonly called  chain-node  topology</gml:description>
+					<gml:description>1-dimensional topological complex -- commonly called chain-node topology</gml:description>
 					<gml:identifier codeSpace="ISOTC211/19115">topology1D</gml:identifier>
 				</CodeDefinition>
 			</codeEntry>
@@ -1686,13 +1797,14 @@ DESCRIPTION :
 			</codeEntry>
 			<codeEntry>
 				<CodeDefinition gml:id="MD_TopologyLevelCode_fullPlanarGraph">
-					<gml:description>2-dimensional topological complex that is planar. (A 2-dimensional topological complex is commonly called  full topology  in a cartographic 2D environment.)</gml:description>
+					<gml:description>2-dimensional topological complex that is planar. (A 2-dimensional topological complex is commonly called full topology in a cartographic 2D environment.)</gml:description>
 					<gml:identifier codeSpace="ISOTC211/19115">fullPlanarGraph</gml:identifier>
 				</CodeDefinition>
 			</codeEntry>
 			<codeEntry>
 				<CodeDefinition gml:id="MD_TopologyLevelCode_surfaceGraph">
-					<gml:description>1-dimensional topological complex that is isomorphic to a subset of a surface. (A geometric complex is isomorphic to a topological complex if their elements are in a one-to-one, dimensional-and boundry-preserving correspondence to one another.)</gml:description>
+					<gml:description>1-dimensional topological complex that is isomorphic to a subset of a surface. (A geometric complex is isomorphic to a topological complex if their elements are in a one-to-one, dimensional-and
+						boundry-preserving correspondence to one another.)</gml:description>
 					<gml:identifier codeSpace="ISOTC211/19115">surfaceGraph</gml:identifier>
 				</CodeDefinition>
 			</codeEntry>
@@ -1722,7 +1834,299 @@ DESCRIPTION :
 			</codeEntry>
 		</CodeListDictionary>
 	</codelistItem>
-	<!---===MX_ScopeCode===-->
+	<!--=== MI_BandDefinition ===-->
+	<codelistItem>
+		<CodeListDictionary gml:id="MI_BandDefinition">
+			<gml:description>designation of criterion for defining maximum and minimum wavelengths for a spectral band</gml:description>
+			<gml:identifier codeSpace="ISOTC211/19115-2">MI_BandDefinition</gml:identifier>
+			<codeEntry>
+				<CodeDefinition gml:id="MI_BandDefinition_3db">
+					<gml:description>width of a distribution equal to the distance between the outer two points on the distribution having power level half of that at the peak</gml:description>
+					<gml:identifier codeSpace="ISOTC211/19115-2">3db</gml:identifier>
+				</CodeDefinition>
+			</codeEntry>
+			<codeEntry>
+				<CodeDefinition gml:id="MI_BandDefinition_halfMaximum">
+					<gml:description>width of a distribution equal to the distance between the outer two points on the distribution having power level half of that at the peak</gml:description>
+					<gml:identifier codeSpace="ISOTC211/19115-2">halfMaximum</gml:identifier>
+				</CodeDefinition>
+			</codeEntry>
+			<codeEntry>
+				<CodeDefinition gml:id="MI_BandDefinition_fiftyPercent">
+					<gml:description>full spectral width of a spectral power density measured at 50% of its peak height</gml:description>
+					<gml:identifier codeSpace="ISOTC211/19115-2">fiftyPercent</gml:identifier>
+				</CodeDefinition>
+			</codeEntry>
+			<codeEntry>
+				<CodeDefinition gml:id="MI_BandDefinition_oneOverE">
+					<gml:description>width of a distribution equal to the distance between the outer two points on the distribution having power level 1/e that of the peak</gml:description>
+					<gml:identifier codeSpace="ISOTC211/19115-2">oneOverE</gml:identifier>
+				</CodeDefinition>
+			</codeEntry>
+			<codeEntry>
+				<CodeDefinition gml:id="MI_BandDefinition_equivalentWidth">
+					<gml:description>width of a band with full sensitivity or absorption at every wavelength that detects or absorbs the same amount of energy as the band described</gml:description>
+					<gml:identifier codeSpace="ISOTC211/19115-2">equivalentWidth</gml:identifier>
+				</CodeDefinition>
+			</codeEntry>
+		</CodeListDictionary>
+	</codelistItem>
+	<!--=== MI_ContextCode ===-->
+	<codelistItem>
+		<CodeListDictionary gml:id="MI_ContextCode">
+			<gml:description>designation of criterion for defining the context of the scanning process event</gml:description>
+			<gml:identifier codeSpace="ISOTC211/19115-2">MI_ContextCode</gml:identifier>
+			<codeEntry>
+				<CodeDefinition gml:id="MI_ContextCode_acquistion">
+					<gml:description>event related to a specific domain</gml:description>
+					<gml:identifier codeSpace="ISOTC211/19115-2">acqisition</gml:identifier>
+				</CodeDefinition>
+			</codeEntry>
+			<codeEntry>
+				<CodeDefinition gml:id="MI_ContextCode_pass">
+					<gml:description>event related to a sequence of collections</gml:description>
+					<gml:identifier codeSpace="ISOTC211/19115-2">pass</gml:identifier>
+				</CodeDefinition>
+			</codeEntry>
+			<codeEntry>
+				<CodeDefinition gml:id="MI_ContextCode_wayPoint">
+					<gml:description>event related to navigational manoeuvre</gml:description>
+					<gml:identifier codeSpace="ISOTC211/19115-2">wayPoint</gml:identifier>
+				</CodeDefinition>
+			</codeEntry>
+		</CodeListDictionary>
+	</codelistItem>
+	<!--=== MI_GeometryTypeCode ===-->
+	<codelistItem>
+		<CodeListDictionary gml:id="MI_GeometryTypeCode">
+			<gml:description>geometric description of the collection</gml:description>
+			<gml:identifier codeSpace="ISOTC211/19115-2">MI_GeometryTypeCode</gml:identifier>
+			<codeEntry>
+				<CodeDefinition gml:id="MI_GeometryTypeCode_point">
+					<gml:description>single geographic point of interest</gml:description>
+					<gml:identifier codeSpace="ISOTC211/19115-2">point</gml:identifier>
+				</CodeDefinition>
+			</codeEntry>
+			<codeEntry>
+				<CodeDefinition gml:id="MI_GeometryTypeCode_linear">
+					<gml:description>extended collection in a single vector</gml:description>
+					<gml:identifier codeSpace="ISOTC211/19115-2">linear</gml:identifier>
+				</CodeDefinition>
+			</codeEntry>
+			<codeEntry>
+				<CodeDefinition gml:id="MI_GeometryTypeCode_areal">
+					<gml:description>collection of a geographic area defined by a polygon (coverage)</gml:description>
+					<gml:identifier codeSpace="ISOTC211/19115-2">areal</gml:identifier>
+				</CodeDefinition>
+			</codeEntry>
+			<codeEntry>
+				<CodeDefinition gml:id="MI_GeometryTypeCode_strip">
+					<gml:description>series of linear collections grouped by way points</gml:description>
+					<gml:identifier codeSpace="ISOTC211/19115-2">strip</gml:identifier>
+				</CodeDefinition>
+			</codeEntry>
+		</CodeListDictionary>
+	</codelistItem>
+	<!--=== MI_ObjectiveTypeCode ===-->
+	<codelistItem>
+		<CodeListDictionary gml:id="MI_ObjectiveTypeCode">
+			<gml:description>temporal persistence of collection objective</gml:description>
+			<gml:identifier codeSpace="ISOTC211/19115-2">MI_ObjectiveTypeCode</gml:identifier>
+			<codeEntry>
+				<CodeDefinition gml:id="MI_ObjectiveTypeCode_instantaneousCollection">
+					<gml:description>single instance of collection</gml:description>
+					<gml:identifier codeSpace="ISOTC211/19115-2">instantaneousCollection</gml:identifier>
+				</CodeDefinition>
+			</codeEntry>
+			<codeEntry>
+				<CodeDefinition gml:id="MI_ObjectiveTypeCode_persistentView">
+					<gml:description>multiple instances of collection</gml:description>
+					<gml:identifier codeSpace="ISOTC211/19115-2">persistentView</gml:identifier>
+				</CodeDefinition>
+			</codeEntry>
+			<codeEntry>
+				<CodeDefinition gml:id="MI_ObjectiveTypeCode_survey">
+					<gml:description>collection over specified domain</gml:description>
+					<gml:identifier codeSpace="ISOTC211/19115-2">survey</gml:identifier>
+				</CodeDefinition>
+			</codeEntry>
+		</CodeListDictionary>
+	</codelistItem>
+	<!--=== MI_OperationTypeCode ===-->
+	<codelistItem>
+		<CodeListDictionary gml:id="MI_OperationTypeCode">
+			<gml:description>code indicating whether the data contained in this packet is real, simulated, or synthesized</gml:description>
+			<gml:identifier codeSpace="ISOTC211/19115-2">MI_OperationTypeCode</gml:identifier>
+			<codeEntry>
+				<CodeDefinition gml:id="MI_OperationTypeCode_real">
+					<gml:description>originates from live-fly or other non-simulated operational source</gml:description>
+					<gml:identifier codeSpace="ISOTC211/19115-2">real</gml:identifier>
+				</CodeDefinition>
+			</codeEntry>
+			<codeEntry>
+				<CodeDefinition gml:id="MI_OperationTypeCode_simulated">
+					<gml:description>originates from target simulator sources</gml:description>
+					<gml:identifier codeSpace="ISOTC211/19115-2">simulated</gml:identifier>
+				</CodeDefinition>
+			</codeEntry>
+			<codeEntry>
+				<CodeDefinition gml:id="MI_OperationTypeCode_synthesized">
+					<gml:description>mix of real and simulated data</gml:description>
+					<gml:identifier codeSpace="ISOTC211/19115-2">synthesized</gml:identifier>
+				</CodeDefinition>
+			</codeEntry>
+		</CodeListDictionary>
+	</codelistItem>
+	<!--=== MI_PolarizationOrientationCode ===-->
+	<codelistItem>
+		<CodeListDictionary gml:id="MI_PolarizationOrientationCode">
+			<gml:description>polarization of the antenna relative to the waveform</gml:description>
+			<gml:identifier codeSpace="ISOTC211/19115-2">MI_PolarizationOrientationCode</gml:identifier>
+			<codeEntry>
+				<CodeDefinition gml:id="MI_PolarizationOrientationCode_horizontal">
+					<gml:description>polarization of the sensor oriented in the horizontal plane in realtion to the swath direction</gml:description>
+					<gml:identifier codeSpace="ISOTC211/19115-2">horizontal</gml:identifier>
+				</CodeDefinition>
+			</codeEntry>
+			<codeEntry>
+				<CodeDefinition gml:id="MI_PolarizationOrientationCode_vertical">
+					<gml:description>polarization of the sensor oriented in the vertical plane in realtion to the swath direction</gml:description>
+					<gml:identifier codeSpace="ISOTC211/19115-2">vertical</gml:identifier>
+				</CodeDefinition>
+			</codeEntry>
+			<codeEntry>
+				<CodeDefinition gml:id="MI_PolarizationOrientationCode_leftCircular">
+					<gml:description>polarization of the sensor oriented in the left circular plane in realtion to the swath direction</gml:description>
+					<gml:identifier codeSpace="ISOTC211/19115-2">leftCircular</gml:identifier>
+				</CodeDefinition>
+			</codeEntry>
+			<codeEntry>
+				<CodeDefinition gml:id="MI_PolarizationOrientationCode_rightCircular">
+					<gml:description>polarization of the sensor oriented in the right circular plane in realtion to the swath direction</gml:description>
+					<gml:identifier codeSpace="ISOTC211/19115-2">rightCircular</gml:identifier>
+				</CodeDefinition>
+			</codeEntry>
+			<codeEntry>
+				<CodeDefinition gml:id="MI_PolarizationOrientationCode_theta">
+					<gml:description>polarization of the sensor oriented in the angle between +90 deg and 0 deg parallel to swath direction</gml:description>
+					<gml:identifier codeSpace="ISOTC211/19115-2">theta</gml:identifier>
+				</CodeDefinition>
+			</codeEntry>
+			<codeEntry>
+				<CodeDefinition gml:id="MI_PolarizationOrientationCode_phi">
+					<gml:description>polarization of the sensor oriented in the angle between +90 deg and 0 deg perpendicular to swath direction</gml:description>
+					<gml:identifier codeSpace="ISOTC211/19115-2">phi</gml:identifier>
+				</CodeDefinition>
+			</codeEntry>
+		</CodeListDictionary>
+	</codelistItem>
+	<!--=== MI_PriorityCode ===-->
+	<codelistItem>
+		<CodeListDictionary gml:id="MI_PriorityCode">
+			<gml:description>ordered list of priorities</gml:description>
+			<gml:identifier codeSpace="ISOTC211/19115-2">MI_PriorityCode</gml:identifier>
+			<codeEntry>
+				<CodeDefinition gml:id="MI_PriorityCode_critical">
+					<gml:description>decisive importance</gml:description>
+					<gml:identifier codeSpace="ISOTC211/19115-2">critical</gml:identifier>
+				</CodeDefinition>
+			</codeEntry>
+			<codeEntry>
+				<CodeDefinition gml:id="MI_PriorityCode_highImportance">
+					<gml:description>requires resources to be made available</gml:description>
+					<gml:identifier codeSpace="ISOTC211/19115-2">highImportance</gml:identifier>
+				</CodeDefinition>
+			</codeEntry>
+			<codeEntry>
+				<CodeDefinition gml:id="MI_PriorityCode_mediumImportance">
+					<gml:description>normal operation priority</gml:description>
+					<gml:identifier codeSpace="ISOTC211/19115-2">mediumImportance</gml:identifier>
+				</CodeDefinition>
+			</codeEntry>
+			<codeEntry>
+				<CodeDefinition gml:id="MI_PriorityCode_lowImportance">
+					<gml:description>to be completed when resources are available</gml:description>
+					<gml:identifier codeSpace="ISOTC211/19115-2">lowImportance</gml:identifier>
+				</CodeDefinition>
+			</codeEntry>
+		</CodeListDictionary>
+	</codelistItem>
+	<!--=== MI_SequenceCode ===-->
+	<codelistItem>
+		<CodeListDictionary gml:id="MI_SequenceCode">
+			<gml:description>temporal relation of activation</gml:description>
+			<gml:identifier codeSpace="ISOTC211/19115-2">MI_SequenceCode</gml:identifier>
+			<codeEntry>
+				<CodeDefinition gml:id="MI_SequenceCode_start">
+					<gml:description>beginning of a collection</gml:description>
+					<gml:identifier codeSpace="ISOTC211/19115-2">start</gml:identifier>
+				</CodeDefinition>
+			</codeEntry>
+			<codeEntry>
+				<CodeDefinition gml:id="MI_SequenceCode_end">
+					<gml:description>end of a collection</gml:description>
+					<gml:identifier codeSpace="ISOTC211/19115-2">end</gml:identifier>
+				</CodeDefinition>
+			</codeEntry>
+			<codeEntry>
+				<CodeDefinition gml:id="MI_SequenceCode_instantaneous">
+					<gml:description>collection without a significant duration</gml:description>
+					<gml:identifier codeSpace="ISOTC211/19115-2">instantaneous</gml:identifier>
+				</CodeDefinition>
+			</codeEntry>
+			</CodeListDictionary>
+	</codelistItem>
+	<!--=== MI_TransferFunctionTypeCode ===-->
+	<codelistItem>
+		<CodeListDictionary gml:id="MI_TransferFunctionTypeCode">
+			<gml:description>transform function to be used when scaling a physical value for a given element</gml:description>
+			<gml:identifier codeSpace="ISOTC211/19115-2">MI_TransferFunctionTypeCode</gml:identifier>
+			<codeEntry>
+				<CodeDefinition gml:id="MI_TransferFunctionTypeCode_linear">
+					<gml:description>beginning of a collection</gml:description>
+					<gml:identifier codeSpace="ISOTC211/19115-2">linear</gml:identifier>
+				</CodeDefinition>
+			</codeEntry>
+			<codeEntry>
+				<CodeDefinition gml:id="MI_TransferFunctionTypeCode_logarithmic">
+					<gml:description>end of a collection</gml:description>
+					<gml:identifier codeSpace="ISOTC211/19115-2">logarithmic</gml:identifier>
+				</CodeDefinition>
+			</codeEntry>
+			<codeEntry>
+				<CodeDefinition gml:id="MI_TransferFunctionTypeCode_exponential">
+					<gml:description>collection without a significant duration</gml:description>
+					<gml:identifier codeSpace="ISOTC211/19115-2">exponential</gml:identifier>
+				</CodeDefinition>
+			</codeEntry>
+			</CodeListDictionary>
+	</codelistItem>
+	<!--=== MI_TriggerCode ===-->
+	<codelistItem>
+		<CodeListDictionary gml:id="MI_TriggerCode">
+			<gml:description>mechanism of activation</gml:description>
+			<gml:identifier codeSpace="ISOTC211/19115-2">MI_TriggerCode</gml:identifier>
+			<codeEntry>
+				<CodeDefinition gml:id="MI_TriggerCode_automatic">
+					<gml:description>event due to external stimuli</gml:description>
+					<gml:identifier codeSpace="ISOTC211/19115-2">automatic</gml:identifier>
+				</CodeDefinition>
+			</codeEntry>
+			<codeEntry>
+				<CodeDefinition gml:id="MI_TriggerCode_manual">
+					<gml:description>event manually instigated</gml:description>
+					<gml:identifier codeSpace="ISOTC211/19115-2">manual</gml:identifier>
+				</CodeDefinition>
+			</codeEntry>
+			<codeEntry>
+				<CodeDefinition gml:id="MI_TriggerCode_preProgrammed">
+					<gml:description>event instigated by planned internal stimuli</gml:description>
+					<gml:identifier codeSpace="ISOTC211/19115-2">preProgrammed</gml:identifier>
+				</CodeDefinition>
+			</codeEntry>
+			</CodeListDictionary>
+	</codelistItem>
+	<!--===MX_ScopeCode===-->
 	<codelistItem>
 		<CodeListDictionary gml:id="MX_ScopeCode">
 			<gml:description>Extension of MD_ScopeCode for the needs of GMX application schemas and in the context of a transfer</gml:description>
