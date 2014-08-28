@@ -21,21 +21,28 @@
    :day-night-flag :day-night
    :browse-only :browsable})
 
+(def sort-key-replacements
+  "A map of legacy sort keys with all variations of +/- to use for substitutions."
+  (into {} (mapcat (fn [[a orig]]
+                     (let [a (name a)
+                           orig (name orig)]
+                       [[a orig]
+                        [(str "+" a) (str "+" orig)]
+                        [(str "-" a) (str "-" orig)]]))
+                   param-aliases)))
+
+
 (defn merger
   "Make a sequence from supplied values."
   [v1 v2]
   (let [make-seq #(if (sequential? %) % [%])]
     (concat (make-seq v1) (make-seq v2))))
 
-(defn- replace-lagacy-sort-key
-  "Replace legacy sort key with CMR version."
+(defn- replace-legacy-sort-key
+  "Replace legacy sort key with CMR version. Takes a sort key with +,-, or nothing as a prefix
+  and replaces the appropriate part."
   [sort-key]
-  (reduce (fn [memo, legacy-param]
-            (s/replace memo
-                       (name legacy-param)
-                       (name (legacy-param param-aliases))))
-          sort-key
-          (keys param-aliases)))
+  (get sort-key-replacements sort-key sort-key))
 
 (defn- replace-legacy-sort-keys
   "Replace legacy sort keys with CMR versions."
@@ -43,8 +50,8 @@
   (if-let [sort-key (:sort-key params)]
     (assoc params :sort-key
            (if (sequential? sort-key)
-             (map replace-lagacy-sort-key sort-key)
-             (replace-lagacy-sort-key sort-key)))
+             (map replace-legacy-sort-key sort-key)
+             (replace-legacy-sort-key sort-key)))
     params))
 
 (defn replace-parameter-aliases
