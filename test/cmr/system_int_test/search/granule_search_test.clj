@@ -351,8 +351,7 @@
         gran2-cid (get-in gran2 [:concept-id])
         gran3-cid (get-in gran3 [:concept-id])
         gran4-cid (get-in gran4 [:concept-id])
-        gran5-cid (get-in gran5 [:concept-id])
-        dummy-cid "D1000000004-PROV2"]
+        gran5-cid (get-in gran5 [:concept-id])]
     (index/refresh-elastic-index)
     (testing "echo granule id search"
       (are [items cid options]
@@ -363,7 +362,6 @@
 
            [gran1] gran1-cid {}
            [gran5] gran5-cid {}
-           [] dummy-cid {}
            ;; Multiple values
            [gran1 gran2 gran3 gran4 gran5] [gran1-cid gran2-cid gran3-cid gran4-cid gran5-cid] {}
            [gran1 gran5] [gran1-cid gran5-cid] {:and false}
@@ -377,7 +375,6 @@
 
            [gran1] gran1-cid {}
            [gran5] gran5-cid {}
-           [] dummy-cid {}
            ;; Multiple values
            [gran1 gran2 gran3 gran4 gran5] [gran1-cid gran2-cid gran3-cid gran4-cid gran5-cid] {}
            [] (s/lower-case gran1-cid) {:ignore-case false}))
@@ -425,7 +422,6 @@
              (d/refs-match? items (search/find-refs :granule params)))
            [gran1] gran1-cid {}
            [gran5] gran5-cid {}
-           [] dummy-cid {}
            ;; Multiple values
            [gran1 gran2 gran3 gran4 gran5] [gran1-cid gran2-cid gran3-cid gran4-cid gran5-cid] {}
            [] [gran1-cid gran5-cid] {:and true}))
