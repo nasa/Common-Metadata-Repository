@@ -342,7 +342,7 @@
 
 (defn boolean-value-validation
   [concept-type params]
-  (let [bool-params (select-keys params [:downloadable])]
+  (let [bool-params (select-keys params [:downloadable :browsable])]
     (mapcat
       (fn [[key value]]
         (if (or (= "true" value) (= "false" value) (= "unset" (s/lower-case value)))
