@@ -43,8 +43,7 @@
                             (x/element :eos:citation {}
                                        (x/element :gmd:CI_Citation {}
                                                   (h/iso-string-element :gmd:title title)
-                                                  (x/element :gmd:date {:gco:nilReason "unknown"})
-                                                  ))
+                                                  (x/element :gmd:date {:gco:nilReason "unknown"})))
                             (x/element :eos:identifier {}
                                        (x/element :gmd:MD_Identifier {}
                                                   (h/iso-string-element :gmd:code short-name)

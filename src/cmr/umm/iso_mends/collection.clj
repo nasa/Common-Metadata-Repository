@@ -86,10 +86,13 @@
        :temporal (t/xml-elem->Temporal id-elem)
        :science-keywords (k/xml-elem->ScienceKeywords id-elem)
        :platforms (platform/xml-elem->Platforms xml-struct)
+       ;; AdditionalAttributes is not fully supported as documented in CMR-692
        ; :product-specific-attributes (psa/xml-elem->ProductSpecificAttributes xml-struct)
        :projects (proj/xml-elem->Projects xml-struct)
+       ;; TwoDCoordinateSystems is not fully supported as documented in CMR-693
        ; :two-d-coordinate-systems (two-d/xml-elem->TwoDCoordinateSystems xml-struct)
        :related-urls (ru/xml-elem->related-urls xml-struct)
+       ;; TODO: Ted has updated the xsl today, will try to add spatial support next.
        ; :spatial-coverage (xml-elem->SpatialCoverage xml-struct)
        :organizations (org/xml-elem->Organizations xml-struct)
        :associated-difs (dif/xml-elem->associated-difs id-elem)
@@ -191,13 +194,13 @@
 (defn- generate-distribution-info
   "Generate the ISO distribution info part of the ISO xml with the given archive center and related urls"
   [archive-center related-urls]
-  (x/element :gmd:distributionInfo {}
-             (x/element :gmd:MD_Distribution {}
-                        (x/element :gmd:distributor {}
-                                   (x/element :gmd:MD_Distributor {}
-                                              (generate-distributor-contact archive-center)
-                                              (generate-distributor-transfer-options related-urls)
-                                              )))))
+  (x/element
+    :gmd:distributionInfo {}
+    (x/element :gmd:MD_Distribution {}
+               (x/element :gmd:distributor {}
+                          (x/element :gmd:MD_Distributor {}
+                                     (generate-distributor-contact archive-center)
+                                     (generate-distributor-transfer-options related-urls))))))
 
 (extend-protocol cmr.umm.iso-mends.core/UmmToIsoMendsXml
   UmmCollection
