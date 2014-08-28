@@ -1,21 +1,21 @@
-(ns cmr.umm.iso.collection
+(ns cmr.umm.iso-mends.collection
   "Contains functions for parsing and generating the MENDS ISO dialect."
   (:require [clojure.data.xml :as x]
             [clojure.java.io :as io]
             [clojure.string :as s]
             [clj-time.core :as time]
             [cmr.common.xml :as cx]
-            [cmr.umm.iso.core :as core]
+            [cmr.umm.iso-mends.core :as core]
             [cmr.umm.collection :as c]
             [cmr.common.xml :as v]
-            [cmr.umm.iso.collection.related-url :as ru]
-            [cmr.umm.iso.collection.org :as org]
-            [cmr.umm.iso.collection.temporal :as t]
-            [cmr.umm.iso.collection.platform :as platform]
-            [cmr.umm.iso.collection.keyword :as k]
-            [cmr.umm.iso.collection.project :as proj]
-            [cmr.umm.iso.collection.associated-difs :as dif]
-            [cmr.umm.iso.collection.helper :as h])
+            [cmr.umm.iso-mends.collection.related-url :as ru]
+            [cmr.umm.iso-mends.collection.org :as org]
+            [cmr.umm.iso-mends.collection.temporal :as t]
+            [cmr.umm.iso-mends.collection.platform :as platform]
+            [cmr.umm.iso-mends.collection.keyword :as k]
+            [cmr.umm.iso-mends.collection.project :as proj]
+            [cmr.umm.iso-mends.collection.associated-difs :as dif]
+            [cmr.umm.iso-mends.collection.helper :as h])
   (:import cmr.umm.collection.UmmCollection))
 
 (defn trunc
@@ -45,15 +45,15 @@
 (defn- xml-elem->DataProviderTimestamps
   "Returns a UMM DataProviderTimestamps from a parsed XML structure"
   [id-elem]
-  (let [date-elements (cx/elements-at-path id-elem [:citation :CI_Citation :date :CI_Date])
-        insert-elem (first (filter
-                             #(= "creation" (cx/string-at-path % [:dateType :CI_DateTypeCode]))
-                             date-elements))
-        update-elem (first (filter
-                             #(= "revision" (cx/string-at-path % [:dateType :CI_DateTypeCode]))
-                             date-elements))
-        insert-time (cx/datetime-at-path insert-elem [:date :DateTime])
-        update-time (cx/datetime-at-path update-elem [:date :DateTime])]
+  (let [parse-date-fn
+        (fn [tag]
+          (let [date-elements (cx/elements-at-path id-elem [:citation :CI_Citation :date :CI_Date])
+                tag-elem (first (filter
+                                  #(= tag (cx/string-at-path % [:dateType :CI_DateTypeCode]))
+                                  date-elements))]
+            (cx/datetime-at-path tag-elem [:date :DateTime])))
+        insert-time (parse-date-fn "creation")
+        update-time (parse-date-fn "revision")]
     (when (or insert-time update-time)
       (c/map->DataProviderTimestamps
         {:insert-time insert-time
@@ -199,11 +199,11 @@
                                               (generate-distributor-transfer-options related-urls)
                                               )))))
 
-(extend-protocol cmr.umm.iso.core/UmmToIsoXml
+(extend-protocol cmr.umm.iso-mends.core/UmmToIsoMendsXml
   UmmCollection
-  (umm->iso-xml
+  (umm->iso-mends-xml
     ([collection]
-     (cmr.umm.iso.core/umm->iso-xml collection false))
+     (cmr.umm.iso-mends.core/umm->iso-mends-xml collection false))
     ([collection indent?]
      (let [{{:keys [short-name long-name version-id processing-level-id]} :product
             dataset-id :entry-title
@@ -284,9 +284,9 @@
   (let [valid-collection-xml
         (slurp (io/file (io/resource "data/all_fields_iso_collection.xml")))
         coll (parse-collection valid-collection-xml)
-        xml (core/umm->iso-xml coll)]
+        xml (core/umm->iso-mends-xml coll)]
     (println "----coll: " coll)
-    (println (core/umm->iso-xml coll true))
+    (println (core/umm->iso-mends-xml coll true))
     (println (validate-xml xml))
     )
 

@@ -1,4 +1,4 @@
-(ns cmr.umm.test.iso.collection
+(ns cmr.umm.test.iso-mends.collection
   "Tests parsing and generating ISO Collection XML."
   (:require [clojure.test :refer :all]
             [cmr.common.test.test-check-ext :refer [defspec]]
@@ -9,11 +9,11 @@
             [cmr.common.joda-time]
             [cmr.common.date-time-parser :as p]
             [cmr.umm.test.generators.collection :as coll-gen]
-            [cmr.umm.iso.collection :as c]
+            [cmr.umm.iso-mends.collection :as c]
             [cmr.umm.echo10.collection :as echo10-c]
             [cmr.umm.echo10.core :as echo10]
             [cmr.umm.collection :as umm-c]
-            [cmr.umm.iso.core :as iso]
+            [cmr.umm.iso-mends.core :as iso]
             [cmr.umm.test.echo10.collection :as test-echo10])
   (:import cmr.spatial.mbr.Mbr))
 
@@ -63,21 +63,21 @@
 
 (defspec generate-collection-is-valid-xml-test 100
   (for-all [collection coll-gen/collections]
-    (let [xml (iso/umm->iso-xml collection)]
+    (let [xml (iso/umm->iso-mends-xml collection)]
       (and
         (> (count xml) 0)
         (= 0 (count (c/validate-xml xml)))))))
 
 (defspec generate-and-parse-collection-test 100
   (for-all [collection coll-gen/collections]
-    (let [xml (iso/umm->iso-xml collection)
+    (let [xml (iso/umm->iso-mends-xml collection)
           parsed (c/parse-collection xml)
           expected-parsed (umm->expected-parsed-iso collection)]
       (= parsed expected-parsed))))
 
 (defspec generate-and-parse-collection-between-formats-test 100
   (for-all [collection coll-gen/collections]
-    (let [xml (iso/umm->iso-xml collection)
+    (let [xml (iso/umm->iso-mends-xml collection)
           parsed-iso (c/parse-collection xml)
           echo10-xml (echo10/umm->echo10-xml parsed-iso)
           parsed-echo10 (echo10-c/parse-collection echo10-xml)

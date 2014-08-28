@@ -1,10 +1,11 @@
-(ns cmr.umm.iso.collection.instrument
+(ns cmr.umm.iso-mends.collection.instrument
+  "Contains functions for parsing and generating the ISO MENDS instrument"
   (:require [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
             [cmr.umm.collection :as c]
-            [cmr.umm.iso.collection.sensor :as sensor]
-            [cmr.umm.iso.collection.keyword :as k]
-            [cmr.umm.iso.collection.helper :as h]))
+            [cmr.umm.iso-mends.collection.sensor :as sensor]
+            [cmr.umm.iso-mends.collection.keyword :as k]
+            [cmr.umm.iso-mends.collection.helper :as h]))
 
 (defn- xml-elem->Instrument
   [instrument-elem]

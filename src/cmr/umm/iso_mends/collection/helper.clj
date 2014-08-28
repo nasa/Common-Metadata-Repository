@@ -1,4 +1,4 @@
-(ns cmr.umm.iso.collection.helper
+(ns cmr.umm.iso-mends.collection.helper
   "Contains functions used by ISO collection generation"
   (:require [clojure.data.xml :as x]
             [clojure.test.check.generators :as gen]

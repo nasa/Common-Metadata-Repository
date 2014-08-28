@@ -1,8 +1,9 @@
-(ns cmr.umm.iso.collection.sensor
+(ns cmr.umm.iso-mends.collection.sensor
+  "Contains functions for parsing and generating the ISO MENDS sensor"
   (:require [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
             [cmr.umm.collection :as c]
-            [cmr.umm.iso.collection.helper :as h]))
+            [cmr.umm.iso-mends.collection.helper :as h]))
 
 (defn xml-elem->Sensor
   [sensor-elem]

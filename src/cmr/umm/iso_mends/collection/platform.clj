@@ -1,10 +1,11 @@
-(ns cmr.umm.iso.collection.platform
+(ns cmr.umm.iso-mends.collection.platform
+  "Contains functions for parsing and generating the ISO MENDS platform"
   (:require [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
             [cmr.umm.collection :as c]
-            [cmr.umm.iso.collection.instrument :as inst]
-            [cmr.umm.iso.collection.keyword :as k]
-            [cmr.umm.iso.collection.helper :as h]))
+            [cmr.umm.iso-mends.collection.instrument :as inst]
+            [cmr.umm.iso-mends.collection.keyword :as k]
+            [cmr.umm.iso-mends.collection.helper :as h]))
 
 (defn xml-elem->Platform
   [instruments-mapping platform-elem]

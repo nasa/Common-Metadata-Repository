@@ -1,9 +1,10 @@
-(ns cmr.umm.iso.collection.project
+(ns cmr.umm.iso-mends.collection.project
+  "Contains functions for parsing and generating the ISO MENDS elements related to UMM project"
   (:require [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
             [cmr.umm.collection :as c]
-            [cmr.umm.iso.collection.keyword :as k]
-            [cmr.umm.iso.collection.helper :as h]))
+            [cmr.umm.iso-mends.collection.keyword :as k]
+            [cmr.umm.iso-mends.collection.helper :as h]))
 
 (defn xml-elem->Project
   [project-elem]

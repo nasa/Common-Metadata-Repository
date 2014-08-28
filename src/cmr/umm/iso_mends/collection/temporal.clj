@@ -1,9 +1,9 @@
-(ns cmr.umm.iso.collection.temporal
-  "Contains functions for parsing and generating the ISO dialect."
+(ns cmr.umm.iso-mends.collection.temporal
+  "Contains functions for parsing and generating the ISO MENDS temporal"
   (:require [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
             [cmr.umm.collection :as c]
-            [cmr.umm.iso.collection.helper :as h]))
+            [cmr.umm.iso-mends.collection.helper :as h]))
 
 (defn- xml-elem->RangeDateTimes
   "Returns a list of UMM RangeDateTimes from a parsed XML structure"

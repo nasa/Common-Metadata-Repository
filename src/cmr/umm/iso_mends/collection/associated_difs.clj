@@ -1,7 +1,8 @@
-(ns cmr.umm.iso.collection.associated-difs
+(ns cmr.umm.iso-mends.collection.associated-difs
+  "Contains functions for parsing and generating the ISO MENDS associated difs"
   (:require [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
-            [cmr.umm.iso.collection.helper :as h]))
+            [cmr.umm.iso-mends.collection.helper :as h]))
 
 (defn xml-elem->associated-difs
   "Returns associated difs from a parsed XML structure"

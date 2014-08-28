@@ -1,9 +1,10 @@
-(ns cmr.umm.iso.collection.keyword
+(ns cmr.umm.iso-mends.collection.keyword
+  "Contains functions for parsing and generating the ISO MENDS keyword related fields"
   (:require [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
             [clojure.string :as s]
             [cmr.umm.collection :as c]
-            [cmr.umm.iso.collection.helper :as h]))
+            [cmr.umm.iso-mends.collection.helper :as h]))
 
 (defn- xml-elem->keywords
   "Returns a list of UMM keywords from a parsed XML structure for the given match key string"

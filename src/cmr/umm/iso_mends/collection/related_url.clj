@@ -1,9 +1,9 @@
-(ns cmr.umm.iso.collection.related-url
-  "Contains functions for parsing and generating the ISO OnlineResources into UMM related urls."
+(ns cmr.umm.iso-mends.collection.related-url
+  "Contains functions for parsing and generating the ISO MENDS related urls"
   (:require [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
             [cmr.umm.collection :as c]
-            [cmr.umm.iso.collection.helper :as h]))
+            [cmr.umm.iso-mends.collection.helper :as h]))
 
 (defn- resource-name->types
   "Mapping of online resource name to related url type and sub-type"
