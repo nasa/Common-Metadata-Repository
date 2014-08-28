@@ -184,7 +184,13 @@
 (defn- add-attribs
   "Returns the attribs with the field-value pair added if there is a value"
   [attribs field value]
-  (if (empty? value) attribs (assoc attribs field value)))
+  (if (or (nil? value)
+          (and (string? value)
+               (empty? value)))
+    attribs
+    (assoc attribs field value)))
+
+
 
 (defn atom-link->attribute-map
   "Convert an atom link to an XML element"
