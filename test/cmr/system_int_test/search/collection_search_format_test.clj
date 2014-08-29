@@ -82,6 +82,15 @@
           :iso-mends all-colls
           (search/find-metadata :collection :iso-mends {} {:format-as-ext? true}))))
 
+    (testing "Retrieving results in ISO, which is an alias for MENDS ISO"
+      (d/assert-metadata-results-match
+        :iso all-colls
+        (search/find-metadata :collection :iso {}))
+      (testing "as extension"
+        (d/assert-metadata-results-match
+          :iso all-colls
+          (search/find-metadata :collection :iso {} {:format-as-ext? true}))))
+
     (testing "Get by concept id in formats"
       (testing "supported formats"
         (are [mime-type format-key format-as-ext?]
