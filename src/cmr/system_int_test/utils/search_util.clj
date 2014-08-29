@@ -15,6 +15,7 @@
             [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
             [cmr.umm.dif.collection :as dif-c]
+            [cmr.umm.iso-mends.collection :as iso-mends-c]
             [cmr.system-int-test.data2.atom :as da]
             [cmr.system-int-test.data2.atom-json :as dj]
             [cmr.system-int-test.data2.provider-holdings :as ph]
@@ -78,7 +79,8 @@
    "application/xml" "xml"
    "application/echo10+xml" "echo10"
    "application/iso_prototype+xml" "iso_prototype"
-   "application/iso:smap+xml" "smap_iso"
+   "application/iso:smap+xml" "iso_smap"
+   "application/iso-mends+xml" "iso_mends"
    "application/iso19115+xml" "iso19115"
    "application/dif+xml" "dif"
    "text/csv" "csv"
@@ -150,20 +152,19 @@
    (get-search-failure-data
      (let [format-mime-type (mime-types/format->mime-type format-key)
            response (find-concepts-in-format format-mime-type concept-type params options)
-           parsed (x/parse-str (:body response))]
-       (map (fn [result]
-              (let [{attrs :attrs [inner-elem] :content} result
-                    {:keys [concept-id collection-concept-id revision-id]} attrs
-                    inner-elem (if (= :dif format-key)
-                                 ;; Fixes issue with parsing and regenerating the XML
-                                 (assoc inner-elem :attrs dif-c/dif-header-attributes)
-                                 inner-elem)]
+           body (:body response)
+           parsed (x/parse-str body)
+           metadatas (for [match (drop 1 (str/split body #"(?ms)<result "))]
+                       (second (re-matches #"(?ms)[^>]*>(.*)</result>.*" match)))]
+       (map (fn [result metadata]
+              (let [{{:keys [concept-id collection-concept-id revision-id]} :attrs} result]
                 {:concept-id concept-id
                  :revision-id (Long. ^String revision-id)
                  :format format-key
                  :collection-concept-id collection-concept-id
-                 :metadata (x/emit-str inner-elem)}))
-            (cx/elements-at-path parsed [:result]))))))
+                 :metadata (str "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" metadata)}))
+            (cx/elements-at-path parsed [:result])
+            metadatas)))))
 
 (defn find-refs-json
   "Finds references using the JSON format. This will eventually go away as the json response format
