@@ -73,6 +73,15 @@
           :dif all-colls
           (search/find-metadata :collection :dif {} {:format-as-ext? true}))))
 
+    (testing "Retrieving results in MENDS ISO"
+      (d/assert-metadata-results-match
+        :iso-mends all-colls
+        (search/find-metadata :collection :iso-mends {}))
+      (testing "as extension"
+        (d/assert-metadata-results-match
+          :iso-mends all-colls
+          (search/find-metadata :collection :iso-mends {} {:format-as-ext? true}))))
+
     (testing "Get by concept id in formats"
       (testing "supported formats"
         (are [mime-type format-key format-as-ext?]
@@ -86,7 +95,7 @@
              "application/echo10+xml" :echo10 true))
       (testing "default format"
         (let [response (search/get-concept-by-concept-id (:concept-id c1-echo) {:accept nil})]
-               (is (= (umm/umm->xml c1-echo :echo10) (:body response)))))
+          (is (= (umm/umm->xml c1-echo :echo10) (:body response)))))
       (testing "unsupported formats"
         (are [mime-type]
              (let [response (search/get-concept-by-concept-id
@@ -115,8 +124,8 @@
                                                        {:short-name "S1"}
                                                        {:format-as-ext? true})))))))
 
-;; Tests that we can ingest and find difs with spatial and that granules in the dif can also be
-;; ingested and found
+; Tests that we can ingest and find difs with spatial and that granules in the dif can also be
+; ingested and found
 (deftest dif-with-spatial
   (let [c1 (d/ingest "PROV1" (dc/collection {:spatial-coverage nil}) :dif)
         g1 (d/ingest "PROV1" (dg/granule c1))
