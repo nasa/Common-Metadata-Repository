@@ -37,7 +37,8 @@
    "xml" "application/xml"
    "echo10" "application/echo10+xml"
    "iso_prototype" "application/iso_prototype+xml"
-   "smap_iso" "application/iso:smap+xml"
+   "iso_smap" "application/iso:smap+xml"
+   "iso_mends" "application/iso-mends+xml"
    "iso19115" "application/iso19115+xml"
    "dif" "application/dif+xml"
    "csv" "text/csv"
@@ -51,6 +52,7 @@
     "application/echo10+xml"
     "application/dif+xml"
     "application/atom+xml"
+    "application/iso-mends+xml"
     "text/csv"})
 
 (def supported-provider-holdings-mime-types
@@ -228,10 +230,11 @@
         (GET "/" {params :params headers :headers context :request-context}
           (find-concept-by-cmr-concept-id context path-w-extension params headers)))
 
-      ;; Find concepts - form encoded
+      ;; Find concepts
       (context ["/:path-w-extension" :path-w-extension concept-type-w-extension-regex] [path-w-extension]
         (GET "/" {params :params headers :headers context :request-context query-string :query-string}
           (find-concepts context path-w-extension params headers query-string))
+        ;; Find concepts - form encoded
         (POST "/" {params :params headers :headers context :request-context body :body-copy}
           (find-concepts context path-w-extension params headers body)))
 

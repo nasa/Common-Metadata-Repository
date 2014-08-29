@@ -13,7 +13,7 @@ Provides a public search API for concepts in the CMR.
 
 #### Headers
 
-  * Accept - specifies the format to return search results in. Default is xml.
+  * Accept - specifies the MimeType to return search results in. Default is "application/xml".
     * `curl -H "Accept: application/xml" -i "http://localhost:3003/collections"`
     * `curl -H "Accept: text/csv" -i "http://localhost:3003/granules"`
     * `curl -H "Accept: application/atom+xml" -i "http://localhost:3003/granules"`
@@ -21,6 +21,25 @@ Provides a public search API for concepts in the CMR.
 
   * The response headers include CMR-Hits and CMR-Took which indicate the number of result hits
      and the time to build and execute the query, respectively.
+
+#### Extenstions
+
+  * Besides MimeTypes, client can also use exetension to specify the format to return search results
+    in. Default is xml.
+    * `curl -i "http://localhost:3003/collections"`
+    * `curl -i "http://localhost:3003/collections.json"`
+    * `curl -i "http://localhost:3003/collections.echo10"`
+    * `curl -i "http://localhost:3003/collections.iso_mends"`
+
+    Here is a list of supported extensions that their corresponding MimeTypes:
+
+      * json      "application/json"
+      * xml       "application/xml"
+      * echo10    "application/echo10+xml"
+      * iso_mends "application/iso-mends+xml"
+      * dif       "application/dif+xml"
+      * csv       "text/csv"
+      * atom      "application/atom+xml"
 
 ### Clear the cache cache
 
@@ -468,7 +487,8 @@ Provider holdings for a list of providers
     curl "http://localhost:3003/provider_holdings.json?provider-id\[\]=PROV1&provider-id\[\]=PROV2"
 
 ### Search with AQL
-Search collections or granules with AQL in POST request body.
+Search collections or granules with AQL in POST request body. The AQL must conform to the schema
+that is defined in cmr-search-app/resources/schema/IIMSAQLQueryLanguage.xsd
 
     curl -i -XPOST http://localhost:3003/concepts/search -d '<?xml version="1.0" encoding="UTF-8"?>
     <query><for value="collections"/><dataCenterId><all/></dataCenterId>
