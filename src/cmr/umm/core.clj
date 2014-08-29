@@ -4,7 +4,9 @@
             [cmr.umm.echo10.collection :as echo10-c]
             [cmr.umm.echo10.granule :as echo10-g]
             [cmr.umm.dif.core :as dif]
-            [cmr.umm.dif.collection :as dif-c]))
+            [cmr.umm.dif.collection :as dif-c]
+            [cmr.umm.iso-mends.core :as iso-mends]
+            [cmr.umm.iso-mends.collection :as iso-mends-c]))
 
 (defmulti parse-concept
   "Convert a metadata db concept map into a umm record by parsing its metadata."
@@ -23,6 +25,10 @@
   [concept]
   (dif-c/parse-collection (:metadata concept)))
 
+(defmethod parse-concept [:collection "application/iso-mends+xml"]
+  [concept]
+  (iso-mends-c/parse-collection (:metadata concept)))
+
 (defmulti umm->xml
   "Convert a umm record into xml of a given format."
   (fn [umm format]
@@ -35,3 +41,7 @@
 (defmethod umm->xml :dif
   [umm format]
   (dif/umm->dif-xml umm))
+
+(defmethod umm->xml :iso-mends
+  [umm format]
+  (iso-mends/umm->iso-mends-xml umm))
