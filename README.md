@@ -36,7 +36,7 @@ Provides a public search API for concepts in the CMR.
       * json      "application/json"
       * xml       "application/xml"
       * echo10    "application/echo10+xml"
-      * iso-mends "application/iso-mends+xml"
+      * iso_mends "application/iso-mends+xml"
       * dif       "application/dif+xml"
       * csv       "text/csv"
       * atom      "application/atom+xml"
