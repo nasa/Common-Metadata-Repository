@@ -225,8 +225,10 @@
                     iso-charset-element
                     iso-hierarchy-level-element
                     (x/element :gmd:contact {:gco:nilReason "missing"})
+                    ;; NOTE: it does not make sense to put the current date time here
+                    ;; and it would cause metadata comparision issues. So we use update time here.
                     (x/element :gmd:dateStamp {}
-                               (x/element :gco:DateTime {} (str (time/now))))
+                               (x/element :gco:DateTime {} (str update-time)))
                     (x/element :gmd:metadataStandardName {}
                                (x/element :gco:CharacterString {}
                                           "ISO 19115-2 Geographic Information - Metadata Part 2 Extensions for imagery and gridded data"))
