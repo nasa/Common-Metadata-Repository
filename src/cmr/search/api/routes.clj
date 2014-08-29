@@ -36,8 +36,8 @@
   {"json" "application/json"
    "xml" "application/xml"
    "echo10" "application/echo10+xml"
-   "iso_prototype" "application/iso_prototype+xml"
-   "iso_smap" "application/iso:smap+xml"
+   "iso" "application/iso+xml"
+   "iso_smap" "application/iso-smap+xml"
    "iso_mends" "application/iso-mends+xml"
    "iso19115" "application/iso19115+xml"
    "dif" "application/dif+xml"
@@ -52,6 +52,7 @@
     "application/echo10+xml"
     "application/dif+xml"
     "application/atom+xml"
+    "application/iso+xml"
     "application/iso-mends+xml"
     "text/csv"})
 
@@ -157,9 +158,12 @@
                         (process-context-info params headers)
                         (assoc :query-string query-string))
             params (process-params params path-w-extension headers "application/xml")
+            result-format (:result-format params)
             _ (info (format "Searching for %ss from client %s in format %s with params %s."
-                            (name concept-type) (:client-id context) (:result-format params)
+                            (name concept-type) (:client-id context) result-format
                             (pr-str params)))
+            ;; alias :iso to iso-mends
+            params (if (= :iso result-format) (assoc params :result-format :iso-mends) params)
             search-params (lp/process-legacy-psa params query-string)
             results (query-svc/find-concepts-by-parameters context concept-type search-params)]
         (search-response params results))
