@@ -10,6 +10,7 @@
    "application/echo10+xml" :echo10
    "application/iso_prototype+xml" :iso-prototype
    "application/iso:smap+xml" :iso-smap
+   "application/iso-mends+xml" :iso-mends
    "application/iso19115+xml" :iso19115
    "application/dif+xml" :dif
    "text/csv" :csv
@@ -21,6 +22,7 @@
    :echo10 "application/echo10+xml"
    :iso-prototype "application/iso_prototype+xml"
    :iso-smap "application/iso:smap+xml"
+   :iso-mends "application/iso-mends+xml"
    :iso19115 "application/iso19115+xml"
    :dif "application/dif+xml"
    :csv "text/csv"
