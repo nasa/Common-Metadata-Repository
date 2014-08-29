@@ -89,17 +89,6 @@
      (cx/remove-xml-processing-instructions metadata)
      "</result>"]))
 
-(defn- fix-header-attributes
-  [result-format parsed]
-  (case result-format
-    :dif (cx/update-elements-at-path
-           parsed [:result :DIF]
-           assoc :attrs dif-c/dif-header-attributes)
-    :iso-mends (cx/update-elements-at-path
-                 parsed [:result :MI_Metadata]
-                 assoc :attrs iso-mends-c/iso-header-attributes)
-    parsed))
-
 (defn search-results->metadata-response
   [context query results]
   (let [{:keys [hits took items]} results
@@ -116,7 +105,11 @@
     (if (and pretty? (not (= :iso-mends result-format)))
       (let [parsed (x/parse-str response)
             ;; Fix for DIF emitting XML
-            parsed (fix-header-attributes result-format parsed)]
+            parsed (if (= :dif result-format)
+                     (cx/update-elements-at-path
+                       parsed [:result :DIF]
+                       assoc :attrs dif-c/dif-header-attributes)
+                     parsed)]
         (x/indent-str parsed))
 
       response)))
