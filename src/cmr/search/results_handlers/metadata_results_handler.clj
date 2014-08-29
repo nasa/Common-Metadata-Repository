@@ -9,6 +9,7 @@
             [cmr.common.xml :as cx]
             [clojure.string :as str]
             [cmr.umm.dif.collection :as dif-c]
+            [cmr.umm.iso-mends.collection :as iso-mends-c]
             [cmr.common.util :as u]
             [cmr.common.log :refer (debug info warn error)]))
 
@@ -21,6 +22,10 @@
   [])
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:collection :dif]
+  [concept-type result-format]
+  [])
+
+(defmethod elastic-search-index/concept-type+result-format->fields [:collection :iso-mends]
   [concept-type result-format]
   [])
 
@@ -48,6 +53,9 @@
   [context query elastic-results]
   (elastic-results->query-metadata-results context query elastic-results))
 
+(defmethod elastic-results/elastic-results->query-results :iso-mends
+  [context query elastic-results]
+  (elastic-results->query-metadata-results context query elastic-results))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Search results handling
@@ -81,6 +89,17 @@
      (cx/remove-xml-processing-instructions metadata)
      "</result>"]))
 
+(defn- fix-header-attributes
+  [result-format parsed]
+  (case result-format
+    :dif (cx/update-elements-at-path
+           parsed [:result :DIF]
+           assoc :attrs dif-c/dif-header-attributes)
+    :iso-mends (cx/update-elements-at-path
+                 parsed [:result :MI_Metadata]
+                 assoc :attrs iso-mends-c/iso-header-attributes)
+    parsed))
+
 (defn search-results->metadata-response
   [context query results]
   (let [{:keys [hits took items]} results
@@ -94,14 +113,10 @@
                  "</took>"]
         footers ["</results>"]
         response (apply str (concat headers result-strings footers))]
-    (if pretty?
+    (if (and pretty? (not (= :iso-mends result-format)))
       (let [parsed (x/parse-str response)
             ;; Fix for DIF emitting XML
-            parsed (if (= :dif result-format)
-                     (cx/update-elements-at-path
-                       parsed [:result :DIF]
-                       assoc :attrs dif-c/dif-header-attributes)
-                     parsed)]
+            parsed (fix-header-attributes result-format parsed)]
         (x/indent-str parsed))
 
       response)))
@@ -111,5 +126,9 @@
   (search-results->metadata-response context query results))
 
 (defmethod qs/search-results->response :dif
+  [context query results]
+  (search-results->metadata-response context query results))
+
+(defmethod qs/search-results->response :iso-mends
   [context query results]
   (search-results->metadata-response context query results))
