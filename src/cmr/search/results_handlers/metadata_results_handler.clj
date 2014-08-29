@@ -102,6 +102,8 @@
                  "</took>"]
         footers ["</results>"]
         response (apply str (concat headers result-strings footers))]
+    ;; Since clojure.data.xml does not handle namesapces fully from parse-str to emit-str,
+    ;; we don't support pretty print for ISO result which has namespace prefixes on element names.
     (if (and pretty? (not (= :iso-mends result-format)))
       (let [parsed (x/parse-str response)
             ;; Fix for DIF emitting XML
