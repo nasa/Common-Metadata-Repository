@@ -15,6 +15,9 @@
    ;; Sequence of result items found by the query
    items
 
-  ])
+   ;; A map of collection concept ids to granule counts.
+   ;; This will only be present in the case of collection queries which enable this feature
+   granule-counts
 
+  ])
 

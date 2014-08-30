@@ -305,16 +305,8 @@
   (validate-aql aql)
   (let [xml-struct (x/parse-str aql)
         concept-type (get-concept-type xml-struct)
-        params (pv/validate-aql-parameters concept-type params)
-        page-size (Integer. (get params :page-size qm/default-page-size))
-        page-num (Integer. (get params :page-num qm/default-page-num))
-        pretty (get params :pretty false)
-        result-format (:result-format params)
-        condition (xml-struct->query-condition concept-type xml-struct)]
-    (qm/query {:concept-type concept-type
-               :page-size page-size
-               :page-num page-num
-               :pretty pretty
-               :condition condition
-               :result-format result-format})))
+        params (pv/validate-aql-parameters concept-type params)]
+    (qm/query (assoc (pc/standard-params->query-attribs concept-type params)
+                     :concept-type concept-type
+                     :condition (xml-struct->query-condition concept-type xml-struct)))))
 

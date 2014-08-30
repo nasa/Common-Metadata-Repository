@@ -3,10 +3,6 @@
             [cmr.search.services.parameters.conversion :as p]
             [cmr.search.models.query :as q]))
 
-;; TODO add test of and-ing and or-ing conditions
-;; What should happen if the conditions list is empty?
-;; - match all? or match none? or internal error?
-
 (deftest conds-test
   (doseq [[operator f] [[:and q/and-conds] [:or q/or-conds]]]
     (testing (str operator " Conditions")

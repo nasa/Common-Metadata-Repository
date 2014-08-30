@@ -3,6 +3,7 @@
   (:require [cmr.search.data.elastic-results-to-query-results :as elastic-results]
             [cmr.search.data.elastic-search-index :as elastic-search-index]
             [cmr.search.services.query-service :as qs]
+            [cmr.search.services.query-walkers.granule-count-query-extractor :as gcqe]
             [cmr.search.models.results :as results]
             [cmr.search.services.transformer :as t]
             [clojure.data.xml :as x]
@@ -56,6 +57,18 @@
 (defmethod elastic-results/elastic-results->query-results :iso-mends
   [context query elastic-results]
   (elastic-results->query-metadata-results context query elastic-results))
+
+(defmethod gcqe/query-results->concept-ids :echo10
+  [results]
+  (->> results
+       :items
+       (map :concept-id)))
+
+(defmethod gcqe/query-results->concept-ids :dif
+  [results]
+  (->> results
+       :items
+       (map :concept-id)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Search results handling

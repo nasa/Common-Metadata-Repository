@@ -3,6 +3,7 @@
   (:require [cmr.search.data.elastic-results-to-query-results :as elastic-results]
             [cmr.search.data.elastic-search-index :as elastic-search-index]
             [cmr.search.services.query-service :as qs]
+            [cmr.search.services.query-walkers.granule-count-query-extractor :as gcqe]
             [clojure.data.xml :as x]
             [cheshire.core :as json]
             [clojure.string :as str]
@@ -155,6 +156,12 @@
   (if (= :granule (:concept-type query))
     (granule-elastic-result->query-result-item elastic-result)
     (collection-elastic-result->query-result-item elastic-result)))
+
+(defmethod gcqe/query-results->concept-ids :atom
+  [results]
+  (->> results
+       :items
+       (map :id)))
 
 (def ATOM_HEADER_ATTRIBUTES
   "The set of attributes that go on the ATOM root element"

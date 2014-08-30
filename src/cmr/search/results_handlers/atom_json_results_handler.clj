@@ -2,6 +2,7 @@
   "Handles the JSON results format and related functions"
   (:require [cmr.search.data.elastic-results-to-query-results :as elastic-results]
             [cmr.search.data.elastic-search-index :as elastic-search-index]
+            [cmr.search.services.query-walkers.granule-count-query-extractor :as gcqe]
             [cmr.search.services.query-service :as qs]
             [cheshire.core :as json]
             [clj-time.core :as time]
@@ -21,6 +22,12 @@
 (defmethod elastic-results/elastic-result->query-result-item :json
   [context query elastic-result]
   (elastic-results/elastic-result->query-result-item context (assoc query :result-format :atom) elastic-result))
+
+(defmethod gcqe/query-results->concept-ids :json
+  [results]
+  (->> results
+       :items
+       (map :id)))
 
 (defn- collection-atom-reference->json
   "Converts a search result collection atom reference into json"

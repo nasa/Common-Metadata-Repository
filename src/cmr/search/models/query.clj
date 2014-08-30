@@ -27,6 +27,9 @@
    ;; desired result format
    result-format
 
+   ;; A list of features identified by symbols that can be enabled or disabled.
+   result-features
+
    ;; flag to determine if the results should be pretty printed in the response
    pretty?
 
@@ -36,6 +39,12 @@
    ;; that compute the score. Keeping them here is cleaner than having to search for the
    ;; keyword condition and pull them from there.
    keywords
+
+   ;; Aggregations to send to elastic. The format of this object matches the shape expected by
+   ;; elastisch for aggregations. It should be a map of aggregation names to aggregation types
+   ;; with details. See the elastisch documentation for more information (which is somewhat light
+   ;; aggregation documentatation unfortunately)
+   aggregations
    ])
 
 (defrecord ConditionGroup
@@ -270,34 +279,33 @@
    ])
 
 (def default-sort-keys
-  "The default sort keys by concept type. Collection default is more complicated in that it will
-  default so relevance score if a keywords search is executed."
-  {:collection [{:field :entry-title
-                 :order :asc}]
+  {:granule [{:field :provider-id :order :asc}
+             {:field :start-date :order :asc}]
+   :collection [{:field :entry-title :order :asc}]})
 
-   :granule [{:field :provider-id
-              :order :asc}
-             {:field :start-date
-              :order :asc}]})
-
-(def default-result-format
-  "The default format for results."
-  {:collection :json
-   :granule :json})
+(def concept-type->default-query-attribs
+  {:granule {:condition (->MatchAllCondition)
+             :page-size default-page-size
+             :page-num default-page-num
+             :sort-keys (default-sort-keys :granule)
+             :result-format :xml
+             :pretty? false}
+   :collection {:condition (->MatchAllCondition)
+                :page-size default-page-size
+                :page-num default-page-num
+                :sort-keys (default-sort-keys :collection)
+                :result-format :xml
+                :pretty? false}})
 
 (defn query
   "Constructs a query with the given type, page-size, page-num, result-format,
   and root condition. If root condition is not provided it matches everything.
   If page-size, page-num, or result-format are not specified then they are given default values."
-  [params]
-  (let [{:keys [concept-type page-size page-num condition keywords sort-keys result-format pretty]} params
-        page-size (or page-size default-page-size)
-        page-num (or page-num default-page-num)
-        condition (or condition (->MatchAllCondition))
-        sort-keys (or sort-keys (default-sort-keys concept-type))
-        result-format (or result-format (default-result-format concept-type))
-        pretty (or pretty false)]
-    (->Query concept-type condition page-size page-num sort-keys result-format pretty keywords)))
+  [attribs]
+  (let [concept-type (:concept-type attribs)]
+    (map->Query (merge-with (fn [default-v v]
+                              (if (some? v) v default-v))
+                            (concept-type->default-query-attribs concept-type) attribs))))
 
 (defn numeric-value-condition
   "Creates a NumericValueCondition"
@@ -337,7 +345,7 @@
   (cond
     (empty? conditions) (errors/internal-error! "Grouping empty list of conditions")
     (= (count conditions) 1) (first conditions)
-    ;; TODO performance enhancement. If subconditions are condition groups of the same type they can
+    ;; Performance enhancement: If subconditions are condition groups of the same type they can
     ;; be combined into this new one.
     :else (->ConditionGroup type conditions)))
 

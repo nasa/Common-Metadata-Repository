@@ -12,8 +12,8 @@
             [cmr.transmit.index-set :as index-set]
             [cmr.search.models.results :as results]
             [cmr.search.data.query-to-elastic :as q2e]
-            [cmr.search.services.collection-concept-id-extractor :as cex]
-            [cmr.search.services.provider-id-extractor :as pex]
+            [cmr.search.services.query-walkers.collection-concept-id-extractor :as cex]
+            [cmr.search.services.query-walkers.provider-id-extractor :as pex]
             [cmr.system-trace.core :refer [deftracefn]]
             [cmr.common.services.errors :as e]))
 
@@ -115,7 +115,7 @@
 (deftracefn send-query-to-elastic
   "Created to trace only the sending of the query off to elastic search."
   [context query]
-  (let [{:keys [page-size page-num concept-type result-format]} query
+  (let [{:keys [page-size page-num concept-type result-format aggregations]} query
         elastic-query (q2e/query->elastic query)
         sort-params (q2e/query->sort-params query)
         index-info (concept-type->index-info context concept-type query)
@@ -123,7 +123,10 @@
         [from size] (if (= (:page-size query) :unlimited)
                       [0 10000]
                       [(* (dec page-num) page-size) page-size])]
-    (debug "Executing against indexes [" (:index-name index-info) "] the elastic query:" (pr-str elastic-query) "with sort" (pr-str sort-params))
+    (debug "Executing against indexes [" (:index-name index-info) "] the elastic query:"
+           (pr-str elastic-query)
+           "with sort" (pr-str sort-params)
+           "and aggregations" (pr-str aggregations))
     (esd/search (context->conn context)
                 (:index-name index-info)
                 [(:type-name index-info)]
@@ -132,7 +135,8 @@
                 :sort sort-params
                 :size size
                 :from from
-                :fields fields)))
+                :fields fields
+                :aggs aggregations)))
 
 (defn get-collection-permitted-groups
   "Useful for debugging only. Gets collections along with their currently permitted groups"
@@ -162,6 +166,7 @@
   [config]
   (->ElasticSearchIndex config nil))
 
+;; TODO this should be refactored to use send-query-to-elastic and specify aggregations in the query.
 (defn get-collection-granule-counts
   "Returns the collection granule count by searching elasticsearch by aggregation"
   [context provider-ids]

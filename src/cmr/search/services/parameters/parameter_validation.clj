@@ -120,8 +120,8 @@
 (defn unrecognized-params-validation
   "Validates that no invalid parameters were supplied"
   [concept-type params]
-  ;; this test does not apply to page_size, page_num, pretty, or result-format
-  (let [params (dissoc params :page-size :page-num :sort-key :result-format :pretty)]
+  ;; this test does not apply to page_size, page_num, etc.
+  (let [params (dissoc params :page-size :page-num :sort-key :result-format :pretty :include-granule-counts)]
     (map #(str "Parameter [" (csk/->snake_case_string % )"] was not recognized.")
          (set/difference (set (keys params))
                          (concept-type->valid-param-names concept-type)))))
@@ -342,7 +342,7 @@
 
 (defn boolean-value-validation
   [concept-type params]
-  (let [bool-params (select-keys params [:downloadable :browsable])]
+  (let [bool-params (select-keys params [:downloadable :browsable :include-granule-counts])]
     (mapcat
       (fn [[key value]]
         (if (or (= "true" value) (= "false" value) (= "unset" (s/lower-case value)))
@@ -382,7 +382,8 @@
   [concept-type params]
   (map #(str "Parameter [" (csk/->snake_case_string % )"] was not recognized.")
        (set/difference (set (keys params))
-                       (set [:page-size :page-num :sort-key :result-format :pretty :options]))))
+                       (set [:page-size :page-num :sort-key :result-format :pretty :options
+                             :include-granule-counts]))))
 
 (def parameter-validations
   "A list of the functions that can validate parameters. They all accept parameters as an argument

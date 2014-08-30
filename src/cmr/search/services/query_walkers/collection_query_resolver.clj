@@ -1,4 +1,4 @@
-(ns cmr.search.services.collection-query-resolver
+(ns cmr.search.services.query-walkers.collection-query-resolver
   "Defines protocols and functions to resolve collection query conditions"
   (:require [cmr.search.models.query :as qm]
             [cmr.common.services.errors :as errors]

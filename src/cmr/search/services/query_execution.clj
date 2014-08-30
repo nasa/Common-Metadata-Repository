@@ -5,8 +5,9 @@
             [cmr.search.models.results :as results]
             [cmr.search.data.elastic-results-to-query-results :as rc]
             [cmr.common.log :refer (debug info warn error)]
-            [cmr.search.services.collection-query-resolver :as r]
-            [cmr.search.services.acl-service :as acl-service])
+            [cmr.search.services.query-walkers.collection-query-resolver :as r]
+            [cmr.search.services.acl-service :as acl-service]
+            [cmr.search.services.query-walkers.granule-count-query-extractor :as gcqe])
   (:import cmr.search.models.query.StringsCondition
            cmr.search.models.query.StringCondition))
 
@@ -53,6 +54,33 @@
   [query]
   (get-in query [:condition :values]))
 
+(defmulti process-post-query-result-feature
+  "Processes the results found by the query to add additional information or other changes
+  based on the particular feature enabled by the user."
+  (fn [context query results feature]
+    feature))
+
+(defmethod process-post-query-result-feature :default
+  [context query results feature]
+  ; Does nothing by default
+  results)
+
+;; This find granule counts per collection.
+(defmethod process-post-query-result-feature :granule-counts
+  [context query results feature]
+  (let [granule-count-query (gcqe/extract-granule-count-query query results)
+        elastic-results (idx/execute-query context granule-count-query)]
+    (assoc results
+           :granule-counts
+           (gcqe/search-results->granule-counts elastic-results))))
+
+(defn process-post-query-result-features
+  "Processes result features that execute after a query results have been found."
+  [context query results]
+  (reduce (partial process-post-query-result-feature context query)
+          results
+          (:result-features query)))
+
 (defmulti execute-query
   "Executes the query using the most appropriate mechanism"
   (fn [context query]
@@ -63,9 +91,9 @@
   (let [{:keys [result-format pretty?]} query
         concept-ids (query->concept-ids query)
         tresults (t/get-latest-formatted-concepts context concept-ids result-format)
-        items (map #(select-keys % [:concept-id :revision-id :collection-concept-id :metadata]) tresults)]
-    (results/map->Results {:hits (count items)
-                           :items items})))
+        items (map #(select-keys % [:concept-id :revision-id :collection-concept-id :metadata]) tresults)
+        results (results/map->Results {:hits (count items) :items items})]
+    (process-post-query-result-features context query results)))
 
 (defmethod execute-query :elastic
   [context query]
@@ -73,6 +101,10 @@
        (acl-service/add-acl-conditions-to-query context)
        (r/resolve-collection-queries context)
        (idx/execute-query context)
-       (rc/elastic-results->query-results context query)))
+       (rc/elastic-results->query-results context query)
+       (process-post-query-result-features context query)))
+
+
+
 
 

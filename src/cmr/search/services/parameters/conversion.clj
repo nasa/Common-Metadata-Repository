@@ -256,38 +256,45 @@
           :field (or (lp/param-aliases field)
                      field)}]))))
 
+(defn standard-params->query-attribs
+  "Extracts standard parameters that work on any query api like page-size and page-num and returns
+  them in a map as query attributes"
+  [concept-type params]
+  (let [page-size (Integer. (get params :page-size qm/default-page-size))
+        page-num (Integer. (get params :page-num qm/default-page-num))
+        ;; If there is no sort key specified and keyword parameter exists then we default to
+        ;; sorting by document relevance score
+        sort-keys (or (parse-sort-key (:sort-key params))
+                      (when (:keyword params) [{:order :desc :field :score}]))
+        pretty? (= "true" (:pretty params))
+        result-features (concat (when (= (:include-granule-counts params) "true")
+                                  [:granule-counts])
+                                ;; Add other result features here
+                                )]
+    {:concept-type concept-type
+     :page-size page-size
+     :page-num page-num
+     :sort-keys sort-keys
+     :result-format (:result-format params)
+     :result-features (seq result-features)
+     :pretty? pretty?}))
+
 (defn parameters->query
   "Converts parameters into a query model."
   [concept-type params]
   (let [options (u/map-keys->kebab-case (get params :options {}))
-        page-size (Integer. (get params :page-size qm/default-page-size))
-        page-num (Integer. (get params :page-num qm/default-page-num))
-        ;; If there is no sort key specified and keyword parameter exists then we deafult to
-        ;; sorting by document relevance score
-        sort-keys (or (parse-sort-key (:sort-key params))
-                      (when (:keyword params) [{:order :desc :field :score}]))
-        pretty (get params :pretty false)
-        result-format (get params :result-format (qm/default-result-format concept-type))
-        params (dissoc params :options :page-size :page-num :sort-key :result-format :pretty)]
+        query-attribs (standard-params->query-attribs concept-type params)
+        keywords (when (:keyword params)
+                   (str/split (str/lower-case (:keyword params)) #" "))
+        params (dissoc params :options :page-size :page-num :sort-key :result-format :pretty
+                       :include-granule-counts)]
     (if (empty? params)
       ;; matches everything
-      (qm/query {:concept-type concept-type
-                 :page-size page-size
-                 :page-num page-num
-                 :sort-keys sort-keys
-                 :result-format result-format
-                 :pretty pretty})
+      (qm/query query-attribs)
       ;; Convert params into conditions
       (let [conditions (map (fn [[param value]]
                               (parameter->condition concept-type param value options))
                             params)]
-        (qm/query {:concept-type concept-type
-                   :page-size page-size
-                   :page-num page-num
-                   :pretty pretty
-                   :condition (qm/and-conds conditions)
-                   :keywords (when (:keyword params)
-                               (str/split (str/lower-case (:keyword params)) #" "))
-                   :sort-keys sort-keys
-                   :result-format result-format})))))
-
+        (qm/query (assoc query-attribs
+                         :condition (qm/and-conds conditions)
+                         :keywords keywords))))))

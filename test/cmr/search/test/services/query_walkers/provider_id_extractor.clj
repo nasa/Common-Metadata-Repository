@@ -1,16 +1,8 @@
-(ns cmr.search.test.services.provider-id-extractor
+(ns cmr.search.test.services.query-walkers.provider-id-extractor
   (:require [clojure.test :refer :all]
-            [cmr.search.services.provider-id-extractor :as p]
+            [cmr.search.test.services.query-walkers.helpers :refer :all]
+            [cmr.search.services.query-walkers.provider-id-extractor :as p]
             [cmr.search.models.query :as q]))
-
-
-(defn and-conds
-  [& conds]
-  (q/and-conds conds))
-
-(defn or-conds
-  [& conds]
-  (q/or-conds conds))
 
 (defn provider
   [provider-id]
@@ -35,10 +27,6 @@
 (defn collection-concept-ids
   [& concept-id]
   (q/string-conditions :collection-concept-id concept-id))
-
-(defn other
-  []
-  (q/string-conditions :foo "foo"))
 
 (deftest extract-provider-ids-test
   (are [condition expected-provider-ids]

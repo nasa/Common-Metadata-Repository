@@ -1,6 +1,7 @@
-(ns cmr.search.test.services.collection-query-resolver
+(ns cmr.search.test.services.query-walkers.collection-query-resolver
   (:require [clojure.test :refer :all]
-            [cmr.search.services.collection-query-resolver :as c]
+            [cmr.search.services.query-walkers.collection-query-resolver :as c]
+            [cmr.search.test.services.query-walkers.helpers :refer :all]
             [clojure.string :as str]
             [cmr.search.models.query :as q]
             [clojure.set :as set]))
@@ -8,28 +9,6 @@
   [condition]
   (q/query {:concept-type :granule
             :condition condition}))
-
-(defn other
-  "Creates a unique condition"
-  [n]
-  (q/string-conditions :foo (str "other" n)))
-
-(defn generic
-  "Creates a generic condition with a specific string name"
-  [named]
-  (q/string-condition :foo named))
-
-(defn and-conds
-  [& conds]
-  (q/and-conds conds))
-
-(defn or-conds
-  [& conds]
-  (q/or-conds conds))
-
-(defn coll-query-cond
-  [condition]
-  (q/->CollectionQueryCondition condition))
 
 (defrecord MockCollectionQueryCondition
   [

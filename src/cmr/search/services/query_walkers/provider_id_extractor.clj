@@ -1,4 +1,4 @@
-(ns cmr.search.services.provider-id-extractor
+(ns cmr.search.services.query-walkers.provider-id-extractor
   "Defines protocols and functions to extract provider ids from the query constructs"
   (:require [cmr.common.services.errors :as errors]
             [cmr.search.models.query :as qm]

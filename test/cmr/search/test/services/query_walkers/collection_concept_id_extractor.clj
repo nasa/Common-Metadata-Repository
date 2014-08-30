@@ -1,16 +1,8 @@
-(ns cmr.search.test.services.collection-concept-id-extractor
+(ns cmr.search.test.services.query-walkers.collection-concept-id-extractor
   (:require [clojure.test :refer :all]
-            [cmr.search.services.collection-concept-id-extractor :as c]
+            [cmr.search.test.services.query-walkers.helpers :refer :all]
+            [cmr.search.services.query-walkers.collection-concept-id-extractor :as c]
             [cmr.search.models.query :as q]))
-
-
-(defn and-conds
-  [& conds]
-  (q/and-conds conds))
-
-(defn or-conds
-  [& conds]
-  (q/or-conds conds))
 
 (defn collection-concept-id
   [concept-id]
@@ -19,10 +11,6 @@
 (defn collection-concept-ids
   [& concept-id]
   (q/string-conditions :collection-concept-id concept-id))
-
-(defn other
-  []
-  (q/string-conditions :foo "foo"))
 
 (deftest extract-collection-concept-ids-test
   (are [condition expected-ids]

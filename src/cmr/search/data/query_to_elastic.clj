@@ -119,7 +119,7 @@
   cmr.search.models.query.ConditionGroup
   (condition->elastic
     [{:keys [operation conditions]} concept-type]
-    ;; TODO Performance Improvement: We should order the conditions within and/ors.
+    ;; Performance enhancement: We should order the conditions within and/ors.
     {operation {:filters (map #(condition->elastic % concept-type) conditions)}})
 
   cmr.search.models.query.NestedCondition
