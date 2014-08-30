@@ -98,12 +98,11 @@
     (es/save-document-in-elastic @context "tests" "collection" (es-doc) 10 nil false)
     (assert-version "C1234-PROV1" 10)))
 
-;; TODO update this test with ignore-conflict true/false after the external_gte support is added
 (deftest save-with-equal-versions-test
   (testing "Save with equal versions"
-    (es/save-document-in-elastic @context "tests" "collection" (es-doc) 1 nil true)
+    (es/save-document-in-elastic @context "tests" "collection" (es-doc) 1 nil false)
     (assert-version "C1234-PROV1" 1)
-    (es/save-document-in-elastic @context "tests" "collection" (es-doc) 1 nil true)
+    (es/save-document-in-elastic @context "tests" "collection" (es-doc) 1 nil false)
     (assert-version "C1234-PROV1" 1)))
 
 (deftest save-with-earlier-versions-test

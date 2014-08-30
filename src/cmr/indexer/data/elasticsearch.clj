@@ -75,7 +75,7 @@
   revision-id is the version of the document in elasticsearch
   ttl time-to-live in milliseconds"
   [f conn es-index es-type es-doc revision-id ttl]
-  (let [options {:version revision-id :version_type "external"}
+  (let [options {:version revision-id :version_type "external_gte"}
         options (if ttl (merge options {:ttl ttl}) options)]
     (try
       (f conn es-index es-type (:concept-id es-doc) es-doc options)

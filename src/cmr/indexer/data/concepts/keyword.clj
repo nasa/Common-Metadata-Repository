@@ -25,7 +25,6 @@
       (into [field-value] (str/split field-value keywords-separator-regex)))))
 
 
-;; TODO - add :temporal-keyword
 (defn create-keywords-field
   [collection]
   "Create a keyword field for keyword searches by concatenating several other fields
