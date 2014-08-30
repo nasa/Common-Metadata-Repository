@@ -14,7 +14,7 @@
     result
     (throw (ex-info "Failed to create concept" result))))
 
-;; TODO this needs more tests for granules
+;; This needs more tests for granules
 ;; This also needs a test where it retrieves granules and collections at the same time.
 ;; It should also try a concept-id prefix that's not valid and a provider id that's invalid
 
