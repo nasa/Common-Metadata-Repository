@@ -447,7 +447,7 @@
       a1 a2)))
 
 
-;; TODO performance enhancement. Add a bounding rectangle's intersects check first.
+;; Performance enhancement: Add a bounding rectangle's intersects check first.
 ;; Actually that might not help anything. When we're searching in elastic we'll only find those
 ;; items where the rings bounding rectangles intersect. Still might be worth it to check with arcs though.
 

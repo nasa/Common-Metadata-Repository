@@ -87,7 +87,7 @@
 
   (shape->stored-ords
     [{:keys [coordinate-system rings]}]
-    ;; TODO reduce size of stored rings and polygons by dropping the duplicate last two ordinates of a ring
+    ;; Performance enhancement: reduce size of stored rings and polygons by dropping the duplicate last two ordinates of a ring
     (let [polygon-type (keyword (str (name coordinate-system) "-polygon"))
           hole-type (keyword (str (name coordinate-system) "-hole"))]
       (concat
@@ -153,7 +153,7 @@
 
   (shape->lr
     [line]
-    ;; TODO performance enhancement. If a line has a vertical or horizontal arc we could use that to define
+    ;; Performance enhancement: If a line has a vertical or horizontal arc we could use that to define
     ;; an LR that would be larger than just a point
     (m/point->mbr (first (:points line)))))
 

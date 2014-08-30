@@ -97,7 +97,7 @@
   [r1 r2]
   (or
     ;; Do any of the line-segments intersect?
-    ;; TODO performance improvement: this should use the multiple arc intersection algorithm to avoid O(N^2) intersections
+    ;; Performance enhancement: this should use the multiple arc intersection algorithm to avoid O(N^2) intersections
     (some (fn [[line1 line2]]
             (seq (asi/intersections line1 line2)))
           (for [ls1 (segments r1)

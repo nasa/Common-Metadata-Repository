@@ -208,7 +208,7 @@
                     ;; Limit it to rings with MBRs covering less than 99% of the world
                     ;; The reason I'm doing this is because if the whole world is covered except very close
                     ;; to a pole then the MBR of the ring will consider the pole covered.
-                    ;; TODO this should be a requirement of the CMR spatial validation.
+                    ;; This should be a requirement of the CMR spatial validation.
                     (< (m/percent-covering-world mbr) 99.999))
                   (gen/fmap (fn [points]
                               (let [points (concat points [(first points)])]
