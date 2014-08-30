@@ -81,9 +81,13 @@
            xml-elem->lines
            xml-elem->bounding-rectangles]))
 
-(defn- collection-xml-elem->entry
-  "Retrns an atom entry from a parsed collection xml structure"
-  [entry-elem]
+(defmulti xml-elem->entry
+  "Retrns an atom entry from a parsed atom xml structure"
+  (fn [concept-type xml-elem]
+    concept-type))
+
+(defmethod xml-elem->entry :collection
+  [concept-type entry-elem]
   (let [res {:id (cx/string-at-path entry-elem [:id])
              :title (cx/string-at-path entry-elem [:title])
              :updated (cx/string-at-path entry-elem [:updated])
@@ -104,15 +108,15 @@
              :browse-flag (cx/string-at-path entry-elem [:browseFlag])
              :coordinate-system (cx/string-at-path entry-elem [:coordinateSystem])
              :shapes (seq (xml-elem->shapes entry-elem))
-             :score (cx/double-at-path entry-elem [:score])}]
+             :score (cx/double-at-path entry-elem [:score])
+             :granule-count (cx/long-at-path entry-elem [:granuleCount])}]
     ;; This is needed because many of the tests are comparing collections to this map and the
     ;; collections won't have relevance scores, so if there is a :score => nil mapping,
     ;; the comparisio will fail. So we must remove the mapping entirely for nil values.
     (util/remove-nil-keys res)))
 
-(defn- granule-xml-elem->entry
-  "Retrns an atom entry from a parsed granule xml structure"
-  [entry-elem]
+(defmethod xml-elem->entry :granule
+  [concept-type entry-elem]
   {:id (cx/string-at-path entry-elem [:id])
    :title (cx/string-at-path entry-elem [:title])
    :updated (cx/string-at-path entry-elem [:updated])
@@ -131,19 +135,13 @@
    :coordinate-system (cx/string-at-path entry-elem [:coordinateSystem])
    :shapes (seq (xml-elem->shapes entry-elem))})
 
-(def parsed (atom nil))
-
 (defn parse-atom-result
   "Returns an atom result in map from an atom xml"
   [concept-type xml]
-  (let [xml-struct (x/parse-str xml)
-        xml-elem-to-entry-fn (if (= :granule concept-type)
-                               granule-xml-elem->entry
-                               collection-xml-elem->entry)]
-    (reset! parsed xml-struct)
+  (let [xml-struct (x/parse-str xml)]
     {:id (cx/string-at-path xml-struct [:id])
      :title (cx/string-at-path xml-struct [:title])
-     :entries (seq (keep xml-elem-to-entry-fn
+     :entries (seq (keep (partial xml-elem->entry concept-type)
                         (cx/elements-at-path xml-struct [:entry])))}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -197,8 +195,10 @@
         archive-center (when organizations (:org-name (first organizations)))
         ;; not really fool proof to get start/end datetime, just get by with the current test setting
         range-date-time (first (get-in collection [:temporal :range-date-times]))
-        start (f/unparse (f/formatters :date-time-no-ms)(:beginning-date-time range-date-time))
-        end (f/unparse (f/formatters :date-time-no-ms)(:ending-date-time range-date-time))]
+        start (when range-date-time
+                (f/unparse (f/formatters :date-time-no-ms) (:beginning-date-time range-date-time)))
+        end (when range-date-time
+              (f/unparse (f/formatters :date-time-no-ms) (:ending-date-time range-date-time)))]
     (util/remove-nil-keys {:id concept-id
                            :title entry-title
                            :summary summary
@@ -213,10 +213,11 @@
                            :processing-level-id processing-level-id
                            :start start
                            :end end
-                           :links (related-urls->links related-urls)
+                           :links (seq (related-urls->links related-urls))
                            :coordinate-system coordinate-system
                            :shapes (seq (get-in collection [:spatial-coverage :geometries]))
                            :associated-difs associated-difs
+                           ;; TODO change this to use (not (empty? ))
                            :online-access-flag (str (> (count (ru/downloadable-urls related-urls)) 0))
                            :browse-flag (str (> (count (ru/browse-urls related-urls)) 0))})))
 
@@ -226,6 +227,13 @@
   {:id (str (url/search-root) atom-path)
    :title "ECHO dataset metadata"
    :entries (map collection->expected-atom collections)})
+
+(defn atom-collection-results-match?
+  [expected-items atom-results]
+  (let [expected-entries (map collection->expected-atom expected-items)]
+    (= (set expected-entries)
+       (set (map #(dissoc % :granule-count)
+                 (get-in atom-results [:results :entries]))))))
 
 (defn- granule->expected-atom
   "Returns the atom map of the granule"
@@ -246,7 +254,7 @@
      :size (str size)
      :original-format "ECHO10"
      :data-center (:provider-id (cu/parse-concept-id concept-id))
-     :links (related-urls->links related-urls)
+     :links (seq (related-urls->links related-urls))
      :start beginning-date-time
      :end ending-date-time
      :online-access-flag (str (> (count (ru/downloadable-urls related-urls)) 0))

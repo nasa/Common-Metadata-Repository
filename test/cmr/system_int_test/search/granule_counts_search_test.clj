@@ -6,6 +6,7 @@
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.granule :as dg]
+            [cmr.system-int-test.data2.atom :as da]
             [cmr.system-int-test.data2.core :as d]
             [cmr.spatial.codec :as codec]
             [cmr.spatial.point :as p]
@@ -39,10 +40,14 @@
   (let [{:keys [beginning-date-time ending-date-time]} (temporal-range start stop)]
     (str beginning-date-time "," ending-date-time)))
 
-(defn granule-count-refs-match?
-  "Takes a map of collections to counts and reference response and checks that the references
+(defmulti granule-counts-match?
+  "Takes a map of collections to counts and actual results and checks that the references
   were found and that the granule counts are correct."
-  [expected-counts refs-result]
+  (fn [result-format expected-counts result]
+    result-format))
+
+(defmethod granule-counts-match? :xml
+  [result-format expected-counts refs-result]
   (let [count-map (into {} (for [[coll granule-count] expected-counts]
                              [(:entry-title coll) granule-count]))
         actual-count-map (into {} (for [{:keys [name granule-count]} (:refs refs-result)]
@@ -57,10 +62,8 @@
       (println "Actual:" (pr-str actual-count-map)))
     (and refs-match? counts-match?)))
 
-(defn granule-count-metadata-items-match?
-  "Takes a map of collections to counts and metadata item response and checks that the metadata items
-  were found and that the granule counts are correct."
-  [expected-counts items]
+(defmethod granule-counts-match? :echo10
+  [result-format expected-counts items]
   (let [count-map (into {} (for [[coll granule-count] expected-counts]
                              [(:concept-id coll) granule-count]))
         actual-count-map (into {} (for [{:keys [concept-id granule-count]} items]
@@ -75,9 +78,23 @@
       (println "Actual:" (pr-str actual-count-map)))
     (and results-match? counts-match?)))
 
-(defn assert-granule-count-refs
-  [expected-counts refs-result]
-  (is (granule-count-refs-match? expected-counts  refs-result)))
+(defmethod granule-counts-match? :atom
+  [result-format expected-counts atom-results]
+  (let [entries (get-in atom-results [:results :entries])
+        count-map (into {} (for [[coll granule-count] expected-counts]
+                             [(:entry-title coll) granule-count]))
+        actual-count-map (into {} (for [{:keys [dataset-id granule-count]} entries]
+                                    [dataset-id granule-count]))
+        results-match? (da/atom-collection-results-match?
+                         (keys expected-counts) atom-results)
+        counts-match? (= count-map actual-count-map)]
+    (when-not results-match?
+      (println "Expected:" (pr-str (map :entry-title (keys expected-counts))))
+      (println "Actual:" (pr-str (map :dataset-id entries))))
+    (when-not counts-match?
+      (println "Expected:" (pr-str count-map))
+      (println "Actual:" (pr-str actual-count-map)))
+    (and results-match? counts-match?)))
 
 (deftest find-granule-counts-per-collection-test
   (let [make-coll (fn [n shape temporal-attribs]
@@ -148,13 +165,13 @@
 
     (testing "granule counts for all collections"
       (let [refs (search/find-refs :collection {:include-granule-counts true})]
-        (assert-granule-count-refs {coll1 5 coll2 0 coll3 3 coll4 3 coll5 3 coll6 3} refs)))
+        (is (granule-counts-match? :xml {coll1 5 coll2 0 coll3 3 coll4 3 coll5 3 coll6 3} refs))))
 
     (testing "granule counts for spatial queries"
       (are [wnes expected-counts]
            (let [refs (search/find-refs :collection {:include-granule-counts true
                                                      :bounding-box (codec/url-encode (apply m/mbr wnes))})]
-             (granule-count-refs-match? expected-counts refs))
+             (granule-counts-match? :xml expected-counts refs))
 
            ;; Whole world
            [-180 90 180 -90] {coll1 5 coll2 0 coll3 3 coll4 3 coll5 3}
@@ -169,7 +186,7 @@
       (are [start stop expected-counts]
            (let [refs (search/find-refs :collection {:include-granule-counts true
                                                      :temporal (temporal-search-range start stop)})]
-             (granule-count-refs-match? expected-counts refs))
+             (granule-counts-match? :xml expected-counts refs))
            1 6 {coll2 0 coll3 3 coll4 3 coll5 3 coll6 3}
            2 3 {coll2 0 coll3 2 coll4 1 coll6 1}))
 
@@ -177,21 +194,24 @@
       (let [refs (search/find-refs :collection {:include-granule-counts true
                                                 :temporal (temporal-search-range 2 3)
                                                 :bounding-box (codec/url-encode (m/mbr -180 90 0 0))})]
-        (assert-granule-count-refs {coll2 0 coll3 1 coll4 1} refs)))
-
+        (is (granule-counts-match? :xml {coll2 0 coll3 1 coll4 1} refs))))
 
     (testing "direct transformer query"
       (let [items (search/find-metadata :collection :echo10 {:include-granule-counts true
                                                              :concept-id (map :concept-id all-colls)})]
-        (is (granule-count-metadata-items-match?
+        (is (granule-counts-match? :echo10
               {coll1 5 coll2 0 coll3 3 coll4 3 coll5 3 coll6 3} items))))
 
     (testing "AQL with include_granule_counts"
       (let [refs (search/find-refs-with-aql :collection [] {}
                                             {:query-params {:include_granule_counts true}})]
-        (assert-granule-count-refs {coll1 5 coll2 0 coll3 3 coll4 3 coll5 3 coll6 3} refs)))
+        (is (granule-counts-match? :xml {coll1 5 coll2 0 coll3 3 coll4 3 coll5 3 coll6 3} refs))))
 
-    ;; TODO add ATOM XMl and ATOM Json tests
+    (testing "ATOM XML results with granule counts"
+      (let [results (search/find-concepts-atom :collection {:include-granule-counts true})]
+        (is (granule-counts-match? :atom {coll1 5 coll2 0 coll3 3 coll4 3 coll5 3 coll6 3} results))))
+
+    ;; TODO add ATOM JSON tests
 
 
     ))
