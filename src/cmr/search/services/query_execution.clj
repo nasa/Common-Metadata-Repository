@@ -7,6 +7,7 @@
             [cmr.common.log :refer (debug info warn error)]
             [cmr.search.services.query-walkers.collection-query-resolver :as r]
             [cmr.search.services.acl-service :as acl-service]
+            [cmr.search.data.complex-to-simple :as c2s]
             [cmr.search.services.query-walkers.granule-count-query-extractor :as gcqe])
   (:import cmr.search.models.query.StringsCondition
            cmr.search.models.query.StringCondition))
@@ -68,7 +69,7 @@
 ;; This find granule counts per collection.
 (defmethod process-post-query-result-feature :granule-counts
   [context query results feature]
-  (let [granule-count-query (gcqe/extract-granule-count-query query results)
+  (let [granule-count-query (c2s/reduce-query (gcqe/extract-granule-count-query query results))
         elastic-results (idx/execute-query context granule-count-query)]
     (assoc results
            :granule-counts
@@ -92,19 +93,18 @@
         concept-ids (query->concept-ids query)
         tresults (t/get-latest-formatted-concepts context concept-ids result-format)
         items (map #(select-keys % [:concept-id :revision-id :collection-concept-id :metadata]) tresults)
-        results (results/map->Results {:hits (count items) :items items})]
+        results (results/map->Results {:hits (count items) :items items :result-format result-format})]
     (process-post-query-result-features context query results)))
 
 (defmethod execute-query :elastic
   [context query]
   (->> query
+       c2s/reduce-query
        (acl-service/add-acl-conditions-to-query context)
        (r/resolve-collection-queries context)
        (idx/execute-query context)
        (rc/elastic-results->query-results context query)
        (process-post-query-result-features context query)))
-
-
 
 
 

@@ -121,8 +121,12 @@
   "Validates that no invalid parameters were supplied"
   [concept-type params]
   ;; this test does not apply to page_size, page_num, etc.
-  (let [params (dissoc params :page-size :page-num :sort-key :result-format :pretty :include-granule-counts)]
-    (map #(str "Parameter [" (csk/->snake_case_string % )"] was not recognized.")
+  (let [params (dissoc params :page-size :page-num :sort-key :result-format :pretty)
+        params (if (= :collection concept-type)
+                 ;; Parameters only supported on collections
+                 (dissoc params :include-granule-counts)
+                 params)]
+    (map #(format "Parameter [%s] was not recognized." (csk/->snake_case_string %))
          (set/difference (set (keys params))
                          (concept-type->valid-param-names concept-type)))))
 
@@ -344,10 +348,11 @@
   [concept-type params]
   (let [bool-params (select-keys params [:downloadable :browsable :include-granule-counts])]
     (mapcat
-      (fn [[key value]]
+      (fn [[param value]]
         (if (or (= "true" value) (= "false" value) (= "unset" (s/lower-case value)))
           []
-          [(format "Parameter %s must take value of true, false, or unset, but was %s" key value)]))
+          [(format "Parameter %s must take value of true, false, or unset, but was %s"
+                   (csk/->snake_case_string param) value)]))
       bool-params)))
 
 (defn polygon-validation

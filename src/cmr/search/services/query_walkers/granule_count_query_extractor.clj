@@ -58,7 +58,7 @@
   coll-query - The collection query
   results - the results of the collection query"
   [coll-query results]
-  ;; TODO this needs to enforce ACLs on the query
+  ;; TODO this needs to enforce granule ACLs on the query
   (let [collection-ids (query-results->concept-ids results)
         spatial-temp-conds (extract-spatial-and-temporal-conditions coll-query)
         condition (if (seq collection-ids)

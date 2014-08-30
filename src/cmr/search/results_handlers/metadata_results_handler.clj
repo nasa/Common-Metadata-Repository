@@ -44,7 +44,7 @@
                               (t/get-formatted-concept-revisions context tuples (:result-format query) false))
         items (map #(select-keys % [:concept-id :revision-id :collection-concept-id :metadata]) tresults)]
     (debug "Transformer metadata request time was" req-time "ms.")
-    (results/map->Results {:hits hits :items items})))
+    (results/map->Results {:hits hits :items items :result-format (:result-format query)})))
 
 (defmethod elastic-results/elastic-results->query-results :echo10
   [context query elastic-results]
@@ -75,11 +75,11 @@
 
 (defmulti metadata-item->result-string
   "Converts a search result + metadata into a string containing a single result for the metadata format."
-  (fn [concept-type metadata-item]
+  (fn [concept-type results metadata-item]
     concept-type))
 
 (defmethod metadata-item->result-string :granule
-  [concept-type metadata-item]
+  [concept-type results metadata-item]
   (let [{:keys [concept-id collection-concept-id revision-id metadata]} metadata-item]
     ["<result concept-id=\""
      concept-id
@@ -92,21 +92,25 @@
      "</result>"]))
 
 (defmethod metadata-item->result-string :collection
-  [concept-type metadata-item]
-  (let [{:keys [concept-id revision-id metadata]} metadata-item]
-    ["<result concept-id=\""
-     concept-id
-     "\" revision-id=\""
-     revision-id
-     "\">"
-     (cx/remove-xml-processing-instructions metadata)
-     "</result>"]))
+  [concept-type results metadata-item]
+  (let [granule-counts-map (:granule-counts results)
+        {:keys [concept-id revision-id metadata]} metadata-item
+        attribs (concat [[:concept-id concept-id]
+                         [:revision-id revision-id]]
+                        (when granule-counts-map
+                          [[:granule-count (get granule-counts-map concept-id 0)]]))
+        attrib-strs (for [[k v] attribs]
+                      (str " " (name k) "=\"" v "\""))]
+    (concat ["<result"]
+            attrib-strs
+            [">" (cx/remove-xml-processing-instructions metadata) "</result>"])))
 
 (defn search-results->metadata-response
   [context query results]
   (let [{:keys [hits took items]} results
         {:keys [result-format pretty? concept-type]} query
-        result-strings (apply concat (map (partial metadata-item->result-string concept-type) items))
+        result-strings (apply concat (map (partial metadata-item->result-string concept-type results)
+                                          items))
         headers ["<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
                  "<results><hits>"
                  hits

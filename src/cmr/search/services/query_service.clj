@@ -54,7 +54,6 @@
             [cmr.search.services.parameters.parameter-validation :as pv]
             [cmr.search.services.query-execution :as qe]
             [cmr.search.services.provider-holdings :as ph]
-            [cmr.search.data.complex-to-simple :as c2s]
             [cmr.search.services.transformer :as t]
             [cmr.metadata-db.services.concept-service :as meta-db]
             [cmr.system-trace.core :refer [deftracefn]]
@@ -96,6 +95,7 @@
 (defn- find-concepts
   "Common functionality for find-concepts-by-parameters and find-concepts-by-aql."
   [context concept-type params query-creation-time query]
+  (validate-query context query)
   (let [[query-execution-time results] (u/time-execution (qe/execute-query context query))
         took (+ query-creation-time query-execution-time)
         [result-gen-time result-str] (u/time-execution
@@ -120,9 +120,7 @@
                                            (lp/replace-science-keywords-or-option concept-type)
 
                                            (pv/validate-parameters concept-type)
-                                           (p/parameters->query concept-type)
-                                           (validate-query context)
-                                           c2s/reduce-query))
+                                           (p/parameters->query concept-type)))
         results (find-concepts context concept-type params query-creation-time query)]
     (info (format "Found %d %ss in %d ms in format %s with params %s."
                   (:hits results) (name concept-type) (:total-took results) (:result-format query)
@@ -134,11 +132,7 @@
   concept id and native provider id along with hit count and timing info."
   [context params aql]
   (let [params (sanitize-params params)
-        [query-creation-time query] (u/time-execution
-                                      (->> aql
-                                           (a/aql->query params)
-                                           (validate-query context)
-                                           c2s/reduce-query))
+        [query-creation-time query] (u/time-execution (a/aql->query params aql))
         concept-type (:concept-type query)
         results (find-concepts context concept-type params query-creation-time query)]
     (info (format "Found %d %ss in %d ms in format %s with aql: %s."
