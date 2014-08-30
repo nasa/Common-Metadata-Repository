@@ -18,7 +18,7 @@
   [^ESLogger logger ^FieldsLookup lookup intersects-fn]
   ; Must explicitly return true or false or elastic search will complain
 
-  ;; TODO idea for performance improvement. We could make the ring lazy.
+  ;; Performance enhancement: We could make the ring lazy.
   ;; Let's say that the first arc in the ring would result in an intersection with the original ring
   ;; We would only have to create one arc in that case. We wouldn't have to calculate the great
   ;; circle for any of the other arcs
