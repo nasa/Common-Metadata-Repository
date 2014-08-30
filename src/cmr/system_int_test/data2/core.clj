@@ -101,9 +101,9 @@
   "Returns true if the references match the expected items"
   [items search-result]
   (let [result (= (set (map item->ref items))
-                  ;; need to remove score because it won't be available in collections
+                  ;; need to remove score etc. because it won't be available in collections
                   ;; to which we are comparing
-                  (set (map #(dissoc % :score) (:refs search-result))))]
+                  (set (map #(dissoc % :score :granule-count) (:refs search-result))))]
     (when (:status search-result)
       (println (pr-str search-result)))
     result))
@@ -112,7 +112,7 @@
   "Returns true if the references match the expected items in the order specified"
   [items search-result]
   (let [result (= (map item->ref items)
-                  (map #(dissoc % :score) (:refs search-result)))]
+                  (map #(dissoc % :score :granule-count) (:refs search-result)))]
     (when (:status search-result)
       (println (pr-str search-result)))
     result))

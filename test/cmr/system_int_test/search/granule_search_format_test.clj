@@ -30,7 +30,7 @@
   )
 
 (deftest search-granules-in-xml-metadata
-  ;; TODO we can add additional formats here later such as iso
+  ;; We can add additional formats here later such as iso
   (let [coll1 (d/ingest "PROV1" (dc/collection))
         coll2 (d/ingest "PROV1" (dc/collection))
         gran1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "g1"}))

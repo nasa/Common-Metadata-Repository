@@ -119,7 +119,6 @@
            ;; archive center
            "some" [coll6]
 
-           ;; TODO
            ;; attributes
            "charlie" [coll12]
 

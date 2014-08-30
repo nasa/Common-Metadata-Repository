@@ -188,6 +188,7 @@
                                            :name (cx/string-at-path ref-elem [:name])
                                            :revision-id (cx/long-at-path ref-elem [:revision-id])
                                            :location (cx/string-at-path ref-elem [:location])
+                                           :granule-count (cx/long-at-path ref-elem [:granule-count])
                                            :score (cx/double-at-path ref-elem [:score])}))
                   (cx/elements-at-path parsed [:references :reference]))]
     {:refs refs
