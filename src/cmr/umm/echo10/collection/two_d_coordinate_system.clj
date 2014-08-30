@@ -24,7 +24,7 @@
         (let [{:keys [name]} two-d]
           (x/element :TwoDCoordinateSystem {}
                      (x/element :TwoDCoordinateSystemName {} name)
-                     ;; TODO: hard code Coordinate1 and Coordinate2 for now to get through the xml validation
+                     ;; Hard coded Coordinate1 and Coordinate2 for now to get through the xml validation
                      ;; should replace this will real code when adding the rest fields of TwoDCoordinateSystem
                      (x/element :Coordinate1 {}
                                 (x/element :MinimumValue {} 0)
