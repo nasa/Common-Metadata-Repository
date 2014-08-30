@@ -218,10 +218,14 @@
   [atom-link]
   (x/element :link (atom-link->attribute-map atom-link)))
 
-(defn- collection-atom-reference->xml-element
-  "Converts a collection search result atom reference into an XML element"
-  [reference]
-  (let [{:keys [id score title short-name version-id summary updated dataset-id collection-data-type
+(defmulti atom-reference->xml-element
+  (fn [results concept-type reference]
+    concept-type))
+
+(defmethod atom-reference->xml-element :collection
+  [results concept-type reference]
+  (let [granule-counts-map (:granule-counts results)
+        {:keys [id score title short-name version-id summary updated dataset-id collection-data-type
                 processing-level-id original-format data-center archive-center start-date end-date
                 atom-links associated-difs online-access-flag browse-flag coordinate-system shapes]} reference]
     (x/element :entry {}
@@ -245,11 +249,12 @@
                (map #(x/element :echo:difId {} %) associated-difs)
                (x/element :echo:onlineAccessFlag {} online-access-flag)
                (x/element :echo:browseFlag {} browse-flag)
+               (when granule-counts-map
+                 (x/element :echo:granuleCount {} (get granule-counts-map id 0)))
                (when score (x/element :relevance:score {} score)))))
 
-(defn- granule-atom-reference->xml-element
-  "Converts a granule search result atom reference into an XML element"
-  [reference]
+(defmethod atom-reference->xml-element :granule
+  [results concept-type reference]
   (let [{:keys [id score title updated dataset-id producer-gran-id size original-format
                 data-center start-date end-date atom-links online-access-flag browse-flag
                 day-night cloud-cover coordinate-system shapes]} reference]
@@ -298,9 +303,6 @@
   (let [{:keys [hits took items]} results
         {:keys [concept-type result-format]} query
         xml-fn (if (:pretty? query) x/indent-str x/emit-str)
-        atom-reference-to-xml-element-fn (if (= :granule concept-type) granule-atom-reference->xml-element
-                                           collection-atom-reference->xml-element)
-
         items (if (= :granule concept-type)
                 (append-collection-links context items)
                 items)
@@ -316,6 +318,6 @@
                  (x/element :updated {} (str (time/now)))
                  (x/element :id {} (url/atom-request-url context concept-type result-format))
                  (x/element :title {:type "text"} (concept-type->atom-title concept-type))
-                 (map atom-reference-to-xml-element-fn items)))))
+                 (map (partial atom-reference->xml-element results concept-type) items)))))
 
 
