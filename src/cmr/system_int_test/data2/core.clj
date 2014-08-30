@@ -6,6 +6,7 @@
             [cmr.common.mime-types :as mime-types]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.url-helper :as url]
+            [cmr.common.util :as util]
             [clj-time.core :as t]
             [clj-time.format :as f]
             [cheshire.core :as json])
@@ -79,23 +80,23 @@
   "Converts an item into the expected metadata result"
   [format-key item]
   (let [{:keys [concept-id revision-id collection-concept-id]} item]
-    {:concept-id concept-id
-     :revision-id revision-id
-     :format format-key
-     :collection-concept-id collection-concept-id
-     :metadata (umm/umm->xml item format-key)}))
+    (util/remove-nil-keys
+      {:concept-id concept-id
+       :revision-id revision-id
+       :format format-key
+       :collection-concept-id collection-concept-id
+       :metadata (umm/umm->xml item format-key)})))
 
 (defn metadata-results-match?
   "Returns true if the metadata results match the expected items"
   [format-key items search-result]
   (= (set (map (partial item->metadata-result format-key) items))
-     (set search-result)))
+     (set (map #(dissoc % :granule-count) search-result))))
 
 (defn assert-metadata-results-match
   "Returns true if the metadata results match the expected items"
   [format-key items search-result]
-  (is (= (set (map (partial item->metadata-result format-key) items))
-         (set search-result))))
+  (is (metadata-results-match? format-key items search-result)))
 
 (defn refs-match?
   "Returns true if the references match the expected items"

@@ -11,31 +11,31 @@
 
 (deftest search-by-temporal
   (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset1"
-                                                    :beginning-date-time "2010-01-01T12:00:00Z"
-                                                    :ending-date-time "2010-01-11T12:00:00Z"}))
+                                                :beginning-date-time "2010-01-01T12:00:00Z"
+                                                :ending-date-time "2010-01-11T12:00:00Z"}))
         coll2 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset2"
-                                                    :beginning-date-time "2010-01-31T12:00:00Z"
-                                                    :ending-date-time "2010-12-12T12:00:00Z"}))
+                                                :beginning-date-time "2010-01-31T12:00:00Z"
+                                                :ending-date-time "2010-12-12T12:00:00Z"}))
         coll3 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset3"
-                                                    :beginning-date-time "2010-12-03T12:00:00Z"
-                                                    :ending-date-time "2010-12-20T12:00:00Z"}))
+                                                :beginning-date-time "2010-12-03T12:00:00Z"
+                                                :ending-date-time "2010-12-20T12:00:00Z"}))
         coll4 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset4"
-                                                    :beginning-date-time "2010-12-12T12:00:00Z"
-                                                    :ending-date-time "2011-01-03T12:00:00Z"}))
+                                                :beginning-date-time "2010-12-12T12:00:00Z"
+                                                :ending-date-time "2011-01-03T12:00:00Z"}))
         coll5 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset5"
-                                                    :beginning-date-time "2011-02-01T12:00:00Z"
-                                                    :ending-date-time "2011-03-01T12:00:00Z"}))
+                                                :beginning-date-time "2011-02-01T12:00:00Z"
+                                                :ending-date-time "2011-03-01T12:00:00Z"}))
         coll6 (d/ingest "PROV2" (dc/collection {:entry-title "Dataset6"
-                                                    :beginning-date-time "2010-01-30T12:00:00Z"}))
+                                                :beginning-date-time "2010-01-30T12:00:00Z"}))
         coll7 (d/ingest "PROV2" (dc/collection {:entry-title "Dataset7"
-                                                    :beginning-date-time "2010-12-12T12:00:00Z"}))
+                                                :beginning-date-time "2010-12-12T12:00:00Z"}))
         coll8 (d/ingest "PROV2" (dc/collection {:entry-title "Dataset8"
-                                                    :beginning-date-time "2011-12-13T12:00:00Z"}))
+                                                :beginning-date-time "2011-12-13T12:00:00Z"}))
         coll9 (d/ingest "PROV2" (dc/collection {:entry-title "Dataset9"}))
         coll10 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset10"
-                                                     :single-date-time "2010-05-01T00:00:00Z"}))
+                                                 :single-date-time "2010-05-01T00:00:00Z"}))
         coll11 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset11"
-                                                     :single-date-time "1999-05-01T00:00:00Z"}))]
+                                                 :single-date-time "1999-05-01T00:00:00Z"}))]
     (index/refresh-elastic-index)
 
     (testing "search by temporal_start."

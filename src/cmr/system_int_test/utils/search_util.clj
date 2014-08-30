@@ -157,12 +157,14 @@
            metadatas (for [match (drop 1 (str/split body #"(?ms)<result "))]
                        (second (re-matches #"(?ms)[^>]*>(.*)</result>.*" match)))]
        (map (fn [result metadata]
-              (let [{{:keys [concept-id collection-concept-id revision-id]} :attrs} result]
-                {:concept-id concept-id
-                 :revision-id (Long. ^String revision-id)
-                 :format format-key
-                 :collection-concept-id collection-concept-id
-                 :metadata (str "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" metadata)}))
+              (let [{{:keys [concept-id collection-concept-id revision-id granule-count]} :attrs} result]
+                (util/remove-nil-keys
+                  {:concept-id concept-id
+                   :revision-id (Long. ^String revision-id)
+                   :format format-key
+                   :collection-concept-id collection-concept-id
+                   :granule-count (when granule-count (Long. ^String granule-count))
+                   :metadata (str "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" metadata)})))
             (cx/elements-at-path parsed [:result])
             metadatas)))))
 
@@ -184,12 +186,13 @@
         hits (cx/long-at-path parsed [:hits])
         took (cx/long-at-path parsed [:took])
         refs (map (fn [ref-elem]
-                    (util/remove-nil-keys {:id (cx/string-at-path ref-elem [:id])
-                                           :name (cx/string-at-path ref-elem [:name])
-                                           :revision-id (cx/long-at-path ref-elem [:revision-id])
-                                           :location (cx/string-at-path ref-elem [:location])
-                                           :granule-count (cx/long-at-path ref-elem [:granule-count])
-                                           :score (cx/double-at-path ref-elem [:score])}))
+                    (util/remove-nil-keys
+                      {:id (cx/string-at-path ref-elem [:id])
+                       :name (cx/string-at-path ref-elem [:name])
+                       :revision-id (cx/long-at-path ref-elem [:revision-id])
+                       :location (cx/string-at-path ref-elem [:location])
+                       :granule-count (cx/long-at-path ref-elem [:granule-count])
+                       :score (cx/double-at-path ref-elem [:score])}))
                   (cx/elements-at-path parsed [:references :reference]))]
     {:refs refs
      :hits hits

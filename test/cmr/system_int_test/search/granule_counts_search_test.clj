@@ -7,6 +7,7 @@
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.core :as d]
+            [cmr.spatial.codec :as codec]
             [cmr.spatial.point :as p]
             [cmr.spatial.mbr :as m]))
 
@@ -19,16 +20,10 @@
   (ingest/create-provider "provguid1" "PROV1")
 
 
-)
+  )
 
 
 ;; TODO add tests incorporating ACLs for granules
-
-;; TODO add tests searching with invalid value for :include-granule-counts
-
-;; TODO test :include-granule-counts with AQL search
-
-;; TODO test granule search rejects :include-granule-counts
 
 (defn temporal-range
   "Creates attributes for collection or granule defining a temporal range between start and stop
@@ -38,16 +33,51 @@
     {:beginning-date-time (n-to-date-str start)
      :ending-date-time (n-to-date-str stop)}))
 
-(defn assert-granule-counts
+(defn temporal-search-range
+  "Creates a temporal search range between start and stop which should be single digit integers"
+  [start stop]
+  (let [{:keys [beginning-date-time ending-date-time]} (temporal-range start stop)]
+    (str beginning-date-time "," ending-date-time)))
+
+(defn granule-count-refs-match?
   "Takes a map of collections to counts and reference response and checks that the references
   were found and that the granule counts are correct."
   [expected-counts refs-result]
-  (is (d/refs-match? (keys expected-counts) refs-result))
   (let [count-map (into {} (for [[coll granule-count] expected-counts]
                              [(:entry-title coll) granule-count]))
         actual-count-map (into {} (for [{:keys [name granule-count]} (:refs refs-result)]
-                                    [name granule-count]))]
-    (is (= count-map actual-count-map))))
+                                    [name granule-count]))
+        refs-match? (d/refs-match? (keys expected-counts) refs-result)
+        counts-match? (= count-map actual-count-map)]
+    (when-not refs-match?
+      (println "Expected:" (pr-str (map :entry-title (keys expected-counts))))
+      (println "Actual:" (pr-str (map :name (:refs refs-result)))))
+    (when-not counts-match?
+      (println "Expected:" (pr-str count-map))
+      (println "Actual:" (pr-str actual-count-map)))
+    (and refs-match? counts-match?)))
+
+(defn granule-count-metadata-items-match?
+  "Takes a map of collections to counts and metadata item response and checks that the metadata items
+  were found and that the granule counts are correct."
+  [expected-counts items]
+  (let [count-map (into {} (for [[coll granule-count] expected-counts]
+                             [(:concept-id coll) granule-count]))
+        actual-count-map (into {} (for [{:keys [concept-id granule-count]} items]
+                                    [concept-id granule-count]))
+        results-match? (d/metadata-results-match? :echo10 (keys expected-counts) items)
+        counts-match? (= count-map actual-count-map)]
+    (when-not results-match?
+      (println "Expected:" (pr-str (map :concept-id (keys expected-counts))))
+      (println "Actual:" (pr-str (map :concept-id items))))
+    (when-not counts-match?
+      (println "Expected:" (pr-str count-map))
+      (println "Actual:" (pr-str actual-count-map)))
+    (and results-match? counts-match?)))
+
+(defn assert-granule-count-refs
+  [expected-counts refs-result]
+  (is (granule-count-refs-match? expected-counts  refs-result)))
 
 (deftest find-granule-counts-per-collection-test
   (let [make-coll (fn [n shape temporal-attribs]
@@ -75,7 +105,8 @@
         ;; southern hemisphere
         coll5 (make-coll 5 (m/mbr -180 0 180 -90) (temporal-range 4 6))
         ;; no spatial
-        coll6 (make-coll 6 nil (temporal-range 1 6))]
+        coll6 (make-coll 6 nil (temporal-range 1 6))
+        all-colls [coll1 coll2 coll3 coll4 coll5 coll6]]
 
     ;; -- Make granules --
     ;; Coll1 granules
@@ -109,13 +140,63 @@
     (make-gran coll6 nil (temporal-range 6 6))
     (index/refresh-elastic-index)
 
+    (testing "invalid include-granule-counts"
+      (is (= {:errors ["Parameter include_granule_counts must take value of true, false, or unset, but was foo"] :status 422}
+             (search/find-refs :collection {:include-granule-counts "foo"})))
+      (is (= {:errors ["Parameter [include_granule_counts] was not recognized."] :status 422}
+             (search/find-refs :granule {:include-granule-counts true}))))
+
     (testing "granule counts for all collections"
       (let [refs (search/find-refs :collection {:include-granule-counts true})]
-        (assert-granule-counts {coll1 5 coll2 0 coll3 3 coll4 3 coll5 3 coll6 3} refs)))
+        (assert-granule-count-refs {coll1 5 coll2 0 coll3 3 coll4 3 coll5 3 coll6 3} refs)))
 
-    ;; TODO add more tests
+    (testing "granule counts for spatial queries"
+      (are [wnes expected-counts]
+           (let [refs (search/find-refs :collection {:include-granule-counts true
+                                                     :bounding-box (codec/url-encode (apply m/mbr wnes))})]
+             (granule-count-refs-match? expected-counts refs))
+
+           ;; Whole world
+           [-180 90 180 -90] {coll1 5 coll2 0 coll3 3 coll4 3 coll5 3}
+           ;; north west quadrant
+           [-180 90 0 0] {coll1 3 coll2 0 coll3 1 coll4 2 coll5 0}
+           ;; south east quadrant
+           [0 0 180 -90] {coll1 3 coll2 0 coll3 2 coll4 0 coll5 2}
+           ;; Smaller area around one granule in coll4
+           [130 47 137 44] {coll1 0 coll3 0 coll4 1}))
+
+    (testing "granule counts for temporal queries"
+      (are [start stop expected-counts]
+           (let [refs (search/find-refs :collection {:include-granule-counts true
+                                                     :temporal (temporal-search-range start stop)})]
+             (granule-count-refs-match? expected-counts refs))
+           1 6 {coll2 0 coll3 3 coll4 3 coll5 3 coll6 3}
+           2 3 {coll2 0 coll3 2 coll4 1 coll6 1}))
+
+    (testing "granule counts for both spatial and temporal queries"
+      (let [refs (search/find-refs :collection {:include-granule-counts true
+                                                :temporal (temporal-search-range 2 3)
+                                                :bounding-box (codec/url-encode (m/mbr -180 90 0 0))})]
+        (assert-granule-count-refs {coll2 0 coll3 1 coll4 1} refs)))
+
+
+    (testing "direct transformer query"
+      (let [items (search/find-metadata :collection :echo10 {:include-granule-counts true
+                                                             :concept-id (map :concept-id all-colls)})]
+        (is (granule-count-metadata-items-match?
+              {coll1 5 coll2 0 coll3 3 coll4 3 coll5 3 coll6 3} items))))
+
+    (testing "AQL with include_granule_counts"
+      (let [refs (search/find-refs-with-aql :collection [] {}
+                                            {:query-params {:include_granule_counts true}})]
+        (assert-granule-count-refs {coll1 5 coll2 0 coll3 3 coll4 3 coll5 3 coll6 3} refs)))
+
+    ;; TODO add ATOM XMl and ATOM Json tests
+
 
     ))
+
+
 
 
 

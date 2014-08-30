@@ -25,31 +25,25 @@
     (index/refresh-elastic-index)
 
     (are [value items]
-         (d/refs-match? items
-                              (search/find-refs :granule {:browsable value}))
-
+         (d/refs-match? items (search/find-refs :granule {:browsable value}))
          true [g2 g4 g5]
          false [g1 g3 g6]
          "unset" [g1 g2 g3 g4 g5 g6])
 
     (are [value items]
-         (d/refs-match? items
-                              (search/find-refs :granule {:browse-only value}))
-
+         (d/refs-match? items (search/find-refs :granule {:browse-only value}))
          true [g2 g4 g5]
          false [g1 g3 g6]
          "unset" [g1 g2 g3 g4 g5 g6])
 
     (testing "search granule by browse_only with aql"
       (are [items value]
-           (d/refs-match? items
-                          (search/find-refs-with-aql :granule [{:browseOnly value}]))
-
+           (d/refs-match? items (search/find-refs-with-aql :granule [{:browseOnly value}]))
            ;; it is not possible to search browseOnly false in AQL, so we don't have a test for that
            [g2 g4 g5] true
            [g2 g4 g5] nil))
 
     (testing "search by browsable wrong value"
-      (is (= {:status 422 :errors ["Parameter :browsable must take value of true, false, or unset, but was wrong"]}
+      (is (= {:status 422 :errors ["Parameter browsable must take value of true, false, or unset, but was wrong"]}
              (search/find-refs :granule {:browsable "wrong"}))))))
 

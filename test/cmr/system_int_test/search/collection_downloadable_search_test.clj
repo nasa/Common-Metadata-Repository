@@ -32,7 +32,7 @@
       (is (d/refs-match? [coll1 coll2 coll3 coll4 coll5 coll6]
                          (search/find-refs :collection {:downloadable "unset"}))))
     (testing "search by downloadable wrong value"
-      (is (= {:status 422 :errors ["Parameter :downloadable must take value of true, false, or unset, but was wrong"]}
+      (is (= {:status 422 :errors ["Parameter downloadable must take value of true, false, or unset, but was wrong"]}
              (search/find-refs :collection {:downloadable "wrong"}))))))
 
 (deftest search-collection-by-online-only
@@ -58,7 +58,7 @@
       (is (d/refs-match? [coll1 coll2 coll3 coll4 coll5 coll6]
                          (search/find-refs :collection {:online-only "unset"}))))
     (testing "search by online only wrong value"
-      (is (= {:status 422 :errors ["Parameter :downloadable must take value of true, false, or unset, but was wrong"]}
+      (is (= {:status 422 :errors ["Parameter downloadable must take value of true, false, or unset, but was wrong"]}
              (search/find-refs :collection {:online-only "wrong"}))))
 
     (testing "search by online only with aql"
