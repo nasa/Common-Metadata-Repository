@@ -217,9 +217,8 @@
                            :coordinate-system coordinate-system
                            :shapes (seq (get-in collection [:spatial-coverage :geometries]))
                            :associated-difs associated-difs
-                           ;; TODO change this to use (not (empty? ))
-                           :online-access-flag (str (> (count (ru/downloadable-urls related-urls)) 0))
-                           :browse-flag (str (> (count (ru/browse-urls related-urls)) 0))})))
+                           :online-access-flag (str (not (empty? (ru/downloadable-urls related-urls))))
+                           :browse-flag (str (not (empty? (ru/browse-urls related-urls))))})))
 
 (defn collections->expected-atom
   "Returns the atom map of the collections"
@@ -257,8 +256,8 @@
      :links (seq (related-urls->links related-urls))
      :start beginning-date-time
      :end ending-date-time
-     :online-access-flag (str (> (count (ru/downloadable-urls related-urls)) 0))
-     :browse-flag (str (> (count (ru/browse-urls related-urls)) 0))
+     :online-access-flag (str (not (empty? (ru/downloadable-urls related-urls))))
+     :browse-flag (str (not (empty? (ru/browse-urls related-urls))))
      :day-night-flag day-night
      :cloud-cover (str cloud-cover)
      :shapes (seq (get-in granule [:spatial-coverage :geometries]))}))

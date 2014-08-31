@@ -36,14 +36,18 @@
                (json-lines->lines lines)
                (json-boxes->bounding-rectangles boxes))))
 
-(defn- collection-json-entry->entry
-  "Retrns an entry from a parsed collection json entry"
-  [json-entry]
+(defmulti json-entry->entry
+  "Retrns an entry from a parsed json entry"
+  (fn [concept-type json-entry]
+    concept-type))
+
+(defmethod json-entry->entry :collection
+  [concept-type json-entry]
   (let [json-entry (util/map-keys->kebab-case json-entry)
         {:keys [id title short-name version-id summary updated dataset-id collection-data-type
                 processing-level-id original-format data-center archive-center time-start time-end
                 links dif-ids online-access-flag browse-flag coordinate-system
-                shapes points boxes polygons lines]} json-entry]
+                shapes points boxes polygons lines granule-count]} json-entry]
     (util/remove-nil-keys {:id id
                            :title title
                            :summary summary
@@ -56,18 +60,18 @@
                            :data-center data-center
                            :archive-center archive-center
                            :processing-level-id processing-level-id
-                           :links links
+                           :links (seq links)
                            :start time-start
                            :end time-end
                            :associated-difs dif-ids
                            :online-access-flag (str online-access-flag)
                            :browse-flag (str browse-flag)
                            :coordinate-system coordinate-system
+                           :granule-count granule-count
                            :shapes (json-geometry->shapes points boxes polygons lines)})))
 
-(defn- granule-json-entry->entry
-  "Retrns an entry from a parsed granule json entry"
-  [json-entry]
+(defmethod json-entry->entry :granule
+  [concept-type json-entry]
   (let [json-entry (util/map-keys->kebab-case json-entry)
         {:keys [id title updated dataset-id producer-granule-id granule-size original-format
                 data-center links time-start time-end online-access-flag browse-flag day-night-flag
@@ -80,7 +84,7 @@
      :size granule-size
      :original-format original-format
      :data-center data-center
-     :links links
+     :links (seq links)
      :start time-start
      :end time-end
      :online-access-flag (str online-access-flag)
@@ -94,10 +98,7 @@
   "Returns the json result from a json string"
   [concept-type json-str]
   (let [json-struct (json/decode json-str true)
-        {{:keys [id title entry]} :feed} json-struct
-        json-to-entry-fn (if (= :granule concept-type)
-                           granule-json-entry->entry
-                           collection-json-entry->entry)]
+        {{:keys [id title entry]} :feed} json-struct]
     {:id id
      :title title
-     :entries (seq (map json-to-entry-fn entry))}))
+     :entries (seq (map (partial json-entry->entry concept-type) entry))}))
