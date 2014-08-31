@@ -29,10 +29,15 @@
        :items
        (map :id)))
 
-(defn- collection-atom-reference->json
-  "Converts a search result collection atom reference into json"
-  [reference]
-  (let [{:keys [id score title short-name version-id summary updated dataset-id collection-data-type
+(defmulti atom-reference->json
+  "Converts a search result atom reference into json"
+  (fn [results concept-type reference]
+    concept-type))
+
+(defmethod atom-reference->json :collection
+  [results concept-type reference]
+  (let [granule-counts-map (:granule-counts results)
+        {:keys [id score title short-name version-id summary updated dataset-id collection-data-type
                 processing-level-id original-format data-center archive-center start-date end-date
                 atom-links associated-difs online-access-flag browse-flag coordinate-system shapes]} reference
         shape-result (atom-spatial/shapes->json shapes)
@@ -54,15 +59,15 @@
                        :dif_ids associated-difs
                        :online_access_flag online-access-flag
                        :browse_flag browse-flag
+                       :granule_count (when granule-counts-map (get granule-counts-map id 0))
                        :links (map atom/atom-link->attribute-map atom-links)
                        :coordinate_system coordinate-system}
                       shape-result)]
     ;; remove entries with nil value
     (util/remove-nil-keys result)))
 
-(defn- granule-atom-reference->json
-  "Converts a search result granule atom reference into json"
-  [reference]
+(defmethod atom-reference->json :granule
+  [results concept-type reference]
   (let [{:keys [id title updated dataset-id producer-gran-id size original-format
                 data-center start-date end-date atom-links online-access-flag browse-flag
                 day-night cloud-cover coordinate-system shapes]} reference
@@ -91,15 +96,13 @@
   [context query results]
   (let [{:keys [items]} results
         {:keys [concept-type result-format]} query
-        atom-reference-to-json-fn (if (= :granule concept-type) granule-atom-reference->json
-                                    collection-atom-reference->json)
         items (if (= :granule (:concept-type query))
                 (atom/append-collection-links context items)
                 items)
         response-results {:feed
                           {:updated (str (time/now))
                            :id (url/atom-request-url context concept-type result-format)
-                           :title (atom/concept-type->atom-title (:concept-type query))
-                           :entry (map atom-reference-to-json-fn items)}}]
+                           :title (atom/concept-type->atom-title concept-type)
+                           :entry (map (partial atom-reference->json results concept-type) items)}}]
     (json/generate-string response-results {:pretty (:pretty? query)})))
 
