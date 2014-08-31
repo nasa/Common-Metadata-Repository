@@ -11,6 +11,7 @@
             [cmr.elastic-utils.connect :as es]
             [cmr.transmit.index-set :as index-set]
             [cmr.search.models.results :as results]
+            [cmr.search.models.query :as qm]
             [cmr.search.data.query-to-elastic :as q2e]
             [cmr.search.services.query-walkers.collection-concept-id-extractor :as cex]
             [cmr.search.services.query-walkers.provider-id-extractor :as pex]
@@ -166,23 +167,24 @@
   [config]
   (->ElasticSearchIndex config nil))
 
-;; TODO this should be refactored to use send-query-to-elastic and specify aggregations in the query.
 (defn get-collection-granule-counts
   "Returns the collection granule count by searching elasticsearch by aggregation"
   [context provider-ids]
-  (let [granule-indexes (if (empty? provider-ids)
-                          all-granule-indexes
-                          (s/join "," (provider-ids->index-names context provider-ids)))
-        result (esd/search (context->conn context)
-                           granule-indexes
-                           "granule"
-                           ;; Since we are limiting the indexes to search by provider id already,
-                           ;; we do not put the provider-ids in the query for now.
-                           ;; We can add it later if it is determined to be necessary.
-                           :query (q/match-all)
-                           :aggregations {:provider_holdings (a/terms "collection-concept-id" {:size 10000})}
-                           :version true
-                           :size 10000
-                           :from 0)
-        holdings (esrsp/aggregation-from result :provider_holdings)]
-    (into {} (map (fn [pair] [(:key pair) (:doc_count pair)]) (:buckets holdings)))))
+  (let [condition (if (seq provider-ids)
+                    (qm/string-conditions :provider-id provider-ids true)
+                    (qm/->MatchAllCondition))
+        query (qm/query {:concept-type :granule
+                         :condition condition
+                         :page-size 0
+                         :aggregations {:provider-holdings
+                                        {:terms {:field :collection-concept-id
+                                                 :size 10000}}}})
+        results (execute-query context query)]
+    (let [aggs (get-in results [:aggregations :provider-holdings :buckets])]
+      (into {} (for [{collection-id :key num-granules :doc_count} aggs]
+                 [collection-id num-granules])))))
+
+
+
+
+
