@@ -157,13 +157,14 @@
            metadatas (for [match (drop 1 (str/split body #"(?ms)<result "))]
                        (second (re-matches #"(?ms)[^>]*>(.*)</result>.*" match)))]
        (map (fn [result metadata]
-              (let [{{:keys [concept-id collection-concept-id revision-id granule-count]} :attrs} result]
+              (let [{{:keys [concept-id collection-concept-id revision-id granule-count has-granules]} :attrs} result]
                 (util/remove-nil-keys
                   {:concept-id concept-id
                    :revision-id (Long. ^String revision-id)
                    :format format-key
                    :collection-concept-id collection-concept-id
                    :granule-count (when granule-count (Long. ^String granule-count))
+                   :has-granules (when has-granules (= has-granules "true"))
                    :metadata (str "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" metadata)})))
             (cx/elements-at-path parsed [:result])
             metadatas)))))
@@ -192,6 +193,7 @@
                        :revision-id (cx/long-at-path ref-elem [:revision-id])
                        :location (cx/string-at-path ref-elem [:location])
                        :granule-count (cx/long-at-path ref-elem [:granule-count])
+                       :has-granules (cx/bool-at-path ref-elem [:has-granules])
                        :score (cx/double-at-path ref-elem [:score])}))
                   (cx/elements-at-path parsed [:references :reference]))]
     {:refs refs

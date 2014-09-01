@@ -109,7 +109,8 @@
              :coordinate-system (cx/string-at-path entry-elem [:coordinateSystem])
              :shapes (seq (xml-elem->shapes entry-elem))
              :score (cx/double-at-path entry-elem [:score])
-             :granule-count (cx/long-at-path entry-elem [:granuleCount])}]
+             :granule-count (cx/long-at-path entry-elem [:granuleCount])
+             :has-granules (cx/bool-at-path entry-elem [:hasGranules])}]
     ;; This is needed because many of the tests are comparing collections to this map and the
     ;; collections won't have relevance scores, so if there is a :score => nil mapping,
     ;; the comparisio will fail. So we must remove the mapping entirely for nil values.

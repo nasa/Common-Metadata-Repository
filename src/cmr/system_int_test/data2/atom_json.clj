@@ -47,7 +47,7 @@
         {:keys [id title short-name version-id summary updated dataset-id collection-data-type
                 processing-level-id original-format data-center archive-center time-start time-end
                 links dif-ids online-access-flag browse-flag coordinate-system
-                shapes points boxes polygons lines granule-count]} json-entry]
+                shapes points boxes polygons lines granule-count has-granules]} json-entry]
     (util/remove-nil-keys {:id id
                            :title title
                            :summary summary
@@ -68,6 +68,7 @@
                            :browse-flag (str browse-flag)
                            :coordinate-system coordinate-system
                            :granule-count granule-count
+                           :has-granules has-granules
                            :shapes (json-geometry->shapes points boxes polygons lines)})))
 
 (defmethod json-entry->entry :granule
