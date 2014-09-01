@@ -132,7 +132,8 @@
                        #(try
                           (lifecycle/start % system)
                           (catch Exception e
-                            (stop-components (stop-apps system))
+                            (stop-components (stop-apps system) :pre-components)
+                            (stop-components (stop-apps system) :post-components)
                             (throw e)))))
           system
           (keys (components-key system))))
@@ -147,7 +148,8 @@
                               (when %
                                 (start-fn %))
                               (catch Exception e
-                                (stop-components (stop-apps system))
+                                (stop-components (stop-apps system) :pre-components)
+                                (stop-components (stop-apps system) :post-components)
                                 (throw e))))))
             system
             app-startup-order)))

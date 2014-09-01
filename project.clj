@@ -61,7 +61,7 @@
   :repl-options {:init-ns user}
 
 
-  :jvm-opts ["-XX:PermSize=256m" "-XX:MaxPermSize=256m"]
+  :jvm-opts ["-XX:PermSize=256m" "-XX:MaxPermSize=256m" "-XX:-OmitStackTraceInFastThrow"]
 
   ;; Uncomment this for performance testing or profiling
   ; :jvm-opts ^:replace ["-server"
