@@ -4,11 +4,10 @@
             [cmr.search.services.transformer :as t]
             [cmr.search.models.results :as results]
             [cmr.search.data.elastic-results-to-query-results :as rc]
+            [cmr.search.data.complex-to-simple :as c2s]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.search.services.query-walkers.collection-query-resolver :as r]
-            [cmr.search.services.acl-service :as acl-service]
-            [cmr.search.data.complex-to-simple :as c2s]
-            [cmr.search.services.query-walkers.granule-count-query-extractor :as gcqe])
+            [cmr.search.services.acl-service :as acl-service])
   (:import cmr.search.models.query.StringsCondition
            cmr.search.models.query.StringCondition))
 
@@ -65,15 +64,6 @@
   [context query results feature]
   ; Does nothing by default
   results)
-
-;; This find granule counts per collection.
-(defmethod process-post-query-result-feature :granule-counts
-  [context query results feature]
-  (let [granule-count-query (c2s/reduce-query (gcqe/extract-granule-count-query query results))
-        elastic-results (idx/execute-query context granule-count-query)]
-    (assoc results
-           :granule-counts
-           (gcqe/search-results->granule-counts elastic-results))))
 
 (defn process-post-query-result-features
   "Processes result features that execute after a query results have been found."

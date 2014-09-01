@@ -12,7 +12,8 @@
             [cmr.metadata-db.system :as mdb-system]
             [cmr.common.config :as cfg]
             [cmr.transmit.config :as transmit-config]
-            [cmr.elastic-utils.config :as es-config]))
+            [cmr.elastic-utils.config :as es-config]
+            [cmr.search.services.query-execution.has-granules-results-feature :as hgrf]))
 
 ;; Design based on http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts
 
@@ -54,12 +55,15 @@
              :web (web/create-web-server (transmit-config/search-port) routes/make-api)
              :caches {:index-names (cache/create-cache)
                       :acls (ac/create-acl-cache)
-                      :token-sid (cache/create-cache (clj-cache/ttl-cache-factory {} :ttl TOKEN_CACHE_TIME))}
+                      ;; Caches a map of tokens to the security identifiers
+                      :token-sid (cache/create-cache (clj-cache/ttl-cache-factory {} :ttl TOKEN_CACHE_TIME))
+                      :has-granules-map (hgrf/create-has-granules-map-cache)}
              :zipkin (context/zipkin-config "Search" false)
              :search-public-conf search-public-conf
              :scheduler (jobs/create-scheduler
                           `system-holder
-                          [(ac/refresh-acl-cache-job "search-acl-cache-refresh")])}]
+                          [(ac/refresh-acl-cache-job "search-acl-cache-refresh")
+                           hgrf/refresh-has-granules-map-job])}]
     (transmit-config/system-with-connections sys [:index-set :echo-rest])))
 
 (defn start

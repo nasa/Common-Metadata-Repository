@@ -1,7 +1,7 @@
-(ns cmr.search.test.services.query-walkers.granule-count-query-extractor
+(ns cmr.search.test.services.query-execution.granule-counts-results-feature
   (:require [clojure.test :refer :all]
             [cmr.search.test.services.query-walkers.helpers :refer :all]
-            [cmr.search.services.query-walkers.granule-count-query-extractor :as gcqe]
+            [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]
             [cmr.search.models.query :as q]
             [cmr.search.models.results :as r]
             [cmr.spatial.point :as p]))
@@ -47,7 +47,7 @@
                    (temporal-cond 1)
                    (spatial-cond 2)
                    (temporal-cond 2)))
-             (gcqe/extract-granule-count-query coll-query results)))))
+             (gcrf/extract-granule-count-query coll-query results)))))
   (testing "spatial and temporal query with no results"
     (let [coll-query (q/query {:condition
                                (and-conds (other)
@@ -58,10 +58,10 @@
                                                                 (other))))})
           results (results-with-items)]
       (is (= (expected-query-with-condition 0 (q/->MatchNoneCondition))
-             (gcqe/extract-granule-count-query coll-query results)))))
+             (gcrf/extract-granule-count-query coll-query results)))))
   (testing "non-spatial non-temporal query"
     (let [coll-query (q/query {:condition (and-conds (other) (other))})
           results (results-with-items "C1-PROV1" "C2-PROV1")]
       (is (= (expected-query-with-condition
                2 (q/string-conditions :collection-concept-id ["C1-PROV1" "C2-PROV1"] true))
-             (gcqe/extract-granule-count-query coll-query results))))))
+             (gcrf/extract-granule-count-query coll-query results))))))

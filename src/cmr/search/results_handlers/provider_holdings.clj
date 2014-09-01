@@ -1,4 +1,4 @@
-(ns cmr.search.services.provider-holdings
+(ns cmr.search.results-handlers.provider-holdings
   "Defines functions to generate xml and json string for provider-holdings"
   (:require [clojure.set :as set]
             [clojure.data.xml :as x]

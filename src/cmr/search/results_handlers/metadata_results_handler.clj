@@ -3,7 +3,7 @@
   (:require [cmr.search.data.elastic-results-to-query-results :as elastic-results]
             [cmr.search.data.elastic-search-index :as elastic-search-index]
             [cmr.search.services.query-service :as qs]
-            [cmr.search.services.query-walkers.granule-count-query-extractor :as gcqe]
+            [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]
             [cmr.search.models.results :as results]
             [cmr.search.services.transformer :as t]
             [clojure.data.xml :as x]
@@ -58,13 +58,13 @@
   [context query elastic-results]
   (elastic-results->query-metadata-results context query elastic-results))
 
-(defmethod gcqe/query-results->concept-ids :echo10
+(defmethod gcrf/query-results->concept-ids :echo10
   [results]
   (->> results
        :items
        (map :concept-id)))
 
-(defmethod gcqe/query-results->concept-ids :dif
+(defmethod gcrf/query-results->concept-ids :dif
   [results]
   (->> results
        :items
@@ -93,10 +93,12 @@
 
 (defmethod metadata-item->result-string :collection
   [concept-type results metadata-item]
-  (let [granule-counts-map (:granule-counts results)
+  (let [{:keys [has-granules-map granule-counts-map]} results
         {:keys [concept-id revision-id metadata]} metadata-item
         attribs (concat [[:concept-id concept-id]
                          [:revision-id revision-id]]
+                        (when has-granules-map
+                          [[:has-granules (get has-granules-map concept-id false)]])
                         (when granule-counts-map
                           [[:granule-count (get granule-counts-map concept-id 0)]]))
         attrib-strs (for [[k v] attribs]

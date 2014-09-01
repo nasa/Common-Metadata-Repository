@@ -3,7 +3,7 @@
   (:require [cmr.search.data.elastic-results-to-query-results :as elastic-results]
             [cmr.search.data.elastic-search-index :as elastic-search-index]
             [cmr.search.services.query-service :as qs]
-            [cmr.search.services.query-walkers.granule-count-query-extractor :as gcqe]
+            [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]
             [clojure.data.xml :as x]
             [cheshire.core :as json]
             [clojure.string :as str]
@@ -157,7 +157,7 @@
     (granule-elastic-result->query-result-item elastic-result)
     (collection-elastic-result->query-result-item elastic-result)))
 
-(defmethod gcqe/query-results->concept-ids :atom
+(defmethod gcrf/query-results->concept-ids :atom
   [results]
   (->> results
        :items
@@ -224,7 +224,7 @@
 
 (defmethod atom-reference->xml-element :collection
   [results concept-type reference]
-  (let [granule-counts-map (:granule-counts results)
+  (let [{:keys [has-granules-map granule-counts-map]} results
         {:keys [id score title short-name version-id summary updated dataset-id collection-data-type
                 processing-level-id original-format data-center archive-center start-date end-date
                 atom-links associated-difs online-access-flag browse-flag coordinate-system shapes]} reference]
@@ -249,6 +249,8 @@
                (map #(x/element :echo:difId {} %) associated-difs)
                (x/element :echo:onlineAccessFlag {} online-access-flag)
                (x/element :echo:browseFlag {} browse-flag)
+               (when has-granules-map
+                 (x/element :echo:hasGranules {} (get has-granules-map id false)))
                (when granule-counts-map
                  (x/element :echo:granuleCount {} (get granule-counts-map id 0)))
                (when score (x/element :relevance:score {} score)))))

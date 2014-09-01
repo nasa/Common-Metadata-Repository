@@ -1,8 +1,14 @@
-(ns cmr.search.services.query-walkers.granule-count-query-extractor
-  "Extracts a query to find granule counts for each collection result in a collection query."
+(ns cmr.search.services.query-execution.granule-counts-results-feature
+  "This enables the :include-granule-counts feature for collection search results. When it is enabled
+  collection search results will include the number of granules in each collection that would match
+  the same query. It is currently limited to spatial and temporal conditions within collection queries.
+  Other types of conditions will not be included in limiting the granule counts."
   (:require [cmr.common.services.errors :as errors]
             [cmr.search.services.query-walkers.condition-extractor :as condition-extractor]
-            [cmr.search.models.query :as q])
+            [cmr.search.models.query :as q]
+            [cmr.search.data.elastic-search-index :as idx]
+            [cmr.search.data.complex-to-simple :as c2s]
+            [cmr.search.services.query-execution :as query-execution])
   (:import [cmr.search.models.query
             Query
             ConditionGroup
@@ -74,10 +80,19 @@
                              {:terms {:field :collection-concept-id
                                       :size (count collection-ids)}}}})))
 
-(defn search-results->granule-counts
+(defn- search-results->granule-counts
   "Extracts the granule counts per collection id in a map from the search results from ElasticSearch"
-  [results]
-  (let [aggs (get-in results [:aggregations :granule-counts-by-collection-id :buckets])]
+  [elastic-results]
+  (let [aggs (get-in elastic-results [:aggregations :granule-counts-by-collection-id :buckets])]
     (into {} (for [{collection-id :key num-granules :doc_count} aggs]
                [collection-id num-granules]))))
 
+;; This find granule counts per collection.
+(defmethod query-execution/process-post-query-result-feature :granule-counts
+  [context query results feature]
+  (->> results
+       (extract-granule-count-query query)
+       c2s/reduce-query
+       (idx/execute-query context)
+       search-results->granule-counts
+       (assoc results :granule-counts-map)))

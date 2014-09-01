@@ -50,10 +50,14 @@
             [cmr.search.data.complex-to-simple-converters.temporal]
             [cmr.search.data.complex-to-simple-converters.spatial]
 
+            ;; Query Results Features
+            [cmr.search.services.query-execution.granule-counts-results-feature]
+            [cmr.search.services.query-execution.has-granules-results-feature :as hgrf]
+
             [cmr.search.services.parameters.legacy-parameters :as lp]
             [cmr.search.services.parameters.parameter-validation :as pv]
             [cmr.search.services.query-execution :as qe]
-            [cmr.search.services.provider-holdings :as ph]
+            [cmr.search.results-handlers.provider-holdings :as ph]
             [cmr.search.services.transformer :as t]
             [cmr.metadata-db.services.concept-service :as meta-db]
             [cmr.system-trace.core :refer [deftracefn]]
@@ -156,9 +160,10 @@
   (info "Clearing the search application cache")
   ;; TODO enforce ingest management ACL here. - CMR-678
   (doseq [[cache-name cache] (get-in context [:system :caches])
-          :when (not= cache-name :acls)]
+          :when (and (not= cache-name :acls) (not= cache-name :has-granules-map))]
     (cache/reset-cache cache))
-  (acl-cache/reset context))
+  (acl-cache/reset context)
+  (hgrf/reset context))
 
 (deftracefn get-collections-by-providers
   "Returns all collections found by the given provider ids"

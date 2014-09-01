@@ -2,7 +2,7 @@
   "Handles the JSON results format and related functions"
   (:require [cmr.search.data.elastic-results-to-query-results :as elastic-results]
             [cmr.search.data.elastic-search-index :as elastic-search-index]
-            [cmr.search.services.query-walkers.granule-count-query-extractor :as gcqe]
+            [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]
             [cmr.search.services.query-service :as qs]
             [cheshire.core :as json]
             [clj-time.core :as time]
@@ -23,7 +23,7 @@
   [context query elastic-result]
   (elastic-results/elastic-result->query-result-item context (assoc query :result-format :atom) elastic-result))
 
-(defmethod gcqe/query-results->concept-ids :json
+(defmethod gcrf/query-results->concept-ids :json
   [results]
   (->> results
        :items
@@ -36,7 +36,7 @@
 
 (defmethod atom-reference->json :collection
   [results concept-type reference]
-  (let [granule-counts-map (:granule-counts results)
+  (let [{:keys [has-granules-map granule-counts-map]} results
         {:keys [id score title short-name version-id summary updated dataset-id collection-data-type
                 processing-level-id original-format data-center archive-center start-date end-date
                 atom-links associated-difs online-access-flag browse-flag coordinate-system shapes]} reference
@@ -59,6 +59,7 @@
                        :dif_ids associated-difs
                        :online_access_flag online-access-flag
                        :browse_flag browse-flag
+                       :has_granules (when has-granules-map (get has-granules-map id false))
                        :granule_count (when granule-counts-map (get granule-counts-map id 0))
                        :links (map atom/atom-link->attribute-map atom-links)
                        :coordinate_system coordinate-system}

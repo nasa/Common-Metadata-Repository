@@ -7,7 +7,7 @@
             [clojure.data.xml :as x]
             [clojure.set :as set]
             [cheshire.core :as json]
-            [cmr.search.services.query-walkers.granule-count-query-extractor :as gcqe]))
+            [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]))
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:granule :xml]
   [concept-type result-format]
@@ -40,7 +40,7 @@
      :name name-value
      :score score}))
 
-(defmethod gcqe/query-results->concept-ids :xml
+(defmethod gcrf/query-results->concept-ids :xml
   [results]
   (->> results
        :items
@@ -49,13 +49,15 @@
 (defn- reference->xml-element
   "Converts a search result reference into an XML element."
   [results reference]
-  (let [granule-counts-map (:granule-counts results)
+  (let [{:keys [has-granules-map granule-counts-map]} results
         {:keys [concept-id revision-id location name score]} reference]
     (x/element :reference {}
                (x/element :name {} name)
                (x/element :id {} concept-id)
                (x/element :location {} location)
                (x/element :revision-id {} (str revision-id))
+               (when has-granules-map
+                 (x/element :has-granules {} (get has-granules-map concept-id false)))
                (when granule-counts-map
                  (x/element :granule-count {} (get granule-counts-map concept-id 0)))
                (when score (x/element :score {} score)))))

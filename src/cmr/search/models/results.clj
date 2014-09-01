@@ -15,9 +15,15 @@
    ;; Sequence of result items found by the query
    items
 
+   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+   ;; Collection Results Only
+
    ;; A map of collection concept ids to granule counts.
    ;; This will only be present in the case of collection queries which enable this feature
-   granule-counts
+   granule-counts-map
+
+   ;; A map of collection concept ids to boolean values indicating if a collection has any granules at all
+   has-granules-map
 
   ])
 

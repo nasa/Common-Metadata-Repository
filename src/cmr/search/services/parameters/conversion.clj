@@ -269,8 +269,8 @@
         pretty? (= "true" (:pretty params))
         result-features (concat (when (= (:include-granule-counts params) "true")
                                   [:granule-counts])
-                                ;; Add other result features here
-                                )]
+                                (when (= (:include-has-granules params) "true")
+                                  [:has-granules]))]
     {:concept-type concept-type
      :page-size page-size
      :page-num page-num
@@ -287,7 +287,7 @@
         keywords (when (:keyword params)
                    (str/split (str/lower-case (:keyword params)) #" "))
         params (dissoc params :options :page-size :page-num :sort-key :result-format :pretty
-                       :include-granule-counts)]
+                       :include-granule-counts :include-has-granules)]
     (if (empty? params)
       ;; matches everything
       (qm/query query-attribs)
