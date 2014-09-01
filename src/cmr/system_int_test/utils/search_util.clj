@@ -144,6 +144,19 @@
         :results (dj/parse-json-result concept-type body)}
        response))))
 
+(defn- parse-facets-xml
+  "Converts an xml element into a sequence of facet maps containing field and value counts"
+  [facets-elem]
+  (when facets-elem
+    (when-let [facet-elems (cx/elements-at-path facets-elem [:facet])]
+      (for [facet-elem facet-elems]
+        (let [field (get-in facet-elem [:attrs :field])
+              value-elems (cx/elements-at-path facet-elem [:value])]
+          {:field field
+           :value-counts (for [value-elem value-elems]
+                           [(first (:content value-elem))
+                            (Long. ^String (get-in value-elem [:attrs :count]))])})))))
+
 (defn find-metadata
   "Returns the response of concept search in a specific metadata XML format."
   ([concept-type format-key params]
@@ -155,19 +168,22 @@
            body (:body response)
            parsed (x/parse-str body)
            metadatas (for [match (drop 1 (str/split body #"(?ms)<result "))]
-                       (second (re-matches #"(?ms)[^>]*>(.*)</result>.*" match)))]
-       (map (fn [result metadata]
-              (let [{{:keys [concept-id collection-concept-id revision-id granule-count has-granules]} :attrs} result]
-                (util/remove-nil-keys
-                  {:concept-id concept-id
-                   :revision-id (Long. ^String revision-id)
-                   :format format-key
-                   :collection-concept-id collection-concept-id
-                   :granule-count (when granule-count (Long. ^String granule-count))
-                   :has-granules (when has-granules (= has-granules "true"))
-                   :metadata (str "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" metadata)})))
-            (cx/elements-at-path parsed [:result])
-            metadatas)))))
+                       (second (re-matches #"(?ms)[^>]*>(.*)</result>.*" match)))
+           items (map (fn [result metadata]
+                        (let [{{:keys [concept-id collection-concept-id revision-id granule-count has-granules]} :attrs} result]
+                          (util/remove-nil-keys
+                            {:concept-id concept-id
+                             :revision-id (Long. ^String revision-id)
+                             :format format-key
+                             :collection-concept-id collection-concept-id
+                             :granule-count (when granule-count (Long. ^String granule-count))
+                             :has-granules (when has-granules (= has-granules "true"))
+                             :metadata (str "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" metadata)})))
+                      (cx/elements-at-path parsed [:result])
+                      metadatas)
+           facets (parse-facets-xml (cx/element-at-path parsed [:facets]))]
+       (util/remove-nil-keys {:items items
+                              :facets facets})))))
 
 (defn find-refs-json
   "Finds references using the JSON format. This will eventually go away as the json response format
@@ -180,6 +196,7 @@
          :body
          (json/decode true)
          (set/rename-keys {:references :refs})))))
+
 
 (defn- parse-reference-response
   [response]
@@ -195,10 +212,14 @@
                        :granule-count (cx/long-at-path ref-elem [:granule-count])
                        :has-granules (cx/bool-at-path ref-elem [:has-granules])
                        :score (cx/double-at-path ref-elem [:score])}))
-                  (cx/elements-at-path parsed [:references :reference]))]
-    {:refs refs
-     :hits hits
-     :took took}))
+                  (cx/elements-at-path parsed [:references :reference]))
+        facets (parse-facets-xml
+                 (cx/element-at-path parsed [:facets]))]
+    (util/remove-nil-keys
+      {:refs refs
+       :hits hits
+       :took took
+       :facets facets})))
 
 (defn find-refs
   "Returns the references that are found by searching with the input params"

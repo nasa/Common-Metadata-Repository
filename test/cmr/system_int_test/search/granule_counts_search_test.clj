@@ -63,12 +63,13 @@
     (and refs-match? counts-match?)))
 
 (defmethod granule-counts-match? :echo10
-  [result-format expected-counts items]
-  (let [count-map (into {} (for [[coll granule-count] expected-counts]
+  [result-format expected-counts results]
+  (let [items (:items results)
+        count-map (into {} (for [[coll granule-count] expected-counts]
                              [(:concept-id coll) granule-count]))
         actual-count-map (into {} (for [{:keys [concept-id granule-count]} items]
                                     [concept-id granule-count]))
-        results-match? (d/metadata-results-match? :echo10 (keys expected-counts) items)
+        results-match? (d/metadata-results-match? :echo10 (keys expected-counts) results)
         counts-match? (= count-map actual-count-map)]
     (when-not results-match?
       (println "Expected:" (pr-str (map :concept-id (keys expected-counts))))
@@ -108,7 +109,7 @@
 
 (defmethod results->actual-has-granules :echo10
   [result-format results]
-  (into {} (for [{:keys [concept-id has-granules]} results]
+  (into {} (for [{:keys [concept-id has-granules]} (:items results)]
              [concept-id has-granules])))
 
 (defmethod results->actual-has-granules :atom
@@ -177,7 +178,7 @@
     (make-gran coll6 nil (temporal-range 6 6))
     (index/refresh-elastic-index)
 
-    #_(testing "granule counts"
+    (testing "granule counts"
       (testing "invalid include-granule-counts"
         (is (= {:errors ["Parameter include_granule_counts must take value of true, false, or unset, but was foo"] :status 422}
                (search/find-refs :collection {:include-granule-counts "foo"})))

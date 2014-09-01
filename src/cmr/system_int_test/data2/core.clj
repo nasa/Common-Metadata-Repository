@@ -91,7 +91,7 @@
   "Returns true if the metadata results match the expected items"
   [format-key items search-result]
   (= (set (map (partial item->metadata-result format-key) items))
-     (set (map #(dissoc % :granule-count) search-result))))
+     (set (map #(dissoc % :granule-count) (:items search-result)))))
 
 (defn assert-metadata-results-match
   "Returns true if the metadata results match the expected items"
