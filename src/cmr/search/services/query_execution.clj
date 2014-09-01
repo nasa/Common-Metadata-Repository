@@ -22,12 +22,15 @@
 
 (defn- direct-transformer-query?
   "Returns true if the query should be executed directly against the transformer and bypass elastic."
-  [{:keys [condition concept-type result-format page-num page-size sort-keys] :as query}]
+  [{:keys [condition concept-type result-format page-num page-size sort-keys
+           result-features] :as query}]
   (and (transformer-supported-format? result-format)
        (#{StringCondition StringsCondition} (type condition))
        (= :concept-id (:field condition))
        (= page-num 1)
        (>= page-size (count (:values condition)))
+       ;; Facets requires elastic search
+       (not-any? #(= % :facets) result-features)
 
        ;; sorting has been left at the default level
        ;; Note that we don't actually sort items by the default sort keys
@@ -54,22 +57,40 @@
   [query]
   (get-in query [:condition :values]))
 
-(defmulti process-post-query-result-feature
-  "Processes the results found by the query to add additional information or other changes
-  based on the particular feature enabled by the user."
-  (fn [context query results feature]
+(defmulti pre-process-query-result-feature
+  "Applies result feature changes to the query before it is executed. Should return the query with
+  any changes necessary to apply the feature."
+  (fn [context query feature]
     feature))
 
-(defmethod process-post-query-result-feature :default
-  [context query results feature]
+(defmethod pre-process-query-result-feature :default
+  [context query feature]
   ; Does nothing by default
-  results)
+  query)
 
-(defn process-post-query-result-features
+(defmulti post-process-query-result-feature
+  "Processes the results found by the query to add additional information or other changes
+  based on the particular feature enabled by the user."
+  (fn [context query elastic-results query-results feature]
+    feature))
+
+(defmethod post-process-query-result-feature :default
+  [context query elastic-results query-results feature]
+  ; Does nothing by default
+  query-results)
+
+(defn pre-process-query-result-features
+  "Applies each result feature change to the query before it is executed. Returns the updated query."
+  [context query]
+  (reduce (partial pre-process-query-result-feature context)
+          query
+          (:result-features query)))
+
+(defn post-process-query-result-features
   "Processes result features that execute after a query results have been found."
-  [context query results]
-  (reduce (partial process-post-query-result-feature context query)
-          results
+  [context query elastic-results query-results]
+  (reduce (partial post-process-query-result-feature context query elastic-results)
+          query-results
           (:result-features query)))
 
 (defmulti execute-query
@@ -84,17 +105,18 @@
         tresults (t/get-latest-formatted-concepts context concept-ids result-format)
         items (map #(select-keys % [:concept-id :revision-id :collection-concept-id :metadata]) tresults)
         results (results/map->Results {:hits (count items) :items items :result-format result-format})]
-    (process-post-query-result-features context query results)))
+    (post-process-query-result-features context query nil results)))
 
 (defmethod execute-query :elastic
   [context query]
-  (->> query
-       c2s/reduce-query
-       (acl-service/add-acl-conditions-to-query context)
-       (r/resolve-collection-queries context)
-       (idx/execute-query context)
-       (rc/elastic-results->query-results context query)
-       (process-post-query-result-features context query)))
+  (let [elastic-results (->> query
+                             (pre-process-query-result-features context)
+                             c2s/reduce-query
+                             (acl-service/add-acl-conditions-to-query context)
+                             (r/resolve-collection-queries context)
+                             (idx/execute-query context))
+        query-results (rc/elastic-results->query-results context query elastic-results)]
+    (post-process-query-result-features context query elastic-results query-results)))
 
 
 

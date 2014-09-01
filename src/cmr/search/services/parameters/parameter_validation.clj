@@ -124,7 +124,7 @@
   (let [params (dissoc params :page-size :page-num :sort-key :result-format :pretty)
         params (if (= :collection concept-type)
                  ;; Parameters only supported on collections
-                 (dissoc params :include-granule-counts :include-has-granules)
+                 (dissoc params :include-granule-counts :include-has-granules :include-facets)
                  params)]
     (map #(format "Parameter [%s] was not recognized." (csk/->snake_case_string %))
          (set/difference (set (keys params))
@@ -347,7 +347,7 @@
 (defn boolean-value-validation
   [concept-type params]
   (let [bool-params (select-keys params [:downloadable :browsable :include-granule-counts
-                                         :include-has-granules])]
+                                         :include-has-granules :include-facets])]
     (mapcat
       (fn [[param value]]
         (if (or (= "true" value) (= "false" value) (= "unset" (s/lower-case value)))
@@ -389,7 +389,7 @@
   (map #(str "Parameter [" (csk/->snake_case_string % )"] was not recognized.")
        (set/difference (set (keys params))
                        (set [:page-size :page-num :sort-key :result-format :pretty :options
-                             :include-granule-counts :include-has-granules]))))
+                             :include-granule-counts :include-has-granules :include-facets]))))
 
 (def parameter-validations
   "A list of the functions that can validate parameters. They all accept parameters as an argument

@@ -1,6 +1,18 @@
 (ns cmr.search.models.results
   "Defines types for search results")
 
+;; Defines a single faceted field.
+(defrecord Facet
+  [
+   ;; The field name. This will match the parameter field name accepted in searches
+   field
+
+   ;; A sequence of value count pairs. These are values that appear in the fields with counts of
+   ;; the number of appearances of that value.
+   value-counts
+   ])
+
+
 (defrecord Results
   [
    ;; The number of hits
@@ -24,6 +36,8 @@
 
    ;; A map of collection concept ids to boolean values indicating if a collection has any granules at all
    has-granules-map
+
+   facets
 
   ])
 

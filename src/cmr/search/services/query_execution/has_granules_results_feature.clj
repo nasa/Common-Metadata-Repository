@@ -51,9 +51,9 @@
     (deref has-granules-map-cache)))
 
 ;; This returns a boolean flag with collection results if a collection has any granules in provider holdings
-(defmethod query-execution/process-post-query-result-feature :has-granules
-  [context query results feature]
-  (assoc results :has-granules-map (get-has-granules-map context)))
+(defmethod query-execution/post-process-query-result-feature :has-granules
+  [context query elastic-results query-results feature]
+  (assoc query-results :has-granules-map (get-has-granules-map context)))
 
 (defjob RefreshHasGranulesMapJob
   [ctx system]

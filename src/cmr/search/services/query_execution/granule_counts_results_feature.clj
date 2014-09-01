@@ -88,11 +88,11 @@
                [collection-id num-granules]))))
 
 ;; This find granule counts per collection.
-(defmethod query-execution/process-post-query-result-feature :granule-counts
-  [context query results feature]
-  (->> results
+(defmethod query-execution/post-process-query-result-feature :granule-counts
+  [context query elastic-results query-results feature]
+  (->> query-results
        (extract-granule-count-query query)
        c2s/reduce-query
        (idx/execute-query context)
        search-results->granule-counts
-       (assoc results :granule-counts-map)))
+       (assoc query-results :granule-counts-map)))

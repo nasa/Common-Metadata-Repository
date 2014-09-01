@@ -53,6 +53,7 @@
             ;; Query Results Features
             [cmr.search.services.query-execution.granule-counts-results-feature]
             [cmr.search.services.query-execution.has-granules-results-feature :as hgrf]
+            [cmr.search.services.query-execution.facets-results-feature]
 
             [cmr.search.services.parameters.legacy-parameters :as lp]
             [cmr.search.services.parameters.parameter-validation :as pv]

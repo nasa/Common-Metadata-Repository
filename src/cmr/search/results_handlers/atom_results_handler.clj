@@ -4,6 +4,7 @@
             [cmr.search.data.elastic-search-index :as elastic-search-index]
             [cmr.search.services.query-service :as qs]
             [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]
+            [cmr.search.services.query-execution.facets-results-feature :as frf]
             [clojure.data.xml :as x]
             [cheshire.core :as json]
             [clojure.string :as str]
@@ -302,7 +303,7 @@
 
 (defmethod qs/search-results->response :atom
   [context query results]
-  (let [{:keys [hits took items]} results
+  (let [{:keys [hits took items facets]} results
         {:keys [concept-type result-format]} query
         xml-fn (if (:pretty? query) x/indent-str x/emit-str)
         items (if (= :granule concept-type)
@@ -320,6 +321,7 @@
                  (x/element :updated {} (str (time/now)))
                  (x/element :id {} (url/atom-request-url context concept-type result-format))
                  (x/element :title {:type "text"} (concept-type->atom-title concept-type))
-                 (map (partial atom-reference->xml-element results concept-type) items)))))
+                 (map (partial atom-reference->xml-element results concept-type) items)
+                 (frf/facets->xml-element "echo" facets)))))
 
 

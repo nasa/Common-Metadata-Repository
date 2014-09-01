@@ -7,7 +7,8 @@
             [clojure.data.xml :as x]
             [clojure.set :as set]
             [cheshire.core :as json]
-            [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]))
+            [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]
+            [cmr.search.services.query-execution.facets-results-feature :as frf]))
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:granule :xml]
   [concept-type result-format]
@@ -64,7 +65,7 @@
 
 (defmethod qs/search-results->response :xml
   [context query results]
-  (let [{:keys [hits took items]} results
+  (let [{:keys [hits took items facets]} results
         {:keys [pretty?]} query
         xml-fn (if pretty? x/indent-str x/emit-str)]
     (xml-fn
@@ -72,7 +73,8 @@
                  (x/element :hits {} (str hits))
                  (x/element :took {} (str took))
                  (x/->Element :references {}
-                              (map (partial reference->xml-element results) items))))))
+                              (map (partial reference->xml-element results) items))
+                 (frf/facets->xml-element facets)))))
 
 
 

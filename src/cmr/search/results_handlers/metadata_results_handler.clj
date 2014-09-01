@@ -4,6 +4,7 @@
             [cmr.search.data.elastic-search-index :as elastic-search-index]
             [cmr.search.services.query-service :as qs]
             [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]
+            [cmr.search.services.query-execution.facets-results-feature :as frf]
             [cmr.search.models.results :as results]
             [cmr.search.services.transformer :as t]
             [clojure.data.xml :as x]
@@ -107,9 +108,17 @@
             attrib-strs
             [">" (cx/remove-xml-processing-instructions metadata) "</result>"])))
 
+(defn- facets->xml-string
+  "Converts facets into an XML string."
+  [facets]
+  (if facets
+    (cx/remove-xml-processing-instructions
+      (x/emit-str (frf/facets->xml-element facets)))
+    ""))
+
 (defn search-results->metadata-response
   [context query results]
-  (let [{:keys [hits took items]} results
+  (let [{:keys [hits took items facets]} results
         {:keys [result-format pretty? concept-type]} query
         result-strings (apply concat (map (partial metadata-item->result-string concept-type results)
                                           items))
@@ -119,8 +128,9 @@
                  "</hits><took>"
                  took
                  "</took>"]
+        facets-strs [(facets->xml-string facets)]
         footers ["</results>"]
-        response (apply str (concat headers result-strings footers))]
+        response (apply str (concat headers result-strings facets-strs footers))]
     ;; Since clojure.data.xml does not handle namespaces fully from parse-str to emit-str,
     ;; we don't support pretty print for ISO result which has namespace prefixes on element names.
     (if (and pretty? (not (= :iso-mends result-format)))

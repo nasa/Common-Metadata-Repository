@@ -95,15 +95,17 @@
 
 (defmethod qs/search-results->response :json
   [context query results]
-  (let [{:keys [items]} results
+  (let [{:keys [items facets]} results
         {:keys [concept-type result-format]} query
         items (if (= :granule (:concept-type query))
                 (atom/append-collection-links context items)
                 items)
         response-results {:feed
-                          {:updated (str (time/now))
-                           :id (url/atom-request-url context concept-type result-format)
-                           :title (atom/concept-type->atom-title concept-type)
-                           :entry (map (partial atom-reference->json results concept-type) items)}}]
+                          (util/remove-nil-keys
+                            {:updated (str (time/now))
+                             :id (url/atom-request-url context concept-type result-format)
+                             :title (atom/concept-type->atom-title concept-type)
+                             :entry (map (partial atom-reference->json results concept-type) items)
+                             :facets facets})}]
     (json/generate-string response-results {:pretty (:pretty? query)})))
 
