@@ -404,7 +404,6 @@
       (catch Exception e
         (let [error-message (.getMessage e)
               error-code (cond
-                           ;;TODO we should have unit tests for this
                            (re-find #"unique constraint.*_CID_REV" error-message)
                            :concept-id-concept-conflict
 
