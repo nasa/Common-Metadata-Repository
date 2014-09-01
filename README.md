@@ -2,14 +2,23 @@
 
 Provides a public search API for concepts in the CMR.
 
-## Example CURL requests
+## API Documentation
 
-### Common GET parameters/headers
+### General Request Details
 
-#### Parameters
+#### Query Parameters
 
  * page_size - number of results per page - default is 10, max is 2000
- * pretty - return formatted results
+ * page_num - The page number to return
+ * sort_key - Indicates one or more fields to sort on. Described below
+ * pretty - return formatted results if set to true
+
+##### Collection Query Parameters
+
+These are query parameters specific to collections
+
+  * include_has_granules - If this parameter is set to "true" this will include a flag indicating true or false if the collection has any granules at all. Supported in all response formats.
+  * include_granule_counts - If this parameter is set to "true" this will include a count of the granules in each collection that would match the spatial and temporal conditions from the collection query. Supported in all response formats.
 
 #### Headers
 
@@ -24,10 +33,10 @@ Provides a public search API for concepts in the CMR.
   * The response headers include CMR-Hits and CMR-Took which indicate the number of result hits
      and the time to build and execute the query, respectively.
 
-#### Extenstions
+#### Extensions
 
-  * Besides MimeTypes, client can also use exetension to specify the format to return search results
-    in. Default is xml.
+Besides MimeTypes, client can also use exetension to specify the format for search results. Default is xml.
+
     * `curl -i "http://localhost:3003/collections"`
     * `curl -i "http://localhost:3003/collections.json"`
     * `curl -i "http://localhost:3003/collections.echo10"`
@@ -496,72 +505,6 @@ that is defined in cmr-search-app/resources/schema/IIMSAQLQueryLanguage.xsd
     <query><for value="collections"/><dataCenterId><all/></dataCenterId>
     <where><collectionCondition><shortName><value>S1</value></shortName></collectionCondition></where></query>'
 
-## Search Flow
-
-### Stage 1: Convert to query model
-
-/granules?provider=PROV1&dataset_id=foo&cloud_cover=50
-
-  * Query
-    * type: granule
-    * condition:
-      * AND
-        * collection_query_condition:
-          * condition:
-            * provider=PROV1
-        * collection_query_condition:
-          * condition
-            * dataset_id=foo
-        * NumericRange
-          * cloud_cover=50
-
-### Stage 2: Add Acls to query
-
-
-In a future sprint lookup acls and convert to query conditions then add on to the query.
-
-
-
-
-### Stage 3: Resolve Dataset Query Conditions
-
-#### A: Merge dataset query conditiosn
-
-query = Search::Simplification::DatasetQueryConditionSimplifier.simplify(query)
-
-  * Query
-    * type: granule
-    * condition:
-      * AND
-        * collection_query_condition:
-          * condition:
-            * AND
-              * provider=PROV1
-              * dataset_id=foo
-        * NumericRange
-          * cloud_cover=50
-
-#### B: Resolve dataset query conditiosn
-
-query = ElasticSearch::DatasetQueryResolver.resolve_collection_query_conditions(query)
-
-Executes this query for collections
-  * Query
-    * type: collection
-    * condition:
-      * AND
-        * provider=PROV1
-        * dataset_id=foo
-
-  * Query
-    * type: granule
-    * condition:
-      * AND
-        * String
-          * echo_collection_id=C5-PROV1
-        * NumericRange
-          * cloud_cover=50
-
 ### Document Scoring For Keyword Search
 
 When a keyword search is requested, matched docuements receive relevancy scores as follows:
@@ -593,22 +536,6 @@ exactly matches the Platform/Instrument/short-name field - weight 1.2
 
 8. The keyword field is a single string that exactly matches the temporal-keyword field  - weight 1.1
 
-
-### Normal path...
-
-
-
-## Prerequisites
-
-You will need [Leiningen][1] 1.7.0 or above installed.
-
-[1]: https://github.com/technomancy/leiningen
-
-## Running
-
-To start a web server for the application, run:
-
-    lein ring server
 
 ## License
 
