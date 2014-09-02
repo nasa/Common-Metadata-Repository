@@ -206,7 +206,9 @@
                                     :platform-ln.lowercase string-field-mapping
                                     :instrument-ln.lowercase string-field-mapping
                                     :sensor-ln.lowercase string-field-mapping
-                                    :temporal-keyword.lowercase string-field-mapping}
+                                    :temporal-keyword.lowercase string-field-mapping
+
+                                    }
                                    spatial-coverage-fields)}})
 
 (def granule-setting {:index {:number_of_shards 6,
@@ -216,8 +218,8 @@
 (def granule-mapping
   {:granule
    {:dynamic "strict",
-    :_source { "enabled" false},
-    :_all {"enabled" false},
+    :_source {:enabled false},
+    :_all {:enabled false},
     :_id  {:path "concept-id"},
     :_ttl {:enabled true},
     :properties (merge
@@ -321,7 +323,26 @@
         status (:status response)]
     (when-not (= 201 status)
       (errors/internal-error! (format "Failed to create index-set: %s, errors: %s"
-                                      (cheshire/generate-string index-set)
+                                      (pr-str index-set)
+                                      (:body response))))))
+
+(defn update
+  "Submit a request to update an index-set"
+  [context index-set]
+  (let [index-set-root-url (transmit-conn/root-url
+                             (transmit-config/context->app-connection context :index-set))
+        index-set-url (format "%s/index-sets/%s" index-set-root-url (get-in index-set [:index-set :id]))
+        response (client/request
+                   {:method :put
+                    :url index-set-url
+                    :body (cheshire/generate-string index-set)
+                    :content-type :json
+                    :accept :json
+                    :throw-exceptions false})
+        status (:status response)]
+    (when-not (= 200 status)
+      (errors/internal-error! (format "Failed to create index-set: %s, errors: %s"
+                                      (pr-str index-set)
                                       (:body response))))))
 
 (defn fetch-concept-type-index-names

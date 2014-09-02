@@ -26,9 +26,24 @@
   "Create elastic index for each index name"
   [context]
   (let [index-set (idx-set/index-set context)
-        index-set-id (get-in index-set [:index-set :id])]
-    (when-not (index-set/get-index-set context index-set-id)
-      (idx-set/create context index-set))))
+        index-set-id (get-in index-set [:index-set :id])
+        existing-index-set (index-set/get-index-set context index-set-id)]
+    (cond
+      (nil? existing-index-set)
+      (do
+        (info "Index set does not exist so creating it.")
+        (idx-set/create context index-set))
+
+      ;; Compare them to see if they're the same
+      (not= (update-in existing-index-set [:index-set] dissoc :concepts)
+            index-set)
+      (do
+        (info "Index set does not match so updating it. Expecting:" (pr-str index-set) "Actual:"
+              (pr-str existing-index-set))
+        (idx-set/update context index-set))
+
+      :else
+      (info "Index set exists and matches."))))
 
 (defn reset-es-store
   "Delete elasticsearch indexes and re-create them via index-set app. A nuclear option just for the development team."
