@@ -158,7 +158,7 @@
    ;; The number of orbits per granule (may be fractional)
    number-of-orbits
 
-   ;; The starting circular latitude in degress
+   ;; The starting circular latitude in degrees
    start-circular-latitude
    ])
 
