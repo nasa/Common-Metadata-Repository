@@ -102,9 +102,13 @@
              "application/dif+xml" :dif true
              "application/echo10+xml" :echo10 false
              "application/echo10+xml" :echo10 true))
-      (testing "default format"
+      (testing "native format"
+        ;; Native format can be specified using application/xml or not specifying any format
         (let [response (search/get-concept-by-concept-id (:concept-id c1-echo) {:accept nil})]
-          (is (= (umm/umm->xml c1-echo :echo10) (:body response)))))
+          (is (= (umm/umm->xml c1-echo :echo10) (:body response))))
+
+        (let [response (search/get-concept-by-concept-id (:concept-id c3-dif) {:accept nil})]
+          (is (= (umm/umm->xml c3-dif :dif) (:body response)))))
       (testing "unsupported formats"
         (are [mime-type]
              (let [response (search/get-concept-by-concept-id
@@ -115,8 +119,7 @@
                     (= {:errors [(str "The mime type [" mime-type "] is not supported.")]} parsed)))
              "application/atom+xml"
              "application/json"
-             "text/csv"
-             "application/xml")))
+             "text/csv")))
 
     (testing "Retrieving results as XML References"
       (let [refs (search/find-refs :collection {:short-name "S1"})
