@@ -20,14 +20,6 @@
   )
 
 
-;; TODO document facets on the API
-;; campaigns (called projects on API) - multiple per collection
-;; platforms, instruments, and sensors - multiple per collection
-;; twod coord names - multiple per collection
-;; science keywords - multiple per collection
-;; processing levels - 1 per collection
-
-
 (defn make-coll
   "Helper for creating and ingesting a collection"
   [n prov & attribs]
