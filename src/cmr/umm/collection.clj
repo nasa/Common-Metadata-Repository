@@ -144,6 +144,24 @@
   "Enumeration of collection spatial representations"
   [:cartesian :geodetic])
 
+(defrecord OrbitParameters
+  [
+   ;; The width of the orbital track in kilometers
+   swath-width
+
+   ;; The period of the orbit in minutes
+   period
+
+   ;; The inclination angle of the orbit in degrees
+   inclination-angle
+
+   ;; The number of orbits per granule (may be fractional)
+   number-of-orbits
+
+   ;; The starting circular latitude in degress
+   start-circular-latitude
+   ])
+
 (defrecord SpatialCoverage
   [
    ;; indicates the type of spatial representation for granules in the collection. (:orbit, :geodetic, etc.)
@@ -155,6 +173,9 @@
    ;; A sequence of spatial points, bounding rectangles, polygons, and lines.
    ;; If this is set then spatial-representation must be set as well.
    geometries
+
+   ;; Parameters for the satellite with which the collection is associated
+   orbit-parameters
    ])
 
 (defrecord UmmCollection
