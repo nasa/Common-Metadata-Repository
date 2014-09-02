@@ -115,5 +115,6 @@
             :sensor-ln.lowercase (map str/lower-case sensor-long-names)
             :project-ln.lowercase (map str/lower-case project-long-names)
             :temporal-keyword.lowercase (map str/lower-case temporal-keywords)}
-           (spatial->elastic collection))))
+           (spatial->elastic collection)
+           (sk/science-keywords->facet-fields collection))))
 

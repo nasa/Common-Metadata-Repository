@@ -170,8 +170,25 @@
                                     :two-d-coord-name string-field-mapping
                                     :two-d-coord-name.lowercase string-field-mapping
                                     :attributes attributes-field-mapping
-                                    :science-keywords science-keywords-field-mapping
                                     :downloadable (stored bool-field-mapping)
+
+                                    ;; - Science Keywords -
+                                    ;; Nested field mapping for searching
+                                    :science-keywords science-keywords-field-mapping
+
+                                    ;; Facet fields
+                                    ;; We can run aggregations on the above science keywords as a
+                                    ;; nested document. However the counts that come back are counts
+                                    ;; of the nested documents. We want counts of collections for each
+                                    ;; value so we must also capture the values at the parent level.
+                                    :category string-field-mapping
+                                    :topic string-field-mapping
+                                    :term string-field-mapping
+                                    :variable-level-1 string-field-mapping
+                                    :variable-level-2 string-field-mapping
+                                    :variable-level-3 string-field-mapping
+                                    :detailed-variable string-field-mapping
+
                                     ;; mappings added for atom
                                     :browsable (not-indexed (stored bool-field-mapping))
                                     :atom-links (not-indexed (stored string-field-mapping))
@@ -181,6 +198,7 @@
                                     :associated-difs (stored string-field-mapping)
                                     :associated-difs.lowercase string-field-mapping
                                     :coordinate-system (not-indexed (stored string-field-mapping))
+
                                     ;; analyzed field for keyword searches
                                     :keyword text-field-mapping
                                     :long-name.lowercase string-field-mapping
