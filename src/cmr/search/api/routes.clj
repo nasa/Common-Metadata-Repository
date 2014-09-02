@@ -64,6 +64,7 @@
 
 (def supported-concept-id-retrieval-mime-types
   #{"*/*"
+    "application/xml" ; allows retrieving native format
     "application/echo10+xml"
     "application/dif+xml"})
 
@@ -188,7 +189,7 @@
   (let [context (process-context-info context params headers)
         result-format (get-search-results-format path-w-extension headers
                                                  supported-concept-id-retrieval-mime-types
-                                                 "application/echo10+xml")
+                                                 "application/xml")
         concept-id (path-w-extension->concept-id path-w-extension)
         _ (info (format "Search for concept with cmr-concept-id [%s]" concept-id))
         concept (query-svc/find-concept-by-id context result-format concept-id)]

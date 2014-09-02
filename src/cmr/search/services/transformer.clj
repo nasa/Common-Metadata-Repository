@@ -9,6 +9,10 @@
             [cmr.search.services.acl-service :as acl-service]
             [cmr.common.util :as u]))
 
+(def native-format
+  "This format is used to indicate the metadata is in it's native format."
+  :xml)
+
 (defn context->metadata-db-context
   "Converts the context into one that can be used to invoke the metadata-db services."
   [context]
@@ -22,7 +26,7 @@
         concept-format (mt/mime-type->format (:format concept))
         _ (when-not concept-format
             (errors/internal-error! "Did not recognize concept format" (pr-str (:format concept))))
-        value-map (if (= format concept-format)
+        value-map (if (or (= format native-format) (= format concept-format))
                     (select-keys concept [:metadata :concept-id :revision-id])
                     (let [metadata (-> concept
                                        ummc/parse-concept

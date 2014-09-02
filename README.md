@@ -483,7 +483,10 @@ Example of sorting by start_date in descending order: (Most recent data first)
 
 ### Retrieve concept with a given cmr-concept-id
 
+This allows retrieving the metadata for a single concept. If no format is specified the native format of the metadata will be returned.
+
     curl -i "http://localhost:3003/concepts/G100000-PROV1"
+
 
 ### Search with POST
 
