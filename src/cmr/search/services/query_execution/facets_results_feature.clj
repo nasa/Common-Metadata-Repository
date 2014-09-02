@@ -18,14 +18,13 @@
    :sensor (terms-facet :sensor-sn)
    :two-d-coordinate-system-name (terms-facet :two-d-coord-name)
    :processing-level-id (terms-facet :processing-level-id)
-   :science-keywords {:nested {:path "science-keywords"}
-                      :aggs {:category (terms-facet "science-keywords.category")
-                             :topic (terms-facet "science-keywords.topic")
-                             :term (terms-facet "science-keywords.term")
-                             :variable-level-1 (terms-facet "science-keywords.variable-level-1")
-                             :variable-level-2 (terms-facet "science-keywords.variable-level-2")
-                             :variable-level-3 (terms-facet "science-keywords.variable-level-3")
-                             :detailed-variable (terms-facet "science-keywords.detailed-variable")}}})
+   :category (terms-facet :category)
+   :topic (terms-facet :topic)
+   :term (terms-facet :term)
+   :variable-level-1 (terms-facet :variable-level-1)
+   :variable-level-2 (terms-facet :variable-level-2)
+   :variable-level-3 (terms-facet :variable-level-3)
+   :detailed-variable (terms-facet :detailed-variable)})
 
 (defmethod query-execution/pre-process-query-result-feature :facets
   [context query feature]
@@ -50,17 +49,14 @@
 
 (defmethod query-execution/post-process-query-result-feature :facets
   [context query elastic-results query-results feature]
-
   (let [aggs (:aggregations elastic-results)
         science-keyword-buckets (:science-keywords aggs)
-        facets (concat (bucket-map->facets
-                         aggs
-                         [:project :platform :instrument :sensor :two-d-coordinate-system-name
-                          :processing-level-id])
-                       (bucket-map->facets
-                         science-keyword-buckets
-                         [:category :topic :term :variable-level-1 :variable-level-2
-                          :variable-level-3 :detailed-variable]))]
+        facets (bucket-map->facets
+                 aggs
+                 ;; Specified here so that order will be consistent with results
+                 [:project :platform :instrument :sensor :two-d-coordinate-system-name
+                  :processing-level-id :category :topic :term :variable-level-1
+                  :variable-level-2 :variable-level-3 :detailed-variable])]
     (assoc query-results :facets facets)))
 
 (defn key-with-prefix
@@ -73,7 +69,7 @@
   [ns-prefix facet]
   (let [{:keys [field value-counts]} facet
         with-prefix (partial key-with-prefix ns-prefix)]
-    (x/element (with-prefix :facet) {(with-prefix :field) field}
+    (x/element (with-prefix :facet) {:field field}
                (for [[value value-count] value-counts]
                  (x/element (with-prefix :value) {:count value-count} value)))))
 
