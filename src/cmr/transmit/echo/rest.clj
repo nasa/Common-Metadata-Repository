@@ -32,7 +32,7 @@
          ; _ (debug "Making ECHO GET Request" url (pr-str params))
          response (client/get url params)
          {:keys [status body headers]} response
-         parsed (if (.startsWith ^String (get headers "Content-Type") "application/json")
+         parsed (if (.startsWith ^String (get headers "Content-Type" "") "application/json")
                   (json/decode body true)
                   nil)]
      [status parsed body])))
