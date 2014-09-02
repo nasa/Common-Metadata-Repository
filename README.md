@@ -19,6 +19,7 @@ These are query parameters specific to collections
 
   * include_has_granules - If this parameter is set to "true" this will include a flag indicating true or false if the collection has any granules at all. Supported in all response formats.
   * include_granule_counts - If this parameter is set to "true" this will include a count of the granules in each collection that would match the spatial and temporal conditions from the collection query. Supported in all response formats.
+  * include_facets - If this parameter is set to "true" facets will be included in the collection results. Facets are described in detail below.
 
 #### Headers
 
@@ -538,6 +539,97 @@ exactly matches the Platform/Instrument/short-name field - weight 1.2
 7. The keyword field is a single string that exactly matches the spatial-keyword field - weight 1.1
 
 8. The keyword field is a single string that exactly matches the temporal-keyword field  - weight 1.1
+
+
+### Facets
+
+Facets are counts of unique values from fields in items matching search results. Facets are supported with collection search results and are enabled with the `include_facets=true` parameter. Facets are supported on all collection search response formats.
+
+#### Facets in XML Responses
+
+Facets in XML search response formats will be formatted like the following example. The exception is ATOM XML which is the same except the tags are in the echo namespace.
+
+```
+<facets>
+  <facet field="project">
+    <value count="245">MANTIS</value>
+    <value count="132">THUNDER</value>
+    <value count="13">Mysterio</value>
+  </facet>
+  <facet field="platform">
+    <value count="76">ASTER</value>
+  </facet>
+  <facet field="instrument">
+    <value count="2">MODIS</value>
+  </facet>
+  <facet field="sensor">...</facet>
+  <facet field="two_d_coordinate_system_name">...</facet>
+  <facet field="processing_level_id">...</facet>
+  <facet field="category">...</facet>
+  <facet field="topic">...</facet>
+  <facet field="term">...</facet>
+  <facet field="variable_level_1">...</facet>
+  <facet field="variable_level_2">...</facet>
+  <facet field="variable_level_3">...</facet>
+  <facet field="detailed_variable">...</facet>
+</facets>
+```
+
+#### Facets in JSON Responses
+
+Facets in JSON search response formats will be formatted like the following example.
+
+```
+{
+  "feed": {
+    "entry": [...],
+    "facets": [{
+      "field": "project",
+      "value-counts": [
+        ["MANTIS", 245],
+        ["THUNDER", 132],
+        ["Mysterio", 13]
+      ]
+    }, {
+      "field": "platform",
+      "value-counts": [["ASTER", 76]]
+    }, {
+      "field": "instrument",
+      "value-counts": [["MODIS", 2]]
+    }, {
+      "field": "sensor",
+      "value-counts": [...]
+    }, {
+      "field": "two_d_coordinate_system_name",
+      "value-counts": [...]
+    }, {
+      "field": "processing_level_id",
+      "value-counts": [...]
+    }, {
+      "field": "category",
+      "value-counts": [...]
+    }, {
+      "field": "topic",
+      "value-counts": [...]
+    }, {
+      "field": "term",
+      "value-counts": [...]
+    }, {
+      "field": "variable_level_1",
+      "value-counts": [...]
+    }, {
+      "field": "variable_level_2",
+      "value-counts": [...]
+    }, {
+      "field": "variable_level_3",
+      "value-counts": [...]
+    }, {
+      "field": "detailed_variable",
+      "value-counts": [...]
+    }]
+  }
+}
+```
 
 
 ## License
