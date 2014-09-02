@@ -20,7 +20,8 @@
             [cmr.system-int-test.data2.atom-json :as dj]
             [cmr.system-int-test.data2.provider-holdings :as ph]
             [cmr.system-int-test.data2.aql :as aql]
-            [cmr.system-int-test.data2.aql-additional-attribute]))
+            [cmr.system-int-test.data2.aql-additional-attribute]
+            [cmr.system-int-test.data2.facets :as f]))
 
 (defn csv->tuples
   "Convert a comma-separated-value string into a set of tuples to be use with find-refs."
@@ -144,19 +145,6 @@
         :results (dj/parse-json-result concept-type body)}
        response))))
 
-(defn- parse-facets-xml
-  "Converts an xml element into a sequence of facet maps containing field and value counts"
-  [facets-elem]
-  (when facets-elem
-    (when-let [facet-elems (cx/elements-at-path facets-elem [:facet])]
-      (for [facet-elem facet-elems]
-        (let [field (get-in facet-elem [:attrs :field])
-              value-elems (cx/elements-at-path facet-elem [:value])]
-          {:field field
-           :value-counts (for [value-elem value-elems]
-                           [(first (:content value-elem))
-                            (Long. ^String (get-in value-elem [:attrs :count]))])})))))
-
 (defn find-metadata
   "Returns the response of concept search in a specific metadata XML format."
   ([concept-type format-key params]
@@ -181,7 +169,7 @@
                              :metadata (str "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" metadata)})))
                       (cx/elements-at-path parsed [:result])
                       metadatas)
-           facets (parse-facets-xml (cx/element-at-path parsed [:facets]))]
+           facets (f/parse-facets-xml (cx/element-at-path parsed [:facets]))]
        (util/remove-nil-keys {:items items
                               :facets facets})))))
 
@@ -213,7 +201,7 @@
                        :has-granules (cx/bool-at-path ref-elem [:has-granules])
                        :score (cx/double-at-path ref-elem [:score])}))
                   (cx/elements-at-path parsed [:references :reference]))
-        facets (parse-facets-xml
+        facets (f/parse-facets-xml
                  (cx/element-at-path parsed [:facets]))]
     (util/remove-nil-keys
       {:refs refs

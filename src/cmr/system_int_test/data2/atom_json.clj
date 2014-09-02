@@ -99,7 +99,9 @@
   "Returns the json result from a json string"
   [concept-type json-str]
   (let [json-struct (json/decode json-str true)
-        {{:keys [id title entry]} :feed} json-struct]
-    {:id id
-     :title title
-     :entries (seq (map (partial json-entry->entry concept-type) entry))}))
+        {{:keys [id title entry facets]} :feed} json-struct]
+    (util/remove-nil-keys
+      {:id id
+       :title title
+       :entries (seq (map (partial json-entry->entry concept-type) entry))
+       :facets facets})))

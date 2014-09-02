@@ -13,7 +13,8 @@
             [clj-time.format :as f]
             [camel-snake-kebab :as csk]
             [cmr.umm.spatial :as umm-s]
-            [cmr.common.util :as util]))
+            [cmr.common.util :as util]
+            [cmr.system-int-test.data2.facets :as facets]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Parsing the ATOM results
@@ -140,10 +141,12 @@
   "Returns an atom result in map from an atom xml"
   [concept-type xml]
   (let [xml-struct (x/parse-str xml)]
-    {:id (cx/string-at-path xml-struct [:id])
-     :title (cx/string-at-path xml-struct [:title])
-     :entries (seq (keep (partial xml-elem->entry concept-type)
-                        (cx/elements-at-path xml-struct [:entry])))}))
+    (util/remove-nil-keys
+      {:id (cx/string-at-path xml-struct [:id])
+       :title (cx/string-at-path xml-struct [:title])
+       :entries (seq (keep (partial xml-elem->entry concept-type)
+                           (cx/elements-at-path xml-struct [:entry])))
+       :facets (facets/parse-facets-xml (cx/element-at-path xml-struct [:facets]))})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Creating expected atom results
