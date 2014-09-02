@@ -19,11 +19,27 @@
     (when-not (esi/exists? conn index-name)
       (try
         (esi/create conn index-name :settings settings :mappings mapping)
-        (catch Exception e
+        (catch clojure.lang.ExceptionInfo e
           (let [body (cheshire/decode (get-in (ex-data e) [:object :body]) true)
                 error (:error body)]
             (info (format "error creating %s elastic index, elastic reported error: %s" index-name error)))
           (throw e))))))
+
+(defn update-index
+  "Update elastic index"
+  [{:keys [conn]} idx-w-config]
+  (let [{:keys [index-name settings mapping]} idx-w-config]
+    (try
+      (doseq [[type-name type-mapping] mapping]
+        (let [response (esi/update-mapping conn index-name (name type-name) :mapping mapping)]
+          (when-not (= {:acknowledged true} response)
+            (errors/internal-error! (str "Unexpected response when updating elastic mappings: "
+                                         (pr-str response))))))
+      (catch clojure.lang.ExceptionInfo e
+        (let [body (cheshire/decode (get-in (ex-data e) [:object :body]) true)
+              error (:error body)]
+          (info e (format "error updating %s elastic index, elastic reported error: %s" index-name error)))
+        (throw e)))))
 
 (defn index-set-exists?
   "Check index-set existence in elastic."

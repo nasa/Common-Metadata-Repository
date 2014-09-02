@@ -14,19 +14,25 @@
 
 (defn- build-routes [system]
   (routes
-    (POST "/index-sets" {body :body request-context :request-context params :params}
-      (let [index-set (walk/keywordize-keys body)]
-        (r/created (index-svc/create-index-set request-context index-set))))
+    (context "/index-sets" []
+      (POST "/" {body :body request-context :request-context}
+        (let [index-set (walk/keywordize-keys body)]
+          (r/created (index-svc/create-index-set request-context index-set))))
 
-    (GET "/index-sets/:id" {{:keys [id]} :params request-context :request-context}
-      (r/response (index-svc/get-index-set request-context id)))
+      ;; respond with index-sets in elastic
+      (GET "/" {request-context :request-context}
+        (r/response (index-svc/get-index-sets request-context)))
 
-    ;; respond with index-sets in elastic
-    (GET "/index-sets" {request-context :request-context}
-      (r/response (index-svc/get-index-sets request-context)))
+      (context "/:id" [id]
+        (GET "/" {request-context :request-context}
+          (r/response (index-svc/get-index-set request-context id)))
 
-    (DELETE "/index-sets/:id" {{:keys [id]} :params request-context :request-context}
-      (r/response (index-svc/delete-index-set request-context id)))
+        (PUT "/" {request-context :request-context body :body}
+          (let [index-set (walk/keywordize-keys body)]
+            (r/response (index-svc/update-index-set request-context index-set))))
+
+        (DELETE "/" {request-context :request-context}
+          (r/response (index-svc/delete-index-set request-context id)))))
 
     ;; delete all of the indices associated with index-sets and index-set docs in elastic
     (POST "/reset" {request-context :request-context}

@@ -126,15 +126,18 @@
 
 (deftracefn validate-requested-index-set
   "Verify input index-set is valid."
-  [context index-set]
+  [context index-set allow-update?]
+
+  (when-not allow-update?
+    (when-let [error (index-set-existence-check context index-set)]
+      (errors/throw-service-error :conflict error))
+    (when-let [error (id-name-existence-check index-set)]
+      (errors/throw-service-error :invalid-data error)))
+
   (when-let [error (index-set-id-validation index-set)]
     (errors/throw-service-error :invalid-data error))
-  (when-let [error (id-name-existence-check index-set)]
-    (errors/throw-service-error :invalid-data error))
   (when-let [error (index-cfg-validation index-set)]
-    (errors/throw-service-error :invalid-data error))
-  (when-let [error (index-set-existence-check context index-set)]
-    (errors/throw-service-error :conflict error)))
+    (errors/throw-service-error :invalid-data error)))
 
 (deftracefn index-requested-index-set
   "Index requested index-set along with generated elastic index names"
@@ -152,8 +155,8 @@
 (deftracefn create-index-set
   "Create indices listed in index-set. Rollback occurs if indices creation or index-set doc indexing fails."
   [context index-set]
-  (let [_ (validate-requested-index-set context index-set)
-        index-names (get-index-names index-set)
+  (validate-requested-index-set context index-set false)
+  (let [index-names (get-index-names index-set)
         indices-w-config (build-indices-list-w-config index-set)
         es-cfg (-> context :system :index :config)
         json-index-set-str (json/generate-string index-set)
@@ -171,6 +174,23 @@
       (catch ExceptionInfo e
         (dorun (map #(es/delete-index es-store %) index-names))
         (m/handle-elastic-exception "attempt to index index-set doc failed"  e)))))
+
+(deftracefn update-index-set
+  "Updates indices in the index set"
+  [context index-set]
+  (info "Updating index-set" (pr-str index-set))
+  (validate-requested-index-set context index-set true)
+  (let [index-names (get-index-names index-set)
+        indices-w-config (build-indices-list-w-config index-set)
+        es-cfg (-> context :system :index :config)
+        json-index-set-str (json/generate-string index-set)
+        idx-name-of-index-sets (:index-name es-config/idx-cfg-for-index-sets)
+        es-store (context->es-store context) ]
+
+    (doseq [idx indices-w-config]
+      (es/update-index es-store idx))
+
+    (index-requested-index-set context index-set)))
 
 (deftracefn delete-index-set
   "Delete all indices having 'id_' as the prefix in the elastic, followed by index-set doc delete"
