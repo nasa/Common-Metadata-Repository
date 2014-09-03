@@ -184,6 +184,24 @@
            [0 90 180 -90] []
            [-180 90 0 -90] [g2]))))
 
+(deftest iso-ingest
+  (let [coll1 (d/ingest "PROV1" (dc/collection {:short-name "S1"
+                                                :version-id "V1"})
+                        :iso)
+        coll2 (d/ingest "PROV2" (dc/collection {:short-name "S2"
+                                                :version-id "V2"})
+                        :iso-mends)]
+    (index/refresh-elastic-index)
+
+    (testing "Finding refs ingested in different formats"
+      (are [search expected]
+           (d/refs-match? expected (search/find-refs :collection search))
+           {} [coll1 coll2]
+           {:short-name "S1"} [coll1]
+           {:short-name "S2"} [coll2]
+           {:version "V1"} [coll1]
+           {:version ["V1" "V2"]} [coll1 coll2]))))
+
 (deftest search-collection-atom-and-json
   (let [ru1 (dc/related-url "GET DATA" "http://example.com")
         ru2 (dc/related-url "GET DATA" "http://example2.com")
