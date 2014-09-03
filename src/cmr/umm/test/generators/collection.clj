@@ -6,7 +6,8 @@
             [cmr.umm.test.generators.collection.temporal :as t]
             [cmr.umm.test.generators.collection.science-keyword :as sk]
             [cmr.umm.test.generators.collection.product-specific-attribute :as psa]
-            [cmr.umm.test.generators.spatial :as spatial-gen]))
+            [cmr.umm.test.generators.spatial :as spatial-gen]
+            [cmr.spatial.test.generators :as sgen]))
 
 (def short-names
   (ext-gen/string-alpha-numeric 1 10))
@@ -127,12 +128,22 @@
                        (ext-gen/string-ascii 1 10)
                        gen/s-pos-int)))
 
+(def orbit-params
+  (gen/fmap (fn [[swath-width period incl-angle num-orbits start-clat]]
+              (c/->OrbitParameters swath-width period incl-angle num-orbits (when start-clat)))
+            (gen/tuple (ext-gen/choose-double 1 100)
+                       (ext-gen/choose-double 10 7200)
+                       (ext-gen/choose-double -90 90)
+                       (ext-gen/choose-double 1 20)
+                       (ext-gen/optional sgen/lats))))
+
 (def spatial-coverages
-  (gen/fmap (fn [[gsr sr geoms]]
-              (c/->SpatialCoverage gsr (when geoms sr) geoms))
+  (gen/fmap (fn [[gsr sr geoms orbit-params]]
+              (c/->SpatialCoverage gsr (when geoms sr) geoms orbit-params))
             (gen/tuple (gen/elements c/granule-spatial-representations)
                        (gen/elements c/spatial-representations)
-                       (ext-gen/optional (gen/vector spatial-gen/geometries 1 5)))))
+                       (ext-gen/optional (gen/vector spatial-gen/geometries 1 5))
+                       orbit-params)))
 
 (def collections
   (gen/fmap (fn [[attribs proc-org archive-org dist-org]]

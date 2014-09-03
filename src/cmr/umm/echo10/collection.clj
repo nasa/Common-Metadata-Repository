@@ -34,18 +34,46 @@
                                   :update-time (cx/datetime-at-path collection-content [:LastUpdate])
                                   :delete-time (cx/datetime-at-path collection-content [:DeleteTime])}))
 
+(defn- xml-elem->OrbitParameters
+  "Returns a UMM OrbitParameters record from a parsed OrbitParameters XML structure"
+  [orbit-params]
+  (when orbit-params
+    (c/map->OrbitParameters {:swath-width (cx/double-at-path orbit-params [:SwathWidth])
+                             :period (cx/double-at-path orbit-params [:Period])
+                             :inclination-angle (cx/double-at-path orbit-params [:InclinationAngle])
+                             :number-of-orbits (cx/double-at-path orbit-params [:NumberOfOrbits])
+                             :start-circular-latitude (cx/double-at-path orbit-params
+                                                                         [:StartCircularLatitude])})))
+
 (defn- xml-elem->SpatialCoverage
-  "Returns a UMM Product from a parsed Collection XML structure"
+  "Returns a UMM SpatialCoverage from a parsed Collection XML structure"
   [xml-struct]
   (if-let [spatial-elem (cx/element-at-path xml-struct [:Spatial])]
-    (let [gsr (csk/->kebab-case-keyword (cx/string-at-path spatial-elem [:GranuleSpatialRepresentation]))]
+    (let [gsr (csk/->kebab-case-keyword (cx/string-at-path spatial-elem [:GranuleSpatialRepresentation]))
+          orbit-params (cx/element-at-path spatial-elem [:OrbitParameters])]
       (if-let [geom-elem (cx/element-at-path spatial-elem [:HorizontalSpatialDomain :Geometry])]
         (c/map->SpatialCoverage
           {:granule-spatial-representation gsr
+           :orbit-parameters (xml-elem->OrbitParameters orbit-params)
            :spatial-representation (csk/->kebab-case-keyword (cx/string-at-path geom-elem [:CoordinateSystem]))
            :geometries (s/geometry-element->geometries geom-elem)})
         (c/map->SpatialCoverage
-          {:granule-spatial-representation gsr})))))
+          {:granule-spatial-representation gsr
+           :orbit-parameters (xml-elem->OrbitParameters orbit-params)})))))
+
+(defn generate-orbit-parameters
+  "Generates the OrbitParameters element from orbit-params"
+  [orbit-params]
+  (when orbit-params
+    (let [{:keys [swath-width period inclination-angle number-of-orbits start-circular-latitude]}
+          orbit-params]
+      (x/element :OrbitParameters {}
+                 (x/element :SwathWidth {} swath-width)
+                 (x/element :Period {} period)
+                 (x/element :InclinationAngle {} inclination-angle)
+                 (x/element :NumberOfOrbits {} number-of-orbits)
+                 (when start-circular-latitude
+                   (x/element :StartCircularLatitude {} start-circular-latitude))))))
 
 (defn generate-spatial
   "Generates the Spatial element from spatial coverage"
@@ -53,7 +81,8 @@
   (when spatial-coverage
     (let [{:keys [granule-spatial-representation
                   spatial-representation
-                  geometries]} spatial-coverage
+                  geometries
+                  orbit-parameters]} spatial-coverage
           gsr (csk/->SNAKE_CASE_STRING granule-spatial-representation)
           sr (some-> spatial-representation csk/->SNAKE_CASE_STRING)]
       (if sr
@@ -62,8 +91,10 @@
                               (x/element :Geometry {}
                                          (x/element :CoordinateSystem {} sr)
                                          (map s/shape-to-xml geometries)))
+                   (generate-orbit-parameters orbit-parameters)
                    (x/element :GranuleSpatialRepresentation {} gsr))
         (x/element :Spatial {}
+                   (generate-orbit-parameters orbit-parameters)
                    (x/element :GranuleSpatialRepresentation {} gsr))))))
 
 (defn- xml-elem->Collection
