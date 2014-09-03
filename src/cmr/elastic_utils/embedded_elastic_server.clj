@@ -7,6 +7,20 @@
            org.elasticsearch.node.Node)
   (:require [cmr.common.lifecycle :as lifecycle]))
 
+{"path" {"data" "es_data/elastic_utils"}, "index" {"store" {"type" "memory"}}, "node" {"name" "embedded-elastic"}, "script" {"disable_dynamic" "true"}, "transport" {"tcp" {"port" "9334"}}, "http" {"port" "9234"}}
+
+
+(comment
+
+  (def settings (create-settings {:http-port 9201
+                                  :transport-port 9203
+                                  :data-dir"es_data2"}))
+
+  (def env (org.elasticsearch.env.Environment. settings))
+
+  (.configFile env)
+
+)
 
 (defn- setup-logging
   "Sets up elastic search logging."
@@ -18,6 +32,7 @@
   [{:keys [http-port transport-port data-dir]}]
   (.. (ImmutableSettings/settingsBuilder)
       (put "node.name" "embedded-elastic")
+      (put "path.conf" "resources")
       (put "path.data" data-dir)
       (put "http.port" (str http-port))
       (put "transport.tcp.port" (str transport-port))
