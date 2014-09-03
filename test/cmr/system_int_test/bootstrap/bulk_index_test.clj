@@ -1,4 +1,4 @@
-(ns cmr.system-int-test.bootstrap.bulk_index_test
+(ns cmr.system-int-test.bootstrap.bulk-index-test
   "Integration test for CMR bulk indexing."
   (:require [clojure.test :refer :all]
             [cmr.system-int-test.utils.ingest-util :as ingest]
@@ -19,14 +19,17 @@
             var-get
             (= :external-dbs))
     (catch Exception e
+      (.printStackTrace e)
+      (println "Exception indicates this is not a runnable environment")
       false)))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
-;; only run this test with the external db
-(when (runnable-env?)
-  ;; This test runs bulk index with some concepts in mdb that are good, and some that are
-  ;; deleted, and some that have not yet been deleted, but have an expired deletion date.
-  (deftest bulk-index-with-some-deleted
+
+;; This test runs bulk index with some concepts in mdb that are good, and some that are
+;; deleted, and some that have not yet been deleted, but have an expired deletion date.
+(deftest bulk-index-with-some-deleted
+  ;; only run this test with the external db
+  (when (runnable-env?)
     (let [;; saved but not indexed
           coll1 {:short-name "coll1" :entry-title "coll1"}
           umm1 (dc/collection coll1)
@@ -87,9 +90,9 @@
 ;; 6. Searches for all of the saved/ingested concepts by concept-id.
 ;; 7. Verifies that the concepts returned by search have the expected revision ids.
 
-;; only run this test with the external db
-(when (runnable-env?)
-  (deftest bulk-index-after-ingest
+(deftest bulk-index-after-ingest
+  ;; only run this test with the external db
+  (when (runnable-env?)
     (let [collections (for [x (range 1 11)]
                         (let [cmap {:short-name (str "short-name" x)
                                     :entry-title (str "ttl" x)}
