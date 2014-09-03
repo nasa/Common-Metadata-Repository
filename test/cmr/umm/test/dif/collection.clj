@@ -37,7 +37,8 @@
         (assoc spatial-coverage
                :granule-spatial-representation granule-spatial-representation
                :spatial-representation spatial-representation
-               :geometries geometries)))))
+               :geometries geometries
+               :orbit-parameters nil)))))
 
 (defn- related-urls->expected-parsed
   "Returns the expected parsed related-urls for the given related-urls."

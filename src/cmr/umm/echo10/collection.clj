@@ -37,12 +37,13 @@
 (defn- xml-elem->OrbitParameters
   "Returns a UMM OrbitParameters record from a parsed OrbitParameters XML structure"
   [orbit-params]
-  (c/map->OrbitParameters {:swath-width (cx/double-at-path orbit-params [:SwathWidth])
-                           :period (cx/double-at-path orbit-params [:Period])
-                           :inclination-angle (cx/double-at-path orbit-params [:InclinationAngle])
-                           :number-of-orbits (cx/double-at-path orbit-params [:NumberOfOrbits])
-                           :start-circular-latitude (cx/double-at-path orbit-params
-                                                                       [:StartCircularLatitude])}))
+  (when orbit-params
+    (c/map->OrbitParameters {:swath-width (cx/double-at-path orbit-params [:SwathWidth])
+                             :period (cx/double-at-path orbit-params [:Period])
+                             :inclination-angle (cx/double-at-path orbit-params [:InclinationAngle])
+                             :number-of-orbits (cx/double-at-path orbit-params [:NumberOfOrbits])
+                             :start-circular-latitude (cx/double-at-path orbit-params
+                                                                         [:StartCircularLatitude])})))
 
 (defn- xml-elem->SpatialCoverage
   "Returns a UMM SpatialCoverage from a parsed Collection XML structure"
@@ -63,15 +64,16 @@
 (defn generate-orbit-parameters
   "Generates the OrbitParameters element from orbit-params"
   [orbit-params]
-  (let [{:keys [swath-width period inclination-angle number-of-orbits start-circular-latitude]}
-        orbit-params]
-    (x/element :OrbitParameters {}
-               (x/element :SwathWidth {} swath-width)
-               (x/element :Period {} period)
-               (x/element :InclinationAngle {} inclination-angle)
-               (x/element :NumberOfOrbits {} number-of-orbits)
-               (when start-circular-latitude
-                 (x/element :StartCircularLatitude {} start-circular-latitude)))))
+  (when orbit-params
+    (let [{:keys [swath-width period inclination-angle number-of-orbits start-circular-latitude]}
+          orbit-params]
+      (x/element :OrbitParameters {}
+                 (x/element :SwathWidth {} swath-width)
+                 (x/element :Period {} period)
+                 (x/element :InclinationAngle {} inclination-angle)
+                 (x/element :NumberOfOrbits {} number-of-orbits)
+                 (when start-circular-latitude
+                   (x/element :StartCircularLatitude {} start-circular-latitude))))))
 
 (defn generate-spatial
   "Generates the Spatial element from spatial coverage"
