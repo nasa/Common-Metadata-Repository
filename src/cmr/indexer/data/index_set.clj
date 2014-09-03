@@ -246,6 +246,7 @@
                    :producer-gran-id.lowercase string-field-mapping
                    :day-night (stored string-field-mapping)
                    :day-night.lowercase string-field-mapping
+                   :access-value double-field-mapping
 
                    ;; We need to sort by a combination of producer granule and granule ur
                    ;; It should use producer granule id if present otherwise the granule ur is used
