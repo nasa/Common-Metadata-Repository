@@ -30,8 +30,7 @@
         cmr.es-spatial-plugin.SpatialSearchPlugin]
 
   :profiles
-  {:dev {:dependencies [[nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
-                        [nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]
+  {:dev {:dependencies [[nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]
                         [org.clojure/tools.namespace "0.2.4"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]]
 
