@@ -76,7 +76,7 @@
   [context query]
   (let [errors (v/validate query)]
     (when-not (empty? errors)
-      (err/throw-service-errors :invalid-data errors))
+      (err/throw-service-errors :bad-request errors))
     query))
 
 (defmulti search-results->response

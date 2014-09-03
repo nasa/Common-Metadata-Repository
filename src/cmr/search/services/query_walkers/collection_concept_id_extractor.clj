@@ -7,7 +7,8 @@
   "Defines a function to extract collection concept ids"
   (extract-collection-concept-ids
     [c]
-    "Extract collection concept ids"))
+    "Extract collection concept ids and returns them as a set. If there are none to return or they
+    do not definitively apply to the whole query then an empty set will returned"))
 
 (extend-protocol ExtractCollectionConceptId
   cmr.search.models.query.Query

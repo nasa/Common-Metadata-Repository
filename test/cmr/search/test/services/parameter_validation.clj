@@ -222,7 +222,7 @@
                                            :bar 2})
       (is false "An error should have been thrown.")
       (catch clojure.lang.ExceptionInfo e
-        (is (= {:type :invalid-data
+        (is (= {:type :bad-request
                 :errors #{"Parameter [foo] was not recognized."
                           "Parameter [bar] was not recognized."}}
                (update-in (ex-data e) [:errors] set)))))))

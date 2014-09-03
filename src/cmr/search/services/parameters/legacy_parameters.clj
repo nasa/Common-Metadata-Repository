@@ -73,7 +73,7 @@
                 (cond
                   (or (and (string? x) (= :legacy-style memo))
                       (and (map? x) (= :cmr-style memo)))
-                  (msg/data-error :invalid-data a-msg/mixed-legacy-and-cmr-style-parameters-msg)
+                  (msg/data-error :bad-request a-msg/mixed-legacy-and-cmr-style-parameters-msg)
 
                   (string? x)
                   :cmr-style
@@ -85,7 +85,7 @@
                   (errors/internal-error! (a-msg/expected-map-or-str-parameter-msg x))))
               nil
               attributes)
-      (msg/data-error :invalid-data a-msg/attributes-must-be-sequence-msg))))
+      (msg/data-error :bad-request a-msg/attributes-must-be-sequence-msg))))
 
 (defn- escape-commas
   "Escape commas in an attribute parameter field"
@@ -113,7 +113,7 @@
   the same attribute field twice, e.g., &attribute[][name]=a&attribute[name]=b."
   [map tuple]
   (if (get map (first tuple))
-    (msg/data-error :invalid-data a-msg/duplicate-parameter-msg tuple)
+    (msg/data-error :bad-request a-msg/duplicate-parameter-msg tuple)
     (merge map tuple)))
 
 

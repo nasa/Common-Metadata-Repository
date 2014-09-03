@@ -430,7 +430,7 @@
   [concept-type params]
   (let [errors (mapcat #(% concept-type params) parameter-validations)]
     (when (seq errors)
-      (err/throw-service-errors :invalid-data errors)))
+      (err/throw-service-errors :bad-request errors)))
   params)
 
 (defn validate-aql-parameters
@@ -440,5 +440,5 @@
   [concept-type params]
   (let [errors (mapcat #(% concept-type params) aql-parameter-validations)]
     (when (seq errors)
-      (err/throw-service-errors :invalid-data errors)))
+      (err/throw-service-errors :bad-request errors)))
   params)

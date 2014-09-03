@@ -263,7 +263,7 @@
   [xml]
   (when-let [errors (cx/validate-xml (io/resource "schema/IIMSAQLQueryLanguage.xsd")
                                      (cx/remove-xml-processing-instructions xml))]
-    (errors/throw-service-errors :invalid-data (map msg/invalid-aql errors))))
+    (errors/throw-service-errors :bad-request (map msg/invalid-aql errors))))
 
 (defn- condition-elem-group->conditions
   "Convert a collectionCondition|granuleCondition element group to conditions"

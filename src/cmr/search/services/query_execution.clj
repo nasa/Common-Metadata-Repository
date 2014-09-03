@@ -98,6 +98,7 @@
   (fn [context query]
     (query->execution-strategy query)))
 
+;; TODO enforce granule ACLs on direct transformer queries
 (defmethod execute-query :direct-transformer
   [context query]
   (let [{:keys [result-format pretty?]} query
@@ -112,8 +113,8 @@
   (let [elastic-results (->> query
                              (pre-process-query-result-features context)
                              c2s/reduce-query
-                             (acl-service/add-acl-conditions-to-query context)
                              (r/resolve-collection-queries context)
+                             (acl-service/add-acl-conditions-to-query context)
                              (idx/execute-query context))
         query-results (rc/elastic-results->query-results context query elastic-results)]
     (post-process-query-result-features context query elastic-results query-results)))
