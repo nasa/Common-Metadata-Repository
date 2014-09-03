@@ -6,8 +6,8 @@
 
 ;; Need to determine which ISO types will be supported when implementing ISO user stories.
 (def concept-type->valid-mime-types
-  {:collection #{"application/echo10+xml", "application/iso_prototype+xml", "application/iso:smap+xml",
-                 "application/iso19115+xml", "application/dif+xml"}
-   :granule #{"application/echo10+xml", "application/iso_prototype+xml", "application/iso:smap+xml",
+  {:collection #{"application/echo10+xml", "application/iso+xml", "application/iso-smap+xml",
+                 "application/iso-mends+xml", "application/iso19115+xml", "application/dif+xml"}
+   :granule #{"application/echo10+xml", "application/iso+xml", "application/iso-smap+xml",
               "application/iso19115+xml"}})
 
