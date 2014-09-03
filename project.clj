@@ -6,7 +6,6 @@
 
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [clj-http "0.9.1"]
-                 [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [nasa-cmr/cmr-umm-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
@@ -15,7 +14,7 @@
                  [nasa-cmr/cmr-search-app "0.1.0-SNAPSHOT"]
 
                  ; include ring-core to support encoding of params
-                 [ring/ring-core "1.2.2"]
+                 [ring/ring-core "1.2.2" :exclusions [clj-time]]
                  [cheshire "5.3.1"]]
   :plugins [[lein-test-out "0.3.1"]]
 
