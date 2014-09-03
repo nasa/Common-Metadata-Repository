@@ -89,6 +89,9 @@
 
    data-granule
 
+   ;; A decimal number. Restriction flag in echo10
+   access-value
+
    temporal
 
    spatial-coverage

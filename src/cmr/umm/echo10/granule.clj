@@ -91,6 +91,7 @@
                         :data-provider-timestamps data-provider-timestamps
                         :collection-ref coll-ref
                         :data-granule (xml-elem->DataGranule xml-struct)
+                        :access-value (cx/double-at-path xml-struct [:RestrictionFlag])
                         :temporal (gt/xml-elem->Temporal xml-struct)
                         :orbit-calculated-spatial-domains (ocsd/xml-elem->orbit-calculated-spatial-domains xml-struct)
                         :platform-refs (p-ref/xml-elem->PlatformRefs xml-struct)
@@ -115,6 +116,7 @@
             {:keys [insert-time update-time delete-time]} :data-provider-timestamps
             granule-ur :granule-ur
             data-granule :data-granule
+            restriction-flag :access-value
             temporal :temporal
             ocsds :orbit-calculated-spatial-domains
             platform-refs :platform-refs
@@ -137,7 +139,8 @@
                           :else (x/element :Collection {}
                                            (x/element :ShortName {} short-name)
                                            (x/element :VersionId {} version-id)))
-                    (x/element :RestrictionFlag {} "0.0")
+                    (when restriction-flag
+                      (x/element :RestrictionFlag {} restriction-flag))
                     (generate-data-granule data-granule)
                     (gt/generate-temporal temporal)
                     (generate-spatial spatial)

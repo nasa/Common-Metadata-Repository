@@ -69,6 +69,7 @@
       :data-provider-timestamps c/data-provider-timestamps
       :collection-ref coll-refs
       :data-granule (ext-gen/optional data-granules)
+      :access-value (ext-gen/optional (ext-gen/choose-double -10 10))
       :temporal gt/temporal
       :orbit-calculated-spatial-domains (ext-gen/nil-if-empty (gen/vector ocsd/orbit-calculated-spatial-domains 0 5))
       :platform-refs (ext-gen/nil-if-empty (gen/vector platform-refs 0 4))
