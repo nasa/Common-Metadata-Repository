@@ -32,7 +32,7 @@
   [{:keys [http-port transport-port data-dir]}]
   (.. (ImmutableSettings/settingsBuilder)
       (put "node.name" "embedded-elastic")
-      (put "path.conf" "resources")
+      (put "path.conf" ".")
       (put "path.data" data-dir)
       (put "http.port" (str http-port))
       (put "transport.tcp.port" (str transport-port))
