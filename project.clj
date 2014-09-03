@@ -7,8 +7,7 @@
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"]
-                 [camel-snake-kebab "0.1.5"]
-                 [clj-time "0.7.0"]]
+                 [camel-snake-kebab "0.1.5"]]
 
   :plugins [[lein-test-out "0.3.1"]]
 
