@@ -128,16 +128,27 @@
            (pr-str elastic-query)
            "with sort" (pr-str sort-params)
            "and aggregations" (pr-str aggregations))
-    (esd/search (context->conn context)
-                (:index-name index-info)
-                [(:type-name index-info)]
-                :query elastic-query
-                :version true
-                :sort sort-params
-                :size size
-                :from from
-                :fields fields
-                :aggs aggregations)))
+    ;; I couldn't figure out how to reduce the duplication here.
+    (if aggregations
+      (esd/search (context->conn context)
+                  (:index-name index-info)
+                  [(:type-name index-info)]
+                  :query elastic-query
+                  :version true
+                  :sort sort-params
+                  :size size
+                  :from from
+                  :fields fields
+                  :aggs aggregations)
+      (esd/search (context->conn context)
+                  (:index-name index-info)
+                  [(:type-name index-info)]
+                  :query elastic-query
+                  :version true
+                  :sort sort-params
+                  :size size
+                  :from from
+                  :fields fields))))
 
 (defn get-collection-permitted-groups
   "Useful for debugging only. Gets collections along with their currently permitted groups"
