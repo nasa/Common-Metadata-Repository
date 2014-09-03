@@ -12,7 +12,6 @@
                  [org.clojure/tools.reader "0.8.4"]
                  [org.clojure/tools.cli "0.3.1"]
                  [org.clojure/java.jdbc "0.3.3"]
-                 [clj-time "0.7.0"]
                  [sqlingvo "0.5.17"]
                  [drift "1.5.2"]
                  [inflections "0.9.7"]
