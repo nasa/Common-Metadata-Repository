@@ -40,8 +40,9 @@
   here match what Catalog REST stores and must continue to match that. Adding new ones is allowed
   but do not modify these existing values."
   {"application/echo10+xml" "ECHO10"
-   "application/iso_prototype+xml" "ISO"
-   "application/iso:smap+xml" "SMAP_ISO"
+   "application/iso+xml" "ISO_MENDS"
+   "application/iso-smap+xml" "ISO_SMAP"
+   "application/iso-mends+xml" "ISO_MENDS"
    "application/iso19115+xml" "ISO19115"
    "application/dif+xml" "DIF"})
 
