@@ -16,7 +16,7 @@
 
 (deftest invalid-psa-searches
   (are [v error]
-       (= {:status 422 :errors [error]}
+       (= {:status 400 :errors [error]}
           (search/find-refs :granule {"attribute[]" v}))
        ",alpha,a" (am/invalid-type-msg "")
        "foo,alpha,a" (am/invalid-type-msg "foo")
@@ -50,7 +50,7 @@
        "date,alpha,a,2000-01-01" (am/invalid-value-msg :date "a")
        "date,alpha,2000-01-01,b" (am/invalid-value-msg :date "b"))
 
-  (is (= {:status 422 :errors [(am/attributes-must-be-sequence-msg)]}
+  (is (= {:status 400 :errors [(am/attributes-must-be-sequence-msg)]}
          (search/find-refs :granule {"attribute" "string,alpha,a"}))))
 
 ;; These are for boolean, datetime_string, time_string, and date_string attribute types which are all indexed and searchable as strings.

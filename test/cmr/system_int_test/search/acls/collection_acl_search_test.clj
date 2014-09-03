@@ -17,10 +17,7 @@
   (ingest/reset)
   (ingest/create-provider "provguid1" "PROV1")
   (ingest/create-provider "provguid2" "PROV2")
-
-
-
-  )
+)
 
 (deftest invalid-security-token-test
   (is (= {:errors ["Token ABC123 does not exist"], :status 401}

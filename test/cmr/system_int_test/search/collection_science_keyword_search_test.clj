@@ -180,5 +180,5 @@
 (deftest search-science-keywords-error-scenarios
   (testing "search by invalid format."
     (let [{:keys [status errors]} (search/find-refs :collection {"science-keywords" {:0 {:and "true"}}})]
-      (is (= 422 status))
+      (is (= 400 status))
       (is (re-find #"parameter \[and\] is not a valid science keyword search term." (first errors))))))

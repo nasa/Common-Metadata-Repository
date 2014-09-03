@@ -68,5 +68,5 @@
 
     (testing "search by day-night-flag invalid value"
       (let [{:keys [status errors]} (search/find-refs-with-aql :granule [{:dayNightFlag "wrong"}])]
-        (is (= 422 status))
+        (is (= 400 status))
         (is (re-find #"AQL Query Syntax Error: " (str errors)))))))

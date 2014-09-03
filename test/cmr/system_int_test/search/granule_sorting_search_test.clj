@@ -14,7 +14,7 @@
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
 (deftest invalid-sort-key-test
-  (is (= {:status 422
+  (is (= {:status 400
           :errors [(msg/invalid-sort-key "foo_bar" :granule)]}
          (search/find-refs :granule {:sort-key "foo_bar"}))))
 

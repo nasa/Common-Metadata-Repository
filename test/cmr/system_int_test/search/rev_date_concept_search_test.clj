@@ -48,12 +48,12 @@
     (testing "search for collections ingested into system with invalid open ended datetime"
       (let [{:keys [status errors]} (search/find-refs :collection {"updated_since" (format "%s," chkpt1-tz)})
             err (first errors)]
-        (is (= 422 status))
+        (is (= 400 status))
         (is (re-find #"datetime is invalid:.*" err))))
     (testing "search for collections ingested into system with invalid inputs - duration chkpt1 and chkpt2"
       (let [{:keys [status errors]} (search/find-refs :collection {"updated_since[]" (format "%s,%s" chkpt1-tz chkpt2-tz)})
             err (first errors)]
-        (is (= 422 status))
+        (is (= 400 status))
         (is (re-find #"datetime is invalid:.*" err))))))
 
 
@@ -82,10 +82,10 @@
     (testing "search for collections ingested into system with invalid open ended datetime"
       (let [{:keys [status errors]} (search/find-refs :granule {"updated_since" (format "%s," chkpt1-tz)})
             err (first errors)]
-        (is (= 422 status))
+        (is (= 400 status))
         (is (re-find #"datetime is invalid:.*" err))))
     (testing "search for collections ingested into system with invalid inputs - duration chkpt1 and chkpt2"
       (let [{:keys [status errors]} (search/find-refs :granule {"updated_since[]" (format "%s,%s" chkpt1-tz chkpt2-tz)})
             err (first errors)]
-        (is (= 422 status))
+        (is (= 400 status))
         (is (re-find #"datetime is invalid:.*" err))))))

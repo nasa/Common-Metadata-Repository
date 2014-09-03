@@ -66,30 +66,30 @@
 ;; Tests that invalid spatial areas are detected and error messages are returned.
 (deftest spatial-search-validation-test
     (testing "invalid encoding"
-      (is (= {:errors [(smsg/shape-decode-msg :polygon "0,ad,d,0")] :status 422}
+      (is (= {:errors [(smsg/shape-decode-msg :polygon "0,ad,d,0")] :status 400}
              (search/find-refs :granule {:polygon "0,ad,d,0"})))
-      (is (= {:errors [(smsg/shape-decode-msg :bounding-box "0,ad,d,0")] :status 422}
+      (is (= {:errors [(smsg/shape-decode-msg :bounding-box "0,ad,d,0")] :status 400}
              (search/find-refs :granule {:bounding-box "0,ad,d,0"})))
-      (is (= {:errors [(smsg/shape-decode-msg :point "0,ad")] :status 422}
+      (is (= {:errors [(smsg/shape-decode-msg :point "0,ad")] :status 400}
              (search/find-refs :granule {:point "0,ad"}))))
 
     (testing "invalid polygons"
-      (is (= {:errors [(smsg/ring-not-closed)] :status 422}
+      (is (= {:errors [(smsg/ring-not-closed)] :status 400}
              (search/find-refs :granule
                                {:polygon (codec/url-encode
                                            (poly/polygon :geodetic [(rr/ords->ring :geodetic 0 0, 1 0, 1 1, 0 1)]))}))))
     (testing "invalid bounding box"
-      (is (= {:errors [(smsg/br-north-less-than-south 45 46)] :status 422}
+      (is (= {:errors [(smsg/br-north-less-than-south 45 46)] :status 400}
              (search/find-refs
                :granule
                {:bounding-box (codec/url-encode (m/mbr -180 45 180 46))}))))
 
     (testing "invalid point"
-      (is (= {:errors [(smsg/point-lon-invalid -181)] :status 422}
+      (is (= {:errors [(smsg/point-lon-invalid -181)] :status 400}
              (search/find-refs :granule {:point "-181.0,5"}))))
 
     (testing "invalid lines"
-      (is (= {:errors [(smsg/duplicate-points [[1 (p/point 1 1)] [3 (p/point 1 1)]])] :status 422}
+      (is (= {:errors [(smsg/duplicate-points [[1 (p/point 1 1)] [3 (p/point 1 1)]])] :status 400}
              (search/find-refs :granule
                                {:line "0,0,1,1,2,2,1,1"})))))
 

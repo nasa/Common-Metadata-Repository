@@ -58,7 +58,7 @@
         (is (d/refs-match? [gran1 gran2 gran5 gran6 gran7 gran8] references))))
     (testing "non-numeric value in range"
       (let [{:keys [status errors]} (search/find-refs :granule {:equator-crossing-longitude "1,X"})]
-        (is (= 422 status))
+        (is (= 400 status))
         (is (= errors [(cm/invalid-msg java.lang.Double "X")]))))
     (testing "catalog-rest-style-equator-crossing-longitude full range"
       (let [references (search/find-refs :granule {"equator-crossing-longitude[minValue]" "10"
@@ -72,7 +72,7 @@
         (is (d/refs-match? [gran1 gran2 gran5 gran6 gran7 gran8] references))))
     (testing "non-numeric value in catalog rest style range"
       (let [{:keys [status errors]} (search/find-refs :granule {"equator-crossing-longitude[maxValue]" "X"})]
-        (is (= 422 status))
+        (is (= 400 status))
         (is (= errors [(cm/invalid-msg java.lang.Double "X")]))))
 
     (testing "search by orbit equator crossing with aql"

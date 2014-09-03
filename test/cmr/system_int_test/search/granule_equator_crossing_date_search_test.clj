@@ -14,7 +14,7 @@
 (deftest invalid-equator-crossing-dates
   (are [v]
        (let [result (search/find-refs :granule {:equator-crossing-date  v})]
-         (and (= 422 (:status result))
+         (and (= 400 (:status result))
               (re-matches #"\[.*\] is not a valid datetime" (first (:errors result)))))
        "a,2011-02-01T12:00:00Z"
        "foo,alpha,a"

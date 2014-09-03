@@ -37,7 +37,7 @@
       (catch clojure.lang.ExceptionInfo e
         (let [status (get-in (ex-data e) [:object :status])
               body (get-in (ex-data e) [:object :body])]
-          (is (= 422 status))
+          (is (= 400 status))
           (is (re-matches #".*page_size must be a number between 1 and 2000.*" body))))))
   (testing "Negative page_size."
     (try
@@ -45,7 +45,7 @@
       (catch clojure.lang.ExceptionInfo e
         (let [status (get-in (ex-data e) [:object :status])
               body (get-in (ex-data e) [:object :body])]
-          (is (= 422 status))
+          (is (= 400 status))
           (is (re-matches #".*page_size must be a number between 1 and 2000.*" body))))))
   (testing "page_size too large."
     (try
@@ -53,7 +53,7 @@
       (catch clojure.lang.ExceptionInfo e
         (let [status (get-in (ex-data e) [:object :status])
               body (get-in (ex-data e) [:object :body])]
-          (is (= 422 status))
+          (is (= 400 status))
           (is (re-matches #".*page_size must be a number between 1 and 2000.*" body))))))
   (testing "Non-numeric page_size"
     (try
@@ -61,7 +61,7 @@
       (catch clojure.lang.ExceptionInfo e
         (let [status (get-in (ex-data e) [:object :status])
               body (get-in (ex-data e) [:object :body])]
-          (is (= 422 status))
+          (is (= 400 status))
           (is (re-matches #".*page_size must be a number between 1 and 2000.*" body)))))))
 
 (deftest search-for-hits
@@ -93,7 +93,7 @@
         (catch clojure.lang.ExceptionInfo e
           (let [status (get-in (ex-data e) [:object :status])
                 body (get-in (ex-data e) [:object :body])]
-            (is (= 422 status))
+            (is (= 400 status))
             (is (re-matches #".*page_num must be a number greater than or equal to 1.*" body))))))
     (testing "Non-numeric page_num."
       (try
@@ -103,5 +103,5 @@
         (catch clojure.lang.ExceptionInfo e
           (let [status (get-in (ex-data e) [:object :status])
                 body (get-in (ex-data e) [:object :body])]
-            (is (= 422 status))
+            (is (= 400 status))
             (is (re-matches #".*page_num must be a number greater than or equal to 1.*" body))))))))

@@ -64,11 +64,8 @@
 
 (defn gran-id
   "Creates an ACL granule identifier"
-  ([gran-ur-patterns]
-   (gran-id gran-ur-patterns nil))
-  ([gran-ur-patterns access-value-filter]
-   {:granule-ur-patterns gran-ur-patterns
-    :access-value access-value-filter}))
+  [access-value-filter]
+  {:access-value access-value-filter})
 
 (defn catalog-item-id
   "Creates a catalog item identity"

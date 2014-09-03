@@ -21,7 +21,7 @@
                             :ending-date-time (d/make-datetime end)})))
 
 (deftest invalid-sort-key-test
-  (is (= {:status 422
+  (is (= {:status 400
           :errors [(msg/invalid-sort-key "foo_bar" :collection)]}
          (search/find-refs :collection {:sort-key "foo_bar"}))))
 

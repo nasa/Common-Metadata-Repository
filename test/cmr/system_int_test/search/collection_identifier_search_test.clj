@@ -280,13 +280,13 @@
            [] "et1" {:ignore-case false}))
 
     (testing "unsupported parameter"
-      (is (= {:status 422,
+      (is (= {:status 400,
               :errors ["Parameter [unsupported] was not recognized."]}
              (search/find-refs :collection {:unsupported "dummy"})))
-      (is (= {:status 422,
+      (is (= {:status 400,
               :errors ["Parameter [unsupported] with option was not recognized."]}
              (search/find-refs :collection {"options[unsupported][ignore-case]" true})))
-      (is (= {:status 422,
+      (is (= {:status 400,
               :errors ["Option [unsupported] for param [entry_title] was not recognized."]}
              (search/find-refs
                :collection
@@ -379,11 +379,11 @@
            [c1-p1 c3-p2] [c1-p1-cid  c3-p2-cid] {:and false}
            [] [c1-p1-cid  c3-p2-cid] {:and true}))
     (testing "echo collection id search - disallow ignore case"
-      (is (= {:status 422
+      (is (= {:status 400
               :errors [(msg/invalid-ignore-case-opt-setting-msg #{:concept-id :echo-collection-id :echo-granule-id})]}
              (search/find-refs :granule {:echo_collection_id c2-p1-cid "options[echo_collection_id]" {:ignore_case true}}))))
     (testing "Search with wildcards in echo_collection_id param not supported."
-      (is (= {:status 422
+      (is (= {:status 400
               :errors [(msg/invalid-pattern-opt-setting-msg #{:concept-id :echo-collection-id :echo-granule-id})]}
              (search/find-refs :granule {:echo_collection_id "C*" "options[echo_collection_id]" {:pattern true}}))))
     (testing "concept id search"
@@ -401,7 +401,7 @@
            [c1-p1 c2-p1 c3-p2 c4-p2] [c1-p1-cid c2-p1-cid c3-p2-cid c4-p2-cid dummy-cid] {}
            [] [c1-p1-cid  c3-p2-cid] {:and true}))
     (testing "Search with wildcards in concep_id param not supported."
-      (is (= {:status 422
+      (is (= {:status 400
               :errors [(msg/invalid-pattern-opt-setting-msg #{:concept-id :echo-collection-id :echo-granule-id})]}
              (search/find-refs :granule {:concept_id "C*" "options[concept_id]" {:pattern true}}))))
 

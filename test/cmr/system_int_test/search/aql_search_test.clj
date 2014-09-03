@@ -16,15 +16,15 @@
 (deftest aql-validation-test
   (testing "invalid against AQL schema"
     (is (= {:errors [(msg/invalid-aql "Line 1 - cvc-elt.1: Cannot find the declaration of element 'foo'.")]
-            :status 422}
+            :status 400}
            (search/find-refs-with-aql-string "<foo/>")))
     (is (= {:errors [(msg/invalid-aql "Line 1 - Content is not allowed in prolog.")]
-            :status 422}
+            :status 400}
            (search/find-refs-with-aql-string "not even valid xml")))
     (is (= {:errors [(msg/invalid-aql (str "Line 7 - cvc-complex-type.2.4.a: Invalid content was "
                                            "found starting with element 'dataSetId'. One of "
                                            "'{granuleCondition, collectionCondition}' is expected."))]
-            :status 422}
+            :status 400}
            (search/find-refs-with-aql-string
              "<query>
              <for value=\"collections\"/>
@@ -109,7 +109,7 @@
     (index/refresh-elastic-index)
     ;; invalid query parameter
     (is (= {:errors ["Parameter [foo] was not recognized."]
-            :status 422}
+            :status 400}
            (search/find-refs-with-aql :collection [] {} {:query-params {:foo true}})))
     (are [params items]
          (let [refs (search/find-refs-with-aql :collection []

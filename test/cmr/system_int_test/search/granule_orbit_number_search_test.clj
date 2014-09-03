@@ -81,15 +81,15 @@
 
     (testing "invalid orbit number range"
       (let [{:keys [status errors]} (search/find-refs :granule {:orbit-number "2,1"})]
-        (is (= 422 status))
+        (is (= 400 status))
         (is (= errors [(m/min-value-greater-than-max 2.0 1.0)]))))
     (testing "non-numeric orbit-number"
       (let [{:keys [status errors]} (search/find-refs :granule {:orbit-number "ABC"})]
-        (is (= 422 status))
+        (is (= 400 status))
         (is (= errors [(on-m/invalid-orbit-number-msg) (cm/invalid-msg java.lang.Double "ABC")]))))
     (testing "non-numeric orbit-number in range"
       (let [{:keys [status errors]} (search/find-refs :granule {:orbit-number "1,X"})]
-        (is (= 422 status))
+        (is (= 400 status))
         (is (= errors [(on-m/invalid-orbit-number-msg) (cm/invalid-msg java.lang.Double "X")]))))
     (testing "catalog-rest-style-orbit-number"
       (let [references (search/find-refs :granule {"orbit-number[value]" "1"})]

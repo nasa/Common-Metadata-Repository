@@ -250,32 +250,32 @@
     (testing "search by cloud-cover with min value greater than max value"
       (let [min-value 30.0
             max-value 0.0]
-        (is (= {:status 422
+        (is (= {:status 400
                 :errors [(vmsg/min-value-greater-than-max min-value max-value)]}
                (search/find-refs :granule {"cloud_cover" (format "%s,%s" min-value max-value)})))))
     (testing "search by cloud-cover with non numeric str 'c9c,'"
       (let [num-range "c9c,"]
-        (is (= {:status 422
+        (is (= {:status 400
                 :errors [(msg/invalid-msg java.lang.Double "c9c")]}
                (search/find-refs :granule {"cloud_cover" num-range})))))
     (testing "search by cloud-cover with non numeric str ',99c'"
       (let [num-range ",99c"]
-        (is (= {:status 422
+        (is (= {:status 400
                 :errors [(msg/invalid-msg java.lang.Double "99c")]}
                (search/find-refs :granule {"cloud_cover" num-range})))))
     (testing "search by cloud-cover with non numeric str ','"
       (let [num-range ","]
-        (is (= {:status 422
+        (is (= {:status 400
                 :errors [(msg/invalid-numeric-range-msg num-range)]}
                (search/find-refs :granule {"cloud_cover" num-range})))))
     (testing "search by cloud-cover with empty str"
       (let [num-range ""]
-        (is (= {:status 422
+        (is (= {:status 400
                 :errors [(msg/invalid-msg java.lang.Double "")]}
                (search/find-refs :granule {"cloud_cover" num-range})))))
     (testing "search by cloud-cover with invalid range"
       (let [num-range "30,c9c"]
-        (is (= {:status 422
+        (is (= {:status 400
                 :errors [(msg/invalid-msg java.lang.Double "c9c")]}
                (search/find-refs :granule {"cloud_cover" num-range})))))
     (testing "catalog-rest style"
@@ -329,10 +329,10 @@
       ;; dataset-id aliases to entry-title - there is no easy way to recover original search param on error
       (let [srch1 {:exclude {:dataset-id [gran2-cid]}, :echo_granule_id [gran1-cid gran2-cid gran3-cid]}
             srch2 {:exclude {:dataset-id [gran2-cid] :concept-id [gran1-cid]}, :echo_granule_id [gran1-cid gran2-cid]}]
-        (is (= {:status 422
+        (is (= {:status 400
                 :errors [(msg/invalid-exclude-param-msg #{:entry-title})]}
                (search/find-refs :granule srch1)))
-        (is (= {:status 422
+        (is (= {:status 400
                 :errors [(msg/invalid-exclude-param-msg #{:entry-title})]}
                (search/find-refs :granule srch2)))))))
 
@@ -378,11 +378,11 @@
            [gran1 gran2 gran3 gran4 gran5] [gran1-cid gran2-cid gran3-cid gran4-cid gran5-cid] {}))
 
     (testing "echo granule id search - disallow ignore case"
-      (is (= {:status 422
+      (is (= {:status 400
               :errors [(msg/invalid-ignore-case-opt-setting-msg #{:concept-id :echo-collection-id :echo-granule-id})]}
              (search/find-refs :granule {:echo_granule_id gran1-cid "options[echo_granule_id]" {:ignore_case true}}))))
     (testing "Search with wildcards in echo_granule_id param not supported."
-      (is (= {:status 422
+      (is (= {:status 400
               :errors [(msg/invalid-pattern-opt-setting-msg #{:concept-id :echo-collection-id :echo-granule-id})]}
              (search/find-refs :granule {:echo_granule_id "G*" "options[echo_granule_id]" {:pattern true}}))))
     (testing "search granules by echo collection id"
@@ -441,6 +441,6 @@
            [gran1 gran5] [gran1-cid "G555-PROV1" "G555-NON_EXIST" gran5-cid] {}
            [] [gran1-cid gran5-cid] {:and true}))
     (testing "Search with wildcards in concept_id param not supported."
-      (is (= {:status 422
+      (is (= {:status 400
               :errors [(msg/invalid-pattern-opt-setting-msg #{:concept-id :echo-collection-id :echo-granule-id})]}
              (search/find-refs :granule {:concept_id "G*" "options[concept_id]" {:pattern true}}))))))

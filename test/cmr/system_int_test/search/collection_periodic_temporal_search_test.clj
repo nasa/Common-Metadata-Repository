@@ -122,7 +122,7 @@
       (catch clojure.lang.ExceptionInfo e
         (let [status (get-in (ex-data e) [:object :status])
               body (get-in (ex-data e) [:object :body])]
-          (is (= 422 status))
+          (is (= 400 status))
           (is (re-find #"temporal_start_day must be accompanied by a temporal_start" body))))))
   (testing "search with temporal_end_day and no temporal_end is invalid."
     (try
@@ -130,5 +130,5 @@
       (catch clojure.lang.ExceptionInfo e
         (let [status (get-in (ex-data e) [:object :status])
               body (get-in (ex-data e) [:object :body])]
-          (is (= 422 status))
+          (is (= 400 status))
           (is (re-find #"temporal_end_day must be accompanied by a temporal_end" body)))))))
