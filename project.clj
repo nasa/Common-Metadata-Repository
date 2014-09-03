@@ -2,13 +2,13 @@
   :description "This is the indexer application for the CMR. It is responsible for indexing modified data into Elasticsearch."
   :url "***REMOVED***projects/CMR/repos/cmr-indexer-app/browse"
   :dependencies [[org.clojure/clojure "1.6.0"]
-                 [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [nasa-cmr/cmr-umm-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-system-trace-lib "0.1.0-SNAPSHOT"]
                  [compojure "1.1.6"]
-                 [ring/ring-core "1.2.2"]
+                 [clj-time "0.7.0"]
+                 [ring/ring-core "1.2.2" :exclusions [clj-time]]
                  [ring/ring-json "0.3.1"]
                  [org.clojure/tools.reader "0.8.4"]
                  [org.clojure/tools.cli "0.3.1"]
