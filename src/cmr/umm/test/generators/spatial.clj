@@ -4,7 +4,9 @@
             [cmr.common.test.test-check-ext :as ext-gen :refer [optional]]
             [cmr.spatial.polygon :as poly]
             [cmr.spatial.line-string :as l]
-            [cmr.umm.spatial :as umm-s]))
+            [cmr.umm.granule :as g]
+            [cmr.umm.spatial :as umm-s]
+            [cmr.umm.test.generators.granule.orbit-calculated-spatial-domain :as ocsd]))
 
 (def generic-rings
   "Generates rings that are not valid but could be used for testing where validity is not important"
@@ -26,3 +28,17 @@
   "A generator returning individual points, bounding rectangles, lines, and polygons.
   The spatial areas generated will not necessarily be valid."
   (gen/one-of [sgen/points sgen/mbrs lines polygons]))
+
+(def orbit-directions
+  (gen/elements ["A" "D"]))
+
+(def orbits
+  "A generator returning an Orbit record for a spatial domain."
+  (ext-gen/model-gen
+    g/->Orbit
+    ocsd/longitude
+    ocsd/latitude
+    orbit-directions
+    ocsd/latitude
+    orbit-directions
+    (optional (gen/tuple ocsd/latitude ocsd/longitude))))

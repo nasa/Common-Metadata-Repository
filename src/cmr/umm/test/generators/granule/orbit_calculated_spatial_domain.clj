@@ -8,6 +8,9 @@
 (def longitude
   (ext-gen/choose-double -180 180))
 
+(def latitude
+  (ext-gen/choose-double -90 90))
+
 (def orbital-model-name
   (ext-gen/string-ascii 1 10))
 

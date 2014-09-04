@@ -9,6 +9,7 @@
             [cmr.spatial.geodetic-ring :as gr]
             [cmr.spatial.cartesian-ring :as cr]
             [cmr.umm.spatial :as umm-s]
+            [cmr.umm.granule :as g]
             [cmr.common.util :as util]))
 
 (defmulti parse-geometry
@@ -26,7 +27,7 @@
   [element]
   (let [lon (cx/double-at-path element [:PointLongitude])
         lat (cx/double-at-path element [:PointLatitude])]
-  (p/point lon lat)))
+    (p/point lon lat)))
 
 (defmethod parse-geometry :Line
   [element]
@@ -55,6 +56,38 @@
   [geom-elem]
   (map parse-geometry (filter (comp geometry-tags :tag) (:content geom-elem))))
 
+(defn xml-elem->Orbit
+  "Returns a UMM Orbit record from a parsed Orbit XML structure"
+  [orbit]
+  (g/map->Orbit {:ascending-crossing (cx/double-at-path orbit [:AscendingCrossing])
+                 :start-lat (cx/double-at-path orbit [:StartLat])
+                 :start-direction (cx/string-at-path orbit [:StartDirection])
+                 :end-lat (cx/double-at-path orbit [:EndLat])
+                 :end-direction (cx/string-at-path orbit [:EndDirection])
+                 ;; set center-point to nil if the elements are not available
+                 :center-point (seq
+                                 (keep
+                                   identity
+                                   [(cx/double-at-path orbit [:CenterPoint :PointLatitude])
+                                    (cx/double-at-path orbit [:CenterPoint :PointLongitude])]))}))
+
+(defn generate-orbit-xml
+  [orbit]
+  (let [{:keys [ascending-crossing start-lat start-direction end-lat end-direction center-point]}
+        orbit]
+    (x/element :Orbit {}
+               (x/element :AscendingCrossing {} (util/double->string ascending-crossing))
+               (x/element :StartLat {} (util/double->string start-lat))
+               (x/element :StartDirection {} start-direction)
+               (x/element :EndLat {} (util/double->string end-lat))
+               (x/element :EndDirection {} end-direction)
+               (when center-point
+                 (x/element
+                   :CenterPoint
+                   {}
+                   (x/element :PointLongitude {} (last center-point))
+                   (x/element :PointLatitude {} (first center-point)))))))
+
 (defprotocol ShapeToXml
   "Protocol for converting a shape into XML."
 
@@ -66,6 +99,7 @@
   [geometries]
   (x/element :Geometry {}
              (map shape-to-xml geometries)))
+
 
 (defn- ring-to-xml
   [ring]
