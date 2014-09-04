@@ -56,14 +56,22 @@
   [geom-elem]
   (map parse-geometry (filter (comp geometry-tags :tag) (:content geom-elem))))
 
+(def direction
+  {"A" :asc
+   "a" :asc
+   "D" :desc
+   "d" :desc
+   :asc "A"
+   :desc "D"})
+
 (defn xml-elem->Orbit
   "Returns a UMM Orbit record from a parsed Orbit XML structure"
   [orbit]
   (g/map->Orbit {:ascending-crossing (cx/double-at-path orbit [:AscendingCrossing])
                  :start-lat (cx/double-at-path orbit [:StartLat])
-                 :start-direction (cx/string-at-path orbit [:StartDirection])
+                 :start-direction (direction (cx/string-at-path orbit [:StartDirection]))
                  :end-lat (cx/double-at-path orbit [:EndLat])
-                 :end-direction (cx/string-at-path orbit [:EndDirection])
+                 :end-direction (direction (cx/string-at-path orbit [:EndDirection]))
                  ;; set center-point to nil if the elements are not available
                  :center-point (seq
                                  (keep
@@ -78,9 +86,9 @@
     (x/element :Orbit {}
                (x/element :AscendingCrossing {} (util/double->string ascending-crossing))
                (x/element :StartLat {} (util/double->string start-lat))
-               (x/element :StartDirection {} start-direction)
+               (x/element :StartDirection {} (direction start-direction))
                (x/element :EndLat {} (util/double->string end-lat))
-               (x/element :EndDirection {} end-direction)
+               (x/element :EndDirection {} (direction end-direction))
                (when center-point
                  (x/element
                    :CenterPoint

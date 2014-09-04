@@ -30,7 +30,7 @@
   (gen/one-of [sgen/points sgen/mbrs lines polygons]))
 
 (def orbit-directions
-  (gen/elements ["A" "D"]))
+  (gen/elements [:asc :desc]))
 
 (def orbits
   "A generator returning an Orbit record for a spatial domain."
