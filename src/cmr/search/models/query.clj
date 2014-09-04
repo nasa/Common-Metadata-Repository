@@ -281,7 +281,8 @@
 (def default-sort-keys
   {:granule [{:field :provider-id :order :asc}
              {:field :start-date :order :asc}]
-   :collection [{:field :entry-title :order :asc}]})
+   :collection [{:field :entry-title :order :asc}
+                {:field :provider-id :order :asc}]})
 
 (def concept-type->default-query-attribs
   {:granule {:condition (->MatchAllCondition)
