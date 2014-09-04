@@ -54,6 +54,15 @@
                                  (generic "normal"))]
                (c/resolve-collection-query test-and {})))))
 
+    (testing "collection concept id strings condition with collection query condition"
+      (let [test-and (and-conds (generic "normal")
+                                (q/string-conditions :collection-concept-id [:a :b :d])
+                                (mock-coll-query-cond "coll-foo" [:a :b :c]))]
+        (is (= [#{:a :b} (and-conds (q/string-conditions :collection-concept-id [:a :b :d])
+                                 (generic ":b,:a")
+                                 (generic "normal"))]
+               (c/resolve-collection-query test-and {})))))
+
     (testing "multiple coll queries with different found collections"
       (let [test-and (and-conds (mock-coll-query-cond "coll-id" [:a])
                                 (mock-coll-query-cond "coll-id" [:b]))]

@@ -371,6 +371,8 @@
   ([field value]
    (string-condition field value false false))
   ([field value case-sensitive? pattern?]
+   (when-not value
+     (errors/internal-error! (str "Null value for field: " field)))
    (->StringCondition field value case-sensitive? pattern?)))
 
 (defn string-conditions
@@ -380,6 +382,8 @@
   ([field values case-sensitive?]
    (string-conditions field values case-sensitive? false :or))
   ([field values case-sensitive? pattern? group-operation]
+   (when-not (seq values)
+     (errors/internal-error! (str "Null or empty values for field: " field)))
    (cond
      (= (count values) 1)
      (string-condition field (first values) case-sensitive? pattern?)

@@ -248,5 +248,8 @@
   AttributeRangeCondition
   (mapify
     [c]
-    (mapify-record (util/record-fields AttributeRangeCondition) c)))
+    (mapify-record (util/record-fields AttributeRangeCondition) c))
+
+  nil
+  (mapify [_] nil))
 

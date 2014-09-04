@@ -64,10 +64,25 @@
       :no-query-coll-ids
       :with-query-coll-ids)))
 
+;; TODO what if an acl is granted for collections that don't exist with an access value?
+;; Could that permit other collections with an access value?
+;; write a test then change it to something like this
+
+(comment
+
+  (when collections
+    (if concept-ids
+      (q/string-conditions :collection-concept-id concept-ids true)
+      ;; There are collections present in acl but none reference real collections
+      (q/->MatchNoneCondition)))
+)
+
+
 (defmethod collection-identifier->query-condition :no-query-coll-ids
   [query-coll-ids provider-id collection-identifier]
   (if-let [{:keys [collections access-value]} collection-identifier]
-    (let [concept-ids (seq (map :concept-id collections))
+    (let [concept-ids (seq (filter identity ; remove concept ids if nil. acls may reference deleted colls.
+                                   (map :concept-id collections)))
           concept-id-cond (when concept-ids
                             (q/string-conditions :collection-concept-id concept-ids true))
           access-value-cond (some-> (access-value->query-condition access-value)
@@ -83,7 +98,8 @@
   [query-coll-ids provider-id collection-identifier]
   (if-let [{:keys [collections access-value]} collection-identifier]
     (let [concept-ids (if collections
-                        (set/intersection query-coll-ids (set (map :concept-id collections)))
+                        (set/intersection query-coll-ids (set (filter identity
+                                                                      (map :concept-id collections))))
                         query-coll-ids)
           concept-id-cond (when concept-ids
                             (q/string-conditions :collection-concept-id concept-ids true))
@@ -104,16 +120,17 @@
           access-value->query-condition))
 
 (defn acl->query-condition
-  "Converts an acl into the equivalent query condition."
+  "Converts an acl into the equivalent query condition. Ths can return nil if the doesn't grant anything.
+  This can happen if it's for one collection that doesn't exist."
   [coll-ids-by-prov acl]
   (let [{:keys [provider-id collection-identifier granule-identifier]} (:catalog-item-identity acl)
         query-coll-ids (set (coll-ids-by-prov provider-id))
         collection-cond (collection-identifier->query-condition
                           query-coll-ids provider-id collection-identifier)
         granule-cond (granule-identifier->query-cond granule-identifier)]
-    (if granule-cond
+    (if (and collection-cond granule-cond)
       (q/and-conds [collection-cond granule-cond])
-      collection-cond)))
+      (or collection-cond granule-cond))))
 
 (defn acls->query-condition
   "Converts a list of acls into a query condition. coll-ids-by-prov should be a map of provider ids
@@ -121,11 +138,17 @@
   [coll-ids-by-prov acls]
   (if (empty? acls)
     (q/->MatchNoneCondition)
-    (q/or-conds (map (partial acl->query-condition coll-ids-by-prov) acls))))
+    (if-let [conds (seq (filter identity
+                            (map (partial acl->query-condition coll-ids-by-prov) acls)))]
+      (q/or-conds conds)
+      (q/->MatchNoneCondition))))
+
+(def last-query (atom nil))
 
 ;; This expects that collection queries have been resolved before this step.
 (defmethod acl-service/add-acl-conditions-to-query :granule
   [context query]
+  (reset! last-query query)
   (let [coll-ids-by-prov (->> (coll-id-extractor/extract-collection-concept-ids query)
                               ;; Group the concept ids by provider
                               (group-by #(:provider-id (c/parse-concept-id %)))
@@ -138,19 +161,19 @@
                (acl-helper/get-acls-applicable-to-token context))
         acl-cond (acls->query-condition coll-ids-by-prov acls)]
 
+    ; (update-in query [:condition] #(q/and-conds [acl-cond %]))
     (r/resolve-collection-queries
       context
       (update-in query [:condition] #(q/and-conds [acl-cond %])))))
 
 (comment
 
-  (def context {:system (get-in user/system [:apps :search])})
+  (def context {:system (get-in user/system [:apps :search])
+                :token "ABC-1"})
 
   (acl-service/add-acl-conditions-to-query
     context
     @last-query)
-
-  (coll-id-extractor/extract-collection-concept-ids @last-query)
 
   (def coll-ids-by-prov
     (->> (coll-id-extractor/extract-collection-concept-ids @last-query)
@@ -165,7 +188,8 @@
               coll-ids-by-prov
               (acl-helper/get-acls-applicable-to-token context)))
 
-  (def acl (last (acl-helper/get-acls-applicable-to-token context)))
+  (def acl (last acls))
+  (acl->query-condition coll-ids-by-prov acl)
 
   (let [{{:keys [provider-id] :as cii} :catalog-item-identity} acl
         acl-collections (get-in cii [:collection-identifier :collections])
