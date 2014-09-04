@@ -78,10 +78,10 @@
           _ (setup-logging node-settings)
           this (assoc this :node (build-node node-settings))]
       ;; See http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/cluster-health.html
-      (info (pr-str (client/get
-                         (format
-                           "http://localhost:%s/_cluster/health?wait_for_status=yellow&timeout=50s"
-                           (:http-port this)))))
+      (client/get
+        (format
+          "http://localhost:%s/_cluster/health?wait_for_status=yellow&timeout=50s"
+          (:http-port this)))
       this))
 
   (stop
