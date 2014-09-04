@@ -44,7 +44,13 @@
                                                  :entry-title "ET4"
                                                  :long-name "ET4"})
                          :dif)
-        all-colls [c1-echo c2-echo c3-dif c4-dif]]
+        c5-iso (d/ingest "PROV1" (dc/collection {:short-name "S5"
+                                                :version-id "V5"})
+                        :iso)
+        c6-iso (d/ingest "PROV2" (dc/collection {:short-name "S6"
+                                                :version-id "V6"})
+                        :iso-mends)
+        all-colls [c1-echo c2-echo c3-dif c4-dif c5-iso c6-iso]]
     (index/refresh-elastic-index)
 
     (testing "Finding refs ingested in different formats"
@@ -53,7 +59,11 @@
            {} all-colls
            {:short-name "S4"} [c4-dif]
            {:entry-title "ET3"} [c3-dif]
-           {:version ["V3" "V2"]} [c2-echo c3-dif]))
+           {:version ["V3" "V2"]} [c2-echo c3-dif]
+           {:short-name "S5"} [c5-iso]
+           {:short-name "S6"} [c6-iso]
+           {:version "V5"} [c5-iso]
+           {:version ["V5" "V6"]} [c5-iso c6-iso]))
 
     (testing "Retrieving results in echo10"
       (d/assert-metadata-results-match
@@ -183,24 +193,6 @@
            [-180 90 180 -90] [g2]
            [0 90 180 -90] []
            [-180 90 0 -90] [g2]))))
-
-(deftest iso-ingest
-  (let [coll1 (d/ingest "PROV1" (dc/collection {:short-name "S1"
-                                                :version-id "V1"})
-                        :iso)
-        coll2 (d/ingest "PROV2" (dc/collection {:short-name "S2"
-                                                :version-id "V2"})
-                        :iso-mends)]
-    (index/refresh-elastic-index)
-
-    (testing "Finding refs ingested in different formats"
-      (are [search expected]
-           (d/refs-match? expected (search/find-refs :collection search))
-           {} [coll1 coll2]
-           {:short-name "S1"} [coll1]
-           {:short-name "S2"} [coll2]
-           {:version "V1"} [coll1]
-           {:version ["V1" "V2"]} [coll1 coll2]))))
 
 (deftest search-collection-atom-and-json
   (let [ru1 (dc/related-url "GET DATA" "http://example.com")
