@@ -5,7 +5,8 @@
            org.elasticsearch.common.logging.log4j.LogConfigurator
            org.elasticsearch.node.NodeBuilder
            org.elasticsearch.node.Node)
-  (:require [cmr.common.lifecycle :as lifecycle]))
+  (:require [cmr.common.lifecycle :as lifecycle]
+            [clj-http.client :as client]))
 
 {"path" {"data" "es_data/elastic_utils"}, "index" {"store" {"type" "memory"}}, "node" {"name" "embedded-elastic"}, "script" {"disable_dynamic" "true"}, "transport" {"tcp" {"port" "9334"}}, "http" {"port" "9234"}}
 
@@ -66,15 +67,21 @@
    transport-port
    data-dir
    node
-  ]
+   ]
 
   lifecycle/Lifecycle
 
   (start
     [this system]
-    (let [node-settings (create-settings this)]
-      (setup-logging node-settings)
-      (assoc this :node (build-node node-settings))))
+    (let [node-settings (create-settings this)
+          _ (setup-logging node-settings)
+          this (assoc this :node (build-node node-settings))]
+      ;; See http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/cluster-health.html
+      (info (pr-str (client/get
+                         (format
+                           "http://localhost:%s/_cluster/health?wait_for_status=yellow&timeout=50s"
+                           (:http-port this)))))
+      this))
 
   (stop
     [this system]
