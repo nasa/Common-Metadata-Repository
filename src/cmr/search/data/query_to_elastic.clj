@@ -136,7 +136,8 @@
                                                   query_string-reserved-characters-regex
                                                   "\\\\$1")
                               :analyzer :whitespace
-                              :default_field field}}}))
+                              :default_field field
+                              :default_operator :and}}}))
 
   cmr.search.models.query.StringCondition
   (condition->elastic
