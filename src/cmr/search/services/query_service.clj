@@ -167,16 +167,31 @@
   (hgrf/reset context))
 
 (deftracefn get-collections-by-providers
-  "Returns all collections found by the given provider ids"
-  [context provider-ids]
-  (let [query-condition (if (empty? provider-ids) (qm/map->MatchAllCondition {})
-                          (qm/string-conditions :provider-id provider-ids))
-        query (qm/query {:concept-type :collection
-                         :condition query-condition
-                         :page-size :unlimited
-                         :result-format :core-fields})
-        results (qe/execute-query context query)]
-    (:items results)))
+  "Returns all collections limited optionally by the given provider ids"
+  ([context skip-acls?]
+   (get-collections-by-providers context nil skip-acls?))
+  ([context provider-ids skip-acls?]
+   (let [query-condition (if (empty? provider-ids)
+                           (qm/->MatchAllCondition)
+                           (qm/string-conditions :provider-id provider-ids))
+         query (qm/query {:concept-type :collection
+                          :condition query-condition
+                          :page-size :unlimited
+                          :result-format :core-fields
+                          :skip-acls? skip-acls?})
+         results (qe/execute-query context query)]
+     (:items results))))
+
+(comment
+  (def collections (get-collections-by-providers {:system (get-in user/system [:apps :search])} true))
+
+  (into
+    {}
+    (for [[prov colls] (group-by :provider-id collections)]
+      [prov
+       (into {} (for [coll colls]
+                  [(:entry-title coll) (:concept-id coll)]))]))
+  )
 
 (deftracefn get-provider-holdings
   "Executes elasticsearch search to get provider holdings"
@@ -188,7 +203,7 @@
                        provider-ids
                        [provider-ids])
         ;; get all collections limited by the list of providers in json format
-        collections (get-collections-by-providers context provider-ids)
+        collections (get-collections-by-providers context provider-ids false)
         ;; get a mapping of collection to granule count
         collection-granule-count (idx/get-collection-granule-counts context provider-ids)
         ;; combine the granule count into collections to form provider holdings

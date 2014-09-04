@@ -54,14 +54,18 @@
 (deftracefn get-latest-formatted-concepts
   "Get latest version of concepts with given concept-ids in a given format. Applies ACLs to the concepts
   found."
-  [context concept-ids format]
-  (info "Getting latest version of" (count concept-ids) "concept(s) in" format "format")
-  (let [mdb-context (context->metadata-db-context context)
-        [t1 concepts] (u/time-execution
-                        (metadata-db/get-latest-concepts mdb-context concept-ids true))
-        [t2 concepts] (u/time-execution (acl-service/filter-concepts context concepts))
-        [t3 values] (u/time-execution (mapv #(concept->value-map % format) concepts))]
-    (debug "get-latest-concepts time:" t1
-           "acl-filter-concepts time:" t2
-           "concept->value-map time:" t3)
-    values))
+  ([context concept-ids format]
+   (get-latest-formatted-concepts context concept-ids format false))
+  ([context concept-ids format skip-acls?]
+   (info "Getting latest version of" (count concept-ids) "concept(s) in" format "format")
+   (let [mdb-context (context->metadata-db-context context)
+         [t1 concepts] (u/time-execution
+                         (metadata-db/get-latest-concepts mdb-context concept-ids true))
+         [t2 concepts] (u/time-execution (if skip-acls?
+                                           concepts
+                                           (acl-service/filter-concepts context concepts)))
+         [t3 values] (u/time-execution (mapv #(concept->value-map % format) concepts))]
+     (debug "get-latest-concepts time:" t1
+            "acl-filter-concepts time:" t2
+            "concept->value-map time:" t3)
+     values)))

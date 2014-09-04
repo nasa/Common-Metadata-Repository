@@ -21,7 +21,11 @@
             [cmr.search.results-handlers.atom-json-results-handler]
             [cmr.search.results-handlers.reference-results-handler]
             [cmr.search.results-handlers.metadata-results-handler]
-            [cmr.search.results-handlers.all-collections-results-handler]))
+            [cmr.search.results-handlers.all-collections-results-handler]
+
+            ;; ACL support. Required here to avoid circular dependencies
+            [cmr.search.services.acls.collection-acls]
+            [cmr.search.services.acls.granule-acls]))
 
 (def TOKEN_HEADER "echo-token")
 (def CONTENT_TYPE_HEADER "Content-Type")

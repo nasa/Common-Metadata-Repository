@@ -45,6 +45,9 @@
    ;; with details. See the elastisch documentation for more information (which is somewhat light
    ;; aggregation documentatation unfortunately)
    aggregations
+
+   ;; Flag to allow acls to be bypassed. For internal use only
+   skip-acls?
    ])
 
 (defrecord ConditionGroup
