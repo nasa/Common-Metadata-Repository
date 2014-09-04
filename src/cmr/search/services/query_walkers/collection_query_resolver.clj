@@ -30,6 +30,9 @@
   collection queries to reduce the number of collection ids in the query found in subsequently
   processed collection queries."
   [context collection-ids]
+  (when (and (not= :all collection-ids) (some nil? collection-ids))
+    (errors/internal-error! (str "Nil collection ids in list: " (pr-str collection-ids))))
+
   (if (= :all collection-ids)
     context
     (update-in context [:collection-ids]
@@ -122,8 +125,17 @@
                          (is-collection-query-cond? %) :coll-q-conds
                          :else :others)
                       conditions)
+            ;; We check if there is only one collection id conditions because this is an AND group.
+            ;; The collections we put in the context are OR'd.
             context (if (= 1 (count coll-id-conds))
-                      (add-collection-ids-to-context context #{(:value (first coll-id-conds))})
+                      (let [coll-id-cond (first coll-id-conds)
+                            collection-ids (cond
+                                             (:value coll-id-cond) #{(:value coll-id-cond)}
+                                             (:values coll-id-cond) (set (:values coll-id-cond))
+                                             :else (errors/internal-error!
+                                                     (str "Unexpected collection id cond: "
+                                                          (pr-str coll-id-cond))))]
+                        (add-collection-ids-to-context context collection-ids))
                       context)]
         (resolve-group-conditions operation (concat coll-id-conds coll-q-conds others) context))))
 
@@ -143,7 +155,7 @@
                       (qm/->MatchNoneCondition)
 
                       collection-ids
-                      (qm/and-conds [(qm/string-conditions :concept-id collection-ids) condition])
+                      (qm/and-conds [(qm/string-conditions :concept-id collection-ids true) condition])
 
                       :else
                       condition)
