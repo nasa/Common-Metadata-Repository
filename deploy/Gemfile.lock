@@ -17,6 +17,7 @@ GEM
       net-ssh (>= 2.6.5)
 
 PLATFORMS
+  java
   ruby
 
 DEPENDENCIES
