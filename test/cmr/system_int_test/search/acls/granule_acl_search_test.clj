@@ -14,27 +14,23 @@
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"
                                            "provguid2" "PROV2"
                                            "provguid3" "PROV3"
-                                           "provguid4" "PROV4"} false))
-
-(def coll-num (atom 0))
-(def gran-num (atom 0))
+                                           "provguid4" "PROV4"
+                                           "provguid5" "PROV5"} false))
 
 (defn make-coll
-  ([prov]
-   (make-coll prov {}))
-  ([prov attribs]
-   (let [n (swap! coll-num inc)]
-     (d/ingest prov
-               (dc/collection
-                 (merge {:entry-title (str "coll" n)}
-                        attribs))))))
+  ([n prov]
+   (make-coll n prov {}))
+  ([n prov attribs]
+   (d/ingest prov
+             (dc/collection
+               (merge {:entry-title (str "coll" n)}
+                      attribs)))))
 
 (defn make-gran
-  ([coll]
-   (make-gran coll {}))
-  ([coll attribs]
+  ([n coll]
+   (make-gran n coll {}))
+  ([n coll attribs]
    (let [prov (:provider-id coll)
-         n (swap! gran-num inc)
          attribs (merge {:granule-ur (str "gran" n)}
                         attribs)]
      (d/ingest prov (dg/granule coll attribs)))))
@@ -45,17 +41,15 @@
     (ingest/create-provider "provguid1" "PROV1" false)
     (ingest/create-provider "provguid2" "PROV2" false)
     (ingest/create-provider "provguid3" "PROV3" false)
-    (ingest/create-provider "provguid4" "PROV4" false))
+    (ingest/create-provider "provguid4" "PROV4" false)
+    (ingest/create-provider "provguid5" "PROV5" false))
   )
 
 (deftest granule-search-with-acls-test
-  ;; TODO add acls for collection entry title that doesn't exist
-  ;; TODO test a search with no acls applied
+  ;; TODO test a search with no acls existing
 
   (do
-    (reset! coll-num 0)
-    (reset! gran-num 0)
-
+    ;; -- PROV1 --
     ;; Guests have access to coll1
     (e/grant-guest (e/gran-catalog-item-id "provguid1" (e/coll-id ["coll1"])))
     ;; coll 2 has no granule permissions
@@ -63,66 +57,142 @@
     (e/grant-guest (e/gran-catalog-item-id "provguid1" nil (e/gran-id {:min-value 10
                                                                        :max-value 20
                                                                        :include-undefined true})))
+
+    ;; -- PROV2 --
+    ;; Combined collection identifier and granule identifier
+    (e/grant-guest
+      (e/gran-catalog-item-id "provguid2" (e/coll-id ["coll7"]) (e/gran-id {:min-value 30
+                                                                            :max-value 40})))
     (e/grant-registered-users
       (e/gran-catalog-item-id "provguid2" (e/coll-id ["coll3"] {:min-value 1 :max-value 3})))
     (e/grant-registered-users
       (e/gran-catalog-item-id "provguid2" (e/coll-id [] {:min-value 4 :max-value 6})))
 
+    ;; Acls that grant nothing
+    (e/grant-guest (e/gran-catalog-item-id "provguid2" (e/coll-id ["nonexist1"])))
+    (e/grant-guest (e/gran-catalog-item-id "provguid2" (e/coll-id [] {:min-value 4000 :max-value 4000})))
+    (e/grant-registered-users (e/gran-catalog-item-id "provguid2" (e/coll-id ["nonexist2"])))
+    (e/grant-guest (e/gran-catalog-item-id "provguid2"
+                                           (e/coll-id ["notexist3"]) (e/gran-id {:min-value 30
+                                                                                 :max-value 40})))
+    ;; -- PROV3 --
     ;; Guests have full access to provider 3
     (e/grant-guest (e/gran-catalog-item-id "provguid3"))
+
+    ;; -- PROV4 --
+    ;; no acls
+
+    ;; -- PROV5 --
+    ;; lots of access value filters
+    (e/grant-registered-users
+      (e/gran-catalog-item-id "provguid5" (e/coll-id ["coll51"]) (e/gran-id {:include-undefined true})))
+    (e/grant-registered-users
+      (e/gran-catalog-item-id "provguid5" (e/coll-id ["coll52"]) (e/gran-id {:min-value 10})))
+    (e/grant-registered-users
+      (e/gran-catalog-item-id "provguid5" (e/coll-id ["coll53"]) (e/gran-id {:max-value 10})))
+
     ;; Clear out acl caches
     (ingest/clear-caches))
 
-  (let [coll1 (make-coll "PROV1")
-        coll2 (make-coll "PROV1")
-        coll3 (make-coll "PROV2" {:access-value 2})
-        coll4 (make-coll "PROV2" {:access-value 5})
-        coll5 (make-coll "PROV3")
-        coll6 (make-coll "PROV4")
+  (let [coll1 (make-coll 1 "PROV1")
+        coll2 (make-coll 2 "PROV1")
+        coll3 (make-coll 3 "PROV2" {:access-value 2})
+        coll4 (make-coll 4 "PROV2" {:access-value 5})
+        coll5 (make-coll 5 "PROV3")
+        coll6 (make-coll 6 "PROV4")
+        coll7 (make-coll 7 "PROV2")
+        coll51 (make-coll 51 "PROV5")
+        coll52 (make-coll 52 "PROV5")
+        coll53 (make-coll 53 "PROV5")
+        all-colls [coll1 coll2 coll3 coll4 coll5 coll6 coll7 coll51 coll52 coll53]
 
         ;; - PROV1 -
-        gran1 (make-gran coll1)
-        gran2 (make-gran coll1)
+        gran1 (make-gran 1 coll1)
+        gran2 (make-gran 2 coll1)
 
         ;; Permitted through undefined access value
-        gran3 (make-gran coll2)
+        gran3 (make-gran 3 coll2)
         ; Not permitted at all (outside of access value range)
-        gran4 (make-gran coll2 {:access-value 9})
+        gran4 (make-gran 4 coll2 {:access-value 9})
         ;; Permitted through access value range
-        gran5 (make-gran coll2 {:access-value 10})
+        gran5 (make-gran 5 coll2 {:access-value 10})
 
         ;; - PROV2 -
         ;; Permitted by collection id and coll access value
-        gran6 (make-gran coll3)
+        gran6 (make-gran 6 coll3)
         ;; Permitted by collection 4's access value
-        gran7 (make-gran coll4)
+        gran7 (make-gran 7 coll4)
+
+        ;; Not permitted from granule access value
+        gran10 (make-gran 10 coll7)
+        ;; Permitted by access value
+        gran11 (make-gran 11 coll7 {:access-value 31})
 
         ;; - PROV3 -
         ;; All granules in prov 3 are permitted
-        gran8 (make-gran coll5)
-        gran9 (make-gran coll5 {:access-value 0})
+        gran8 (make-gran 8 coll5)
+        gran9 (make-gran 9 coll5 {:access-value 0})
 
         ;; - PROV4 - no permitted access
-        gran10 (make-gran coll6)
+        gran10 (make-gran 10 coll6)
+
+        ;; - PROV5 -
+        ;; Not permitted because it has an access value
+        gran51 (make-gran 51 coll51 {:access-value 0})
+        ;; Permitted because it doesn't have an access value
+        gran52 (make-gran 52 coll51 {:access-value nil})
+
+        ;; permitted because it is above min
+        gran53 (make-gran 53 coll52 {:access-value 11})
+        ;; permitted because it is equal to min
+        gran54 (make-gran 54 coll52 {:access-value 10})
+        ;; not permitted below min
+        gran55 (make-gran 55 coll52 {:access-value 9})
+
+        ;; permitted below max
+        gran56 (make-gran 56 coll53 {:access-value 9})
+        ;; permitted equal to max
+        gran57 (make-gran 57 coll53 {:access-value 10})
+        ;; not permitted above max
+        gran58 (make-gran 58 coll53 {:access-value 11})
+
+        ;; Tokens
         guest-token (e/login-guest)
-        user1-token (e/login "user1")]
+        user1-token (e/login "user1")
+
+        guest-permitted-granules [gran1 gran2 gran3 gran5 gran11 gran8 gran9]
+        user-permitted-granules [gran6 gran7 gran52 gran53 gran54 gran56 gran57]]
 
     (index/refresh-elastic-index)
 
-    (testing "search as guest"
-      (let [refs-result (search/find-refs :granule {:token guest-token})
-            expected [gran1 gran2 gran3 gran5 gran8 gran9]
-            match? (d/refs-match? expected refs-result)]
-        (when-not match?
-          (println "Expected:" (map :concept-id expected))
-          (println "Actual:" (map :id (:refs refs-result)))
-          (println "Expected:" (map :granule-ur expected))
-          (println "Actual:" (map :name (:refs refs-result))))
-        (is match?)))
+    (are [expected params]
+         (let [refs-result (search/find-refs :granule params)
+               match? (d/refs-match? expected refs-result)]
+           (when-not match?
+             (println "Expected:" (map :concept-id expected))
+             (println "Actual:" (map :id (:refs refs-result)))
+             (println "Expected:" (map :granule-ur expected))
+             (println "Actual:" (map :name (:refs refs-result))))
+           match?)
+         guest-permitted-granules {:token guest-token}
+         user-permitted-granules {:token user1-token}
 
-    #_(testing "search as registered users"
-        (is (d/refs-match? [gran6 gran7]
-                           (search/find-refs :granule {:token user1-token}))))
+         ;; Test searching with each collecion id as guest and user
+         ;; Entry title searches
+         [gran1 gran2] {:token guest-token :entry-title "coll1"}
+         [gran3 gran5] {:token guest-token :entry-title "coll2"}
+         [gran1 gran2 gran3 gran5 gran11] {:token guest-token :entry-title ["coll1" "coll2" "coll7"]}
+
+         ;; concept id
+         [gran1 gran2] {:token guest-token :concept-id (:concept-id coll1)}
+         [gran3 gran5] {:token guest-token :concept-id (:concept-id coll2)}
+         guest-permitted-granules
+         {:token guest-token :concept-id (cons "C999-PROV1" (map :concept-id all-colls))}
+         ; user-permitted-granules
+         ; {:token guest-token :concept-id (cons "C999-PROV1" (map :concept-id all-colls))}
+
+
+         )
 
     ;; TODO test searching
     ;; with no collection concept ids
