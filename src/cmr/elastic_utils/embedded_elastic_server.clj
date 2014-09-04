@@ -6,7 +6,8 @@
            org.elasticsearch.node.NodeBuilder
            org.elasticsearch.node.Node)
   (:require [cmr.common.lifecycle :as lifecycle]
-            [clj-http.client :as client]))
+            [clj-http.client :as client]
+            [cmr.common.log :as log :refer (debug info warn error)]))
 
 {"path" {"data" "es_data/elastic_utils"}, "index" {"store" {"type" "memory"}}, "node" {"name" "embedded-elastic"}, "script" {"disable_dynamic" "true"}, "transport" {"tcp" {"port" "9334"}}, "http" {"port" "9234"}}
 
