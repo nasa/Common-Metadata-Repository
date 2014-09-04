@@ -42,7 +42,6 @@
   "A function that will validate concept-type and thrown and exception if it's invalid"
   (util/build-validator :bad-request concept-type-validation))
 
-
 (defn parse-concept-id
   "Split a concept id into concept-type-prefix, sequence number, and provider id."
   [concept-id]

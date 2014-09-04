@@ -4,6 +4,7 @@
             [cmr.common.lifecycle :as l]
             [cmr.common.services.errors :as errors]
             [clj-time.core :as t]
+            [cmr.common.config :as config]
             ;; quartzite dependencies
             [clojurewerkz.quartzite.scheduler :as qs]
             [clojurewerkz.quartzite.triggers :as qt]
@@ -99,12 +100,15 @@
     (System/setProperty "org.quartz.dataSource.myDS.user" user)
     (System/setProperty "org.quartz.dataSource.myDS.password" password)))
 
+(def default-start-delay
+  (config/config-value-fn :default-job-start-delay "5" #(Long. ^String %)))
+
 (defn- schedule-job
   "Schedules a quartzite job (stopping existing job first)."
   [system-holder-var-name job]
   (let [{:keys [^Class job-type job-key interval start-delay]} job
         ;; Defaults
-        start-delay (or start-delay 5)
+        start-delay (or start-delay (default-start-delay))
         job-key (or job-key (str (.getSimpleName job-type) ".job"))
 
         trigger-key (str job-key ".trigger")
