@@ -282,18 +282,4 @@
   [xml]
   (v/validate-xml (io/resource "schema/iso_mends/schema/1.0/ISO19115-2_EOS.xsd") xml))
 
-(comment
-
-  (def valid-collection-xml
-    (slurp (io/file (io/resource "data/minimal_iso_collection.xml"))))
-  (let [valid-collection-xml
-        (slurp (io/file (io/resource "data/all_fields_iso_collection.xml")))
-        coll (parse-collection valid-collection-xml)
-        xml (core/umm->iso-mends-xml coll)]
-    (println "----coll: " coll)
-    (println (core/umm->iso-mends-xml coll true))
-    (println (validate-xml xml))
-    )
-
-  )
 
