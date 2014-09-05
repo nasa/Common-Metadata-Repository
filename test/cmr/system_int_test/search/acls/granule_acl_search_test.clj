@@ -46,8 +46,6 @@
   )
 
 (deftest granule-search-with-acls-test
-  ;; TODO test a search with no acls existing
-
   (do
     ;; -- PROV1 --
     ;; Guests have access to coll1
@@ -91,7 +89,6 @@
     (e/grant-registered-users
       (e/gran-catalog-item-id "provguid5" (e/coll-id ["coll53"]) (e/gran-id {:max-value 10})))
 
-    ;; Clear out acl caches
     (ingest/clear-caches))
 
   (let [coll1 (make-coll 1 "PROV1")
@@ -156,6 +153,9 @@
         ;; not permitted above max
         gran58 (make-gran 58 coll53 {:access-value 11})
 
+        all-grans [gran1 gran2 gran3 gran4 gran5 gran6 gran7 gran8 gran9 gran10 gran11 gran51 gran52
+                  gran54 gran53 gran55 gran56 gran57 gran58]
+
         ;; Tokens
         guest-token (e/login-guest)
         user1-token (e/login "user1")
@@ -183,24 +183,29 @@
          [gran3 gran5] {:token guest-token :entry-title "coll2"}
          [gran1 gran2 gran3 gran5 gran11] {:token guest-token :entry-title ["coll1" "coll2" "coll7"]}
 
+         ;; provider id
+         (filter #(= "PROV1" (:provider-id %))
+                 guest-permitted-granules)
+         {:token guest-token :provider-id "PROV1"}
+
+         ;; provider id and entry title
+         [gran1 gran2] {:token guest-token :entry-title "coll1" :provider-id "PROV1"}
+         [] {:token guest-token :entry-title "coll5" :provider-id "PROV1"}
+
          ;; concept id
          [gran1 gran2] {:token guest-token :concept-id (:concept-id coll1)}
          [gran3 gran5] {:token guest-token :concept-id (:concept-id coll2)}
          guest-permitted-granules
          {:token guest-token :concept-id (cons "C999-PROV1" (map :concept-id all-colls))}
-         ; user-permitted-granules
-         ; {:token guest-token :concept-id (cons "C999-PROV1" (map :concept-id all-colls))}
+         user-permitted-granules
+         {:token user1-token :concept-id (cons "C999-PROV1" (map :concept-id all-colls))})
 
-
-         )
-
-    ;; TODO test searching
-    ;; with no collection concept ids
-    ;; 1 coll concept id
-    ;; 2 coll concept ids
-    ;; a provider id
-    ;; a provider id and entry title
-    ;; an entry title
+    (testing "Direct transformer retrieval acl enforcement"
+      (d/assert-metadata-results-match
+          :echo10 user-permitted-granules
+          (search/find-metadata :granule :echo10 {:token user1-token
+                                                  :page-size 100
+                                                  :concept-id (map :concept-id all-grans)})))
 
 
     ))
