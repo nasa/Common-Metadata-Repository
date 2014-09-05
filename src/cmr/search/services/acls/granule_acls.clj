@@ -66,20 +66,6 @@
       :no-query-coll-ids
       :with-query-coll-ids)))
 
-;; TODO what if an acl is granted for collections that don't exist with an access value?
-;; Could that permit other collections with an access value?
-;; write a test then change it to something like this
-
-(comment
-
-  (when collections
-    (if concept-ids
-      (q/string-conditions :collection-concept-id concept-ids true)
-      ;; There are collections present in acl but none reference real collections
-      (q/->MatchNoneCondition)))
-)
-
-
 (defmethod collection-identifier->query-condition :no-query-coll-ids
   [query-coll-ids provider-id collection-identifier]
   (if-let [{:keys [collections access-value]} collection-identifier]

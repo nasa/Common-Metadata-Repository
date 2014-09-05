@@ -8,7 +8,8 @@
             [cmr.search.models.query :as q]
             [cmr.search.data.elastic-search-index :as idx]
             [cmr.search.data.complex-to-simple :as c2s]
-            [cmr.search.services.query-execution :as query-execution])
+            [cmr.search.services.query-execution :as query-execution]
+            [cmr.search.services.acl-service :as acl-service])
   (:import [cmr.search.models.query
             Query
             ConditionGroup
@@ -64,7 +65,6 @@
   coll-query - The collection query
   results - the results of the collection query"
   [coll-query results]
-  ;; TODO this needs to enforce granule ACLs on the query
   (let [collection-ids (query-results->concept-ids results)
         spatial-temp-conds (extract-spatial-and-temporal-conditions coll-query)
         condition (if (seq collection-ids)
@@ -92,6 +92,7 @@
   [context query elastic-results query-results feature]
   (->> query-results
        (extract-granule-count-query query)
+       (acl-service/add-acl-conditions-to-query context)
        c2s/reduce-query
        (idx/execute-query context)
        search-results->granule-counts
