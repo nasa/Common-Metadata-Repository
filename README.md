@@ -16,6 +16,17 @@ Dev System combines together the separate microservices of the CMR into a single
       - I'll give someone a gold star if the fix this
   - Open a repl in sublime from this project.
 
+## Create a Jar for ECHO
+
+  - Increment version in project.clj
+  - Update version in build-and-run.sh to match.
+  - Update all projects
+  - Sign on to the vpn
+  - run support/build-cmr-for-echo.sh
+    - This will build uberjar and push it to cmr-wl-app1 in your home directory
+  - Notify echo dev of new version.
+
+
 ## License
 
 Copyright © 2014 NASA
