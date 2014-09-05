@@ -192,7 +192,7 @@
                                     :detailed-variable string-field-mapping
 
                                     ;; mappings added for atom
-                                    :browsable (not-indexed (stored bool-field-mapping))
+                                    :browsable (stored bool-field-mapping)
                                     :atom-links (not-indexed (stored string-field-mapping))
                                     :summary (not-indexed (stored string-field-mapping))
                                     :original-format (not-indexed (stored string-field-mapping))
