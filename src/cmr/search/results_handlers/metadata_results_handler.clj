@@ -11,7 +11,8 @@
             [cmr.common.xml :as cx]
             [clojure.string :as str]
             [cmr.umm.dif.collection :as dif-c]
-            [cmr.umm.iso-mends.collection :as iso-mends-c]
+            [cmr.umm.iso-mends.collection]
+            [cmr.umm.iso-mends.collection]
             [cmr.common.util :as u]
             [cmr.common.log :refer (debug info warn error)]))
 
@@ -28,6 +29,10 @@
   [])
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:collection :iso-mends]
+  [concept-type result-format]
+  [])
+
+(defmethod elastic-search-index/concept-type+result-format->fields [:collection :iso-smap]
   [concept-type result-format]
   [])
 
@@ -56,6 +61,10 @@
   (elastic-results->query-metadata-results context query elastic-results))
 
 (defmethod elastic-results/elastic-results->query-results :iso-mends
+  [context query elastic-results]
+  (elastic-results->query-metadata-results context query elastic-results))
+
+(defmethod elastic-results/elastic-results->query-results :iso-smap
   [context query elastic-results]
   (elastic-results->query-metadata-results context query elastic-results))
 
@@ -154,5 +163,9 @@
   (search-results->metadata-response context query results))
 
 (defmethod qs/search-results->response :iso-mends
+  [context query results]
+  (search-results->metadata-response context query results))
+
+(defmethod qs/search-results->response :iso-smap
   [context query results]
   (search-results->metadata-response context query results))

@@ -58,6 +58,7 @@
     "application/atom+xml"
     "application/iso+xml"
     "application/iso-mends+xml"
+    "application/iso-smap+xml"
     "text/csv"})
 
 (def supported-provider-holdings-mime-types
