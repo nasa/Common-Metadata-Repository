@@ -13,7 +13,7 @@
   ["Granule UR","Producer Granule ID","Start Time","End Time","Online Access URLs","Browse URLs","Cloud Cover","Day/Night","Size"])
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:granule :csv]
-  [concept-type result-format]
+  [concept-type query]
   ["granule-ur"
    "producer-gran-id"
    "start-date"

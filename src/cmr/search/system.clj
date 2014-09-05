@@ -14,7 +14,8 @@
             [cmr.transmit.config :as transmit-config]
             [cmr.elastic-utils.config :as es-config]
             [cmr.search.services.query-execution.has-granules-results-feature :as hgrf]
-            [cmr.search.services.acls.acl-cache-extension :as ace]))
+            [cmr.search.services.acls.acl-cache-extension :as ace]
+            [cmr.search.services.acls.collections-cache :as coll-cache]))
 
 ;; Design based on http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts
 
@@ -54,18 +55,22 @@
              :metadata-db metadata-db
              :search-index (idx/create-elastic-search-index (es-config/elastic-config))
              :web (web/create-web-server (transmit-config/search-port) routes/make-api)
+             ;; Caches added to this list must be explicitly cleared in query-service/clear-cache
              :caches {:index-names (cache/create-cache)
                       :acls (ac/create-acl-cache)
                       ;; Caches a map of tokens to the security identifiers
                       :token-sid (cache/create-cache (clj-cache/ttl-cache-factory {} :ttl TOKEN_CACHE_TIME))
-                      :has-granules-map (hgrf/create-has-granules-map-cache)}
+                      :has-granules-map (hgrf/create-has-granules-map-cache)
+                      coll-cache/cache-key (coll-cache/create-cache)}
+             ;; TODO remove this
              :acl-cache-extension-fns [ace/handle-acl-cache-update]
              :zipkin (context/zipkin-config "Search" false)
              :search-public-conf search-public-conf
              :scheduler (jobs/create-scheduler
                           `system-holder
                           [(ac/refresh-acl-cache-job "search-acl-cache-refresh")
-                           hgrf/refresh-has-granules-map-job])}]
+                           hgrf/refresh-has-granules-map-job
+                           coll-cache/refresh-collections-cache-for-granule-acls-job])}]
     (transmit-config/system-with-connections sys [:index-set :echo-rest])))
 
 (defn start

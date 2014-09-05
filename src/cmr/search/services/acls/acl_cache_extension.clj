@@ -4,6 +4,8 @@
   (:require [cmr.acl.acl-cache]
             [cmr.search.services.query-service :as query-service]))
 
+;; TODO get rid of this namespace
+
 (defn get-provider-entry-title-concept-id-map
   "Returns a map of provider to entry titles to concept ids in ECHO. Dynamically loads it using
   provider holdings"

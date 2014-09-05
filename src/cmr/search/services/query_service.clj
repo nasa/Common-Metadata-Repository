@@ -66,6 +66,7 @@
             [cmr.common.util :as u]
             [cmr.common.cache :as cache]
             [cmr.acl.acl-cache :as acl-cache]
+            [cmr.search.services.acls.collections-cache :as coll-cache]
             [camel-snake-kebab :as csk]
             [cheshire.core :as json]
             [cmr.common.log :refer (debug info warn error)]))
@@ -160,11 +161,12 @@
   [context]
   (info "Clearing the search application cache")
   ;; TODO enforce ingest management ACL here. - CMR-678
-  (doseq [[cache-name cache] (get-in context [:system :caches])
-          :when (and (not= cache-name :acls) (not= cache-name :has-granules-map))]
-    (cache/reset-cache cache))
+
+  (cache/reset-cache (get-in context [:system :caches :index-names]))
+  (cache/reset-cache (get-in context [:system :caches :token-sid]))
   (acl-cache/reset context)
-  (hgrf/reset context))
+  (hgrf/reset context)
+  (coll-cache/reset context))
 
 (deftracefn get-collections-by-providers
   "Returns all collections limited optionally by the given provider ids"
@@ -177,7 +179,8 @@
          query (qm/query {:concept-type :collection
                           :condition query-condition
                           :page-size :unlimited
-                          :result-format :core-fields
+                          :result-format :query-specified
+                          :fields [:entry-title :provider-id]
                           :skip-acls? skip-acls?})
          results (qe/execute-query context query)]
      (:items results))))

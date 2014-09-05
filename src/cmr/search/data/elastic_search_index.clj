@@ -88,8 +88,8 @@
 (defmulti concept-type+result-format->fields
   "Returns the fields that should be selected out of elastic search given a concept type and result
   format"
-  (fn [concept-type result-format]
-    [concept-type result-format]))
+  (fn [concept-type query]
+    [concept-type (:result-format query)]))
 
 (defrecord ElasticSearchIndex
   [
@@ -120,7 +120,7 @@
         elastic-query (q2e/query->elastic query)
         sort-params (q2e/query->sort-params query)
         index-info (concept-type->index-info context concept-type query)
-        fields (concept-type+result-format->fields concept-type result-format)
+        fields (concept-type+result-format->fields concept-type query)
         [from size] (if (= (:page-size query) :unlimited)
                       [0 10000]
                       [(* (dec page-num) page-size) page-size])]

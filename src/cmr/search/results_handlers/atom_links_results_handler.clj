@@ -14,7 +14,7 @@
             [clj-time.core :as time]))
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:collection :atom-links]
-  [concept-type result-format]
+  [concept-type query]
   ["concept-id"
    "atom-links"])
 

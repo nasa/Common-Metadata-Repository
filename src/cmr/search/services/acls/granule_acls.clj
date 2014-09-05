@@ -6,6 +6,8 @@
             [cmr.common.concepts :as c]
             [cmr.search.services.query-walkers.collection-concept-id-extractor :as coll-id-extractor]
             [cmr.search.services.query-walkers.collection-query-resolver :as r]
+            [cmr.acl.collection-matchers :as coll-matchers]
+            [cmr.search.services.acls.collections-cache :as coll-cache]
             [cmr.common.services.errors :as errors]
             [clojure.set :as set]))
 
@@ -143,12 +145,9 @@
       (q/or-conds conds)
       (q/->MatchNoneCondition))))
 
-(def last-query (atom nil))
-
 ;; This expects that collection queries have been resolved before this step.
 (defmethod acl-service/add-acl-conditions-to-query :granule
   [context query]
-  (reset! last-query query)
   (let [coll-ids-by-prov (->> (coll-id-extractor/extract-collection-concept-ids query)
                               ;; Group the concept ids by provider
                               (group-by #(:provider-id (c/parse-concept-id %)))
@@ -170,6 +169,7 @@
 
   (def context {:system (get-in user/system [:apps :search])
                 :token "ABC-1"})
+  (coll-cache/get-collection-map context)
 
   (acl-service/add-acl-conditions-to-query
     context
@@ -191,34 +191,49 @@
   (def acl (last acls))
   (acl->query-condition coll-ids-by-prov acl)
 
-  (let [{{:keys [provider-id] :as cii} :catalog-item-identity} acl
-        acl-collections (get-in cii [:collection-identifier :collections])
-        acl-coll-ids (->> acl-collections
-                          (map :concept-id)
-                          ;; It's possible an ACL refers to an entry title that doesn't exist
-                          (remove nil?))]
-    `(and ~(:granule-applicable cii)
-          ;; applies to a provider the user is searching
-          ~(coll-ids-by-prov provider-id)
-          (or ; The ACL applies to no specific collection
-              ~(empty? acl-collections)
-              ;; The acl applies to a specific collection that the user is searching
-              ~(some (coll-ids-by-prov provider-id) acl-coll-ids))))
+)
 
+(defn granule-identifier-matches-concept?
+  "Returns true if the granule identifier is nil or it matches the concept."
+  [gran-id concept]
+  (if-let [{:keys [min-value max-value include-undefined]} (:access-value gran-id)]
+    (let [access-value (acl-helper/extract-access-value concept)]
+      (or (and (nil? access-value) include-undefined)
+          (and access-value
+               (or (and (and min-value max-value)
+                        (>= access-value min-value)
+                        (<= access-value max-value))
+                   (and min-value (nil? max-value) (>= access-value min-value))
+                   (and max-value (nil? min-value) (<= access-value max-value))))))
+    true))
 
+(defn collection-identifier-matches-concept?
+  "Returns true if the collection identifier is nil or it matches the concept."
+  [context coll-id concept]
+  (if coll-id
+    (let [collection-concept-id (get-in concept [:extra-fields :parent-collection-id])
+          collection (coll-cache/get-collection context collection-concept-id)]
+      (when-not collection
+        (errors/internal-error!
+          (format "Collection with id %s was in a granule but was not found using collection cache."
+                  collection-concept-id)))
+      (coll-matchers/coll-matches-collection-identifier? collection coll-id))
+    true))
 
-
-
-  (acl->query-condition {} acl)
-
-  (for [acl acls]
-    (acl->query-condition {} acl))
-
-  )
-
-
+(defn acl-match-concept?
+  "Returns true if the acl matches the concept indicating the concept is permitted."
+  [context acl concept]
+  (let [{provider-id :provider-id
+         gran-id :granule-identifier
+         coll-id :collection-identifier} (:catalog-item-identity acl)]
+    (and (= provider-id (:provider-id concept))
+         (granule-identifier-matches-concept? gran-id concept)
+         (collection-identifier-matches-concept? context coll-id concept))))
 
 (defmethod acl-service/acls-match-concept? :granule
-  [acls concept]
-  ;; TODO implement acl-service/acls-match-concept? for granules
-  true)
+  [context acls concept]
+  (some #(acl-match-concept? context % concept) acls))
+
+
+
+
