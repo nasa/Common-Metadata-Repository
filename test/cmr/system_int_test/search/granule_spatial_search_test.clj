@@ -132,11 +132,11 @@
         make-gran (fn [ur & shapes]
                     (d/ingest "PROV1" (dg/granule geodetic-coll
                                                   {:granule-ur ur
-                                                   :spatial-coverage (apply dg/spatial shapes)})))
+                                                   :spatial-coverage (apply dg/spatial nil shapes)})))
         make-cart-gran (fn [ur & shapes]
                          (d/ingest "PROV1" (dg/granule cartesian-coll
                                                        {:granule-ur ur
-                                                        :spatial-coverage (apply dg/spatial shapes)})))
+                                                        :spatial-coverage (apply dg/spatial nil shapes)})))
 
         ;; Lines
         normal-line (make-gran "normal-line" (l/ords->line-string :geodetic 22.681 -8.839, 18.309 -11.426, 22.705 -6.557))

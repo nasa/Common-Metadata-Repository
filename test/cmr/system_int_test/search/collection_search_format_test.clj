@@ -154,7 +154,7 @@
 
         ;; A collection with a granule spatial representation
         c2 (d/ingest "PROV1" (dc/collection {:spatial-coverage (dc/spatial :geodetic)}) :dif)
-        g2 (d/ingest "PROV1" (dg/granule c2 {:spatial-coverage (dg/spatial (m/mbr -160 45 -150 35))}))
+        g2 (d/ingest "PROV1" (dg/granule c2 {:spatial-coverage (dg/spatial nil (m/mbr -160 45 -150 35))}))
 
 
         ;; A collections with a granule spatial representation and spatial data
@@ -162,6 +162,7 @@
                      (dc/collection
                        {:spatial-coverage
                         (dc/spatial :geodetic
+                                    nil
                                     :geodetic
                                     (m/mbr -10 9 0 -10))})
                      :dif)
@@ -219,6 +220,7 @@
                                         :associated-difs ["DIF-1" "DIF-2"]
                                         :spatial-coverage
                                         (dc/spatial :geodetic
+                                                    nil
                                                     :geodetic
                                                     (poly/polygon [(umm-s/ords->ring -70 20, 70 20, 70 30, -70 30, -70 20)])
                                                     polygon-with-holes

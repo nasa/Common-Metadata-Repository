@@ -169,6 +169,7 @@
                                 :cloud-cover 50.0
                                 :related-urls [ru1 ru2]
                                 :spatial-coverage (dg/spatial
+                                                    nil
                                                     (poly/polygon [(umm-s/ords->ring -70 20, 70 20, 70 30, -70 30, -70 20)])
                                                     polygon-with-holes
                                                     (p/point 1 2)
@@ -185,7 +186,10 @@
                                 :size 80.0
                                 :cloud-cover 30.0
                                 :related-urls [ru3]
-                                :spatial-coverage (dc/spatial :geodetic)})]
+                                ;; FIXME - Commented this out because it seems wrong (dc not dg)
+                                ;; and is incompatible with spatial-coverage with orbit
+                                ; :spatial-coverage (dc/spatial nil :geodetic)
+                                })]
 
     (index/refresh-elastic-index)
 

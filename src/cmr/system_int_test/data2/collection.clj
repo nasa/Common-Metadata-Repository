@@ -133,9 +133,13 @@
 
 (defn spatial
   ([gsr]
-   (spatial gsr nil))
-  ([gsr sr & shapes]
+   (spatial gsr nil nil))
+  ([gsr orbit-params]
+   (spatial gsr orbit-params nil))
+  ([gsr orbit-params sr & shapes]
    (c/map->SpatialCoverage {:granule-spatial-representation gsr
+                            :orbit-parameters (when orbit-params
+                                                (c/map->OrbitParameters orbit-params))
                             :spatial-representation sr
                             :geometries (seq shapes)})))
 

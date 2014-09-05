@@ -121,13 +121,13 @@
   (let [make-coll (fn [n shape temporal-attribs]
                     (let [spatial-attribs (when shape
                                             {:spatial-coverage
-                                             (dc/spatial :geodetic :geodetic shape)})
+                                             (dc/spatial :geodetic nil :geodetic shape)})
                           coll-attribs (merge {:entry-title (str "coll" n)}
                                               spatial-attribs
                                               temporal-attribs)]
                       (d/ingest "PROV1" (dc/collection coll-attribs))))
         make-gran (fn [coll shape temporal-attribs]
-                    (let [spatial-attribs (when shape {:spatial-coverage (dg/spatial shape)})
+                    (let [spatial-attribs (when shape {:spatial-coverage (dg/spatial nil shape)})
                           gran-attribs (merge {} spatial-attribs temporal-attribs)]
                       (d/ingest "PROV1" (dg/granule coll gran-attribs))))
 

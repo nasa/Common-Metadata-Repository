@@ -58,8 +58,8 @@
                            :size size}))))
 
 (defn spatial
-  [& geometries]
-  (g/->SpatialCoverage geometries))
+  [orbit & geometries]
+  (g/->SpatialCoverage geometries orbit))
 
 (defn granule
   "Creates a granule"
