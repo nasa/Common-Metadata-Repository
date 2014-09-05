@@ -249,6 +249,14 @@ The temporal datetime has to be in yyyy-MM-ddTHH:mm:ssZ format.
 
     curl "http://localhost:3003/collections?downloadable=true"
 
+#### Find collections by browse_only
+
+    curl "http://localhost:3003/collections?browse_only=true"
+
+#### Find collections by browsable
+
+    curl "http://localhost:3003/collections?browsable=true"
+
 #### Find collections by keyword search, case insensitive and support wild cards ? and *
 
     curl "http://localhost:3003/collections?keyword=alpha%20beta%20g?mma"

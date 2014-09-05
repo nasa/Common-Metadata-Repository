@@ -35,6 +35,7 @@
                 :science-keywords :science-keywords
                 :dif-entry-id :dif-entry-id
                 :downloadable :boolean
+                :browsable :boolean
                 :polygon :polygon
                 :bounding-box :bounding-box
                 :point :point
