@@ -1,10 +1,10 @@
 (ns cmr.indexer.data.concepts.keyword
   "Contains functions to create keyword fields"
-  (require [clojure.string :as str]
-           [cmr.indexer.data.concepts.science-keyword :as sk]
-           [cmr.indexer.data.concepts.attribute :as attrib]
-           [cmr.indexer.data.concepts.organization :as org]
-           [cmr.common.util :as util]))
+  (:require [clojure.string :as str]
+            [cmr.indexer.data.concepts.science-keyword :as sk]
+            [cmr.indexer.data.concepts.attribute :as attrib]
+            [cmr.indexer.data.concepts.organization :as org]
+            [cmr.common.util :as util]))
 
 ;; NOTE -  The following fields are marked as deprecated in the UMM documenation
 ;; and are therefore not used for keyword searches in the CMR:

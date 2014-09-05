@@ -39,7 +39,7 @@
   (let [{:keys [concept-id provider-id revision-date format]} concept
         {{:keys [short-name long-name version-id processing-level-id collection-data-type]} :product
          :keys [entry-id entry-title summary temporal related-urls spatial-keywords associated-difs
-                temporal-keywords]} collection
+                temporal-keywords access-value]} collection
         platforms (:platforms collection)
         platform-short-names (map :short-name platforms)
         platform-long-names (remove nil? (map :long-name platforms))
@@ -76,6 +76,7 @@
             :version-id version-id
             :version-id.lowercase (when version-id (str/lower-case version-id))
             :revision-date revision-date
+            :access-value access-value
             :processing-level-id processing-level-id
             :processing-level-id.lowercase (when processing-level-id (str/lower-case processing-level-id))
             :collection-data-type collection-data-type

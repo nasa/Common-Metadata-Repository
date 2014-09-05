@@ -149,6 +149,8 @@
                                     :version-id            (stored string-field-mapping)
                                     :version-id.lowercase  string-field-mapping
                                     :revision-date         date-field-mapping
+                                    ;; Stored to allow retrieval for implementing granule acls
+                                    :access-value          (stored double-field-mapping)
                                     :processing-level-id   (stored string-field-mapping)
                                     :processing-level-id.lowercase  string-field-mapping
                                     :collection-data-type  (stored string-field-mapping)
