@@ -6,8 +6,7 @@
             [clj-time.core :as t]
             [cmr.common.jobs :refer [defjob]]
             [cmr.transmit.echo.acls :as echo-acls]
-            [cmr.common.log :as log :refer (debug info warn error)]
-            [clojure.walk :as w]))
+            [cmr.common.log :as log :refer (debug info warn error)]))
 
 (def initial-cache-state
   {:acls nil

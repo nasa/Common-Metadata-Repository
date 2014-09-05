@@ -29,7 +29,7 @@
       ;; collection's without a value will only be included if include-undefined is true
       include-undefined)))
 
-(defn- coll-matches-collection-identifier?
+(defn coll-matches-collection-identifier?
   "Returns true if the collection matches the collection identifier"
   [coll coll-id]
   (let [coll-entry-title (:entry-title coll)
@@ -43,6 +43,7 @@
   "Returns true if the acl is applicable to the collection."
   ([coll-prov-id coll acl]
    (coll-applicable-acl? coll-prov-id coll acl nil))
+  ;; TODO remove ignore keys. The commit can be reverted
   ([coll-prov-id coll acl ignore-keys]
    (when-let [{:keys [collection-applicable
                       collection-identifier
