@@ -38,6 +38,15 @@
         sids (context->sids context)]
     (filter (partial acl-matches-sids-and-permission? sids :read) acls)))
 
+(defn- get-iso-access-value
+  "Returns the iso-mends access value by parsing MENDS ISO xml"
+  [concept]
+  (when-let [[_ restriction-flag-str]
+             (re-matches #"(?s).*<gco:CharacterString>Restriction Flag:(.+?)</gco:CharacterString>.*"
+                         (:metadata concept))]
+    (when-not (re-find #".*<.*" restriction-flag-str)
+      (Double. ^String restriction-flag-str))))
+
 (defmulti extract-access-value
   "Extracts access value (aka. restriction flag) from the concept."
   (fn [concept]
@@ -52,4 +61,17 @@
 (defmethod extract-access-value "application/dif+xml"
   [concept]
   ;; DIF doesn't support restriction flag yet.
+  nil)
+
+(defmethod extract-access-value "application/iso+xml"
+  [concept]
+  (get-iso-access-value concept))
+
+(defmethod extract-access-value "application/iso-mends+xml"
+  [concept]
+  (get-iso-access-value concept))
+
+(defmethod extract-access-value "application/iso-smap+xml"
+  [concept]
+  ;; SMAP ISO doesn't support restriction flag yet.
   nil)
