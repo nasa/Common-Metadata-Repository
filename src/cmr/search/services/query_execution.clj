@@ -112,9 +112,9 @@
 (defmethod execute-query :elastic
   [context query]
   (let [processed-query (pre-process-query-result-features context query)
-        processed-query (c2s/reduce-query processed-query)
-        processed-query (r/resolve-collection-queries context processed-query)
 
+        processed-query (r/resolve-collection-queries context processed-query)
+        processed-query (c2s/reduce-query processed-query)
 
         ; collection-ids (ce/extract-collection-concept-ids processed-query)
         ; context (assoc context :parent-collection-ids collection-ids)
