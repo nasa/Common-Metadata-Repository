@@ -205,7 +205,7 @@
     (let [[l1 l2] (p/order-longitudes lon1 lon2)]
       (and
         ;; should have original values
-        (= #{l1 l2} #{lon1 lon2})
+        (= (hash-set l1 l2) (hash-set lon1 lon2))
         ;; should stay in order
         (= [l1 l2] (p/order-longitudes l1 l2))
         ;; should be put back in the right order
