@@ -25,6 +25,7 @@
           :errors [(msg/invalid-sort-key "foo_bar" :collection)]}
          (search/find-refs :collection {:sort-key "foo_bar"}))))
 
+
 (deftest sorting-test
   (let [c1 (make-coll "PROV1" "et99" 10 20)
         c2 (make-coll "PROV1" "et90" 14 24)
@@ -43,10 +44,6 @@
         all-colls [c1 c2 c3 c4 c5 c6 c7 c8 c9 c10 c11 c12]]
     (index/refresh-elastic-index)
 
-    (testing "default sorting"
-      (is (d/refs-match-order?
-            (sort-by (comp str/lower-case :entry-title) all-colls)
-            (search/find-refs :collection {:page-size 20}))))
 
     (testing "Sort by entry title ascending"
       (are [sort-key] (d/refs-match-order?
@@ -80,6 +77,17 @@
                                                              :sort-key sort-key}))
            "end_date" [c5 c1 c12 c2 c6 c7 c3 c4 c8 c9 c10 c11]
            "-end_date" [c8 c4 c3 c7 c6 c2 c12 c1 c5 c9 c10 c11]))))
+
+(deftest default-sorting-test
+  (let [c1 (make-coll "PROV1" "et99" 10 20)
+        c2 (make-coll "PROV2" "et99" 14 24)
+        c3 (make-coll "PROV2" "et80" 19 30)
+        c4 (make-coll "PROV1" "et80" 24 35)
+        all-colls [c1 c2 c3 c4]]
+    (index/refresh-elastic-index)
+    (is (d/refs-match-order?
+      (sort-by (juxt (comp str/lower-case :entry-title) (comp str/lower-case :provider-id)) all-colls)
+      (search/find-refs :collection {:page-size 20})))))
 
 (deftest multiple-sort-key-test
   (let [c1 (make-coll "PROV1" "et10" 10 nil)
