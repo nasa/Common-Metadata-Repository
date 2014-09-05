@@ -12,12 +12,12 @@
             [cmr.common.util :as util]))
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:collection :json]
-  [concept-type result-format]
-  (elastic-search-index/concept-type+result-format->fields :collection :atom))
+  [concept-type query]
+  (elastic-search-index/concept-type+result-format->fields :collection (assoc query :result-format :atom)))
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:granule :json]
-  [concept-type result-format]
-  (elastic-search-index/concept-type+result-format->fields :granule :atom))
+  [concept-type query]
+  (elastic-search-index/concept-type+result-format->fields :granule (assoc query :result-format :atom)))
 
 (defmethod elastic-results/elastic-result->query-result-item :json
   [context query elastic-result]

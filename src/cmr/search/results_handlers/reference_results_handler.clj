@@ -11,12 +11,12 @@
             [cmr.search.services.query-execution.facets-results-feature :as frf]))
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:granule :xml]
-  [concept-type result-format]
+  [concept-type query]
   ["granule-ur"
    "provider-id"])
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:collection :xml]
-  [concept-type result-format]
+  [concept-type query]
   ["entry-title"
    "provider-id"
    "short-name"

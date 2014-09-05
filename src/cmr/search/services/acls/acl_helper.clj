@@ -37,3 +37,19 @@
   (let [acls (ac/get-acls context)
         sids (context->sids context)]
     (filter (partial acl-matches-sids-and-permission? sids :read) acls)))
+
+(defmulti extract-access-value
+  "Extracts access value (aka. restriction flag) from the concept."
+  (fn [concept]
+    (:format concept)))
+
+(defmethod extract-access-value "application/echo10+xml"
+  [concept]
+  (when-let [[_ restriction-flag-str] (re-matches #"(?s).*<RestrictionFlag>(.+)</RestrictionFlag>.*"
+                                                  (:metadata concept))]
+    (Double. ^String restriction-flag-str)))
+
+(defmethod extract-access-value "application/dif+xml"
+  [concept]
+  ;; DIF doesn't support restriction flag yet.
+  nil)

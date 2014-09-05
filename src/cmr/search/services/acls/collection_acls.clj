@@ -13,25 +13,9 @@
     (update-in query [:condition] #(qm/and-conds [acl-cond %]))))
 
 
-(defmulti extract-access-value
-  "Extracts access value (aka. restriction flag) from the concept."
-  (fn [concept]
-    (:format concept)))
-
-(defmethod extract-access-value "application/echo10+xml"
-  [concept]
-  (when-let [[_ restriction-flag-str] (re-matches #"(?s).*<RestrictionFlag>(.+)</RestrictionFlag>.*"
-                                                  (:metadata concept))]
-    (Double. ^String restriction-flag-str)))
-
-(defmethod extract-access-value "application/dif+xml"
-  [concept]
-  ;; DIF doesn't support restriction flag yet.
-  nil)
-
 (defmethod acl-service/acls-match-concept? :collection
-  [acls concept]
+  [context acls concept]
   (let [;; Create a equivalent umm collection that will work with collection matchers.
         coll {:entry-title (get-in concept [:extra-fields :entry-title])
-              :access-value (extract-access-value concept)}]
+              :access-value (acl-helper/extract-access-value concept)}]
     (some #(coll-matchers/coll-applicable-acl? (:provider-id concept) coll % [:collections]) acls)))

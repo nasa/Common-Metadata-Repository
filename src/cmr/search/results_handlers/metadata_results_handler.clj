@@ -17,19 +17,19 @@
             [cmr.common.log :refer (debug info warn error)]))
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:granule :echo10]
-  [concept-type result-format]
+  [concept-type query]
   [])
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:collection :echo10]
-  [concept-type result-format]
+  [concept-type query]
   [])
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:collection :dif]
-  [concept-type result-format]
+  [concept-type query]
   [])
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:collection :iso-mends]
-  [concept-type result-format]
+  [concept-type query]
   [])
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:collection :iso-smap]

@@ -15,7 +15,7 @@
             [cmr.search.results-handlers.atom-links-results-handler :as atom-links]))
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:collection :atom]
-  [concept-type result-format]
+  [concept-type query]
   ["short-name"
    "version-id"
    "summary"
@@ -39,7 +39,7 @@
    "_score"])
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:granule :atom]
-  [concept-type result-format]
+  [concept-type query]
   ["granule-ur"
    "collection-concept-id"
    "update-time"
