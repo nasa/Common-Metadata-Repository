@@ -87,10 +87,10 @@
 
 ;; This is a made-up include all fields collection xml sample for the parse collection test
 (def all-fields-collection-xml
-  (slurp (io/file (io/resource "data/all_fields_iso_collection.xml"))))
+  (slurp (io/file (io/resource "data/iso_mends/all_fields_iso_collection.xml"))))
 
 (def valid-collection-xml
-  (slurp (io/file (io/resource "data/sample_iso_collection.xml"))))
+  (slurp (io/file (io/resource "data/iso_mends/sample_iso_collection.xml"))))
 
 (deftest parse-collection-test
   (let [expected (umm-c/map->UmmCollection
