@@ -109,21 +109,21 @@
         results (results/map->Results {:hits (count items) :items items :result-format result-format})]
     (post-process-query-result-features context query nil results)))
 
-; (defmethod execute-query :elastic
-;   [context query]
-;   (let [processed-query (pre-process-query-result-features context query)
-;         processed-query (c2s/reduce-query context processed-query)
-;         processed-query (r/resolve-collection-queries context processed-query)
+(defmethod execute-query :elastic
+  [context query]
+  (let [processed-query (pre-process-query-result-features context query)
+        processed-query (c2s/reduce-query processed-query)
+        processed-query (r/resolve-collection-queries context processed-query)
 
 
-;         ; collection-ids (ce/extract-collection-concept-ids processed-query)
-;         ; context (assoc context :parent-collection-ids collection-ids)
-;         processed-query (if (:skip-acls? processed-query)
-;                 processed-query
-;                 (acl-service/add-acl-conditions-to-query context processed-query))
-;         elastic-results (idx/execute-query context processed-query)
-;         query-results (rc/elastic-results->query-results context query elastic-results)]
-;     (post-process-query-result-features context query elastic-results query-results)))
+        ; collection-ids (ce/extract-collection-concept-ids processed-query)
+        ; context (assoc context :parent-collection-ids collection-ids)
+        processed-query (if (:skip-acls? processed-query)
+                processed-query
+                (acl-service/add-acl-conditions-to-query context processed-query))
+        elastic-results (idx/execute-query context processed-query)
+        query-results (rc/elastic-results->query-results context query elastic-results)]
+    (post-process-query-result-features context query elastic-results query-results)))
 
 ;; TODO find a way to pass in the rest of the parameters so we can look for collection ids to
 ;; narrow the search like catalog rest does
@@ -145,18 +145,18 @@
   ;; and :orbit-end-clat range
   )
 
-(defmethod execute-query :elastic
-  [context query]
-  (let [elastic-results (->> query
-                             (pre-process-query-result-features context)
-                             c2s/reduce-query
-                             (r/resolve-collection-queries context)
-                             (#(if (:skip-acls? %)
-                                 %
-                                 (acl-service/add-acl-conditions-to-query context %)))
-                             (idx/execute-query context))
-        query-results (rc/elastic-results->query-results context query elastic-results)]
-    (post-process-query-result-features context query elastic-results query-results)))
+; (defmethod execute-query :elastic
+;   [context query]
+;   (let [elastic-results (->> query
+;                              (pre-process-query-result-features context)
+;                              c2s/reduce-query
+;                              (r/resolve-collection-queries context)
+;                              (#(if (:skip-acls? %)
+;                                  %
+;                                  (acl-service/add-acl-conditions-to-query context %)))
+;                              (idx/execute-query context))
+;         query-results (rc/elastic-results->query-results context query elastic-results)]
+;     (post-process-query-result-features context query elastic-results query-results)))
 
 
 
