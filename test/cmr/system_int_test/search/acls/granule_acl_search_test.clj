@@ -8,6 +8,7 @@
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.granule :as dg]
+            [cmr.system-int-test.data2.granule-counts :as gran-counts]
             [cmr.system-int-test.data2.core :as d]
             [cmr.system-int-test.utils.echo-util :as e]))
 
@@ -89,6 +90,10 @@
     (e/grant-registered-users
       (e/gran-catalog-item-id "provguid5" (e/coll-id ["coll53"]) (e/gran-id {:max-value 10})))
 
+    ;; Grant all collections to guests so that granule counts query can be executed
+    (dotimes [n 5]
+      (e/grant-all (e/coll-catalog-item-id (str "provguid" (inc n)))))
+
     (ingest/clear-caches))
 
   (let [coll1 (make-coll 1 "PROV1")
@@ -98,6 +103,7 @@
         coll5 (make-coll 5 "PROV3")
         coll6 (make-coll 6 "PROV4")
         coll7 (make-coll 7 "PROV2")
+        coll8 (make-coll 8 "PROV2" {:access-value 30})
         coll51 (make-coll 51 "PROV5")
         coll52 (make-coll 52 "PROV5")
         coll53 (make-coll 53 "PROV5")
@@ -125,13 +131,17 @@
         ;; Permitted by access value
         gran11 (make-gran 11 coll7 {:access-value 31})
 
+        ;; Not permitted. The collection has an access value that matches an acl with a non-existant
+        ;; collection
+        gran12 (make-gran 12 coll8)
+
         ;; - PROV3 -
         ;; All granules in prov 3 are permitted
         gran8 (make-gran 8 coll5)
         gran9 (make-gran 9 coll5 {:access-value 0})
 
         ;; - PROV4 - no permitted access
-        gran10 (make-gran 10 coll6)
+        gran13 (make-gran 13 coll6)
 
         ;; - PROV5 -
         ;; Not permitted because it has an access value
@@ -153,8 +163,8 @@
         ;; not permitted above max
         gran58 (make-gran 58 coll53 {:access-value 11})
 
-        all-grans [gran1 gran2 gran3 gran4 gran5 gran6 gran7 gran8 gran9 gran10 gran11 gran51 gran52
-                  gran54 gran53 gran55 gran56 gran57 gran58]
+        all-grans [gran1 gran2 gran3 gran4 gran5 gran6 gran7 gran8 gran9 gran10 gran11 gran12
+                   gran13 gran51 gran52 gran54 gran53 gran55 gran56 gran57 gran58]
 
         ;; Tokens
         guest-token (e/login-guest)
@@ -202,10 +212,28 @@
 
     (testing "Direct transformer retrieval acl enforcement"
       (d/assert-metadata-results-match
-          :echo10 user-permitted-granules
-          (search/find-metadata :granule :echo10 {:token user1-token
-                                                  :page-size 100
-                                                  :concept-id (map :concept-id all-grans)})))
+        :echo10 user-permitted-granules
+        (search/find-metadata :granule :echo10 {:token user1-token
+                                                :page-size 100
+                                                :concept-id (map :concept-id all-grans)})))
+
+    (testing "granule counts acl enforcement"
+      (testing "guest"
+        (let [refs-result (search/find-refs :collection {:token guest-token
+                                                         :include-granule-counts true})]
+          (is (gran-counts/granule-counts-match?
+                :xml {coll1 2 coll2 2 coll3 0 coll4 0 coll5 2
+                      coll6 0 coll7 1 coll51 0 coll52 0 coll53 0}
+                refs-result))))
+
+      (testing "user"
+        (let [refs-result (search/find-refs :collection {:token user1-token
+                                                         :include-granule-counts true})]
+          (is (gran-counts/granule-counts-match?
+                :xml {coll1 0 coll2 0 coll3 1 coll4 1 coll5 0
+                      coll6 0 coll7 0 coll51 1 coll52 2 coll53 2}
+                refs-result)))))))
 
 
-    ))
+
+

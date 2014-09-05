@@ -126,6 +126,12 @@
   {:permissions [:read]
    :group-guid group-guid})
 
+(defn grant-all
+  "Creates an ACL in mock echo granting guests and registered users access to catalog items
+  identified by the catalog-item-identity"
+  [catalog-item-identity]
+  (grant [guest-ace registered-user-ace] catalog-item-identity))
+
 (defn grant-guest
   "Creates an ACL in mock echo granting guests access to catalog items identified by the
   catalog-item-identity"

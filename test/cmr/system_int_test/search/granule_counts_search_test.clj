@@ -6,7 +6,7 @@
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.granule :as dg]
-            [cmr.system-int-test.data2.atom :as da]
+            [cmr.system-int-test.data2.granule-counts :as gran-counts]
             [cmr.system-int-test.data2.core :as d]
             [cmr.spatial.codec :as codec]
             [cmr.spatial.point :as p]
@@ -24,8 +24,6 @@
 
   )
 
-;; TODO add tests incorporating ACLs for granules
-
 (defn temporal-range
   "Creates attributes for collection or granule defining a temporal range between start and stop
   which should be single digit integers."
@@ -39,83 +37,6 @@
   [start stop]
   (let [{:keys [beginning-date-time ending-date-time]} (temporal-range start stop)]
     (str beginning-date-time "," ending-date-time)))
-
-(defmulti granule-counts-match?
-  "Takes a map of collections to counts and actual results and checks that the references
-  were found and that the granule counts are correct."
-  (fn [result-format expected-counts result]
-    result-format))
-
-(defmethod granule-counts-match? :xml
-  [result-format expected-counts refs-result]
-  (let [count-map (into {} (for [[coll granule-count] expected-counts]
-                             [(:entry-title coll) granule-count]))
-        actual-count-map (into {} (for [{:keys [name granule-count]} (:refs refs-result)]
-                                    [name granule-count]))
-        refs-match? (d/refs-match? (keys expected-counts) refs-result)
-        counts-match? (= count-map actual-count-map)]
-    (when-not refs-match?
-      (println "Expected:" (pr-str (map :entry-title (keys expected-counts))))
-      (println "Actual:" (pr-str (map :name (:refs refs-result)))))
-    (when-not counts-match?
-      (println "Expected:" (pr-str count-map))
-      (println "Actual:" (pr-str actual-count-map)))
-    (and refs-match? counts-match?)))
-
-(defmethod granule-counts-match? :echo10
-  [result-format expected-counts results]
-  (let [items (:items results)
-        count-map (into {} (for [[coll granule-count] expected-counts]
-                             [(:concept-id coll) granule-count]))
-        actual-count-map (into {} (for [{:keys [concept-id granule-count]} items]
-                                    [concept-id granule-count]))
-        results-match? (d/metadata-results-match? :echo10 (keys expected-counts) results)
-        counts-match? (= count-map actual-count-map)]
-    (when-not results-match?
-      (println "Expected:" (pr-str (map :concept-id (keys expected-counts))))
-      (println "Actual:" (pr-str (map :concept-id items))))
-    (when-not counts-match?
-      (println "Expected:" (pr-str count-map))
-      (println "Actual:" (pr-str actual-count-map)))
-    (and results-match? counts-match?)))
-
-(defmethod granule-counts-match? :atom
-  [result-format expected-counts atom-results]
-  (let [entries (get-in atom-results [:results :entries])
-        count-map (into {} (for [[coll granule-count] expected-counts]
-                             [(:entry-title coll) granule-count]))
-        actual-count-map (into {} (for [{:keys [dataset-id granule-count]} entries]
-                                    [dataset-id granule-count]))
-        results-match? (da/atom-collection-results-match?
-                         (keys expected-counts) atom-results)
-        counts-match? (= count-map actual-count-map)]
-    (when-not results-match?
-      (println "Expected:" (pr-str (map :entry-title (keys expected-counts))))
-      (println "Actual:" (pr-str (map :dataset-id entries))))
-    (when-not counts-match?
-      (println "Expected:" (pr-str count-map))
-      (println "Actual:" (pr-str actual-count-map)))
-    (and results-match? counts-match?)))
-
-(defmulti results->actual-has-granules
-  "Converts the results into a map of collection ids to the has-granules value"
-  (fn [result-format results]
-    result-format))
-
-(defmethod results->actual-has-granules :xml
-  [result-format results]
-  (into {} (for [{:keys [id has-granules]} (:refs results)]
-             [id has-granules])))
-
-(defmethod results->actual-has-granules :echo10
-  [result-format results]
-  (into {} (for [{:keys [concept-id has-granules]} (:items results)]
-             [concept-id has-granules])))
-
-(defmethod results->actual-has-granules :atom
-  [result-format results]
-  (into {} (for [{:keys [id has-granules]} (get-in results [:results :entries])]
-             [id has-granules])))
 
 (deftest granule-related-collection-query-results-features-test
   (let [make-coll (fn [n shape temporal-attribs]
@@ -187,13 +108,13 @@
 
       (testing "granule counts for all collections"
         (let [refs (search/find-refs :collection {:include-granule-counts true})]
-          (is (granule-counts-match? :xml {coll1 5 coll2 0 coll3 3 coll4 3 coll5 3 coll6 3} refs))))
+          (is (gran-counts/granule-counts-match? :xml {coll1 5 coll2 0 coll3 3 coll4 3 coll5 3 coll6 3} refs))))
 
       (testing "granule counts for spatial queries"
         (are [wnes expected-counts]
              (let [refs (search/find-refs :collection {:include-granule-counts true
                                                        :bounding-box (codec/url-encode (apply m/mbr wnes))})]
-               (granule-counts-match? :xml expected-counts refs))
+               (gran-counts/granule-counts-match? :xml expected-counts refs))
 
              ;; Whole world
              [-180 90 180 -90] {coll1 5 coll2 0 coll3 3 coll4 3 coll5 3}
@@ -208,7 +129,7 @@
         (are [start stop expected-counts]
              (let [refs (search/find-refs :collection {:include-granule-counts true
                                                        :temporal (temporal-search-range start stop)})]
-               (granule-counts-match? :xml expected-counts refs))
+               (gran-counts/granule-counts-match? :xml expected-counts refs))
              1 6 {coll2 0 coll3 3 coll4 3 coll5 3 coll6 3}
              2 3 {coll2 0 coll3 2 coll4 1 coll6 1}))
 
@@ -216,26 +137,26 @@
         (let [refs (search/find-refs :collection {:include-granule-counts true
                                                   :temporal (temporal-search-range 2 3)
                                                   :bounding-box (codec/url-encode (m/mbr -180 90 0 0))})]
-          (is (granule-counts-match? :xml {coll2 0 coll3 1 coll4 1} refs))))
+          (is (gran-counts/granule-counts-match? :xml {coll2 0 coll3 1 coll4 1} refs))))
 
       (testing "direct transformer query"
         (let [items (search/find-metadata :collection :echo10 {:include-granule-counts true
                                                                :concept-id (map :concept-id all-colls)})]
-          (is (granule-counts-match? :echo10
+          (is (gran-counts/granule-counts-match? :echo10
                                      {coll1 5 coll2 0 coll3 3 coll4 3 coll5 3 coll6 3} items))))
 
       (testing "AQL with include_granule_counts"
         (let [refs (search/find-refs-with-aql :collection [] {}
                                               {:query-params {:include_granule_counts true}})]
-          (is (granule-counts-match? :xml {coll1 5 coll2 0 coll3 3 coll4 3 coll5 3 coll6 3} refs))))
+          (is (gran-counts/granule-counts-match? :xml {coll1 5 coll2 0 coll3 3 coll4 3 coll5 3 coll6 3} refs))))
 
       (testing "ATOM XML results with granule counts"
         (let [results (search/find-concepts-atom :collection {:include-granule-counts true})]
-          (is (granule-counts-match? :atom {coll1 5 coll2 0 coll3 3 coll4 3 coll5 3 coll6 3} results))))
+          (is (gran-counts/granule-counts-match? :atom {coll1 5 coll2 0 coll3 3 coll4 3 coll5 3 coll6 3} results))))
 
       (testing "JSON results with granule counts"
         (let [results (search/find-concepts-json :collection {:include-granule-counts true})]
-          (is (granule-counts-match? :atom {coll1 5 coll2 0 coll3 3 coll4 3 coll5 3 coll6 3} results)))))
+          (is (gran-counts/granule-counts-match? :atom {coll1 5 coll2 0 coll3 3 coll4 3 coll5 3 coll6 3} results)))))
 
     (testing "has granules"
       (testing "invalid include-has-granules"
@@ -249,7 +170,7 @@
              (let [expected-has-granules (util/map-keys :concept-id
                                                         {coll1 true coll2 false coll3 true coll4 true
                                                          coll5 true coll6 true})
-                   actual-has-granules (results->actual-has-granules result-format results)
+                   actual-has-granules (gran-counts/results->actual-has-granules result-format results)
                    has-granules-match? (= expected-has-granules actual-has-granules)]
                (when-not has-granules-match?
                  (println "Expected:" (pr-str expected-has-granules))
@@ -259,14 +180,6 @@
              :echo10 (search/find-metadata :collection :echo10 {:include-has-granules true})
              :atom (search/find-concepts-atom :collection {:include-has-granules true})
              :atom (search/find-concepts-json :collection {:include-has-granules true}))))))
-
-
-
-
-
-
-
-
 
 
 
