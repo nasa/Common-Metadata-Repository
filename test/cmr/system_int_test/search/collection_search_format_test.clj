@@ -45,12 +45,15 @@
                                                  :long-name "ET4"})
                          :dif)
         c5-iso (d/ingest "PROV1" (dc/collection {:short-name "S5"
-                                                :version-id "V5"})
-                        :iso)
+                                                 :version-id "V5"})
+                         :iso)
         c6-iso (d/ingest "PROV2" (dc/collection {:short-name "S6"
-                                                :version-id "V6"})
-                        :iso-mends)
-        all-colls [c1-echo c2-echo c3-dif c4-dif c5-iso c6-iso]]
+                                                 :version-id "V6"})
+                         :iso-mends)
+        c7-smap (d/ingest "PROV1" (dc/collection {:short-name "S7"
+                                                 :version-id "V7"})
+                         :iso-smap)
+        all-colls [c1-echo c2-echo c3-dif c4-dif c5-iso c6-iso c7-smap]]
     (index/refresh-elastic-index)
 
     (testing "Finding refs ingested in different formats"
@@ -63,7 +66,9 @@
            {:short-name "S5"} [c5-iso]
            {:short-name "S6"} [c6-iso]
            {:version "V5"} [c5-iso]
-           {:version ["V5" "V6"]} [c5-iso c6-iso]))
+           {:version ["V5" "V6"]} [c5-iso c6-iso]
+           {:short-name "S7"} [c7-smap]
+           {:version "V7"} [c7-smap]))
 
     (testing "Retrieving results in echo10"
       (d/assert-metadata-results-match
@@ -100,6 +105,15 @@
         (d/assert-metadata-results-match
           :iso all-colls
           (search/find-metadata :collection :iso {} {:format-as-ext? true}))))
+
+    (testing "Retrieving results in SMAP ISO"
+      (d/assert-metadata-results-match
+        :iso-smap all-colls
+        (search/find-metadata :collection :iso-smap {}))
+      (testing "as extension"
+        (d/assert-metadata-results-match
+          :iso-smap all-colls
+          (search/find-metadata :collection :iso-smap {} {:format-as-ext? true}))))
 
     (testing "Get by concept id in formats"
       (testing "supported formats"
