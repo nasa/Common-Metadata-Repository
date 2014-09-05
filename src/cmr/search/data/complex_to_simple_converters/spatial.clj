@@ -54,7 +54,7 @@
 (extend-protocol c2s/ComplexQueryToSimple
   cmr.search.models.query.SpatialCondition
   (c2s/reduce-query
-    [{:keys [shape]}]
+    [context {:keys [shape]}]
     (let [shape (d/calculate-derived shape)
           mbr-cond (br->cond "mbr" (srl/shape->mbr shape))
           lr-cond (br->cond "lr" (srl/shape->lr shape))
