@@ -41,28 +41,23 @@
 
 (defn coll-applicable-acl?
   "Returns true if the acl is applicable to the collection."
-  ([coll-prov-id coll acl]
-   (coll-applicable-acl? coll-prov-id coll acl nil))
-  ;; TODO remove ignore keys. The commit can be reverted
-  ([coll-prov-id coll acl ignore-keys]
-   (when-let [{:keys [collection-applicable
-                      collection-identifier
-                      provider-id]} (:catalog-item-identity acl)]
+  [coll-prov-id coll acl]
+  (when-let [{:keys [collection-applicable
+                     collection-identifier
+                     provider-id]} (:catalog-item-identity acl)]
 
-     ;; Verify the collection identifier isn't using any unsupported ACL features.
-     (when collection-identifier
-       (let [unsupported-keys (set/difference (set (keys collection-identifier))
-                                              (reduce #(conj %1 %2)
-                                                       supported-collection-identifier-keys
-                                                       ignore-keys))]
-         (when-not (empty? unsupported-keys)
-           (errors/internal-error!
-             (format "The ACL with GUID %s had unsupported attributes set: %s"
-                     (:guid acl)
-                     (str/join ", " unsupported-keys))))))
+    ;; Verify the collection identifier isn't using any unsupported ACL features.
+    (when collection-identifier
+      (let [unsupported-keys (set/difference (set (keys collection-identifier))
+                                             supported-collection-identifier-keys)]
+        (when-not (empty? unsupported-keys)
+          (errors/internal-error!
+            (format "The ACL with GUID %s had unsupported attributes set: %s"
+                    (:guid acl)
+                    (str/join ", " unsupported-keys))))))
 
+    (and collection-applicable
+         (= coll-prov-id provider-id)
+         (or (nil? collection-identifier)
+             (coll-matches-collection-identifier? coll collection-identifier)))))
 
-     (and collection-applicable
-          (= coll-prov-id provider-id)
-          (or (nil? collection-identifier)
-              (coll-matches-collection-identifier? coll collection-identifier))))))
