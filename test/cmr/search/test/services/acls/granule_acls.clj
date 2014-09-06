@@ -70,8 +70,9 @@
   {:system
    {:caches
     {coll-cache/cache-key
-     (atom (into {} (for [{:keys [concept-id] :as coll} collections]
-                      [concept-id coll])))}}})
+     (atom {:by-concept-id
+            (into {} (for [{:keys [concept-id] :as coll} collections]
+                       [concept-id coll]))})}}})
 
 (deftest acl-match-granule-concept-test
   (testing "provider ids"
