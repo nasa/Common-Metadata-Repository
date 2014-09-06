@@ -28,9 +28,11 @@
 (defn find-collection-atom-links
   "Returns a mapping of collection-concept-ids and its atom links for the given collection-concept-ids"
   [context collection-concept-ids]
-  (let [collection-links-query (q/query {:concept-type :collection
-                                         :condition (q/string-conditions :concept-id collection-concept-ids true)
-                                         :page-size :unlimited
-                                         :result-format :atom-links})
-        result (qe/execute-query context collection-links-query)]
-    (into {} (:items result))))
+  (if (seq collection-concept-ids)
+    (let [collection-links-query (q/query {:concept-type :collection
+                                           :condition (q/string-conditions :concept-id collection-concept-ids true)
+                                           :page-size :unlimited
+                                           :result-format :atom-links})
+          result (qe/execute-query context collection-links-query)]
+      (into {} (:items result)))
+    {}))
