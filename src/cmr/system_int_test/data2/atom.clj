@@ -269,6 +269,7 @@
 (defn granules->expected-atom
   "Returns the atom map of the granules"
   [granules collections atom-path]
-  {:id (str (url/search-root) atom-path)
-   :title "ECHO granule metadata"
-   :entries (map granule->expected-atom granules collections)})
+  (util/remove-nil-keys
+    {:id (str (url/search-root) atom-path)
+     :title "ECHO granule metadata"
+     :entries (seq (map granule->expected-atom granules collections))}))
