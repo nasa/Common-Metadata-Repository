@@ -12,6 +12,7 @@ Provides a public search API for concepts in the CMR.
  * page_num - The page number to return
  * sort_key - Indicates one or more fields to sort on. Described below
  * pretty - return formatted results if set to true
+ * token - specifies a user/guest token from ECHO to use to authenticate yourself. This can also be specified as the header Echo-Token
 
 ##### Collection Query Parameters
 
@@ -30,6 +31,8 @@ These are query parameters specific to collections
     * `curl -H "Accept: application/json" -i "http://localhost:3003/granules"`
     * `curl -H "Accept: application/echo10+xml" -i "http://localhost:3003/granules"`
     * `curl -H "Accept: application/dif+xml" -i "http://localhost:3003/granules"`
+  * Echo-Token - specifies an ECHO token to use to authenticate yourself.
+  * Client-Id - Indicates a name for the client using the CMR API. Specifying this helps Operations monitor query performance per client. It can also make it easier for them to identify your requests if you contact them for assistance.
 
   * The response headers include CMR-Hits and CMR-Took which indicate the number of result hits
      and the time to build and execute the query, respectively.
