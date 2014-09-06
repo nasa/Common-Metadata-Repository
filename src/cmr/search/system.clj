@@ -14,7 +14,6 @@
             [cmr.transmit.config :as transmit-config]
             [cmr.elastic-utils.config :as es-config]
             [cmr.search.services.query-execution.has-granules-results-feature :as hgrf]
-            [cmr.search.services.acls.acl-cache-extension :as ace]
             [cmr.search.services.acls.collections-cache :as coll-cache]))
 
 ;; Design based on http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts
@@ -62,8 +61,6 @@
                       :token-sid (cache/create-cache (clj-cache/ttl-cache-factory {} :ttl TOKEN_CACHE_TIME))
                       :has-granules-map (hgrf/create-has-granules-map-cache)
                       coll-cache/cache-key (coll-cache/create-cache)}
-             ;; TODO remove this
-             :acl-cache-extension-fns [ace/handle-acl-cache-update]
              :zipkin (context/zipkin-config "Search" false)
              :search-public-conf search-public-conf
              :scheduler (jobs/create-scheduler

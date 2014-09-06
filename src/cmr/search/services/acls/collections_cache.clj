@@ -7,9 +7,8 @@
             [cmr.search.services.query-execution :as qe]))
 
 (def initial-cache-state
-  "The initial cache state. This will be a map of collection concept ids to the maps containing
-  colleciton information"
-  {})
+  "The initial cache state."
+  nil)
 
 (defn create-cache
   "Creates a new empty collections cache. The cache itself is just an atom with a map."
@@ -23,6 +22,17 @@
   "Gets the collections cache from the context"
   [context]
   (get-in context [:system :caches cache-key]))
+
+
+(comment
+
+  (def context {:system (get-in user/system [:apps :search])})
+  (get-collection context "PROV2" "coll3")
+  (get-collection context "C1200000006-PROV2")
+  (context->cache context)
+  (refresh-cache context)
+
+  )
 
 (defn reset
   "Resets the cache back to it's initial state"
@@ -38,7 +48,7 @@
                         :skip-acls? true
                         :page-size :unlimited
                         :result-format :query-specified
-                        :fields [:entry-title :access-value]})]
+                        :fields [:entry-title :access-value :provider-id]})]
     (:items (qe/execute-query context query))))
 
 (defn refresh-cache
@@ -48,9 +58,12 @@
   [context]
   (let [cache-atom (context->cache context)
         collections (fetch-collections context)
-        collections-map (into {} (for [{:keys [concept-id] :as coll} collections]
-                                   [concept-id coll]))]
-    (reset! cache-atom collections-map)))
+        by-concept-id (into {} (for [{:keys [concept-id] :as coll} collections]
+                                 [concept-id coll]))
+        by-provider-id-entry-title (into {} (for [{:keys [provider-id entry-title] :as coll} collections]
+                                              [[provider-id entry-title] coll]))]
+    (reset! cache-atom {:by-concept-id by-concept-id
+                        :by-provider-id-entry-title by-provider-id-entry-title})))
 
 (defn get-collections-map
   "Gets the cached value."
@@ -64,14 +77,18 @@
       (errors/internal-error! "Collections were not in cache."))))
 
 (defn get-collection
-  "Gets a single collection from the cache. Handles refreshing the cache if it is not found in it"
-  [context concept-id]
-  (let [collections-map (get-collections-map context)]
-    (when-not (collections-map concept-id)
-      (info (format "Collection with id %s not found in cache. Manually triggering cache refresh"
-                    concept-id))
-      (refresh-cache context))
-    (get (get-collections-map context) concept-id)))
+  "Gets a single collection from the cache by concept id. Handles refreshing the cache if it is not found in it.
+  Also allows provider-id and entry-title to be used."
+  ([context concept-id]
+   (let [by-concept-id (:by-concept-id (get-collections-map context))]
+     (when-not (by-concept-id concept-id)
+       (info (format "Collection with id %s not found in cache. Manually triggering cache refresh"
+                     concept-id))
+       (refresh-cache context))
+     (get (:by-concept-id (get-collections-map context)) concept-id)))
+  ([context provider-id entry-title]
+   (let [by-provider-id-entry-title (:by-provider-id-entry-title (get-collections-map context))]
+     (get by-provider-id-entry-title [provider-id entry-title]))))
 
 (defjob RefreshCollectionsCacheForGranuleAclsJob
   [ctx system]

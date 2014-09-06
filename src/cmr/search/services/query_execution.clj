@@ -99,7 +99,6 @@
   (fn [context query]
     (query->execution-strategy query)))
 
-;; TODO enforce granule ACLs on direct transformer queries
 (defmethod execute-query :direct-transformer
   [context query]
   (let [{:keys [result-format pretty? skip-acls?]} query

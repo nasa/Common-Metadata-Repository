@@ -18,4 +18,4 @@
   (let [;; Create a equivalent umm collection that will work with collection matchers.
         coll {:entry-title (get-in concept [:extra-fields :entry-title])
               :access-value (acl-helper/extract-access-value concept)}]
-    (some #(coll-matchers/coll-applicable-acl? (:provider-id concept) coll % [:collections]) acls)))
+    (some (partial coll-matchers/coll-applicable-acl? (:provider-id concept) coll) acls)))
