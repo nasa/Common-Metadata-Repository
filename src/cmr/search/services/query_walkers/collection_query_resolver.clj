@@ -168,8 +168,7 @@
       (if (empty? collection-concept-ids)
         [#{} (qm/->MatchNoneCondition)]
         [(set collection-concept-ids)
-         (qm/or-conds
-           (map #(qm/string-condition :collection-concept-id % true false) collection-concept-ids))])))
+         (qm/string-conditions :collection-concept-id collection-concept-ids true)])))
 
   (is-collection-query-cond? [_] true)
 
