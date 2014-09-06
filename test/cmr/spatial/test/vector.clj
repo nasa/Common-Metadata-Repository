@@ -31,7 +31,9 @@
       [:x :y :z])))
 
 (defspec normalized-vectors-have-a-length-of-1 100
-  (for-all [v sgen/vectors]
+  (for-all [v (gen/such-that (fn [v]
+                               (> (v/length v) 0))
+                             sgen/vectors)]
     (let [normalized (v/normalize v)
           length (v/length normalized)]
       (approx= 1.0 length))))

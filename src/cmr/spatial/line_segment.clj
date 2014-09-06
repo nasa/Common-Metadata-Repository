@@ -10,7 +10,8 @@
             [cmr.spatial.messages :as msg]
             [cmr.common.services.errors :as errors]
             [cmr.spatial.derived :as d]
-            [cmr.common.util :as util])
+            [cmr.common.util :as util]
+            [clojure.math.combinatorics :as combo])
   (:import cmr.spatial.point.Point
            cmr.spatial.mbr.Mbr))
 
@@ -318,6 +319,17 @@
     (let [edges (mbr->line-segments mbr)]
       (filter identity (map (partial intersection ls) edges)))))
 
+(defn keep-farthest-points
+  "Takes a list of points and returns the two points that are farthest from each other."
+  [points]
+  (->> (combo/combinations points 2)
+       (map (fn [[p1 p2]]
+              {:distance (distance p1 p2)
+               :points [p1 p2]}))
+       (sort-by :distance)
+       last
+       :points))
+
 (defn subselect-not-across-am
   "Helper for implementing subselect. Works on an mbr that does not cross the antimeridian"
   [ls mbr]
@@ -329,7 +341,14 @@
       {:line-segments [ls]}
       (let [intersection-points (mbr-intersections ls mbr)
             intersection-points (distinct (map (partial p/round-point 11)
-                                               intersection-points))]
+                                               intersection-points))
+            ;; There are some cases where the above can generate more than 3 points. This happens
+            ;; for things like very close to horizontal lines and a very short mbr.
+            intersection-points (if (> (count intersection-points) 2)
+                                  ;; Keep the points that are the farthest away from each other
+                                  ;; in this case.
+                                  (keep-farthest-points intersection-points)
+                                  intersection-points)]
         (cond
           (> (count intersection-points) 2)
           (errors/internal-error! (str "Found too many intersection points " (pr-str intersection-points)))
@@ -363,7 +382,6 @@
   (apply merge-with concat
          (map (partial subselect-not-across-am ls)
               (m/split-across-antimeridian mbr))))
-
 
 (extend-protocol d/DerivedCalculator
   cmr.spatial.line_segment.LineSegment

@@ -175,9 +175,12 @@
   [n1 n2 ^double percent-diff]
   (let [avg-magnitude (avg [(abs n1) (abs n2)])
         delta (* avg-magnitude (/ percent-diff 100.0))]
-    (approx= n1 n2 delta)))
+    (or (approx= n1 n2 delta)
+        ;; Handles cases where the values are very small.
+        (approx= n1 n2 0.0000001))))
 
 (defn valid-subselected-line-segment?
+  "Returns true if sub-ls is a valid line segment that was subselected from ls with mbr."
   [ls mbr sub-ls]
   (let [{:keys [point1 point2]} sub-ls
         ls-mbr (:mbr ls)]
@@ -190,6 +193,7 @@
          (m/covers-point? :cartesian ls-mbr point2))))
 
 (defn valid-subselected-point?
+  "Returns true if point is a valid point that was subselected from ls with mbr."
   [ls mbr point]
   (let [ls-mbr (:mbr ls)]
     (and (m/covers-point? :cartesian mbr point)
@@ -213,7 +217,4 @@
              ;; The line segment shouldn't intersect any of the mbr sides.
              (not (some #(s/intersection ls %)
                         (s/mbr->line-segments mbr))))))))
-
-
-
 

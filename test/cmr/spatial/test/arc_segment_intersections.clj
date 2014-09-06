@@ -22,7 +22,7 @@
   (sgen/print-failed-line-segments type ls))
 
 
-(defspec arc-segment-intersections-spec {:times 100 :printer-fn print-failure}
+(defspec arc-segment-intersections-spec {:times 1000 :printer-fn print-failure}
   (for-all [arc sgen/arcs
             ls sgen/line-segments]
     (let [intersections (asi/intersections ls arc)
@@ -45,14 +45,6 @@
                        (some #(m/covers-point? :geodetic % point) arc-mbrs))
                      intersections))))))
 
-(comment
-
-
-  (cmr.spatial.arc/ords->arc 161.33333333333334 -48.857142857142854 -100.8 56.90909090909091)
-  (cmr.spatial.line-segment/ords->line-segment -139.5 48.016949152542374 101.97297297297297 48.01960784313726)
-
-)
-
 
 (deftest example-arc-line-segment-intersections
   (are [ls-ords arc-ords intersection-ords]
@@ -71,7 +63,17 @@
        [10 -90 30 -90] [0 -90 10 -85] [0 -90]
 
        ;; line segment along antimeridian
-       [180 10 180 20] [175 15 -175 15] [180.0 15.0547]))
+       [180 10 180 20] [175 15 -175 15] [180.0 15.0547]
+
+       ;; arc starts on south pole
+       [0 0 -25 -30] [85 -90 -14 -7] [-14 -16.8]
+       ;; arc ends on south pole
+       [0 0 -25 -30] [-14 -7 85 -90] [-14 -16.8]
+
+       ;; arc starts on north pole
+       [0 0 -25 -30] [85 90 -14 -20] [-14 -16.8]
+       ;; arc ends on north pole
+       [0 0 -25 -30] [-14 -20 85 90] [-14 -16.8]))
 
 
 (comment

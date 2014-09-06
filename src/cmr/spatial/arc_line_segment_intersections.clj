@@ -13,6 +13,34 @@
            cmr.spatial.point.Point))
 (primitive-math/use-primitive-operators)
 
+(defn- vertical-arc-line-segment-intersections
+  "Determines the intersection points of a vertical arc and a line segment"
+  [ls arc]
+  (let [;; convert the arc into a set of equivalent line segments.
+        point1 (:west-point arc)
+        point2 (:east-point arc)
+        arc-segments (cond
+                       ;; A vertical arc could cross a pole. It gets divided in half at the pole in that case.
+                       (a/crosses-north-pole? arc)
+                       [(s/line-segment point1 p/north-pole)
+                        (s/line-segment point2 p/north-pole)]
+
+                       (a/crosses-south-pole? arc)
+                       [(s/line-segment point1 p/south-pole)
+                        (s/line-segment point2 p/south-pole)]
+
+                       (p/is-north-pole? point2)
+                       ;; Create a vertical line segment ignoring the original point2 lon
+                       [(s/line-segment point1 (p/point (:lon point1) 90))]
+
+                       (p/is-south-pole? point2)
+                       ;; Create a vertical line segment ignoring the original point2 lon
+                       [(s/line-segment point1 (p/point (:lon point1) -90))]
+
+                       :else
+                       [(s/line-segment point1 point2)])]
+    (filter identity (map (partial s/intersection ls) arc-segments))))
+
 (defn line-segment-arc-intersections-with-densification
   "Performs the intersection between a line segment and the arc using densification of the line segment"
   [ls arc mbrs]
@@ -31,25 +59,6 @@
       ;; and any points that are on the original arc
       (filter (partial a/point-on-arc? arc) points))))
 
-(defn- vertical-arc-line-segment-intersections
-  "Determines the intersection points of a vertical arc and a line segment"
-  [ls arc]
-  (let [;; convert the arc into a set of equivalent line segments.
-        point1 (:west-point arc)
-        point2 (:east-point arc)
-        arc-segments (cond
-                       ;; A vertical arc could cross a pole. It gets divided in half at the pole in that case.
-                       (a/crosses-north-pole? arc)
-                       [(s/line-segment point1 p/north-pole)
-                        (s/line-segment point2 p/north-pole)]
-
-                       (a/crosses-south-pole? arc)
-                       [(s/line-segment point1 p/south-pole)
-                        (s/line-segment point2 p/south-pole)]
-
-                       :else
-                       [(s/line-segment point1 point2)])]
-    (filter identity (map (partial s/intersection ls) arc-segments))))
 
 (defn line-segment-arc-intersections
   "Returns a list of the points where the line segment intersects the arc."
@@ -82,7 +91,6 @@
           ;; Compute the intersections of the intersecting mbrs. Smaller mbrs around the intersection
           ;; point will result in better bounding for newton's method.
           (mapcat (partial m/intersections ls-mbr) intersecting-mbrs))))))
-
 
 (defprotocol ArcSegmentIntersects
   "Defines functions for intersecting with an arc or segments"
