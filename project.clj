@@ -27,7 +27,7 @@
                  [nasa-cmr/cmr-vdd-spatial-viz "0.1.0-SNAPSHOT"]
 
                  ;; Added for combinations function
-                 [org.clojure/math.combinatorics "0.0.7"]]
+                 [org.clojure/math.combinatorics "0.0.8"]]
 
 
   :plugins [[lein-test-out "0.3.1"]]
