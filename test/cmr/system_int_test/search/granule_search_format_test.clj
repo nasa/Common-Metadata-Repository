@@ -205,6 +205,13 @@
       (is (= gran-atom
              (:results response))))
 
+    (testing "empty results"
+      (let [gran-atom (da/granules->expected-atom [] [] "granules.atom?granule-ur=foo")
+              response (search/find-concepts-atom :granule {:granule-ur "foo"})]
+          (is (= 200 (:status response)))
+          (is (= gran-atom
+                 (:results response)))))
+
     (testing "as extension"
       (is (= (select-keys
                (search/find-concepts-atom :granule {:granule-ur "Granule1"})

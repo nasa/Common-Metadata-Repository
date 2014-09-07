@@ -11,7 +11,7 @@
             [cmr.common.xml :as cx]
             [clojure.string :as str]
             [clj-time.format :as f]
-            [camel-snake-kebab :as csk]
+            [camel-snake-kebab.core :as csk]
             [cmr.umm.spatial :as umm-s]
             [cmr.common.util :as util]
             [cmr.system-int-test.data2.facets :as facets]))
@@ -269,6 +269,7 @@
 (defn granules->expected-atom
   "Returns the atom map of the granules"
   [granules collections atom-path]
-  {:id (str (url/search-root) atom-path)
-   :title "ECHO granule metadata"
-   :entries (map granule->expected-atom granules collections)})
+  (util/remove-nil-keys
+    {:id (str (url/search-root) atom-path)
+     :title "ECHO granule metadata"
+     :entries (seq (map granule->expected-atom granules collections))}))
