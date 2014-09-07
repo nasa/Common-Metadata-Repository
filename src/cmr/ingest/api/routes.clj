@@ -23,6 +23,8 @@
       concept
       (assoc concept :concept-id concept-id))))
 
+(codec/url-decode "Name%2FWith%2FSlashes")
+
 (defn- build-routes [system]
   (routes
     (POST "/reindex-collection-permitted-groups" {:keys [headers request-context]}
@@ -31,7 +33,8 @@
     (context "/providers/:provider-id" [provider-id]
       (context ["/collections/:native-id" :native-id #".*$"] [native-id]
         (PUT "/" {:keys [body content-type headers request-context]}
-          (let [metadata (string/trim (slurp body))
+          (let [native-id (codec/url-decode native-id)
+                metadata (string/trim (slurp body))
                 base-concept {:metadata metadata
                               :format content-type
                               :provider-id provider-id
@@ -46,7 +49,8 @@
             (r/response (ingest/delete-concept request-context concept-attribs)))))
       (context ["/granules/:native-id" :native-id #".*$"] [native-id]
         (PUT "/" {:keys [body content-type headers request-context]}
-          (let [metadata (string/trim (slurp body))
+          (let [native-id (codec/url-decode native-id)
+                metadata (string/trim (slurp body))
                 base-concept {:metadata metadata
                               :format content-type
                               :provider-id provider-id
