@@ -81,7 +81,7 @@
 (defn resolve-collection-queries
   [context query]
   (let [query (merge-collection-queries query)]
-    (second (resolve-collection-query query context))))
+    (resolve-collection-query query context)))
 
 (extend-protocol ResolveCollectionQuery
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

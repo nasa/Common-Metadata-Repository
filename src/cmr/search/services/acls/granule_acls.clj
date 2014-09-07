@@ -71,7 +71,7 @@
 (defmethod provider->collection-condition :no-query-coll-ids
   [query-coll-ids provider-id]
   (q/->CollectionQueryCondition
-      (q/string-condition :provider-id provider-id true false)))
+    (q/string-condition :provider-id provider-id true false)))
 
 (defmethod provider->collection-condition :with-query-coll-ids
   [query-coll-ids provider-id]
@@ -181,9 +181,9 @@
                (acl-helper/get-acls-applicable-to-token context))
         acl-cond (acls->query-condition context coll-ids-by-prov acls)]
 
-    (r/resolve-collection-queries
-      context
-      (update-in query [:condition] #(q/and-conds [acl-cond %])))))
+    (second (r/resolve-collection-queries
+              context
+              (update-in query [:condition] #(q/and-conds [acl-cond %]))))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

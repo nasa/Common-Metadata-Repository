@@ -50,6 +50,26 @@
                        south-cond
                        (qm/or-conds [am-conds non-am-conds])])))))
 
+;; TODO find a way to pass in the rest of the parameters so we can look for collection ids to
+;; narrow the search like catalog rest does
+;; TODO - we must have a context here so that we can call the service to look up the
+;; orbit parameters
+(defn orbit-cond
+  "Create a condition that will use orbit parameters and orbital back tracking to find matches
+  to a spatial search."
+  [shape]
+  ;; Construct a query for concept-ids and orbit parameters of all collections that have them
+  ;; TODO this should be limited to any parent collection ids specified in the paramters (if any)
+  ;; Execute the query to get the data needed to do orbitial back tracking
+
+
+  ;; Use the orbit parameters to perform oribtial back tracking to longitude ranges to be used
+  ;; in the search
+
+  ;; Construct an OR group with the ranges, looking for overlaps with the :orbit-start-clat
+  ;; and :orbit-end-clat range
+  )
+
 
 (extend-protocol c2s/ComplexQueryToSimple
   cmr.search.models.query.SpatialCondition

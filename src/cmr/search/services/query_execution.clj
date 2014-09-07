@@ -113,11 +113,9 @@
   (let [processed-query (pre-process-query-result-features context query)
 
 
-        processed-query (r/resolve-collection-queries context processed-query)
+        [collection-ids processed-query] (r/resolve-collection-queries context processed-query)
+        context (assoc context :orbit-collection-ids collection-ids)
         processed-query (c2s/reduce-query processed-query context)
-
-        ; collection-ids (ce/extract-collection-concept-ids processed-query)
-        ; context (assoc context :parent-collection-ids collection-ids)
         processed-query (if (:skip-acls? processed-query)
                           processed-query
                           (acl-service/add-acl-conditions-to-query context processed-query))
@@ -126,25 +124,6 @@
         query-results (rc/elastic-results->query-results context query elastic-results)]
     (post-process-query-result-features context query elastic-results query-results)))
 
-;; TODO find a way to pass in the rest of the parameters so we can look for collection ids to
-;; narrow the search like catalog rest does
-;; TODO - we must have a context here so that we can call the service to look up the
-;; orbit parameters
-(defn orbit-cond
-  "Create a condition that will use orbit parameters and orbital back tracking to find matches
-  to a spatial search."
-  [shape]
-  ;; Construct a query for concept-ids and orbit parameters of all collections that have them
-  ;; TODO this should be limited to any parent collection ids specified in the paramters (if any)
-  ;; Execute the query to get the data needed to do orbitial back tracking
-
-
-  ;; Use the orbit parameters to perform oribtial back tracking to longitude ranges to be used
-  ;; in the search
-
-  ;; Construct an OR group with the ranges, looking for overlaps with the :orbit-start-clat
-  ;; and :orbit-end-clat range
-  )
 
 ; (defmethod execute-query :elastic
 ;   [context query]
