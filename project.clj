@@ -6,7 +6,7 @@
                  [compojure "1.1.9"]
                  [ring/ring-core "1.3.1" :exclusions [clj-time]]
                  [ring/ring-json "0.3.1"]
-                 [org.clojure/tools.reader "0.8.4"]
+                 [org.clojure/tools.reader "0.8.8"]
                  [org.clojure/tools.cli "0.3.1"]]
   :plugins [[lein-test-out "0.3.1"]]
   :repl-options {:init-ns user}
