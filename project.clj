@@ -31,7 +31,7 @@
 
   :profiles
   {:dev {:dependencies [[nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]
-                        [org.clojure/tools.namespace "0.2.4"]
+                        [org.clojure/tools.namespace "0.2.5"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]]
 
          ;; The ^replace is done to disable the tiered compilation for accurate benchmarks
