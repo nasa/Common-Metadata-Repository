@@ -5,7 +5,7 @@
             [cmr.spatial.mbr :as m]
             [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
-            [camel-snake-kebab :as csk])
+            [camel-snake-kebab.core :as csk])
   (:import cmr.spatial.mbr.Mbr))
 
 (def SPATIAL_COVERAGE_EXTERNAL_META_NAME
