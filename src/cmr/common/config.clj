@@ -2,7 +2,7 @@
   "A namespace that allows for global configuration. Configuration can be provided at runtime or
   through an environment variable"
   (:require [clojure.string :as str]
-            [camel-snake-kebab :as csk]))
+            [camel-snake-kebab.core :as csk]))
 
 (def runtime-config-values
   "An atom containing a map of explicitly set config values."
