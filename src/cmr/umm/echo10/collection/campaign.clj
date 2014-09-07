@@ -4,7 +4,7 @@
             [cmr.common.xml :as cx]
             [cmr.umm.collection :as c]
             [clj-time.format :as f]
-            [camel-snake-kebab :as csk]
+            [camel-snake-kebab.core :as csk]
             [cmr.common.services.errors :as errors]
             [cmr.umm.generator-util :as gu]))
 

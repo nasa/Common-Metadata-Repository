@@ -1,7 +1,7 @@
 (ns cmr.umm.collection.product-specific-attribute
   (:require [clojure.string :as str]
             [clj-time.format :as f]
-            [camel-snake-kebab :as csk]
+            [camel-snake-kebab.core :as csk]
             [cmr.common.services.errors :as errors]))
 
 (defn parse-data-type
