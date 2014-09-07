@@ -151,7 +151,7 @@
     (is (= 200 (:status delete2-result)))))
 
 ;;; Verify that collections with embedded / (%2F) in the native-id are handled correctly
-(deftest ingest-granule-with-slash-in-native-id-test
+(deftest ingest-collection-with-slash-in-native-id-test
   (let [collection {:concept-type :collection
                     :native-id "Name%2FWith%2FSlashes"
                     :provider-id "PROV1"
