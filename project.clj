@@ -8,8 +8,8 @@
                  [nasa-cmr/cmr-metadata-db-app "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-umm-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"]
-                 [compojure "1.1.6"]
-                 [ring/ring-core "1.2.2" :exclusions [clj-time]]
+                 [compojure "1.1.9"]
+                 [ring/ring-core "1.3.1" :exclusions [clj-time]]
                  [ring/ring-json "0.3.1"]
                  [org.clojure/tools.reader "0.8.4"]
                  [org.clojure/tools.cli "0.3.1"]
@@ -19,7 +19,7 @@
   :repl-options {:init-ns user}
   :jvm-opts ["-XX:PermSize=256m" "-XX:MaxPermSize=256m"]
   :profiles
-  {:dev {:dependencies [[org.clojure/tools.namespace "0.2.4"]
+  {:dev {:dependencies [[org.clojure/tools.namespace "0.2.5"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]
                         [criterium "0.4.3"]
                         [pjstadig/humane-test-output "0.6.0"]
