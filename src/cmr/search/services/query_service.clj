@@ -67,7 +67,7 @@
             [cmr.common.cache :as cache]
             [cmr.acl.acl-cache :as acl-cache]
             [cmr.search.services.acls.collections-cache :as coll-cache]
-            [camel-snake-kebab :as csk]
+            [camel-snake-kebab.core :as csk]
             [cheshire.core :as json]
             [cmr.common.log :refer (debug info warn error)]))
 
@@ -85,6 +85,13 @@
   (fn [context query results]
     (:result-format query)))
 
+(defn- sanitize-sort-key
+  "Sanitizes a single sort key preserving the direction character."
+  [sort-key]
+  (if-let [[_ dir-char field] (re-find #"([^a-zA-Z])?(.*)" sort-key)]
+    (str dir-char (csk/->kebab-case field))
+    sort-key))
+
 (defn- sanitize-params
   "Manipulates the parameters to make them easier to process"
   [params]
@@ -95,9 +102,8 @@
                                                      [k (u/map-keys->kebab-case v)])
                                                    %))))
       (update-in [:sort-key] #(when % (if (sequential? %)
-                                        (map csk/->kebab-case % )
-                                        (csk/->kebab-case %))))))
-
+                                        (map sanitize-sort-key % )
+                                        (sanitize-sort-key %))))))
 (defn- find-concepts
   "Common functionality for find-concepts-by-parameters and find-concepts-by-aql."
   [context concept-type params query-creation-time query]
