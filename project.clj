@@ -9,7 +9,7 @@
                  [compojure "1.1.9"]
                  [ring/ring-core "1.3.1" :exclusions [clj-time]]
                  [ring/ring-json "0.3.1"]
-                 [org.clojure/tools.reader "0.8.4"]
+                 [org.clojure/tools.reader "0.8.8"]
                  [org.clojure/tools.cli "0.3.1"]]
   :plugins []
   :repl-options {:init-ns user}
@@ -17,11 +17,11 @@
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.5"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]
                         [cheshire "5.3.1"]
-                        [clj-http "0.9.1"]
+                        [clj-http "1.0.0"]
                         [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]]
          :source-paths ["src" "dev" "test" "int_test"]}
    :integration-test {:test-paths ["int_test"]
-                      :dependencies [[clj-http "0.9.1"]]}
+                      :dependencies [[clj-http "1.0.0"]]}
    :uberjar {:main cmr.index-set.runner
              :aot :all}})
 
