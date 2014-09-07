@@ -16,6 +16,6 @@
   :plugins [[lein-test-out "0.3.1"]]
 
   :profiles
-  {:dev {:dependencies [[org.clojure/tools.namespace "0.2.4"]
+  {:dev {:dependencies [[org.clojure/tools.namespace "0.2.5"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]]
          :source-paths ["src" "dev" "test"]}})
