@@ -70,14 +70,16 @@
   [collection granule]
   (let [parent-type-map (into {} (for [psa (:product-specific-attributes collection)]
                                    [(:name psa) (:data-type psa)]))]
-    (map (fn [psa-ref]
-           (let [type (parent-type-map (:name psa-ref))]
-             (when-not type
-               (errors/internal-error! (format "Could not find parent attribute [%s] in collection [%s]"
-                                               (:name psa-ref)
-                                               (:concept-id collection))))
-             (psa-ref->elastic-doc type psa-ref)))
-         (:product-specific-attributes granule))))
+    (mapv (fn [psa-ref]
+            (let [type (parent-type-map (:name psa-ref))]
+              (when-not type
+                (errors/internal-error!
+                  (format "Could not find parent attribute [%s] in collection [%s] for granule [%s]"
+                          (:name psa-ref)
+                          (:concept-id collection)
+                          (:concept-id granule))))
+              (psa-ref->elastic-doc type psa-ref)))
+          (:product-specific-attributes granule))))
 
 (defn psa->elastic-doc
   "Converts a PSA into the portion going in an elastic document"

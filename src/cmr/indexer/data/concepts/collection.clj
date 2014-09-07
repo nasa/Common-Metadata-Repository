@@ -3,7 +3,7 @@
   (:require [clojure.string :as str]
             [clj-time.format :as f]
             [cheshire.core :as json]
-            [camel-snake-kebab :as csk]
+            [camel-snake-kebab.core :as csk]
             [cmr.indexer.services.index-service :as idx]
             [cmr.indexer.data.elasticsearch :as es]
             [cmr.common.mime-types :as mt]
