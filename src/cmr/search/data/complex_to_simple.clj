@@ -5,30 +5,31 @@
   "Defines a function to convert a complex / high level query/condition into simpler ones that
   can be optimized more easily."
   (reduce-query
-    [query]
+    [query context]
     "Converts a high-level query condition into a simpler form."))
 
 
 (extend-protocol ComplexQueryToSimple
   cmr.search.models.query.Query
   (reduce-query
-    [query]
-    (update-in query [:condition] reduce-query))
+    [query context]
+    (update-in query [:condition] reduce-query context))
 
   cmr.search.models.query.ConditionGroup
   (reduce-query
-    [condition]
-    (update-in condition [:conditions] (partial map reduce-query)))
+    [condition context]
+    (update-in condition [:conditions] (fn [conditions]
+                                         (map #(reduce-query % context) conditions))))
 
 
   cmr.search.models.query.CollectionQueryCondition
   (reduce-query
-    [condition]
-    (update-in condition [:condition] reduce-query))
+    [condition context]
+    (update-in condition [:condition] reduce-query context))
 
   ;; catch all
   java.lang.Object
   (reduce-query
-    [this]
+    [this context]
     ;; do nothing
     this))

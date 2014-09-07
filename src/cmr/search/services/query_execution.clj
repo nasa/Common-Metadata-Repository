@@ -112,14 +112,15 @@
   [context query]
   (let [processed-query (pre-process-query-result-features context query)
 
+
         processed-query (r/resolve-collection-queries context processed-query)
-        processed-query (c2s/reduce-query processed-query)
+        processed-query (c2s/reduce-query processed-query context)
 
         ; collection-ids (ce/extract-collection-concept-ids processed-query)
         ; context (assoc context :parent-collection-ids collection-ids)
         processed-query (if (:skip-acls? processed-query)
-                processed-query
-                (acl-service/add-acl-conditions-to-query context processed-query))
+                          processed-query
+                          (acl-service/add-acl-conditions-to-query context processed-query))
         elastic-results (idx/execute-query context processed-query)
 
         query-results (rc/elastic-results->query-results context query elastic-results)]

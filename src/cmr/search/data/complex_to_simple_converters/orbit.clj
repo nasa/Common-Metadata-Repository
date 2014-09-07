@@ -66,7 +66,7 @@
 (extend-protocol c2s/ComplexQueryToSimple
   cmr.search.models.query.OrbitNumberValueCondition
   (c2s/reduce-query
-    [condition]
+    [condition context]
     (let [orbit-number (:value condition)
           term-condition (qm/map->NumericValueCondition {:field :orbit-number :value orbit-number})
           start-range-cond (qm/numeric-range-condition :start-orbit-number nil orbit-number)
@@ -78,7 +78,7 @@
 
   cmr.search.models.query.OrbitNumberRangeCondition
   (c2s/reduce-query
-    [condition]
+    [condition context]
     (let [{:keys [min-value max-value]} condition
           group-condtion (cond
                            (and min-value max-value)
@@ -96,7 +96,7 @@
 
   cmr.search.models.query.EquatorCrossingLongitudeCondition
   (c2s/reduce-query
-    [condition]
+    [condition context]
     (let [{:keys [min-value max-value]} condition
           group-condition (cond
                             (and min-value max-value)
@@ -114,7 +114,7 @@
 
   cmr.search.models.query.EquatorCrossingDateCondition
   (c2s/reduce-query
-    [condition]
+    [condition context]
     (let [{:keys [start-date end-date]} condition
           range-cond (qm/date-range-condition :equator-crossing-date-time start-date end-date)]
       (qm/nested-condition :orbit-calculated-spatial-domains range-cond))))

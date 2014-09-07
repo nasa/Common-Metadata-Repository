@@ -162,8 +162,9 @@
                       condition)
           result (idx/execute-query context
                                     (c2s/reduce-query (qm/query {:concept-type :collection
-                                                                         :condition condition
-                                                                         :page-size :unlimited})))
+                                                                 :condition condition
+                                                                 :page-size :unlimited})
+                                                      context))
           collection-concept-ids (map :_id (get-in result [:hits :hits]))]
 
       (if (empty? collection-concept-ids)

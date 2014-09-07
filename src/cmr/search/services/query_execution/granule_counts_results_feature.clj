@@ -90,10 +90,11 @@
 ;; This find granule counts per collection.
 (defmethod query-execution/post-process-query-result-feature :granule-counts
   [context query elastic-results query-results feature]
-  (->> query-results
-       (extract-granule-count-query query)
-       (acl-service/add-acl-conditions-to-query context)
-       c2s/reduce-query
-       (idx/execute-query context)
-       search-results->granule-counts
-       (assoc query-results :granule-counts-map)))
+  (let [query-res (->> query-results
+                       (extract-granule-count-query query)
+                       (acl-service/add-acl-conditions-to-query context))
+        query-res (c2s/reduce-query query-res context)]
+    (->> query-res
+         (idx/execute-query context)
+         search-results->granule-counts
+         (assoc query-results :granule-counts-map))))

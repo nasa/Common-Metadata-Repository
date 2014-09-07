@@ -86,5 +86,5 @@
 (extend-protocol c2s/ComplexQueryToSimple
   cmr.search.models.query.TemporalCondition
   (c2s/reduce-query
-    [condition]
+    [condition context]
     (temporal->simple-conditions condition)))

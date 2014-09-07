@@ -86,7 +86,7 @@
 (extend-protocol c2s/ComplexQueryToSimple
   cmr.search.models.query.AttributeNameCondition
   (c2s/reduce-query
-    [condition]
+    [condition context]
     (let [{:keys [name pattern?]} condition
           name-cond (qm/string-condition :name name true pattern?)]
       (qm/nested-condition :attributes name-cond))))
@@ -94,7 +94,7 @@
 (extend-protocol c2s/ComplexQueryToSimple
   cmr.search.models.query.AttributeValueCondition
   (c2s/reduce-query
-    [condition]
+    [condition context]
     (let [value-filter (value-condition->value-filter condition)
           attrib-name (:name condition)
           name-cond (qm/map->NumericValueCondition {:field :name :value attrib-name})
@@ -103,7 +103,7 @@
 
   cmr.search.models.query.AttributeRangeCondition
   (c2s/reduce-query
-    [condition]
+    [condition context]
     (let [range-filter (range-condition->range-filter condition)
           attrib-name (:name condition)
           name-cond (qm/map->NumericValueCondition {:field :name :value attrib-name})
