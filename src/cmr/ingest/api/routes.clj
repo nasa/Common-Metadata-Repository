@@ -23,8 +23,6 @@
       concept
       (assoc concept :concept-id concept-id))))
 
-(codec/url-decode "Name%2FWith%2FSlashes")
-
 (defn- build-routes [system]
   (routes
     (POST "/reindex-collection-permitted-groups" {:keys [headers request-context]}
