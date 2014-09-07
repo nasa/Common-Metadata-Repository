@@ -3,7 +3,7 @@
   (:require [clojure.string :as str]
             [clojure.set :as set]
             [cmr.common.util :as util]
-            [camel-snake-kebab :as csk]))
+            [camel-snake-kebab.core :as csk]))
 
 (defn echo-sid->cmr-sid
   "Converts an ECHO sid into a cmr style sid.
