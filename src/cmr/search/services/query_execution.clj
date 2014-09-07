@@ -121,6 +121,7 @@
                 processed-query
                 (acl-service/add-acl-conditions-to-query context processed-query))
         elastic-results (idx/execute-query context processed-query)
+
         query-results (rc/elastic-results->query-results context query elastic-results)]
     (post-process-query-result-features context query elastic-results query-results)))
 
