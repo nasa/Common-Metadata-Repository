@@ -37,14 +37,15 @@
         (and (every? (fn [point]
                        (let [lon (:lon point)
                              line-point (p/point lon (s/segment+lon->lat ls lon))
-                             arc-point (a/point-at-lon arc lon)]
+                             arc-point (if (a/vertical? arc)
+                                         (first (a/points-at-lat arc (:lat point)))
+                                         (a/point-at-lon arc lon))]
                          (approx= line-point arc-point 0.01)))
                      intersections)
              (every? (partial m/covers-point? :geodetic ls-mbr) intersections)
              (every? (fn [point]
                        (some #(m/covers-point? :geodetic % point) arc-mbrs))
                      intersections))))))
-
 
 (deftest example-arc-line-segment-intersections
   (are [ls-ords arc-ords intersection-ords]
