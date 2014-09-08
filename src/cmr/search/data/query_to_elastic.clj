@@ -78,8 +78,7 @@
              :platform :platform-sn.lowercase
              :instrument :instrument-sn.lowercase
              :sensor :sensor-sn.lowercase
-             :project :project-refs.lowercase
-             :score :_score}})
+             :project :project-refs.lowercase}})
 
 (defn query->sort-params
   "Converts a query into the elastic parameters for sorting results"

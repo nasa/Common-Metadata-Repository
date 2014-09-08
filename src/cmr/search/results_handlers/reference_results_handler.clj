@@ -7,6 +7,7 @@
             [clojure.data.xml :as x]
             [clojure.set :as set]
             [cheshire.core :as json]
+            [cmr.search.models.results :as r]
             [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]
             [cmr.search.services.query-execution.facets-results-feature :as frf]))
 
@@ -39,7 +40,7 @@
      :revision-id revision-id
      :location (format "%s%s" (url/reference-root context) concept-id)
      :name name-value
-     :score score}))
+     :score (r/normalize-score score)}))
 
 (defmethod gcrf/query-results->concept-ids :xml
   [results]

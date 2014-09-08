@@ -41,3 +41,11 @@
 
   ])
 
+(defn normalize-score
+  "The score is divided by 2 to mimic the Catalog REST logic that tries to keep the boosts normalized
+  between 0.0 and 1.0. That doesn't actually work but it at least matches Catalog REST's style. As
+  of this writing there are plans to improve the relevancesort algorithm to better match client's
+  expectations of better results. We will wait until that time to come up with a more reasonable
+  approach."
+  [score]
+  (when score (/ score 2.0)))

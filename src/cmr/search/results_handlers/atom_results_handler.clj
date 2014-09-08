@@ -9,6 +9,7 @@
             [cheshire.core :as json]
             [clojure.string :as str]
             [clj-time.core :as time]
+            [cmr.search.models.results :as r]
             [cmr.spatial.serialize :as srl]
             [cmr.search.services.url-helper :as url]
             [cmr.search.results-handlers.atom-spatial-results-handler :as atom-spatial]
@@ -86,7 +87,7 @@
         end-date (when end-date (str/replace (str end-date) #"\+0000" "Z"))
         atom-links (map #(json/decode % true) atom-links)]
     {:id concept-id
-     :score score
+     :score (r/normalize-score score)
      :title entry-title
      :short-name short-name
      :version-id version-id
