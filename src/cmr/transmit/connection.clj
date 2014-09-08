@@ -1,7 +1,7 @@
 (ns cmr.transmit.connection
   "Contains functions that allow creating application connections. We'll eventually use this for
   implementing CMR-538"
-  (:require [camel-snake-kebab.core :as csk]
+  (:require [camel-snake-kebab :as csk]
             [cmr.common.api.web-server :as web-server]
             [clj-http.conn-mgr :as conn-mgr]))
 

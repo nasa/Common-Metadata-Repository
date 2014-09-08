@@ -2,7 +2,7 @@
   "Contains functions for retrieving application connection information from environment variables"
   (:require [cmr.common.config :as cfg]
             [cmr.transmit.connection :as conn]
-            [camel-snake-kebab.core :as csk]))
+            [camel-snake-kebab :as csk]))
 
 (defn parse-port
   "Parses a port into a long."
