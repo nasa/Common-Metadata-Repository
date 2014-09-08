@@ -67,7 +67,7 @@
             [cmr.common.cache :as cache]
             [cmr.acl.acl-cache :as acl-cache]
             [cmr.search.services.acls.collections-cache :as coll-cache]
-            [camel-snake-kebab.core :as csk]
+            [camel-snake-kebab :as csk]
             [cheshire.core :as json]
             [cmr.common.log :refer (debug info warn error)]))
 
