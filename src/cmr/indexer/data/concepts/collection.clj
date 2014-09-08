@@ -116,6 +116,7 @@
             :sensor-ln.lowercase (map str/lower-case sensor-long-names)
             :project-ln.lowercase (map str/lower-case project-long-names)
             :temporal-keyword.lowercase (map str/lower-case temporal-keywords)}
+           (get-in collection [:spatial-coverage :orbit-parameters])
            (spatial->elastic collection)
            (sk/science-keywords->facet-fields collection))))
 

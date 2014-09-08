@@ -215,7 +215,7 @@
                                     :period (stored double-field-mapping)
                                     :inclination-angle (stored double-field-mapping)
                                     :number-of-orbits (stored double-field-mapping)
-                                    :start-circ-latitude (stored double-field-mapping)}
+                                    :start-circular-latitude (stored double-field-mapping)}
                                    spatial-coverage-fields)}})
 
 (def granule-setting {:index {:number_of_shards 6,
