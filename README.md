@@ -166,13 +166,15 @@ The temporal datetime has to be in yyyy-MM-ddTHH:mm:ssZ format.
 
 ### Find collections by processing_level_id param, supports pattern and ignore_case
 
-  Find collections matching 'processing_level_id' param value
+Find collections matching 'processing_level_id' param value
 
      curl "http://localhost:3003/collections?processing_level_id\[\]=1B"
 
-  Find collections matching any of the 'processing_level_id' param values
+Find collections matching any of the 'processing_level_id' param values
 
      curl "http://localhost:3003/collections?processing_level_id\[\]=1B&processing_level_id\[\]=2B"
+
+The alias 'processing_level' also works for searching by processing level id.
 
 ### Find collections by platform param, supports pattern, ignore_case and option :and
 

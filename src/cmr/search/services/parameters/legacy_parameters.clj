@@ -19,7 +19,8 @@
    :online-only :downloadable
    :provider-id :provider
    :day-night-flag :day-night
-   :browse-only :browsable})
+   :browse-only :browsable
+   :processing-level :processing-level-id})
 
 (def sort-key-replacements
   "A map of legacy sort keys with all variations of +/- to use for substitutions."
