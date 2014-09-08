@@ -66,6 +66,11 @@
         on-sp (make-coll :geodetic "on-sp" (polygon -45 -85, -135 -85, 135 -85, 45 -85, -45 -85))
         normal-poly (make-coll :geodetic "normal-poly" (polygon -20 -10, -10 -10, -10 10, -20 10, -20 -10))
 
+        ;; CMR-724 special case
+        whole-world-poly (make-coll :geodetic "whole-world-poly"
+                                    (polygon -179.9999 0.0, -179.9999 -89.9999, 0.0 -89.9999,
+                                             0.0 0.0, 0.0 89.9999, -179.9999 89.9999, -179.9999 0.0))
+
         ;; polygon with holes
         outer (umm-s/ords->ring -5.26,-2.59, 11.56,-2.77, 10.47,8.71, -5.86,8.63, -5.26,-2.59)
         hole1 (umm-s/ords->ring 6.95,2.05, 2.98,2.06, 3.92,-0.08, 6.95,2.05)
@@ -104,26 +109,26 @@
              matches?)
 
            ;; normal two points
-           [-24.28,-12.76,10,10] [whole-world polygon-with-holes normal-poly normal-brs]
+           [-24.28,-12.76,10,10] [whole-world whole-world-poly polygon-with-holes normal-poly normal-brs]
 
            ;; normal multiple points
-           [-0.37,-14.07,4.75,1.27,25.13,-15.51] [whole-world polygon-with-holes
+           [-0.37,-14.07,4.75,1.27,25.13,-15.51] [whole-world whole-world-poly polygon-with-holes
                                                   polygon-with-holes-cart normal-line-cart
                                                   normal-line normal-poly-cart]
            ;; across antimeridian
-           [-167.85,-9.08,171.69,43.24] [whole-world across-am-br across-am-poly very-wide-cart]
+           [-167.85,-9.08,171.69,43.24] [whole-world whole-world-poly across-am-br across-am-poly very-wide-cart]
 
            ;; across north pole
-           [0 85, 180 85] [whole-world north-pole on-np touches-np]
+           [0 85, 180 85] [whole-world whole-world-poly north-pole on-np touches-np]
 
            ;; across north pole where cartesian polygon touches it
-           [-155 85, 25 85] [whole-world north-pole on-np very-tall-cart]
+           [-155 85, 25 85] [whole-world whole-world-poly north-pole on-np very-tall-cart]
 
            ;; across south pole
-           [0 -85, 180 -85] [whole-world south-pole on-sp]
+           [0 -85, 180 -85] [whole-world whole-world-poly south-pole on-sp]
 
            ;; across north pole where cartesian polygon touches it
-           [-155 -85, 25 -85] [whole-world south-pole on-sp touches-sp very-tall-cart]))
+           [-155 -85, 25 -85] [whole-world whole-world-poly south-pole on-sp touches-sp very-tall-cart]))
 
     (testing "point searches"
       (are [lon_lat items]
@@ -136,43 +141,43 @@
              matches?)
 
            ;; north pole
-           [0 90] [whole-world north-pole on-np touches-np]
+           [0 90] [whole-world whole-world-poly north-pole on-np touches-np]
 
            ;; south pole
-           [0 -90] [whole-world south-pole on-sp touches-sp]
+           [0 -90] [whole-world whole-world-poly south-pole on-sp touches-sp]
 
            ;; in hole of polygon with a hole
-           [4.83 1.06] [whole-world]
+           [4.83 1.06] [whole-world whole-world-poly]
            ;; in hole of polygon with a hole
-           [1.67 5.43] [whole-world]
+           [1.67 5.43] [whole-world whole-world-poly]
            ;; and not in hole
-           [1.95 3.36] [whole-world polygon-with-holes]
+           [1.95 3.36] [whole-world whole-world-poly polygon-with-holes]
 
            ;; in mbr
-           [17.73 2.21] [whole-world normal-brs]
+           [17.73 2.21] [whole-world whole-world-poly normal-brs]
 
            ;;matches exact point on polygon
-           [-5.26 -2.59] [whole-world polygon-with-holes]
+           [-5.26 -2.59] [whole-world whole-world-poly polygon-with-holes]
 
            ;; Matches a granule point
-           [10 22] [whole-world normal-point wide-north-cart]
+           [10 22] [whole-world whole-world-poly normal-point wide-north-cart]
 
-           [-154.821 37.84] [whole-world very-wide-cart very-tall-cart]
+           [-154.821 37.84] [whole-world whole-world-poly very-wide-cart very-tall-cart]
 
            ;; Near but not inside the cartesian normal polygon
            ;; and also insid the polygon with holes (outside the holes)
-           [-2.212,-12.44] [whole-world polygon-with-holes-cart]
-           [0.103,-15.911] [whole-world polygon-with-holes-cart]
+           [-2.212,-12.44] [whole-world whole-world-poly polygon-with-holes-cart]
+           [0.103,-15.911] [whole-world whole-world-poly polygon-with-holes-cart]
            ;; inside the cartesian normal polygon
-           [2.185,-11.161] [whole-world normal-poly-cart]
+           [2.185,-11.161] [whole-world whole-world-poly normal-poly-cart]
 
            ;; inside a hole in the cartesian polygon
-           [4.496,-18.521] [whole-world]
+           [4.496,-18.521] [whole-world whole-world-poly]
 
            ;; point on geodetic line
-           [20.0 -10.437310310746927] [whole-world normal-line]
+           [20.0 -10.437310310746927] [whole-world whole-world-poly normal-line]
            ;; point on cartesian line
-           [20.0 -13.496157710960231] [whole-world normal-line-cart]))
+           [20.0 -13.496157710960231] [whole-world whole-world-poly normal-line-cart]))
 
     (testing "bounding rectangle searches"
       (are [wnes items]
@@ -184,40 +189,40 @@
                (println "Actual:" (->> found :refs (map :name) sort pr-str)))
              matches?)
 
-           [-23.43 5 25.54 -6.31] [whole-world polygon-with-holes normal-poly normal-brs]
+           [-23.43 5 25.54 -6.31] [whole-world whole-world-poly polygon-with-holes normal-poly normal-brs]
 
            ;; inside hole in geodetic
-           [4.03,1.51,4.62,0.92] [whole-world]
+           [4.03,1.51,4.62,0.92] [whole-world whole-world-poly]
            ;; corner points inside different holes
-           [4.03,5.94,4.35,0.92] [whole-world polygon-with-holes]
+           [4.03,5.94,4.35,0.92] [whole-world whole-world-poly polygon-with-holes]
 
            ;; inside hole in cartesian polygon
-           [-0.54,-13.7,3.37,-14.45] [whole-world normal-poly-cart]
+           [-0.54,-13.7,3.37,-14.45] [whole-world whole-world-poly normal-poly-cart]
            ;; inside different holes in cartesian polygon
-           [3.57,-14.38,3.84,-18.63] [whole-world normal-poly-cart polygon-with-holes-cart]
+           [3.57,-14.38,3.84,-18.63] [whole-world whole-world-poly normal-poly-cart polygon-with-holes-cart]
 
            ;; just under wide north polygon
-           [-1.82,46.56,5.25,44.04] [whole-world]
-           [-1.74,46.98,5.25,44.04] [whole-world wide-north]
-           [-1.74 47.05 5.27 44.04] [whole-world wide-north]
+           [-1.82,46.56,5.25,44.04] [whole-world whole-world-poly]
+           [-1.74,46.98,5.25,44.04] [whole-world whole-world-poly wide-north]
+           [-1.74 47.05 5.27 44.04] [whole-world whole-world-poly wide-north]
 
            ;; vertical slice of earth
-           [-10 90 10 -90] [whole-world on-np on-sp wide-north wide-south polygon-with-holes
+           [-10 90 10 -90] [whole-world whole-world-poly on-np on-sp wide-north wide-south polygon-with-holes
                             normal-poly normal-brs north-pole south-pole normal-point
                             very-wide-cart wide-north-cart wide-south-cart normal-poly-cart
                             polygon-with-holes-cart]
 
            ;; crosses am
-           [166.11,53.04,-166.52,-19.14] [whole-world across-am-poly across-am-br am-point very-wide-cart]
+           [166.11,53.04,-166.52,-19.14] [whole-world whole-world-poly across-am-poly across-am-br am-point very-wide-cart]
 
            ;; Matches geodetic line
-           [17.67,-4,25.56,-6.94] [whole-world normal-line]
+           [17.67,-4,25.56,-6.94] [whole-world whole-world-poly normal-line]
 
            ;; Matches cartesian line
-           [23.59,-4,25.56,-15.47] [whole-world normal-line-cart]
+           [23.59,-4,25.56,-15.47] [whole-world whole-world-poly normal-line-cart]
 
            ;; whole world
-           [-180 90 180 -90] [whole-world touches-np touches-sp across-am-br normal-brs
+           [-180 90 180 -90] [whole-world whole-world-poly touches-np touches-sp across-am-br normal-brs
                               wide-north wide-south across-am-poly on-sp on-np normal-poly
                               polygon-with-holes north-pole south-pole normal-point am-point
                               very-wide-cart very-tall-cart wide-north-cart wide-south-cart
@@ -233,68 +238,68 @@
              matches?)
 
            [20.16,-13.7,21.64,12.43,12.47,11.84,-22.57,7.06,20.16,-13.7]
-           [whole-world normal-poly normal-brs polygon-with-holes normal-line normal-line-cart]
+           [whole-world whole-world-poly normal-poly normal-brs polygon-with-holes normal-line normal-line-cart]
 
            ;; Intersects 2nd of normal-brs
            [-16.79,-12.71,-6.32,-10.95,-5.74,-6.11,-15.18,-7.63,-16.79,-12.71]
-           [whole-world normal-poly normal-brs]
+           [whole-world whole-world-poly normal-poly normal-brs]
 
            [0.53,39.23,21.57,59.8,-112.21,84.48,-13.37,40.91,0.53,39.23]
-           [whole-world on-np wide-north very-wide-cart]
+           [whole-world whole-world-poly on-np wide-north very-wide-cart]
 
            ;; around north pole
            [58.41,76.95,163.98,80.56,-122.99,81.94,-26.18,82.82,58.41,76.95]
-           [whole-world on-np touches-np north-pole very-tall-cart]
+           [whole-world whole-world-poly on-np touches-np north-pole very-tall-cart]
 
            ;; around south pole
            [-161.53,-69.93,25.43,-51.08,13.89,-39.94,-2.02,-40.67,-161.53,-69.93]
-           [whole-world on-sp wide-south touches-sp south-pole very-tall-cart]
+           [whole-world whole-world-poly on-sp wide-south touches-sp south-pole very-tall-cart]
 
            ;; Across antimeridian
            [-163.9,49.6,171.51,53.82,166.96,-11.32,-168.36,-14.86,-163.9,49.6]
-           [whole-world across-am-poly across-am-br am-point very-wide-cart]
+           [whole-world whole-world-poly across-am-poly across-am-br am-point very-wide-cart]
 
            [-2.212 -12.44, 0.103 -15.911, 2.185 -11.161 -2.212 -12.44]
-           [whole-world normal-poly-cart polygon-with-holes-cart]
+           [whole-world whole-world-poly normal-poly-cart polygon-with-holes-cart]
 
            ;; Interactions with lines
            ;; Covers both lines
            [15.42,-15.13,36.13,-14.29,25.98,-0.75,13.19,0.05,15.42,-15.13]
-           [whole-world normal-line normal-line-cart normal-brs]
+           [whole-world whole-world-poly normal-line normal-line-cart normal-brs]
 
            ;; Intersects both lines
            [23.33,-14.96,24.02,-14.69,19.73,-6.81,18.55,-6.73,23.33,-14.96]
-           [whole-world normal-line normal-line-cart]
+           [whole-world whole-world-poly normal-line normal-line-cart]
 
            ;; Related to the geodetic polygon with the holes
            ;; Inside holes
-           [4.1,0.64,4.95,0.97,6.06,1.76,3.8,1.5,4.1,0.64] [whole-world]
-           [1.41,5.12,3.49,5.52,2.66,6.11,0.13,6.23,1.41,5.12] [whole-world]
+           [4.1,0.64,4.95,0.97,6.06,1.76,3.8,1.5,4.1,0.64] [whole-world whole-world-poly]
+           [1.41,5.12,3.49,5.52,2.66,6.11,0.13,6.23,1.41,5.12] [whole-world whole-world-poly]
            ;; Partially inside a hole
-           [3.58,-1.34,4.95,0.97,6.06,1.76,3.8,1.5,3.58,-1.34] [whole-world polygon-with-holes]
+           [3.58,-1.34,4.95,0.97,6.06,1.76,3.8,1.5,3.58,-1.34] [whole-world whole-world-poly polygon-with-holes]
            ;; Covers a hole
-           [3.58,-1.34,5.6,0.05,7.6,2.33,2.41,2.92,3.58,-1.34] [whole-world polygon-with-holes]
+           [3.58,-1.34,5.6,0.05,7.6,2.33,2.41,2.92,3.58,-1.34] [whole-world whole-world-poly polygon-with-holes]
            ;; points inside both holes
-           [4.44,0.66,5.4,1.35,2.66,6.11,0.13,6.23,4.44,0.66] [whole-world polygon-with-holes]
+           [4.44,0.66,5.4,1.35,2.66,6.11,0.13,6.23,4.44,0.66] [whole-world whole-world-poly polygon-with-holes]
            ;; completely covers the polygon with holes
-           [-6.45,-3.74,12.34,-4.18,12,9.45,-6.69,9.2,-6.45,-3.74] [whole-world polygon-with-holes normal-brs]
+           [-6.45,-3.74,12.34,-4.18,12,9.45,-6.69,9.2,-6.45,-3.74] [whole-world whole-world-poly polygon-with-holes normal-brs]
 
            ;; Related to the cartesian polygon with the holes
            ;; Inside holes
            [-1.39,-14.32,2.08,-14.38,1.39,-13.43,-1.68,-13.8,-1.39,-14.32]
-           [whole-world normal-poly-cart]
+           [whole-world whole-world-poly normal-poly-cart]
            ;; Partially inside a hole
            [-1.39,-14.32,2.08,-14.38,1.64,-12.45,-1.68,-13.8,-1.39,-14.32]
-           [whole-world polygon-with-holes-cart normal-poly-cart]
+           [whole-world whole-world-poly polygon-with-holes-cart normal-poly-cart]
            ;; Covers a hole
            [-3.24,-15.58,5.22,-15.16,6.05,-12.37,-1.98,-12.46,-3.24,-15.58]
-           [whole-world polygon-with-holes-cart normal-poly-cart]
+           [whole-world whole-world-poly polygon-with-holes-cart normal-poly-cart]
            ;; points inside both holes
            [3.98,-18.64,5.08,-18.53,3.7,-13.78,-0.74,-13.84,3.98,-18.64]
-           [whole-world polygon-with-holes-cart normal-poly-cart]
+           [whole-world whole-world-poly polygon-with-holes-cart normal-poly-cart]
            ;; completely covers the polygon with holes
            [-5.95,-23.41,12.75,-23.69,11.11,-10.38,-6.62,-10.89,-5.95,-23.41]
-           [whole-world polygon-with-holes-cart wide-south-cart normal-poly-cart]))
+           [whole-world whole-world-poly polygon-with-holes-cart wide-south-cart normal-poly-cart]))
 
     (testing "AQL spatial search"
       (are [type ords items]
@@ -305,12 +310,12 @@
                (println "Actual:" (pr-str (map :name (:refs refs)))))
              result)
            :polygon [20.16,-13.7,21.64,12.43,12.47,11.84,-22.57,7.06,20.16,-13.7]
-           [whole-world normal-poly normal-brs polygon-with-holes normal-line normal-line-cart]
+           [whole-world whole-world-poly normal-poly normal-brs polygon-with-holes normal-line normal-line-cart]
 
-           :box [23.59,-4,25.56,-15.47] [whole-world normal-line-cart]
-           :point [17.73 2.21] [whole-world normal-brs]
+           :box [23.59,-4,25.56,-15.47] [whole-world whole-world-poly normal-line-cart]
+           :point [17.73 2.21] [whole-world whole-world-poly normal-brs]
            :line [-0.37,-14.07,4.75,1.27,25.13,-15.51]
-           [whole-world polygon-with-holes polygon-with-holes-cart normal-line-cart normal-line
+           [whole-world whole-world-poly polygon-with-holes polygon-with-holes-cart normal-line-cart normal-line
             normal-poly-cart]))))
 
 
