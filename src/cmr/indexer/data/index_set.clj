@@ -280,6 +280,11 @@
                    :browsable (stored bool-field-mapping)
                    :attributes attributes-field-mapping
 
+                   ;; Used for orbit search
+                   :orbit-asc-crossing-lon double-field-mapping
+                   :orbit-start-clat double-field-mapping
+                   :orbit-end-clat double-field-mapping
+
                    ;; atom-links is a json string that contains the atom-links, which is a list of
                    ;; maps of atom link attributes. We tried to use nested document to save atom-links
                    ;; as a structure in elasticsearch, but can't find a way to retrieve it out.
