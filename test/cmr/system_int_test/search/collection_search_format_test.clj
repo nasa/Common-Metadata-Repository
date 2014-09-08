@@ -308,8 +308,8 @@
                                    (map :score (get-in (search/find-concepts-atom :collection
                                                                                   {:keyword keyword-str})
                                                        [:results :entries])))
-           "ABC" [1.4]
-           "ABC Foo" [1.0]))
+           "ABC" [0.7]
+           "ABC Foo" [0.5]))
 
     (testing "Atom has no score field for non-keyword search."
       (are [title-str scores] (= scores
@@ -327,8 +327,8 @@
       (are [keyword-str scores] (= scores
                                    (map :score (:refs (search/find-refs :collection
                                                                         {:keyword keyword-str}))))
-           "ABC" [1.4]
-           "ABC Foo" [1.0]))
+           "ABC" [0.7]
+           "ABC Foo" [0.5]))
 
     (testing "XML has no score field for non-keyword search."
       (are [title-str scores] (= scores
@@ -346,8 +346,8 @@
                                    (map :score (get-in (search/find-refs-json :collection
                                                                               {:keyword keyword-str})
                                                        [:feed :entry])))
-           "ABC" [1.4]
-           "ABC Foo" [1.0]))
+           "ABC" [0.7]
+           "ABC Foo" [0.5]))
 
     (testing "XML has no score field for non-keyword search."
       (are [title-str scores] (= scores
