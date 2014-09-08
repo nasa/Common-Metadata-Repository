@@ -11,7 +11,7 @@
             [cmr.common.xml :as cx]
             [clojure.string :as str]
             [clj-time.format :as f]
-            [camel-snake-kebab.core :as csk]
+            [camel-snake-kebab :as csk]
             [cmr.umm.spatial :as umm-s]
             [cmr.common.util :as util]
             [cmr.system-int-test.data2.facets :as facets]))
