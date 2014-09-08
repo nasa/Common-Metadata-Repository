@@ -15,7 +15,7 @@
             [cmr.umm.echo10.collection.science-keyword :as sk]
             [cmr.umm.echo10.spatial :as s]
             [cmr.umm.echo10.core]
-            [camel-snake-kebab.core :as csk])
+            [camel-snake-kebab :as csk])
   (:import cmr.umm.collection.UmmCollection))
 
 (defn- xml-elem->Product
