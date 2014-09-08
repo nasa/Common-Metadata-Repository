@@ -20,8 +20,7 @@
 
 (defn spatial->elastic
   [collection]
-  (try
-    (when-let [geometries (seq (get-in collection [:spatial-coverage :geometries]))]
+  (when-let [geometries (seq (get-in collection [:spatial-coverage :geometries]))]
       (let [sr (get-in collection [:spatial-coverage :spatial-representation])]
         ;; TODO Add support for all spatial representations and geometries
         (cond
@@ -29,10 +28,7 @@
           (spatial/spatial->elastic-docs sr collection)
 
           :else
-          (info "Ignoring indexing spatial of collection spatial representation of" sr))))
-    (catch Exception e
-      (error e (format "Error generating spatial for collection: %s. Skipping spatial."
-                       (pr-str collection))))))
+          (info "Ignoring indexing spatial of collection spatial representation of" sr)))))
 
 (defmethod es/concept->elastic-doc :collection
   [context concept collection]

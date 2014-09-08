@@ -35,19 +35,15 @@
 
 (defn spatial->elastic
   [parent-collection granule]
-  (try
-    (when-let [geometries (seq (get-in granule [:spatial-coverage :geometries]))]
-      (let [gsr (get-in parent-collection [:spatial-coverage :granule-spatial-representation])]
-        ;; TODO Add support for all granule spatial representations and geometries
-        (cond
-          (or (= gsr :geodetic) (= gsr :cartesian))
-          (spatial/spatial->elastic-docs gsr granule)
+  (when-let [geometries (seq (get-in granule [:spatial-coverage :geometries]))]
+    (let [gsr (get-in parent-collection [:spatial-coverage :granule-spatial-representation])]
+      ;; TODO Add support for all granule spatial representations and geometries
+      (cond
+        (or (= gsr :geodetic) (= gsr :cartesian))
+        (spatial/spatial->elastic-docs gsr granule)
 
-          :else
-          (info "Ignoring indexing spatial of granule spatial representation of" gsr))))
-    (catch Throwable e
-      (error e (format "Error generating spatial for granule: %s. Skipping spatial."
-                       (pr-str granule))))))
+        :else
+        (info "Ignoring indexing spatial of granule spatial representation of" gsr)))))
 
 (defmethod es/concept->elastic-doc :granule
   [context concept umm-granule]
