@@ -155,7 +155,7 @@
            "SUPER" [coll9]))
 
     (testing "Boost on fields"
-      (are [keyword-str scores] (= scores
+      (are [keyword-str scores] (= (map #(/ % 2.0) scores)
                                    (map :score (:refs (search/find-refs :collection
                                                                         {:keyword keyword-str}))))
            ;; short-name
