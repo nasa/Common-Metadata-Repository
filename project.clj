@@ -7,7 +7,7 @@
                  [ring/ring-jetty-adapter "1.3.1"]
                  [org.clojure/test.check "0.5.9"]
                  [org.clojure/data.xml "0.0.8"]
-                 [camel-snake-kebab "0.2.4"]
+                 [camel-snake-kebab "0.1.5"]
                  [org.clojure/core.cache "0.6.4"]
                  [org.clojure/data.codec "0.1.0"]
                  [com.novemberain/pantomime "2.3.0"]
