@@ -232,6 +232,10 @@
       shapes
       (let [[int-type size] (first ords-info-pairs)
             type (integer->shape-type int-type)
+            _ (when-not type
+                (errors/internal-error!
+                  (format "Could not get a shape type from integer [%s]. Ords info: %s"
+                          int-type (pr-str ords-info))))
             shape-ords (take size ords)
             shape (stored-ords->shape type shape-ords)
             ;; If shape is a hole add it to the last shape
