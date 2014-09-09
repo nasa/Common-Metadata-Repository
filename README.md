@@ -521,7 +521,7 @@ Provider holdings for a list of providers
 Search collections or granules with AQL in POST request body. The AQL must conform to the schema
 that is defined in cmr-search-app/resources/schema/IIMSAQLQueryLanguage.xsd
 
-    curl -i -XPOST http://localhost:3003/concepts/search -d '<?xml version="1.0" encoding="UTF-8"?>
+    curl -i -XPOST -H "Content-Type: application/xml" http://localhost:3003/concepts/search -d '<?xml version="1.0" encoding="UTF-8"?>
     <query><for value="collections"/><dataCenterId><all/></dataCenterId>
     <where><collectionCondition><shortName><value>S1</value></shortName></collectionCondition></where></query>'
 
