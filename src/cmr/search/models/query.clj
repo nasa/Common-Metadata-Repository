@@ -193,6 +193,21 @@
    max-value
    ])
 
+(defrecord NumericOverlapCondition
+  [
+   ;; The field representing the minimum value of an indexed range
+   min-field
+
+   ;; The field representing the maximum value of an indexed range
+   max-field
+
+   ;; The minimum value of the search range (inclusive)
+   min-value
+
+   ;; The maximum value of the search range (inclusive)
+   max-vlaue
+   ])
+
 (defrecord StringRangeCondition
   [
    ;; The field being searched

@@ -1,12 +1,18 @@
 (ns cmr.search.data.complex-to-simple-converters.spatial
   "Contains converters for spatial condition into the simpler executable conditions"
   (:require [cmr.search.data.complex-to-simple :as c2s]
+            [cmr.search.data.elastic-search-index :as idx]
             [cmr.search.models.query :as qm]
             [cmr.spatial.mbr :as mbr]
             [cmr.spatial.serialize :as srl]
             [cmr.spatial.derived :as d]
-            [clojure.string :as str]))
+            [cmr.spatial.relations :as sr]
+            [clojure.string :as str])
+  (:import gov.nasa.echo_orbits.EchoOrbitsRubyBootstrap))
 
+(def orbits
+  "Java wrapper for echo-orbits ruby library."
+  (EchoOrbitsRubyBootstrap/bootstrapEchoOrbits))
 
 (defn- shape->script-cond
   [shape]
@@ -50,18 +56,97 @@
                        south-cond
                        (qm/or-conds [am-conds non-am-conds])])))))
 
-;; TODO find a way to pass in the rest of the parameters so we can look for collection ids to
-;; narrow the search like catalog rest does
-;; TODO - we must have a context here so that we can call the service to look up the
-;; orbit parameters
-(defn orbit-cond
-  "Create a condition that will use orbit parameters and orbital back tracking to find matches
-  to a spatial search."
-  [shape]
-  ;; Construct a query for concept-ids and orbit parameters of all collections that have them
-  ;; TODO this should be limited to any parent collection ids specified in the paramters (if any)
-  ;; Execute the query to get the data needed to do orbitial back tracking
 
+(def orbit-param-fields
+  ["concept-id"
+   "swath-width"
+   "period"
+   "inclination-angle"
+   "number-of-orbits"
+   "start-circular-latitude"])
+
+(defn- collection-ids-present?
+  [orbit-collection-ids]
+  (and (not= :all orbit-collection-ids)
+       (seq orbit-collection-ids)))
+
+(defn- fix-vals
+  "Helper function to convert a map with sequences for values into a map with single values."
+  [map-value]
+  (reduce (fn [m key]
+            (update-in m [key] #(first %)))
+          map-value
+          (keys map-value)))
+
+(defn- orbits-for-context
+  "Get the orbit parameters for all the relevant collections."
+  [context]
+  ;; Construct a query for concept-ids and orbit parameters of all collections that have them
+  ;; Execute the query to get the data needed to do orbitial back tracking
+  (let [{:keys [orbit-collection-ids]} context
+        orbit-params-cond (qm/->ExistCondition :swath-width)
+        orbit-params-cond (if (collection-ids-present? orbit-collection-ids)
+                            (qm/and-conds orbit-params-cond
+                                          (qm/or-conds (map (fn [concept-id]
+                                                              (qm/string-condition
+                                                                :concept-id
+                                                                concept-id
+                                                                true
+                                                                false))
+                                                            orbit-collection-ids)))
+                            orbit-params-cond)
+        orbit-params-query (qm/query {:concept-type :collection
+                                      :condition orbit-params-cond
+                                      :skip-acls? true
+                                      :page-size :unlimited
+                                      :result-format :query-specified
+                                      :fields orbit-param-fields})
+        results (get-in (idx/execute-query context orbit-params-query) [:hits :hits])]
+    (map #(fix-vals (:fields %)) results)))
+
+
+(defn orbit-crossings
+  "Compute the orbit crossing ranges (latitude and longitude) used to create the crossing
+  conditions for orbital crossing searches."
+  [stored-ords orbit-params]
+  (let [
+        type (name (get-in stored-ords [0 :type]))
+        coords (double-array (map srl/stored->ordinate
+                              (get-in stored-ords [0 :ords])))
+        crossings (let [{:keys [swath-width
+                                       period
+                                       inclination-angle
+                                       number-of-orbits
+                                       start-circular-latitude]} orbit-params
+                               asc-crossing (.areaCrossingRange
+                                              orbits
+                                              type
+                                              coords
+                                              true
+                                              inclination-angle
+                                              period
+                                              swath-width
+                                              start-circular-latitude
+                                              number-of-orbits)
+                               desc-crossing (.areaCrossingRange
+                                              orbits
+                                              type
+                                              coords
+                                              false
+                                              inclination-angle
+                                              period
+                                              swath-width
+                                              start-circular-latitude
+                                              number-of-orbits)]
+                           [asc-crossing desc-crossing])]
+    (doseq [crossing crossings]
+      (println "CROSSING....")
+      (println "LON MIN")
+      (println (first (first crossing)))
+      (println "LON MAX")
+      (println (last (first crossing))))
+
+    crossings)
 
   ;; Use the orbit parameters to perform oribtial back tracking to longitude ranges to be used
   ;; in the search
@@ -70,12 +155,32 @@
   ;; and :orbit-end-clat range
   )
 
+(defn orbital-condition
+  "Create a condition that will use orbit parameters and orbital back tracking to find matches
+  to a spatial search."
+  [shape context]
+  (let [mbr (sr/mbr shape)
+        lat-ranges (.denormalizeLatitudeRange orbits (:south mbr) (:north mbr))
+        ;lat-conds (
+        orbit-params (orbits-for-context context)
+        stored-ords (srl/shape->stored-ords shape)]
+    ; (map (fn [params]
+    ;        (let [crossings (orbit-crossings stored-ords params)]
+    ;          (qm/and-conds
+    ;            (qm/string-condition :collection-concept-id (:concept-id params))
+    ;            (qm/and-conds
+    ;              (qm/or-conds
+    ;                (
+    orbit-params))
+
+
 
 (extend-protocol c2s/ComplexQueryToSimple
   cmr.search.models.query.SpatialCondition
   (c2s/reduce-query
     [{:keys [shape]} context]
     (let [shape (d/calculate-derived shape)
+          orbital-cond (orbital-condition shape context)
           mbr-cond (br->cond "mbr" (srl/shape->mbr shape))
           lr-cond (br->cond "lr" (srl/shape->lr shape))
           spatial-script (shape->script-cond shape)]
