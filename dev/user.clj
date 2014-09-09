@@ -15,8 +15,23 @@
 
 (def system nil)
 
+(defn tunnel-system
+  "Allows tunneling the search to a indexer and elasticsearch running on a different system"
+  []
+  ;; workload can be tunnelled by running these
+  ;; ssh -L4005:localhost:3005 cmr-wl-app1.dev.echo.nasa.gov
+  ;; ssh -L9211:localhost:9200 cmr-wl-elastic1.dev.echo.nasa.gov
+  (cfg/set-config-value! :elastic-port 9211)
+  (cfg/set-config-value! :index-set-port 4005)
+
+  (cfg/set-config-value! :echo-rest-host "api-wkld.echo.nasa.gov")
+  (cfg/set-config-value! :echo-rest-port 80)
+  (cfg/set-config-value! :echo-rest-context "/echo-rest")
+  (cfg/set-config-value! :echo-system-token "XXXXXXXX"))
+
 (defn create-system
   []
+  ; (tunnel-system)
   (let [web-server (web/create-web-server (transmit-config/search-port)
                                           (repeat-last-request/wrap-api routes/make-api))]
     (assoc (system/create-system) :web web-server)))
@@ -42,24 +57,5 @@
   (refresh :after 'user/start))
 
 
-(defn tunnel-system
-  "Allows tunneling the search to a indexer and elasticsearch running on a different system"
-  []
-  (cfg/set-config-value! :index-set-port 4005)
-  ;; Stop the current system
-  (stop)
-
-  (let [updated-sys (-> (create-system)
-                        (assoc-in [:search-index :config :port] 9211)
-                        system/start)]
-    (alter-var-root #'system (constantly updated-sys))))
-
-(comment
-  ;; workload can be tunnelled by running these
-  ;; ssh -L4005:localhost:3005 cmr-wl-app1.dev.echo.nasa.gov
-  ;; ssh -L9211:localhost:9200 cmr-wl-elastic1.dev.echo.nasa.gov
-  (tunnel-system)
-
-)
 
 (info "Custom user.clj loaded.")

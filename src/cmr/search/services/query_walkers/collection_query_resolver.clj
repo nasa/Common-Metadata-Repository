@@ -33,7 +33,7 @@
   (when (and (not= :all collection-ids) (some nil? collection-ids))
     (errors/internal-error! (str "Nil collection ids in list: " (pr-str collection-ids))))
 
-  (if (= :all collection-ids)
+  (if (or (= :all collection-ids) (nil? collection-ids))
     context
     (update-in context [:collection-ids]
                (fn [existing-ids]
