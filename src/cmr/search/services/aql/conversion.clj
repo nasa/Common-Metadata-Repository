@@ -153,7 +153,8 @@
       (try
         (apply t/date-time units)
         (catch org.joda.time.IllegalFieldValueException e
-          (errors/throw-service-error :bad-request (.getMessage e)))))))
+          (errors/throw-service-error :bad-request
+                                      (str "Invalid datetime in AQL: " (.getMessage e))))))))
 
 (defn parse-date-range-element
   "Returns start-date and stop-date in a vector by parsing the given data range element"
