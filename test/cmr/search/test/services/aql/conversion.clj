@@ -158,6 +158,7 @@
 
 (deftest aql-datetime-validation-test
   (testing "aql datetime validation"
-    (is (thrown? clojure.lang.ExceptionInfo
-                 (a/date-time-from-strings "2014" "13" "22" nil nil nil)))))
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                          #"Value 13 for monthOfYear must be in the range \[1,12\]"
+                          (a/date-time-from-strings "2014" "13" "22" nil nil nil)))))
 
