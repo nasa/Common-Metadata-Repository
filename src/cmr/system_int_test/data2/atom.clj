@@ -209,7 +209,7 @@
        :dataset-id entry-title
        :short-name short-name
        :version-id version-id
-       :original-format "ECHO10"
+       :original-format (get collection :original-format "ECHO10")
        :collection-data-type collection-data-type
        :data-center (:provider-id (cu/parse-concept-id concept-id))
        :archive-center archive-center

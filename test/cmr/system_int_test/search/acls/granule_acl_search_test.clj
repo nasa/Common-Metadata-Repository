@@ -221,13 +221,14 @@
            user-permitted-granules
            {:token user1-token :concept-id (cons "C999-PROV1" (map :concept-id all-colls))}))
 
-    (testing "atom"
+    (testing "ATOM ACL Enforcement"
       (testing "all items"
         (let [gran-atom (da/granules->expected-atom
                           guest-permitted-granules
                           guest-permitted-granule-colls
-                          (str "granules.atom?token=" guest-token))]
-          (is (= gran-atom (:results (search/find-concepts-atom :granule {:token guest-token}))))))
+                          (format "granules.atom?token=%s&page_size=100" guest-token))]
+          (is (= gran-atom (:results (search/find-concepts-atom :granule {:token guest-token
+                                                                          :page-size 100}))))))
 
       (testing "by concept id"
         (let [concept-ids (map :concept-id all-grans)
@@ -235,17 +236,19 @@
                           guest-permitted-granules
                           guest-permitted-granule-colls
                           (str "granules.atom?token=" guest-token
-                               "&concept_id="
+                               "&page_size=100&concept_id="
                                (str/join "&concept_id=" concept-ids)))]
           (is (= gran-atom (:results (search/find-concepts-atom :granule {:token guest-token
+                                                                          :page-size 100
                                                                           :concept-id concept-ids})))))))
-    (testing "json"
+    (testing "JSON ACL Enforcement"
       (testing "all items"
         (let [gran-atom (da/granules->expected-atom
                           guest-permitted-granules
                           guest-permitted-granule-colls
-                          (str "granules.json?token=" guest-token))]
-          (is (= gran-atom (:results (search/find-concepts-json :granule {:token guest-token}))))))
+                          (format "granules.json?token=%s&page_size=100" guest-token))]
+          (is (= gran-atom (:results (search/find-concepts-json :granule {:token guest-token
+                                                                          :page-size 100}))))))
 
       (testing "by concept id"
         (let [concept-ids (map :concept-id all-grans)
@@ -253,9 +256,10 @@
                           guest-permitted-granules
                           guest-permitted-granule-colls
                           (str "granules.json?token=" guest-token
-                               "&concept_id="
+                               "&page_size=100&concept_id="
                                (str/join "&concept_id=" concept-ids)))]
           (is (= gran-atom (:results (search/find-concepts-json :granule {:token guest-token
+                                                                          :page-size 100
                                                                           :concept-id concept-ids})))))))
 
     (testing "csv"
@@ -263,7 +267,8 @@
         (let [expected-granule-urs (map :granule-ur guest-permitted-granules)]
           (is (= expected-granule-urs
                  (csv-response->granule-urs
-                   (search/find-grans-csv :granule {:token guest-token}))))))
+                   (search/find-grans-csv :granule {:token guest-token
+                                                    :page-size 100}))))))
 
       (testing "by concept id"
         (let [concept-ids (map :concept-id all-grans)
@@ -271,6 +276,7 @@
           (is (= expected-granule-urs
                  (csv-response->granule-urs
                    (search/find-grans-csv :granule {:token guest-token
+                                                    :page-size 100
                                                     :concept-id concept-ids})))))))
 
 
@@ -296,8 +302,7 @@
           (is (gran-counts/granule-counts-match?
                 :xml {coll1 0 coll2 0 coll3 1 coll4 1 coll5 0
                       coll6 0 coll7 0 coll51 1 coll52 2 coll53 2}
-                refs-result)))))
-    ))
+                refs-result)))))))
 
 
 
