@@ -150,7 +150,10 @@
   [year month day hour minute sec]
   (when (or year month day hour minute sec)
     (let [units (map (fn [^String unit] (if unit (Long. unit) 0)) [year month day hour minute sec])]
-      (apply t/date-time units))))
+      (try
+        (apply t/date-time units)
+        (catch org.joda.time.IllegalFieldValueException e
+          (errors/throw-service-error :bad-request (.getMessage e)))))))
 
 (defn parse-date-range-element
   "Returns start-date and stop-date in a vector by parsing the given data range element"

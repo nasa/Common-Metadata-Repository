@@ -155,3 +155,9 @@
 
          true "<onlineOnly value=\"Y\" />"
          true "<onlineOnly />")))
+
+(deftest aql-datetime-validation-test
+  (testing "aql datetime validation"
+    (is (thrown? clojure.lang.ExceptionInfo
+                 (a/date-time-from-strings "2014" "13" "22" nil nil nil)))))
+
