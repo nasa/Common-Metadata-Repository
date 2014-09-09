@@ -78,7 +78,7 @@
        :online-access-flag online-access-flag
        :browse-flag browse-flag
        :coordinate-system coordinate-system
-       :granule-count (parse-long granule-count)
+       :granule-count granule-count
        :has-granules has-granules
        :shapes (json-geometry->shapes points boxes polygons lines)})))
 

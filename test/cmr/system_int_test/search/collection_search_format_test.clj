@@ -253,7 +253,7 @@
 
     (index/refresh-elastic-index)
 
-    (let [coll-atom (da/collections->expected-atom [coll1] "collections.atom?dataset-id=Dataset1")
+    (let [coll-atom (da/collections->expected-atom [coll1] "collections.atom?dataset_id=Dataset1")
           response (search/find-concepts-atom :collection {:dataset-id "Dataset1"})]
       (is (= 200 (:status response)))
       (is (= coll-atom
@@ -276,7 +276,7 @@
                [:status :results]))))
 
     ;; search json format
-    (let [coll-json (da/collections->expected-atom [coll1] "collections.json?dataset-id=Dataset1")
+    (let [coll-json (da/collections->expected-atom [coll1] "collections.json?dataset_id=Dataset1")
           response (search/find-concepts-json :collection {:dataset-id "Dataset1"})]
       (is (= 200 (:status response)))
       (is (= coll-json
