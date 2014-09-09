@@ -95,9 +95,8 @@
   ([format concept-type params options]
    ;; no-snake-kebab needed for legacy psa which use camel case minValue/maxValue
 
-   (let [{:keys [format-as-ext? snake-kebab?]
-          :or {:format-as-ext? false
-               :snake-kebab? true}} options
+   (let [format-as-ext? (get options :format-as-ext? false)
+         snake-kebab? (get options :snake-kebab? true)
          headers (get options :headers {})
          params (if snake-kebab?
                   (params->snake_case (util/map-keys csk/->snake_case_keyword params))

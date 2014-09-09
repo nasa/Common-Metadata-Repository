@@ -1,12 +1,13 @@
 (ns cmr.system-int-test.search.acls.granule-acl-search-test
   "Tests searching for collections with ACLs in place"
   (:require [clojure.test :refer :all]
-            [clojure.string :as s]
+            [clojure.string :as str]
             [cmr.common.services.messages :as msg]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.data2.collection :as dc]
+            [cmr.system-int-test.data2.atom :as da]
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.granule-counts :as gran-counts]
             [cmr.system-int-test.data2.core :as d]
@@ -35,6 +36,14 @@
          attribs (merge {:granule-ur (str "gran" n)}
                         attribs)]
      (d/ingest prov (dg/granule coll attribs)))))
+
+(defn csv-response->granule-urs
+  "Parses the csv response and returns the first column which is the granule ur."
+  [csv-response]
+  (->> (str/split (:body csv-response) #"\n")
+       (drop 1)
+       (map #(str/split % #","))
+       (map first)))
 
 (comment
   (do
@@ -171,44 +180,99 @@
         user1-token (e/login "user1")
 
         guest-permitted-granules [gran1 gran2 gran3 gran5 gran11 gran8 gran9]
+        guest-permitted-granule-colls [coll1 coll1 coll2 coll2 coll7 coll5 coll5]
         user-permitted-granules [gran6 gran7 gran52 gran53 gran54 gran56 gran57]]
 
     (index/refresh-elastic-index)
 
-    (are [expected params]
-         (let [refs-result (search/find-refs :granule params)
-               match? (d/refs-match? expected refs-result)]
-           (when-not match?
-             (println "Expected:" (map :concept-id expected))
-             (println "Actual:" (map :id (:refs refs-result)))
-             (println "Expected:" (map :granule-ur expected))
-             (println "Actual:" (map :name (:refs refs-result))))
-           match?)
-         guest-permitted-granules {:token guest-token}
-         user-permitted-granules {:token user1-token}
+    (testing "refs"
+      (are [expected params]
+           (let [refs-result (search/find-refs :granule params)
+                 match? (d/refs-match? expected refs-result)]
+             (when-not match?
+               (println "Expected:" (map :concept-id expected))
+               (println "Actual:" (map :id (:refs refs-result)))
+               (println "Expected:" (map :granule-ur expected))
+               (println "Actual:" (map :name (:refs refs-result))))
+             match?)
+           guest-permitted-granules {:token guest-token}
+           user-permitted-granules {:token user1-token}
 
-         ;; Test searching with each collecion id as guest and user
-         ;; Entry title searches
-         [gran1 gran2] {:token guest-token :entry-title "coll1"}
-         [gran3 gran5] {:token guest-token :entry-title "coll2"}
-         [gran1 gran2 gran3 gran5 gran11] {:token guest-token :entry-title ["coll1" "coll2" "coll7"]}
+           ;; Test searching with each collecion id as guest and user
+           ;; Entry title searches
+           [gran1 gran2] {:token guest-token :entry-title "coll1"}
+           [gran3 gran5] {:token guest-token :entry-title "coll2"}
+           [gran1 gran2 gran3 gran5 gran11] {:token guest-token :entry-title ["coll1" "coll2" "coll7"]}
 
-         ;; provider id
-         (filter #(= "PROV1" (:provider-id %))
-                 guest-permitted-granules)
-         {:token guest-token :provider-id "PROV1"}
+           ;; provider id
+           (filter #(= "PROV1" (:provider-id %))
+                   guest-permitted-granules)
+           {:token guest-token :provider-id "PROV1"}
 
-         ;; provider id and entry title
-         [gran1 gran2] {:token guest-token :entry-title "coll1" :provider-id "PROV1"}
-         [] {:token guest-token :entry-title "coll5" :provider-id "PROV1"}
+           ;; provider id and entry title
+           [gran1 gran2] {:token guest-token :entry-title "coll1" :provider-id "PROV1"}
+           [] {:token guest-token :entry-title "coll5" :provider-id "PROV1"}
 
-         ;; concept id
-         [gran1 gran2] {:token guest-token :concept-id (:concept-id coll1)}
-         [gran3 gran5] {:token guest-token :concept-id (:concept-id coll2)}
-         guest-permitted-granules
-         {:token guest-token :concept-id (cons "C999-PROV1" (map :concept-id all-colls))}
-         user-permitted-granules
-         {:token user1-token :concept-id (cons "C999-PROV1" (map :concept-id all-colls))})
+           ;; concept id
+           [gran1 gran2] {:token guest-token :concept-id (:concept-id coll1)}
+           [gran3 gran5] {:token guest-token :concept-id (:concept-id coll2)}
+           guest-permitted-granules
+           {:token guest-token :concept-id (cons "C999-PROV1" (map :concept-id all-colls))}
+           user-permitted-granules
+           {:token user1-token :concept-id (cons "C999-PROV1" (map :concept-id all-colls))}))
+
+    (testing "atom"
+      (testing "all items"
+        (let [gran-atom (da/granules->expected-atom
+                          guest-permitted-granules
+                          guest-permitted-granule-colls
+                          (str "granules.atom?token=" guest-token))]
+          (is (= gran-atom (:results (search/find-concepts-atom :granule {:token guest-token}))))))
+
+      (testing "by concept id"
+        (let [concept-ids (map :concept-id all-grans)
+              gran-atom (da/granules->expected-atom
+                          guest-permitted-granules
+                          guest-permitted-granule-colls
+                          (str "granules.atom?token=" guest-token
+                               "&concept_id="
+                               (str/join "&concept_id=" concept-ids)))]
+          (is (= gran-atom (:results (search/find-concepts-atom :granule {:token guest-token
+                                                                          :concept-id concept-ids})))))))
+    (testing "json"
+      (testing "all items"
+        (let [gran-atom (da/granules->expected-atom
+                          guest-permitted-granules
+                          guest-permitted-granule-colls
+                          (str "granules.json?token=" guest-token))]
+          (is (= gran-atom (:results (search/find-concepts-json :granule {:token guest-token}))))))
+
+      (testing "by concept id"
+        (let [concept-ids (map :concept-id all-grans)
+              gran-atom (da/granules->expected-atom
+                          guest-permitted-granules
+                          guest-permitted-granule-colls
+                          (str "granules.json?token=" guest-token
+                               "&concept_id="
+                               (str/join "&concept_id=" concept-ids)))]
+          (is (= gran-atom (:results (search/find-concepts-json :granule {:token guest-token
+                                                                          :concept-id concept-ids})))))))
+
+    (testing "csv"
+      (testing "all items"
+        (let [expected-granule-urs (map :granule-ur guest-permitted-granules)]
+          (is (= expected-granule-urs
+                 (csv-response->granule-urs
+                   (search/find-grans-csv :granule {:token guest-token}))))))
+
+      (testing "by concept id"
+        (let [concept-ids (map :concept-id all-grans)
+              expected-granule-urs (map :granule-ur guest-permitted-granules)]
+          (is (= expected-granule-urs
+                 (csv-response->granule-urs
+                   (search/find-grans-csv :granule {:token guest-token
+                                                    :concept-id concept-ids})))))))
+
 
     (testing "Direct transformer retrieval acl enforcement"
       (d/assert-metadata-results-match
@@ -232,7 +296,8 @@
           (is (gran-counts/granule-counts-match?
                 :xml {coll1 0 coll2 0 coll3 1 coll4 1 coll5 0
                       coll6 0 coll7 0 coll51 1 coll52 2 coll53 2}
-                refs-result)))))))
+                refs-result)))))
+    ))
 
 
 

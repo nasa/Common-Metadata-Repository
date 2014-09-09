@@ -147,9 +147,9 @@
         ru4 (dc/related-url "ALGORITHM INFO" "http://inherited.com")
         ru5 (dc/related-url "GET RELATED VISUALIZATION" "http://inherited.com/browse")
         coll1 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset1"
-                                                    :spatial-coverage (dc/spatial :geodetic)}))
+                                                :spatial-coverage (dc/spatial :geodetic)}))
         coll2 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset2"
-                                                    :related-urls [ru4 ru5]}))
+                                                :related-urls [ru4 ru5]}))
 
         make-gran (fn [coll attribs]
                     (d/ingest "PROV1" (dg/granule coll attribs)))
@@ -189,54 +189,55 @@
 
     (index/refresh-elastic-index)
 
-    (let [gran-atom (da/granules->expected-atom [gran1] [coll1] "granules.atom?granule-ur=Granule1")
-          response (search/find-concepts-atom :granule {:granule-ur "Granule1"})]
-      (is (= 200 (:status response)))
-      (is (= gran-atom
-             (:results response))))
+    (testing "atom"
+      (let [gran-atom (da/granules->expected-atom [gran1] [coll1] "granules.atom?granule_ur=Granule1")
+            response (search/find-concepts-atom :granule {:granule-ur "Granule1"})]
+        (is (= 200 (:status response)))
+        (is (= gran-atom
+               (:results response))))
 
-    (let [gran-atom (da/granules->expected-atom [gran1 gran2] [coll1 coll2] "granules.atom")
-          response (search/find-concepts-atom :granule {})]
-      (is (= 200 (:status response)))
-      (is (= gran-atom
-             (:results response))))
+      (let [gran-atom (da/granules->expected-atom [gran1 gran2] [coll1 coll2] "granules.atom")
+            response (search/find-concepts-atom :granule {})]
+        (is (= 200 (:status response)))
+        (is (= gran-atom
+               (:results response))))
 
-    (testing "empty results"
-      (let [gran-atom (da/granules->expected-atom [] [] "granules.atom?granule-ur=foo")
+      (testing "empty results"
+        (let [gran-atom (da/granules->expected-atom [] [] "granules.atom?granule_ur=foo")
               response (search/find-concepts-atom :granule {:granule-ur "foo"})]
           (is (= 200 (:status response)))
           (is (= gran-atom
                  (:results response)))))
 
-    (testing "as extension"
-      (is (= (select-keys
-               (search/find-concepts-atom :granule {:granule-ur "Granule1"})
-               [:status :results])
-             (select-keys
-               (search/find-concepts-atom :granule
-                                          {:granule-ur "Granule1"}
-                                          {:format-as-ext? true})
-               [:status :results]))))
+      (testing "as extension"
+        (is (= (select-keys
+                 (search/find-concepts-atom :granule {:granule-ur "Granule1"})
+                 [:status :results])
+               (select-keys
+                 (search/find-concepts-atom :granule
+                                            {:granule-ur "Granule1"}
+                                            {:format-as-ext? true})
+                 [:status :results])))))
 
-    ;; search json format
-    (let [gran-json (da/granules->expected-atom [gran1] [coll1] "granules.json?granule-ur=Granule1")
-          response (search/find-concepts-json :granule {:granule-ur "Granule1"})]
-      (is (= 200 (:status response)))
-      (is (= gran-json
-             (:results response))))
+    (testing "json"
+      (let [gran-json (da/granules->expected-atom [gran1] [coll1] "granules.json?granule_ur=Granule1")
+            response (search/find-concepts-json :granule {:granule-ur "Granule1"})]
+        (is (= 200 (:status response)))
+        (is (= gran-json
+               (:results response))))
 
-    (let [gran-json (da/granules->expected-atom [gran1 gran2] [coll1 coll2] "granules.json")
-          response (search/find-concepts-json :granule {})]
-      (is (= 200 (:status response)))
-      (is (= gran-json
-             (:results response))))
+      (let [gran-json (da/granules->expected-atom [gran1 gran2] [coll1 coll2] "granules.json")
+            response (search/find-concepts-json :granule {})]
+        (is (= 200 (:status response)))
+        (is (= gran-json
+               (:results response))))
 
-    (testing "as extension"
-      (is (= (select-keys
-               (search/find-concepts-json :granule {:granule-ur "Granule1"})
-               [:status :results])
-             (select-keys
-               (search/find-concepts-json :granule
-                                          {:granule-ur "Granule1"}
-                                          {:format-as-ext? true})
-               [:status :results]))))))
+      (testing "as extension"
+        (is (= (select-keys
+                 (search/find-concepts-json :granule {:granule-ur "Granule1"})
+                 [:status :results])
+               (select-keys
+                 (search/find-concepts-json :granule
+                                            {:granule-ur "Granule1"}
+                                            {:format-as-ext? true})
+                 [:status :results])))))))

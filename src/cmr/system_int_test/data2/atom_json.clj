@@ -41,6 +41,16 @@
   (fn [concept-type json-entry]
     concept-type))
 
+(defn parse-long
+  [^String v]
+  (when (and v (seq v))
+    (Long. v)))
+
+(defn parse-double
+  [^String v]
+  (when (and v (seq v))
+    (Double. v)))
+
 (defmethod json-entry->entry :collection
   [concept-type json-entry]
   (let [json-entry (util/map-keys->kebab-case json-entry)
@@ -48,28 +58,29 @@
                 processing-level-id original-format data-center archive-center time-start time-end
                 links dif-ids online-access-flag browse-flag coordinate-system
                 shapes points boxes polygons lines granule-count has-granules]} json-entry]
-    (util/remove-nil-keys {:id id
-                           :title title
-                           :summary summary
-                           :updated updated
-                           :dataset-id dataset-id
-                           :short-name short-name
-                           :version-id version-id
-                           :original-format original-format
-                           :collection-data-type collection-data-type
-                           :data-center data-center
-                           :archive-center archive-center
-                           :processing-level-id processing-level-id
-                           :links (seq links)
-                           :start time-start
-                           :end time-end
-                           :associated-difs dif-ids
-                           :online-access-flag (str online-access-flag)
-                           :browse-flag (str browse-flag)
-                           :coordinate-system coordinate-system
-                           :granule-count granule-count
-                           :has-granules has-granules
-                           :shapes (json-geometry->shapes points boxes polygons lines)})))
+    (util/remove-nil-keys
+      {:id id
+       :title title
+       :summary summary
+       :updated updated
+       :dataset-id dataset-id
+       :short-name short-name
+       :version-id version-id
+       :original-format original-format
+       :collection-data-type collection-data-type
+       :data-center data-center
+       :archive-center archive-center
+       :processing-level-id processing-level-id
+       :links (seq links)
+       :start time-start
+       :end time-end
+       :associated-difs dif-ids
+       :online-access-flag online-access-flag
+       :browse-flag browse-flag
+       :coordinate-system coordinate-system
+       :granule-count (parse-long granule-count)
+       :has-granules has-granules
+       :shapes (json-geometry->shapes points boxes polygons lines)})))
 
 (defmethod json-entry->entry :granule
   [concept-type json-entry]
@@ -77,23 +88,24 @@
         {:keys [id title updated dataset-id producer-granule-id granule-size original-format
                 data-center links time-start time-end online-access-flag browse-flag day-night-flag
                 cloud-cover coordinate-system points boxes polygons lines]} json-entry]
-    {:id id
-     :title title
-     :updated updated
-     :dataset-id dataset-id
-     :producer-granule-id producer-granule-id
-     :size granule-size
-     :original-format original-format
-     :data-center data-center
-     :links (seq links)
-     :start time-start
-     :end time-end
-     :online-access-flag (str online-access-flag)
-     :browse-flag (str browse-flag)
-     :day-night-flag day-night-flag
-     :cloud-cover cloud-cover
-     :coordinate-system coordinate-system
-     :shapes (json-geometry->shapes points boxes polygons lines)}))
+    (util/remove-nil-keys
+      {:id id
+       :title title
+       :updated updated
+       :dataset-id dataset-id
+       :producer-granule-id producer-granule-id
+       :size (parse-double granule-size)
+       :original-format original-format
+       :data-center data-center
+       :links (seq links)
+       :start time-start
+       :end time-end
+       :online-access-flag online-access-flag
+       :browse-flag browse-flag
+       :day-night-flag day-night-flag
+       :cloud-cover (parse-double cloud-cover)
+       :coordinate-system coordinate-system
+       :shapes (json-geometry->shapes points boxes polygons lines)})))
 
 (defn parse-json-result
   "Returns the json result from a json string"
