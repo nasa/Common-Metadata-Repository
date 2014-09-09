@@ -96,4 +96,5 @@
 
 (def refresh-collections-cache-for-granule-acls-job
   {:job-type RefreshCollectionsCacheForGranuleAclsJob
-   :interval 3600})
+   ;; 15 minutes
+   :interval (* 15 60)})
