@@ -303,10 +303,11 @@
   "Validates parameters and converts aql into a query model."
   [params aql]
   (validate-aql aql)
-  (let [xml-struct (x/parse-str aql)
+  (let [;; remove the DocType from the aql string as clojure.data.xml does not handle it correctly
+        ;; by adding attributes to elements when it is present.
+        xml-struct (x/parse-str (cx/remove-xml-processing-instructions aql))
         concept-type (get-concept-type xml-struct)
         params (pv/validate-aql-parameters concept-type params)]
     (qm/query (assoc (pc/standard-params->query-attribs concept-type params)
                      :concept-type concept-type
                      :condition (xml-struct->query-condition concept-type xml-struct)))))
-
