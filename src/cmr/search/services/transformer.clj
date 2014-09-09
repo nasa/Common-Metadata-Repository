@@ -51,6 +51,61 @@
            "concept->value-map time:" t2)
     values))
 
+(defn- get-iso-access-value
+  "Returns the iso-mends access value by parsing MENDS ISO xml"
+  [concept]
+  (when-let [[_ restriction-flag-str]
+             (re-matches #"(?s).*<gco:CharacterString>Restriction Flag:(.+?)</gco:CharacterString>.*"
+                         (:metadata concept))]
+    (when-not (re-find #".*<.*" restriction-flag-str)
+      (Double. ^String restriction-flag-str))))
+
+(defmulti extract-access-value
+  "Extracts access value (aka. restriction flag) from the concept."
+  (fn [concept]
+    (:format concept)))
+
+(defmethod extract-access-value "application/echo10+xml"
+  [concept]
+  (when-let [[_ restriction-flag-str] (re-matches #"(?s).*<RestrictionFlag>(.+)</RestrictionFlag>.*"
+                                                  (:metadata concept))]
+    (Double. ^String restriction-flag-str)))
+
+(defmethod extract-access-value "application/dif+xml"
+  [concept]
+  ;; DIF doesn't support restriction flag yet.
+  nil)
+
+(defmethod extract-access-value "application/iso+xml"
+  [concept]
+  (get-iso-access-value concept))
+
+(defmethod extract-access-value "application/iso-mends+xml"
+  [concept]
+  (get-iso-access-value concept))
+
+(defmethod extract-access-value "application/iso-smap+xml"
+  [concept]
+  ;; SMAP ISO doesn't support restriction flag yet.
+  nil)
+
+(defmulti add-acl-enforcement-fields
+  "Adds the fields necessary to enforce ACLs to the concept"
+  (fn [concept]
+    (:concept-type concept)))
+
+(defmethod add-acl-enforcement-fields :collection
+  [concept]
+  (assoc concept
+         :access-value (extract-access-value concept)
+         :entry-title (get-in concept [:extra-fields :entry-title])))
+
+(defmethod add-acl-enforcement-fields :granule
+  [concept]
+  (assoc concept
+         :access-value (extract-access-value concept)
+         :collection-concept-id (get-in concept [:extra-fields :parent-collection-id])))
+
 (deftracefn get-latest-formatted-concepts
   "Get latest version of concepts with given concept-ids in a given format. Applies ACLs to the concepts
   found."
@@ -63,7 +118,9 @@
                          (metadata-db/get-latest-concepts mdb-context concept-ids true))
          [t2 concepts] (u/time-execution (if skip-acls?
                                            concepts
-                                           (acl-service/filter-concepts context concepts)))
+                                           (acl-service/filter-concepts
+                                             context
+                                             (map add-acl-enforcement-fields concepts))))
          [t3 values] (u/time-execution (mapv #(concept->value-map % format) concepts))]
      (debug "get-latest-concepts time:" t1
             "acl-filter-concepts time:" t2

@@ -37,7 +37,9 @@
    "coordinate-system"
    "ords-info"
    "ords"
-   "_score"])
+   "_score"
+   "access-value" ;; needed for acl enforcment
+   ])
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:granule :atom]
   [concept-type query]
@@ -58,7 +60,9 @@
    "cloud-cover"
    "coordinate-system"
    "ords-info"
-   "ords"])
+   "ords"
+   "access-value" ;; needed for acl enforcment
+   ])
 
 (defn- collection-elastic-result->query-result-item
   [elastic-result]
@@ -82,7 +86,8 @@
           [browsable] :browsable
           [coordinate-system] :coordinate-system
           ords-info :ords-info
-          ords :ords} :fields} elastic-result
+          ords :ords
+          [access-value] :access-value} :fields} elastic-result
         start-date (when start-date (str/replace (str start-date) #"\+0000" "Z"))
         end-date (when end-date (str/replace (str end-date) #"\+0000" "Z"))
         atom-links (map #(json/decode % true) atom-links)]
@@ -106,7 +111,12 @@
      :browse-flag browsable
      :associated-difs associated-difs
      :coordinate-system coordinate-system
-     :shapes (srl/ords-info->shapes ords-info ords)}))
+     :shapes (srl/ords-info->shapes ords-info ords)
+     ;; Fields required for ACL enforcment
+     :concept-type :collection
+     :provider-id provider-id
+     :access-value access-value
+     :entry-title entry-title}))
 
 (defn- granule-elastic-result->query-result-item
   [elastic-result]
@@ -128,7 +138,8 @@
           [cloud-cover] :cloud-cover
           [coordinate-system] :coordinate-system
           ords-info :ords-info
-          ords :ords} :fields} elastic-result
+          ords :ords
+          [access-value] :access-value} :fields} elastic-result
         start-date (when start-date (str/replace (str start-date) #"\+0000" "Z"))
         end-date (when end-date (str/replace (str end-date) #"\+0000" "Z"))
         atom-links (map (fn [link-str]
@@ -151,7 +162,12 @@
      :day-night day-night
      :cloud-cover (str cloud-cover)
      :coordinate-system coordinate-system
-     :shapes (srl/ords-info->shapes ords-info ords)}))
+     :shapes (srl/ords-info->shapes ords-info ords)
+
+     ;; Fields required for ACL enforcment
+     :concept-type :granule
+     :provider-id provider-id
+     :access-value access-value}))
 
 (defmethod elastic-results/elastic-result->query-result-item :atom
   [context query elastic-result]
