@@ -4,7 +4,8 @@
             [clojure.data.xml :as x]
             [clj-time.core :as t]
             [cmr.common.util :as u]
-            [cmr.common.date-time-parser :as p]))
+            [cmr.common.date-time-parser :as p]
+            [cmr.umm.dif.collection.temporal :as tm]))
 
 (defn- generate-value-element
   "Returns the xml element for the given element value. It will be either value or textPattern."
@@ -26,7 +27,7 @@
   "Returns the xml element for the given date string"
   [value]
   (when value
-    (let [dt (p/parse-datetime value)]
+    (let [dt (tm/string->datetime value)]
       (x/element :Date {:YYYY (str (t/year dt))
                         :MM (str (t/month dt))
                         :DD (str (t/day dt))

@@ -608,4 +608,18 @@
            ;; only max range provided
            "date,bravo," nil 24 [coll1 coll2]
 
-           "date,charlie," 44 45 [coll2]))))
+           "date,charlie," 44 45 [coll2]))
+
+    (testing "search collections by additionalAttributes date range with aql"
+      (are [items additional-attribs]
+           (let [value-fn (fn [v] (map d/make-date v))
+                 value (map #(update-in % [:value] value-fn) additional-attribs)
+                 condition {:additionalAttributes value}]
+             (d/refs-match? items (search/find-refs-with-aql :collection [condition])))
+
+           [coll1] [{:type :dateRange :name "alpha" :value [9 11]}]
+           [coll1] [{:type :dateRange :name "alpha" :value [10 11]}]
+           [coll1] [{:type :dateRange :name "alpha" :value [9 10]}]
+           [coll1 coll2] [{:type :dateRange :name "bravo" :value [20 nil]}]
+           [coll1 coll2] [{:type :dateRange :name "bravo" :value [nil 24]}]
+           [coll2] [{:type :dateRange :name "charlie" :value [44 45]}]))))
