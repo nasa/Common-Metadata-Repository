@@ -89,6 +89,9 @@
   [attrib-name value-elem]
   (let [{year :YYYY month :MM day :DD hour :HH minute :MI sec :SS} (:attrs value-elem)
         value (a/date-time-from-strings year month day hour minute sec)]
+    ;; There is no Datetime element for AdditionalAttribute in AQL,
+    ;; the Date element covers both the date type and datetime type of AA.
+    ;; This is different from parameter search of AA.
     (qm/or-conds
       [(qm/map->AttributeValueCondition
          {:type :datetime
@@ -102,6 +105,9 @@
 (defmethod attrib-value-element->condition :dateRange
   [attrib-name value-elem]
   (let [[start-date stop-date] (a/parse-date-range-element value-elem)]
+    ;; There is no datetimeRange element for AdditionalAttribute in AQL,
+    ;; the dateRange element covers both the date type and datetime type of AA.
+    ;; This is different from parameter search of AA.
     (qm/or-conds
       [(qm/map->AttributeRangeCondition
          {:type :datetime
