@@ -89,19 +89,30 @@
   [attrib-name value-elem]
   (let [{year :YYYY month :MM day :DD hour :HH minute :MI sec :SS} (:attrs value-elem)
         value (a/date-time-from-strings year month day hour minute sec)]
-    (qm/map->AttributeValueCondition
-      {:type :datetime
-       :name attrib-name
-       :value value})))
+    (qm/or-conds
+      [(qm/map->AttributeValueCondition
+         {:type :datetime
+          :name attrib-name
+          :value value})
+       (qm/map->AttributeValueCondition
+         {:type :date
+          :name attrib-name
+          :value value})])))
 
 (defmethod attrib-value-element->condition :dateRange
   [attrib-name value-elem]
   (let [[start-date stop-date] (a/parse-date-range-element value-elem)]
-    (qm/map->AttributeRangeCondition
-      {:type :datetime
-       :name attrib-name
-       :min-value start-date
-       :max-value stop-date})))
+    (qm/or-conds
+      [(qm/map->AttributeRangeCondition
+         {:type :datetime
+          :name attrib-name
+          :min-value start-date
+          :max-value stop-date})
+       (qm/map->AttributeRangeCondition
+         {:type :date
+          :name attrib-name
+          :min-value start-date
+          :max-value stop-date})])))
 
 (defmethod attrib-value-element->condition :time
   [attrib-name value-elem]
