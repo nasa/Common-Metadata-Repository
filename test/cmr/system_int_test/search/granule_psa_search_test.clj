@@ -715,6 +715,17 @@
            "date,bravo," 0 [gran1]
            "date,charlie," 45 [gran3 gran4]))
 
+    (testing "search granules by additionalAttributes date value with aql"
+      (are [items additional-attribs]
+           (let [value (map #(update-in % [:value] d/make-date) additional-attribs)
+                 condition {:additionalAttributes value}]
+             (d/refs-match? items (search/find-refs-with-aql :granule [condition])))
+
+           [gran2 gran3] [{:type :date :name "bravo" :value 23}]
+           [] [{:type :date :name "alpha" :value 11}]
+           [gran1] [{:type :date :name "bravo" :value 0}]
+           [gran3 gran4] [{:type :date :name "charlie" :value 45}]))
+
     (testing "search by range"
       (are [v min-n max-n items]
            (let [min-v (d/make-date min-n)
@@ -757,5 +768,20 @@
            ;; only max range provided
            "date,bravo," nil 12 [gran1 gran2]
 
-           "date,charlie," 44 45 [gran3 gran4]))))
+           "date,charlie," 44 45 [gran3 gran4]))
+
+    (testing "search granules by additionalAttributes date range with aql"
+      (are [items additional-attribs]
+           (let [value-fn (fn [v] (map d/make-date v))
+                 value (map #(update-in % [:value] value-fn) additional-attribs)
+                 condition {:additionalAttributes value}]
+             (d/refs-match? items (search/find-refs-with-aql :granule [condition])))
+
+           [gran1] [{:type :dateRange :name "alpha" :value [9 11]}]
+           [gran1] [{:type :dateRange :name "alpha" :value [10 11]}]
+           [gran1] [{:type :dateRange :name "alpha" :value [9 10]}]
+           [gran2 gran3] [{:type :dateRange :name "bravo" :value [20 nil]}]
+           [gran1 gran2] [{:type :dateRange :name "bravo" :value [nil 12]}]
+           ;; range inheritance
+           [gran3 gran4] [{:type :dateRange :name "charlie" :value [44 45]}]))))
 
