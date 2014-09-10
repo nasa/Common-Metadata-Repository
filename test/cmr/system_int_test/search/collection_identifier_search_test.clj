@@ -327,6 +327,10 @@
            [c2-p2] "2b" {:ignore-case true}
            [] "2b" {:ignore-case false}))
 
+    (testing "search with legacy processing-level"
+      (is (d/refs-match? [c1-p2 c2-p2 c3-p2]
+                         (search/find-refs :collection {:processing-level ["1B" "2B" "3B"]}))))
+
     (testing "processing level search with aql"
       (are [items id options]
            (let [condition (merge {:processingLevel id} options)]

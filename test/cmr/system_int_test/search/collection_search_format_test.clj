@@ -51,8 +51,8 @@
                                                  :version-id "V6"})
                          :iso-mends)
         c7-smap (d/ingest "PROV1" (dc/collection {:short-name "S7"
-                                                 :version-id "V7"})
-                         :iso-smap)
+                                                  :version-id "V7"})
+                          :iso-smap)
         all-colls [c1-echo c2-echo c3-dif c4-dif c5-iso c6-iso c7-smap]]
     (index/refresh-elastic-index)
 
@@ -255,7 +255,7 @@
 
     (index/refresh-elastic-index)
 
-    (let [coll-atom (da/collections->expected-atom [coll1] "collections.atom?dataset-id=Dataset1")
+    (let [coll-atom (da/collections->expected-atom [coll1] "collections.atom?dataset_id=Dataset1")
           response (search/find-concepts-atom :collection {:dataset-id "Dataset1"})]
       (is (= 200 (:status response)))
       (is (= coll-atom
@@ -278,7 +278,7 @@
                [:status :results]))))
 
     ;; search json format
-    (let [coll-json (da/collections->expected-atom [coll1] "collections.json?dataset-id=Dataset1")
+    (let [coll-json (da/collections->expected-atom [coll1] "collections.json?dataset_id=Dataset1")
           response (search/find-concepts-json :collection {:dataset-id "Dataset1"})]
       (is (= 200 (:status response)))
       (is (= coll-json
@@ -302,59 +302,51 @@
 
 (deftest atom-has-score-for-keyword-search
   (let [coll1 (d/ingest "PROV1" (dc/collection {:long-name "ABC!XYZ" :entry-title "Foo"}))]
-
     (index/refresh-elastic-index)
-
     (testing "Atom has score for keyword search."
-      (are [keyword-str scores] (= scores
-                                   (map :score (get-in (search/find-concepts-atom :collection
-                                                                                  {:keyword keyword-str})
-                                                       [:results :entries])))
-           "ABC" [1.4]
-           "ABC Foo" [1.0]))
-
+      (are [keyword-str scores]
+           (= scores
+              (map :score (get-in (search/find-concepts-atom :collection
+                                                             {:keyword keyword-str})
+                                  [:results :entries])))
+           "ABC" [0.7]
+           "ABC Foo" [0.5]))
     (testing "Atom has no score field for non-keyword search."
-      (are [title-str scores] (= scores
-                                 (map :score (get-in (search/find-concepts-atom :collection
-                                                                                {:entry-title title-str})
-                                                     [:results :entries])))
+      (are [title-str scores]
+           (= scores
+              (map :score (get-in (search/find-concepts-atom :collection {:entry-title title-str})
+                                  [:results :entries])))
            "Foo" [nil]))))
 
 (deftest reference-xml-has-score-for-keyword-search
   (let [coll1 (d/ingest "PROV1" (dc/collection {:long-name "ABC!XYZ" :entry-title "Foo"}))]
-
     (index/refresh-elastic-index)
-
     (testing "XML has score for keyword search."
-      (are [keyword-str scores] (= scores
-                                   (map :score (:refs (search/find-refs :collection
-                                                                        {:keyword keyword-str}))))
-           "ABC" [1.4]
-           "ABC Foo" [1.0]))
-
+      (are [keyword-str scores]
+           (= scores
+              (map :score (:refs (search/find-refs :collection {:keyword keyword-str}))))
+           "ABC" [0.7]
+           "ABC Foo" [0.5]))
     (testing "XML has no score field for non-keyword search."
-      (are [title-str scores] (= scores
-                                 (map :score (:refs (search/find-refs :collection
-                                                                      {:entry-title title-str}))))
+      (are [title-str scores]
+           (= scores
+              (map :score (:refs (search/find-refs :collection {:entry-title title-str}))))
            "Foo" [nil]))))
 
 (deftest json-atom-has-score-for-keyword-search
   (let [coll1 (d/ingest "PROV1" (dc/collection {:long-name "ABC!XYZ" :entry-title "Foo"}))]
-
     (index/refresh-elastic-index)
-
     (testing "XML has score for keyword search."
-      (are [keyword-str scores] (= scores
-                                   (map :score (get-in (search/find-refs-json :collection
-                                                                              {:keyword keyword-str})
-                                                       [:feed :entry])))
-           "ABC" [1.4]
-           "ABC Foo" [1.0]))
-
+      (are [keyword-str scores]
+           (= scores
+              (map :score (get-in (search/find-refs-json :collection {:keyword keyword-str})
+                                  [:feed :entry])))
+           "ABC" [0.7]
+           "ABC Foo" [0.5]))
     (testing "XML has no score field for non-keyword search."
-      (are [title-str scores] (= scores
-                                 (map :score (get-in (search/find-refs-json :collection
-                                                                            {:entry-title title-str})
-                                                     [:feed :entry])))
+      (are [title-str scores]
+           (= scores
+              (map :score (get-in (search/find-refs-json :collection {:entry-title title-str})
+                                  [:feed :entry])))
            "Foo" [nil]))))
 
