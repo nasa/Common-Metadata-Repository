@@ -4,6 +4,7 @@
 
             ;; Must be required for derived calculations
             [cmr.spatial.geodetic-ring :as gr]
+            [cmr.spatial.ring-relations :as rr]
             [cmr.spatial.polygon :as p]
             [cmr.spatial.mbr :as mbr]
             [cmr.spatial.lr-binary-search :as lr]
@@ -23,13 +24,21 @@
      (with-prefix :south) (:south mbr)
      (with-prefix :crosses-antimeridian) (mbr/crosses-antimeridian? mbr)}))
 
+(def special-cases
+  "Created for CMR-724. It has mappings of specific spatial areas which cause problems to an equivalent
+  representation."
+  {(p/polygon :geodetic [(rr/ords->ring :geodetic
+                                        -179.9999 0.0, -179.9999 -89.9999, 0.0 -89.9999, 0.0 0.0,
+                                        0.0 89.9999, -179.9999 89.9999, -179.9999 0.0)])
+   mbr/whole-world})
 
 (defn shapes->elastic-doc
   "Converts a spatial shapes into the nested elastic attributes"
   [shapes coordinate-system]
-  (let [shapes (map d/calculate-derived
-                    (map (partial umm-s/set-coordinate-system coordinate-system)
-                         shapes))
+  (let [shapes (->> shapes
+                    (map (partial umm-s/set-coordinate-system coordinate-system))
+                    (map #(get special-cases % %))
+                    (map d/calculate-derived))
         ords-info-map (srl/shapes->ords-info-map shapes)
         lrs (map srl/shape->lr shapes)
         ;; union mbrs to get one covering the whole area
