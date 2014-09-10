@@ -34,7 +34,7 @@
   (when (and (not= :all collection-ids) (some nil? collection-ids))
     (errors/internal-error! (str "Nil collection ids in list: " (pr-str collection-ids))))
 
-  (if (= :all collection-ids)
+  (if (or (= :all collection-ids) (nil? collection-ids))
     context
     (update-in context [:collection-ids]
                (fn [existing-ids]
@@ -153,7 +153,7 @@
                       (and collection-ids (empty? collection-ids))
                       ;; The collection ids in the context is an empty set. This query can match
                       ;; nothing.
-                      (qm/->MatchNoneCondition)
+                      qm/match-none
 
                       collection-ids
                       (qm/and-conds [(qm/string-conditions :concept-id collection-ids true) condition])
@@ -168,7 +168,7 @@
           collection-concept-ids (map :_id (get-in result [:hits :hits]))]
 
       (if (empty? collection-concept-ids)
-        [#{} (qm/->MatchNoneCondition)]
+        [#{} qm/match-none]
         [(set collection-concept-ids)
          (qm/string-conditions :collection-concept-id collection-concept-ids true)])))
 

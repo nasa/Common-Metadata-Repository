@@ -15,7 +15,7 @@
             [cmr.search.services.messages.orbit-number-messages :as on-msg]
             [cmr.search.services.messages.common-messages :as msg]
             [cmr.search.data.messages :as d-msg]
-            [camel-snake-kebab.core :as csk]
+            [camel-snake-kebab :as csk]
             [cmr.spatial.codec :as spatial-codec])
   (:import clojure.lang.ExceptionInfo))
 

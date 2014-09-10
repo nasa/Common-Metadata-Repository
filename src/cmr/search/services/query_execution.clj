@@ -21,29 +21,46 @@
   "Returns true if the format is supported by the transformer."
   (complement non-transformer-supported-formats))
 
-(defn- direct-transformer-query?
-  "Returns true if the query should be executed directly against the transformer and bypass elastic."
-  [{:keys [condition concept-type result-format page-num page-size sort-keys
-           result-features] :as query}]
-  (and (transformer-supported-format? result-format)
-       (#{StringCondition StringsCondition} (type condition))
+(def specific-elastic-items-format?
+  "The set of formats that are supported for the :specific-elastic-items query execution strategy"
+  #{:json :atom :csv})
+
+(defn- specific-items-query?
+  "Returns true if the query is only for specific items."
+  [{:keys [condition concept-type page-num page-size sort-keys] :as query}]
+  (and (#{StringCondition StringsCondition} (type condition))
        (= :concept-id (:field condition))
        (= page-num 1)
-       (>= page-size (count (:values condition)))
-       ;; Facets requires elastic search
-       (not-any? #(= % :facets) result-features)
-
+       (or (= page-size :unlimited)
+           (>= page-size (count (:values condition))))
        ;; sorting has been left at the default level
        ;; Note that we don't actually sort items by the default sort keys
        ;; See issue CMR-607
        (= (concept-type qm/default-sort-keys) sort-keys)))
 
+(defn- direct-transformer-query?
+  "Returns true if the query should be executed directly against the transformer and bypass elastic."
+  [{:keys [result-format result-features] :as query}]
+  (and (specific-items-query? query)
+       (transformer-supported-format? result-format)
+       ;; Facets requires elastic search
+       (not-any? #(= % :facets) result-features)))
+
+(defn- specific-items-from-elastic-query?
+  "Returns true if the query is only for specific items that will come directly from elastic search.
+  This query type is split out because it is faster to bypass ACLs and apply them afterwards
+  than to apply them ahead of time to the query."
+  [{:keys [result-format] :as query}]
+  (and (specific-items-query? query)
+       (specific-elastic-items-format? result-format)))
+
 (defn- query->execution-strategy
   "Determines the execution strategy to use for the given query."
   [query]
-  (if (direct-transformer-query? query)
-    :direct-transformer
-    :elastic))
+  (cond
+     (direct-transformer-query? query) :direct-transformer
+     (specific-items-from-elastic-query? query) :specific-elastic-items
+    :else :elastic))
 
 (defmulti query->concept-ids
   "Extract concept ids from a concept-id only query"
@@ -107,6 +124,20 @@
         items (map #(select-keys % [:concept-id :revision-id :collection-concept-id :metadata]) tresults)
         results (results/map->Results {:hits (count items) :items items :result-format result-format})]
     (post-process-query-result-features context query nil results)))
+
+(defmethod execute-query :specific-elastic-items
+  [context query]
+  (let [elastic-results (->> query
+                             (pre-process-query-result-features context)
+                             c2s/reduce-query
+                             (r/resolve-collection-queries context)
+                             (idx/execute-query context))
+        query-results (rc/elastic-results->query-results context query elastic-results)
+        query-results (if (:skip-acls? query)
+                        query-results
+                        (update-in query-results [:items]
+                                   #(acl-service/filter-concepts context %)))]
+    (post-process-query-result-features context query elastic-results query-results)))
 
 (defmethod execute-query :elastic
   [context query]

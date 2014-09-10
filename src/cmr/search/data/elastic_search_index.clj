@@ -183,7 +183,7 @@
   [context provider-ids]
   (let [condition (if (seq provider-ids)
                     (qm/string-conditions :provider-id provider-ids true)
-                    (qm/->MatchAllCondition))
+                    qm/match-all)
         query (qm/query {:concept-type :granule
                          :condition condition
                          :page-size 0

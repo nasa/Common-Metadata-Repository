@@ -1,6 +1,6 @@
 (ns cmr.search.test.services.query-walkers.provider-id-extractor
   (:require [clojure.test :refer :all]
-            [cmr.search.test.services.query-walkers.helpers :refer :all]
+            [cmr.search.test.models.helpers :refer :all]
             [cmr.search.services.query-walkers.provider-id-extractor :as p]
             [cmr.search.models.query :as q]))
 

@@ -5,7 +5,7 @@
   in the record."
   (:require [cmr.common.services.errors :as errors]
             [cmr.search.models.query :as qm]
-            [camel-snake-kebab.core :as csk]
+            [camel-snake-kebab :as csk]
             [cmr.common.util :as util]
             [clojure.pprint :as pprint])
   (:import [cmr.search.models.query

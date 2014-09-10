@@ -180,7 +180,7 @@
                                :value (= "true" value)})
 
     (= "unset" (str/lower-case value))
-    (qm/map->MatchAllCondition {})
+    qm/match-all
 
     :else
     (errors/internal-error! (format "Boolean condition for %s has invalid value of [%s]" param value))))

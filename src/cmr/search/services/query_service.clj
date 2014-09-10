@@ -67,7 +67,7 @@
             [cmr.common.cache :as cache]
             [cmr.acl.acl-cache :as acl-cache]
             [cmr.search.services.acls.collections-cache :as coll-cache]
-            [camel-snake-kebab.core :as csk]
+            [camel-snake-kebab :as csk]
             [cheshire.core :as json]
             [cmr.common.log :refer (debug info warn error)]))
 
@@ -180,7 +180,7 @@
    (get-collections-by-providers context nil skip-acls?))
   ([context provider-ids skip-acls?]
    (let [query-condition (if (empty? provider-ids)
-                           (qm/->MatchAllCondition)
+                           qm/match-all
                            (qm/string-conditions :provider-id provider-ids))
          query (qm/query {:concept-type :collection
                           :condition query-condition

@@ -11,7 +11,6 @@
             [cmr.common.services.errors :as errors]
             [clojure.set :as set]))
 
-
 (defmulti filter-applicable-granule-acls
   (fn [context coll-ids-by-prov acls]
     (if (empty? coll-ids-by-prov)
@@ -86,7 +85,7 @@
   (if query-coll-ids
     (if-let [concept-ids (seq (set/intersection query-coll-ids (set concept-ids)))]
       (q/string-conditions :collection-concept-id concept-ids true)
-      (q/->MatchNoneCondition))
+      q/match-none)
     (q/string-conditions :collection-concept-id concept-ids true)))
 
 (defn- provider+entry-titles->collection-condition
@@ -114,7 +113,6 @@
         (q/and-conds [concept-ids-cond entry-titles-cond])
         (or concept-ids-cond entry-titles-cond)))))
 
-
 (defn collection-identifier->query-condition
   "Converts an acl collection identifier to an query condition. Switches implementations based
   on whether the user's query contained collection ids. This implementation assumes the query-coll-ids
@@ -130,7 +128,6 @@
         (or entry-titles-cond access-value-cond)))
     ;; No other collection info provided so every collection in provider is possible
     (provider->collection-condition query-coll-ids provider-id)))
-
 
 (defn granule-identifier->query-cond
   "Converts an acl granule identifier into a query condition."
@@ -159,11 +156,11 @@
   to collection concept ids from the user's query."
   [context coll-ids-by-prov acls]
   (if (empty? acls)
-    (q/->MatchNoneCondition)
+    q/match-none
     (if-let [conds (seq (filter identity
                                 (map (partial acl->query-condition context coll-ids-by-prov) acls)))]
       (q/or-conds conds)
-      (q/->MatchNoneCondition))))
+      q/match-none)))
 
 ;; This expects that collection queries have been resolved before this step.
 (defmethod acl-service/add-acl-conditions-to-query :granule
@@ -186,6 +183,14 @@
               (update-in query [:condition] #(q/and-conds [acl-cond %]))))))
 
 
+(comment
+
+  (def context {:system (get-in user/system [:apps :search])})
+  (acl-service/add-acl-conditions-to-query context @last-query)
+
+)
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; acls match concept functions
 
@@ -193,7 +198,7 @@
   "Returns true if the granule identifier is nil or it matches the concept."
   [gran-id concept]
   (if-let [{:keys [min-value max-value include-undefined]} (:access-value gran-id)]
-    (let [access-value (acl-helper/extract-access-value concept)]
+    (let [access-value (:access-value concept)]
       (or (and (nil? access-value) include-undefined)
           (and access-value
                (or (and (and min-value max-value)
@@ -207,7 +212,7 @@
   "Returns true if the collection identifier is nil or it matches the concept."
   [context coll-id concept]
   (if coll-id
-    (let [collection-concept-id (get-in concept [:extra-fields :parent-collection-id])
+    (let [collection-concept-id (:collection-concept-id concept)
           collection (coll-cache/get-collection context collection-concept-id)]
       (when-not collection
         (errors/internal-error!

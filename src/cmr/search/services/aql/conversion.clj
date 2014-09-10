@@ -150,7 +150,11 @@
   [year month day hour minute sec]
   (when (or year month day hour minute sec)
     (let [units (map (fn [^String unit] (if unit (Long. unit) 0)) [year month day hour minute sec])]
-      (apply t/date-time units))))
+      (try
+        (apply t/date-time units)
+        (catch org.joda.time.IllegalFieldValueException e
+          (errors/throw-service-error :bad-request
+                                      (str "Invalid datetime in AQL: " (.getMessage e))))))))
 
 (defn parse-date-range-element
   "Returns start-date and stop-date in a vector by parsing the given data range element"
@@ -303,10 +307,11 @@
   "Validates parameters and converts aql into a query model."
   [params aql]
   (validate-aql aql)
-  (let [xml-struct (x/parse-str aql)
+  (let [;; remove the DocType from the aql string as clojure.data.xml does not handle it correctly
+        ;; by adding attributes to elements when it is present.
+        xml-struct (x/parse-str (cx/remove-xml-processing-instructions aql))
         concept-type (get-concept-type xml-struct)
         params (pv/validate-aql-parameters concept-type params)]
     (qm/query (assoc (pc/standard-params->query-attribs concept-type params)
                      :concept-type concept-type
                      :condition (xml-struct->query-condition concept-type xml-struct)))))
-

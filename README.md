@@ -166,13 +166,15 @@ The temporal datetime has to be in yyyy-MM-ddTHH:mm:ssZ format.
 
 ### Find collections by processing_level_id param, supports pattern and ignore_case
 
-  Find collections matching 'processing_level_id' param value
+Find collections matching 'processing_level_id' param value
 
      curl "http://localhost:3003/collections?processing_level_id\[\]=1B"
 
-  Find collections matching any of the 'processing_level_id' param values
+Find collections matching any of the 'processing_level_id' param values
 
      curl "http://localhost:3003/collections?processing_level_id\[\]=1B&processing_level_id\[\]=2B"
+
+The alias 'processing_level' also works for searching by processing level id.
 
 ### Find collections by platform param, supports pattern, ignore_case and option :and
 
@@ -519,7 +521,7 @@ Provider holdings for a list of providers
 Search collections or granules with AQL in POST request body. The AQL must conform to the schema
 that is defined in cmr-search-app/resources/schema/IIMSAQLQueryLanguage.xsd
 
-    curl -i -XPOST http://localhost:3003/concepts/search -d '<?xml version="1.0" encoding="UTF-8"?>
+    curl -i -XPOST -H "Content-Type: application/xml" http://localhost:3003/concepts/search -d '<?xml version="1.0" encoding="UTF-8"?>
     <query><for value="collections"/><dataCenterId><all/></dataCenterId>
     <where><collectionCondition><shortName><value>S1</value></shortName></collectionCondition></where></query>'
 

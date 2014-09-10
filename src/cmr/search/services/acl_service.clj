@@ -19,7 +19,18 @@
 
 (defn filter-concepts
   "Filters out the concepts that the current user does not have access to. Concepts are the maps
-  of concept metadata as returned by the metadata db."
+  of concept metadata as returned by the metadata db. The following fields are required for each
+  concept depending on type.
+  Granules:
+   * :concept-type
+   * :provider-id
+   * :access-value
+   * :collection-concept-id
+  Collections:
+   * :concept-type
+   * :provider-id
+   * :access-value
+   * :entry-title"
   [context concepts]
   (when (seq concepts)
     (let [acls (acl-helper/get-acls-applicable-to-token context)

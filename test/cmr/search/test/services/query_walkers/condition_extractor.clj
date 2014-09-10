@@ -1,6 +1,6 @@
 (ns cmr.search.test.services.query-walkers.condition-extractor
   (:require [clojure.test :refer :all]
-            [cmr.search.test.services.query-walkers.helpers :refer :all]
+            [cmr.search.test.models.helpers :refer :all]
             [cmr.search.services.query-walkers.condition-extractor :as c]
             [cmr.search.models.query :as q]))
 

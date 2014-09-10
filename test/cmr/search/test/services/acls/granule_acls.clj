@@ -38,22 +38,15 @@
      :collection-identifier coll-identifier
      :granule-identifier gran-identifier}}))
 
-
 (defn concept
   "Creates an example concept for testing."
   ([prov collection-concept-id]
    (concept prov collection-concept-id nil))
   ([prov collection-concept-id access-value]
-   (let [metadata (if access-value
-                    (format "<Granule><RestrictionFlag>%s</RestrictionFlag><Granule>"
-                            access-value)
-                    "<Granule><Granule>")]
-     {:provider-id prov
-      :metadata metadata
-      :concept-type :granule
-      :format "application/echo10+xml",
-      :extra-fields
-      {:parent-collection-id collection-concept-id}})))
+   {:provider-id prov
+    :access-value access-value
+    :concept-type :granule
+    :collection-concept-id collection-concept-id}))
 
 (defn collection
   "Creates a collection that would be stored in the collection cache."

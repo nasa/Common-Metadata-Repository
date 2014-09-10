@@ -21,7 +21,11 @@
    "atom-links"
    "cloud-cover"
    "day-night"
-   "size"])
+   "size"
+   ;; needed for acl enforcement
+   "provider-id"
+   "collection-concept-id"
+   "access-value"])
 
 (defmethod elastic-results/elastic-result->query-result-item :csv
   [context query elastic-result]
@@ -32,7 +36,10 @@
          atom-links :atom-links
          [cloud-cover] :cloud-cover
          [day-night] :day-night
-         [size] :size} (:fields elastic-result)
+         [size] :size
+         [provider-id] :provider-id
+         [access-value] :access-value
+         [collection-concept-id] :collection-concept-id} (:fields elastic-result)
         start-date (when start-date (str/replace (str start-date) #"\+0000" "Z"))
         end-date (when end-date (str/replace (str end-date) #"\+0000" "Z"))
         atom-links (map #(json/decode % true) atom-links)
@@ -40,13 +47,19 @@
                                     (filter #(= (:link-type %) "data") atom-links)))
         browse-urls (seq (map :href
                               (filter #(= (:link-type %) "browse") atom-links)))]
-    [granule-ur producer-gran-id start-date end-date (str/join "," downloadable-urls)
-     (str/join "," browse-urls) (str cloud-cover) day-night (str size)]))
+    {:row [granule-ur producer-gran-id start-date end-date (str/join "," downloadable-urls)
+           (str/join "," browse-urls) (str cloud-cover) day-night (str size)]
+     ;; Fields required for ACL enforcment
+     :concept-type :granule
+     :collection-concept-id collection-concept-id
+     :provider-id provider-id
+     :access-value access-value}))
 
 (defmethod qs/search-results->response :csv
   [context query results]
   (let [{:keys [hits took items]} results
-        rows (conj items CSV_HEADER)
+        rows (cons CSV_HEADER
+                   (map :row items))
         string-writer (StringWriter.)]
     (csv/write-csv string-writer rows)
     (str string-writer)))
