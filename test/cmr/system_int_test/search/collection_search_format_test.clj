@@ -249,7 +249,11 @@
                                         :summary "Summary of coll2"
                                         :beginning-date-time "2010-01-01T12:00:00Z"
                                         :ending-date-time "2010-01-11T12:00:00Z"
-                                        :related-urls [ru3]}))]
+                                        :related-urls [ru3]
+                                        :spatial-coverage
+                                        (dc/spatial :cartesian
+                                                    :cartesian
+                                                    (poly/polygon [(umm-s/ords->ring -70 20, 70 20, 70 30, -70 30, -70 20)]))}))]
 
     (index/refresh-elastic-index)
 
