@@ -71,7 +71,7 @@
                     (q/and-conds (cons (q/string-conditions :collection-concept-id collection-ids true)
                                        spatial-temp-conds))
                     ;; The results were empty so the granule count query doesn't need to find anything.
-                    (q/->MatchNoneCondition))]
+                    q/match-none)]
     (q/query {:concept-type :granule
               :condition condition
               ;; We don't need any results

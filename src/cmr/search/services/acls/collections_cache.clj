@@ -44,7 +44,7 @@
 (defn fetch-collections
   [context]
   (let [query (q/query {:concept-type :collection
-                        :condition (q/->MatchAllCondition)
+                        :condition q/match-all
                         :skip-acls? true
                         :page-size :unlimited
                         :result-format :query-specified

@@ -343,15 +343,79 @@
   [path condition]
   (->NestedCondition path condition))
 
+(def match-none
+  (->MatchNoneCondition))
+
+(def match-all
+  (->MatchAllCondition))
+
+(defn- flatten-group-conds
+  "Looks for group conditions of the same operation type in the conditions to create. If they are
+  of the same operation type (i.e. AND condition groups within an AND) then it will return the child
+  conditions of those condition groups"
+  [operation conditions]
+  (mapcat (fn [c]
+            (if (and (= (type c) ConditionGroup)
+                     (= operation (:operation c)))
+              (:conditions c)
+              [c]))
+          conditions))
+
+(defmulti filter-group-conds
+  "Filters out conditions from group conditions that would have no effect on the query."
+  (fn [operation conditions]
+    operation))
+
+(defmethod filter-group-conds :and
+  [operation conditions]
+  ;; Match all conditions can be filtered out of an AND.
+  (if (= conditions [match-all])
+    ;; A single match-all should be returned
+    conditions
+    (filter #(not= % match-all) conditions)))
+
+(defmethod filter-group-conds :or
+  [operation conditions]
+  ;; Match none conditions can be filtered out of an OR.
+  (if (= conditions [match-none])
+    ;; A single match-none should be returned
+    conditions
+    (filter #(not= % match-none) conditions)))
+
+(defmulti short-circuit-group-conds
+  "Looks for conditions that will overrule all other conditions such as a match-none or match-all.
+  If the condition group contains one of those conditions it will return just that condition."
+  (fn [operation conditions]
+    operation))
+
+(defmethod short-circuit-group-conds :and
+  [operation conditions]
+  (if (some #(= match-none %) conditions)
+    [match-none]
+    conditions))
+
+(defmethod short-circuit-group-conds :or
+  [operation conditions]
+  (if (some #(= match-all %) conditions)
+    [match-all]
+    conditions))
+
 (defn group-conds
   "Combines the conditions together in the specified type of group."
-  [type conditions]
-  (cond
-    (empty? conditions) (errors/internal-error! "Grouping empty list of conditions")
-    (= (count conditions) 1) (first conditions)
-    ;; Performance enhancement: If subconditions are condition groups of the same type they can
-    ;; be combined into this new one.
-    :else (->ConditionGroup type conditions)))
+  [operation conditions]
+  (when (empty? conditions) (errors/internal-error! "Grouping empty list of conditions"))
+
+  (let [conditions (->> conditions
+                        (short-circuit-group-conds operation)
+                        (flatten-group-conds operation)
+                        (filter-group-conds operation))]
+
+    (when (empty? conditions)
+      (errors/internal-error! "Logic error while grouping conditions. No conditions found"))
+
+    (if (= (count conditions) 1)
+      (first conditions)
+      (->ConditionGroup operation conditions))))
 
 (defn and-conds
   "Combines conditions in an AND condition."
@@ -401,3 +465,4 @@
   [field value]
   (let [{:keys [min-value max-value]} (pp/numeric-range-parameter->map value)]
     (->NumericRangeCondition field min-value max-value)))
+

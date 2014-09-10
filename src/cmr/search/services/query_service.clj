@@ -180,7 +180,7 @@
    (get-collections-by-providers context nil skip-acls?))
   ([context provider-ids skip-acls?]
    (let [query-condition (if (empty? provider-ids)
-                           (qm/->MatchAllCondition)
+                           qm/match-all
                            (qm/string-conditions :provider-id provider-ids))
          query (qm/query {:concept-type :collection
                           :condition query-condition

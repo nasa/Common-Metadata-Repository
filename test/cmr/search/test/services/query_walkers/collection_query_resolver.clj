@@ -1,7 +1,7 @@
 (ns cmr.search.test.services.query-walkers.collection-query-resolver
   (:require [clojure.test :refer :all]
             [cmr.search.services.query-walkers.collection-query-resolver :as c]
-            [cmr.search.test.services.query-walkers.helpers :refer :all]
+            [cmr.search.test.models.helpers :refer :all]
             [clojure.string :as str]
             [cmr.search.models.query :as q]
             [clojure.set :as set]))
@@ -25,7 +25,7 @@
                            (set/intersection (set collection-ids) collection-ids-to-find)
                            collection-ids-to-find)]
       (if (empty? collection-ids)
-        [#{} (q/->MatchNoneCondition)]
+        [#{} q/match-none]
         [collection-ids (generic (str/join "," collection-ids))])))
 
   (is-collection-query-cond? [_] true))
@@ -67,7 +67,7 @@
       (let [test-and (and-conds (mock-coll-query-cond "coll-id" [:a])
                                 (mock-coll-query-cond "coll-id" [:b]))]
         (is (= [#{} (and-conds (generic ":a")
-                               (q/->MatchNoneCondition))]
+                               q/match-none)]
                (c/resolve-collection-query test-and {})))))
     (testing "multiple coll queries with matching collections"
       (let [test-and (and-conds (mock-coll-query-cond "coll-id" [:a :b])

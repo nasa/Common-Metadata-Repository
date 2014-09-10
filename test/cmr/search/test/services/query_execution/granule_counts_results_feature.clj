@@ -1,6 +1,6 @@
 (ns cmr.search.test.services.query-execution.granule-counts-results-feature
   (:require [clojure.test :refer :all]
-            [cmr.search.test.services.query-walkers.helpers :refer :all]
+            [cmr.search.test.models.helpers :refer :all]
             [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]
             [cmr.search.models.query :as q]
             [cmr.search.models.results :as r]
@@ -57,7 +57,7 @@
                                                      (and-conds (temporal-cond 2)
                                                                 (other))))})
           results (results-with-items)]
-      (is (= (expected-query-with-condition 0 (q/->MatchNoneCondition))
+      (is (= (expected-query-with-condition 0 q/match-none)
              (gcrf/extract-granule-count-query coll-query results)))))
   (testing "non-spatial non-temporal query"
     (let [coll-query (q/query {:condition (and-conds (other) (other))})

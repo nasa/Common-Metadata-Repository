@@ -85,7 +85,7 @@
   (if query-coll-ids
     (if-let [concept-ids (seq (set/intersection query-coll-ids (set concept-ids)))]
       (q/string-conditions :collection-concept-id concept-ids true)
-      (q/->MatchNoneCondition))
+      q/match-none)
     (q/string-conditions :collection-concept-id concept-ids true)))
 
 (defn- provider+entry-titles->collection-condition
@@ -156,11 +156,11 @@
   to collection concept ids from the user's query."
   [context coll-ids-by-prov acls]
   (if (empty? acls)
-    (q/->MatchNoneCondition)
+    q/match-none
     (if-let [conds (seq (filter identity
                                 (map (partial acl->query-condition context coll-ids-by-prov) acls)))]
       (q/or-conds conds)
-      (q/->MatchNoneCondition))))
+      q/match-none)))
 
 ;; This expects that collection queries have been resolved before this step.
 (defmethod acl-service/add-acl-conditions-to-query :granule

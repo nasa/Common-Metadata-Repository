@@ -1,6 +1,6 @@
 (ns cmr.search.test.services.query-walkers.collection-concept-id-extractor
   (:require [clojure.test :refer :all]
-            [cmr.search.test.services.query-walkers.helpers :refer :all]
+            [cmr.search.test.models.helpers :refer :all]
             [cmr.search.services.query-walkers.collection-concept-id-extractor :as c]
             [cmr.search.models.query :as q]))
 

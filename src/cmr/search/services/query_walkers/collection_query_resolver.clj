@@ -152,7 +152,7 @@
                       (and collection-ids (empty? collection-ids))
                       ;; The collection ids in the context is an empty set. This query can match
                       ;; nothing.
-                      (qm/->MatchNoneCondition)
+                      qm/match-none
 
                       collection-ids
                       (qm/and-conds [(qm/string-conditions :concept-id collection-ids true) condition])
@@ -166,7 +166,7 @@
           collection-concept-ids (map :_id (get-in result [:hits :hits]))]
 
       (if (empty? collection-concept-ids)
-        [#{} (qm/->MatchNoneCondition)]
+        [#{} qm/match-none]
         [(set collection-concept-ids)
          (qm/string-conditions :collection-concept-id collection-concept-ids true)])))
 
