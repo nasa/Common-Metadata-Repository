@@ -36,10 +36,10 @@
   "Compute a circular latitude range from the start and and latitudes of an orbit."
   [orbit]
   (let [{:keys [start-lat end-lat start-direction end-direction]} orbit
-        start-lat (if (= start-direction :desc)
+        start-lat (if (= :desc start-direction)
                     (- 180 start-lat)
                     start-lat)
-        end-lat (if (= end-direction :desc)
+        end-lat (if (= :desc end-direction)
                   (- 180 end-lat)
                   end-lat)
         min (mod start-lat 360)
