@@ -191,6 +191,6 @@
           mbr-cond (br->cond "mbr" (srl/shape->mbr shape))
           lr-cond (br->cond "lr" (srl/shape->lr shape))
           spatial-script (shape->script-cond shape)]
-      ;(qm/and-conds [mbr-cond (qm/or-conds [lr-cond spatial-script])]))))
-      (qm/or-conds [(qm/and-conds [mbr-cond (qm/or-conds [lr-cond spatial-script])])
-                    orbital-cond]))))
+      (qm/and-conds [mbr-cond (qm/or-conds [lr-cond spatial-script])]))))
+      ; (qm/or-conds [(qm/and-conds [mbr-cond (qm/or-conds [lr-cond spatial-script])])
+      ;               orbital-cond]))))
