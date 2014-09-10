@@ -5,6 +5,7 @@
             [cmr.spatial.point :as p]
             [cmr.spatial.mbr :as m]
             [cmr.spatial.geodetic-ring :as gr]
+            [cmr.spatial.cartesian-ring :as cr]
             [cmr.spatial.line-string :as l]
             [clojure.string :as str]))
 
@@ -55,6 +56,17 @@
 
 
   cmr.spatial.geodetic_ring.GeodeticRing
+  (shape->string
+    [ring]
+    (points-map->points-str ring))
+
+  (shape->xml-element
+    [ring]
+    (x/element :gml:LinearRing {}
+               (x/element :gml:posList {}
+                          (shape->string ring))))
+
+  cmr.spatial.cartesian_ring.CartesianRing
   (shape->string
     [ring]
     (points-map->points-str ring))
