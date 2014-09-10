@@ -205,7 +205,7 @@
    min-value
 
    ;; The maximum value of the search range (inclusive)
-   max-vlaue
+   max-value
    ])
 
 (defrecord StringRangeCondition
@@ -336,6 +336,13 @@
   (map->NumericRangeCondition {:field field
                                :min-value min
                                :max-value max}))
+
+(defn numeric-overlap-condition
+  [min-field max-field min max]
+  (map->NumericOverlapCondition {:min-field min-field
+                                 :max-field max-field
+                                 :min-value min
+                                 :max-value max}))
 
 (defn string-range-condition
   "Create a string range condition."

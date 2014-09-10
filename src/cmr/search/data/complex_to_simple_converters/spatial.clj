@@ -106,54 +106,46 @@
 
 
 (defn orbit-crossings
-  "Compute the orbit crossing ranges (latitude and longitude) used to create the crossing
-  conditions for orbital crossing searches."
+  "Compute the orbit crossing ranges (max and min longitude) used to create the crossing
+  conditions for orbital crossing searches. Returns a vector of vectors"
   [stored-ords orbit-params]
-  (let [
-        type (name (get-in stored-ords [0 :type]))
-        coords (double-array (map srl/stored->ordinate
-                              (get-in stored-ords [0 :ords])))
-        crossings (let [{:keys [swath-width
-                                       period
-                                       inclination-angle
-                                       number-of-orbits
-                                       start-circular-latitude]} orbit-params
-                               asc-crossing (.areaCrossingRange
-                                              orbits
-                                              type
-                                              coords
-                                              true
-                                              inclination-angle
-                                              period
-                                              swath-width
-                                              start-circular-latitude
-                                              number-of-orbits)
-                               desc-crossing (.areaCrossingRange
-                                              orbits
-                                              type
-                                              coords
-                                              false
-                                              inclination-angle
-                                              period
-                                              swath-width
-                                              start-circular-latitude
-                                              number-of-orbits)]
-                           [asc-crossing desc-crossing])]
-    (doseq [crossing crossings]
-      (println "CROSSING....")
-      (println "LON MIN")
-      (println (first (first crossing)))
-      (println "LON MAX")
-      (println (last (first crossing))))
-
-    crossings)
-
   ;; Use the orbit parameters to perform oribtial back tracking to longitude ranges to be used
   ;; in the search
 
   ;; Construct an OR group with the ranges, looking for overlaps with the :orbit-start-clat
   ;; and :orbit-end-clat range
-  )
+  (let [
+        type (name (get-in stored-ords [0 :type]))
+        coords (double-array (map srl/stored->ordinate
+                                  (get-in stored-ords [0 :ords])))
+        crossings (let [{:keys [swath-width
+                                period
+                                inclination-angle
+                                number-of-orbits
+                                start-circular-latitude]} orbit-params
+                        asc-crossing (.areaCrossingRange
+                                       orbits
+                                       type
+                                       coords
+                                       true
+                                       inclination-angle
+                                       period
+                                       swath-width
+                                       start-circular-latitude
+                                       number-of-orbits)
+                        desc-crossing (.areaCrossingRange
+                                        orbits
+                                        type
+                                        coords
+                                        false
+                                        inclination-angle
+                                        period
+                                        swath-width
+                                        start-circular-latitude
+                                        number-of-orbits)]
+                    (into (into [] asc-crossing) desc-crossing))]
+
+    crossings))
 
 (defn orbital-condition
   "Create a condition that will use orbit parameters and orbital back tracking to find matches
@@ -161,19 +153,32 @@
   [shape context]
   (let [mbr (sr/mbr shape)
         lat-ranges (.denormalizeLatitudeRange orbits (:south mbr) (:north mbr))
-        ;lat-conds (
+        lat-conds (qm/or-conds
+                    (map (fn [range]
+                           (qm/numeric-overlap-condition
+                             :orbit-start-clat
+                             :orbit-end-clat
+                             (first range)
+                             (last range)))
+                         lat-ranges))
         orbit-params (orbits-for-context context)
         stored-ords (srl/shape->stored-ords shape)]
-    ; (map (fn [params]
-    ;        (let [crossings (orbit-crossings stored-ords params)]
-    ;          (qm/and-conds
-    ;            (qm/string-condition :collection-concept-id (:concept-id params))
-    ;            (qm/and-conds
-    ;              (qm/or-conds
-    ;                (
-    orbit-params))
+    (qm/or-conds
+      (map (fn [params]
+             (qm/and-conds
+               [(qm/string-condition :collection-concept-id (:concept-id params))
+                (let [crossings (orbit-crossings stored-ords params)]
+                  (qm/or-conds
+                    [lat-conds
+                     (qm/or-conds
+                       (map (fn [crossing-range]
+                              (qm/numeric-range-condition
+                                :orbit-asc-crossing-lon
+                                (first crossing-range)
+                                (last crossing-range)))
+                            crossings))]))]))
 
-
+           orbit-params))))
 
 (extend-protocol c2s/ComplexQueryToSimple
   cmr.search.models.query.SpatialCondition
@@ -181,7 +186,11 @@
     [{:keys [shape]} context]
     (let [shape (d/calculate-derived shape)
           orbital-cond (orbital-condition shape context)
+          _ (println "ORBITAL CONDS.......")
+          _ (println orbital-cond)
           mbr-cond (br->cond "mbr" (srl/shape->mbr shape))
           lr-cond (br->cond "lr" (srl/shape->lr shape))
           spatial-script (shape->script-cond shape)]
-      (qm/and-conds [mbr-cond (qm/or-conds [lr-cond spatial-script])]))))
+      ;(qm/and-conds [mbr-cond (qm/or-conds [lr-cond spatial-script])]))))
+      (qm/or-conds [(qm/and-conds [mbr-cond (qm/or-conds [lr-cond spatial-script])])
+                    orbital-cond]))))

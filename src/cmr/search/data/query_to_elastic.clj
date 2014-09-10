@@ -197,6 +197,26 @@
     (range-condition->elastic (query-field->elastic-field field concept-type)
                               min-value max-value "fielddata"))
 
+  cmr.search.models.query.NumericOverlapCondition
+  (condition->elastic
+    [{:keys [min-field max-field min-value max-value]} concept-type]
+    {:or [(range-condition->elastic (query-field->elastic-field min-field concept-type)
+                                    min-value
+                                    max-value
+                                    "fielddata")
+          (range-condition->elastic (query-field->elastic-field max-field concept-type)
+                                    min-value
+                                    max-value
+                                    "fielddata")
+          {:and [(range-condition->elastic (query-field->elastic-field min-field concept-type)
+                                           nil
+                                           min-value
+                                           "fielddata")
+                 (range-condition->elastic (query-field->elastic-field max-field concept-type)
+                                           max-value
+                                           nil
+                                           "fielddata")]}]})
+
   cmr.search.models.query.StringRangeCondition
   (condition->elastic
     [{:keys [field start-value end-value]} concept-type]
