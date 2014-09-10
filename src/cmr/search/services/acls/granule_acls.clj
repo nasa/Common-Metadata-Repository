@@ -162,6 +162,7 @@
       (q/or-conds conds)
       q/match-none)))
 
+
 ;; This expects that collection queries have been resolved before this step.
 (defmethod acl-service/add-acl-conditions-to-query :granule
   [context query]
@@ -178,9 +179,9 @@
                (acl-helper/get-acls-applicable-to-token context))
         acl-cond (acls->query-condition context coll-ids-by-prov acls)]
 
-    (second (r/resolve-collection-queries
-              context
-              (update-in query [:condition] #(q/and-conds [acl-cond %]))))))
+    (r/resolve-collection-queries
+      context
+      (update-in query [:condition] #(q/and-conds [acl-cond %])))))
 
 
 (comment

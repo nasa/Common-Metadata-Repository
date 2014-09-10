@@ -1,5 +1,5 @@
 (ns cmr.search.data.complex-to-simple-converters.temporal
-  "Defines functions that implement the reduce-query method of the ComplexQueryToSimple
+  "Defines functions that implement the reduce-query-condition method of the ComplexQueryToSimple
   protocol for Temporal conditions."
 
   (:require [clj-time.core :as t]
@@ -85,6 +85,6 @@
 ;; Reduce a Temporal condition to simpler conditions
 (extend-protocol c2s/ComplexQueryToSimple
   cmr.search.models.query.TemporalCondition
-  (c2s/reduce-query
+  (c2s/reduce-query-condition
     [condition context]
     (temporal->simple-conditions condition)))

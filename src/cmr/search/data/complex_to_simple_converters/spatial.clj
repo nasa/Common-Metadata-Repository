@@ -65,11 +65,6 @@
    "number-of-orbits"
    "start-circular-latitude"])
 
-(defn- collection-ids-present?
-  [orbit-collection-ids]
-  (and (not= :all orbit-collection-ids)
-       (seq orbit-collection-ids)))
-
 (defn- fix-vals
   "Helper function to convert a map with sequences for values into a map with single values."
   [map-value]
@@ -83,9 +78,9 @@
   [context]
   ;; Construct a query for concept-ids and orbit parameters of all collections that have them
   ;; Execute the query to get the data needed to do orbitial back tracking
-  (let [{:keys [orbit-collection-ids]} context
+  (let [{:keys [query-collection-ids]} context
         orbit-params-cond (qm/->ExistCondition :swath-width)
-        orbit-params-cond (if (collection-ids-present? orbit-collection-ids)
+        orbit-params-cond (if (seq query-collection-ids)
                             (qm/and-conds orbit-params-cond
                                           (qm/or-conds (map (fn [concept-id]
                                                               (qm/string-condition
@@ -93,7 +88,7 @@
                                                                 concept-id
                                                                 true
                                                                 false))
-                                                            orbit-collection-ids)))
+                                                            query-collection-ids)))
                             orbit-params-cond)
         orbit-params-query (qm/query {:concept-type :collection
                                       :condition orbit-params-cond
@@ -162,27 +157,50 @@
                              (last range)))
                          lat-ranges))
         orbit-params (orbits-for-context context)
-        stored-ords (srl/shape->stored-ords shape)]
-    (qm/or-conds
-      (map (fn [params]
-             (qm/and-conds
-               [(qm/string-condition :collection-concept-id (:concept-id params))
-                (let [crossings (orbit-crossings stored-ords params)]
-                  (qm/or-conds
-                    [lat-conds
-                     (qm/or-conds
-                       (map (fn [crossing-range]
-                              (qm/numeric-range-condition
-                                :orbit-asc-crossing-lon
-                                (first crossing-range)
-                                (last crossing-range)))
-                            crossings))]))]))
+        stored-ords (srl/shape->stored-ords shape)
+        crossings (map (fn [params]
+                  (orbit-crossings stored-ords params))
 
-           orbit-params))))
+             orbit-params)]
+    ))
+
+#_(defn orbital-condition
+  "Create a condition that will use orbit parameters and orbital back tracking to find matches
+  to a spatial search."
+  [shape context]
+  (let [mbr (sr/mbr shape)
+        lat-ranges (.denormalizeLatitudeRange orbits (:south mbr) (:north mbr))
+        lat-conds (qm/or-conds
+                    (map (fn [range]
+                           (qm/numeric-overlap-condition
+                             :orbit-start-clat
+                             :orbit-end-clat
+                             (first range)
+                             (last range)))
+                         lat-ranges))
+        orbit-params (orbits-for-context context)
+        stored-ords (srl/shape->stored-ords shape)]
+    (when (seq orbit-params)
+      (qm/or-conds
+        (map (fn [params]
+               (qm/and-conds
+                 [(qm/string-condition :collection-concept-id (:concept-id params))
+                  (let [crossings (orbit-crossings stored-ords params)]
+                    (qm/or-conds
+                      [lat-conds
+                       (qm/or-conds
+                         (map (fn [crossing-range]
+                                (qm/numeric-range-condition
+                                  :orbit-asc-crossing-lon
+                                  (first crossing-range)
+                                  (last crossing-range)))
+                              crossings))]))]))
+
+             orbit-params)))))
 
 (extend-protocol c2s/ComplexQueryToSimple
   cmr.search.models.query.SpatialCondition
-  (c2s/reduce-query
+  (c2s/reduce-query-condition
     [{:keys [shape]} context]
     (let [shape (d/calculate-derived shape)
           orbital-cond (orbital-condition shape context)
@@ -192,5 +210,5 @@
           lr-cond (br->cond "lr" (srl/shape->lr shape))
           spatial-script (shape->script-cond shape)]
       (qm/and-conds [mbr-cond (qm/or-conds [lr-cond spatial-script])]))))
-      ; (qm/or-conds [(qm/and-conds [mbr-cond (qm/or-conds [lr-cond spatial-script])])
-      ;               orbital-cond]))))
+; (qm/or-conds [(qm/and-conds [mbr-cond (qm/or-conds [lr-cond spatial-script])])
+;               orbital-cond]))))

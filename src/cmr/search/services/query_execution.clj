@@ -130,7 +130,7 @@
   (let [processed-query (->> query
                              (pre-process-query-result-features context)
                              (r/resolve-collection-queries context))
-        processed-query (c2s/reduce-query processed-query context)
+        processed-query (c2s/reduce-query context processed-query)
         elastic-results (idx/execute-query context processed-query)
         query-results (rc/elastic-results->query-results context query elastic-results)
         query-results (if (:skip-acls? query)
@@ -144,18 +144,12 @@
   (let [processed-query (pre-process-query-result-features context query)
 
         processed-query (r/resolve-collection-queries context processed-query)
-        _ (println "QUERY.......")
-        _ (println processed-query)
         ;[collection-ids processed-query] (r/resolve-collection-queries context processed-query)
         ;context (assoc context :orbit-collection-ids collection-ids)
-        processed-query (c2s/reduce-query processed-query context)
-        _ (println "QUERY.......")
-        _ (println processed-query)
+        processed-query (c2s/reduce-query context processed-query)
         processed-query (if (:skip-acls? processed-query)
                           processed-query
                           (acl-service/add-acl-conditions-to-query context processed-query))
-        _ (println "QUERY.......")
-        _ (println processed-query)
         elastic-results (idx/execute-query context processed-query)
 
         query-results (rc/elastic-results->query-results context query elastic-results)]
