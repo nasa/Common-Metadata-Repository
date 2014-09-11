@@ -36,13 +36,13 @@
                 :entry-id {:name :entry-id :type :string}
                 :associated-difs {:name :associated-difs :type :string}
                 :scienceKeywords {:name :science-keywords :type :science-keywords}
-                :categoryKeyword {:name :category :type :string}
-                :topicKeyword {:name :topic :type :string}
-                :termKeyword {:name :term :type :string}
-                :variableLevel1Keyword {:name :variable-level-1 :type :string}
-                :variableLevel2Keyword {:name :variable-level-2 :type :string}
-                :variableLevel3Keyword {:name :variable-level-3 :type :string}
-                :detailedVariableKeyword {:name :detailed-variable :type :string}
+                :categoryKeyword {:name :science-keywords.category :type :string}
+                :topicKeyword {:name :science-keywords.topic :type :string}
+                :termKeyword {:name :science-keywords.term :type :string}
+                :variableLevel1Keyword {:name :science-keywords.variable-level-1 :type :string}
+                :variableLevel2Keyword {:name :science-keywords.variable-level-2 :type :string}
+                :variableLevel3Keyword {:name :science-keywords.variable-level-3 :type :string}
+                :detailedVariableKeyword {:name :science-keywords.detailed-variable :type :string}
                 :TwoDCoordinateSystemName {:name :two-d-coordinate-system-name :type :string}
                 :spatial {:name :spatial :type :spatial}}
    :granule {:dataCenterId {:name :provider-id :type :collection-query :coll-tag :dataCenterId}
