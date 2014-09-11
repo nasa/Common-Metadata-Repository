@@ -137,8 +137,7 @@
   TemporalCondition
   (mapify
     [c]
-    (mapify-record (util/record-fields TemporalCondition)
-                   (update-in c [:date-range-condition] mapify)))
+    (mapify-record (util/record-fields TemporalCondition) c))
 
   TextCondition
   (mapify

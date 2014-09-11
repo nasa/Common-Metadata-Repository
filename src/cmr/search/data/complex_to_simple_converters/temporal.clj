@@ -4,14 +4,13 @@
 
   (:require [clj-time.core :as t]
             [cmr.search.models.query :as qm]
-            [cmr.search.services.parameters.converters.temporal :as temporal]
             [cmr.search.data.complex-to-simple :as c2s]))
 
 (defn- intersect-temporal->simple-conditions
   "Convert a temporal condition with INTERSECT mask into a combination of simpler conditions
   so that it will be easier to convert into elastic json"
   [temporal]
-  (let [{:keys [start-date end-date]} (:date-range-condition temporal)
+  (let [{:keys [start-date end-date]} temporal
         conditions (if end-date
                      [(qm/map->DateRangeCondition {:field :start-date
                                                    :end-date end-date})
@@ -56,16 +55,14 @@
         current-end (current-end-date current-year end-date start-day end-day end-year)]
     (when-not (t/before? current-end current-start)
       (intersect-temporal->simple-conditions
-        (temporal/map->temporal-condition {:field :temporal
-                                           :start-date current-start
-                                           :end-date current-end})))))
+        (qm/map->TemporalCondition {:start-date current-start
+                                    :end-date current-end})))))
 
 (defn- periodic-temporal->simple-conditions
   "Convert a periodic temporal condition into a combination of simpler conditions
   so that it will be easier to convert into elastic json"
   [temporal]
-  (let [{{:keys [start-date end-date]} :date-range-condition
-         :keys [start-day end-day]} temporal
+  (let [{:keys [start-day end-day start-date end-date]} temporal
         end-year (if end-date (t/year end-date) (t/year (t/now)))
         start-day (if start-day start-day 1)
         conditions (map
