@@ -59,6 +59,6 @@
            [gran2 gran3] ["XYZ" "PDQ"] {}
            [gran1 gran2] ["ABC" "LMN"] {}
            [] "LMN" {}
-           [gran1 gran2] "abc" {}
+           [] "abc" {}
            [gran1 gran2] "abc" {:ignore-case true}
            [] "abc" {:ignore-case false}))))

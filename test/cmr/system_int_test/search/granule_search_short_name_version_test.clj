@@ -75,7 +75,7 @@
            ;; ignore case
            [] "onlyShort" {:ignore-case false}
            [gran2] "onlyShort" {:ignore-case true}
-           [gran2] "onlyShort" {}))))
+           [] "onlyShort" {}))))
 
 (deftest search-by-version
   (let [coll1 (d/ingest "PROV1" (dc/collection {:version-id "1"}))
@@ -143,4 +143,4 @@
            ;; ignore case
            [] "r3" {:ignore-case false}
            [gran4] "r3" {:ignore-case true}
-           [gran4] "r3" {}))))
+           [] "r3" {}))))

@@ -51,7 +51,7 @@
              (d/refs-match? items (search/find-refs-with-aql :collection [condition])))
 
            [coll1 coll2] "platform_Sn A" {}
-           [coll6 coll7] "platform_x" {}
+           [coll7] "platform_x" {}
            [] "BLAH" {}
            [coll1 coll2 coll4] ["platform_SnA" "platform_Sn A"] {}
            [coll6 coll7] ["platform_x"] {:ignore-case true}
@@ -111,7 +111,7 @@
              (d/refs-match? items (search/find-refs-with-aql :collection [condition])))
 
            [coll1 coll2 coll6] "instrument_Sn A" {}
-           [coll7 coll8] "instrument_x" {}
+           [coll8] "instrument_x" {}
            [] "BLAH" {}
            [coll1 coll2 coll4 coll6] ["instrument_SnA" "instrument_Sn A"] {}
            [coll7 coll8] ["instrument_x"] {:ignore-case true}
@@ -180,7 +180,7 @@
              (d/refs-match? items (search/find-refs-with-aql :collection [condition])))
 
            [coll1 coll2 coll6 coll7] "sensor_Sn A" {}
-           [coll8 coll9] "sensor_x" {}
+           [coll8] "sensor_x" {}
            [] "BLAH" {}
            [coll1 coll2 coll4 coll6 coll7] ["sensor_SnA" "sensor_Sn A"] {}
            [coll8 coll9] ["sensor_x"] {:ignore-case true}
