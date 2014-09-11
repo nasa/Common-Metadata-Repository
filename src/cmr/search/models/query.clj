@@ -222,16 +222,9 @@
 
 (defrecord TemporalCondition
   [
-   ;; The field being searched.
-   field
-
-   ;; The date range condition
-   date-range-condition
-
-   ;; The start-day value
+   start-date
+   end-date
    start-day
-
-   ;; The end-day value
    end-day
    ])
 

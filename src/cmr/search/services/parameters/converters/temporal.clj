@@ -11,18 +11,6 @@
   [value]
   (when-not (s/blank? value) (Integer/parseInt value)))
 
-(defn map->temporal-condition
-  "Returns temporal condition built with the given map with field, start-date, end-date, start-day and end-day"
-  [values]
-  (let [{:keys [field start-date end-date start-day end-day]} values
-        date-range-condition (qm/map->DateRangeCondition {:field field
-                                                          :start-date start-date
-                                                          :end-date end-date})]
-    (qm/map->TemporalCondition {:field field
-                                :date-range-condition date-range-condition
-                                :start-day start-day
-                                :end-day end-day})))
-
 ;; Converts temporal parameter and values into query condition, returns the converted condition
 (defmethod p/parameter->condition :temporal
   [concept-type param value options]
@@ -33,9 +21,8 @@
       (qm/or-conds
         (map #(p/parameter->condition concept-type param % options) value)))
     (let [[start-date end-date start-day end-day] (map s/trim (s/split value #","))]
-      (map->temporal-condition {:field param
-                                :start-date (when-not (s/blank? start-date) (parser/parse-datetime start-date))
-                                :end-date (when-not (s/blank? end-date) (parser/parse-datetime end-date))
-                                :start-day (string->int-value start-day)
-                                :end-day (string->int-value end-day)}))))
+      (qm/map->TemporalCondition {:start-date (when-not (s/blank? start-date) (parser/parse-datetime start-date))
+                                  :end-date (when-not (s/blank? end-date) (parser/parse-datetime end-date))
+                                  :start-day (string->int-value start-day)
+                                  :end-day (string->int-value end-day)}))))
 
