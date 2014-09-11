@@ -134,6 +134,7 @@
    (let [value (first (:content elem))
          value (if pattern? (aql-pattern->cmr-pattern value) value)
          case-insensitive (get-in elem [:attrs :caseInsensitive])
+         case-insensitive (if case-insensitive case-insensitive "N")
          case-sensitive? (if (and case-insensitive (= "N" (str/upper-case case-insensitive))) true false)
          case-sensitive? (if (some? (pc/always-case-sensitive key)) true case-sensitive?)]
      (if (inherited-condition? concept-type key)
