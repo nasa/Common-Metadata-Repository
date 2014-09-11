@@ -50,18 +50,19 @@
              (d/refs-match? items
                             (search/find-refs-with-aql :collection [condition])))
            [coll4 coll6] "Larc" {}
-           [coll5 coll7] "SEDAC AC" {}
+           [coll5] "SEDAC AC" {}
+           [coll7] "Sedac AC" {}
+           [] "sedac ac" {}
            [] "SEDAC PC" {}
            [] "BLAH" {}
-           [coll4 coll5 coll6 coll7] ["SEDAC AC" "Larc"] {}
+           [coll4 coll5 coll6] ["SEDAC AC" "Larc"] {}
 
            ;; Wildcards
            [coll5 coll7] "S%" {:pattern true}
-           [coll5 coll7] "SEDAC _C" {:pattern true}
+           [coll5] "SEDAC _C" {:pattern true}
            [] "%Q%" {:pattern true}
 
            ;; Ignore case
-           [coll5 coll7] "sedac ac" {}
            [coll5 coll7] "sedac ac" {:ignore-case true}
            [] "sedac ac" {:ignore-case false}))))
 

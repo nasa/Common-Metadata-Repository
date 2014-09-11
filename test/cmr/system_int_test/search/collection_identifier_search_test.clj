@@ -88,7 +88,7 @@
            all-prov1-colls ["PROV1" "PROV3"] {}
 
            ;; Ignore case
-           all-prov1-colls "pRoV1" {}
+           [] "pRoV1" {}
            all-prov1-colls "pRoV1" {:ignore-case true}
            [] "prov1" {:ignore-case false}))
 
@@ -143,7 +143,7 @@
            [] "%Q%" {:pattern true}
 
            ;; Ignore case
-           [c1-p1 c1-p2] "s1" {}
+           [] "s1" {}
            [c1-p1 c1-p2] "s1" {:ignore-case true}
            [] "s1" {:ignore-case false}))
 

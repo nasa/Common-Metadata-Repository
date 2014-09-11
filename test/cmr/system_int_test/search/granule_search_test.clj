@@ -125,7 +125,7 @@
            ;; ignore case
            [] "anotherCollectionV1" {:ignore-case false}
            [gran3] "anotherCollectionV1" {:ignore-case true}
-           [gran3] "anotherCollectionV1" {}))))
+           [] "anotherCollectionV1" {}))))
 
 
 (def provider-granules
@@ -198,15 +198,15 @@
            [gran3 gran4] "Granule3" {}
 
            ;; pattern
-           [gran5 gran6 gran7] "S%" {:pattern true}
+           [gran5 gran6] "S%" {:pattern true}
            [gran5 gran6] "SampleUR_" {:pattern true}
 
            ;; ignore case
            [] "sampleUR1" {:ignore-case false}
            [gran5] "sampleUR1" {:ignore-case true}
-           [gran5] "sampleUR1" {}
+           [] "sampleUR1" {}
            [gran5 gran6] "sampleUR_" {:ignore-case true :pattern true}
-           [gran5 gran6] "sampleUR_" {:pattern true}))))
+           [] "sampleUR_" {:pattern true}))))
 
 (defn- make-catalog-rest-style-query
   "Make a cloud-cover query in the catalog-reset style."

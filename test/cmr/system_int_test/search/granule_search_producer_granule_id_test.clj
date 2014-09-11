@@ -61,5 +61,5 @@
            ;; ignore case
            [] "granule1" {:ignore-case false}
            [gran1] "granule1" {:ignore-case true}
-           [gran1] "granule1" {}))))
+           [] "granule1" {}))))
 

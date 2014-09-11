@@ -71,14 +71,14 @@
            [coll3 coll4] "DC" {}
            [coll6] "LL" {}
            [coll4] "LA" {}
-           [coll5 coll7] ["Detroit"] {}
-           [coll5 coll6 coll7] ["LL" "Detroit"] {}
+           [coll5] ["Detroit"] {}
+           [coll5 coll6] ["LL" "Detroit"] {}
            [] "BLAH" {}
            ;; pattern
-           [coll3 coll4 coll5 coll7] "D%" {:pattern true}
+           [coll3 coll4 coll5] "D%" {:pattern true}
            [coll4 coll6] "L_" {:pattern true}
            ;;ignore case
-           [coll5 coll7] "detroit" {}
+           [coll7] "detroit" {}
            [coll5 coll7] "detroit" {:ignore-case true}
            [coll7] "detroit" {:ignore-case false}))))
 
