@@ -5,7 +5,6 @@
             [cmr.umm.test.generators.collection :as c]
             [cmr.umm.test.generators.granule.temporal :as gt]
             [cmr.umm.test.generators.collection.product-specific-attribute :as psa]
-            [cmr.umm.test.generators.granule.orbit-calculated-spatial-domain :as ocsd]
             [cmr.umm.granule :as g]
             [cmr.umm.test.generators.spatial :as spatial-gen]))
 
@@ -75,7 +74,7 @@
       :data-granule (ext-gen/optional data-granules)
       :access-value (ext-gen/optional (ext-gen/choose-double -10 10))
       :temporal gt/temporal
-      :orbit-calculated-spatial-domains (ext-gen/nil-if-empty (gen/vector ocsd/orbit-calculated-spatial-domains 0 5))
+      :orbit-calculated-spatial-domains (ext-gen/nil-if-empty (gen/vector spatial-gen/orbit-calculated-spatial-domains 0 5))
       :platform-refs (ext-gen/nil-if-empty (gen/vector platform-refs 0 4))
       :project-refs (ext-gen/nil-if-empty (gen/vector (ext-gen/string-ascii 1 10) 0 3))
       :cloud-cover (ext-gen/optional cloud-cover-values)

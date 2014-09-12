@@ -5,8 +5,34 @@
             [cmr.spatial.polygon :as poly]
             [cmr.spatial.line-string :as l]
             [cmr.umm.granule :as g]
-            [cmr.umm.spatial :as umm-s]
-            [cmr.umm.test.generators.granule.orbit-calculated-spatial-domain :as ocsd]))
+            [cmr.umm.spatial :as umm-s]))
+
+
+(def longitude
+  (ext-gen/choose-double -180 180))
+
+(def latitude
+  (ext-gen/choose-double -90 90))
+
+(def orbital-model-name
+  (ext-gen/string-ascii 1 10))
+
+(def orbit-number
+  gen/int)
+
+(def s-orbit-number
+  "start/stop orbit number"
+  (gen/fmap double gen/ratio))
+
+(def orbit-calculated-spatial-domains
+  (gen/fmap (fn [[omn on son spon ecl ecdt]]
+              (g/->OrbitCalculatedSpatialDomain omn on son spon ecl ecdt))
+            (gen/tuple orbital-model-name
+                       orbit-number
+                       s-orbit-number
+                       s-orbit-number
+                       longitude
+                       ext-gen/date-time)))
 
 (def generic-rings
   "Generates rings that are not valid but could be used for testing where validity is not important"
@@ -36,8 +62,8 @@
   "A generator returning an Orbit record for a spatial domain."
   (ext-gen/model-gen
     g/->Orbit
-    ocsd/longitude
-    ocsd/latitude
+    longitude
+    latitude
     orbit-directions
-    ocsd/latitude
+    latitude
     orbit-directions))
