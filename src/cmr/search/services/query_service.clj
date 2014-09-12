@@ -69,7 +69,8 @@
             [cmr.search.services.acls.collections-cache :as coll-cache]
             [camel-snake-kebab :as csk]
             [cheshire.core :as json]
-            [cmr.common.log :refer (debug info warn error)]))
+            [cmr.common.log :refer (debug info warn error)]
+            [cmr.common.date-time-parser :as parser]))
 
 (deftracefn validate-query
   "Validates a query model. Throws an exception to return to user with errors.
@@ -162,6 +163,47 @@
         (format "Concept with concept-id: %s could not be found" concept-id)))
     (first concepts)))
 
+
+
+(deftracefn get-granule-timeline
+  "TODO"
+  [context params]
+  ;; TODO add system integration test of validations
+
+  ;; TODO
+  ;; validate timeline params
+  ;; - interval is required and must be one of the supported values
+  ;; - start_date is required and must be a valid date time
+  ;; - end_date is required and must be a valid date time
+  ;; - concept_id is required (We can require that explicitly)
+  ;; validate other params
+
+  (let [params (->> params
+                    sanitize-params
+                    ;; handle legacy parameters
+                    lp/replace-parameter-aliases
+                    (lp/process-legacy-multi-params-conditions :granule)
+                    (lp/replace-science-keywords-or-option :granule))
+        ;; Remove timeline parameters from params before we build the query
+        {:keys [interval start-date end-date]} params
+        ;; Validate the normal parameters and build the query
+        query (->> (dissoc params :interval :start-date :end-date)
+                   (pv/validate-parameters :granule)
+                   (p/parameters->query :granule))
+        ;; Add timeline request fields to the query so that they can be used later
+        ;; for processing the timeline results.
+        query (assoc query
+                     :interval (keyword interval)
+                     :start-date (parser/parse-datetime start-date)
+                     :end-date (parser/parse-datetime end-date)
+                     ;; Indicate the result feature of timeline so that we can preprocess
+                     ;; the query and add aggregations and make other changes.
+                     :result-features [:timeline]
+                     :result-format :timeline)
+        results (qe/execute-query context query)]
+
+    (search-results->response context query results)))
+
 (deftracefn clear-cache
   "Clear the cache for search app"
   [context]
@@ -190,17 +232,6 @@
                           :skip-acls? skip-acls?})
          results (qe/execute-query context query)]
      (:items results))))
-
-(comment
-  (def collections (get-collections-by-providers {:system (get-in user/system [:apps :search])} true))
-
-  (into
-    {}
-    (for [[prov colls] (group-by :provider-id collections)]
-      [prov
-       (into {} (for [coll colls]
-                  [(:entry-title coll) (:concept-id coll)]))]))
-  )
 
 (deftracefn get-provider-holdings
   "Executes elasticsearch search to get provider holdings"

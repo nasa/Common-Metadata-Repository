@@ -22,6 +22,7 @@
             [cmr.search.results-handlers.reference-results-handler]
             [cmr.search.results-handlers.metadata-results-handler]
             [cmr.search.results-handlers.query-specified-results-handler]
+            [cmr.search.results-handlers.timeline-results-handler]
 
             ;; ACL support. Required here to avoid circular dependencies
             [cmr.search.services.acls.collection-acls]
@@ -168,14 +169,30 @@
             _ (info (format "Searching for %ss from client %s in format %s with params %s."
                             (name concept-type) (:client-id context) result-format
                             (pr-str params)))
+
+            ;; TODO this should be handled in the mime type namespace.
             ;; alias :iso to iso-mends
             params (if (= :iso result-format) (assoc params :result-format :iso-mends) params)
+
+
             search-params (lp/process-legacy-psa params query-string)
             results (query-svc/find-concepts-by-parameters context concept-type search-params)]
         (search-response params results))
       {:status 415
        :body (str "Unsupported content type ["
                   (get headers (str/lower-case CONTENT_TYPE_HEADER)) "]")})))
+
+(defn- get-granules-timeline
+  "TODO"
+  [context path-w-extension params headers query-string]
+  (let [context (process-context-info context params headers)
+        params (process-params params path-w-extension headers "application/json")
+        ;; TODO add validation somewhere and a test that the result format is always json.
+        _ (info (format "Getting granule timeline from client %s with params %s."
+                        (:client-id context) (pr-str params)))
+        search-params (lp/process-legacy-psa params query-string)
+        results (query-svc/get-granule-timeline context search-params)]
+    (r/response results)))
 
 (defn- find-concepts-by-aql
   "Invokes query service to parse the AQL query, find results and returns the response"
@@ -213,47 +230,35 @@
      :headers {CONTENT_TYPE_HEADER (str (mt/format->mime-type (:result-format params)) "; charset=utf-8")}
      :body provider-holdings}))
 
-(def concept-type-w-extension-regex
-  "A regular expression that matches URLs including the concept type (pluralized) along with a file
-  extension."
-  #"(?:(?:granules)|(?:collections))(?:\..+)?")
-
-(def concept-id-w-extension-regex
-  "A regular expression matching URLs including a concept id along with a file extension"
-  #"(?:[A-Z][0-9]+-[0-9A-Z_]+)(?:\..+)?")
-
-(def provider-holdings-w-extension-regex
-  "A regular expression that matches URLs including the provider holdings and a file extension."
-  #"(?:provider_holdings)(?:\..+)?")
-
-(def search-w-extension-regex
-  "A regular expression that matches URLs including the search and a file extension."
-  #"(?:search)(?:\..+)?")
-
 (defn- build-routes [system]
   (routes
     (context (get-in system [:search-public-conf :relative-root-url]) []
 
-      ;; Retrieve by cmr concept id
-      (context ["/concepts/:path-w-extension" :path-w-extension concept-id-w-extension-regex] [path-w-extension]
+      ;; Retrieve by cmr concept id -
+      (context ["/concepts/:path-w-extension" :path-w-extension #"(?:[A-Z][0-9]+-[0-9A-Z_]+)(?:\..+)?"] [path-w-extension]
         (GET "/" {params :params headers :headers context :request-context}
           (find-concept-by-cmr-concept-id context path-w-extension params headers)))
 
       ;; Find concepts
-      (context ["/:path-w-extension" :path-w-extension concept-type-w-extension-regex] [path-w-extension]
+      (context ["/:path-w-extension" :path-w-extension #"(?:(?:granules)|(?:collections))(?:\..+)?"] [path-w-extension]
         (GET "/" {params :params headers :headers context :request-context query-string :query-string}
           (find-concepts context path-w-extension params headers query-string))
         ;; Find concepts - form encoded
         (POST "/" {params :params headers :headers context :request-context body :body-copy}
           (find-concepts context path-w-extension params headers body)))
 
+      ;; Granule timeline
+      (context ["/granules/:path-w-extension" :path-w-extension #"(?:timeline)(?:\..+)?"] [path-w-extension]
+        (GET "/" {params :params headers :headers context :request-context query-string :query-string}
+          (get-granules-timeline context path-w-extension params headers query-string)))
+
       ;; AQL search - xml
-      (context ["/concepts/:path-w-extension" :path-w-extension search-w-extension-regex] [path-w-extension]
+      (context ["/concepts/:path-w-extension" :path-w-extension #"(?:search)(?:\..+)?"] [path-w-extension]
         (POST "/" {params :params headers :headers context :request-context body :body-copy}
           (find-concepts-by-aql context path-w-extension params headers body)))
 
       ;; Provider holdings
-      (context ["/:path-w-extension" :path-w-extension provider-holdings-w-extension-regex] [path-w-extension]
+      (context ["/:path-w-extension" :path-w-extension #"(?:provider_holdings)(?:\..+)?"] [path-w-extension]
         (GET "/" {params :params headers :headers context :request-context}
           (get-provider-holdings context path-w-extension params headers)))
 

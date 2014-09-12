@@ -138,10 +138,15 @@
                                    #(acl-service/filter-concepts context %)))]
     (post-process-query-result-features context query elastic-results query-results)))
 
+(def last-query (atom nil))
+
 (defmethod execute-query :elastic
   [context query]
-  (let [elastic-results (->> query
-                             (pre-process-query-result-features context)
+  (reset! last-query query)
+  (let [; We have to update the binding to the query so changes to the query will be visible when we
+        ; use it subsequently.
+        query (pre-process-query-result-features context query)
+        elastic-results (->> query
                              c2s/reduce-query
                              (r/resolve-collection-queries context)
                              (#(if (:skip-acls? %)
@@ -151,5 +156,12 @@
         query-results (rc/elastic-results->query-results context query elastic-results)]
     (post-process-query-result-features context query elastic-results query-results)))
 
+
+(comment
+  (def context {:system (get-in user/system [:apps :search])})
+  (execute-query context @last-query)
+
+
+)
 
 

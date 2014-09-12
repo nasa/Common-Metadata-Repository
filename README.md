@@ -507,6 +507,11 @@ Search collections or granules with query parameters encoded form in POST reques
 
     curl -i -XPOST http://localhost:3003/collections -d "dataset_id[]=Example%20DatasetId&dataset_id[]=Dataset2"
 
+### Search Response as Granule Timeline
+
+TODO document timeline feature
+
+
 ### Retrieve provider holdings, support format :xml and :json in header and as extension.
 
 All provider holdings

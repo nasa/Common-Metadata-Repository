@@ -46,16 +46,16 @@
     (try
       (let [page-size-i (Integer. page-size)]
         (cond
-          (> 1 page-size-i)
-          ["page_size must be a number between 1 and 2000"]
+          (< page-size-i 0 )
+          ["page_size must be a number between 0 and 2000"]
 
-          (< 2000 page-size-i)
-          ["page_size must be a number between 1 and 2000"]
+          (> page-size-i 2000)
+          ["page_size must be a number between 0 and 2000"]
 
           :else
           []))
       (catch NumberFormatException e
-        ["page_size must be a number between 1 and 2000"]))
+        ["page_size must be a number between 0 and 2000"]))
     []))
 
 (defn page-num-validation
