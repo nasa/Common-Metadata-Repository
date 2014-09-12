@@ -61,9 +61,10 @@
 (def orbits
   "A generator returning an Orbit record for a spatial domain."
   (ext-gen/model-gen
-    g/->Orbit
-    longitude
-    latitude
-    orbit-directions
-    latitude
-    orbit-directions))
+    g/map->Orbit
+    (gen/hash-map
+      :ascending-crossing longitude
+      :start-lat latitude
+      :start-direction orbit-directions
+      :end-lat latitude
+      :end-direction orbit-directions)))
