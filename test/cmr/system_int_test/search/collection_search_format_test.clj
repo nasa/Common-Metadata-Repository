@@ -254,6 +254,7 @@
                                         :related-urls [ru3]
                                         :spatial-coverage
                                         (dc/spatial :cartesian
+                                                    nil
                                                     :cartesian
                                                     (poly/polygon [(umm-s/ords->ring -70 20, 70 20, 70 30, -70 30, -70 20)]))}))]
 
