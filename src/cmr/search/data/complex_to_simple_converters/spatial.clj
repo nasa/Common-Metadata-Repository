@@ -81,14 +81,14 @@
   (let [{:keys [query-collection-ids]} context
         orbit-params-cond (qm/->ExistCondition :swath-width)
         orbit-params-cond (if (seq query-collection-ids)
-                            (qm/and-conds orbit-params-cond
-                                          (qm/or-conds (map (fn [concept-id]
-                                                              (qm/string-condition
-                                                                :concept-id
-                                                                concept-id
-                                                                true
-                                                                false))
-                                                            query-collection-ids)))
+                            (qm/and-conds [orbit-params-cond
+                                           (qm/or-conds (map (fn [concept-id]
+                                                               (qm/string-condition
+                                                                 :concept-id
+                                                                 concept-id
+                                                                 true
+                                                                 false))
+                                                             query-collection-ids))])
                             orbit-params-cond)
         orbit-params-query (qm/query {:concept-type :collection
                                       :condition orbit-params-cond
@@ -100,6 +100,15 @@
     (map #(fix-vals (:fields %)) results)))
 
 
+(defn- resolve-shape-type
+  "Convert the 'type' string from a serialized shape to one of 'point', 'line', 'br', or 'poly'.
+  These are used by the echo-orbits-java wrapper library."
+  [type]
+  (cond
+    (re-matches #".*line.*" type) "line"
+    (re-matches #".*poly.*" type) "poly"
+    :else type))
+
 (defn orbit-crossings
   "Compute the orbit crossing ranges (max and min longitude) used to create the crossing
   conditions for orbital crossing searches. Returns a vector of vectors"
@@ -109,8 +118,7 @@
 
   ;; Construct an OR group with the ranges, looking for overlaps with the :orbit-start-clat
   ;; and :orbit-end-clat range
-  (let [
-        type (name (get-in stored-ords [0 :type]))
+  (let [type (resolve-shape-type (name (:type (first stored-ords))))
         coords (double-array (map srl/stored->ordinate
                                   (get-in stored-ords [0 :ords])))
         crossings (let [{:keys [swath-width
@@ -138,8 +146,9 @@
                                         swath-width
                                         start-circular-latitude
                                         number-of-orbits)]
-                    [asc-crossing desc-crossing]
-                    #_(into (into [] asc-crossing) desc-crossing))]
+                    (when (or (seq asc-crossing)
+                              (seq desc-crossing))
+                      [asc-crossing desc-crossing]))]
 
     crossings))
 
@@ -213,12 +222,10 @@
     [{:keys [shape]} context]
     (let [shape (d/calculate-derived shape)
           orbital-cond (orbital-condition shape context)
-          _ (println "ORBITAL CONDS.......")
-          _ (println orbital-cond)
           mbr-cond (br->cond "mbr" (srl/shape->mbr shape))
           lr-cond (br->cond "lr" (srl/shape->lr shape))
-          spatial-script (shape->script-cond shape)]
+          spatial-script (shape->script-cond shape)
+          spatial-cond (qm/and-conds [mbr-cond (qm/or-conds [lr-cond spatial-script])])]
       (if orbital-cond
-        (qm/or-conds [(qm/and-conds [mbr-cond (qm/or-conds [lr-cond spatial-script])])
-                      orbital-cond])
-        (qm/and-conds [mbr-cond (qm/or-conds [lr-cond spatial-script])])))))
+        (qm/or-conds [spatial-cond orbital-cond])
+        spatial-cond))))
