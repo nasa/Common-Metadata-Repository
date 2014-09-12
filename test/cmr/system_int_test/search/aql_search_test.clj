@@ -141,7 +141,7 @@
            (d/refs-match? items
                           (search/find-refs-with-aql :collection conditions data-center-condition))
 
-           [coll1 coll3] [{:dataSetId "Dataset1"} {:shortName "SHORT"}] {}
+           [coll1] [{:dataSetId "Dataset1"} {:shortName "SHORT"}] {}
            [coll1 coll3] [{:dataSetId "Dataset1"} {:shortName "SHORT" :ignore-case true}] {}
            [coll1] [{:dataSetId "Dataset1"} {:shortName "SHORT" :ignore-case false}] {}
            [] [{:dataSetId "Dataset2"} {:shortName "Long%"}] {}
@@ -159,7 +159,7 @@
              (d/refs-match? items
                             (search/find-refs-with-aql-string aql-string)))
 
-           [coll1 coll3] ["<dataSetId><value>Dataset1</value></dataSetId>"
+           [coll1] ["<dataSetId><value>Dataset1</value></dataSetId>"
                           "<shortName><value>SHORT</value></shortName>"]
            [coll1 coll3] ["<dataSetId><value>Dataset1</value></dataSetId>"
                           "<shortName><value caseInsensitive=\"Y\">SHORT</value></shortName>"]

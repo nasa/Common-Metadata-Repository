@@ -87,6 +87,18 @@
                                                     :topic "Popular"}
                                                 :1 {:term "Extreme"}}}))))
 
+    (testing "search by science keywords, ignore case"
+      (are [items science-keyword value ignore-case]
+           (d/refs-match? items
+                          (search/find-refs
+                            :collection
+                            {"science-keywords" {:0 {science-keyword value}}
+                             "options[science-keywords][ignore-case]" ignore-case}))
+
+           [coll1] :category "Cat1" false
+           [] :category "cat1" false
+           [coll1] :category "cat1" true))
+
     (testing "search by science keywords, multiple. options :or false"
       (is (d/refs-match? [coll2 coll6]
                          (search/find-refs
@@ -167,9 +179,9 @@
                                             {:term "Extreme"}] {:or true}
 
            ;; case sensitivity
-           [coll1] [{:category "cat1"}] {}
+           [] [{:category "cat1"}] {}
            [] [{:category "cat1" :ignore-case false}] {}
-           [coll1] [{:category "cat1"} {:term "extreme" :ignore-case false}] {:or true}
+           [coll1] [{:category "Cat1"} {:term "extreme" :ignore-case false}] {:or true}
 
            ;; pattern
            [coll1] [{:category "C%" :pattern true}] {}

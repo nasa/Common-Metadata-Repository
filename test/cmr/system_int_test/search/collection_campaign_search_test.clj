@@ -56,7 +56,7 @@
            [coll3 coll4 coll6] "ESI" {}
            [coll5 coll6] "EVI" {}
            [coll5 coll6] "EPI" {}
-           [coll3 coll4 coll6] "Esi" {}
+           [coll4] "Esi" {}
            [] "BLAH" {}
 
            ;; Multiple values
@@ -72,7 +72,7 @@
            [] "%Q%" {:pattern true}
 
            ;; Ignore case
-           [coll5 coll6] "epi" {}
+           [] "epi" {}
            [coll5 coll6] "epi" {:ignore-case true}
            [] "epi" {:ignore-case false}))))
 

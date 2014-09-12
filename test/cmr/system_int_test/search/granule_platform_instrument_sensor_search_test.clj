@@ -78,7 +78,7 @@
 
            [gran1 gran2] "platform-Sn A" {}
            [gran2 gran3] "platform-Sn B" {}
-           [gran8 gran9] "platform-x" {}
+           [gran8] "platform-x" {}
            [] "BLAH" {}
 
            ;; search by platform, multiple values"
@@ -185,7 +185,7 @@
 
              [gran1 gran2 gran6] "instrument-Sn A" {}
              [gran4] "instrument-SnA" {}
-             [gran9 gran10] "instrument-x" {}
+             [gran9] "instrument-x" {}
              [] "BLAH" {}
 
              ;; search by instrument, multiple values
@@ -282,7 +282,7 @@
 
            [gran1 gran2 gran6 gran7] "sensor-Sn A" {}
            [gran4] "sensor-SnA" {}
-           [gran10 gran11] "sensor-x" {}
+           [gran10] "sensor-x" {}
            [] "BLAH" {}
 
            ;; search by sensor, multiple values
