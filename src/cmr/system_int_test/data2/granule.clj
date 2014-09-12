@@ -57,6 +57,10 @@
                            :day-night day-night
                            :size size}))))
 
+(defn orbit
+  [asc-crossing start-lat start-dir end-lat end-dir]
+  (g/->Orbit asc-crossing start-lat start-dir end-lat end-dir nil))
+
 (defn spatial
   [orbit & geometries]
   (g/->SpatialCoverage geometries orbit))

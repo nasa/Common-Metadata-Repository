@@ -48,10 +48,10 @@
 
         ;; orbit parameters
         orbit-params {:swath-width 2
-                                 :period 96
-                                 :inclination-angle 45
-                                 :number-of-orbits 1
-                                 :start-circular-latitude 0}
+                      :period 96
+                      :inclination-angle 45
+                      :number-of-orbits 1
+                      :start-circular-latitude 0}
         orbit-coll (d/ingest "PROV1"
                              (dc/collection
                                {:entry-title "orbit-params"
@@ -82,7 +82,7 @@
         normal-poly (make-coll :geodetic nil "normal-poly" (polygon -20 -10, -10 -10, -10 10, -20 10, -20 -10))
 
         ;; CMR-724 special case
-        whole-world-poly (make-coll :geodetic "whole-world-poly"
+        whole-world-poly (make-coll :geodetic nil "whole-world-poly"
                                     (polygon -179.9999 0.0, -179.9999 -89.9999, 0.0 -89.9999,
                                              0.0 0.0, 0.0 89.9999, -179.9999 89.9999, -179.9999 0.0))
 

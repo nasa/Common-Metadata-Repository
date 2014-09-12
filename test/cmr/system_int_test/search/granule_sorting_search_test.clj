@@ -210,7 +210,7 @@
          ;; Descending sorts by the min value of a multi value fields
          "instrument" [g1 g2 g3 g4 g5]
          ;; Descending sorts by the max value of a multi value fields
-         "-instrument" [g2 g5 g1 g4 g3])))
+        "-instrument" [g2 g5 g1 g4 g3])))
 
 (deftest granule-sensor-sorting-test
   (let [coll (d/ingest "PROV1" (dc/collection {}))
