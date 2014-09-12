@@ -138,7 +138,8 @@
                                         swath-width
                                         start-circular-latitude
                                         number-of-orbits)]
-                    (into (into [] asc-crossing) desc-crossing))]
+                    [asc-crossing desc-crossing]
+                    #_(into (into [] asc-crossing) desc-crossing))]
 
     crossings))
 
@@ -147,56 +148,64 @@
   to a spatial search."
   [shape context]
   (let [mbr (sr/mbr shape)
-        lat-ranges (.denormalizeLatitudeRange orbits (:south mbr) (:north mbr))
-        lat-conds (qm/or-conds
-                    (map (fn [range]
-                           (qm/numeric-overlap-condition
-                             :orbit-start-clat
-                             :orbit-end-clat
-                             (first range)
-                             (last range)))
-                         lat-ranges))
+        [asc-lat-ranges desc-lat-ranges] (.denormalizeLatitudeRange orbits (:south mbr) (:north mbr))
+        asc-lat-conds (qm/or-conds
+                        (map (fn [range]
+                               (qm/numeric-overlap-condition
+                                 :orbit-start-clat
+                                 :orbit-end-clat
+                                 (first range)
+                                 (last range)))
+                             asc-lat-ranges))
+        desc-lat-conds (qm/or-conds
+                         (map (fn [range]
+                                (qm/numeric-overlap-condition
+                                  :orbit-start-clat
+                                  :orbit-end-clat
+                                  (first range)
+                                  (last range)))
+                              desc-lat-ranges))
         orbit-params (orbits-for-context context)
         stored-ords (srl/shape->stored-ords shape)
-        crossings (map (fn [params]
-                  (orbit-crossings stored-ords params))
-
-             orbit-params)]
-    ))
-
-#_(defn orbital-condition
-  "Create a condition that will use orbit parameters and orbital back tracking to find matches
-  to a spatial search."
-  [shape context]
-  (let [mbr (sr/mbr shape)
-        lat-ranges (.denormalizeLatitudeRange orbits (:south mbr) (:north mbr))
-        lat-conds (qm/or-conds
-                    (map (fn [range]
-                           (qm/numeric-overlap-condition
-                             :orbit-start-clat
-                             :orbit-end-clat
-                             (first range)
-                             (last range)))
-                         lat-ranges))
-        orbit-params (orbits-for-context context)
-        stored-ords (srl/shape->stored-ords shape)]
-    (when (seq orbit-params)
-      (qm/or-conds
-        (map (fn [params]
-               (qm/and-conds
-                 [(qm/string-condition :collection-concept-id (:concept-id params))
-                  (let [crossings (orbit-crossings stored-ords params)]
-                    (qm/or-conds
-                      [lat-conds
-                       (qm/or-conds
-                         (map (fn [crossing-range]
-                                (qm/numeric-range-condition
-                                  :orbit-asc-crossing-lon
-                                  (first crossing-range)
-                                  (last crossing-range)))
-                              crossings))]))]))
-
-             orbit-params)))))
+        crossings-map (reduce (fn [memo params]
+                                (let [lon-crossings (orbit-crossings stored-ords params)]
+                                  (if (seq lon-crossings)
+                                    (assoc
+                                      memo
+                                      (:concept-id params)
+                                      lon-crossings)
+                                    memo)))
+                              {}
+                              orbit-params)
+        orbit-conds (when (seq crossings-map)
+                      (qm/or-conds
+                        (map (fn [collection-id]
+                               (let [[asc-crossings desc-crossings] (get crossings-map collection-id)]
+                                 (qm/and-conds
+                                   [(qm/string-condition :collection-concept-id collection-id, true, false)
+                                    (qm/or-conds
+                                      [
+                                       ;; ascending
+                                       (qm/and-conds
+                                         [asc-lat-conds
+                                          (qm/or-conds
+                                            (map (fn [crossing-range]
+                                                   (qm/numeric-range-condition
+                                                     :orbit-asc-crossing-lon
+                                                     (first crossing-range)
+                                                     (last crossing-range)))
+                                                 asc-crossings))])
+                                       (qm/and-conds
+                                         [desc-lat-conds
+                                          (qm/or-conds
+                                            (map (fn [crossing-range]
+                                                   (qm/numeric-range-condition
+                                                     :orbit-asc-crossing-lon
+                                                     (first crossing-range)
+                                                     (last crossing-range)))
+                                                 desc-crossings))])])])))
+                             (keys crossings-map))))]
+    orbit-conds))
 
 (extend-protocol c2s/ComplexQueryToSimple
   cmr.search.models.query.SpatialCondition
@@ -209,6 +218,7 @@
           mbr-cond (br->cond "mbr" (srl/shape->mbr shape))
           lr-cond (br->cond "lr" (srl/shape->lr shape))
           spatial-script (shape->script-cond shape)]
-      (qm/and-conds [mbr-cond (qm/or-conds [lr-cond spatial-script])]))))
-; (qm/or-conds [(qm/and-conds [mbr-cond (qm/or-conds [lr-cond spatial-script])])
-;               orbital-cond]))))
+      (if orbital-cond
+        (qm/or-conds [(qm/and-conds [mbr-cond (qm/or-conds [lr-cond spatial-script])])
+                      orbital-cond])
+        (qm/and-conds [mbr-cond (qm/or-conds [lr-cond spatial-script])])))))

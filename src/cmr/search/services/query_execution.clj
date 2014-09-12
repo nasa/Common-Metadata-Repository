@@ -144,8 +144,8 @@
   (let [processed-query (pre-process-query-result-features context query)
 
         processed-query (r/resolve-collection-queries context processed-query)
-        ;[collection-ids processed-query] (r/resolve-collection-queries context processed-query)
-        ;context (assoc context :orbit-collection-ids collection-ids)
+        collection-ids (ce/extract-collection-concept-ids processed-query)
+        context (assoc context :query-collection-ids collection-ids)
         processed-query (c2s/reduce-query context processed-query)
         processed-query (if (:skip-acls? processed-query)
                           processed-query
