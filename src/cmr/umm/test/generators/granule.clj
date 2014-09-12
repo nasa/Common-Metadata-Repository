@@ -59,12 +59,11 @@
                      (ext-gen/nil-if-empty (gen/vector instrument-refs 0 4))))
 
 (def spatial-coverages
-  (gen/fmap (partial apply g/->SpatialCoverage)
-            (gen/one-of
-              [(gen/tuple (gen/vector spatial-gen/geometries 1 5)
-                          (gen/return nil))
-               (gen/tuple (gen/return nil)
-                          spatial-gen/orbits)])))
+  (ext-gen/model-gen
+    g/map->SpatialCoverage
+    (gen/one-of
+      [(gen/hash-map :geometries (gen/vector spatial-gen/geometries 1 5))
+       (gen/hash-map :orbit spatial-gen/orbits)])))
 
 (def granules
   (ext-gen/model-gen
