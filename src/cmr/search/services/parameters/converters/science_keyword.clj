@@ -6,6 +6,11 @@
 (def science-keyword-fields
   [:category :topic :term :variable-level-1 :variable-level-2 :variable-level-3 :detailed-variable])
 
+(defn- science-keyword->elastic-keyword
+  "Returns the elastic keyword for the given science-keyword"
+  [science-keyword]
+  (keyword (str "science-keywords." (name science-keyword))))
+
 ;; Converts science keywords parameter and values into conditions
 (defmethod p/parameter->condition :science-keywords
   [concept-type param value options]
@@ -25,8 +30,10 @@
             (map (fn [[pn pv]]
                    (if (= :any pn)
                      (qm/or-conds
-                       (map #(qm/string-condition % pv case-sensitive pattern)
+                       (map #(qm/string-condition
+                               (science-keyword->elastic-keyword %) pv case-sensitive pattern)
                             science-keyword-fields))
-                     (qm/string-condition pn pv case-sensitive pattern)))
+                     (qm/string-condition
+                       (science-keyword->elastic-keyword pn) pv case-sensitive pattern)))
                  value)))))))
 
