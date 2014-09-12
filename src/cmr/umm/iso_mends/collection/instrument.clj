@@ -5,7 +5,8 @@
             [cmr.umm.collection :as c]
             [cmr.umm.iso-mends.collection.sensor :as sensor]
             [cmr.umm.iso-mends.collection.keyword :as k]
-            [cmr.umm.iso-mends.collection.helper :as h]))
+            [cmr.umm.iso-mends.collection.helper :as h]
+            [cmr.umm.generator-util :as gu]))
 
 (defn- xml-elem->Instrument
   [instrument-elem]
@@ -36,7 +37,7 @@
 (defn- instrument-with-id
   "Returns the instrument with generated ids for ISO xml generation"
   [platform-id instrument]
-  (let [instrument-id (h/generate-id)
+  (let [instrument-id (gu/generate-id)
         sensors (sensor/sensors-with-id (:sensors instrument) instrument-id)]
     (-> instrument
         (assoc :sensors sensors)

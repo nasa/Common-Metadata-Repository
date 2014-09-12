@@ -2,9 +2,7 @@
   "Contains functions used by SMAP ISO collection and granule generation"
   (:require [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
-            [clj-time.format :as f]
-            [clojure.test.check.generators :as gen]
-            [cmr.common.test.test-check-ext :as ext-gen]))
+            [clj-time.format :as f]))
 
 (defn xml-elem-with-path-value
   "Returns the identification element with the given path and value"
@@ -99,11 +97,6 @@
   "Returns the smap iso version id element"
   [version-id]
   (generate-identifer-element "The ECS Version ID" version-id))
-
-(defn generate-id
-  "Returns a 5 character random id to use as an ISO id"
-  []
-  (str "d" (last (gen/sample (ext-gen/string-alpha-numeric 4 4)))))
 
 (defn generate-citation-element
   "Returns the citation element with the given title and datetime"

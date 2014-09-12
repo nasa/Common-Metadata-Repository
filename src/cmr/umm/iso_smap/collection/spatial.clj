@@ -4,7 +4,7 @@
             [cmr.common.xml :as cx]
             [cmr.umm.collection :as c]
             [cmr.spatial.mbr :as mbr]
-            [cmr.umm.iso-smap.helper :as h]))
+            [cmr.umm.generator-util :as gu]))
 
 (defn bounding-box-elem->geometry
   "Returns the spatial geometry parsed from the bounding box xml element"
@@ -41,7 +41,7 @@
                        (x/element type {}
                                   (x/element :gco:Decimal {} value)))]
     (x/element :gmd:geographicElement {}
-               (x/element :gmd:EX_GeographicBoundingBox {:id (h/generate-id)}
+               (x/element :gmd:EX_GeographicBoundingBox {:id (gu/generate-id)}
                           (x/element :gmd:extentTypeCode {}
                                      (x/element :gco:Boolean {} 1))
                           (gen-point-fn :gmd:westBoundLongitude west)
