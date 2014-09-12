@@ -56,12 +56,14 @@
            {:producer-granule-id ["p1" "p3"]} [g1-echo g1-smap]))
 
     (testing "Retrieving results in echo10"
-      (d/assert-metadata-results-match
-        :echo10 all-granules
-        (search/find-metadata :granule :echo10 {}))
-      (d/assert-metadata-results-match
-        :echo10 [g1-echo]
-        (search/find-metadata :granule :echo10 {:granule-ur "g1"}))
+      (are [search expected]
+           (d/assert-metadata-results-match
+             :echo10 expected
+             (search/find-metadata :granule :echo10 search))
+           {} all-granules
+           {:granule-ur "g1"} [g1-echo]
+           {:granule-ur "g3"} [g1-smap])
+
       (testing "as extension"
         (d/assert-metadata-results-match
           :echo10 [g1-echo]
