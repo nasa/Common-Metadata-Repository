@@ -4,9 +4,9 @@
             [cmr.common.xml :as cx]
             [cmr.umm.collection :as c]
             [cmr.spatial.mbr :as mbr]
-            [cmr.umm.iso-smap.collection.helper :as h]))
+            [cmr.umm.iso-smap.helper :as h]))
 
-(defn- bounding-box-elem->geometry
+(defn bounding-box-elem->geometry
   "Returns the spatial geometry parsed from the bounding box xml element"
   [bounding-box-elem]
   (let [west (cx/double-at-path bounding-box-elem [:westBoundLongitude :Decimal])

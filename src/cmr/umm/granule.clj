@@ -117,4 +117,6 @@
   ([entry-title]
    (map->CollectionRef {:entry-title entry-title}))
   ([short-name version-id]
-   (map->CollectionRef {:short-name short-name :version-id version-id})))
+   (map->CollectionRef {:short-name short-name :version-id version-id}))
+  ([entry-title short-name version-id]
+   (map->CollectionRef {:entry-title entry-title :short-name short-name :version-id version-id})))
