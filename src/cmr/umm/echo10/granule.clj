@@ -75,8 +75,8 @@
   (let [geom-elem (cx/element-at-path granule-content-node [:Spatial :HorizontalSpatialDomain :Geometry])
         orbit-elem (cx/element-at-path granule-content-node [:Spatial :HorizontalSpatialDomain :Orbit])]
     (when (or geom-elem orbit-elem)
-      (g/->SpatialCoverage (when geom-elem (s/geometry-element->geometries geom-elem))
-                           (when orbit-elem (s/xml-elem->Orbit orbit-elem))))))
+      (g/map->SpatialCoverage {:geometries (when geom-elem (s/geometry-element->geometries geom-elem))
+                               :orbit (when orbit-elem (s/xml-elem->Orbit orbit-elem))}))))
 
 (defn generate-spatial
   [spatial-coverage]

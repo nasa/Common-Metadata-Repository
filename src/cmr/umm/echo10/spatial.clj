@@ -56,28 +56,26 @@
   [geom-elem]
   (map parse-geometry (filter (comp geometry-tags :tag) (:content geom-elem))))
 
-(def direction
+(def key->orbit-direction
+  "Mapping of keys to orbit direction stirngs."
+  {:asc "A"
+   :desc "D"})
+
+(def orbit-direction->key
+  "Mapping of oribit direction strings to keywords."
   {"A" :asc
    "a" :asc
    "D" :desc
-   "d" :desc
-   :asc "A"
-   :desc "D"})
+   "d" :desc})
 
 (defn xml-elem->Orbit
   "Returns a UMM Orbit record from a parsed Orbit XML structure"
   [orbit]
   (g/map->Orbit {:ascending-crossing (cx/double-at-path orbit [:AscendingCrossing])
                  :start-lat (cx/double-at-path orbit [:StartLat])
-                 :start-direction (direction (cx/string-at-path orbit [:StartDirection]))
+                 :start-direction (orbit-direction->key (cx/string-at-path orbit [:StartDirection]))
                  :end-lat (cx/double-at-path orbit [:EndLat])
-                 :end-direction (direction (cx/string-at-path orbit [:EndDirection]))
-                 ;; set center-point to nil if the elements are not available
-                 :center-point (seq
-                                 (keep
-                                   identity
-                                   [(cx/double-at-path orbit [:CenterPoint :PointLatitude])
-                                    (cx/double-at-path orbit [:CenterPoint :PointLongitude])]))}))
+                 :end-direction (orbit-direction->key (cx/string-at-path orbit [:EndDirection]))}))
 
 (defn generate-orbit-xml
   [orbit]
@@ -86,15 +84,9 @@
     (x/element :Orbit {}
                (x/element :AscendingCrossing {} (util/double->string ascending-crossing))
                (x/element :StartLat {} (util/double->string start-lat))
-               (x/element :StartDirection {} (direction start-direction))
+               (x/element :StartDirection {} (key->orbit-direction start-direction))
                (x/element :EndLat {} (util/double->string end-lat))
-               (x/element :EndDirection {} (direction end-direction))
-               (when center-point
-                 (x/element
-                   :CenterPoint
-                   {}
-                   (x/element :PointLongitude {} (last center-point))
-                   (x/element :PointLatitude {} (first center-point)))))))
+               (x/element :EndDirection {} (key->orbit-direction end-direction)))))
 
 (defprotocol ShapeToXml
   "Protocol for converting a shape into XML."

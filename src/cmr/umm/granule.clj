@@ -51,7 +51,6 @@
    start-direction ; A or D (ascending or descending)
    end-lat
    end-direction ; A or D (ascending or descending)
-   center-point ; lat/lon tuple
    ])
 
 ;; A reference to a product specific attribute in the parent collection. The attribute reference may

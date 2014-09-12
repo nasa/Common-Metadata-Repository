@@ -40,5 +40,4 @@
     ocsd/latitude
     orbit-directions
     ocsd/latitude
-    orbit-directions
-    (optional (gen/tuple ocsd/latitude ocsd/longitude))))
+    orbit-directions))
