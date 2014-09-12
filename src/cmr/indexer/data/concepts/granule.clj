@@ -33,7 +33,7 @@
     (fetch-parent-collection context parent-collection-id)))
 
 (defn orbit->circular-latitude-range
-  "Compute a circular latitude range from the start and and latitudes of an orbit."
+  "Compute a circular latitude range from the start and end latitudes of an orbit."
   [orbit]
   (let [{:keys [start-lat end-lat start-direction end-direction]} orbit
         start-lat (if (= :desc start-direction)
@@ -47,6 +47,8 @@
               (+ min 360)
               (+ min (mod (- end-lat start-lat) 360)))]
     [min max]))
+
+(orbit->circular-latitude-range {:start-lat -81.8 :end-lat 81.8 :start-direction :asc :end-direction :asc})
 
 (defn spatial->elastic
   [parent-collection granule]
@@ -62,10 +64,12 @@
           (info "Ignoring indexing spatial of granule spatial representation of" gsr)))
       (when-let [orbit (get-in granule [:spatial-coverage :orbit])]
         (let [orbit-asc-crossing-lon (:ascending-crossing orbit)
-              clat-range (orbit->circular-latitude-range orbit)]
+              [orbit-start-clat orbit-end-clat] (orbit->circular-latitude-range orbit)]
           {:orbit-asc-crossing-lon orbit-asc-crossing-lon
-           :orbit-start-clat (first clat-range)
-           :orbit-end-clat (last clat-range)})))
+           :orbit-start-clat orbit-start-clat
+           :orbit-end-clat (if (= orbit-end-clat orbit-start-clat)
+                             (+ orbit-end-clat 360)
+                             orbit-end-clat)})))
     (catch Throwable e
       (error e (format "Error generating spatial for granule: %s. Skipping spatial."
                        (pr-str granule))))))
