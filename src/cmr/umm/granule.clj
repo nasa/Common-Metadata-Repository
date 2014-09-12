@@ -48,9 +48,9 @@
   [
    ascending-crossing ; lon of equator crossing
    start-lat
-   start-direction ; A or D (ascending or descending)
+   start-direction ; :asc or :desc (ascending or descending)
    end-lat
-   end-direction ; A or D (ascending or descending)
+   end-direction ; :asc or :desc (ascending or descending)
    ])
 
 ;; A reference to a product specific attribute in the parent collection. The attribute reference may
