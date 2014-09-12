@@ -8,7 +8,8 @@
             [cmr.umm.iso-mends.core :as iso-mends]
             [cmr.umm.iso-mends.collection :as iso-mends-c]
             [cmr.umm.iso-smap.core :as iso-smap]
-            [cmr.umm.iso-smap.collection :as iso-smap-c]))
+            [cmr.umm.iso-smap.collection :as iso-smap-c]
+            [cmr.umm.iso-smap.granule :as iso-smap-g]))
 
 (defmulti parse-concept
   "Convert a metadata db concept map into a umm record by parsing its metadata."
@@ -38,6 +39,10 @@
 (defmethod parse-concept [:collection "application/iso-smap+xml"]
   [concept]
   (iso-smap-c/parse-collection (:metadata concept)))
+
+(defmethod parse-concept [:granule "application/iso-smap+xml"]
+  [concept]
+  (iso-smap-g/parse-granule (:metadata concept)))
 
 (defmulti umm->xml
   "Convert a umm record into xml of a given format."

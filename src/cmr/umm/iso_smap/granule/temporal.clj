@@ -52,11 +52,12 @@
                                     (x/element :gml:endPosition {} (str ending-date-time))
                                     (x/element :gml:endPosition {})))))))
       ;; single date time
-      (x/element
-        :gmd:temporalElement {}
+      (when single-date-time
         (x/element
-          :gmd:EX_TemporalExtent {}
-          (x/element :gmd:extent {}
-                     (x/element :gml:TimeInstant {:gml:id (h/generate-id)}
-                                (x/element :gml:timePosition {} (str single-date-time)))))))))
+          :gmd:temporalElement {}
+          (x/element
+            :gmd:EX_TemporalExtent {}
+            (x/element :gmd:extent {}
+                       (x/element :gml:TimeInstant {:gml:id (h/generate-id)}
+                                  (x/element :gml:timePosition {} (str single-date-time))))))))))
 
