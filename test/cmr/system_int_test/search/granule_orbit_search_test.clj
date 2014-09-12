@@ -1,4 +1,5 @@
 (ns cmr.system-int-test.search.granule-orbit-search-test
+  "Tests for spatial search with obital back tracking."
   (:require [clojure.test :refer :all]
             [clojure.string :as s]
             [cmr.system-int-test.utils.ingest-util :as ingest]
@@ -17,7 +18,25 @@
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
-(deftest search-by-orbit
+(defn- make-gran
+  [coll ur asc-crossing start-lat start-dir end-lat end-dir]
+  (let [orbit (dg/orbit
+                asc-crossing
+                start-lat
+                start-dir
+                end-lat
+                end-dir)]
+    (d/ingest
+      "PROV1"
+      (dg/granule
+        coll
+        {:granule-ur ur
+         :spatial-coverage (apply
+                             dg/spatial
+                             orbit
+                             nil)}))))
+
+(deftest orbit-search
   (let [;; orbit parameters
         op1 {:swath-width 1450
              :period 98.88
@@ -29,19 +48,6 @@
              :inclination-angle 94
              :number-of-orbits 0.25
              :start-circular-latitude -50}
-        make-gran (fn [coll ur asc-crossing start-lat start-dir end-lat end-dir]
-                    (let [orbit (dg/orbit
-                                  asc-crossing
-                                  start-lat
-                                  start-dir
-                                  end-lat
-                                  end-dir)]
-                      (d/ingest "PROV1" (dg/granule coll
-                                                    {:granule-ur ur
-                                                     :spatial-coverage (apply
-                                                                         dg/spatial
-                                                                         orbit
-                                                                         nil)}))))
         coll1 (d/ingest "PROV1"
                         (dc/collection
                           {:entry-title "orbit-params1"
@@ -83,3 +89,68 @@
            [145 -45 -145 -85] [g2 g3 g4 g7] nil
            ;; Search while specifying parent collection
            [145 45 -145 -45] [g2] {:concept-id (:concept-id coll1)}))))
+
+(deftest multi-orbit-search
+  (let [;; orbit parameters
+        op1 {:swath-width 2
+             :period 96.7
+             :inclination-angle 94
+             :number-of-orbits 14
+             :start-circular-latitude 50}
+        op2 {:swath-width 400
+             :period 98.88
+             :inclination-angle 98.3
+             :number-of-orbits 1
+             :start-circular-latitude 0}
+        coll1 (d/ingest "PROV1"
+                        (dc/collection
+                          {:entry-title "orbit-params1"
+                           :spatial-coverage (dc/spatial :geodetic op1)}))
+        coll2 (d/ingest "PROV1"
+                        (dc/collection
+                          {:entry-title "orbit-params2"
+                           :spatial-coverage (dc/spatial :geodetic op2)}))
+        g1 (make-gran coll1 "gran1" 104.0852 50 :asc 50 :asc)
+        g2 (make-gran coll2 "gran2" 31.946 70.113955 :asc  -71.344289 :desc)]
+    (index/refresh-elastic-index)
+
+    (testing "bounding rectangle searches"
+      (are [wnes items params]
+           (let [found (search/find-refs
+                         :granule
+                         (merge {:bounding-box
+                                 (codec/url-encode (apply m/mbr wnes))
+                                 :page-size 50} params))
+                 matches? (d/refs-match? items found)]
+             (when-not matches?
+               (println "Expected:" (->> items (map :granule-ur) sort pr-str))
+               (println "Actual:" (->> found :refs (map :name) sort pr-str)))
+             matches?)
+
+           ;; Search with large box that finds the granule
+           [-134.648 69.163 76.84 65.742] [g1] {:concept-id (:concept-id coll1)}
+           ;; Search near equator that doesn't intersect granule
+           [0 1 1 0] [] {:concept-id (:concept-id coll1)}
+           ;; Search near equator that intersects granule
+           [1 11 15 1] [g1] {:concept-id (:concept-id coll1)}
+           ;; Search near north pole
+           [1 89.5 1.5 89] [] {:concept-id (:concept-id coll1)}
+           ;; Search for granules with exactly one orbit does not match areas seen on the second pass
+           [175.55 38.273 -164.883 17.912] [] {:concept-id (:concept-id coll2)}
+           ;; The following test is deliberately commented out because it is marked as @broken
+           ;; in ECHO. It is included here for completeness.
+           ;;
+           ;; The following comment is repeated verbatim from the ECHO cucumber test:
+           ;;
+           ;; Orbit searching is known to have some issues. The following query successfully finds a granule
+           ;; when it appears from the drawing of the granule in Reverb that it shouldn't.  I manually verified that
+           ;; the query does match the query output in echo-catalog when searching the legacy provider schemas.
+           ;; At some point it would be a good idea for someone in the ECHO organization to have a better understanding
+           ;; of the backtrack algorithm and be able to definitively state when an orbit granule doesn intersect a
+           ;; particular bounding box.
+           ;;
+           ;[0 1 6 0] [] nil
+           ))))
+
+
+
