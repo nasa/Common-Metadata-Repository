@@ -42,7 +42,15 @@
    stop-orbit-number
    equator-crossing-longitude
    equator-crossing-date-time
+   ])
 
+(defrecord Orbit
+  [
+   ascending-crossing ; lon of equator crossing
+   start-lat
+   start-direction ; :asc or :desc (ascending or descending)
+   end-lat
+   end-direction ; :asc or :desc (ascending or descending)
    ])
 
 ;; A reference to a product specific attribute in the parent collection. The attribute reference may
@@ -73,8 +81,12 @@
 
 (defrecord SpatialCoverage
   [
+   ;; Only one of the following two should be present
+
    ;; A sequence of spatial points, bounding rectangles, polygons, and lines
    geometries
+   ;; An alternative way to express spatial coverage - used for orbit backtracking
+   orbit
    ])
 
 (defrecord UmmGranule

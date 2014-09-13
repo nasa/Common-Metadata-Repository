@@ -72,15 +72,21 @@
 
 (defn- xml-elem->SpatialCoverage
   [granule-content-node]
-  (when-let [geom-elem (cx/element-at-path granule-content-node [:Spatial :HorizontalSpatialDomain :Geometry])]
-    (g/->SpatialCoverage (s/geometry-element->geometries geom-elem))))
+  (let [geom-elem (cx/element-at-path granule-content-node [:Spatial :HorizontalSpatialDomain :Geometry])
+        orbit-elem (cx/element-at-path granule-content-node [:Spatial :HorizontalSpatialDomain :Orbit])]
+    (when (or geom-elem orbit-elem)
+      (g/map->SpatialCoverage {:geometries (when geom-elem (s/geometry-element->geometries geom-elem))
+                               :orbit (when orbit-elem (s/xml-elem->Orbit orbit-elem))}))))
 
 (defn generate-spatial
   [spatial-coverage]
   (when spatial-coverage
-    (x/element :Spatial {}
-               (x/element :HorizontalSpatialDomain {}
-                          (s/generate-geometry-xml (:geometries spatial-coverage))))))
+    (let [{:keys [geometries orbit]} spatial-coverage]
+      (x/element :Spatial {}
+                 (x/element :HorizontalSpatialDomain {}
+                            (if geometries
+                              (s/generate-geometry-xml geometries)
+                              (s/generate-orbit-xml orbit)))))))
 
 (defn- xml-elem->Granule
   "Returns a UMM Product from a parsed Granule XML structure"
@@ -124,7 +130,8 @@
             cloud-cover :cloud-cover
             related-urls :related-urls
             psas :product-specific-attributes
-            spatial :spatial-coverage} granule
+            spatial :spatial-coverage
+            orbit :orbit} granule
            emit-fn (if indent? x/indent-str x/emit-str)]
        (emit-fn
          (x/element :Granule {}
