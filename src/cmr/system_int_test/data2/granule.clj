@@ -63,7 +63,7 @@
 
 (defn spatial
   [& geometries]
-  (g/->SpatialCoverage geometries))
+  (g/map->SpatialCoverage {:geometries geometries}))
 
 (defn granule
   "Creates a granule"
