@@ -79,8 +79,8 @@
 
 (defn generate-orbit-xml
   [orbit]
-  (let [{:keys [ascending-crossing start-lat start-direction end-lat end-direction center-point]}
-        orbit]
+  (when-let [{:keys [ascending-crossing start-lat start-direction end-lat end-direction center-point]}
+             orbit]
     (x/element :Orbit {}
                (x/element :AscendingCrossing {} (util/double->string ascending-crossing))
                (x/element :StartLat {} (util/double->string start-lat))
