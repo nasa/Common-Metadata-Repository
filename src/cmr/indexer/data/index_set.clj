@@ -286,9 +286,9 @@
                    ;; Used for orbit search
                    ;; TODO - remove the 'stored' if these don't need to be stored
                    ;; for 'field_data' range filters to work.
-                   :orbit-asc-crossing-lon (stored double-field-mapping)
-                   :orbit-start-clat (stored double-field-mapping)
-                   :orbit-end-clat (stored double-field-mapping)
+                   :orbit-asc-crossing-lon double-field-mapping
+                   :orbit-start-clat double-field-mapping
+                   :orbit-end-clat double-field-mapping
 
                    ;; atom-links is a json string that contains the atom-links, which is a list of
                    ;; maps of atom link attributes. We tried to use nested document to save atom-links

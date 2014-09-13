@@ -18,6 +18,11 @@
             [cmr.common.cache :as cache])
   (:import cmr.spatial.mbr.Mbr))
 
+(defn unrecognized-gsr-msg
+  "The granule spatial representaiton (gsr) is not of a known type."
+  [gsr]
+  (str "Unrecognized granule spatial represention [" gsr "]"))
+
 (defn- fetch-parent-collection
   "Retrieve the parent collection umm from the db"
   [context parent-collection-id]
@@ -35,44 +40,38 @@
 (defn orbit->circular-latitude-range
   "Compute a circular latitude range from the start and end latitudes of an orbit."
   [orbit]
-  (let [{:keys [start-lat end-lat start-direction end-direction]} orbit
+  (let [{:keys [^double start-lat ^double end-lat start-direction end-direction]} orbit
         start-lat (if (= :desc start-direction)
-                    (- 180 start-lat)
+                    (- 180.0 start-lat)
                     start-lat)
         end-lat (if (= :desc end-direction)
-                  (- 180 end-lat)
+                  (- 180.0 end-lat)
                   end-lat)
-        min (mod start-lat 360)
-        max (if (= 360 (- end-lat start-lat))
-              (+ min 360)
-              (+ min (mod (- end-lat start-lat) 360)))]
+        min (mod start-lat 360.0)
+        max (if (= 360.0 (- end-lat start-lat))
+              (+ min 360.0)
+              (+ min (mod (- end-lat start-lat) 360.0)))]
     [min max]))
-
-(orbit->circular-latitude-range {:start-lat -81.8 :end-lat 81.8 :start-direction :asc :end-direction :asc})
 
 (defn spatial->elastic
   [parent-collection granule]
-  (try
-    (if-let [geometries (seq (get-in granule [:spatial-coverage :geometries]))]
-      (let [gsr (get-in parent-collection [:spatial-coverage :granule-spatial-representation])]
-        ;; TODO Add support for all granule spatial representations and geometries
-        (cond
-          (or (= gsr :geodetic) (= gsr :cartesian))
-          (spatial/spatial->elastic-docs gsr granule)
+  (when-let [gsr (get-in parent-collection [:spatial-coverage :granule-spatial-representation])]
+    (cond
+      (or (= gsr :geodetic) (= gsr :cartesian))
+      (let [geometries (seq (get-in granule [:spatial-coverage :geometries]))]
+        (spatial/spatial->elastic-docs gsr granule))
 
-          :else
-          (info "Ignoring indexing spatial of granule spatial representation of" gsr)))
-      (when-let [orbit (get-in granule [:spatial-coverage :orbit])]
-        (let [orbit-asc-crossing-lon (:ascending-crossing orbit)
-              [orbit-start-clat orbit-end-clat] (orbit->circular-latitude-range orbit)]
-          {:orbit-asc-crossing-lon orbit-asc-crossing-lon
-           :orbit-start-clat orbit-start-clat
-           :orbit-end-clat (if (= orbit-end-clat orbit-start-clat)
-                             (+ orbit-end-clat 360)
-                             orbit-end-clat)})))
-    (catch Throwable e
-      (error e (format "Error generating spatial for granule: %s. Skipping spatial."
-                       (pr-str granule))))))
+      (= gsr :orbit)
+      (let [orbit (get-in granule [:spatial-coverage :orbit])
+            orbit-asc-crossing-lon (:ascending-crossing orbit)
+            [^double orbit-start-clat ^double orbit-end-clat] (orbit->circular-latitude-range orbit)]
+        {:orbit-asc-crossing-lon orbit-asc-crossing-lon
+         :orbit-start-clat orbit-start-clat
+         :orbit-end-clat (if (= orbit-end-clat orbit-start-clat)
+                           (+ orbit-end-clat 360.0)
+                           orbit-end-clat)})
+      :else
+      (errors/throw-service-error :invalid-data (unrecognized-gsr-msg gsr)))))
 
 (defmethod es/concept->elastic-doc :granule
   [context concept umm-granule]
