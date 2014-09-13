@@ -7,7 +7,6 @@
             [cmr.spatial.ring-relations :as rr]
             [cmr.spatial.polygon :as p]
             [cmr.spatial.mbr :as mbr]
-            [cmr.spatial.lr-binary-search :as lr]
             [cmr.spatial.serialize :as srl]
             [cmr.common.services.errors :as errors]
             [cmr.umm.spatial :as umm-s]))
@@ -36,13 +35,13 @@
   "Converts a spatial shapes into the nested elastic attributes"
   [shapes coordinate-system]
   (let [shapes (->> shapes
-                    (map (partial umm-s/set-coordinate-system coordinate-system))
-                    (map #(get special-cases % %))
-                    (map d/calculate-derived))
+                    (mapv (partial umm-s/set-coordinate-system coordinate-system))
+                    (mapv #(get special-cases % %))
+                    (mapv d/calculate-derived))
         ords-info-map (srl/shapes->ords-info-map shapes)
-        lrs (map srl/shape->lr shapes)
+        lrs (mapv srl/shape->lr shapes)
         ;; union mbrs to get one covering the whole area
-        mbr (reduce mbr/union (map srl/shape->mbr shapes))
+        mbr (reduce mbr/union (mapv srl/shape->mbr shapes))
         ;; Choose the largest lr
         lr (->> lrs
                 (sort-by mbr/percent-covering-world)
