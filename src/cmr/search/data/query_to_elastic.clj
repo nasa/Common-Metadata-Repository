@@ -196,7 +196,7 @@
     (range-condition->elastic (query-field->elastic-field field concept-type)
                               min-value max-value "fielddata"))
 
-  cmr.search.models.query.NumericOverlapCondition
+  cmr.search.models.query.NumericRangeIntersectionCondition
   (condition->elastic
     [{:keys [min-field max-field min-value max-value]} concept-type]
     {:or [(range-condition->elastic (query-field->elastic-field min-field concept-type)

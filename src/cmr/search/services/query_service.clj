@@ -222,27 +222,4 @@
     (ph/provider-holdings->string (:result-format params) provider-holdings pretty?)))
 
 
-(def orbit-parameter-fields
-  [:swath-width
-   :period
-   :inclination-angle
-   :number-of-orbits
-   :start-circ-latitude])
-
-(defn get-orbit-parameters
-  "Get orbit parameters for all collections that have them."
-  [context]
-  ;; TODO Make this take some sort of context that can (potentially) limit the number of
-  ;; collectoins we need to pull back.
-  (let [exists-cond (qm/->ExistCondition :swath-width)
-        query (qm/query {:concept-type :collection
-                         :condition exists-cond
-                         :page-size :unlimited
-                         :result-format :query-specified
-                         :fields orbit-parameter-fields})
-        results (qe/execute-query context query)]
-    (:items results)))
-
-
-
 

@@ -160,7 +160,7 @@
         [asc-lat-ranges desc-lat-ranges] (.denormalizeLatitudeRange orbits (:south mbr) (:north mbr))
         asc-lat-conds (qm/or-conds
                         (map (fn [range]
-                               (qm/numeric-overlap-condition
+                               (qm/numeric-range-intersection-condition
                                  :orbit-start-clat
                                  :orbit-end-clat
                                  (first range)
@@ -168,7 +168,7 @@
                              asc-lat-ranges))
         desc-lat-conds (qm/or-conds
                          (map (fn [range]
-                                (qm/numeric-overlap-condition
+                                (qm/numeric-range-intersection-condition
                                   :orbit-start-clat
                                   :orbit-end-clat
                                   (first range)

@@ -10,6 +10,8 @@
 
 
 (defn reduce-query
+  "Converts a complex / high level query/condition into simpler ones that
+  can be optimized more easily."
   [context query]
   (reduce-query-condition query context))
 

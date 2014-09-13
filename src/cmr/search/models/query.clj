@@ -193,7 +193,9 @@
    max-value
    ])
 
-(defrecord NumericOverlapCondition
+;; This condition can be used for finding concepts having two fields representing a range of values
+;; where that range overlaps a given range.
+(defrecord NumericRangeIntersectionCondition
   [
    ;; The field representing the minimum value of an indexed range
    min-field
@@ -330,9 +332,9 @@
                                :min-value min
                                :max-value max}))
 
-(defn numeric-overlap-condition
+(defn numeric-range-intersection-condition
   [min-field max-field min max]
-  (map->NumericOverlapCondition {:min-field min-field
+  (map->NumericRangeIntersectionCondition {:min-field min-field
                                  :max-field max-field
                                  :min-value min
                                  :max-value max}))
