@@ -1,5 +1,8 @@
 (ns cmr.search.results-handlers.timeline-results-handler
-  "Handles granule timeline interval results"
+  "Handles granule timeline interval results. The timeline is implemented by finding aggregations
+  over granule start date and end dates. The aggregation results of start date and end dates are
+  converted to a list of events of some number of granules starting and some number of granules
+  ending. The events counts of granules are used to determine when intervals start and stop."
   (:require [cmr.search.data.elastic-results-to-query-results :as elastic-results]
             [cmr.search.data.elastic-search-index :as elastic-search-index]
             [cmr.search.services.query-execution :as query-execution]
@@ -11,23 +14,23 @@
             [clj-time.core :as t]
             [clj-time.coerce :as c]))
 
-(defn- interval->query-aggregations
-  "TODO"
-  [interval]
+(defn- query-aggregations
+  "Returns the elasticsearch aggregations to put in the query for finding granule timeline intervals."
+  [interval-granularity]
   {:by-collection
    {:terms {:field :collection-concept-id
             :size 10000}
     :aggregations {:start-date-intervals {:date_histogram {:field :start-date
-                                                           :interval interval}}
+                                                           :interval interval-granularity}}
                    :end-date-intervals {:date_histogram {:field :end-date
-                                                         :interval interval}}}}})
+                                                         :interval interval-granularity}}}}})
 
 (defmethod query-execution/pre-process-query-result-feature :timeline
   [context query feature]
   (let [{:keys [interval]} query
         temporal-cond (q/map->TemporalCondition (select-keys query [:start-date :end-date]))]
     (-> query
-        (assoc :aggregations (interval->query-aggregations interval)
+        (assoc :aggregations (query-aggregations interval)
                :page-size 0
                :sort-keys nil)
         (update-in [:condition] #(q/and-conds [% temporal-cond])))))
@@ -37,7 +40,6 @@
   [concept-type query]
   ;; Timeline results are aggregation results so we select no fields
   [])
-
 
 (defn event-comparator
   "Sorts events by event time. If event times match a start event comes before an end event."
@@ -52,16 +54,16 @@
       (= type2 :start) 1
       :else (throw (Exception. "Logic error")))))
 
-
 (defn- interval-bucket->event
-  "TODO"
+  "Converts an interval bucket from the elastic search response into an event. An event has an
+  event type (:start or :end), hits, and event time that the event occurred. "
   [event-type bucket]
   {:event-type event-type
    :hits (:doc_count bucket)
    :event-time (c/from-long (:key bucket))})
 
 (defn collection-bucket->ordered-events
-  "TODO"
+  "Returns a list of ordered events within the collection bucket."
   [collection-bucket]
   (sort-by identity event-comparator
            (concat
@@ -78,7 +80,7 @@
    :num-grans 0})
 
 (defn ordered-events->intervals
-  "TODO"
+  "Walks over the ordered events and returns intervals of continuous granule data."
   [events]
   (loop [current-interval initial-interval
          events-left events
@@ -110,7 +112,8 @@
         (recur current-interval (rest events-left) intervals)))))
 
 (def interval-granularity->dist-fn
-  "TODO"
+  "Maps an interval granularity to a clj-time function to compute the distance between two time values
+  in that granularity."
   {:year t/in-years
    :month t/in-months
    :day t/in-days
@@ -126,16 +129,17 @@
     (= 1 (dist-fn (t/interval (:end i1) (:start i2))))))
 
 (defn merge-intervals
-  "TODO
-  order is important"
+  "Merges two intervals together. The start date of the first is taken along with the end date of
+  the second. The hits are added together."
   [i1 i2]
   (-> i1
       (update-in [:num-grans] #(+ % (:num-grans i2)))
       (assoc :end (:end i2))))
 
 (defn merge-adjacent-intervals
-  "TODO
-  assumes intervals are already sorted by start date"
+  "Takes an interval-granularity and a list of intervals. Merges the intervals together that are
+  within one interval granularity from each other. ASsumes intervals are already sorted by start
+  date."
   [interval-granularity intervals]
   (loop [intervals intervals new-intervals [] prev nil]
     (if (empty? intervals)
@@ -187,7 +191,8 @@
         (update-in [:end] #(if (or no-end (nil? %) (t/after? % end-date)) end-date %)))))
 
 (defn collection-bucket->intervals
-  "TODO"
+  "Takes a single collection bucket from the aggregation response and returns the intervals
+  for that collection."
   [interval-granularity start-date end-date collection-bucket]
   (let [collection-concept-id (:key collection-bucket)
         num-granules (:doc_count collection-bucket)
@@ -205,12 +210,8 @@
                      (map (partial advance-interval-end-date interval-granularity))
                      (map (partial constrain-interval-to-user-range start-date end-date)))}))
 
-
-(def last-elastic-results (atom nil))
-
 (defmethod elastic-results/elastic-results->query-results :timeline
   [context query elastic-results]
-  (reset! last-elastic-results elastic-results)
   (let [{:keys [start-date end-date interval]} query
         items (map (partial collection-bucket->intervals (:interval query) start-date end-date)
                    (get-in elastic-results [:aggregations :by-collection :buckets]))]
@@ -237,7 +238,7 @@
   )
 
 (defn interval->response-tuple
-  "TODO"
+  "Converts an interval into the response tuple containing the start, end, and number of granules."
   [query {:keys [start end num-grans]}]
   [(/ (c/to-long start) 1000)
    (-> end
@@ -248,7 +249,7 @@
    num-grans])
 
 (defn collection-result->response-result
-  "TODO"
+  "Convers the collection interval map into the timeline response."
   [query coll-result]
   (update-in coll-result [:intervals] (partial map (partial interval->response-tuple query))))
 
@@ -257,7 +258,6 @@
   (let [{:keys [items]} results
         response (map (partial collection-result->response-result query) items)]
     (json/generate-string response {:pretty (:pretty? query)})))
-
 
 
 

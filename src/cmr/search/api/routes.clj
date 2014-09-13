@@ -183,11 +183,10 @@
                   (get headers (str/lower-case CONTENT_TYPE_HEADER)) "]")})))
 
 (defn- get-granules-timeline
-  "TODO"
+  "Retrieves a timeline of granules within each collection found."
   [context path-w-extension params headers query-string]
   (let [context (process-context-info context params headers)
         params (process-params params path-w-extension headers "application/json")
-        ;; TODO add validation somewhere and a test that the result format is always json.
         _ (info (format "Getting granule timeline from client %s with params %s."
                         (:client-id context) (pr-str params)))
         search-params (lp/process-legacy-psa params query-string)

@@ -162,27 +162,17 @@
         (format "Concept with concept-id: %s could not be found" concept-id)))
     (first concepts)))
 
-
-
 (deftracefn get-granule-timeline
-  "TODO"
+  "Finds granules and returns the results as a list of intervals of granule counts per collection."
   [context params]
-  ;; TODO
-  ;; validate timeline params
-  ;; - interval is required and must be one of the supported values
-  ;; - start_date is required and must be a valid date time
-  ;; - end_date is required and must be a valid date time
-  ;; - concept_id is required (We can require that explicitly)
-  ;; validate other params
-
-  (let [params (->> params
-                    sanitize-params
-                    ;; handle legacy parameters
-                    lp/replace-parameter-aliases
-                    (lp/process-legacy-multi-params-conditions :granule)
-                    (lp/replace-science-keywords-or-option :granule)
-                    pv/validate-timeline-parameters
-                    p/timeline-parameters->query)
+  (let [query (->> params
+                   sanitize-params
+                   ;; handle legacy parameters
+                   lp/replace-parameter-aliases
+                   (lp/process-legacy-multi-params-conditions :granule)
+                   (lp/replace-science-keywords-or-option :granule)
+                   pv/validate-timeline-parameters
+                   p/timeline-parameters->query)
         results (qe/execute-query context query)]
     (search-results->response context query results)))
 
