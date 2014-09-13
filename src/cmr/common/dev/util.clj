@@ -50,10 +50,11 @@
   (sh/sh "say" "-v" "Victoria" text))
 
 (defn copy-to-clipboard
-  "Copies the string into the clipboard"
+  "Copies the string into the clipboard and returns the string"
   [s]
   (let [clipboard (.getSystemClipboard (Toolkit/getDefaultToolkit))]
-    (.setContents clipboard (StringSelection. s) nil)))
+    (.setContents clipboard (StringSelection. s) nil))
+  s)
 
 (defn message->regex
   "Converts an expected message into the a regular expression that matches the exact string.
