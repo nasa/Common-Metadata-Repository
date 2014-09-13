@@ -69,8 +69,7 @@
             [cmr.search.services.acls.collections-cache :as coll-cache]
             [camel-snake-kebab :as csk]
             [cheshire.core :as json]
-            [cmr.common.log :refer (debug info warn error)]
-            [cmr.common.date-time-parser :as parser]))
+            [cmr.common.log :refer (debug info warn error)]))
 
 (deftracefn validate-query
   "Validates a query model. Throws an exception to return to user with errors.
@@ -168,8 +167,6 @@
 (deftracefn get-granule-timeline
   "TODO"
   [context params]
-  ;; TODO add system integration test of validations
-
   ;; TODO
   ;; validate timeline params
   ;; - interval is required and must be one of the supported values
@@ -183,25 +180,10 @@
                     ;; handle legacy parameters
                     lp/replace-parameter-aliases
                     (lp/process-legacy-multi-params-conditions :granule)
-                    (lp/replace-science-keywords-or-option :granule))
-        ;; Remove timeline parameters from params before we build the query
-        {:keys [interval start-date end-date]} params
-        ;; Validate the normal parameters and build the query
-        query (->> (dissoc params :interval :start-date :end-date)
-                   (pv/validate-parameters :granule)
-                   (p/parameters->query :granule))
-        ;; Add timeline request fields to the query so that they can be used later
-        ;; for processing the timeline results.
-        query (assoc query
-                     :interval (keyword interval)
-                     :start-date (parser/parse-datetime start-date)
-                     :end-date (parser/parse-datetime end-date)
-                     ;; Indicate the result feature of timeline so that we can preprocess
-                     ;; the query and add aggregations and make other changes.
-                     :result-features [:timeline]
-                     :result-format :timeline)
+                    (lp/replace-science-keywords-or-option :granule)
+                    pv/validate-timeline-parameters
+                    p/timeline-parameters->query)
         results (qe/execute-query context query)]
-
     (search-results->response context query results)))
 
 (deftracefn clear-cache
