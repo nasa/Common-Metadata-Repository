@@ -210,7 +210,12 @@
                                     :sensor-ln.lowercase string-field-mapping
                                     :temporal-keyword.lowercase string-field-mapping
 
-                                    }
+                                    ;; orbit parameters
+                                    :swath-width (stored double-field-mapping)
+                                    :period (stored double-field-mapping)
+                                    :inclination-angle (stored double-field-mapping)
+                                    :number-of-orbits (stored double-field-mapping)
+                                    :start-circular-latitude (stored double-field-mapping)}
                                    spatial-coverage-fields)}})
 
 (def granule-setting {:index {:number_of_shards 6,
@@ -277,6 +282,13 @@
                    :downloadable (stored bool-field-mapping)
                    :browsable (stored bool-field-mapping)
                    :attributes attributes-field-mapping
+
+                   ;; Used for orbit search
+                   ;; TODO - remove the 'stored' if these don't need to be stored
+                   ;; for 'field_data' range filters to work.
+                   :orbit-asc-crossing-lon double-field-mapping
+                   :orbit-start-clat double-field-mapping
+                   :orbit-end-clat double-field-mapping
 
                    ;; atom-links is a json string that contains the atom-links, which is a list of
                    ;; maps of atom link attributes. We tried to use nested document to save atom-links
