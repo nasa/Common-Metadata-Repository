@@ -114,12 +114,14 @@
   [context]
   (get-in context [:system :db :config]))
 
+(def supported-formats
+  "Defines the set of supported concept forms, new forms shold be added once it is supported."
+  #{"application/echo10+xml" "application/dif+xml" "application/iso-smap+xml"})
+
 (defn prepare-batch
   "Convert a batch of concepts into elastic docs for bulk indexing."
   [context concept-batch]
-  ;; we only handle these formats right now
-  ;; TODO add SMAP ISO to this once granules are implemented
-  (let [parseable-batch (filterv #(#{"application/echo10+xml" "application/dif+xml"} (:format %)) concept-batch)
+  (let [parseable-batch (filterv #(supported-formats (:format %)) concept-batch)
         num-skipped (- (count concept-batch) (count parseable-batch))]
     (when (> num-skipped 0)
       (debug "Skipping" num-skipped "concepts that are not in a supported format."))
