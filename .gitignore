@@ -11,3 +11,4 @@ pom.xml.asc
 /log
 /.nrepl-port
 /es_data
+*holdings.json
