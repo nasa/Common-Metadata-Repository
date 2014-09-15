@@ -150,28 +150,26 @@
                 (seq desc-crossing))
         [asc-crossing desc-crossing]))))
 
-(defn orbital-condition
-  "Create a condition that will use orbit parameters and orbital back tracking to find matches
-  to a spatial search."
-  [shape context]
-  (let [mbr (sr/mbr shape)
-        [asc-lat-ranges desc-lat-ranges] (.denormalizeLatitudeRange orbits (:south mbr) (:north mbr))
-        asc-lat-conds (qm/or-conds
-                        (map (fn [range]
+(defn- range->numeric-range-intersection-condition
+  "Create a condtion to test for a numberic range intersection with multiple ranges."
+  [ranges]
+  (qm/or-conds
+    (map (fn [[start-lat end-lat]]
                                (qm/numeric-range-intersection-condition
                                  :orbit-start-clat
                                  :orbit-end-clat
-                                 (first range)
-                                 (last range)))
-                             asc-lat-ranges))
-        desc-lat-conds (qm/or-conds
-                         (map (fn [range]
-                                (qm/numeric-range-intersection-condition
-                                  :orbit-start-clat
-                                  :orbit-end-clat
-                                  (first range)
-                                  (last range)))
-                              desc-lat-ranges))
+                                 start-lat
+                                 end-lat))
+                             ranges)))
+
+(defn orbital-condition
+  "Create a condition that will use orbit parameters and orbital back tracking to find matches
+  to a spatial search."
+  [context shape]
+  (let [mbr (sr/mbr shape)
+        [asc-lat-ranges desc-lat-ranges] (.denormalizeLatitudeRange orbits (:south mbr) (:north mbr))
+        asc-lat-conds (range->numeric-range-intersection-condition asc-lat-ranges)
+        desc-lat-conds (range->numeric-range-intersection-condition desc-lat-ranges)
         orbit-params (orbits-for-context context)
         stored-ords (srl/shape->stored-ords shape)
         crossings-map (reduce (fn [memo params]
@@ -219,7 +217,7 @@
   (c2s/reduce-query-condition
     [{:keys [shape]} context]
     (let [shape (d/calculate-derived shape)
-          orbital-cond (orbital-condition shape context)
+          orbital-cond (orbital-condition context shape)
           mbr-cond (br->cond "mbr" (srl/shape->mbr shape))
           lr-cond (br->cond "lr" (srl/shape->lr shape))
           spatial-script (shape->script-cond shape)
