@@ -20,7 +20,7 @@
             [cmr.umm.core :as umm]
             [cmr.umm.spatial :as umm-s]))
 
-(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
 (comment
 
@@ -30,24 +30,58 @@
   )
 
 (deftest search-granules-in-xml-metadata
-  ;; We can add additional formats here later such as iso
-  (let [coll1 (d/ingest "PROV1" (dc/collection))
-        coll2 (d/ingest "PROV1" (dc/collection))
-        gran1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "g1"}))
-        gran2 (d/ingest "PROV1" (dg/granule coll2 {:granule-ur "g2"}))
-        all-granules [gran1 gran2]]
+  (let [c1-echo (d/ingest "PROV1" (dc/collection) :echo10)
+        c2-smap (d/ingest "PROV2" (dc/collection) :iso-smap)
+        g1-echo (d/ingest "PROV1" (dg/granule c1-echo {:granule-ur "g1"
+                                                       :producer-gran-id "p1"}) :echo10)
+        g2-echo (d/ingest "PROV1" (dg/granule c1-echo {:granule-ur "g2"
+                                                       :producer-gran-id "p2"}) :echo10)
+        g1-smap (d/ingest "PROV2" (dg/granule c2-smap {:granule-ur "g3"
+                                                       :producer-gran-id "p3"}) :iso-smap)
+        g2-smap (d/ingest "PROV2" (dg/granule c2-smap {:granule-ur "g4"
+                                                       :producer-gran-id "p2"}) :iso-smap)
+        all-granules [g1-echo g2-echo g1-smap g2-smap]]
     (index/refresh-elastic-index)
-    (testing "echo10"
-      (d/assert-metadata-results-match
-        :echo10 all-granules
-        (search/find-metadata :granule :echo10 {}))
-      (d/assert-metadata-results-match
-        :echo10 [gran1]
-        (search/find-metadata :granule :echo10 {:granule-ur "g1"}))
+
+    (testing "Finding refs ingested in different formats"
+      (are [search expected]
+           (d/refs-match? expected (search/find-refs :granule search))
+           {} all-granules
+           {:granule-ur "g1"} [g1-echo]
+           {:granule-ur "g3"} [g1-smap]
+           {:producer-granule-id "p1"} [g1-echo]
+           {:producer-granule-id "p3"} [g1-smap]
+           {:producer-granule-id "p2"} [g2-echo g2-smap]
+           {:granule-ur ["g1" "g4"]} [g1-echo g2-smap]
+           {:producer-granule-id ["p1" "p3"]} [g1-echo g1-smap]))
+
+    (testing "Retrieving results in echo10"
+      (are [search expected]
+           (d/assert-metadata-results-match
+             :echo10 expected
+             (search/find-metadata :granule :echo10 search))
+           {} all-granules
+           {:granule-ur "g1"} [g1-echo]
+           {:granule-ur "g3"} [g1-smap])
+
       (testing "as extension"
         (d/assert-metadata-results-match
-          :echo10 [gran1]
+          :echo10 [g1-echo]
           (search/find-metadata :granule :echo10
+                                {:granule-ur "g1"}
+                                {:format-as-ext? true}))))
+
+    (testing "Retrieving results in SMAP ISO"
+      (d/assert-metadata-results-match
+        :iso-smap all-granules
+        (search/find-metadata :granule :iso-smap {}))
+      (d/assert-metadata-results-match
+        :iso-smap [g1-echo]
+        (search/find-metadata :granule :iso-smap {:granule-ur "g1"}))
+      (testing "as extension"
+        (d/assert-metadata-results-match
+          :iso-smap [g1-echo]
+          (search/find-metadata :granule :iso-smap
                                 {:granule-ur "g1"}
                                 {:format-as-ext? true}))))
 
@@ -68,18 +102,18 @@
     (testing "reference XML"
       (let [refs (search/find-refs :granule {:granule-ur "g1"})
             location (:location (first (:refs refs)))]
-        (is (d/refs-match? [gran1] refs))
+        (is (d/refs-match? [g1-echo] refs))
 
         (testing "Location allows granule native format retrieval"
           (let [response (client/get location
                                      {:accept :application/echo10+xml
                                       :connection-manager (url/conn-mgr)})]
-            (is (= (umm/umm->xml gran1 :echo10) (:body response))))))
+            (is (= (umm/umm->xml g1-echo :echo10) (:body response))))))
 
       (testing "as extension"
-        (is (d/refs-match? [gran1] (search/find-refs :granule
-                                                     {:granule-ur "g1"}
-                                                     {:format-as-ext? true})))))))
+        (is (d/refs-match? [g1-echo] (search/find-refs :granule
+                                                       {:granule-ur "g1"}
+                                                       {:format-as-ext? true})))))))
 
 
 (deftest search-granule-csv
@@ -89,28 +123,28 @@
         coll1 (d/ingest "PROV1" (dc/collection {}))
         coll2 (d/ingest "PROV1" (dc/collection {}))
         gran1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule1"
-                                                       :beginning-date-time "2010-01-01T12:00:00Z"
-                                                       :ending-date-time "2010-01-11T12:00:00Z"
-                                                       :producer-gran-id "Granule #1"
-                                                       :day-night "DAY"
-                                                       :size 100
-                                                       :cloud-cover 50
-                                                       :related-urls [ru1 ru2 ru3]}))
+                                                   :beginning-date-time "2010-01-01T12:00:00Z"
+                                                   :ending-date-time "2010-01-11T12:00:00Z"
+                                                   :producer-gran-id "Granule #1"
+                                                   :day-night "DAY"
+                                                   :size 100
+                                                   :cloud-cover 50
+                                                   :related-urls [ru1 ru2 ru3]}))
         gran2 (d/ingest "PROV1" (dg/granule coll2 {:granule-ur "Granule2"
-                                                       :beginning-date-time "2011-01-01T12:00:00Z"
-                                                       :ending-date-time "2011-01-11T12:00:00Z"
-                                                       :producer-gran-id "Granule #2"
-                                                       :day-night "NIGHT"
-                                                       :size 80
-                                                       :cloud-cover 30
-                                                       :related-urls [ru1]}))
+                                                   :beginning-date-time "2011-01-01T12:00:00Z"
+                                                   :ending-date-time "2011-01-11T12:00:00Z"
+                                                   :producer-gran-id "Granule #2"
+                                                   :day-night "NIGHT"
+                                                   :size 80
+                                                   :cloud-cover 30
+                                                   :related-urls [ru1]}))
         gran3 (d/ingest "PROV1" (dg/granule coll2 {:granule-ur "Granule3"
-                                                       :beginning-date-time "2012-01-01T12:00:00Z"
-                                                       :ending-date-time "2012-01-11T12:00:00Z"
-                                                       :producer-gran-id "Granule #3"
-                                                       :day-night "NIGHT"
-                                                       :size 80
-                                                       :cloud-cover 30}))]
+                                                   :beginning-date-time "2012-01-01T12:00:00Z"
+                                                   :ending-date-time "2012-01-11T12:00:00Z"
+                                                   :producer-gran-id "Granule #3"
+                                                   :day-night "NIGHT"
+                                                   :size 80
+                                                   :cloud-cover 30}))]
 
     (index/refresh-elastic-index)
 
