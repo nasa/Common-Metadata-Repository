@@ -2,6 +2,7 @@
   "Contains converters for spatial condition into the simpler executable conditions"
   (:require [cmr.search.data.complex-to-simple :as c2s]
             [cmr.search.data.elastic-search-index :as idx]
+            [cmr.search.services.query-execution :as qe]
             [cmr.search.models.query :as qm]
             [cmr.spatial.mbr :as mbr]
             [cmr.spatial.serialize :as srl]
@@ -58,12 +59,13 @@
 
 
 (def orbit-param-fields
-  ["concept-id"
-   "swath-width"
-   "period"
-   "inclination-angle"
-   "number-of-orbits"
-   "start-circular-latitude"])
+  "The collection fields that describe the orbit as used in orbital back tracking."
+  [:concept-id
+   :swath-width
+   :period
+   :inclination-angle
+   :number-of-orbits
+   :start-circular-latitude])
 
 (defn- fix-vals
   "Helper function to convert a map with sequences for values into a map with single values."
@@ -82,13 +84,10 @@
         orbit-params-cond (qm/->ExistCondition :swath-width)
         orbit-params-cond (if (seq query-collection-ids)
                             (qm/and-conds [orbit-params-cond
-                                           (qm/or-conds (map (fn [concept-id]
-                                                               (qm/string-condition
-                                                                 :concept-id
-                                                                 concept-id
-                                                                 true
-                                                                 false))
-                                                             query-collection-ids))])
+                                           (qm/string-conditions
+                                             :concept-id
+                                             query-collection-ids
+                                             true)])
                             orbit-params-cond)
         orbit-params-query (qm/query {:concept-type :collection
                                       :condition orbit-params-cond
@@ -96,8 +95,8 @@
                                       :page-size :unlimited
                                       :result-format :query-specified
                                       :fields orbit-param-fields})
-        results (get-in (idx/execute-query context orbit-params-query) [:hits :hits])]
-    (map #(fix-vals (:fields %)) results)))
+        results (:items (qe/execute-query context orbit-params-query))]
+    results))
 
 
 (defn- resolve-shape-type
@@ -110,47 +109,46 @@
     :else type))
 
 (defn orbit-crossings
-  "Compute the orbit crossing ranges (max and min longitude) used to create the crossing
-  conditions for orbital crossing searches. Returns a vector of vectors"
+  "Compute the orbit crossing ranges (max and min longitude) for a single collection
+  used to create the crossing conditions for orbital crossing searches.
+  The stored-ords parameter is a vector of coordinates (longitude/latitude) of the points for
+  the search area (as returned by the shape->stored-ords method of the spatial library.
+  The orbit-params paraemter is the set of orbit parameters for a single collection.
+  Returns a vector of vectors of doubles representing the ascending and descending crossing ranges."
   [stored-ords orbit-params]
-  ;; Use the orbit parameters to perform oribtial back tracking to longitude ranges to be used
-  ;; in the search
-
-  ;; Construct an OR group with the ranges, looking for overlaps with the :orbit-start-clat
-  ;; and :orbit-end-clat range
+  ;; Use the orbit parameters to perform orbital back tracking to longitude ranges to be used
+  ;; in the search.
   (let [type (resolve-shape-type (name (:type (first stored-ords))))
         coords (double-array (map srl/stored->ordinate
-                                  (get-in stored-ords [0 :ords])))
-        crossings (let [{:keys [swath-width
-                                period
-                                inclination-angle
-                                number-of-orbits
-                                start-circular-latitude]} orbit-params
-                        asc-crossing (.areaCrossingRange
-                                       orbits
-                                       type
-                                       coords
-                                       true
-                                       inclination-angle
-                                       period
-                                       swath-width
-                                       start-circular-latitude
-                                       number-of-orbits)
-                        desc-crossing (.areaCrossingRange
-                                        orbits
-                                        type
-                                        coords
-                                        false
-                                        inclination-angle
-                                        period
-                                        swath-width
-                                        start-circular-latitude
-                                        number-of-orbits)]
-                    (when (or (seq asc-crossing)
-                              (seq desc-crossing))
-                      [asc-crossing desc-crossing]))]
-
-    crossings))
+                                  (get-in stored-ords [0 :ords])))]
+    (let [{:keys [swath-width
+                  period
+                  inclination-angle
+                  number-of-orbits
+                  start-circular-latitude]} orbit-params
+          asc-crossing (.areaCrossingRange
+                         orbits
+                         type
+                         coords
+                         true
+                         inclination-angle
+                         period
+                         swath-width
+                         start-circular-latitude
+                         number-of-orbits)
+          desc-crossing (.areaCrossingRange
+                          orbits
+                          type
+                          coords
+                          false
+                          inclination-angle
+                          period
+                          swath-width
+                          start-circular-latitude
+                          number-of-orbits)]
+      (when (or (seq asc-crossing)
+                (seq desc-crossing))
+        [asc-crossing desc-crossing]))))
 
 (defn orbital-condition
   "Create a condition that will use orbit parameters and orbital back tracking to find matches

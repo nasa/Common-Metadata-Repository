@@ -9,9 +9,8 @@
 (defmethod acl-service/add-acl-conditions-to-query :collection
   [context query]
   (let [group-ids (map #(if (keyword? %) (name %) %) (acl-helper/context->sids context))
-        acl-cond (qm/string-conditions :permitted-group-ids group-ids true)
-    result (update-in query [:condition] #(qm/and-conds [acl-cond %]))]
-    result))
+        acl-cond (qm/string-conditions :permitted-group-ids group-ids true)]
+    (update-in query [:condition] #(qm/and-conds [acl-cond %]))))
 
 
 (defmethod acl-service/acls-match-concept? :collection

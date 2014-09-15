@@ -58,8 +58,8 @@
   "Determines the execution strategy to use for the given query."
   [query]
   (cond
-     (direct-transformer-query? query) :direct-transformer
-     (specific-items-from-elastic-query? query) :specific-elastic-items
+    (direct-transformer-query? query) :direct-transformer
+    (specific-items-from-elastic-query? query) :specific-elastic-items
     :else :elastic))
 
 (defmulti query->concept-ids
@@ -141,33 +141,16 @@
 
 (defmethod execute-query :elastic
   [context query]
-  (let [processed-query (pre-process-query-result-features context query)
-
-        processed-query (r/resolve-collection-queries context processed-query)
+  (let [pre-processed-query (pre-process-query-result-features context query)
+        processed-query (r/resolve-collection-queries context pre-processed-query)
         collection-ids (ce/extract-collection-concept-ids processed-query)
         context (assoc context :query-collection-ids collection-ids)
-        processed-query (c2s/reduce-query context processed-query)
-        processed-query (if (:skip-acls? processed-query)
-                          processed-query
-                          (acl-service/add-acl-conditions-to-query context processed-query))
-        elastic-results (idx/execute-query context processed-query)
-
+        elastic-results (->> processed-query
+                             (c2s/reduce-query context)
+                             (#(if (:skip-acls? %)
+                                 %
+                                 (acl-service/add-acl-conditions-to-query context %)))
+                             (idx/execute-query context))
         query-results (rc/elastic-results->query-results context query elastic-results)]
-    (post-process-query-result-features context query elastic-results query-results)))
-
-
-; (defmethod execute-query :elastic
-;   [context query]
-;   (let [elastic-results (->> query
-;                              (pre-process-query-result-features context)
-;                              c2s/reduce-query
-;                              (r/resolve-collection-queries context)
-;                              (#(if (:skip-acls? %)
-;                                  %
-;                                  (acl-service/add-acl-conditions-to-query context %)))
-;                              (idx/execute-query context))
-;         query-results (rc/elastic-results->query-results context query elastic-results)]
-;     (post-process-query-result-features context query elastic-results query-results)))
-
-
+    (post-process-query-result-features context pre-processed-query elastic-results query-results)))
 
