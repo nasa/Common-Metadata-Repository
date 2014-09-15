@@ -18,4 +18,4 @@
 (defn generate-id
   "Returns a 5 character random id to use as an ISO id"
   []
-  (str "d" (get-random-id 4)))
+  (str "d" (java.util.UUID/randomUUID)))
