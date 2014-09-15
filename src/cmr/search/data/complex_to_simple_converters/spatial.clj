@@ -57,7 +57,6 @@
                        south-cond
                        (qm/or-conds [am-conds non-am-conds])])))))
 
-
 (def orbit-param-fields
   "The collection fields that describe the orbit as used in orbital back tracking."
   [:concept-id
@@ -66,14 +65,6 @@
    :inclination-angle
    :number-of-orbits
    :start-circular-latitude])
-
-(defn- fix-vals
-  "Helper function to convert a map with sequences for values into a map with single values."
-  [map-value]
-  (reduce (fn [m key]
-            (update-in m [key] #(first %)))
-          map-value
-          (keys map-value)))
 
 (defn- orbits-for-context
   "Get the orbit parameters for all the relevant collections."
@@ -97,7 +88,6 @@
                                       :fields orbit-param-fields})
         results (:items (qe/execute-query context orbit-params-query))]
     results))
-
 
 (defn- resolve-shape-type
   "Convert the 'type' string from a serialized shape to one of 'point', 'line', 'br', or 'poly'.
@@ -163,7 +153,7 @@
          ranges)))
 
 (defn- crossing-ranges->condition
-  "Createa a search condtion for a given vector of crossing ranges."
+  "Create a search condition for a given vector of crossing ranges."
   [crossing-ranges]
   (qm/or-conds
     (map (fn [[range-start range-end]]
