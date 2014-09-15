@@ -87,8 +87,6 @@
 
 (defmethod extract-access-value "application/iso-smap+xml"
   [concept]
-  ;; TODO: Don't have a good way to extract the access-value of SMAP ISO granule.
-  ;; Need to save the access value in concept.
   (when (= :granule (:concept-type concept))
     (smap-g/xml->access-value (:metadata concept))))
 
