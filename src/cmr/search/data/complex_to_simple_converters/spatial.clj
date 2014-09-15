@@ -108,7 +108,7 @@
     (re-matches #".*poly.*" type) "poly"
     :else type))
 
-(defn orbit-crossings
+(defn- orbit-crossings
   "Compute the orbit crossing ranges (max and min longitude) for a single collection
   used to create the crossing conditions for orbital crossing searches.
   The stored-ords parameter is a vector of coordinates (longitude/latitude) of the points for
@@ -155,14 +155,25 @@
   [ranges]
   (qm/or-conds
     (map (fn [[start-lat end-lat]]
-                               (qm/numeric-range-intersection-condition
-                                 :orbit-start-clat
-                                 :orbit-end-clat
-                                 start-lat
-                                 end-lat))
-                             ranges)))
+           (qm/numeric-range-intersection-condition
+             :orbit-start-clat
+             :orbit-end-clat
+             start-lat
+             end-lat))
+         ranges)))
 
-(defn orbital-condition
+(defn- crossing-ranges->condition
+  "Createa a search condtion for a given vector of crossing ranges."
+  [crossing-ranges]
+  (qm/or-conds
+    (map (fn [[range-start range-end]]
+           (qm/numeric-range-condition
+             :orbit-asc-crossing-lon
+             range-start
+             range-end))
+         crossing-ranges)))
+
+(defn- orbital-condition
   "Create a condition that will use orbit parameters and orbital back tracking to find matches
   to a spatial search."
   [context shape]
@@ -181,36 +192,23 @@
                                       lon-crossings)
                                     memo)))
                               {}
-                              orbit-params)
-        orbit-conds (when (seq crossings-map)
-                      (qm/or-conds
-                        (map (fn [collection-id]
-                               (let [[asc-crossings desc-crossings] (get crossings-map collection-id)]
-                                 (qm/and-conds
-                                   [(qm/string-condition :collection-concept-id collection-id, true, false)
-                                    (qm/or-conds
-                                      [
-                                       ;; ascending
-                                       (qm/and-conds
-                                         [asc-lat-conds
-                                          (qm/or-conds
-                                            (map (fn [crossing-range]
-                                                   (qm/numeric-range-condition
-                                                     :orbit-asc-crossing-lon
-                                                     (first crossing-range)
-                                                     (last crossing-range)))
-                                                 asc-crossings))])
-                                       (qm/and-conds
-                                         [desc-lat-conds
-                                          (qm/or-conds
-                                            (map (fn [crossing-range]
-                                                   (qm/numeric-range-condition
-                                                     :orbit-asc-crossing-lon
-                                                     (first crossing-range)
-                                                     (last crossing-range)))
-                                                 desc-crossings))])])])))
-                             (keys crossings-map))))]
-    orbit-conds))
+                              orbit-params)]
+    (when (seq crossings-map)
+      (qm/or-conds
+        (map (fn [collection-id]
+               (let [[asc-crossings desc-crossings] (get crossings-map collection-id)]
+                 (qm/and-conds
+                   [(qm/string-condition :collection-concept-id collection-id, true, false)
+                    (qm/or-conds
+                      [;; ascending
+                       (qm/and-conds
+                         [asc-lat-conds
+                          (crossing-ranges->condition asc-crossings)])
+                       ;; descending
+                       (qm/and-conds
+                         [desc-lat-conds
+                          (crossing-ranges->condition desc-crossings)])])])))
+             (keys crossings-map))))))
 
 (extend-protocol c2s/ComplexQueryToSimple
   cmr.search.models.query.SpatialCondition
