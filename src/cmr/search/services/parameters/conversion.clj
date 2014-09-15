@@ -7,7 +7,8 @@
             [cmr.common.date-time-parser :as dt-parser]
             [cmr.common.util :as u]
             [cmr.search.services.parameters.legacy-parameters :as lp]
-            [cmr.common.concepts :as cc]))
+            [cmr.common.concepts :as cc]
+            [cmr.common.date-time-parser :as parser]))
 
 (def nrt-aliases
   ["near_real_time","nrt", "NRT", "near real time","near-real time","near-real-time","near real-time"])
@@ -104,6 +105,12 @@
   "Converts a parameter into a condition"
   (fn [concept-type param value options]
     (param-name->type concept-type param)))
+
+(defmethod parameter->condition :default
+  [concept-type param value options]
+  (errors/internal-error!
+    (format "Could not find parameter handler for [%s] with concept-type [%s]"
+            param concept-type)))
 
 (defn string-parameter->condition
   [param value options]
@@ -301,3 +308,22 @@
         (qm/query (assoc query-attribs
                          :condition (qm/and-conds conditions)
                          :keywords keywords))))))
+
+(defn timeline-parameters->query
+  "Converts parameters from a granule timeline request into a query."
+  [params]
+  (let [{:keys [interval start-date end-date]} params
+        query (parameters->query
+                :granule
+                (dissoc params :interval :start-date :end-date))]
+    ;; Add timeline request fields to the query so that they can be used later
+    ;; for processing the timeline results.
+    (assoc query
+           :interval (keyword interval)
+           :start-date (parser/parse-datetime start-date)
+           :end-date (parser/parse-datetime end-date)
+           ;; Indicate the result feature of timeline so that we can preprocess
+           ;; the query and add aggregations and make other changes.
+           :result-features [:timeline]
+           :result-format :timeline)))
+

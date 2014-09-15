@@ -139,18 +139,43 @@
                                    #(acl-service/filter-concepts context %)))]
     (post-process-query-result-features context query elastic-results query-results)))
 
+(def last-query (atom nil))
+
 (defmethod execute-query :elastic
   [context query]
+<<<<<<< HEAD
   (let [pre-processed-query (pre-process-query-result-features context query)
         processed-query (r/resolve-collection-queries context pre-processed-query)
         collection-ids (ce/extract-collection-concept-ids processed-query)
         context (assoc context :query-collection-ids collection-ids)
         elastic-results (->> processed-query
                              (c2s/reduce-query context)
+=======
+  (reset! last-query query)
+  (let [; We have to update the binding to the query so changes to the query will be visible when we
+        ; use it subsequently.
+        query (pre-process-query-result-features context query)
+        elastic-results (->> query
+                             c2s/reduce-query
+                             (r/resolve-collection-queries context)
+>>>>>>> FETCH_HEAD
                              (#(if (:skip-acls? %)
                                  %
                                  (acl-service/add-acl-conditions-to-query context %)))
                              (idx/execute-query context))
         query-results (rc/elastic-results->query-results context query elastic-results)]
+<<<<<<< HEAD
     (post-process-query-result-features context pre-processed-query elastic-results query-results)))
+=======
+    (post-process-query-result-features context query elastic-results query-results)))
+
+
+(comment
+  (def context {:system (get-in user/system [:apps :search])})
+  (execute-query context @last-query)
+
+
+)
+
+>>>>>>> FETCH_HEAD
 

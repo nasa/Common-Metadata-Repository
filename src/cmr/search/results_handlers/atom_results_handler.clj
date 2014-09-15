@@ -215,15 +215,13 @@
     attribs
     (assoc attribs field value)))
 
-
-
 (defn atom-link->attribute-map
   "Convert an atom link to an XML element"
   [atom-link]
   (let [{:keys [href link-type title mime-type size inherited]} atom-link
         attribs (-> {}
                     (add-attribs :inherited inherited)
-                    (add-attribs :size size)
+                    (add-attribs :length size)
                     (add-attribs :rel (link-type->link-type-uri (keyword link-type)))
                     (add-attribs :type mime-type)
                     (add-attribs :title title)

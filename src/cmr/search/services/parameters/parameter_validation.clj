@@ -16,7 +16,8 @@
             [cmr.search.services.messages.common-messages :as msg]
             [cmr.search.data.messages :as d-msg]
             [camel-snake-kebab :as csk]
-            [cmr.spatial.codec :as spatial-codec])
+            [cmr.spatial.codec :as spatial-codec]
+            [clj-time.core :as t])
   (:import clojure.lang.ExceptionInfo))
 
 (def case-sensitive-params
@@ -46,16 +47,16 @@
     (try
       (let [page-size-i (Integer. page-size)]
         (cond
-          (> 1 page-size-i)
-          ["page_size must be a number between 1 and 2000"]
+          (< page-size-i 0 )
+          ["page_size must be a number between 0 and 2000"]
 
-          (< 2000 page-size-i)
-          ["page_size must be a number between 1 and 2000"]
+          (> page-size-i 2000)
+          ["page_size must be a number between 0 and 2000"]
 
           :else
           []))
       (catch NumberFormatException e
-        ["page_size must be a number between 1 and 2000"]))
+        ["page_size must be a number between 0 and 2000"]))
     []))
 
 (defn page-num-validation
@@ -184,13 +185,13 @@
 
 (defn- validate-date-time
   "Validates datetime string is in the given format"
-  [dt]
+  [date-name dt]
   (try
     (when-not (s/blank? dt)
       (dt-parser/parse-datetime dt))
     []
     (catch ExceptionInfo e
-      [(format "temporal datetime is invalid: %s." (first (:errors (ex-data e))))])))
+      [(format "%s datetime is invalid: %s." date-name (first (:errors (ex-data e))))])))
 
 (defn- day-valid?
   "Validates if the given day in temporal is an integer between 1 and 366 inclusive"
@@ -216,13 +217,12 @@
         (fn [value]
           (let [[start-date end-date start-day end-day] (map s/trim (s/split value #","))]
             (concat
-              (validate-date-time start-date)
-              (validate-date-time end-date)
+              (validate-date-time "temporal start" start-date)
+              (validate-date-time "temporal end" end-date)
               (day-valid? start-day "temporal_start_day")
               (day-valid? end-day "temporal_end_day"))))
         temporal))
     []))
-
 
 (defn updated-since-validation
   "Validates updated-since parameter conforms to formats in data-time-parser NS"
@@ -231,7 +231,7 @@
     (if (and (sequential? (:updated-since params)) (> (count (:updated-since params)) 1))
       [(format "search not allowed with multiple updated_since values s%: " (:updated-since params))]
       (let [updated-since-val (if (sequential? param-value) (first param-value) param-value)]
-        (validate-date-time updated-since-val)))
+        (validate-date-time "updated_since" updated-since-val)))
     []))
 
 (defn attribute-validation
@@ -391,6 +391,48 @@
                        (set [:page-size :page-num :sort-key :result-format :pretty :options
                              :include-granule-counts :include-has-granules :include-facets]))))
 
+(defn timeline-start-date-validation
+  "Validates the timeline start date parameter"
+  [concept-type params]
+  (if-let [start-date (:start-date params)]
+    (validate-date-time "Timeline parameter start_date" start-date)
+    ["start_date is a required parameter for timeline searches"]))
+
+(defn timeline-end-date-validation
+  "Validates the timeline end date parameter"
+  [concept-type params]
+  (if-let [end-date (:end-date params)]
+    (validate-date-time "Timeline parameter end_date" end-date)
+    ["end_date is a required parameter for timeline searches"]))
+
+(defn timeline-range-validation
+  "Validates the start date is before the end date"
+  [concept-type params]
+  (try
+    (let [{:keys [start-date end-date]} params]
+      (when (and start-date end-date
+                 (t/after? (dt-parser/parse-datetime start-date)
+                           (dt-parser/parse-datetime end-date)))
+        [(format "start_date [%s] must be before the end_date [%s]"
+                 start-date end-date)]))
+    (catch ExceptionInfo e
+      ;; The date times are invalid. This error should be handled by other validations
+      [])))
+
+
+(def valid-timeline-intervals
+  "A list of the valid values for timeline intervals."
+  #{"year" "month" "day" "hour" "minute" "second"})
+
+(defn timeline-interval-validation
+  "Validates the timeline interval parameter"
+  [concept-type params]
+  (if-let [interval (:interval params)]
+    (when-not (valid-timeline-intervals interval)
+      [(str "Timeline interval is a required parameter for timeline search and must be one of"
+            " year, month, day, hour, minute, or second.")])
+    ["interval is a required parameter for timeline searches"]))
+
 (def parameter-validations
   "A list of the functions that can validate parameters. They all accept parameters as an argument
   and return a list of errors."
@@ -424,6 +466,14 @@
    sort-key-validation
    unrecognized-aql-params-validation])
 
+(def timeline-parameter-validations
+  "A list of function that can validate timeline query parameters. It will only validate the timeline
+  parameters specifically. Parameter validation on the "
+  [timeline-start-date-validation
+   timeline-end-date-validation
+   timeline-interval-validation
+   timeline-range-validation])
+
 (defn validate-parameters
   "Validates parameters. Throws exceptions to send to the user. Returns parameters if validation
   was successful so it can be chained with other calls."
@@ -439,6 +489,19 @@
   was successful so it can be chained with other calls."
   [concept-type params]
   (let [errors (mapcat #(% concept-type params) aql-parameter-validations)]
+    (when (seq errors)
+      (err/throw-service-errors :bad-request errors)))
+  params)
+
+(defn validate-timeline-parameters
+  "Validates the query parameters passed in with a timeline search.
+  Throws exceptions to send to the user. Returns parameters if validation
+  was successful so it can be chained with other calls."
+  [params]
+  (let [timeline-params (select-keys params [:interval :start-date :end-date])
+        regular-params (dissoc params :interval :start-date :end-date)
+        errors (concat (mapcat #(% :granule regular-params) parameter-validations)
+                       (mapcat #(% :granule timeline-params) timeline-parameter-validations))]
     (when (seq errors)
       (err/throw-service-errors :bad-request errors)))
   params)

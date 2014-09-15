@@ -507,6 +507,29 @@ Search collections or granules with query parameters encoded form in POST reques
 
     curl -i -XPOST http://localhost:3003/collections -d "dataset_id[]=Example%20DatasetId&dataset_id[]=Dataset2"
 
+### Search Response as Granule Timeline
+
+Granule timeline queries allow clients to find time intervals with continuous granule coverage per collection. The intervals are listed per collection and contain the number of granules within each interval. A timeline search can be performed by sending a `GET` request to the `granules/timeline` route. The utility of this feature for clients is in building interactive timelines. Clients need to display on the timeline where there is granule data and where there is none.
+
+It supports all normal granule parameters. It requires the following parameters.
+
+  * start_date - The start date of the timeline intervals to search from.
+  * end_date - The end date of to search from.
+  * interval - The interval granularity. This can be one of year, month, day, hour, minute, or second. At least one granule found within the interval time will be considered coverage for that interval.
+  * concept_id - Specifies a collection concept id to search for. It is recommended that the timeline search be limited to a few collections for good performance.
+
+The response format is in JSON. Intervals are returned as tuples containing three numbers like `[949363200,965088000,4]`. The two numbers are the start and stop date of the interval represented by the number of seconds since the epoch. The third number is the number of granules within that interval.
+
+#### Example Request:
+
+    curl -i "http://localhost:3003/granules/timeline?concept_id=C1-PROV1&start_date=2000-01-01T00:00:00Z&end_date=2002-02-01T00:00:00.000Z&interval=month""
+
+#### Example Response
+
+```
+[{"concept-id":"C1200000000-PROV1","intervals":[[949363200,965088000,4],[967766400,970358400,1],[973036800,986083200,3],[991353600,1072915200,3]]}]
+```
+
 ### Retrieve provider holdings, support format :xml and :json in header and as extension.
 
 All provider holdings

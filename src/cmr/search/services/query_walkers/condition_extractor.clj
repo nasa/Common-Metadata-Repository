@@ -62,7 +62,9 @@
   cmr.search.models.query.NestedCondition
   (extract-condition-impl
     [c condition-path extract-tester]
-    (errors/internal-error! "NestedCondition is not (yet) supported with the conditions extractor."))
+    (concat (extract-self condition-path extract-tester c)
+            (let [condition-path (conj condition-path c)]
+              (extract-condition-impl (:condition c) condition-path extract-tester))))
 
   ;; catch all extractor
   java.lang.Object

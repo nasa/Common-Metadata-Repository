@@ -162,6 +162,20 @@
         (format "Concept with concept-id: %s could not be found" concept-id)))
     (first concepts)))
 
+(deftracefn get-granule-timeline
+  "Finds granules and returns the results as a list of intervals of granule counts per collection."
+  [context params]
+  (let [query (->> params
+                   sanitize-params
+                   ;; handle legacy parameters
+                   lp/replace-parameter-aliases
+                   (lp/process-legacy-multi-params-conditions :granule)
+                   (lp/replace-science-keywords-or-option :granule)
+                   pv/validate-timeline-parameters
+                   p/timeline-parameters->query)
+        results (qe/execute-query context query)]
+    (search-results->response context query results)))
+
 (deftracefn clear-cache
   "Clear the cache for search app"
   [context]
@@ -190,17 +204,6 @@
                           :skip-acls? skip-acls?})
          results (qe/execute-query context query)]
      (:items results))))
-
-(comment
-  (def collections (get-collections-by-providers {:system (get-in user/system [:apps :search])} true))
-
-  (into
-    {}
-    (for [[prov colls] (group-by :provider-id collections)]
-      [prov
-       (into {} (for [coll colls]
-                  [(:entry-title coll) (:concept-id coll)]))]))
-  )
 
 (deftracefn get-provider-holdings
   "Executes elasticsearch search to get provider holdings"

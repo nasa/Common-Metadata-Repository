@@ -8,7 +8,7 @@
             [cmr.common.test.test-check-ext :as tc :refer [defspec]]
             [clojure.string :as s]
             [cmr.common.dev.util :as cu])
-  (import clojure.lang.ExceptionInfo))
+  (:import clojure.lang.ExceptionInfo))
 
 
 (defn- legacy-psa-maps->legacy-psa-query

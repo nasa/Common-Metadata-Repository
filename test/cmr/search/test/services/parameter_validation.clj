@@ -34,23 +34,17 @@
                                                                    :options {:entry-title {:foo "true"}}}))))
 
   ;; Page Size
-  (testing "Page size less than one"
-    (is (= ["page_size must be a number between 1 and 2000"]
-           (pv/page-size-validation :collection (assoc valid-params :page-size 0)))))
-  (testing "Page size less than one"
-    (is (= ["page_size must be a number between 1 and 2000"]
-           (pv/page-size-validation :collection (assoc valid-params :page-size 0)))))
   (testing "Search with large page size"
     (is (= []
            (pv/page-size-validation :collection (assoc valid-params :page-size 100)))))
   (testing "Negative page size"
-    (is (= ["page_size must be a number between 1 and 2000"]
+    (is (= ["page_size must be a number between 0 and 2000"]
            (pv/page-size-validation :collection (assoc valid-params :page-size -1)))))
   (testing "Page size too large."
-    (is (= ["page_size must be a number between 1 and 2000"]
+    (is (= ["page_size must be a number between 0 and 2000"]
            (pv/page-size-validation :collection (assoc valid-params :page-size 2001)))))
   (testing "Non-numeric page size"
-    (is (= ["page_size must be a number between 1 and 2000"]
+    (is (= ["page_size must be a number between 0 and 2000"]
            (pv/page-size-validation :collection (assoc valid-params :page-size "ABC")))))
 
   ;; Page Num
@@ -120,7 +114,7 @@
     (are [start-date]
          (let [error (pv/temporal-format-validation :collection {:temporal [start-date]})]
            (is (= 1 (count error)))
-           (re-find (re-pattern "temporal datetime is invalid:") (first error)))
+           (re-find (re-pattern "temporal start datetime is invalid:") (first error)))
          "2014-13-05T00:00:00Z"
          "2014-04-00T00:00:00Z"
          "2014-04-05T24:00:00Z"
@@ -137,7 +131,7 @@
     (are [end-date]
          (let [error (pv/temporal-format-validation :collection {:temporal [end-date]})]
            (is (= 1 (count error)))
-           (re-find (re-pattern "temporal datetime is invalid:") (first error)))
+           (re-find (re-pattern "temporal end datetime is invalid:") (first error)))
          ",2014-13-05T00:00:00Z"
          ",2014-04-00T00:00:00Z"
          ",2014-04-05T24:00:00Z"
