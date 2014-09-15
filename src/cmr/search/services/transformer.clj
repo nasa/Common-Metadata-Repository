@@ -7,7 +7,8 @@
             [cmr.common.mime-types :as mt]
             [cmr.common.services.errors :as errors]
             [cmr.search.services.acl-service :as acl-service]
-            [cmr.common.util :as u]))
+            [cmr.common.util :as u]
+            [cmr.umm.iso-smap.granule :as smap-g]))
 
 (def native-format
   "This format is used to indicate the metadata is in it's native format."
@@ -86,8 +87,8 @@
 
 (defmethod extract-access-value "application/iso-smap+xml"
   [concept]
-  ;; SMAP ISO doesn't support restriction flag yet.
-  nil)
+  (when (= :granule (:concept-type concept))
+    (smap-g/xml->access-value (:metadata concept))))
 
 (defmulti add-acl-enforcement-fields
   "Adds the fields necessary to enforce ACLs to the concept"

@@ -36,6 +36,10 @@
   [concept-type result-format]
   [])
 
+(defmethod elastic-search-index/concept-type+result-format->fields [:granule :iso-smap]
+  [concept-type result-format]
+  [])
+
 (def concept-type->name-key
   "A map of the concept type to the key to use to extract the reference name field."
   {:collection :entry-title
