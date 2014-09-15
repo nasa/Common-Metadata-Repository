@@ -3,6 +3,7 @@
   (:require [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
             [cmr.umm.collection :as c]
+            [clojure.string :as s]
             [cmr.umm.iso-mends.collection.keyword :as k]
             [cmr.umm.iso-mends.collection.helper :as h]))
 
@@ -10,9 +11,10 @@
   [project-elem]
   (let [short-name (cx/string-at-path project-elem
                                       [:identifier :MD_Identifier :code :CharacterString])
-        long-name (cx/string-at-path project-elem [:description :CharacterString])
+        description (cx/string-at-path project-elem [:description :CharacterString])
         ;; ISO description is built as "short-name > long-name", so here we extract the long-name out
-        long-name (when long-name (second (re-matches #".* > (.*)" long-name)))]
+        long-name (when-not (= short-name description)
+                    (s/replace description (str short-name " > ") ""))]
     (c/map->Project
       {:short-name short-name
        :long-name long-name})))
