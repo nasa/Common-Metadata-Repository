@@ -3,7 +3,7 @@
   (:require [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
             [cmr.umm.collection :as c]
-            [cmr.umm.iso-smap.collection.helper :as h]))
+            [cmr.umm.generator-util :as gu]))
 
 (defn- xml-elem->RangeDateTimes
   "Returns a list of UMM RangeDateTimes from a parsed XML structure"
@@ -43,7 +43,7 @@
             (x/element
               :gmd:EX_TemporalExtent {}
               (x/element :gmd:extent {}
-                         (x/element :gml:TimePeriod {:gml:id (h/generate-id)}
+                         (x/element :gml:TimePeriod {:gml:id (gu/generate-id)}
                                     (when beginning-date-time
                                       (x/element :gml:beginPosition {} (str beginning-date-time)))
                                     (if ending-date-time
@@ -56,6 +56,6 @@
           (x/element
             :gmd:EX_TemporalExtent {}
             (x/element :gmd:extent {}
-                       (x/element :gml:TimeInstant {:gml:id (h/generate-id)}
+                       (x/element :gml:TimeInstant {:gml:id (gu/generate-id)}
                                   (x/element :gml:timePosition {} (str single-date-time))))))))))
 

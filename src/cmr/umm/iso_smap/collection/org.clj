@@ -1,9 +1,9 @@
 (ns cmr.umm.iso-smap.collection.org
-  "Archive and Processing Center elements of ISO are mapped umm organization elements."
+  "Contains functions for parsing and generating the ISO SMAP Archive and Processing Center"
   (:require [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
             [cmr.umm.collection :as c]
-            [cmr.umm.iso-smap.collection.helper :as h]))
+            [cmr.umm.iso-smap.helper :as h]))
 
 (defn- xml-elem->archive-center
   "Returns the archive center from parsed xml structure"

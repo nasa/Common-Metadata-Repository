@@ -5,7 +5,8 @@
             [cmr.umm.collection :as c]
             [cmr.umm.iso-mends.collection.instrument :as inst]
             [cmr.umm.iso-mends.collection.keyword :as k]
-            [cmr.umm.iso-mends.collection.helper :as h]))
+            [cmr.umm.iso-mends.collection.helper :as h]
+            [cmr.umm.generator-util :as gu]))
 
 (defn xml-elem->Platform
   [instruments-mapping platform-elem]
@@ -33,7 +34,7 @@
 (defn- platform-with-id
   "Returns the platform with generated ids for ISO xml generation"
   [platform]
-  (let [platform-id (h/generate-id)
+  (let [platform-id (gu/generate-id)
         instruments (inst/instruments-with-id (:instruments platform) platform-id)]
     (-> platform
         (assoc :instruments instruments)

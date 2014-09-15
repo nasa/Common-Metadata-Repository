@@ -3,7 +3,8 @@
   (:require [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
             [cmr.umm.collection :as c]
-            [cmr.umm.iso-mends.collection.helper :as h]))
+            [cmr.umm.iso-mends.collection.helper :as h]
+            [cmr.umm.generator-util :as gu]))
 
 (defn xml-elem->Sensor
   [sensor-elem]
@@ -23,7 +24,7 @@
 (defn- sensor-with-id
   "Returns the sensor with generated ids for ISO xml generation"
   [instrument-id sensor]
-  (let [sensor-id (h/generate-id)]
+  (let [sensor-id (gu/generate-id)]
     (-> sensor
         (assoc :sensor-id sensor-id)
         (assoc :instrument-id instrument-id))))
