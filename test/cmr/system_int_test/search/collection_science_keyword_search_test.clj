@@ -59,7 +59,7 @@
            (d/refs-match? items
                           (search/find-refs
                             :collection
-                            {"science-keywords" {:0 {science-keyword value}}}))
+                            {:science-keywords {:0 {science-keyword value}}}))
            :category "Cat1" [coll1]
            :topic "Topic1" [coll1]
            :term "Term1" [coll1]
@@ -75,24 +75,31 @@
       (is (d/refs-match? [coll2]
                          (search/find-refs
                            :collection
-                           {"science-keywords" {:0 {:category "Hurricane"
-                                                    :topic "Popular"
-                                                    :term "Extreme"}}}))))
+                           {:science-keywords {:0 {:category "Hurricane"
+                                                   :topic "Popular"
+                                                   :term "Extreme"}}}))))
 
     (testing "search by science keywords, multiple."
       (is (d/refs-match? [coll2 coll6]
                          (search/find-refs
                            :collection
-                           {"science-keywords" {:0 {:category "Hurricane"
-                                                    :topic "Popular"}
-                                                :1 {:term "Extreme"}}}))))
+                           {:science-keywords {:0 {:category "Hurricane"
+                                                   :topic "Popular"}
+                                               :1 {:term "Extreme"}}}))))
+
+    (testing "search by science keywords, multiple values in one field."
+      (is (d/refs-match? [coll2 coll5 coll6 coll7]
+                         (search/find-refs
+                           :collection
+                           {:science-keywords {:0 {:category ["Hurricane" "Tornado"]
+                                                   :term "Extreme"}}}))))
 
     (testing "search by science keywords, ignore case"
       (are [items science-keyword value ignore-case]
            (d/refs-match? items
                           (search/find-refs
                             :collection
-                            {"science-keywords" {:0 {science-keyword value}}
+                            {:science-keywords {:0 {science-keyword value}}
                              "options[science-keywords][ignore-case]" ignore-case}))
 
            [coll1] :category "Cat1" false
@@ -103,42 +110,42 @@
       (is (d/refs-match? [coll2 coll6]
                          (search/find-refs
                            :collection
-                           {"science-keywords" {:0 {:category "Hurricane"
-                                                    :topic "Popular"}
-                                                :1 {:term "Extreme"}}
+                           {:science-keywords {:0 {:category "Hurricane"
+                                                   :topic "Popular"}
+                                               :1 {:term "Extreme"}}
                             "options[science-keywords][or]" "false"}))))
 
     (testing "search by science keywords, multiple. options :or true"
       (is (d/refs-match? [coll2 coll3 coll5 coll6 coll7]
                          (search/find-refs
                            :collection
-                           {"science-keywords" {:0 {:category "Hurricane"
-                                                    :topic "Popular"}
-                                                :1 {:term "Extreme"}}
+                           {:science-keywords {:0 {:category "Hurricane"
+                                                   :topic "Popular"}
+                                               :1 {:term "Extreme"}}
                             "options[science-keywords][or]" "true"}))))
 
     (testing "search by science keywords, multiple and legacy :or format"
       (is (d/refs-match? [coll2 coll6]
                          (search/find-refs
                            :collection
-                           {"science-keywords" {:0 {:category "Hurricane"
-                                                    :topic "Popular"}
-                                                :1 {:term "Extreme"}
-                                                :or "false"}})))
+                           {:science-keywords {:0 {:category "Hurricane"
+                                                   :topic "Popular"}
+                                               :1 {:term "Extreme"}
+                                               :or "false"}})))
       (is (d/refs-match? [coll2 coll3 coll5 coll6 coll7]
                          (search/find-refs
                            :collection
-                           {"science-keywords" {:0 {:category "Hurricane"
-                                                    :topic "Popular"}
-                                                :1 {:term "Extreme"}
-                                                :or "true"}}))))
+                           {:science-keywords {:0 {:category "Hurricane"
+                                                   :topic "Popular"}
+                                               :1 {:term "Extreme"}
+                                               :or "true"}}))))
 
     (testing "search by science keywords, default case insensitive."
       (are [science-keyword value items]
            (d/refs-match? items
                           (search/find-refs
                             :collection
-                            {"science-keywords" {:0 {science-keyword value}}}))
+                            {:science-keywords {:0 {science-keyword value}}}))
            :category "cat1" [coll1]
            :topic "TOPIC1" [coll1]
            :term "term1" [coll1]
@@ -191,6 +198,6 @@
 
 (deftest search-science-keywords-error-scenarios
   (testing "search by invalid format."
-    (let [{:keys [status errors]} (search/find-refs :collection {"science-keywords" {:0 {:and "true"}}})]
+    (let [{:keys [status errors]} (search/find-refs :collection {:science-keywords {:0 {:and "true"}}})]
       (is (= 400 status))
       (is (re-find #"parameter \[and\] is not a valid science keyword search term." (first errors))))))

@@ -52,6 +52,10 @@
   [type]
   (format "http://localhost:%s/%ss" (transmit-config/search-port) (name type)))
 
+(defn timeline-url
+  []
+  (format "%s/timeline" (search-url :granule)))
+
 (defn aql-url
   []
   (format "http://localhost:%s/concepts/search" (transmit-config/search-port)))

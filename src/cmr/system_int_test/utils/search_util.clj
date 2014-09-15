@@ -2,6 +2,8 @@
   cmr.system-int-test.utils.search-util
   (:require [clojure.test :refer :all]
             [clj-http.client :as client]
+            [clj-time.core :as t]
+            [clj-time.coerce :as tc]
             [clojure.string :as str]
             [cheshire.core :as json]
             [cmr.common.concepts :as cs]
@@ -110,6 +112,47 @@
                                    :connection-manager (url/conn-mgr)})]
      (is (= 200 (:status response)))
      response)))
+
+(defn- parse-timeline-interval
+  "Parses the timeline response interval component into a more readable and comparable format."
+  [[start end num-grans]]
+  [(-> start (* 1000) tc/from-long str)
+   (-> end (* 1000) tc/from-long str)
+   num-grans])
+
+(defn- parse-timeline-response
+  "Parses the timeline response into a more readable and comparable format."
+  [response]
+  (mapv (fn [{:keys [concept-id intervals]}]
+          {:concept-id concept-id
+           :intervals (mapv parse-timeline-interval intervals)})
+        (json/decode response true)))
+
+(defn get-granule-timeline
+  "Requests search response as a granule timeline. Parses the granule timeline response."
+  ([params]
+   (get-granule-timeline params {}))
+  ([params options]
+   (let [format-as-ext? (get options :format-as-ext? false)
+         snake-kebab? (get options :snake-kebab? true)
+         headers (get options :headers {})
+         params (if snake-kebab?
+                  (params->snake_case (util/map-keys csk/->snake_case_keyword params))
+                  params)
+         ;; allow interval to be specified as a keyword
+         params (update-in params [:interval] #(some-> % name))
+         [url accept] (if format-as-ext?
+                        [(str (url/timeline-url) "." (mime-type->extension "application/json"))]
+                        [(url/timeline-url) "application/json"])
+         response (get-search-failure-data
+                    (client/get url {:accept accept
+                                     :headers headers
+                                     :query-params params
+                                     :connection-manager (url/conn-mgr)}))]
+     (if (= 200 (:status response))
+       {:status (:status response)
+        :results (parse-timeline-response (:body response))}
+       response))))
 
 (defn find-grans-csv
   "Returns the response of granule search in csv format"

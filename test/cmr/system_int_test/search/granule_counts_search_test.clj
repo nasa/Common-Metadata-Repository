@@ -38,23 +38,32 @@
   (let [{:keys [beginning-date-time ending-date-time]} (temporal-range start stop)]
     (str beginning-date-time "," ending-date-time)))
 
-(deftest granule-related-collection-query-results-features-test
-  (let [make-coll (fn [n shape temporal-attribs]
-                    (let [spatial-attribs (when shape
-                                            {:spatial-coverage
-                                             (dc/spatial :geodetic nil :geodetic shape)})
-                          coll-attribs (merge {:entry-title (str "coll" n)}
-                                              spatial-attribs
-                                              temporal-attribs)]
-                      (d/ingest "PROV1" (dc/collection coll-attribs))))
-        make-gran (fn [coll shape temporal-attribs]
-                    (let [spatial-attribs (when shape {:spatial-coverage (dg/spatial nil shape)})
-                          gran-attribs (merge {} spatial-attribs temporal-attribs)]
-                      (d/ingest "PROV1" (dg/granule coll gran-attribs))))
+(defn make-coll
+  ([n shape temporal-attribs]
+   (make-coll n shape temporal-attribs {}))
+  ([n shape temporal-attribs other-attribs]
+   (let [spatial-attribs (when shape
+                           {:spatial-coverage
+                            (dc/spatial :geodetic :geodetic shape)})
+         coll-attribs (merge {:entry-title (str "coll" n)}
+                             spatial-attribs
+                             temporal-attribs
+                             other-attribs)]
+     (d/ingest "PROV1" (dc/collection coll-attribs)))))
 
-        ;; Create collections
-        ;; whole world, no temporal
-        coll1 (make-coll 1 m/whole-world nil)
+(defn make-gran
+  [coll shape temporal-attribs]
+  (let [spatial-attribs (when shape {:spatial-coverage (dg/spatial shape)})
+        gran-attribs (merge {} spatial-attribs temporal-attribs)]
+    (d/ingest "PROV1" (dg/granule coll gran-attribs))))
+
+(deftest granule-related-collection-query-results-features-test
+  (let [;; Create collections
+        ;; whole world, no temporal, and science keywords
+        coll1 (make-coll 1 m/whole-world nil {:science-keywords
+                                              [(dc/science-keyword {:category "Tornado"
+                                                                    :topic "Wind"
+                                                                    :term "Speed"})]})
         ;; western hemisphere
         coll2 (make-coll 2 (m/mbr -180 90 0 -90) (temporal-range 1 3))
         ;; eastern hemisphere
@@ -109,6 +118,12 @@
       (testing "granule counts for all collections"
         (let [refs (search/find-refs :collection {:include-granule-counts true})]
           (is (gran-counts/granule-counts-match? :xml {coll1 5 coll2 0 coll3 3 coll4 3 coll5 3 coll6 3} refs))))
+
+      ;; CMR-712
+      (testing "granule counts with science keywords query"
+        (let [refs (search/find-refs :collection {:include-granule-counts true
+                                                  :science-keywords {:0 {:category "Tornado"}}})]
+          (is (gran-counts/granule-counts-match? :xml {coll1 5} refs))))
 
       (testing "granule counts for spatial queries"
         (are [wnes expected-counts]
