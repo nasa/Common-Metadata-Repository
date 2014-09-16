@@ -166,4 +166,8 @@
     (is (= 200 (:status response)))
     (is (ingest/concept-exists-in-mdb? concept-id revision-id))
     (is (= 1 revision-id))
-    (is (= "Name/With/Slashes" (:native-id ingested-concept)))))
+    (is (= "Name/With/Slashes" (:native-id ingested-concept)))
+
+    (testing "delete"
+      (let [delete-result (ingest/delete-concept ingested-concept)]
+        (is (= 200 (:status delete-result)))))))
