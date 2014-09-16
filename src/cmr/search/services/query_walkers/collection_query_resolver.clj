@@ -3,6 +3,7 @@
   (:require [cmr.search.models.query :as qm]
             [cmr.common.services.errors :as errors]
             [cmr.search.data.elastic-search-index :as idx]
+            [cmr.search.data.complex-to-simple :as c2s]
             [cmr.common.log :refer (debug info warn error)]
             [clojure.set :as set])
   (:import cmr.search.models.query.CollectionQueryCondition))
@@ -160,9 +161,10 @@
                       :else
                       condition)
           result (idx/execute-query context
-                                    (qm/query {:concept-type :collection
-                                               :condition condition
-                                               :page-size :unlimited}))
+                                    (c2s/reduce-query context
+                                                      (qm/query {:concept-type :collection
+                                                                 :condition condition
+                                                                 :page-size :unlimited})))
           collection-concept-ids (map :_id (get-in result [:hits :hits]))]
 
       (if (empty? collection-concept-ids)

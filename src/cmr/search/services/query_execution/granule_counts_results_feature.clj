@@ -93,7 +93,7 @@
   (->> query-results
        (extract-granule-count-query query)
        (acl-service/add-acl-conditions-to-query context)
-       c2s/reduce-query
+       (c2s/reduce-query context)
        (idx/execute-query context)
        search-results->granule-counts
        (assoc query-results :granule-counts-map)))

@@ -7,6 +7,7 @@
             [cmr.search.data.complex-to-simple :as c2s]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.search.services.query-walkers.collection-query-resolver :as r]
+            [cmr.search.services.query-walkers.collection-concept-id-extractor :as ce]
             [cmr.search.services.acl-service :as acl-service])
   (:import cmr.search.models.query.StringsCondition
            cmr.search.models.query.StringCondition))
@@ -57,8 +58,8 @@
   "Determines the execution strategy to use for the given query."
   [query]
   (cond
-     (direct-transformer-query? query) :direct-transformer
-     (specific-items-from-elastic-query? query) :specific-elastic-items
+    (direct-transformer-query? query) :direct-transformer
+    (specific-items-from-elastic-query? query) :specific-elastic-items
     :else :elastic))
 
 (defmulti query->concept-ids
@@ -126,11 +127,11 @@
 
 (defmethod execute-query :specific-elastic-items
   [context query]
-  (let [elastic-results (->> query
+  (let [processed-query (->> query
                              (pre-process-query-result-features context)
-                             c2s/reduce-query
-                             (r/resolve-collection-queries context)
-                             (idx/execute-query context))
+                             (r/resolve-collection-queries context))
+        processed-query (c2s/reduce-query context processed-query)
+        elastic-results (idx/execute-query context processed-query)
         query-results (rc/elastic-results->query-results context query elastic-results)
         query-results (if (:skip-acls? query)
                         query-results
@@ -143,17 +144,17 @@
 (defmethod execute-query :elastic
   [context query]
   (reset! last-query query)
-  (let [; We have to update the binding to the query so changes to the query will be visible when we
-        ; use it subsequently.
-        query (pre-process-query-result-features context query)
-        elastic-results (->> query
-                             c2s/reduce-query
-                             (r/resolve-collection-queries context)
+  (let [pre-processed-query (pre-process-query-result-features context query)
+        processed-query (r/resolve-collection-queries context pre-processed-query)
+        collection-ids (ce/extract-collection-concept-ids processed-query)
+        context (assoc context :query-collection-ids collection-ids)
+        elastic-results (->> processed-query
+                             (c2s/reduce-query context)
                              (#(if (:skip-acls? %)
                                  %
                                  (acl-service/add-acl-conditions-to-query context %)))
                              (idx/execute-query context))
-        query-results (rc/elastic-results->query-results context query elastic-results)]
+        query-results (rc/elastic-results->query-results context pre-processed-query elastic-results)]
     (post-process-query-result-features context query elastic-results query-results)))
 
 
@@ -162,6 +163,6 @@
   (execute-query context @last-query)
 
 
-)
+  )
 
 

@@ -70,7 +70,7 @@
 (defmethod provider->collection-condition :no-query-coll-ids
   [query-coll-ids provider-id]
   (q/->CollectionQueryCondition
-      (q/string-condition :provider-id provider-id true false)))
+    (q/string-condition :provider-id provider-id true false)))
 
 (defmethod provider->collection-condition :with-query-coll-ids
   [query-coll-ids provider-id]
@@ -161,6 +161,7 @@
                                 (map (partial acl->query-condition context coll-ids-by-prov) acls)))]
       (q/or-conds conds)
       q/match-none)))
+
 
 ;; This expects that collection queries have been resolved before this step.
 (defmethod acl-service/add-acl-conditions-to-query :granule

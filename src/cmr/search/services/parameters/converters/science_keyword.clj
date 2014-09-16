@@ -32,7 +32,6 @@
       (qm/group-conds
         group-operation
         (map #(p/parameter->condition concept-type param % options) (vals value)))
-
       ;; Creates the science keyword condition for a group of science keyword fields and values.
       (qm/nested-condition
         :science-keywords
@@ -44,4 +43,3 @@
                           science-keyword-fields))
                    (sk-field+value->string-condition field-name field-value case-sensitive? pattern?)))
                value))))))
-
