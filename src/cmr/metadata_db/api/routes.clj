@@ -182,7 +182,7 @@
         (get-concept request-context params concept-id)))
 
     ;; get the concept id for a given concept-type, provider-id, and native-id
-    (GET "/concept-id/:concept-type/:provider-id/:native-id"
+    (GET ["/concept-id/:concept-type/:provider-id/:native-id" :native-id #".*$"]
       {{:keys [concept-type provider-id native-id] :as params} :params request-context :request-context}
       (get-concept-id request-context params concept-type provider-id native-id))
 
