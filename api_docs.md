@@ -4,19 +4,19 @@
 
 #### Query Parameters
 
- * page\_size - number of results per page - default is 10, max is 2000
- * page\_num - The page number to return
- * sort\_key - Indicates one or more fields to sort on. Described below
- * pretty - return formatted results if set to true
- * token - specifies a user/guest token from ECHO to use to authenticate yourself. This can also be specified as the header Echo-Token
+ * `page_size` - number of results per page - default is 10, max is 2000
+ * `page_num` - The page number to return
+ * `sort_key` - Indicates one or more fields to sort on. Described below
+ * `pretty` - return formatted results if set to true
+ * `token` - specifies a user/guest token from ECHO to use to authenticate yourself. This can also be specified as the header Echo-Token
 
 ##### Collection Query Parameters
 
 These are query parameters specific to collections
 
-  * include\_has\_granules - If this parameter is set to "true" this will include a flag indicating true or false if the collection has any granules at all. Supported in all response formats.
-  * include\_granule\_counts - If this parameter is set to "true" this will include a count of the granules in each collection that would match the spatial and temporal conditions from the collection query. Supported in all response formats.
-  * include\_facets - If this parameter is set to "true" facets will be included in the collection results. Facets are described in detail below.
+  * `include_has_granules` - If this parameter is set to "true" this will include a flag indicating true or false if the collection has any granules at all. Supported in all response formats.
+  * `include_granule_counts` - If this parameter is set to "true" this will include a count of the granules in each collection that would match the spatial and temporal conditions from the collection query. Supported in all response formats.
+  * `include_facets` - If this parameter is set to "true" facets will be included in the collection results. Facets are described in detail below.
 
 #### Headers
 
@@ -27,8 +27,8 @@ These are query parameters specific to collections
     * `curl -H "Accept: application/json" -i "http://localhost:3003/granules"`
     * `curl -H "Accept: application/echo10+xml" -i "http://localhost:3003/granules"`
     * `curl -H "Accept: application/dif+xml" -i "http://localhost:3003/granules"`
-  * Echo-Token - specifies an ECHO token to use to authenticate yourself.
-  * Client-Id - Indicates a name for the client using the CMR API. Specifying this helps Operations monitor query performance per client. It can also make it easier for them to identify your requests if you contact them for assistance.
+  * `Echo-Token` - specifies an ECHO token to use to authenticate yourself.
+  * `Client-Id` - Indicates a name for the client using the CMR API. Specifying this helps Operations monitor query performance per client. It can also make it easier for them to identify your requests if you contact them for assistance.
 
   * The response headers include CMR-Hits and CMR-Took which indicate the number of result hits
      and the time to build and execute the query, respectively.
@@ -37,23 +37,23 @@ These are query parameters specific to collections
 
 Besides MimeTypes, client can also use exetension to specify the format for search results. Default is xml.
 
-    * `curl -i "http://localhost:3003/collections"`
-    * `curl -i "http://localhost:3003/collections.json"`
-    * `curl -i "http://localhost:3003/collections.echo10"`
-    * `curl -i "http://localhost:3003/collections.iso_mends"`
+  * `curl -i "http://localhost:3003/collections"`
+  * `curl -i "http://localhost:3003/collections.json"`
+  * `curl -i "http://localhost:3003/collections.echo10"`
+  * `curl -i "http://localhost:3003/collections.iso_mends"`
 
-    Here is a list of supported extensions that their corresponding MimeTypes:
+Here is a list of supported extensions that their corresponding MimeTypes:
 
-      * json      "application/json"
-      * xml       "application/xml"
-      * echo10    "application/echo10+xml"
-      * iso       "application/iso+xml"
-      * iso\_mends "application/iso-mends+xml"
-      * dif       "application/dif+xml"
-      * csv       "text/csv"
-      * atom      "application/atom+xml"
+  * `json`      "application/json"
+  * `xml`       "application/xml"
+  * `echo10`    "application/echo10+xml"
+  * `iso`       "application/iso+xml"
+  * `iso_mends` "application/iso-mends+xml"
+  * `dif`       "application/dif+xml"
+  * `csv`       "text/csv"
+  * `atom`      "application/atom+xml"
 
-      iso is an alias for iso\_mends.
+iso is an alias for iso\_mends.
 
 ### Clear the cache cache
 
@@ -270,15 +270,15 @@ Collection results are sorted by ascending entry title by default. One or more s
 
 ##### Valid Collection Sort Keys
 
-  * entry_title
-  * dataset_id - alias for entry_title
-  * start_date
-  * end_date
-  * platform
-  * instrument
-  * sensor
-  * provider
-  * score - document relevance score, only valid with keyword search, defaults to descending
+  * `entry_title`
+  * `dataset_id` - alias for entry_title
+  * `start_date`
+  * `end_date`
+  * `platform`
+  * `instrument`
+  * `sensor`
+  * `provider`
+  * `score` - document relevance score, only valid with keyword search, defaults to descending
 
 Example of sorting by start_date in descending order: (Most recent data first)
 
@@ -413,7 +413,8 @@ Bounding boxes define an area on the earth aligned with longitude and latitude. 
      curl "http://localhost:3003/granules?sensor\[\]=1B"
 
 ### Find granules by echo granule id, echo collection id and concept ids.
-    Note: more than one may be supplied
+
+Note: more than one may be supplied
 
   Find granule by concept id
 
@@ -431,30 +432,34 @@ Bounding boxes define an area on the earth aligned with longitude and latitude. 
 
     curl "http://localhost:3003/granules?concept_id\[\]=C1000000001-CMR_PROV2"
 
-### Find granules by day_night_flag param, supports pattern, ignore_case, and option :and, :or
+### Find granules by day\_night\_flag param, supports pattern, ignore_case, and option :and, :or
 
-  curl "http://localhost:3003/granules?day_night_flag=night
+```
+curl "http://localhost:3003/granules?day_night_flag=night
 
-  curl "http://localhost:3003/granules?day_night_flag=day
+curl "http://localhost:3003/granules?day_night_flag=day
 
-  curl "http://localhost:3003/granules?day_night=unspecified
+curl "http://localhost:3003/granules?day_night=unspecified
+```
 
 
 ### Exclude granules from elastic results by echo granule id and concept ids. Note: more than one id may be supplied in exclude param
 
 Exclude granule by echo granule id
 
-   curl "http://localhost:3003/granules?echo_granule_id\[\]=G1000000002-CMR_PROV1&echo_granule_id\[\]=G1000000003-CMR_PROV1&echo_granule_id\[\]=G1000000006-CMR_PROV2&exclude\[echo_granule_id\]\[\]=G1000000006-CMR_PROV2"
+```
+curl "http://localhost:3003/granules?echo_granule_id\[\]=G1000000002-CMR_PROV1&echo_granule_id\[\]=G1000000003-CMR_PROV1&echo_granule_id\[\]=G1000000006-CMR_PROV2&exclude\[echo_granule_id\]\[\]=G1000000006-CMR_PROV2"
 
-   curl "http://localhost:3003/granules?exclude\[echo_granule_id\]\[\]=G1000000006-CMR_PROV2&cloud_cover=-70,120"
+curl "http://localhost:3003/granules?exclude\[echo_granule_id\]\[\]=G1000000006-CMR_PROV2&cloud_cover=-70,120"
+```
 
 Exclude granule by concept id
 
-   curl "http://localhost:3003/granules?echo_granule_id\[\]=G1000000002-CMR_PROV1&echo_granule_id\[\]=G1000000003-CMR_PROV1&echo_granule_id\[\]=G1000000006-CMR_PROV2&exclude\[concept_id\]\[\]=G1000000006-CMR_PROV2"
+    curl "http://localhost:3003/granules?echo_granule_id\[\]=G1000000002-CMR_PROV1&echo_granule_id\[\]=G1000000003-CMR_PROV1&echo_granule_id\[\]=G1000000006-CMR_PROV2&exclude\[concept_id\]\[\]=G1000000006-CMR_PROV2"
 
 Exclude granule by parent concept id
 
-   curl "http://localhost:3003/granules?echo_granule_id\[\]=G1000000002-CMR_PROV1&echo_granule_id\[\]=G1000000003-CMR_PROV1&echo_granule_id\[\]=G1000000006-CMR_PROV2&exclude\[concept_id\]\[\]=C1000000001-CMR_PROV2"
+    curl "http://localhost:3003/granules?echo_granule_id\[\]=G1000000002-CMR_PROV1&echo_granule_id\[\]=G1000000003-CMR_PROV1&echo_granule_id\[\]=G1000000006-CMR_PROV2&exclude\[concept_id\]\[\]=C1000000001-CMR_PROV2"
 
 #### Sorting Granule Results
 
@@ -462,30 +467,26 @@ Granule results are sorted by ascending provider and start date by default. One 
 
 ##### Valid Granule Sort Keys
 
-  * campaign - alias for project
-  * entry_title
-  * dataset_id - alias for entry_title
-  * data_size
-  * end_date
-  * granule_ur
-  * producer_granule_id
-  * project
-  * provider
-  * readable_granule_name - this sorts on a combination of producer_granule_id and granule_ur. If a producer_granule_id is present, that value is used. Otherwise, the granule_ur is used.
-  * short_name
-  * start_date
-  * version
-  * platform
-  * instrument
-  * sensor
-  * day_night_flag
-  * online_only
-  * browsable (legacy key browse_only is supported as well)
-
-##### Future Granule Sort Keys
-Not yet implemented
-
-  * cloud_cover
+  * `campaign` - alias for project
+  * `entry_title`
+  * `dataset_id` - alias for entry_title
+  * `data_size`
+  * `end_date`
+  * `granule_ur`
+  * `producer_granule_id`
+  * `project`
+  * `provider`
+  * `readable_granule_name` - this sorts on a combination of `producer_granule_id` and `granule_ur`. If a `producer_granule_id` is present, that value is used. Otherwise, the `granule_ur` is used.
+  * `short_name`
+  * `start_date`
+  * `version`
+  * `platform`
+  * `instrument`
+  * `sensor`
+  * `day_night_flag`
+  * `online_only`
+  * `browsable` (legacy key browse_only is supported as well)
+  * `cloud_cover`
 
 Example of sorting by start_date in descending order: (Most recent data first)
 
@@ -511,10 +512,10 @@ Granule timeline queries allow clients to find time intervals with continuous gr
 
 It supports all normal granule parameters. It requires the following parameters.
 
-  * start_date - The start date of the timeline intervals to search from.
-  * end_date - The end date of to search from.
-  * interval - The interval granularity. This can be one of year, month, day, hour, minute, or second. At least one granule found within the interval time will be considered coverage for that interval.
-  * concept_id - Specifies a collection concept id to search for. It is recommended that the timeline search be limited to a few collections for good performance.
+  * `start_date` - The start date of the timeline intervals to search from.
+  * `end_date` - The end date of to search from.
+  * `interval` - The interval granularity. This can be one of year, month, day, hour, minute, or second. At least one granule found within the interval time will be considered coverage for that interval.
+  * `concept_id` - Specifies a collection concept id to search for. It is recommended that the timeline search be limited to a few collections for good performance.
 
 The response format is in JSON. Intervals are returned as tuples containing three numbers like `[949363200,965088000,4]`. The two numbers are the start and stop date of the interval represented by the number of seconds since the epoch. The third number is the number of granules within that interval.
 
