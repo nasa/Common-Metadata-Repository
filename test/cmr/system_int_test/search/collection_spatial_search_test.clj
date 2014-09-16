@@ -111,19 +111,6 @@
         am-point (make-coll :geodetic nil "am-point" (p/point 180 22))]
     (index/refresh-elastic-index)
 
-    (testing "orbit parameters retrieval"
-      (let [found (search/find-concepts-in-format
-                    "application/echo10+xml"
-                    :collection
-                    {:entry-title "orbit-params"})
-            xml (:body found)
-            echo10 (re-find #"<Collection>.*Collection>" xml)
-            umm (ec/parse-collection echo10)
-            umm-op (:orbit-parameters (:spatial-coverage umm))
-            expected (c/map->OrbitParameters orbit-params)]
-        (= expected umm-op)))
-
-
     (testing "line searches"
       (are [ords items]
            (let [found (search/find-refs
