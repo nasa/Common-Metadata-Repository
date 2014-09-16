@@ -61,7 +61,7 @@
       (let [geometries (seq (get-in granule [:spatial-coverage :geometries]))]
         (spatial/spatial->elastic-docs gsr granule))
 
-      (= gsr :no-spatil)
+      (= gsr :no-spatial)
       nil
 
       (= gsr :orbit)
