@@ -61,6 +61,9 @@
       (let [geometries (seq (get-in granule [:spatial-coverage :geometries]))]
         (spatial/spatial->elastic-docs gsr granule))
 
+      (= gsr :no-spatil)
+      nil
+
       (= gsr :orbit)
       (let [orbit (get-in granule [:spatial-coverage :orbit])
             orbit-asc-crossing-lon (:ascending-crossing orbit)
