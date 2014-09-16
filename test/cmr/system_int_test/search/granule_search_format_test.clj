@@ -147,7 +147,7 @@
         ru4 (dc/related-url "ALGORITHM INFO" "http://inherited.com")
         ru5 (dc/related-url "GET RELATED VISUALIZATION" "http://inherited.com/browse")
         coll1 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset1"
-                                                :spatial-coverage (dc/spatial :geodetic)}))
+                                                :spatial-coverage (dc/spatial {:gsr :geodetic})}))
         coll2 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset2"
                                                 :related-urls [ru4 ru5]}))
 
@@ -169,7 +169,6 @@
                                 :cloud-cover 50.0
                                 :related-urls [ru1 ru2]
                                 :spatial-coverage (dg/spatial
-                                                    nil
                                                     (poly/polygon [(umm-s/ords->ring -70 20, 70 20, 70 30, -70 30, -70 20)])
                                                     polygon-with-holes
                                                     (p/point 1 2)

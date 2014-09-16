@@ -127,16 +127,16 @@
 
 
 (deftest spatial-search-test
-  (let [geodetic-coll (d/ingest "PROV1" (dc/collection {:spatial-coverage (dc/spatial :geodetic)}))
-        cartesian-coll (d/ingest "PROV1" (dc/collection {:spatial-coverage (dc/spatial :cartesian)}))
+  (let [geodetic-coll (d/ingest "PROV1" (dc/collection {:spatial-coverage (dc/spatial {:gsr :geodetic})}))
+        cartesian-coll (d/ingest "PROV1" (dc/collection {:spatial-coverage (dc/spatial {:gsr :cartesian})}))
         make-gran (fn [ur & shapes]
                     (d/ingest "PROV1" (dg/granule geodetic-coll
                                                   {:granule-ur ur
-                                                   :spatial-coverage (apply dg/spatial nil shapes)})))
+                                                   :spatial-coverage (apply dg/spatial shapes)})))
         make-cart-gran (fn [ur & shapes]
                          (d/ingest "PROV1" (dg/granule cartesian-coll
                                                        {:granule-ur ur
-                                                        :spatial-coverage (apply dg/spatial nil shapes)})))
+                                                        :spatial-coverage (apply dg/spatial shapes)})))
 
         ;; Lines
         normal-line (make-gran "normal-line" (l/ords->line-string :geodetic 22.681 -8.839, 18.309 -11.426, 22.705 -6.557))

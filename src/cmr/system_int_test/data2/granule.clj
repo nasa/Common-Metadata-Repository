@@ -5,7 +5,8 @@
             [cmr.umm.granule.temporal :as gt]
             [cmr.system-int-test.data2.core :as d]
             [cmr.system-int-test.data2.collection :as dc]
-            [cmr.common.date-time-parser :as p]))
+            [cmr.common.date-time-parser :as p])
+  (:import [cmr.umm.granule Orbit]))
 
 (defn psa
   "Creates product specific attribute ref"
@@ -63,11 +64,22 @@
 
 (defn orbit
   [asc-crossing start-lat start-dir end-lat end-dir]
-  (g/->Orbit asc-crossing start-lat start-dir end-lat end-dir nil))
+  (g/->Orbit asc-crossing start-lat start-dir end-lat end-dir))
 
-(defn spatial
-  [orbit & geometries]
-  (g/->SpatialCoverage geometries orbit))
+(defmulti spatial
+  (fn [& spatial-data]
+    (if (and (= 1 (count spatial-data))
+             (= Orbit (type (first spatial-data))))
+      :orbit
+      :geometry)))
+
+(defmethod spatial :orbit
+  [& orbits]
+  (g/map->SpatialCoverage {:orbit (first orbits)}))
+
+(defmethod spatial :geometry
+  [& geometries]
+  (g/map->SpatialCoverage {:geometries geometries}))
 
 (defn granule
   "Creates a granule"

@@ -167,18 +167,17 @@
         g1 (d/ingest "PROV1" (dg/granule c1))
 
         ;; A collection with a granule spatial representation
-        c2 (d/ingest "PROV1" (dc/collection {:spatial-coverage (dc/spatial :geodetic)}) :dif)
-        g2 (d/ingest "PROV1" (dg/granule c2 {:spatial-coverage (dg/spatial nil (m/mbr -160 45 -150 35))}))
+        c2 (d/ingest "PROV1" (dc/collection {:spatial-coverage (dc/spatial {:gsr :geodetic})}) :dif)
+        g2 (d/ingest "PROV1" (dg/granule c2 {:spatial-coverage (dg/spatial (m/mbr -160 45 -150 35))}))
 
 
         ;; A collections with a granule spatial representation and spatial data
         c3 (d/ingest "PROV1"
                      (dc/collection
                        {:spatial-coverage
-                        (dc/spatial :geodetic
-                                    nil
-                                    :geodetic
-                                    (m/mbr -10 9 0 -10))})
+                        (dc/spatial {:gsr :geodetic
+                                     :sr :geodetic
+                                     :geometries [(m/mbr -10 9 0 -10)]})})
                      :dif)
         g3 (d/ingest "PROV1" (dg/granule c3))]
     (index/refresh-elastic-index)
@@ -233,17 +232,16 @@
                                         :related-urls [ru1 ru2]
                                         :associated-difs ["DIF-1" "DIF-2"]
                                         :spatial-coverage
-                                        (dc/spatial :geodetic
-                                                    nil
-                                                    :geodetic
-                                                    (poly/polygon [(umm-s/ords->ring -70 20, 70 20, 70 30, -70 30, -70 20)])
-                                                    polygon-with-holes
-                                                    (p/point 1 2)
-                                                    (p/point -179.9 89.4)
-                                                    (l/ords->line-string nil 0 0, 0 1, 0 -90, 180 0)
-                                                    (l/ords->line-string nil 1 2, 3 4, 5 6, 7 8)
-                                                    (m/mbr -180 90 180 -90)
-                                                    (m/mbr -10 20 30 -40))}))
+                                        (dc/spatial {:sr :geodetic
+                                                     :gsr :geodetic
+                                                     :shapes [(poly/polygon [(umm-s/ords->ring -70 20, 70 20, 70 30, -70 30, -70 20)])
+                                                              polygon-with-holes
+                                                              (p/point 1 2)
+                                                              (p/point -179.9 89.4)
+                                                              (l/ords->line-string nil 0 0, 0 1, 0 -90, 180 0)
+                                                              (l/ords->line-string nil 1 2, 3 4, 5 6, 7 8)
+                                                              (m/mbr -180 90 180 -90)
+                                                              (m/mbr -10 20 30 -40)]})}))
         coll2 (d/ingest "PROV1"
                         (dc/collection {:entry-title "Dataset2"
                                         :short-name "ShortName#2"
@@ -253,10 +251,9 @@
                                         :ending-date-time "2010-01-11T12:00:00Z"
                                         :related-urls [ru3]
                                         :spatial-coverage
-                                        (dc/spatial :cartesian
-                                                    nil
-                                                    :cartesian
-                                                    (poly/polygon [(umm-s/ords->ring -70 20, 70 20, 70 30, -70 30, -70 20)]))}))]
+                                        (dc/spatial {:sr :cartesian
+                                                     :gsr :cartesian
+                                                     :geometries [(poly/polygon [(umm-s/ords->ring -70 20, 70 20, 70 30, -70 30, -70 20)])]})}))]
 
     (index/refresh-elastic-index)
 

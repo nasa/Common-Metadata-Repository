@@ -40,11 +40,10 @@
                     (d/ingest "PROV1"
                               (dc/collection
                                 {:entry-title et
-                                 :spatial-coverage (apply dc/spatial
-                                                          coord-sys
-                                                          orbit-params
-                                                          coord-sys
-                                                          shapes)})))
+                                 :spatial-coverage (dc/spatial {:gsr coord-sys
+                                                                :orbit orbit-params
+                                                                :sr coord-sys
+                                                                :geometries shapes})})))
 
         ;; orbit parameters
         orbit-params {:swath-width 2
@@ -55,7 +54,8 @@
         orbit-coll (d/ingest "PROV1"
                              (dc/collection
                                {:entry-title "orbit-params"
-                                :spatial-coverage (dc/spatial :geodetic orbit-params)}))
+                                :spatial-coverage (dc/spatial {:gsr :geodetic
+                                                               :orbit orbit-params})}))
 
 
         ;; Lines

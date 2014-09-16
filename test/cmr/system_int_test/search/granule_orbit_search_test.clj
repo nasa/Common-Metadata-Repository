@@ -51,11 +51,13 @@
         coll1 (d/ingest "PROV1"
                         (dc/collection
                           {:entry-title "orbit-params1"
-                           :spatial-coverage (dc/spatial :geodetic op1)}))
+                           :spatial-coverage (dc/spatial {:gsr :orbit
+                                                          :orbit op1})}))
         coll2 (d/ingest "PROV1"
                         (dc/collection
                           {:entry-title "orbit-params2"
-                           :spatial-coverage (dc/spatial :geodetic op2)}))
+                           :spatial-coverage (dc/spatial {:gsr :orbit
+                                                          :orbit op2})}))
         g1 (make-gran coll1 "gran1" -158.1 81.8 :desc  -81.8 :desc)
         g2 (make-gran coll1 "gran2" 177.16 -81.8 :asc 81.8 :asc)
         g3 (make-gran coll1 "gran3" 127.73 81.8 :desc -81.8 :desc)
@@ -67,7 +69,7 @@
     (index/refresh-elastic-index)
 
     (testing "bounding rectangle searches"
-      (are [wnes items params]
+      (are [items wnes params]
            (let [found (search/find-refs
                          :granule
                          (merge {:bounding-box
@@ -80,15 +82,15 @@
              matches?)
 
            ;; Search for orbits crossing a rectangle over the equator and anti-meridian
-           [145 45 -145 -45] [g2 g7] nil
+           [g2 g7] [145 45 -145 -45] nil
            ;; Search for orbits crossing a rectangle over the equator and meridian
-           [-45 45 45 -45] [g1 g3 g8] nil
+           [g1 g3 g8] [-45 45 45 -45] nil
            ;; Search for orbits crossing a rectangle in the western hemisphere near the north pole
-           [-90 89 -45 85] [g5] nil
+           [g5] [-90 89 -45 85] nil
            ;; Search for orbits crossing a rectangle in the southern hemisphere crossing the anti-meridian
-           [145 -45 -145 -85] [g2 g3 g4 g7] nil
+           [g2 g3 g4 g7] [145 -45 -145 -85] nil
            ;; Search while specifying parent collection
-           [145 45 -145 -45] [g2] {:concept-id (:concept-id coll1)}))))
+           [g2] [145 45 -145 -45] {:concept-id (:concept-id coll1)}))))
 
 (deftest multi-orbit-search
   (let [;; orbit parameters
@@ -105,17 +107,19 @@
         coll1 (d/ingest "PROV1"
                         (dc/collection
                           {:entry-title "orbit-params1"
-                           :spatial-coverage (dc/spatial :geodetic op1)}))
+                           :spatial-coverage (dc/spatial {:gsr :orbit
+                                                          :orbit op1})}))
         coll2 (d/ingest "PROV1"
                         (dc/collection
                           {:entry-title "orbit-params2"
-                           :spatial-coverage (dc/spatial :geodetic op2)}))
+                           :spatial-coverage (dc/spatial {:gsr :orbit
+                                                          :orbit op2})}))
         g1 (make-gran coll1 "gran1" 104.0852 50 :asc 50 :asc)
         g2 (make-gran coll2 "gran2" 31.946 70.113955 :asc  -71.344289 :desc)]
     (index/refresh-elastic-index)
 
     (testing "bounding rectangle searches"
-      (are [wnes items params]
+      (are [items wnes params]
            (let [found (search/find-refs
                          :granule
                          (merge {:bounding-box
@@ -128,15 +132,15 @@
              matches?)
 
            ;; Search with large box that finds the granule
-           [-134.648 69.163 76.84 65.742] [g1] {:concept-id (:concept-id coll1)}
+           [g1] [-134.648 69.163 76.84 65.742] {:concept-id (:concept-id coll1)}
            ;; Search near equator that doesn't intersect granule
-           [0 1 1 0] [] {:concept-id (:concept-id coll1)}
+           [] [0 1 1 0] {:concept-id (:concept-id coll1)}
            ;; Search near equator that intersects granule
-           [1 11 15 1] [g1] {:concept-id (:concept-id coll1)}
+           [g1] [1 11 15 1] {:concept-id (:concept-id coll1)}
            ;; Search near north pole
-           [1 89.5 1.5 89] [] {:concept-id (:concept-id coll1)}
+           [] [1 89.5 1.5 89] {:concept-id (:concept-id coll1)}
            ;; Search for granules with exactly one orbit does not match areas seen on the second pass
-           [175.55 38.273 -164.883 17.912] [] {:concept-id (:concept-id coll2)}
+           [] [175.55 38.273 -164.883 17.912] {:concept-id (:concept-id coll2)}
            ;; The following test is deliberately commented out because it is marked as @broken
            ;; in ECHO. It is included here for completeness.
            ;;
@@ -149,7 +153,7 @@
            ;; of the backtrack algorithm and be able to definitively state when an orbit granule doesn intersect a
            ;; particular bounding box.
            ;;
-           ;[0 1 6 0] [] nil
+           ;[] [0 1 6 0] nil
            ))))
 
 

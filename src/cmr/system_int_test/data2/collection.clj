@@ -131,17 +131,27 @@
                          :title description
                          :mime-type mime-type}))))
 
+; (defn spatial
+;   ([gsr]
+;    (spatial gsr nil nil))
+;   ([gsr orbit-params]
+;    (spatial gsr orbit-params nil))
+;   ([gsr orbit-params sr & shapes]
+;    (c/map->SpatialCoverage {:granule-spatial-representation gsr
+;                             :orbit-parameters (when orbit-params
+;                                                 (c/map->OrbitParameters orbit-params))
+;                             :spatial-representation sr
+;                             :geometries (seq shapes)})))
+
 (defn spatial
-  ([gsr]
-   (spatial gsr nil nil))
-  ([gsr orbit-params]
-   (spatial gsr orbit-params nil))
-  ([gsr orbit-params sr & shapes]
-   (c/map->SpatialCoverage {:granule-spatial-representation gsr
-                            :orbit-parameters (when orbit-params
-                                                (c/map->OrbitParameters orbit-params))
-                            :spatial-representation sr
-                            :geometries (seq shapes)})))
+  [attributes]
+  (let [{:keys [gsr sr orbit geometries]} attributes]
+    (c/map->SpatialCoverage {:granule-spatial-representation gsr
+                             :orbit-parameters (when orbit
+                                                 (c/map->OrbitParameters orbit))
+                             :spatial-representation sr
+                             :geometries (seq geometries)})))
+
 
 (defn collection
   "Creates a collection"
