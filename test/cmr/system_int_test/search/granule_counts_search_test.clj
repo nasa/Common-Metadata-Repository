@@ -44,7 +44,9 @@
   ([n shape temporal-attribs other-attribs]
    (let [spatial-attribs (when shape
                            {:spatial-coverage
-                            (dc/spatial :geodetic :geodetic shape)})
+                            (dc/spatial {:gsr :geodetic
+                                         :sr :geodetic
+                                         :geometries [shape]})})
          coll-attribs (merge {:entry-title (str "coll" n)}
                              spatial-attribs
                              temporal-attribs
@@ -158,7 +160,7 @@
         (let [items (search/find-metadata :collection :echo10 {:include-granule-counts true
                                                                :concept-id (map :concept-id all-colls)})]
           (is (gran-counts/granule-counts-match? :echo10
-                                     {coll1 5 coll2 0 coll3 3 coll4 3 coll5 3 coll6 3} items))))
+                                                 {coll1 5 coll2 0 coll3 3 coll4 3 coll5 3 coll6 3} items))))
 
       (testing "AQL with include_granule_counts"
         (let [refs (search/find-refs-with-aql :collection [] {}

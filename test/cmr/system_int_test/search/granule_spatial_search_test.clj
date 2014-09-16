@@ -127,8 +127,8 @@
 
 
 (deftest spatial-search-test
-  (let [geodetic-coll (d/ingest "PROV1" (dc/collection {:spatial-coverage (dc/spatial :geodetic)}))
-        cartesian-coll (d/ingest "PROV1" (dc/collection {:spatial-coverage (dc/spatial :cartesian)}))
+  (let [geodetic-coll (d/ingest "PROV1" (dc/collection {:spatial-coverage (dc/spatial {:gsr :geodetic})}))
+        cartesian-coll (d/ingest "PROV1" (dc/collection {:spatial-coverage (dc/spatial {:gsr :cartesian})}))
         make-gran (fn [ur & shapes]
                     (d/ingest "PROV1" (dg/granule geodetic-coll
                                                   {:granule-ur ur

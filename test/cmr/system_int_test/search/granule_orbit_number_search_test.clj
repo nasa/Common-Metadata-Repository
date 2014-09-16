@@ -1,5 +1,5 @@
 (ns cmr.system-int-test.search.granule-orbit-number-search-test
-  "Integration test for CMR granule temporal search"
+  "Integration test for CMR granule orbit number search"
   (:require [clojure.test :refer :all]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.search-util :as search]

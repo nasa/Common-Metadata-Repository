@@ -18,7 +18,9 @@
             [cmr.spatial.serialize :as srl]
             [cmr.common.dev.util :as dev-util]
             [cmr.spatial.lr-binary-search :as lbs]
-            [cmr.umm.spatial :as umm-s]))
+            [cmr.umm.spatial :as umm-s]
+            [cmr.umm.collection :as c]
+            [cmr.umm.echo10.collection :as ec]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
@@ -34,40 +36,53 @@
   (codec/url-encode (umm-s/set-coordinate-system :geodetic (apply polygon ords))))
 
 (deftest spatial-search-test
-  (let [make-coll (fn [coord-sys et & shapes]
+  (let [make-coll (fn [coord-sys orbit-params et & shapes]
                     (d/ingest "PROV1"
                               (dc/collection
                                 {:entry-title et
-                                 :spatial-coverage (apply dc/spatial
-                                                          coord-sys
-                                                          coord-sys
-                                                          shapes)})))
+                                 :spatial-coverage (dc/spatial {:gsr coord-sys
+                                                                :orbit orbit-params
+                                                                :sr coord-sys
+                                                                :geometries shapes})})))
+
+        ;; orbit parameters
+        orbit-params {:swath-width 2
+                      :period 96
+                      :inclination-angle 45
+                      :number-of-orbits 1
+                      :start-circular-latitude 0}
+        orbit-coll (d/ingest "PROV1"
+                             (dc/collection
+                               {:entry-title "orbit-params"
+                                :spatial-coverage (dc/spatial {:gsr :geodetic
+                                                               :orbit orbit-params})}))
+
 
         ;; Lines
-        normal-line (make-coll :geodetic "normal-line"
+        normal-line (make-coll :geodetic nil "normal-line"
                                (l/ords->line-string :geodetic 22.681 -8.839, 18.309 -11.426, 22.705 -6.557))
-        normal-line-cart (make-coll :cartesian "normal-line-cart"
+        normal-line-cart (make-coll :cartesian nil "normal-line-cart"
                                     (l/ords->line-string :cartesian 16.439 -13.463,  31.904 -13.607, 31.958 -10.401))
 
         ;; Bounding rectangles
-        whole-world (make-coll :geodetic "whole-world" (m/mbr -180 90 180 -90))
-        touches-np (make-coll :geodetic "touches-np" (m/mbr 45 90 55 70))
-        touches-sp (make-coll :geodetic "touches-sp" (m/mbr -160 -70 -150 -90))
-        across-am-br (make-coll :geodetic "across-am-br" (m/mbr 170 10 -170 -10))
-        normal-brs (make-coll :geodetic "normal-brs"
+        whole-world (make-coll :geodetic nil "whole-world" (m/mbr -180 90 180 -90))
+        touches-np (make-coll :geodetic nil "touches-np" (m/mbr 45 90 55 70))
+        touches-sp (make-coll :geodetic nil "touches-sp" (m/mbr -160 -70 -150 -90))
+        across-am-br (make-coll :geodetic nil "across-am-br" (m/mbr 170 10 -170 -10))
+        normal-brs (make-coll :geodetic nil "normal-brs"
                               (m/mbr 10 10 20 0)
                               (m/mbr -20 0 -10 -10))
 
         ;; Polygons
-        wide-north (make-coll :geodetic "wide-north" (polygon -70 20, 70 20, 70 30, -70 30, -70 20))
-        wide-south (make-coll :geodetic "wide-south" (polygon -70 -30, 70 -30, 70 -20, -70 -20, -70 -30))
-        across-am-poly (make-coll :geodetic "across-am-poly" (polygon 170 35, -175 35, -170 45, 175 45, 170 35))
-        on-np (make-coll :geodetic "on-np" (polygon 45 85, 135 85, -135 85, -45 85, 45 85))
-        on-sp (make-coll :geodetic "on-sp" (polygon -45 -85, -135 -85, 135 -85, 45 -85, -45 -85))
-        normal-poly (make-coll :geodetic "normal-poly" (polygon -20 -10, -10 -10, -10 10, -20 10, -20 -10))
+        wide-north (make-coll :geodetic nil "wide-north" (polygon -70 20, 70 20, 70 30, -70 30, -70 20))
+        wide-south (make-coll :geodetic nil "wide-south" (polygon -70 -30, 70 -30, 70 -20, -70 -20, -70 -30))
+        across-am-poly (make-coll :geodetic nil "across-am-poly" (polygon 170 35, -175 35, -170 45, 175 45, 170 35))
+        on-np (make-coll :geodetic nil "on-np" (polygon 45 85, 135 85, -135 85, -45 85, 45 85))
+        on-sp (make-coll :geodetic nil "on-sp" (polygon -45 -85, -135 -85, 135 -85, 45 -85, -45 -85))
+        normal-poly (make-coll :geodetic nil "normal-poly" (polygon -20 -10, -10 -10, -10 10, -20 10, -20 -10))
 
         ;; CMR-724 special case
-        whole-world-poly (make-coll :geodetic "whole-world-poly"
+        whole-world-poly (make-coll :geodetic nil "whole-world-poly"
                                     (polygon -179.9999 0.0, -179.9999 -89.9999, 0.0 -89.9999,
                                              0.0 0.0, 0.0 89.9999, -179.9999 89.9999, -179.9999 0.0))
 
@@ -75,25 +90,25 @@
         outer (umm-s/ords->ring -5.26,-2.59, 11.56,-2.77, 10.47,8.71, -5.86,8.63, -5.26,-2.59)
         hole1 (umm-s/ords->ring 6.95,2.05, 2.98,2.06, 3.92,-0.08, 6.95,2.05)
         hole2 (umm-s/ords->ring 5.18,6.92, -1.79,7.01, -2.65,5, 4.29,5.05, 5.18,6.92)
-        polygon-with-holes  (make-coll :geodetic "polygon-with-holes" (poly/polygon [outer hole1 hole2]))
+        polygon-with-holes  (make-coll :geodetic nil "polygon-with-holes" (poly/polygon [outer hole1 hole2]))
 
         ;; Cartesian Polygons
-        wide-north-cart (make-coll :cartesian "wide-north-cart" (polygon -70 20, 70 20, 70 30, -70 30, -70 20))
-        wide-south-cart (make-coll :cartesian "wide-south-cart" (polygon -70 -30, 70 -30, 70 -20, -70 -20, -70 -30))
-        very-wide-cart (make-coll :cartesian "very-wide-cart" (polygon -180 40, -180 35, 180 35, 180 40, -180 40))
-        very-tall-cart (make-coll :cartesian "very-tall-cart" (polygon -160 90, -160 -90, -150 -90, -150 90, -160 90))
-        normal-poly-cart (make-coll :cartesian "normal-poly-cart" (polygon 1.534 -16.52, 6.735 -14.102, 3.745 -9.735, -1.454 -11.802, 1.534 -16.52))
+        wide-north-cart (make-coll :cartesian nil "wide-north-cart" (polygon -70 20, 70 20, 70 30, -70 30, -70 20))
+        wide-south-cart (make-coll :cartesian nil "wide-south-cart" (polygon -70 -30, 70 -30, 70 -20, -70 -20, -70 -30))
+        very-wide-cart (make-coll :cartesian nil "very-wide-cart" (polygon -180 40, -180 35, 180 35, 180 40, -180 40))
+        very-tall-cart (make-coll :cartesian nil "very-tall-cart" (polygon -160 90, -160 -90, -150 -90, -150 90, -160 90))
+        normal-poly-cart (make-coll :cartesian nil "normal-poly-cart" (polygon 1.534 -16.52, 6.735 -14.102, 3.745 -9.735, -1.454 -11.802, 1.534 -16.52))
 
         outer-cart (umm-s/ords->ring -5.26 -22.59 11.56 -22.77 10.47 -11.29 -5.86 -11.37 -5.26 -22.59)
         hole1-cart (umm-s/ords->ring 6.95 -17.95 2.98 -17.94 3.92 -20.08 6.95 -17.95)
         hole2-cart (umm-s/ords->ring 5.18 -13.08 -1.79 -12.99 -2.65 -15 4.29 -14.95 5.18 -13.08)
-        polygon-with-holes-cart (make-coll :cartesian "polygon-with-holes-cart" (poly/polygon [outer-cart hole1-cart hole2-cart]))
+        polygon-with-holes-cart (make-coll :cartesian nil "polygon-with-holes-cart" (poly/polygon [outer-cart hole1-cart hole2-cart]))
 
         ;; Points
-        north-pole (make-coll :geodetic "north-pole" (p/point 0 90))
-        south-pole (make-coll :geodetic "south-pole" (p/point 0 -90))
-        normal-point (make-coll :geodetic "normal-point" (p/point 10 22))
-        am-point (make-coll :geodetic "am-point" (p/point 180 22))]
+        north-pole (make-coll :geodetic nil "north-pole" (p/point 0 90))
+        south-pole (make-coll :geodetic nil "south-pole" (p/point 0 -90))
+        normal-point (make-coll :geodetic nil "normal-point" (p/point 10 22))
+        am-point (make-coll :geodetic nil "am-point" (p/point 180 22))]
     (index/refresh-elastic-index)
 
     (testing "line searches"

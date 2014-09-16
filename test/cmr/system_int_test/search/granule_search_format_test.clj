@@ -181,7 +181,7 @@
         ru4 (dc/related-url "ALGORITHM INFO" "http://inherited.com")
         ru5 (dc/related-url "GET RELATED VISUALIZATION" "http://inherited.com/browse")
         coll1 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset1"
-                                                :spatial-coverage (dc/spatial :geodetic)}))
+                                                :spatial-coverage (dc/spatial {:gsr :geodetic})}))
         coll2 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset2"
                                                 :related-urls [ru4 ru5]}))
 
@@ -219,7 +219,10 @@
                                 :size 80.0
                                 :cloud-cover 30.0
                                 :related-urls [ru3]
-                                :spatial-coverage (dc/spatial :geodetic)})]
+                                ;; FIXME - Commented this out because it seems wrong (dc not dg)
+                                ;; and is incompatible with spatial-coverage with orbit
+                                ; :spatial-coverage (dc/spatial nil :geodetic)
+                                })]
 
     (index/refresh-elastic-index)
 
