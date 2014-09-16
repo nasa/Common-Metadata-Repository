@@ -18,7 +18,8 @@
                  [org.clojure/tools.cli "0.3.1"]
                  [nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]
                  [org.clojure/data.csv "0.1.2"]]
-  :plugins [[lein-test-out "0.3.1"]]
+  :plugins [[lein-test-out "0.3.1"]
+            [lein-exec "0.3.4"]]
   :repl-options {:init-ns user}
   :jvm-opts ["-XX:PermSize=256m" "-XX:MaxPermSize=256m"]
   :profiles
@@ -27,11 +28,16 @@
                         [criterium "0.4.3"]
                         [pjstadig/humane-test-output "0.6.0"]
                         ;; Must be listed here as metadata db depends on it.
-                        [drift "1.5.2"]]
+                        [drift "1.5.2"]
+                        [markdown-clj "0.9.47"]]
          :source-paths ["src" "dev" "test"]
          :injections [(require 'pjstadig.humane-test-output)
                       (pjstadig.humane-test-output/activate!)]}
    :uberjar {:main cmr.search.runner
-             :aot :all}})
+             :aot :all}}
+
+  ;; Note this takes a while to run. We commit the files that are generated.
+  :aliases {"generate-docs" ["exec" "-p" "./support/generate_docs.clj"]})
+
 
 

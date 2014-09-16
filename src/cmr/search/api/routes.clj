@@ -3,6 +3,7 @@
             [compojure.route :as route]
             [compojure.core :refer :all]
             [clojure.string :as str]
+            [clojure.java.io :as io]
             [ring.util.response :as r]
             [ring.util.codec :as codec]
             [ring.middleware.json :as ring-json]
@@ -232,6 +233,15 @@
 (defn- build-routes [system]
   (routes
     (context (get-in system [:search-public-conf :relative-root-url]) []
+
+      ;; CMR Welcome Page
+      (GET "/" []
+        {:status 200
+         :body (slurp (io/resource "public/index.html"))})
+
+      (GET "/site/:resource" [resource]
+        {:status 200
+         :body (slurp (io/resource (str "public/site/" resource)))})
 
       ;; Retrieve by cmr concept id -
       (context ["/concepts/:path-w-extension" :path-w-extension #"(?:[A-Z][0-9]+-[0-9A-Z_]+)(?:\..+)?"] [path-w-extension]

@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>CMR Search</title>
+    <!--[if lt IE 9 ]>
+      <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+      <![endif]-->
+      <link rel="stylesheet" href="bootstrap.min.css">
+      <script src="jquery.min.js"></script>
+      <script src="bootstrap.min.js"></script>
+  </head>
+  <body lang="en-US">
+    <div class="container">
+    <h1>CMR Search</h1><h2>API Documentation</h2><h3>General Request Details</h3><h4>Query Parameters</h4><ul><li>page&#95;size - number of results per page - default is 10, max is 2000</li><li>page&#95;num - The page number to return</li><li>sort&#95;key - Indicates one or more fields to sort on. Described below</li><li>pretty - return formatted results if set to true</li><li>token - specifies a user/guest token from ECHO to use to authenticate yourself. This can also be specified as the header Echo-Token</li></ul><h5>Collection Query Parameters</h5><p>These are query parameters specific to collections</p><ul><li>include&#95;has&#95;granules - If this parameter is set to "true" this will include a flag indicating true or false if the collection has any granules at all. Supported in all response formats.</li><li>include&#95;granule&#95;counts - If this parameter is set to "true" this will include a count of the granules in each collection that would match the spatial and temporal conditions from the collection query. Supported in all response formats.</li><li>include&#95;facets - If this parameter is set to "true" facets will be included in the collection results. Facets are described in detail below.</li></ul><h4>Headers</h4><ul><li>Accept - specifies the MimeType to return search results in. Default is "application/xml".<ul><li><code>curl -H &quot;Accept: application/xml&quot; -i &quot;http://localhost:3003/collections&quot;</code></li><li><code>curl -H &quot;Accept: text/csv&quot; -i &quot;http://localhost:3003/granules&quot;</code></li><li><code>curl -H &quot;Accept: application/atom+xml&quot; -i &quot;http://localhost:3003/granules&quot;</code></li><li><code>curl -H &quot;Accept: application/json&quot; -i &quot;http://localhost:3003/granules&quot;</code></li><li><code>curl -H &quot;Accept: application/echo10+xml&quot; -i &quot;http://localhost:3003/granules&quot;</code></li><li><code>curl -H &quot;Accept: application/dif+xml&quot; -i &quot;http://localhost:3003/granules&quot;</code></li></ul></li><li>Echo-Token - specifies an ECHO token to use to authenticate yourself.</li><li>Client-Id - Indicates a name for the client using the CMR API. Specifying this helps Operations monitor query performance per client. It can also make it easier for them to identify your requests if you contact them for assistance.</li><li>The response headers include CMR-Hits and CMR-Took which indicate the number of result hits     and the time to build and execute the query, respectively.</li></ul><h4>Extensions</h4><p>Besides MimeTypes, client can also use exetension to specify the format for search results. Default is xml.</p><pre>
+&#42; `curl -i &quot;http://localhost:3003/collections&quot;`
+&#42; `curl -i &quot;http://localhost:3003/collections.json&quot;`
+&#42; `curl -i &quot;http://localhost:3003/collections.echo10&quot;`
+&#42; `curl -i &quot;http://localhost:3003/collections.iso&#95;mends&quot;`
+</pre><pre>
+Here is a list of supported extensions that their corresponding MimeTypes:
+</pre><pre>
+  &#42; json      &quot;application/json&quot;
+  &#42; xml       &quot;application/xml&quot;
+  &#42; echo10    &quot;application/echo10+xml&quot;
+  &#42; iso       &quot;application/iso+xml&quot;
+  &#42; iso\&#95;mends &quot;application/iso-mends+xml&quot;
+  &#42; dif       &quot;application/dif+xml&quot;
+  &#42; csv       &quot;text/csv&quot;
+  &#42; atom      &quot;application/atom+xml&quot;
+</pre><pre>
+  iso is an alias for iso\&#95;mends.
+</pre><h3>Clear the cache cache</h3><pre>
+curl -i -XPOST http://localhost:3003/clear-cache
+</pre><h3>Reset the application to the initial state</h3><p>Every CMR application has a reset function to reset it back to it's initial state. Currently this only clears the cache so it is effectively the the same as the clear-cache endpoint.</p><pre>
+curl -i -XPOST http://localhost:3003/reset
+</pre><h3>Search for Collections</h3><h4>Find all collections</h4><pre>
+curl &quot;http://localhost:3003/collections&quot;
+</pre><h4>Find collections by concept id</h4><p>A CMR concept id is in the format <code>&lt;concept-type-prefix&gt; &lt;unique-number&gt; &quot;-&quot; &lt;provider-id&gt;</code></p><ul><li><code>concept-type-prefix</code> is a single capital letter prefix indicating the concept type. "C" is used for collections</li><li><code>unique-number</code> is a single number assigned by the CMR during ingest.</li><li><code>provider-id</code> is the short name for the provider. i.e. "LPDAAC&#95;ECS"</li></ul><p>Example: <code>C123456-LPDAAC&#95;ECS</code></p><pre>
+curl &quot;http://localhost:3003/collections?concept&#95;id\&#91;\&#93;=C123456-LPDAAC&#95;ECS&quot;
+</pre><h4>Find collections by echo collection id</h4><p>  Find a collection matching a echo collection id. Note more than one echo collection id may be supplied.</p><pre>
+ curl &quot;http://localhost:3003/collections?echo&#95;collection&#95;id\&#91;\&#93;=C1000000001-CMR&#95;PROV2&quot;
+</pre><h4>Find collections by entry title</h4><p>One entry title</p><pre>
+curl &quot;http://localhost:3003/collections?entry&#95;title\&#91;\&#93;=DatasetId%204&quot;
+</pre><p>a dataset id (alias for entry title)</p><pre>
+curl &quot;http://localhost:3003/collections?dataset&#95;id\&#91;\&#93;=DatasetId%204&quot;
+</pre><p>with multiple dataset ids</p><pre>
+curl &quot;http://localhost:3003/collections?entry&#95;title\&#91;\&#93;=DatasetId%204&amp;entry&#95;title\&#91;\&#93;=DatasetId%205&quot;
+</pre><p>with a entry title case insensitively</p><pre>
+curl &quot;http://localhost:3003/collections?entry&#95;title\&#91;\&#93;=datasetId%204&amp;options\&#91;entry&#95;title\&#93;\&#91;ignore&#95;case\&#93;=true&quot;
+</pre><p>with a entry title pattern</p><pre>
+curl &quot;http://localhost:3003/collections?entry&#95;title\&#91;\&#93;=DatasetId&#42;&amp;options\&#91;entry&#95;title\&#93;\&#91;pattern\&#93;=true&quot;
+</pre><h4>Find collections by entry id</h4><p>One entry id</p><pre>
+curl &quot;http://localhost:3003/collections?entry&#95;id\&#91;\&#93;=SHORT&#95;V5&quot;
+</pre><h4>Find collections by dif entry id, this searches for matches on either entry id or associated difs</h4><p>One dif&#95;entry&#95;id</p><pre>
+curl &quot;http://localhost:3003/collections?dif&#95;entry&#95;id\&#91;\&#93;=SHORT&#95;V5&quot;
+</pre><h4>Find collections by archive center, supports pattern and ignore_case</h4><p>  Find collections matching 'archive_center' param value<pre>
+curl &quot;http://localhost:3003/collections?archive&#95;center\&#91;\&#93;=LARC&quot;
+curl &quot;http://localhost:3003/collections?archive&#95;center=Sedac+AC&quot; 
+</pre>  Find collections matching any of the 'archive_center' param values</p><pre>
+ curl &quot;http://localhost:3003/collections?archive&#95;center\&#91;\&#93;=Larc&amp;archive&#95;center\&#91;\&#93;=SEDAC&quot;
+</pre><h4>Find collections with multiple temporal</h4><p>The temporal datetime has to be in yyyy-MM-ddTHH:mm:ssZ format.</p><pre>
+curl &quot;http://localhost:3003/collections?temporal\&#91;\&#93;=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z,30,60&amp;temporal\&#91;\&#93;=2000-01-01T10:00:00Z,,30&amp;temporal\&#91;\&#93;=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z&quot;
+</pre><h3>Find collections by campaign param, supports pattern, ignore_case and option :and. Note: 'campaign' maps to 'project' in UMM</h3><p>  Find collections matching 'campaign' param value</p><pre>
+ curl &quot;http://localhost:3003/collections?campaign\&#91;\&#93;=ESI&quot;
+</pre><p>  Find collections matching any of the 'campaign' param values</p><pre>
+ curl &quot;http://localhost:3003/collections?campaign\&#91;\&#93;=ESI&amp;campaign\&#91;\&#93;=EVI&amp;campaign\&#91;\&#93;=EPI&quot;
+</pre><p>  Find collections that match all of the 'campaign' param values</p><pre>
+ curl &quot;http://localhost:3003/collections?campaign\&#91;\&#93;=ESI&amp;campaign\&#91;\&#93;=EVI&amp;campaign\&#91;\&#93;=EPI&amp;options\&#91;campaign\&#93;\&#91;and\&#93;=true&quot;
+</pre><h3>Find collections by updated_since param</h3><p>  Find collections which have revision date starting at or after 'updated_since' param value</p><pre>
+ curl &quot;http://localhost:3003/collections?updated&#95;since=2014-05-08T20:06:38.331Z&quot;
+</pre><h3>Find collections by processing&#95;level&#95;id param, supports pattern and ignore_case</h3><p>Find collections matching 'processing<i>level</i>id' param value</p><pre>
+ curl &quot;http://localhost:3003/collections?processing&#95;level&#95;id\&#91;\&#93;=1B&quot;
+</pre><p>Find collections matching any of the 'processing&#95;level&#95;id' param values</p><pre>
+ curl &quot;http://localhost:3003/collections?processing&#95;level&#95;id\&#91;\&#93;=1B&amp;processing&#95;level&#95;id\&#91;\&#93;=2B&quot;
+</pre><p>The alias 'processing_level' also works for searching by processing level id.</p><h3>Find collections by platform param, supports pattern, ignore_case and option :and</h3><p>  Find collections matching 'platform' param value</p><pre>
+ curl &quot;http://localhost:3003/collections?platform\&#91;\&#93;=1B&quot;
+</pre><p>  Find collections matching any of the 'platform' param values</p><pre>
+ curl &quot;http://localhost:3003/collections?platform\&#91;\&#93;=1B&amp;platform\&#91;\&#93;=2B&quot;
+</pre><h3>Find collections by instrument param, supports pattern, ignore_case and option :and</h3><p>  Find collections matching 'instrument' param value</p><pre>
+ curl &quot;http://localhost:3003/collections?instrument\&#91;\&#93;=1B&quot;
+</pre><p>  Find collections matching any of the 'instrument' param values</p><pre>
+ curl &quot;http://localhost:3003/collections?instrument\&#91;\&#93;=1B&amp;instrument\&#91;\&#93;=2B&quot;
+</pre><h3>Find collections by sensor param, supports pattern, ignore_case and option :and</h3><p>  Find collections matching 'sensor' param value</p><pre>
+ curl &quot;http://localhost:3003/collections?sensor\&#91;\&#93;=1B&quot;
+</pre><p>  Find collections matching any of the 'sensor' param values</p><pre>
+ curl &quot;http://localhost:3003/collections?sensor\&#91;\&#93;=1B&amp;sensor\&#91;\&#93;=2B&quot;
+</pre><h3>Find collections by spatial<i>keyword param, supports pattern, ignore</i>case and option :and</h3><p>  Find collections matching 'spatial_keyword' param value</p><pre>
+ curl &quot;http://localhost:3003/collections?spatial&#95;keyword\&#91;\&#93;=DC&quot;
+</pre><p>  Find collections matching any of the 'spatial_keyword' param values</p><pre>
+ curl &quot;http://localhost:3003/collections?spatial&#95;keyword\&#91;\&#93;=DC&amp;spatial&#95;keyword\&#91;\&#93;=LA&quot;
+</pre><h3>Find collections by science_keywords params, supports option :or</h3><p>  Find collections matching 'science_keywords' param value</p><pre>
+ curl &quot;http://localhost:3003/collections?science&#95;keywords\&#91;0\&#93;\&#91;category\&#93;=Cat1&quot;
+</pre><p>  Find collections matching multiple 'science_keywords' param values, default is :and</p><pre>
+ curl &quot;http://localhost:3003/collections?science&#95;keywords\&#91;0\&#93;\&#91;category\&#93;=Cat1&amp;science&#95;keywords\&#91;0\&#93;\&#91;topic\&#93;=Topic1&amp;science&#95;keywords\&#91;1\&#93;\&#91;category\&#93;=Cat2&quot;
+</pre><h3>Find collections by two&#95;d&#95;coordinate&#95;system&#95;name param, supports pattern</h3><p>  Find collections matching 'two&#95;d&#95;coordinate&#95;system&#95;name' param value</p><pre>
+curl &quot;http://localhost:3003/collections?two&#95;d&#95;coordinate&#95;system&#95;name\&#91;\&#93;=Alpha&quot;
+</pre><p>  Find collections matching any ofthe 'two&#95;d&#95;coordinate&#95;system&#95;name' param values</p><pre>
+curl &quot;http://localhost:3003/collections?two&#95;d&#95;coordinate&#95;system&#95;name\&#91;\&#93;=Alpha&amp;two&#95;d&#95;coordinate&#95;system&#95;name\&#91;\&#93;=Bravo&quot;
+</pre><h3>Find collections by collection&#95;data&#95;type param</h3><p>Supports ignore_case and the following aliases for "NEAR&#95;REAL&#95;TIME": "near&#95;real&#95;time","nrt", "NRT", "near real time","near-real time","near-real-time","near real-time".</p><p>  Find collections matching 'collection&#95;data&#95;type' param value</p><pre>
+ curl &quot;http://localhost:3003/collections?collection&#95;data&#95;type\&#91;\&#93;=NEAR&#95;REAL&#95;TIME&quot;
+</pre><p>  Find collections matching any of the 'collection&#95;data&#95;type' param values</p><pre>
+ curl &quot;http://localhost:3003/collections?collection&#95;data&#95;type\&#91;\&#93;=NEAR&#95;REAL&#95;TIME&amp;collection&#95;data&#95;type\&#91;\&#93;=OTHER&quot;
+</pre><h4>Find collections by online_only</h4><pre>
+curl &quot;http://localhost:3003/collections?online&#95;only=true&quot;
+</pre><h4>Find collections by downloadable</h4><pre>
+curl &quot;http://localhost:3003/collections?downloadable=true&quot;
+</pre><h4>Find collections by browse_only</h4><pre>
+curl &quot;http://localhost:3003/collections?browse&#95;only=true&quot;
+</pre><h4>Find collections by browsable</h4><pre>
+curl &quot;http://localhost:3003/collections?browsable=true&quot;
+</pre><h4>Find collections by keyword search, case insensitive and support wild cards ? and *</h4><pre>
+curl &quot;http://localhost:3003/collections?keyword=alpha%20beta%20g?mma&quot;
+</pre><h4>Sorting Collection Results</h4><p>Collection results are sorted by ascending entry title by default. One or more sort keys can be specified using the <code>sort&#95;key&#91;&#93;</code> parameter. The order used impacts searching. Fields can be prepended with a <code>-</code> to sort in descending order. Ascending order is the default but <code>+</code> can be used to explicitly request ascending.</p><h5>Valid Collection Sort Keys</h5><ul><li>entry_title</li><li>dataset<i>id - alias for entry</i>title</li><li>start_date</li><li>end_date</li><li>platform</li><li>instrument</li><li>sensor</li><li>provider</li><li>score - document relevance score, only valid with keyword search, defaults to descending</li></ul><p>Example of sorting by start_date in descending order: (Most recent data first)</p><pre>
+curl &quot;http://localhost:3003/collections?sort&#95;key\&#91;\&#93;=-start&#95;date
+</pre><h3>Search for Granules</h3><h4>Find all granules</h4><pre>
+curl &quot;http://localhost:3003/granules&quot;
+</pre><h4>Find granules with a granule-ur</h4><pre>
+curl &quot;http://localhost:3003/granules?granule&#95;ur\&#91;\&#93;=DummyGranuleUR&quot;
+</pre><h4>Find granules with a producer granule id</h4><pre>
+curl &quot;http://localhost:3003/granules?producer&#95;granule&#95;id\&#91;\&#93;=DummyID&quot;
+</pre><h4>Find granules matching either granule ur or producer granule id</h4><pre>
+curl &quot;http://localhost:3003/granules?readable&#95;granule&#95;name\&#91;\&#93;=DummyID&quot;
+</pre><h4>Find granules by online_only</h4><pre>
+curl &quot;http://localhost:3003/granules?online&#95;only=true&quot;
+</pre><h4>Find granules by downloadable</h4><pre>
+curl &quot;http://localhost:3003/granules?downloadable=true&quot;
+</pre><h4>Find granules by additional attribute</h4><p>Find an attribute attribute with name "PERCENTAGE" of type float with value 25.5</p><pre>
+curl &quot;http://localhost:3003/granules?attribute\&#91;\&#93;=float,PERCENTAGE,25.5&quot;
+</pre><p>Find an attribute attribute with name "PERCENTAGE" of type float in range 25.5 - 30.</p><pre>
+curl &quot;http://localhost:3003/granules?attribute\&#91;\&#93;=float,PERCENTAGE,25.5,30&quot;
+</pre><p>Find an attribute attribute with name "PERCENTAGE" of type float with min value 25.5.</p><pre>
+curl &quot;http://localhost:3003/granules?attribute\&#91;\&#93;=float,PERCENTAGE,25.5,&quot;
+</pre><p>Find an attribute attribute with name "PERCENTAGE" of type float with max value 30.</p><pre>
+curl &quot;http://localhost:3003/granules?attribute\&#91;\&#93;=float,PERCENTAGE,,30&quot;
+</pre><p>Find an additional attribute with name "X,Y,Z" with value 7.</p><pre>
+curl &quot;http://localhost:3003/granules?attribute\&#91;\&#93;=float,X\,Y\,Z,7&quot;
+</pre><p>Find an additional attribute with name "X\Y\Z" with value 7.</p><pre>
+curl &quot;http://localhost:3003/granules?attribute\&#91;\&#93;=float,X\Y\Z,7&quot;
+</pre><p>Multiple attributes can be provided. The default is for granules to match all the attribute parameters. This can be changed by specifying <code>or</code> option with <code>option&#91;attribute&#93;&#91;or&#93;=true</code>.</p><h3>Find granules by Spatial</h3><h4>Polygon</h4><p>Polygon points are provided in clockwise order. The last point should match the first point to close the polygon. The values are listed comma separated in longitude latitude order, i.e. lon1,lat1,lon2,lat2,...</p><pre>
+curl &quot;http://localhost:3003/granules?polygon=10,10,10,20,30,20,30,10,10,10&quot;
+</pre><h4>Bounding Box</h4><p>Bounding boxes define an area on the earth aligned with longitude and latitude. The Bounding box parameters must be 4 comma-separated numbers: lower left longitude,lower left latitude,upper right longitude,upper right latitude.</p><pre>
+curl &quot;http://localhost:3003/granules?bounding&#95;box=-10,-5,10,5
+</pre><h3>Find granules by orbit number</h3><p>  Find granules with an orbit number of 10</p><pre>
+curl &quot;http://localhost:3003/granules?orbit&#95;number=10&quot;
+</pre><p>  Find granules with an orbit number in a range of 0.5 to 1.5</p><pre>
+curl &quot;http://localhost:3003/granules?orbit&#95;number=0.5,1.5&quot;
+</pre><h3>Find granules by orbit equator crossing longitude</h3><p>  Find granules with an orbit equator crossing longitude in the range of 0 to 10</p><pre>
+curl &quot;http://localhost:3003/granules?:equator+crossing&#95;longitude=0,10
+</pre><p>  Find granules with an equator crossing longitude in the range from 170 to -170   (across the antimeridian)</p><pre>
+curl &quot;http://localhost:3003/granules?:equator+crossing&#95;longitude=170,-170
+</pre><h3>Find granules by orbit equator crossing date</h3><p>  Find granules with an orbit equator crossing date in the range of   2000-01-01T10:00:00Z to 2010-03-10T12:00:00Z</p><pre>
+curl &quot;http://localhost:3003/granules?:equator+crossing&#95;date=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z
+</pre><h3>Find granules by updated_since param</h3><p>  Find granules which have revision date starting at or after 'updated_since' param value</p><pre>
+ curl &quot;http://localhost:3003/granules?updated&#95;since=2014-05-08T20:12:35Z&quot;
+</pre><h3>Find granules by cloud_cover param</h3><p>  Find granules with just the min cloud cover value set to 0.2</p><pre>
+ curl &quot;http://localhost:3003/granules?cloud&#95;cover=0.2,&quot;
+</pre><p>  Find granules with just the max cloud cover value set to 30</p><pre>
+ curl &quot;http://localhost:3003/granules?cloud&#95;cover=,30&quot;
+</pre><p>  Find granules with cloud cover numeric range set to min: -70.0 max: 120.0</p><pre>
+ curl &quot;http://localhost:3003/granules?cloud&#95;cover=-70.0,120.0&quot;
+</pre><h3>Find collections by platform param, supports pattern, ignore_case and option :and</h3><pre>
+ curl &quot;http://localhost:3003/granules?platform\&#91;\&#93;=1B&quot;
+</pre><h3>Find collections by instrument param, supports pattern, ignore_case and option :and</h3><pre>
+ curl &quot;http://localhost:3003/granules?instrument\&#91;\&#93;=1B&quot;
+</pre><h3>Find collections by sensor param, supports pattern, ignore_case and option :and</h3><pre>
+ curl &quot;http://localhost:3003/granules?sensor\&#91;\&#93;=1B&quot;
+</pre><h3>Find granules by echo granule id, echo collection id and concept ids.</h3><pre>
+Note: more than one may be supplied
+</pre><p>  Find granule by concept id</p><pre>
+curl &quot;http://localhost:3003/granules?concept&#95;id\&#91;\&#93;=G1000000002-CMR&#95;PROV1&quot;
+</pre><p>  Find granule by echo granule id</p><pre>
+curl &quot;http://localhost:3003/granules?echo&#95;granule&#95;id\&#91;\&#93;=G1000000002-CMR&#95;PROV1&quot;
+</pre><p>  Find granules by echo collection id</p><pre>
+curl &quot;http://localhost:3003/granules?echo&#95;collection&#95;id\&#91;\&#93;=C1000000001-CMR&#95;PROV2&quot;
+</pre><p>  Find granules by parent concept id</p><pre>
+curl &quot;http://localhost:3003/granules?concept&#95;id\&#91;\&#93;=C1000000001-CMR&#95;PROV2&quot;
+</pre><h3>Find granules by day<i>night</i>flag param, supports pattern, ignore_case, and option :and, :or</h3><p>  curl "http://localhost:3003/granules?day<i>night</i>flag=night</p><p>  curl "http://localhost:3003/granules?day<i>night</i>flag=day</p><p>  curl "http://localhost:3003/granules?day_night=unspecified</p><h3>Exclude granules from elastic results by echo granule id and concept ids. Note: more than one id may be supplied in exclude param</h3><p>Exclude granule by echo granule id</p><p>   curl "http://localhost:3003/granules?echo<i>granule</i>id&#91;&#93;=G1000000002-CMR<i>PROV1&echo</i>granule<i>id&#91;&#93;=G1000000003-CMR</i>PROV1&echo<i>granule</i>id&#91;&#93;=G1000000006-CMR<i>PROV2&exclude&#91;echo</i>granule<i>id&#93;&#91;&#93;=G1000000006-CMR</i>PROV2"</p><p>   curl "http://localhost:3003/granules?exclude&#91;echo<i>granule</i>id&#93;&#91;&#93;=G1000000006-CMR<i>PROV2&cloud</i>cover=-70,120"</p><p>Exclude granule by concept id</p><p>   curl "http://localhost:3003/granules?echo<i>granule</i>id&#91;&#93;=G1000000002-CMR<i>PROV1&echo</i>granule<i>id&#91;&#93;=G1000000003-CMR</i>PROV1&echo<i>granule</i>id&#91;&#93;=G1000000006-CMR<i>PROV2&exclude&#91;concept</i>id&#93;&#91;&#93;=G1000000006-CMR_PROV2"</p><p>Exclude granule by parent concept id</p><p>   curl "http://localhost:3003/granules?echo<i>granule</i>id&#91;&#93;=G1000000002-CMR<i>PROV1&echo</i>granule<i>id&#91;&#93;=G1000000003-CMR</i>PROV1&echo<i>granule</i>id&#91;&#93;=G1000000006-CMR<i>PROV2&exclude&#91;concept</i>id&#93;&#91;&#93;=C1000000001-CMR_PROV2"</p><h4>Sorting Granule Results</h4><p>Granule results are sorted by ascending provider and start date by default. One or more sort keys can be specified using the <code>sort&#95;key&#91;&#93;</code> parameter. The order used impacts searching. Fields can be prepended with a <code>-</code> to sort in descending order. Ascending order is the default but <code>+</code> can be used to explicitly request ascending.</p><h5>Valid Granule Sort Keys</h5><ul><li>campaign - alias for project</li><li>entry_title</li><li>dataset<i>id - alias for entry</i>title</li><li>data_size</li><li>end_date</li><li>granule_ur</li><li>producer<i>granule</i>id</li><li>project</li><li>provider</li><li>readable<i>granule</i>name - this sorts on a combination of producer<i>granule</i>id and granule<i>ur. If a producer</i>granule<i>id is present, that value is used. Otherwise, the granule</i>ur is used.</li><li>short_name</li><li>start_date</li><li>version</li><li>platform</li><li>instrument</li><li>sensor</li><li>day<i>night</i>flag</li><li>online_only</li><li>browsable (legacy key browse_only is supported as well)</li></ul><h5>Future Granule Sort Keys</h5>Not yet implemented<ul><li>cloud_cover</li></ul><p>Example of sorting by start_date in descending order: (Most recent data first)</p><pre>
+curl &quot;http://localhost:3003/granules/sort&#95;key\&#91;\&#93;=-start&#95;date
+</pre><h3>Retrieve concept with a given cmr-concept-id</h3><p>This allows retrieving the metadata for a single concept. If no format is specified the native format of the metadata will be returned.</p><pre>
+curl -i &quot;http://localhost:3003/concepts/G100000-PROV1&quot;
+</pre><h3>Search with POST</h3><p>Search collections or granules with query parameters encoded form in POST request body.</p><pre>
+curl -i -XPOST http://localhost:3003/collections -d &quot;dataset&#95;id&#91;&#93;=Example%20DatasetId&amp;dataset&#95;id&#91;&#93;=Dataset2&quot;
+</pre><h3>Search Response as Granule Timeline</h3><p>Granule timeline queries allow clients to find time intervals with continuous granule coverage per collection. The intervals are listed per collection and contain the number of granules within each interval. A timeline search can be performed by sending a <code>GET</code> request to the <code>granules/timeline</code> route. The utility of this feature for clients is in building interactive timelines. Clients need to display on the timeline where there is granule data and where there is none.</p><p>It supports all normal granule parameters. It requires the following parameters.</p><ul><li>start_date - The start date of the timeline intervals to search from.</li><li>end_date - The end date of to search from.</li><li>interval - The interval granularity. This can be one of year, month, day, hour, minute, or second. At least one granule found within the interval time will be considered coverage for that interval.</li><li>concept_id - Specifies a collection concept id to search for. It is recommended that the timeline search be limited to a few collections for good performance.</li></ul><p>The response format is in JSON. Intervals are returned as tuples containing three numbers like <code>&#91;949363200,965088000,4&#93;</code>. The two numbers are the start and stop date of the interval represented by the number of seconds since the epoch. The third number is the number of granules within that interval.</p><h4>Example Request:</h4><pre>
+curl -i &quot;http://localhost:3003/granules/timeline?concept&#95;id=C1-PROV1&amp;start&#95;date=2000-01-01T00:00:00Z&amp;end&#95;date=2002-02-01T00:00:00.000Z&amp;interval=month&quot;&quot;
+</pre><h4>Example Response</h4><pre>
+&#91;{&quot;concept-id&quot;:&quot;C1200000000-PROV1&quot;,&quot;intervals&quot;:&#91;&#91;949363200,965088000,4&#93;,&#91;967766400,970358400,1&#93;,&#91;973036800,986083200,3&#93;,&#91;991353600,1072915200,3&#93;&#93;}&#93;
+</pre><h3>Retrieve provider holdings, support format :xml and :json in header and as extension.</h3><p>All provider holdings</p><pre>
+curl &quot;http://localhost:3003/provider&#95;holdings.xml&quot;
+</pre><p>Provider holdings for a list of providers</p><pre>
+curl &quot;http://localhost:3003/provider&#95;holdings.json?provider-id\&#91;\&#93;=PROV1&amp;provider-id\&#91;\&#93;=PROV2&quot;
+</pre><h3>Search with AQL</h3>Search collections or granules with AQL in POST request body. The AQL must conform to the schemathat is defined in cmr-search-app/resources/schema/IIMSAQLQueryLanguage.xsd<pre>
+curl -i -XPOST -H &quot;Content-Type: application/xml&quot; http://localhost:3003/concepts/search -d '&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;query&gt;&lt;for value=&quot;collections&quot;/&gt;&lt;dataCenterId&gt;&lt;all/&gt;&lt;/dataCenterId&gt;
+&lt;where&gt;&lt;collectionCondition&gt;&lt;shortName&gt;&lt;value&gt;S1&lt;/value&gt;&lt;/shortName&gt;&lt;/collectionCondition&gt;&lt;/where&gt;&lt;/query&gt;'
+</pre><h3>Document Scoring For Keyword Search</h3><p>When a keyword search is requested, matched docuements receive relevancy scores as follows:</p><p>A series of filters are executed against each document. Each of these  has an associated boost value. The boost values of all the filters that match a given document are multiplied together to get the final document score. Docuemnts that match none of the filters have a default score of 1.0.</p><p>The filters are case insensitive, support wildcards * and ?, and are given below:</p><ol><li>All keywords are conatained in the long-name field OR one of the keywords exactly matchesthe short-name field - weight 1.4</li><li>All keywords are contained in the Project/long-name field OR one of the keywordsexactly matches the Project/short-name field - weight 1.3</li><li>All keywords are contained in the Platform/long-name field OR one of the keywordsexaclty matches the Platform/short-name field - weight 1.3</li><li>All keywords are contained in the Platform/Instrument/long-name field OR one of the keywordsexactly matches the Platform/Instrument/short-name field - weight 1.2</li><li>All keywords are contained in the Platform/Instrument/Sensor/long-name field OR one of the keywords exactly matches the Platform/Instrument/Sensor/short-name field - weight 1.2</li><li>The keyword field is a single string that exactly matches the science-keyword field - weight 1.2</li><li>The keyword field is a single string that exactly matches the spatial-keyword field - weight 1.1</li><li>The keyword field is a single string that exactly matches the temporal-keyword field  - weight 1.1</li></ol><h3>Facets</h3><p>Facets are counts of unique values from fields in items matching search results. Facets are supported with collection search results and are enabled with the <code>include&#95;facets=true</code> parameter. Facets are supported on all collection search response formats.</p><h4>Facets in XML Responses</h4><p>Facets in XML search response formats will be formatted like the following example. The exception is ATOM XML which is the same except the tags are in the echo namespace.</p><pre>
+&lt;facets&gt;
+  &lt;facet field=&quot;project&quot;&gt;
+    &lt;value count=&quot;245&quot;&gt;MANTIS&lt;/value&gt;
+    &lt;value count=&quot;132&quot;&gt;THUNDER&lt;/value&gt;
+    &lt;value count=&quot;13&quot;&gt;Mysterio&lt;/value&gt;
+  &lt;/facet&gt;
+  &lt;facet field=&quot;platform&quot;&gt;
+    &lt;value count=&quot;76&quot;&gt;ASTER&lt;/value&gt;
+  &lt;/facet&gt;
+  &lt;facet field=&quot;instrument&quot;&gt;
+    &lt;value count=&quot;2&quot;&gt;MODIS&lt;/value&gt;
+  &lt;/facet&gt;
+  &lt;facet field=&quot;sensor&quot;&gt;...&lt;/facet&gt;
+  &lt;facet field=&quot;two&#95;d&#95;coordinate&#95;system&#95;name&quot;&gt;...&lt;/facet&gt;
+  &lt;facet field=&quot;processing&#95;level&#95;id&quot;&gt;...&lt;/facet&gt;
+  &lt;facet field=&quot;category&quot;&gt;...&lt;/facet&gt;
+  &lt;facet field=&quot;topic&quot;&gt;...&lt;/facet&gt;
+  &lt;facet field=&quot;term&quot;&gt;...&lt;/facet&gt;
+  &lt;facet field=&quot;variable&#95;level&#95;1&quot;&gt;...&lt;/facet&gt;
+  &lt;facet field=&quot;variable&#95;level&#95;2&quot;&gt;...&lt;/facet&gt;
+  &lt;facet field=&quot;variable&#95;level&#95;3&quot;&gt;...&lt;/facet&gt;
+  &lt;facet field=&quot;detailed&#95;variable&quot;&gt;...&lt;/facet&gt;
+&lt;/facets&gt;
+</pre><h4>Facets in JSON Responses</h4><p>Facets in JSON search response formats will be formatted like the following example.</p><pre>
+{
+  &quot;feed&quot;: {
+    &quot;entry&quot;: &#91;...&#93;,
+    &quot;facets&quot;: &#91;{
+      &quot;field&quot;: &quot;project&quot;,
+      &quot;value-counts&quot;: &#91;
+        &#91;&quot;MANTIS&quot;, 245&#93;,
+        &#91;&quot;THUNDER&quot;, 132&#93;,
+        &#91;&quot;Mysterio&quot;, 13&#93;
+      &#93;
+    }, {
+      &quot;field&quot;: &quot;platform&quot;,
+      &quot;value-counts&quot;: &#91;&#91;&quot;ASTER&quot;, 76&#93;&#93;
+    }, {
+      &quot;field&quot;: &quot;instrument&quot;,
+      &quot;value-counts&quot;: &#91;&#91;&quot;MODIS&quot;, 2&#93;&#93;
+    }, {
+      &quot;field&quot;: &quot;sensor&quot;,
+      &quot;value-counts&quot;: &#91;...&#93;
+    }, {
+      &quot;field&quot;: &quot;two&#95;d&#95;coordinate&#95;system&#95;name&quot;,
+      &quot;value-counts&quot;: &#91;...&#93;
+    }, {
+      &quot;field&quot;: &quot;processing&#95;level&#95;id&quot;,
+      &quot;value-counts&quot;: &#91;...&#93;
+    }, {
+      &quot;field&quot;: &quot;category&quot;,
+      &quot;value-counts&quot;: &#91;...&#93;
+    }, {
+      &quot;field&quot;: &quot;topic&quot;,
+      &quot;value-counts&quot;: &#91;...&#93;
+    }, {
+      &quot;field&quot;: &quot;term&quot;,
+      &quot;value-counts&quot;: &#91;...&#93;
+    }, {
+      &quot;field&quot;: &quot;variable&#95;level&#95;1&quot;,
+      &quot;value-counts&quot;: &#91;...&#93;
+    }, {
+      &quot;field&quot;: &quot;variable&#95;level&#95;2&quot;,
+      &quot;value-counts&quot;: &#91;...&#93;
+    }, {
+      &quot;field&quot;: &quot;variable&#95;level&#95;3&quot;,
+      &quot;value-counts&quot;: &#91;...&#93;
+    }, {
+      &quot;field&quot;: &quot;detailed&#95;variable&quot;,
+      &quot;value-counts&quot;: &#91;...&#93;
+    }&#93;
+  }
+}
+</pre></div></body></html>
