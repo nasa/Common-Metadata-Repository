@@ -27,7 +27,7 @@
         (errors/throw-service-error
           :bad-request (format "grid values [%s] must be numeric value or range" coord-str))))))
 
-(defn- string->coordinate-condition
+(defn string->coordinate-condition
   "Returns a list of coordinate conditions for the given search coordinate string"
   [coord-str]
   (let [coord-str (s/trim coord-str)]
@@ -37,7 +37,7 @@
           (qm/->CoordinateValueCondition x)
           (qm/->CoordinateRangeCondition x y))))))
 
-(defn- string->TwoDCoordinateCondition
+(defn string->TwoDCoordinateCondition
   "Returns a map of search coordinates for the given string
   which is in the format of 5,10 or 5-7,1-6, etc."
   [coordinates-str]
@@ -47,7 +47,7 @@
     (qm/map->TwoDCoordinateCondition {:coordinate-1-cond coord-1-cond
                                       :coordinate-2-cond coord-2-cond})))
 
-(defn- two-d-param-str->condition
+(defn two-d-param-str->condition
   [param-str]
   (let [[two-d-name two-d-coord-str] (s/split param-str #":" 2)
         coordinate-conds (when-not (empty? two-d-coord-str)

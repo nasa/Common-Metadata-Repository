@@ -184,11 +184,6 @@
                                              equator-crossing-end-date)))
       params)))
 
-; (defn- legacy-two-d-coords->cmr-two-d-coords
-;   "Returns the cmr style two d coordinates for the legacy style two d coordinates"
-;   [coords]
-;   )
-
 (defn- cmr-two-d-coord-system
   "Returns the CMR style two d coordinate system parameter for the legacy style params"
   [name coords]

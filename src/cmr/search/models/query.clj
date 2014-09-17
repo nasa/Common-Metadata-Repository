@@ -241,17 +241,20 @@
    max-value
    ])
 
+;; This condition is used for holding two-d-coordinate value
 (defrecord CoordinateValueCondition
   [
    value
    ])
 
+;; This condition is used for holding two-d-coordinate range
 (defrecord CoordinateRangeCondition
   [
    min-value
    max-value
    ])
 
+;; This condition is used for holding two-d-coordinate-system coordinates info
 (defrecord TwoDCoordinateCondition
   [
    ;; it is nil, CoordinateValueCondition or CoordinateRangeCondition

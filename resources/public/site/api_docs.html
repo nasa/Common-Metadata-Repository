@@ -161,10 +161,9 @@ curl &quot;http://localhost:3003/granules?day&#95;night&#95;flag=night
 curl &quot;http://localhost:3003/granules?day&#95;night&#95;flag=day
 
 curl &quot;http://localhost:3003/granules?day&#95;night=unspecified
-</pre><h3>Find granules by grid param, this is an alias of catalog-rest two<i>d</i>coordinate_system.</h3><pre>
-':' is the separator between name and coordinates; range is indicated by '-',
-otherwise it is a single value.
-</pre><p>  curl "http://localhost:3003/granules?grid&#91;&#93;=wrs-1:5,10:8-10,0-10</p><h3>Exclude granules from elastic results by echo granule id and concept ids. Note: more than one id may be supplied in exclude param</h3><p>Exclude granule by echo granule id</p><pre>
+</pre><h3>Find granules by grid param, this is an alias of catalog-rest two<i>d</i>coordinate_system.</h3><p>':' is the separator between name and coordinates; range is indicated by '-', otherwise it is a single value.</p><pre>
+  curl &quot;http://localhost:3003/granules?grid\&#91;\&#93;=wrs-1:5,10:8-10,0-10
+</pre><h3>Exclude granules from elastic results by echo granule id and concept ids. Note: more than one id may be supplied in exclude param</h3><p>Exclude granule by echo granule id</p><pre>
 curl &quot;http://localhost:3003/granules?echo&#95;granule&#95;id\&#91;\&#93;=G1000000002-CMR&#95;PROV1&amp;echo&#95;granule&#95;id\&#91;\&#93;=G1000000003-CMR&#95;PROV1&amp;echo&#95;granule&#95;id\&#91;\&#93;=G1000000006-CMR&#95;PROV2&amp;exclude\&#91;echo&#95;granule&#95;id\&#93;\&#91;\&#93;=G1000000006-CMR&#95;PROV2&quot;
 
 curl &quot;http://localhost:3003/granules?exclude\&#91;echo&#95;granule&#95;id\&#93;\&#91;\&#93;=G1000000006-CMR&#95;PROV2&amp;cloud&#95;cover=-70,120&quot;
