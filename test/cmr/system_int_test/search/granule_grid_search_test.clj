@@ -120,6 +120,17 @@
            ;; search by multiple grids
            [gran3 gran11] ["one CALIPSO:160-170,350-360" "BRAVO:100,310"]))
 
+    (testing "invalid grid parameters"
+      (are [two-d error]
+           (let [{:keys [status errors]} (search/find-refs :granule {:grid two-d})]
+             (is (= [400 [error]]
+                    [status errors])))
+           " :1," "grid name can not be empty, but is for [ :1,]"
+           "name:x" "grid values [x] must be numeric value or range"
+           "name:10-x" "grid values [10-x] must be numeric value or range"
+           "name:10-5" "Invalid grid range for [10-5]"
+           "name:6,10-5" "Invalid grid range for [10-5]"))
+
     (testing "catalog-rest style"
       (are [items two-d-name coords]
            (let [search-params {"two_d_coordinate_system[name]" two-d-name}
@@ -127,8 +138,7 @@
                                  (merge search-params
                                         {"two_d_coordinate_system[coordinates]" coords})
                                  search-params)]
-             (d/refs-match? items (search/find-refs
-                                    :granule search-params)))
+             (d/refs-match? items (search/find-refs :granule search-params)))
            ;; search by grid name
            [gran11] "BRAVO" nil
            ;; search by grid value
@@ -143,6 +153,22 @@
            [gran3 gran4] "one CALIPSO" "160-170:350-360,150-160:330-340"
            [gran3 gran4 gran5 gran6 gran9 gran10]
            "one CALIPSO" "160-170:350-360,150-160:330-340,-:360-"))
+
+    (testing "invalid catalog-rest two-d-coordinate-system parameters"
+      (are [two-d-name coords error]
+           (let [search-params {"two_d_coordinate_system[name]" two-d-name}
+                 search-params (if coords
+                                 (merge search-params
+                                        {"two_d_coordinate_system[coordinates]" coords})
+                                 search-params)
+                 {:keys [status errors]} (search/find-refs :granule search-params)]
+             (is (= [400 [error]]
+                    [status errors])))
+           " " "1" "grid name can not be empty, but is for [ :1]"
+           "name" "x" "grid values [x] must be numeric value or range"
+           "name" "10-x" "grid values [10-x] must be numeric value or range"
+           "name" "10-5" "Invalid grid range for [10-5]"
+           "name" "6,10-5" "Invalid grid range for [10-5]"))
 
     (testing "search by two d coordinate system with aql"
       (are [items two-d]
