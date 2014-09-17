@@ -142,5 +142,29 @@
            [gran3 gran5 gran6 gran9 gran10] "one CALIPSO" "160-170:350-360,-:360-"
            [gran3 gran4] "one CALIPSO" "160-170:350-360,150-160:330-340"
            [gran3 gran4 gran5 gran6 gran9 gran10]
-           "one CALIPSO" "160-170:350-360,150-160:330-340,-:360-"))))
+           "one CALIPSO" "160-170:350-360,150-160:330-340,-:360-"))
+
+    (testing "search by two d coordinate system with aql"
+      (are [items two-d]
+           (d/refs-match? items
+                          (search/find-refs-with-aql :granule
+                                                     [{:TwoDCoordinateSystem two-d}]))
+           ;; search by grid name
+           [gran11] {:name "BRAVO" :coord-1 nil :coord-2 nil}
+           [] {:name "bravo" :coord-1 nil :coord-2 nil}
+           ;; ignore-case
+           [] {:name "bravo" :coord-1 nil :coord-2 nil :ignore-case false}
+           [gran11] {:name "bravo" :coord-1 nil :coord-2 nil :ignore-case true}
+           [gran11] {:name "BRAVO" :coord-1 nil :coord-2 nil :ignore-case false}
+           [gran11] {:name "BRAVO" :coord-1 nil :coord-2 nil :ignore-case true}
+           ;; search by grid value
+           [gran1] {:name "one CALIPSO" :coord-1 110 :coord-2 300}
+           ;; search by grid range
+           [gran3] {:name "one CALIPSO" :coord-1 [160 170] :coord-2 [350 360]}
+           [gran2 gran3 gran4, gran5 gran8 gran10]
+           {:name "one CALIPSO" :coord-1 nil :coord-2 [329 360]}
+           [gran1 gran2 gran3 gran4 gran5 gran7 gran8 gran10]
+           {:name "one CALIPSO" :coord-1 nil :coord-2 [nil 360]}
+           [gran3 gran5 gran6 gran9 gran10] {:name "one CALIPSO" :coord-1 nil :coord-2 [360 nil]}))))
+
 

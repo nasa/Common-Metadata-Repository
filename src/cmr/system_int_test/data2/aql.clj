@@ -103,6 +103,7 @@
    :dayNightFlag :day-night
    :scienceKeywords :science-keywords
    :additionalAttributes :additional-attributes
+   :TwoDCoordinateSystem :two-d
    :polygon :polygon
    :box :box
    :line :line
@@ -128,6 +129,17 @@
                    :else nil)]
     (if operator {:operator operator} {})))
 
+(defn- generate-two-d-coord-element
+  "Returns the two d coordinate element for the given index and coordinate"
+  [idx coord]
+  (let [elem-key (keyword (str "coordinate" idx))
+        coord (if coord coord "")]
+    (if (sequential? coord)
+      (x/element elem-key {}
+                 (generate-range-element :range coord))
+      (x/element elem-key {}
+                 (x/element :value {} coord)))))
+
 (defmulti generate-element
   "Returns the xml element for the given element condition"
   (fn [condition]
@@ -149,6 +161,17 @@
         operator-option (condition->operator-option condition)]
     (x/element elem-key operator-option
                (map generate-science-keyword-element science-keywords))))
+
+(defmethod generate-element :two-d
+  [condition]
+  (let [elem-key (condition->element-name condition)
+        two-d (elem-key condition)
+        {:keys [name coord-1 coord-2 ignore-case]} two-d]
+    (x/element elem-key {}
+               (x/element :TwoDCoordinateSystemName {}
+                          (generate-value-element ignore-case false name))
+               (generate-two-d-coord-element 1 coord-1)
+               (generate-two-d-coord-element 2 coord-2))))
 
 (defn point-elem
   "Creates a AQL point element from a lon lat tuple"
