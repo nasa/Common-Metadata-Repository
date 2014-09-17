@@ -3,8 +3,7 @@
   (:require [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
             [cmr.umm.collection :as c]
-            [cmr.umm.granule :as g]
-            [cmr.umm.generator-util :as gu]))
+            [cmr.umm.granule :as g]))
 
 (defn- xml-elem->RangeDateTime
   "Returns a list of UMM RangeDateTimes from a parsed Temporal XML structure"
