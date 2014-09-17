@@ -241,6 +241,32 @@
    max-value
    ])
 
+(defrecord CoordinateValueCondition
+  [
+   value
+   ])
+
+(defrecord CoordinateRangeCondition
+  [
+   min-value
+   max-value
+   ])
+
+(defrecord TwoDCoordinateCondition
+  [
+   ;; it is nil, CoordinateValueCondition or CoordinateRangeCondition
+   coordinate-1-cond
+   ;; it is nil, CoordinateValueCondition or CoordinateRangeCondition
+   coordinate-2-cond
+   ])
+
+(defrecord TwoDCoordinateSystemCondition
+  [
+   two-d-name
+   ;; it is nil or a list of TwoDCoordinateConditions
+   two-d-conditions
+   ])
+
 (defrecord EquatorCrossingLongitudeCondition
   [
    min-value

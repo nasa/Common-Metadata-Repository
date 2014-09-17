@@ -25,6 +25,7 @@
             [cmr.search.services.parameters.converters.equator-crossing-date]
             [cmr.search.services.parameters.converters.spatial]
             [cmr.search.services.parameters.converters.science-keyword]
+            [cmr.search.services.parameters.converters.two-d-coordinate-system]
 
             ;; aql
             [cmr.search.services.aql.conversion :as a]
@@ -49,6 +50,7 @@
             [cmr.search.data.complex-to-simple-converters.orbit]
             [cmr.search.data.complex-to-simple-converters.temporal]
             [cmr.search.data.complex-to-simple-converters.spatial]
+            [cmr.search.data.complex-to-simple-converters.two-d-coordinate-system]
 
             ;; Query Results Features
             [cmr.search.services.query-execution.granule-counts-results-feature]
