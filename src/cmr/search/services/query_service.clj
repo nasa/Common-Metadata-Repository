@@ -34,6 +34,7 @@
             [cmr.search.services.aql.converters.science-keywords]
             [cmr.search.services.aql.converters.attribute]
             [cmr.search.services.aql.converters.attribute-name]
+            [cmr.search.services.aql.converters.two-d-coordinate-system]
 
             ;; Validation
             [cmr.search.validators.validation :as v]

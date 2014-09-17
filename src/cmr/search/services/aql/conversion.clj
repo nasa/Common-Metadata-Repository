@@ -68,7 +68,7 @@
              :orbitNumber {:name :orbit-number :type :orbit-number}
              :equatorCrossingLongitude {:name :equator-crossing-longitude :type :equator-crossing-longitude}
              :equatorCrossingDate {:name :equator-crossing-date :type :equator-crossing-date}
-             :TwoDCoordinateSystemName {:name :two-d-coordinate-system-name :type :string}}})
+             :TwoDCoordinateSystem {:name :two-d-coordinate-system :type :two-d-coordinate-system}}})
 
 (defn- elem-name->type
   "Returns the query condition type based on the given concept-type and aql element name."
@@ -168,7 +168,7 @@
         stop-date (date-time-from-strings year month day hour minute sec)]
     [start-date stop-date]))
 
-(defn- element->num-range
+(defn element->num-range
   [concept-type element]
   (let [string-double-fn (fn [n] (when n (Double. n)))
         range-val (-> (cx/attrs-at-path element [:range])

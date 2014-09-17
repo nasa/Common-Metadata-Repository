@@ -70,8 +70,8 @@
   cmr.search.models.query.TwoDCoordinateSystemCondition
   (c2s/reduce-query-condition
     [condition context]
-    (let [{:keys [two-d-name two-d-conditions]} condition
-          two-d-name-cond (qm/string-condition :two-d-coord-name two-d-name)
+    (let [{:keys [two-d-name two-d-conditions case-sensitive?]} condition
+          two-d-name-cond (qm/string-condition :two-d-coord-name two-d-name case-sensitive? false)
           coord-cond (two-d-conditions->condition two-d-conditions context)]
       (qm/and-conds [two-d-name-cond coord-cond]))))
 
