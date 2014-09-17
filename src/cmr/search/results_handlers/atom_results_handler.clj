@@ -5,6 +5,7 @@
             [cmr.search.services.query-service :as qs]
             [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]
             [cmr.search.services.query-execution.facets-results-feature :as frf]
+            [cmr.indexer.data.concepts.granule :as idxg]
             [clojure.data.xml :as x]
             [clojure.walk :as walk]
             [cheshire.core :as json]
@@ -65,6 +66,13 @@
    "ords"
    "access-value" ;; needed for acl enforcment
    ])
+
+(defn ocsd-json->map
+  "Conver the orbit calculated spatial domain json string from elastic into a map. The string
+  is stored internally as a vector of values."
+  [json-str]
+  (let [value-array (json/decode json-str)]
+    (zipmap idxg/ocsd-fields value-array)))
 
 (defn- collection-elastic-result->query-result-item
   [elastic-result]
@@ -148,7 +156,7 @@
         atom-links (map (fn [link-str]
                           (update-in (json/decode link-str true) [:size] #(when % (str %))))
                         atom-links)
-        orbit-calculated-spatial-domains (map json/decode orbit-calculated-spatial-domains-json)]
+        orbit-calculated-spatial-domains (map ocsd-json->map orbit-calculated-spatial-domains-json)]
     {:id concept-id
      :title granule-ur
      :collection-concept-id collection-concept-id
