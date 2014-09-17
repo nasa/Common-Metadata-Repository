@@ -282,6 +282,12 @@
                    :downloadable (stored bool-field-mapping)
                    :browsable (stored bool-field-mapping)
                    :attributes attributes-field-mapping
+                   :two-d-coord-name string-field-mapping
+                   :two-d-coord-name.lowercase string-field-mapping
+                   :start-coordinate-1 double-field-mapping
+                   :end-coordinate-1 double-field-mapping
+                   :start-coordinate-2 double-field-mapping
+                   :end-coordinate-2 double-field-mapping
 
                    ;; Used for orbit search
                    ;; TODO - remove the 'stored' if these don't need to be stored
