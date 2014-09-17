@@ -6,6 +6,7 @@
             [cmr.search.services.query-service :as qs]
             [cheshire.core :as json]
             [clj-time.core :as time]
+            [clojure.string :as str]
             [cmr.search.services.url-helper :as url]
             [cmr.search.results-handlers.atom-results-handler :as atom]
             [cmr.search.results-handlers.atom-spatial-results-handler :as atom-spatial]
@@ -67,11 +68,18 @@
     ;; remove entries with nil value
     (util/remove-nil-keys result)))
 
+(defn- dashes-to-underscores
+  "Convert the keys in a map to underscore form and converts values to strings (because
+  that is how it is in ECHO json)."
+  [input-map]
+  (into {} (for [[k v] input-map] [(str/replace (name k) #"-" "_") (str v)])))
+
 (defmethod atom-reference->json :granule
   [results concept-type reference]
   (let [{:keys [id title updated dataset-id producer-gran-id size original-format
                 data-center start-date end-date atom-links online-access-flag browse-flag
-                day-night cloud-cover coordinate-system shapes]} reference
+                day-night cloud-cover coordinate-system shapes
+                orbit-calculated-spatial-domains]} reference
         shape-result (atom-spatial/shapes->json shapes)
         result (merge {:id id
                        :title title
@@ -88,7 +96,9 @@
                        :browse_flag browse-flag
                        :day_night_flag day-night
                        :cloud_cover cloud-cover
-                       :coordinate_system coordinate-system}
+                       :coordinate_system coordinate-system
+                       :orbit_calculated_spatial_domains (map dashes-to-underscores
+                                                              orbit-calculated-spatial-domains)}
                       shape-result)]
     ;; remove entries with nil value
     (util/remove-nil-keys result)))
