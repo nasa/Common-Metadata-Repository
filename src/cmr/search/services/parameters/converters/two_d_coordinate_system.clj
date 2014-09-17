@@ -30,12 +30,18 @@
 (defn string->coordinate-condition
   "Returns a list of coordinate conditions for the given search coordinate string"
   [coord-str]
-  (let [coord-str (s/trim coord-str)]
+  (let [coord-str (when coord-str (s/trim coord-str))]
     (when-not (or (empty? coord-str) (= "-" coord-str))
       (let [[x y] (string->coordinate-values coord-str)]
         (if (and (nil? y) (nil? (re-find #"-" coord-str)))
           (qm/->CoordinateValueCondition x)
-          (qm/->CoordinateRangeCondition x y))))))
+          (if (and (not (nil? x))
+                   (not (nil? y))
+                   (> x y))
+            (errors/throw-service-error
+              :bad-request
+              (format "Invalid grid range for [%s]" coord-str))
+            (qm/->CoordinateRangeCondition x y)))))))
 
 (defn string->TwoDCoordinateCondition
   "Returns a map of search coordinates for the given string
@@ -55,8 +61,12 @@
                                 (map string->TwoDCoordinateCondition)
                                 (remove nil?)
                                 seq))]
-    (qm/map->TwoDCoordinateSystemCondition {:two-d-name two-d-name
-                                            :two-d-conditions coordinate-conds})))
+    (if (s/blank? two-d-name)
+      (errors/throw-service-error
+        :bad-request
+        (format "grid name can not be empty, but is for [%s]" param-str))
+      (qm/map->TwoDCoordinateSystemCondition {:two-d-name two-d-name
+                                              :two-d-conditions coordinate-conds}))))
 
 ;; Converts two-d-coordinate-system parameter into a query condition
 (defmethod p/parameter->condition :two-d-coordinate-system
