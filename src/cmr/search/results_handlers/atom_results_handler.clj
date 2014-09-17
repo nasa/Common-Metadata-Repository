@@ -5,7 +5,6 @@
             [cmr.search.services.query-service :as qs]
             [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]
             [cmr.search.services.query-execution.facets-results-feature :as frf]
-            [cmr.indexer.data.concepts.granule :as idxg]
             [clojure.data.xml :as x]
             [clojure.walk :as walk]
             [cheshire.core :as json]
@@ -67,12 +66,22 @@
    "access-value" ;; needed for acl enforcment
    ])
 
+(def ocsd-fields
+  "The fields for orbit calculated spatil domains, in the order that they are stored in the jason
+  string in the index."
+  [:equator-crossing-date-time
+   :equator-crossing-longitude
+   :orbital-model-name
+   :orbit-number
+   :start-orbit-number
+   :stop-orbit-number])
+
 (defn ocsd-json->map
   "Conver the orbit calculated spatial domain json string from elastic into a map. The string
   is stored internally as a vector of values."
   [json-str]
   (let [value-array (json/decode json-str)]
-    (zipmap idxg/ocsd-fields value-array)))
+    (zipmap ocsd-fields value-array)))
 
 (defn- collection-elastic-result->query-result-item
   [elastic-result]
