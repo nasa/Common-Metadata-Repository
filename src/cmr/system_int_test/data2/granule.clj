@@ -81,6 +81,16 @@
   [& geometries]
   (g/map->SpatialCoverage {:geometries geometries}))
 
+(defn two-d-coordinate-system
+  [attribs]
+  (let [{:keys [name start-coordinate-1 end-coordinate-1
+                start-coordinate-2 end-coordinate-2]} attribs]
+    (g/map->TwoDCoordinateSystem {:name name
+                                  :start-coordinate-1 start-coordinate-1
+                                  :end-coordinate-1 end-coordinate-1
+                                  :start-coordinate-2 start-coordinate-2
+                                  :end-coordinate-2 end-coordinate-2})))
+
 (defn granule
   "Creates a granule"
   ([collection]
