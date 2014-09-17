@@ -11,6 +11,7 @@
             [cmr.umm.echo10.related-url :as ru]
             [cmr.umm.echo10.granule.product-specific-attribute-ref :as psa]
             [cmr.umm.echo10.granule.orbit-calculated-spatial-domain :as ocsd]
+            [cmr.umm.echo10.granule.two-d-coordinate-system :as two-d]
             [cmr.common.xml :as v]
             [cmr.umm.echo10.core])
   (:import cmr.umm.granule.UmmGranule))
@@ -103,6 +104,7 @@
                         :platform-refs (p-ref/xml-elem->PlatformRefs xml-struct)
                         :project-refs (xml-elem->project-refs xml-struct)
                         :cloud-cover (cx/double-at-path xml-struct [:CloudCover])
+                        :two-d-coordinate-system (two-d/xml-elem->TwoDCoordinateSystem xml-struct)
                         :related-urls (ru/xml-elem->related-urls xml-struct)
                         :spatial-coverage (xml-elem->SpatialCoverage xml-struct)
                         :product-specific-attributes (psa/xml-elem->ProductSpecificAttributeRefs xml-struct)})))
@@ -120,18 +122,9 @@
     ([granule indent?]
      (let [{{:keys [entry-title short-name version-id]} :collection-ref
             {:keys [insert-time update-time delete-time]} :data-provider-timestamps
-            granule-ur :granule-ur
-            data-granule :data-granule
-            restriction-flag :access-value
-            temporal :temporal
-            ocsds :orbit-calculated-spatial-domains
-            platform-refs :platform-refs
-            prefs :project-refs
-            cloud-cover :cloud-cover
-            related-urls :related-urls
-            psas :product-specific-attributes
-            spatial :spatial-coverage
-            orbit :orbit} granule
+            :keys [granule-ur data-granule access-value temporal orbit-calculated-spatial-domains
+                   platform-refs project-refs cloud-cover related-urls product-specific-attributes
+                   spatial-coverage orbit two-d-coordinate-system]} granule
            emit-fn (if indent? x/indent-str x/emit-str)]
        (emit-fn
          (x/element :Granule {}
@@ -146,15 +139,16 @@
                           :else (x/element :Collection {}
                                            (x/element :ShortName {} short-name)
                                            (x/element :VersionId {} version-id)))
-                    (when restriction-flag
-                      (x/element :RestrictionFlag {} restriction-flag))
+                    (when access-value
+                      (x/element :RestrictionFlag {} access-value))
                     (generate-data-granule data-granule)
                     (gt/generate-temporal temporal)
-                    (generate-spatial spatial)
-                    (ocsd/generate-orbit-calculated-spatial-domains ocsds)
+                    (generate-spatial spatial-coverage)
+                    (ocsd/generate-orbit-calculated-spatial-domains orbit-calculated-spatial-domains)
                     (p-ref/generate-platform-refs platform-refs)
-                    (generate-project-refs prefs)
-                    (psa/generate-product-specific-attribute-refs psas)
+                    (generate-project-refs project-refs)
+                    (psa/generate-product-specific-attribute-refs product-specific-attributes)
+                    (two-d/generate-two-d-coordinate-system two-d-coordinate-system)
                     (ru/generate-access-urls related-urls)
                     (ru/generate-resource-urls related-urls)
                     (x/element :Orderable {} "true")

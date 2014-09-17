@@ -111,6 +111,13 @@
         <ShortName>Short Name-241</ShortName>
       </Campaign>
     </Campaigns>
+    <TwoDCoordinateSystem>
+      <StartCoordinate1>1.0</StartCoordinate1>
+      <EndCoordinate1>2.0</EndCoordinate1>
+      <StartCoordinate2>3.0</StartCoordinate2>
+      <EndCoordinate2>4.0</EndCoordinate2>
+      <TwoDCoordinateSystemName>name0</TwoDCoordinateSystemName>
+    </TwoDCoordinateSystem>
     <OnlineAccessURLs>
       <OnlineAccessURL>
         <URL>http://ghrc.nsstc.nasa.gov/hydro/details.pl?ds=dc8capac</URL>
@@ -193,6 +200,12 @@
                                                           :stop-orbit-number 0.0
                                                           :equator-crossing-longitude 0.0
                                                           :equator-crossing-date-time (p/parse-datetime "2010-01-05T05:30:30Z")})]
+                    :two-d-coordinate-system (umm-g/map->TwoDCoordinateSystem
+                                               {:name "name0"
+                                                :start-coordinate-1 1.0
+                                                :end-coordinate-1 2.0
+                                                :start-coordinate-2 3.0
+                                                :end-coordinate-2 4.0})
                     :related-urls [(umm-c/map->RelatedURL
                                      {:type "GET DATA"
                                       :url "http://ghrc.nsstc.nasa.gov/hydro/details.pl?ds=dc8capac"})

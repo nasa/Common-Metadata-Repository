@@ -89,6 +89,15 @@
    orbit
    ])
 
+(defrecord TwoDCoordinateSystem
+  [
+   name
+   start-coordinate-1
+   end-coordinate-1
+   start-coordinate-2
+   end-coordinate-2
+   ])
+
 (defrecord UmmGranule
   [
    ;; maps to Granule/GranuleUR in echo granule schema
@@ -123,6 +132,8 @@
 
    ;; maps to Granule/CloudCover in echo granule schema
    cloud-cover
+
+   two-d-coordinate-system
    ])
 
 (defn collection-ref

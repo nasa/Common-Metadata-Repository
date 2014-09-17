@@ -69,6 +69,8 @@
       (dissoc :product-specific-attributes)
       ;; SMAP ISO does not support cloud-cover
       (dissoc :cloud-cover)
+      ;; SMAP ISO does not support two-d-coordinate-system
+      (dissoc :two-d-coordinate-system)
       umm-g/map->UmmGranule))
 
 (defspec generate-collection-is-valid-xml-test 100

@@ -57,6 +57,19 @@
                      platform-ref-short-names
                      (ext-gen/nil-if-empty (gen/vector instrument-refs 0 4))))
 
+(def two-d-coordinate-system
+  (let [coords-gen (gen/fmap sort (gen/vector (ext-gen/choose-double 0 1000) 1 2))]
+    (gen/fmap
+      (fn [[name [start-coordinate-1 end-coordinate-1] [start-coordinate-2 end-coordinate-2]]]
+        (g/map->TwoDCoordinateSystem {:name name
+                                      :start-coordinate-1 start-coordinate-1
+                                      :end-coordinate-1 end-coordinate-1
+                                      :start-coordinate-2 start-coordinate-2
+                                      :end-coordinate-2 end-coordinate-2}))
+      (gen/tuple (ext-gen/string-ascii 1 10)
+                 coords-gen
+                 coords-gen))))
+
 (def spatial-coverages
   (ext-gen/model-gen
     g/map->SpatialCoverage
@@ -74,13 +87,17 @@
       :data-granule (ext-gen/optional data-granules)
       :access-value (ext-gen/optional (ext-gen/choose-double -10 10))
       :temporal gt/temporal
-      :orbit-calculated-spatial-domains (ext-gen/nil-if-empty (gen/vector spatial-gen/orbit-calculated-spatial-domains 0 5))
+      :orbit-calculated-spatial-domains (ext-gen/nil-if-empty
+                                          (gen/vector
+                                            spatial-gen/orbit-calculated-spatial-domains 0 5))
       :platform-refs (ext-gen/nil-if-empty (gen/vector platform-refs 0 4))
       :project-refs (ext-gen/nil-if-empty (gen/vector (ext-gen/string-ascii 1 10) 0 3))
       :cloud-cover (ext-gen/optional cloud-cover-values)
+      :two-d-coordinate-system (ext-gen/optional two-d-coordinate-system)
       :related-urls (ext-gen/nil-if-empty (gen/vector c/related-url 0 5))
       :spatial-coverage (ext-gen/optional spatial-coverages)
-      :product-specific-attributes (ext-gen/nil-if-empty (gen/vector product-specific-attribute-refs 0 5)))))
+      :product-specific-attributes (ext-gen/nil-if-empty
+                                     (gen/vector product-specific-attribute-refs 0 5)))))
 
 ;; Generator that only returns collection ref with entry-title
 ;; DEPRECATED - this will go away in the future. Don't use it.
