@@ -285,8 +285,6 @@
                    :attributes attributes-field-mapping
 
                    ;; Used for orbit search
-                   ;; TODO - remove the 'stored' if these don't need to be stored
-                   ;; for 'field_data' range filters to work.
                    :orbit-asc-crossing-lon double-field-mapping
                    :orbit-start-clat double-field-mapping
                    :orbit-end-clat double-field-mapping
