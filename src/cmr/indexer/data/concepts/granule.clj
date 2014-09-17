@@ -97,8 +97,10 @@
         {:keys [parent-collection-id]} extra-fields
         parent-collection (get-parent-collection context parent-collection-id)
         {:keys [granule-ur data-granule temporal platform-refs project-refs related-urls cloud-cover
-                access-value]} umm-granule
+                access-value two-d-coordinate-system]} umm-granule
         {:keys [size producer-gran-id day-night]} data-granule
+        {:keys [start-coordinate-1 end-coordinate-1 start-coordinate-2 end-coordinate-2]
+         two-d-coord-name :name} two-d-coordinate-system
         platform-short-names (map :short-name platform-refs)
         instrument-refs (mapcat :instrument-refs platform-refs)
         instrument-short-names (remove nil? (map :short-name instrument-refs))
@@ -159,6 +161,11 @@
             :browsable browsable
             :start-date (when start-date (f/unparse (f/formatters :date-time) start-date))
             :end-date (when end-date (f/unparse (f/formatters :date-time) end-date))
+            :two-d-coord-name.lowercase (when two-d-coord-name (s/lower-case two-d-coord-name))
+            :start-coordinate-1 start-coordinate-1
+            :end-coordinate-1 end-coordinate-1
+            :start-coordinate-2 start-coordinate-2
+            :end-coordinate-2 end-coordinate-2
             :atom-links atom-links
             :orbit-calculated-spatial-domains-json ocsd-json}
            (spatial->elastic parent-collection umm-granule))))
