@@ -92,6 +92,7 @@
         start-date (temporal/start-date :granule temporal)
         end-date (temporal/end-date :granule temporal)
         atom-links (map json/generate-string (ru/atom-links related-urls))
+        ocsd-json (map json/generate-string (ocsd/ocsds->elastic-docs umm-granule))
         ;; not empty is used below to get a real true false value
         downloadable (not (empty? (ru/downloadable-urls related-urls)))
         browsable (not (empty? (ru/browse-urls related-urls)))
@@ -141,5 +142,6 @@
             :browsable browsable
             :start-date (when start-date (f/unparse (f/formatters :date-time) start-date))
             :end-date (when end-date (f/unparse (f/formatters :date-time) end-date))
-            :atom-links atom-links}
+            :atom-links atom-links
+            :orbit-calculated-spatial-domains-json ocsd-json}
            (spatial->elastic parent-collection umm-granule))))

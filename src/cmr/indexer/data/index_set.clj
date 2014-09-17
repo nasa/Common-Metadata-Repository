@@ -93,7 +93,8 @@
 (def orbit-calculated-spatial-domain-mapping
   {:type "nested"
    :dynamic "strict"
-   :properties {:orbit-number double-field-mapping
+   :properties {:orbital-model-name string-field-mapping
+                :orbit-number int-field-mapping
                 :start-orbit-number double-field-mapping
                 :stop-orbit-number double-field-mapping
                 :equator-crossing-longitude double-field-mapping
@@ -295,6 +296,10 @@
                    ;; as a structure in elasticsearch, but can't find a way to retrieve it out.
                    ;; So we are saving the links in json string, then parse it out when we need it.
                    :atom-links (not-indexed (stored string-field-mapping))
+
+                   ;; :orbit-calculated-spatial-domains-json is a json string stored for
+                   ;; retrieval similar to :atom-links above
+                   :orbit-calculated-spatial-domains-json (not-indexed (stored string-field-mapping))
                    }
                   spatial-coverage-fields)}})
 
