@@ -21,7 +21,7 @@
 
 (def ^:const ^double TAU (* 2.0 PI))
 
-(def ^:const ^double EARTH_RADIUS_METERS 6371000)
+(def ^:const ^double EARTH_RADIUS_METERS 6371000.0)
 
 (defn radians
   "Converts degrees to radians"
