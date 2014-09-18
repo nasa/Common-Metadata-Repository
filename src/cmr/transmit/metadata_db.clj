@@ -6,6 +6,7 @@
             [cheshire.core :as cheshire]
             [clojure.walk :as walk]
             [cmr.system-trace.http :as ch]
+            [ring.util.codec :as codec]
             [cmr.transmit.connection :as conn]
             [cmr.common.log :refer (debug info warn error)]))
 
@@ -43,7 +44,8 @@
   "Return a distinct identifier for the given arguments."
   [context concept-type provider-id native-id]
   (let [conn (config/context->app-connection context :metadata-db)
-        request-url (str (conn/root-url conn) "/concept-id/" (name concept-type) "/" provider-id "/" native-id)
+        request-url (str (conn/root-url conn) "/concept-id/" (name concept-type) "/" provider-id "/"
+                         (codec/url-encode native-id))
         response (client/get request-url {:accept :json
                                           :headers (ch/context->http-headers context)
                                           :throw-exceptions false
