@@ -242,9 +242,7 @@
   [atom-link]
   (let [{:keys [href link-type title mime-type size inherited]} atom-link
         attribs (-> {}
-                    ;; TODO remove or uncomment the next line depending on whether or not
-                    ;; we want to keep the 'inherited' attribute (See CMR-637).
-                    ;(add-attribs :inherited inherited)
+                    (add-attribs :inherited inherited)
                     (add-attribs :length size)
                     (add-attribs :rel (link-type->link-type-uri (keyword link-type)))
                     (add-attribs :type mime-type)
