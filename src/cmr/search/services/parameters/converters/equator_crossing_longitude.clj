@@ -7,7 +7,7 @@
             [cmr.common.parameter-parser :as parser])
   (:import [cmr.search.models.query
             EquatorCrossingLongitudeRangeCondition
-            EquatorCrossingLongitudeCondition]
+            EquatorCrossingLongitudeValueCondition]
            clojure.lang.ExceptionInfo))
 
 (defn- equator-crossing-longitude-param-str->condition

@@ -364,21 +364,25 @@ Bounding boxes define an area on the earth aligned with longitude and latitude. 
 
 ### Find granules by orbit equator crossing longitude
 
+  Find granules with an exact equator crossing longitude of 90
+
+    curl "http://localhost:3003/granules?equator_crossing_longitude=90"
+
   Find granules with an orbit equator crossing longitude in the range of 0 to 10
 
-    curl "http://localhost:3003/granules?:equator+crossing_longitude=0,10
+    curl "http://localhost:3003/granules?equator_crossing_longitude=0,10
 
   Find granules with an equator crossing longitude in the range from 170 to -170
   (across the antimeridian)
 
-    curl "http://localhost:3003/granules?:equator+crossing_longitude=170,-170
+    curl "http://localhost:3003/granules?equator_crossing_longitude=170,-170
 
 ### Find granules by orbit equator crossing date
 
   Find granules with an orbit equator crossing date in the range of
   2000-01-01T10:00:00Z to 2010-03-10T12:00:00Z
 
-    curl "http://localhost:3003/granules?:equator+crossing_date=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z
+    curl "http://localhost:3003/granules?equator_crossing_date=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z
 
 ### Find granules by updated_since param
 
@@ -442,6 +446,13 @@ curl "http://localhost:3003/granules?day_night_flag=day
 curl "http://localhost:3003/granules?day_night=unspecified
 ```
 
+### Find granules by grid param, this is an alias of catalog-rest two_d_coordinate_system.
+
+':' is the separator between name and coordinates; range is indicated by '-', otherwise it is a single value.
+
+```
+  curl "http://localhost:3003/granules?grid\[\]=wrs-1:5,10:8-10,0-10
+```
 
 ### Exclude granules from elastic results by echo granule id and concept ids. Note: more than one id may be supplied in exclude param
 

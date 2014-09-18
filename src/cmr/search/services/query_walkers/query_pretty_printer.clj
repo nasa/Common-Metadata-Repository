@@ -32,6 +32,10 @@
             EquatorCrossingLongitudeValueCondition
             EquatorCrossingLongitudeRangeCondition
             EquatorCrossingDateCondition
+            CoordinateValueCondition
+            CoordinateRangeCondition
+            TwoDCoordinateCondition
+            TwoDCoordinateSystemCondition
             CollectionQueryCondition
             MatchAllCondition
             MatchNoneCondition
@@ -63,7 +67,7 @@
   (mapify q)
   (pprint/pprint q)
 
-)
+  )
 
 
 (def query-types
@@ -91,6 +95,10 @@
    EquatorCrossingLongitudeValueCondition
    EquatorCrossingLongitudeRangeCondition
    EquatorCrossingDateCondition
+   CoordinateValueCondition
+   CoordinateRangeCondition
+   TwoDCoordinateCondition
+   TwoDCoordinateSystemCondition
    MatchAllCondition
    MatchNoneCondition
    AttributeNameCondition
@@ -215,6 +223,26 @@
   (mapify
     [c]
     (mapify-record (util/record-fields OrbitNumberRangeCondition) c))
+
+  CoordinateValueCondition
+  (mapify
+    [c]
+    (mapify-record (util/record-fields CoordinateValueCondition) c))
+
+  CoordinateRangeCondition
+  (mapify
+    [c]
+    (mapify-record (util/record-fields CoordinateRangeCondition) c))
+
+  TwoDCoordinateCondition
+  (mapify
+    [c]
+    (mapify-record (util/record-fields TwoDCoordinateCondition) c))
+
+  TwoDCoordinateSystemCondition
+  (mapify
+    [c]
+    (mapify-record (util/record-fields TwoDCoordinateSystemCondition) c))
 
   EquatorCrossingLongitudeValueCondition
   (mapify
