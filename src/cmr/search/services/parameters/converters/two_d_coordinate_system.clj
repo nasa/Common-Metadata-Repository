@@ -25,7 +25,7 @@
       [(string->double x) (string->double y)]
       (catch NumberFormatException e
         (errors/throw-service-error
-          :bad-request (format "grid values [%s] must be numeric value or range" coord-str))))))
+          :bad-request (format "Grid values [%s] must be numeric value or range" coord-str))))))
 
 (defn string->coordinate-condition
   "Returns a list of coordinate conditions for the given search coordinate string"
@@ -35,9 +35,7 @@
       (let [[x y] (string->coordinate-values coord-str)]
         (if (and (nil? y) (nil? (re-find #"-" coord-str)))
           (qm/->CoordinateValueCondition x)
-          (if (and (not (nil? x))
-                   (not (nil? y))
-                   (> x y))
+          (if (and x y (> x y))
             (errors/throw-service-error
               :bad-request
               (format "Invalid grid range for [%s]" coord-str))
@@ -64,7 +62,7 @@
     (if (s/blank? two-d-name)
       (errors/throw-service-error
         :bad-request
-        (format "grid name can not be empty, but is for [%s]" param-str))
+        (format "Grid name can not be empty, but is for [%s]" param-str))
       (qm/map->TwoDCoordinateSystemCondition {:two-d-name two-d-name
                                               :two-d-conditions coordinate-conds}))))
 
