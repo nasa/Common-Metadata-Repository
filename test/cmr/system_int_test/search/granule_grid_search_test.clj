@@ -125,9 +125,9 @@
            (let [{:keys [status errors]} (search/find-refs :granule {:grid two-d})]
              (is (= [400 [error]]
                     [status errors])))
-           " :1," "grid name can not be empty, but is for [ :1,]"
-           "name:x" "grid values [x] must be numeric value or range"
-           "name:10-x" "grid values [10-x] must be numeric value or range"
+           " :1," "Grid name can not be empty, but is for [ :1,]"
+           "name:x" "Grid values [x] must be numeric value or range"
+           "name:10-x" "Grid values [10-x] must be numeric value or range"
            "name:10-5" "Invalid grid range for [10-5]"
            "name:6,10-5" "Invalid grid range for [10-5]"))
 
@@ -164,9 +164,9 @@
                  {:keys [status errors]} (search/find-refs :granule search-params)]
              (is (= [400 [error]]
                     [status errors])))
-           " " "1" "grid name can not be empty, but is for [ :1]"
-           "name" "x" "grid values [x] must be numeric value or range"
-           "name" "10-x" "grid values [10-x] must be numeric value or range"
+           " " "1" "Grid name can not be empty, but is for [ :1]"
+           "name" "x" "Grid values [x] must be numeric value or range"
+           "name" "10-x" "Grid values [10-x] must be numeric value or range"
            "name" "10-5" "Invalid grid range for [10-5]"
            "name" "6,10-5" "Invalid grid range for [10-5]"))
 
@@ -191,6 +191,23 @@
            {:name "one CALIPSO" :coord-1 nil :coord-2 [329 360]}
            [gran1 gran2 gran3 gran4 gran5 gran7 gran8 gran10]
            {:name "one CALIPSO" :coord-1 nil :coord-2 [nil 360]}
-           [gran3 gran5 gran6 gran9 gran10] {:name "one CALIPSO" :coord-1 nil :coord-2 [360 nil]}))))
+           [gran3 gran5 gran6 gran9 gran10] {:name "one CALIPSO" :coord-1 nil :coord-2 [360 nil]}))
+
+    (testing "invalid AQL two-d-coordinate-system"
+      (are [two-d-name coord-1 coord-2 error]
+           (let [two-d {:name two-d-name :coord-1 coord-1 :coord-2 coord-2}
+                 {:keys [status errors]} (search/find-refs-with-aql
+                                           :granule
+                                           [{:TwoDCoordinateSystem two-d}])]
+             (is (= [400 [error]]
+                    [status errors])))
+           " " "1" nil "TwoDCoordinateSystemName can not be empty"
+           "name" "x" nil "Invalid format for coordinate1, it should be numeric"
+           "name" nil "x" "Invalid format for coordinate2, it should be numeric"
+           "name" [10 "x"] nil "Invalid format for coordinate1, it should be numeric"
+           "name" [5 1] nil
+           "TwoDCoordinateSystem coordinate1 range lower [5.0] should be smaller than upper [1.0]"
+           "name" nil [5 1]
+           "TwoDCoordinateSystem coordinate2 range lower [5.0] should be smaller than upper [1.0]"))))
 
 
