@@ -41,21 +41,25 @@
                                     {:orbit-calculated-spatial-domains [{:equator-crossing-longitude -180}]}))]
     (index/refresh-elastic-index)
 
-    (testing "search by unused crossing range returns nothing"
-      (let [references (search/find-refs :granule {:equator-crossing-longitude "10,20"})]
-        (is (d/refs-match? [] references))))
-    (testing "search by valid crossing range returns results"
-      (let [references (search/find-refs :granule {:equator-crossing-longitude "10,150.2"})]
-        (is (d/refs-match? [gran2 gran3] references))))
-    (testing "search by valid crossing range with min > max returns proper results"
-      (let [references (search/find-refs :granule {:equator-crossing-longitude "130,-170"})]
-        (is (d/refs-match? [gran3 gran4 gran8] references))))
-    (testing "search by valid crossing range only min-value returns results"
-      (let [references (search/find-refs :granule {:equator-crossing-longitude "120.5,"})]
-        (is (d/refs-match? [gran3 gran4] references))))
-    (testing "search by valid crossing range only max-value returns results"
-      (let [references (search/find-refs :granule {:equator-crossing-longitude ",95.5"})]
-        (is (d/refs-match? [gran1 gran2 gran5 gran6 gran7 gran8] references))))
+    (testing "search by crossing range"
+      (are [items crossing-range]
+           (d/refs-match? items
+                          (search/find-refs
+                            :granule
+                            {:equator-crossing-longitude crossing-range}))
+           ;; no match
+           [] "10,20"
+           ;; single value
+           [gran4] "180"
+           ;; valid range
+           [gran2 gran3] "10,150.2"
+           ;; min > max (crossing antimeridian)
+           [gran3 gran4 gran8] "130,-170"
+           ;; min-value only
+           [gran3 gran4] "120.5,"
+           ;; max-value only
+           [gran1 gran2 gran5 gran6 gran7 gran8] ",95.5"))
+
     (testing "non-numeric value in range"
       (let [{:keys [status errors]} (search/find-refs :granule {:equator-crossing-longitude "1,X"})]
         (is (= 400 status))
