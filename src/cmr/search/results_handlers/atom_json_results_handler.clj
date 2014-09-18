@@ -6,10 +6,12 @@
             [cmr.search.services.query-service :as qs]
             [cheshire.core :as json]
             [clj-time.core :as time]
+            [clojure.string :as str]
             [cmr.search.services.url-helper :as url]
             [cmr.search.results-handlers.atom-results-handler :as atom]
             [cmr.search.results-handlers.atom-spatial-results-handler :as atom-spatial]
-            [cmr.common.util :as util]))
+            [cmr.common.util :as util]
+            [camel-snake-kebab :as csk]))
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:collection :json]
   [concept-type query]
@@ -33,6 +35,12 @@
   "Converts a search result atom reference into json"
   (fn [results concept-type reference]
     concept-type))
+
+(defn- fix-ocsd-values
+  "Convert the keys in a map to underscore form and converts values to strings (because
+  that is how it is in ECHO json)."
+  [input-map]
+  (into {} (for [[k v] input-map] [(csk/->snake_case_string (name k)) (str v)])))
 
 (defmethod atom-reference->json :collection
   [results concept-type reference]
@@ -71,7 +79,8 @@
   [results concept-type reference]
   (let [{:keys [id title updated dataset-id producer-gran-id size original-format
                 data-center start-date end-date atom-links online-access-flag browse-flag
-                day-night cloud-cover coordinate-system shapes]} reference
+                day-night cloud-cover coordinate-system shapes
+                orbit-calculated-spatial-domains]} reference
         shape-result (atom-spatial/shapes->json shapes)
         result (merge {:id id
                        :title title
@@ -88,7 +97,10 @@
                        :browse_flag browse-flag
                        :day_night_flag day-night
                        :cloud_cover cloud-cover
-                       :coordinate_system coordinate-system}
+                       :coordinate_system coordinate-system
+                       :orbit_calculated_spatial_domains (map
+                                                           fix-ocsd-values
+                                                           orbit-calculated-spatial-domains)}
                       shape-result)]
     ;; remove entries with nil value
     (util/remove-nil-keys result)))
