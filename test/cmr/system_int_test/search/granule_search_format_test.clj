@@ -8,6 +8,7 @@
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.atom :as da]
+            [cmr.system-int-test.data2.atom-json :as dj]
             [cmr.system-int-test.data2.core :as d]
             [cmr.system-int-test.utils.url-helper :as url]
             [cmr.spatial.polygon :as poly]
@@ -257,13 +258,13 @@
                  [:status :results])))))
 
     (testing "json"
-      (let [gran-json (da/granules->expected-atom [gran1] [coll1] "granules.json?granule_ur=Granule1")
+      (let [gran-json (dj/granules->expected-json [gran1] [coll1] "granules.json?granule_ur=Granule1")
             response (search/find-concepts-json :granule {:granule-ur "Granule1"})]
         (is (= 200 (:status response)))
         (is (= gran-json
                (:results response))))
 
-      (let [gran-json (da/granules->expected-atom [gran1 gran2] [coll1 coll2] "granules.json")
+      (let [gran-json (dj/granules->expected-json [gran1 gran2] [coll1 coll2] "granules.json")
             response (search/find-concepts-json :granule {})]
         (is (= 200 (:status response)))
         (is (= gran-json
