@@ -113,6 +113,14 @@
     (format "Could not find parameter handler for [%s] with concept-type [%s]"
             param concept-type)))
 
+(defn- convert-to-regex
+  "Convert a parameter with wildcards to a regex"
+  [param]
+  (-> param
+      (str/replace #"\?" ".")
+      (str/replace #"\*" ".*")
+      re-pattern))
+
 (defn string-parameter->condition
   [param value options]
   (let [case-sensitive (case-sensitive-field? param options)
@@ -149,7 +157,6 @@
     (if (and collection-cond granule-cond)
       (qm/and-conds [collection-cond granule-cond])
       (or collection-cond granule-cond))))
-
 
 ;; Construct an inheritance query condition for granules.
 ;; This will find granules which either have explicitly specified a value
@@ -193,7 +200,6 @@
     :else
     (errors/internal-error! (format "Boolean condition for %s has invalid value of [%s]" param value))))
 
-
 (defmethod parameter->condition :readable-granule-name
   [concept-type param value options]
   (if (sequential? value)
@@ -221,7 +227,9 @@
           pattern (pattern-field? :collection-data-type options)]
       (if (or (= "SCIENCE_QUALITY" value)
               (and (= "SCIENCE_QUALITY" (str/upper-case value))
-                   (not= "false" (get-in options [:collection-data-type :ignore-case]))))
+                   (not= "false" (get-in options [:collection-data-type :ignore-case])))
+              (and pattern
+                   (re-find (convert-to-regex (str/upper-case value)) "SCIENCE_QUALITY")))
         ; SCIENCE_QUALITY collection-data-type should match concepts with SCIENCE_QUALITY
         ; or the ones missing collection-data-type field
         (qm/or-conds
