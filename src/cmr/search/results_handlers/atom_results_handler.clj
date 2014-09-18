@@ -242,7 +242,9 @@
   [atom-link]
   (let [{:keys [href link-type title mime-type size inherited]} atom-link
         attribs (-> {}
-                    (add-attribs :inherited inherited)
+                    ;; TODO remove or uncomment the next line depending on whether or not
+                    ;; we want to keep the 'inherited' attribute (See CMR-637).
+                    ;(add-attribs :inherited inherited)
                     (add-attribs :length size)
                     (add-attribs :rel (link-type->link-type-uri (keyword link-type)))
                     (add-attribs :type mime-type)
@@ -254,7 +256,9 @@
 (defn- atom-link->xml-element
   "Convert an atom link to an XML element"
   [atom-link]
-  (x/element :link (atom-link->attribute-map atom-link)))
+  (x/element :link (atom-link->attribute-map atom-link)
+             (when (:inherited atom-link)
+               (x/element :inherited))))
 
 (defn- ocsd->attribute-map
   "Convert an oribt calculated spatial domain to attributes for an XML element"
