@@ -95,8 +95,8 @@
     (ingest/reset)
     (ingest/create-provider "PROV1")
 
-    (let [coll-geodetic (d/ingest "PROV1" (dc/collection {:spatial-coverage (dc/spatial :geodetic)}))
-          coll-cartesian (d/ingest "PROV1" (dc/collection {:spatial-coverage (dc/spatial :cartesian)}))]
+    (let [coll-geodetic (d/ingest "PROV1" (dc/collection {:spatial-coverage (dc/spatial {:gsr :geodetic})}))
+          coll-cartesian (d/ingest "PROV1" (dc/collection {:spatial-coverage (dc/spatial {:gsr :cartesian})}))]
       (doseq [shape shapes]
         (let [coll (if (= :cartesian (:coordinate-system shape))
                      coll-cartesian
