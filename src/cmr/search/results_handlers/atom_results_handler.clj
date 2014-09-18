@@ -305,7 +305,7 @@
                         ;; remove duplicate links from the collection links if it already exists in the granule
                         (remove (set atom-links))
                         ;; set the inherited flag for collection links
-                        (map #(assoc % :inherited "true"))
+                        (map #(assoc % :inherited true))
                         (concat atom-links))]
     (assoc reference :atom-links atom-links)))
 
