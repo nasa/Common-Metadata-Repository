@@ -40,14 +40,11 @@
 
 (defn ground-track-uncorrected
   [orbit-parameters ^double ascending-crossing-lon-rad ^double alpha]
-  (println "ascending-crossing-lon-rad:" ascending-crossing-lon-rad
-           "alpha:" alpha)
   (let [inclination-rad (radians (:inclination-angle orbit-parameters))
         ground-track-lat (asin (* (sin inclination-rad) (sin alpha)))
         ground-track-lon (if (= (abs ground-track-lat) (/ PI 2.0))
                            ascending-crossing-lon-rad
                            (let [drift (safe-acos (/ (cos alpha) (cos ground-track-lat)))]
-                             (println "drift:" drift)
                              (- ascending-crossing-lon-rad
                                 (* (if (<= alpha PI)
                                      drift
@@ -84,17 +81,14 @@
         ^double alpha (if (or (= 0.0 alpha) (= PI alpha))
                         (+ alpha ALPHA_CORRECTION_DELTA)
                         alpha)
-        _ (println "alpha:" alpha)
 
         r (/ (echo-orbits/swath-width-rad orbit-parameters) 2.0)
         coord (ground-track-uncorrected orbit-parameters 0 alpha)
         beta (acos (* (cos r) (cos (:phi coord)) (cos (:theta coord))))
         rR (safe-asin (/ (sin r) (sin beta)))
-        _ (println "r:" r "beta:" beta "rR:" rR)
 
         lat-left (alpha-negate alpha (asin (* (sin (+ rR inclination-rad)) (sin beta))))
         rw (safe-acos (* (cos r) (cos (:phi coord)) (/ (cos (:theta coord)) (cos lat-left))))
-        _ (println "rw:" rw)
         lon-left (- ascending-crossing-lon-rad
                     (* (if (<= alpha PI) rw (- TAU rw))
                        (if (< (+ rR inclination-rad) HALF_PI) -1.0 1.0)))
@@ -107,7 +101,6 @@
         lon-correct (longitude-correction time-elapsed-secs)
         edge [(coordinate/from-phi-theta lat-left (- lon-left lon-correct))
               (coordinate/from-phi-theta lat-right (- lon-right lon-correct))]]
-    (println "lon-left:" lon-left "lon-right:" lon-right)
     (if (< alpha PI)
       edge
       (reverse edge))))
@@ -140,7 +133,6 @@
         ascending-crossing-lon-rad (radians ascending-crossing-lon)
         alpha (mod (* time-elapsed-secs (echo-orbits/angular-velocity-rad-s orbit-parameters)) TAU)
         coord (ground-track-uncorrected orbit-parameters ascending-crossing-lon-rad alpha)]
-    (println (pr-str "ground-track-uncorrected" (pr-str coord)))
     (coordinate/from-phi-theta (:phi coord) (- ^double (:theta coord)
                                                (longitude-correction time-elapsed-secs)))))
 
