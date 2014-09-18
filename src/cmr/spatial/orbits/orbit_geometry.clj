@@ -84,28 +84,54 @@
         ^double alpha (if (or (= 0.0 alpha) (= PI alpha))
                         (+ alpha ALPHA_CORRECTION_DELTA)
                         alpha)
+        _ (println "alpha:" alpha)
 
         r (/ (echo-orbits/swath-width-rad orbit-parameters) 2.0)
-        coord (ground-track-uncorrected 0 alpha)
+        coord (ground-track-uncorrected orbit-parameters 0 alpha)
         beta (acos (* (cos r) (cos (:phi coord)) (cos (:theta coord))))
         rR (safe-asin (/ (sin r) (sin beta)))
+        _ (println "r:" r "beta:" beta "rR:" rR)
 
         lat-left (alpha-negate alpha (asin (* (sin (+ rR inclination-rad)) (sin beta))))
         rw (safe-acos (* (cos r) (cos (:phi coord)) (/ (cos (:theta coord)) (cos lat-left))))
-        lon-left (- ascending-crossing-lon-rad (* (if (<= alpha PI) rw (- TAU rw))
-                                                  (+ rR (if (< inclination-rad HALF_PI) -1.0 1.0))))
+        _ (println "rw:" rw)
+        lon-left (- ascending-crossing-lon-rad
+                    (* (if (<= alpha PI) rw (- TAU rw))
+                       (if (< (+ rR inclination-rad) HALF_PI) -1.0 1.0)))
 
         lat-right (alpha-negate alpha (asin (* (sin (+ (* -1.0 rR) inclination-rad)) (sin beta))))
         re (safe-acos (* (cos r) (cos (:phi coord)) (/ (cos (:theta coord)) (cos lat-right))))
         lon-right (- ascending-crossing-lon-rad (* (if (<= alpha PI) re (- TAU re))
-                                                   (+ (* -1.0 rR) (if (< inclination-rad HALF_PI) -1.0 1.0))))
+                                                   (if (< (- inclination-rad rR) HALF_PI) -1.0 1.0)))
 
         lon-correct (longitude-correction time-elapsed-secs)
         edge [(coordinate/from-phi-theta lat-left (- lon-left lon-correct))
               (coordinate/from-phi-theta lat-right (- lon-right lon-correct))]]
+    (println "lon-left:" lon-left "lon-right:" lon-right)
     (if (< alpha PI)
       edge
       (reverse edge))))
+
+(comment
+
+  ;; an example from orbit geometry spec
+  (def test-orbit-parameters
+    {:inclination-angle 120.0
+     :period 100.0
+     :swath-width 1450.0
+     :start-circular-latitude -90.0
+     :number-of-orbits 0.5})
+
+  (for [{:keys [lon lat]} (along-track-swath-edges test-orbit-parameters 50.0 10)]
+    [lon lat])
+
+  (ground-track
+    test-orbit-parameters
+    0.0
+    30.0)
+
+
+  )
 
 (defn ground-track
   "TODO"
@@ -118,23 +144,3 @@
     (coordinate/from-phi-theta (:phi coord) (- ^double (:theta coord)
                                                (longitude-correction time-elapsed-secs)))))
 
-
-
-
-(comment
-
-  ;; an example from orbit geometry spec
-  (def test-orbit-parameters
-    {:inclination-angle 90.0
-     :period 90.0
-     :swath-width 2.0
-     :start-circular-latitude -50.0
-     :number-of-orbits 0.25})
-
-  (ground-track
-    test-orbit-parameters
-    0.0
-    30.0)
-
-
-  )

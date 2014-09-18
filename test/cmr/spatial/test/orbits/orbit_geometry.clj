@@ -105,3 +105,15 @@
              23.0 (- 180.0 (mod (* (/ 360.0 echo-orbits/SOLAR_DAY_S) 23.0 60.0) 360.0))
              30.0 (- 180.0 (mod (* (/ 360.0 echo-orbits/SOLAR_DAY_S) 30.0 60.0) 360.0))
              67.5 -16.875)))))
+
+
+
+(deftest along-track-swath-edges-test
+  (let [orbit-params {:inclination-angle 120.0
+                      :period 100.0
+                      :swath-width 1450.0
+                      :start-circular-latitude -90.0
+                      :number-of-orbits 0.5}]
+    ))
+
+

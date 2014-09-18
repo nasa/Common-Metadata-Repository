@@ -33,7 +33,7 @@
 
 (defn swath-width-rad
   ^double [orbit-parameters]
-  (* ^double (:swath-width orbit-parameters) (/ 1000.0 EARTH_RADIUS_METERS)))
+  (/ (* ^double (:swath-width orbit-parameters) 1000.0) EARTH_RADIUS_METERS))
 
 (defn inclination-rad
   ^double [orbit-parameters]
