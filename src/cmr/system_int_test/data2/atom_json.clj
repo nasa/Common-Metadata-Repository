@@ -51,6 +51,14 @@
   (when (and v (seq v))
     (Double. v)))
 
+(defn- parse-ocsd
+  "Parse orbit-calculated-spatial-domain map"
+  [ocsd]
+  (into ocsd {:orbit-number (parse-long (:orbit-number ocsd))
+              :start-orbit-number (parse-double (:start-orbit-number ocsd))
+              :stop-orbit-number (parse-double (:stop-orbit-number ocsd))
+              :equator-crossing-longitude (parse-double (:equator-crossing-longitude ocsd))}))
+
 (defmethod json-entry->entry :collection
   [concept-type json-entry]
   (let [json-entry (util/map-keys->kebab-case json-entry)
@@ -87,7 +95,8 @@
   (let [json-entry (util/map-keys->kebab-case json-entry)
         {:keys [id title updated dataset-id producer-granule-id granule-size original-format
                 data-center links time-start time-end online-access-flag browse-flag day-night-flag
-                cloud-cover coordinate-system points boxes polygons lines]} json-entry]
+                cloud-cover coordinate-system points boxes polygons lines
+                orbit-calculated-spatial-domains]} json-entry]
     (util/remove-nil-keys
       {:id id
        :title title
@@ -98,6 +107,7 @@
        :original-format original-format
        :data-center data-center
        :links (seq links)
+       :orbit-calculated-spatial-domains (seq (map parse-ocsd orbit-calculated-spatial-domains))
        :start time-start
        :end time-end
        :online-access-flag online-access-flag
