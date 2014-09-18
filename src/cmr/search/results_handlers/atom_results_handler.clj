@@ -6,6 +6,7 @@
             [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]
             [cmr.search.services.query-execution.facets-results-feature :as frf]
             [clojure.data.xml :as x]
+            [clojure.walk :as walk]
             [cheshire.core :as json]
             [clojure.string :as str]
             [clj-time.core :as time]
@@ -54,6 +55,7 @@
    "start-date"
    "end-date"
    "atom-links"
+   "orbit-calculated-spatial-domains-json"
    "downloadable"
    "browsable"
    "day-night"
@@ -63,6 +65,23 @@
    "ords"
    "access-value" ;; needed for acl enforcment
    ])
+
+(def ocsd-fields
+  "The fields for orbit calculated spatil domains, in the order that they are stored in the jason
+  string in the index."
+  [:equator-crossing-date-time
+   :equator-crossing-longitude
+   :orbital-model-name
+   :orbit-number
+   :start-orbit-number
+   :stop-orbit-number])
+
+(defn ocsd-json->map
+  "Conver the orbit calculated spatial domain json string from elastic into a map. The string
+  is stored internally as a vector of values."
+  [json-str]
+  (let [value-array (json/decode json-str)]
+    (zipmap ocsd-fields value-array)))
 
 (defn- collection-elastic-result->query-result-item
   [elastic-result]
@@ -132,6 +151,7 @@
           [start-date] :start-date
           [end-date] :end-date
           atom-links :atom-links
+          orbit-calculated-spatial-domains-json :orbit-calculated-spatial-domains-json
           [downloadable] :downloadable
           [browsable] :browsable
           [day-night] :day-night
@@ -144,7 +164,8 @@
         end-date (when end-date (str/replace (str end-date) #"\+0000" "Z"))
         atom-links (map (fn [link-str]
                           (update-in (json/decode link-str true) [:size] #(when % (str %))))
-                        atom-links)]
+                        atom-links)
+        orbit-calculated-spatial-domains (map ocsd-json->map orbit-calculated-spatial-domains-json)]
     {:id concept-id
      :title granule-ur
      :collection-concept-id collection-concept-id
@@ -157,6 +178,7 @@
      :start-date start-date
      :end-date end-date
      :atom-links atom-links
+     :orbit-calculated-spatial-domains orbit-calculated-spatial-domains
      :online-access-flag downloadable
      :browse-flag browsable
      :day-night day-night
@@ -234,6 +256,29 @@
   [atom-link]
   (x/element :link (atom-link->attribute-map atom-link)))
 
+(defn- ocsd->attribute-map
+  "Convert an oribt calculated spatial domain to attributes for an XML element"
+  [ocsd]
+  (let [ocsd (walk/keywordize-keys ocsd)
+        {:keys [orbital-model-name
+                orbit-number
+                start-orbit-number
+                stop-orbit-number
+                equator-crossing-longitude
+                equator-crossing-date-time]} ocsd]
+    (-> {}
+        (add-attribs :orbitModelName orbital-model-name)
+        (add-attribs :orbitNumber orbit-number)
+        (add-attribs :startOrbitNumber start-orbit-number)
+        (add-attribs :stopOrbitNumber stop-orbit-number)
+        (add-attribs :equatorCrossingLongitude equator-crossing-longitude)
+        (add-attribs :equatorCrossingDateTime equator-crossing-date-time))))
+
+(defn- ocsd->xml-element
+  "Convert an oribt calculated spatial domain to an XML element"
+  [ocsd]
+  (x/element :echo:orbitCalSpatialDomain (ocsd->attribute-map ocsd)))
+
 (defmulti atom-reference->xml-element
   (fn [results concept-type reference]
     concept-type))
@@ -275,7 +320,8 @@
   [results concept-type reference]
   (let [{:keys [id score title updated dataset-id producer-gran-id size original-format
                 data-center start-date end-date atom-links online-access-flag browse-flag
-                day-night cloud-cover coordinate-system shapes]} reference]
+                day-night cloud-cover coordinate-system shapes
+                orbit-calculated-spatial-domains]} reference]
     (x/element :entry {}
                (x/element :id {} id)
                (x/element :title {:type "text"} title)
@@ -288,6 +334,8 @@
                (when start-date (x/element :time:start {} start-date))
                (when end-date (x/element :time:end {} end-date))
                (map atom-link->xml-element atom-links)
+               (map ocsd->xml-element orbit-calculated-spatial-domains)
+
                (when coordinate-system (x/element :echo:coordinateSystem {} coordinate-system))
                (map atom-spatial/shape->xml-element shapes)
                (x/element :echo:onlineAccessFlag {} online-access-flag)
