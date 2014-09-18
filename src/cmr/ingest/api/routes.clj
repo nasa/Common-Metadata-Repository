@@ -31,8 +31,7 @@
     (context "/providers/:provider-id" [provider-id]
       (context ["/collections/:native-id" :native-id #".*$"] [native-id]
         (PUT "/" {:keys [body content-type headers request-context]}
-          (let [native-id (codec/url-decode native-id)
-                metadata (string/trim (slurp body))
+          (let [metadata (string/trim (slurp body))
                 base-concept {:metadata metadata
                               :format content-type
                               :provider-id provider-id
@@ -47,8 +46,7 @@
             (r/response (ingest/delete-concept request-context concept-attribs)))))
       (context ["/granules/:native-id" :native-id #".*$"] [native-id]
         (PUT "/" {:keys [body content-type headers request-context]}
-          (let [native-id (codec/url-decode native-id)
-                metadata (string/trim (slurp body))
+          (let [metadata (string/trim (slurp body))
                 base-concept {:metadata metadata
                               :format content-type
                               :provider-id provider-id
