@@ -82,6 +82,17 @@
            xml-elem->lines
            xml-elem->bounding-rectangles]))
 
+(defn- fix-ocsd-attribs
+  "Convert orbit-calculated-spatial-domains attributes to their proper keys / value types"
+  [attribs]
+  (util/remove-nil-keys {:orbital-model-name (:orbitModelName attribs)
+                         :orbit-number (Integer/parseInt (:orbitNumber attribs))
+                         :start-orbit-number (Double/parseDouble (:startOrbitNumber attribs))
+                         :stop-orbit-number (Double/parseDouble (:stopOrbitNumber attribs))
+                         :equator-crossing-longitude (Double/parseDouble
+                                                       (:equatorCrossingLongitude attribs))
+                         :equator-crossing-date-time (:equatorCrossingDateTime attribs)}))
+
 (defmulti xml-elem->entry
   "Retrns an atom entry from a parsed atom xml structure"
   (fn [concept-type xml-elem]
@@ -126,6 +137,12 @@
      :original-format (cx/string-at-path entry-elem [:originalFormat])
      :data-center (cx/string-at-path entry-elem [:dataCenter])
      :links (seq (map :attrs (cx/elements-at-path entry-elem [:link])))
+     :orbit-calculated-spatial-domains (seq
+                                         (map
+                                           #(fix-ocsd-attribs (:attrs %))
+                                           (cx/elements-at-path
+                                             entry-elem
+                                             [:orbitCalSpatialDomain])))
      :start (cx/string-at-path entry-elem [:start])
      :end (cx/string-at-path entry-elem [:end])
      :online-access-flag (cx/bool-at-path entry-elem [:onlineAccessFlag])
@@ -241,7 +258,8 @@
   "Returns the atom map of the granule"
   [granule coll]
   (let [{:keys [concept-id granule-ur producer-gran-id size related-urls
-                beginning-date-time ending-date-time day-night cloud-cover]} granule
+                beginning-date-time ending-date-time day-night cloud-cover
+                orbit-calculated-spatial-domains]} granule
         related-urls (add-collection-links coll related-urls)
         dataset-id (get-in granule [:collection-ref :entry-title])
         update-time (get-in granule [:data-provider-timestamps :update-time])
@@ -258,6 +276,7 @@
        :original-format "ECHO10"
        :data-center (:provider-id (cu/parse-concept-id concept-id))
        :links (seq (related-urls->links related-urls))
+       :orbit-calculated-spatial-domains (seq orbit-calculated-spatial-domains)
        :start beginning-date-time
        :end ending-date-time
        :online-access-flag (not (empty? (ru/downloadable-urls related-urls)))

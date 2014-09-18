@@ -152,8 +152,9 @@
 
 ;;; Verify that collections with embedded / (%2F) in the native-id are handled correctly
 (deftest ingest-collection-with-slash-in-native-id-test
-  (let [collection {:concept-type :collection
-                    :native-id "Name%2FWith%2FSlashes"
+  (let [crazy-id "`1234567890-=qwertyuiop[]\\asdfghjkl;'zxcvbnm,./ ~!@#$%^&*()_+QWERTYUIOP{}ASDFGHJKL:\"ZXCVBNM<>?"
+        collection {:concept-type :collection
+                    :native-id crazy-id
                     :provider-id "PROV1"
                     :metadata (old-ingest/collection-xml old-ingest/base-concept-attribs)
                     :format "application/echo10+xml"
@@ -166,7 +167,7 @@
     (is (= 200 (:status response)))
     (is (ingest/concept-exists-in-mdb? concept-id revision-id))
     (is (= 1 revision-id))
-    (is (= "Name/With/Slashes" (:native-id ingested-concept)))
+    (is (= crazy-id (:native-id ingested-concept)))
 
     (testing "delete"
       (let [delete-result (ingest/delete-concept ingested-concept)]

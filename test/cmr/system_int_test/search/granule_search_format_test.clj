@@ -201,6 +201,12 @@
                                 :day-night "DAY"
                                 :size 100.0
                                 :cloud-cover 50.0
+                                :orbit-calculated-spatial-domains [{:orbital-model-name "MODEL NAME"
+                                                                    :orbit-number 2
+                                                                    :start-orbit-number 3.0
+                                                                    :stop-orbit-number 4.0
+                                                                    :equator-crossing-longitude -45.0
+                                                                    :equator-crossing-date-time "2011-01-01T12:00:00.000Z"}]
                                 :related-urls [ru1 ru2]
                                 :spatial-coverage (dg/spatial
                                                     (poly/polygon [(umm-s/ords->ring -70 20, 70 20, 70 30, -70 30, -70 20)])
