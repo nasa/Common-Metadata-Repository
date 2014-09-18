@@ -59,7 +59,8 @@
         coll18 (d/ingest "PROV2" (dc/collection {:short-name "SNFoobar"}))
         coll19 (d/ingest "PROV2" (dc/collection {:long-name "LNFoobar"}))
         coll20 (d/ingest "PROV2" (dc/collection {:projects pr1}))
-        coll21 (d/ingest "PROV2" (dc/collection {:entry-title "coll21" :long-name "ABC!"}))]
+        coll21 (d/ingest "PROV2" (dc/collection {:entry-title "coll21" :long-name "ABC!"}))
+        coll22 (d/ingest "PROV2" (dc/collection {:collection-data-type "NEAR_REAL_TIME"}))]
 
     (index/refresh-elastic-index)
 
@@ -100,6 +101,14 @@
 
            ;; collection data type
            "cldt" [coll15]
+
+           ;; collection data type aliases for NEAR_REAL_TIME
+           "NEAR_REAL_TIME" [coll22]
+           "near_real_time" [coll22]
+           "nrt" [coll22]
+           "near real time" [coll22]
+           "near-real time" [coll22]
+           "near real-time" [coll22]
 
            ;; summary
            "summary" [coll15]
