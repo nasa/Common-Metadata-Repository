@@ -76,6 +76,28 @@
       :else
       (errors/throw-service-error :invalid-data (unrecognized-gsr-msg gsr)))))
 
+(def ocsd-fields
+  "The fields for orbit calculated spatil domains, in the order that they are stored in the jason
+  string in the index."
+  [:equator-crossing-date-time
+   :equator-crossing-longitude
+   :orbital-model-name
+   :orbit-number
+   :start-orbit-number
+   :stop-orbit-number])
+
+(defn- ocsd-map->vector
+  "Turn a map of orbit crossing spatial domain data into a vector"
+  [ocsd]
+  (map ocsd ocsd-fields))
+
+(defn- granule->ocsd-json
+  "Create a json string from the orbitial calculated spatial domains."
+  [umm-granule]
+  (map #(json/generate-string
+                          (ocsd-map->vector %))
+                       (ocsd/ocsds->elastic-docs umm-granule)))
+
 (defmethod es/concept->elastic-doc :granule
   [context concept umm-granule]
   (let [{:keys [concept-id extra-fields provider-id revision-date format]} concept
@@ -94,6 +116,7 @@
         start-date (temporal/start-date :granule temporal)
         end-date (temporal/end-date :granule temporal)
         atom-links (map json/generate-string (ru/atom-links related-urls))
+        ocsd-json (granule->ocsd-json umm-granule)
         ;; not empty is used below to get a real true false value
         downloadable (not (empty? (ru/downloadable-urls related-urls)))
         browsable (not (empty? (ru/browse-urls related-urls)))
@@ -143,11 +166,11 @@
             :browsable browsable
             :start-date (when start-date (f/unparse (f/formatters :date-time) start-date))
             :end-date (when end-date (f/unparse (f/formatters :date-time) end-date))
-            :two-d-coord-name two-d-coord-name
             :two-d-coord-name.lowercase (when two-d-coord-name (s/lower-case two-d-coord-name))
             :start-coordinate-1 start-coordinate-1
             :end-coordinate-1 end-coordinate-1
             :start-coordinate-2 start-coordinate-2
             :end-coordinate-2 end-coordinate-2
-            :atom-links atom-links}
+            :atom-links atom-links
+            :orbit-calculated-spatial-domains-json ocsd-json}
            (spatial->elastic parent-collection umm-granule))))

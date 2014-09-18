@@ -13,7 +13,8 @@
                 equator-crossing-longitude
                 equator-crossing-date-time]} ocsd
         ecdt (when equator-crossing-date-time (attr/value->elastic-value :datetime equator-crossing-date-time))]
-    {:orbit-number orbit-number
+    {:orbital-model-name orbital-model-name
+     :orbit-number orbit-number
      :start-orbit-number start-orbit-number
      :stop-orbit-number stop-orbit-number
      :equator-crossing-longitude equator-crossing-longitude
