@@ -119,7 +119,7 @@
   (let [collection (old-ingest/collection-concept "PROV1" 5)
         _ (ingest/ingest-concept collection)
         granule {:concept-type :granule
-                 :native-id "Name%2FWith%2FSlashes"
+                 :native-id "Name/With/Slashes"
                  :provider-id "PROV1"
                  :metadata (old-ingest/granule-xml old-ingest/base-concept-attribs)
                  :format "application/echo10+xml"
