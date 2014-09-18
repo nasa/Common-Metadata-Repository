@@ -29,12 +29,13 @@
             TemporalCondition
             OrbitNumberValueCondition
             OrbitNumberRangeCondition
+            EquatorCrossingLongitudeValueCondition
+            EquatorCrossingLongitudeRangeCondition
+            EquatorCrossingDateCondition
             CoordinateValueCondition
             CoordinateRangeCondition
             TwoDCoordinateCondition
             TwoDCoordinateSystemCondition
-            EquatorCrossingLongitudeCondition
-            EquatorCrossingDateCondition
             CollectionQueryCondition
             MatchAllCondition
             MatchNoneCondition
@@ -91,12 +92,13 @@
    StringRangeCondition
    OrbitNumberValueCondition
    OrbitNumberRangeCondition
+   EquatorCrossingLongitudeValueCondition
+   EquatorCrossingLongitudeRangeCondition
+   EquatorCrossingDateCondition
    CoordinateValueCondition
    CoordinateRangeCondition
    TwoDCoordinateCondition
    TwoDCoordinateSystemCondition
-   EquatorCrossingLongitudeCondition
-   EquatorCrossingDateCondition
    MatchAllCondition
    MatchNoneCondition
    AttributeNameCondition
@@ -242,10 +244,15 @@
     [c]
     (mapify-record (util/record-fields TwoDCoordinateSystemCondition) c))
 
-  EquatorCrossingLongitudeCondition
+  EquatorCrossingLongitudeValueCondition
   (mapify
     [c]
-    (mapify-record (util/record-fields EquatorCrossingLongitudeCondition) c))
+    (mapify-record (util/record-fields EquatorCrossingLongitudeValueCondition) c))
+
+  EquatorCrossingLongitudeRangeCondition
+  (mapify
+    [c]
+    (mapify-record (util/record-fields EquatorCrossingLongitudeRangeCondition) c))
 
   EquatorCrossingDateCondition
   (mapify

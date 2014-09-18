@@ -6,14 +6,17 @@
             [cmr.common.services.errors :as errors]
             [cmr.common.parameter-parser :as parser])
   (:import [cmr.search.models.query
-            EquatorCrossingLongitudeCondition]
+            EquatorCrossingLongitudeRangeCondition
+            EquatorCrossingLongitudeValueCondition]
            clojure.lang.ExceptionInfo))
 
 (defn- equator-crossing-longitude-param-str->condition
   [param-str]
   (try
     (let [{:keys [value] :as on-map} (parser/numeric-range-parameter->map param-str)]
-      (qm/map->EquatorCrossingLongitudeCondition on-map))
+      (if value
+        (qm/map->EquatorCrossingLongitudeValueCondition on-map)
+        (qm/map->EquatorCrossingLongitudeRangeCondition on-map)))
     (catch ExceptionInfo e
       (errors/internal-error! (msg/non-numeric-value-failed-validation) e))))
 
@@ -22,7 +25,9 @@
   (try
     (let [numeric-map (into {} (for [[k v] eql-map] [k (Double. v)]))
           {:keys [value]} numeric-map]
-      (qm/map->EquatorCrossingLongitudeCondition numeric-map))
+      (if value
+        (qm/map->EquatorCrossingLongitudeValueCondition numeric-map)
+        (qm/map->EquatorCrossingLongitudeRangeCondition numeric-map)))
     (catch NumberFormatException e
       (errors/internal-error! (msg/non-numeric-value-failed-validation) e))))
 

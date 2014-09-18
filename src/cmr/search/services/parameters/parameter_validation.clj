@@ -315,7 +315,8 @@
     []))
 
 (defn equator-crossing-longitude-validation
-  "Validates that the equator-crossing-longitude parameter is a valid range string."
+  "Validates that the equator-crossing-longitude parameter is a single number or
+  a valid range string."
   [concept-type params]
   (if-let [equator-crossing-longitude (:equator-crossing-longitude params)]
     (if (string? equator-crossing-longitude)

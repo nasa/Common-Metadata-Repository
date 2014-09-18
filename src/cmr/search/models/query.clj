@@ -241,6 +241,17 @@
    max-value
    ])
 
+(defrecord EquatorCrossingLongitudeValueCondition
+  [
+   value
+   ])
+
+(defrecord EquatorCrossingLongitudeRangeCondition
+  [
+   min-value
+   max-value
+   ])
+
 ;; This condition is used for holding two-d-coordinate value
 (defrecord CoordinateValueCondition
   [
@@ -268,12 +279,6 @@
    two-d-name
    ;; it is nil or a list of TwoDCoordinateConditions
    two-d-conditions
-   ])
-
-(defrecord EquatorCrossingLongitudeCondition
-  [
-   min-value
-   max-value
    ])
 
 (defrecord EquatorCrossingDateCondition

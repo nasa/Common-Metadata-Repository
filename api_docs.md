@@ -364,21 +364,25 @@ Bounding boxes define an area on the earth aligned with longitude and latitude. 
 
 ### Find granules by orbit equator crossing longitude
 
+  Find granules with an exact equator crossing longitude of 90
+
+    curl "http://localhost:3003/granules?equator_crossing_longitude=90"
+
   Find granules with an orbit equator crossing longitude in the range of 0 to 10
 
-    curl "http://localhost:3003/granules?:equator+crossing_longitude=0,10
+    curl "http://localhost:3003/granules?equator_crossing_longitude=0,10
 
   Find granules with an equator crossing longitude in the range from 170 to -170
   (across the antimeridian)
 
-    curl "http://localhost:3003/granules?:equator+crossing_longitude=170,-170
+    curl "http://localhost:3003/granules?equator_crossing_longitude=170,-170
 
 ### Find granules by orbit equator crossing date
 
   Find granules with an orbit equator crossing date in the range of
   2000-01-01T10:00:00Z to 2010-03-10T12:00:00Z
 
-    curl "http://localhost:3003/granules?:equator+crossing_date=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z
+    curl "http://localhost:3003/granules?equator_crossing_date=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z
 
 ### Find granules by updated_since param
 

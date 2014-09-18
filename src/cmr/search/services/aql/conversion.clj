@@ -250,7 +250,9 @@
 
 (defmethod element->condition :equator-crossing-longitude
   [concept-type element]
-  (qm/map->EquatorCrossingLongitudeCondition (element->num-range concept-type element)))
+  (if-let [value (cx/double-at-path element [:value])]
+    (qm/map->EquatorCrossingLongitudeValueCondition {:value value})
+    (qm/map->EquatorCrossingLongitudeRangeCondition (element->num-range concept-type element))))
 
 (defmethod element->condition :num-range
   [concept-type element]
