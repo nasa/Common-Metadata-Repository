@@ -3,11 +3,19 @@
   (:require [clojure.set]
             [cmr.search.models.query :as qm]
             [cmr.search.validators.validation :as v]
-            [cmr.search.validators.numeric-range :as nm]))
-
+            [cmr.search.validators.numeric-range :as nm]
+            [cmr.search.services.messages.orbit-number-messages :as onm]))
 
 (extend-protocol v/Validator
-  cmr.search.models.query.EquatorCrossingLongitudeCondition
+  cmr.search.models.query.EquatorCrossingLongitudeValueCondition
+  (validate
+    [{:keys [value]}]
+    (when (or (> value 180.0)
+         (< value -180.0))
+      (onm/non-numeric-equator-crossing-longitude-parameter))))
+
+(extend-protocol v/Validator
+  cmr.search.models.query.EquatorCrossingLongitudeRangeCondition
   (validate
     [{:keys [min-value max-value]}]
     (let [numeric-range-condition (qm/map->NumericRangeCondition {:min-value min-value

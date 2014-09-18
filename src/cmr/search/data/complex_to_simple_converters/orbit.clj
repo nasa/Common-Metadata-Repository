@@ -39,8 +39,8 @@
         orbit-number-range-cond (qm/numeric-range-condition :orbit-number nil max-value)]
     (qm/or-conds [start-orbit-number-range-cond orbit-number-range-cond])))
 
-(defn- equator-crossing-longitude-condition-both
-  "Creates a grouped condition from an EquatorCrossingLongitudeCondition with both min-value and
+(defn- equator-crossing-longitude-range-condition-both
+  "Creates a grouped condition from an EquatorCrossingLongitudeRangeCondition with both min-value and
   max-value.'"
   [min-value max-value]
   (if (>= max-value min-value)
@@ -52,12 +52,12 @@
           upper-query (qm/numeric-range-condition :equator-crossing-longitude -180.0 max-value)]
       (qm/or-conds [lower-query upper-query]))))
 
-(defn- equator-crossing-longitude-condition-min
+(defn- equator-crossing-longitude-range-condition-min
   "Creates a grouped condition with just the min-value specified."
   [min-value]
   (qm/numeric-range-condition :equator-crossing-longitude min-value nil))
 
-(defn- equator-crossing-longitude-condition-max
+(defn- equator-crossing-longitude-range-condition-max
   "Creates a grouped condition with just the max specified."
   [max-value]
   (qm/numeric-range-condition :equator-crossing-longitude nil max-value))
@@ -94,19 +94,27 @@
                            (errors/internal-error! (m/nil-min-max-msg)))]
       (qm/nested-condition :orbit-calculated-spatial-domains group-condtion)))
 
-  cmr.search.models.query.EquatorCrossingLongitudeCondition
+  cmr.search.models.query.EquatorCrossingLongitudeValueCondition
+  (c2s/reduce-query-condition
+    [condition context]
+    (let [{:keys [value]} condition
+          term-cond (qm/map->NumericValueCondition {:field :equator-crossing-longitude :value value})]
+      (qm/nested-condition :orbit-calculated-spatial-domains term-cond)))
+
+
+  cmr.search.models.query.EquatorCrossingLongitudeRangeCondition
   (c2s/reduce-query-condition
     [condition context]
     (let [{:keys [min-value max-value]} condition
           group-condition (cond
                             (and min-value max-value)
-                            (equator-crossing-longitude-condition-both min-value max-value)
+                            (equator-crossing-longitude-range-condition-both min-value max-value)
 
                             min-value
-                            (equator-crossing-longitude-condition-min min-value)
+                            (equator-crossing-longitude-range-condition-min min-value)
 
                             max-value
-                            (equator-crossing-longitude-condition-max max-value)
+                            (equator-crossing-longitude-range-condition-max max-value)
 
                             :else
                             (errors/internal-error! (m/nil-min-max-msg)))]

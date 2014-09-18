@@ -241,7 +241,12 @@
    max-value
    ])
 
-(defrecord EquatorCrossingLongitudeCondition
+(defrecord EquatorCrossingLongitudeValueCondition
+  [
+   value
+   ])
+
+(defrecord EquatorCrossingLongitudeRangeCondition
   [
    min-value
    max-value
