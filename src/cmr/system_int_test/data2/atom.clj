@@ -174,7 +174,7 @@
 (defn- add-attribs
   "Returns the attribs with the field-value pair added if there is a value"
   [attribs field value]
-  (if (empty? value) attribs (assoc attribs field value)))
+  (if (nil? value) attribs (assoc attribs field value)))
 
 (defn- related-url->link
   "Returns the atom link of the given related url"
