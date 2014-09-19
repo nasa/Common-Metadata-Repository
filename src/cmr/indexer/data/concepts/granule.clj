@@ -166,6 +166,7 @@
             :browsable browsable
             :start-date (when start-date (f/unparse (f/formatters :date-time) start-date))
             :end-date (when end-date (f/unparse (f/formatters :date-time) end-date))
+            :two-d-coord-name two-d-coord-name
             :two-d-coord-name.lowercase (when two-d-coord-name (s/lower-case two-d-coord-name))
             :start-coordinate-1 start-coordinate-1
             :end-coordinate-1 end-coordinate-1
