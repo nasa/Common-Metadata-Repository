@@ -330,8 +330,9 @@
          response (client/get url {:accept accept
                                    :query-params params
                                    :connection-manager (url/conn-mgr)})
-         {:keys [status body]} response]
+         {:keys [status body headers]} response]
      (if (= status 200)
        {:status status
+        :headers headers
         :results (ph/parse-provider-holdings format-key body)}
        response))))
