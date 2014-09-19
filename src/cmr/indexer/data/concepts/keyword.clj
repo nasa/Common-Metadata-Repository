@@ -39,7 +39,7 @@
                 projects]} collection
         collection-data-type (if (and collection-data-type
                                       (some #{(str/lower-case collection-data-type)} nrt-aliases))
-                               nrt-aliases
+                               "nrt"
                                collection-data-type)
         project-long-names (map :long-name projects)
         project-short-names (map :short-name projects)
