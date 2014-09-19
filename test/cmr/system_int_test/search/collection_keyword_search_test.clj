@@ -106,9 +106,7 @@
            "NEAR_REAL_TIME" [coll22]
            "near_real_time" [coll22]
            "nrt" [coll22]
-           "near real time" [coll22]
-           "near-real time" [coll22]
-           "near real-time" [coll22]
+           "near-real-time" [coll22]
 
            ;; summary
            "summary" [coll15]
