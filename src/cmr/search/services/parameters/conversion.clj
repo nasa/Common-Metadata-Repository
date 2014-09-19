@@ -298,13 +298,19 @@
      :result-features (seq result-features)
      :pretty? pretty?}))
 
+(defn- alias-nrt
+  "Alias variations of NEAR_REAL_TIME to nrt"
+  [value]
+  (if (some #{value} nrt-aliases) "nrt" value))
+
 (defn parameters->query
   "Converts parameters into a query model."
   [concept-type params]
   (let [options (u/map-keys->kebab-case (get params :options {}))
         query-attribs (standard-params->query-attribs concept-type params)
         keywords (when (:keyword params)
-                   (str/split (str/lower-case (:keyword params)) #" "))
+                   (map alias-nrt (str/split (str/lower-case (:keyword params)) #" ")))
+        params (if keywords (assoc params :keyword (str/join " " keywords)) params)
         params (dissoc params :options :page-size :page-num :sort-key :result-format :pretty
                        :include-granule-counts :include-has-granules :include-facets)]
     (if (empty? params)
