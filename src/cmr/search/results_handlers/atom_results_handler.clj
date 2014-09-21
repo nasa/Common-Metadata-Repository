@@ -254,7 +254,9 @@
 (defn- atom-link->xml-element
   "Convert an atom link to an XML element"
   [atom-link]
-  (x/element :link (atom-link->attribute-map atom-link)))
+  (x/element :link (atom-link->attribute-map atom-link)
+             (when (:inherited atom-link)
+               (x/element :inherited))))
 
 (defn- ocsd->attribute-map
   "Convert an oribt calculated spatial domain to attributes for an XML element"
