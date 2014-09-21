@@ -1,6 +1,7 @@
 (ns cmr.system-int-test.search.provider-holdings-test
   "Integration tests for provider holdings"
   (:require [clojure.test :refer :all]
+            [cmr.search.api.routes :as sr]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.index-util :as index]
@@ -130,5 +131,15 @@
                                                    {:provider_id "PROV1"
                                                     :token user-token}
                                                    {:format-as-ext? true})
-               [:status :results]))))))
+               [:status :results]))))
+    (testing "retrieve provider holdings with count summaries in headers"
+      (let [response (search/provider-holdings-in-format :json {:provider_id "PROV1"
+                                                                :token user-token})
+            headers (:headers response)
+            header-granule-count (headers sr/CMR_GRANULE_COUNT_HEADER)
+            header-collection-count (headers sr/CMR_COLLECTION_COUNT_HEADER)
+            granule-count (reduce + (map :granule-count (all-holdings "PROV1")))]
+        (is (= 200 (:status response)))
+        (is (and (= (str prov1-collection-count) header-collection-count)
+                 (= (str granule-count) header-granule-count)))))))
 
