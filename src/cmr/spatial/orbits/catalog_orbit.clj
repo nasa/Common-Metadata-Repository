@@ -30,4 +30,7 @@
                                     orbit-parameters ascending-crossing-lon time-elapsed-mins)]
                          (map coordinate/to-point edge)))]
      (for [[edge1 edge2] (partition 2 1 swath-edges)]
-       (poly/polygon :geodetic [(gr/ring (concat edge1 (reverse edge2)))])))))
+       (poly/polygon :geodetic [(gr/ring (concat edge1
+                                                 (reverse edge2)
+                                                 ;; close the polygon
+                                                 [(first edge1)]))])))))

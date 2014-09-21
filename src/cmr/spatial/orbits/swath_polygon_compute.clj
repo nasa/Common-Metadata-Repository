@@ -53,3 +53,28 @@
                             [begin-elapsed-time end-elapsed-time])))
 
 
+
+(comment
+  (require '[cmr.spatial.dev.viz-helper :as viz-helper])
+
+  (let [orbit-parameters
+        {:inclination-angle 65
+         :period 90
+         :swath-width 120.0
+         :start-circular-latitude -90.0
+         :number-of-orbits 0.5}]
+
+    (viz-helper/clear-geometries)
+    (viz-helper/add-geometries
+      (catalog-orbit/geometry orbit-parameters -158.1 [30 40])))
+
+  ;; TODO build integration tests that take some made up data that looks good and is run through
+  ;; the code in ruby
+  ;; We can also get some existing granules in ops and their polygons and hard code them in the
+  ;; integration tests.
+
+
+
+  )
+
+
