@@ -17,6 +17,10 @@
 ;; Regex to split strings with special characters into multiple words for keyword searches
 (def keywords-separator-regex #"[!@#$%^&()\-=_+{}\[\]|;'.,\"/:<>?`~* ]")
 
+;; Aliases for NEAR_REAL_TIME
+(def nrt-aliases
+  ["near_real_time","nrt","near real time","near-real time","near-real-time","near real-time"])
+
 (defn prepare-keyword-field
   [field-value]
   "Convert a string to lowercase then separate it into keywords"
@@ -33,6 +37,10 @@
         {{:keys [short-name long-name version-id processing-level-id collection-data-type]} :product
          :keys [entry-id entry-title summary spatial-keywords temporal-keywords associated-difs
                 projects]} collection
+        collection-data-type (if (and collection-data-type
+                                      (some #{(str/lower-case collection-data-type)} nrt-aliases))
+                               "nrt"
+                               collection-data-type)
         project-long-names (map :long-name projects)
         project-short-names (map :short-name projects)
         platforms (:platforms collection)
