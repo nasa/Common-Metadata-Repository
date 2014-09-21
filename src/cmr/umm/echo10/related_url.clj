@@ -10,7 +10,7 @@
 (def resource-type->related-url-types
   "A mapping of ECHO10 OnlineResource's type to UMM RelatedURL's type and sub-type.
   This came from a list provided by Katie on ECHO10 collections, more may need to be added for granules."
-  {"STATIC URL" ["GET DATA"]
+  {"STATIC URL" ["VIEW RELATED INFORMATION"]
    "GUIDE" ["VIEW RELATED INFORMATION" "USER'S GUIDE"]
    "HOMEPAGE" ["VIEW PROJECT HOME PAGE"]
    "SOFTWARE" ["GET SERVICE" "GET SOFTWARE PACKAGE"]
@@ -55,7 +55,7 @@
 (def related-url-types->resource-types
   "A mapping of UMM RelatedURL's type to ECHO10 OnlineResource's type.
   This list is used for generating ECHO10 OnlineResources from UMM RelatedURLs."
-  {"GET DATA" "STATIC URL"
+  {"GET DATA" "DATA ACCESS"
    "GET RELATED VISUALIZATION" "BROWSE"
    "VIEW RELATED INFORMATION" "USER SUPPORT"})
 
