@@ -33,6 +33,8 @@
 (def CONTENT_TYPE_HEADER "Content-Type")
 (def HITS_HEADER "CMR-Hits")
 (def TOOK_HEADER "CMR-Took")
+(def CMR_GRANULE_COUNT_HEADER "CMR-Granule-Hits")
+(def CMR_COLLECTION_COUNT_HEADER "CMR-Collection-Hits")
 (def BROWSER_CLIENT_ID "browser")
 (def CURL_CLIENT_ID "curl")
 (def UNKNOWN_CLIENT_ID "unknown")
@@ -225,10 +227,15 @@
         params (process-params params path-w-extension headers "application/json")
         _ (info (format "Searching for provider holdings from client %s in format %s with params %s."
                         (:client-id context) (:result-format params) (pr-str params)))
-        provider-holdings (query-svc/get-provider-holdings context params)]
+        [provider-holdings provider-holdings-formatted]
+         (query-svc/get-provider-holdings context params)
+         collection-count (count provider-holdings)
+         granule-count (reduce + (map :granule-count provider-holdings))]
     {:status 200
-     :headers {CONTENT_TYPE_HEADER (str (mt/format->mime-type (:result-format params)) "; charset=utf-8")}
-     :body provider-holdings}))
+     :headers {CONTENT_TYPE_HEADER (str (mt/format->mime-type (:result-format params)) "; charset=utf-8")
+               CMR_COLLECTION_COUNT_HEADER (str collection-count)
+               CMR_GRANULE_COUNT_HEADER (str granule-count)}
+     :body provider-holdings-formatted}))
 
 (defn- build-routes [system]
   (routes
