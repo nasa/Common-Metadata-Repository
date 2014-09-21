@@ -17,6 +17,7 @@ cmr_deploy $1
 cd ../cmr-indexer-app
 cmr_deploy $1
 cd ../cmr-search-app
+lein generate-docs
 cmr_deploy $1
 cd ../cmr-ingest-app
 cmr_deploy $1
