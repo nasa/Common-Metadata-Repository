@@ -162,7 +162,14 @@
   StringsCondition
   (mapify
     [c]
-    (mapify-record (util/record-fields StringsCondition) c))
+
+    (let [c (if (> (count (:values c)) 6)
+              (update-in c [:values]
+                         (fn [values]
+                           [(first values) (second values)
+                            (str "... " (- (count values) 2) " values hidden ...")]))
+              c)]
+      (mapify-record (util/record-fields StringsCondition) c)))
 
   BooleanCondition
   (mapify

@@ -21,16 +21,25 @@
   ;; workload can be tunnelled by running these
   ;; ssh -L4005:localhost:3005 cmr-wl-app1.dev.echo.nasa.gov
   ;; ssh -L9211:localhost:9200 cmr-wl-elastic1.dev.echo.nasa.gov
+  ;; ssh -L1557:dbrac1node1.dev.echo.nasa.gov:1521 wlapp3.dev.echo.nasa.gov
   (cfg/set-config-value! :elastic-port 9211)
   (cfg/set-config-value! :index-set-port 4005)
 
   (cfg/set-config-value! :echo-rest-host "api-wkld.echo.nasa.gov")
   (cfg/set-config-value! :echo-rest-port 80)
   (cfg/set-config-value! :echo-rest-context "/echo-rest")
-  (cfg/set-config-value! :echo-system-token "XXXXXXXX"))
+
+  (cfg/set-config-value! :db-url "thin:@localhost:1557:OPSDB1")
+
+  ;; Set the following but do not commit them
+  (cfg/set-config-value! :echo-system-token "XXXXX")
+  (cfg/set-config-value! :metadata-db-password "XXXXX"))
 
 (defn create-system
   []
+  ;; Uncomment this to tunnel to another system for testing.
+  ; (tunnel-system)
+
   ;; Set the default job start delay to avoid jobs kicking off with tests etc.
   (cfg/set-config-value! :default-job-start-delay (str (* 3 3600)))
 

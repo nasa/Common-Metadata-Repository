@@ -110,8 +110,9 @@
                                 (q/and-conds [(q/string-condition :provider-id provider-id true false)
                                               (q/string-conditions :entry-title entry-titles true)])))]
       (if (and concept-ids-cond entry-titles-cond)
-        (q/and-conds [concept-ids-cond entry-titles-cond])
+        (q/or-conds [concept-ids-cond entry-titles-cond])
         (or concept-ids-cond entry-titles-cond)))))
+
 
 (defn collection-identifier->query-condition
   "Converts an acl collection identifier to an query condition. Switches implementations based
@@ -151,6 +152,7 @@
       (q/and-conds [collection-cond granule-cond])
       (or collection-cond granule-cond))))
 
+
 (defn acls->query-condition
   "Converts a list of acls into a query condition. coll-ids-by-prov should be a map of provider ids
   to collection concept ids from the user's query."
@@ -161,7 +163,6 @@
                                 (map (partial acl->query-condition context coll-ids-by-prov) acls)))]
       (q/or-conds conds)
       q/match-none)))
-
 
 ;; This expects that collection queries have been resolved before this step.
 (defmethod acl-service/add-acl-conditions-to-query :granule
@@ -186,6 +187,7 @@
 
 (comment
 
+  (def context {:system user/system})
   (def context {:system (get-in user/system [:apps :search])})
   (acl-service/add-acl-conditions-to-query context @last-query)
 

@@ -68,7 +68,7 @@
              :orbitNumber {:name :orbit-number :type :orbit-number}
              :equatorCrossingLongitude {:name :equator-crossing-longitude :type :equator-crossing-longitude}
              :equatorCrossingDate {:name :equator-crossing-date :type :equator-crossing-date}
-             :TwoDCoordinateSystemName {:name :two-d-coordinate-system-name :type :string}}})
+             :TwoDCoordinateSystem {:name :two-d-coordinate-system :type :two-d-coordinate-system}}})
 
 (defn- elem-name->type
   "Returns the query condition type based on the given concept-type and aql element name."
@@ -126,6 +126,12 @@
       ;; Replace any escaped _ with just _
       (str/replace "\\_" "_")))
 
+(defn aql-elem-case-sensitive?
+  "Returns true if the given AQL element has attributes that indicates it should be case sensitive,
+  Otherwise return false."
+  [elem]
+  (= "N" (str/upper-case (get-in elem [:attrs :caseInsensitive] "N"))))
+
 (defn- string-value-elem->condition
   "Converts a string value element to query condition"
   ([concept-type key elem]
@@ -133,9 +139,7 @@
   ([concept-type key elem pattern?]
    (let [value (first (:content elem))
          value (if pattern? (aql-pattern->cmr-pattern value) value)
-         case-insensitive (get-in elem [:attrs :caseInsensitive])
-         case-insensitive (if case-insensitive case-insensitive "N")
-         case-sensitive? (if (and case-insensitive (= "N" (str/upper-case case-insensitive))) true false)
+         case-sensitive? (aql-elem-case-sensitive? elem)
          case-sensitive? (if (some? (pc/always-case-sensitive key)) true case-sensitive?)]
      (if (inherited-condition? concept-type key)
        (inheritance-condition key value case-sensitive? pattern?)
@@ -168,7 +172,7 @@
         stop-date (date-time-from-strings year month day hour minute sec)]
     [start-date stop-date]))
 
-(defn- element->num-range
+(defn element->num-range
   [concept-type element]
   (let [string-double-fn (fn [n] (when n (Double. n)))
         range-val (-> (cx/attrs-at-path element [:range])

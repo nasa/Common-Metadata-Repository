@@ -34,6 +34,7 @@
             [cmr.search.services.aql.converters.science-keywords]
             [cmr.search.services.aql.converters.attribute]
             [cmr.search.services.aql.converters.attribute-name]
+            [cmr.search.services.aql.converters.two-d-coordinate-system]
 
             ;; Validation
             [cmr.search.validators.validation :as v]
@@ -223,8 +224,8 @@
         ;; combine the granule count into collections to form provider holdings
         provider-holdings (map #(assoc % :granule-count (get collection-granule-count (:concept-id %) 0))
                                collections)]
-
-    (ph/provider-holdings->string (:result-format params) provider-holdings pretty?)))
+    [provider-holdings
+     (ph/provider-holdings->string (:result-format params) provider-holdings pretty?)]))
 
 
 

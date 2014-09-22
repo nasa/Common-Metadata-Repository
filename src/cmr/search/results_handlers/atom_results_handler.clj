@@ -254,7 +254,9 @@
 (defn- atom-link->xml-element
   "Convert an atom link to an XML element"
   [atom-link]
-  (x/element :link (atom-link->attribute-map atom-link)))
+  (x/element :link (atom-link->attribute-map atom-link)
+             (when (:inherited atom-link)
+               (x/element :inherited))))
 
 (defn- ocsd->attribute-map
   "Convert an oribt calculated spatial domain to attributes for an XML element"
@@ -353,7 +355,7 @@
                         ;; remove duplicate links from the collection links if it already exists in the granule
                         (remove (set atom-links))
                         ;; set the inherited flag for collection links
-                        (map #(assoc % :inherited "true"))
+                        (map #(assoc % :inherited true))
                         (concat atom-links))]
     (assoc reference :atom-links atom-links)))
 

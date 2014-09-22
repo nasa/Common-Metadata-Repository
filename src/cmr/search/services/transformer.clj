@@ -122,8 +122,11 @@
                                            (acl-service/filter-concepts
                                              context
                                              (map add-acl-enforcement-fields concepts))))
-         [t3 values] (u/time-execution (mapv #(concept->value-map % format) concepts))]
+         ;; Filtering deleted concepts
+         [t3 concepts] (u/time-execution (filter #(not (:deleted %)) concepts))
+         [t4 values] (u/time-execution (mapv #(concept->value-map % format) concepts))]
      (debug "get-latest-concepts time:" t1
             "acl-filter-concepts time:" t2
-            "concept->value-map time:" t3)
+            "tombstone-filter time:" t3
+            "concept->value-map time:" t4)
      values)))

@@ -279,6 +279,8 @@
    two-d-name
    ;; it is nil or a list of TwoDCoordinateConditions
    two-d-conditions
+   ;; indicates if the search is case sensitive. Defaults to false.
+   case-sensitive?
    ])
 
 (defrecord EquatorCrossingDateCondition
