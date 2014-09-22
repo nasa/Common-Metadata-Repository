@@ -118,7 +118,9 @@
                            (remove #(or (nil? %) (#{\% \_} %))))]
     (when (seq invalid-chars)
       (errors/throw-service-error
-        :bad-request (str "Invalid text pattern for searching")))))
+        :bad-request
+        (str "Invalid AQL text pattern: Backslashes are used for escaping backslash, "
+             "%, and _. There were some invalid escaped characters in the text pattern.")))))
 
 (defn aql-pattern->cmr-pattern
   "Converts an AQL pattern of % for 0 to many characters and . for 1 character to the CMR style

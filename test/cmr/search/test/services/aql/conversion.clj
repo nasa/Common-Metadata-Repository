@@ -180,11 +180,13 @@
     (are [pattern-str]
          (thrown-with-msg?
            clojure.lang.ExceptionInfo
-           #"Invalid text pattern for searching"
+           #"Invalid AQL text pattern: "
            (a/validate-aql-pattern pattern-str))
 
          "aa\\b"
          "\\n"
          "\\*"
-         "\\?")))
+         "\\?"
+         "aa\\y\\*bb"
+         "ab\\%\\_\\\\c\\d\\")))
 
