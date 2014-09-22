@@ -14,12 +14,14 @@
 (deftest retrieve-granule-by-cmr-concept-id
   (let [coll1 (d/ingest "PROV1" (dc/collection {}))
         gran1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule1"
-                                                       :project-refs ["ABC"]}))
+                                                   :project-refs ["ABC"]}))
         gran1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule1"
-                                                       :project-refs ["KLM"]}))
+                                                   :project-refs ["KLM"]}))
         umm-gran (dg/granule coll1 {:granule-ur "Granule1"
                                     :project-refs ["XYZ"]})
-        gran1 (d/ingest "PROV1" umm-gran)]
+        gran1 (d/ingest "PROV1" umm-gran)
+        del-gran (d/ingest "PROV1" (dg/granule coll1))]
+    (ingest/delete-concept (d/item->concept del-gran :echo10))
     (index/refresh-elastic-index)
     (testing "retrieval by granule cmr-concept-id returns the latest revision."
       (let [response (search/get-concept-by-concept-id (:concept-id gran1))
@@ -27,6 +29,10 @@
         (is (= (dissoc umm-gran
                        :collection-concept-id)
                parsed-granule))))
+    (testing "retrieval of a deleted granule results in a 404"
+      (let [response (search/get-concept-by-concept-id (:concept-id del-gran))]
+        (is (= 404 (:status response)))
+        (is (re-find #"Concept with concept-id: .*? could not be found" (:body response)))))
     (testing "retrieval by granule cmr-concept-id, not found."
       (let [response (search/get-concept-by-concept-id "G1111-PROV1")]
         (is (= 404 (:status response)))

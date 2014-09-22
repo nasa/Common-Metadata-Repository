@@ -127,3 +127,23 @@
        :title title
        :entries (seq (map (partial json-entry->entry concept-type) entry))
        :facets facets})))
+
+(defn- update-inherited-link
+  "Update the inherited field from string to boolean value"
+  [link]
+  (if-let [inherited (:inherited link)]
+    (update-in link [:inherited] = "true")
+    link))
+
+(defn- update-entries
+  "Update the entries by fixing the inherited field for each link.
+  The atom value is string true and the json value is boolean true."
+  [entries]
+  (map #(update-in % [:links] (partial map update-inherited-link)) entries))
+
+(defn granules->expected-json
+  "Returns the json map of the granules"
+  [granules collections atom-path]
+  (let [expected-atom (atom/granules->expected-atom granules collections atom-path)]
+    (update-in expected-atom [:entries] update-entries)))
+

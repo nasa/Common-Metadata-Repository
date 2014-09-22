@@ -59,7 +59,7 @@
   (do
     ;; -- PROV1 --
     ;; Guests have access to coll1
-    (e/grant-guest (e/gran-catalog-item-id "provguid1" (e/coll-id ["coll1"])))
+    (e/grant-guest (e/gran-catalog-item-id "provguid1" (e/coll-id ["coll1" "collnonexist"])))
     ;; coll 2 has no granule permissions
     ;; Permits granules with access values.
     (e/grant-guest (e/gran-catalog-item-id "provguid1" nil (e/gran-id {:min-value 10
@@ -120,7 +120,7 @@
 
         ;; - PROV1 -
         gran1 (make-gran 1 coll1)
-        gran2 (make-gran 2 coll1)
+        gran2 (make-gran 2 coll1 {:access-value 1000})
 
         ;; Permitted through undefined access value
         gran3 (make-gran 3 coll2)
@@ -198,7 +198,7 @@
            guest-permitted-granules {:token guest-token}
            user-permitted-granules {:token user1-token}
 
-           ;; Test searching with each collecion id as guest and user
+           ;; Test searching with each collection id as guest and user
            ;; Entry title searches
            [gran1 gran2] {:token guest-token :entry-title "coll1"}
            [gran3 gran5] {:token guest-token :entry-title "coll2"}

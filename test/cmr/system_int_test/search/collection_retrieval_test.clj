@@ -40,10 +40,18 @@
                                  :projects (dc/projects "ESI_3")})
         coll1 (d/ingest "PROV1" umm-coll)
         coll2 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset2"}))
+        del-coll (d/ingest "PROV1" (dc/collection))
         ;; tokens
         guest-token (e/login-guest)
         user1-token (e/login "user1")]
+    (ingest/delete-concept (d/item->concept del-coll :echo10))
     (index/refresh-elastic-index)
+
+    (testing "retrieval of a deleted collection results in a 404"
+      (let [response (search/get-concept-by-concept-id (:concept-id del-coll)
+                                                       {:query-params {:token user1-token}})]
+        (is (= 404 (:status response)))
+        (is (re-find #"Concept with concept-id: .*? could not be found" (:body response)))))
     (testing "retrieval by collection cmr-concept-id returns the latest revision."
       (let [response (search/get-concept-by-concept-id (:concept-id coll1)
                                                        {:query-params {:token user1-token}})
