@@ -147,7 +147,9 @@
   (let [pre-processed-query (pre-process-query-result-features context query)
         processed-query (r/resolve-collection-queries context pre-processed-query)
         collection-ids (ce/extract-collection-concept-ids processed-query)
-        context (assoc context :query-collection-ids collection-ids)
+        context (assoc context
+                       :query-collection-ids collection-ids
+                       :query-concept-type (:concept-type query))
         elastic-results (->> processed-query
                              (c2s/reduce-query context)
                              (#(if (:skip-acls? %)
