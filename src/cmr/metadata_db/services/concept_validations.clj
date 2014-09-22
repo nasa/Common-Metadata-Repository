@@ -45,9 +45,13 @@
              concept))
 
 (defn nil-extra-fields-validation
-  "Validates that none of the extra fields are nil except delete-time."
+  "Validates that among the extra fields, only delete-time and version-id can sometimes be nil."
   [concept]
-  (nil-fields-validation (dissoc (:extra-fields concept) :delete-time)))
+  (let [not-nil-extra-fields (dissoc (:extra-fields concept) :delete-time)
+        not-nil-extra-fields (if (= "application/echo10+xml" (:format concept))
+                               not-nil-extra-fields
+                               (dissoc not-nil-extra-fields :version-id))]
+    (nil-fields-validation not-nil-extra-fields)))
 
 (defn concept-id-validation
   [concept]
