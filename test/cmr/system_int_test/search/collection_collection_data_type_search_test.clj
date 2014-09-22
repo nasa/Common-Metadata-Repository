@@ -18,25 +18,30 @@
     (index/refresh-elastic-index)
 
     (testing "search by collection data type."
-      (are [value items] (d/refs-match? items (search/find-refs :collection {:collection-data-type value}))
-           "NEAR_REAL_TIME" [coll1]
-           "SCIENCE_QUALITY" [coll2 coll4]
-           "OTHER" [coll3]
-           "near_real_time" [coll1]
-           "science_quality" [coll2 coll4]
-           "Other" [coll3]
-           ["NEAR_REAL_TIME" "OTHER"] [coll1 coll3]
-           "BLAH" []))
+      (are [items value options] (d/refs-match? items (search/find-refs
+                                                :collection
+                                                (apply merge {:collection-data-type value}
+                                                       options)))
+           [coll1] "NEAR_REAL_TIME" nil
+           [coll2 coll4] "SCIENCE_QUALITY" nil
+           [coll2 coll4] "SCIENCE?QUALITY" {"options[collection-data-type][pattern]" "true"}
+           [coll2 coll4] "SCIEN*LITY" {"options[collection-data-type][pattern]" "true"}
+           [coll3] "OTHER" nil
+           [coll1] "near_real_time" nil
+           [coll2 coll4] "science_quality" nil
+           [coll3] "Other" nil
+           [coll1 coll3] ["NEAR_REAL_TIME" "OTHER"] nil
+           [] "BLAH" nil))
 
     (testing "search by collection data type NEAR_REAL_TIME aliases."
-      (are [value items] (d/refs-match? items (search/find-refs :collection {:collection-data-type value}))
-           "near_real_time" [coll1]
-           "nrt" [coll1]
-           "NRT" [coll1]
-           "near real time" [coll1]
-           "near-real time" [coll1]
-           "near-real-time" [coll1]
-           "near real-time" [coll1]))
+      (are [items value] (d/refs-match? items (search/find-refs :collection {:collection-data-type value}))
+           [coll1] "near_real_time"
+           [coll1] "nrt"
+           [coll1] "NRT"
+           [coll1] "near real time"
+           [coll1] "near-real time"
+           [coll1] "near-real-time"
+           [coll1] "near real-time"))
 
     (testing "search by collection data type case default is ignore case true."
       (is (d/refs-match? [coll3]
