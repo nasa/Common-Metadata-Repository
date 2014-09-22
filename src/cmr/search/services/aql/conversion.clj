@@ -106,18 +106,19 @@
 (defn validate-aql-pattern
   "Validates the aql pattern string, throws service error if the string contains backslash
   followed by characters other than backslash, % or _"
-  ([value]
-   (validate-aql-pattern false value))
-  ([check-first? value]
-   (let [value (str/replace value "\\\\" "")
-         parts (str/split value #"\\")
-         parts (if check-first? parts (subvec parts 1))]
-     (if (= value (first parts))
-       (when (and check-first?
-                  (not (some #{(first value)} [\\ \% \_])))
-         (errors/throw-service-error :bad-request
-                                     (str "Invalid text pattern for searching")))
-       (mapv (partial validate-aql-pattern true) parts)))))
+  [pattern]
+  (let [pattern (str/replace pattern "\\\\" "")
+        invalid-chars (->> ;; Split on \
+                           (str/split pattern #"\\")
+                           ;; Drop everything before the first \
+                           (drop 1)
+                           ;; Get the first character following each \
+                           (map (comp first seq))
+                           ;; Remove valid escape characters
+                           (remove #(or (nil? %) (#{\% \_} %))))]
+    (when (seq invalid-chars)
+      (errors/throw-service-error
+        :bad-request (str "Invalid text pattern for searching")))))
 
 (defn aql-pattern->cmr-pattern
   "Converts an AQL pattern of % for 0 to many characters and . for 1 character to the CMR style
