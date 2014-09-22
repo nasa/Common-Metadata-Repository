@@ -163,3 +163,30 @@
           #"Invalid datetime in AQL: Value 13 for monthOfYear must be in the range \[1,12\]"
           (a/date-time-from-strings "2014" "13" "22" nil nil nil)))))
 
+(deftest validate-aql-pattern-test
+  (testing "aql pattern string validation success"
+    (are [pattern-str]
+         (= nil
+         (a/validate-aql-pattern pattern-str))
+
+         "some%_*?characters"
+         "\\\\Short"
+         "\\\\"
+         "xyz\\%"
+         "\\_"
+         "ab\\%\\_\\\\cd\\"))
+
+  (testing "aql pattern string validation failure"
+    (are [pattern-str]
+         (thrown-with-msg?
+           clojure.lang.ExceptionInfo
+           #"Invalid AQL text pattern: "
+           (a/validate-aql-pattern pattern-str))
+
+         "aa\\b"
+         "\\n"
+         "\\*"
+         "\\?"
+         "aa\\y\\*bb"
+         "ab\\%\\_\\\\c\\d\\")))
+
