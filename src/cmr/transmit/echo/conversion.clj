@@ -74,6 +74,20 @@
               (set/rename-keys access-value
                                {:include-undefined :include-undefined-value})}))))
 
+(defn cmr-gran-id->echo-gran-id
+  [gid]
+  (when-let [access-value (:access-value gid)]
+    {:restriction-flag
+     (set/rename-keys access-value
+                      {:include-undefined :include-undefined-value})}))
+
+(defn echo-gran-id->cmr-gran-id
+  [gid]
+  (when-let [restriction-flag (:restriction-flag gid)]
+    {:access-value (set/rename-keys restriction-flag
+                                    {:include-undefined-value :include-undefined})}))
+
+
 (defn echo-acl->cmr-acl
   "Cleans up the acl data structure to be easier to work with. See the in code comment in this namespace for an example."
   [acl]
@@ -82,7 +96,8 @@
       util/map-keys->kebab-case
       (set/rename-keys {:id :guid :access-control-entries :aces})
       (update-in [:aces] (partial mapv echo-ace->cmr-ace))
-      (update-in [:catalog-item-identity :collection-identifier] echo-coll-id->cmr-coll-id)))
+      (update-in [:catalog-item-identity :collection-identifier] echo-coll-id->cmr-coll-id)
+      (update-in [:catalog-item-identity :granule-identifier] echo-gran-id->cmr-gran-id)))
 
 (defn cmr-acl->echo-acl
   "Converts a cmr style acl back to the echo style. Converting echo->cmr->echo is lossy due to
@@ -92,6 +107,7 @@
   (-> acl
       (update-in [:aces] (partial mapv cmr-ace->echo-ace))
       (update-in [:catalog-item-identity :collection-identifier] cmr-coll-id->echo-coll-id)
+      (update-in [:catalog-item-identity :granule-identifier] cmr-gran-id->echo-gran-id)
       (set/rename-keys {:guid :id :aces :access-control-entries})
       util/map-keys->snake_case
       (#(hash-map :acl %))))

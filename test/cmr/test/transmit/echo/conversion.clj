@@ -20,7 +20,10 @@
                                   [{:data_set_id "Landsat 1-5 Multispectral Scanner V1"}
                                    {:data_set_id "Landsat 4-5 Thematic Mapper V1"}]
                                   :restriction_flag
-                                  {:include_undefined_value false, :max_value 3.0, :min_value 3.0}}}}})
+                                  {:include_undefined_value false, :max_value 3.0, :min_value 3.0}}
+                                 :granule_identifier
+                                 {:restriction_flag {:include_undefined_value true
+                                                     :max_value 5.0, :min_value 3.0}}}}})
 
 (def example-acl-cleaned-up
   {:guid "5C1B77E7-48E5-4579-E516-7D933F500F23"
@@ -37,7 +40,9 @@
                            :collection-identifier
                            {:entry-titles ["Landsat 1-5 Multispectral Scanner V1"
                                            "Landsat 4-5 Thematic Mapper V1"]
-                            :access-value {:include-undefined false, :max-value 3.0, :min-value 3.0}}}})
+                            :access-value {:include-undefined false, :max-value 3.0, :min-value 3.0}}
+                           :granule-identifier
+                           {:access-value {:include-undefined true, :max-value 5.0, :min-value 3.0}}}})
 
 (deftest conversion-test
   (testing "echo -> cmr"
