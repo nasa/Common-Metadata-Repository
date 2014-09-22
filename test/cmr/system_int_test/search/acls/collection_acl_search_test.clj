@@ -12,12 +12,14 @@
             [cmr.system-int-test.utils.echo-util :as e]))
 
 
-(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"} false))
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2" "provguid3" "PROV3"}
+                                          false))
 
 (comment
   (ingest/reset)
   (ingest/create-provider "provguid1" "PROV1")
   (ingest/create-provider "provguid2" "PROV2")
+  (ingest/create-provider "provguid3" "PROV3")
 )
 
 (deftest invalid-security-token-test
@@ -27,9 +29,13 @@
 (deftest collection-search-with-acls-test
   ;; Grant permissions before creating data
   ;; Grant guests permission to coll1
-  (e/grant-guest (e/coll-catalog-item-id "provguid1" (e/coll-id ["coll1"])))
+  (e/grant-guest (e/coll-catalog-item-id "provguid1" (e/coll-id ["coll1" "notexist"])))
   ;; restriction flag acl grants matches coll4
   (e/grant-guest (e/coll-catalog-item-id "provguid1" (e/coll-id ["coll4"] {:min-value 4 :max-value 6})))
+
+  ;; Grant undefined access values in prov3
+  (e/grant-guest (e/coll-catalog-item-id "provguid3" (e/coll-id nil {:include-undefined true})))
+
   ;; all collections in prov2 granted to guests
   (e/grant-guest (e/coll-catalog-item-id "provguid2"))
   ;; grant registered users permission to coll2 and coll4
@@ -59,8 +65,13 @@
         ;; added for atom results
         coll8 (assoc coll8 :original-format "DIF")
 
-        all-colls [coll1 coll2 coll3 coll4 coll5 coll6 coll7 coll8]
-        guest-permitted-collections [coll1 coll4 coll6 coll7 coll8]
+        ;; PROV3
+        coll9 (d/ingest "PROV3" (dc/collection {:entry-title "coll9"}))
+        coll10 (d/ingest "PROV3" (dc/collection {:entry-title "coll10"
+                                                :access-value 12}))
+
+        all-colls [coll1 coll2 coll3 coll4 coll5 coll6 coll7 coll8 coll9 coll10]
+        guest-permitted-collections [coll1 coll4 coll6 coll7 coll8 coll9]
         guest-token (e/login-guest)
         user1-token (e/login "user1")
         user2-token (e/login "user2" ["group-guid1"])
