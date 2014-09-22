@@ -22,6 +22,28 @@
   (fn [context concept umm-concept]
     (cs/concept-id->type (:concept-id concept))))
 
+(defn index-set->index-names
+  "Returns the names of the indexes assigned to each concept type of an index set."
+  [index-set]
+  {:collection (get-in index-set [:index-set :collection :index-names])
+   :granule (get-in index-set [:index-set :granule :index-names])})
+
+(defn validate-index-names-not-changing
+  "Takes an existing index set and an index set to update. Validates that the index names are not
+  different than what was expected. Throws an error if they are different."
+  [context existing update]
+  (let [existing-index-names (index-set->index-names existing)
+        update-index-names (index-set->index-names update)]
+    (when-not (= existing-index-names update-index-names)
+      (error "Detected index name change."
+             "Existing index names" (pr-str existing-index-names)
+             "Expected index names" (pr-str update-index-names))
+      (error "System environment variables:" (pr-str (System/getenv)))
+      (error "Configured collections with separate granule indexes:"
+             (pr-str ((get-in context [:system :colls-with-separate-indexes-fn]))))
+      (errors/internal-error!
+        "Discovered existing index set with index names different than expected."))))
+
 (defn create-indexes
   "Create elastic index for each index name"
   [context]
@@ -40,6 +62,7 @@
       (do
         (info "Index set does not match so updating it. Expecting:" (pr-str index-set) "Actual:"
               (pr-str existing-index-set))
+        (validate-index-names-not-changing context existing-index-set index-set)
         (idx-set/update context index-set))
 
       :else
