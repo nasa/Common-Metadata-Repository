@@ -206,15 +206,19 @@
         [(qm/string-condition :granule-ur value case-sensitive pattern)
          (qm/string-condition :producer-granule-id value case-sensitive pattern)]))))
 
-(defn- collection-data-type-param->regex
+(defn- collection-data-type-matches-science-quality?
   "Convert the collection-data-type parameter with wildcards to a regex. This function
   does not fully handle escaping special characters and is only intended for handling
   the special case of SCIENCE_QUALITY."
-  [param]
-  (-> param
-      (str/replace #"\?" ".")
-      (str/replace #"\*" ".*")
-      re-pattern))
+  [param case-sensitive]
+  (let [param (if case-sensitive
+                (str/upper-case param)
+                param)
+        pattern (-> param
+                    (str/replace #"\?" ".")
+                    (str/replace #"\*" ".*")
+                    re-pattern)]
+    (re-find pattern "SCIENCE_QUALITY")))
 
 (defmethod parameter->condition :collection-data-type
   [concept-type param value options]
@@ -231,11 +235,7 @@
               (and (= "SCIENCE_QUALITY" (str/upper-case value))
                    (not= "false" (get-in options [:collection-data-type :ignore-case])))
               (and pattern
-                   (re-find
-                     (collection-data-type-param->regex (if case-sensitive
-                                                          (str/upper-case value)
-                                                          value))
-                     "SCIENCE_QUALITY")))
+                   (collection-data-type-matches-science-quality? value case-sensitive)))
         ; SCIENCE_QUALITY collection-data-type should match concepts with SCIENCE_QUALITY
         ; or the ones missing collection-data-type field
         (qm/or-conds
