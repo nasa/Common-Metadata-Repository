@@ -165,8 +165,9 @@
 
     (let [c (if (> (count (:values c)) 6)
               (update-in c [:values]
-                         (fn [[v1 v2]]
-                           [v1 v2 (str "... " (- (count values) 2) " values hidden ...")]))
+                         (fn [values]
+                           [(first values) (second values)
+                            (str "... " (- (count values) 2) " values hidden ...")]))
               c)]
       (mapify-record (util/record-fields StringsCondition) c)))
 
