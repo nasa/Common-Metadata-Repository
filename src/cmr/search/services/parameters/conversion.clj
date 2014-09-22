@@ -150,7 +150,6 @@
       (qm/and-conds [collection-cond granule-cond])
       (or collection-cond granule-cond))))
 
-
 ;; Construct an inheritance query condition for granules.
 ;; This will find granules which either have explicitly specified a value
 ;; or have not specified any value for the field and inherit it from their parent collection.
@@ -193,7 +192,6 @@
     :else
     (errors/internal-error! (format "Boolean condition for %s has invalid value of [%s]" param value))))
 
-
 (defmethod parameter->condition :readable-granule-name
   [concept-type param value options]
   (if (sequential? value)
@@ -208,6 +206,20 @@
         [(qm/string-condition :granule-ur value case-sensitive pattern)
          (qm/string-condition :producer-granule-id value case-sensitive pattern)]))))
 
+(defn- collection-data-type-matches-science-quality?
+  "Convert the collection-data-type parameter with wildcards to a regex. This function
+  does not fully handle escaping special characters and is only intended for handling
+  the special case of SCIENCE_QUALITY."
+  [param case-sensitive]
+  (let [param (if case-sensitive
+                (str/upper-case param)
+                param)
+        pattern (-> param
+                    (str/replace #"\?" ".")
+                    (str/replace #"\*" ".*")
+                    re-pattern)]
+    (re-find pattern "SCIENCE_QUALITY")))
+
 (defmethod parameter->condition :collection-data-type
   [concept-type param value options]
   (if (sequential? value)
@@ -221,7 +233,9 @@
           pattern (pattern-field? :collection-data-type options)]
       (if (or (= "SCIENCE_QUALITY" value)
               (and (= "SCIENCE_QUALITY" (str/upper-case value))
-                   (not= "false" (get-in options [:collection-data-type :ignore-case]))))
+                   (not= "false" (get-in options [:collection-data-type :ignore-case])))
+              (and pattern
+                   (collection-data-type-matches-science-quality? value case-sensitive)))
         ; SCIENCE_QUALITY collection-data-type should match concepts with SCIENCE_QUALITY
         ; or the ones missing collection-data-type field
         (qm/or-conds
@@ -290,13 +304,19 @@
      :result-features (seq result-features)
      :pretty? pretty?}))
 
+(defn- alias-nrt
+  "Alias variations of NEAR_REAL_TIME to nrt"
+  [value]
+  (if (some #{value} nrt-aliases) "nrt" value))
+
 (defn parameters->query
   "Converts parameters into a query model."
   [concept-type params]
   (let [options (u/map-keys->kebab-case (get params :options {}))
         query-attribs (standard-params->query-attribs concept-type params)
         keywords (when (:keyword params)
-                   (str/split (str/lower-case (:keyword params)) #" "))
+                   (map alias-nrt (str/split (str/lower-case (:keyword params)) #" ")))
+        params (if keywords (assoc params :keyword (str/join " " keywords)) params)
         params (dissoc params :options :page-size :page-num :sort-key :result-format :pretty
                        :include-granule-counts :include-has-granules :include-facets)]
     (if (empty? params)
