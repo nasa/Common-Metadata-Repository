@@ -205,7 +205,8 @@
   (c2s/reduce-query-condition
     [{:keys [shape]} context]
     (let [shape (d/calculate-derived shape)
-          orbital-cond (orbital-condition context shape)
+          orbital-cond (when (= :granule (:query-concept-type context))
+                         (orbital-condition context shape))
           mbr-cond (br->cond "mbr" (srl/shape->mbr shape))
           lr-cond (br->cond "lr" (srl/shape->lr shape))
           spatial-script (shape->script-cond shape)

@@ -103,10 +103,30 @@
         options {key options}]
     (pc/parameter->condition :granule key value options)))
 
+(defn validate-aql-pattern
+  "Validates the aql pattern string, throws service error if the string contains backslash
+  followed by characters other than backslash, % or _"
+  [pattern]
+  (let [pattern (str/replace pattern "\\\\" "")
+        invalid-chars (->> ;; Split on \
+                           (str/split pattern #"\\")
+                           ;; Drop everything before the first \
+                           (drop 1)
+                           ;; Get the first character following each \
+                           (map (comp first seq))
+                           ;; Remove valid escape characters
+                           (remove #(or (nil? %) (#{\% \_} %))))]
+    (when (seq invalid-chars)
+      (errors/throw-service-error
+        :bad-request
+        (str "Invalid AQL text pattern: Backslashes are used for escaping backslash, "
+             "%, and _. There were some invalid escaped characters in the text pattern.")))))
+
 (defn aql-pattern->cmr-pattern
   "Converts an AQL pattern of % for 0 to many characters and . for 1 character to the CMR style
   pattern using * and ?. It handles escaping characters as well."
   [value]
+  (validate-aql-pattern value)
   (-> value
       ;; Escape * and ?
       (str/replace "*" "\\*")
