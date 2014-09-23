@@ -1,4 +1,5 @@
 (ns cmr.common.test.mime-types
+  "Tests for mime-type functions."
   (:require [clojure.test :refer :all]
             [clojure.string :as str]
             ; [clojure.test.check.clojure-test :refer [defspec]]
@@ -19,7 +20,7 @@
     "application/pdf"})
 
 (def supported-mime-types
-  "The mime types supported by search."
+  "The mime-types supported by search."
   #{"*/*"
     "application/xml"
     "application/json"
