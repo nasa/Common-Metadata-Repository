@@ -229,7 +229,7 @@
          (set/rename-keys {:references :refs})))))
 
 
-(defn- parse-reference-response
+(defn parse-reference-response
   [response]
   (let [parsed (-> response :body x/parse-str)
         hits (cx/long-at-path parsed [:hits])
