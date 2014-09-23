@@ -125,7 +125,7 @@
   [concept result tries-left revision-id-provided?]
   (let [error-code (:error result)]
     (when (= tries-left 1)
-      (errors/internal-error! (msg/maximum-save-attempts-exceeded)))
+      (errors/internal-error! (msg/maximum-save-attempts-exceeded (:error-message result))))
     (condp = error-code
       :revision-id-conflict
       (when revision-id-provided?
