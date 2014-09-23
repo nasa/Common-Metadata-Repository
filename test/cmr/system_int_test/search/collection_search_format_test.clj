@@ -18,7 +18,9 @@
             [cmr.spatial.line-string :as l]
             [cmr.spatial.ring-relations :as rr]
             [cmr.spatial.codec :as codec]
-            [cmr.umm.spatial :as umm-s]))
+            [cmr.umm.spatial :as umm-s]
+            [clojure.data.xml :as x]
+            [cmr.common.xml :as cx]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
@@ -143,16 +145,18 @@
         (let [response (search/get-concept-by-concept-id (:concept-id c3-dif) {:accept nil})]
           (is (= (umm/umm->xml c3-dif :dif) (:body response)))))
       (testing "unsupported formats"
-        (are [mime-type]
+        (are [mime-type xml?]
              (let [response (search/get-concept-by-concept-id
                               (:concept-id c1-echo)
                               {:format-as-ext? true :accept mime-type})
-                   parsed (json/decode (:body response) true)]
+                   err-msg (if xml?
+                             (cx/string-at-path (x/parse-str (:body response)) [:error])
+                             (first (:errors (json/decode (:body response) true))))]
                (and (= 400 (:status response))
-                    (= {:errors [(str "The mime type [" mime-type "] is not supported.")]} parsed)))
-             "application/atom+xml"
-             "application/json"
-             "text/csv")))
+                    (= (str "The mime type [" mime-type "] is not supported.") err-msg)))
+             "application/atom+xml" true
+             "application/json" false
+             "text/csv" false)))
 
     (testing "Retrieving results as XML References"
       (let [refs (search/find-refs :collection {:short-name "S1"})
