@@ -87,17 +87,17 @@
                                 {:format-as-ext? true}))))
 
     (testing "Retrieving results in a format specified as a comma separated list"
-      (are [search expected]
+      (are [format-str]
            (d/refs-match?
-             expected
+             [g1-echo]
              (search/parse-reference-response
                (search/find-concepts-in-format
-                 "text/html,application/xhtml+xml, application/xml;q=0.9,*/*;q=0.8"
+                 format-str
                  :granule
-                 search)))
-           {} all-granules
-           {:granule-ur "g1"} [g1-echo]
-           {:granule-ur "g3"} [g1-smap]))
+                 {:granule-ur "g1"})))
+           "text/html,application/xhtml+xml, application/xml;q=0.9,*/*;q=0.8"
+           "text/html, application/xhtml+xml, application/xml;q=0.9,*/*;q=0.8"
+           "*/*; q=0.5, application/xml"))
 
     (testing "invalid format"
       (is (= {:errors ["The mime type [application/echo11+xml] is not supported."],
