@@ -8,6 +8,7 @@
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.core :as d]
+            [cmr.system-int-test.search.granule-spatial-search-test :as st]
             [cmr.spatial.polygon :as poly]
             [cmr.spatial.point :as p]
             [cmr.spatial.line-string :as l]
@@ -90,7 +91,60 @@
            ;; Search for orbits crossing a rectangle in the southern hemisphere crossing the anti-meridian
            [g2 g3 g4 g7] [145 -45 -145 -85] nil
            ;; Search while specifying parent collection
-           [g2] [145 45 -145 -45] {:concept-id (:concept-id coll1)}))))
+           [g2] [145 45 -145 -45] {:concept-id (:concept-id coll1)}))
+
+    (testing "point searches"
+      (are [items lon_lat params]
+           (let [found (search/find-refs :granule {:point (codec/url-encode (apply p/point lon_lat))
+                                                     :page-size 50})
+                   matches? (d/refs-match? items found)]
+             (when-not matches?
+                (println "Expected:" (->> items (map :granule-ur) sort pr-str))
+               (println "Actual:" (->> found :refs (map :name) sort pr-str)))
+             matches?)
+
+           [g3] [-45,45] nil
+           [g1] [0,-20] nil
+           [g2] [-180,0] nil
+           ))
+
+    (testing "line searches"
+      (are [items coords params]
+           (let [found (search/find-refs
+                         :granule
+                         {:line (codec/url-encode (apply l/ords->line-string :geodetic coords))
+                          :page-size 50})
+                 matches? (d/refs-match? items found)]
+             (when-not matches?
+                (println "Expected:" (->> items (map :granule-ur) sort pr-str))
+               (println "Actual:" (->> found :refs (map :name) sort pr-str)))
+             matches?)
+
+           ;; Line crossing prime meridian and equator
+           [g1 g8] [-45,-45 45,45] nil
+           ;; Line crossing the antimeridian
+           [g2] [179,-45 -170, 30] nil
+           ))
+
+    (testing "polygon searches"
+      (are [items coords params]
+           (let [found (search/find-refs
+                         :granule
+                         (merge {:polygon
+                                 (apply st/search-poly coords)
+                                 :page-size 50} params))
+                 matches? (d/refs-match? items found)]
+             (when-not matches?
+                (println "Expected:" (->> items (map :granule-ur) sort pr-str))
+               (println "Actual:" (->> found :refs (map :name) sort pr-str)))
+             matches?)
+
+           ;; Trangle crossing prime meridian
+           [g1 g8] [-45,-45 45,-45 45,0, -45,-45] nil
+           ;; Pentagon over the north pole
+           [g1 g2 g3 g4 g5] [0,80 72,80 144,80 -144,80 -72,80 0,80] nil
+           ;; Concave polygon crossing antimeridian and equator
+           [g2 g4 g7] [170,-70 -170,-80 -175,20 -179,-10 175,25 170,-70] nil))))
 
 (deftest multi-orbit-search
   (let [;; orbit parameters
