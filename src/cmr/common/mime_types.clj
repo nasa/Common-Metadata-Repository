@@ -46,13 +46,14 @@
 (defn mime-type-from-headers
   "Try to get a supported mime-type from the 'accept' header."
   [headers supported-mime-types]
-  (let [mime-type-str (when-let [mstr (get headers "accept")]
-                        ;; Strip out any semicolon clauses
-                        (str/replace mstr #";.*?(,|$)" "$1"))
+  (let [orig-mime-type-str (get headers "accept")
+        ;; Strip out any semicolon clauses
+        mime-type-str (when orig-mime-type-str
+                        (str/replace orig-mime-type-str  #";.*?(,|$)" "$1"))
         ;; Split mime-type string on commas
         mime-types (when mime-type-str (str/split (str/lower-case mime-type-str), #"[,]"))
         first-supported-mime-type (some (set mime-types) supported-mime-types)]
-    (or first-supported-mime-type mime-type-str)))
+    (or first-supported-mime-type orig-mime-type-str)))
 
 (defn validate-request-mime-type
   "Validates the requested mime type is supported."
