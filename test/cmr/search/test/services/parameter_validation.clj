@@ -19,6 +19,7 @@
              "Parameter [bar] was not recognized."}
            (set (pv/unrecognized-params-validation :collection
                                                    {:entry-title "fdad"
+                                                    :echo-compatible "true"
                                                     :foo 1
                                                     :bar 2})))))
   (testing "invalid options param names"

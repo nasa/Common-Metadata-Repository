@@ -89,11 +89,13 @@
 
 (defmulti metadata-item->result-string
   "Converts a search result + metadata into a string containing a single result for the metadata format."
-  (fn [concept-type results metadata-item]
-    concept-type))
+  (fn [concept-type echo-compatible? results metadata-item]
+    [concept-type echo-compatible?]))
 
-(defmethod metadata-item->result-string :granule
-  [concept-type results metadata-item]
+;; Normal CMR Search Response handling
+
+(defmethod metadata-item->result-string [:granule false]
+  [concept-type echo-compatible? results metadata-item]
   (let [{:keys [concept-id collection-concept-id revision-id metadata]} metadata-item]
     ["<result concept-id=\""
      concept-id
@@ -105,8 +107,8 @@
      (cx/remove-xml-processing-instructions metadata)
      "</result>"]))
 
-(defmethod metadata-item->result-string :collection
-  [concept-type results metadata-item]
+(defmethod metadata-item->result-string [:collection false]
+  [concept-type echo-compatible? results metadata-item]
   (let [{:keys [has-granules-map granule-counts-map]} results
         {:keys [concept-id revision-id metadata]} metadata-item
         attribs (concat [[:concept-id concept-id]
@@ -121,6 +123,28 @@
             attrib-strs
             [">" (cx/remove-xml-processing-instructions metadata) "</result>"])))
 
+;; ECHO Compatible Response Handling
+
+(defmethod metadata-item->result-string [:granule true]
+  [concept-type echo-compatible? results metadata-item]
+  (let [{:keys [concept-id collection-concept-id metadata]} metadata-item]
+    ["<result echo_granule_id=\""
+     concept-id
+     "\" echo_dataset_id=\""
+     collection-concept-id
+     "\">"
+     (cx/remove-xml-processing-instructions metadata)
+     "</result>"]))
+
+(defmethod metadata-item->result-string [:collection true]
+  [concept-type echo-compatible? results metadata-item]
+  (let [{:keys [concept-id metadata]} metadata-item]
+    ["<result echo_dataset_id=\""
+     concept-id
+     "\">"
+     (cx/remove-xml-processing-instructions metadata)
+     "</result>"]))
+
 (defn- facets->xml-string
   "Converts facets into an XML string."
   [facets]
@@ -132,16 +156,16 @@
 (defn search-results->metadata-response
   [context query results]
   (let [{:keys [hits took items facets]} results
-        {:keys [result-format pretty? concept-type]} query
-        result-strings (apply concat (map (partial metadata-item->result-string concept-type results)
+        {:keys [result-format pretty? concept-type echo-compatible?]} query
+        result-strings (apply concat (map (partial metadata-item->result-string
+                                                   concept-type echo-compatible? results)
                                           items))
-        headers ["<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-                 "<results><hits>"
-                 hits
-                 "</hits><took>"
-                 took
-                 "</took>"]
-        facets-strs [(facets->xml-string facets)]
+        headers (if echo-compatible?
+                  ["<?xml version=\"1.0\" encoding=\"UTF-8\"?><results>"]
+                  ["<?xml version=\"1.0\" encoding=\"UTF-8\"?><results><hits>"
+                   hits "</hits><took>" took "</took>"])
+        ;; Facet response is not in ECHO response.
+        facets-strs (when-not echo-compatible? [(facets->xml-string facets)])
         footers ["</results>"]
         response (apply str (concat headers result-strings facets-strs footers))]
     ;; Since clojure.data.xml does not handle namespaces fully from parse-str to emit-str,

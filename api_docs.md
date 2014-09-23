@@ -9,6 +9,7 @@
  * `sort_key` - Indicates one or more fields to sort on. Described below
  * `pretty` - return formatted results if set to true
  * `token` - specifies a user/guest token from ECHO to use to authenticate yourself. This can also be specified as the header Echo-Token
+ * `echo_compatible` - When set to true results will be returned in an ECHO compatible format. This mostly removes fields and features specific to the CMR such as revision id, granule counts and facets in collection results. Metadata format style results will also use ECHO style names for concept ids such as `echo_granule_id` and `echo_dataset_id`.
 
 ##### Collection Query Parameters
 

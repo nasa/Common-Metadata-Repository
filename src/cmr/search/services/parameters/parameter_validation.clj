@@ -122,7 +122,7 @@
   "Validates that no invalid parameters were supplied"
   [concept-type params]
   ;; this test does not apply to page_size, page_num, etc.
-  (let [params (dissoc params :page-size :page-num :sort-key :result-format :pretty)
+  (let [params (dissoc params :page-size :page-num :sort-key :result-format :pretty :echo-compatible)
         params (if (= :collection concept-type)
                  ;; Parameters only supported on collections
                  (dissoc params :include-granule-counts :include-has-granules :include-facets)
@@ -390,7 +390,8 @@
   (map #(str "Parameter [" (csk/->snake_case_string % )"] was not recognized.")
        (set/difference (set (keys params))
                        (set [:page-size :page-num :sort-key :result-format :pretty :options
-                             :include-granule-counts :include-has-granules :include-facets]))))
+                             :include-granule-counts :include-has-granules :include-facets
+                             :echo-compatible]))))
 
 (defn timeline-start-date-validation
   "Validates the timeline start date parameter"
