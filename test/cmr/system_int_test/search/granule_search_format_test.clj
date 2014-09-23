@@ -91,7 +91,7 @@
     (testing "invalid format"
       (is (= {:errors ["The mime type [application/echo11+xml] is not supported."],
               :status 400}
-             (search/get-search-failure-data
+             (search/get-search-failure-xml-data
                (search/find-concepts-in-format
                  "application/echo11+xml" :granule {})))))
 

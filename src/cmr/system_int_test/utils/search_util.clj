@@ -78,6 +78,17 @@
              errors# (:errors (json/decode body# true))]
          {:status status# :errors errors#}))))
 
+(defmacro get-search-failure-xml-data
+  "Executes a search and returns error data that was caught, parsing the body as an xml string.
+  Tests should verify the results this returns."
+  [& body]
+  `(try
+     ~@body
+     (catch clojure.lang.ExceptionInfo e#
+       (let [{{status# :status body# :body} :object} (ex-data e#)
+             errors# (cx/strings-at-path (x/parse-str body#) [:error])]
+         {:status status# :errors errors#}))))
+
 (def mime-type->extension
   {"application/json" "json"
    "application/xml" "xml"
@@ -167,7 +178,7 @@
   ([concept-type params]
    (find-concepts-atom concept-type params {}))
   ([concept-type params options]
-   (let [response (get-search-failure-data
+   (let [response (get-search-failure-xml-data
                     (find-concepts-in-format "application/atom+xml" concept-type params options))
          {:keys [status body]} response]
      (if (= status 200)
@@ -193,7 +204,7 @@
   ([concept-type format-key params]
    (find-metadata concept-type format-key params {}))
   ([concept-type format-key params options]
-   (get-search-failure-data
+   (get-search-failure-xml-data
      (let [format-mime-type (mime-types/format->mime-type format-key)
            response (find-concepts-in-format format-mime-type concept-type params options)
            body (:body response)
@@ -278,14 +289,14 @@
   ([concept-type params]
    (find-refs concept-type params {}))
   ([concept-type params options]
-   (get-search-failure-data
+   (get-search-failure-xml-data
      (parse-reference-response (:echo-compatible params)
        (find-concepts-in-format "application/xml" concept-type params options)))))
 
 (defn find-refs-with-post
   "Returns the references that are found by searching through POST request with the input params"
   [concept-type params]
-  (get-search-failure-data
+  (get-search-failure-xml-data
     (let [response (client/post (url/search-url concept-type)
                                 {:accept "application/xml"
                                  :content-type "application/x-www-form-urlencoded"
@@ -298,7 +309,7 @@
   ([aql]
    (find-refs-with-aql-string aql {}))
   ([aql options]
-   (get-search-failure-data
+   (get-search-failure-xml-data
      (let [response (client/post (url/aql-url)
                                  (merge {:accept "application/xml"
                                          :content-type "application/xml"
