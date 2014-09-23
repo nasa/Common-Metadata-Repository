@@ -135,22 +135,3 @@
            [gran3 gran4 gran5 gran6 gran7 gran8 gran9 gran10 gran16 gran17 gran19]
            "2000-04-03T00:00:00Z" "2002-01-02T00:00:00Z" 93 2))))
 
-
-;; Just some symbolic invalid temporal testing, more complete test coverage is in unit tests
-(deftest search-temporal-error-scenarios
-  (testing "search with temporal_start_day and no temporal_start is invalid."
-    (try
-      (search/find-refs :granule {"temporal[]" ", , 32"})
-      (catch clojure.lang.ExceptionInfo e
-        (let [status (get-in (ex-data e) [:object :status])
-              body (get-in (ex-data e) [:object :body])]
-          (is (= 400 status))
-          (is (re-find #"temporal_start_day must be accompanied by a temporal_start" body))))))
-  (testing "search with temporal_end_day and no temporal_end is invalid."
-    (try
-      (search/find-refs :granule {"temporal[]" ", , , 32"})
-      (catch clojure.lang.ExceptionInfo e
-        (let [status (get-in (ex-data e) [:object :status])
-              body (get-in (ex-data e) [:object :body])]
-          (is (= 400 status))
-          (is (re-find #"temporal_end_day must be accompanied by a temporal_end" body)))))))
