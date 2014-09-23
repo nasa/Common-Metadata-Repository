@@ -106,16 +106,7 @@
   [path-w-extension]
   (second (re-matches #"([^\.]+)(?:\..+)?" path-w-extension)))
 
-(defn- mime-type-from-headers
-  "Try to get a supported mime-type from the 'accept' header."
-  [headers supported-mime-types]
-  (let [mime-type-str (when-let [mstr (get headers "accept")]
-                        ;; Strip out any semicolon clauses
-                        (str/replace mstr #";.*?(,|$)" "$1"))
-        ;; Split mime-type string on commas
-        mime-types (when mime-type-str (str/split (str/lower-case mime-type-str), #"[,]"))
-        first-supported-mime-type (some (set mime-types) supported-mime-types)]
-    (or first-supported-mime-type mime-type-str)))
+
 
 (defn- get-search-results-format
   "Returns the requested search results format parsed from headers or from the URL extension"
@@ -124,7 +115,7 @@
   ([path-w-extension headers valid-mime-types default-mime-type]
    (let [ext-mime-type (path-w-extension->mime-type path-w-extension)
          mime-type (or ext-mime-type
-                       (mime-type-from-headers headers valid-mime-types)
+                       (mt/mime-type-from-headers headers valid-mime-types)
                        default-mime-type)]
      (mt/validate-request-mime-type mime-type valid-mime-types)
      ;; set the default format to xml
