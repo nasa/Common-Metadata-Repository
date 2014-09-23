@@ -4,6 +4,7 @@
             [cmr.common.services.errors :as err]
             [cmr.common.date-time-parser :as parser]
             [cmr.search.models.query :as qm]
+            [cmr.search.models.group-query-conditions :as gc]
             [cmr.search.services.parameters.conversion :as p]))
 
 (defn string->int-value
@@ -16,9 +17,9 @@
   [concept-type param value options]
   (if (sequential? value)
     (if (= "true" (get-in options [:temporal :and]))
-      (qm/and-conds
+      (gc/and-conds
         (map #(p/parameter->condition concept-type param % options) value))
-      (qm/or-conds
+      (gc/or-conds
         (map #(p/parameter->condition concept-type param % options) value)))
     (let [[start-date end-date start-day end-day] (map s/trim (s/split value #","))]
       (qm/map->TemporalCondition {:start-date (when-not (s/blank? start-date) (parser/parse-datetime start-date))

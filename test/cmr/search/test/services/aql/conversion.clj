@@ -5,6 +5,7 @@
             [cmr.common.date-time-parser :as dt-parser]
             [cmr.search.services.aql.conversion :as a]
             [cmr.search.models.query :as q]
+            [cmr.search.models.group-query-conditions :as gc]
             [cmr.search.services.aql.conversion :as c]))
 
 (defn- aql-string-elem->condition
@@ -71,7 +72,7 @@
          ;; list
          (q/string-condition :provider-id "PROV1" true false) "<list><value>PROV1</value></list>"
 
-         (q/or-conds[(q/string-condition :provider-id "PROV1" true false)
+         (gc/or-conds[(q/string-condition :provider-id "PROV1" true false)
                      (q/string-condition :provider-id "PROV2" true false)])
          "<list><value>PROV1</value><value>PROV2</value></list>"
 
@@ -79,7 +80,7 @@
          (q/string-condition :provider-id "PROV1" true false)
          "<list><value caseInsensitive=\"N\">PROV1</value></list>"
 
-         (q/or-conds[(q/string-condition :provider-id "PROV1" true false)
+         (gc/or-conds[(q/string-condition :provider-id "PROV1" true false)
                      (q/string-condition :provider-id "PROV2" false false)])
          "<list><value caseInsensitive=\"N\">PROV1</value><value caseInsensitive=\"y\">PROV2</value></list>"
 
@@ -88,11 +89,11 @@
          (q/string-condition :provider-id "PROV*" true true)
          "<patternList><textPattern>PROV%</textPattern></patternList>"
 
-         (q/or-conds[(q/string-condition :provider-id "PROV1" true false)
+         (gc/or-conds[(q/string-condition :provider-id "PROV1" true false)
                      (q/string-condition :provider-id "PROV2" true false)])
          "<patternList><value>PROV1</value><value>PROV2</value></patternList>"
 
-         (q/or-conds[(q/string-condition :provider-id "PROV1" true false)
+         (gc/or-conds[(q/string-condition :provider-id "PROV1" true false)
                      (q/string-condition :provider-id "PROV?" true true)])
          "<patternList><value>PROV1</value><textPattern>PROV_</textPattern></patternList>"
 
@@ -100,11 +101,11 @@
          (q/string-condition :provider-id "PROV1" true false)
          "<patternList><value caseInsensitive=\"N\">PROV1</value></patternList>"
 
-         (q/or-conds[(q/string-condition :provider-id "PROV1" true false)
+         (gc/or-conds[(q/string-condition :provider-id "PROV1" true false)
                      (q/string-condition :provider-id "PROV2" false false)])
          "<patternList><value caseInsensitive=\"N\">PROV1</value><value caseInsensitive=\"y\">PROV2</value></patternList>"
 
-         (q/or-conds[(q/string-condition :provider-id "PROV1" true true)
+         (gc/or-conds[(q/string-condition :provider-id "PROV1" true true)
                      (q/string-condition :provider-id "PROV2" false false)])
          "<patternList><textPattern caseInsensitive=\"N\">PROV1</textPattern><value caseInsensitive=\"y\">PROV2</value></patternList>")))
 

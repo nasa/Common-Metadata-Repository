@@ -4,6 +4,7 @@
             [cmr.search.services.parameters.converters.attribute :as a]
             [cmr.search.services.messages.attribute-messages :as msg]
             [cmr.search.models.query :as qm]
+            [cmr.search.models.group-query-conditions :as gc]
             [cmr.search.services.parameters.conversion :as p]
             [cmr.common.util :as u]))
 
@@ -87,18 +88,18 @@
 (deftest parameter->condition-test
   (testing "single value condition"
     (let [expected-cond (qm/->AttributeValueCondition :string "alpha" "a" nil)]
-      (is (= (qm/or-conds [expected-cond (qm/->CollectionQueryCondition expected-cond)])
+      (is (= (gc/or-conds [expected-cond (qm/->CollectionQueryCondition expected-cond)])
              (p/parameter->condition :granule :attribute ["string,alpha,a"] {})))))
   (testing "single range condition"
     (let [expected-cond (qm/->AttributeRangeCondition :string "alpha" "a" "b")]
-      (is (= (qm/or-conds [expected-cond (qm/->CollectionQueryCondition expected-cond)])
+      (is (= (gc/or-conds [expected-cond (qm/->CollectionQueryCondition expected-cond)])
              (p/parameter->condition :granule :attribute ["string,alpha,a,b"] {})))))
   (testing "multiple conditions"
     (testing "and conditions"
       (let [strings ["string,alpha,a" "string,alpha,a,b"]
-            expected-cond (qm/and-conds [(qm/->AttributeValueCondition :string "alpha" "a" nil)
+            expected-cond (gc/and-conds [(qm/->AttributeValueCondition :string "alpha" "a" nil)
                                          (qm/->AttributeRangeCondition :string "alpha" "a" "b")])
-            expected-cond (qm/or-conds [expected-cond (qm/->CollectionQueryCondition expected-cond)])]
+            expected-cond (gc/or-conds [expected-cond (qm/->CollectionQueryCondition expected-cond)])]
         (is (= expected-cond
                (p/parameter->condition :granule :attribute strings {:attribute {:or "false"}})))
         (is (= expected-cond
@@ -106,8 +107,8 @@
             "Multiple attributes should default to AND.")))
     (testing "or conditions"
       (let [strings ["string,alpha,a" "string,alpha,a,b"]
-            expected-cond (qm/or-conds [(qm/->AttributeValueCondition :string "alpha" "a" nil)
+            expected-cond (gc/or-conds [(qm/->AttributeValueCondition :string "alpha" "a" nil)
                                          (qm/->AttributeRangeCondition :string "alpha" "a" "b")])
-            expected-cond (qm/or-conds [expected-cond (qm/->CollectionQueryCondition expected-cond)])]
+            expected-cond (gc/or-conds [expected-cond (qm/->CollectionQueryCondition expected-cond)])]
         (is (= expected-cond
                (p/parameter->condition :granule :attribute strings {:attribute {:or "true"}})))))))

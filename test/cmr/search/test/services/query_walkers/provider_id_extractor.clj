@@ -34,13 +34,12 @@
           (p/extract-provider-ids (q/query {:condition condition})))
 
        (provider "a") #{"a"}
-       (and-conds (provider "a") (provider "b")) #{"a" "b"}
+       (providers "a" "b") #{"a" "b"}
        (or-conds (provider "a") (provider "b")) #{"a" "b"}
        (or-conds (provider "a") (other)) #{}
        (and-conds (provider "a") (other)) #{"a"}
 
        ;; Nested conditions
-       (and-conds (provider "c") (and-conds (provider "a") (provider "b"))) #{"a" "b" "c"}
        (and-conds (provider "c") (or-conds (provider "a") (other))) #{"c"}
 
        ;; Concept types

@@ -4,6 +4,7 @@
             [clojure.set :as set]
             [cmr.common.services.errors :as errors]
             [cmr.search.models.query :as qm]
+            [cmr.search.models.group-query-conditions :as gc]
             [cmr.common.date-time-parser :as dt-parser]
             [cmr.common.util :as u]
             [cmr.search.services.parameters.legacy-parameters :as lp]
@@ -115,14 +116,11 @@
 
 (defn string-parameter->condition
   [param value options]
-  (let [case-sensitive (case-sensitive-field? param options)
-        pattern (pattern-field? param options)
-        group-operation (group-operation param options)
-        value (if (and (sequential? value) (= 1 (count value)))
-                (first value)
-                value)]
-    (if (sequential? value)
-      (qm/string-conditions param value case-sensitive pattern group-operation)
+  (if (sequential? value)
+    (gc/group-conds (group-operation param options)
+                    (map #(string-parameter->condition param % options) value))
+    (let [case-sensitive (case-sensitive-field? param options)
+          pattern (pattern-field? param options)]
       (qm/string-condition param value case-sensitive pattern))))
 
 (defmethod parameter->condition :string
@@ -147,7 +145,7 @@
         granule-cond (when (seq granule-concept-ids)
                        (string-parameter->condition :concept-id granule-concept-ids options))]
     (if (and collection-cond granule-cond)
-      (qm/and-conds [collection-cond granule-cond])
+      (gc/and-conds [collection-cond granule-cond])
       (or collection-cond granule-cond))))
 
 ;; Construct an inheritance query condition for granules.
@@ -156,16 +154,16 @@
 (defmethod parameter->condition :inheritance
   [concept-type param value options]
   (let [field-condition (parameter->condition :collection param value options)]
-    (qm/or-conds
+    (gc/or-conds
       [field-condition
-       (qm/and-conds
+       (gc/and-conds
          [(qm/->CollectionQueryCondition field-condition)
           (qm/map->MissingCondition {:field param})])])))
 
 ;; or-conds --> "not (CondA and CondB)" == "(not CondA) or (not CondB)"
 (defmethod parameter->condition :exclude
   [concept-type param value options]
-  (qm/or-conds
+  (gc/or-conds
     (map (fn [[exclude-param exclude-val]]
            (qm/map->NegatedCondition
              {:condition (parameter->condition concept-type exclude-param exclude-val options)}))
@@ -196,13 +194,13 @@
   [concept-type param value options]
   (if (sequential? value)
     (if (= "true" (get-in options [param :and]))
-      (qm/and-conds
+      (gc/and-conds
         (map #(parameter->condition concept-type param % options) value))
-      (qm/or-conds
+      (gc/or-conds
         (map #(parameter->condition concept-type param % options) value)))
     (let [case-sensitive (case-sensitive-field? :readable-granule-name options)
           pattern (pattern-field? :readable-granule-name options)]
-      (qm/or-conds
+      (gc/or-conds
         [(qm/string-condition :granule-ur value case-sensitive pattern)
          (qm/string-condition :producer-granule-id value case-sensitive pattern)]))))
 
@@ -224,9 +222,9 @@
   [concept-type param value options]
   (if (sequential? value)
     (if (= "true" (get-in options [param :and]))
-      (qm/and-conds
+      (gc/and-conds
         (map #(parameter->condition concept-type param % options) value))
-      (qm/or-conds
+      (gc/or-conds
         (map #(parameter->condition concept-type param % options) value)))
     (let [value (if (some #{value} nrt-aliases) "NEAR_REAL_TIME" value)
           case-sensitive (case-sensitive-field? :collection-data-type options)
@@ -238,7 +236,7 @@
                    (collection-data-type-matches-science-quality? value case-sensitive)))
         ; SCIENCE_QUALITY collection-data-type should match concepts with SCIENCE_QUALITY
         ; or the ones missing collection-data-type field
-        (qm/or-conds
+        (gc/or-conds
           [(qm/string-condition :collection-data-type value case-sensitive pattern)
            (qm/map->MissingCondition {:field :collection-data-type})])
         (qm/string-condition :collection-data-type value case-sensitive pattern)))))
@@ -250,7 +248,7 @@
 ;; dif-entry-id matches on entry-id or associated-difs
 (defmethod parameter->condition :dif-entry-id
   [concept-type param value options]
-  (qm/or-conds
+  (gc/or-conds
     [(parameter->condition concept-type :entry-id value (set/rename-keys options {:dif-entry-id :entry-id}))
      (string-parameter->condition :associated-difs value (set/rename-keys options {:dif-entry-id :associated-difs}))]))
 
@@ -327,7 +325,7 @@
                               (parameter->condition concept-type param value options))
                             params)]
         (qm/query (assoc query-attribs
-                         :condition (qm/and-conds conditions)
+                         :condition (gc/and-conds conditions)
                          :keywords keywords))))))
 
 (defn timeline-parameters->query

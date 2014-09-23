@@ -4,6 +4,7 @@
 
   (:require [clj-time.core :as t]
             [cmr.search.models.query :as qm]
+            [cmr.search.models.group-query-conditions :as gc]
             [cmr.search.data.complex-to-simple :as c2s]))
 
 (defn- intersect-temporal->simple-conditions
@@ -14,13 +15,13 @@
         conditions (if end-date
                      [(qm/map->DateRangeCondition {:field :start-date
                                                    :end-date end-date})
-                      (qm/or-conds [(qm/map->MissingCondition {:field :end-date})
+                      (gc/or-conds [(qm/map->MissingCondition {:field :end-date})
                                     (qm/map->DateRangeCondition {:field :end-date
                                                                  :start-date start-date})])]
-                     [(qm/or-conds [(qm/map->MissingCondition {:field :end-date})
+                     [(gc/or-conds [(qm/map->MissingCondition {:field :end-date})
                                     (qm/map->DateRangeCondition {:field :end-date
                                                                  :start-date start-date})])])]
-    (qm/and-conds (concat
+    (gc/and-conds (concat
                     [(qm/map->ExistCondition {:field :start-date})]
                     conditions))))
 
@@ -69,7 +70,7 @@
                      #(simple-conditions-for-year
                         % start-date end-date start-day end-day end-year)
                      (range (t/year start-date) (inc end-year)))]
-    (qm/or-conds (remove nil? conditions))))
+    (gc/or-conds (remove nil? conditions))))
 
 (defn- temporal->simple-conditions
   "Convert a temporal condition into a combination of simpler conditions so that it will be easier to convert into elastic json"

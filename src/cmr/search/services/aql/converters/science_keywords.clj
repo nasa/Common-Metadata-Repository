@@ -2,7 +2,8 @@
   "Contains functions for parsing, validating and converting scienceKeywords aql element to query conditions"
   (:require [cmr.common.xml :as cx]
             [cmr.search.services.aql.conversion :as a]
-            [cmr.search.models.query :as qm]))
+            [cmr.search.models.query :as qm]
+            [cmr.search.models.group-query-conditions :as gc]))
 
 (defmulti keyword-element->condition
   "Returns the query condition of the given keyword element"
@@ -11,7 +12,7 @@
 
 (defmethod keyword-element->condition :anyKeyword
   [concept-type keyword-elem]
-  (qm/or-conds
+  (gc/or-conds
     (map #(a/string-element->condition concept-type (assoc keyword-elem :tag %))
          [:categoryKeyword :topicKeyword :termKeyword :variableLevel1Keyword
           :variableLevel2Keyword :variableLevel3Keyword :detailedVariableKeyword])))
@@ -26,7 +27,7 @@
   (let [keyword-elems (:content science-keyword)]
     (qm/nested-condition
       :science-keywords
-      (qm/and-conds
+      (gc/and-conds
         (map (partial keyword-element->condition concept-type) keyword-elems)))))
 
 ;; Converts scienceKeywords element into query condition, returns the converted condition
@@ -36,5 +37,5 @@
         operator (get-in element [:attrs :operator])
         conditions (map (partial science-keyword-element->conditions concept-type) science-keywords)]
     (if (= "OR" operator)
-      (qm/or-conds conditions)
-      (qm/and-conds conditions))))
+      (gc/or-conds conditions)
+      (gc/and-conds conditions))))

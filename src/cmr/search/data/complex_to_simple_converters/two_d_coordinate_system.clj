@@ -2,6 +2,7 @@
   "Defines functions that implement the reduce-query-condition method of the ComplexQueryToSimple
   protocol for two d coordinate system related search fields."
   (:require [cmr.search.models.query :as qm]
+            [cmr.search.models.group-query-conditions :as gc]
             [cmr.search.data.complex-to-simple :as c2s]
             [cmr.common.services.errors :as errors]))
 
@@ -21,9 +22,9 @@
           end-exist-condition (qm/->ExistCondition end-key)
           start-range-cond (qm/numeric-range-condition start-key nil value)
           end-range-cond (qm/numeric-range-condition end-key value nil)
-          and-clause (qm/and-conds
+          and-clause (gc/and-conds
                        [start-exist-condition end-exist-condition start-range-cond end-range-cond])]
-      (qm/or-conds [start-value-cond end-value-cond and-clause])))
+      (gc/or-conds [start-value-cond end-value-cond and-clause])))
 
   cmr.search.models.query.CoordinateRangeCondition
   (coordinate-cond->condition
@@ -36,11 +37,11 @@
                   end-exist-condition (qm/->ExistCondition end-key)
                   start-max-cond (qm/numeric-range-condition start-key nil min-value)
                   end-min-cond (qm/numeric-range-condition end-key max-value nil)]
-              (qm/and-conds
+              (gc/and-conds
                 [start-exist-condition end-exist-condition start-max-cond end-min-cond])))
           start-range-cond (qm/numeric-range-condition start-key min-value max-value)
           end-range-cond (qm/numeric-range-condition end-key min-value max-value)]
-      (qm/or-conds (if contains-cond
+      (gc/or-conds (if contains-cond
                      [contains-cond start-range-cond end-range-cond]
                      [start-range-cond end-range-cond]))))
 
@@ -54,7 +55,7 @@
   (c2s/reduce-query-condition
     [condition context]
     (let [{:keys [coordinate-1-cond coordinate-2-cond]} condition]
-      (qm/and-conds
+      (gc/and-conds
         [(coordinate-cond->condition coordinate-1-cond :start-coordinate-1 :end-coordinate-1)
          (coordinate-cond->condition coordinate-2-cond :start-coordinate-2 :end-coordinate-2)]))))
 
@@ -62,7 +63,7 @@
   "Returns the query condition for the given two d coordinates search params."
   [two-d-conditions context]
   (if two-d-conditions
-    (qm/or-conds (map #(c2s/reduce-query-condition % context) two-d-conditions))
+    (gc/or-conds (map #(c2s/reduce-query-condition % context) two-d-conditions))
     qm/match-all))
 
 
@@ -73,5 +74,5 @@
     (let [{:keys [two-d-name two-d-conditions case-sensitive?]} condition
           two-d-name-cond (qm/string-condition :two-d-coord-name two-d-name case-sensitive? false)
           coord-cond (two-d-conditions->condition two-d-conditions context)]
-      (qm/and-conds [two-d-name-cond coord-cond]))))
+      (gc/and-conds [two-d-name-cond coord-cond]))))
 

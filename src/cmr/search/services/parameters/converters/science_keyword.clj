@@ -1,6 +1,7 @@
 (ns cmr.search.services.parameters.converters.science-keyword
   "Contains functions for converting science keywords query parameters to conditions"
   (:require [cmr.search.models.query :as qm]
+            [cmr.search.models.group-query-conditions :as gc]
             [cmr.search.services.parameters.conversion :as p]))
 
 (def science-keyword-fields
@@ -29,16 +30,16 @@
       ;; If multiple science keywords are passed in like the following
       ;;  -> science_keywords[0][category]=foo&science_keywords[1][category]=bar
       ;; then this recurses back into this same function to handle each separately
-      (qm/group-conds
+      (gc/group-conds
         group-operation
         (map #(p/parameter->condition concept-type param % options) (vals value)))
       ;; Creates the science keyword condition for a group of science keyword fields and values.
       (qm/nested-condition
         :science-keywords
-        (qm/and-conds
+        (gc/and-conds
           (map (fn [[field-name field-value]]
                  (if (= :any field-name)
-                   (qm/or-conds
+                   (gc/or-conds
                      (map #(sk-field+value->string-condition % field-value case-sensitive? pattern?)
                           science-keyword-fields))
                    (sk-field+value->string-condition field-name field-value case-sensitive? pattern?)))

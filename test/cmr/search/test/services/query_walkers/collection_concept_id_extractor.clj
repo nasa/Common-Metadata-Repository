@@ -18,13 +18,12 @@
           (c/extract-collection-concept-ids (q/query {:condition condition})))
 
        (collection-concept-id "a") #{"a"}
-       (and-conds (collection-concept-id "a") (collection-concept-id "b")) #{"a" "b"}
+       (collection-concept-ids "a" "b") #{"a" "b"}
        (or-conds (collection-concept-id "a") (collection-concept-id "b")) #{"a" "b"}
        (or-conds (collection-concept-id "a") (other)) #{}
        (and-conds (collection-concept-id "a") (other)) #{"a"}
 
        ;; Nested conditions
-       (and-conds (collection-concept-id "c") (and-conds (collection-concept-id "a") (collection-concept-id "b"))) #{"a" "b" "c"}
        (and-conds (collection-concept-id "c") (or-conds (collection-concept-id "a") (other))) #{"c"}
 
        ;; multiple

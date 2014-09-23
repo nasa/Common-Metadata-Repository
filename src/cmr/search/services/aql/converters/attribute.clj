@@ -3,6 +3,7 @@
   (:require [cmr.common.xml :as cx]
             [cmr.search.services.aql.conversion :as a]
             [cmr.search.models.query :as qm]
+            [cmr.search.models.group-query-conditions :as gc]
             [cmr.search.services.parameters.converters.attribute :as p]
             [cmr.common.date-time-parser :as date-time-parser]))
 
@@ -63,7 +64,7 @@
   [attrib-name value-elem]
   (let [values (cx/strings-at-path value-elem [:value])
         conditions (map (partial attrib-value->condition :string attrib-name) values)]
-    (qm/or-conds conditions)))
+    (gc/or-conds conditions)))
 
 (defmethod attrib-value-element->condition :range
   [attrib-name value-elem]
@@ -92,7 +93,7 @@
     ;; There is no Datetime element for AdditionalAttribute in AQL,
     ;; the Date element covers both the date type and datetime type of AA.
     ;; This is different from parameter search of AA.
-    (qm/or-conds
+    (gc/or-conds
       [(qm/map->AttributeValueCondition
          {:type :datetime
           :name attrib-name
@@ -108,7 +109,7 @@
     ;; There is no datetimeRange element for AdditionalAttribute in AQL,
     ;; the dateRange element covers both the date type and datetime type of AA.
     ;; This is different from parameter search of AA.
-    (qm/or-conds
+    (gc/or-conds
       [(qm/map->AttributeRangeCondition
          {:type :datetime
           :name attrib-name
@@ -149,9 +150,9 @@
         operator (get-in element [:attrs :operator])
         conditions (map additional-attribute-element->conditions attributes)
         attrib-condition (if (= "OR" operator)
-                           (qm/or-conds conditions)
-                           (qm/and-conds conditions))]
+                           (gc/or-conds conditions)
+                           (gc/and-conds conditions))]
     (if (= :granule concept-type)
       ;; Granule attribute queries will inherit values from their parent collections.
-      (qm/or-conds [attrib-condition (qm/->CollectionQueryCondition attrib-condition)])
+      (gc/or-conds [attrib-condition (qm/->CollectionQueryCondition attrib-condition)])
       attrib-condition)))

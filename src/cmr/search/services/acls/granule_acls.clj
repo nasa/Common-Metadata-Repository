@@ -1,6 +1,7 @@
 (ns cmr.search.services.acls.granule-acls
   "Contains functions for manipulating granule acls"
   (:require [cmr.search.models.query :as q]
+            [cmr.search.models.group-query-conditions :as gc]
             [cmr.search.services.acl-service :as acl-service]
             [cmr.search.services.acls.acl-helper :as acl-helper]
             [cmr.common.concepts :as c]
@@ -54,7 +55,7 @@
                                    (q/->NegatedCondition
                                      (q/->ExistCondition :access-value)))]
       (if (and value-cond include-undefined-cond)
-        (q/or-conds [value-cond include-undefined-cond])
+        (gc/or-conds [value-cond include-undefined-cond])
         (or value-cond include-undefined-cond)))))
 
 (defmulti provider->collection-condition
@@ -107,10 +108,10 @@
                              (concept-ids->collection-condition query-coll-ids concept-ids))
           entry-titles-cond (when entry-titles
                               (q/->CollectionQueryCondition
-                                (q/and-conds [(q/string-condition :provider-id provider-id true false)
+                                (gc/and-conds [(q/string-condition :provider-id provider-id true false)
                                               (q/string-conditions :entry-title entry-titles true)])))]
       (if (and concept-ids-cond entry-titles-cond)
-        (q/or-conds [concept-ids-cond entry-titles-cond])
+        (gc/or-conds [concept-ids-cond entry-titles-cond])
         (or concept-ids-cond entry-titles-cond)))))
 
 
@@ -125,7 +126,7 @@
           access-value-cond (some-> (access-value->query-condition access-value)
                                     q/->CollectionQueryCondition)]
       (if (and entry-titles-cond access-value-cond)
-        (q/and-conds [entry-titles-cond access-value-cond])
+        (gc/and-conds [entry-titles-cond access-value-cond])
         (or entry-titles-cond access-value-cond)))
     ;; No other collection info provided so every collection in provider is possible
     (provider->collection-condition query-coll-ids provider-id)))
@@ -149,7 +150,7 @@
                           context query-coll-ids provider-id collection-identifier)
         granule-cond (granule-identifier->query-cond granule-identifier)]
     (if (and collection-cond granule-cond)
-      (q/and-conds [collection-cond granule-cond])
+      (gc/and-conds [collection-cond granule-cond])
       (or collection-cond granule-cond))))
 
 
@@ -161,7 +162,7 @@
     q/match-none
     (if-let [conds (seq (filter identity
                                 (map (partial acl->query-condition context coll-ids-by-prov) acls)))]
-      (q/or-conds conds)
+      (gc/or-conds conds)
       q/match-none)))
 
 ;; This expects that collection queries have been resolved before this step.
@@ -182,7 +183,7 @@
 
     (r/resolve-collection-queries
       context
-      (update-in query [:condition] #(q/and-conds [acl-cond %])))))
+      (update-in query [:condition] #(gc/and-conds [acl-cond %])))))
 
 
 (comment

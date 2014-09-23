@@ -10,6 +10,7 @@
             [cmr.search.services.messages.common-messages :as msg]
             [clj-time.core :as t]
             [cmr.search.models.query :as qm]
+            [cmr.search.models.group-query-conditions :as gc]
             [cmr.search.services.parameters.conversion :as pc]
             [cmr.search.services.parameters.parameter-validation :as pv]))
 
@@ -218,9 +219,9 @@
        :textPattern (string-pattern-elem->condition concept-type key element)
        ;; list and patternList can be processed the same way below
        (if (= "AND" operator)
-         (qm/and-conds
+         (gc/and-conds
            (map (partial string-element->condition concept-type key operator) (:content element)))
-         (qm/or-conds
+         (gc/or-conds
            (map (partial string-element->condition concept-type key operator) (:content element))))))))
 
 (defmethod element->condition :string
@@ -229,7 +230,7 @@
 
 (defmethod element->condition :dif-entry-id
   [concept-type element]
-  (qm/or-conds
+  (gc/or-conds
     [(element->condition concept-type (assoc element :tag :entry-id))
      (element->condition concept-type (assoc element :tag :associated-difs))]))
 
@@ -328,7 +329,7 @@
         conditions (if data-center-condition
                      (cons data-center-condition where-conditions)
                      where-conditions)]
-    (when (seq conditions) (qm/and-conds conditions))))
+    (when (seq conditions) (gc/and-conds conditions))))
 
 (defn aql->query
   "Validates parameters and converts aql into a query model."

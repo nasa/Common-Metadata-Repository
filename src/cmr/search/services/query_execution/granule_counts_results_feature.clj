@@ -6,6 +6,7 @@
   (:require [cmr.common.services.errors :as errors]
             [cmr.search.services.query-walkers.condition-extractor :as condition-extractor]
             [cmr.search.models.query :as q]
+            [cmr.search.models.group-query-conditions :as gc]
             [cmr.search.data.elastic-search-index :as idx]
             [cmr.search.data.complex-to-simple :as c2s]
             [cmr.search.services.query-execution :as query-execution]
@@ -68,7 +69,7 @@
   (let [collection-ids (query-results->concept-ids results)
         spatial-temp-conds (extract-spatial-and-temporal-conditions coll-query)
         condition (if (seq collection-ids)
-                    (q/and-conds (cons (q/string-conditions :collection-concept-id collection-ids true)
+                    (gc/and-conds (cons (q/string-conditions :collection-concept-id collection-ids true)
                                        spatial-temp-conds))
                     ;; The results were empty so the granule count query doesn't need to find anything.
                     q/match-none)]

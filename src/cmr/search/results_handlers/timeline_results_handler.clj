@@ -9,6 +9,7 @@
             [cmr.search.services.query-service :as qs]
             [cmr.common.services.errors :as errors]
             [cmr.search.models.query :as q]
+            [cmr.search.models.group-query-conditions :as gc]
             [cheshire.core :as json]
             [cmr.search.models.results :as r]
             [clj-time.core :as t]
@@ -33,7 +34,7 @@
         (assoc :aggregations (query-aggregations interval)
                :page-size 0
                :sort-keys nil)
-        (update-in [:condition] #(q/and-conds [% temporal-cond])))))
+        (update-in [:condition] #(gc/and-conds [% temporal-cond])))))
 
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:granule :timeline]
