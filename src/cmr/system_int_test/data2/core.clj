@@ -76,9 +76,13 @@
      :location (str (url/location-root) (:concept-id item))
      :revision-id revision-id}))
 
-(defn item->metadata-result
+(defmulti item->metadata-result
   "Converts an item into the expected metadata result"
-  [format-key item]
+  (fn [echo-compatible? format-key item]
+    echo-compatible?))
+
+(defmethod item->metadata-result false
+  [_ format-key item]
   (let [{:keys [concept-id revision-id collection-concept-id]} item]
     (util/remove-nil-keys
       {:concept-id concept-id
@@ -87,16 +91,47 @@
        :collection-concept-id collection-concept-id
        :metadata (umm/umm->xml item format-key)})))
 
+(defmethod item->metadata-result true
+  [_ format-key item]
+  (let [{:keys [concept-id revision-id collection-concept-id]} item]
+    (if collection-concept-id
+      (util/remove-nil-keys
+        {:echo_granule_id concept-id
+         :echo_dataset_id collection-concept-id
+         :format format-key
+         :metadata (umm/umm->xml item format-key)})
+      (util/remove-nil-keys
+        {:echo_dataset_id concept-id
+         :format format-key
+         :metadata (umm/umm->xml item format-key)}))))
+
 (defn metadata-results-match?
   "Returns true if the metadata results match the expected items"
-  [format-key items search-result]
-  (= (set (map (partial item->metadata-result format-key) items))
-     (set (map #(dissoc % :granule-count) (:items search-result)))))
+  ([format-key items search-result]
+   (metadata-results-match? format-key items search-result false))
+  ([format-key items search-result echo-compatible?]
+   (= (set (map (partial item->metadata-result echo-compatible? format-key) items))
+      (set (map #(dissoc % :granule-count) (:items search-result))))))
 
 (defn assert-metadata-results-match
   "Returns true if the metadata results match the expected items"
   [format-key items search-result]
   (is (metadata-results-match? format-key items search-result)))
+
+(defn assert-echo-compatible-metadata-results-match
+  "Returns true if the metadata results match the expected items"
+  [format-key items search-result]
+  (is (metadata-results-match? format-key items search-result true)))
+
+
+(defn echo-compatible-refs-match?
+  "Returns true if the echo compatible references match the expected items"
+  [items search-result]
+  (let [result (= (set (map #(dissoc % :revision-id) (map item->ref items)))
+                  (set (map #(dissoc % :score) (:refs search-result))))]
+    (when (:status search-result)
+      (println (pr-str search-result)))
+    result))
 
 (defn refs-match?
   "Returns true if the references match the expected items"

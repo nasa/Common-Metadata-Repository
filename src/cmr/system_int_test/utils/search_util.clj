@@ -201,12 +201,15 @@
            metadatas (for [match (drop 1 (str/split body #"(?ms)<result "))]
                        (second (re-matches #"(?ms)[^>]*>(.*)</result>.*" match)))
            items (map (fn [result metadata]
-                        (let [{{:keys [concept-id collection-concept-id revision-id granule-count has-granules]} :attrs} result]
+                        (let [{{:keys [concept-id collection-concept-id revision-id granule-count has-granules
+                                       echo_dataset_id echo_granule_id]} :attrs} result]
                           (util/remove-nil-keys
                             {:concept-id concept-id
-                             :revision-id (Long. ^String revision-id)
+                             :revision-id (when revision-id (Long. ^String revision-id))
                              :format format-key
                              :collection-concept-id collection-concept-id
+                             :echo_dataset_id echo_dataset_id
+                             :echo_granule_id echo_granule_id
                              :granule-count (when granule-count (Long. ^String granule-count))
                              :has-granules (when has-granules (= has-granules "true"))
                              :metadata (str "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" metadata)})))
@@ -228,9 +231,12 @@
          (json/decode true)
          (set/rename-keys {:references :refs})))))
 
+(defmulti parse-reference-response
+  (fn [echo-compatible? response]
+    echo-compatible?))
 
-(defn parse-reference-response
-  [response]
+(defmethod parse-reference-response :default
+  [_ response]
   (let [parsed (-> response :body x/parse-str)
         hits (cx/long-at-path parsed [:hits])
         took (cx/long-at-path parsed [:took])
@@ -252,13 +258,28 @@
        :took took
        :facets facets})))
 
+(defmethod parse-reference-response true
+  [_ response]
+  (let [parsed (-> response :body x/parse-str)
+        references-type (get-in parsed [:attrs :type])
+       refs (map (fn [ref-elem]
+                    (util/remove-nil-keys
+                      {:id (cx/string-at-path ref-elem [:id])
+                       :name (cx/string-at-path ref-elem [:name])
+                       :location (cx/string-at-path ref-elem [:location])
+                       :score (cx/double-at-path ref-elem [:score])}))
+                  (cx/elements-at-path parsed [:reference]))]
+    (util/remove-nil-keys
+      {:refs refs
+       :type references-type})))
+
 (defn find-refs
   "Returns the references that are found by searching with the input params"
   ([concept-type params]
    (find-refs concept-type params {}))
   ([concept-type params options]
    (get-search-failure-data
-     (parse-reference-response
+     (parse-reference-response (:echo-compatible params)
        (find-concepts-in-format "application/xml" concept-type params options)))))
 
 (defn find-refs-with-post
@@ -271,7 +292,7 @@
                                  :body (codec/form-encode params)
                                  :throw-exceptions false
                                  :connection-manager (url/conn-mgr)})]
-      (parse-reference-response response))))
+      (parse-reference-response (:echo-compatible params) response))))
 
 (defn find-refs-with-aql-string
   ([aql]
@@ -285,7 +306,7 @@
                                          :query-params {:page-size 100}
                                          :connection-manager (url/conn-mgr)}
                                         options))]
-       (parse-reference-response response)))))
+       (parse-reference-response (get-in options [:query-params :echo_compatible]) response)))))
 
 (defn find-refs-with-aql
   "Returns the references that are found by searching through POST request with aql for the given conditions"
