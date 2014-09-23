@@ -22,6 +22,15 @@
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
+(comment
+
+  (do
+    (ingest/reset)
+    (ingest/create-provider "provguid1" "PROV1")
+    (ingest/create-provider "provguid2" "PROV2")  )
+
+  )
+
 ;; Tests that we can ingest and find items in different formats
 (deftest multi-format-search-test
   (let [c1-echo (d/ingest "PROV1" (dc/collection {:short-name "S1"
@@ -158,7 +167,19 @@
       (testing "as extension"
         (is (d/refs-match? [c1-echo] (search/find-refs :collection
                                                        {:short-name "S1"}
-                                                       {:format-as-ext? true})))))))
+                                                       {:format-as-ext? true})))))
+    (testing "ECHO Compatibility mode"
+      (testing "XML References"
+        (are [refs]
+             (and (d/echo-compatible-refs-match? all-colls refs)
+                  (= "array" (:type refs)))
+             (search/find-refs :collection {:echo-compatible true})
+             (search/find-refs-with-aql :collection [] [] {:query-params {:echo_compatible true}})))
+
+      (testing "ECHO10"
+        (d/assert-echo-compatible-metadata-results-match
+          :echo10 all-colls
+          (search/find-metadata :collection :echo10 {:echo-compatible true}))))))
 
 ; Tests that we can ingest and find difs with spatial and that granules in the dif can also be
 ; ingested and found

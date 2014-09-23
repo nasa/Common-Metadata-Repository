@@ -25,8 +25,10 @@
 
 (comment
 
-  (ingest/reset)
-  (ingest/create-provider "provguid1" "PROV1")
+  (do
+    (ingest/reset)
+    (ingest/create-provider "provguid1" "PROV1")
+    (ingest/create-provider "provguid2" "PROV2"))
 
   )
 
@@ -114,7 +116,19 @@
       (testing "as extension"
         (is (d/refs-match? [g1-echo] (search/find-refs :granule
                                                        {:granule-ur "g1"}
-                                                       {:format-as-ext? true})))))))
+                                                       {:format-as-ext? true})))))
+    (testing "ECHO Compatibility mode"
+      (testing "XML References"
+        (are [refs]
+             (and (d/echo-compatible-refs-match? all-granules refs)
+                  (= "array" (:type refs)))
+             (search/find-refs :granule {:echo-compatible true})
+             (search/find-refs-with-aql :granule [] [] {:query-params {:echo_compatible true}})))
+
+      (testing "ECHO10"
+        (d/assert-echo-compatible-metadata-results-match
+          :echo10 all-granules
+          (search/find-metadata :granule :echo10 {:echo-compatible true}))))))
 
 
 (deftest search-granule-csv
