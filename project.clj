@@ -10,7 +10,7 @@
                  [nasa-cmr/cmr-metadata-db-app "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-umm-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"]
-                 [nasa-echo/echo-orbits-java "0.1.4"]
+                 [nasa-echo/echo-orbits-java "0.1.5"]
                  [compojure "1.1.9"]
                  [ring/ring-core "1.3.1" :exclusions [clj-time]]
                  [ring/ring-json "0.3.1"]
