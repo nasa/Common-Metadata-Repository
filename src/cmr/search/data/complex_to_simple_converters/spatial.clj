@@ -110,7 +110,7 @@
   ;; in the search.
   (let [type (resolve-shape-type (name (:type (first stored-ords))))
         coords (double-array (map srl/stored->ordinate
-                                  (get-in stored-ords [0 :ords])))]
+                                  (:ords (first stored-ords))))]
     (let [{:keys [swath-width
                   period
                   inclination-angle
