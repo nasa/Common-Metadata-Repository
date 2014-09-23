@@ -288,6 +288,7 @@
         sort-keys (or (parse-sort-key (:sort-key params))
                       (when (:keyword params) [{:order :desc :field :score}]))
         pretty? (= "true" (:pretty params))
+        echo-compatible? (= "true" (:echo-compatible params))
         result-features (concat (when (= (:include-granule-counts params) "true")
                                   [:granule-counts])
                                 (when (= (:include-has-granules params) "true")
@@ -300,7 +301,8 @@
      :sort-keys sort-keys
      :result-format (:result-format params)
      :result-features (seq result-features)
-     :pretty? pretty?}))
+     :pretty? pretty?
+     :echo-compatible? echo-compatible?}))
 
 (defn- alias-nrt
   "Alias variations of NEAR_REAL_TIME to nrt"
@@ -316,7 +318,8 @@
                    (map alias-nrt (str/split (str/lower-case (:keyword params)) #" ")))
         params (if keywords (assoc params :keyword (str/join " " keywords)) params)
         params (dissoc params :options :page-size :page-num :sort-key :result-format :pretty
-                       :include-granule-counts :include-has-granules :include-facets)]
+                       :include-granule-counts :include-has-granules :include-facets
+                       :echo-compatible)]
     (if (empty? params)
       ;; matches everything
       (qm/query query-attribs)

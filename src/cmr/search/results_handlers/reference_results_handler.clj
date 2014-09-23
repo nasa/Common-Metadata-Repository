@@ -48,9 +48,20 @@
        :items
        (map :concept-id)))
 
-(defn- reference->xml-element
+(defmulti reference->xml-element
   "Converts a search result reference into an XML element."
-  [results reference]
+  (fn [echo-compatible? results reference]
+    echo-compatible?))
+
+(defmulti results->xml-element
+  "Converts the results into an XML element"
+  (fn [echo-compatible? results]
+    echo-compatible?))
+
+;; Normal CMR Search response implementations
+
+(defmethod reference->xml-element false
+  [_ results reference]
   (let [{:keys [has-granules-map granule-counts-map]} results
         {:keys [concept-id revision-id location name score]} reference]
     (x/element :reference {}
@@ -64,18 +75,38 @@
                  (x/element :granule-count {} (get granule-counts-map concept-id 0)))
                (when score (x/element :score {} score)))))
 
+(defmethod results->xml-element false
+  [_ results]
+  (let [{:keys [hits took items facets]} results]
+    (x/element :results {}
+               (x/element :hits {} (str hits))
+               (x/element :took {} (str took))
+               (x/->Element :references {}
+                            (map (partial reference->xml-element false results) items))
+               (frf/facets->xml-element facets))))
+
+;; ECHO Compatible implementations
+
+(defmethod reference->xml-element true
+  [_ results reference]
+  (let [{:keys [concept-id location name score]} reference]
+    (x/element :reference {}
+               (x/element :name {} name)
+               (x/element :id {} concept-id)
+               (x/element :location {} location)
+               (when score (x/element :score {} score)))))
+
+(defmethod results->xml-element true
+  [_ results]
+  (x/->Element :references {"type" "array"}
+               (map (partial reference->xml-element true results) (:items results))))
+
 (defmethod qs/search-results->response :xml
   [context query results]
-  (let [{:keys [hits took items facets]} results
-        {:keys [pretty?]} query
+  (let [{:keys [pretty? echo-compatible?]} query
         xml-fn (if pretty? x/indent-str x/emit-str)]
-    (xml-fn
-      (x/element :results {}
-                 (x/element :hits {} (str hits))
-                 (x/element :took {} (str took))
-                 (x/->Element :references {}
-                              (map (partial reference->xml-element results) items))
-                 (frf/facets->xml-element facets)))))
+    (println "echo-compatible?" echo-compatible?)
+    (xml-fn (results->xml-element echo-compatible? results))))
 
 
 

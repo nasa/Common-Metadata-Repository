@@ -30,6 +30,9 @@
    ;; A list of features identified by symbols that can be enabled or disabled.
    result-features
 
+   ;; Flag indicates if results should be returned in a way that is ECHO compatible.
+   echo-compatible?
+
    ;; flag to determine if the results should be pretty printed in the response
    pretty?
 
@@ -339,12 +342,14 @@
              :page-num default-page-num
              :sort-keys (default-sort-keys :granule)
              :result-format :xml
+             :echo-compatible? false
              :pretty? false}
    :collection {:condition (->MatchAllCondition)
                 :page-size default-page-size
                 :page-num default-page-num
                 :sort-keys (default-sort-keys :collection)
                 :result-format :xml
+                :echo-compatible? false
                 :pretty? false}})
 
 (defn query
