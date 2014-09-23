@@ -60,6 +60,8 @@
   "Defines mappings for attributes."
   {:type "nested"
    :dynamic "strict"
+   :_source {:enabled false}
+   :_all {:enabled false}
    :properties
    {:name string-field-mapping
     :string-value string-field-mapping
@@ -74,6 +76,8 @@
   "Defines mappings for science keywords."
   {:type "nested"
    :dynamic "strict"
+   :_source {:enabled false}
+   :_all {:enabled false}
    :properties
    {:category string-field-mapping
     :category.lowercase string-field-mapping
@@ -93,19 +97,14 @@
 (def orbit-calculated-spatial-domain-mapping
   {:type "nested"
    :dynamic "strict"
+   :_source {:enabled false}
+   :_all {:enabled false}
    :properties {:orbital-model-name string-field-mapping
                 :orbit-number int-field-mapping
                 :start-orbit-number double-field-mapping
                 :stop-orbit-number double-field-mapping
                 :equator-crossing-longitude double-field-mapping
                 :equator-crossing-date-time date-field-mapping}})
-
-(def spatial-shape-mapping
-  "Defines the mapping for a single spatial shape. Each shape is represented by a minimum bounding
-  rectangle, largest interior rectangle, and spatial ordinates."
-  {:type "nested"
-   :dynamic "strict"
-   :properties {}})
 
 (def spatial-coverage-fields
   "Defines the sets of fields shared by collections and granules for indexing spatial data."
@@ -127,9 +126,9 @@
 
    ;; ords-info contains tuples of shapes stored in ords
    ;; Each tuple contains the shape type and the number of ordinates
-   :ords-info (stored int-field-mapping)
+   :ords-info (not-indexed (stored int-field-mapping))
    ;; ords contains longitude latitude pairs (ordinates) of all the shapes
-   :ords (stored int-field-mapping)})
+   :ords (not-indexed (stored int-field-mapping))})
 
 (def collection-mapping
   {:collection {:dynamic "strict",
