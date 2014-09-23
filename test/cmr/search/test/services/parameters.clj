@@ -2,6 +2,7 @@
   (:require [clojure.test :refer :all]
             [cmr.search.services.parameters.conversion :as p]
             [cmr.search.models.query :as q]
+            [cmr.search.models.group-query-conditions :as gc]
             [cmr.search.services.parameters.legacy-parameters :as lp]))
 
 (deftest replace-parameter-aliases-test
@@ -49,12 +50,12 @@
              (p/parameter->condition :collection :entry-title ["foo" "bar"]
                                      {:entry-title {:ignore-case "false"}}))))
     (testing "with multiple values pattern"
-      (is (= (q/or-conds [(q/string-condition :entry-title "foo" false true)
+      (is (= (gc/or-conds [(q/string-condition :entry-title "foo" false true)
                           (q/string-condition :entry-title "bar" false true)])
              (p/parameter->condition :collection :entry-title ["foo" "bar"]
                                      {:entry-title {:pattern "true"}}))))
     (testing "with multiple values and'd"
-      (is (= (q/and-conds [(q/string-condition :entry-title "foo" false false)
+      (is (= (gc/and-conds [(q/string-condition :entry-title "foo" false false)
                           (q/string-condition :entry-title "bar" false false)])
              (p/parameter->condition :collection :entry-title ["foo" "bar"]
                                      {:entry-title {:and "true"}}))))
@@ -84,7 +85,7 @@
            (p/parameters->query :collection {:entry-title ["foo"]}))))
   (testing "with multiple conditions"
     (is (= (q/query {:concept-type :collection
-                     :condition (q/and-conds [(q/string-condition :provider "bar")
+                     :condition (gc/and-conds [(q/string-condition :provider "bar")
                                               (q/string-condition :entry-title "foo")])})
            (p/parameters->query :collection {:entry-title ["foo"] :provider "bar"})))))
 

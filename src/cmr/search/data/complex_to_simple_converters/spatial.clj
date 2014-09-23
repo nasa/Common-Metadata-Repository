@@ -4,6 +4,7 @@
             [cmr.search.data.elastic-search-index :as idx]
             [cmr.search.services.query-execution :as qe]
             [cmr.search.models.query :as qm]
+            [cmr.search.models.group-query-conditions :as gc]
             [cmr.spatial.mbr :as mbr]
             [cmr.spatial.serialize :as srl]
             [cmr.spatial.derived :as d]
@@ -36,13 +37,13 @@
             d (range-cond :east -180 east)
             e (range-cond :east east 180)
             f (range-cond :west west 180)
-            am-conds (qm/and-conds [(qm/or-conds [c f])
-                                    (qm/or-conds [d e])
+            am-conds (gc/and-conds [(gc/or-conds [c f])
+                                    (gc/or-conds [d e])
                                     (bool-cond :crosses-antimeridian true)])
-            lon-cond (qm/or-conds [(range-cond :west -180 east)
+            lon-cond (gc/or-conds [(range-cond :west -180 east)
                                    (range-cond :east west 180)
                                    am-conds])]
-        (qm/and-conds [lon-cond
+        (gc/and-conds [lon-cond
                        (range-cond :north south 90)
                        (range-cond :south -90 north)]))
 
@@ -50,12 +51,12 @@
             south-cond (range-cond :south -90.0 north)
             west-cond (range-cond :west -180 east)
             east-cond (range-cond :east west 180)
-            am-conds (qm/and-conds [(bool-cond :crosses-antimeridian true)
-                                    (qm/or-conds [west-cond east-cond])])
-            non-am-conds (qm/and-conds [west-cond east-cond])]
-        (qm/and-conds [north-cond
+            am-conds (gc/and-conds [(bool-cond :crosses-antimeridian true)
+                                    (gc/or-conds [west-cond east-cond])])
+            non-am-conds (gc/and-conds [west-cond east-cond])]
+        (gc/and-conds [north-cond
                        south-cond
-                       (qm/or-conds [am-conds non-am-conds])])))))
+                       (gc/or-conds [am-conds non-am-conds])])))))
 
 (def orbit-param-fields
   "The collection fields that describe the orbit as used in orbital back tracking."
@@ -74,7 +75,7 @@
   (let [{:keys [query-collection-ids]} context
         orbit-params-cond (qm/->ExistCondition :swath-width)
         orbit-params-cond (if (seq query-collection-ids)
-                            (qm/and-conds [orbit-params-cond
+                            (gc/and-conds [orbit-params-cond
                                            (qm/string-conditions
                                              :concept-id
                                              query-collection-ids
@@ -143,7 +144,7 @@
 (defn- range->numeric-range-intersection-condition
   "Create a condtion to test for a numberic range intersection with multiple ranges."
   [ranges]
-  (qm/or-conds
+  (gc/or-conds
     (map (fn [[start-lat end-lat]]
            (qm/numeric-range-intersection-condition
              :orbit-start-clat
@@ -155,7 +156,7 @@
 (defn- crossing-ranges->condition
   "Create a search condition for a given vector of crossing ranges."
   [crossing-ranges]
-  (qm/or-conds
+  (gc/or-conds
     (map (fn [[range-start range-end]]
            (qm/numeric-range-condition
              :orbit-asc-crossing-lon
@@ -184,18 +185,18 @@
                               {}
                               orbit-params)]
     (when (seq crossings-map)
-      (qm/or-conds
+      (gc/or-conds
         (map (fn [collection-id]
                (let [[asc-crossings desc-crossings] (get crossings-map collection-id)]
-                 (qm/and-conds
+                 (gc/and-conds
                    [(qm/string-condition :collection-concept-id collection-id, true, false)
-                    (qm/or-conds
+                    (gc/or-conds
                       [;; ascending
-                       (qm/and-conds
+                       (gc/and-conds
                          [asc-lat-conds
                           (crossing-ranges->condition asc-crossings)])
                        ;; descending
-                       (qm/and-conds
+                       (gc/and-conds
                          [desc-lat-conds
                           (crossing-ranges->condition desc-crossings)])])])))
              (keys crossings-map))))))
@@ -210,7 +211,7 @@
           mbr-cond (br->cond "mbr" (srl/shape->mbr shape))
           lr-cond (br->cond "lr" (srl/shape->lr shape))
           spatial-script (shape->script-cond shape)
-          spatial-cond (qm/and-conds [mbr-cond (qm/or-conds [lr-cond spatial-script])])]
+          spatial-cond (gc/and-conds [mbr-cond (gc/or-conds [lr-cond spatial-script])])]
       (if orbital-cond
-        (qm/or-conds [spatial-cond orbital-cond])
+        (gc/or-conds [spatial-cond orbital-cond])
         spatial-cond))))

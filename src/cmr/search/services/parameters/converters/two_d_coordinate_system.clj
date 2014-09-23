@@ -1,6 +1,7 @@
 (ns cmr.search.services.parameters.converters.two-d-coordinate-system
   "Contains functions for converting two d coordinate system search parameters to a query model."
   (:require [cmr.search.models.query :as qm]
+            [cmr.search.models.group-query-conditions :as gc]
             [cmr.search.services.parameters.conversion :as p]
             [clojure.string :as s]
             [cmr.common.services.errors :as errors])
@@ -71,4 +72,4 @@
   [concept-type param values options]
   (if (string? values)
     (two-d-param-str->condition values)
-    (qm/or-conds (map two-d-param-str->condition values))))
+    (gc/or-conds (map two-d-param-str->condition values))))

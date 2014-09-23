@@ -2,24 +2,25 @@
   (:require [clojure.test :refer :all]
             [cmr.search.test.models.helpers :refer :all]
             [cmr.search.services.parameters.conversion :as p]
-            [cmr.search.models.query :as q]))
+            [cmr.search.models.query :as q]
+            [cmr.search.models.group-query-conditions :as gc]))
 
 
 
 (deftest conds-test
   (testing "AND simplification"
     (testing "no conditions"
-      (is (thrown? Exception (q/and-conds []))))
+      (is (thrown? Exception (gc/and-conds []))))
 
     (testing "one condition"
       (is (= (q/string-condition :a 1)
-             (q/and-conds [(q/string-condition :a 1)]))))
+             (gc/and-conds [(q/string-condition :a 1)]))))
 
     (testing "multiple conditions"
       (let [conds [(q/string-condition :a 1)
                    (q/string-condition :b 2)]]
         (is (= (q/->ConditionGroup :and conds)
-               (q/and-conds conds)))))
+               (gc/and-conds conds)))))
 
     (testing "flattening nested"
       (is (= (and-conds (other 1) (other 2) (other 3))
@@ -38,17 +39,17 @@
 
   (testing "OR simplification"
     (testing "no conditions"
-      (is (thrown? Exception (q/or-conds []))))
+      (is (thrown? Exception (gc/or-conds []))))
 
     (testing "one condition"
       (is (= (q/string-condition :a 1)
-             (q/or-conds [(q/string-condition :a 1)]))))
+             (gc/or-conds [(q/string-condition :a 1)]))))
 
     (testing "multiple conditions"
       (let [conds [(q/string-condition :a 1)
                    (q/string-condition :b 2)]]
         (is (= (q/->ConditionGroup :or conds)
-               (q/or-conds conds)))))
+               (gc/or-conds conds)))))
 
     (testing "flattening nested"
       (is (= (or-conds (other 1) (other 2) (other 3))

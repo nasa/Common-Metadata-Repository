@@ -2,7 +2,8 @@
   "Contains functions for parsing and converting additionalAttributeNames aql element to query conditions"
   (:require [cmr.common.xml :as cx]
             [cmr.search.services.aql.conversion :as a]
-            [cmr.search.models.query :as qm]))
+            [cmr.search.models.query :as qm]
+            [cmr.search.models.group-query-conditions :as gc]))
 
 (defn- attrib-name-condition
   "Returns the AttributeNameCondition for the given attrib-name"
@@ -30,7 +31,7 @@
   [elem]
   (let [values (cx/strings-at-path elem [:value])
         conditions (map attrib-name-condition values)]
-    (qm/or-conds conditions)))
+    (gc/or-conds conditions)))
 
 ;; Converts additionalAttributeNames element into query condition, returns the converted condition
 (defmethod a/element->condition :attribute-name

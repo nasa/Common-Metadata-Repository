@@ -4,6 +4,7 @@
   (:require [clojure.string :as s]
             [cmr.search.data.complex-to-simple :as c2s]
             [cmr.search.models.query :as qm]
+            [cmr.search.models.group-query-conditions :as gc]
             [cmr.search.data.datetime-helper :as h]))
 
 (defmulti value-condition->value-filter
@@ -98,7 +99,7 @@
     (let [value-filter (value-condition->value-filter condition)
           attrib-name (:name condition)
           name-cond (qm/map->NumericValueCondition {:field :name :value attrib-name})
-          and-cond (qm/and-conds [name-cond value-filter])]
+          and-cond (gc/and-conds [name-cond value-filter])]
       (qm/nested-condition :attributes and-cond)))
 
   cmr.search.models.query.AttributeRangeCondition
@@ -107,5 +108,5 @@
     (let [range-filter (range-condition->range-filter condition)
           attrib-name (:name condition)
           name-cond (qm/map->NumericValueCondition {:field :name :value attrib-name})
-          and-cond (qm/and-conds [name-cond range-filter])]
+          and-cond (gc/and-conds [name-cond range-filter])]
       (qm/nested-condition :attributes and-cond))))

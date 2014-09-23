@@ -1,6 +1,7 @@
 (ns cmr.search.services.query-walkers.collection-query-resolver
   "Defines protocols and functions to resolve collection query conditions"
   (:require [cmr.search.models.query :as qm]
+            [cmr.search.models.group-query-conditions :as gc]
             [cmr.common.services.errors :as errors]
             [cmr.search.data.elastic-search-index :as idx]
             [cmr.search.data.complex-to-simple :as c2s]
@@ -76,7 +77,7 @@
         (reduce group-sub-condition-resolver
                 {:resolved-conditions [] :operation operation :context context}
                 conditions)]
-    [collection-ids (qm/group-conds operation resolved-conditions)]))
+    [collection-ids (gc/group-conds operation resolved-conditions)]))
 
 (defn resolve-collection-queries
   [context query]
@@ -107,12 +108,12 @@
     (let [conditions (map merge-collection-queries conditions)
           {coll-q-conds true others false} (group-by is-collection-query-cond? conditions)]
       (if (seq coll-q-conds)
-        (qm/group-conds
+        (gc/group-conds
           operation
           (concat [(qm/->CollectionQueryCondition
-                     (qm/group-conds operation (map :condition coll-q-conds)))]
+                     (gc/group-conds operation (map :condition coll-q-conds)))]
                   others))
-        (qm/group-conds operation others))))
+        (gc/group-conds operation others))))
 
 
   (resolve-collection-query
@@ -156,7 +157,7 @@
                       qm/match-none
 
                       collection-ids
-                      (qm/and-conds [(qm/string-conditions :concept-id collection-ids true) condition])
+                      (gc/and-conds [(qm/string-conditions :concept-id collection-ids true) condition])
 
                       :else
                       condition)
