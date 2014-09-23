@@ -69,7 +69,7 @@
                        :browse_flag browse-flag
                        :has_granules (when has-granules-map (get has-granules-map id false))
                        :granule_count (when granule-counts-map (get granule-counts-map id 0))
-                       :links (map atom/atom-link->attribute-map atom-links)
+                       :links (seq (map atom/atom-link->attribute-map atom-links))
                        :coordinate_system coordinate-system}
                       shape-result)]
     ;; remove entries with nil value
@@ -92,7 +92,7 @@
                        :data_center data-center
                        :time_start start-date
                        :time_end end-date
-                       :links (map atom/atom-link->attribute-map atom-links)
+                       :links (seq (map atom/atom-link->attribute-map atom-links))
                        :online_access_flag online-access-flag
                        :browse_flag browse-flag
                        :day_night_flag day-night
