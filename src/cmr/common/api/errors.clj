@@ -17,7 +17,7 @@
   [errors xml-format?]
   (let [content-type (if xml-format? "application/xml" "application/json")
         body (if xml-format?
-               (x/indent-str
+               (x/emit-str
                  (x/element :errors {}
                             (for [err errors]
                               (x/element :error {} err))))
