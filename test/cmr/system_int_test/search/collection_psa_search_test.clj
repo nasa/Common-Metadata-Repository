@@ -634,3 +634,57 @@
            [coll1 coll2] [{:type :dateRange :name "bravo" :value [20 nil]}]
            [coll1 coll2] [{:type :dateRange :name "bravo" :value [nil 24]}]
            [coll2] [{:type :dateRange :name "charlie" :value [44 45]}]))))
+
+(deftest range-validation-test
+  (testing "empty parameter range"
+    (are [attrib-value]
+         (= {:errors [(am/one-of-min-max-msg)]
+             :status 400}
+            (search/get-search-failure-xml-data
+              (search/find-refs :collection {"attribute[]" attrib-value})))
+
+         "string,alpha,,"
+         "int,alpha,,"
+         "float,alpha,,"
+         "date,alpha,,"
+         "time,alpha,,"
+         "datetime,alpha,,"))
+
+  (testing "invalid parameter range values"
+    (are [v min-n max-n]
+         (= {:errors [(am/max-must-be-greater-than-min-msg min-n max-n)]
+             :status 400}
+            (search/get-search-failure-xml-data
+              (search/find-refs :collection
+                                {"attribute[]" (format "%s,%s,%s" v (str min-n) (str max-n))})))
+
+         "string,alpha" "y" "m"
+         "int,alpha" 10 6
+         "float,alpha" 10.0 6.0))
+
+  (testing "empty aql range"
+    (are [attrib-value]
+         (= {:errors [(am/one-of-min-max-msg)]
+             :status 400}
+            (search/get-search-failure-xml-data
+              (search/find-refs-with-aql
+                :collection [{:additionalAttributes [attrib-value]}])))
+
+         {:type :range :name "alpha" :value [nil nil]}
+         {:type :intRange :name "alpha" :value [nil nil]}
+         {:type :floatRange :name "alpha" :value [nil nil]}
+         {:type :dateRange :name "alpha" :value [nil nil]}
+         {:type :timeRange :name "alpha" :value [nil nil]}))
+
+  (testing "invalid aql range values"
+    (are [attrib-value]
+         (= {:errors [(apply am/max-must-be-greater-than-min-msg (:value attrib-value))]
+             :status 400}
+            (search/get-search-failure-xml-data
+              (search/find-refs-with-aql
+                :collection [{:additionalAttributes [attrib-value]}])))
+
+         {:type :range :name "alpha" :value ["y" "m"]}
+         {:type :intRange :name "alpha" :value [10 6]}
+         {:type :floatRange :name "alpha" :value [10.0 6.0]})))
+
