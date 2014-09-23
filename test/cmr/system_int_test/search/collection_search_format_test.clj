@@ -377,3 +377,18 @@
                                   [:feed :entry])))
            "Foo" [nil]))))
 
+(deftest search-errors-in-json-or-xml-format
+  (testing "invalid format"
+    (is (= {:errors ["The mime type [application/echo11+xml] is not supported."],
+            :status 400}
+           (search/get-search-failure-xml-data
+             (search/find-concepts-in-format
+               "application/echo11+xml" :collection {})))))
+
+  (is (= {:status 400,
+          :errors ["Parameter [unsupported] was not recognized."]}
+         (search/find-refs :collection {:unsupported "dummy"})))
+
+  (is (= {:status 400,
+          :errors ["Parameter [unsupported] was not recognized."]}
+         (search/find-refs-json :collection {:unsupported "dummy"}))))
