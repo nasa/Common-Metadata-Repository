@@ -36,7 +36,7 @@
 
 ;; The version number here is for the sprint number. It will be incremented each sprint. The second
 ;; number is for which delivery of the version was given to ECHO for use.
-(defproject nasa-cmr/cmr-dev-system "0.12.6"
+(defproject nasa-cmr/cmr-dev-system "0.13.0"
   :description "Dev System combines together the separate microservices of the CMR into a single
                application to make it simpler to develop."
   :url "***REMOVED***projects/CMR/repos/cmr-dev-system/browse"
