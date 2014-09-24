@@ -5,7 +5,8 @@
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.data2.core :as d2c]))
+            [cmr.system-int-test.data2.core :as d2c]
+            [cmr.common.config :as cfg]))
 
 (def prov1-collection-count 10)
 (def prov2-collection-count 15)
@@ -22,6 +23,20 @@
   (index/refresh-elastic-index))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
+
+(deftest search-with-page-size-and-page-num
+  (create-collections)
+  (testing "Exceeded page depth (page-num * page-size)"
+    (let [limit (cfg/config-value :paging-depth-limit 1000000)
+          page-size 10
+          page-num (int (+ (/ limit page-size) 1))]
+      (let [res (search/find-refs :collection
+                                  {:page_size page-size
+                                   :page-num page-num})
+            status (:status res)
+            errors (:errors res)]
+        (is (= 400 status))
+        (is (re-matches #"The paging depth \(page_num \* page_size\) of \[\d*?\] exceeds the limit of \d*?.*?" (first errors)))))))
 
 (deftest search-with-page-size
   (create-collections)
@@ -43,6 +58,7 @@
     (try
       (search/find-refs :collection {:page_size -1})
       (catch clojure.lang.ExceptionInfo e
+        (println "OK>..........")
         (let [status (get-in (ex-data e) [:object :status])
               body (get-in (ex-data e) [:object :body])]
           (is (= 400 status))
@@ -81,8 +97,8 @@
     (index/refresh-elastic-index)
     (testing "Search with page_num."
       (let [{:keys [refs]} (search/find-refs :collection {:provider "PROV1"
-                                                      :page_size 5
-                                                      :page_num 2})]
+                                                          :page_size 5
+                                                          :page_num 2})]
         (is (= (map :short-name [col5 col4 col3 col2 col1])
                (map :short-name refs)))))
     (testing "page_num less than one."
