@@ -6,7 +6,7 @@
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.core :as d2c]
-            [cmr.common.config :as cfg]))
+            [cmr.search.services.parameters.parameter-validation :as pm]))
 
 (def prov1-collection-count 10)
 (def prov2-collection-count 15)
@@ -27,7 +27,7 @@
 (deftest search-with-page-size-and-page-num
   (create-collections)
   (testing "Exceeded page depth (page-num * page-size)"
-    (let [limit (cfg/config-value :paging-depth-limit 1000000)
+    (let [limit pm/search-paging-depth-limit
           page-size 10
           page-num (int (+ (/ limit page-size) 1))]
       (let [resp (search/find-refs :collection
