@@ -27,9 +27,8 @@
 (deftest search-with-page-size-and-page-num
   (create-collections)
   (testing "Exceeded page depth (page-num * page-size)"
-    (let [limit pm/search-paging-depth-limit
-          page-size 10
-          page-num (int (+ (/ limit page-size) 1))]
+    (let [page-size 10
+          page-num 1000000000]
       (let [resp (search/find-refs :collection
                                    {:page_size page-size
                                     :page-num page-num})
