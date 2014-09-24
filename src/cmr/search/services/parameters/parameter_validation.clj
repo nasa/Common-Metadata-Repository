@@ -19,7 +19,12 @@
             [camel-snake-kebab :as csk]
             [cmr.spatial.codec :as spatial-codec]
             [clj-time.core :as t])
-  (:import clojure.lang.ExceptionInfo))
+  (:import clojure.lang.ExceptionInfo
+           java.lang.Integer))
+
+(def search-paging-depth-limit
+  "The maximum value for page-num * page-size"
+  (cfg/config-value :search-paging-depth-limit 1000000 #(Integer. %)))
 
 (def case-sensitive-params
   "Parameters which do not allow option with ingnore_case set to true."
@@ -82,16 +87,15 @@
   "Validates that the paging depths (page-num * page-size) does not exceed a set limit."
   [concept-type params]
   (try
-    (let [limit (cfg/config-value :search-paging-depth-limit 1000000)
+    (let [limit search-paging-depth-limit
           page-size (get-ivalue-from-params params :page-size)
           page-num (get-ivalue-from-params params :page-num)]
-      (if (and page-size page-num)
-        (if (> (* page-size page-num) limit)
-          [(format "The paging depth (page_num * page_size) of [%d] exceeds the limit of %d."
-                   (* page-size page-num)
-                   limit)]
-          [])
-        []))
+      (when (and page-size
+                 page-num
+                 (> (* page-size page-num) limit))
+        [(format "The paging depth (page_num * page_size) of [%d] exceeds the limit of %d."
+                 (* page-size page-num)
+                 limit)]))
     (catch NumberFormatException e
       ;; This should be handled separately by page-size and page-num validiation
       [])))
