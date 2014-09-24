@@ -11,7 +11,6 @@
 (defn set-current-time!
   "Sets the current time. This should only be used for testing."
   [t]
-  (warn "Current time set to" t)
   (reset! time-override t))
 
 (defn freeze-time!
@@ -22,8 +21,7 @@
 (defn advance-time!
   "Increases the time override by a number of seconds"
   [num-secs]
-  (swap! time-override t/plus (t/seconds num-secs))
-  (warn "Current time set to" @time-override))
+  (swap! time-override t/plus (t/seconds num-secs)))
 
 (defn clear-current-time!
   "Clears the current time if one was set."
