@@ -1,5 +1,6 @@
 (ns cmr.ingest.services.ingest
   (:require [clj-time.core :as t]
+            [cmr.common.time-keeper :as tk]
             [cmr.transmit.metadata-db :as mdb]
             [cmr.ingest.data.indexer :as indexer]
             [cmr.ingest.services.messages :as msg]
@@ -49,7 +50,7 @@
   [context concept]
   (v/validate concept)
   (let [concept (add-extra-fields context concept)
-        time-to-compare (t/plus (t/now) (t/minutes 1))
+        time-to-compare (t/plus (tk/now) (t/minutes 1))
         delete-time (get-in concept [:extra-fields :delete-time])
         delete-time (if delete-time (p/parse-datetime delete-time) nil)]
     (if (and delete-time (t/after? time-to-compare delete-time))

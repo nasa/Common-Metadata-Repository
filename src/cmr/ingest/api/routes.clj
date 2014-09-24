@@ -28,6 +28,9 @@
     (POST "/reindex-collection-permitted-groups" {:keys [headers request-context]}
       (jobs/reindex-collection-permitted-groups request-context)
       {:status 200})
+    (POST "/cleanup-expired-collections" {:keys [headers request-context]}
+      (jobs/cleanup-expired-collections request-context)
+      {:status 200})
     (context "/providers/:provider-id" [provider-id]
       (context ["/collections/:native-id" :native-id #".*$"] [native-id]
         (PUT "/" {:keys [body content-type headers request-context]}

@@ -11,6 +11,10 @@
   "The number of seconds between jobs to check for ACL changes and reindex collections."
   3600)
 
+(def CLEANUP_EXPIRED_COLLECTIONS_INTERVAL
+  "The number of seconds between jobs to cleanup expired collections"
+  3600)
+
 (defn acls->provider-id-hashes
   "Converts acls to a map of provider-ids to hashes of the ACLs."
   [acls]
@@ -43,7 +47,26 @@
   (let [context {:system system}]
     (reindex-collection-permitted-groups context)))
 
+(defn cleanup-expired-collections
+  "Finds collections that have expired (have a delete date in the past) and removes them from
+  metadata db and the index"
+  [context]
+  (doseq [provider-id (mdb/get-providers context)]
+    (info "Cleaning up expired collections for provider" provider-id)
+    (when-let [concept-ids (mdb/get-expired-collection-concept-ids context provider-id)]
+      (info "Removing expired collections:" (pr-str concept-ids))
+      (doseq [concept-id concept-ids]
+        (let [revision-id (mdb/delete-concept context concept-id)]
+          (indexer/delete-concept-from-index context concept-id revision-id))))))
+
+(def-stateful-job CleanupExpiredCollections
+  [ctx system]
+  (let [context {:system system}]
+    (cleanup-expired-collections context)))
+
 (def jobs
   "A list of jobs for ingest"
   [{:job-type ReindexCollectionPermittedGroups
-    :interval REINDEX_COLLECTION_PERMITTED_GROUPS_INTERVAL}])
+    :interval REINDEX_COLLECTION_PERMITTED_GROUPS_INTERVAL}
+   {:job-type CleanupExpiredCollections
+    :interval CLEANUP_EXPIRED_COLLECTIONS_INTERVAL}])
