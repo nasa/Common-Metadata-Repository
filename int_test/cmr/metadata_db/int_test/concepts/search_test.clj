@@ -6,9 +6,19 @@
             [cheshire.core :as cheshire]
             [clojure.data]
             [cmr.metadata-db.int-test.utility :as util]
-            [cmr.metadata-db.services.messages :as msg]))
+            [cmr.metadata-db.services.messages :as msg]
+            [clj-time.core :as t]))
 
 (use-fixtures :each (util/reset-database-fixture "PROV1" "PROV2"))
+
+(comment
+
+  (do
+    (util/reset-database)
+    (util/save-provider "PROV1")
+    (util/save-provider "PROV2"))
+
+)
 
 (defn concepts-for-comparison
   "Removes revision-date from concepts so they can be compared."
@@ -139,6 +149,33 @@
              ;; Searching with an unknown provider id should just find nothing
              "PROVNONE" et1)))))
 
+(deftest get-expired-collections-concept-ids
+  (let [time-now (t/now)
+        make-coll-expiring-in (fn [prov uniq-num num-revisions num-secs]
+                                (let [expire-time (t/plus time-now (t/seconds num-secs))]
+                                  (util/create-and-save-collection
+                                    prov uniq-num num-revisions
+                                    {:delete-time (str expire-time)})))
+        ;; Expired 60 seconds ago
+        coll1 (make-coll-expiring-in "PROV1" 1 1 -60)
+        coll2 (make-coll-expiring-in "PROV1" 2 2 -60)
+        ;; Expires in the far future
+        coll3 (make-coll-expiring-in "PROV1" 3 1 5000)
+        ;; Doesn't have an expiration date
+        coll4 (util/create-and-save-collection "PROV1" 4 1)
+        ;; Won't find because it's in another provider
+        coll5 (make-coll-expiring-in "PROV2" 5 1 -60)]
+
+    (testing "invalid or missing provider id"
+      (is (= {:status 404, :errors ["Providers with provider-ids [PROVNONE] do not exist."]}
+             (util/get-expired-collection-concept-ids "PROVNONE")))
+
+      (is (= {:status 400, :errors ["A provider parameter was required but was not provided."]}
+             (util/get-expired-collection-concept-ids nil))))
+
+    (is (= {:status 200
+            :concept-ids (map :concept-id [coll1 coll2])}
+           (util/get-expired-collection-concept-ids "PROV1")))))
 
 (deftest find-collections-with-invalid-parameters
   (testing "missing parameters"

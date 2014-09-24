@@ -15,6 +15,7 @@
             [cmr.system-trace.http :as http-trace]
             [cmr.metadata-db.services.concept-service :as concept-service]
             [cmr.metadata-db.services.provider-service :as provider-service]
+            [cmr.metadata-db.services.messages :as msg]
             [inflections.core :as inf]))
 
 ;;; service proxies
@@ -61,9 +62,19 @@
      :body (to-json concepts params)
      :headers json-header}))
 
+(defn- get-expired-collections-concept-ids
+  "Gets collections that have gone past their expiration date."
+  [context params]
+  (let [provider (:provider params)]
+    (when-not provider
+      (serv-err/throw-service-error :bad-request (msg/provider-id-parameter-required)))
+    {:status 200
+     :body (to-json (concept-service/get-expired-collections-concept-ids context provider) params)
+     :headers json-header}))
+
 (defn- find-concepts
   "Find concepts for a concept type with specific params"
-  [context params params]
+  [context params]
   (let [params (update-in params [:concept-type] (comp keyword inf/singular))
         concepts (concept-service/find-concepts context params)]
     {:status 200
@@ -149,14 +160,16 @@
     (context "/concepts" []
 
       (context "/search" []
-        ;; get multiple concpts by concept-id and revision-id
+        ;; get multiple concepts by concept-id and revision-id
         (POST "/concept-revisions" {:keys [params request-context body]}
           (get-concepts request-context params body))
         (POST "/latest-concept-revisions" {:keys [params request-context body]}
           (get-latest-concepts request-context params body))
+        (GET "/expired-collections" {:keys [params request-context]}
+          (get-expired-collections-concept-ids request-context params))
         ;; Find concepts by parameters
         (GET "/:concept-type" {:keys [params request-context]}
-          (find-concepts request-context params params)))
+          (find-concepts request-context params)))
 
       ;; saves a concept
       (POST "/" {:keys [request-context params body]}
@@ -169,7 +182,7 @@
       (DELETE "/:concept-id" {{:keys [concept-id] :as params} :params
                               request-context :request-context}
         (delete-concept request-context params concept-id nil))
-      ;; remove a specific revision of a concpet form the database
+      ;; remove a specific revision of a concept form the database
       (DELETE "/force-delete/:concept-id/:revision-id" {{:keys [concept-id revision-id] :as params} :params
                                                         request-context :request-context}
         (force-delete request-context params concept-id revision-id))

@@ -38,17 +38,20 @@
 
 (defn collection-concept
   "Creates a collection concept"
-  [provider-id uniq-num]
-  {:concept-type :collection
-   :native-id (str "native-id " uniq-num)
-   :provider-id provider-id
-   :metadata (str "xml here " uniq-num)
-   :format "application/echo10+xml"
-   :deleted false
-   :extra-fields {:short-name (str "short" uniq-num)
-                  :version-id (str "V" uniq-num)
-                  :entry-title (str "dataset" uniq-num)
-                  :delete-time nil}})
+  ([provider-id uniq-num]
+   (collection-concept provider-id uniq-num {}))
+  ([provider-id uniq-num extra-fields]
+   {:concept-type :collection
+    :native-id (str "native-id " uniq-num)
+    :provider-id provider-id
+    :metadata (str "xml here " uniq-num)
+    :format "application/echo10+xml"
+    :deleted false
+    :extra-fields (merge {:short-name (str "short" uniq-num)
+                          :version-id (str "V" uniq-num)
+                          :entry-title (str "dataset" uniq-num)
+                          :delete-time nil}
+                         extra-fields)}))
 
 (defn granule-concept
   "Creates a granule concept"
@@ -170,7 +173,6 @@
         :concepts (parse-concepts response)}
        (assoc (parse-errors response) :status status)))))
 
-
 (defn find-concepts
   "Make a get to retrieve concepts by parameters for a specific concept type"
   [concept-type params]
@@ -183,6 +185,20 @@
     (if (= status 200)
       {:status status
        :concepts (parse-concepts response)}
+      (assoc (parse-errors response) :status status))))
+
+(defn get-expired-collection-concept-ids
+  "Make a get to retrieve expired collection concept ids."
+  [provider-id]
+  (let [response (client/get (str concepts-url "search/expired-collections")
+                             {:query-params (when provider-id {:provider provider-id})
+                              :accept :json
+                              :throw-exceptions false
+                              :connection-manager (conn-mgr)})
+        status (:status response)]
+    (if (= status 200)
+      {:status status
+       :concept-ids (cheshire/parse-string (:body response))}
       (assoc (parse-errors response) :status status))))
 
 (defn save-concept
@@ -240,7 +256,9 @@
   ([provider-id uniq-num]
    (create-and-save-collection provider-id uniq-num 1))
   ([provider-id uniq-num num-revisions]
-   (let [concept (collection-concept provider-id uniq-num)
+   (create-and-save-collection provider-id uniq-num num-revisions {}))
+  ([provider-id uniq-num num-revisions extra-fields]
+   (let [concept (collection-concept provider-id uniq-num extra-fields)
          _ (dotimes [n (dec num-revisions)] (save-concept concept))
          {:keys [concept-id revision-id]} (save-concept concept)]
      (assoc concept :concept-id concept-id :revision-id revision-id))))

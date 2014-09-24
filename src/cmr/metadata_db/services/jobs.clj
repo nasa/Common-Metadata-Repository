@@ -6,7 +6,7 @@
             [cmr.metadata-db.services.concept-service :as srv]))
 
 (def EXPIRED_CONCEPT_CLEANUP_INTERVAL
-  "The number of seconds between jobs run to cleanup expired granules and collections"
+  "The number of seconds between jobs run to cleanup expired granules"
   (* 3600 5))
 
 (def OLD_REVISIONS_CONCEPT_CLEANUP_INTERVAL
@@ -17,7 +17,8 @@
   [ctx system]
   (let [db (:db system)]
     (doseq [provider (provider-db/get-providers db)]
-      (srv/delete-expired-concepts db provider :collection)
+      ;; Only granule are cleaned up here. Ingest cleans up expired collections because it
+      ;; must remove granules from the index that belong to the collections.
       (srv/delete-expired-concepts db provider :granule))))
 
 (def-stateful-job OldRevisionConceptCleanupJob

@@ -33,10 +33,10 @@
           (is (= 200 status))
           (is (= 3 (:revision-id concept))))))
 
-    (testing "get-non-existant-concept-test"
-      (testing "Non existant collection id"
+    (testing "get-non-existent-concept-test"
+      (testing "Non existent collection id"
         (is (= 404 (:status (util/get-concept-by-id "C123-PROV1")))))
-      (testing "Non existant provider id"
+      (testing "Non existent provider id"
         (is (= 404 (:status (util/get-concept-by-id "C1000000000-PROV12"))))))
 
     (testing "get-concept-with-version-test"

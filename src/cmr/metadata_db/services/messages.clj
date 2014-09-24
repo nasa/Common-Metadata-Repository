@@ -68,6 +68,9 @@
 (defn maximum-save-attempts-exceeded [error-msg]
   (str "Reached limit of attempts to save concept - giving up. Potential cause: " error-msg))
 
+(defn provider-id-parameter-required []
+  "A provider parameter was required but was not provided.")
+
 (defn provider-does-not-exist [provider-id]
   (format "Provider with provider-id [%s] does not exist."
           provider-id))

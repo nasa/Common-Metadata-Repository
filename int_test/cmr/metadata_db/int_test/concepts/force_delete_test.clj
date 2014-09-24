@@ -27,7 +27,7 @@
     (testing "later revisions still available"
       (is (util/verify-concept-was-saved (assoc coll :revision-id 3)))
       (is (util/verify-concept-was-saved (assoc coll :revision-id 4))))
-    (testing "delete non-existant revision gets 404"
+    (testing "delete non-existent revision gets 404"
       (is (= 404 (:status (util/force-delete-concept concept-id 2))))
       (is (= 404 (:status (util/force-delete-concept concept-id 22)))))))
 
@@ -47,7 +47,7 @@
     (testing "later revisions still available"
       (is (util/verify-concept-was-saved (assoc gran :revision-id 3)))
       (is (util/verify-concept-was-saved (assoc gran :revision-id 4))))
-    (testing "delete non-existant revision gets 404"
+    (testing "delete non-existent revision gets 404"
       (is (= 404 (:status (util/force-delete-concept concept-id 2))))
       (is (= 404 (:status (util/force-delete-concept concept-id 22)))))))
 

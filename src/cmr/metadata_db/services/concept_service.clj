@@ -198,7 +198,7 @@
           {}
           concept-ids))
 
-(defn- filter-non-existant-providers
+(defn- filter-non-existent-providers
   "Removes providers that don't exist from a map of provider-ids to values."
   [db provider-id-map]
   (let [existing-provider-ids (set (provider-db/get-providers db))]
@@ -215,7 +215,7 @@
         ;; Split the tuples so they can be requested separately for each provider and concept type
         split-tuples-map (split-concept-id-revision-id-tuples concept-id-revision-id-tuples)
         split-tuples-map (if allow-missing?
-                           (filter-non-existant-providers db split-tuples-map)
+                           (filter-non-existent-providers db split-tuples-map)
                            (do
                              (validate-providers-exist db (keys split-tuples-map))
                              split-tuples-map))]
@@ -258,7 +258,7 @@
         ;; Split the concept-ids so they can be requested separately for each provider and concept type
         split-concept-ids-map (split-concept-ids concept-ids)
         split-concept-ids-map (if allow-missing?
-                                (filter-non-existant-providers db split-concept-ids-map)
+                                (filter-non-existent-providers db split-concept-ids-map)
                                 (do
                                   (validate-providers-exist db (keys split-concept-ids-map))
                                   split-concept-ids-map))]
@@ -298,6 +298,13 @@
       (c/find-concepts db params)
       ;; the provider doesn't exist
       [])))
+
+(deftracefn get-expired-collections-concept-ids
+  "Returns the concept ids of expired collections in the provider."
+  [context provider-id]
+  (let [db (util/context->db context)]
+    (validate-providers-exist db [provider-id])
+    (map :concept-id (c/get-expired-concepts db provider-id :collection))))
 
 (deftracefn save-concept
   "Store a concept record and return the revision."
