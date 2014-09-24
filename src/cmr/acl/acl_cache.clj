@@ -4,6 +4,7 @@
   the acls."
   (:require [cmr.common.services.errors :as errors]
             [clj-time.core :as t]
+            [cmr.common.time-keeper :as tk]
             [cmr.common.jobs :refer [defjob]]
             [cmr.transmit.echo.acls :as echo-acls]
             [cmr.common.log :as log :refer (debug info warn error)]))
@@ -36,7 +37,7 @@
   [context]
   (let [acl-cache-atom (context->acl-cache context)]
     (reset! acl-cache-atom {:acls (echo-acls/get-acls-by-type context "CATALOG_ITEM")
-                            :last-updated (t/now)})))
+                            :last-updated (tk/now)})))
 
 (defn get-acls
   "Gets the current cached acls."
