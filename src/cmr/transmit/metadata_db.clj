@@ -147,6 +147,24 @@
         (format "Collection search failed. status: %s body: %s"
                 status body)))))
 
+(defn get-expired-collection-concept-ids
+  "Searches metadata db for collections in a provider that have expired and returns their concept ids."
+  [context provider-id]
+  (let [conn (config/context->app-connection context :metadata-db)
+        request-url (str (conn/root-url conn) "/concepts/search/expired-collections")
+        response (client/get request-url {:accept :json
+                                          :query-params {:provider provider-id}
+                                          :headers (ch/context->http-headers context)
+                                          :throw-exceptions false
+                                          :connection-manager (conn/conn-mgr conn)})
+        {:keys [status body]} response]
+    (case status
+      200 (cheshire/decode body true)
+      ;; default
+      (errors/internal-error!
+        (format "Collection search failed. status: %s body: %s"
+                status body)))))
+
 (defn get-providers
   "Returns the list of provider ids configured in the metadata db"
   [context]
