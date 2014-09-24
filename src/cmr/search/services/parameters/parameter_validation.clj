@@ -15,6 +15,7 @@
             [cmr.search.services.messages.orbit-number-messages :as on-msg]
             [cmr.search.services.messages.common-messages :as msg]
             [cmr.search.data.messages :as d-msg]
+            [cmr.common.config :as cfg]
             [camel-snake-kebab :as csk]
             [cmr.spatial.codec :as spatial-codec]
             [clj-time.core :as t])
@@ -40,37 +41,60 @@
          (keys lp/param-aliases)
          [:options])))
 
+(defn- get-ivalue-from-params
+  "Get a value from the params as an Integer or nil value. Throws NumberFormatException
+  if the value cannot be converted to an Integer."
+  [params value-keyword]
+  (if-let [value-str (value-keyword params)]
+    (Integer. value-str)))
+
 (defn page-size-validation
   "Validates that the page-size (if present) is a number in the valid range."
   [concept-type params]
-  (if-let [page-size (:page-size params)]
-    (try
-      (let [page-size-i (Integer. page-size)]
-        (cond
-          (< page-size-i 0 )
-          ["page_size must be a number between 0 and 2000"]
+  (try
+    (if-let [page-size-i (get-ivalue-from-params params :page-size)]
+      (cond
+        (< page-size-i 0 )
+        ["page_size must be a number between 0 and 2000"]
 
-          (> page-size-i 2000)
-          ["page_size must be a number between 0 and 2000"]
+        (> page-size-i 2000)
+        ["page_size must be a number between 0 and 2000"]
 
-          :else
-          []))
-      (catch NumberFormatException e
-        ["page_size must be a number between 0 and 2000"]))
-    []))
+        :else
+        [])
+      [])
+    (catch NumberFormatException e
+      ["page_size must be a number between 0 and 2000"])))
 
 (defn page-num-validation
   "Validates that the page-num (if present) is a number in the valid range."
   [concept-type params]
-  (if-let [page-num (:page-num params)]
-    (try
-      (let [page-num-i (Integer. page-num)]
-        (if (> 1 page-num-i)
-          ["page_num must be a number greater than or equal to 1"]
-          []))
-      (catch NumberFormatException e
-        ["page_num must be a number greater than or equal to 1"]))
-    []))
+  (try
+    (if-let [page-num-i (get-ivalue-from-params params :page-num)]
+      (if (> 1 page-num-i)
+        ["page_num must be a number greater than or equal to 1"]
+        [])
+      [])
+    (catch NumberFormatException e
+      ["page_num must be a number greater than or equal to 1"])))
+
+(defn paging-depth-validation
+  "Validates that the paging depths (page-num * page-size) does not exceed a set limit."
+  [concept-type params]
+  (try
+    (let [limit (cfg/config-value :search-paging-depth-limit 1000000)
+          page-size (get-ivalue-from-params params :page-size)
+          page-num (get-ivalue-from-params params :page-num)]
+      (if (and page-size page-num)
+        (if (> (* page-size page-num) limit)
+          [(format "The paging depth (page_num * page_size) of [%d] exceeds the limit of %d."
+                   (* page-size page-num)
+                   limit)]
+          [])
+        []))
+    (catch NumberFormatException e
+      ;; This should be handled separately by page-size and page-num validiation
+      [])))
 
 (def concept-type->valid-sort-keys
   "A map of concept type to sets of valid sort keys"
@@ -440,6 +464,7 @@
   and return a list of errors."
   [page-size-validation
    page-num-validation
+   paging-depth-validation
    sort-key-validation
    unrecognized-params-validation
    unrecognized-params-in-options-validation
@@ -465,6 +490,7 @@
   They all accept parameters as an argument and return a list of errors."
   [page-size-validation
    page-num-validation
+   paging-depth-validation
    sort-key-validation
    unrecognized-aql-params-validation])
 

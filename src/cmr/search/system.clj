@@ -26,6 +26,9 @@
 (def search-public-host (cfg/config-value :search-public-host "localhost"))
 (def search-public-port (cfg/config-value :search-public-port 3003 transmit-config/parse-port))
 (def search-relative-root-url (cfg/config-value :search-relative-root-url ""))
+(def search-paging-depth-limit
+  "The maximum value for page-num * page-size"
+  (cfg/config-value :search-paging-depth-limit 1000000))
 
 (def search-public-conf
   {:protocol search-public-protocol
