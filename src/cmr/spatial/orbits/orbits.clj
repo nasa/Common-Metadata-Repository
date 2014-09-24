@@ -1,14 +1,11 @@
-(ns cmr.spatial.orbits.echo-orbits
-  "TODO"
+(ns cmr.spatial.orbits.orbits
+  "Useful constants and transformation for orbit parameters"
   (:require [cmr.spatial.math :refer :all]
             [cmr.common.services.errors :as errors]
             [primitive-math]
             [clj-time.core :as t]))
 
 (primitive-math/use-primitive-operators)
-
-(def ^:const ^double SOLAR_DAY_S
-  (* 24.0 3600.0))
 
 (comment
 
@@ -28,17 +25,21 @@
 )
 
 (defn angular-velocity-rad-s
+  "Returns the orbit's angular velocity in radians/second"
   ^double [orbit-parameters]
   (/ TAU (* 60.0 ^double (:period orbit-parameters))))
 
 (defn swath-width-rad
+  "Returns the orbit's swath width in radians"
   ^double [orbit-parameters]
   (/ (* ^double (:swath-width orbit-parameters) 1000.0) EARTH_RADIUS_METERS))
 
 (defn inclination-rad
+  "Returns the orbit's inclination in radians"
   ^double [orbit-parameters]
   (radians (:inclination-angle orbit-parameters)))
 
-(defn retrograde?
-  [orbit-parameters]
-  (> (radians (:inclination-angle orbit-parameters)) (/ PI 2.0)))
+(defn declination-rad
+  "Returns the orbit's declination in radians"
+  ^double [orbit-parameters]
+  (- ^double (inclination-rad orbit-parameters) (/ PI 2.0)))

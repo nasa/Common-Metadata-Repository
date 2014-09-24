@@ -16,6 +16,11 @@
                  ;; to detect when this library has been updated.
                  [jafama/jafama "2.1"]
 
+                 ;; Matrix multiplication
+                 [net.mikera/core.matrix "0.30.0"]
+                 ;; Fast vectors
+                 [net.mikera/vectorz-clj "0.25.0"]
+
                  ;; allows enable and disable when assertions run by jvm flags.
                  ;; Can skip assertions for better performance
                  [pjstadig/assertions "0.1.0"]
@@ -54,5 +59,3 @@
                         [criterium "0.4.3"]]
 
          :source-paths ["src" "dev" "test"]}})
-
-
