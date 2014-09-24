@@ -15,6 +15,7 @@
             [cmr.system-trace.core :refer [deftracefn]]
             [cmr.umm.core :as umm]
             [clj-time.core :as t]
+            [cmr.common.time-keeper :as tk]
             [cheshire.core :as json]))
 
 (defmulti concept->elastic-doc
@@ -167,7 +168,7 @@
                             (let [umm-concept (umm/parse-concept concept)
                                   delete-time (get-in umm-concept
                                                       [:data-provider-timestamps :delete-time])
-                                  ttl (when delete-time (t/in-millis (t/interval (t/now)
+                                  ttl (when delete-time (t/in-millis (t/interval (tk/now)
                                                                                  delete-time)))
                                   elastic-doc (concept->elastic-doc context concept umm-concept)
                                   elastic-doc (if ttl

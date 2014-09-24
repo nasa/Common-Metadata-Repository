@@ -2,6 +2,7 @@
   "Provide functions to index concept"
   (:require [clojure.string :as s]
             [clj-time.core :as t]
+            [cmr.common.time-keeper :as tk]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.concepts :as cs]
             [cmr.common.date-time-parser :as date]
@@ -23,7 +24,7 @@
                   delete-time (when delete-time-str
                                 (date/parse-datetime delete-time-str))]
               (or (nil? delete-time)
-                  (t/after? delete-time (t/now)))))
+                  (t/after? delete-time (tk/now)))))
           batch))
 
 
@@ -60,7 +61,7 @@
         concept (meta-db/get-concept context concept-id revision-id)
         umm-concept (umm/parse-concept concept)
         delete-time (get-in umm-concept [:data-provider-timestamps :delete-time])
-        ttl (when delete-time (t/in-millis (t/interval (t/now) delete-time)))
+        ttl (when delete-time (t/in-millis (t/interval (tk/now) delete-time)))
         concept-index (idx-set/get-concept-index-name context concept-id revision-id concept)
         es-doc (es/concept->elastic-doc context concept umm-concept)]
     (when-not (and ttl (<= ttl 0))
