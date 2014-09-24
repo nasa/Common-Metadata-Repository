@@ -106,13 +106,17 @@
   [path-w-extension]
   (second (re-matches #"([^\.]+)(?:\..+)?" path-w-extension)))
 
+
+
 (defn- get-search-results-format
   "Returns the requested search results format parsed from headers or from the URL extension"
   ([path-w-extension headers default-mime-type]
    (get-search-results-format path-w-extension headers supported-mime-types default-mime-type))
   ([path-w-extension headers valid-mime-types default-mime-type]
    (let [ext-mime-type (path-w-extension->mime-type path-w-extension)
-         mime-type (or ext-mime-type (get headers "accept") default-mime-type)]
+         mime-type (or ext-mime-type
+                       (mt/mime-type-from-headers headers valid-mime-types)
+                       default-mime-type)]
      (mt/validate-request-mime-type mime-type valid-mime-types)
      ;; set the default format to xml
      (mt/mime-type->format mime-type default-mime-type))))
@@ -228,9 +232,9 @@
         _ (info (format "Searching for provider holdings from client %s in format %s with params %s."
                         (:client-id context) (:result-format params) (pr-str params)))
         [provider-holdings provider-holdings-formatted]
-         (query-svc/get-provider-holdings context params)
-         collection-count (count provider-holdings)
-         granule-count (reduce + (map :granule-count provider-holdings))]
+        (query-svc/get-provider-holdings context params)
+        collection-count (count provider-holdings)
+        granule-count (reduce + (map :granule-count provider-holdings))]
     {:status 200
      :headers {CONTENT_TYPE_HEADER (str (mt/format->mime-type (:result-format params)) "; charset=utf-8")
                CMR_COLLECTION_COUNT_HEADER (str collection-count)
