@@ -157,9 +157,9 @@
                                   (util/create-and-save-collection
                                     prov uniq-num num-revisions
                                     {:delete-time (str expire-time)})))
-        ;; Expired 60 seconds ago
-        coll1 (make-coll-expiring-in "PROV1" 1 1 -60)
-        coll2 (make-coll-expiring-in "PROV1" 2 2 -60)
+        ;; Expired 6000 seconds ago.
+        coll1 (make-coll-expiring-in "PROV1" 1 1 -6000)
+        coll2 (make-coll-expiring-in "PROV1" 2 2 -6000)
         ;; Expires in the far future
         coll3 (make-coll-expiring-in "PROV1" 3 1 5000)
         ;; Doesn't have an expiration date
