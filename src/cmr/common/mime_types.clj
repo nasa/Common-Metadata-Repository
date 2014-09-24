@@ -1,6 +1,7 @@
 (ns cmr.common.mime-types
   "Provides functions for handling mime types."
   (:require [pantomime.media :as mt]
+            [clojure.string :as str]
             [cmr.common.services.errors :as errors]))
 
 (def base-mime-type-to-format
@@ -42,6 +43,18 @@
          (get base-mime-type-to-format (base-mime-type default-mime-type)))
      (get base-mime-type-to-format (base-mime-type default-mime-type)))))
 
+(defn mime-type-from-headers
+  "Try to get a supported mime-type from the 'accept' header."
+  [headers supported-mime-types]
+  (let [orig-mime-type-str (get headers "accept")
+        ;; Strip out any semicolon clauses
+        mime-type-str (when orig-mime-type-str
+                        (str/replace orig-mime-type-str  #";.*?(,|$)" "$1"))
+        ;; Split mime-type string on commas
+        mime-types (when mime-type-str (str/split (str/lower-case mime-type-str), #"[,]"))
+        first-supported-mime-type (some (set mime-types) supported-mime-types)]
+    (or first-supported-mime-type orig-mime-type-str)))
+
 (defn validate-request-mime-type
   "Validates the requested mime type is supported."
   [mime-type supported-types]
@@ -52,6 +65,6 @@
 (defn get-request-format
   "Returns the requested format parsed from headers"
   [headers supported-types]
-  (let [mime-type (get headers "accept")]
+  (let [mime-type (mime-type-from-headers headers supported-types)]
     (validate-request-mime-type mime-type supported-types)
     (mime-type->format mime-type)))
