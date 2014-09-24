@@ -15,7 +15,7 @@
 
 (def system nil)
 
-(defn tunnel-system
+(defn tunnel-system-wl
   "Allows tunneling the search to a indexer and elasticsearch running on a different system"
   []
   ;; workload can be tunnelled by running these
@@ -35,10 +35,32 @@
   (cfg/set-config-value! :echo-system-token "XXXXX")
   (cfg/set-config-value! :metadata-db-password "XXXXX"))
 
+(defn tunnel-system-uat
+  "Allows tunneling the search to a indexer and elasticsearch running on a different system"
+  []
+  ;; UAT can be tunnelled by running these
+  ;; ssh -L4005:localhost:3005 cmr-uat-app1.dev.echo.nasa.gov
+  ;; ssh -L9213:localhost:9200 cmr-uat-elastic1.dev.echo.nasa.gov
+  ;; ssh -L1559:dbrac1node1.dev.echo.nasa.gov:1521 ptkernel4.dev.echo.nasa.gov
+  (cfg/set-config-value! :elastic-port 9213)
+  (cfg/set-config-value! :index-set-port 4005)
+
+  (cfg/set-config-value! :echo-rest-protocol "https")
+  (cfg/set-config-value! :echo-rest-host "api-test.echo.nasa.gov")
+  (cfg/set-config-value! :echo-rest-port 443)
+  (cfg/set-config-value! :echo-rest-context "/echo-rest")
+
+  (cfg/set-config-value! :db-url "thin:@localhost:1559/ptdb.dev.echo.nasa.gov")
+
+  ;; Set the following but do not commit them
+  (cfg/set-config-value! :echo-system-token "XXXXX")
+  (cfg/set-config-value! :metadata-db-password "XXXXX"))
+
 (defn create-system
   []
   ;; Uncomment this to tunnel to another system for testing.
-  ; (tunnel-system)
+  ; (tunnel-system-uat)
+  ; (tunnel-system-wl)
 
   ;; Set the default job start delay to avoid jobs kicking off with tests etc.
   (cfg/set-config-value! :default-job-start-delay (str (* 3 3600)))
