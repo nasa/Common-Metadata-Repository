@@ -7,7 +7,8 @@
             [clojure.data]
             [cmr.metadata-db.int-test.utility :as util]
             [cmr.metadata-db.services.messages :as msg]
-            [clj-time.core :as t]))
+            [clj-time.core :as t]
+            [cmr.common.time-keeper :as tk]))
 
 (use-fixtures :each (util/reset-database-fixture "PROV1" "PROV2"))
 
@@ -150,7 +151,7 @@
              "PROVNONE" et1)))))
 
 (deftest get-expired-collections-concept-ids
-  (let [time-now (t/now)
+  (let [time-now (tk/now)
         make-coll-expiring-in (fn [prov uniq-num num-revisions num-secs]
                                 (let [expire-time (t/plus time-now (t/seconds num-secs))]
                                   (util/create-and-save-collection

@@ -5,6 +5,7 @@
             [cmr.common.concepts :as cc]
             [cmr.common.lifecycle :as lifecycle]
             [clj-time.core :as t]
+            [cmr.common.time-keeper :as tk]
             [clj-time.format :as f]
             [cmr.common.date-time-parser :as p]
             [cmr.metadata-db.data.oracle.concepts]))
@@ -135,7 +136,7 @@
     {:pre [(:revision-id concept)]}
 
     (let [{:keys [concept-type provider-id concept-id revision-id]} concept
-          concept (assoc concept :revision-date (f/unparse (f/formatters :date-time) (t/now)))]
+          concept (assoc concept :revision-date (f/unparse (f/formatters :date-time) (tk/now)))]
       (if (or (nil? revision-id)
               (concepts/get-concept this concept-type provider-id concept-id revision-id))
         {:error :revision-id-conflict}
@@ -175,7 +176,7 @@
           (and (= provider (:provider-id c))
                (= concept-type (:concept-type c))
                (some? delete-time)
-               (t/before? delete-time (t/now)))))
+               (t/before? delete-time (tk/now)))))
       @concepts-atom))
 
   (get-tombstoned-concept-revisions
