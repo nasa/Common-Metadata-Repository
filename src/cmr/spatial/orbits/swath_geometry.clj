@@ -164,7 +164,7 @@
      interval-separation-s: the maximum desired time sparation in seconds
        between two edge points"
   ([orbit-parameters granule-orbit ocsds temporal]
-     (to-swath orbit-parameters granule-orbit ocsds temporal 60.0))
+     (to-swath orbit-parameters granule-orbit ocsds temporal 300.0))
   ([orbit-parameters granule-orbit ocsds temporal interval-separation-s]
      (let [ascending-crossing-time (ascending-crossing-time orbit-parameters granule-orbit ocsds)
            [start-time-s end-time-s] (temporal-offset-range temporal ascending-crossing-time)
