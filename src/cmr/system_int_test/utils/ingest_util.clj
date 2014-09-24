@@ -43,6 +43,12 @@
   (let [response (client/post (url/reindex-collection-permitted-groups-url))]
     (is (= 200 (:status response)))))
 
+(defn cleanup-expired-collections
+  "Tells ingest to run the cleanup-expired-collections job"
+  []
+  (let [response (client/post (url/cleanup-expired-collections-url))]
+    (is (= 200 (:status response)))))
+
 (defn ingest-concept
   "Ingest a concept and return a map with status, concept-id, and revision-id"
   [{:keys [metadata format concept-type concept-id revision-id provider-id native-id] :as concept}]

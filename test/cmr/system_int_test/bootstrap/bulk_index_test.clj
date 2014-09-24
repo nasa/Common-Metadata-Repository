@@ -9,27 +9,17 @@
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.core :as d]
             [cmr.common.config :as config]
-            [clj-time.core :as t]))
+            [clj-time.core :as t]
+            [cmr.system-int-test.utils.test-environment :as test-env]))
 
-(defn runnable-env?
-  []
-  (try
-    (some-> 'user/system-type
-            find-var
-            var-get
-            (= :external-dbs))
-    (catch Exception e
-      (.printStackTrace e)
-      (println "Exception indicates this is not a runnable environment")
-      false)))
+
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
 ;; This test runs bulk index with some concepts in mdb that are good, and some that are
 ;; deleted, and some that have not yet been deleted, but have an expired deletion date.
 (deftest bulk-index-with-some-deleted
-  ;; only run this test with the external db
-  (when (runnable-env?)
+  (test-env/only-with-real-database
     (let [;; saved but not indexed
           coll1 {:short-name "coll1" :entry-title "coll1"}
           umm1 (dc/collection coll1)
@@ -91,8 +81,7 @@
 ;; 7. Verifies that the concepts returned by search have the expected revision ids.
 
 (deftest bulk-index-after-ingest
-  ;; only run this test with the external db
-  (when (runnable-env?)
+  (test-env/only-with-real-database
     (let [collections (for [x (range 1 11)]
                         (let [cmap {:short-name (str "short-name" x)
                                     :entry-title (str "ttl" x)}

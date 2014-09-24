@@ -40,6 +40,11 @@
   (format "http://localhost:%s/reindex-collection-permitted-groups"
           (transmit-config/ingest-port)))
 
+(defn cleanup-expired-collections-url
+  []
+  (format "http://localhost:%s/cleanup-expired-collections"
+          (transmit-config/ingest-port)))
+
 (defn ingest-url
   [provider-id type native-id]
   (format "http://localhost:%s/providers/%s/%ss/%s"

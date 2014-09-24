@@ -7,6 +7,7 @@
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.granule :as dg]
             [clj-time.core :as t]
+            [cmr.common.time-keeper :as tk]
             [clj-time.format :as f]
             [cmr.system-int-test.data2.core :as d]))
 
@@ -14,9 +15,10 @@
 
 (defn now-time-str
   []
-  (f/unparse (f/formatters :date-time) (t/now)))
+  (f/unparse (f/formatters :date-time) (tk/now)))
 
 ;; Tests are commented out due to CMR-539.
+;; Note later: This can be fixed by the use of the new namespace cmr.common.time-keeper
 
 #_(deftest search-colls-by-revision-date
   (let [chkpt1-tz (now-time-str)

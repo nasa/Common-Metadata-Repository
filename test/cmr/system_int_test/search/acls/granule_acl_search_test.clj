@@ -140,7 +140,7 @@
         ;; Permitted by access value
         gran11 (make-gran 11 coll7 {:access-value 31})
 
-        ;; Not permitted. The collection has an access value that matches an acl with a non-existant
+        ;; Not permitted. The collection has an access value that matches an acl with a non-existent
         ;; collection
         gran12 (make-gran 12 coll8)
 

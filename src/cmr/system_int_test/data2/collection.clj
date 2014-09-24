@@ -48,7 +48,8 @@
 
 (defn data-provider-timestamps
   [attribs]
-  (let [attribs (select-keys attribs (util/record-fields DataProviderTimestamps))
+  (let [attribs (util/remove-nil-keys
+                  (select-keys attribs (util/record-fields DataProviderTimestamps)))
         attribs (into {} (for [[k v] attribs] [k (p/parse-datetime v)]))
         minimal-timestamps {:insert-time (d/make-datetime 10 false)
                             :update-time (d/make-datetime 18 false)}]
@@ -131,18 +132,6 @@
                          :title description
                          :mime-type mime-type}))))
 
-; (defn spatial
-;   ([gsr]
-;    (spatial gsr nil nil))
-;   ([gsr orbit-params]
-;    (spatial gsr orbit-params nil))
-;   ([gsr orbit-params sr & shapes]
-;    (c/map->SpatialCoverage {:granule-spatial-representation gsr
-;                             :orbit-parameters (when orbit-params
-;                                                 (c/map->OrbitParameters orbit-params))
-;                             :spatial-representation sr
-;                             :geometries (seq shapes)})))
-
 (defn spatial
   [attributes]
   (let [{:keys [gsr sr orbit geometries]} attributes]
@@ -151,7 +140,6 @@
                                                  (c/map->OrbitParameters orbit))
                              :spatial-representation sr
                              :geometries (seq geometries)})))
-
 
 (defn collection
   "Creates a collection"

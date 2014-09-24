@@ -437,7 +437,7 @@
            [gran5] gran5-cid {}
            ;; Multiple values
            [gran1 gran2 gran3 gran4 gran5] [gran1-cid gran2-cid gran3-cid gran4-cid gran5-cid] {}
-           ;; an non existant granule along with existing granules
+           ;; an non existent granule along with existing granules
            [gran1 gran5] [gran1-cid "G555-PROV1" "G555-NON_EXIST" gran5-cid] {}
            [] [gran1-cid gran5-cid] {:and true}))
     (testing "Search with wildcards in concept_id param not supported."
