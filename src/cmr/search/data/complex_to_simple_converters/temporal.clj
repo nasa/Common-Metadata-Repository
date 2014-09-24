@@ -3,6 +3,7 @@
   protocol for Temporal conditions."
 
   (:require [clj-time.core :as t]
+            [cmr.common.time-keeper :as tk]
             [cmr.search.models.query :as qm]
             [cmr.search.models.group-query-conditions :as gc]
             [cmr.search.data.complex-to-simple :as c2s]))
@@ -64,7 +65,7 @@
   so that it will be easier to convert into elastic json"
   [temporal]
   (let [{:keys [start-day end-day start-date end-date]} temporal
-        end-year (if end-date (t/year end-date) (t/year (t/now)))
+        end-year (if end-date (t/year end-date) (t/year (tk/now)))
         start-day (if start-day start-day 1)
         conditions (map
                      #(simple-conditions-for-year
