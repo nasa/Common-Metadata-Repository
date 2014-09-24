@@ -221,7 +221,7 @@
         _ (info (format "Search for concept with cmr-concept-id [%s]" concept-id))
         concept (query-svc/find-concept-by-id context result-format concept-id)]
     {:status 200
-     :headers {CONTENT_TYPE_HEADER "application/xml; charset=utf-8"}
+     :headers {CONTENT_TYPE_HEADER (str (:format concept) "; charset=utf-8")}
      :body (:metadata concept)}))
 
 (defn- get-provider-holdings
