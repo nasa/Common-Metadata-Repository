@@ -123,8 +123,10 @@
   "Take a list of tuples created from a legacy query string and group them together as attributes"
   [big-list]
   (reduce (fn [results item]
-            (if (= :name (first item))
-              ;; Put current set on results and start a new current set
+            (if (or (= 0 (count results))
+                    (and (= :name (first item))
+                         (:name (last results))))
+              ;; We create a new set when the results is empty or a new name comes in
               (conj results (merge {} item))
               ;; Update the current set (last set on results)
               (update-in results [(dec (count results))] checked-merge item)))
