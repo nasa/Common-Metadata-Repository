@@ -22,10 +22,9 @@
   (:import clojure.lang.ExceptionInfo
            java.lang.Integer))
 
-(defn search-paging-depth-limit
+(def search-paging-depth-limit
   "The maximum value for page-num * page-size"
-  []
-  (cfg/config-value :search-paging-depth-limit 1000000 #(Integer. %)))
+  (cfg/config-value-fn :search-paging-depth-limit 1000000 #(Integer. %)))
 
 (def case-sensitive-params
   "Parameters which do not allow option with ingnore_case set to true."
