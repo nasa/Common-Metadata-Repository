@@ -22,8 +22,9 @@
   (:import clojure.lang.ExceptionInfo
            java.lang.Integer))
 
-(def search-paging-depth-limit
+(defn search-paging-depth-limit
   "The maximum value for page-num * page-size"
+  []
   (cfg/config-value :search-paging-depth-limit 1000000 #(Integer. %)))
 
 (def case-sensitive-params
@@ -50,7 +51,7 @@
   "Get a value from the params as an Integer or nil value. Throws NumberFormatException
   if the value cannot be converted to an Integer."
   [params value-keyword]
-  (if-let [value-str (value-keyword params)]
+  (when-let [value-str (value-keyword params)]
     (Integer. value-str)))
 
 (defn page-size-validation
@@ -87,7 +88,7 @@
   "Validates that the paging depths (page-num * page-size) does not exceed a set limit."
   [concept-type params]
   (try
-    (let [limit search-paging-depth-limit
+    (let [limit (search-paging-depth-limit)
           page-size (get-ivalue-from-params params :page-size)
           page-num (get-ivalue-from-params params :page-num)]
       (when (and page-size
