@@ -45,7 +45,7 @@
                :port (index-set-port)}
    :bootstrap {:host (cfg/config-value :bootstrap-host "localhost")
                :port (bootstrap-port)}
-   :echo-rest {:protocol "http"
+   :echo-rest {:protocol (cfg/config-value :echo-rest-protocol "http")
                :host (cfg/config-value :echo-rest-host "localhost")
                :port (echo-rest-port)
                :context (cfg/config-value :echo-rest-context "")}})
