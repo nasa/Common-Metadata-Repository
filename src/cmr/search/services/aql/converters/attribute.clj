@@ -5,7 +5,9 @@
             [cmr.search.models.query :as qm]
             [cmr.search.models.group-query-conditions :as gc]
             [cmr.search.services.parameters.converters.attribute :as p]
-            [cmr.common.date-time-parser :as date-time-parser]))
+            [cmr.search.services.messages.attribute-messages :as msg]
+            [cmr.common.date-time-parser :as date-time-parser]
+            [cmr.common.services.errors :as errors]))
 
 (defn- attrib-value->condition
   [attrib-type attrib-name value]
@@ -109,17 +111,19 @@
     ;; There is no datetimeRange element for AdditionalAttribute in AQL,
     ;; the dateRange element covers both the date type and datetime type of AA.
     ;; This is different from parameter search of AA.
-    (gc/or-conds
-      [(qm/map->AttributeRangeCondition
-         {:type :datetime
-          :name attrib-name
-          :min-value start-date
-          :max-value stop-date})
-       (qm/map->AttributeRangeCondition
-         {:type :date
-          :name attrib-name
-          :min-value start-date
-          :max-value stop-date})])))
+    (if (or start-date stop-date)
+      (gc/or-conds
+        [(qm/map->AttributeRangeCondition
+           {:type :datetime
+            :name attrib-name
+            :min-value start-date
+            :max-value stop-date})
+         (qm/map->AttributeRangeCondition
+           {:type :date
+            :name attrib-name
+            :min-value start-date
+            :max-value stop-date})])
+      {:errors [(msg/one-of-min-max-msg)]})))
 
 (defmethod attrib-value-element->condition :time
   [attrib-name value-elem]
@@ -130,11 +134,13 @@
 (defmethod attrib-value-element->condition :timeRange
   [attrib-name value-elem]
   (let [[start-time stop-time] (parse-time-range-element value-elem)]
-    (qm/map->AttributeRangeCondition
-      {:type :time
-       :name attrib-name
-       :min-value start-time
-       :max-value stop-time})))
+    (if (or start-time stop-time)
+      (qm/map->AttributeRangeCondition
+        {:type :time
+         :name attrib-name
+         :min-value start-time
+         :max-value stop-time})
+      {:errors [(msg/one-of-min-max-msg)]})))
 
 (defn- additional-attribute-element->conditions
   "Returns the query conditions of the given additionalAttribute element"
@@ -142,6 +148,13 @@
   (let [attrib-name (cx/string-at-path additional-attribute [:additionalAttributeName])
         attrib-value (first (cx/content-at-path additional-attribute [:additionalAttributeValue]))]
     (attrib-value-element->condition attrib-name attrib-value)))
+
+(defn- raise-condition-errors
+  "Raise condition errors if there are validation errors in the conditions"
+  [conditions]
+  (let [validation-errors (mapcat :errors conditions)]
+    (when (seq validation-errors)
+      (errors/throw-service-errors :bad-request validation-errors))))
 
 ;; Converts additionalAttributes element into query condition, returns the converted condition
 (defmethod a/element->condition :attribute
@@ -152,6 +165,7 @@
         attrib-condition (if (= "OR" operator)
                            (gc/or-conds conditions)
                            (gc/and-conds conditions))]
+    (raise-condition-errors conditions)
     (if (= :granule concept-type)
       ;; Granule attribute queries will inherit values from their parent collections.
       (gc/or-conds [attrib-condition (qm/->CollectionQueryCondition attrib-condition)])
