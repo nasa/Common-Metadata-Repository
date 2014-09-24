@@ -93,6 +93,7 @@
            (d/refs-match?
              [g1-echo]
              (search/parse-reference-response
+               false
                (search/find-concepts-in-format
                  format-str
                  :granule
