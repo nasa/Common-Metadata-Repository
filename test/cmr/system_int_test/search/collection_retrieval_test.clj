@@ -56,6 +56,7 @@
       (let [response (search/get-concept-by-concept-id (:concept-id coll1)
                                                        {:query-params {:token user1-token}})
             parsed-collection (c/parse-collection (:body response))]
+        (is (= "application/echo10+xml; charset=utf-8" (get-in response [:headers "Content-Type"])))
         (is (= umm-coll parsed-collection))))
     (testing "ACL enforced on retrieval"
       (let [response (search/get-concept-by-concept-id (:concept-id coll1) {:query-params {:token guest-token}})]
