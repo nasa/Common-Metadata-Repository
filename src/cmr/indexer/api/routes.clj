@@ -41,6 +41,11 @@
       (index-svc/reset-indexes request-context)
       {:status 200})
 
+    ;; Sends an update to the index set to update mappings and index settings.
+    (POST "/update-indexes" {:keys [request-context]}
+      (index-svc/update-indexes request-context)
+      {:status 200})
+
     (POST "/clear-cache" {:keys [request-context]}
       (index-svc/clear-cache request-context)
       {:status 200})

@@ -43,32 +43,50 @@
       (error "System environment variables:" (pr-str (System/getenv)))
       (error "Configured collections with separate granule indexes:"
              (pr-str ((get-in context [:system :colls-with-separate-indexes-fn]))))
-      (errors/internal-error!
+      (errors/throw-service-error :bad-request
         "Discovered existing index set with index names different than expected."))))
 
 (defn create-indexes
   "Create elastic index for each index name"
   [context]
-  (let [index-set (idx-set/index-set context)
-        index-set-id (get-in index-set [:index-set :id])
+  (let [new-index-set (idx-set/index-set context)
+        index-set-id (get-in new-index-set [:index-set :id])
         existing-index-set (index-set/get-index-set context index-set-id)]
     (cond
       (nil? existing-index-set)
       (do
         (info "Index set does not exist so creating it.")
-        (idx-set/create context index-set))
+        (idx-set/create context new-index-set))
 
       ;; Compare them to see if they're the same
       (not= (update-in existing-index-set [:index-set] dissoc :concepts)
-            index-set)
+            new-index-set)
       (do
-        (info "Index set does not match so updating it. Expecting:" (pr-str index-set) "Actual:"
-              (pr-str existing-index-set))
-        (validate-index-names-not-changing context existing-index-set index-set)
-        (idx-set/update context index-set))
+        (warn "Index set does not match you may want to update it.")
+        (warn "Expecting:" (pr-str new-index-set))
+        (warn "Actual:" (pr-str existing-index-set)))
 
       :else
       (info "Index set exists and matches."))))
+
+(defn update-indexes
+  "Updates the indexes to make sure they have the latest mappings"
+  [context]
+
+  (let [new-index-set (idx-set/index-set context)
+        index-set-id (get-in new-index-set [:index-set :id])
+        existing-index-set (index-set/get-index-set context index-set-id)]
+
+    (when (= (update-in existing-index-set [:index-set] dissoc :concepts)
+            new-index-set)
+      (info "Existing index set:" (pr-str existing-index-set))
+      (info "New index set:" (pr-str new-index-set))
+      (errors/throw-service-error :bad-request "It appears the existing index set and the new index set are the same."))
+
+      (validate-index-names-not-changing context existing-index-set new-index-set)
+      (info "Updating the index set to " (pr-str new-index-set))
+      (idx-set/update context new-index-set)))
+
 
 (defn reset-es-store
   "Delete elasticsearch indexes and re-create them via index-set app. A nuclear option just for the development team."

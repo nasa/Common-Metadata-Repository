@@ -105,3 +105,10 @@
   (clear-cache context)
   (es/reset-es-store context)
   (clear-cache context))
+
+(deftracefn update-indexes
+  "Updates the index mappings and settings."
+  [context]
+  (clear-cache context)
+  (es/update-indexes context)
+  (clear-cache context))
