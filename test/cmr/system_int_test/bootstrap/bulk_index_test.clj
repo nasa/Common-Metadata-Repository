@@ -54,7 +54,18 @@
                      :provider-id "PROV1"
                      :native-id "coll3"
                      :short-name "coll3"}
-          coll3 (ingest/save-concept coll3-map)]
+          coll3 (ingest/save-concept coll3-map)
+          ;; a granule saved with a nil delete time but an expired delete time in the xml
+          gran1 {:granule-ur "gran1" :delete-time "2000-01-01T12:00:00Z"}
+          ummg1 (dg/granule coll1 gran1)
+          xmlg1 (echo10/umm->echo10-xml ummg1)
+          gran1-map {:concept-type :granule
+                     :provider-id "PROV1"
+                     :native-id "gran1"
+                     :format "application/echo10+xml"
+                     :metadata xmlg1
+                     :extra-fields {:parent-collection-id (:concept-id umm1)}}
+          gran1 (ingest/save-concept gran1-map)]
       (ingest/tombstone-concept coll2-tombstone)
 
       (index/bulk-index-provider "PROV1")
@@ -62,11 +73,12 @@
 
       (testing "Expired documents are not indexed during bulk indexing and deleted documents
                get deleted."
-               (are [search expected]
-                    (d/refs-match? expected (search/find-refs :collection search))
-                    {:concept-id (:concept-id coll1)} [umm1]
-                    {:concept-id (:concept-id coll2)} []
-                    {:concept-id (:concept-id coll3)} [])))))
+               (are [search concept-type expected]
+                    (d/refs-match? expected (search/find-refs concept-type search))
+                    {:concept-id (:concept-id coll1)} :collection [umm1]
+                    {:concept-id (:concept-id coll2)} :collection []
+                    {:concept-id (:concept-id coll3)} :collection []
+                    {:concept-id (:concept-id umm1)} :granule [])))))
 
 
 
