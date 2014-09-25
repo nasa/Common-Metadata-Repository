@@ -424,16 +424,18 @@
 (defn timeline-start-date-validation
   "Validates the timeline start date parameter"
   [concept-type params]
-  (if-let [start-date (:start-date params)]
-    (validate-date-time "Timeline parameter start_date" start-date)
-    ["start_date is a required parameter for timeline searches"]))
+  (let [start-date (:start-date params)]
+    (if-not (s/blank? start-date)
+      (validate-date-time "Timeline parameter start_date" start-date)
+      ["start_date is a required parameter for timeline searches"])))
 
 (defn timeline-end-date-validation
   "Validates the timeline end date parameter"
   [concept-type params]
-  (if-let [end-date (:end-date params)]
-    (validate-date-time "Timeline parameter end_date" end-date)
-    ["end_date is a required parameter for timeline searches"]))
+  (let [end-date (:end-date params)]
+    (if-not (s/blank? end-date)
+      (validate-date-time "Timeline parameter end_date" end-date)
+      ["end_date is a required parameter for timeline searches"])))
 
 (defn timeline-range-validation
   "Validates the start date is before the end date"
