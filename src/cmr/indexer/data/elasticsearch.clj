@@ -15,6 +15,7 @@
             [cmr.system-trace.core :refer [deftracefn]]
             [cmr.umm.core :as umm]
             [clj-time.core :as t]
+            [clj-time.format :as f]
             [cmr.common.time-keeper :as tk]
             [cheshire.core :as json]))
 
@@ -168,16 +169,28 @@
                             (let [umm-concept (umm/parse-concept concept)
                                   delete-time (get-in umm-concept
                                                       [:data-provider-timestamps :delete-time])
-                                  ttl (when delete-time (t/in-millis (t/interval (tk/now)
-                                                                                 delete-time)))
+                                  now (tk/now)
+                                  ttl (when delete-time
+                                        (if (t/after? delete-time now)
+                                          (t/in-millis (t/interval now delete-time))
+                                          0))
                                   elastic-doc (concept->elastic-doc context concept umm-concept)
                                   elastic-doc (if ttl
                                                 (assoc elastic-doc :_ttl ttl)
                                                 elastic-doc)]
-                              (merge elastic-doc {:_index index-name
-                                                  :_type type
-                                                  :_version revision-id
-                                                  :_version_type "external_gte"}))))
+                              (if (or (nil? ttl)
+                                        (> ttl 0))
+                                (merge elastic-doc {:_index index-name
+                                                   :_type type
+                                                   :_version revision-id
+                                                   :_version_type "external_gte"})
+                                (info
+                                  (str
+                                    "Skipping expired concept ["
+                                    concept-id
+                                    "] with delete-time ["
+                                    (f/unparse (f/formatters :date-time) delete-time)
+                                    "]"))))))
                         (catch Throwable e
                           (error e (str "Skipping failed catalog item. Exception trying to convert concept to elastic doc:"
                                         (pr-str concept))))))
