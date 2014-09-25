@@ -32,9 +32,9 @@
                     (let [metadata (-> concept
                                        ummc/parse-concept
                                        (ummc/umm->xml format))]
-                      (-> (select-keys concept [:concept-id :revision-id])
-                            (assoc :metadata metadata)
-                            (assoc :format (mt/format->mime-type format)))))]
+                      (assoc (select-keys concept [:concept-id :revision-id])
+                             :metadata metadata
+                             :format (mt/format->mime-type format))))]
     (if collection-concept-id
       (assoc value-map :collection-concept-id collection-concept-id)
       value-map)))

@@ -123,7 +123,7 @@
   "Take a list of tuples created from a legacy query string and group them together as attributes"
   [big-list]
   (reduce (fn [results item]
-            (if (or (= 0 (count results))
+            (if (or (empty? results)
                     (and (= :name (first item))
                          (:name (last results))))
               ;; We create a new set when the results is empty or a new name comes in
