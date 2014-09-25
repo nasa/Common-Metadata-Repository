@@ -28,13 +28,13 @@
         _ (when-not concept-format
             (errors/internal-error! "Did not recognize concept format" (pr-str (:format concept))))
         value-map (if (or (= format native-format) (= format concept-format))
-                    (select-keys concept [:metadata :concept-id :revision-id])
+                    (select-keys concept [:metadata :concept-id :revision-id :format])
                     (let [metadata (-> concept
                                        ummc/parse-concept
                                        (ummc/umm->xml format))]
                       (assoc (select-keys concept [:concept-id :revision-id])
-                             :metadata
-                             metadata)))]
+                             :metadata metadata
+                             :format (mt/format->mime-type format))))]
     (if collection-concept-id
       (assoc value-map :collection-concept-id collection-concept-id)
       value-map)))
