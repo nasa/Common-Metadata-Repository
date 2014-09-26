@@ -56,16 +56,16 @@
 
 (defn- ascending-crossing-time
   "Finds the ascending crossing date time given at the given longitude from orbit calculated spatial domains"
-  [orbit-parameters granule-orbit ocsds]
+  [orbit-parameters ascending-crossing-lon ocsds]
   ;; If the ascending equator crossing has an entry in the spatial domain, then we use the time
   ;; corresponding to it for the ascending equator crossing time, otherwise we assume that the first
   ;; equator crossing in the spatial domain is a descending crossing and the ascending equator
   ;; crossing occurred half period earlier.
-  (if-let [match (first (filter #(= (:ascending-crossing granule-orbit)
+  (if-let [match (first (filter #(= ascending-crossing-lon
                                     (:equator-crossing-longitude %))
                                 ocsds))]
-    (:equator-crossing-date-time match)
-    (t/minus (:equator-crossing-date-time (first ocsds))
+    (c/from-string (:equator-crossing-date-time match))
+    (t/minus (c/from-string (:equator-crossing-date-time (first ocsds)))
              (t/minutes (/ ^double (:period orbit-parameters) 2.0)))))
 
 (defn- to-unix-time
@@ -74,13 +74,13 @@
   (/ ^long (c/to-long datetime) 1000))
 
 (defn- temporal-offset-range
-  "Given a range temporal and an ascending crossing datetime, returns a list of
+  "Given a temporal range and an ascending crossing datetime, returns a list of
    two items containing the temporal start and end dates expressed as seconds
    offset from the ascending crossing time"
-  [temporal ascending-crossing-time]
-  (let [begin-s (to-unix-time (get-in temporal [:range-date-time :beginning-date-time]))
-        end-s (to-unix-time (get-in temporal [:range-date-time :ending-date-time]))
-        crossing-s (to-unix-time ascending-crossing-time)]
+  [start-date end-date ascending-crossing-date]
+  (let [begin-s (to-unix-time start-date)
+        end-s (to-unix-time end-date)
+        crossing-s (to-unix-time ascending-crossing-date)]
     [(- begin-s crossing-s) (- end-s crossing-s)]))
 
 (defn- vec3->point
@@ -151,31 +151,45 @@
   [start-time-s end-time-s interval-separation-s]
   (concat (range start-time-s end-time-s interval-separation-s) [end-time-s]))
 
-(defn to-swath
-  "Returns a sequence of two-element arrays corresponding to left and right
-   swath edges along the given granule orbit separated by at most
-   interval-separation-s seconds (default: 60).
+(defn to-swaths
+  "Returns a sequence of sequences two-element arrays corresponding to left and right
+   swath edges along the given granule's orbit separated by at most interval-separation-s
+   seconds (default: 300), one outer sequence per orbit revolution.
 
    Parameters:
      orbit-parameters: the granule's collection-level orbit metadata
-     granule-orbit: the granule's orbit spatial metadata
+     ascending-crossing-lon: the granule's ascending crossing lon
      ocsds: a sequence of the granule's orbit calculated spatial domain elements
-     temporal: the granule's temporal metadata
+     start-date: the granule's temporal start date
+     end-date: the granule's temporal end date
      interval-separation-s: the maximum desired time sparation in seconds
        between two edge points"
-  ([orbit-parameters granule-orbit ocsds temporal]
-     (to-swath orbit-parameters granule-orbit ocsds temporal 300.0))
-  ([orbit-parameters granule-orbit ocsds temporal interval-separation-s]
-     (let [ascending-crossing-time (ascending-crossing-time orbit-parameters granule-orbit ocsds)
-           [start-time-s end-time-s] (temporal-offset-range temporal ascending-crossing-time)
-           ascending-crossing-theta (radians (:ascending-crossing granule-orbit))
+  ([orbit-parameters ascending-crossing-lon ocsds start-date end-date]
+     (to-swaths orbit-parameters ascending-crossing-lon ocsds start-date end-date 300.0))
+  ([orbit-parameters ascending-crossing-lon ocsds start-date end-date interval-separation-s]
+     (let [ascending-crossing-date (ascending-crossing-time orbit-parameters ascending-crossing-lon ocsds)
+           [start-time-s end-time-s] (temporal-offset-range start-date end-date ascending-crossing-date)
+           ascending-crossing-theta (radians ascending-crossing-lon)
            time->swath-edges (fn-time->swath-edges orbit-parameters ascending-crossing-theta)
-           times (interpolation-times start-time-s end-time-s interval-separation-s)]
-       (map time->swath-edges times))))
+           orbit-starts (interpolation-times start-time-s end-time-s (* ^double (:period orbit-parameters) 60.0))
+           orbit-time-ranges (map vector orbit-starts (rest orbit-starts))
+           times (map (fn [[start end]] (interpolation-times start end interval-separation-s)) orbit-time-ranges)]
+       (map (partial map time->swath-edges) times))))
 
-(comment
+(defn- to-polygon
+  [swath]
+  (let [ring (concat (map first swath)
+                    (reverse (map second swath))
+                    [(ffirst swath)])]
+    (poly/polygon :geodetic [(gr/ring (doall ring))])))
+
+(defn to-polygons
+  [& args]
+  (map to-polygon (apply to-swaths args)))
+
   ;; Tests
-  (require '[cmr.spatial.dev.viz-helper :as viz-helper])
+  ;(require '[cmr.spatial.dev.viz-helper :as viz-helper])
+(comment
 
   (defn to-polygons
     [& args]
@@ -189,7 +203,6 @@
   (defn test-orbit-to-poly
     []
     (let [orbit-parameters {:inclination-angle 94.0 :period 96.7 :swath-width 2.0 :start-circular-latitude 50.0 :number-of-orbits 14.0}
-          granule-orbit {:ascending-crossing 104.0823 :start-lat 50.0 :start-direction "A" :end-lat 50.0 :end-direction "A"}
           ocsds [{:orbit-number 579 :equator-crossing-longitude  104.08523   :equator-crossing-date-time (t/date-time 2003  2 20 20 25 19)}
                  {:orbit-number 580 :equator-crossing-longitude   79.88192   :equator-crossing-date-time (t/date-time 2003  2 20 22  2  0)}
                  {:orbit-number 581 :equator-crossing-longitude   55.67938   :equator-crossing-date-time (t/date-time 2003  2 20 23 38 39)}
@@ -205,29 +218,30 @@
                  {:orbit-number 591 :equator-crossing-longitude  173.66837   :equator-crossing-date-time (t/date-time 2003  2 21 15 45 28)}
                  {:orbit-number 592 :equator-crossing-longitude  149.46652   :equator-crossing-date-time (t/date-time 2003  2 21 17 22  7)}
                  {:orbit-number 593 :equator-crossing-longitude  125.265396  :equator-crossing-date-time (t/date-time 2003  2 21 18 58 47)}]
-          temporal {:range-date-time {:beginning-date-time (t/date-time 2003 2 20 21 48 32)
-                                      :ending-date-time (t/date-time 2003 2 21 19 12 15)}}
+          ascending-crossing-lon 104.0823
+          start-date (t/date-time 2003 2 20 21 48 32)
+          end-time (t/date-time 2003 2 21 19 12 15)
           ]
-      (let [geo (to-polygons orbit-parameters granule-orbit ocsds temporal)]
-        (viz-helper/clear-geometries)
-        (viz-helper/add-geometries geo)
-        geo)))
-
+      (with-progress-reporting
+        (bench (to-polygons orbit-parameters ascending-crossing-lon ocsds start-time end-time)))))
+)
+(comment
   ; Based on G195170098-GSFCS4PA and G195170099-GSFCS4PA.  These should line up one against the other
   (defn test-orbit-to-poly-2
     []
     (let [orbit-parameters {:inclination-angle 98.2 :period 100.0 :swath-width 2600.0 :start-circular-latitude 0.0 :number-of-orbits 1.0}
-          granule0-orbit {:ascending-crossing -167.57 :start-lat -78.213646 :start-direction "D" :end-lat 76.538508 :end-direction "D"}
+          crossing-lon0 -167.57
           ocsds0 [{:orbit-number 1132 :equator-crossing-longitude  -167.57   :equator-crossing-date-time (t/date-time 2004 10  1  0 52 22)}]
-          temporal0 {:range-date-time {:beginning-date-time (t/date-time 2004 10 1 0  3  5)
-                                          :ending-date-time (t/date-time 2004 10 1 1 41 58)}}
-          granule1-orbit {:ascending-crossing 167.71 :start-lat -78.221053 :start-direction "D" :end-lat 76.529464 :end-direction "D"}
+          start-date0 (t/date-time 2004 10 1 0  3  5)
+          end-date0 (t/date-time 2004 10 1 1 41 58)
+
+          crossing-lon1 167.71
           ocsds1 [{:orbit-number 1133 :equator-crossing-longitude 167.71   :equator-crossing-date-time (t/date-time 2004 10  1  2 31 15)}]
-          temporal1 {:range-date-time {:beginning-date-time (t/date-time 2004 10 1 1 41 58)
-                                          :ending-date-time (t/date-time 2004 10 1 3 20 50)}}
+          start-date1 (t/date-time 2004 10 1 1 41 58)
+          end-date1 (t/date-time 2004 10 1 3 20 50)
           ]
-      (let [geo0 (to-polygons orbit-parameters granule0-orbit ocsds0 temporal0)
-            geo1 (to-polygons orbit-parameters granule1-orbit ocsds1 temporal1)]
+      (let [geo0 (to-polygons orbit-parameters crossing-lon0 ocsds0 start-time0 end-time0)
+            geo1 (to-polygons orbit-parameters crossing-lon1 ocsds1 start-time1 end-time1)]
         (viz-helper/clear-geometries)
         (viz-helper/add-geometries geo0)
         (viz-helper/add-geometries geo1)
