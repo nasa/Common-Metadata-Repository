@@ -7,6 +7,7 @@
             [cmr.common.mime-types :as mt]
             [cmr.common.services.errors :as errors]
             [cmr.search.services.acl-service :as acl-service]
+            [cmr.search.services.xslt :as xslt]
             [cmr.common.util :as u]
             [cmr.umm.iso-smap.granule :as smap-g]))
 
@@ -14,10 +15,27 @@
   "This format is used to indicate the metadata is in it's native format."
   :xml)
 
+(def types->xsl
+  "Defines the [original-format target-format] to xsl mapping"
+  {[:echo10 :iso-mends] "xslt/echo10_to_iso19115.xsl"
+   [:echo10 :iso] "xslt/echo10_to_iso19115.xsl"
+   [:echo10 :iso19115] "xslt/echo10_to_iso19115.xsl"})
+
 (defn context->metadata-db-context
   "Converts the context into one that can be used to invoke the metadata-db services."
   [context]
   (assoc context :system (get-in context [:system :metadata-db])))
+
+(defn- transform-metadata
+  "Transforms the metadata of the concept to the given format"
+  [concept target-format]
+  (let [native-format (mt/mime-type->format (:format concept))]
+    (if-let [xsl (types->xsl [native-format target-format])]
+      ; xsl is defined for the transformation, so use xslt
+      (xslt/transform (:metadata concept) xsl)
+      (-> concept
+          ummc/parse-concept
+          (ummc/umm->xml target-format)))))
 
 (defn- concept->value-map
   "Convert a concept into a map containing metadata in a desired format as well as
@@ -29,9 +47,7 @@
             (errors/internal-error! "Did not recognize concept format" (pr-str (:format concept))))
         value-map (if (or (= format native-format) (= format concept-format))
                     (select-keys concept [:metadata :concept-id :revision-id :format])
-                    (let [metadata (-> concept
-                                       ummc/parse-concept
-                                       (ummc/umm->xml format))]
+                    (let [metadata (transform-metadata concept format)]
                       (assoc (select-keys concept [:concept-id :revision-id])
                              :metadata metadata
                              :format (mt/format->mime-type format))))]

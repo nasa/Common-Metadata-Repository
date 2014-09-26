@@ -59,6 +59,7 @@
     "application/dif+xml"
     "application/atom+xml"
     "application/iso+xml"
+    "application/iso19115+xml"
     "application/iso-mends+xml"
     "application/iso-smap+xml"
     "text/csv"})
@@ -150,9 +151,9 @@
                             (name concept-type) (:client-id context) result-format
                             (pr-str params)))
 
-            ;; TODO this should be handled in the mime type namespace.
-            ;; alias :iso to iso-mends
-            params (if (= :iso result-format) (assoc params :result-format :iso-mends) params)
+            ;; handle aliases of :iso-mends
+            params (if (mt/alias-of-iso-mends? result-format)
+                     (assoc params :result-format :iso-mends) params)
 
 
             search-params (lp/process-legacy-psa params query-string)

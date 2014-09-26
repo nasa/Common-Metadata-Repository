@@ -15,7 +15,8 @@
                  [org.clojure/tools.reader "0.8.8"]
                  [org.clojure/tools.cli "0.3.1"]
                  [nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]
-                 [org.clojure/data.csv "0.1.2"]]
+                 [org.clojure/data.csv "0.1.2"]
+                 [net.sf.saxon/Saxon-HE "9.5.1-6"]]
   :plugins [[lein-test-out "0.3.1"]
             [lein-exec "0.3.4"]]
   :repl-options {:init-ns user}
