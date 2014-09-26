@@ -34,20 +34,25 @@
 (def special-cases
   "Created for CMR-724. It has mappings of specific spatial areas which cause problems to an equivalent
   representation."
-  {(poly/polygon :geodetic [(rr/ords->ring :geodetic
-                                           -179.9999 0.0, -179.9999 -89.9999, 0.0 -89.9999, 0.0 0.0,
-                                           0.0 89.9999, -179.9999 89.9999, -179.9999 0.0)])
-   west-hemisphere
+  (let [ords-case-map
+        {[-179.9999 0.0, -179.9999 -89.9999, 0.0 -89.9999, 0.0 0.0, 0.0 89.9999, -179.9999 89.9999,
+          -179.9999 0.0]
+         west-hemisphere
 
-   (poly/polygon :geodetic [(rr/ords->ring :geodetic
-                                           -179.9999 -89.9999, 0.0 -89.9999,  0.0 89.9999,
-                                           -179.9999 89.9999, -179.9999 -89.9999)])
-   west-hemisphere
+         [-179.9999 -89.9999, 0.0 -89.9999,  0.0 89.9999, -179.9999 89.9999, -179.9999 -89.9999]
+         west-hemisphere
 
-   (poly/polygon :geodetic [(rr/ords->ring :geodetic
-                                           0.0001 -89.9999, 180 -89.9999, 180 89.9999, 0.0001 89.9999,
-                                           0.0001 -89.9999)])
-   east-hemisphere})
+         [-179.9999 75, -179.9 75, -179.9 0, -179.9999 0, -179.9999 -89.9999, 0 -89.9999, 0 89.9999,
+          -179.9999 89.9999, -179.9999 75]
+         west-hemisphere
+
+         [0.0001 -89.9999, 180 -89.9999, 180 89.9999, 0.0001 89.9999, 0.0001 -89.9999]
+         east-hemisphere}]
+        (into {}
+          (for [[ords equiv] ords-case-map]
+            [(poly/polygon :geodetic [(apply rr/ords->ring :geodetic ords)])
+             equiv]))))
+
 
 (defn shapes->elastic-doc
   "Converts a spatial shapes into the nested elastic attributes"
