@@ -99,23 +99,22 @@
           :dif all-colls
           (search/find-metadata :collection :dif {} {:format-as-ext? true}))))
 
-    (testing "Retrieving results in MENDS ISO"
-      (d/assert-metadata-results-match
-        :iso-mends all-colls
-        (search/find-metadata :collection :iso-mends {}))
+    (testing "Retrieving results in MENDS ISO and its aliases"
+      (are [format-key]
+           (d/assert-metadata-results-match
+             format-key all-colls
+             (search/find-metadata :collection format-key {}))
+           :iso-mends
+           :iso
+           :iso19115)
       (testing "as extension"
-        (d/assert-metadata-results-match
-          :iso-mends all-colls
-          (search/find-metadata :collection :iso-mends {} {:format-as-ext? true}))))
-
-    (testing "Retrieving results in ISO, which is an alias for MENDS ISO"
-      (d/assert-metadata-results-match
-        :iso all-colls
-        (search/find-metadata :collection :iso {}))
-      (testing "as extension"
-        (d/assert-metadata-results-match
-          :iso all-colls
-          (search/find-metadata :collection :iso {} {:format-as-ext? true}))))
+        (are [format-key]
+             (d/assert-metadata-results-match
+               format-key all-colls
+               (search/find-metadata :collection format-key {} {:format-as-ext? true}))
+             :iso-mends
+             :iso
+             :iso19115)))
 
     (testing "Retrieving results in SMAP ISO"
       (d/assert-metadata-results-match
