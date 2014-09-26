@@ -7,7 +7,13 @@
             [cmr.system-trace.core :refer [deftracefn]]
             [cmr.system-trace.http :as ch]
             [cmr.transmit.config :as transmit-config]
-            [cmr.transmit.connection :as transmit-conn]))
+            [cmr.transmit.connection :as transmit-conn]
+            [cmr.acl.core :as acl]))
+
+(defn- get-headers
+  "Gets the headers to use for communicating with the indexer."
+  [context]
+  (assoc (ch/context->http-headers context) acl/token-header (transmit-config/echo-system-token)))
 
 (deftracefn reindex-provider-collections
   "Reindexes all the collections in the provider"
@@ -19,7 +25,7 @@
         response (client/post url {:content-type :json
                                    :throw-exceptions false
                                    :accept :json
-                                   :headers (ch/context->http-headers context)
+                                   :headers (get-headers context)
                                    :connection-manager (transmit-conn/conn-mgr conn)})
         status (:status response)]
     (when-not (= 200 status)
@@ -36,7 +42,7 @@
                                            :content-type :json
                                            :throw-exceptions false
                                            :accept :json
-                                           :headers (ch/context->http-headers context)
+                                           :headers (get-headers context)
                                            :connection-manager (transmit-conn/conn-mgr conn)})
         status (:status response)]
     (when-not (= 201 status)
@@ -50,7 +56,7 @@
         response (client/delete (format "%s/%s/%s" indexer-url concept-id revision-id)
                                 {:accept :json
                                  :throw-exceptions false
-                                 :headers (ch/context->http-headers context)
+                                 :headers (get-headers context)
                                  :connection-manager (transmit-conn/conn-mgr conn)})
         status (:status response)]
     (when-not (some #{200, 201} [status])
