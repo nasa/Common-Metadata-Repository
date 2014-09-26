@@ -20,34 +20,25 @@
                                                        :project-refs ["PDQ" "RST"]}))]
     (index/refresh-elastic-index)
 
-    (testing "search by single campaign single result."
-      (let [references (search/find-refs :granule
-                                         {"campaign" "XYZ"})]
-        (is (d/refs-match? [gran2] references))))
-    (testing "search by single campaign multiple result."
-      (let [references (search/find-refs :granule
-                                         {"campaign" "ABC"})]
-        (is (d/refs-match? [gran1 gran2] references))))
-    (testing "serch by single project single result."
-      (let [references (search/find-refs :granule
-                                         {"project" "XYZ"})]
-        (is (d/refs-match? [gran2] references))))
-    (testing "search by single project multiple results."
-      (let [references (search/find-refs :granule
-                                         {"project" "ABC"})]
-        (is (d/refs-match? [gran1 gran2] references))))
-    (testing "search by multiple projects."
-      (let [references (search/find-refs :granule
-                                         {"project" ["XYZ" "PDQ"]})]
-        (is (d/refs-match? [gran2 gran3] references))))
-    (testing "search with some missing projects."
-      (let [references (search/find-refs :granule
-                                         {"project" ["ABC" "LMN"]})]
-        (is (d/refs-match? [gran1 gran2] references))))
-    (testing "search for missing project."
-      (let [references (search/find-refs :granule
-                                         {"project" "LMN"})]
-        (is (d/refs-match? [] references))))
+    (testing "search by campaign"
+      (are [campaign-sn items] (d/refs-match? items (search/find-refs :granule {:campaign campaign-sn}))
+           "XYZ" [gran2]
+           "ABC" [gran1 gran2]))
+    (testing "search by project"
+      (are [project-sn items] (d/refs-match? items (search/find-refs :granule {:project project-sn}))
+           "XYZ" [gran2]
+           "ABC" [gran1 gran2]))
+    (testing "search by multiple campaigns"
+      (are [campaign-kvs items] (d/refs-match? items (search/find-refs :granule campaign-kvs))
+           ;; tests with AND
+           {"campaign[]" ["XYZ" "PDQ"], "options[campaign][and]" "false"} [gran2 gran3]
+           {"campaign[]" ["XYZ" "ABC"], "options[campaign][and]" "true"} [gran2]
+           ;; OR is the default
+           {"campaign[]" ["XYZ" "ABC"]} [gran1 gran2]
+           ;; some missing campaigns
+           {"campaign[]" ["ABC" "LMN"]} [gran1 gran2]
+           ;; not found
+           {"campaign[]" ["LMN"]} []))
 
     (testing "search by campaign with aql"
       (are [items campaigns options]
