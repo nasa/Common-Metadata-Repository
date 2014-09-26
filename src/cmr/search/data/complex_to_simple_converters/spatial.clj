@@ -2,7 +2,7 @@
   "Contains converters for spatial condition into the simpler executable conditions"
   (:require [cmr.search.data.complex-to-simple :as c2s]
             [cmr.search.data.elastic-search-index :as idx]
-            [cmr.search.services.query-execution :as qe]
+            [cmr.search.services.query-helper-service :as query-helper]
             [cmr.search.models.query :as qm]
             [cmr.search.models.group-query-conditions :as gc]
             [cmr.spatial.mbr :as mbr]
@@ -57,38 +57,6 @@
         (gc/and-conds [north-cond
                        south-cond
                        (gc/or-conds [am-conds non-am-conds])])))))
-
-(def orbit-param-fields
-  "The collection fields that describe the orbit as used in orbital back tracking."
-  [:concept-id
-   :swath-width
-   :period
-   :inclination-angle
-   :number-of-orbits
-   :start-circular-latitude])
-
-(defn- orbits-for-context
-  "Get the orbit parameters for all the relevant collections."
-  [context]
-  ;; Construct a query for concept-ids and orbit parameters of all collections that have them
-  ;; Execute the query to get the data needed to do orbitial back tracking
-  (let [{:keys [query-collection-ids]} context
-        orbit-params-cond (qm/->ExistCondition :swath-width)
-        orbit-params-cond (if (seq query-collection-ids)
-                            (gc/and-conds [orbit-params-cond
-                                           (qm/string-conditions
-                                             :concept-id
-                                             query-collection-ids
-                                             true)])
-                            orbit-params-cond)
-        orbit-params-query (qm/query {:concept-type :collection
-                                      :condition orbit-params-cond
-                                      :skip-acls? true
-                                      :page-size :unlimited
-                                      :result-format :query-specified
-                                      :fields orbit-param-fields})
-        results (:items (qe/execute-query context orbit-params-query))]
-    results))
 
 (defn- resolve-shape-type
   "Convert the 'type' string from a serialized shape to one of 'point', 'line', 'br', or 'poly'.
@@ -172,7 +140,8 @@
         [asc-lat-ranges desc-lat-ranges] (.denormalizeLatitudeRange orbits (:south mbr) (:north mbr))
         asc-lat-conds (range->numeric-range-intersection-condition asc-lat-ranges)
         desc-lat-conds (range->numeric-range-intersection-condition desc-lat-ranges)
-        orbit-params (orbits-for-context context)
+        {:keys [query-collection-ids]} context
+        orbit-params (query-helper/collection-orbit-parameters context true query-collection-ids)
         stored-ords (srl/shape->stored-ords shape)
         crossings-map (reduce (fn [memo params]
                                 (let [lon-crossings (orbit-crossings stored-ords params)]
