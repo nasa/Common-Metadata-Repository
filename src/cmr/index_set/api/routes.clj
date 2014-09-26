@@ -10,33 +10,46 @@
             [cmr.common.api.errors :as errors]
             [clojure.walk :as walk]
             [cmr.index-set.services.index-service :as index-svc]
-            [cmr.system-trace.http :as http-trace]))
+            [cmr.system-trace.http :as http-trace]
+            [cmr.acl.core :as acl]))
 
 (defn- build-routes [system]
   (routes
     (context "/index-sets" []
-      (POST "/" {body :body request-context :request-context}
-        (let [index-set (walk/keywordize-keys body)]
+      (POST "/" {body :body request-context :request-context params :params headers :headers}
+        (let [index-set (walk/keywordize-keys body)
+              context (acl/add-authentication-to-context request-context params headers)]
+          (acl/verify-ingest-management-permission context :update)
           (r/created (index-svc/create-index-set request-context index-set))))
 
       ;; respond with index-sets in elastic
-      (GET "/" {request-context :request-context}
-        (r/response (index-svc/get-index-sets request-context)))
+      (GET "/" {request-context :request-context params :params headers :headers}
+        (let [context (acl/add-authentication-to-context request-context params headers)]
+          (acl/verify-ingest-management-permission context :read)
+          (r/response (index-svc/get-index-sets request-context))))
 
       (context "/:id" [id]
-        (GET "/" {request-context :request-context}
-          (r/response (index-svc/get-index-set request-context id)))
+        (GET "/" {request-context :request-context params :params headers :headers}
+          (let [context (acl/add-authentication-to-context request-context params headers)]
+            (acl/verify-ingest-management-permission context :read)
+            (r/response (index-svc/get-index-set request-context id))))
 
-        (PUT "/" {request-context :request-context body :body}
-          (let [index-set (walk/keywordize-keys body)]
+        (PUT "/" {request-context :request-context body :body params :params headers :headers}
+          (let [index-set (walk/keywordize-keys body)
+                context (acl/add-authentication-to-context request-context params headers)]
+            (acl/verify-ingest-management-permission context :update)
             (r/response (index-svc/update-index-set request-context index-set))))
 
-        (DELETE "/" {request-context :request-context}
-          (r/response (index-svc/delete-index-set request-context id)))))
+        (DELETE "/" {request-context :request-context params :params headers :headers}
+          (let [context (acl/add-authentication-to-context request-context params headers)]
+            (acl/verify-ingest-management-permission context :update)
+            (r/response (index-svc/delete-index-set request-context id))))))
 
     ;; delete all of the indices associated with index-sets and index-set docs in elastic
-    (POST "/reset" {request-context :request-context}
-      (r/response (index-svc/reset request-context)))
+    (POST "/reset" {request-context :request-context params :params headers :headers}
+      (let [context (acl/add-authentication-to-context request-context params headers)]
+        (acl/verify-ingest-management-permission context :update)
+        (r/response (index-svc/reset request-context))))
 
     (route/not-found "Not Found")))
 

@@ -9,7 +9,8 @@
             [cheshire.core :as cheshire]
             [clojurewerkz.elastisch.rest :as esr]
             [cmr.elastic-utils.config :as es-config]
-            [cmr.transmit.config :as transmit-config]))
+            [cmr.transmit.config :as transmit-config]
+            [cmr.acl.core :as acl]))
 
 (def index-set-root-url
   (format "%s:%s"  "http://localhost" (transmit-config/index-set-port)))
@@ -106,6 +107,7 @@
                     :url index-set-url
                     :body (cheshire.core/generate-string idx-set)
                     :content-type :json
+                    :headers {acl/token-header (transmit-config/echo-system-token)}
                     :accept :json
                     :throw-exceptions false})
         status (:status response)
@@ -120,6 +122,7 @@
                    {:method :delete
                     :url (format "%s/%s" index-set-url id)
                     :accept :json
+                    :headers {acl/token-header (transmit-config/echo-system-token)}
                     :throw-exceptions false})
         status (:status response)
         body (cheshire/parse-string (:body response))
@@ -133,6 +136,7 @@
                    {:method :get
                     :url (format "%s/%s" index-set-url id)
                     :accept :json
+                    :headers {acl/token-header (transmit-config/echo-system-token)}
                     :throw-exceptions false})
         status (:status response)
         body (cheshire/parse-string (:body response))
@@ -146,6 +150,7 @@
                    {:method :get
                     :url index-set-url
                     :accept :json
+                    :headers {acl/token-header (transmit-config/echo-system-token)}
                     :throw-exceptions false})
         status (:status response)
         body (cheshire/parse-string (:body response))
@@ -158,6 +163,7 @@
   (let [result (client/request
                  {:method :post
                   :url (format "%s/%s" index-set-root-url "reset")
+                  :headers {acl/token-header (transmit-config/echo-system-token)}
                   :accept :json})
         status (:status result)
         {:keys [status errors-str response]} result]

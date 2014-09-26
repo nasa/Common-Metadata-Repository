@@ -3,7 +3,6 @@
   (:require [clojure.string :as s]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.index-set.data.elasticsearch :as es]
-            [cmr.umm.echo10.collection :as collection]
             [cheshire.core :as json]
             [cmr.common.services.errors :as errors]
             [cmr.index-set.services.messages :as m]

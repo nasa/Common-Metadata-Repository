@@ -9,6 +9,7 @@
             [cmr.system-trace.context :as context]
             [cmr.index-set.data.elasticsearch :as es]
             [cmr.elastic-utils.config :as es-config]
+            [cmr.transmit.config :as transmit-config]
             [cmr.common.config :as cfg]))
 
 (def app-port (cfg/config-value-fn :index-set-port 3005 #(Long. %)))
@@ -21,10 +22,11 @@
 (defn create-system
   "Returns a new instance of the whole application."
   []
-  {:log (log/create-logger)
-   :index (es/create-elasticsearch-store (es-config/elastic-config))
-   :web (web/create-web-server (app-port) routes/make-api)
-   :zipkin (context/zipkin-config "index-set" false)})
+  (let [sys {:log (log/create-logger)
+             :index (es/create-elasticsearch-store (es-config/elastic-config))
+             :web (web/create-web-server (app-port) routes/make-api)
+             :zipkin (context/zipkin-config "index-set" false)}]
+    (transmit-config/system-with-connections sys [:echo-rest])))
 
 (defn start
   "Performs side effects to initialize the system, acquire resources,

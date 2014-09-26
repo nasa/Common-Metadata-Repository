@@ -3,7 +3,7 @@
                for indexing and searching for concepts."
   :url "***REMOVED***projects/CMR/repos/cmr-index-set-app/browse"
   :dependencies [[org.clojure/clojure "1.6.0"]
-                 [nasa-cmr/cmr-umm-lib "0.1.0-SNAPSHOT"]
+                 [nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-system-trace-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]
                  [compojure "1.1.9"]
