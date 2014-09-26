@@ -34,6 +34,10 @@
   "Parameters which do not allow pattern search option."
   (set #{:concept-id :echo-collection-id :echo-granule-id}))
 
+(def params-that-allow-or-option
+  "Parameter which allow search with the OR option."
+  #{:attribute :science-keywords})
+
 (def exclude-params
   "Lists parameters which can be used to exclude items from results."
   (set #{:concept-id}))
@@ -181,7 +185,6 @@
              options))
     []))
 
-
 (defn option-case-sensitive-params-validation
   "Validates ignore case option setting is not set to true for identified params."
   [concept-type params]
@@ -210,6 +213,17 @@
              options))
     []))
 
+(defn options-or-params-validation
+  "Validates or option setting is not set to true for anything but attribute"
+  [concept-type params]
+  (when-let [options (:options params)]
+    (apply concat
+           (map
+             (fn [[param settings]]
+               (when (and (= "true" (:or settings))
+                        (not (contains? params-that-allow-or-option param)))
+                 [(c-msg/invalid-or-opt-setting-msg param)]))
+             options))))
 
 (defn- validate-date-time
   "Validates datetime string is in the given format"
@@ -477,6 +491,7 @@
    unrecognized-params-settings-in-options-validation
    option-case-sensitive-params-validation
    option-pattern-params-validation
+   options-or-params-validation
    temporal-format-validation
    updated-since-validation
    orbit-number-validation
