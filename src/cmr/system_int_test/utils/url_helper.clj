@@ -116,10 +116,20 @@
   []
   (format "http://localhost:%s/reset" (transmit-config/metadata-db-port)))
 
+(defn index-set-reset-url
+  "Delete and re-create the index set in elastic. Only development team to use this functionality."
+  []
+  (format "http://localhost:%s/reset" (transmit-config/index-set-port)))
+
 (defn indexer-reset-url
   "Delete and re-create indexes in elastic. Only development team to use this functionality."
   []
   (format "http://localhost:%s/reset" (transmit-config/indexer-port)))
+
+(defn indexer-update-indexes
+  "Updates the indexes in the indexer to update mappings and settings"
+  []
+  (format "http://localhost:%s/update-indexes" (transmit-config/indexer-port)))
 
 ;; discard this once oracle impl is in place
 (defn mdb-concept-coll-id-url

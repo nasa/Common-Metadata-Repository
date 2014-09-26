@@ -41,17 +41,20 @@
         admin-update-token (e/login "admin" ["admin-update-group-guid" "group-guid3"])
         admin-read-update-token (e/login "admin" ["admin-read-update-group-guid" "group-guid3"])]
 
+    (are [url]
+         (and
+           (not (has-action-permission? url :post guest-token))
+           (not (has-action-permission? url :post user-token))
+           (not (has-action-permission? url :post admin-read-token))
+           (has-action-permission? url :post admin-update-token)
+           (has-action-permission? url :post admin-read-update-token))
 
-    (is (not (has-action-permission? (url/search-clear-cache-url) :post guest-token)))
-    (is (not (has-action-permission? (url/search-clear-cache-url) :post user-token)))
-    (is (not (has-action-permission? (url/search-clear-cache-url) :post admin-read-token)))
-    (is (has-action-permission? (url/search-clear-cache-url) :post admin-update-token))
-    (is (has-action-permission? (url/search-clear-cache-url) :post admin-read-update-token))
+         (url/search-clear-cache-url)
+         (url/search-reset-url)
+         (url/indexer-clear-cache-url)
+         (url/indexer-reset-url)
+         (url/mdb-reset-url)
+         (url/index-set-reset-url))))
 
-    ))
 
-
-(comment
-(has-action-permission? (url/search-clear-cache-url) :post "ABC-4")
-)
 
