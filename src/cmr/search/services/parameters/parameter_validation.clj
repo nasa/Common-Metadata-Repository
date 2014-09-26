@@ -36,7 +36,7 @@
 
 (def params-that-allow-or-option
   "Parameter which allow search with the OR option."
-  #{:attribute :science-keywords})
+  (set #{:attribute :science-keywords}))
 
 (def exclude-params
   "Lists parameters which can be used to exclude items from results."

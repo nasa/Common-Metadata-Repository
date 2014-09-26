@@ -24,7 +24,7 @@ where paramter is the URL parameter whose behavior is to be affected, value is e
  more characters and '?' matches any single character. For example, `platform[]=AB?D*&options[platform][pattern]=true` would match 'ABAD123', 'ABCD12', 'ABeD', etc. Defaults to false.
  * `and` - if set to true and if multiple values are listed for the param, the concpet must have ALL of these values in order to match. The default
  is `false` which means concpets with ANY of the values match. This option only applies to fields which may be multivalued; these are documented here.
- * `or` - this option only applies to granule attribute searches. If set to true, attribute searches will find granules that match
+ * `or` - this option only applies to granule attribute or science-keywords searches. If set to true, attribute searches will find granules that match
  any of the attibutes. The default is false.
 
 ##### Collection Query Parameters
