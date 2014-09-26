@@ -11,6 +11,22 @@
  * `token` - specifies a user/guest token from ECHO to use to authenticate yourself. This can also be specified as the header Echo-Token
  * `echo_compatible` - When set to true results will be returned in an ECHO compatible format. This mostly removes fields and features specific to the CMR such as revision id, granule counts and facets in collection results. Metadata format style results will also use ECHO style names for concept ids such as `echo_granule_id` and `echo_dataset_id`.
 
+#### Parameter Options
+
+The behavior of search with respect to each parameter can be modified using the `options` parameter. The `options` parameter takes the following form:
+
+  `options[parameter][option_key]=value`
+
+where paramter is the URL parameter whose behavior is to be affected, value is either `true` for `false`, and `option_key` is one of the following:
+
+ * `ignore_case` - the search should be case insensitive. The default is case sensitive.
+ * `pattern` - the search should treat the value provided for the parameter as a pattern with wildcards, in which '*' matches zero or
+ more characters and '?' matches any single character. For example, `platform[]=AB?D*&options[platform][pattern]=true` would match 'ABAD123', 'ABCD12', 'ABeD', etc. Defaults to false.
+ * `and` - if set to true and if multiple values are listed for the param, the concpet must have ALL of these values in order to match. The default
+ is `false` which means concpets with ANY of the values match. This option only applies to fields which may be multivalued; these are documented here.
+ * `or` - this option only applies to granule attribute or science-keywords searches. If set to true, attribute searches will find granules that match
+ any of the attibutes. The default is false.
+
 ##### Collection Query Parameters
 
 These are query parameters specific to collections
@@ -437,7 +453,7 @@ Note: more than one may be supplied
 
     curl "http://localhost:3003/granules?concept_id\[\]=C1000000001-CMR_PROV2"
 
-### Find granules by day\_night\_flag param, supports pattern, ignore_case, and option :and, :or
+### Find granules by day\_night\_flag param, supports pattern and ignore_case
 
 ```
 curl "http://localhost:3003/granules?day_night_flag=night
