@@ -10,11 +10,13 @@
   (update-in acl
              [:catalog-item-identity]
              (fn [cii]
-               (-> cii
-                   (assoc :provider-id (provider-guid-id-map (:provider-guid cii)))
-                   (dissoc :provider-guid)))))
+               (some-> cii
+                       (assoc :provider-id (provider-guid-id-map (:provider-guid cii)))
+                       (dissoc :provider-guid)))))
 
 (defn get-acls-by-type
+  "Fetches ACLs from ECHO by object identity type. Valid values are PROVIDER_OBJECT, SYSTEM_OBJECT,
+  SINGLE_INSTANCE_OBJECT, and CATALOG_ITEM as strings."
   [context type]
   (let [provider-guid-id-map (echo-providers/get-provider-guid-id-map context)
         [status acls body] (r/rest-get context "/acls" {:query-params {:object_identity_type type
@@ -24,7 +26,5 @@
                       c/echo-acl->cmr-acl)
                 acls)
       (r/unexpected-status-error! status body))))
-
-
 
 
