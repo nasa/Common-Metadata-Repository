@@ -63,11 +63,6 @@
       (let [references (search/find-refs :granule
                                          {:readable-granule-name ["Granule2", "SuperSpecial"]})]
         (is (d/refs-match? [gran2 gran4 gran5] references))))
-    (testing "search by readable granule name options :or."
-      (let [references (search/find-refs :granule
-                                         {:readable-granule-name ["Granule2", "SuperSpecial"]
-                                          "options[readable-granule-name][or]" "true"})]
-        (is (d/refs-match? [gran2 gran4 gran5] references))))
     (testing "search by readable granule name options :and."
       (let [references (search/find-refs :granule
                                          {:readable-granule-name ["Granule2", "SuperSpecial"]
