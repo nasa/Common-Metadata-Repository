@@ -158,10 +158,10 @@
                                     prov uniq-num num-revisions
                                     {:delete-time (str expire-time)})))
         ;; Expired a long time ago.
-        coll1 (make-coll-expiring-in "PROV1" 1 1 -60000)
-        coll2 (make-coll-expiring-in "PROV1" 2 2 -60000)
+        coll1 (make-coll-expiring-in "PROV1" 1 1 -600000)
+        coll2 (make-coll-expiring-in "PROV1" 2 2 -600000)
         ;; Expires in the far future
-        coll3 (make-coll-expiring-in "PROV1" 3 1 5000)
+        coll3 (make-coll-expiring-in "PROV1" 3 1 500000)
         ;; Doesn't have an expiration date
         coll4 (util/create-and-save-collection "PROV1" 4 1)
         ;; Won't find because it's in another provider
