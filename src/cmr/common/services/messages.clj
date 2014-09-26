@@ -52,3 +52,8 @@
   "Creates a message saying supplied parameter(s) are not in exclude params set."
   [params-set]
   (format "Parameter(s) [%s] can not be used with exclude." (str/join ", " (map name params-set))))
+
+(defn invalid-or-opt-setting-msg
+  "Creates a message saying which parameter is not allowed to use the 'or' option."
+  [param]
+  (format "'or' option is not valid for parameter [%s]" param))
