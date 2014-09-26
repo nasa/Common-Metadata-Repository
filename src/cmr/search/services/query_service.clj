@@ -70,6 +70,7 @@
             [cmr.common.cache :as cache]
             [cmr.acl.acl-cache :as acl-cache]
             [cmr.search.services.acls.collections-cache :as coll-cache]
+            [cmr.acl.core :as acl]
             [camel-snake-kebab :as csk]
             [cheshire.core :as json]
             [cmr.common.log :refer (debug info warn error)]))
@@ -182,9 +183,8 @@
 (deftracefn clear-cache
   "Clear the cache for search app"
   [context]
+  (acl/verify-ingest-management-permission context)
   (info "Clearing the search application cache")
-  ;; TODO enforce ingest management ACL here. - CMR-678
-
   (cache/reset-cache (get-in context [:system :caches :index-names]))
   (cache/reset-cache (get-in context [:system :caches :token-sid]))
   (acl-cache/reset context)

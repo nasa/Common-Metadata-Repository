@@ -283,13 +283,13 @@
           (get-provider-holdings context path-w-extension params headers)))
 
       ;; Resets the application back to it's initial state.
-      (POST "/reset" {:keys [request-context]}
-        (query-svc/clear-cache request-context)
+       (POST "/reset" {:keys [request-context params headers]}
+        (query-svc/clear-cache (process-context-info request-context params headers))
         {:status 200})
 
       ;; Clears the cache.
-      (POST "/clear-cache" {:keys [request-context]}
-        (query-svc/clear-cache request-context)
+      (POST "/clear-cache" {:keys [request-context params headers]}
+        (query-svc/clear-cache (process-context-info request-context params headers))
         {:status 200}))
     (route/not-found "Not Found")))
 
