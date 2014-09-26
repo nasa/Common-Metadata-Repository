@@ -291,7 +291,7 @@
                    :end-coordinate-2 double-field-mapping
 
                    ;; Used for orbit search
-                   :orbit-asc-crossing-lon double-field-mapping
+                   :orbit-asc-crossing-lon (stored double-field-mapping)
                    :orbit-start-clat double-field-mapping
                    :orbit-end-clat double-field-mapping
 
@@ -425,5 +425,3 @@
   [context]
   (let [cache-atom (-> context :system :caches :general)]
     (cache/cache-lookup cache-atom :concept-mapping-types (partial fetch-concept-mapping-types context))))
-
-
