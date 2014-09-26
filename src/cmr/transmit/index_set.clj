@@ -16,7 +16,8 @@
                     :url (format "%s/index-sets/%s" (conn/root-url conn) (str id))
                     :accept :json
                     :throw-exceptions false
-                    :connection-manager (conn/conn-mgr conn)})
+                    :connection-manager (conn/conn-mgr conn)
+                    :headers {"echo-token" (config/echo-system-token)}})
         status (:status response)
         body (cheshire/decode (:body response) true)]
     (case status
