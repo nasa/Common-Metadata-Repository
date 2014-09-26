@@ -13,15 +13,15 @@
 
 #### Parameter Options
 
-The behavior of search with respect to each parameter can be modified using the `option` parameter. The `option` parameter takes the following form:
+The behavior of search with respect to each parameter can be modified using the `options` parameter. The `options` parameter takes the following form:
 
-  `option[parameter][option_key]=value`
+  `options[parameter][option_key]=value`
 
 where paramter is the URL parameter whose behavior is to be affected, value is either `true` for `false`, and `option_key` is one of the following:
 
  * `ignore_case` - the search should be case insensitive. The default is case sensitive.
  * `pattern` - the search should treat the value provided for the parameter as a pattern with wildcards, in which '*' matches zero or
- more characters and '?' matches any single character. For example, `platform[]=AB?D*&option[platform][pattern]=true` would match 'ABAD123', 'ABCD12', 'ABeD', etc. Defaults to false.
+ more characters and '?' matches any single character. For example, `platform[]=AB?D*&options[platform][pattern]=true` would match 'ABAD123', 'ABCD12', 'ABeD', etc. Defaults to false.
  * `and` - if set to true and if multiple values are listed for the param, the concpet must have ALL of these values in order to match. The default
  is `false` which means concpets with ANY of the values match. This option only applies to fields which may be multivalued; these are documented here.
  * `or` - this option only applies to granule attribute searches. If set to true, attribute searches will find granules that match
