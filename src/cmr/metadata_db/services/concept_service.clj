@@ -304,7 +304,7 @@
   [context provider-id]
   (let [db (util/context->db context)]
     (validate-providers-exist db [provider-id])
-    (map :concept-id (c/get-expired-concepts db provider-id :collection))))
+    (distinct (map :concept-id (c/get-expired-concepts db provider-id :collection)))))
 
 (deftracefn save-concept
   "Store a concept record and return the revision."

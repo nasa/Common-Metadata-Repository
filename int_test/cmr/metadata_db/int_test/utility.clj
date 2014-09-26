@@ -10,7 +10,9 @@
             [clj-time.coerce :as cr]
             [inflections.core :as inf]
             [cmr.metadata-db.config :as config]
-            [clj-http.conn-mgr :as conn-mgr]))
+            [clj-http.conn-mgr :as conn-mgr]
+            [cmr.acl.core :as acl]
+            [cmr.transmit.config :as transmit-config]))
 
 (def conn-mgr-atom (atom nil))
 
@@ -330,6 +332,7 @@
   "Make a request to reset the database by clearing out all stored concepts."
   []
   (let [response (client/post reset-url {:throw-exceptions false
+                                         :headers {acl/token-header (transmit-config/echo-system-token)}
                                          :connection-manager (conn-mgr)})
         status (:status response)]
     status))
