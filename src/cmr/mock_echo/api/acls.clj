@@ -11,12 +11,16 @@
   (let [acl (json/decode body true)]
     (acl-db/create-acl context (json/decode body true))))
 
+(def object-identity-type->acl-key
+  {"CATALOG_ITEM" :catalog_item_identity
+   "SYSTEM_OBJECT" :system_object_identity})
+
 (defn get-acls
   [context params]
-  (when-not (= "CATALOG_ITEM" (:object_identity_type params))
+  (when-not (:object_identity_type params)
     (svc-errors/throw-service-error
       :bad-request
-      "Mock ECHO currently only supports retrieving ACLS with object identity type CATALOG_ITEM"))
+      "Mock ECHO currently only supports retrieving ACLS by object identity type"))
   (when (:provider_id params)
     (svc-errors/throw-service-error
       :bad-request
@@ -25,7 +29,9 @@
     (svc-errors/throw-service-error
       :bad-request
       "Mock ECHO does not currently support retrieving acls as references"))
-  (acl-db/get-acls context))
+
+  (let [acl-key (object-identity-type->acl-key (:object_identity_type params))]
+    (filter #(get-in % [:acl acl-key]) (acl-db/get-acls context))))
 
 (defn delete-acl
   [context guid]

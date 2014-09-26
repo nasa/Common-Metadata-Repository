@@ -2,8 +2,9 @@
 
 (def initial-db-state
   {:last-id 0
-   ;; a map of token ids to
-   :token-map {}})
+   ;; a map of token ids to maps containing username and group_guids
+   :token-map {"mock-echo-system-token" {:username "mock-admin"
+                                         :group_guids ["mock-admin-group-guid"]}}})
 
 (defn create-db
   "Creates a new empty token database"

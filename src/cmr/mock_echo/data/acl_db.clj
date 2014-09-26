@@ -2,7 +2,15 @@
 
 (def initial-db-state
   {:last-id 0
-   :acls {}})
+   ;; A map of guids to acls
+   ;; Contains an initial guid that grants the mock admin user ingest management permission.
+   :acls {"mock-admin-acl-guid"
+          {:acl
+           {:id "mock-admin-acl-guid",
+            :access_control_entries
+            [{:sid {:group_sid {:group_guid "mock-admin-group-guid"}},
+              :permissions ["READ" "UPDATE"]}],
+            :system_object_identity {:target "INGEST_MANAGEMENT_ACL"}}}}})
 
 (defn create-db
   []
