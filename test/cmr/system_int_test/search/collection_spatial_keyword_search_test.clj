@@ -53,10 +53,6 @@
                          (search/find-refs :collection
                                            {:spatial-keyword "detroit"
                                             "options[spatial-keyword][ignore-case]" "true"}))))
-    (testing "search by spatial keywords, options :or."
-      (is (d/refs-match? [coll3 coll4]
-                         (search/find-refs :collection {"spatial-keyword[]" ["DC" "LA"]
-                                                        "options[spatial-keyword][or]" "true"}))))
     (testing "search by spatial keywords, options :and."
       (is (d/refs-match? [coll4]
                          (search/find-refs :collection {"spatial-keyword[]" ["DC" "LA"]
