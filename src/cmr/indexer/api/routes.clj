@@ -10,6 +10,7 @@
             [clojure.walk :as walk]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.api.errors :as errors]
+            [cmr.acl.core :as acl]
 
             ;; These must be required here to make multimethod implementations available.
             [cmr.indexer.data.concepts.collection]
@@ -30,35 +31,49 @@
   (routes
 
     ;; Index a concept
-    (POST "/" {body :body context :request-context params :params}
+    (POST "/" {body :body context :request-context params :params headers :headers}
       (let [{:keys [concept-id revision-id]} (walk/keywordize-keys body)
-            ignore-conflict (ignore-conflict? params)]
+            ignore-conflict (ignore-conflict? params)
+            context (acl/add-authentication-to-context context params headers)]
+        (acl/verify-ingest-management-permission context :update)
         (r/created (index-svc/index-concept context concept-id revision-id ignore-conflict))))
 
     ;; reset operation available just for development purposes
     ;; delete configured elastic indexes and create them back
-    (POST "/reset" {:keys [request-context]}
-      (index-svc/reset-indexes request-context)
+    (POST "/reset" {:keys [request-context params headers]}
+      (let [context (acl/add-authentication-to-context request-context params headers)]
+        (acl/verify-ingest-management-permission context :update)
+        (index-svc/reset-indexes context))
       {:status 200})
 
     ;; Sends an update to the index set to update mappings and index settings.
-    (POST "/update-indexes" {:keys [request-context]}
-      (index-svc/update-indexes request-context)
+    (POST "/update-indexes" {:keys [request-context params headers]}
+      (let [context (acl/add-authentication-to-context request-context params headers)]
+        (acl/verify-ingest-management-permission context :update)
+        (index-svc/update-indexes context))
       {:status 200})
 
-    (POST "/clear-cache" {:keys [request-context]}
-      (index-svc/clear-cache request-context)
+    (POST "/clear-cache" {:keys [request-context params headers]}
+      (let [context (acl/add-authentication-to-context request-context params headers)]
+        (acl/verify-ingest-management-permission context :update)
+        (index-svc/clear-cache context))
       {:status 200})
 
     (context "/reindex-provider-collections/:provider-id" [provider-id]
-      (POST "/" {context :request-context}
-        (index-svc/reindex-provider-collections context provider-id)
+      (POST "/" {context :request-context params :params headers :headers}
+        (let [context (acl/add-authentication-to-context context params headers)]
+          (acl/verify-ingest-management-permission context :update)
+          (index-svc/reindex-provider-collections
+            context
+            provider-id))
         {:status 200}))
 
     ;; Unindex a concept
     (context "/:concept-id/:revision-id" [concept-id revision-id]
-      (DELETE "/" {context :request-context params :params}
-        (let [ignore-conflict (ignore-conflict? params)]
+      (DELETE "/" {context :request-context params :params headers :headers}
+        (let [ignore-conflict (ignore-conflict? params)
+              context (acl/add-authentication-to-context context params headers)]
+          (acl/verify-ingest-management-permission context :update)
           (index-svc/delete-concept context concept-id revision-id ignore-conflict)
           (r/response nil))))
 

@@ -10,7 +10,8 @@
             [cmr.transmit.config :as transmit-config]
             [cmr.transmit.connection :as transmit-conn]
             [cmr.common.cache :as cache]
-            [cmr.system-trace.core :refer [deftracefn]]))
+            [cmr.system-trace.core :refer [deftracefn]]
+            [cmr.acl.core :as acl]))
 
 (def collection-setting {:index
                          {:number_of_shards 6,
@@ -331,6 +332,7 @@
       {:method :post
        :url index-set-reset-url
        :content-type :json
+       :headers {acl/token-header (transmit-config/echo-system-token)}
        :accept :json})))
 
 (defn create
@@ -345,6 +347,7 @@
                     :body (cheshire/generate-string index-set)
                     :content-type :json
                     :accept :json
+                    :headers {acl/token-header (transmit-config/echo-system-token)}
                     :throw-exceptions false})
         status (:status response)]
     (when-not (= 201 status)
@@ -364,6 +367,7 @@
                     :body (cheshire/generate-string index-set)
                     :content-type :json
                     :accept :json
+                    :headers {acl/token-header (transmit-config/echo-system-token)}
                     :throw-exceptions false})
         status (:status response)]
     (when-not (= 200 status)
