@@ -443,4 +443,8 @@
     (testing "Search with wildcards in concept_id param not supported."
       (is (= {:status 400
               :errors [(msg/invalid-pattern-opt-setting-msg #{:concept-id :echo-collection-id :echo-granule-id})]}
-             (search/find-refs :granule {:concept_id "G*" "options[concept_id]" {:pattern true}}))))))
+             (search/find-refs :granule {:concept_id "G*" "options[concept_id]" {:pattern true}}))))
+    (testing "OR option is not supported for anything but attribute, science-keywords"
+      (is (= {:status 400
+              :errors [(msg/invalid-or-opt-setting-msg :concept-id)]}
+             (search/find-refs :granule {:concept-id "G" "options[concept_id]" {:or true}}))))))
