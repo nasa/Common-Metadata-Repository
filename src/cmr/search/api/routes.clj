@@ -14,6 +14,7 @@
             [cmr.search.services.query-service :as query-svc]
             [cmr.system-trace.http :as http-trace]
             [cmr.search.services.parameters.legacy-parameters :as lp]
+            [cmr.acl.core :as acl]
 
             ;; Result handlers
             ;; required here to avoid circular dependency in query service
@@ -35,9 +36,6 @@
 (def TOOK_HEADER "CMR-Took")
 (def CMR_GRANULE_COUNT_HEADER "CMR-Granule-Hits")
 (def CMR_COLLECTION_COUNT_HEADER "CMR-Collection-Hits")
-(def BROWSER_CLIENT_ID "browser")
-(def CURL_CLIENT_ID "curl")
-(def UNKNOWN_CLIENT_ID "unknown")
 
 (def extension->mime-type
   "A map of URL file extensions to the mime type they represent."
@@ -129,31 +127,6 @@
       (dissoc :token)
       (assoc :result-format (get-search-results-format path-w-extension headers default-mime-type))))
 
-(defn- get-token
-  "Returns the token the user passed in the headers or parameters"
-  [params headers]
-  (or (:token params)
-      (get headers "echo-token")))
-
-(defn- get-client-id
-  "Gets the client id passed by the client or tries to determine it from other headers"
-  [headers]
-  (or (get headers "client-id")
-      (when-let [user-agent (get headers "user-agent")]
-        (cond
-          (or (re-find #"^Mozilla.*" user-agent) (re-find #"^Opera.*" user-agent))
-          BROWSER_CLIENT_ID
-          (re-find #"^curl.*" user-agent)
-          CURL_CLIENT_ID))
-      UNKNOWN_CLIENT_ID))
-
-(defn process-context-info
-  "Adds information to the context including the current token and the client id"
-  [context params headers]
-  (-> context
-      (assoc :token (get-token params headers))
-      (assoc :client-id (get-client-id headers))))
-
 (defn- search-response
   "Generate the response map for finding concepts by params or AQL."
   [params results]
@@ -169,7 +142,7 @@
             (= "application/x-www-form-urlencoded" content-type-header))
       (let [concept-type (concept-type-path-w-extension->concept-type path-w-extension)
             context (-> context
-                        (process-context-info params headers)
+                        (acl/add-authentication-to-context params headers)
                         (assoc :query-string query-string))
             params (process-params params path-w-extension headers "application/xml")
             result-format (:result-format params)
@@ -192,7 +165,7 @@
 (defn- get-granules-timeline
   "Retrieves a timeline of granules within each collection found."
   [context path-w-extension params headers query-string]
-  (let [context (process-context-info context params headers)
+  (let [context (acl/add-authentication-to-context context params headers)
         params (process-params params path-w-extension headers "application/json")
         _ (info (format "Getting granule timeline from client %s with params %s."
                         (:client-id context) (pr-str params)))
@@ -203,7 +176,7 @@
 (defn- find-concepts-by-aql
   "Invokes query service to parse the AQL query, find results and returns the response"
   [context path-w-extension params headers aql]
-  (let [context (process-context-info context params headers)
+  (let [context (acl/add-authentication-to-context context params headers)
         params (process-params params path-w-extension headers "application/xml")
         _ (info (format "Searching for concepts from client %s in format %s with AQL: %s and query parameters %s."
                         (:client-id context) (:result-format params) aql params))
@@ -213,7 +186,7 @@
 (defn- find-concept-by-cmr-concept-id
   "Invokes query service to find concept metadata by cmr concept id and returns the response"
   [context path-w-extension params headers]
-  (let [context (process-context-info context params headers)
+  (let [context (acl/add-authentication-to-context context params headers)
         result-format (get-search-results-format path-w-extension headers
                                                  supported-concept-id-retrieval-mime-types
                                                  "application/xml")
@@ -227,7 +200,7 @@
 (defn- get-provider-holdings
   "Invokes query service to retrieve provider holdings and returns the response"
   [context path-w-extension params headers]
-  (let [context (process-context-info context params headers)
+  (let [context (acl/add-authentication-to-context context params headers)
         params (process-params params path-w-extension headers "application/json")
         _ (info (format "Searching for provider holdings from client %s in format %s with params %s."
                         (:client-id context) (:result-format params) (pr-str params)))
@@ -284,12 +257,12 @@
 
       ;; Resets the application back to it's initial state.
        (POST "/reset" {:keys [request-context params headers]}
-        (query-svc/clear-cache (process-context-info request-context params headers))
+        (query-svc/clear-cache (acl/add-authentication-to-context request-context params headers))
         {:status 200})
 
       ;; Clears the cache.
       (POST "/clear-cache" {:keys [request-context params headers]}
-        (query-svc/clear-cache (process-context-info request-context params headers))
+        (query-svc/clear-cache (acl/add-authentication-to-context request-context params headers))
         {:status 200}))
     (route/not-found "Not Found")))
 
