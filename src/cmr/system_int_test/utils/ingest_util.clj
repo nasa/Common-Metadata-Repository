@@ -125,19 +125,25 @@
   [concept-id revision-id]
   (not (nil? (get-concept concept-id revision-id))))
 
+(defn admin-connect-options
+  "This returns the options to send when executing admin commands"
+  []
+  {:connection-manager (url/conn-mgr)
+   :query-params {:token "mock-echo-system-token"}})
+
 (defn reset
   "Resets the database and the elastic indexes"
   []
   (echo-util/reset)
-  (client/post (url/mdb-reset-url) {:connection-manager (url/conn-mgr)})
-  (client/post (url/indexer-reset-url) {:connection-manager (url/conn-mgr)})
-  (client/post (url/search-reset-url) {:connection-manager (url/conn-mgr)})
+  (client/post (url/mdb-reset-url) (admin-connect-options))
+  (client/post (url/indexer-reset-url) (admin-connect-options))
+  (client/post (url/search-reset-url) (admin-connect-options))
   (index/refresh-elastic-index))
 
 (defn clear-caches
   []
-  (client/post (url/indexer-clear-cache-url) {:connection-manager (url/conn-mgr)})
-  (client/post (url/search-clear-cache-url) {:connection-manager (url/conn-mgr)}))
+  (client/post (url/indexer-clear-cache-url) (admin-connect-options))
+  (client/post (url/search-clear-cache-url) (admin-connect-options)))
 
 ;;; fixture - each test to call this fixture
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -154,10 +160,13 @@
                        echo-util/registered-user-ace]
                       (assoc (echo-util/catalog-item-id provider-guid)
                              :collection-applicable true
-                             :granule-applicable true)))))
+                             :granule-applicable true)
+                      nil))))
 
 (defn reset-fixture
-  "New version of reset fixture that works with ECHO."
+  "Creates the given providers in ECHO and the CMR then clears out all data at the end."
+  ([]
+   (reset-fixture {}))
   ([provider-guid-id-map]
    (reset-fixture provider-guid-id-map true))
   ([provider-guid-id-map grant-all?]

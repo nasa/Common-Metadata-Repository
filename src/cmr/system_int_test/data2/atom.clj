@@ -254,6 +254,8 @@
        (set (map #(dissoc % :granule-count)
                  (get-in atom-results [:results :entries]))))))
 
+
+
 (defn- granule->expected-atom
   "Returns the atom map of the granule"
   [granule coll]

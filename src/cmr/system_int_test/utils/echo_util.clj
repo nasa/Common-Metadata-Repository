@@ -99,10 +99,11 @@
           :granule-applicable true)))
 
 (defn grant
-  "Creates an ACL in mock echo with the id, access control entries, and catalog item identity"
-  [aces catalog-item-identity]
+  "Creates an ACL in mock echo with the id, access control entries, identities"
+  [aces catalog-item-identity system-object-identity]
   (let [acl {:aces aces
-             :catalog-item-identity catalog-item-identity}]
+             :catalog-item-identity catalog-item-identity
+             :system-object-identity system-object-identity}]
     (mock/create-acl (context) acl)))
 
 (defn ungrant
@@ -122,32 +123,45 @@
 
 (defn group-ace
   "A CMR style access control entry granting users in a specific group read access."
-  [group-guid]
-  {:permissions [:read]
+  [group-guid permissions]
+  {:permissions permissions
    :group-guid group-guid})
 
 (defn grant-all
   "Creates an ACL in mock echo granting guests and registered users access to catalog items
   identified by the catalog-item-identity"
   [catalog-item-identity]
-  (grant [guest-ace registered-user-ace] catalog-item-identity))
+  (grant [guest-ace registered-user-ace] catalog-item-identity nil))
 
 (defn grant-guest
   "Creates an ACL in mock echo granting guests access to catalog items identified by the
   catalog-item-identity"
   [catalog-item-identity]
-  (grant [guest-ace] catalog-item-identity))
+  (grant [guest-ace] catalog-item-identity nil))
 
 (defn grant-registered-users
   "Creates an ACL in mock echo granting all registered users access to catalog items identified by the
   catalog-item-identity"
   [catalog-item-identity]
-  (grant [registered-user-ace] catalog-item-identity))
+  (grant [registered-user-ace] catalog-item-identity nil))
 
 (defn grant-group
   "Creates an ACL in mock echo granting users in the group access to catalog items identified by the
   catalog-item-identity"
   [group-guid catalog-item-identity]
-  (grant [(group-ace group-guid)] catalog-item-identity))
+  (grant [(group-ace group-guid [:read])] catalog-item-identity nil))
+
+
+;; Ingest management AKA admin granters
+(def ingest-management-system-object-identity
+  "A system object identity for the ingest management acl which is used for managing admin access."
+  {:target "INGEST_MANAGEMENT_ACL"})
+
+(defn grant-group-admin
+  [group-guid & permission-types]
+  (grant [(group-ace group-guid (or (seq permission-types)
+                                    [:read :update]))]
+         nil
+         ingest-management-system-object-identity))
 
 
