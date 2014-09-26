@@ -51,6 +51,7 @@
   "Stores the captured var-sym-values in the capture-values by namespace. var-sym-values should be
   an alternating list of symbols and their values. the-ns should be the namesspace string name."
   [the-ns & var-sym-values]
+  ;; Create a map of var symbols to var values.
   (let [var-sym-values-map (into {} (map vec (partition 2 var-sym-values)))]
     (swap! captured-values
            (fn [captured]
@@ -65,7 +66,7 @@
         (cmr.common.dev.capture-reveal/capture foo))"
   [& vars]
   `(capture-values ~(str *ns*)
-                   ;; create a map here of symbols to values
+                   ;; Create a sequence of var symbols to the var values.
                    ~@(mapcat (fn [v] [`'~v v]) vars)))
 
 (defn- reveal-value
