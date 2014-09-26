@@ -5,7 +5,7 @@
             ;; Must be required for derived calculations
             [cmr.spatial.geodetic-ring :as gr]
             [cmr.spatial.ring-relations :as rr]
-            [cmr.spatial.polygon :as p]
+            [cmr.spatial.polygon :as poly]
             [cmr.spatial.mbr :as mbr]
             [cmr.spatial.serialize :as srl]
             [cmr.common.services.errors :as errors]
@@ -23,13 +23,31 @@
      (with-prefix :south) (:south mbr)
      (with-prefix :crosses-antimeridian) (mbr/crosses-antimeridian? mbr)}))
 
+(def west-hemisphere
+  "an mbr that covers the western hemispher"
+  (mbr/mbr -180 90 0 -90))
+
+(def east-hemisphere
+  "an mbr that covers the eastern hemisphere"
+  (mbr/mbr 0 90 180 -90))
+
 (def special-cases
   "Created for CMR-724. It has mappings of specific spatial areas which cause problems to an equivalent
   representation."
-  {(p/polygon :geodetic [(rr/ords->ring :geodetic
-                                        -179.9999 0.0, -179.9999 -89.9999, 0.0 -89.9999, 0.0 0.0,
-                                        0.0 89.9999, -179.9999 89.9999, -179.9999 0.0)])
-   mbr/whole-world})
+  {(poly/polygon :geodetic [(rr/ords->ring :geodetic
+                                           -179.9999 0.0, -179.9999 -89.9999, 0.0 -89.9999, 0.0 0.0,
+                                           0.0 89.9999, -179.9999 89.9999, -179.9999 0.0)])
+   west-hemisphere
+
+   (poly/polygon :geodetic [(rr/ords->ring :geodetic
+                                           -179.9999 -89.9999, 0.0 -89.9999,  0.0 89.9999,
+                                           -179.9999 89.9999, -179.9999 -89.9999)])
+   west-hemisphere
+
+   (poly/polygon :geodetic [(rr/ords->ring :geodetic
+                                           0.0001 -89.9999, 180 -89.9999, 180 89.9999, 0.0001 89.9999,
+                                           0.0001 -89.9999)])
+   east-hemisphere})
 
 (defn shapes->elastic-doc
   "Converts a spatial shapes into the nested elastic attributes"
