@@ -12,7 +12,8 @@
             [cmr.metadata-db.services.jobs :as mdb-jobs]
             [cmr.common.jobs :as jobs]
             [cmr.oracle.config :as oracle-config]
-            [cmr.metadata-db.config :as config]))
+            [cmr.metadata-db.config :as config]
+            [cmr.transmit.config :as transmit-config]))
 
 ;; Design based on http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts
 
@@ -30,14 +31,15 @@
   ([]
    (create-system "metadata-db"))
   ([connection-pool-name]
-   {:db (assoc (oracle/create-db (config/db-spec connection-pool-name))
-               :result-set-fetch-size
-               (config/result-set-fetch-size))
-    :log (log/create-logger)
-    :web (web/create-web-server (config/app-port) routes/make-api)
-    :zipkin (context/zipkin-config "Metadata DB" false)
-    :parallel-chunk-size (config/parallel-chunk-size)
-    :scheduler (jobs/create-clustered-scheduler `system-holder mdb-jobs/jobs)}))
+   (let [sys {:db (assoc (oracle/create-db (config/db-spec connection-pool-name))
+                         :result-set-fetch-size
+                         (config/result-set-fetch-size))
+              :log (log/create-logger)
+              :web (web/create-web-server (config/app-port) routes/make-api)
+              :zipkin (context/zipkin-config "Metadata DB" false)
+              :parallel-chunk-size (config/parallel-chunk-size)
+              :scheduler (jobs/create-clustered-scheduler `system-holder mdb-jobs/jobs)}]
+     (transmit-config/system-with-connections sys [:echo-rest]))))
 
 (defn start
   "Performs side effects to initialize the system, acquire resources,
@@ -48,8 +50,7 @@
                                  (update-in system [component-name]
                                             #(when % (lifecycle/start % system))))
                                this
-                               component-order)
-        db (:db started-system)]
+                               component-order)]
 
     (info "Metadata DB started")
     started-system))

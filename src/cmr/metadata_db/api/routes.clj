@@ -16,6 +16,7 @@
             [cmr.metadata-db.services.concept-service :as concept-service]
             [cmr.metadata-db.services.provider-service :as provider-service]
             [cmr.metadata-db.services.messages :as msg]
+            [cmr.acl.core :as acl]
             [inflections.core :as inf]))
 
 ;;; service proxies
@@ -211,8 +212,10 @@
         (get-providers request-context params)))
 
     ;; delete the entire database
-    (POST "/reset" {:keys [request-context params]}
-      (reset request-context params))
+    (POST "/reset" {:keys [request-context params headers]}
+      (let [context (acl/add-authentication-to-context request-context params headers)]
+        (acl/verify-ingest-management-permission context :update)
+        (reset context params)))
 
     (route/not-found "Not Found")))
 
