@@ -254,6 +254,42 @@
           (is (= expected-facets
                  (:facets (search/find-refs :collection {:include-facets true
                                                          :project "PROJ2"}))))))
+
+      (testing "AND conditions narrow facets via AND not OR"
+        (let [expected-facets [{:field "project" :value-counts [["PROJ2" 1] ["proj3" 1]]}
+                               {:field "platform" :value-counts [["B-p0" 1] ["B-p1" 1]]}
+                               {:field "instrument"
+                                :value-counts [["B-p0-i0" 1]
+                                               ["B-p0-i1" 1]
+                                               ["B-p1-i0" 1]
+                                               ["B-p1-i1" 1]]}
+                               {:field "sensor"
+                                :value-counts [["B-p0-i0-s0" 1]
+                                               ["B-p0-i1-s0" 1]
+                                               ["B-p1-i0-s0" 1]
+                                               ["B-p1-i1-s0" 1]]}
+                               {:field "two_d_coordinate_system_name" :value-counts []}
+                               {:field "processing_level_id" :value-counts [["pl1" 1]]}
+                               {:field "category" :value-counts [["Cat1" 1] ["Hurricane" 1]]}
+                               {:field "topic" :value-counts [["Popular" 1] ["Topic1" 1]]}
+                               {:field "term" :value-counts [["Extreme" 1]
+                                                             ["Term1" 1]
+                                                             ["UNIVERSAL" 1]]}
+                               {:field "variable_level_1":value-counts [["Level1-1" 1]
+                                                                        ["Level2-1" 1]]}
+                               {:field "variable_level_2" :value-counts [["Level1-2" 1]
+                                                                         ["Level2-2" 1]]}
+                               {:field "variable_level_3" :value-counts [["Level1-3" 1]
+                                                                         ["Level2-3" 1]]}
+                               {:field "detailed_variable" :value-counts [["Detail1" 1]
+                                                                          ["UNIVERSAL" 1]]}]]
+
+
+          (is (= expected-facets
+                 (:facets (search/find-refs :collection {:include-facets true
+                                                        :project ["PROJ2" "proj3"]
+                                                        "options[project][and]" true}))))))
+
       (testing "search finding one document"
         (let [expected-facets [{:field "project" :value-counts []}
                                {:field "platform" :value-counts []}
