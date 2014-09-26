@@ -6,6 +6,37 @@
             [cmr.transmit.echo.tokens :as echo-tokens]
             [cmr.acl.collection-matchers :as cm]))
 
+(def BROWSER_CLIENT_ID "browser")
+(def CURL_CLIENT_ID "curl")
+(def UNKNOWN_CLIENT_ID "unknown")
+
+(def token-header
+  "echo-token")
+
+(defn- get-token
+  "Returns the token the user passed in the headers or parameters"
+  [params headers]
+  (or (:token params) (get headers token-header)))
+
+(defn- get-client-id
+  "Gets the client id passed by the client or tries to determine it from other headers"
+  [headers]
+  (or (get headers "client-id")
+      (when-let [user-agent (get headers "user-agent")]
+        (cond
+          (or (re-find #"^Mozilla.*" user-agent) (re-find #"^Opera.*" user-agent))
+          BROWSER_CLIENT_ID
+          (re-find #"^curl.*" user-agent)
+          CURL_CLIENT_ID))
+      UNKNOWN_CLIENT_ID))
+
+(defn add-authentication-to-context
+  "Adds information to the context including the current token and the client id"
+  [context params headers]
+  (-> context
+      (assoc :token (get-token params headers))
+      (assoc :client-id (get-client-id headers))))
+
 (defn context->sids
   "Returns the security identifiers (group guids and :guest or :registered) of the user identified
   by the token in the context."
