@@ -21,7 +21,11 @@
 
 (def ^:const ^double TAU (* 2.0 PI))
 
-(def ^:const ^double EARTH_RADIUS_METERS 6371000)
+(def ^:const ^double EARTH_RADIUS_METERS 6367435.0)
+
+(def ^:const ^double SOLAR_DAY_S (* 24.0 3600.0))
+
+(def ^:const ^double EARTH_ANGULAR_VELOCITY_RAD_S (/ TAU SOLAR_DAY_S))
 
 (defn radians
   "Converts degrees to radians"
