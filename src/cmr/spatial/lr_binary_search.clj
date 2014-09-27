@@ -106,14 +106,19 @@
   (a/midpoint (a/arc (first (:points ring))
                      (a/midpoint (second (rr/segments ring))))))
 
+(defn ring-point-on-pole?
+  "Returns true if this is a geodetic coordinate system at the ring has a poitn on the pole"
+  [ring]
+  (let [points (:points ring)]
+    (and (= :geodetic (rr/coordinate-system ring))
+         (some p/is-pole? points))))
+
 (defmulti ring->lr-search-points
   "Returns points that may potentially be in the ring to use to search for a LR."
   (fn [ring]
-    (let [points (:points ring)]
-      (cond
-        (and (some p/is-pole? points)
-             (= :geodetic (rr/coordinate-system ring))) :on-pole
-        :else :default))))
+    (if (ring-point-on-pole? ring)
+      :on-pole
+      :default)))
 
 ;; If the ring is on a pole we divide up the ring into triangles and return points inside the triangles.
 (defmethod ring->lr-search-points :on-pole
@@ -169,28 +174,53 @@
   (fn [shape]
     (type shape)))
 
+(defmulti polygon->lr-search-points
+  (fn [polygon]
+    (let [point-on-pole? (ring-point-on-pole? (poly/boundary polygon))
+          has-holes? (seq (poly/holes polygon))]
+      (cond
+        (and point-on-pole? has-holes?) :on-pole-with-holes
+        has-holes? :has-holes
+        :else :default))))
+
+(defmethod polygon->lr-search-points :default
+  [polygon]
+  (ring->lr-search-points (poly/boundary polygon)))
+
+(defmethod polygon->lr-search-points :has-holes
+  [polygon]
+  ;; The holes may contain all of the lr search points we would have. We'll find intersections
+  ;; through the middle of the MBR and the ring and all the holes. The midpoints of the
+  ;; intersections should result in a point that will work.
+  (let [mbr (relations/mbr polygon)
+        vert-line (mbr->vert-dividing-line mbr)
+        intersections (distinct-points (mapcat (partial line-ring-intersection-points vert-line)
+                                               (:rings polygon)))]
+    ;; Between at least 2 of the points there will be a midpoint in the polygon.
+    ;; Create a list of test points from midpoints of all combinations of points.
+    (distinct-points
+      (map (fn [[p1 p2]]
+             (a/midpoint (a/arc p1 p2)))
+           ;; Skip intersection combinations that are antipodal to each other.
+           (filter (partial apply (complement p/antipodal?))
+                   (combo/combinations intersections 2))))))
+
+(defmethod polygon->lr-search-points :on-pole-with-holes
+  [polygon]
+  ;; If a polygon has holes and a point on the pole we'll be be able to find a point in the polygon
+  ;; by searching for a midpoint between the points of the hole and the point on the pole.
+  (let [boundary (poly/boundary polygon)
+        pole-point (first (filter p/is-pole? (:points boundary)))
+        hole-points (mapcat :points (poly/holes polygon))]
+    (distinct-points
+      (map (fn [hole-point]
+             (a/midpoint (a/arc pole-point hole-point)))
+           hole-points))))
+
+
 (defmethod shape->lr-search-points Polygon
   [polygon]
-  (let [boundary (poly/boundary polygon)
-        holes (poly/holes polygon)
-        mbr (relations/mbr polygon)]
-    (if (empty? holes)
-      (ring->lr-search-points boundary)
-
-      ;; The holes may contain all of the lr search points we would have. We'll find intersections
-      ;; through the middle of the MBR and the ring and all the holes. The midpoints of the
-      ;; intersections should result in a point that will work.
-      (let [vert-line (mbr->vert-dividing-line mbr)
-            intersections (distinct-points (mapcat (partial line-ring-intersection-points vert-line)
-                                                   (:rings polygon)))]
-        ;; Between at least 2 of the points there will be a midpoint in the polygon.
-        ;; Create a list of test points from midpoints of all combinations of points.
-        (distinct-points
-          (map (fn [[p1 p2]]
-                 (a/midpoint (a/arc p1 p2)))
-               ;; Skip intersection combinations that are antipodal to each other.
-               (filter (partial apply (complement p/antipodal?))
-                       (combo/combinations intersections 2))))))))
+  (polygon->lr-search-points polygon))
 
 (defmethod shape->lr-search-points GeodeticRing
   [ring]
