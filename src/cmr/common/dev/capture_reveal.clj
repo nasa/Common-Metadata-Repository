@@ -47,7 +47,7 @@
   to captured values"
   (atom {}))
 
-(defn- capture-values
+(defn capture-values
   "Stores the captured var-sym-values in the capture-values by namespace. var-sym-values should be
   an alternating list of symbols and their values. the-ns should be the namesspace string name."
   [the-ns & var-sym-values]
@@ -69,12 +69,12 @@
                    ;; Create a sequence of var symbols to the var values.
                    ~@(mapcat (fn [v] [`'~v v]) vars)))
 
-(defn- reveal-value
+(defn reveal-value
   "Gets the captured value of the given symbol in the namespace."
   [the-ns var-sym]
   (get-in @captured-values [the-ns var-sym]))
 
-(defn- reveal-all-values
+(defn reveal-all-values
   "Returns all the captured values for a namespace."
   [the-ns]
   (get @captured-values the-ns))
