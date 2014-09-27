@@ -128,8 +128,7 @@
 (defn- iso-mends-metadata-results-match?
   "Returns true if the iso-mends metadata results match the expected items"
   [format-key items search-result]
-  (let [echo10-items (filter #(= :echo10 (:format-key %)) items)
-        non-echo10-items (filter #(not= :echo10 (:format-key %)) items)
+  (let [{echo10-items true non-echo10-items false} (group-by #(= :echo10 (:format-key %)) items)
         search-items (:items search-result)
         echo10-concept-ids (map :concept-id echo10-items)
         echo10-search-items (filter #(some #{(:concept-id %)} echo10-concept-ids) search-items)
@@ -142,7 +141,7 @@
   ([format-key items search-result]
    (metadata-results-match? format-key items search-result false))
   ([format-key items search-result echo-compatible?]
-   (if (some #{format-key} [:iso :iso19115 :iso-mends])
+   (if (some #{format-key} [:iso :iso19115])
      (iso-mends-metadata-results-match? format-key items search-result)
      (items-match? format-key items (:items search-result) echo-compatible?))))
 

@@ -95,11 +95,17 @@
    "application/echo10+xml" "echo10"
    "application/iso+xml" "iso"
    "application/iso-smap+xml" "iso_smap"
-   "application/iso-mends+xml" "iso_mends"
    "application/iso19115+xml" "iso19115"
    "application/dif+xml" "dif"
    "text/csv" "csv"
    "application/atom+xml" "atom"})
+
+(defn- fix-iso-mime-type
+  "Change the iso mime-type to iso19115 one"
+  [format]
+  (if (= "application/iso+xml" format)
+    "application/iso19115+xml"
+    format))
 
 (defn find-concepts-in-format
   "Returns the concepts in the format given."
@@ -116,7 +122,7 @@
                   params)
          [url accept] (if format-as-ext?
                         [(str (url/search-url concept-type) "." (mime-type->extension format))]
-                        [(url/search-url concept-type) format])
+                        [(url/search-url concept-type) (fix-iso-mime-type format)])
          response (client/get url {:accept accept
                                    :headers headers
                                    :query-params params

@@ -100,19 +100,14 @@
           (search/find-metadata :collection :dif {} {:format-as-ext? true}))))
 
     (testing "Retrieving results in MENDS ISO and its aliases"
-      (are [format-key]
-           (d/assert-metadata-results-match
-             format-key all-colls
-             (search/find-metadata :collection format-key {}))
-           :iso-mends
-           :iso
-           :iso19115)
+      (d/assert-metadata-results-match
+        :iso19115 all-colls
+        (search/find-metadata :collection :iso19115 {}))
       (testing "as extension"
         (are [format-key]
              (d/assert-metadata-results-match
                format-key all-colls
                (search/find-metadata :collection format-key {} {:format-as-ext? true}))
-             :iso-mends
              :iso
              :iso19115)))
 
