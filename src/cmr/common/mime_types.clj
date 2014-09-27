@@ -9,9 +9,7 @@
   {"application/json" :json
    "application/xml" :xml
    "application/echo10+xml" :echo10
-   "application/iso+xml" :iso
    "application/iso-smap+xml" :iso-smap
-   "application/iso-mends+xml" :iso-mends
    "application/iso19115+xml" :iso19115
    "application/dif+xml" :dif
    "text/csv" :csv
@@ -21,9 +19,9 @@
   {:json "application/json"
    :xml "application/xml"
    :echo10 "application/echo10+xml"
-   :iso "application/iso+xml"
+   :iso "application/iso19115+xml"
    :iso-smap "application/iso-smap+xml"
-   :iso-mends "application/iso-mends+xml"
+   :iso-mends "application/iso19115+xml"
    :iso19115 "application/iso19115+xml"
    :dif "application/dif+xml"
    :csv "text/csv"
