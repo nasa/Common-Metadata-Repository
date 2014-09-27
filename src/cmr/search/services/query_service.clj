@@ -70,6 +70,7 @@
             [cmr.common.cache :as cache]
             [cmr.acl.acl-cache :as acl-cache]
             [cmr.search.services.acls.collections-cache :as coll-cache]
+            [cmr.search.services.xslt :as xslt]
             [cmr.acl.core :as acl]
             [camel-snake-kebab :as csk]
             [cheshire.core :as json]
@@ -187,6 +188,7 @@
   (info "Clearing the search application cache")
   (cache/reset-cache (get-in context [:system :caches :index-names]))
   (cache/reset-cache (get-in context [:system :caches :token-sid]))
+  (cache/reset-cache (xslt/context->xsl-transformer-cache context))
   (acl-cache/reset context)
   (hgrf/reset context)
   (coll-cache/reset context))
