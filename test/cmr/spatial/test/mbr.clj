@@ -224,6 +224,10 @@
          (m/intersects-br? :geodetic mbr2 mbr1)))))
 
 (deftest intersects-br-test
+  (testing "one across antimeridian and one not"
+    (is (m/intersects-br? :geodetic (m/mbr 180 85 180 0) (m/mbr 170 20 -170 10)))
+    (is (m/intersects-br? :geodetic (m/mbr -170 85 -160 0) (m/mbr 170 20 -150 10))))
+
   (let [m1 (m/mbr -10 25 10 -25)]
     (are [w n e s]
          (let [m2 (m/mbr w n e s)]

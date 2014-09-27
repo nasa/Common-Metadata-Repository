@@ -228,22 +228,23 @@
 (defn intersects-br?
   "Returns true if the mbr intersects the other bounding rectangle"
   [coord-sys ^Mbr mbr ^Mbr other-br]
-  (or (some (partial covers-point? coord-sys mbr) (corner-points other-br))
-      (some (partial covers-point? coord-sys other-br) (corner-points mbr))
+  (some identity
+        (for [m1 (split-across-antimeridian mbr)
+              m2 (split-across-antimeridian other-br)]
+          (or (some (partial covers-point? coord-sys m1) (corner-points m2))
+              (some (partial covers-point? coord-sys m2) (corner-points m1))
 
-      ;; Do they form an overlapping t shape?
-      (and (= (crosses-antimeridian? mbr)
-              (crosses-antimeridian? other-br))
-           (let [{^double w1 :west ^double  n1 :north ^double e1 :east ^double s1 :south} mbr
-                 {^double w2 :west ^double  n2 :north ^double e2 :east ^double s2 :south} other-br]
-             (or (and (< w1 w2)
-                      (> e1 e2)
-                      (> n2 n1)
-                      (< s2 s1))
-                 (and (< w2 w1)
-                      (> e2 e1)
-                      (> n1 n2)
-                      (< s1 s2)))))))
+              ;; Do they form an overlapping t shape?
+              (let [{^double w1 :west ^double  n1 :north ^double e1 :east ^double s1 :south} m1
+                    {^double w2 :west ^double  n2 :north ^double e2 :east ^double s2 :south} m2]
+                (or (and (< w1 w2)
+                         (> e1 e2)
+                         (> n2 n1)
+                         (< s2 s1))
+                    (and (< w2 w1)
+                         (> e2 e1)
+                         (> n1 n2)
+                         (< s1 s2))))))))
 
 (defn non-crossing-intersects-br?
   "Specialized version of intersects-br? for two mbrs that don't cross the antimeridian.

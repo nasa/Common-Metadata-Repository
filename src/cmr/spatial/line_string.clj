@@ -1,4 +1,7 @@
 (ns cmr.spatial.line-string
+  "This contains generic functions for operating on geodetic or cartesian line strings. Geodetic line
+  strings are represented by the Arc record. Cartesian line strings are represented by the LineSegment
+  record."
   (:require [cmr.spatial.point :as p]
             [cmr.spatial.math :refer :all]
             [primitive-math]

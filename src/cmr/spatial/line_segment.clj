@@ -4,7 +4,6 @@
   (:require [cmr.spatial.math :refer :all]
             [primitive-math]
             [pjstadig.assertions :as pj]
-            [cmr.spatial.validation :as v]
             [cmr.spatial.mbr :as m]
             [cmr.spatial.point :as p]
             [cmr.spatial.messages :as msg]
