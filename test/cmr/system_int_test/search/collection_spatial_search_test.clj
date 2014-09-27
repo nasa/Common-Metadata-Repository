@@ -24,6 +24,13 @@
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
+(comment
+
+  (ingest/reset)
+  (ingest/create-provider "provguid1" "PROV1")
+
+  )
+
 (defn polygon
   "Creates a single ring polygon with the given ordinates. Points must be in counter clockwise order.
   The polygon will be closed automatically."
@@ -105,6 +112,8 @@
   (let [;; Lines
         normal-line (make-coll :geodetic "normal-line"
                                (l/ords->line-string :geodetic 22.681 -8.839, 18.309 -11.426, 22.705 -6.557))
+        along-am-line (make-coll :geodetic "along-am-line"
+                                 (l/ords->line-string :geodetic -180 0 -180 85))
         normal-line-cart (make-coll :cartesian "normal-line-cart"
                                     (l/ords->line-string :cartesian 16.439 -13.463,  31.904 -13.607, 31.958 -10.401))
 
@@ -170,10 +179,11 @@
                                                   polygon-with-holes-cart normal-line-cart
                                                   normal-line normal-poly-cart]
            ;; across antimeridian
-           [-167.85,-9.08,171.69,43.24] [whole-world across-am-br across-am-poly very-wide-cart]
+           [-167.85,-9.08,171.69,43.24] [whole-world across-am-br across-am-poly very-wide-cart
+                                         along-am-line]
 
            ;; across north pole
-           [0 85, 180 85] [whole-world north-pole on-np touches-np]
+           [0 85, 180 85] [whole-world north-pole on-np touches-np along-am-line]
 
            ;; across north pole where cartesian polygon touches it
            [-155 85, 25 85] [whole-world north-pole on-np very-tall-cart]
@@ -267,7 +277,8 @@
                             polygon-with-holes-cart]
 
            ;; crosses am
-           [166.11,53.04,-166.52,-19.14] [whole-world across-am-poly across-am-br am-point very-wide-cart]
+           [166.11,53.04,-166.52,-19.14] [whole-world across-am-poly across-am-br am-point
+                                          very-wide-cart along-am-line]
 
            ;; Matches geodetic line
            [17.67,-4,25.56,-6.94] [whole-world normal-line]
@@ -280,7 +291,8 @@
                               wide-north wide-south across-am-poly on-sp on-np normal-poly
                               polygon-with-holes north-pole south-pole normal-point am-point
                               very-wide-cart very-tall-cart wide-north-cart wide-south-cart
-                              normal-poly-cart polygon-with-holes-cart normal-line normal-line-cart]))
+                              normal-poly-cart polygon-with-holes-cart normal-line normal-line-cart
+                              along-am-line]))
 
     (testing "polygon searches"
       (are [ords items]
@@ -303,7 +315,7 @@
 
            ;; around north pole
            [58.41,76.95,163.98,80.56,-122.99,81.94,-26.18,82.82,58.41,76.95]
-           [whole-world on-np touches-np north-pole very-tall-cart]
+           [whole-world on-np touches-np north-pole very-tall-cart along-am-line]
 
            ;; around south pole
            [-161.53,-69.93,25.43,-51.08,13.89,-39.94,-2.02,-40.67,-161.53,-69.93]
@@ -311,7 +323,7 @@
 
            ;; Across antimeridian
            [-163.9,49.6,171.51,53.82,166.96,-11.32,-168.36,-14.86,-163.9,49.6]
-           [whole-world across-am-poly across-am-br am-point very-wide-cart]
+           [whole-world across-am-poly across-am-br am-point very-wide-cart along-am-line]
 
            [-2.212 -12.44, 0.103 -15.911, 2.185 -11.161 -2.212 -12.44]
            [whole-world normal-poly-cart polygon-with-holes-cart]
@@ -371,9 +383,18 @@
            [whole-world normal-poly normal-brs polygon-with-holes normal-line normal-line-cart]
 
            :box [23.59,-4,25.56,-15.47] [whole-world normal-line-cart]
+
+           ;; Across antimeridian
+           :box [170 20 -170 10]
+           [whole-world across-am-br along-am-line]
+
+           :box [166.11,53.04,-166.52,-19.14]
+           [whole-world across-am-poly across-am-br am-point very-wide-cart along-am-line]
+
            :point [17.73 2.21] [whole-world normal-brs]
            :line [-0.37,-14.07,4.75,1.27,25.13,-15.51]
            [whole-world polygon-with-holes polygon-with-holes-cart normal-line-cart normal-line
             normal-poly-cart]))))
+
 
 
