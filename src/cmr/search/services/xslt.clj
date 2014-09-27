@@ -1,15 +1,19 @@
 (ns cmr.search.services.xslt
   "Provides functions for invoking xsl on metadata."
-  (:require [clojure.java.io :as io])
+  (:require [clojure.java.io :as io]
+            [cmr.common.cache :as cache])
   (:import javax.xml.transform.TransformerFactory
            java.io.StringReader
            java.io.StringWriter
            javax.xml.transform.stream.StreamSource
            javax.xml.transform.stream.StreamResult))
 
-(def xsl-transformers
-  "An atom containing a map of xsl file name and compiled transformers."
-  (atom {}))
+(def xsl-transformer-cache-name
+  :xsl-transformers)
+
+(defn context->xsl-transformer-cache
+  [context]
+  (get-in context [:system :caches xsl-transformer-cache-name]))
 
 (defn- xsl->transformer
   "Returns the xsl transformer for the given xsl file"
@@ -18,19 +22,11 @@
         factory (TransformerFactory/newInstance)]
     (.newTransformer factory xsl-resource)))
 
-(defn- create-xsl-transformer
-  "Creates a xsl transformer and sets it in xsl-transformers"
-  [xsl]
-  (swap! xsl-transformers #(assoc % xsl (xsl->transformer xsl))))
-
 (defn transform
   "Transforms the given xml by appling the given xsl"
-  [xml xsl]
-  ;; create and cache the transformer if it has not been created
-  (when-not (get @xsl-transformers xsl)
-    (create-xsl-transformer xsl))
-
-  (let [transformer (get @xsl-transformers xsl)
+  [context xml xsl]
+  (let [transformer (cache/cache-lookup
+                      (context->xsl-transformer-cache context) xsl #(xsl->transformer xsl))
         source (new StreamSource (new StringReader xml))
         result (new StreamResult (new StringWriter))]
     (.transform transformer source result)
