@@ -11,9 +11,6 @@
             [cmr.common.concepts :as cc]
             [cmr.common.date-time-parser :as parser]))
 
-(def nrt-aliases
-  ["near_real_time","nrt", "NRT", "near real time","near-real time","near-real-time","near real-time"])
-
 (def concept-param->type
   "A mapping of param names to query condition types based on concept-type"
   {:collection {:entry-title :string
@@ -226,8 +223,7 @@
         (map #(parameter->condition concept-type param % options) value))
       (gc/or-conds
         (map #(parameter->condition concept-type param % options) value)))
-    (let [value (if (some #{value} nrt-aliases) "NEAR_REAL_TIME" value)
-          case-sensitive (case-sensitive-field? :collection-data-type options)
+    (let [case-sensitive (case-sensitive-field? :collection-data-type options)
           pattern (pattern-field? :collection-data-type options)]
       (if (or (= "SCIENCE_QUALITY" value)
               (and (= "SCIENCE_QUALITY" (str/upper-case value))
@@ -304,18 +300,13 @@
      :pretty? pretty?
      :echo-compatible? echo-compatible?}))
 
-(defn- alias-nrt
-  "Alias variations of NEAR_REAL_TIME to nrt"
-  [value]
-  (if (some #{value} nrt-aliases) "nrt" value))
-
 (defn parameters->query
   "Converts parameters into a query model."
   [concept-type params]
   (let [options (u/map-keys->kebab-case (get params :options {}))
         query-attribs (standard-params->query-attribs concept-type params)
         keywords (when (:keyword params)
-                   (map alias-nrt (str/split (str/lower-case (:keyword params)) #" ")))
+                  (str/split (str/lower-case (:keyword params)) #" "))
         params (if keywords (assoc params :keyword (str/join " " keywords)) params)
         params (dissoc params :options :page-size :page-num :sort-key :result-format :pretty
                        :include-granule-counts :include-has-granules :include-facets
