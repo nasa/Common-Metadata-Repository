@@ -112,7 +112,7 @@
 
 (defn- aql-date-range-elem->condition
   [aql-snippet]
-  (let [aql (format "<ECHOLastUpdate>%s</ECHOLastUpdate>" aql-snippet)
+  (let [aql (format "<ECHOLastUpdate><dateRange>%s</dateRange></ECHOLastUpdate>" aql-snippet)
         xml-struct (x/parse-str aql)]
     (a/element->condition :collection xml-struct)))
 
