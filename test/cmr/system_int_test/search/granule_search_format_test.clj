@@ -72,7 +72,7 @@
           :echo10 [g1-echo]
           (search/find-metadata :granule :echo10
                                 {:granule-ur "g1"}
-                                {:format-as-ext? true}))))
+                                {:url-extension "echo10"}))))
 
     (testing "Retrieving results in SMAP ISO"
       (d/assert-metadata-results-match
@@ -86,19 +86,19 @@
           :iso-smap [g1-echo]
           (search/find-metadata :granule :iso-smap
                                 {:granule-ur "g1"}
-                                {:format-as-ext? true}))))
+                                {:url-extension "iso_smap"}))))
 
     (testing "Retrieving results in ISO19115"
       (d/assert-metadata-results-match
         :iso19115 [g1-echo g2-echo]
         (search/find-metadata :granule :iso19115 {:granule-ur ["g1" "g2"]}))
       (testing "as extension"
-        (are [format-key]
+        (are [url-extension]
              (d/assert-metadata-results-match
                :iso19115 [g1-echo]
-               (search/find-metadata :granule format-key {:granule-ur "g1"} {:format-as-ext? true}))
-             :iso
-             :iso19115)))
+               (search/find-metadata :granule :iso19115 {:granule-ur "g1"} {:url-extension url-extension}))
+             "iso"
+             "iso19115")))
 
     (testing "Retrieving results in a format specified as a comma separated list"
       (are [format-str]
@@ -142,7 +142,7 @@
       (testing "as extension"
         (is (d/refs-match? [g1-echo] (search/find-refs :granule
                                                        {:granule-ur "g1"}
-                                                       {:format-as-ext? true})))))
+                                                       {:url-extension "xml"})))))
     (testing "ECHO Compatibility mode"
       (testing "XML References"
         (are [refs]
@@ -212,7 +212,7 @@
                           [:status :body])
              (select-keys (search/find-grans-csv :granule
                                                  {:granule-ur "Granule1"}
-                                                 {:format-as-ext? true})
+                                                 {:url-extension "csv"})
                           [:status :body]))))))
 
 (deftest search-granule-atom-and-json
@@ -265,11 +265,7 @@
                                 :day-night "NIGHT"
                                 :size 80.0
                                 :cloud-cover 30.0
-                                :related-urls [ru3]
-                                ;; FIXME - Commented this out because it seems wrong (dc not dg)
-                                ;; and is incompatible with spatial-coverage with orbit
-                                ; :spatial-coverage (dc/spatial nil :geodetic)
-                                })]
+                                :related-urls [ru3]})]
 
     (index/refresh-elastic-index)
 
@@ -300,7 +296,7 @@
                (select-keys
                  (search/find-concepts-atom :granule
                                             {:granule-ur "Granule1"}
-                                            {:format-as-ext? true})
+                                            {:url-extension "atom"})
                  [:status :results])))))
 
     (testing "json"
@@ -323,5 +319,5 @@
                (select-keys
                  (search/find-concepts-json :granule
                                             {:granule-ur "Granule1"}
-                                            {:format-as-ext? true})
+                                            {:url-extension "json"})
                  [:status :results])))))))

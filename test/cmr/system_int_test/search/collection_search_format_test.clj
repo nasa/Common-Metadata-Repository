@@ -88,7 +88,7 @@
       (testing "as extension"
         (d/assert-metadata-results-match
           :echo10 all-colls
-          (search/find-metadata :collection :echo10 {} {:format-as-ext? true}))))
+          (search/find-metadata :collection :echo10 {} {:url-extension "echo10"}))))
 
     (testing "Retrieving results in dif"
       (d/assert-metadata-results-match
@@ -97,19 +97,23 @@
       (testing "as extension"
         (d/assert-metadata-results-match
           :dif all-colls
-          (search/find-metadata :collection :dif {} {:format-as-ext? true}))))
+          (search/find-metadata :collection :dif {} {:url-extension "dif"}))))
 
     (testing "Retrieving results in MENDS ISO and its aliases"
+
       (d/assert-metadata-results-match
         :iso19115 all-colls
         (search/find-metadata :collection :iso19115 {}))
+
       (testing "as extension"
-        (are [format-key]
+        (are [url-extension]
              (d/assert-metadata-results-match
                :iso19115 all-colls
-               (search/find-metadata :collection format-key {} {:format-as-ext? true}))
-             :iso
-             :iso19115)))
+               (search/find-metadata :collection :iso19115 {} {:url-extension url-extension}))
+             "iso"
+             "iso19115")))
+
+    ;; TODO support for retrieving data in SMAP should only be supported through direct retrieval
 
     (testing "Retrieving results in SMAP ISO"
       (d/assert-metadata-results-match
@@ -118,19 +122,19 @@
       (testing "as extension"
         (d/assert-metadata-results-match
           :iso-smap all-colls
-          (search/find-metadata :collection :iso-smap {} {:format-as-ext? true}))))
+          (search/find-metadata :collection :iso-smap {} {:url-extension "iso_smap"}))))
 
     (testing "Get by concept id in formats"
       (testing "supported formats"
-        (are [mime-type format-key format-as-ext?]
+        (are [mime-type format-key url-extension]
              (let [response (search/get-concept-by-concept-id
                               (:concept-id c1-echo)
-                              {:format-as-ext? format-as-ext? :accept mime-type})]
+                              {:url-extension url-extension :accept mime-type})]
                (= (umm/umm->xml c1-echo format-key) (:body response)))
-             "application/dif+xml" :dif false
-             "application/dif+xml" :dif true
-             "application/echo10+xml" :echo10 false
-             "application/echo10+xml" :echo10 true))
+             "application/dif+xml" :dif nil
+             "application/dif+xml" :dif "dif"
+             "application/echo10+xml" :echo10 nil
+             "application/echo10+xml" :echo10 "echo10"))
       (testing "native format"
         ;; Native format can be specified using application/xml or not specifying any format
         (let [response (search/get-concept-by-concept-id (:concept-id c1-echo) {:accept nil})]
@@ -142,7 +146,7 @@
         (are [mime-type xml?]
              (let [response (search/get-concept-by-concept-id
                               (:concept-id c1-echo)
-                              {:format-as-ext? true :accept mime-type})
+                              {:accept mime-type})
                    err-msg (if xml?
                              (cx/string-at-path (x/parse-str (:body response)) [:error])
                              (first (:errors (json/decode (:body response) true))))]
@@ -165,7 +169,7 @@
       (testing "as extension"
         (is (d/refs-match? [c1-echo] (search/find-refs :collection
                                                        {:short-name "S1"}
-                                                       {:format-as-ext? true})))))
+                                                       {:url-extension "xml"})))))
     (testing "ECHO Compatibility mode"
       (testing "XML References"
         (are [refs]
@@ -177,7 +181,8 @@
       (testing "ECHO10"
         (d/assert-echo-compatible-metadata-results-match
           :echo10 all-colls
-          (search/find-metadata :collection :echo10 {:echo-compatible true}))))))
+          (search/find-metadata :collection :echo10 {:echo-compatible true}))))
+    ))
 
 ; Tests that we can ingest and find difs with spatial and that granules in the dif can also be
 ; ingested and found
@@ -295,7 +300,7 @@
              (select-keys
                (search/find-concepts-atom :collection
                                           {:dataset-id "Dataset1"}
-                                          {:format-as-ext? true})
+                                          {:url-extension "atom"})
                [:status :results]))))
 
     ;; search json format
@@ -318,7 +323,7 @@
              (select-keys
                (search/find-concepts-json :collection
                                           {:dataset-id "Dataset1"}
-                                          {:format-as-ext? true})
+                                          {:url-extension "json"})
                [:status :results]))))))
 
 (deftest atom-has-score-for-keyword-search
