@@ -4,6 +4,7 @@
 
   (:require [clj-time.core :as t]
             [cmr.common.time-keeper :as tk]
+            [cmr.common.services.errors :as errors]
             [cmr.search.models.query :as qm]
             [cmr.search.models.group-query-conditions :as gc]
             [cmr.search.data.complex-to-simple :as c2s]))
@@ -64,14 +65,18 @@
   "Convert a periodic temporal condition into a combination of simpler conditions
   so that it will be easier to convert into elastic json"
   [temporal]
-  (let [{:keys [start-day end-day start-date end-date]} temporal
-        end-year (if end-date (t/year end-date) (t/year (tk/now)))
-        start-day (if start-day start-day 1)
-        conditions (map
-                     #(simple-conditions-for-year
-                        % start-date end-date start-day end-day end-year)
-                     (range (t/year start-date) (inc end-year)))]
-    (gc/or-conds (remove nil? conditions))))
+  (let [{:keys [start-day end-day start-date end-date]} temporal]
+    (if (or start-date end-date)
+      (let [end-year (if end-date (t/year end-date) (t/year (tk/now)))
+            start-day (if start-day start-day 1)
+            conditions (map
+                         #(simple-conditions-for-year
+                            % start-date end-date start-day end-day end-year)
+                         (range (t/year start-date) (inc end-year)))]
+        (gc/or-conds (remove nil? conditions)))
+      (errors/throw-service-error
+        :bad-request
+        "At least temporal_start or temporal_end must be supplied for each temporal condition."))))
 
 (defn- temporal->simple-conditions
   "Convert a temporal condition into a combination of simpler conditions so that it will be easier to convert into elastic json"
