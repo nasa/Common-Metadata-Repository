@@ -4,12 +4,18 @@
             [cmr.acl.core :as acl]
             [cmr.common.cache :as cache]))
 
+(def token-sid-cache-name
+  :token-sid)
+
+(defn context->token-sid-cache
+  [context]
+  (get-in context [:system :caches token-sid-cache-name]))
+
 (defn context->sids
   "Wraps the existing context->sids but with caching"
   [context]
-  (let [{:keys [token]} context
-        token-sid-cache (get-in context [:system :caches :token-sid])]
-    (cache/cache-lookup token-sid-cache token #(acl/context->sids context))))
+  (let [{:keys [token]} context]
+    (cache/cache-lookup (context->token-sid-cache context) token #(acl/context->sids context))))
 
 (defn get-acls-applicable-to-token
   "Retrieves the ACLs that are applicable to the current user."

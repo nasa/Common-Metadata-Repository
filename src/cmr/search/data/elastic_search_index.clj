@@ -27,11 +27,17 @@
   (let [fetched-index-set (index-set/get-index-set context index-set-id)]
     (get-in fetched-index-set [:index-set :concepts])))
 
+(def index-cache-name
+  :index-names)
+
+(defn context->index-cache
+  [context]
+  (get-in context [:system :caches index-cache-name]))
+
 (defn- get-granule-index-names
   "Fetch index names associated with concepts."
   [context]
-  (let [index-cache (-> context :system :caches :index-names)
-        index-names (cache/cache-lookup index-cache :concept-indices
+  (let [index-names (cache/cache-lookup (context->index-cache context) :concept-indices
                                         (partial fetch-concept-type-index-names context))]
     (get index-names :granule)))
 
@@ -155,11 +161,11 @@
   [context]
   (let [index-info (concept-type->index-info context :collection nil)
         results (esd/search (context->conn context)
-                (:index-name index-info)
-                [(:type-name index-info)]
-                :query (q/match-all)
-                :size 10000
-                :fields ["permitted-group-ids"])]
+                            (:index-name index-info)
+                            [(:type-name index-info)]
+                            :query (q/match-all)
+                            :size 10000
+                            :fields ["permitted-group-ids"])]
     (into {} (for [hit (get-in results [:hits :hits])]
                [(:_id hit) (get-in hit [:fields :permitted-group-ids])]))))
 

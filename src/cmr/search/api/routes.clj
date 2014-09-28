@@ -150,9 +150,9 @@
                             (name concept-type) (:client-id context) result-format
                             (pr-str params)))
 
-            ;; handle aliases of :iso-mends
-            params (if (mt/alias-of-iso-mends? result-format)
-                     (assoc params :result-format :iso-mends) params)
+            ;; :iso is aliases of :iso19115
+            params (if (= :iso result-format)
+                     (assoc params :result-format :iso19115) params)
             search-params (lp/process-legacy-psa params query-string)
             results (query-svc/find-concepts-by-parameters context concept-type search-params)]
         (search-response params results))

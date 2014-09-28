@@ -28,7 +28,7 @@
   [concept-type query]
   [])
 
-(defmethod elastic-search-index/concept-type+result-format->fields [:collection :iso-mends]
+(defmethod elastic-search-index/concept-type+result-format->fields [:collection :iso19115]
   [concept-type query]
   [])
 
@@ -64,7 +64,7 @@
   [context query elastic-results]
   (elastic-results->query-metadata-results context query elastic-results))
 
-(defmethod elastic-results/elastic-results->query-results :iso-mends
+(defmethod elastic-results/elastic-results->query-results :iso19115
   [context query elastic-results]
   (elastic-results->query-metadata-results context query elastic-results))
 
@@ -170,7 +170,7 @@
         response (apply str (concat headers result-strings facets-strs footers))]
     ;; Since clojure.data.xml does not handle namespaces fully from parse-str to emit-str,
     ;; we don't support pretty print for ISO result which has namespace prefixes on element names.
-    (if (and pretty? (not (= :iso-mends result-format)))
+    (if (and pretty? (not (= :iso19115 result-format)))
       (let [parsed (x/parse-str response)
             ;; Fix for DIF emitting XML
             parsed (if (= :dif result-format)
@@ -190,7 +190,7 @@
   [context query results]
   (search-results->metadata-response context query results))
 
-(defmethod qs/search-results->response :iso-mends
+(defmethod qs/search-results->response :iso19115
   [context query results]
   (search-results->metadata-response context query results))
 
