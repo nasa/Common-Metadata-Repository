@@ -8,6 +8,7 @@
             [cmr.indexer.data.elasticsearch :as es]
             [cmr.common.mime-types :as mt]
             [cmr.common.log :refer (debug info warn error)]
+            [cmr.common.services.errors :as errors]
             [cmr.umm.related-url-helper :as ru]
             [cmr.indexer.data.concepts.temporal :as temporal]
             [cmr.indexer.data.concepts.attribute :as attrib]
@@ -21,14 +22,13 @@
 (defn spatial->elastic
   [collection]
   (when-let [geometries (seq (get-in collection [:spatial-coverage :geometries]))]
-      (let [sr (get-in collection [:spatial-coverage :spatial-representation])]
-        ;; TODO Add support for all spatial representations and geometries
-        (cond
-          (or (= sr :geodetic) (= sr :cartesian))
-          (spatial/spatial->elastic-docs sr collection)
+    (let [sr (get-in collection [:spatial-coverage :spatial-representation])]
+      (cond
+        (or (= sr :geodetic) (= sr :cartesian))
+        (spatial/spatial->elastic-docs sr collection)
 
-          :else
-          (info "Ignoring indexing spatial of collection spatial representation of" sr)))))
+        :else
+        (errors/internal-error! (str "Unknown spatial representation [" sr "]"))))))
 
 (defmethod es/concept->elastic-doc :collection
   [context concept collection]
@@ -36,6 +36,10 @@
         {{:keys [short-name long-name version-id processing-level-id collection-data-type]} :product
          :keys [entry-id entry-title summary temporal related-urls spatial-keywords associated-difs
                 temporal-keywords access-value]} collection
+        collection-data-type (if (= "NEAR_REAL_TIME" collection-data-type)
+                               ;; add in all the aliases for NEAR_REAL_TIME
+                               (concat [collection-data-type] k/nrt-aliases)
+                               collection-data-type)
         platforms (:platforms collection)
         platform-short-names (map :short-name platforms)
         platform-long-names (remove nil? (map :long-name platforms))
@@ -76,7 +80,10 @@
             :processing-level-id processing-level-id
             :processing-level-id.lowercase (when processing-level-id (str/lower-case processing-level-id))
             :collection-data-type collection-data-type
-            :collection-data-type.lowercase (when collection-data-type (str/lower-case collection-data-type))
+            :collection-data-type.lowercase (when collection-data-type
+                                              (if (sequential? collection-data-type)
+                                                (map str/lower-case collection-data-type)
+                                                (str/lower-case collection-data-type)))
             :platform-sn platform-short-names
             :platform-sn.lowercase  (map str/lower-case platform-short-names)
             :instrument-sn instrument-short-names

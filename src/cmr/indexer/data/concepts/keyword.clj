@@ -3,8 +3,7 @@
   (:require [clojure.string :as str]
             [cmr.indexer.data.concepts.science-keyword :as sk]
             [cmr.indexer.data.concepts.attribute :as attrib]
-            [cmr.indexer.data.concepts.organization :as org]
-            [cmr.common.util :as util]))
+            [cmr.indexer.data.concepts.organization :as org]))
 
 ;; NOTE -  The following fields are marked as deprecated in the UMM documenation
 ;; and are therefore not used for keyword searches in the CMR:
@@ -28,7 +27,6 @@
     (let [field-value (str/lower-case field-value)]
       (into [field-value] (str/split field-value keywords-separator-regex)))))
 
-
 (defn create-keywords-field
   [collection]
   "Create a keyword field for keyword searches by concatenating several other fields
@@ -37,9 +35,8 @@
         {{:keys [short-name long-name version-id processing-level-id collection-data-type]} :product
          :keys [entry-id entry-title summary spatial-keywords temporal-keywords associated-difs
                 projects]} collection
-        collection-data-type (if (and collection-data-type
-                                      (some #{(str/lower-case collection-data-type)} nrt-aliases))
-                               "nrt"
+        collection-data-type (if (= "NEAR_REAL_TIME" collection-data-type)
+                               nrt-aliases
                                collection-data-type)
         project-long-names (map :long-name projects)
         project-short-names (map :short-name projects)
