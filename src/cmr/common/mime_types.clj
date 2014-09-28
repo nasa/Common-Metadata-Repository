@@ -19,7 +19,6 @@
   {:json "application/json"
    :xml "application/xml"
    :echo10 "application/echo10+xml"
-   :iso "application/iso19115+xml"
    :iso-smap "application/iso-smap+xml"
    :iso19115 "application/iso19115+xml"
    :dif "application/dif+xml"
