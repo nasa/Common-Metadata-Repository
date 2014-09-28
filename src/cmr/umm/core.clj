@@ -28,15 +28,7 @@
   [concept]
   (dif-c/parse-collection (:metadata concept)))
 
-(defmethod parse-concept [:collection "application/iso+xml"]
-  [concept]
-  (iso-mends-c/parse-collection (:metadata concept)))
-
 (defmethod parse-concept [:collection "application/iso19115+xml"]
-  [concept]
-  (iso-mends-c/parse-collection (:metadata concept)))
-
-(defmethod parse-concept [:collection "application/iso-mends+xml"]
   [concept]
   (iso-mends-c/parse-collection (:metadata concept)))
 
@@ -61,15 +53,7 @@
   [umm format]
   (dif/umm->dif-xml umm))
 
-(defmethod umm->xml :iso
-  [umm format]
-  (iso-mends/umm->iso-mends-xml umm))
-
 (defmethod umm->xml :iso19115
-  [umm format]
-  (iso-mends/umm->iso-mends-xml umm))
-
-(defmethod umm->xml :iso-mends
   [umm format]
   (iso-mends/umm->iso-mends-xml umm))
 
