@@ -32,6 +32,10 @@
   [concept-type query]
   [])
 
+(defmethod elastic-search-index/concept-type+result-format->fields [:granule :iso19115]
+  [concept-type result-format]
+  [])
+
 (defmethod elastic-search-index/concept-type+result-format->fields [:collection :iso-smap]
   [concept-type result-format]
   [])

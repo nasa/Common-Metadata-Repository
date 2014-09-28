@@ -18,7 +18,7 @@
 (defn- xsl->transformer
   "Returns the xsl transformer for the given xsl file"
   [xsl]
-  (let [xsl-resource (new StreamSource (io/file (io/resource xsl)))
+  (let [xsl-resource (new StreamSource (io/file xsl))
         factory (TransformerFactory/newInstance)]
     (.newTransformer factory xsl-resource)))
 
