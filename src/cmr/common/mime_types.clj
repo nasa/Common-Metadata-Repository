@@ -21,7 +21,6 @@
    :echo10 "application/echo10+xml"
    :iso "application/iso19115+xml"
    :iso-smap "application/iso-smap+xml"
-   :iso-mends "application/iso19115+xml"
    :iso19115 "application/iso19115+xml"
    :dif "application/dif+xml"
    :csv "text/csv"
@@ -66,8 +65,3 @@
   (let [mime-type (mime-type-from-headers headers supported-types)]
     (validate-request-mime-type mime-type supported-types)
     (mime-type->format mime-type)))
-
-(defn alias-of-iso-mends?
-  "Returns true if the given result format is an alias of :iso-mends"
-  [result-format]
-  (some #{result-format} [:iso :iso19115]))
