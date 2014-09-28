@@ -628,14 +628,14 @@
 
   <xs:complexType name='intRange'>
     <xs:annotation><xs:documentation>A range of integers.</xs:documentation></xs:annotation>
-    <xs:attribute name='lower' type='xs:integer' use='optional'/>
-    <xs:attribute name='upper' type='xs:integer' use='optional'/>
+    <xs:attribute name='lower' type='integerType' use='optional'/>
+    <xs:attribute name='upper' type='integerType' use='optional'/>
   </xs:complexType>
 
   <xs:complexType name='floatRange'>
     <xs:annotation><xs:documentation>A range of floats.</xs:documentation></xs:annotation>
-    <xs:attribute name='lower' type='xs:float' use='optional'/>
-    <xs:attribute name='upper' type='xs:float' use='optional'/>
+    <xs:attribute name='lower' type='floatType' use='optional'/>
+    <xs:attribute name='upper' type='floatType' use='optional'/>
   </xs:complexType>
 
   <xs:complexType name='time'>
@@ -676,4 +676,31 @@
       <xs:element minOccurs='0' name='stopTime' type='stopTime'/>
     </xs:sequence>
   </xs:complexType>
+
+  <xs:simpleType name="integerType">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base='xs:integer'/>
+      </xs:simpleType>
+      <xs:simpleType>
+       <xs:restriction base='xs:string'>
+         <xs:length value='0' fixed='true'/>
+       </xs:restriction>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+
+  <xs:simpleType name="floatType">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base='xs:float'/>
+      </xs:simpleType>
+      <xs:simpleType>
+       <xs:restriction base='xs:string'>
+         <xs:length value='0' fixed='true'/>
+       </xs:restriction>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+
 </xs:schema>
