@@ -88,6 +88,18 @@
                                 {:granule-ur "g1"}
                                 {:format-as-ext? true}))))
 
+    (testing "Retrieving results in ISO19115"
+      (d/assert-metadata-results-match
+        :iso19115 [g1-echo g2-echo]
+        (search/find-metadata :granule :iso19115 {:granule-ur ["g1" "g2"]}))
+      (testing "as extension"
+        (are [format-key]
+             (d/assert-metadata-results-match
+               :iso19115 [g1-echo]
+               (search/find-metadata :granule format-key {:granule-ur "g1"} {:format-as-ext? true}))
+             :iso
+             :iso19115)))
+
     (testing "Retrieving results in a format specified as a comma separated list"
       (are [format-str]
            (d/refs-match?
