@@ -93,9 +93,7 @@
   {"application/json" "json"
    "application/xml" "xml"
    "application/echo10+xml" "echo10"
-   "application/iso+xml" "iso"
    "application/iso-smap+xml" "iso_smap"
-   "application/iso-mends+xml" "iso_mends"
    "application/iso19115+xml" "iso19115"
    "application/dif+xml" "dif"
    "text/csv" "csv"
@@ -217,7 +215,7 @@
                           (util/remove-nil-keys
                             {:concept-id concept-id
                              :revision-id (when revision-id (Long. ^String revision-id))
-                             :format format-key
+                             :format (if (= :iso format-key) :iso19115 format-key)
                              :collection-concept-id collection-concept-id
                              :echo_dataset_id echo_dataset_id
                              :echo_granule_id echo_granule_id

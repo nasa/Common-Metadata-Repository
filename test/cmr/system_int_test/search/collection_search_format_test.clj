@@ -57,10 +57,10 @@
                          :dif)
         c5-iso (d/ingest "PROV1" (dc/collection {:short-name "S5"
                                                  :version-id "V5"})
-                         :iso)
+                         :iso19115)
         c6-iso (d/ingest "PROV2" (dc/collection {:short-name "S6"
                                                  :version-id "V6"})
-                         :iso-mends)
+                         :iso19115)
         c7-smap (d/ingest "PROV1" (dc/collection {:short-name "S7"
                                                   :version-id "V7"})
                           :iso-smap)
@@ -99,23 +99,17 @@
           :dif all-colls
           (search/find-metadata :collection :dif {} {:format-as-ext? true}))))
 
-    (testing "Retrieving results in MENDS ISO"
+    (testing "Retrieving results in MENDS ISO and its aliases"
       (d/assert-metadata-results-match
-        :iso-mends all-colls
-        (search/find-metadata :collection :iso-mends {}))
+        :iso19115 all-colls
+        (search/find-metadata :collection :iso19115 {}))
       (testing "as extension"
-        (d/assert-metadata-results-match
-          :iso-mends all-colls
-          (search/find-metadata :collection :iso-mends {} {:format-as-ext? true}))))
-
-    (testing "Retrieving results in ISO, which is an alias for MENDS ISO"
-      (d/assert-metadata-results-match
-        :iso all-colls
-        (search/find-metadata :collection :iso {}))
-      (testing "as extension"
-        (d/assert-metadata-results-match
-          :iso all-colls
-          (search/find-metadata :collection :iso {} {:format-as-ext? true}))))
+        (are [format-key]
+             (d/assert-metadata-results-match
+               :iso19115 all-colls
+               (search/find-metadata :collection format-key {} {:format-as-ext? true}))
+             :iso
+             :iso19115)))
 
     (testing "Retrieving results in SMAP ISO"
       (d/assert-metadata-results-match
