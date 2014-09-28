@@ -57,10 +57,10 @@
                          :dif)
         c5-iso (d/ingest "PROV1" (dc/collection {:short-name "S5"
                                                  :version-id "V5"})
-                         :iso)
+                         :iso19115)
         c6-iso (d/ingest "PROV2" (dc/collection {:short-name "S6"
                                                  :version-id "V6"})
-                         :iso-mends)
+                         :iso19115)
         c7-smap (d/ingest "PROV1" (dc/collection {:short-name "S7"
                                                   :version-id "V7"})
                           :iso-smap)
@@ -106,7 +106,7 @@
       (testing "as extension"
         (are [format-key]
              (d/assert-metadata-results-match
-               format-key all-colls
+               :iso19115 all-colls
                (search/find-metadata :collection format-key {} {:format-as-ext? true}))
              :iso
              :iso19115)))

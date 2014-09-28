@@ -93,19 +93,11 @@
   {"application/json" "json"
    "application/xml" "xml"
    "application/echo10+xml" "echo10"
-   "application/iso+xml" "iso"
    "application/iso-smap+xml" "iso_smap"
    "application/iso19115+xml" "iso19115"
    "application/dif+xml" "dif"
    "text/csv" "csv"
    "application/atom+xml" "atom"})
-
-(defn- fix-iso-mime-type
-  "Change the iso mime-type to iso19115 one"
-  [format]
-  (if (= "application/iso+xml" format)
-    "application/iso19115+xml"
-    format))
 
 (defn find-concepts-in-format
   "Returns the concepts in the format given."
@@ -122,7 +114,7 @@
                   params)
          [url accept] (if format-as-ext?
                         [(str (url/search-url concept-type) "." (mime-type->extension format))]
-                        [(url/search-url concept-type) (fix-iso-mime-type format)])
+                        [(url/search-url concept-type) format])
          response (client/get url {:accept accept
                                    :headers headers
                                    :query-params params
@@ -223,7 +215,7 @@
                           (util/remove-nil-keys
                             {:concept-id concept-id
                              :revision-id (when revision-id (Long. ^String revision-id))
-                             :format format-key
+                             :format (if (= :iso format-key) :iso19115 format-key)
                              :collection-concept-id collection-concept-id
                              :echo_dataset_id echo_dataset_id
                              :echo_granule_id echo_granule_id

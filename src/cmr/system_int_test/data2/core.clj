@@ -141,7 +141,7 @@
   ([format-key items search-result]
    (metadata-results-match? format-key items search-result false))
   ([format-key items search-result echo-compatible?]
-   (if (some #{format-key} [:iso :iso19115])
+   (if (= :iso19115 format-key)
      (iso-mends-metadata-results-match? format-key items search-result)
      (items-match? format-key items (:items search-result) echo-compatible?))))
 
