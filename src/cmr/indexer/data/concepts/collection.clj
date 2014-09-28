@@ -80,10 +80,10 @@
             :processing-level-id processing-level-id
             :processing-level-id.lowercase (when processing-level-id (str/lower-case processing-level-id))
             :collection-data-type collection-data-type
-            :collection-data-type.lowercase (if (seq collection-data-type)
-                                              (map str/lower-case collection-data-type)
-                                              (when collection-data-type
-                                                str/lower-case collection-data-type))
+            :collection-data-type.lowercase (when collection-data-type
+                                              (if (= java.lang.String (type collection-data-type))
+                                                (str/lower-case collection-data-type)
+                                                (map str/lower-case collection-data-type)))
             :platform-sn platform-short-names
             :platform-sn.lowercase  (map str/lower-case platform-short-names)
             :instrument-sn instrument-short-names

@@ -153,9 +153,9 @@
                                     ;; Stored to allow retrieval for implementing granule acls
                                     :access-value          (stored double-field-mapping)
                                     :processing-level-id   (stored string-field-mapping)
-                                    :processing-level-id.lowercase  string-field-mapping
+                                    :processing-level-id.lowercase string-field-mapping
                                     :collection-data-type  (stored string-field-mapping)
-                                    :collection-data-type.lowercase  string-field-mapping
+                                    :collection-data-type.lowercase string-field-mapping
                                     :start-date            (stored date-field-mapping)
                                     :end-date              (stored date-field-mapping)
                                     :platform-sn           string-field-mapping
