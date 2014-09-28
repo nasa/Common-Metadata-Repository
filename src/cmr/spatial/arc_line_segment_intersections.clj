@@ -37,6 +37,10 @@
                        ;; Create a vertical line segment ignoring the original point2 lon
                        [(s/line-segment point1 (p/point (:lon point1) -90))]
 
+                       (p/is-south-pole? point1)
+                       ;; Create a vertical line segment ignoring the original point1 lon
+                       [(s/line-segment point2 (p/point (:lon point2) -90))]
+
                        :else
                        [(s/line-segment point1 point2)])]
     (filter identity (map (partial s/intersection ls) arc-segments))))
