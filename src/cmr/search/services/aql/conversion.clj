@@ -195,7 +195,7 @@
 
 (defn element->num-range
   [concept-type element]
-  (let [string-double-fn (fn [n] (when n (Double. n)))
+  (let [string-double-fn (fn [n] (when-not (str/blank? n) (Double. n)))
         range-val (-> (cx/attrs-at-path element [:range])
                       (set/rename-keys {:lower :min-value :upper :max-value})
                       (update-in [:min-value] string-double-fn)
@@ -237,7 +237,7 @@
 (defmethod element->condition :date-range
   [concept-type element]
   (let [condition-key (elem-name->condition-key concept-type (:tag element))
-        [start-date stop-date] (parse-date-range-element element)]
+        [start-date stop-date] (parse-date-range-element (cx/element-at-path element [:dateRange]))]
     (qm/map->DateRangeCondition
       {:field condition-key
        :start-date start-date

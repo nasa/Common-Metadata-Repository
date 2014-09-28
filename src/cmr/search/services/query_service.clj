@@ -63,6 +63,7 @@
             [cmr.search.services.query-execution :as qe]
             [cmr.search.results-handlers.provider-holdings :as ph]
             [cmr.search.services.transformer :as t]
+            [cmr.search.services.acls.acl-helper :as ah]
             [cmr.metadata-db.services.concept-service :as meta-db]
             [cmr.system-trace.core :refer [deftracefn]]
             [cmr.common.services.errors :as err]
@@ -70,6 +71,7 @@
             [cmr.common.cache :as cache]
             [cmr.acl.acl-cache :as acl-cache]
             [cmr.search.services.acls.collections-cache :as coll-cache]
+            [cmr.search.services.xslt :as xslt]
             [cmr.acl.core :as acl]
             [camel-snake-kebab :as csk]
             [cheshire.core :as json]
@@ -185,8 +187,9 @@
   [context]
   (acl/verify-ingest-management-permission context)
   (info "Clearing the search application cache")
-  (cache/reset-cache (get-in context [:system :caches :index-names]))
-  (cache/reset-cache (get-in context [:system :caches :token-sid]))
+  (cache/reset-cache (idx/context->index-cache context))
+  (cache/reset-cache (ah/context->token-sid-cache context))
+  (cache/reset-cache (xslt/context->xsl-transformer-cache context))
   (acl-cache/reset context)
   (hgrf/reset context)
   (coll-cache/reset context))

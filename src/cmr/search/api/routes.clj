@@ -42,9 +42,8 @@
   {"json" "application/json"
    "xml" "application/xml"
    "echo10" "application/echo10+xml"
-   "iso" "application/iso+xml"
+   "iso" "application/iso19115+xml"
    "iso_smap" "application/iso-smap+xml"
-   "iso_mends" "application/iso-mends+xml"
    "iso19115" "application/iso19115+xml"
    "dif" "application/dif+xml"
    "csv" "text/csv"
@@ -58,8 +57,7 @@
     "application/echo10+xml"
     "application/dif+xml"
     "application/atom+xml"
-    "application/iso+xml"
-    "application/iso-mends+xml"
+    "application/iso19115+xml"
     "application/iso-smap+xml"
     "text/csv"})
 
@@ -73,6 +71,8 @@
   #{"*/*"
     "application/xml" ; allows retrieving native format
     "application/echo10+xml"
+    "application/iso19115+xml"
+    "application/iso-smap+xml"
     "application/dif+xml"})
 
 (defn- search-response-headers
@@ -150,11 +150,9 @@
                             (name concept-type) (:client-id context) result-format
                             (pr-str params)))
 
-            ;; TODO this should be handled in the mime type namespace.
-            ;; alias :iso to iso-mends
-            params (if (= :iso result-format) (assoc params :result-format :iso-mends) params)
-
-
+            ;; :iso is aliases of :iso19115
+            params (if (= :iso result-format)
+                     (assoc params :result-format :iso19115) params)
             search-params (lp/process-legacy-psa params query-string)
             results (query-svc/find-concepts-by-parameters context concept-type search-params)]
         (search-response params results))

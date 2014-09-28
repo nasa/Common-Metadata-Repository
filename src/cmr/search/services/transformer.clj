@@ -6,7 +6,9 @@
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.mime-types :as mt]
             [cmr.common.services.errors :as errors]
+            [clojure.java.io :as io]
             [cmr.search.services.acl-service :as acl-service]
+            [cmr.search.services.xslt :as xslt]
             [cmr.common.util :as u]
             [cmr.umm.iso-smap.granule :as smap-g]))
 
@@ -14,24 +16,37 @@
   "This format is used to indicate the metadata is in it's native format."
   :xml)
 
+(def types->xsl
+  "Defines the [original-format target-format] to xsl mapping"
+  {[:echo10 :iso19115] (io/resource "xslt/echo10_to_iso19115.xsl")})
+
 (defn context->metadata-db-context
   "Converts the context into one that can be used to invoke the metadata-db services."
   [context]
   (assoc context :system (get-in context [:system :metadata-db])))
 
+(defn- transform-metadata
+  "Transforms the metadata of the concept to the given format"
+  [context concept target-format]
+  (let [native-format (mt/mime-type->format (:format concept))]
+    (if-let [xsl (types->xsl [native-format target-format])]
+      ; xsl is defined for the transformation, so use xslt
+      (xslt/transform context (:metadata concept) xsl)
+      (-> concept
+          ummc/parse-concept
+          (ummc/umm->xml target-format)))))
+
 (defn- concept->value-map
   "Convert a concept into a map containing metadata in a desired format as well as
   concept-id, revision-id, and possibly collection-concept-id"
-  [concept format]
+  [context concept format]
   (let [collection-concept-id (get-in concept [:extra-fields :parent-collection-id])
         concept-format (mt/mime-type->format (:format concept))
         _ (when-not concept-format
             (errors/internal-error! "Did not recognize concept format" (pr-str (:format concept))))
         value-map (if (or (= format native-format) (= format concept-format))
                     (select-keys concept [:metadata :concept-id :revision-id :format])
-                    (let [metadata (-> concept
-                                       ummc/parse-concept
-                                       (ummc/umm->xml format))]
+                    (let [metadata (transform-metadata context concept format)]
                       (assoc (select-keys concept [:concept-id :revision-id])
                              :metadata metadata
                              :format (mt/format->mime-type format))))]
@@ -47,7 +62,8 @@
   (let [mdb-context (context->metadata-db-context context)
         [t1 concepts] (u/time-execution
                         (metadata-db/get-concepts mdb-context concepts-tuples allow-missing?))
-        [t2 values] (u/time-execution (mapv #(concept->value-map % format) concepts))]
+        [t2 values] (u/time-execution
+                      (doall (pmap #(concept->value-map context % format) concepts)))]
     (debug "get-concept-revisions time:" t1
            "concept->value-map time:" t2)
     values))
@@ -124,7 +140,8 @@
                                              (map add-acl-enforcement-fields concepts))))
          ;; Filtering deleted concepts
          [t3 concepts] (u/time-execution (filter #(not (:deleted %)) concepts))
-         [t4 values] (u/time-execution (mapv #(concept->value-map % format) concepts))]
+         [t4 values] (u/time-execution
+                       (doall (pmap #(concept->value-map context % format) concepts)))]
      (debug "get-latest-concepts time:" t1
             "acl-filter-concepts time:" t2
             "tombstone-filter time:" t3
