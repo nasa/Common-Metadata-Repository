@@ -218,7 +218,7 @@
            "NEA*REA*IME" [coll22]
            "nea*rea*ime" [coll22]
            "\"Quoted*" [coll23]))
-    (testing "earch by keywords using wildcard ?."
+    (testing "search by keywords using wildcard ?."
       (are [keyword-str items]
            (let [refs (search/find-refs :collection {:keyword keyword-str})
                  matches? (d/refs-match? items refs)]
