@@ -43,17 +43,18 @@
 
 (deftracefn collection-orbit-parameters
   "Fetch elastic orbit parameters for the given collection ids.
-   If scope? is true, scopes the results to the passed collection ids and null or
-   empty collection ids implies that no scoping should be applied (all collections
-   should be fetched).
-   If scope? is false, treats collection-ids as an additional condition.  null or
-   empty collection ids implies that no results should be found.
-   TODO: The scoping rules are kind of ugly, but we need it both ways.
-   "
-  [context scope? collection-ids]
-  (if (or scope? (seq collection-ids))
-    (fetch-elastic-collections context
-                               (qm/->ExistCondition :swath-width)
-                               collection-ids
-                               orbit-param-fields)
-    []))
+   If treat-empty-as-all? is true, scopes the results to the passed collection ids
+   and null or empty collection ids implies that no scoping should be applied (all
+   collections should be fetched).
+   If treat-empty-as-all? is false, treats collection-ids as an additional condition.
+   null or empty collection ids implies that no results should be found.
+   TODO: The scoping rules are kind of ugly, but we need it both ways."
+  ([context collection-ids]
+     (collection-orbit-parameters context collection-ids false))
+  ([context collection-ids treat-empty-as-all?]
+     (if (or treat-empty-as-all? (seq collection-ids))
+       (fetch-elastic-collections context
+                                  (qm/->ExistCondition :swath-width)
+                                  collection-ids
+                                  orbit-param-fields)
+       [])))
