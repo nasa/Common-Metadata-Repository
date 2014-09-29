@@ -43,8 +43,8 @@
    "xml" "application/xml"
    "echo10" "application/echo10+xml"
    "iso" "application/iso19115+xml"
-   "iso_smap" "application/iso-smap+xml"
    "iso19115" "application/iso19115+xml"
+   "iso_smap" "application/iso:smap+xml"
    "dif" "application/dif+xml"
    "csv" "text/csv"
    "atom" "application/atom+xml"})
@@ -58,7 +58,7 @@
     "application/dif+xml"
     "application/atom+xml"
     "application/iso19115+xml"
-    "application/iso-smap+xml"
+    "application/iso:smap+xml"
     "text/csv"})
 
 (def supported-provider-holdings-mime-types
@@ -72,7 +72,7 @@
     "application/xml" ; allows retrieving native format
     "application/echo10+xml"
     "application/iso19115+xml"
-    "application/iso-smap+xml"
+    "application/iso:smap+xml"
     "application/dif+xml"})
 
 (defn- search-response-headers
@@ -146,6 +146,9 @@
                         (assoc :query-string query-string))
             params (process-params params path-w-extension headers "application/xml")
             result-format (:result-format params)
+            _ (when (= :iso-smap result-format)
+                (svc-errors/throw-service-error
+                  :bad-request "Searching in iso_smap format is not supported."))
             _ (info (format "Searching for %ss from client %s in format %s with params %s."
                             (name concept-type) (:client-id context) result-format
                             (pr-str params)))
