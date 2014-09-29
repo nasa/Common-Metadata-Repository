@@ -159,7 +159,7 @@
 
 (def supported-formats
   "Defines the set of supported concept forms, new forms shold be added once it is supported."
-  #{"application/echo10+xml" "application/dif+xml" "application/iso-smap+xml"})
+  #{"application/echo10+xml" "application/dif+xml" "application/iso:smap+xml"})
 
 (defn prepare-batch
   "Convert a batch of concepts into elastic docs for bulk indexing."
