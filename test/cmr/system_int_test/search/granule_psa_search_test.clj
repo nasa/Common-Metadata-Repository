@@ -113,18 +113,21 @@
         gran5 (d/ingest "PROV1" (dg/granule coll3 {:product-specific-attributes [(dg/psa "case" ["UP"])]}))]
     (index/refresh-elastic-index)
     (testing "search by value"
-      (are [v items]
-           (d/refs-match? items (search/find-refs :granule {"attribute[]" v}))
-           "string,alpha,ab" [gran1]
-           "string,alpha,AB" [gran1]
-           "string,alpha,c" []
-           "string,bravo,bf" [gran1 gran3]
-           "string,case,UP" [gran5]
-           "string,case,up" [gran5]
+      (are [items v options]
+           (let [params (merge {"attribute[]" v} options)]
+             (d/refs-match? items (search/find-refs :granule params)))
+           [gran1] "string,alpha,ab" nil
+           [gran1] "string,alpha,AB" nil
+           [] "string,alpha,c" nil
+           [gran1 gran3] "string,bravo,bf" nil
+           [gran5] "string,case,UP" nil
+           [gran5] "string,case,up" nil
 
            ;; tests by value inheritance
-           "string,charlie,FoO" [gran3 gran4]
-           "string,charlie,foo" [gran3 gran4]))
+           [gran3 gran4] "string,charlie,FoO" nil
+           [gran3 gran4] "string,charlie,foo" nil
+           [gran3 gran4] "string,charlie,foo" {"options[attribute][exclude-collection]" false}
+           [] "string,charlie,foo" {"options[attribute][exclude-collection]" true}))
 
     (testing "search by value catalog-rest style"
       (are [v items]
