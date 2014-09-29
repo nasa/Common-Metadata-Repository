@@ -32,11 +32,11 @@
   [concept]
   (iso-mends-c/parse-collection (:metadata concept)))
 
-(defmethod parse-concept [:collection "application/iso-smap+xml"]
+(defmethod parse-concept [:collection "application/iso:smap+xml"]
   [concept]
   (iso-smap-c/parse-collection (:metadata concept)))
 
-(defmethod parse-concept [:granule "application/iso-smap+xml"]
+(defmethod parse-concept [:granule "application/iso:smap+xml"]
   [concept]
   (iso-smap-g/parse-granule (:metadata concept)))
 
