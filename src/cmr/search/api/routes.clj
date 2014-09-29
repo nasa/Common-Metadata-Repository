@@ -44,13 +44,13 @@
    "xml" "application/xml"
    "echo10" "application/echo10+xml"
    "iso" "application/iso19115+xml"
-   "iso_smap" "application/iso-smap+xml"
    "iso19115" "application/iso19115+xml"
+   "iso_smap" "application/iso:smap+xml"
    "dif" "application/dif+xml"
    "csv" "text/csv"
    "atom" "application/atom+xml"})
 
-(def supported-mime-types
+(def search-result-supported-mime-types
   "The mime types supported by search."
   #{"*/*"
     "application/xml"
@@ -59,7 +59,6 @@
     "application/dif+xml"
     "application/atom+xml"
     "application/iso19115+xml"
-    "application/iso-smap+xml"
     "text/csv"})
 
 (def supported-provider-holdings-mime-types
@@ -73,7 +72,7 @@
     "application/xml" ; allows retrieving native format
     "application/echo10+xml"
     "application/iso19115+xml"
-    "application/iso-smap+xml"
+    "application/iso:smap+xml"
     "application/dif+xml"})
 
 (defn- search-response-headers
@@ -105,12 +104,11 @@
   [path-w-extension]
   (second (re-matches #"([^\.]+)(?:\..+)?" path-w-extension)))
 
-
-
 (defn- get-search-results-format
   "Returns the requested search results format parsed from headers or from the URL extension"
   ([path-w-extension headers default-mime-type]
-   (get-search-results-format path-w-extension headers supported-mime-types default-mime-type))
+   (get-search-results-format
+     path-w-extension headers search-result-supported-mime-types default-mime-type))
   ([path-w-extension headers valid-mime-types default-mime-type]
    (let [ext-mime-type (path-w-extension->mime-type path-w-extension)
          mime-type (or ext-mime-type
@@ -150,10 +148,6 @@
             _ (info (format "Searching for %ss from client %s in format %s with params %s."
                             (name concept-type) (:client-id context) result-format
                             (pr-str params)))
-
-            ;; :iso is aliases of :iso19115
-            params (if (= :iso result-format)
-                     (assoc params :result-format :iso19115) params)
             search-params (lp/process-legacy-psa params query-string)
             results (query-svc/find-concepts-by-parameters context concept-type search-params)]
         (search-response params results))

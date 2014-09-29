@@ -93,15 +93,11 @@
   ;; DIF doesn't support restriction flag yet.
   nil)
 
-(defmethod extract-access-value "application/iso+xml"
+(defmethod extract-access-value "application/iso19115+xml"
   [concept]
   (get-iso-access-value concept))
 
-(defmethod extract-access-value "application/iso-mends+xml"
-  [concept]
-  (get-iso-access-value concept))
-
-(defmethod extract-access-value "application/iso-smap+xml"
+(defmethod extract-access-value "application/iso:smap+xml"
   [concept]
   (when (= :granule (:concept-type concept))
     (smap-g/xml->access-value (:metadata concept))))
