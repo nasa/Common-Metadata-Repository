@@ -284,9 +284,7 @@
                                                                     :start-orbit-number 3.0
                                                                     :stop-orbit-number 4.0
                                                                     :equator-crossing-longitude -45.0
-                                                                    :equator-crossing-date-time "2011-01-01T12:00:00.000Z"}]
-                                })
-        ]
+                                                                    :equator-crossing-date-time "2011-01-01T12:00:00.000Z"}]})]
 
     (index/refresh-elastic-index)
 
