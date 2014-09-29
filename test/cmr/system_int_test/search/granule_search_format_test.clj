@@ -74,19 +74,17 @@
                                 {:granule-ur "g1"}
                                 {:url-extension "echo10"}))))
 
-    (testing "Retrieving results in SMAP ISO"
-      (d/assert-metadata-results-match
-        :iso-smap all-granules
-        (search/find-metadata :granule :iso-smap {}))
-      (d/assert-metadata-results-match
-        :iso-smap [g1-echo]
-        (search/find-metadata :granule :iso-smap {:granule-ur "g1"}))
+    (testing "Retrieving results in SMAP ISO format is not supported"
+      (is (= {:errors ["The mime type [application/iso:smap+xml] is not supported."],
+              :status 400}
+             (search/get-search-failure-xml-data
+               (search/find-metadata :granule :iso-smap {}))))
       (testing "as extension"
-        (d/assert-metadata-results-match
-          :iso-smap [g1-echo]
-          (search/find-metadata :granule :iso-smap
-                                {:granule-ur "g1"}
-                                {:url-extension "iso_smap"}))))
+        (is (= {:errors ["The mime type [application/iso:smap+xml] is not supported."],
+                :status 400}
+               (search/get-search-failure-data
+                 (search/find-concepts-in-format
+                   nil :granule {} {:url-extension "iso_smap"}))))))
 
     (testing "Retrieving results in ISO19115"
       (d/assert-metadata-results-match
