@@ -2,12 +2,14 @@
   "Provides functions for invoking xsl on metadata."
   (:require [clojure.java.io :as io]
             [cmr.common.cache :as cache])
-  (:import javax.xml.transform.TransformerFactory
-           java.io.StringReader
+  (:import java.io.StringReader
            java.io.StringWriter
            javax.xml.transform.stream.StreamSource
            javax.xml.transform.stream.StreamResult
-           javax.xml.transform.Templates))
+           [javax.xml.transform
+            TransformerFactory
+            Templates
+            URIResolver]))
 
 (def xsl-transformer-cache-name
   "This is the name of the cache to use for XSLT transformer templates. Templates are thread
@@ -19,12 +21,23 @@
   [context]
   (get-in context [:system :caches xsl-transformer-cache-name]))
 
+(defn- create-uri-resolver
+  "Creates an instance of the URIResolver interface that will direct all paths within the xslt
+  folder on the classpath."
+  ^URIResolver []
+  (proxy [URIResolver] []
+    (resolve
+      [href base]
+      (new StreamSource (io/reader (io/resource (str "xslt/" href)))))))
+
 (defn- xsl->transformer-template
   "Returns the xsl transformer template for the given xsl file"
   [xsl]
-  (let [xsl-resource (new StreamSource (io/file xsl))
-        factory (TransformerFactory/newInstance)]
-    (.newTemplates factory xsl-resource)))
+  (with-open [xsl-reader (io/reader xsl)]
+    (let [xsl-resource (new StreamSource xsl-reader)
+          factory (TransformerFactory/newInstance)]
+      (.setURIResolver factory (create-uri-resolver))
+      (.newTemplates factory xsl-resource))))
 
 (defn transform
   "Transforms the given xml by appling the given xsl"
