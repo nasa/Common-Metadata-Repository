@@ -177,6 +177,8 @@
        (map (partial map time->swath-edges) times))))
 
 (defn- to-polygon
+  "Swath is a sequence of vectors containing
+   [left-swath-edge-point right-swath-edge-point]"
   [swath]
   (let [ring (concat (map first swath)
                     (reverse (map second swath))
