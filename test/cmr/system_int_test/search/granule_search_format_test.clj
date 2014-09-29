@@ -88,8 +88,8 @@
 
     (testing "Retrieving results in ISO19115"
       (d/assert-metadata-results-match
-        :iso19115 [g1-echo g2-echo]
-        (search/find-metadata :granule :iso19115 {:granule-ur ["g1" "g2"]}))
+        :iso19115 all-granules
+        (search/find-metadata :granule :iso19115 {}))
       (testing "as extension"
         (are [url-extension]
              (d/assert-metadata-results-match
