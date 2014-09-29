@@ -519,6 +519,9 @@ xmlns:xs="http://www.w3.org/2001/XMLSchema">
       <xs:element minOccurs="0" name="AssociatedDIFs"
       type="ListOfAssociatedDIFs" />
       <xs:element minOccurs="0" name="Spatial" type="Spatial" />
+      <xs:element minOccurs="0" name="MetadataStandardName" type="MetadataStandardName" />
+      <xs:element minOccurs="0" name="MetadataStandardVersion" type="MetadataStandardVersion" />
+      <xs:element minOccurs="0" name="ProductFlag" type="ProductFlag" />
       <xs:choice>
         <xs:element name="AssociatedBrowseImages"
         type="ListOfProviderBrowseIds" minOccurs="0">

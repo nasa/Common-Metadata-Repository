@@ -612,4 +612,25 @@
 			</xs:element>
 		</xs:sequence>
 	</xs:complexType>
+    <xs:simpleType name="MetadataStandardName">
+      <xs:restriction base="xs:string">
+        <xs:minLength value="1" />
+        <xs:maxLength value="80" />
+      </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="MetadataStandardVersion">
+      <xs:restriction base="xs:string">
+        <xs:minLength value="1" />
+        <xs:maxLength value="80" />
+      </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="ProductFlag">
+      <xs:restriction base="xs:string">
+        <xs:enumeration value="DATA_PRODUCT_FILE"/>
+        <xs:enumeration value="INSTRUMENT_ANCILLARY_FILE"/>
+        <xs:enumeration value="SYSTEM/SPACECRAFT_FILE"/>
+        <xs:enumeration value="EXTERNAL_DATA"/>
+      </xs:restriction>
+    </xs:simpleType>
+
 </xs:schema>
