@@ -38,12 +38,12 @@ These are query parameters specific to collections
 #### Headers
 
   * Accept - specifies the MimeType to return search results in. Default is "application/xml".
-    * `curl -H "Accept: application/xml" -i "http://localhost:3003/collections"`
-    * `curl -H "Accept: text/csv" -i "http://localhost:3003/granules"`
-    * `curl -H "Accept: application/atom+xml" -i "http://localhost:3003/granules"`
-    * `curl -H "Accept: application/json" -i "http://localhost:3003/granules"`
-    * `curl -H "Accept: application/echo10+xml" -i "http://localhost:3003/granules"`
-    * `curl -H "Accept: application/dif+xml" -i "http://localhost:3003/granules"`
+    * `curl -H "Accept: application/xml" -i "%CMR-ENDPOINT%/collections"`
+    * `curl -H "Accept: text/csv" -i "%CMR-ENDPOINT%/granules"`
+    * `curl -H "Accept: application/atom+xml" -i "%CMR-ENDPOINT%/granules"`
+    * `curl -H "Accept: application/json" -i "%CMR-ENDPOINT%/granules"`
+    * `curl -H "Accept: application/echo10+xml" -i "%CMR-ENDPOINT%/granules"`
+    * `curl -H "Accept: application/dif+xml" -i "%CMR-ENDPOINT%/granules"`
   * `Echo-Token` - specifies an ECHO token to use to authenticate yourself.
   * `Client-Id` - Indicates a name for the client using the CMR API. Specifying this helps Operations monitor query performance per client. It can also make it easier for them to identify your requests if you contact them for assistance.
 
@@ -54,10 +54,10 @@ These are query parameters specific to collections
 
 Besides MimeTypes, client can also use exetension to specify the format for search results. Default is xml.
 
-  * `curl -i "http://localhost:3003/collections"`
-  * `curl -i "http://localhost:3003/collections.json"`
-  * `curl -i "http://localhost:3003/collections.echo10"`
-  * `curl -i "http://localhost:3003/collections.iso_mends"`
+  * `curl -i "%CMR-ENDPOINT%/collections"`
+  * `curl -i "%CMR-ENDPOINT%/collections.json"`
+  * `curl -i "%CMR-ENDPOINT%/collections.echo10"`
+  * `curl -i "%CMR-ENDPOINT%/collections.iso_mends"`
 
 Here is a list of supported extensions that their corresponding MimeTypes:
 
@@ -74,19 +74,19 @@ iso is an alias for iso\_mends.
 
 ### Clear the cache cache
 
-    curl -i -XPOST http://localhost:3003/clear-cache
+    curl -i -XPOST %CMR-ENDPOINT%/clear-cache
 
 ### Reset the application to the initial state
 
 Every CMR application has a reset function to reset it back to it's initial state. Currently this only clears the cache so it is effectively the the same as the clear-cache endpoint.
 
-    curl -i -XPOST http://localhost:3003/reset
+    curl -i -XPOST %CMR-ENDPOINT%/reset
 
 ### Search for Collections
 
 #### Find all collections
 
-    curl "http://localhost:3003/collections"
+    curl "%CMR-ENDPOINT%/collections"
 
 #### Find collections by concept id
 
@@ -98,94 +98,94 @@ A CMR concept id is in the format `<concept-type-prefix> <unique-number> "-" <pr
 
 Example: `C123456-LPDAAC_ECS`
 
-    curl "http://localhost:3003/collections?concept_id\[\]=C123456-LPDAAC_ECS"
+    curl "%CMR-ENDPOINT%/collections?concept_id\[\]=C123456-LPDAAC_ECS"
 
 #### Find collections by echo collection id
 
   Find a collection matching a echo collection id. Note more than one echo collection id may be supplied.
 
-     curl "http://localhost:3003/collections?echo_collection_id\[\]=C1000000001-CMR_PROV2"
+     curl "%CMR-ENDPOINT%/collections?echo_collection_id\[\]=C1000000001-CMR_PROV2"
 
 
 #### Find collections by entry title
 
 One entry title
 
-    curl "http://localhost:3003/collections?entry_title\[\]=DatasetId%204"
+    curl "%CMR-ENDPOINT%/collections?entry_title\[\]=DatasetId%204"
 
 a dataset id (alias for entry title)
 
-    curl "http://localhost:3003/collections?dataset_id\[\]=DatasetId%204"
+    curl "%CMR-ENDPOINT%/collections?dataset_id\[\]=DatasetId%204"
 
 with multiple dataset ids
 
-    curl "http://localhost:3003/collections?entry_title\[\]=DatasetId%204&entry_title\[\]=DatasetId%205"
+    curl "%CMR-ENDPOINT%/collections?entry_title\[\]=DatasetId%204&entry_title\[\]=DatasetId%205"
 
 with a entry title case insensitively
 
-    curl "http://localhost:3003/collections?entry_title\[\]=datasetId%204&options\[entry_title\]\[ignore_case\]=true"
+    curl "%CMR-ENDPOINT%/collections?entry_title\[\]=datasetId%204&options\[entry_title\]\[ignore_case\]=true"
 
 with a entry title pattern
 
-    curl "http://localhost:3003/collections?entry_title\[\]=DatasetId*&options\[entry_title\]\[pattern\]=true"
+    curl "%CMR-ENDPOINT%/collections?entry_title\[\]=DatasetId*&options\[entry_title\]\[pattern\]=true"
 
 #### Find collections by entry id
 
 One entry id
 
-    curl "http://localhost:3003/collections?entry_id\[\]=SHORT_V5"
+    curl "%CMR-ENDPOINT%/collections?entry_id\[\]=SHORT_V5"
 
 #### Find collections by dif entry id, this searches for matches on either entry id or associated difs
 
 One dif\_entry\_id
 
-    curl "http://localhost:3003/collections?dif_entry_id\[\]=SHORT_V5"
+    curl "%CMR-ENDPOINT%/collections?dif_entry_id\[\]=SHORT_V5"
 
 #### Find collections by archive center, supports pattern and ignore_case
 
   Find collections matching 'archive_center' param value
-    curl "http://localhost:3003/collections?archive_center\[\]=LARC"
-    curl "http://localhost:3003/collections?archive_center=Sedac+AC"
+    curl "%CMR-ENDPOINT%/collections?archive_center\[\]=LARC"
+    curl "%CMR-ENDPOINT%/collections?archive_center=Sedac+AC"
 
   Find collections matching any of the 'archive_center' param values
 
-     curl "http://localhost:3003/collections?archive_center\[\]=Larc&archive_center\[\]=SEDAC"
+     curl "%CMR-ENDPOINT%/collections?archive_center\[\]=Larc&archive_center\[\]=SEDAC"
 
 #### Find collections with multiple temporal
 
 The temporal datetime has to be in yyyy-MM-ddTHH:mm:ssZ format.
 
-    curl "http://localhost:3003/collections?temporal\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z,30,60&temporal\[\]=2000-01-01T10:00:00Z,,30&temporal\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z"
+    curl "%CMR-ENDPOINT%/collections?temporal\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z,30,60&temporal\[\]=2000-01-01T10:00:00Z,,30&temporal\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z"
 
 ### Find collections by campaign param, supports pattern, ignore_case and option :and. Note: 'campaign' maps to 'project' in UMM
 
   Find collections matching 'campaign' param value
 
-     curl "http://localhost:3003/collections?campaign\[\]=ESI"
+     curl "%CMR-ENDPOINT%/collections?campaign\[\]=ESI"
 
   Find collections matching any of the 'campaign' param values
 
-     curl "http://localhost:3003/collections?campaign\[\]=ESI&campaign\[\]=EVI&campaign\[\]=EPI"
+     curl "%CMR-ENDPOINT%/collections?campaign\[\]=ESI&campaign\[\]=EVI&campaign\[\]=EPI"
 
   Find collections that match all of the 'campaign' param values
 
-     curl "http://localhost:3003/collections?campaign\[\]=ESI&campaign\[\]=EVI&campaign\[\]=EPI&options\[campaign\]\[and\]=true"
+     curl "%CMR-ENDPOINT%/collections?campaign\[\]=ESI&campaign\[\]=EVI&campaign\[\]=EPI&options\[campaign\]\[and\]=true"
 
 ### Find collections by updated_since param
 
   Find collections which have revision date starting at or after 'updated_since' param value
 
-     curl "http://localhost:3003/collections?updated_since=2014-05-08T20:06:38.331Z"
+     curl "%CMR-ENDPOINT%/collections?updated_since=2014-05-08T20:06:38.331Z"
 
 ### Find collections by processing\_level\_id param, supports pattern and ignore_case
 
 Find collections matching 'processing_level_id' param value
 
-     curl "http://localhost:3003/collections?processing_level_id\[\]=1B"
+     curl "%CMR-ENDPOINT%/collections?processing_level_id\[\]=1B"
 
 Find collections matching any of the 'processing\_level\_id' param values
 
-     curl "http://localhost:3003/collections?processing_level_id\[\]=1B&processing_level_id\[\]=2B"
+     curl "%CMR-ENDPOINT%/collections?processing_level_id\[\]=1B&processing_level_id\[\]=2B"
 
 The alias 'processing_level' also works for searching by processing level id.
 
@@ -193,61 +193,61 @@ The alias 'processing_level' also works for searching by processing level id.
 
   Find collections matching 'platform' param value
 
-     curl "http://localhost:3003/collections?platform\[\]=1B"
+     curl "%CMR-ENDPOINT%/collections?platform\[\]=1B"
 
   Find collections matching any of the 'platform' param values
 
-     curl "http://localhost:3003/collections?platform\[\]=1B&platform\[\]=2B"
+     curl "%CMR-ENDPOINT%/collections?platform\[\]=1B&platform\[\]=2B"
 
 ### Find collections by instrument param, supports pattern, ignore_case and option :and
 
   Find collections matching 'instrument' param value
 
-     curl "http://localhost:3003/collections?instrument\[\]=1B"
+     curl "%CMR-ENDPOINT%/collections?instrument\[\]=1B"
 
   Find collections matching any of the 'instrument' param values
 
-     curl "http://localhost:3003/collections?instrument\[\]=1B&instrument\[\]=2B"
+     curl "%CMR-ENDPOINT%/collections?instrument\[\]=1B&instrument\[\]=2B"
 
 ### Find collections by sensor param, supports pattern, ignore_case and option :and
 
   Find collections matching 'sensor' param value
 
-     curl "http://localhost:3003/collections?sensor\[\]=1B"
+     curl "%CMR-ENDPOINT%/collections?sensor\[\]=1B"
 
   Find collections matching any of the 'sensor' param values
 
-     curl "http://localhost:3003/collections?sensor\[\]=1B&sensor\[\]=2B"
+     curl "%CMR-ENDPOINT%/collections?sensor\[\]=1B&sensor\[\]=2B"
 
 ### Find collections by spatial_keyword param, supports pattern, ignore_case and option :and
 
   Find collections matching 'spatial_keyword' param value
 
-     curl "http://localhost:3003/collections?spatial_keyword\[\]=DC"
+     curl "%CMR-ENDPOINT%/collections?spatial_keyword\[\]=DC"
 
   Find collections matching any of the 'spatial_keyword' param values
 
-     curl "http://localhost:3003/collections?spatial_keyword\[\]=DC&spatial_keyword\[\]=LA"
+     curl "%CMR-ENDPOINT%/collections?spatial_keyword\[\]=DC&spatial_keyword\[\]=LA"
 
 ### Find collections by science_keywords params, supports option :or
 
   Find collections matching 'science_keywords' param value
 
-     curl "http://localhost:3003/collections?science_keywords\[0\]\[category\]=Cat1"
+     curl "%CMR-ENDPOINT%/collections?science_keywords\[0\]\[category\]=Cat1"
 
   Find collections matching multiple 'science_keywords' param values, default is :and
 
-     curl "http://localhost:3003/collections?science_keywords\[0\]\[category\]=Cat1&science_keywords\[0\]\[topic\]=Topic1&science_keywords\[1\]\[category\]=Cat2"
+     curl "%CMR-ENDPOINT%/collections?science_keywords\[0\]\[category\]=Cat1&science_keywords\[0\]\[topic\]=Topic1&science_keywords\[1\]\[category\]=Cat2"
 
 ### Find collections by two\_d\_coordinate\_system\_name param, supports pattern
 
   Find collections matching 'two\_d\_coordinate\_system\_name' param value
 
-    curl "http://localhost:3003/collections?two_d_coordinate_system_name\[\]=Alpha"
+    curl "%CMR-ENDPOINT%/collections?two_d_coordinate_system_name\[\]=Alpha"
 
   Find collections matching any ofthe 'two\_d\_coordinate\_system\_name' param values
 
-    curl "http://localhost:3003/collections?two_d_coordinate_system_name\[\]=Alpha&two_d_coordinate_system_name\[\]=Bravo"
+    curl "%CMR-ENDPOINT%/collections?two_d_coordinate_system_name\[\]=Alpha&two_d_coordinate_system_name\[\]=Bravo"
 
 ### Find collections by collection\_data\_type param
 
@@ -255,31 +255,31 @@ Supports ignore_case and the following aliases for "NEAR\_REAL\_TIME": "near\_re
 
   Find collections matching 'collection\_data\_type' param value
 
-     curl "http://localhost:3003/collections?collection_data_type\[\]=NEAR_REAL_TIME"
+     curl "%CMR-ENDPOINT%/collections?collection_data_type\[\]=NEAR_REAL_TIME"
 
   Find collections matching any of the 'collection\_data\_type' param values
 
-     curl "http://localhost:3003/collections?collection_data_type\[\]=NEAR_REAL_TIME&collection_data_type\[\]=OTHER"
+     curl "%CMR-ENDPOINT%/collections?collection_data_type\[\]=NEAR_REAL_TIME&collection_data_type\[\]=OTHER"
 
 #### Find collections by online_only
 
-    curl "http://localhost:3003/collections?online_only=true"
+    curl "%CMR-ENDPOINT%/collections?online_only=true"
 
 #### Find collections by downloadable
 
-    curl "http://localhost:3003/collections?downloadable=true"
+    curl "%CMR-ENDPOINT%/collections?downloadable=true"
 
 #### Find collections by browse_only
 
-    curl "http://localhost:3003/collections?browse_only=true"
+    curl "%CMR-ENDPOINT%/collections?browse_only=true"
 
 #### Find collections by browsable
 
-    curl "http://localhost:3003/collections?browsable=true"
+    curl "%CMR-ENDPOINT%/collections?browsable=true"
 
 #### Find collections by keyword search, case insensitive and support wild cards ? and *
 
-    curl "http://localhost:3003/collections?keyword=alpha%20beta%20g?mma"
+    curl "%CMR-ENDPOINT%/collections?keyword=alpha%20beta%20g?mma"
 
 #### Sorting Collection Results
 
@@ -299,59 +299,59 @@ Collection results are sorted by ascending entry title by default. One or more s
 
 Example of sorting by start_date in descending order: (Most recent data first)
 
-    curl "http://localhost:3003/collections?sort_key\[\]=-start_date
+    curl "%CMR-ENDPOINT%/collections?sort_key\[\]=-start_date
 
 ### Search for Granules
 
 #### Find all granules
 
-    curl "http://localhost:3003/granules"
+    curl "%CMR-ENDPOINT%/granules"
 
 #### Find granules with a granule-ur
 
-    curl "http://localhost:3003/granules?granule_ur\[\]=DummyGranuleUR"
+    curl "%CMR-ENDPOINT%/granules?granule_ur\[\]=DummyGranuleUR"
 
 #### Find granules with a producer granule id
 
-    curl "http://localhost:3003/granules?producer_granule_id\[\]=DummyID"
+    curl "%CMR-ENDPOINT%/granules?producer_granule_id\[\]=DummyID"
 
 #### Find granules matching either granule ur or producer granule id
 
-    curl "http://localhost:3003/granules?readable_granule_name\[\]=DummyID"
+    curl "%CMR-ENDPOINT%/granules?readable_granule_name\[\]=DummyID"
 
 #### Find granules by online_only
 
-    curl "http://localhost:3003/granules?online_only=true"
+    curl "%CMR-ENDPOINT%/granules?online_only=true"
 
 #### Find granules by downloadable
 
-    curl "http://localhost:3003/granules?downloadable=true"
+    curl "%CMR-ENDPOINT%/granules?downloadable=true"
 
 #### Find granules by additional attribute
 
 Find an attribute attribute with name "PERCENTAGE" of type float with value 25.5
 
-    curl "http://localhost:3003/granules?attribute\[\]=float,PERCENTAGE,25.5"
+    curl "%CMR-ENDPOINT%/granules?attribute\[\]=float,PERCENTAGE,25.5"
 
 Find an attribute attribute with name "PERCENTAGE" of type float in range 25.5 - 30.
 
-    curl "http://localhost:3003/granules?attribute\[\]=float,PERCENTAGE,25.5,30"
+    curl "%CMR-ENDPOINT%/granules?attribute\[\]=float,PERCENTAGE,25.5,30"
 
 Find an attribute attribute with name "PERCENTAGE" of type float with min value 25.5.
 
-    curl "http://localhost:3003/granules?attribute\[\]=float,PERCENTAGE,25.5,"
+    curl "%CMR-ENDPOINT%/granules?attribute\[\]=float,PERCENTAGE,25.5,"
 
 Find an attribute attribute with name "PERCENTAGE" of type float with max value 30.
 
-    curl "http://localhost:3003/granules?attribute\[\]=float,PERCENTAGE,,30"
+    curl "%CMR-ENDPOINT%/granules?attribute\[\]=float,PERCENTAGE,,30"
 
 Find an additional attribute with name "X,Y,Z" with value 7.
 
-    curl "http://localhost:3003/granules?attribute\[\]=float,X\,Y\,Z,7"
+    curl "%CMR-ENDPOINT%/granules?attribute\[\]=float,X\,Y\,Z,7"
 
 Find an additional attribute with name "X\Y\Z" with value 7.
 
-    curl "http://localhost:3003/granules?attribute\[\]=float,X\Y\Z,7"
+    curl "%CMR-ENDPOINT%/granules?attribute\[\]=float,X\Y\Z,7"
 
 Multiple attributes can be provided. The default is for granules to match all the attribute parameters. This can be changed by specifying `or` option with `option[attribute][or]=true`.
 
@@ -361,77 +361,77 @@ Multiple attributes can be provided. The default is for granules to match all th
 
 Polygon points are provided in clockwise order. The last point should match the first point to close the polygon. The values are listed comma separated in longitude latitude order, i.e. lon1,lat1,lon2,lat2,...
 
-    curl "http://localhost:3003/granules?polygon=10,10,10,20,30,20,30,10,10,10"
+    curl "%CMR-ENDPOINT%/granules?polygon=10,10,10,20,30,20,30,10,10,10"
 
 #### Bounding Box
 
 Bounding boxes define an area on the earth aligned with longitude and latitude. The Bounding box parameters must be 4 comma-separated numbers: lower left longitude,lower left latitude,upper right longitude,upper right latitude.
 
-    curl "http://localhost:3003/granules?bounding_box=-10,-5,10,5
+    curl "%CMR-ENDPOINT%/granules?bounding_box=-10,-5,10,5
 
 ### Find granules by orbit number
 
   Find granules with an orbit number of 10
 
-    curl "http://localhost:3003/granules?orbit_number=10"
+    curl "%CMR-ENDPOINT%/granules?orbit_number=10"
 
   Find granules with an orbit number in a range of 0.5 to 1.5
 
-    curl "http://localhost:3003/granules?orbit_number=0.5,1.5"
+    curl "%CMR-ENDPOINT%/granules?orbit_number=0.5,1.5"
 
 ### Find granules by orbit equator crossing longitude
 
   Find granules with an exact equator crossing longitude of 90
 
-    curl "http://localhost:3003/granules?equator_crossing_longitude=90"
+    curl "%CMR-ENDPOINT%/granules?equator_crossing_longitude=90"
 
   Find granules with an orbit equator crossing longitude in the range of 0 to 10
 
-    curl "http://localhost:3003/granules?equator_crossing_longitude=0,10
+    curl "%CMR-ENDPOINT%/granules?equator_crossing_longitude=0,10
 
   Find granules with an equator crossing longitude in the range from 170 to -170
   (across the antimeridian)
 
-    curl "http://localhost:3003/granules?equator_crossing_longitude=170,-170
+    curl "%CMR-ENDPOINT%/granules?equator_crossing_longitude=170,-170
 
 ### Find granules by orbit equator crossing date
 
   Find granules with an orbit equator crossing date in the range of
   2000-01-01T10:00:00Z to 2010-03-10T12:00:00Z
 
-    curl "http://localhost:3003/granules?equator_crossing_date=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z
+    curl "%CMR-ENDPOINT%/granules?equator_crossing_date=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z
 
 ### Find granules by updated_since param
 
   Find granules which have revision date starting at or after 'updated_since' param value
 
-     curl "http://localhost:3003/granules?updated_since=2014-05-08T20:12:35Z"
+     curl "%CMR-ENDPOINT%/granules?updated_since=2014-05-08T20:12:35Z"
 
 ### Find granules by cloud_cover param
 
   Find granules with just the min cloud cover value set to 0.2
 
-     curl "http://localhost:3003/granules?cloud_cover=0.2,"
+     curl "%CMR-ENDPOINT%/granules?cloud_cover=0.2,"
 
   Find granules with just the max cloud cover value set to 30
 
-     curl "http://localhost:3003/granules?cloud_cover=,30"
+     curl "%CMR-ENDPOINT%/granules?cloud_cover=,30"
 
   Find granules with cloud cover numeric range set to min: -70.0 max: 120.0
 
-     curl "http://localhost:3003/granules?cloud_cover=-70.0,120.0"
+     curl "%CMR-ENDPOINT%/granules?cloud_cover=-70.0,120.0"
 
 ### Find collections by platform param, supports pattern, ignore_case and option :and
 
-     curl "http://localhost:3003/granules?platform\[\]=1B"
+     curl "%CMR-ENDPOINT%/granules?platform\[\]=1B"
 
 ### Find collections by instrument param, supports pattern, ignore_case and option :and
 
-     curl "http://localhost:3003/granules?instrument\[\]=1B"
+     curl "%CMR-ENDPOINT%/granules?instrument\[\]=1B"
 
 ### Find collections by sensor param, supports pattern, ignore_case and option :and
 
-     curl "http://localhost:3003/granules?sensor\[\]=1B"
+     curl "%CMR-ENDPOINT%/granules?sensor\[\]=1B"
 
 ### Find granules by echo granule id, echo collection id and concept ids.
 
@@ -439,28 +439,28 @@ Note: more than one may be supplied
 
   Find granule by concept id
 
-    curl "http://localhost:3003/granules?concept_id\[\]=G1000000002-CMR_PROV1"
+    curl "%CMR-ENDPOINT%/granules?concept_id\[\]=G1000000002-CMR_PROV1"
 
   Find granule by echo granule id
 
-    curl "http://localhost:3003/granules?echo_granule_id\[\]=G1000000002-CMR_PROV1"
+    curl "%CMR-ENDPOINT%/granules?echo_granule_id\[\]=G1000000002-CMR_PROV1"
 
   Find granules by echo collection id
 
-    curl "http://localhost:3003/granules?echo_collection_id\[\]=C1000000001-CMR_PROV2"
+    curl "%CMR-ENDPOINT%/granules?echo_collection_id\[\]=C1000000001-CMR_PROV2"
 
   Find granules by parent concept id
 
-    curl "http://localhost:3003/granules?concept_id\[\]=C1000000001-CMR_PROV2"
+    curl "%CMR-ENDPOINT%/granules?concept_id\[\]=C1000000001-CMR_PROV2"
 
 ### Find granules by day\_night\_flag param, supports pattern and ignore_case
 
 ```
-curl "http://localhost:3003/granules?day_night_flag=night
+curl "%CMR-ENDPOINT%/granules?day_night_flag=night
 
-curl "http://localhost:3003/granules?day_night_flag=day
+curl "%CMR-ENDPOINT%/granules?day_night_flag=day
 
-curl "http://localhost:3003/granules?day_night=unspecified
+curl "%CMR-ENDPOINT%/granules?day_night=unspecified
 ```
 
 ### Find granules by grid param, this is an alias of catalog-rest two_d_coordinate_system.
@@ -468,7 +468,7 @@ curl "http://localhost:3003/granules?day_night=unspecified
 ':' is the separator between name and coordinates; range is indicated by '-', otherwise it is a single value.
 
 ```
-  curl "http://localhost:3003/granules?grid\[\]=wrs-1:5,10:8-10,0-10
+  curl "%CMR-ENDPOINT%/granules?grid\[\]=wrs-1:5,10:8-10,0-10
 ```
 
 ### Exclude granules from elastic results by echo granule id and concept ids. Note: more than one id may be supplied in exclude param
@@ -476,18 +476,18 @@ curl "http://localhost:3003/granules?day_night=unspecified
 Exclude granule by echo granule id
 
 ```
-curl "http://localhost:3003/granules?echo_granule_id\[\]=G1000000002-CMR_PROV1&echo_granule_id\[\]=G1000000003-CMR_PROV1&echo_granule_id\[\]=G1000000006-CMR_PROV2&exclude\[echo_granule_id\]\[\]=G1000000006-CMR_PROV2"
+curl "%CMR-ENDPOINT%/granules?echo_granule_id\[\]=G1000000002-CMR_PROV1&echo_granule_id\[\]=G1000000003-CMR_PROV1&echo_granule_id\[\]=G1000000006-CMR_PROV2&exclude\[echo_granule_id\]\[\]=G1000000006-CMR_PROV2"
 
-curl "http://localhost:3003/granules?exclude\[echo_granule_id\]\[\]=G1000000006-CMR_PROV2&cloud_cover=-70,120"
+curl "%CMR-ENDPOINT%/granules?exclude\[echo_granule_id\]\[\]=G1000000006-CMR_PROV2&cloud_cover=-70,120"
 ```
 
 Exclude granule by concept id
 
-    curl "http://localhost:3003/granules?echo_granule_id\[\]=G1000000002-CMR_PROV1&echo_granule_id\[\]=G1000000003-CMR_PROV1&echo_granule_id\[\]=G1000000006-CMR_PROV2&exclude\[concept_id\]\[\]=G1000000006-CMR_PROV2"
+    curl "%CMR-ENDPOINT%/granules?echo_granule_id\[\]=G1000000002-CMR_PROV1&echo_granule_id\[\]=G1000000003-CMR_PROV1&echo_granule_id\[\]=G1000000006-CMR_PROV2&exclude\[concept_id\]\[\]=G1000000006-CMR_PROV2"
 
 Exclude granule by parent concept id
 
-    curl "http://localhost:3003/granules?echo_granule_id\[\]=G1000000002-CMR_PROV1&echo_granule_id\[\]=G1000000003-CMR_PROV1&echo_granule_id\[\]=G1000000006-CMR_PROV2&exclude\[concept_id\]\[\]=C1000000001-CMR_PROV2"
+    curl "%CMR-ENDPOINT%/granules?echo_granule_id\[\]=G1000000002-CMR_PROV1&echo_granule_id\[\]=G1000000003-CMR_PROV1&echo_granule_id\[\]=G1000000006-CMR_PROV2&exclude\[concept_id\]\[\]=C1000000001-CMR_PROV2"
 
 #### Sorting Granule Results
 
@@ -518,21 +518,21 @@ Granule results are sorted by ascending provider and start date by default. One 
 
 Example of sorting by start_date in descending order: (Most recent data first)
 
-    curl "http://localhost:3003/granules/sort_key\[\]=-start_date
+    curl "%CMR-ENDPOINT%/granules/sort_key\[\]=-start_date
 
 
 ### Retrieve concept with a given cmr-concept-id
 
 This allows retrieving the metadata for a single concept. If no format is specified the native format of the metadata will be returned.
 
-    curl -i "http://localhost:3003/concepts/G100000-PROV1"
+    curl -i "%CMR-ENDPOINT%/concepts/G100000-PROV1"
 
 
 ### Search with POST
 
 Search collections or granules with query parameters encoded form in POST request body.
 
-    curl -i -XPOST http://localhost:3003/collections -d "dataset_id[]=Example%20DatasetId&dataset_id[]=Dataset2"
+    curl -i -XPOST %CMR-ENDPOINT%/collections -d "dataset_id[]=Example%20DatasetId&dataset_id[]=Dataset2"
 
 ### Search Response as Granule Timeline
 
@@ -549,7 +549,7 @@ The response format is in JSON. Intervals are returned as tuples containing thre
 
 #### Example Request:
 
-    curl -i "http://localhost:3003/granules/timeline?concept_id=C1-PROV1&start_date=2000-01-01T00:00:00Z&end_date=2002-02-01T00:00:00.000Z&interval=month""
+    curl -i "%CMR-ENDPOINT%/granules/timeline?concept_id=C1-PROV1&start_date=2000-01-01T00:00:00Z&end_date=2002-02-01T00:00:00.000Z&interval=month""
 
 #### Example Response
 
@@ -561,17 +561,17 @@ The response format is in JSON. Intervals are returned as tuples containing thre
 
 All provider holdings
 
-    curl "http://localhost:3003/provider_holdings.xml"
+    curl "%CMR-ENDPOINT%/provider_holdings.xml"
 
 Provider holdings for a list of providers
 
-    curl "http://localhost:3003/provider_holdings.json?provider-id\[\]=PROV1&provider-id\[\]=PROV2"
+    curl "%CMR-ENDPOINT%/provider_holdings.json?provider-id\[\]=PROV1&provider-id\[\]=PROV2"
 
 ### Search with AQL
 Search collections or granules with AQL in POST request body. The AQL must conform to the schema
 that is defined in cmr-search-app/resources/schema/IIMSAQLQueryLanguage.xsd
 
-    curl -i -XPOST -H "Content-Type: application/xml" http://localhost:3003/concepts/search -d '<?xml version="1.0" encoding="UTF-8"?>
+    curl -i -XPOST -H "Content-Type: application/xml" %CMR-ENDPOINT%/concepts/search -d '<?xml version="1.0" encoding="UTF-8"?>
     <query><for value="collections"/><dataCenterId><all/></dataCenterId>
     <where><collectionCondition><shortName><value>S1</value></shortName></collectionCondition></where></query>'
 

@@ -26,6 +26,7 @@
                         [org.clojars.gjahad/debug-repl "0.3.3"]
                         [criterium "0.4.3"]
                         [pjstadig/humane-test-output "0.6.0"]
+                        [ring-mock "0.1.5"]
                         ;; Must be listed here as metadata db depends on it.
                         [drift "1.5.2"]
                         [markdown-clj "0.9.47"]]
@@ -37,6 +38,3 @@
 
   ;; Note this takes a while to run. We commit the files that are generated.
   :aliases {"generate-docs" ["exec" "-p" "./support/generate_docs.clj"]})
-
-
-
