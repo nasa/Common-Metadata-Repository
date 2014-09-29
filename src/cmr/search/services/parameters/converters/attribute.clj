@@ -25,12 +25,12 @@
   "Parses an additional attribute value into it's constituent parts.
   Values must be comma separated in one of the following two formats
 
-    * type,name,value
-      * Example: \"string,fav_color,blue\"
-    * type,name,min,max
-      * Example: \"float,cloud_cover_range,0,100\"
-      * Example: \"float,cloud_cover_range,,80\"  means must be less than 80 with no lower bounds
-      * Example: \"float,cloud_cover_range,10,\"  means must be greater than 10 with no upper bounds"
+  * type,name,value
+    * Example: \"string,fav_color,blue\"
+  * type,name,min,max
+    * Example: \"float,cloud_cover_range,0,100\"
+    * Example: \"float,cloud_cover_range,,80\"  means must be less than 80 with no lower bounds
+    * Example: \"float,cloud_cover_range,10,\"  means must be greater than 10 with no upper bounds"
   [value]
   (let [comma-escape "\\,"
         comma-replace "%COMMA%" ; used to replace escaped commas during splitting
@@ -135,20 +135,19 @@
   (let [conditions (map parse-value values)
         failed-conditions (seq (filter :errors conditions))
         _ (when failed-conditions
-                           (errors/internal-error!
-                             (format
-                               "Found invalid value that should have been validated already. Values: %s"
-                               (pr-str values))))
+            (errors/internal-error!
+              (format
+                "Found invalid value that should have been validated already. Values: %s"
+                (pr-str values))))
         operator (if (= "true" (get-in options [:attribute :or]))
                    :or
                    :and)
-        attrib-condition (gc/group-conds operator conditions)]
+        attrib-condition (gc/group-conds operator conditions)
+        exclude-collection (= "true" (get-in options [:attribute :exclude-collection]))]
 
-    (if (= :granule concept-type)
-      ;; Granule attribute queries will inherit values from their parent collections.
+    (if (and (= :granule concept-type) (not exclude-collection))
+      ;; Granule attribute queries will inherit values from their parent collections
+      ;; unless :exclude-collection option is set to true.
       (gc/or-conds [attrib-condition (qm/->CollectionQueryCondition attrib-condition)])
       attrib-condition)))
-
-
-
 
