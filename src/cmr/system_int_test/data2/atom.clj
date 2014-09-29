@@ -82,7 +82,7 @@
            xml-elem->lines
            xml-elem->bounding-rectangles]))
 
-(defn- fix-orbit-params
+(defn- parse-orbit-params
   "Convert orbit parameter attributes to their proper key /value types"
   [attribs]
   (when (seq attribs)
@@ -98,7 +98,7 @@
                            :start-circular-latitude (when startCircularLatitude
                                                       (Double/parseDouble startCircularLatitude))}))))
 
-(defn- fix-ocsd-attribs
+(defn- parse-ocsd-attribs
   "Convert orbit-calculated-spatial-domains attributes to their proper keys / value types"
   [attribs]
   (let [{:keys [orbitModelName orbitNumber startOrbitNumber stopOrbitNumber
@@ -142,7 +142,7 @@
      :online-access-flag (cx/bool-at-path entry-elem [:onlineAccessFlag])
      :browse-flag (cx/bool-at-path entry-elem [:browseFlag])
      :coordinate-system (cx/string-at-path entry-elem [:coordinateSystem])
-     :orbit-parameters (fix-orbit-params
+     :orbit-parameters (parse-orbit-params
                          (:attrs (cx/element-at-path
                                    entry-elem
                                    [:orbitParameters])))
@@ -165,7 +165,7 @@
      :links (seq (map :attrs (cx/elements-at-path entry-elem [:link])))
      :orbit-calculated-spatial-domains (seq
                                          (map
-                                           #(fix-ocsd-attribs (:attrs %))
+                                           #(parse-ocsd-attribs (:attrs %))
                                            (cx/elements-at-path
                                              entry-elem
                                              [:orbitCalSpatialDomain])))
@@ -262,6 +262,7 @@
        :end end
        :links (seq (related-urls->links related-urls))
        :coordinate-system coordinate-system
+       ;; Need to create UMM OrbitParameters record into map so test comparisons don't fail
        :orbit-parameters (when orbit-parameters (into {} orbit-parameters))
        :shapes (seq (get-in collection [:spatial-coverage :geometries]))
        :associated-difs associated-difs
