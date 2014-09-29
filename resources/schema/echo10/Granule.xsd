@@ -327,6 +327,8 @@ xmlns:xs="http://www.w3.org/2001/XMLSchema">
           Set.</xs:documentation>
         </xs:annotation>
       </xs:element>
+      <xs:element minOccurs="0" name="MetadataStandardName" type="MetadataStandardName" />
+      <xs:element minOccurs="0" name="MetadataStandardVersion" type="MetadataStandardVersion" />
       <xs:choice>
         <xs:element name="AssociatedBrowseImages"
         type="ListOfProviderBrowseIds" minOccurs="0">
