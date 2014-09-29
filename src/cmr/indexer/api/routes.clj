@@ -35,7 +35,8 @@
       (let [{:keys [concept-id revision-id]} (walk/keywordize-keys body)
             ignore-conflict (ignore-conflict? params)
             context (acl/add-authentication-to-context context params headers)]
-        (acl/verify-ingest-management-permission context :update)
+        ;; TODO commenting out for now due to performance issue CMR-813
+        ; (acl/verify-ingest-management-permission context :update)
         (r/created (index-svc/index-concept context concept-id revision-id ignore-conflict))))
 
     ;; reset operation available just for development purposes
@@ -73,7 +74,8 @@
       (DELETE "/" {context :request-context params :params headers :headers}
         (let [ignore-conflict (ignore-conflict? params)
               context (acl/add-authentication-to-context context params headers)]
-          (acl/verify-ingest-management-permission context :update)
+          ;; TODO commenting out for now due to performance issue CMR-813
+          ; (acl/verify-ingest-management-permission context :update)
           (index-svc/delete-concept context concept-id revision-id ignore-conflict)
           (r/response nil))))
 
