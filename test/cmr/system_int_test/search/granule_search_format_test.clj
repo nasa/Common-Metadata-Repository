@@ -225,6 +225,13 @@
                                                 :spatial-coverage (dc/spatial {:gsr :geodetic})}))
         coll2 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset2"
                                                 :related-urls [ru4 ru5]}))
+        coll3 (d/ingest "PROV1" (dc/collection {:entry-title "OrbitDataset"
+                                                :spatial-coverage (dc/spatial {:gsr :orbit
+                                                                               :orbit {:inclination-angle 98.0
+                                                                                       :period 97.87
+                                                                                       :swath-width 390.0
+                                                                                       :start-circular-latitude -90.0
+                                                                                       :number-of-orbits 1.0}})}))
 
         make-gran (fn [coll attribs]
                     (d/ingest "PROV1" (dg/granule coll attribs)))
@@ -249,6 +256,11 @@
                                                                     :equator-crossing-longitude -45.0
                                                                     :equator-crossing-date-time "2011-01-01T12:00:00.000Z"}]
                                 :related-urls [ru1 ru2]
+                                :orbit-parameters {:inclination-angle 98.0
+                                                   :period 97.87
+                                                   :swath-width 390.0
+                                                   :start-circular-latitude -90.0
+                                                   :number-of-orbits 1.0}
                                 :spatial-coverage (dg/spatial
                                                     (poly/polygon [(umm-s/ords->ring -70 20, 70 20, 70 30, -70 30, -70 20)])
                                                     polygon-with-holes
@@ -265,7 +277,22 @@
                                 :day-night "NIGHT"
                                 :size 80.0
                                 :cloud-cover 30.0
-                                :related-urls [ru3]})]
+                                :related-urls [ru3]})
+        gran3 (make-gran coll3 {:granule-ur "OrbitGranule"
+                                :beginning-date-time "2011-01-01T12:00:00Z"
+                                :ending-date-time "2011-01-11T12:00:00Z"
+                                :producer-gran-id "OrbitGranuleId"
+                                :day-night "NIGHT"
+                                :size 80.0
+                                :cloud-cover 30.0
+                                :related-urls [ru3]
+                                :spatial-coverage (dg/spatial (dg/orbit 120.0 50.0 "A" 50.0 "A"))
+                                :orbit-calculated-spatial-domains [{:orbital-model-name "MODEL NAME"
+                                                                    :orbit-number 2
+                                                                    :start-orbit-number 3.0
+                                                                    :stop-orbit-number 4.0
+                                                                    :equator-crossing-longitude -45.0
+                                                                    :equator-crossing-date-time "2011-01-01T12:00:00.000Z"}]})]
 
     (index/refresh-elastic-index)
 
@@ -276,7 +303,7 @@
         (is (= gran-atom
                (:results response))))
 
-      (let [gran-atom (da/granules->expected-atom [gran1 gran2] [coll1 coll2] "granules.atom")
+      (let [gran-atom (da/granules->expected-atom [gran1 gran2 gran3] [coll1 coll2 coll3] "granules.atom")
             response (search/find-concepts-atom :granule {})]
         (is (= 200 (:status response)))
         (is (= gran-atom
@@ -306,7 +333,7 @@
         (is (= gran-json
                (:results response))))
 
-      (let [gran-json (dj/granules->expected-json [gran1 gran2] [coll1 coll2] "granules.json")
+      (let [gran-json (dj/granules->expected-json [gran1 gran2 gran3] [coll1 coll2 coll3] "granules.json")
             response (search/find-concepts-json :granule {})]
         (is (= 200 (:status response)))
         (is (= gran-json
