@@ -52,6 +52,7 @@ cd ../cmr-ingest-app
 lein do clean, install, clean
 
 cd ../cmr-search-app
+lein generate-docs
 lein do clean, install, clean
 
 cd ../cmr-bootstrap-app

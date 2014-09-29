@@ -16,7 +16,6 @@ lein uberjar
 cd ../cmr-ingest-app
 lein uberjar
 cd ../cmr-search-app
-lein generate-docs
 lein uberjar
 cd ../cmr-bootstrap-app
 lein uberjar
