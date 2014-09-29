@@ -60,7 +60,8 @@
         coll19 (d/ingest "PROV2" (dc/collection {:long-name "LNFoobar"}))
         coll20 (d/ingest "PROV2" (dc/collection {:projects pr1}))
         coll21 (d/ingest "PROV2" (dc/collection {:entry-title "coll21" :long-name "ABC!"}))
-        coll22 (d/ingest "PROV2" (dc/collection {:collection-data-type "NEAR_REAL_TIME"}))]
+        coll22 (d/ingest "PROV2" (dc/collection {:collection-data-type "NEAR_REAL_TIME"}))
+        coll23 (d/ingest "PROV1" (dc/collection {:entry-title "coll23" :long-name "\"Quoted\" collection" }))]
 
     (index/refresh-elastic-index)
 
@@ -215,8 +216,9 @@
            "*aser" [coll5 coll7 coll9 coll14]
            "p*ce" [coll6]
            "NEA*REA*IME" [coll22]
-           "nea*rea*ime" [coll22]))
-    (testing "search by keywords using wildcard ?."
+           "nea*rea*ime" [coll22]
+           "\"Quoted*" [coll23]))
+    (testing "earch by keywords using wildcard ?."
       (are [keyword-str items]
            (let [refs (search/find-refs :collection {:keyword keyword-str})
                  matches? (d/refs-match? items refs)]
@@ -254,4 +256,3 @@
            "Laser" "score" [coll14 coll5 coll7 coll9]
            "Laser" "+score" [coll5 coll7 coll9 coll14]
            "Laser" "-score" [coll14 coll5 coll7 coll9]))))
-
