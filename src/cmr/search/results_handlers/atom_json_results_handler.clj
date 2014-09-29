@@ -50,8 +50,6 @@
                 atom-links associated-difs online-access-flag browse-flag coordinate-system shapes
                 orbit-parameters]} reference
         shape-result (atom-spatial/shapes->json shapes)
-        _ (println "ORBIT PARAMETERS........")
-        _ (println orbit-parameters)
         result (merge {:id id
                        :score score
                        :title title
