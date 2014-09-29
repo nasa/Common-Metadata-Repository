@@ -181,7 +181,8 @@
              (fn [[param settings]]
                (map #(str "Option [" (csk/->snake_case_string %)
                           "] for param [" (csk/->snake_case_string param) "] was not recognized.")
-                    (set/difference (set (keys settings)) (set [:ignore-case :pattern :and :or]))))
+                    (set/difference (set (keys settings))
+                                    (set [:ignore-case :pattern :and :or :exclude-collection]))))
              options))
     []))
 
