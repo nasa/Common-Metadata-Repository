@@ -36,6 +36,11 @@
    "downloadable"
    "browsable"
    "coordinate-system"
+   "swath-width"
+   "period"
+   "inclination-angle"
+   "number-of-orbits"
+   "start-circular-latitude"
    "ords-info"
    "ords"
    "_score"
@@ -106,7 +111,12 @@
           [coordinate-system] :coordinate-system
           ords-info :ords-info
           ords :ords
-          [access-value] :access-value} :fields} elastic-result
+          [access-value] :access-value
+          [swath-width] :swath-width
+          [period] :period
+          [inclination-angle] :inclination-angle
+          [number-of-orbits] :number-of-orbits
+          [start-circular-latitude] :start-circular-latitude} :fields} elastic-result
         start-date (when start-date (str/replace (str start-date) #"\+0000" "Z"))
         end-date (when end-date (str/replace (str end-date) #"\+0000" "Z"))
         atom-links (map #(json/decode % true) atom-links)]
@@ -131,6 +141,11 @@
      :associated-difs associated-difs
      :coordinate-system coordinate-system
      :shapes (srl/ords-info->shapes ords-info ords)
+     :orbit-parameters {:swath-width swath-width
+                        :period period
+                        :inclination-angle inclination-angle
+                        :number-of-orbits number-of-orbits
+                        :start-circular-latitude start-circular-latitude}
      ;; Fields required for ACL enforcment
      :concept-type :collection
      :provider-id provider-id
@@ -258,6 +273,23 @@
              (when (:inherited atom-link)
                (x/element :inherited))))
 
+(defn- orbit-parameters->attribute-map
+  "Convert orbit parameters into attributes for an XML element"
+  [orbit-params]
+  (let [{:keys [swath-width period inclination-angle number-of-orbits start-circular-latitude]}
+        orbit-params]
+    (-> {}
+        (add-attribs :swathWidth swath-width)
+        (add-attribs :period period)
+        (add-attribs :inclinationAngle inclination-angle)
+        (add-attribs :numberOfOrbits number-of-orbits)
+        (add-attribs :startCircularLatitude start-circular-latitude))))
+
+(defn- orbit-parameters->xml-element
+  "Convert orbit parameters into an XML element"
+  [orbit-params]
+  (x/element :echo:orbitParameters (orbit-parameters->attribute-map orbit-params)))
+
 (defn- ocsd->attribute-map
   "Convert an oribt calculated spatial domain to attributes for an XML element"
   [ocsd]
@@ -290,7 +322,8 @@
   (let [{:keys [has-granules-map granule-counts-map]} results
         {:keys [id score title short-name version-id summary updated dataset-id collection-data-type
                 processing-level-id original-format data-center archive-center start-date end-date
-                atom-links associated-difs online-access-flag browse-flag coordinate-system shapes]} reference]
+                atom-links associated-difs online-access-flag browse-flag coordinate-system shapes
+                orbit-parameters]} reference]
     (x/element :entry {}
                (x/element :id {} id)
                (x/element :title {:type "text"} title)
@@ -308,6 +341,7 @@
                (when end-date (x/element :time:end {} end-date))
                (map atom-link->xml-element atom-links)
                (when coordinate-system (x/element :echo:coordinateSystem {} coordinate-system))
+               (when orbit-parameters (orbit-parameters->xml-element orbit-parameters))
                (map atom-spatial/shape->xml-element shapes)
                (map #(x/element :echo:difId {} %) associated-difs)
                (x/element :echo:onlineAccessFlag {} online-access-flag)

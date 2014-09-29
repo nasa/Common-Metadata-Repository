@@ -47,8 +47,11 @@
   (let [{:keys [has-granules-map granule-counts-map]} results
         {:keys [id score title short-name version-id summary updated dataset-id collection-data-type
                 processing-level-id original-format data-center archive-center start-date end-date
-                atom-links associated-difs online-access-flag browse-flag coordinate-system shapes]} reference
+                atom-links associated-difs online-access-flag browse-flag coordinate-system shapes
+                orbit-parameters]} reference
         shape-result (atom-spatial/shapes->json shapes)
+        _ (println "ORBIT PARAMETERS........")
+        _ (println orbit-parameters)
         result (merge {:id id
                        :score score
                        :title title
@@ -70,7 +73,9 @@
                        :has_granules (when has-granules-map (get has-granules-map id false))
                        :granule_count (when granule-counts-map (get granule-counts-map id 0))
                        :links (seq (map atom/atom-link->attribute-map atom-links))
-                       :coordinate_system coordinate-system}
+                       :coordinate_system coordinate-system
+                       :orbit-parameters (when orbit-parameters
+                                           (fix-ocsd-values orbit-parameters))}
                       shape-result)]
     ;; remove entries with nil value
     (util/remove-nil-keys result)))
