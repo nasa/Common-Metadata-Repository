@@ -79,6 +79,7 @@
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.5"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]
                         [pjstadig/humane-test-output "0.6.0"]
+                        [ring-mock "0.1.5"]
                         [criterium "0.4.3"]
                         ;; Must be listed here as metadata db depends on it.
                         [drift "1.5.2"]]
@@ -91,4 +92,3 @@
              :aot :all}}
   :aliases {;; Creates the checkouts directory to the local projects
             "create-checkouts" ~create-checkouts-commands})
-
