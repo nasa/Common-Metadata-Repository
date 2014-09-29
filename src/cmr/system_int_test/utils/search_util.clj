@@ -78,6 +78,14 @@
              errors# (:errors (json/decode body# true))]
          {:status status# :errors errors#}))))
 
+(defn safe-parse-error-xml
+  [xml]
+  (try
+    (cx/strings-at-path (x/parse-str xml) [:error])
+    (catch Exception e
+      (.printStackTrace e)
+      [xml])))
+
 (defmacro get-search-failure-xml-data
   "Executes a search and returns error data that was caught, parsing the body as an xml string.
   Tests should verify the results this returns."
@@ -86,7 +94,7 @@
      ~@body
      (catch clojure.lang.ExceptionInfo e#
        (let [{{status# :status body# :body} :object} (ex-data e#)
-             errors# (cx/strings-at-path (x/parse-str body#) [:error])]
+             errors# (safe-parse-error-xml body#)]
          {:status status# :errors errors#}))))
 
 (defn find-concepts-in-format
