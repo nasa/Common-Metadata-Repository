@@ -104,7 +104,6 @@
       (d/assert-metadata-results-match
         :iso19115 all-colls
         (search/find-metadata :collection :iso19115 {}))
-
       (testing "as extension"
         (are [url-extension]
              (d/assert-metadata-results-match
@@ -113,35 +112,47 @@
              "iso"
              "iso19115")))
 
-    ;; TODO support for retrieving data in SMAP should only be supported through direct retrieval
-
-    (testing "Retrieving results in SMAP ISO"
-      (d/assert-metadata-results-match
-        :iso-smap all-colls
-        (search/find-metadata :collection :iso-smap {}))
+    (testing "Retrieving results in SMAP ISO format is not supported"
+      (is (= {:errors ["The mime type [application/iso:smap+xml] is not supported."],
+              :status 400}
+             (search/get-search-failure-xml-data
+               (search/find-metadata :collection :iso-smap {}))))
       (testing "as extension"
-        (d/assert-metadata-results-match
-          :iso-smap all-colls
-          (search/find-metadata :collection :iso-smap {} {:url-extension "iso_smap"}))))
+        (is (= {:errors ["The mime type [application/iso:smap+xml] is not supported."],
+                :status 400}
+               (search/get-search-failure-data
+                 (search/find-concepts-in-format
+                   nil :collection {} {:url-extension "iso_smap"}))))))
 
     (testing "Get by concept id in formats"
       (testing "supported formats"
-        (are [mime-type format-key url-extension]
+        (are [concept mime-type format-key url-extension]
              (let [response (search/get-concept-by-concept-id
-                              (:concept-id c1-echo)
+                              (:concept-id concept)
                               {:url-extension url-extension :accept mime-type})]
-               (= (umm/umm->xml c1-echo format-key) (:body response)))
-             "application/dif+xml" :dif nil
-             "application/dif+xml" :dif "dif"
-             "application/echo10+xml" :echo10 nil
-             "application/echo10+xml" :echo10 "echo10"))
+               (= (umm/umm->xml concept format-key) (:body response)))
+             c1-echo "application/dif+xml" :dif nil
+             c1-echo nil :dif "dif"
+             c1-echo "application/echo10+xml" :echo10 nil
+             c1-echo nil :echo10 "echo10"
+             c3-dif "application/dif+xml" :dif nil
+             c3-dif nil :dif "dif"
+             c5-iso "application/iso19115+xml" :iso19115 nil
+             c5-iso nil :iso19115 "iso19115"
+             c5-iso nil :iso19115 "iso"
+             c7-smap "application/iso:smap+xml" :iso-smap nil
+             c7-smap nil :iso-smap "iso_smap"))
+
       (testing "native format"
         ;; Native format can be specified using application/xml or not specifying any format
-        (let [response (search/get-concept-by-concept-id (:concept-id c1-echo) {:accept nil})]
-          (is (= (umm/umm->xml c1-echo :echo10) (:body response))))
+        (are [concept format-key]
+             (let [response (search/get-concept-by-concept-id (:concept-id concept) {:accept nil})]
+               (is (= (umm/umm->xml concept format-key) (:body response))))
+             c1-echo :echo10
+             c3-dif :dif
+             c5-iso :iso19115
+             c7-smap :iso-smap))
 
-        (let [response (search/get-concept-by-concept-id (:concept-id c3-dif) {:accept nil})]
-          (is (= (umm/umm->xml c3-dif :dif) (:body response)))))
       (testing "unsupported formats"
         (are [mime-type xml?]
              (let [response (search/get-concept-by-concept-id
@@ -181,8 +192,7 @@
       (testing "ECHO10"
         (d/assert-echo-compatible-metadata-results-match
           :echo10 all-colls
-          (search/find-metadata :collection :echo10 {:echo-compatible true}))))
-    ))
+          (search/find-metadata :collection :echo10 {:echo-compatible true}))))))
 
 ; Tests that we can ingest and find difs with spatial and that granules in the dif can also be
 ; ingested and found
