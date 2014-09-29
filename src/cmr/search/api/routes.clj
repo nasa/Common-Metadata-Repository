@@ -5,6 +5,7 @@
             [clojure.string :as str]
             [clojure.java.io :as io]
             [ring.util.response :as r]
+            [ring.util.request :as request]
             [ring.util.codec :as codec]
             [ring.middleware.json :as ring-json]
             [cmr.common.log :refer (debug info warn error)]
@@ -212,15 +213,36 @@
                CMR_GRANULE_COUNT_HEADER (str granule-count)}
      :body provider-holdings-formatted}))
 
+(defmacro force-trailing-slash
+  "Given a ring request, if the request was made against a resource path with a trailing
+   slash, performs the body form (presumably returning a valid ring response).  Otherwise,
+   issues a 301 Moved Permanently redirect to the request's resource path with an appended
+   trailing slash."
+  [req body]
+  `(if (.endsWith (:uri ~req) "/")
+     ~body
+     (assoc (r/redirect (str (request/request-url ~req) "/")) :status 301)))
+
 (defn- build-routes [system]
   (routes
     (context (get-in system [:search-public-conf :relative-root-url]) []
 
       ;; CMR Welcome Page
-      (GET "/" []
-        {:status 200
-         :body (slurp (io/resource "public/index.html"))})
+      (GET "/" req
+        (force-trailing-slash req ; Without a trailing slash, the relative URLs in index.html are wrong
+         {:status 200
+           :body (slurp (io/resource "public/index.html"))}))
 
+      ;; Static HTML resources, typically API documentation which needs endpoint URLs replaced
+      (GET ["/site/:resource", :resource #".*\.html$"] {scheme :scheme headers :headers {resource :resource} :params}
+        (let [cmr-root (str (name scheme)  "://" (headers "host") (get-in system [:search-public-conf :relative-root-url]))]
+          {:status 200
+           :body (-> (str "public/site/" resource)
+                     (io/resource)
+                     (slurp)
+                     (str/replace "%CMR-ENDPOINT%" cmr-root))}))
+
+      ;; Other static resources (Javascript, CSS)
       (GET "/site/:resource" [resource]
         {:status 200
          :body (slurp (io/resource (str "public/site/" resource)))})
