@@ -49,7 +49,7 @@
    "csv" "text/csv"
    "atom" "application/atom+xml"})
 
-(def supported-mime-types
+(def search-result-supported-mime-types
   "The mime types supported by search."
   #{"*/*"
     "application/xml"
@@ -58,7 +58,6 @@
     "application/dif+xml"
     "application/atom+xml"
     "application/iso19115+xml"
-    "application/iso:smap+xml"
     "text/csv"})
 
 (def supported-provider-holdings-mime-types
@@ -104,12 +103,11 @@
   [path-w-extension]
   (second (re-matches #"([^\.]+)(?:\..+)?" path-w-extension)))
 
-
-
 (defn- get-search-results-format
   "Returns the requested search results format parsed from headers or from the URL extension"
   ([path-w-extension headers default-mime-type]
-   (get-search-results-format path-w-extension headers supported-mime-types default-mime-type))
+   (get-search-results-format
+     path-w-extension headers search-result-supported-mime-types default-mime-type))
   ([path-w-extension headers valid-mime-types default-mime-type]
    (let [ext-mime-type (path-w-extension->mime-type path-w-extension)
          mime-type (or ext-mime-type
@@ -146,16 +144,9 @@
                         (assoc :query-string query-string))
             params (process-params params path-w-extension headers "application/xml")
             result-format (:result-format params)
-            _ (when (= :iso-smap result-format)
-                (svc-errors/throw-service-error
-                  :bad-request "Searching in iso_smap format is not supported."))
             _ (info (format "Searching for %ss from client %s in format %s with params %s."
                             (name concept-type) (:client-id context) result-format
                             (pr-str params)))
-
-            ;; :iso is aliases of :iso19115
-            params (if (= :iso result-format)
-                     (assoc params :result-format :iso19115) params)
             search-params (lp/process-legacy-psa params query-string)
             results (query-svc/find-concepts-by-parameters context concept-type search-params)]
         (search-response params results))
