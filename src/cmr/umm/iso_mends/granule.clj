@@ -15,13 +15,15 @@
     ([granule]
      (cmr.umm.iso-mends.core/umm->iso-mends-xml granule false))
     ([granule indent?]
-     (let [emit-fn (if indent? x/indent-str x/emit-str)]
+     (let [{:keys [granule-ur]} granule
+           emit-fn (if indent? x/indent-str x/emit-str)]
        (emit-fn
-         (x/element :granule {} "UMM granule for MENDS ISO is not supported."))))))
+         (x/element :granule {}
+                    (x/element :placeholder {} "UMM granule for MENDS ISO is not supported.")
+                    (x/element :granule-ur {} granule-ur)))))))
 
 (defn validate-xml
   "Validates the XML against the ISO schema."
   [xml]
   (v/validate-xml (io/resource "schema/iso_mends/schema/1.0/ISO19115-2_EOS.xsd") xml))
-
 
