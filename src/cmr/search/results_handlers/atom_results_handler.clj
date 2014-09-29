@@ -3,6 +3,7 @@
   (:require [cmr.search.data.elastic-results-to-query-results :as elastic-results]
             [cmr.search.data.elastic-search-index :as elastic-search-index]
             [cmr.search.services.query-service :as qs]
+            [cmr.search.services.query-helper-service :as query-helper]
             [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]
             [cmr.search.services.query-execution.facets-results-feature :as frf]
             [clojure.data.xml :as x]
@@ -12,6 +13,7 @@
             [clj-time.core :as time]
             [cmr.search.models.results :as r]
             [cmr.spatial.serialize :as srl]
+            [cmr.spatial.orbits.swath-geometry :as swath]
             [cmr.search.services.url-helper :as url]
             [cmr.search.results-handlers.atom-spatial-results-handler :as atom-spatial]
             [cmr.search.results-handlers.atom-links-results-handler :as atom-links]))
@@ -56,6 +58,7 @@
    "end-date"
    "atom-links"
    "orbit-calculated-spatial-domains-json"
+   "orbit-asc-crossing-lon"
    "downloadable"
    "browsable"
    "day-night"
@@ -138,7 +141,7 @@
      :entry-title entry-title}))
 
 (defn- granule-elastic-result->query-result-item
-  [elastic-result]
+  [orbits-by-collection elastic-result]
   (let [{concept-id :_id
          {[granule-ur] :granule-ur
           [collection-concept-id] :collection-concept-id
@@ -152,6 +155,7 @@
           [end-date] :end-date
           atom-links :atom-links
           orbit-calculated-spatial-domains-json :orbit-calculated-spatial-domains-json
+          [orbit-asc-crossing-lon] :orbit-asc-crossing-lon
           [downloadable] :downloadable
           [browsable] :browsable
           [day-night] :day-night
@@ -165,7 +169,15 @@
         atom-links (map (fn [link-str]
                           (update-in (json/decode link-str true) [:size] #(when % (str %))))
                         atom-links)
-        orbit-calculated-spatial-domains (map ocsd-json->map orbit-calculated-spatial-domains-json)]
+        orbit-calculated-spatial-domains (map ocsd-json->map orbit-calculated-spatial-domains-json)
+        shapes (if orbit-asc-crossing-lon
+                 (concat (srl/ords-info->shapes ords-info ords)
+                         (swath/to-polygons (orbits-by-collection collection-concept-id)
+                                            orbit-asc-crossing-lon
+                                            orbit-calculated-spatial-domains
+                                            start-date
+                                            end-date))
+                 (srl/ords-info->shapes ords-info ords))]
     {:id concept-id
      :title granule-ur
      :collection-concept-id collection-concept-id
@@ -191,11 +203,32 @@
      :provider-id provider-id
      :access-value access-value}))
 
-(defmethod elastic-results/elastic-result->query-result-item :atom
-  [context query elastic-result]
-  (if (= :granule (:concept-type query))
-    (granule-elastic-result->query-result-item elastic-result)
-    (collection-elastic-result->query-result-item elastic-result)))
+(defn- granule-elastic-result-has-orbit-spatial?
+  [elastic-result]
+  (some? (get-in elastic-result [:fields :orbit-asc-crossing-lon])))
+
+(defn- granule-elastic-result->collection-concept-id
+  [elastic-result]
+  (get-in elastic-result [:fields :collection-concept-id 0]))
+
+(defn- granule-elastic-results->query-result-items
+  [context query elastic-matches]
+  (let [collection-orbits (->> elastic-matches
+                               (filter granule-elastic-result-has-orbit-spatial?)
+                               (map granule-elastic-result->collection-concept-id)
+                               distinct
+                               (query-helper/collection-orbit-parameters context))
+        orbits-by-collection (zipmap (map :concept-id collection-orbits) collection-orbits)]
+    (pmap (partial granule-elastic-result->query-result-item orbits-by-collection) elastic-matches)))
+
+(defmethod elastic-results/elastic-results->query-results :atom
+  [context query elastic-results]
+  (let [hits (get-in elastic-results [:hits :total])
+        elastic-matches (get-in elastic-results [:hits :hits])
+        items (if (= :granule (:concept-type query))
+                (granule-elastic-results->query-result-items context query elastic-matches)
+                (map collection-elastic-result->query-result-item elastic-matches))]
+    (r/map->Results {:hits hits :items items :result-format (:result-format query)})))
 
 (defmethod gcrf/query-results->concept-ids :atom
   [results]
@@ -388,5 +421,3 @@
                  (x/element :title {:type "text"} (concept-type->atom-title concept-type))
                  (map (partial atom-reference->xml-element results concept-type) items)
                  (frf/facets->xml-element "echo" facets)))))
-
-

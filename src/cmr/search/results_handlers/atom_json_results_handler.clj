@@ -21,9 +21,9 @@
   [concept-type query]
   (elastic-search-index/concept-type+result-format->fields :granule (assoc query :result-format :atom)))
 
-(defmethod elastic-results/elastic-result->query-result-item :json
-  [context query elastic-result]
-  (elastic-results/elastic-result->query-result-item context (assoc query :result-format :atom) elastic-result))
+(defmethod elastic-results/elastic-results->query-results :json
+  [context query elastic-results]
+  (elastic-results/elastic-results->query-results context (assoc query :result-format :atom) elastic-results))
 
 (defmethod gcrf/query-results->concept-ids :json
   [results]
@@ -120,4 +120,3 @@
                              :entry (map (partial atom-reference->json results concept-type) items)
                              :facets facets})}]
     (json/generate-string response-results {:pretty (:pretty? query)})))
-
