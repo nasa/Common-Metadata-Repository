@@ -37,9 +37,9 @@
             d (range-cond :east -180 east)
             e (range-cond :east east 180)
             f (range-cond :west west 180)
-            am-conds (gc/and-conds [(gc/or-conds [c f])
-                                    (gc/or-conds [d e])
-                                    (bool-cond :crosses-antimeridian true)])
+            am-conds (gc/and-conds [(bool-cond :crosses-antimeridian true)
+                                    (gc/or-conds [c f])
+                                    (gc/or-conds [d e])])
             lon-cond (gc/or-conds [(range-cond :west -180 east)
                                    (range-cond :east west 180)
                                    am-conds])]

@@ -105,7 +105,6 @@
   [context query results]
   (let [{:keys [pretty? echo-compatible?]} query
         xml-fn (if pretty? x/indent-str x/emit-str)]
-    (println "echo-compatible?" echo-compatible?)
     (xml-fn (results->xml-element echo-compatible? results))))
 
 

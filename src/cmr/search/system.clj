@@ -8,13 +8,15 @@
             [cmr.common.jobs :as jobs]
             [cmr.search.api.routes :as routes]
             [cmr.search.data.elastic-search-index :as idx]
+            [cmr.search.services.acls.acl-helper :as ah]
             [cmr.system-trace.context :as context]
             [cmr.metadata-db.system :as mdb-system]
             [cmr.common.config :as cfg]
             [cmr.transmit.config :as transmit-config]
             [cmr.elastic-utils.config :as es-config]
             [cmr.search.services.query-execution.has-granules-results-feature :as hgrf]
-            [cmr.search.services.acls.collections-cache :as coll-cache]))
+            [cmr.search.services.acls.collections-cache :as coll-cache]
+            [cmr.search.services.xslt :as xslt]))
 
 ;; Design based on http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts
 
@@ -55,12 +57,14 @@
              :search-index (idx/create-elastic-search-index (es-config/elastic-config))
              :web (web/create-web-server (transmit-config/search-port) routes/make-api)
              ;; Caches added to this list must be explicitly cleared in query-service/clear-cache
-             :caches {:index-names (cache/create-cache)
+             :caches {idx/index-cache-name (cache/create-cache)
                       :acls (ac/create-acl-cache)
                       ;; Caches a map of tokens to the security identifiers
-                      :token-sid (cache/create-cache (clj-cache/ttl-cache-factory {} :ttl TOKEN_CACHE_TIME))
+                      ah/token-sid-cache-name (cache/create-cache
+                                                (clj-cache/ttl-cache-factory {} :ttl TOKEN_CACHE_TIME))
                       :has-granules-map (hgrf/create-has-granules-map-cache)
-                      coll-cache/cache-key (coll-cache/create-cache)}
+                      coll-cache/cache-key (coll-cache/create-cache)
+                      xslt/xsl-transformer-cache-name (cache/create-cache)}
              :zipkin (context/zipkin-config "Search" false)
              :search-public-conf search-public-conf
              :scheduler (jobs/create-scheduler
