@@ -295,6 +295,11 @@
     (index/refresh-elastic-index)
 
     (testing "atom"
+      (let [coll-atom (da/collections->expected-atom [coll1] "collections.atom?entry_title=Dataset1")
+            response (search/find-concepts-atom :collection {:entry-title "Dataset1"})]
+        (is (= 200 (:status response)))
+        (is (= coll-atom
+               (:results response))))
       (let [gran-atom (da/granules->expected-atom [gran1] [coll1] "granules.atom?granule_ur=Granule1")
             response (search/find-concepts-atom :granule {:granule-ur "Granule1"})]
         (is (= 200 (:status response)))

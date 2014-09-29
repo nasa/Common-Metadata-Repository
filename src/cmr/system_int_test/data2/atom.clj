@@ -82,16 +82,38 @@
            xml-elem->lines
            xml-elem->bounding-rectangles]))
 
-(defn- fix-ocsd-attribs
+(defn- parse-orbit-params
+  "Convert orbit parameter attributes to their proper key /value types"
+  [attribs]
+  (when (seq attribs)
+    (let [{:keys [swathWidth period inclinationAngle numberOfOrbits startCircularLatitude]} attribs]
+    (util/remove-nil-keys {:swath-width (when swathWidth
+                                          (Double/parseDouble swathWidth))
+                           :period (when period
+                                     (Double/parseDouble period))
+                           :inclination-angle (when inclinationAngle
+                                                (Double/parseDouble inclinationAngle))
+                           :number-of-orbits (when numberOfOrbits
+                                               (Double/parseDouble numberOfOrbits))
+                           :start-circular-latitude (when startCircularLatitude
+                                                      (Double/parseDouble startCircularLatitude))}))))
+
+(defn- parse-ocsd-attribs
   "Convert orbit-calculated-spatial-domains attributes to their proper keys / value types"
   [attribs]
-  (util/remove-nil-keys {:orbital-model-name (:orbitModelName attribs)
-                         :orbit-number (Integer/parseInt (:orbitNumber attribs))
-                         :start-orbit-number (Double/parseDouble (:startOrbitNumber attribs))
-                         :stop-orbit-number (Double/parseDouble (:stopOrbitNumber attribs))
-                         :equator-crossing-longitude (Double/parseDouble
-                                                       (:equatorCrossingLongitude attribs))
-                         :equator-crossing-date-time (:equatorCrossingDateTime attribs)}))
+  (let [{:keys [orbitModelName orbitNumber startOrbitNumber stopOrbitNumber
+                equatorCrossingLongitude equatorCrossingDateTime]} attribs]
+    (util/remove-nil-keys {:orbital-model-name orbitModelName
+                           :orbit-number (when orbitNumber
+                                           (Integer/parseInt orbitNumber))
+                           :start-orbit-number (when startOrbitNumber
+                                                 (Double/parseDouble startOrbitNumber))
+                           :stop-orbit-number (when stopOrbitNumber
+                                                (Double/parseDouble stopOrbitNumber))
+                           :equator-crossing-longitude (when equatorCrossingLongitude
+                                                         (Double/parseDouble
+                                                           equatorCrossingLongitude))
+                           :equator-crossing-date-time equatorCrossingDateTime})))
 
 (defmulti xml-elem->entry
   "Retrns an atom entry from a parsed atom xml structure"
@@ -120,6 +142,10 @@
      :online-access-flag (cx/bool-at-path entry-elem [:onlineAccessFlag])
      :browse-flag (cx/bool-at-path entry-elem [:browseFlag])
      :coordinate-system (cx/string-at-path entry-elem [:coordinateSystem])
+     :orbit-parameters (parse-orbit-params
+                         (:attrs (cx/element-at-path
+                                   entry-elem
+                                   [:orbitParameters])))
      :shapes (seq (xml-elem->shapes entry-elem))
      :score (cx/double-at-path entry-elem [:score])
      :granule-count (cx/long-at-path entry-elem [:granuleCount])
@@ -139,7 +165,7 @@
      :links (seq (map :attrs (cx/elements-at-path entry-elem [:link])))
      :orbit-calculated-spatial-domains (seq
                                          (map
-                                           #(fix-ocsd-attribs (:attrs %))
+                                           #(parse-ocsd-attribs (:attrs %))
                                            (cx/elements-at-path
                                              entry-elem
                                              [:orbitCalSpatialDomain])))
@@ -211,6 +237,7 @@
         update-time (get-in collection [:data-provider-timestamps :update-time])
         spatial-representation (get-in collection [:spatial-coverage :spatial-representation])
         coordinate-system (when spatial-representation (csk/->SNAKE_CASE_STRING spatial-representation))
+        orbit-parameters (get-in collection [:spatial-coverage :orbit-parameters])
         archive-center (when organizations (:org-name (first organizations)))
         ;; not really fool proof to get start/end datetime, just get by with the current test setting
         range-date-time (first (get-in collection [:temporal :range-date-times]))
@@ -235,6 +262,8 @@
        :end end
        :links (seq (related-urls->links related-urls))
        :coordinate-system coordinate-system
+       ;; Need to create UMM OrbitParameters record into map so test comparisons don't fail
+       :orbit-parameters (when orbit-parameters (into {} orbit-parameters))
        :shapes (seq (get-in collection [:spatial-coverage :geometries]))
        :associated-difs associated-difs
        :online-access-flag (not (empty? (ru/downloadable-urls related-urls)))

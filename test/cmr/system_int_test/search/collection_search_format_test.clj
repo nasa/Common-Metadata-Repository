@@ -246,6 +246,11 @@
   (let [ru1 (dc/related-url "GET DATA" "http://example.com")
         ru2 (dc/related-url "GET DATA" "http://example2.com")
         ru3 (dc/related-url "GET RELATED VISUALIZATION" "http://example.com/browse")
+        op1 {:swath-width 1450.0
+             :period 98.88
+             :inclination-angle 98.15
+             :number-of-orbits 0.5
+             :start-circular-latitude -90.0}
 
         ;; polygon with holes
         outer (umm-s/ords->ring -5.26,-2.59, 11.56,-2.77, 10.47,8.71, -5.86,8.63, -5.26,-2.59)
@@ -287,7 +292,12 @@
                                         :spatial-coverage
                                         (dc/spatial {:sr :cartesian
                                                      :gsr :cartesian
-                                                     :geometries [(poly/polygon [(umm-s/ords->ring -70 20, 70 20, 70 30, -70 30, -70 20)])]})}))]
+                                                     :geometries [(poly/polygon [(umm-s/ords->ring -70 20, 70 20, 70 30, -70 30, -70 20)])]})}))
+         coll3 (d/ingest "PROV1"
+                        (dc/collection
+                          {:entry-title "Dataset3"
+                           :spatial-coverage (dc/spatial {:gsr :orbit
+                                                          :orbit op1})}))]
 
     (index/refresh-elastic-index)
 
@@ -297,8 +307,14 @@
       (is (= coll-atom
              (:results response))))
 
-    (let [coll-atom (da/collections->expected-atom [coll1 coll2] "collections.atom")
+    (let [coll-atom (da/collections->expected-atom [coll1 coll2 coll3] "collections.atom")
           response (search/find-concepts-atom :collection {})]
+      (is (= 200 (:status response)))
+      (is (= coll-atom
+             (:results response))))
+
+    (let [coll-atom (da/collections->expected-atom [coll3] "collections.atom?dataset_id=Dataset3")
+          response (search/find-concepts-atom :collection {:dataset-id "Dataset3"})]
       (is (= 200 (:status response)))
       (is (= coll-atom
              (:results response))))
@@ -320,7 +336,7 @@
       (is (= coll-json
              (:results response))))
 
-    (let [coll-json (da/collections->expected-atom [coll1 coll2] "collections.json")
+    (let [coll-json (da/collections->expected-atom [coll1 coll2 coll3] "collections.json")
           response (search/find-concepts-json :collection {})]
       (is (= 200 (:status response)))
       (is (= coll-json

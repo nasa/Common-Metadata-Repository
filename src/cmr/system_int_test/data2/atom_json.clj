@@ -51,6 +51,17 @@
   (when (and v (seq v))
     (Double. v)))
 
+(defn- parse-orbit-parameters
+  "Parse orbit-parameters map"
+  [orbit-params]
+  (when orbit-params
+    (let [result (util/remove-nil-keys
+                   (into orbit-params
+                         (for [[k v] orbit-params] [k (parse-double v)])))]
+      ;; Don't return an empty map
+      (when (seq result)
+        result))))
+
 (defn- parse-ocsd
   "Parse orbit-calculated-spatial-domain map"
   [ocsd]
@@ -65,7 +76,8 @@
         {:keys [id title short-name version-id summary updated dataset-id collection-data-type
                 processing-level-id original-format data-center archive-center time-start time-end
                 links dif-ids online-access-flag browse-flag coordinate-system
-                shapes points boxes polygons lines granule-count has-granules]} json-entry]
+                shapes points boxes polygons lines granule-count has-granules
+                orbit-parameters]} json-entry]
     (util/remove-nil-keys
       {:id id
        :title title
@@ -88,7 +100,8 @@
        :coordinate-system coordinate-system
        :granule-count granule-count
        :has-granules has-granules
-       :shapes (json-geometry->shapes points boxes polygons lines)})))
+       :shapes (json-geometry->shapes points boxes polygons lines)
+       :orbit-parameters (parse-orbit-parameters orbit-parameters)})))
 
 (defmethod json-entry->entry :granule
   [concept-type json-entry]
