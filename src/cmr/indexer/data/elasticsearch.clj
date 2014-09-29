@@ -19,6 +19,11 @@
             [cmr.common.time-keeper :as tk]
             [cheshire.core :as json]))
 
+(def supported-formats
+  "Defines the set of supported concept forms, new forms shold be added once it is supported."
+  #{"application/echo10+xml" "application/dif+xml" "application/iso:smap+xml"
+    "application/iso19115+xml"})
+
 (defmulti concept->elastic-doc
   "Returns elastic json that can be used to insert into Elasticsearch for the given concept"
   (fn [context concept umm-concept]
@@ -156,10 +161,6 @@
   "Returns the elastic config in the context"
   [context]
   (get-in context [:system :db :config]))
-
-(def supported-formats
-  "Defines the set of supported concept forms, new forms shold be added once it is supported."
-  #{"application/echo10+xml" "application/dif+xml" "application/iso:smap+xml"})
 
 (defn prepare-batch
   "Convert a batch of concepts into elastic docs for bulk indexing."
