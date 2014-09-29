@@ -104,9 +104,12 @@
 
            ;; collection data type aliases for NEAR_REAL_TIME
            "NEAR_REAL_TIME" [coll22]
+           "NRT" [coll22]
            "near_real_time" [coll22]
            "nrt" [coll22]
            "near-real-time" [coll22]
+           "near real-time" [coll22]
+           "near-real time" [coll22]
 
            ;; summary
            "summary" [coll15]
@@ -210,7 +213,9 @@
            "A*C" [coll2 coll5 coll21]
            "XY*" [coll2 coll13]
            "*aser" [coll5 coll7 coll9 coll14]
-           "p*ce" [coll6]))
+           "p*ce" [coll6]
+           "NEA*REA*IME" [coll22]
+           "nea*rea*ime" [coll22]))
     (testing "search by keywords using wildcard ?."
       (are [keyword-str items]
            (let [refs (search/find-refs :collection {:keyword keyword-str})
@@ -222,7 +227,9 @@
            "A?C" [coll2 coll5 coll21]
            "XY?" [coll2 coll13]
            "?aser" [coll5 coll7 coll9 coll14]
-           "p*ace" [coll6]))
+           "p*ace" [coll6]
+           "NEAR?REAL?TIME" [coll22]
+           "near?real?time" [coll22]))
     (testing "sorted search by keywords."
       (are [keyword-str items]
            (let [refs (search/find-refs :collection {:keyword keyword-str})

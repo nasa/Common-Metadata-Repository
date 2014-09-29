@@ -64,8 +64,6 @@
            [gran1 gran2 gran3] ["platform-Sn *"] {:pattern true}
            [gran4 gran5] ["platform-Sn?"] {:pattern true}
            [] ["platform-Sn?"] {}
-           ;; search by platform, options :or
-           [gran1 gran2 gran3] ["platform-Sn B" "platform-Sn A"] {:or true}
            ;; search by platform, options :and
            [gran2] ["platform-Sn B" "platform-Sn A"] {:and true}))
 
@@ -93,8 +91,6 @@
            [gran1 gran2 gran3] "platform-Sn %" {:pattern true}
            [gran4 gran5] "platform-Sn_" {:pattern true}
            [] ["platform-Sn?"] {}
-           ;; search by platform, options :or
-           [gran1 gran2 gran3] ["platform-Sn B" "platform-Sn A"] {:or true}
            ;; search by platform, options :and
            [gran2] ["platform-Sn B" "platform-Sn A"] {:and true}))))
 
@@ -173,8 +169,6 @@
              ;; search by instrument, wildcards
              [gran1 gran2 gran3 gran6] ["instrument-Sn *"] {:pattern true}
              [gran4 gran5] ["instrument-Sn?"] {:pattern true}
-             ;; search by instrument, options :or
-             [gran1 gran2 gran3 gran6] ["instrument-Sn b" "instrument-Sn A"] {:or true}
              ;; search by instrument, options :and
              [gran2 gran6] ["instrument-Sn b" "instrument-Sn A"] {:and true}))
 
@@ -198,8 +192,6 @@
              ;; search by instrument, wildcards
              [gran1 gran2 gran3 gran6] "instrument-Sn %" {:pattern true}
              [gran4 gran5] "instrument-Sn_" {:pattern true}
-             ;; search by instrument, options :or
-             [gran1 gran2 gran3 gran6] ["instrument-Sn b" "instrument-Sn A"] {:or true}
              ;; search by instrument, options :and
              [gran2 gran6] ["instrument-Sn b" "instrument-Sn A"] {:and true}))))
 
@@ -270,8 +262,6 @@
            ;; search by sensor, wildcards
            [gran1 gran2 gran3 gran6 gran7] ["sensor-Sn *"] {:pattern true}
            [gran4 gran5] ["sensor-Sn?"] {:pattern true}
-           ;; search by sensor, options :or
-           [gran1 gran2 gran3 gran6 gran7] ["sensor-Sn b" "sensor-Sn A"] {:or true}
            ;; search by sensor, options :and
            [gran2 gran6 gran7] ["sensor-Sn b" "sensor-Sn A"] {:and true}))
 
@@ -295,7 +285,5 @@
            ;; search by sensor, wildcards
            [gran1 gran2 gran3 gran6 gran7] "sensor-Sn %" {:pattern true}
            [gran4 gran5] "sensor-Sn_" {:pattern true}
-           ;; search by sensor, options :or
-           [gran1 gran2 gran3 gran6 gran7] ["sensor-Sn b" "sensor-Sn A"] {:or true}
            ;; search by sensor, options :and
            [gran2 gran6 gran7] ["sensor-Sn b" "sensor-Sn A"] {:and true}))))

@@ -42,7 +42,6 @@
            [coll7] ["platform_x"] {:ignore-case false}
            [coll1 coll2 coll3] ["platform_Sn *"] {:pattern true}
            [coll4 coll5] ["platform_Sn?"] {:pattern true}
-           [coll1 coll2 coll3] ["platform_Sn B" "platform_Sn A"] {:or true}
            [coll2] ["platform_Sn B" "platform_Sn A"] {:and true}))
 
     (testing "search collections by platform with aql"
@@ -58,7 +57,6 @@
            [coll7] ["platform_x"] {:ignore-case false}
            [coll1 coll2 coll3] "platform_Sn %" {:pattern true}
            [coll4 coll5] "platform_Sn_" {:pattern true}
-           [coll1 coll2 coll3] ["platform_Sn B" "platform_Sn A"] {:or true}
            [coll2] ["platform_Sn B" "platform_Sn A"] {:and true}))))
 
 (deftest search-by-instrument-short-names
@@ -102,7 +100,6 @@
            [coll8] ["instrument_x"] {:ignore-case false}
            [coll1 coll2 coll3 coll6] ["instrument_Sn *"] {:pattern true}
            [coll4 coll5] ["instrument_Sn?"] {:pattern true}
-           [coll1 coll2 coll3 coll6] ["instrument_Sn B" "instrument_Sn A"] {:or true}
            [coll2 coll6] ["instrument_Sn B" "instrument_Sn A"] {:and true}))
 
     (testing "search collections by instrument with aql"
@@ -118,7 +115,6 @@
            [coll8] ["instrument_x"] {:ignore-case false}
            [coll1 coll2 coll3 coll6] "instrument_Sn %" {:pattern true}
            [coll4 coll5] "instrument_Sn_" {:pattern true}
-           [coll1 coll2 coll3 coll6] ["instrument_Sn B" "instrument_Sn A"] {:or true}
            [coll2 coll6] ["instrument_Sn B" "instrument_Sn A"] {:and true}))))
 
 (deftest search-by-sensor-short-names
@@ -171,7 +167,6 @@
            [coll8] ["sensor_x"] {:ignore-case false}
            [coll1 coll2 coll3 coll6 coll7] ["sensor_Sn *"] {:pattern true}
            [coll4 coll5] ["sensor_Sn?"] {:pattern true}
-           [coll1 coll2 coll3 coll6 coll7] ["sensor_Sn B" "sensor_Sn A"] {:or true}
            [coll2 coll6 coll7] ["sensor_Sn B" "sensor_Sn A"] {:and true}))
 
     (testing "search collections by sensor with aql"
@@ -187,6 +182,5 @@
            [coll8] ["sensor_x"] {:ignore-case false}
            [coll1 coll2 coll3 coll6 coll7] "sensor_Sn %" {:pattern true}
            [coll4 coll5] "sensor_Sn_" {:pattern true}
-           [coll1 coll2 coll3 coll6 coll7] ["sensor_Sn B" "sensor_Sn A"] {:or true}
            [coll2 coll6 coll7] ["sensor_Sn B" "sensor_Sn A"] {:and true}))))
 

@@ -49,8 +49,7 @@
            [gran4 gran10] "*SP*C*" {:pattern true}
            [gran2] "?I?H?" {:pattern true}
 
-           ;; or and option
-           [gran1 gran3 gran4 gran5 gran6 gran7 gran8 gran9 gran10] ["DAY", "BOTH", "UNSPECIFIED"] {:or true}
+           ;; and option
            [] ["DAY", "NIGHT"] {:and true}))
 
     (testing "search by day-night-flag with aql"

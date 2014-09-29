@@ -103,7 +103,7 @@
                (search/provider-holdings-in-format :xml
                                                    {:provider_id "PROV1"
                                                     :token user-token}
-                                                   {:format-as-ext? true})
+                                                   {:url-extension "xml"})
                [:status :results]))))
     (testing "retrieve provider holdings in JSON"
       (let [response (search/provider-holdings-in-format :json {:token user-token})]
@@ -130,7 +130,7 @@
                (search/provider-holdings-in-format :json
                                                    {:provider_id "PROV1"
                                                     :token user-token}
-                                                   {:format-as-ext? true})
+                                                   {:url-extension "json"})
                [:status :results]))))
     (testing "retrieve provider holdings with count summaries in headers"
       (let [response (search/provider-holdings-in-format :json {:provider_id "PROV1"

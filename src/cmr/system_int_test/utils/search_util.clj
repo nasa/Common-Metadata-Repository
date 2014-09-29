@@ -78,6 +78,14 @@
              errors# (:errors (json/decode body# true))]
          {:status status# :errors errors#}))))
 
+(defn safe-parse-error-xml
+  [xml]
+  (try
+    (cx/strings-at-path (x/parse-str xml) [:error])
+    (catch Exception e
+      (.printStackTrace e)
+      [xml])))
+
 (defmacro get-search-failure-xml-data
   "Executes a search and returns error data that was caught, parsing the body as an xml string.
   Tests should verify the results this returns."
@@ -86,20 +94,8 @@
      ~@body
      (catch clojure.lang.ExceptionInfo e#
        (let [{{status# :status body# :body} :object} (ex-data e#)
-             errors# (cx/strings-at-path (x/parse-str body#) [:error])]
+             errors# (safe-parse-error-xml body#)]
          {:status status# :errors errors#}))))
-
-(def mime-type->extension
-  {"application/json" "json"
-   "application/xml" "xml"
-   "application/echo10+xml" "echo10"
-   "application/iso+xml" "iso"
-   "application/iso-smap+xml" "iso_smap"
-   "application/iso-mends+xml" "iso_mends"
-   "application/iso19115+xml" "iso19115"
-   "application/dif+xml" "dif"
-   "text/csv" "csv"
-   "application/atom+xml" "atom"})
 
 (defn find-concepts-in-format
   "Returns the concepts in the format given."
@@ -107,15 +103,14 @@
    (find-concepts-in-format format concept-type params {}))
   ([format concept-type params options]
    ;; no-snake-kebab needed for legacy psa which use camel case minValue/maxValue
-
-   (let [format-as-ext? (get options :format-as-ext? false)
+   (let [url-extension (get options :url-extension)
          snake-kebab? (get options :snake-kebab? true)
          headers (get options :headers {})
          params (if snake-kebab?
                   (params->snake_case (util/map-keys csk/->snake_case_keyword params))
                   params)
-         [url accept] (if format-as-ext?
-                        [(str (url/search-url concept-type) "." (mime-type->extension format))]
+         [url accept] (if url-extension
+                        [(str (url/search-url concept-type) "." url-extension)]
                         [(url/search-url concept-type) format])
          response (client/get url {:accept accept
                                    :headers headers
@@ -144,7 +139,7 @@
   ([params]
    (get-granule-timeline params {}))
   ([params options]
-   (let [format-as-ext? (get options :format-as-ext? false)
+   (let [url-extension (get options :url-extension)
          snake-kebab? (get options :snake-kebab? true)
          headers (get options :headers {})
          params (if snake-kebab?
@@ -152,8 +147,8 @@
                   params)
          ;; allow interval to be specified as a keyword
          params (update-in params [:interval] #(some-> % name))
-         [url accept] (if format-as-ext?
-                        [(str (url/timeline-url) "." (mime-type->extension "application/json"))]
+         [url accept] (if url-extension
+                        [(str (url/timeline-url) "." url-extension)]
                         [(url/timeline-url) "application/json"])
          response (get-search-failure-data
                     (client/get url {:accept accept
@@ -333,14 +328,14 @@
   ([concept-id]
    (get-concept-by-concept-id concept-id {}))
   ([concept-id options]
-   (let [format-as-ext? (:format-as-ext? options)
+   (let [url-extension (get options :url-extension)
          concept-type (cs/concept-prefix->concept-type (subs concept-id 0 1))
          format-mime-type (or (:accept options) "application/echo10+xml")
          url (url/retrieve-concept-url concept-type concept-id)
-         url (if format-as-ext?
-               (str url "." (mime-type->extension format-mime-type))
+         url (if url-extension
+               (str url "." url-extension)
                url)]
-     (client/get url (merge {:accept (when-not format-as-ext? format-mime-type)
+     (client/get url (merge {:accept (when-not url-extension format-mime-type)
                              :throw-exceptions false
                              :connection-manager (url/conn-mgr)}
                             options)))))
@@ -353,11 +348,10 @@
    (provider-holdings-in-format format-key params {}))
   ([format-key params options]
    (let [format-mime-type (mime-types/format->mime-type format-key)
-         {:keys [format-as-ext?]
-          :or {:format-as-ext? false}} options
+         {:keys [url-extension]} options
          params (params->snake_case (util/map-keys csk/->snake_case_keyword params))
-         [url accept] (if format-as-ext?
-                        [(str (url/provider-holdings-url) "." (mime-type->extension format-mime-type))]
+         [url accept] (if url-extension
+                        [(str (url/provider-holdings-url) "." url-extension)]
                         [(url/provider-holdings-url) format-mime-type])
          response (client/get url {:accept accept
                                    :query-params params
