@@ -36,7 +36,11 @@
         ;; They do intersect
         (and (every? (fn [point]
                        (let [lon (:lon point)
-                             line-point (p/point lon (s/segment+lon->lat ls lon))
+                             line-point (if (s/vertical? ls)
+                                          (if (s/point-on-segment? ls point)
+                                            point
+                                            :point-not-on-vertical-segment)
+                                          (p/point lon (s/segment+lon->lat ls lon)))
                              arc-point (if (a/vertical? arc)
                                          (first (a/points-at-lat arc (:lat point)))
                                          (a/point-at-lon arc lon))]
