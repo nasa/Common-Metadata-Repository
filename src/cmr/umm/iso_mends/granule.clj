@@ -19,7 +19,7 @@
            emit-fn (if indent? x/indent-str x/emit-str)]
        (emit-fn
          (x/element :granule {}
-                    (x/element :placehodler {} "UMM granule for MENDS ISO is not supported.")
+                    (x/element :placeholder {} "UMM granule for MENDS ISO is not supported.")
                     (x/element :granule-ur {} granule-ur)))))))
 
 (defn validate-xml
