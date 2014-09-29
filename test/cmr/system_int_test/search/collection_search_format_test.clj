@@ -113,12 +113,12 @@
              "iso19115")))
 
     (testing "Retrieving results in SMAP ISO format is not supported"
-      (is (= {:errors ["Searching in iso_smap format is not supported."],
+      (is (= {:errors ["The mime type [application/iso:smap+xml] is not supported."],
               :status 400}
              (search/get-search-failure-xml-data
                (search/find-metadata :collection :iso-smap {}))))
       (testing "as extension"
-        (is (= {:errors ["Searching in iso_smap format is not supported."],
+        (is (= {:errors ["The mime type [application/iso:smap+xml] is not supported."],
                 :status 400}
                (search/get-search-failure-data
                  (search/find-concepts-in-format
@@ -146,12 +146,12 @@
       (testing "native format"
         ;; Native format can be specified using application/xml or not specifying any format
         (are [concept format-key]
-        (let [response (search/get-concept-by-concept-id (:concept-id concept) {:accept nil})]
-          (is (= (umm/umm->xml concept format-key) (:body response))))
-        c1-echo :echo10
-        c3-dif :dif
-        c5-iso :iso19115
-        c7-smap :iso-smap))
+             (let [response (search/get-concept-by-concept-id (:concept-id concept) {:accept nil})]
+               (is (= (umm/umm->xml concept format-key) (:body response))))
+             c1-echo :echo10
+             c3-dif :dif
+             c5-iso :iso19115
+             c7-smap :iso-smap))
 
       (testing "unsupported formats"
         (are [mime-type xml?]

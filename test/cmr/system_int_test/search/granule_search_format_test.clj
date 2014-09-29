@@ -75,12 +75,12 @@
                                 {:url-extension "echo10"}))))
 
     (testing "Retrieving results in SMAP ISO format is not supported"
-      (is (= {:errors ["Searching in iso_smap format is not supported."],
+      (is (= {:errors ["The mime type [application/iso:smap+xml] is not supported."],
               :status 400}
              (search/get-search-failure-xml-data
                (search/find-metadata :granule :iso-smap {}))))
       (testing "as extension"
-        (is (= {:errors ["Searching in iso_smap format is not supported."],
+        (is (= {:errors ["The mime type [application/iso:smap+xml] is not supported."],
                 :status 400}
                (search/get-search-failure-data
                  (search/find-concepts-in-format
