@@ -29,7 +29,7 @@
     "application/atom+xml"
     "application/iso+xml"
     "application/iso-mends+xml"
-    "application/iso-smap+xml"
+    "application/iso:smap+xml"
     "text/csv"})
 
 (def optional-params

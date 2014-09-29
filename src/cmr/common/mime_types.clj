@@ -9,7 +9,7 @@
   {"application/json" :json
    "application/xml" :xml
    "application/echo10+xml" :echo10
-   "application/iso-smap+xml" :iso-smap
+   "application/iso:smap+xml" :iso-smap
    "application/iso19115+xml" :iso19115
    "application/dif+xml" :dif
    "text/csv" :csv
@@ -19,15 +19,11 @@
   {:json "application/json"
    :xml "application/xml"
    :echo10 "application/echo10+xml"
-   :iso-smap "application/iso-smap+xml"
+   :iso-smap "application/iso:smap+xml"
    :iso19115 "application/iso19115+xml"
    :dif "application/dif+xml"
    :csv "text/csv"
    :atom "application/atom+xml"})
-
-(defn- base-mime-type
-  [mime-type]
-  (str (mt/base-type (mt/parse mime-type))))
 
 (defn mime-type->format
   "Converts a mime-type into the format requested."
@@ -35,9 +31,9 @@
    (mime-type->format mime-type "application/json"))
   ([mime-type default-mime-type]
    (if mime-type
-     (or (get base-mime-type-to-format (base-mime-type mime-type))
-         (get base-mime-type-to-format (base-mime-type default-mime-type)))
-     (get base-mime-type-to-format (base-mime-type default-mime-type)))))
+     (or (get base-mime-type-to-format mime-type)
+         (get base-mime-type-to-format default-mime-type))
+     (get base-mime-type-to-format default-mime-type))))
 
 (defn mime-type-from-headers
   "Try to get a supported mime-type from the 'accept' header."
