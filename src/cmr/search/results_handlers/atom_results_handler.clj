@@ -170,15 +170,14 @@
                           (update-in (json/decode link-str true) [:size] #(when % (str %))))
                         atom-links)
         orbit-calculated-spatial-domains (map ocsd-json->map orbit-calculated-spatial-domains-json)
-        shapes (if (nil? orbit-asc-crossing-lon)
-                 (srl/ords-info->shapes ords-info ords)
+        shapes (if orbit-asc-crossing-lon
                  (concat (srl/ords-info->shapes ords-info ords)
                          (swath/to-polygons (orbits-by-collection collection-concept-id)
                                             orbit-asc-crossing-lon
                                             orbit-calculated-spatial-domains
                                             start-date
-                                            end-date)))
-        ]
+                                            end-date))
+                 (srl/ords-info->shapes ords-info ords))]
     {:id concept-id
      :title granule-ur
      :collection-concept-id collection-concept-id
@@ -206,7 +205,7 @@
 
 (defn- granule-elastic-result-has-orbit-spatial?
   [elastic-result]
-  (not (nil? (get-in elastic-result [:fields :orbit-asc-crossing-lon]))))
+  (some? (get-in elastic-result [:fields :orbit-asc-crossing-lon])))
 
 (defn- granule-elastic-result->collection-concept-id
   [elastic-result]
@@ -218,7 +217,7 @@
                                (filter granule-elastic-result-has-orbit-spatial?)
                                (map granule-elastic-result->collection-concept-id)
                                distinct
-                               (query-helper/collection-orbit-parameters context false))
+                               (query-helper/collection-orbit-parameters context))
         orbits-by-collection (zipmap (map :concept-id collection-orbits) collection-orbits)]
     (pmap (partial granule-elastic-result->query-result-item orbits-by-collection) elastic-matches)))
 

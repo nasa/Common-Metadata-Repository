@@ -141,7 +141,7 @@
         asc-lat-conds (range->numeric-range-intersection-condition asc-lat-ranges)
         desc-lat-conds (range->numeric-range-intersection-condition desc-lat-ranges)
         {:keys [query-collection-ids]} context
-        orbit-params (query-helper/collection-orbit-parameters context true query-collection-ids)
+        orbit-params (query-helper/collection-orbit-parameters context query-collection-ids true)
         stored-ords (srl/shape->stored-ords shape)
         crossings-map (reduce (fn [memo params]
                                 (let [lon-crossings (orbit-crossings stored-ords params)]
