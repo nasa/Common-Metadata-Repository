@@ -35,7 +35,7 @@
 
 (def query_string-reserved-characters-regex
   "Characters reserved for elastic query_string queries. These must be escaped."
-  #"([+\-\[\]!\^:\\/{}\(\)\\\"]|&&)")
+  #"([+\-\[\]!\^:\\/{}\(\)\"]|&&)")
 
 (defprotocol ConditionToElastic
   "Defines a function to map from a query to elastic search query"
