@@ -60,7 +60,8 @@
   if the value cannot be converted to an Integer."
   [params value-keyword]
   (when-let [value (value-keyword params)]
-    (if (not (vector? value)) ; Return null if value is a vector.  Assumes single-value-validation handles arrays.
+    ; Return null if value is a vector.  Assumes single-value-validation handles vectors.
+    (when-not (sequential? value)
       (Integer. value))))
 
 (defn single-value-validation
@@ -68,10 +69,10 @@
    passed as a vector of values."
   [concept-type params]
   (->> (select-keys params single-value-params)
-       (filter (fn [[k v]] (or (vector? v) (seq? v))))
+       (filter #(sequential? (second %)))
        (map first)
        (map #(format "Parameter [%s] must have a single value." (csk/->snake_case_string %)))
-       (vec)))
+       vec))
 
 (defn page-size-validation
   "Validates that the page-size (if present) is a number in the valid range."
