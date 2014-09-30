@@ -23,6 +23,7 @@
             [cmr.search.results-handlers.atom-results-handler]
             [cmr.search.results-handlers.atom-json-results-handler]
             [cmr.search.results-handlers.reference-results-handler]
+            [cmr.search.results-handlers.kml-results-handler]
             [cmr.search.results-handlers.metadata-results-handler]
             [cmr.search.results-handlers.query-specified-results-handler]
             [cmr.search.results-handlers.timeline-results-handler]
