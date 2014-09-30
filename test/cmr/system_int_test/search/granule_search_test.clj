@@ -363,9 +363,7 @@
            [gran1] gran1-cid {}
            [gran5] gran5-cid {}
            ;; Multiple values
-           [gran1 gran2 gran3 gran4 gran5] [gran1-cid gran2-cid gran3-cid gran4-cid gran5-cid] {}
-           [gran1 gran5] [gran1-cid gran5-cid] {:and false}
-           [] [gran1-cid gran5-cid] {:and true}))
+           [gran1 gran2 gran3 gran4 gran5] [gran1-cid gran2-cid gran3-cid gran4-cid gran5-cid] {}))
 
     (testing "search granule by echo granule id with aql"
       (are [items ids options]
@@ -379,11 +377,11 @@
 
     (testing "echo granule id search - disallow ignore case"
       (is (= {:status 400
-              :errors [(msg/invalid-ignore-case-opt-setting-msg #{:concept-id :echo-collection-id :echo-granule-id})]}
+              :errors [(msg/invalid-opt-for-param :concept-id :ignore-case)]}
              (search/find-refs :granule {:echo_granule_id gran1-cid "options[echo_granule_id]" {:ignore_case true}}))))
     (testing "Search with wildcards in echo_granule_id param not supported."
       (is (= {:status 400
-              :errors [(msg/invalid-pattern-opt-setting-msg #{:concept-id :echo-collection-id :echo-granule-id})]}
+              :errors [(msg/invalid-opt-for-param :concept-id :pattern)]}
              (search/find-refs :granule {:echo_granule_id "G*" "options[echo_granule_id]" {:pattern true}}))))
     (testing "search granules by echo collection id"
       (are [items cid options]
@@ -442,9 +440,9 @@
            [] [gran1-cid gran5-cid] {:and true}))
     (testing "Search with wildcards in concept_id param not supported."
       (is (= {:status 400
-              :errors [(msg/invalid-pattern-opt-setting-msg #{:concept-id :echo-collection-id :echo-granule-id})]}
+              :errors [(msg/invalid-opt-for-param :concept-id :pattern)]}
              (search/find-refs :granule {:concept_id "G*" "options[concept_id]" {:pattern true}}))))
     (testing "OR option is not supported for anything but attribute, science-keywords"
       (is (= {:status 400
-              :errors [(msg/invalid-or-opt-setting-msg :concept-id)]}
+              :errors [(msg/invalid-opt-for-param :concept-id :or)]}
              (search/find-refs :granule {:concept-id "G" "options[concept_id]" {:or true}}))))))

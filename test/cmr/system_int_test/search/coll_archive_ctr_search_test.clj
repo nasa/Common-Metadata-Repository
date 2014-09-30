@@ -40,8 +40,6 @@
                          (search/find-refs :collection {:archive-center "S*", "options[archive-center][pattern]" "true"}))))
     (testing "search using AND/OR operators"
       (are [kvs items] (d/refs-match? items (search/find-refs :collection kvs))
-           {"archive-center[]" ["SEDAC AC" "Larc"], "options[archive-center][and]" "true"} []
-           {"archive-center[]" ["SEDAC AC" "Larc" "Sedac AC"], "options[archive-center][and]" "false"} [coll4 coll5 coll6 coll7]
            {"archive-center[]" ["SEDAC AC" "Larc" "Sedac AC"]} [coll4 coll5 coll6 coll7]))
 
     (testing "search collections by archive center with AQL."

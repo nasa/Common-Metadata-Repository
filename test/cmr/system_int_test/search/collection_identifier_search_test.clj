@@ -55,8 +55,6 @@
            ;; Multiple values
            all-colls ["PROV1" "PROV2"] {}
            all-prov1-colls ["PROV1" "PROV3"] {}
-           all-colls ["PROV1" "PROV2"] {:and false}
-           [] ["PROV1" "PROV2"] {:and true}
 
            ;; Wildcards
            all-colls "PROV*" {:pattern true}
@@ -159,8 +157,6 @@
            ;; Multiple values
            [c1-p1 c1-p2 c2-p1 c2-p2] ["V1" "V2"] {}
            [c1-p1 c1-p2] ["V1" "V44"] {}
-           [c1-p1 c1-p2 c2-p1 c2-p2] ["V1" "V2"] {:and false}
-           [] ["V1" "V2"] {:and true}
 
            ;; Wildcards
            all-colls "V*" {:pattern true}
@@ -287,7 +283,7 @@
               :errors ["Parameter [unsupported] with option was not recognized."]}
              (search/find-refs :collection {"options[unsupported][ignore-case]" true})))
       (is (= {:status 400,
-              :errors ["Option [unsupported] for param [entry_title] was not recognized."]}
+              :errors [(msg/invalid-opt-for-param :entry-title :unsupported)]}
              (search/find-refs
                :collection
                {:entry-title "dummy" "options[entry-title][unsupported]" "unsupported"}))))))
@@ -313,8 +309,6 @@
            ;; Multiple values
            [c1-p2 c2-p2 c3-p2] ["1B" "2B" "3B"] {}
            [c4-p2] ["4B" "4C"] {}
-           [c1-p2 c2-p2 c3-p2] ["1B" "2B" "3B"] {:and false}
-           [] ["B1" "B2"] {:and true}
 
            ;; Wildcards
            all-prov2-colls "*B" {:pattern true}
@@ -379,16 +373,14 @@
            [c3-p2] c3-p2-cid {}
            [] dummy-cid {}
            ;; Multiple values
-           [c1-p1 c2-p1 c3-p2 c4-p2] [c1-p1-cid c2-p1-cid c3-p2-cid c4-p2-cid dummy-cid] {}
-           [c1-p1 c3-p2] [c1-p1-cid  c3-p2-cid] {:and false}
-           [] [c1-p1-cid  c3-p2-cid] {:and true}))
+           [c1-p1 c2-p1 c3-p2 c4-p2] [c1-p1-cid c2-p1-cid c3-p2-cid c4-p2-cid dummy-cid] {}))
     (testing "echo collection id search - disallow ignore case"
       (is (= {:status 400
-              :errors [(msg/invalid-ignore-case-opt-setting-msg #{:concept-id :echo-collection-id :echo-granule-id})]}
+              :errors [(msg/invalid-opt-for-param :concept-id :ignore-case)]}
              (search/find-refs :granule {:echo_collection_id c2-p1-cid "options[echo_collection_id]" {:ignore_case true}}))))
     (testing "Search with wildcards in echo_collection_id param not supported."
       (is (= {:status 400
-              :errors [(msg/invalid-pattern-opt-setting-msg #{:concept-id :echo-collection-id :echo-granule-id})]}
+              :errors [(msg/invalid-opt-for-param :concept-id :pattern)]}
              (search/find-refs :granule {:echo_collection_id "C*" "options[echo_collection_id]" {:pattern true}}))))
     (testing "concept id search"
       ;; skipping some test conditions because concept_id search is similar in behavior to above echo_collection_id search
@@ -404,9 +396,9 @@
            ;; Multiple values
            [c1-p1 c2-p1 c3-p2 c4-p2] [c1-p1-cid c2-p1-cid c3-p2-cid c4-p2-cid dummy-cid] {}
            [] [c1-p1-cid  c3-p2-cid] {:and true}))
-    (testing "Search with wildcards in concep_id param not supported."
+    (testing "Search with wildcards in concept_id param not supported."
       (is (= {:status 400
-              :errors [(msg/invalid-pattern-opt-setting-msg #{:concept-id :echo-collection-id :echo-granule-id})]}
+              :errors [(msg/invalid-opt-for-param :concept-id :pattern)]}
              (search/find-refs :granule {:concept_id "C*" "options[concept_id]" {:pattern true}}))))
 
     (testing "echo collection id search with aql"
