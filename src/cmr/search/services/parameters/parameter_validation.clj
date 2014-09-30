@@ -24,7 +24,7 @@
 
 (def single-value-params
   "Parameters that must take a single value, never a vector of values."
-  #{:keyword :page-size :page-num :sort-key :result-format :pretty :echo-compatible
+  #{:keyword :page-size :page-num :result-format :pretty :echo-compatible
     :include-granule-counts :include-has-granules :include-facets})
 
 (def search-paging-depth-limit
