@@ -75,7 +75,7 @@
   (let [json-entry (util/map-keys->kebab-case json-entry)
         {:keys [id title short-name version-id summary updated dataset-id collection-data-type
                 processing-level-id original-format data-center archive-center time-start time-end
-                links dif-ids online-access-flag browse-flag coordinate-system
+                links dif-ids online-access-flag browse-flag coordinate-system score
                 shapes points boxes polygons lines granule-count has-granules
                 orbit-parameters]} json-entry]
     (util/remove-nil-keys
@@ -98,6 +98,7 @@
        :online-access-flag online-access-flag
        :browse-flag browse-flag
        :coordinate-system coordinate-system
+       :score score
        :granule-count granule-count
        :has-granules has-granules
        :shapes (json-geometry->shapes points boxes polygons lines)
