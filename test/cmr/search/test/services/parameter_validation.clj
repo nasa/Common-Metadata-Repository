@@ -34,6 +34,23 @@
                                                                   {:entry-title "fdad"
                                                                    :options {:entry-title {:foo "true"}}}))))
 
+  (testing "for a parameter requiring a single value validating a value vector returns an error"
+    (is (= ["Parameter [keyword] must have a single value."]
+           (pv/single-value-validation :collection {:keyword ["foo"]}))))
+  (testing "for multiple parameters requiring single values validating value vectors returns multiple errors"
+    (is (= ["Parameter [keyword] must have a single value."
+            "Parameter [page_size] must have a single value."]
+           (pv/single-value-validation :collection {:keyword ["foo"] :page-size [10] :platform ["bar"]}))))
+  (testing "for a parameter allowing multiple values validating a value vector returns no error"
+    (is (= []
+           (pv/single-value-validation :collection {:platform ["bar"]}))))
+  (testing "for a parameter requiring a single value validating a single value returns no error"
+    (is (= []
+           (pv/single-value-validation :collection {:keyword "foo"}))))
+  (testing "for a parameter requiring a single value validating no value returns no error"
+    (is (= []
+           (pv/single-value-validation :collection {}))))
+
   ;; Page Size
   (testing "Search with large page size"
     (is (= []
