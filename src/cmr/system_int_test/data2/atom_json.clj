@@ -160,4 +160,3 @@
   [granules collections atom-path]
   (let [expected-atom (atom/granules->expected-atom granules collections atom-path)]
     (update-in expected-atom [:entries] update-entries)))
-
