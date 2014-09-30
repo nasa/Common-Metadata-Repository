@@ -227,6 +227,14 @@
   (testing "parameters are validated according to concept-type"
     (is (= {:granule-ur "Dummy"} (pv/validate-parameters :granule {:granule-ur "Dummy"})))
     (is (thrown? clojure.lang.ExceptionInfo (pv/validate-parameters :collection {:granule-ur "Dummy"}))))
+  (testing "validation errors (rather than type errors) thrown a vector is supplied for page-num"
+    (try
+      (pv/validate-parameters :collection {:page-num [10]})
+      (is false "An error should have been thrown.")
+      (catch clojure.lang.ExceptionInfo e
+        (is (= {:type :bad-request
+                :errors #{"Parameter [page_num] must have a single value."}}
+               (update-in (ex-data e) [:errors] set))))))
   (testing "errors thrown when parameters are invalid."
     (try
       (pv/validate-parameters :collection {:entry-title "fdad"

@@ -58,13 +58,13 @@
   "Get a value from the params as an Integer or nil value. Throws NumberFormatException
   if the value cannot be converted to an Integer."
   [params value-keyword]
-  (when-let [value-str (value-keyword params)]
-    (Integer. value-str)))
+  (when-let [value (value-keyword params)]
+    (if (not (vector? value)) ; Return null if value is a vector.  Assumes single-value-validation handles arrays.
+      (Integer. value))))
 
 (defn single-value-validation
   "Validates that parameters which, if present, must have a single value and cannot not be
-   passed as a vector of values. This must be done early because other validations assume,
-   for instance, that page_num has a single integer value."
+   passed as a vector of values."
   [concept-type params]
   (->> (select-keys params single-value-params)
        (filter (fn [[k v]] (or (vector? v) (seq? v))))
