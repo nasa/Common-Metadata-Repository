@@ -14,6 +14,7 @@
             [camel-snake-kebab :as csk]
             [cmr.umm.spatial :as umm-s]
             [cmr.common.util :as util]
+            [cmr.spatial.orbits.swath-geometry :as swath]
             [cmr.system-int-test.data2.facets :as facets]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -283,7 +284,26 @@
        (set (map #(dissoc % :granule-count)
                  (get-in atom-results [:results :entries]))))))
 
+(defn- normalize-orbit-polygon
+  "Strips generated data not parsed when reading orbit polygon atom"
+  [orbit-polygon]
+  (assoc orbit-polygon
+    :coordinate-system nil
+    :rings (map #(umm-s/ring (:points %)) (:rings orbit-polygon))))
 
+(defn- granule->orbit-shapes
+  "Given a granule and its collection, returns a sequence containing its
+   orbit geometries, or a empty sequence if it is not an orbit granule"
+  [granule coll]
+  (if (get-in granule [:spatial-coverage :orbit])
+    (map normalize-orbit-polygon
+     (swath/to-polygons (get-in coll [:spatial-coverage :orbit-parameters])
+                        (get-in granule [:spatial-coverage :orbit :ascending-crossing])
+                        (:orbit-calculated-spatial-domains granule)
+                        (:beginning-date-time granule)
+                        (:ending-date-time granule)))
+    [])
+)
 
 (defn- granule->expected-atom
   "Returns the atom map of the granule"
@@ -295,7 +315,9 @@
         dataset-id (get-in granule [:collection-ref :entry-title])
         update-time (get-in granule [:data-provider-timestamps :update-time])
         granule-spatial-representation (get-in coll [:spatial-coverage :granule-spatial-representation])
-        coordinate-system (when granule-spatial-representation (csk/->SNAKE_CASE_STRING granule-spatial-representation))]
+        coordinate-system (when granule-spatial-representation (csk/->SNAKE_CASE_STRING granule-spatial-representation))
+        shapes (concat (get-in granule [:spatial-coverage :geometries])
+                       (granule->orbit-shapes granule coll))]
     (util/remove-nil-keys
       {:id concept-id
        :title granule-ur
@@ -314,7 +336,7 @@
        :browse-flag (not (empty? (ru/browse-urls related-urls)))
        :day-night-flag day-night
        :cloud-cover cloud-cover
-       :shapes (seq (get-in granule [:spatial-coverage :geometries]))})))
+       :shapes (seq shapes)})))
 
 (defn granules->expected-atom
   "Returns the atom map of the granules"
@@ -323,4 +345,3 @@
     {:id (str (url/search-root) atom-path)
      :title "ECHO granule metadata"
      :entries (seq (map granule->expected-atom granules collections))}))
-

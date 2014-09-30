@@ -278,7 +278,7 @@
                                 :related-urls [ru3]})
         gran3 (make-gran coll3 {:granule-ur "OrbitGranule"
                                 :beginning-date-time "2011-01-01T12:00:00Z"
-                                :ending-date-time "2011-01-11T12:00:00Z"
+                                :ending-date-time "2011-01-01T14:00:00Z"
                                 :producer-gran-id "OrbitGranuleId"
                                 :day-night "NIGHT"
                                 :size 80.0
@@ -305,9 +305,13 @@
         (is (= 200 (:status response)))
         (is (= gran-atom
                (:results response))))
-
       (let [gran-atom (da/granules->expected-atom [gran1 gran2 gran3] [coll1 coll2 coll3] "granules.atom")
             response (search/find-concepts-atom :granule {})]
+        (is (= 200 (:status response)))
+        (is (= gran-atom
+               (:results response))))
+      (let [gran-atom (da/granules->expected-atom [gran3] [coll3] "granules.atom?granule_ur=OrbitGranule")
+            response (search/find-concepts-atom :granule {:granule-ur "OrbitGranule"})]
         (is (= 200 (:status response)))
         (is (= gran-atom
                (:results response))))
