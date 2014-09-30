@@ -5,6 +5,7 @@
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.data2.collection :as dc]
+            [cmr.system-int-test.data2.kml :as dk]
             [cmr.system-int-test.data2.core :as d]
             [cmr.spatial.polygon :as poly]
             [cmr.spatial.point :as p]
@@ -44,13 +45,13 @@
 
 (defn make-coll
   [coord-sys et & shapes]
-  (println "making " et)
-  (d/ingest "PROV1"
-            (dc/collection
-              {:entry-title et
-               :spatial-coverage (dc/spatial {:gsr coord-sys
-                                              :sr coord-sys
-                                              :geometries shapes})})))
+  (let [shapes (map (partial umm-s/set-coordinate-system coord-sys) shapes)]
+    (d/ingest "PROV1"
+              (dc/collection
+                {:entry-title et
+                 :spatial-coverage (dc/spatial {:gsr coord-sys
+                                                :sr coord-sys
+                                                :geometries shapes})}))))
 
 (deftest special-case-spatial-search-test
   (let [west-hemi-poly1 (make-coll :geodetic "west-hemi-poly1"
@@ -107,7 +108,6 @@
          ;; middle of west hemisphere
          [-90 45] [west-hemi-poly1 west-hemi-poly2 west-hemi-poly3 combined])))
 
-
 (deftest spatial-search-test
   (let [;; Lines
         normal-line (make-coll :geodetic "normal-line"
@@ -156,8 +156,16 @@
         north-pole (make-coll :geodetic "north-pole" (p/point 0 90))
         south-pole (make-coll :geodetic "south-pole" (p/point 0 -90))
         normal-point (make-coll :geodetic "normal-point" (p/point 10 22))
-        am-point (make-coll :geodetic "am-point" (p/point 180 22))]
+        am-point (make-coll :geodetic "am-point" (p/point 180 22))
+        all-colls [whole-world touches-np touches-sp across-am-br normal-brs wide-north wide-south
+                   across-am-poly on-sp on-np normal-poly polygon-with-holes north-pole south-pole
+                   normal-point am-point very-wide-cart very-tall-cart wide-north-cart
+                   wide-south-cart normal-poly-cart polygon-with-holes-cart normal-line
+                   normal-line-cart along-am-line]]
     (index/refresh-elastic-index)
+
+    (testing "kml search results"
+      (is (dk/kml-results-match? all-colls (search/find-concepts-kml :collection {:page-size 100}))))
 
     (testing "line searches"
       (are [ords items]
@@ -287,12 +295,7 @@
            [23.59,-4,25.56,-15.47] [whole-world normal-line-cart]
 
            ;; whole world
-           [-180 90 180 -90] [whole-world touches-np touches-sp across-am-br normal-brs
-                              wide-north wide-south across-am-poly on-sp on-np normal-poly
-                              polygon-with-holes north-pole south-pole normal-point am-point
-                              very-wide-cart very-tall-cart wide-north-cart wide-south-cart
-                              normal-poly-cart polygon-with-holes-cart normal-line normal-line-cart
-                              along-am-line]))
+           [-180 90 180 -90] all-colls))
 
     (testing "polygon searches"
       (are [ords items]

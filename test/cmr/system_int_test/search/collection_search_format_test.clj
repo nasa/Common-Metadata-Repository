@@ -391,14 +391,14 @@
     (testing "XML has score for keyword search."
       (are [keyword-str scores]
            (= scores
-              (map :score (get-in (search/find-refs-json :collection {:keyword keyword-str})
+              (map :score (get-in (search/find-concepts-json :collection {:keyword keyword-str})
                                   [:feed :entry])))
            "ABC" [0.7]
            "ABC Foo" [0.5]))
     (testing "XML has no score field for non-keyword search."
       (are [title-str scores]
            (= scores
-              (map :score (get-in (search/find-refs-json :collection {:entry-title title-str})
+              (map :score (get-in (search/find-concepts-json :collection {:entry-title title-str})
                                   [:feed :entry])))
            "Foo" [nil]))))
 
@@ -416,4 +416,4 @@
 
   (is (= {:status 400,
           :errors ["Parameter [unsupported] was not recognized."]}
-         (search/find-refs-json :collection {:unsupported "dummy"}))))
+         (search/find-concepts-json :collection {:unsupported "dummy"}))))

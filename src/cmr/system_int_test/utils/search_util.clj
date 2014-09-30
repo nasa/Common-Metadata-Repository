@@ -21,6 +21,7 @@
             [cmr.umm.iso-smap.collection]
             [cmr.system-int-test.data2.atom :as da]
             [cmr.system-int-test.data2.atom-json :as dj]
+            [cmr.system-int-test.data2.kml :as dk]
             [cmr.system-int-test.data2.provider-holdings :as ph]
             [cmr.system-int-test.data2.aql :as aql]
             [cmr.system-int-test.data2.aql-additional-attribute]
@@ -169,7 +170,7 @@
      (find-concepts-in-format "text/csv" concept-type params options))))
 
 (defn find-concepts-atom
-  "Returns the response of granule search in atom format"
+  "Returns the response of a search in atom format"
   ([concept-type params]
    (find-concepts-atom concept-type params {}))
   ([concept-type params options]
@@ -182,7 +183,7 @@
        response))))
 
 (defn find-concepts-json
-  "Returns the response of granule search in json format"
+  "Returns the response of a search in json format"
   ([concept-type params]
    (find-concepts-json concept-type params {}))
   ([concept-type params options]
@@ -192,6 +193,20 @@
      (if (= status 200)
        {:status status
         :results (dj/parse-json-result concept-type body)}
+       response))))
+
+(defn find-concepts-kml
+  "Returns the response of search in KML format"
+  ([concept-type params]
+   (find-concepts-kml concept-type params {}))
+  ([concept-type params options]
+   (let [response (get-search-failure-data
+                    (find-concepts-in-format "application/vnd.google-earth.kml+xml"
+                                             concept-type params options))
+         {:keys [status body]} response]
+     (if (= status 200)
+       {:status status
+        :results (dk/parse-kml-results body)}
        response))))
 
 (defn find-metadata
@@ -224,18 +239,6 @@
            facets (f/parse-facets-xml (cx/element-at-path parsed [:facets]))]
        (util/remove-nil-keys {:items items
                               :facets facets})))))
-
-(defn find-refs-json
-  "Finds references using the JSON format. This will eventually go away as the json response format
-  should be similar to the ATOM XML format."
-  ([concept-type params]
-   (find-refs-json concept-type params {}))
-  ([concept-type params options]
-   (get-search-failure-data
-     (-> (find-concepts-in-format "application/json" concept-type params options)
-         :body
-         (json/decode true)
-         (set/rename-keys {:references :refs})))))
 
 (defmulti parse-reference-response
   (fn [echo-compatible? response]
