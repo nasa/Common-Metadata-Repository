@@ -48,7 +48,8 @@
    "iso_smap" "application/iso:smap+xml"
    "dif" "application/dif+xml"
    "csv" "text/csv"
-   "atom" "application/atom+xml"})
+   "atom" "application/atom+xml"
+   "kml" "application/vnd.google-earth.kml+xml"})
 
 (def search-result-supported-mime-types
   "The mime types supported by search."
@@ -59,7 +60,8 @@
     "application/dif+xml"
     "application/atom+xml"
     "application/iso19115+xml"
-    "text/csv"})
+    "text/csv"
+    "application/vnd.google-earth.kml+xml"})
 
 (def supported-provider-holdings-mime-types
   "The mime types supported by search."
