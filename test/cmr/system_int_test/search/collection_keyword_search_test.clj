@@ -255,4 +255,11 @@
            "Laser" "-entry-title" [coll9 coll7 coll5 coll14]
            "Laser" "score" [coll14 coll5 coll7 coll9]
            "Laser" "+score" [coll5 coll7 coll9 coll14]
-           "Laser" "-score" [coll14 coll5 coll7 coll9]))))
+           "Laser" "-score" [coll14 coll5 coll7 coll9]))
+    (testing "search by multiple keywords returns an error."
+      (let [resp (search/find-refs :collection {:provider "PROV1"
+                                                :page_size 5
+                                                :keyword ["Laser" "spoon"]})
+            {:keys [status errors]} resp]
+        (is (= 400 status))
+        (is (= "Parameter [keyword] must have a single value." (first errors)))))))
