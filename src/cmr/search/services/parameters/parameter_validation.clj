@@ -104,6 +104,107 @@
       ;; This should be handled separately by page-size and page-num validiation
       [])))
 
+(def option->valid-parameters
+  "Map of options to parameters that allow them."
+  {:pattern #{:collection-concept-id
+              :archive-center
+              :dataset-id
+              :entry-title
+              :short-name
+              :entry-id
+              :version
+              :granule-ur
+              :producer-granule-id
+              :readable-granule-name
+              :project
+              :campaign
+              :platform
+              :sensor
+              :instrument
+              :collection-data-type
+              :day-night
+              :day-night-flag
+              :two-d-coordinate-system
+              :two-d-coordinate-system-name
+              :grid
+              :keyword
+              :processing-level
+              :processing-level-id
+              :science-keywords
+              :spatial-keyword
+              :dif-entry-id
+              :provider
+              :provider-id}
+   :ignore-case #{:short-name
+                  :dif-entry-id
+                  :readable-granule-name
+                  :version
+                  :processing-level
+                  :processing-level-id
+                  :collection-data-type
+                  :project
+                  :campaign
+                  :archive-center
+                  :spatial-keyword
+                  :science-keywords
+                  :long-name
+                  :entry-title
+                  :granule-ur
+                  :producer-granule-id
+                  :day-night
+                  :day-night-flag
+                  :platform
+                  :instrument
+                  :sensor
+                  :project-refs
+                  :two-d-coordinate-system
+                  :grid
+                  :entry-id
+                  :provider
+                  :provider-id}
+   :and #{:entry-id
+          :dif-entry-id
+          :entry-title
+          :readable-granule-name
+          :campaign
+          :spatial-keyword
+          :project
+          :platform
+          :instrument
+          :sensor
+          :short-name
+          :temporal}
+   :or #{:attribute :science-keywords :temporal}
+   :exclude-collection #{:attribute}})
+
+(defn- param->valid-options
+  "Return a set of valid options for the given parameter."
+  [param]
+  (set (filter #((option->valid-parameters %) param)
+               (keys option->valid-parameters))))
+
+(def memoized-param->valid-options
+  (memoize param->valid-options))
+
+(defn validate-parameter-options
+  [concept-type params]
+  "Validates that no invalid parameter names in the options were supplied"
+  [concept-type params]
+  (if-let [options (:options params)]
+    (apply concat
+           (map
+             (fn [[param settings]]
+               ;; handle these parameters separately since they don't allow any options
+               (if (case-sensitive-params param)
+                 (map #(c-msg/invalid-opt-for-param param %) (keys settings))
+                 (let [valid-options (memoized-param->valid-options param)]
+                   ;; Only check params we recognize - other validations will handle the rest
+                   (when (seq valid-options)
+                     (map #(c-msg/invalid-opt-for-param param %)
+                          (set/difference (set (keys settings))
+                                          valid-options))))))
+             options))))
+
 (def concept-type->valid-sort-keys
   "A map of concept type to sets of valid sort keys"
   {:collection #{:entry-title
@@ -222,7 +323,7 @@
            (map
              (fn [[param settings]]
                (when (and (= "true" (:or settings))
-                        (not (contains? params-that-allow-or-option param)))
+                          (not (contains? params-that-allow-or-option param)))
                  [(c-msg/invalid-or-opt-setting-msg param)]))
              options))))
 
@@ -489,10 +590,11 @@
    sort-key-validation
    unrecognized-params-validation
    unrecognized-params-in-options-validation
-   unrecognized-params-settings-in-options-validation
-   option-case-sensitive-params-validation
-   option-pattern-params-validation
-   options-or-params-validation
+   ;unrecognized-params-settings-in-options-validation
+   validate-parameter-options
+   ;option-case-sensitive-params-validation
+   ;option-pattern-params-validation
+   ;options-or-params-validation
    temporal-format-validation
    updated-since-validation
    orbit-number-validation
