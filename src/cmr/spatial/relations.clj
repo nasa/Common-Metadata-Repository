@@ -20,6 +20,11 @@
 (defprotocol SpatialRelations
   "Defines functions for determining relations between different spatial areas."
 
+  (coordinate-system
+    [shape]
+    "Returns the coordinate system of a shape if it has one. Points do not occupy
+    a set coordinate system.")
+
   (mbr [shape] "Returns the minimum bounding rectangle of the shape")
 
   (contains-north-pole? [shape] "Returns true if the shape contains the north pole")
@@ -39,6 +44,11 @@
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   cmr.spatial.point.Point
+
+  (coordinate-system
+    [point]
+    ;; Points don't have a specific coordinate system
+    nil)
 
   (mbr
     [point]
@@ -78,6 +88,10 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   cmr.spatial.line_string.LineString
 
+  (coordinate-system
+    [line]
+    (:coordinate-system line))
+
   (mbr
     [line]
     (:mbr line))
@@ -115,6 +129,10 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   cmr.spatial.mbr.Mbr
 
+  (coordinate-system
+    [_]
+    :cartesian)
+
   (mbr [br] br)
 
   (contains-north-pole?
@@ -151,6 +169,10 @@
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   cmr.spatial.geodetic_ring.GeodeticRing
+
+  (coordinate-system
+    [_]
+    :geodetic)
 
   (mbr
     [ring]
@@ -191,6 +213,10 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   cmr.spatial.cartesian_ring.CartesianRing
 
+  (coordinate-system
+    [_]
+    :cartesian)
+
   (mbr
     [ring]
     (:mbr ring))
@@ -229,6 +255,10 @@
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   cmr.spatial.polygon.Polygon
+
+  (coordinate-system
+    [polygon]
+    (:coordinate-system polygon))
 
   (mbr
     [polygon]
