@@ -7,6 +7,7 @@
             [cmr.umm.dif.collection :as dif-c]
             [cmr.umm.iso-mends.core :as iso-mends]
             [cmr.umm.iso-mends.collection :as iso-mends-c]
+            [cmr.umm.iso-mends.granule :as iso-mends-g]
             [cmr.umm.iso-smap.core :as iso-smap]
             [cmr.umm.iso-smap.collection :as iso-smap-c]
             [cmr.umm.iso-smap.granule :as iso-smap-g]))
