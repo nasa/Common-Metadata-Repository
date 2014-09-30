@@ -13,7 +13,8 @@
    "application/iso19115+xml" :iso19115
    "application/dif+xml" :dif
    "text/csv" :csv
-   "application/atom+xml" :atom})
+   "application/atom+xml" :atom
+   "application/vnd.google-earth.kml+xml" :kml})
 
 (def format->mime-type
   {:json "application/json"
@@ -23,7 +24,8 @@
    :iso19115 "application/iso19115+xml"
    :dif "application/dif+xml"
    :csv "text/csv"
-   :atom "application/atom+xml"})
+   :atom "application/atom+xml"
+   :kml "application/vnd.google-earth.kml+xml"})
 
 (defn mime-type->format
   "Converts a mime-type into the format requested."
