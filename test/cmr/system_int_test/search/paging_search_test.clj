@@ -59,7 +59,12 @@
     (let [resp (search/find-refs :collection {:page_size "ABC"})
           {:keys [status errors]} resp]
       (is (= 400 status))
-      (is (re-matches #".*page_size must be a number between 0 and 2000.*" (first errors))))))
+      (is (re-matches #".*page_size must be a number between 0 and 2000.*" (first errors)))))
+  (testing "Vector page_size"
+    (let [resp (search/find-refs :collection {:page_size [10 20]})
+          {:keys [status errors]} resp]
+      (is (= 400 status))
+      (is (= "Parameter [page_size] must have a single value." (first errors))))))
 
 (deftest search-for-hits
   (create-collections)
@@ -97,4 +102,11 @@
             {:keys [status errors]} resp]
         (is (= 400 status))
         (is (re-matches #".*page_num must be a number greater than or equal to 1.*"
-                        (first errors)))))))
+                        (first errors)))))
+    (testing "Vector page_num."
+      (let [resp (search/find-refs :collection {:provider "PROV1"
+                                                :page_size 5
+                                                :page_num [1 2]})
+            {:keys [status errors]} resp]
+        (is (= 400 status))
+        (is (= "Parameter [page_num] must have a single value." (first errors)))))))
