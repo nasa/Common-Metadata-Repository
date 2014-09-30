@@ -29,8 +29,9 @@
          url (format "%s%s" (conn/root-url conn) url-path)
          params (merge (request-options conn) options)
          ;; Uncoment to log requests
-         _ (debug "Making ECHO GET Request" url (pr-str params))
+         _ (debug "Making ECHO GET Request" url)
          response (client/get url params)
+         _ (debug "Completed ECHO GET Request" url)
          {:keys [status body headers]} response
          parsed (if (.startsWith ^String (get headers "Content-Type" "") "application/json")
                   (json/decode body true)
