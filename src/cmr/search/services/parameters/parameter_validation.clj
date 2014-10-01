@@ -630,8 +630,6 @@
   "Validates parameters. Throws exceptions to send to the user. Returns parameters if validation
   was successful so it can be chained with other calls."
   [concept-type params]
-  (println "PARAMS.....")
-  (println params)
   (let [errors (mapcat #(% concept-type params) parameter-validations)]
     (when (seq errors)
       (err/throw-service-errors :bad-request errors)))

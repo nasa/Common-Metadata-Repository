@@ -212,9 +212,9 @@
 
 (defmacro force-trailing-slash
   "Given a ring request, if the request was made against a resource path with a trailing
-   slash, performs the body form (presumably returning a valid ring response).  Otherwise,
-   issues a 301 Moved Permanently redirect to the request's resource path with an appended
-   trailing slash."
+  slash, performs the body form (presumably returning a valid ring response).  Otherwise,
+  issues a 301 Moved Permanently redirect to the request's resource path with an appended
+  trailing slash."
   [req body]
   `(if (.endsWith (:uri ~req) "/")
      ~body
@@ -227,8 +227,8 @@
       ;; CMR Welcome Page
       (GET "/" req
         (force-trailing-slash req ; Without a trailing slash, the relative URLs in index.html are wrong
-         {:status 200
-           :body (slurp (io/resource "public/index.html"))}))
+                              {:status 200
+                               :body (slurp (io/resource "public/index.html"))}))
 
       ;; Static HTML resources, typically API documentation which needs endpoint URLs replaced
       (GET ["/site/:resource", :resource #".*\.html$"] {scheme :scheme headers :headers {resource :resource} :params}
@@ -273,7 +273,7 @@
           (get-provider-holdings context path-w-extension params headers)))
 
       ;; Resets the application back to it's initial state.
-       (POST "/reset" {:keys [request-context params headers]}
+      (POST "/reset" {:keys [request-context params headers]}
         (query-svc/clear-cache (acl/add-authentication-to-context request-context params headers))
         {:status 200})
 
@@ -299,10 +299,12 @@
   the query string."
   [query]
   ;; Look for params appear as both singular and multivaluded, e.g., foo=1&foo[bar]=2, in any order.
-  (let [mixed-param-groups (or (re-find #"(^|&)(.*?)=.*?\2\[" query)
-                               (re-find #"(^|&)(.*?)\[.*?\2=" query))]
-    (when mixed-param-groups
-      (last mixed-param-groups))))
+  (when query (let [mixed-param-groups (or (re-find #"(^|&)(.*?)=.*?\2%5B" query)
+                                           (re-find #"(^|&)(.*?)%5B.*?\2=" query)
+                                           (re-find #"(^|&)(.*?)=.*?\2\[" query)
+                                           (re-find #"(^|&)(.*?)\[.*?\2=" query))]
+                (when mixed-param-groups
+                  (last mixed-param-groups)))))
 
 ;; Ring parameter handling is causing crashes when single value params are mixed with multivalue.
 ;; The specific case of this is for improperly expressed options, e.g.,
