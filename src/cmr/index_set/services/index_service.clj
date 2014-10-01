@@ -3,6 +3,7 @@
   (:require [clojure.string :as s]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.index-set.data.elasticsearch :as es]
+            [cmr.elastic-utils.connect :as es-util]
             [cheshire.core :as json]
             [camel-snake-kebab :as csk]
             [cmr.acl.core :as acl]
@@ -216,7 +217,7 @@
 (deftracefn health
   "Returns the health state of the app."
   [context]
-  (let [elastic-health (es/health context)
+  (let [elastic-health (es-util/health context :index)
         echo-rest-health (rest/health context)
         ok? (and (:ok? elastic-health) (:ok? echo-rest-health))]
     {:ok? ok?

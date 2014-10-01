@@ -27,18 +27,19 @@ To start a web server for the application, run:
 curl -XGET "http://localhost:3005/index-sets/3"
 
 - Get all index-sets
-curl  -XGET "http://localhost:3005/index-sets"
+curl -XGET "http://localhost:3005/index-sets"
 
 - Delete index-set by id
-curl  -XDELETE "http://localhost:3005/index-sets/3"
+curl -XDELETE "http://localhost:3005/index-sets/3"
 
+- Check index-set-app health
+ curl -XGET "http://localhost:3005/health"
 
 - Reset for dev purposes
 curl -i -H "Accept: application/json" -H "Content-type: application/json" -XPOST "http://localhost:3005/reset"
 
 - See indices listing
  curl http://localhost:9210/index_sets/_aliases?pretty=1
-
 
 ## License
 
