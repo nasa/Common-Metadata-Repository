@@ -121,6 +121,11 @@
   []
   (format "http://localhost:%s/reset" (transmit-config/index-set-port)))
 
+(defn index-set-health-url
+  "URL to check index-set health."
+  []
+  (format "http://localhost:%s/health" (transmit-config/index-set-port)))
+
 (defn indexer-reset-url
   "Delete and re-create indexes in elastic. Only development team to use this functionality."
   []
