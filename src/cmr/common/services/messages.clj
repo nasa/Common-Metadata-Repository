@@ -2,7 +2,8 @@
   "This namespace provides functions to generate messages used for error reporting, logging, etc.
   Messages used in more than one project should be placed here."
   (:require [clojure.string :as str]
-            [cmr.common.services.errors :as errors]))
+            [cmr.common.services.errors :as errors]
+            [camel-snake-kebab :as csk]))
 
 (defn data-error [error-type msg-fn & args]
   "Utility method that uses throw-service-error to generate a response with a specific status code
@@ -57,3 +58,17 @@
   "Creates a message saying which parameter is not allowed to use the 'or' option."
   [param]
   (format "'or' option is not valid for parameter [%s]" param))
+
+(defn invalid-opt-for-param
+  "Creates a message saying supplied option is not allowed for parameter."
+  [param option]
+  (str "Option [" (csk/->snake_case_string option)
+       "] is not supported for param [" (csk/->snake_case_string param) "]"))
+
+(defn mixed-arity-parameter-msg
+  "Creates a message saying the given parameter should not appear as both a single value and
+  a multivalue."
+  [param]
+  (str "Parameter ["
+       (csk/->snake_case_string param)
+       "] may be either single valued or multivalued, but not both."))
