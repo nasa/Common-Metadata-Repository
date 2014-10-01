@@ -52,10 +52,10 @@
         (r/response (index-svc/reset request-context))))
 
     (GET "/health" {request-context :request-context}
-      (let [{:keys [status-ok? result]} (index-svc/health request-context)]
-        {:status (if status-ok? 200 503)
+      (let [{:keys [ok? dependencies]} (index-svc/health request-context)]
+        {:status (if ok? 200 503)
          :headers {"Content-Type" "application/json; charset=utf-8"}
-         :body result}))
+         :body dependencies}))
 
     (route/not-found "Not Found")))
 

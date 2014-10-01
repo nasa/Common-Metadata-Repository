@@ -148,8 +148,11 @@
 (deftracefn health
   "Returns the health state of elasticsearch."
   [context]
-  (let [conn (get-in context [:system :index :conn])]
-    (admin/cluster-health conn)))
+  (let [conn (get-in context [:system :index :conn])
+        status (:status (admin/cluster-health conn))]
+    (if (some #{status} ["green" "yellow"])
+      {:ok? true}
+      {:ok? false})))
 
 (comment
   (doc/get "index-sets" "set" "1" "fields" "index-set-id,index-set-name,index-set-request")

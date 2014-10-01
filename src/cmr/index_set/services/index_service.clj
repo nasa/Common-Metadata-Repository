@@ -216,11 +216,11 @@
 (deftracefn health
   "Returns the health state of the app."
   [context]
-  (let [elastic-health (:status (es/health context))
+  (let [elastic-health (es/health context)
         echo-rest-health (rest/health context)
-        status-ok? (and (some #{elastic-health} ["green" "yellow"]) (= "ok" echo-rest-health))]
-    {:status-ok? status-ok?
-     :result {:elastic_search elastic-health
-              :echo-rest echo-rest-health}}))
+        ok? (and (:ok? elastic-health) (:ok? echo-rest-health))]
+    {:ok? ok?
+     :dependencies {:elastic_search elastic-health
+                    :echo echo-rest-health}}))
 
 
