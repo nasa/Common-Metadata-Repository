@@ -58,15 +58,4 @@
       (is (d/refs-match? [coll2 coll4]
                          (search/find-refs :collection
                                            {:collection-data-type "science_quality"
-                                            "options[collection-data-type][ignore-case]" "true"}))))
-
-    (testing "search by collection data type, options :and false."
-      (is (d/refs-match? [coll1 coll3]
-                         (search/find-refs :collection {"collection-data-type[]" ["NEAR_REAL_TIME" "OTHER"]
-                                                        "options[collection-data-type][and]" "false"}))))
-
-    (testing "search by collection data type, options :and true."
-      (is (d/refs-match? []
-                         (search/find-refs :collection
-                                           {"collection-data-type[]" ["NEAR_REAL_TIME" "OTHER"]
-                                            "options[collection-data-type][and]" "true"}))))))
+                                            "options[collection-data-type][ignore-case]" "true"}))))))

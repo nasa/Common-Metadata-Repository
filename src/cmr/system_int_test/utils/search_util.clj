@@ -98,6 +98,14 @@
              errors# (safe-parse-error-xml body#)]
          {:status status# :errors errors#}))))
 
+(defn make-raw-search-query
+  "Make a query to search with the given query string."
+  [concept-type query]
+  (let [url (url/search-url concept-type)]
+    (get-search-failure-data
+
+      (client/get (str url query) {:connection-manager (url/conn-mgr)}))))
+
 (defn find-concepts-in-format
   "Returns the concepts in the format given."
   ([format concept-type params]
@@ -271,7 +279,7 @@
   [_ response]
   (let [parsed (-> response :body x/parse-str)
         references-type (get-in parsed [:attrs :type])
-       refs (map (fn [ref-elem]
+        refs (map (fn [ref-elem]
                     (util/remove-nil-keys
                       {:id (cx/string-at-path ref-elem [:id])
                        :name (cx/string-at-path ref-elem [:name])
@@ -289,7 +297,7 @@
   ([concept-type params options]
    (get-search-failure-xml-data
      (parse-reference-response (:echo-compatible params)
-       (find-concepts-in-format "application/xml" concept-type params options)))))
+                               (find-concepts-in-format "application/xml" concept-type params options)))))
 
 (defn find-refs-with-post
   "Returns the references that are found by searching through POST request with the input params"
