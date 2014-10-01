@@ -10,6 +10,7 @@
   (testing "good health"
     (let [response (client/get (url/index-set-health-url)
                                {:accept :json
+                                :throw-exceptions false
                                 :connection-manager (url/conn-mgr)})
           status-code (:status response)
           health-detail (json/decode (:body response) true)]
