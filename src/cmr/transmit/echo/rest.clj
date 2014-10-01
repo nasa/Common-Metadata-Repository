@@ -81,5 +81,9 @@
   [context]
   (let [conn (config/context->app-connection context :echo-rest)
         url (format "%s%s" (conn/root-url conn) "/availability")
-        response (client/get url {:throw-exceptions false})]
-    (if (= 200 (:status response)) "ok" "down")))
+        response (client/get url {:throw-exceptions false})
+        status-code (:status response)]
+    (if (= 200 status-code)
+      {:ok? true}
+      {:ok? false
+       :problem (format "Recieved %d from availability check. %s" status-code (:body response))})))
