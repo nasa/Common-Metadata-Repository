@@ -9,7 +9,13 @@
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.api.errors :as errors]
             [cmr.transmit.echo.acls :as echo-acls]
-            [cmr.search.data.elastic-search-index :as es]))
+            [cmr.search.data.elastic-search-index :as es]
+
+            ;; Services for reseting
+            [cmr.metadata-db.services.concept-service :as mdb-service]
+            [cmr.index-set.services.index-service :as index-set-service]
+            [cmr.indexer.services.index-service :as indexer-service]
+            [cmr.search.services.query-service :as search-service]))
 
 (defn app-context
   [system app]
@@ -35,6 +41,18 @@
               :search-cached-acls search-cached-acls
               :actual-acls actual-acls}))))
 
+(def service-reset-fns
+  "A map of services to reset functions."
+  {:metadata-db mdb-service/reset
+   :index-set index-set-service/reset
+   :indexer indexer-service/reset
+   :search search-service/clear-cache})
+
+(def service-clear-cache-fns
+  "A map of services to reset functions."
+  {:indexer indexer-service/clear-cache
+   :search search-service/clear-cache})
+
 
 (defn- build-routes [system]
   (routes
@@ -43,6 +61,18 @@
       {:status 200
        :body (json/generate-string (get-acl-state system) {:pretty true})
        :headers {"Content-Type" "application/json"}})
+
+    ;; Calls reset on all other systems internally
+    (POST "/reset" []
+      (doseq [[service-name reset-fn] service-reset-fns]
+        (reset-fn (app-context system service-name)))
+      {:status 200})
+
+    (POST "/clear-cache" []
+      (doseq [[service-name clear-cache-fn] service-clear-cache-fns]
+        (clear-cache-fn (app-context system service-name)))
+      {:status 200})
+
     (POST "/stop" []
       ((var-get (find-var 'cmr.dev-system.system/stop)) system)
       (System/exit 0))
