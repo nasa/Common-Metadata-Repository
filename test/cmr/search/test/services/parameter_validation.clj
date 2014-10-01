@@ -29,10 +29,9 @@
                                                          {:entry-title "fdad"
                                                           :options {:foo {:ignore-case "true"}}}))))
   (testing "invalid options param args"
-    (is (= ["Option [foo] for param [entry_title] was not recognized."]
-           (pv/unrecognized-params-settings-in-options-validation :collection
-                                                                  {:entry-title "fdad"
-                                                                   :options {:entry-title {:foo "true"}}}))))
+    (is (= [(com-msg/invalid-opt-for-param :entry-title :foo)]
+           (pv/parameter-options-validation :collection {:entry-title "fdad"
+                                                         :options {:entry-title {:foo "true"}}}))))
 
   ;; Page Size
   (testing "Search with large page size"

@@ -186,7 +186,7 @@
 (def memoized-param->valid-options
   (memoize param->valid-options))
 
-(defn validate-parameter-options
+(defn parameter-options-validation
   [concept-type params]
   "Validates that no invalid parameter names in the options were supplied"
   [concept-type params]
@@ -272,60 +272,6 @@
          (set/difference (set (keys options))
                          (concept-type->valid-param-names concept-type)))
     []))
-
-(defn unrecognized-params-settings-in-options-validation
-  "Validates that no invalid parameters names in the options were supplied"
-  [concept-type params]
-  (if-let [options (:options params)]
-    (apply concat
-           (map
-             (fn [[param settings]]
-               (map #(str "Option [" (csk/->snake_case_string %)
-                          "] for param [" (csk/->snake_case_string param) "] was not recognized.")
-                    (set/difference (set (keys settings))
-                                    (set [:ignore-case :pattern :and :or :exclude-collection]))))
-             options))
-    []))
-
-(defn option-case-sensitive-params-validation
-  "Validates ignore case option setting is not set to true for identified params."
-  [concept-type params]
-  (if-let [options (:options params)]
-    (apply concat
-           (map
-             (fn [[param settings]]
-               (if (and (contains? case-sensitive-params param)
-                        (= "true" (:ignore-case settings)))
-                 [(c-msg/invalid-ignore-case-opt-setting-msg case-sensitive-params)]
-                 []))
-             options))
-    []))
-
-(defn option-pattern-params-validation
-  "Validates pattern option setting is not set to true for identified params."
-  [concept-type params]
-  (if-let [options (:options params)]
-    (apply concat
-           (map
-             (fn [[param settings]]
-               (if (and (contains? params-that-disallow-pattern-search-option param)
-                        (= "true" (:pattern settings)))
-                 [(c-msg/invalid-pattern-opt-setting-msg params-that-disallow-pattern-search-option)]
-                 []))
-             options))
-    []))
-
-(defn options-or-params-validation
-  "Validates or option setting is not set to true for anything but attribute"
-  [concept-type params]
-  (when-let [options (:options params)]
-    (apply concat
-           (map
-             (fn [[param settings]]
-               (when (and (= "true" (:or settings))
-                          (not (contains? params-that-allow-or-option param)))
-                 [(c-msg/invalid-or-opt-setting-msg param)]))
-             options))))
 
 (defn- validate-date-time
   "Validates datetime string is in the given format"
@@ -590,11 +536,7 @@
    sort-key-validation
    unrecognized-params-validation
    unrecognized-params-in-options-validation
-   ;unrecognized-params-settings-in-options-validation
-   validate-parameter-options
-   ;option-case-sensitive-params-validation
-   ;option-pattern-params-validation
-   ;options-or-params-validation
+   parameter-options-validation
    temporal-format-validation
    updated-since-validation
    orbit-number-validation
