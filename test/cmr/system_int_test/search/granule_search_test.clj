@@ -445,4 +445,8 @@
     (testing "OR option is not supported for anything but attribute, science-keywords"
       (is (= {:status 400
               :errors [(msg/invalid-opt-for-param :concept-id :or)]}
-             (search/find-refs :granule {:concept-id "G" "options[concept_id]" {:or true}}))))))
+             (search/find-refs :granule {:concept-id "G" "options[concept_id]" {:or true}}))))
+    (testing "Mixed arity param results in 400 error"
+      (is (= {:status 400
+              :errors [(msg/mixed-arity-parameter-msg :concept-id)]}
+             (search/make-raw-search-query :granule "?concept_id=G&concept_id[pattern]=true"))))))
