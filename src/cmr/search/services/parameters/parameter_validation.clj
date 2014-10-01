@@ -121,6 +121,64 @@
       ;; This should be handled separately by page-size and page-num validiation
       [])))
 
+(def string-param-options #{:pattern :ignore-case})
+(def pattern-option #{:pattern})
+(def or-option #{:or})
+(def and-or-option #{:and :or})
+(def exclude-plus-or-option #{:exclude-collection :or})
+(def string-plus-and-options #{:pattern :ignore-case :and})
+(def string-plus-or-options #{:pattern :ignore-case :or})
+
+
+(def param->valid-options
+  "Map of parameters to options that are valid for them."
+  {:collection-concept-id pattern-option
+   :archive-center string-param-options
+   :dataset-id pattern-option
+   :entry-title string-plus-and-options
+   :short-name string-plus-and-options
+   :entry-id string-plus-and-options
+   :version string-param-options
+   :granule-ur string-param-options
+   :producer-granule-id string-param-options
+   :readable-granule-name string-plus-and-options
+   :project string-plus-and-options
+   :campaign string-plus-and-options
+   :platform string-plus-and-options
+   :sensor string-plus-and-options
+   :instrument string-plus-and-options
+   :collection-data-type string-param-options
+   :day-night string-param-options
+   :two-d-coordinate-system string-param-options
+   :grid string-param-options
+   :keyword pattern-option
+   :processing-level string-param-options
+   :science-keywords string-plus-or-options
+   :spatial-keyword string-plus-and-options
+   :dif-entry-id string-plus-and-options
+   :provider string-param-options
+   :attribute exclude-plus-or-option
+   :temporal and-or-option})
+
+(defn parameter-options-validation
+  [concept-type params]
+  "Validates that no invalid parameter names in the options were supplied"
+  [concept-type params]
+  (if-let [options (:options params)]
+    (apply concat
+           (map
+             (fn [[param settings]]
+               ;; handle these parameters separately since they don't allow any options
+               (if (case-sensitive-params param)
+                 (map #(msg/invalid-opt-for-param param %) (keys settings))
+                 (let [valid-options (param->valid-options param)]
+                   ;; Only check params we recognize - other validations will handle the rest
+                   (when valid-options
+                     (map #(msg/invalid-opt-for-param param %)
+                          (set/difference (set (keys settings))
+                                          valid-options))))))
+             options))))
+
 (def concept-type->valid-sort-keys
   "A map of concept type to sets of valid sort keys"
   {:collection #{:entry-title
@@ -188,60 +246,6 @@
          (set/difference (set (keys options))
                          (concept-type->valid-param-names concept-type)))
     []))
-
-(defn unrecognized-params-settings-in-options-validation
-  "Validates that no invalid parameters names in the options were supplied"
-  [concept-type params]
-  (if-let [options (:options params)]
-    (apply concat
-           (map
-             (fn [[param settings]]
-               (map #(str "Option [" (csk/->snake_case_string %)
-                          "] for param [" (csk/->snake_case_string param) "] was not recognized.")
-                    (set/difference (set (keys settings))
-                                    (set [:ignore-case :pattern :and :or :exclude-collection]))))
-             options))
-    []))
-
-(defn option-case-sensitive-params-validation
-  "Validates ignore case option setting is not set to true for identified params."
-  [concept-type params]
-  (if-let [options (:options params)]
-    (apply concat
-           (map
-             (fn [[param settings]]
-               (if (and (contains? case-sensitive-params param)
-                        (= "true" (:ignore-case settings)))
-                 [(c-msg/invalid-ignore-case-opt-setting-msg case-sensitive-params)]
-                 []))
-             options))
-    []))
-
-(defn option-pattern-params-validation
-  "Validates pattern option setting is not set to true for identified params."
-  [concept-type params]
-  (if-let [options (:options params)]
-    (apply concat
-           (map
-             (fn [[param settings]]
-               (if (and (contains? params-that-disallow-pattern-search-option param)
-                        (= "true" (:pattern settings)))
-                 [(c-msg/invalid-pattern-opt-setting-msg params-that-disallow-pattern-search-option)]
-                 []))
-             options))
-    []))
-
-(defn options-or-params-validation
-  "Validates or option setting is not set to true for anything but attribute"
-  [concept-type params]
-  (when-let [options (:options params)]
-    (apply concat
-           (map
-             (fn [[param settings]]
-               (when (and (= "true" (:or settings))
-                        (not (contains? params-that-allow-or-option param)))
-                 [(c-msg/invalid-or-opt-setting-msg param)]))
-             options))))
 
 (defn- validate-date-time
   "Validates datetime string is in the given format"
@@ -402,7 +406,7 @@
           (if (some #(.startsWith % "C") exclude-values)
             [(str "Exclude collection is not supported, " exclude-kv)]
             []))
-        [(c-msg/invalid-exclude-param-msg invalid-exclude-params)]))
+        [(msg/invalid-exclude-param-msg invalid-exclude-params)]))
     []))
 
 (defn boolean-value-validation
@@ -507,10 +511,7 @@
    sort-key-validation
    unrecognized-params-validation
    unrecognized-params-in-options-validation
-   unrecognized-params-settings-in-options-validation
-   option-case-sensitive-params-validation
-   option-pattern-params-validation
-   options-or-params-validation
+   parameter-options-validation
    temporal-format-validation
    updated-since-validation
    orbit-number-validation

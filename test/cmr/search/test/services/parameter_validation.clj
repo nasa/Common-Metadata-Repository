@@ -29,10 +29,9 @@
                                                          {:entry-title "fdad"
                                                           :options {:foo {:ignore-case "true"}}}))))
   (testing "invalid options param args"
-    (is (= ["Option [foo] for param [entry_title] was not recognized."]
-           (pv/unrecognized-params-settings-in-options-validation :collection
-                                                                  {:entry-title "fdad"
-                                                                   :options {:entry-title {:foo "true"}}}))))
+    (is (= [(msg/invalid-opt-for-param :entry-title :foo)]
+           (pv/parameter-options-validation :collection {:entry-title "fdad"
+                                                         :options {:entry-title {:foo "true"}}}))))
 
   (testing "for a parameter requiring a single value validating a value vector returns an error"
     (is (= ["Parameter [keyword] must have a single value."]

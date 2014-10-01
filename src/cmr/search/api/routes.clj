@@ -15,6 +15,7 @@
             [cmr.search.services.query-service :as query-svc]
             [cmr.system-trace.http :as http-trace]
             [cmr.search.services.parameters.legacy-parameters :as lp]
+            [cmr.search.services.messages.common-messages :as msg]
             [cmr.acl.core :as acl]
 
             ;; Result handlers
@@ -212,9 +213,9 @@
 
 (defmacro force-trailing-slash
   "Given a ring request, if the request was made against a resource path with a trailing
-   slash, performs the body form (presumably returning a valid ring response).  Otherwise,
-   issues a 301 Moved Permanently redirect to the request's resource path with an appended
-   trailing slash."
+  slash, performs the body form (presumably returning a valid ring response).  Otherwise,
+  issues a 301 Moved Permanently redirect to the request's resource path with an appended
+  trailing slash."
   [req body]
   `(if (.endsWith (:uri ~req) "/")
      ~body
@@ -227,8 +228,8 @@
       ;; CMR Welcome Page
       (GET "/" req
         (force-trailing-slash req ; Without a trailing slash, the relative URLs in index.html are wrong
-         {:status 200
-           :body (slurp (io/resource "public/index.html"))}))
+                              {:status 200
+                               :body (slurp (io/resource "public/index.html"))}))
 
       ;; Static HTML resources, typically API documentation which needs endpoint URLs replaced
       (GET ["/site/:resource", :resource #".*\.html$"] {scheme :scheme headers :headers {resource :resource} :params}
@@ -273,8 +274,8 @@
           (get-provider-holdings context path-w-extension params headers)))
 
       ;; Resets the application back to it's initial state.
-       (POST "/reset" {:keys [request-context params headers]}
-         (acl/verify-ingest-management-permission
+      (POST "/reset" {:keys [request-context params headers]}
+        (acl/verify-ingest-management-permission
           (acl/add-authentication-to-context request-context params headers))
         (query-svc/clear-cache request-context)
         {:status 204})
@@ -298,10 +299,36 @@
                 :body-copy body
                 :body (java.io.ByteArrayInputStream. (.getBytes body)))))))
 
-(defn make-api [system]
-  (-> (build-routes system)
-      (http-trace/build-request-context-handler system)
-      handler/site
-      copy-of-body-handler
-      errors/exception-handler
-      ring-json/wrap-json-response))
+(defn- find-query-str-mixed-arity-param
+  "Return the first parameter that has mixed arity, i.e., appears both single and multivalued in
+  the query string."
+  [query]
+  ;; Look for params appear as both singular and multivaluded, e.g., foo=1&foo[bar]=2, in any order.
+  (when query
+    (last (some #(re-find % query)
+                [#"(^|&)(.*?)=.*?\2%5B"
+                 #"(^|&)(.*?)%5B.*?\2="
+                 #"(^|&)(.*?)=.*?\2\["
+                 #"(^|&)(.*?)\[.*?\2="]))))
+
+    ;; Ring parameter handling is causing crashes when single value params are mixed with multivalue.
+    ;; The specific case of this is for improperly expressed options, e.g.,
+    ;; granule_ur=*&granules_ur[pattern]=true, but it is a problem for mixed single/multivalue
+    ;; parameters. This middleware returns a 400 early to avoid 500 errors from Ring.
+    (defn mixed-arity-param-handler
+      [f]
+      (fn [request]
+        (when-let [mixed-param (find-query-str-mixed-arity-param (:query-string request))]
+          (svc-errors/throw-service-errors
+            :bad-request
+            [(msg/mixed-arity-parameter-msg mixed-param)]))
+        (f request)))
+
+    (defn make-api [system]
+      (-> (build-routes system)
+          (http-trace/build-request-context-handler system)
+          handler/site
+          mixed-arity-param-handler
+          copy-of-body-handler
+          errors/exception-handler
+          ring-json/wrap-json-response))
