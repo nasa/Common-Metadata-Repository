@@ -277,14 +277,14 @@
          (acl/verify-ingest-management-permission
           (acl/add-authentication-to-context request-context params headers))
         (query-svc/clear-cache request-context)
-        {:status 200})
+        {:status 204})
 
       ;; Clears the cache.
       (POST "/clear-cache" {:keys [request-context params headers]}
         (acl/verify-ingest-management-permission
           (acl/add-authentication-to-context request-context params headers))
         (query-svc/clear-cache request-context)
-        {:status 200}))
+        {:status 204}))
     (route/not-found "Not Found")))
 
 ;; Copies the body into a new attribute called :body-copy so that after a post of form content type
