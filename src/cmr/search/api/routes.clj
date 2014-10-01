@@ -274,14 +274,16 @@
 
       ;; Resets the application back to it's initial state.
        (POST "/reset" {:keys [request-context params headers]}
-         (acl/verify-ingest-management-permission request-context)
-        (query-svc/clear-cache (acl/add-authentication-to-context request-context params headers))
+         (acl/verify-ingest-management-permission
+          (acl/add-authentication-to-context request-context params headers))
+        (query-svc/clear-cache request-context)
         {:status 200})
 
       ;; Clears the cache.
       (POST "/clear-cache" {:keys [request-context params headers]}
-        (acl/verify-ingest-management-permission request-context)
-        (query-svc/clear-cache (acl/add-authentication-to-context request-context params headers))
+        (acl/verify-ingest-management-permission
+          (acl/add-authentication-to-context request-context params headers))
+        (query-svc/clear-cache request-context)
         {:status 200}))
     (route/not-found "Not Found")))
 
