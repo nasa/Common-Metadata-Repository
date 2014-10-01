@@ -4,7 +4,10 @@
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.index-set.data.elasticsearch :as es]
             [cheshire.core :as json]
+            [camel-snake-kebab :as csk]
+            [cmr.acl.core :as acl]
             [cmr.common.services.errors :as errors]
+            [cmr.transmit.echo.rest :as rest]
             [cmr.index-set.services.messages :as m]
             [clojure.walk :as walk]
             [cheshire.core :as cheshire]
@@ -209,4 +212,15 @@
     ;; delete indices assoc with index-set
     (doseq [id index-set-ids]
       (delete-index-set context (str id)))))
+
+(deftracefn health
+  "Returns the health state of the app."
+  [context]
+  (let [elastic-health (es/health context)
+        echo-rest-health (rest/health context)
+        ok? (and (:ok? elastic-health) (:ok? echo-rest-health))]
+    {:ok? ok?
+     :dependencies {:elastic_search elastic-health
+                    :echo echo-rest-health}}))
+
 

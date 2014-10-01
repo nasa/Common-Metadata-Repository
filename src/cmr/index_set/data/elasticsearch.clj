@@ -3,6 +3,7 @@
             [clojurewerkz.elastisch.rest :as esr]
             [clojurewerkz.elastisch.rest.index :as esi]
             [clojurewerkz.elastisch.rest.document :as doc]
+            [clojurewerkz.elastisch.rest.admin :as admin]
             [clj-http.client :as client]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.services.errors :as errors]
@@ -143,6 +144,15 @@
         status (:status result)]
     (when-not (= status 200)
       (errors/internal-error! (m/index-set-doc-delete-msg result)))))
+
+(deftracefn health
+  "Returns the health state of elasticsearch."
+  [context]
+  (let [conn (get-in context [:system :index :conn])
+        status (:status (admin/cluster-health conn))]
+    (if (some #{status} ["green" "yellow"])
+      {:ok? true}
+      {:ok? false})))
 
 (comment
   (doc/get "index-sets" "set" "1" "fields" "index-set-id,index-set-name,index-set-request")
