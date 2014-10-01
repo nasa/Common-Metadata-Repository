@@ -215,6 +215,12 @@
         (acl/verify-ingest-management-permission context :update)
         (reset context params)))
 
+    (GET "/health" {request-context :request-context}
+      (let [{:keys [ok? dependencies]} (provider-service/health request-context)]
+        {:status (if ok? 200 503)
+         :headers {"Content-Type" "application/json; charset=utf-8"}
+         :body dependencies}))
+
     (route/not-found "Not Found")))
 
 
