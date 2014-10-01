@@ -3,6 +3,7 @@
   (:require [clojure.test :refer :all]
             [clojure.string :as s]
             [cmr.common.services.messages :as msg]
+            [cmr.search.services.messages.common-messages :as smsg]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.index-util :as index]
@@ -283,7 +284,7 @@
               :errors ["Parameter [unsupported] with option was not recognized."]}
              (search/find-refs :collection {"options[unsupported][ignore-case]" true})))
       (is (= {:status 400,
-              :errors [(msg/invalid-opt-for-param :entry-title :unsupported)]}
+              :errors [(smsg/invalid-opt-for-param :entry-title :unsupported)]}
              (search/find-refs
                :collection
                {:entry-title "dummy" "options[entry-title][unsupported]" "unsupported"}))))))
@@ -376,11 +377,11 @@
            [c1-p1 c2-p1 c3-p2 c4-p2] [c1-p1-cid c2-p1-cid c3-p2-cid c4-p2-cid dummy-cid] {}))
     (testing "echo collection id search - disallow ignore case"
       (is (= {:status 400
-              :errors [(msg/invalid-opt-for-param :concept-id :ignore-case)]}
+              :errors [(smsg/invalid-opt-for-param :concept-id :ignore-case)]}
              (search/find-refs :granule {:echo_collection_id c2-p1-cid "options[echo_collection_id]" {:ignore_case true}}))))
     (testing "Search with wildcards in echo_collection_id param not supported."
       (is (= {:status 400
-              :errors [(msg/invalid-opt-for-param :concept-id :pattern)]}
+              :errors [(smsg/invalid-opt-for-param :concept-id :pattern)]}
              (search/find-refs :granule {:echo_collection_id "C*" "options[echo_collection_id]" {:pattern true}}))))
     (testing "concept id search"
       ;; skipping some test conditions because concept_id search is similar in behavior to above echo_collection_id search
@@ -398,7 +399,7 @@
            [] [c1-p1-cid  c3-p2-cid] {:and true}))
     (testing "Search with wildcards in concept_id param not supported."
       (is (= {:status 400
-              :errors [(msg/invalid-opt-for-param :concept-id :pattern)]}
+              :errors [(smsg/invalid-opt-for-param :concept-id :pattern)]}
              (search/find-refs :granule {:concept_id "C*" "options[concept_id]" {:pattern true}}))))
 
     (testing "echo collection id search with aql"
