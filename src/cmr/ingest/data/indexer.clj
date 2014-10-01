@@ -59,6 +59,6 @@
                                  :headers (get-headers context)
                                  :connection-manager (transmit-conn/conn-mgr conn)})
         status (:status response)]
-    (when-not (some #{200, 201} [status])
+    (when-not (some #{200, 204} [status])
       (errors/internal-error! (str "Delete concept operation failed. Indexer app response status code: "  status " " response)))))
 
