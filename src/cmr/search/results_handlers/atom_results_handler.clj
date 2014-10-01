@@ -211,7 +211,7 @@
      :day-night day-night
      :cloud-cover (str cloud-cover)
      :coordinate-system coordinate-system
-     :shapes (srl/ords-info->shapes ords-info ords)
+     :shapes shapes
 
      ;; Fields required for ACL enforcment
      :concept-type :granule

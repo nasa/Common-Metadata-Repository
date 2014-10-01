@@ -139,11 +139,9 @@
                                    #(acl-service/filter-concepts context %)))]
     (post-process-query-result-features context query elastic-results query-results)))
 
-(def last-query (atom nil))
 
 (defmethod execute-query :elastic
   [context query]
-  (reset! last-query query)
   (let [pre-processed-query (pre-process-query-result-features context query)
         processed-query (r/resolve-collection-queries context pre-processed-query)
         collection-ids (ce/extract-collection-concept-ids processed-query)

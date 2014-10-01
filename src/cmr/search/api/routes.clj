@@ -24,6 +24,7 @@
             [cmr.search.results-handlers.atom-results-handler]
             [cmr.search.results-handlers.atom-json-results-handler]
             [cmr.search.results-handlers.reference-results-handler]
+            [cmr.search.results-handlers.kml-results-handler]
             [cmr.search.results-handlers.metadata-results-handler]
             [cmr.search.results-handlers.query-specified-results-handler]
             [cmr.search.results-handlers.timeline-results-handler]
@@ -273,13 +274,17 @@
           (get-provider-holdings context path-w-extension params headers)))
 
       ;; Resets the application back to it's initial state.
-      (POST "/reset" {:keys [request-context params headers]}
-        (query-svc/clear-cache (acl/add-authentication-to-context request-context params headers))
+       (POST "/reset" {:keys [request-context params headers]}
+         (acl/verify-ingest-management-permission
+          (acl/add-authentication-to-context request-context params headers))
+        (query-svc/clear-cache request-context)
         {:status 200})
 
       ;; Clears the cache.
       (POST "/clear-cache" {:keys [request-context params headers]}
-        (query-svc/clear-cache (acl/add-authentication-to-context request-context params headers))
+        (acl/verify-ingest-management-permission
+          (acl/add-authentication-to-context request-context params headers))
+        (query-svc/clear-cache request-context)
         {:status 200}))
     (route/not-found "Not Found")))
 

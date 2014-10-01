@@ -355,7 +355,7 @@ Find an additional attribute with name "X\Y\Z" with value 7.
 
 Multiple attributes can be provided. The default is for granules to match all the attribute parameters. This can be changed by specifying `or` option with `option[attribute][or]=true`.
 
-For granule additional attributes search, the default is searching for the attributes included in the collection this granule belongs to as well. This can be changed by specifying `exclude-collection` option with `option[attribute][exclude-collection]=true`.
+For granule additional attributes search, the default is searching for the attributes included in the collection this granule belongs to as well. This can be changed by specifying `exclude_collection` option with `option[attribute][exclude_collection]=true`.
 
 ### Find granules by Spatial
 

@@ -22,6 +22,11 @@
   (:import clojure.lang.ExceptionInfo
            java.lang.Integer))
 
+(def single-value-params
+  "Parameters that must take a single value, never a vector of values."
+  #{:keyword :page-size :page-num :result-format :pretty :echo-compatible
+    :include-granule-counts :include-has-granules :include-facets})
+
 (def search-paging-depth-limit
   "The maximum value for page-num * page-size"
   (cfg/config-value-fn :search-paging-depth-limit 1000000 #(Integer. %)))
@@ -54,8 +59,20 @@
   "Get a value from the params as an Integer or nil value. Throws NumberFormatException
   if the value cannot be converted to an Integer."
   [params value-keyword]
-  (when-let [value-str (value-keyword params)]
-    (Integer. value-str)))
+  (when-let [value (value-keyword params)]
+    ; Return null if value is a vector.  Assumes single-value-validation handles vectors.
+    (when-not (sequential? value)
+      (Integer. value))))
+
+(defn single-value-validation
+  "Validates that parameters which, if present, must have a single value and cannot not be
+   passed as a vector of values."
+  [concept-type params]
+  (->> (select-keys params single-value-params)
+       (filter #(sequential? (second %)))
+       (map first)
+       (map #(format "Parameter [%s] must have a single value." (csk/->snake_case_string %)))
+       vec))
 
 (defn page-size-validation
   "Validates that the page-size (if present) is a number in the valid range."
@@ -530,7 +547,8 @@
 (def parameter-validations
   "A list of the functions that can validate parameters. They all accept parameters as an argument
   and return a list of errors."
-  [page-size-validation
+  [single-value-validation
+   page-size-validation
    page-num-validation
    paging-depth-validation
    sort-key-validation
