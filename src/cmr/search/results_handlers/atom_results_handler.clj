@@ -3,20 +3,20 @@
   (:require [cmr.search.data.elastic-results-to-query-results :as elastic-results]
             [cmr.search.data.elastic-search-index :as elastic-search-index]
             [cmr.search.services.query-service :as qs]
-            [cmr.search.services.query-helper-service :as query-helper]
             [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]
             [cmr.search.services.query-execution.facets-results-feature :as frf]
             [clojure.data.xml :as x]
             [clojure.walk :as walk]
-            [cheshire.core :as json]
             [clojure.string :as str]
+            [clojure.set :as set]
             [clj-time.core :as time]
+            [cheshire.core :as json]
             [cmr.search.models.results :as r]
             [cmr.spatial.serialize :as srl]
-            [cmr.spatial.orbits.swath-geometry :as swath]
             [cmr.search.services.url-helper :as url]
             [cmr.search.results-handlers.atom-spatial-results-handler :as atom-spatial]
-            [cmr.search.results-handlers.atom-links-results-handler :as atom-links]))
+            [cmr.search.results-handlers.atom-links-results-handler :as atom-links]
+            [cmr.search.results-handlers.orbit-swath-results-helper :as orbit-swath-helper]))
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:collection :atom]
   [concept-type query]
@@ -51,45 +51,32 @@
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:granule :atom]
   [concept-type query]
-  ["granule-ur"
-   "collection-concept-id"
-   "update-time"
-   "entry-title"
-   "producer-gran-id"
-   "size"
-   "original-format"
-   "provider-id"
-   "start-date"
-   "end-date"
-   "atom-links"
-   "orbit-calculated-spatial-domains-json"
-   "orbit-asc-crossing-lon"
-   "downloadable"
-   "browsable"
-   "day-night"
-   "cloud-cover"
-   "coordinate-system"
-   "ords-info"
-   "ords"
-   "access-value" ;; needed for acl enforcment
-   ])
+  (let [atom-fields #{"granule-ur"
+                      "collection-concept-id"
+                      "update-time"
+                      "entry-title"
+                      "producer-gran-id"
+                      "size"
+                      "original-format"
+                      "provider-id"
+                      "start-date"
+                      "end-date"
+                      "atom-links"
+                      "orbit-calculated-spatial-domains-json"
+                      "downloadable"
+                      "browsable"
+                      "day-night"
+                      "cloud-cover"
+                      "coordinate-system"
+                      "ords-info"
+                      "ords"
+                      ;; needed for acl enforcment
+                      "access-value"}]
+    (vec (into atom-fields orbit-swath-helper/orbit-elastic-fields))))
 
-(def ocsd-fields
-  "The fields for orbit calculated spatil domains, in the order that they are stored in the jason
-  string in the index."
-  [:equator-crossing-date-time
-   :equator-crossing-longitude
-   :orbital-model-name
-   :orbit-number
-   :start-orbit-number
-   :stop-orbit-number])
 
-(defn ocsd-json->map
-  "Conver the orbit calculated spatial domain json string from elastic into a map. The string
-  is stored internally as a vector of values."
-  [json-str]
-  (let [value-array (json/decode json-str)]
-    (zipmap ocsd-fields value-array)))
+
+
 
 (defn- collection-elastic-result->query-result-item
   [elastic-result]
@@ -170,7 +157,6 @@
           [end-date] :end-date
           atom-links :atom-links
           orbit-calculated-spatial-domains-json :orbit-calculated-spatial-domains-json
-          [orbit-asc-crossing-lon] :orbit-asc-crossing-lon
           [downloadable] :downloadable
           [browsable] :browsable
           [day-night] :day-night
@@ -184,15 +170,11 @@
         atom-links (map (fn [link-str]
                           (update-in (json/decode link-str true) [:size] #(when % (str %))))
                         atom-links)
-        orbit-calculated-spatial-domains (map ocsd-json->map orbit-calculated-spatial-domains-json)
-        shapes (if orbit-asc-crossing-lon
-                 (concat (srl/ords-info->shapes ords-info ords)
-                         (swath/to-polygons (orbits-by-collection collection-concept-id)
-                                            orbit-asc-crossing-lon
-                                            orbit-calculated-spatial-domains
-                                            start-date
-                                            end-date))
-                 (srl/ords-info->shapes ords-info ords))]
+        orbit-calculated-spatial-domains (map orbit-swath-helper/ocsd-json->map
+                                              orbit-calculated-spatial-domains-json)
+        shapes (concat (srl/ords-info->shapes ords-info ords)
+                       (orbit-swath-helper/elastic-result->swath-shapes
+                         orbits-by-collection elastic-result))]
     {:id concept-id
      :title granule-ur
      :collection-concept-id collection-concept-id
@@ -218,22 +200,9 @@
      :provider-id provider-id
      :access-value access-value}))
 
-(defn- granule-elastic-result-has-orbit-spatial?
-  [elastic-result]
-  (some? (get-in elastic-result [:fields :orbit-asc-crossing-lon])))
-
-(defn- granule-elastic-result->collection-concept-id
-  [elastic-result]
-  (get-in elastic-result [:fields :collection-concept-id 0]))
-
 (defn- granule-elastic-results->query-result-items
   [context query elastic-matches]
-  (let [collection-orbits (->> elastic-matches
-                               (filter granule-elastic-result-has-orbit-spatial?)
-                               (map granule-elastic-result->collection-concept-id)
-                               distinct
-                               (query-helper/collection-orbit-parameters context))
-        orbits-by-collection (zipmap (map :concept-id collection-orbits) collection-orbits)]
+  (let [orbits-by-collection (orbit-swath-helper/get-orbits-by-collection context elastic-matches)]
     (pmap (partial granule-elastic-result->query-result-item orbits-by-collection) elastic-matches)))
 
 (defmethod elastic-results/elastic-results->query-results :atom

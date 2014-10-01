@@ -15,52 +15,56 @@
             [cmr.spatial.geodetic-ring :as gr]
             [cmr.spatial.cartesian-ring :as cr]
             [cmr.spatial.line-string :as l]
-            [cmr.common.util :as util]))
+            [cmr.common.util :as util]
+            [cmr.search.results-handlers.orbit-swath-results-helper :as orbit-swath-helper]))
 
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:collection :kml]
   [concept-type query]
   ["entry-title"
    "ords-info"
-   "ords"
-   ])
+   "ords"])
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:granule :kml]
   [concept-type query]
-  ["granule-ur"
-   ;; TODO we need to support returning the orbit polygons as kml as well.
-   "ords-info"
-   "ords"
-   ])
+  (vec (into #{"granule-ur" "ords-info" "ords"}
+             orbit-swath-helper/orbit-elastic-fields)))
 
-(defmethod elastic-results/elastic-result->query-result-item :kml
-  [context query elastic-result]
+(defn collection-elastic-result->query-result-item
+  [elastic-result]
   (let [{[granule-ur] :granule-ur
          [entry-title] :entry-title
          ords-info :ords-info
          ords :ords} (:fields elastic-result)]
-    (util/remove-nil-keys
-      {:name (or granule-ur entry-title)
-       :shapes (srl/ords-info->shapes ords-info ords)})))
+    {:name (or granule-ur entry-title)
+     :shapes (srl/ords-info->shapes ords-info ords)}))
 
-(defn- item->coordinate-system
-  "Returns the coordinate system to use for the item. Also Verifies that an item (granule or
-  collection) only has shapes in a single coordinate system sincea single KML placemark can only
-  have a single style and the styles are used to correctly represent areas in cartesian or geodetic."
-  [item]
-  (let [coordinate-systems (->> (:shapes item)
-                               (map relations/coordinate-system)
-                               distinct
-                               ;; point coordinate system will be nil
-                               (remove nil?))]
-    (when (> (count coordinate-systems) 1)
-      (errors/internal-error!
-        (format "Found granule [%s] with more than one coordinate system for it's shapes: %s"
-                (:name item) (pr-str (:shapes item)))))
-    (or (first coordinate-systems)
-        ;; If there were only points then there won't be a specific coordinate system. Geodetic
-        ;; will work for points in KML
-        :geodetic)))
+(defn granule-elastic-result->query-result-item
+  [orbits-by-collection elastic-result]
+  (let [{[granule-ur] :granule-ur
+         [entry-title] :entry-title
+         ords-info :ords-info
+         ords :ords} (:fields elastic-result)
+        shapes (concat (srl/ords-info->shapes ords-info ords)
+                       (orbit-swath-helper/elastic-result->swath-shapes
+                         orbits-by-collection elastic-result))]
+    {:name (or granule-ur entry-title)
+     :shapes shapes}))
+
+(defn- granule-elastic-results->query-result-items
+  [context query elastic-matches]
+  (let [orbits-by-collection (orbit-swath-helper/get-orbits-by-collection context elastic-matches)]
+    (pmap (partial granule-elastic-result->query-result-item orbits-by-collection) elastic-matches)))
+
+(defmethod elastic-results/elastic-results->query-results :kml
+  [context query elastic-results]
+  (let [hits (get-in elastic-results [:hits :total])
+        elastic-matches (get-in elastic-results [:hits :hits])
+        items (if (= :granule (:concept-type query))
+                (granule-elastic-results->query-result-items context query elastic-matches)
+                (map collection-elastic-result->query-result-item elastic-matches))]
+    (r/map->Results {:hits hits :items items :result-format (:result-format query)})))
+
 
 (defprotocol KmlSpatialShapeHandler
   (shape->xml-element
@@ -91,7 +95,7 @@
       ;; A cartesian line string is drawn appropriately in KML if it is represented as a non-closed
       ;; polygon using the cartesian style.
       [(x/xml-comment (str "CMR representation is a line. Cartesian Lines are represented as non-closed,"
-                       " filled polygons with 0 opacity to be correctly rendered in Google Earth."))
+                           " filled polygons with 0 opacity to be correctly rendered in Google Earth."))
        (shape->xml-element (poly/polygon :cartesian [(cr/ring (:points line))]))]))
 
   cmr.spatial.mbr.Mbr
@@ -100,10 +104,10 @@
     (let [points (reverse (m/corner-points mbr))]
       [(x/xml-comment "CMR representation is a bounding box.")
        (shape->xml-element
-              ;; An mbr is represented as a cartesian polygon.
-              (poly/polygon
-                :cartesian
-                [(cr/ring (concat points [(first points)]))]))]))
+         ;; An mbr is represented as a cartesian polygon.
+         (poly/polygon
+           :cartesian
+           [(cr/ring (concat points [(first points)]))]))]))
 
   cmr.spatial.geodetic_ring.GeodeticRing
   (shape->xml-element
@@ -128,25 +132,32 @@
                  (for [hole holes]
                    (x/element :innerBoundaryIs {} (shape->xml-element hole)))))))
 
-(defn- item->kml-placemark
-  "Converts a single item into a KML placemark xml element"
+(def coordinate-system->style-url
+  "A map of coordinate system to the style url to use in a placemark."
+  {:geodetic "#geodetic_style"
+   :cartesian "#cartesian_style"})
+
+(defn- item->kml-placemarks
+  "Converts a single item into KML placemarks xml element. Most of the time an item will become a single
+  placemark. In the event an item has both geodetic areas and cartesian as with geodetic polygons and
+  bounding boxes it will be written as two placemarks"
   [item]
-  (let [coordinate-system (item->coordinate-system item)
-        style-url (str "#" (name coordinate-system) "_style")
-        shapes (:shapes item)]
-    (x/element :Placemark {}
-               (x/element :name {} (:name item))
-               (x/element :styleUrl {} style-url)
-               (cond
-                 (> (count shapes) 1)
-                 (x/element :MultiGeometry {}
-                            (map shape->xml-element shapes))
-
-                 (= (count shapes) 1)
-                 (shape->xml-element (first shapes))
-
-                 :else
-                 (x/xml-comment "No spatial area")))))
+  (if-let [shapes (seq (:shapes item))]
+    (let [shapes-by-coord-sys (group-by #(or (relations/coordinate-system %) :geodetic) (:shapes item))
+          multiple-placemarks? (> (count shapes-by-coord-sys) 1)]
+      (for [[coordinate-system shapes] shapes-by-coord-sys]
+        (x/element :Placemark {}
+                   (x/element :name {} (if multiple-placemarks?
+                                         (str (:name item) "_" (name coordinate-system))
+                                         (:name item)))
+                   (x/element :styleUrl {} (coordinate-system->style-url coordinate-system))
+                   (if (> (count shapes) 1)
+                     (x/element :MultiGeometry {}
+                                (map shape->xml-element shapes))
+                     (shape->xml-element (first shapes))))))
+    [(x/element :Placemark {}
+                (x/element :name {} (:name item))
+                (x/xml-comment "No spatial area"))]))
 
 (def KML_XML_NAMESPACE_ATTRIBUTES
   "The set of attributes that go on the KML root element"
@@ -194,7 +205,7 @@
                  (x/element :Document {}
                             kml-geodetic-style-xml-elem
                             kml-cartesian-style-xml-elem
-                            (map item->kml-placemark items))))))
+                            (mapcat item->kml-placemarks items))))))
 
 
 
