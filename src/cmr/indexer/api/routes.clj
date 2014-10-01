@@ -42,7 +42,7 @@
     (POST "/reset" {:keys [request-context params headers]}
       (let [context (acl/add-authentication-to-context request-context params headers)]
         (acl/verify-ingest-management-permission context :update)
-        (index-svc/reset-indexes context))
+        (index-svc/reset context))
       {:status 200})
 
     ;; Sends an update to the index set to update mappings and index settings.

@@ -99,7 +99,7 @@
   (cache/reset-cache (-> context :system :caches :general))
   (acl-cache/reset context))
 
-(deftracefn reset-indexes
+(deftracefn reset
   "Delegate reset elastic indices operation to index-set app"
   [context]
   (clear-cache context)
