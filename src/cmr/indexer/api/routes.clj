@@ -58,14 +58,14 @@
         (index-svc/clear-cache context))
       {:status 200})
 
-    (context "/reindex-provider-collections/:provider-id" [provider-id]
-      (POST "/" {context :request-context params :params headers :headers}
-        (let [context (acl/add-authentication-to-context context params headers)]
-          (acl/verify-ingest-management-permission context :update)
-          (index-svc/reindex-provider-collections
-            context
-            provider-id))
-        {:status 200}))
+    (POST "/reindex-provider-collections"
+      {context :request-context params :params headers :headers body :body}
+      (let [context (acl/add-authentication-to-context context params headers)]
+        (acl/verify-ingest-management-permission context :update)
+        (index-svc/reindex-provider-collections
+          context
+          body))
+      {:status 200})
 
     ;; Unindex a concept
     (context "/:concept-id/:revision-id" [concept-id revision-id]

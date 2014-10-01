@@ -42,15 +42,16 @@
           concept-batches))
 
 (deftracefn reindex-provider-collections
-  "Reindexes all the collections in a provider."
-  [context provider-id]
+  "Reindexes all the collections in the providers given."
+  [context provider-ids]
 
   ;; Refresh the ACL cache.
   ;; We want the latest permitted groups to be indexed with the collections
   (acl-cache/refresh-acl-cache context)
 
-  (let [collections (meta-db/find-collections context {:provider-id provider-id})]
-    (bulk-index context [collections])))
+  (doseq [provider-id provider-ids]
+    (let [collections (meta-db/find-collections context {:provider-id provider-id})]
+      (bulk-index context [collections]))))
 
 (deftracefn index-concept
   "Index the given concept and revision-id"
