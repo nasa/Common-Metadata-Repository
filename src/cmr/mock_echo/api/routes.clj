@@ -24,7 +24,7 @@
       (token-db/reset context)
       (provider-db/reset context)
       (acl-db/reset context)
-      {:status 200})
+      {:status 204})
 
     ;; Add routes
     (token-api/build-routes system)
