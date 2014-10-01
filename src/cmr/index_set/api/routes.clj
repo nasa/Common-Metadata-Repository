@@ -51,6 +51,10 @@
         (acl/verify-ingest-management-permission context :update)
         (r/response (index-svc/reset request-context))))
 
+    (GET "/health" {request-context :request-context params :params headers :headers}
+      (let [context (acl/add-authentication-to-context request-context params headers)]
+        (index-svc/health context)))
+
     (route/not-found "Not Found")))
 
 (defn make-api [system]

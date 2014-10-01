@@ -4,7 +4,10 @@
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.index-set.data.elasticsearch :as es]
             [cheshire.core :as json]
+            [camel-snake-kebab :as csk]
+            [cmr.acl.core :as acl]
             [cmr.common.services.errors :as errors]
+            [cmr.common.api.errors :as api-errors]
             [cmr.index-set.services.messages :as m]
             [clojure.walk :as walk]
             [cheshire.core :as cheshire]
@@ -209,4 +212,23 @@
     ;; delete indices assoc with index-set
     (doseq [id index-set-ids]
       (delete-index-set context (str id)))))
+
+(deftracefn health
+  "Returns the health state of the app."
+  [context]
+  (let [elastic-health (:status (es/health context))
+        echo-rest-health (try (acl/verify-ingest-management-permission context :update)
+                           (catch clojure.lang.ExceptionInfo e
+                             (if-let [error-type (:type (ex-data e))]
+                               (format "%d %s" (api-errors/type->http-status-code error-type)
+                                       (csk/->SNAKE_CASE_STRING error-type))
+                               "500 INTERNAL_SERVER_ERROR")))
+        echo-rest-health (if echo-rest-health echo-rest-health "ok")
+        status (if (and (some #{elastic-health} ["green" "yellow"]) (= "ok" echo-rest-health))
+                 200 503)]
+    {:status status
+     :headers {"Content-Type" "application/json; charset=utf-8"}
+     :body {:elastic_search elastic-health
+            :echo-rest echo-rest-health}}))
+
 
