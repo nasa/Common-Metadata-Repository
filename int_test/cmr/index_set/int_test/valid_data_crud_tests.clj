@@ -77,7 +77,7 @@
           suffix-idx-name "C99-Collections"
           expected-idx-name (svc/gen-valid-index-name index-set-id suffix-idx-name)
           {:keys [status]} (util/submit-delete-index-set-req index-set-id)]
-      (is (= 200 status))
+      (is (= 204 status))
       (is (not (esi/exists? @util/elastic-connection expected-idx-name))))))
 
 ;; Verify get index-sets fetches all index-sets in elastic.
@@ -120,7 +120,7 @@
 (deftest reset-index-sets-test
   (testing "reset index-set app"
     (let [{:keys [status]} (util/reset)]
-      (is (= 200 status)))))
+      (is (= 204 status)))))
 
 
 

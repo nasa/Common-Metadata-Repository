@@ -38,18 +38,21 @@
           (let [index-set (walk/keywordize-keys body)
                 context (acl/add-authentication-to-context request-context params headers)]
             (acl/verify-ingest-management-permission context :update)
-            (r/response (index-svc/update-index-set request-context index-set))))
+            (index-svc/update-index-set request-context index-set)
+            {:status 200}))
 
         (DELETE "/" {request-context :request-context params :params headers :headers}
           (let [context (acl/add-authentication-to-context request-context params headers)]
             (acl/verify-ingest-management-permission context :update)
-            (r/response (index-svc/delete-index-set request-context id))))))
+            (index-svc/delete-index-set request-context id)
+            {:status 204}))))
 
     ;; delete all of the indices associated with index-sets and index-set docs in elastic
     (POST "/reset" {request-context :request-context params :params headers :headers}
       (let [context (acl/add-authentication-to-context request-context params headers)]
         (acl/verify-ingest-management-permission context :update)
-        (r/response (index-svc/reset request-context))))
+        (index-svc/reset request-context)
+        {:status 204}))
 
     (route/not-found "Not Found")))
 
