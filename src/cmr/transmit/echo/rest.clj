@@ -75,3 +75,11 @@
   (errors/internal-error!
     (format "Unexpected status %d from response. body: %s"
             status (pr-str body))))
+
+(defn health
+  "Returns the availability status of echo-rest by calling its availability endpoint"
+  [context]
+  (let [conn (config/context->app-connection context :echo-rest)
+        url (format "%s%s" (conn/root-url conn) "/availability")
+        response (client/get url {:throw-exceptions false})]
+    (if (= 200 (:status response)) "ok" "down")))
