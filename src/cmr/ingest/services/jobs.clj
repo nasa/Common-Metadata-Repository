@@ -31,13 +31,16 @@
   (let [providers (mdb/get-providers context)
         provider-id-acl-hashes (or (pah/get-provider-id-acl-hashes context) {})
         current-provider-id-acl-hashes (acls->provider-id-hashes
-                                         (echo-acls/get-acls-by-type context "CATALOG_ITEM"))]
-    (doseq [provider-id providers]
-      (let [current-hash (get current-provider-id-acl-hashes provider-id)
-            saved-hash (get provider-id-acl-hashes provider-id)]
-        (when (not= current-hash saved-hash)
-          (info "Provider" provider-id "ACLs have changed. Reindexing collections")
-          (indexer/reindex-provider-collections context provider-id))))
+                                         (echo-acls/get-acls-by-type context "CATALOG_ITEM"))
+        providers-requiring-reindex (filter (fn [provider-id]
+                                              (not= (get current-provider-id-acl-hashes provider-id)
+                                                    (get provider-id-acl-hashes provider-id)))
+                                            providers)]
+    (when (seq providers-requiring-reindex)
+      (info "Providers" (pr-str providers-requiring-reindex)
+            "ACLs have changed. Reindexing collections")
+      (indexer/reindex-provider-collections context providers-requiring-reindex))
+
     (pah/save-provider-id-acl-hashes context current-provider-id-acl-hashes)))
 
 ;; Periodically checks the acls for a provider. When they change reindexes all the collections in a

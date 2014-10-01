@@ -1,7 +1,7 @@
 (ns cmr.ingest.data.indexer
   "Implements Ingest App datalayer access interface. Takes on the role of a proxy to indexer app."
   (:require [clj-http.client :as client]
-            [cheshire.core :as  cheshire]
+            [cheshire.core :as json]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.services.errors :as errors]
             [cmr.system-trace.core :refer [deftracefn]]
@@ -17,13 +17,13 @@
 
 (deftracefn reindex-provider-collections
   "Reindexes all the collections in the provider"
-  [context provider-id]
+  [context provider-ids]
   (let [conn (transmit-config/context->app-connection context :indexer)
-        url (format "%s/reindex-provider-collections/%s"
-                    (transmit-conn/root-url conn)
-                    provider-id)
+        url (format "%s/reindex-provider-collections"
+                    (transmit-conn/root-url conn))
         response (client/post url {:content-type :json
                                    :throw-exceptions false
+                                   :body (json/generate-string provider-ids)
                                    :accept :json
                                    :headers (get-headers context)
                                    :connection-manager (transmit-conn/conn-mgr conn)})
@@ -38,7 +38,7 @@
   (let [conn (transmit-config/context->app-connection context :indexer)
         indexer-url (transmit-conn/root-url conn)
         concept-attribs {:concept-id concept-id, :revision-id revision-id}
-        response (client/post indexer-url {:body (cheshire/generate-string concept-attribs)
+        response (client/post indexer-url {:body (json/generate-string concept-attribs)
                                            :content-type :json
                                            :throw-exceptions false
                                            :accept :json
