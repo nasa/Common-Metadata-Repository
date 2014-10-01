@@ -172,9 +172,11 @@
                (if (case-sensitive-params param)
                  (map #(msg/invalid-opt-for-param param %) (keys settings))
                  (let [valid-options (param->valid-options param)]
-                   (map #(msg/invalid-opt-for-param param %)
+                   ;; Only check params we recognize - other validations will handle the rest
+                   (when valid-options
+                     (map #(msg/invalid-opt-for-param param %)
                           (set/difference (set (keys settings))
-                                          valid-options)))))
+                                          valid-options))))))
              options))))
 
 (def concept-type->valid-sort-keys
