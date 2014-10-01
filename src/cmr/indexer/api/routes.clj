@@ -43,7 +43,7 @@
       (let [context (acl/add-authentication-to-context request-context params headers)]
         (acl/verify-ingest-management-permission context :update)
         (index-svc/reset context))
-      {:status 200})
+      {:status 204})
 
     ;; Sends an update to the index set to update mappings and index settings.
     (POST "/update-indexes" {:keys [request-context params headers]}
@@ -73,7 +73,7 @@
         (let [ignore-conflict (ignore-conflict? params)
               context (acl/add-authentication-to-context context params headers)]
           (index-svc/delete-concept context concept-id revision-id ignore-conflict)
-          (r/response nil))))
+          {:status 204})))
 
     (route/not-found "Not Found")))
 
