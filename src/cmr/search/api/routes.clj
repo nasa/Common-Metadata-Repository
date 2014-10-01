@@ -12,10 +12,10 @@
             [cmr.common.api.errors :as errors]
             [cmr.common.services.errors :as svc-errors]
             [cmr.common.mime-types :as mt]
-            [cmr.common.services.messages :as msg]
             [cmr.search.services.query-service :as query-svc]
             [cmr.system-trace.http :as http-trace]
             [cmr.search.services.parameters.legacy-parameters :as lp]
+            [cmr.search.services.messages.common-messages :as msg]
             [cmr.acl.core :as acl]
 
             ;; Result handlers
@@ -274,8 +274,8 @@
           (get-provider-holdings context path-w-extension params headers)))
 
       ;; Resets the application back to it's initial state.
-       (POST "/reset" {:keys [request-context params headers]}
-         (acl/verify-ingest-management-permission
+      (POST "/reset" {:keys [request-context params headers]}
+        (acl/verify-ingest-management-permission
           (acl/add-authentication-to-context request-context params headers))
         (query-svc/clear-cache request-context)
         {:status 200})
@@ -304,12 +304,14 @@
   the query string."
   [query]
   ;; Look for params appear as both singular and multivaluded, e.g., foo=1&foo[bar]=2, in any order.
-  (when query (let [mixed-param-groups (or (re-find #"(^|&)(.*?)=.*?\2%5B" query)
-                                           (re-find #"(^|&)(.*?)%5B.*?\2=" query)
-                                           (re-find #"(^|&)(.*?)=.*?\2\[" query)
-                                           (re-find #"(^|&)(.*?)\[.*?\2=" query))]
-                (when mixed-param-groups
-                  (last mixed-param-groups)))))
+  (when query
+    (let [mixed-param-groups (some #(re-find % query)
+                                   [#"(^|&)(.*?)=.*?\2%5B"
+                                    #"(^|&)(.*?)%5B.*?\2="
+                                    #"(^|&)(.*?)=.*?\2\["
+                                    #"(^|&)(.*?)\[.*?\2="])]
+      (when mixed-param-groups
+        (last mixed-param-groups)))))
 
 ;; Ring parameter handling is causing crashes when single value params are mixed with multivalue.
 ;; The specific case of this is for improperly expressed options, e.g.,

@@ -29,7 +29,7 @@
                                                          {:entry-title "fdad"
                                                           :options {:foo {:ignore-case "true"}}}))))
   (testing "invalid options param args"
-    (is (= [(com-msg/invalid-opt-for-param :entry-title :foo)]
+    (is (= [(msg/invalid-opt-for-param :entry-title :foo)]
            (pv/parameter-options-validation :collection {:entry-title "fdad"
                                                          :options {:entry-title {:foo "true"}}}))))
 

@@ -121,6 +121,45 @@
       ;; This should be handled separately by page-size and page-num validiation
       [])))
 
+(def string-param-options #{:pattern :ignore-case})
+(def pattern-option #{:pattern})
+(def or-option #{:or})
+(def and-or-option #{:and :or})
+(def exclude-plus-or-option #{:exclude-collection :or})
+(def string-plus-and-options #{:pattern :ignore-case :and})
+(def string-plus-or-options #{:pattern :ignore-case :or})
+
+
+(def param->valid-options
+  "Map of parameters to options that are valid for them."
+  {:collection-concept-id pattern-option
+   :archive-center string-param-options
+   :dataset-id pattern-option
+   :entry-title string-plus-and-options
+   :short-name string-plus-and-options
+   :entry-id string-plus-and-options
+   :version string-param-options
+   :granule-ur string-param-options
+   :producer-granule-id string-param-options
+   :readable-granule-name string-plus-and-options
+   :project string-plus-and-options
+   :campaign string-plus-and-options
+   :platform string-plus-and-options
+   :sensor string-plus-and-options
+   :instrument string-plus-and-options
+   :collection-data-type string-param-options
+   :day-night string-param-options
+   :two-d-coordinate-system string-param-options
+   :grid string-param-options
+   :keyword pattern-option
+   :processing-level string-param-options
+   :science-keywords string-plus-or-options
+   :spatial-keyword string-plus-and-options
+   :dif-entry-id string-plus-and-options
+   :provider string-param-options
+   :attribute exclude-plus-or-option
+   :temporal and-or-option})
+
 (def option->valid-parameters
   "Map of options to parameters that allow them."
   {:pattern #{:collection-concept-id
@@ -194,15 +233,6 @@
    :or #{:attribute :science-keywords :temporal}
    :exclude-collection #{:attribute}})
 
-(defn- param->valid-options
-  "Return a set of valid options for the given parameter."
-  [param]
-  (set (filter #((option->valid-parameters %) param)
-               (keys option->valid-parameters))))
-
-(def memoized-param->valid-options
-  (memoize param->valid-options))
-
 (defn parameter-options-validation
   [concept-type params]
   "Validates that no invalid parameter names in the options were supplied"
@@ -213,11 +243,11 @@
              (fn [[param settings]]
                ;; handle these parameters separately since they don't allow any options
                (if (case-sensitive-params param)
-                 (map #(c-msg/invalid-opt-for-param param %) (keys settings))
-                 (let [valid-options (memoized-param->valid-options param)]
+                 (map #(msg/invalid-opt-for-param param %) (keys settings))
+                 (let [valid-options (param->valid-options param)]
                    ;; Only check params we recognize - other validations will handle the rest
                    (when (seq valid-options)
-                     (map #(c-msg/invalid-opt-for-param param %)
+                     (map #(msg/invalid-opt-for-param param %)
                           (set/difference (set (keys settings))
                                           valid-options))))))
              options))))
@@ -449,7 +479,7 @@
           (if (some #(.startsWith % "C") exclude-values)
             [(str "Exclude collection is not supported, " exclude-kv)]
             []))
-        [(c-msg/invalid-exclude-param-msg invalid-exclude-params)]))
+        [(msg/invalid-exclude-param-msg invalid-exclude-params)]))
     []))
 
 (defn boolean-value-validation
