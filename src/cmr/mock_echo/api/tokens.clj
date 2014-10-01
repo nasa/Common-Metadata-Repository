@@ -11,15 +11,15 @@
 
 (def token-keys
   #{
-   ;; Fields provided during login
-   :username
-   :client_id
-   :password
-   :user_ip_address
+    ;; Fields provided during login
+    :username
+    :client_id
+    :password
+    :user_ip_address
 
-   ;; A list of group guids the user belongs to.
-   :group_guids
- })
+    ;; A list of group guids the user belongs to.
+    :group_guids
+    })
 
 (defn login
   [context body]
@@ -90,5 +90,6 @@
           (ah/status-ok (get-current-sids context token-id)))
         (GET "/token_info" {context :request-context headers :headers }
           (ah/require-sys-admin-token headers)
-          (ah/status-ok (get-token-info context token-id)))))))
-
+          (ah/status-ok (get-token-info context token-id)))))
+    (GET "/availability" {context :request-context}
+      {:status 200})))
