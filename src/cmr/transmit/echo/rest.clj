@@ -86,4 +86,4 @@
     (if (= 200 status-code)
       {:ok? true}
       {:ok? false
-       :problem (format "Recieved %d from availability check. %s" status-code (:body response))})))
+       :problem (format "Received %d from availability check. %s" status-code (:body response))})))
