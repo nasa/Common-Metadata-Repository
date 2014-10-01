@@ -72,7 +72,6 @@
             [cmr.acl.acl-cache :as acl-cache]
             [cmr.search.services.acls.collections-cache :as coll-cache]
             [cmr.search.services.xslt :as xslt]
-            [cmr.acl.core :as acl]
             [camel-snake-kebab :as csk]
             [cheshire.core :as json]
             [cmr.common.log :refer (debug info warn error)]))
@@ -185,7 +184,6 @@
 (deftracefn clear-cache
   "Clear the cache for search app"
   [context]
-  (acl/verify-ingest-management-permission context)
   (info "Clearing the search application cache")
   (cache/reset-cache (idx/context->index-cache context))
   (cache/reset-cache (ah/context->token-sid-cache context))
