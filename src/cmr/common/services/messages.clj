@@ -64,3 +64,11 @@
   [param option]
   (str "Option [" (csk/->snake_case_string option)
        "] is not supported for param [" (csk/->snake_case_string param) "]"))
+
+(defn mixed-arity-parameter-msg
+  "Creates a message saying the given parameter should not appear as both a single value and
+  a multivalue."
+  [param]
+  (str "Parameter ["
+       (csk/->snake_case_string param)
+       "] may be either single valued or multivalued, but not both."))
