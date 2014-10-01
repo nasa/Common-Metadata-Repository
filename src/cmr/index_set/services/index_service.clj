@@ -218,9 +218,8 @@
   [context]
   (let [elastic-health (:status (es/health context))
         echo-rest-health (rest/health context)
-        status (if (and (some #{elastic-health} ["green" "yellow"]) (= "ok" echo-rest-health))
-                 200 503)]
-    {:status status
+        status-ok? (and (some #{elastic-health} ["green" "yellow"]) (= "ok" echo-rest-health))]
+    {:status-ok? status-ok?
      :result {:elastic_search elastic-health
               :echo-rest echo-rest-health}}))
 

@@ -52,8 +52,8 @@
         (r/response (index-svc/reset request-context))))
 
     (GET "/health" {request-context :request-context}
-      (let [{:keys [status result]} (index-svc/health request-context)]
-        {:status status
+      (let [{:keys [status-ok? result]} (index-svc/health request-context)]
+        {:status (if status-ok? 200 503)
          :headers {"Content-Type" "application/json; charset=utf-8"}
          :body result}))
 
