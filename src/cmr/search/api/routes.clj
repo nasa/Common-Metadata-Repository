@@ -12,6 +12,7 @@
             [cmr.common.api.errors :as errors]
             [cmr.common.services.errors :as svc-errors]
             [cmr.common.mime-types :as mt]
+            [cmr.common.services.messages :as msg]
             [cmr.search.services.query-service :as query-svc]
             [cmr.system-trace.http :as http-trace]
             [cmr.search.services.parameters.legacy-parameters :as lp]
@@ -293,10 +294,34 @@
                 :body-copy body
                 :body (java.io.ByteArrayInputStream. (.getBytes body)))))))
 
+(defn- find-query-str-mixed-arity-param
+  "Return the first parameter that has mixed arity, i.e., appears both single and multivalued in
+  the query string."
+  [query]
+  ;; Look for params appear as both singular and multivaluded, e.g., foo=1&foo[bar]=2, in any order.
+  (let [mixed-param-groups (or (re-find #"(^|&)(.*?)=.*?\2\[" query)
+                               (re-find #"(^|&)(.*?)\[.*?\2=" query))]
+    (when mixed-param-groups
+      (last mixed-param-groups))))
+
+;; Ring parameter handling is causing crashes when single value params are mixed with multivalue.
+;; The specific case of this is for improperly expressed options, e.g.,
+;; granule_ur=*&granules_ur[pattern]=true, but it is a problem for mixed single/multivalue
+;; parameters. This middleware returns a 400 early to avoid 500 errors from Ring.
+(defn mixed-arity-param-handler
+  [f]
+  (fn [request]
+    (when-let [mixed-param (find-query-str-mixed-arity-param (:query-string request))]
+      (svc-errors/throw-service-errors
+        :bad-request
+        [(msg/mixed-arity-parameter-msg mixed-param)]))
+    (f request)))
+
 (defn make-api [system]
   (-> (build-routes system)
       (http-trace/build-request-context-handler system)
       handler/site
+      mixed-arity-param-handler
       copy-of-body-handler
       errors/exception-handler
       ring-json/wrap-json-response))
