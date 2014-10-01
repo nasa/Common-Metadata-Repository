@@ -119,9 +119,7 @@
   "Delete all concepts from the data store"
   [context params]
   (concept-service/reset context)
-  {:status 204
-   :body nil
-   :headers json-header})
+  {:status 204})
 
 (defn- get-concept-id
   "Get the concept id for a given concept."
