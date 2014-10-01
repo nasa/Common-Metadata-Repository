@@ -5,7 +5,9 @@
             [cmr.umm.granule.temporal :as gt]
             [cmr.system-int-test.data2.core :as d]
             [cmr.system-int-test.data2.collection :as dc]
-            [cmr.common.date-time-parser :as p])
+            [cmr.common.date-time-parser :as p]
+            [cmr.umm.spatial :as umm-s]
+            [cmr.spatial.orbits.swath-geometry :as swath])
   (:import [cmr.umm.granule Orbit]))
 
 (defn psa
@@ -80,6 +82,20 @@
 (defmethod spatial :geometry
   [& geometries]
   (g/map->SpatialCoverage {:geometries geometries}))
+
+(defn granule->orbit-shapes
+  "This is a helper for creating the expected spatial for a granule that has orbit data that could be
+  converted into a spatial shape. Given a granule and its collection, returns a sequence containing its
+  orbit geometries, or a empty sequence if it is not an orbit granule"
+  [granule coll]
+  (if (get-in granule [:spatial-coverage :orbit])
+    (swath/to-polygons (get-in coll [:spatial-coverage :orbit-parameters])
+                       (get-in granule [:spatial-coverage :orbit :ascending-crossing])
+                       (:orbit-calculated-spatial-domains granule)
+                       (:beginning-date-time granule)
+                       (:ending-date-time granule))
+    []))
+
 
 (defn two-d-coordinate-system
   [attribs]

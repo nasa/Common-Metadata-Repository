@@ -4,7 +4,8 @@
             [cmr.common.util :as util]
             [cmr.system-int-test.data2.core :as d]
             [cmr.common.date-time-parser :as p]
-            [cmr.umm.collection.temporal :as ct])
+            [cmr.umm.collection.temporal :as ct]
+            [cmr.umm.spatial :as umm-s])
   (:import [cmr.umm.collection
             Product
             DataProviderTimestamps
@@ -134,7 +135,8 @@
 
 (defn spatial
   [attributes]
-  (let [{:keys [gsr sr orbit geometries]} attributes]
+  (let [{:keys [gsr sr orbit geometries]} attributes
+        geometries (map (partial umm-s/set-coordinate-system sr) geometries)]
     (c/map->SpatialCoverage {:granule-spatial-representation gsr
                              :orbit-parameters (when orbit
                                                  (c/map->OrbitParameters orbit))

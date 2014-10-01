@@ -5,7 +5,6 @@
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.data2.kml :as dk]
             [cmr.system-int-test.data2.core :as d]
             [cmr.spatial.polygon :as poly]
             [cmr.spatial.point :as p]
@@ -163,9 +162,6 @@
                    wide-south-cart normal-poly-cart polygon-with-holes-cart normal-line
                    normal-line-cart along-am-line]]
     (index/refresh-elastic-index)
-
-    (testing "kml search results"
-      (is (dk/kml-results-match? all-colls (search/find-concepts-kml :collection {:page-size 100}))))
 
     (testing "line searches"
       (are [ords items]

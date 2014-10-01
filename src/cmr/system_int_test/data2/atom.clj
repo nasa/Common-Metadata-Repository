@@ -14,7 +14,7 @@
             [camel-snake-kebab :as csk]
             [cmr.umm.spatial :as umm-s]
             [cmr.common.util :as util]
-            [cmr.spatial.orbits.swath-geometry :as swath]
+            [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.facets :as facets]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -72,16 +72,22 @@
            (m/mbr w n e s)))
        (cx/strings-at-path entry-elem [:box])))
 
-
 (defn xml-elem->shapes
   "Extracts the spatial shapes from the XML entry."
   [entry-elem]
-  (mapcat #(% entry-elem)
-          [xml-elem->polygons-without-holes
-           xml-elem->polygons-with-holes
-           xml-elem->points
-           xml-elem->lines
-           xml-elem->bounding-rectangles]))
+  (when-let [coordinate-system (some-> (cx/string-at-path entry-elem [:coordinateSystem])
+                                       str/lower-case
+                                       keyword)]
+    (let [coordinate-system (if (= coordinate-system :orbit)
+                              :geodetic
+                              coordinate-system)]
+      (->> [xml-elem->polygons-without-holes
+            xml-elem->polygons-with-holes
+            xml-elem->points
+            xml-elem->lines
+            xml-elem->bounding-rectangles]
+           (mapcat #(% entry-elem))
+           (map (partial umm-s/set-coordinate-system coordinate-system))))))
 
 (defn- parse-orbit-params
   "Convert orbit parameter attributes to their proper key /value types"
@@ -245,7 +251,9 @@
         start (when range-date-time
                 (f/unparse (f/formatters :date-time-no-ms) (:beginning-date-time range-date-time)))
         end (when range-date-time
-              (f/unparse (f/formatters :date-time-no-ms) (:ending-date-time range-date-time)))]
+              (f/unparse (f/formatters :date-time-no-ms) (:ending-date-time range-date-time)))
+        shapes (map (partial umm-s/set-coordinate-system spatial-representation)
+                            (get-in collection [:spatial-coverage :geometries]))]
     (util/remove-nil-keys
       {:id concept-id
        :title entry-title
@@ -265,7 +273,7 @@
        :coordinate-system coordinate-system
        ;; Need to create UMM OrbitParameters record into map so test comparisons don't fail
        :orbit-parameters (when orbit-parameters (into {} orbit-parameters))
-       :shapes (seq (get-in collection [:spatial-coverage :geometries]))
+       :shapes (seq shapes)
        :associated-difs associated-difs
        :online-access-flag (not (empty? (ru/downloadable-urls related-urls)))
        :browse-flag (not (empty? (ru/browse-urls related-urls)))})))
@@ -284,27 +292,6 @@
        (set (map #(dissoc % :granule-count)
                  (get-in atom-results [:results :entries]))))))
 
-(defn- normalize-orbit-polygon
-  "Strips generated data not parsed when reading orbit polygon atom"
-  [orbit-polygon]
-  (assoc orbit-polygon
-    :coordinate-system nil
-    :rings (map #(umm-s/ring (:points %)) (:rings orbit-polygon))))
-
-(defn- granule->orbit-shapes
-  "Given a granule and its collection, returns a sequence containing its
-   orbit geometries, or a empty sequence if it is not an orbit granule"
-  [granule coll]
-  (if (get-in granule [:spatial-coverage :orbit])
-    (map normalize-orbit-polygon
-     (swath/to-polygons (get-in coll [:spatial-coverage :orbit-parameters])
-                        (get-in granule [:spatial-coverage :orbit :ascending-crossing])
-                        (:orbit-calculated-spatial-domains granule)
-                        (:beginning-date-time granule)
-                        (:ending-date-time granule)))
-    [])
-)
-
 (defn- granule->expected-atom
   "Returns the atom map of the granule"
   [granule coll]
@@ -315,9 +302,11 @@
         dataset-id (get-in granule [:collection-ref :entry-title])
         update-time (get-in granule [:data-provider-timestamps :update-time])
         granule-spatial-representation (get-in coll [:spatial-coverage :granule-spatial-representation])
-        coordinate-system (when granule-spatial-representation (csk/->SNAKE_CASE_STRING granule-spatial-representation))
-        shapes (concat (get-in granule [:spatial-coverage :geometries])
-                       (granule->orbit-shapes granule coll))]
+        coordinate-system (when granule-spatial-representation
+                            (csk/->SNAKE_CASE_STRING granule-spatial-representation))
+        granule-shapes (map (partial umm-s/set-coordinate-system granule-spatial-representation)
+                            (get-in granule [:spatial-coverage :geometries]))
+        shapes (concat granule-shapes (dg/granule->orbit-shapes granule coll))]
     (util/remove-nil-keys
       {:id concept-id
        :title granule-ur

@@ -7,7 +7,11 @@
             [cmr.spatial.ring-relations :as rr]
             [cmr.spatial.line-string :as l]
             [cmr.common.xml :as cx]
-            [clojure.string :as str])
+            [clojure.string :as str]
+            [cmr.spatial.relations :as r]
+            [clojure.test]
+            [cmr.system-int-test.data2.granule :as dg]
+            [cmr.common.util :as util])
   (:import cmr.umm.collection.UmmCollection
            cmr.umm.granule.UmmGranule
            cmr.spatial.mbr.Mbr))
@@ -59,14 +63,16 @@
   "Converts a KML placemark element into the spatial item representation."
   [placemark-elem]
   (let [item-name (cx/string-at-path placemark-elem [:name])
-        coordinate-system (->> (cx/string-at-path placemark-elem [:styleUrl])
-                               (re-matches #".*((?:cartesian)|(?:geodetic)).*")
-                               last
-                               keyword)
-        shape-elements (or (:content (cx/element-at-path placemark-elem [:MultiGeometry]))
-                           [(-> placemark-elem :content last)])]
-    {:name item-name
-     :shapes (map (partial shape-element->shape coordinate-system) shape-elements)}))
+        coordinate-system (some->> (cx/string-at-path placemark-elem [:styleUrl])
+                                   (re-matches #".*((?:cartesian)|(?:geodetic)).*")
+                                   last
+                                   keyword)
+        shape-elements (when coordinate-system
+                         (or (:content (cx/element-at-path placemark-elem [:MultiGeometry]))
+                             [(-> placemark-elem :content last)]))]
+    (util/remove-nil-keys
+      {:name item-name
+       :shapes (seq (map (partial shape-element->shape coordinate-system) shape-elements))})))
 
 (defn parse-kml-results
   "Takes kml as a string and returns expected items which will contain a name and a list of shapes"
@@ -89,30 +95,54 @@
       :cartesian
       [(rr/ring :cartesian (concat points [(first points)]))])))
 
-(defmulti umm-item->expected-kml-result
-  (fn [umm-item]
-    (type umm-item)))
+(defn- name+shapes->expected-kml
+  "Takes an item name and a list of cmr spatial shapes and returns the list of expected kml
+  parsed placemarks."
+  [item-name shapes]
+  (if (seq shapes)
+    (let [shapes-by-coord-sys (group-by #(or (r/coordinate-system %) :geodetic) shapes)
+          multiple-placemarks? (> (count shapes-by-coord-sys) 1)]
+      (for [[coord-sys shapes] shapes-by-coord-sys]
+        {:name (if multiple-placemarks?
+                 (str item-name "_" (name coord-sys))
+                 item-name)
+         :shapes (map shape->kml-representation shapes)}))
+    [{:name item-name}]))
 
-(defmethod umm-item->expected-kml-result UmmCollection
-  [umm-item]
-  {:name (:entry-title umm-item)
-   :shapes (map shape->kml-representation (get-in umm-item [:spatial-coverage :geometries]))})
+(defn collection->expected-kml
+  [collection]
+  (name+shapes->expected-kml
+    (:entry-title collection)
+    (get-in collection [:spatial-coverage :geometries])))
 
-(defmethod umm-item->expected-kml-result UmmGranule
-  [umm-item]
-  {:name (:granule-ur umm-item)
-   :shapes (map shape->kml-representation (get-in umm-item [:spatial-coverage :geometries]))})
-
-(defn umm-items->expected-kml-results
-  [expected-items]
+(defn collections->expected-kml
+  [collections]
   {:status 200
-   :results (set (map umm-item->expected-kml-result expected-items))})
+   :results (set (mapcat collection->expected-kml collections))})
 
-(defn kml-results-match?
+(defn granule->expected-kml
+  [granule coll]
+  (name+shapes->expected-kml
+    (:granule-ur granule)
+    (concat (get-in granule [:spatial-coverage :geometries])
+            (dg/granule->orbit-shapes granule coll))))
+
+(defn granules->expected-kml
+  [granules collections]
+  {:status 200
+   :results (set (apply concat (map granule->expected-kml granules collections)))})
+
+(defn assert-collection-kml-results-match
   "Returns true if the kml results are for the expected items"
-  [expected-items actual-result]
-  (= (umm-items->expected-kml-results expected-items)
-     (update-in actual-result [:results] set)))
+  [collections actual-result]
+  (clojure.test/is (= (collections->expected-kml collections)
+                      (update-in actual-result [:results] set))))
+
+(defn assert-granule-kml-results-match
+  "Returns true if the kml results are for the expected items"
+  [expected-granules collections actual-result]
+  (clojure.test/is (= (granules->expected-kml expected-granules collections)
+                      (update-in actual-result [:results] set))))
 
 (comment
 
@@ -123,7 +153,7 @@
   (def placemarks
     (cx/elements-at-path (x/parse-str sample-kml) [:Document :Placemark]))
 
-(first placemarks)
+  (first placemarks)
 
   (some-> (cx/element-at-path p [:MultiGeometry]))
 

@@ -20,7 +20,8 @@
             [cmr.spatial.codec :as codec]
             [cmr.umm.spatial :as umm-s]
             [clojure.data.xml :as x]
-            [cmr.common.xml :as cx]))
+            [cmr.common.xml :as cx]
+            [cmr.system-int-test.data2.kml :as dk]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
@@ -242,7 +243,7 @@
            [0 90 180 -90] []
            [-180 90 0 -90] [g2]))))
 
-(deftest search-collection-atom-and-json
+(deftest search-collection-atom-and-json-and-kml
   (let [ru1 (dc/related-url "GET DATA" "http://example.com")
         ru2 (dc/related-url "GET DATA" "http://example2.com")
         ru3 (dc/related-url "GET RELATED VISUALIZATION" "http://example.com/browse")
@@ -257,6 +258,7 @@
         hole1 (umm-s/ords->ring 6.95,2.05, 2.98,2.06, 3.92,-0.08, 6.95,2.05)
         hole2 (umm-s/ords->ring 5.18,6.92, -1.79,7.01, -2.65,5, 4.29,5.05, 5.18,6.92)
         polygon-with-holes (poly/polygon [outer hole1 hole2])
+        polygon-without-holes (poly/polygon [(umm-s/ords->ring -70 20, 70 20, 70 30, -70 30, -70 20)])
 
         coll1 (d/ingest "PROV1"
                         (dc/collection {:entry-title "Dataset1"
@@ -273,14 +275,14 @@
                                         :spatial-coverage
                                         (dc/spatial {:sr :geodetic
                                                      :gsr :geodetic
-                                                     :shapes [(poly/polygon [(umm-s/ords->ring -70 20, 70 20, 70 30, -70 30, -70 20)])
-                                                              polygon-with-holes
-                                                              (p/point 1 2)
-                                                              (p/point -179.9 89.4)
-                                                              (l/ords->line-string nil 0 0, 0 1, 0 -90, 180 0)
-                                                              (l/ords->line-string nil 1 2, 3 4, 5 6, 7 8)
-                                                              (m/mbr -180 90 180 -90)
-                                                              (m/mbr -10 20 30 -40)]})}))
+                                                     :geometries [polygon-without-holes
+                                                                  polygon-with-holes
+                                                                  (p/point 1 2)
+                                                                  (p/point -179.9 89.4)
+                                                                  (l/ords->line-string nil 0 0, 0 1, 0 -90, 180 0)
+                                                                  (l/ords->line-string nil 1 2, 3 4, 5 6, 7 8)
+                                                                  (m/mbr -180 90 180 -90)
+                                                                  (m/mbr -10 20 30 -40)]})}))
         coll2 (d/ingest "PROV1"
                         (dc/collection {:entry-title "Dataset2"
                                         :short-name "ShortName#2"
@@ -292,8 +294,8 @@
                                         :spatial-coverage
                                         (dc/spatial {:sr :cartesian
                                                      :gsr :cartesian
-                                                     :geometries [(poly/polygon [(umm-s/ords->ring -70 20, 70 20, 70 30, -70 30, -70 20)])]})}))
-         coll3 (d/ingest "PROV1"
+                                                     :geometries [polygon-without-holes]})}))
+        coll3 (d/ingest "PROV1"
                         (dc/collection
                           {:entry-title "Dataset3"
                            :spatial-coverage (dc/spatial {:gsr :orbit
@@ -301,56 +303,61 @@
 
     (index/refresh-elastic-index)
 
-    (let [coll-atom (da/collections->expected-atom [coll1] "collections.atom?dataset_id=Dataset1")
-          response (search/find-concepts-atom :collection {:dataset-id "Dataset1"})]
-      (is (= 200 (:status response)))
-      (is (= coll-atom
-             (:results response))))
+    (testing "kml"
+      (let [results (search/find-concepts-kml :collection {})]
+        (dk/assert-collection-kml-results-match [coll1 coll2 coll3] results)))
 
-    (let [coll-atom (da/collections->expected-atom [coll1 coll2 coll3] "collections.atom")
-          response (search/find-concepts-atom :collection {})]
-      (is (= 200 (:status response)))
-      (is (= coll-atom
-             (:results response))))
+    (testing "ATOM XML"
+        (let [coll-atom (da/collections->expected-atom [coll1] "collections.atom?dataset_id=Dataset1")
+              response (search/find-concepts-atom :collection {:dataset-id "Dataset1"})]
+          (is (= 200 (:status response)))
+          (is (= coll-atom
+                 (:results response))))
 
-    (let [coll-atom (da/collections->expected-atom [coll3] "collections.atom?dataset_id=Dataset3")
-          response (search/find-concepts-atom :collection {:dataset-id "Dataset3"})]
-      (is (= 200 (:status response)))
-      (is (= coll-atom
-             (:results response))))
+        (let [coll-atom (da/collections->expected-atom [coll1 coll2 coll3] "collections.atom")
+              response (search/find-concepts-atom :collection {})]
+          (is (= 200 (:status response)))
+          (is (= coll-atom
+                 (:results response))))
 
-    (testing "as extension"
-      (is (= (select-keys
-               (search/find-concepts-atom :collection {:dataset-id "Dataset1"})
-               [:status :results])
-             (select-keys
-               (search/find-concepts-atom :collection
-                                          {:dataset-id "Dataset1"}
-                                          {:url-extension "atom"})
-               [:status :results]))))
+        (let [coll-atom (da/collections->expected-atom [coll3] "collections.atom?dataset_id=Dataset3")
+              response (search/find-concepts-atom :collection {:dataset-id "Dataset3"})]
+          (is (= 200 (:status response)))
+          (is (= coll-atom
+                 (:results response))))
 
-    ;; search json format
-    (let [coll-json (da/collections->expected-atom [coll1] "collections.json?dataset_id=Dataset1")
-          response (search/find-concepts-json :collection {:dataset-id "Dataset1"})]
-      (is (= 200 (:status response)))
-      (is (= coll-json
-             (:results response))))
+        (testing "as extension"
+          (is (= (select-keys
+                   (search/find-concepts-atom :collection {:dataset-id "Dataset1"})
+                   [:status :results])
+                 (select-keys
+                   (search/find-concepts-atom :collection
+                                              {:dataset-id "Dataset1"}
+                                              {:url-extension "atom"})
+                   [:status :results])))))
 
-    (let [coll-json (da/collections->expected-atom [coll1 coll2 coll3] "collections.json")
-          response (search/find-concepts-json :collection {})]
-      (is (= 200 (:status response)))
-      (is (= coll-json
-             (:results response))))
+    (testing "JSON"
+        (let [coll-json (da/collections->expected-atom [coll1] "collections.json?dataset_id=Dataset1")
+              response (search/find-concepts-json :collection {:dataset-id "Dataset1"})]
+          (is (= 200 (:status response)))
+          (is (= coll-json
+                 (:results response))))
 
-    (testing "as extension"
-      (is (= (select-keys
-               (search/find-concepts-json :collection {:dataset-id "Dataset1"})
-               [:status :results])
-             (select-keys
-               (search/find-concepts-json :collection
-                                          {:dataset-id "Dataset1"}
-                                          {:url-extension "json"})
-               [:status :results]))))))
+        (let [coll-json (da/collections->expected-atom [coll1 coll2 coll3] "collections.json")
+              response (search/find-concepts-json :collection {})]
+          (is (= 200 (:status response)))
+          (is (= coll-json
+                 (:results response))))
+
+        (testing "as extension"
+          (is (= (select-keys
+                   (search/find-concepts-json :collection {:dataset-id "Dataset1"})
+                   [:status :results])
+                 (select-keys
+                   (search/find-concepts-json :collection
+                                              {:dataset-id "Dataset1"}
+                                              {:url-extension "json"})
+                   [:status :results])))))))
 
 (deftest formats-have-scores-test
   (let [coll1 (d/ingest "PROV1" (dc/collection {:long-name "ABC!XYZ" :entry-title "Foo"}))]

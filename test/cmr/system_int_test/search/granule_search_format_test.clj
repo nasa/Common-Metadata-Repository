@@ -10,6 +10,7 @@
             [cmr.system-int-test.data2.atom :as da]
             [cmr.system-int-test.data2.atom-json :as dj]
             [cmr.system-int-test.data2.core :as d]
+            [cmr.system-int-test.data2.kml :as dk]
             [cmr.system-int-test.utils.url-helper :as url]
             [cmr.spatial.polygon :as poly]
             [cmr.spatial.point :as p]
@@ -213,7 +214,7 @@
                                                  {:url-extension "csv"})
                           [:status :body]))))))
 
-(deftest search-granule-atom-and-json
+(deftest search-granule-atom-and-json-and-kml
   (let [ru1 (dc/related-url "GET DATA" "http://example.com")
         ru2 (dc/related-url "GET DATA" "http://example2.com")
         ru3 (dc/related-url "GET RELATED VISUALIZATION" "http://example.com/browse")
@@ -238,7 +239,7 @@
         outer (umm-s/ords->ring -5.26,-2.59, 11.56,-2.77, 10.47,8.71, -5.86,8.63, -5.26,-2.59)
         hole1 (umm-s/ords->ring 6.95,2.05, 2.98,2.06, 3.92,-0.08, 6.95,2.05)
         hole2 (umm-s/ords->ring 5.18,6.92, -1.79,7.01, -2.65,5, 4.29,5.05, 5.18,6.92)
-        polygon-with-holes  (poly/polygon [outer hole1 hole2])
+        polygon-with-holes  (umm-s/set-coordinate-system :geodetic (poly/polygon [outer hole1 hole2]))
 
         gran1 (make-gran coll1 {:granule-ur "Granule1"
                                 :beginning-date-time "2010-01-01T12:00:00Z"
@@ -260,12 +261,14 @@
                                                    :start-circular-latitude -90.0
                                                    :number-of-orbits 1.0}
                                 :spatial-coverage (dg/spatial
-                                                    (poly/polygon [(umm-s/ords->ring -70 20, 70 20, 70 30, -70 30, -70 20)])
+                                                    (poly/polygon
+                                                      :geodetic
+                                                      [(rr/ords->ring :geodetic -70 20, 70 20, 70 30, -70 30, -70 20)])
                                                     polygon-with-holes
                                                     (p/point 1 2)
                                                     (p/point -179.9 89.4)
-                                                    (l/ords->line-string nil 0 0, 0 1, 0 -90, 180 0)
-                                                    (l/ords->line-string nil 1 2, 3 4, 5 6, 7 8)
+                                                    (l/ords->line-string :geodetic 0 0, 0 1, 0 -90, 180 0)
+                                                    (l/ords->line-string :geodetic 1 2, 3 4, 5 6, 7 8)
                                                     (m/mbr -180 90 180 -90)
                                                     (m/mbr -10 20 30 -40))})
         gran2 (make-gran coll2 {:granule-ur "Granule2"
@@ -285,14 +288,19 @@
                                 :cloud-cover 30.0
                                 :related-urls [ru3]
                                 :spatial-coverage (dg/spatial (dg/orbit 120.0 50.0 "A" 50.0 "A"))
-                                :orbit-calculated-spatial-domains [{:orbital-model-name "MODEL NAME"
-                                                                    :orbit-number 2
-                                                                    :start-orbit-number 3.0
-                                                                    :stop-orbit-number 4.0
-                                                                    :equator-crossing-longitude -45.0
-                                                                    :equator-crossing-date-time "2011-01-01T12:00:00.000Z"}]})]
+                                :orbit-calculated-spatial-domains
+                                [{:orbital-model-name "MODEL NAME"
+                                  :orbit-number 2
+                                  :start-orbit-number 3.0
+                                  :stop-orbit-number 4.0
+                                  :equator-crossing-longitude -45.0
+                                  :equator-crossing-date-time "2011-01-01T12:00:00.000Z"}]})]
 
     (index/refresh-elastic-index)
+
+    (testing "kml"
+      (let [results (search/find-concepts-kml :granule {})]
+        (dk/assert-granule-kml-results-match [gran1 gran2 gran3] [coll1 coll2 coll3] results)))
 
     (testing "atom"
       (let [coll-atom (da/collections->expected-atom [coll1] "collections.atom?entry_title=Dataset1")

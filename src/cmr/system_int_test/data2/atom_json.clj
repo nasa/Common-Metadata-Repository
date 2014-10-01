@@ -7,6 +7,7 @@
             [cheshire.core :as json]
             [cmr.common.util :as util]
             [clojure.string :as str]
+            [cmr.umm.spatial :as umm-s]
             [cmr.system-int-test.data2.atom :as atom]))
 
 (defn json-polygons->polygons
@@ -30,11 +31,16 @@
 
 (defn json-geometry->shapes
   "Extracts the spatial shapes from the json geometry."
-  [points boxes polygons lines]
-  (seq (concat (json-polygons->polygons polygons)
-               (json-points->points points)
-               (json-lines->lines lines)
-               (json-boxes->bounding-rectangles boxes))))
+  [coordinate-system points boxes polygons lines]
+  (when-let [coordinate-system (some-> coordinate-system str/lower-case keyword)]
+    (let [coordinate-system (if (= :orbit coordinate-system)
+                              :geodetic
+                              coordinate-system)]
+      (seq (map (partial umm-s/set-coordinate-system coordinate-system)
+                  (concat (json-polygons->polygons polygons)
+                          (json-points->points points)
+                          (json-lines->lines lines)
+                          (json-boxes->bounding-rectangles boxes)))))))
 
 (defmulti json-entry->entry
   "Retrns an entry from a parsed json entry"
@@ -101,7 +107,7 @@
        :score score
        :granule-count granule-count
        :has-granules has-granules
-       :shapes (json-geometry->shapes points boxes polygons lines)
+       :shapes (json-geometry->shapes coordinate-system points boxes polygons lines)
        :orbit-parameters (parse-orbit-parameters orbit-parameters)})))
 
 (defmethod json-entry->entry :granule
@@ -110,7 +116,8 @@
         {:keys [id title updated dataset-id producer-granule-id granule-size original-format
                 data-center links time-start time-end online-access-flag browse-flag day-night-flag
                 cloud-cover coordinate-system points boxes polygons lines
-                orbit-calculated-spatial-domains]} json-entry]
+                orbit-calculated-spatial-domains]} json-entry
+        shapes (json-geometry->shapes coordinate-system points boxes polygons lines)]
     (util/remove-nil-keys
       {:id id
        :title title
@@ -129,7 +136,7 @@
        :day-night-flag day-night-flag
        :cloud-cover (parse-double cloud-cover)
        :coordinate-system coordinate-system
-       :shapes (json-geometry->shapes points boxes polygons lines)})))
+       :shapes shapes})))
 
 (defn parse-json-result
   "Returns the json result from a json string"
