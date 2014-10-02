@@ -24,7 +24,7 @@
   "Returns the health state of elasticsearch."
   [context elastic-key-in-context]
   (let [conn (get-in context [:system elastic-key-in-context :conn])
-        health-detail (admin/cluster-health conn)
+        health-detail (admin/cluster-health conn :wait_for_status "yellow" :timeout "30s")
         status (:status health-detail)]
     (if (some #{status} ["green" "yellow"])
       {:ok? true}
