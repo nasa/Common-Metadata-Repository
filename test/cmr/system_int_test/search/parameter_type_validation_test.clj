@@ -3,34 +3,28 @@
    level due to the tendency for pre-validation code to make assumptions about the
    shape of parameters."
   (:require [clojure.test :refer :all]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.data2.core :as d]
-            [cmr.search.data.keywords-to-elastic :as k2e]))
+            [cmr.system-int-test.utils.search-util :as search]))
 
 (defn- is-bad-request?
   "Returns true if the given response returns a 400 error with the given error strings"
   [response expected-errors]
   (is (= 400 (:status response)))
-  (is (= expected-errors (:errors response))))
+  (is (= (sort expected-errors) (sort (:errors response)))))
 
-(defmacro test-map-type
+(defn- test-map-type
   "Runs tests that the given parameter works for searches on the given concept id using
     the valid example map and produces errors non-map values.  other-params is an optional
     map (or maps) of other parameters to send with the query."
   [concept-type name valid-example-map & other-params]
-  `(do
-     (testing (str "querying with " ~name " as a single value returns an error")
-       (let [response# (search/find-refs ~concept-type (into {~name "a"} (list ~@other-params)))]
-         (is-bad-request? response# [(str "Parameter [" ~name "] must contain a map.")])))
-     (testing (str "querying with " ~name " as a list returns an error")
-       (let [response# (search/find-refs ~concept-type (into {~name ["a" "b"]} (list ~@other-params)))]
-         (is-bad-request? response# [(str "Parameter [" ~name "] must contain a map.")])))
-     (testing (str "querying with " ~name " as a map succeeds")
-       (let [response# (search/find-refs ~concept-type (into {~name ~valid-example-map} (list ~@other-params)))]
-         (is (nil? (:errors response#)))))))
+  (testing (str "querying with " name " as a single value returns an error")
+    (let [response (search/find-refs concept-type (into {name "a"} other-params))]
+      (is-bad-request? response [(str "Parameter [" name "] must contain a map.")])))
+  (testing (str "querying with " name " as a list returns an error")
+    (let [response (search/find-refs concept-type (into {name ["a" "b"]} other-params))]
+      (is-bad-request? response [(str "Parameter [" name "] must contain a map.")])))
+  (testing (str "querying with " name " as a map succeeds")
+    (let [response (search/find-refs concept-type (into {name valid-example-map} other-params))]
+      (is (nil? (:errors response))))))
 
 (deftest parameter-type-validations
   (test-map-type :collection "options" {:entry-title {:pattern "true"}})
