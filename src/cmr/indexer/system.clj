@@ -14,7 +14,8 @@
             [cmr.transmit.config :as transmit-config]
             [clojure.string :as str]
             [cmr.common.config :as cfg]
-            [cmr.elastic-utils.config :as es-config]))
+            [cmr.elastic-utils.config :as es-config]
+            [cmr.acl.core :as acl]))
 
 
 (def collections-with-separate-indexes
@@ -44,7 +45,8 @@
              :parent-collection-cache nil
              :zipkin (context/zipkin-config "Indexer" false)
              :caches {:acls (ac/create-acl-cache)
-                      :general (cache/create-cache)}
+                      :general (cache/create-cache)
+                      acl/token-imp-cache-key (acl/create-token-imp-cache)}
              :scheduler (jobs/create-scheduler
                           `system-holder
                           [(ac/refresh-acl-cache-job "indexer-acl-cache-refresh")])}]
