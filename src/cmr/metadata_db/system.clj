@@ -13,7 +13,8 @@
             [cmr.common.jobs :as jobs]
             [cmr.oracle.config :as oracle-config]
             [cmr.metadata-db.config :as config]
-            [cmr.transmit.config :as transmit-config]))
+            [cmr.transmit.config :as transmit-config]
+            [cmr.acl.core :as acl]))
 
 ;; Design based on http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts
 
@@ -38,6 +39,7 @@
               :web (web/create-web-server (config/app-port) routes/make-api)
               :zipkin (context/zipkin-config "Metadata DB" false)
               :parallel-chunk-size (config/parallel-chunk-size)
+              :caches {acl/token-imp-cache-key (acl/create-token-imp-cache)}
               :scheduler (jobs/create-clustered-scheduler `system-holder mdb-jobs/jobs)}]
      (transmit-config/system-with-connections sys [:echo-rest]))))
 
