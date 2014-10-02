@@ -17,13 +17,17 @@
             [cmr.mock-echo.data.provider-db :as provider-db]
             [cmr.mock-echo.data.acl-db :as acl-db]))
 
+(defn reset
+  [context]
+  (token-db/reset context)
+  (provider-db/reset context)
+  (acl-db/reset context))
+
 (defn- build-routes [system]
   (routes
 
     (POST "/reset" {context :request-context}
-      (token-db/reset context)
-      (provider-db/reset context)
-      (acl-db/reset context)
+      (reset context)
       {:status 204})
 
     ;; Add routes
