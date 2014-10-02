@@ -160,6 +160,7 @@
   ([system provider-id collection-id]
    (info "Copying collection data for provider" provider-id)
    (let [stmt (copy-collection-data-sql system provider-id collection-id)]
+     (println stmt)
      (j/with-db-transaction
        [conn (:db system)]
        (j/execute! conn [stmt])))))
