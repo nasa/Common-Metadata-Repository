@@ -4,7 +4,9 @@
             [cmr.acl.acl-cache :as acl-cache]
             [cmr.transmit.echo.acls :as echo-acls]
             [cmr.transmit.echo.tokens :as echo-tokens]
-            [cmr.acl.collection-matchers :as cm]))
+            [cmr.acl.collection-matchers :as cm]
+            [cmr.common.cache :as cache]
+            [clojure.core.cache :as clj-cache]))
 
 (def BROWSER_CLIENT_ID "browser")
 (def CURL_CLIENT_ID "curl")
@@ -79,21 +81,49 @@
        (map #(or (:group-guid %) (some-> % :user-type name)))
        distinct))
 
+(def token-imp-cache-key
+  "The cache key for the token to ingest management permission cache."
+  :token-imp)
+
+(def TOKEN_IMP_CACHE_TIME
+  "The number of milliseconds token information will be cached."
+  (* 5 60 1000))
+
+(defn create-token-imp-cache
+  "Creates a cache for which tokens have ingest management permission."
+  []
+  (cache/create-cache
+    (clj-cache/ttl-cache-factory {} :ttl TOKEN_IMP_CACHE_TIME)))
+
+(defn context->token-imp-cache
+  [context]
+  (get-in context [:system :caches token-imp-cache-key]))
+
+(defn- has-ingest-management-permission?
+  "Returns true if the user identified by the token in the cache has been granted
+  INGEST_MANAGEMENT_PERMISSION in ECHO ACLS for the given permission type."
+  [context permission-type]
+  (->> (echo-acls/get-acls-by-type context "SYSTEM_OBJECT")
+       ;; Find acls on INGEST_MANAGEMENT
+       (filter (comp (partial = "INGEST_MANAGEMENT_ACL") :target :system-object-identity))
+       ;; Find acls for this user and permission type
+       (filter (partial acl-matches-sids-and-permission?
+                        (context->sids context)
+                        permission-type))
+       seq))
+
 (defn verify-ingest-management-permission
   "Verifies the current user has been granted INGEST_MANAGEMENT_PERMISSION in ECHO ACLs"
   ([context]
    (verify-ingest-management-permission context :update))
   ([context permission-type]
-   (when-not  (->> (echo-acls/get-acls-by-type context "SYSTEM_OBJECT")
-                   ;; Find acls on INGEST_MANAGEMENT
-                   (filter (comp (partial = "INGEST_MANAGEMENT_ACL") :target :system-object-identity))
-                   ;; Find acls for this user and permission type
-                   (filter (partial acl-matches-sids-and-permission?
-                                    (context->sids context)
-                                    permission-type))
-                   seq)
-     (errors/throw-service-error
-       :unauthorized
-       "You do not have permission to perform that action."))))
+   (let [cache-key [(:token context) permission-type]
+         has-permission? (cache/cache-lookup (context->token-imp-cache context)
+                                             cache-key
+                                             #(has-ingest-management-permission? context permission-type))]
+     (when-not has-permission?
+       (errors/throw-service-error
+         :unauthorized
+         "You do not have permission to perform that action.")))))
 
 
