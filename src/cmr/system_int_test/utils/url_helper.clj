@@ -12,6 +12,10 @@
 (def search-public-port (config/config-value :search-public-port 3003 transmit-config/parse-port))
 (def search-relative-root-url (config/config-value :search-relative-root-url ""))
 
+(def dev-system-port
+  "The port number for the dev system control api"
+  2999)
+
 (def conn-mgr-atom (atom nil))
 
 (defn conn-mgr
@@ -22,6 +26,16 @@
     (reset! conn-mgr-atom  (conn-mgr/make-reusable-conn-manager {})))
 
   @conn-mgr-atom)
+
+(defn dev-system-reset-url
+  "The reset url on the dev system control api."
+  []
+  (format "http://localhost:%s/reset" dev-system-port))
+
+(defn dev-system-clear-cache-url
+  "The reset url on the dev system control clear cache."
+  []
+  (format "http://localhost:%s/clear-cache" dev-system-port))
 
 (defn elastic-root
   []

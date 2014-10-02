@@ -134,16 +134,12 @@
 (defn reset
   "Resets the database and the elastic indexes"
   []
-  (echo-util/reset)
-  (client/post (url/mdb-reset-url) (admin-connect-options))
-  (client/post (url/indexer-reset-url) (admin-connect-options))
-  (client/post (url/search-reset-url) (admin-connect-options))
+  (client/post (url/dev-system-reset-url) (admin-connect-options))
   (index/refresh-elastic-index))
 
 (defn clear-caches
   []
-  (client/post (url/indexer-clear-cache-url) (admin-connect-options))
-  (client/post (url/search-clear-cache-url) (admin-connect-options)))
+  (client/post (url/dev-system-clear-cache-url) (admin-connect-options)))
 
 ;;; fixture - each test to call this fixture
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
