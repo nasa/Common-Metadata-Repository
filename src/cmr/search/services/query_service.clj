@@ -97,15 +97,25 @@
     (str dir-char (csk/->kebab-case field))
     sort-key))
 
+(declare deep-kebab)
+
+(defn- deep-kebab-entry
+  "Recursive helper for deep-kebab (see below)"
+  [[k v]]
+  (let [kebab-k (csk/->kebab-case k)
+        kebab-v (if (map? v) (deep-kebab v) v)]
+    [kebab-k kebab-v]))
+
+(defn- deep-kebab
+  "Converts all keys of params and all keys in all descendent maps to kebab-case strings."
+  [params]
+  (into {} (map deep-kebab-entry params)))
+
 (defn- sanitize-params
   "Manipulates the parameters to make them easier to process"
   [params]
   (-> params
-      u/map-keys->kebab-case
-      (update-in [:options] u/map-keys->kebab-case)
-      (update-in [:options] #(when % (into {} (map (fn [[k v]]
-                                                     [k (u/map-keys->kebab-case v)])
-                                                   %))))
+      deep-kebab
       (update-in [:sort-key] #(when % (if (sequential? %)
                                         (map sanitize-sort-key % )
                                         (sanitize-sort-key %))))))
@@ -227,6 +237,3 @@
                                collections)]
     [provider-holdings
      (ph/provider-holdings->string (:result-format params) provider-holdings pretty?)]))
-
-
-

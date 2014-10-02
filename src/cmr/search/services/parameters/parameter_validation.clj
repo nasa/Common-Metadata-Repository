@@ -18,6 +18,7 @@
             [cmr.common.config :as cfg]
             [camel-snake-kebab :as csk]
             [cmr.spatial.codec :as spatial-codec]
+            [clojure.core.incubator :as incubator]
             [clj-time.core :as t])
   (:import clojure.lang.ExceptionInfo
            java.lang.Integer))
@@ -501,6 +502,56 @@
             " year, month, day, hour, minute, or second.")])
     ["interval is a required parameter for timeline searches"]))
 
+(defn assoc-keys->param-name
+  "Given a set of parameter assoc keys, returns the URL string for the parameter at that path.  For
+   instance, [:foo :bar :baz] returns \"foo[bar][baz]\""
+  [keys]
+  (let [[root & descendants] (map csk/->snake_case_string keys)
+        subscripts (s/join (map #(str "[" % "]") descendants))]
+    (str root subscripts)))
+
+(defn- validate-type
+  "Helper function for composing type validations.
+   Validates that f returns true when applied to the parameter value found by following the given
+   keys, or that the value is null.  Dissoc's the parameter if it is invalid.  Returns a tuple
+   containing [valid-params error-strings]."
+  [f type-name keys params]
+  (let [value (get-in params keys)]
+    (if (or (nil? value) (f value))
+      [params []]
+      [(incubator/dissoc-in params keys) [(str "Parameter [" (assoc-keys->param-name keys) "] must contain a " type-name ".")]])))
+
+(defn- validate-map
+  "Validates that the parameter value found by following keys is a map or null.  Dissocs the
+   parameter from params if it is invalid, returning [valid-params error-strings]."
+  [keys params]
+  (validate-type map? "map" keys params))
+
+(defn- apply-type-validations
+  "Validates data types of parameters.  Returns a tuple of [safe-params errors] where errors
+   contains a list of type error strings and safe-params contains the original params with
+   error those that have type errors dissoc'ed out."
+  [params validation-functions]
+  (loop [[validation & validations] validation-functions
+         safe-params params
+         errors []]
+    (let [[new-safe-params new-errors] (validation safe-params)
+          all-errors (concat new-errors errors)]
+      (if (seq validations)
+        (recur validations new-safe-params all-errors)
+        [new-safe-params all-errors]))))
+
+(defn- validate-all-map-values
+  "Applies the validation function to all values in the map and aggregates the result.  Useful
+   for places like science keywords where we don't know all of the keys up front."
+  [f path params]
+  (let [entries (get-in params path)]
+    (if (seq entries)
+      (let [validations (map #(partial f (concat path [%])) (keys entries))]
+        (apply-type-validations params validations))
+      [params []])))
+
+
 (def parameter-validations
   "A list of the functions that can validate parameters. They all accept parameters as an argument
   and return a list of errors."
@@ -529,7 +580,8 @@
 (def aql-parameter-validations
   "A list of functions that can validate the query parameters passed in with an AQL search.
   They all accept parameters as an argument and return a list of errors."
-  [page-size-validation
+  [single-value-validation
+   page-size-validation
    page-num-validation
    paging-depth-validation
    sort-key-validation
@@ -543,11 +595,33 @@
    timeline-interval-validation
    timeline-range-validation])
 
+(def parameter-data-type-validations
+  "Validations of the data type of various parameters, used to ensure the data is the correct
+   shape before we manipulate it further."
+  [(partial validate-map [:options])
+   (partial validate-map [:options :entry-title])
+   (partial validate-map [:options :platform])
+   (partial validate-map [:options :project])
+   (partial validate-map [:options :attribute])
+   (partial validate-map [:exclude])
+   (partial validate-map [:science-keywords])
+   (partial validate-all-map-values validate-map [:science-keywords])])
+
+(defn validate-parameter-data-types
+  "Validates data types of parameters.  Unlike other validations, this returns a tuple of
+   [safe-params errors] where errors contains the usual list of errors and safe-params
+   contains only params whose data type is correct.  Dissoc'ing invalid data types from
+   the list allows other validations to make assumptions about their shapes / types."
+  [params]
+  (apply-type-validations params parameter-data-type-validations))
+
 (defn validate-parameters
   "Validates parameters. Throws exceptions to send to the user. Returns parameters if validation
   was successful so it can be chained with other calls."
   [concept-type params]
-  (let [errors (mapcat #(% concept-type params) parameter-validations)]
+  (let [[safe-params type-errors] (validate-parameter-data-types params)
+        errors (concat type-errors
+                       (mapcat #(% concept-type safe-params) parameter-validations))]
     (when (seq errors)
       (err/throw-service-errors :bad-request errors)))
   params)
@@ -567,9 +641,11 @@
   Throws exceptions to send to the user. Returns parameters if validation
   was successful so it can be chained with other calls."
   [params]
-  (let [timeline-params (select-keys params [:interval :start-date :end-date])
-        regular-params (dissoc params :interval :start-date :end-date)
-        errors (concat (mapcat #(% :granule regular-params) parameter-validations)
+  (let [[safe-params type-errors] (validate-parameter-data-types params)
+        timeline-params (select-keys safe-params [:interval :start-date :end-date])
+        regular-params (dissoc safe-params :interval :start-date :end-date)
+        errors (concat type-errors
+                       (mapcat #(% :granule regular-params) parameter-validations)
                        (mapcat #(% :granule timeline-params) timeline-parameter-validations))]
     (when (seq errors)
       (err/throw-service-errors :bad-request errors)))
