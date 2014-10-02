@@ -15,7 +15,8 @@
             [cmr.metadata-db.services.concept-service :as mdb-service]
             [cmr.index-set.services.index-service :as index-set-service]
             [cmr.indexer.services.index-service :as indexer-service]
-            [cmr.search.services.query-service :as search-service]))
+            [cmr.search.services.query-service :as search-service]
+            [cmr.mock-echo.api.routes :as mock-echo-api]))
 
 (defn app-context
   [system app]
@@ -46,7 +47,8 @@
   {:metadata-db mdb-service/reset
    :index-set index-set-service/reset
    :indexer indexer-service/reset
-   :search search-service/clear-cache})
+   :search search-service/clear-cache
+   :mock-echo mock-echo-api/reset})
 
 (def service-clear-cache-fns
   "A map of services to reset functions."
