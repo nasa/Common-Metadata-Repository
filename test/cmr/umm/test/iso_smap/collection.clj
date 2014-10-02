@@ -113,13 +113,13 @@
 
 (deftest parse-collection-test
   (let [expected (umm-c/map->UmmCollection
-                   {:entry-id "SPL1AA_R03001"
+                   {:entry-id "SPL1AA_002"
                     :entry-title "SMAP Collection Dataset ID"
                     :summary "Parsed high resolution and low resolution radar instrument telemetry with spacecraft position, attitude and antenna azimuth information as well as voltage and temperature sensor measurements converted from telemetry data numbers to engineering units."
                     :product (umm-c/map->Product
                                {:short-name "SPL1AA"
                                 :long-name "SMAP Level 1A Parsed Radar Instrument Telemetry"
-                                :version-id "R03001"})
+                                :version-id "002"})
                     :data-provider-timestamps (umm-c/map->DataProviderTimestamps
                                                 {:insert-time (p/parse-datetime "2013-04-04T15:15:00Z")
                                                  :update-time (p/parse-datetime "2013-04-05T17:15:00Z")})

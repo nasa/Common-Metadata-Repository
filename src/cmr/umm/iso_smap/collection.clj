@@ -24,10 +24,12 @@
 (defn- xml-elem->Product
   "Returns a UMM Product from a parsed XML structure"
   [product-elem]
-  (let [short-name (cx/string-at-path product-elem [:citation :CI_Citation :identifier :MD_Identifier
-                                                    :code :CharacterString])
-        long-name (cx/string-at-path product-elem [:citation :CI_Citation :title :CharacterString])
-        version-id (cx/string-at-path product-elem [:citation :CI_Citation :edition :CharacterString])]
+  (let [long-name (cx/string-at-path product-elem [:citation :CI_Citation :title :CharacterString])
+        id-elems (cx/elements-at-path product-elem [:citation :CI_Citation :identifier :MD_Identifier])
+        short-name-elem (h/xml-elem-with-path-value id-elems [:description :CharacterString] "The ECS Short Name")
+        short-name (cx/string-at-path short-name-elem [:code :CharacterString])
+        version-elem (h/xml-elem-with-path-value id-elems [:description :CharacterString] "The ECS Version ID")
+        version-id (cx/string-at-path version-elem [:code :CharacterString])]
     (c/map->Product {:short-name short-name
                      :long-name long-name
                      :version-id version-id})))
@@ -174,8 +176,8 @@
                        ;; We need to work out how to handle it.
                        ;; For now, just use the update time to replace the revision date.
                        (h/iso-date-element "revision" update-time true)
-                       (h/iso-string-element :gmd:edition version-id)
                        (h/generate-short-name-element short-name)
+                       (h/generate-version-id-element version-id)
                        (org/generate-processing-center organizations)))
                    (h/iso-string-element :gmd:abstract summary)
                    (h/iso-string-element :gmd:credit "National Aeronautics and Space Administration (NASA)")
