@@ -502,7 +502,7 @@
             " year, month, day, hour, minute, or second.")])
     ["interval is a required parameter for timeline searches"]))
 
-(defn assoc-keys->param-name
+(defn- assoc-keys->param-name
   "Given a set of parameter assoc keys, returns the URL string for the parameter at that path.  For
    instance, [:foo :bar :baz] returns \"foo[bar][baz]\""
   [keys]
@@ -510,22 +510,21 @@
         subscripts (s/join (map #(str "[" % "]") descendants))]
     (str root subscripts)))
 
-(defn- validate-type
-  "Helper function for composing type validations.
-   Validates that f returns true when applied to the parameter value found by following the given
-   keys, or that the value is null.  Dissoc's the parameter if it is invalid.  Returns a tuple
-   containing [valid-params error-strings]."
-  [f type-name keys params]
-  (let [value (get-in params keys)]
-    (if (or (nil? value) (f value))
-      [params []]
-      [(incubator/dissoc-in params keys) [(str "Parameter [" (assoc-keys->param-name keys) "] must contain a " type-name ".")]])))
-
 (defn- validate-map
   "Validates that the parameter value found by following keys is a map or null.  Dissocs the
-   parameter from params if it is invalid, returning [valid-params error-strings]."
+   parameter from params if it is invalid, returning [valid-params error-strings].
+   Examples:
+      => (validate-map [:parent :child] {:parent {:child {:gchild 0}}})
+      [{:parent {:child {:gchild 0}}} []]
+      => (validate-map [:parent :child] {:parent {:child 0}})
+      [{:parent {}} [\"Parameter [parent[child]] must contain a nested value, parent[child][...]=value.\"]]"
   [keys params]
-  (validate-type map? "map" keys params))
+  (let [value (get-in params keys)]
+    (if (or (nil? value) (map? value))
+      [params []]
+      (let [param-name (assoc-keys->param-name keys)]
+        [(incubator/dissoc-in params keys)
+         [(str "Parameter [" param-name "] must include a nested key, " param-name "[...]=value.")]]))))
 
 (defn- apply-type-validations
   "Validates data types of parameters.  Returns a tuple of [safe-params errors] where errors
@@ -544,13 +543,12 @@
 (defn- validate-all-map-values
   "Applies the validation function to all values in the map and aggregates the result.  Useful
    for places like science keywords where we don't know all of the keys up front."
-  [f path params]
+  [validation-fn path params]
   (let [entries (get-in params path)]
     (if (seq entries)
-      (let [validations (map #(partial f (concat path [%])) (keys entries))]
+      (let [validations (map #(partial validation-fn (concat path [%])) (keys entries))]
         (apply-type-validations params validations))
       [params []])))
-
 
 (def parameter-validations
   "A list of the functions that can validate parameters. They all accept parameters as an argument
