@@ -18,6 +18,8 @@
                  [cheshire "5.3.1"]]
   :plugins [[lein-test-out "0.3.1"]]
 
+  :jvm-opts ["-XX:PermSize=256m" "-XX:MaxPermSize=256m" "-XX:-OmitStackTraceInFastThrow"]
+
   :profiles
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.5"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]
