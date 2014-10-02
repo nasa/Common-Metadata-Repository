@@ -5,6 +5,7 @@
             [cmr.common.cache :as cache]
             [clojure.core.cache :as clj-cache]
             [cmr.acl.acl-cache :as ac]
+            [cmr.acl.core :as acl]
             [cmr.common.jobs :as jobs]
             [cmr.search.api.routes :as routes]
             [cmr.search.data.elastic-search-index :as idx]
@@ -64,7 +65,8 @@
                                                 (clj-cache/ttl-cache-factory {} :ttl TOKEN_CACHE_TIME))
                       :has-granules-map (hgrf/create-has-granules-map-cache)
                       coll-cache/cache-key (coll-cache/create-cache)
-                      xslt/xsl-transformer-cache-name (cache/create-cache)}
+                      xslt/xsl-transformer-cache-name (cache/create-cache)
+                      acl/token-imp-cache-key (acl/create-token-imp-cache)}
              :zipkin (context/zipkin-config "Search" false)
              :search-public-conf search-public-conf
              :scheduler (jobs/create-scheduler
