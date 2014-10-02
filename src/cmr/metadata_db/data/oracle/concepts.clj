@@ -344,43 +344,45 @@
                     (sql-utils/query conn stmt))))))
 
   (find-concepts-in-batches
-    [db params batch-size]
+    ([db params batch-size]
+     (c/find-concepts-in-batches db params batch-size 0))
+    ([db params batch-size requested-start-index]
 
-    (letfn [(find-batch
-              [start-index]
-              (j/with-db-transaction
-                [conn db]
-                (let [{:keys [concept-type provider-id]} params
-                      params (dissoc params :concept-type :provider-id)
-                      table (tables/get-table-name provider-id concept-type)
-                      conditions [`(>= :id ~start-index)
-                                  `(< :id ~(+ start-index batch-size))]
-                      _ (debug "Finding batch from id >=" start-index " and id <" (+ start-index batch-size))
-                      conditions (if (empty? params)
-                                   conditions
-                                   (cons (find-params->sql-clause params) conditions))
-                      stmt (su/build (select [:*]
-                                       (from table)
-                                       (where (cons `and conditions))))
-                      batch-result (sql-utils/query db stmt)]
-                  (mapv (partial db-result->concept-map concept-type conn provider-id)
-                        batch-result))))
-            (lazy-find
-              [start-index]
-              (let [batch (find-batch start-index)]
-                (if (empty? batch)
-                  ;; We couldn't find any items  between start-index and start-index + batch-size
-                  ;; Look for the next greatest id and to see if there's a gap that we can restart from.
-                  (do
-                    (debug "Couldn't find batch so searching for more from" start-index)
-                    (when-let [next-id (find-batch-starting-id db params start-index)]
-                      (debug "Found next-id of" next-id)
-                      (lazy-find next-id)))
-                  ;; We found a batch. Return it and the next batch lazily
-                  (cons batch (lazy-seq (lazy-find (+ start-index batch-size)))))))]
-      ;; If there's no minimum found so there are no concepts that match
-      (when-let [start-index (find-batch-starting-id db params)]
-        (lazy-find start-index))))
+     (letfn [(find-batch
+               [start-index]
+               (j/with-db-transaction
+                 [conn db]
+                 (let [{:keys [concept-type provider-id]} params
+                       params (dissoc params :concept-type :provider-id)
+                       table (tables/get-table-name provider-id concept-type)
+                       conditions [`(>= :id ~start-index)
+                                   `(< :id ~(+ start-index batch-size))]
+                       _ (debug "Finding batch from id >=" start-index " and id <" (+ start-index batch-size))
+                       conditions (if (empty? params)
+                                    conditions
+                                    (cons (find-params->sql-clause params) conditions))
+                       stmt (su/build (select [:*]
+                                        (from table)
+                                        (where (cons `and conditions))))
+                       batch-result (sql-utils/query db stmt)]
+                   (mapv (partial db-result->concept-map concept-type conn provider-id)
+                         batch-result))))
+             (lazy-find
+               [start-index]
+               (let [batch (find-batch start-index)]
+                 (if (empty? batch)
+                   ;; We couldn't find any items  between start-index and start-index + batch-size
+                   ;; Look for the next greatest id and to see if there's a gap that we can restart from.
+                   (do
+                     (debug "Couldn't find batch so searching for more from" start-index)
+                     (when-let [next-id (find-batch-starting-id db params start-index)]
+                       (debug "Found next-id of" next-id)
+                       (lazy-find next-id)))
+                   ;; We found a batch. Return it and the next batch lazily
+                   (cons batch (lazy-seq (lazy-find (+ start-index batch-size)))))))]
+       ;; If there's no minimum found so there are no concepts that match
+       (when-let [start-index (find-batch-starting-id db params)]
+         (lazy-find (max requested-start-index start-index))))))
 
   (save-concept
     [db concept]

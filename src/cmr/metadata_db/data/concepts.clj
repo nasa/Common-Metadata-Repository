@@ -39,6 +39,7 @@
 
   (find-concepts-in-batches
     [db params batch-size]
+    [db params batch-size start-index]
     "Get a lazy sequence of batched concepts for the given parameters.")
 
   (save-concept
