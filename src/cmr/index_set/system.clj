@@ -10,7 +10,8 @@
             [cmr.index-set.data.elasticsearch :as es]
             [cmr.elastic-utils.config :as es-config]
             [cmr.transmit.config :as transmit-config]
-            [cmr.common.config :as cfg]))
+            [cmr.common.config :as cfg]
+            [cmr.acl.core :as acl]))
 
 (def app-port (cfg/config-value-fn :index-set-port 3005 #(Long. %)))
 
@@ -25,6 +26,7 @@
   (let [sys {:log (log/create-logger)
              :index (es/create-elasticsearch-store (es-config/elastic-config))
              :web (web/create-web-server (app-port) routes/make-api)
+             :caches {acl/token-imp-cache-key (acl/create-token-imp-cache)}
              :zipkin (context/zipkin-config "index-set" false)}]
     (transmit-config/system-with-connections sys [:echo-rest])))
 
