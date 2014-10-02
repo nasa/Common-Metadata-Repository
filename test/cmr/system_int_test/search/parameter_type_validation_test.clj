@@ -18,10 +18,12 @@
   [concept-type name valid-example-map & other-params]
   (testing (str "querying with " name " as a single value returns an error")
     (let [response (search/find-refs concept-type (into {name "a"} other-params))]
-      (is-bad-request? response [(str "Parameter [" name "] must contain a map.")])))
+      (is-bad-request? response
+                       [(str "Parameter [" name "] must include a nested key, " name "[...]=value.")])))
   (testing (str "querying with " name " as a list returns an error")
     (let [response (search/find-refs concept-type (into {name ["a" "b"]} other-params))]
-      (is-bad-request? response [(str "Parameter [" name "] must contain a map.")])))
+      (is-bad-request? response
+                       [(str "Parameter [" name "] must include a nested key, " name "[...]=value.")])))
   (testing (str "querying with " name " as a map succeeds")
     (let [response (search/find-refs concept-type (into {name valid-example-map} other-params))]
       (is (nil? (:errors response))))))
@@ -39,10 +41,10 @@
 
   (testing "invalid type alongside other invalid parameters produces multiple errors"
     (let [response (search/find-refs :granule {:options "bad" :page_size "twenty"})]
-      (is-bad-request? response ["Parameter [options] must contain a map."
+      (is-bad-request? response ["Parameter [options] must include a nested key, options[...]=value."
                                  "page_size must be a number between 0 and 2000"])))
 
   (testing "multiple invalid types produce multiple errors"
     (let [response (search/find-refs :granule {:options "bad" :exclude "also-bad"})]
-      (is-bad-request? response ["Parameter [exclude] must contain a map."
-                                 "Parameter [options] must contain a map."]))))
+      (is-bad-request? response ["Parameter [exclude] must include a nested key, exclude[...]=value."
+                                 "Parameter [options] must include a nested key, options[...]=value."]))))
