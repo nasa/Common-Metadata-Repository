@@ -68,6 +68,19 @@
               </gmd:identifier>
               <gmd:identifier>
                 <gmd:MD_Identifier>
+                  <gmd:code>  <!-- This field provides the v.  This field identifies each major series in SMAP science data system operations.  -->
+                    <gco:CharacterString>002</gco:CharacterString>
+                  </gmd:code>
+                  <gmd:codeSpace>  <!-- This field is intended to provide a namespace identifier for SMAP mission. Team should devise an identifier. -->
+                    <gco:CharacterString>smap.jpl.nasa.gov</gco:CharacterString>
+                  </gmd:codeSpace>
+                  <gmd:description>
+                    <gco:CharacterString>The ECS Version ID</gco:CharacterString>
+                  </gmd:description>
+                </gmd:MD_Identifier>
+              </gmd:identifier>
+              <gmd:identifier>
+                <gmd:MD_Identifier>
 <!-- This field provides the Digital Object Identifier (DOI). -->
                   <gmd:code>
                     <gmx:Anchor xlink:actuate="onRequest" xlink:href="http://dx.doi.org/10.5067/smap/radar/data100">doi:10.5067/smap/radar/data100</gmx:Anchor>
