@@ -67,6 +67,11 @@
           (name type)
           (codec/url-encode native-id)))
 
+(defn ingest-health-url
+  "URL to check ingest health."
+  []
+  (format "http://localhost:%s/health" (transmit-config/ingest-port)))
+
 (defn search-url
   [type]
   (format "http://localhost:%s/%ss" (transmit-config/search-port) (name type)))
@@ -89,6 +94,11 @@
   []
   (format "http://localhost:%s/clear-cache" (transmit-config/search-port)))
 
+(defn search-health-url
+  "URL to check search health."
+  []
+  (format "http://localhost:%s/health" (transmit-config/search-port)))
+
 (defn indexer-clear-cache-url
   "Clear cache in indexer app."
   []
@@ -106,6 +116,11 @@
 (defn bulk-index-provider-url
   []
   (format "http://localhost:%s/bulk_index/providers?synchronous=true" (transmit-config/bootstrap-port)))
+
+(defn bootstrap-health-url
+  "URL to check bootstrap health."
+  []
+  (format "http://localhost:%s/health" (transmit-config/bootstrap-port)))
 
 (defn elastic-refresh-url
   []
@@ -130,6 +145,11 @@
   []
   (format "http://localhost:%s/reset" (transmit-config/metadata-db-port)))
 
+(defn mdb-health-url
+  "URL to check metadata db health."
+  []
+  (format "http://localhost:%s/health" (transmit-config/metadata-db-port)))
+
 (defn index-set-reset-url
   "Delete and re-create the index set in elastic. Only development team to use this functionality."
   []
@@ -149,6 +169,11 @@
   "Updates the indexes in the indexer to update mappings and settings"
   []
   (format "http://localhost:%s/update-indexes" (transmit-config/indexer-port)))
+
+(defn indexer-health-url
+  "URL to check indexer health."
+  []
+  (format "http://localhost:%s/health" (transmit-config/indexer-port)))
 
 ;; discard this once oracle impl is in place
 (defn mdb-concept-coll-id-url
