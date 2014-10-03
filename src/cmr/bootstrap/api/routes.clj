@@ -36,11 +36,12 @@
   [context provider-id-map params]
   (let [provider-id (get provider-id-map "provider_id")
         synchronous (:synchronous params)
+        start-index (Long/parseLong (get params :start_index "0"))
         system (:system context)
-        result (bulk/index-provider system provider-id synchronous)
+        result (bulk/index-provider system provider-id synchronous start-index)
         msg (if synchronous
               result
-              (str "Processing provider " provider-id " for bulk indexing."))]
+              (str "Processing provider " provider-id " for bulk indexing from start index " start-index))]
     {:status 202
      :body {:message msg}}))
 

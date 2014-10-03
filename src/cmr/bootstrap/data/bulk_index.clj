@@ -40,12 +40,12 @@
 
 (defn- index-granules-for-provider
   "Index the granule data for every collection for a given provider."
-  [system provider-id]
+  [system provider-id start-index]
   (info "Indexing granule data for provider" provider-id)
   (let [db (get-in system [:metadata-db :db])
         params {:concept-type :granule
                 :provider-id provider-id}
-        concept-batches (db/find-concepts-in-batches db params (:db-batch-size system))
+        concept-batches (db/find-concepts-in-batches db params (:db-batch-size system) start-index)
         num-granules (index/bulk-index {:system (:indexer system)} concept-batches)]
     (info "Indexed" num-granules "granule(s) for provider" provider-id)
     num-granules))
@@ -63,10 +63,10 @@
 
 (defn index-provider
   "Bulk index a provider."
-  [system provider-id]
+  [system provider-id start-index]
   (info "Indexing provider" provider-id)
   (let [col-count (index-provider-collections system provider-id)
-        gran-count (index-granules-for-provider system provider-id)]
+        gran-count (index-granules-for-provider system provider-id start-index)]
     (info "Indexing of provider" provider-id "completed.")
     (format "Indexed %d collections containing %d granules for provider %s"
             col-count
@@ -81,8 +81,8 @@
   (let [channel (:provider-index-channel system)]
     (ca/thread (while true
                  (try ; catch any errors and log them, but don't let the thread die
-                   (let [provider-id (<!! channel)]
-                     (index-provider system provider-id))
+                   (let [{:keys [provider-id start-index]} (<!! channel)]
+                     (index-provider system provider-id start-index))
                    (catch Throwable e
                      (error e (.getMessage e)))))))
   (let [channel (:collection-index-channel system)]
