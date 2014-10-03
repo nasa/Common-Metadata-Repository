@@ -260,3 +260,47 @@
   (testing "collection-concept-id is an invalid value to exclude"
     (is (= ["Exclude collection is not supported, {:concept-id \"C1-PROV1\"}"]
            (pv/exclude-validation :granule {:exclude {:concept-id "C1-PROV1"}})))))
+
+(def ^:private assoc-keys->param-name #'cmr.search.services.parameters.parameter-validation/assoc-keys->param-name)
+(deftest assoc-keys->param-name-fn-test
+  (is (= "foo_bar" (assoc-keys->param-name [:foo-bar])))
+  (is (= "foo_bar[bar_baz][baz_quux]" (assoc-keys->param-name [:foo-bar :bar-baz :baz-quux]))))
+
+(def ^:private validate-map #'cmr.search.services.parameters.parameter-validation/validate-map)
+(deftest validate-map-fn-test
+  (testing "params contain a map at the specified path"
+    (is (= [{:parent {:child {:gchild 0}}} []]
+           (validate-map [:parent :child] {:parent {:child {:gchild 0}}}))))
+  (testing "params do not contain an entry for the specified path"
+    (is (= [{:parent {:other-child 0}} []]
+           (validate-map [:parent :child] {:parent {:other-child 0}}))))
+  (testing "params have something other than a map at the specified path"
+    (is (= [{:parent {:other-child 0}} ["Parameter [parent[child]] must include a nested key, parent[child][...]=value."]]
+           (validate-map [:parent :child] {:parent {:child 0 :other-child 0}})))))
+
+(def ^:private apply-type-validations #'cmr.search.services.parameters.parameter-validation/apply-type-validations)
+(deftest apply-type-validations-fn-test
+  (let [type-validation-fns [(partial validate-map [:foo])
+                             (partial validate-map [:bar])
+                             (partial validate-map [:baz :quux])]
+        valid-params {:foo {:foochild 1} :bar {:barchild 1} :baz {:quux {:quuxchild 1} :other-quux 1} :other 1}
+        invalid-params {:foo "foovalue" :bar "barvalue" :baz {:quux "quuxvalue" :other-quux 1} :other 1}]
+    (testing "passed valid params"
+      (is (= [valid-params []]
+             (apply-type-validations valid-params type-validation-fns))))
+    (testing "passed invalid params"
+      (is (= [{:baz {:other-quux 1} :other 1} ["Parameter [baz[quux]] must include a nested key, baz[quux][...]=value."
+                                               "Parameter [bar] must include a nested key, bar[...]=value."
+                                               "Parameter [foo] must include a nested key, foo[...]=value."]]
+             (apply-type-validations invalid-params type-validation-fns))))))
+
+(def ^:private validate-all-map-values #'cmr.search.services.parameters.parameter-validation/validate-all-map-values)
+(deftest validate-all-map-values-fn-test
+  (testing "passed valid map values"
+    (let [params {:root {:0 {:k0 :v0} :1 {:k1 :v1}}}]
+      (is (= [params []]
+             (validate-all-map-values validate-map [:root] params)))))
+  (testing "passed an invalid map value"
+    (let [params {:root {:0 {:k0 :v0} :1 :v1 :2 {:k2 :v2}}}]
+      (is (= [{:root {:0 {:k0 :v0} :2 {:k2 :v2}}} ["Parameter [root[1]] must include a nested key, root[1][...]=value."]]
+             (validate-all-map-values validate-map [:root] params))))))

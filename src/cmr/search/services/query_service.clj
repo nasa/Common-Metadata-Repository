@@ -102,10 +102,6 @@
   [params]
   (-> params
       u/map-keys->kebab-case
-      (update-in [:options] u/map-keys->kebab-case)
-      (update-in [:options] #(when % (into {} (map (fn [[k v]]
-                                                     [k (u/map-keys->kebab-case v)])
-                                                   %))))
       (update-in [:sort-key] #(when % (if (sequential? %)
                                         (map sanitize-sort-key % )
                                         (sanitize-sort-key %))))))
@@ -227,6 +223,3 @@
                                collections)]
     [provider-holdings
      (ph/provider-holdings->string (:result-format params) provider-holdings pretty?)]))
-
-
-
