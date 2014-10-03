@@ -28,10 +28,11 @@
    (let [conn (config/context->app-connection context :echo-rest)
          url (format "%s%s" (conn/root-url conn) url-path)
          params (merge (request-options conn) options)
-         ;; Uncoment to log requests
-         ; _ (debug "Making ECHO GET Request" url)
          response (client/get url params)
-         ; _ (debug "Completed ECHO GET Request" url)
+         start (System/currentTimeMillis)
+         response (client/get url params)
+         _ (debug (format "Completed ECHO GET Request to %s in [%d] ms" url (- (System/currentTimeMillis) start)))
+
          {:keys [status body headers]} response
          parsed (if (.startsWith ^String (get headers "Content-Type" "") "application/json")
                   (json/decode body true)
