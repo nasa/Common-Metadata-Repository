@@ -9,6 +9,7 @@
   "Looks up the value of the cached item using the key. If there is a cache miss it will invoke
   the function given with no arguments, save the value in the cache and return the value."
   [cmr-cache key f]
+  (debug "CMR-CACHE" cmr-cache)
   (-> (swap! (:atom cmr-cache)
              (fn [cache]
                (if (cc/has? cache key)
@@ -19,7 +20,7 @@
 (defn create-cache
   "Create system level cache."
   ([]
-   (create-cache (cc/lru-cache-factory {})))
+   (create-cache (cc/basic-cache-factory {})))
   ([initial-cache]
    {:initial initial-cache
     :atom (atom initial-cache)}))
@@ -27,6 +28,11 @@
 (defn reset-cache
   [cmr-cache]
   (reset! (:atom cmr-cache) (:initial cmr-cache)))
+
+(defn set-cache!
+  [cmr-cache value]
+  (swap! (:atom cmr-cache)
+         (fn [_] value)))
 
 
 
