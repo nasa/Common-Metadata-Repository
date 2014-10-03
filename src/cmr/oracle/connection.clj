@@ -20,18 +20,26 @@
    :ons-config ons-config})
 
 
-(defn test-db-connection!
-  "Tests the database connection. Throws an exception if unable to execute some sql."
+(defn health
+  "Returns the health status of the database by executing some sql."
   [oracle-store]
   (try
-    (when-not (= [{:a 1M}]
-                 (j/query oracle-store "select 1 a from dual"))
-      (throw (Exception. "Could not select data from database.")))
+    (if (= [{:a 1M}]
+           (j/query oracle-store "select 1 a from dual"))
+      {:ok? true}
+      {:ok? false :problem "Could not select data from database."})
     (catch Exception e
       (info "Database conn info" (pr-str (-> oracle-store
                                              :spec
                                              (assoc :password "*****"))))
-      (throw e))))
+      {:ok? false :problem (.getMessage e)})))
+
+(defn test-db-connection!
+  "Tests the database connection. Throws an exception if the database is unhealthy."
+  [oracle-store]
+  (let [db-health (health oracle-store)]
+    (when-not (:ok? db-health)
+      (throw (Exception. (:problem db-health))))))
 
 (defn pool
   [spec]
