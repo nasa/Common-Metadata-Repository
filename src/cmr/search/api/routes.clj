@@ -280,6 +280,21 @@
         (query-svc/clear-cache request-context)
         {:status 204})
 
+      ;; Querying cache
+    (context "/caches" []
+      (GET "/" {:keys [params]}
+        {:status 200})
+      (GET "/:cache-name" {{:keys [cache-name] :as params} :params
+                           request-context :request-context
+                           headers :headers}
+        (let [context (acl/add-authentication-to-context request-context params headers)
+              ;_ (acl/verify-ingest-management-permission context :read)
+              result (keys (get-in context [:system :caches (keyword cache-name)]))]
+          (println "CACHES.....")
+          (println (get-in context [:system :caches]))
+          (when result {:status 200
+                        :body result}))))
+
       ;; Clears the cache.
       (POST "/clear-cache" {:keys [request-context params headers]}
         (acl/verify-ingest-management-permission
