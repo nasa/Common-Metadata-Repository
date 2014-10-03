@@ -52,7 +52,13 @@ cd ../cmr-ingest-app
 lein do clean, install, clean
 
 cd ../cmr-search-app
-lein generate-docs
+
+# Generate search docs unless skip-docs is passed in as an argument.
+if [ "$1" != "skip-docs" ]
+  then
+  lein generate-docs
+fi
+
 lein do clean, install, clean
 
 cd ../cmr-bootstrap-app
