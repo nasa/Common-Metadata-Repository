@@ -58,7 +58,8 @@
 
 
   :plugins [[lein-shell "0.4.0"]]
-  :repl-options {:init-ns user}
+  :repl-options {:init-ns user
+                 :timeout 120000}
 
 
   :jvm-opts ["-XX:PermSize=256m" "-XX:MaxPermSize=256m" "-XX:-OmitStackTraceInFastThrow"]
