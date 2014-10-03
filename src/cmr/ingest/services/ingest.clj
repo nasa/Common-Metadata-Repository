@@ -89,10 +89,7 @@
         echo-rest-health (rest/health context)
         metadata-db-health (mdb/get-metadata-db-health context)
         indexer-health (indexer/get-indexer-health context)
-        ok? (and (:ok? db-health)
-                 (:ok? echo-rest-health)
-                 (:ok? metadata-db-health)
-                 (:ok? indexer-health))]
+        ok? (every? :ok? [db-health echo-rest-health metadata-db-health indexer-health])]
     {:ok? ok?
      :dependencies {:oracle db-health
                     :echo echo-rest-health
