@@ -62,6 +62,13 @@
                                  :native-id native-id
                                  :concept-type :granule}]
             (r/response (ingest/delete-concept request-context concept-attribs))))))
+
+    (GET "/health" {request-context :request-context}
+      (let [{:keys [ok? dependencies]} (ingest/health request-context)]
+        {:status (if ok? 200 503)
+         :headers {"Content-Type" "application/json; charset=utf-8"}
+         :body dependencies}))
+
     (route/not-found "Not Found")))
 
 (defn make-api [system]
