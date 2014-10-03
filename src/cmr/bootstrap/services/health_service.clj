@@ -13,9 +13,7 @@
         indexer-health (indexer/health indexer-context)
         internal-meta-db-context (assoc context :system (get-in context [:system :metadata-db]))
         internal-meta-db-health (ps/health internal-meta-db-context)
-        ok? (and (:ok? metadata-db-health)
-                 (:ok? internal-meta-db-health)
-                 (:ok? indexer-health))]
+        ok? (every? :ok? [metadata-db-health internal-meta-db-health indexer-health])]
     {:ok? ok?
      :dependencies {:metadata-db metadata-db-health
                     :internal-meta-db internal-meta-db-health
