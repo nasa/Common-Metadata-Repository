@@ -52,6 +52,29 @@
         (index-svc/update-indexes context))
       {:status 200})
 
+    ;; Querying cache
+    (context "/caches" []
+      (GET "/" {:keys [params]}
+        {:status 200})
+      (GET "/:cache-name" {{:keys [cache-name] :as params} :params
+                           request-context :request-context
+                           headers :headers}
+        (let [context (acl/add-authentication-to-context request-context params headers)
+              ;_ (acl/verify-ingest-management-permission context :read)
+              result (keys (get-in context [:system :caches (keyword cache-name)]))]
+          (println (str "LOOKING FOR CACHE [" (keyword cache-name) "]"))
+          (println "CACHES.....")
+          (println (get-in context [:system :caches]))
+          (when result {:status 200
+                        :body result})))
+
+      (GET "/:cache-name/:cache-key" {{:keys [cache-name cache-key] :as params} :params
+                                      request-context :request-context
+                                      headers :headers}
+        (let [context (acl/add-authentication-to-context request-context params headers)]
+          (acl/verify-ingest-management-permission context :read)
+          (identity))))
+
     (POST "/clear-cache" {:keys [request-context params headers]}
       (let [context (acl/add-authentication-to-context request-context params headers)]
         (acl/verify-ingest-management-permission context :update)
