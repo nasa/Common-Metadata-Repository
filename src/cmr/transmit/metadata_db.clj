@@ -234,3 +234,17 @@
                                    status
                                    " "
                                    response)))))
+
+(defn get-metadata-db-health
+  "Returns the health status of the metadata db"
+  [context]
+  (let [conn (config/context->app-connection context :metadata-db)
+        request-url (str (conn/root-url conn) "/health")
+        response (client/get request-url {:accept :json
+                                          :throw-exceptions false
+                                          :connection-manager (conn/conn-mgr conn)})
+        {:keys [status body]} response
+        result (cheshire/decode body true)]
+    (if (= 200 status)
+      {:ok? true :dependencies result}
+      {:ok? false :problem result})))
