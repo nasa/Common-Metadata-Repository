@@ -120,16 +120,20 @@
   on whether the user's query contained collection ids. This implementation assumes the query-coll-ids
   passed in are limited to the provider of the collection identifier."
   [context query-coll-ids provider-id collection-identifier]
-  (if-let [{:keys [entry-titles access-value]} collection-identifier]
-    (let [entry-titles-cond (provider+entry-titles->collection-condition
-                              context query-coll-ids provider-id entry-titles)
-          access-value-cond (some-> (access-value->query-condition access-value)
-                                    q/->CollectionQueryCondition)]
-      (if (and entry-titles-cond access-value-cond)
-        (gc/and-conds [entry-titles-cond access-value-cond])
-        (or entry-titles-cond access-value-cond)))
-    ;; No other collection info provided so every collection in provider is possible
-    (provider->collection-condition query-coll-ids provider-id)))
+  (let [colls-in-prov-cond (provider->collection-condition query-coll-ids provider-id)]
+    (if-let [{:keys [entry-titles access-value]} collection-identifier]
+      (let [entry-titles-cond (provider+entry-titles->collection-condition
+                                context query-coll-ids provider-id entry-titles)
+            access-value-cond (some-> (access-value->query-condition access-value)
+                                      q/->CollectionQueryCondition)]
+        (if (and entry-titles-cond access-value-cond)
+          (gc/and-conds [entry-titles-cond access-value-cond])
+          (or entry-titles-cond
+              ;; If there's no entry title condition the access value condition must be scoped
+              ;; by provider
+              (gc/and-conds [colls-in-prov-cond access-value-cond]))))
+      ;; No other collection info provided so every collection in provider is possible
+      colls-in-prov-cond)))
 
 (defn granule-identifier->query-cond
   "Converts an acl granule identifier into a query condition."
@@ -152,7 +156,6 @@
     (if (and collection-cond granule-cond)
       (gc/and-conds [collection-cond granule-cond])
       (or collection-cond granule-cond))))
-
 
 (defn acls->query-condition
   "Converts a list of acls into a query condition. coll-ids-by-prov should be a map of provider ids
@@ -188,9 +191,10 @@
 
 (comment
 
-  (def context {:system user/system})
-  (def context {:system (get-in user/system [:apps :search])})
-  (acl-service/add-acl-conditions-to-query context @last-query)
+  (def query (cmr.common.dev.capture-reveal/reveal query))
+  (def context (cmr.common.dev.capture-reveal/reveal context))
+
+  (acl-service/add-acl-conditions-to-query context query)
 
 )
 
