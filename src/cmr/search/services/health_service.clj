@@ -2,7 +2,7 @@
   "Contains fuctions to provider health status of the search app."
   (:require [cmr.system-trace.core :refer [deftracefn]]
             [cmr.transmit.echo.rest :as rest]
-            [cmr.metadata-db.services.provider-service :as meta-db]
+            [cmr.metadata-db.services.health-service :as meta-db]
             [cmr.transmit.index-set :as index-set]))
 
 (deftracefn health
