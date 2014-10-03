@@ -87,6 +87,10 @@
     ;; Guests have full access to provider 3
     (e/grant-guest (e/gran-catalog-item-id "provguid3"))
 
+    ;; Added for CMR-835: This should have no effect on other providers.
+    (e/grant-guest (e/gran-catalog-item-id "provguid3" (e/coll-id [] {:include-undefined true})))
+
+
     ;; -- PROV4 --
     ;; no acls
 
