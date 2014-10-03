@@ -7,7 +7,10 @@
             [cmr.common.concepts :as cs]
             [cmr.common.date-time-parser :as date]
             [cmr.transmit.metadata-db :as meta-db]
+            [cmr.transmit.index-set :as tis]
+            [cmr.transmit.echo.rest :as rest]
             [cmr.indexer.data.elasticsearch :as es]
+            [cmr.elastic-utils.connect :as es-util]
             [cmr.umm.core :as umm]
             [cheshire.core :as cheshire]
             [cmr.indexer.data.index-set :as idx-set]
@@ -113,3 +116,21 @@
   (clear-cache context)
   (es/update-indexes context)
   (clear-cache context))
+
+(deftracefn health
+  "Returns the health state of the app."
+  [context]
+  (let [elastic-health (es-util/health context :db)
+        echo-rest-health (rest/health context)
+        metadata-db-health (meta-db/get-metadata-db-health context)
+        index-set-health (tis/get-index-set-health context)
+        ok? (and (:ok? elastic-health)
+                 (:ok? echo-rest-health)
+                 (:ok? metadata-db-health)
+                 (:ok? index-set-health))]
+    {:ok? ok?
+     :dependencies {:elastic_search elastic-health
+                    :echo echo-rest-health
+                    :metadata-db metadata-db-health
+                    :index-set index-set-health}}))
+

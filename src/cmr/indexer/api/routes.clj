@@ -75,6 +75,12 @@
           (index-svc/delete-concept context concept-id revision-id ignore-conflict)
           {:status 204})))
 
+    (GET "/health" {request-context :request-context}
+      (let [{:keys [ok? dependencies]} (index-svc/health request-context)]
+        {:status (if ok? 200 503)
+         :headers {"Content-Type" "application/json; charset=utf-8"}
+         :body dependencies}))
+
     (route/not-found "Not Found")))
 
 (defn make-api [system]
