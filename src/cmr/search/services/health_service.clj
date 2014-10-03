@@ -12,9 +12,7 @@
         index-set-health (index-set/get-index-set-health context)
         metadata-db-context (assoc context :system (get-in context [:system :metadata-db]))
         metadata-db-health (meta-db/health metadata-db-context)
-        ok? (and (:ok? echo-rest-health)
-                 (:ok? metadata-db-health)
-                 (:ok? index-set-health))]
+        ok? (every? :ok? [echo-rest-health metadata-db-health index-set-health])]
     {:ok? ok?
      :dependencies {:echo echo-rest-health
                     :metadata-db metadata-db-health
