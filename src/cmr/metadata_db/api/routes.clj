@@ -15,6 +15,7 @@
             [cmr.system-trace.http :as http-trace]
             [cmr.metadata-db.services.concept-service :as concept-service]
             [cmr.metadata-db.services.provider-service :as provider-service]
+            [cmr.metadata-db.services.health-service :as hs]
             [cmr.metadata-db.services.messages :as msg]
             [cmr.acl.core :as acl]
             [inflections.core :as inf]))
@@ -216,7 +217,7 @@
         (reset context params)))
 
     (GET "/health" {request-context :request-context}
-      (let [{:keys [ok? dependencies]} (provider-service/health request-context)]
+      (let [{:keys [ok? dependencies]} (hs/health request-context)]
         {:status (if ok? 200 503)
          :headers {"Content-Type" "application/json; charset=utf-8"}
          :body dependencies}))

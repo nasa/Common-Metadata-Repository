@@ -3,7 +3,6 @@
            [cmr.common.services.errors :as errors]
            [cmr.metadata-db.services.messages :as msg]
            [cmr.common.services.messages :as cmsg]
-           [cmr.transmit.echo.rest :as rest]
            [cmr.metadata-db.services.util :as util]
            [cmr.common.log :refer (debug info warn error)]
            [cmr.system-trace.core :refer [deftracefn]]))
@@ -55,24 +54,4 @@
   (info "Deleting all providers and concepts.")
   (let [db (util/context->db context)]
     (providers/reset-providers db)))
-
-(deftracefn get-db-health
-  "Get the health status of db, we do this by getting providers out of db."
-  [context]
-  (try
-    (get-providers context)
-    {:ok? true}
-    (catch Exception e
-      {:ok? false
-       :problem (.getMessage e)})))
-
-(deftracefn health
-  "Returns the health state of the app."
-  [context]
-  (let [db-health (get-db-health context)
-        echo-rest-health (rest/health context)
-        ok? (and (:ok? db-health) (:ok? echo-rest-health))]
-    {:ok? ok?
-     :dependencies {:oracle db-health
-                    :echo echo-rest-health}}))
 
