@@ -1,6 +1,7 @@
 (ns cmr.ingest.services.ingest
   (:require [clj-time.core :as t]
             [cmr.common.time-keeper :as tk]
+            [cmr.oracle.connection :as conn]
             [cmr.transmit.metadata-db :as mdb]
             [cmr.transmit.echo.rest :as rest]
             [cmr.ingest.data.indexer :as indexer]
@@ -72,20 +73,10 @@
     (indexer/delete-concept-from-index context concept-id revision-id)
     {:concept-id concept-id, :revision-id revision-id}))
 
-(deftracefn get-db-health
-  "Get the health status of db, we do this by getting provider acl hashes out of db."
-  [context]
-  (try
-    (pah/get-provider-id-acl-hashes context)
-    {:ok? true}
-    (catch Exception e
-      {:ok? false
-       :problem (.getMessage e)})))
-
 (deftracefn health
   "Returns the health state of the app."
   [context]
-  (let [db-health (get-db-health context)
+  (let [db-health (conn/health (pah/context->db context))
         echo-rest-health (rest/health context)
         metadata-db-health (mdb/get-metadata-db-health context)
         indexer-health (indexer/get-indexer-health context)
