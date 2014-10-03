@@ -26,3 +26,17 @@
       (errors/internal-error! (format "Unexpected error fetching index-set with id: %s,
                                       Index set app reported status: %s, error: %s"
                                       id status (pr-str (flatten (:errors body))))))))
+
+(defn get-index-set-health
+  "Returns the health status of the index set"
+  [context]
+  (let [conn (config/context->app-connection context :index-set)
+        request-url (str (conn/root-url conn) "/health")
+        response (client/get request-url {:accept :json
+                                          :throw-exceptions false
+                                          :connection-manager (conn/conn-mgr conn)})
+        {:keys [status body]} response
+        result (cheshire/decode body true)]
+    (if (= 200 status)
+      {:ok? true :dependencies result}
+      {:ok? false :problem result})))
