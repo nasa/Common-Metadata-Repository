@@ -3,14 +3,24 @@
   (:require [clojurewerkz.elastisch.rest :as esr]
             [clojurewerkz.elastisch.rest.admin :as admin]
             [cmr.common.log :as log :refer (debug info warn error)]
-            [cmr.common.services.errors :as errors]))
+            [cmr.common.services.errors :as errors]
+            [clj-http.conn-mgr :as conn-mgr]
+            [cmr.common.api.web-server :as web-server]))
 
 (defn- connect-with-config
   "Connects to ES with the given config"
   [config]
-  (let [{:keys [host port]} config]
+  (let [{:keys [host port]} config
+        http-options {:conn-mgr (conn-mgr/make-reusable-conn-manager
+                                  {;; Maximum number of threads that will be used for connecting.
+                                   ;; Very important that this matches the maximum number of threads that will be running
+                                   :threads web-server/MAX_THREADS
+                                   ;; Maximum number of simultaneous connections per host
+                                   :default-per-route 10})
+                      :socket-timeout 10000
+                      :conn-timeout 10000}]
     (info (format "Connecting to single ES on %s %d" host port))
-    (esr/connect (str "http://" host ":" port))))
+    (esr/connect (str "http://" host ":" port) http-options)))
 
 (defn try-connect
   [config]
