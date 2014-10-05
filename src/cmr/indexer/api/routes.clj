@@ -54,26 +54,42 @@
 
     ;; Querying cache
     (context "/caches" []
-      (GET "/" {:keys [params]}
-        {:status 200})
+      (GET "/" {:keys [params request-context headers]}
+        (debug "Getting caches...")
+        (let [context (acl/add-authentication-to-context request-context params headers)
+              caches (keys (get-in context [:system :caches]))]
+          (acl/verify-ingest-management-permission context :read)
+          {:status 200
+           :body caches}))
       (GET "/:cache-name" {{:keys [cache-name] :as params} :params
                            request-context :request-context
                            headers :headers}
         (let [context (acl/add-authentication-to-context request-context params headers)
-              ;_ (acl/verify-ingest-management-permission context :read)
-              result (keys (get-in context [:system :caches (keyword cache-name)]))]
-          (println (str "LOOKING FOR CACHE [" (keyword cache-name) "]"))
-          (println "CACHES.....")
-          (println (get-in context [:system :caches]))
-          (when result {:status 200
-                        :body result})))
+              cache (get-in context [:system :caches (keyword cache-name)])]
+          (acl/verify-ingest-management-permission context :read)
+          (when cache
+            (let [result (-> cache
+                             :atom
+                             deref
+                             keys
+                             pr-str)]
+              {:status 200
+               :body result}))))
 
       (GET "/:cache-name/:cache-key" {{:keys [cache-name cache-key] :as params} :params
                                       request-context :request-context
                                       headers :headers}
-        (let [context (acl/add-authentication-to-context request-context params headers)]
+        (let [cache-key (keyword cache-key)
+              context (acl/add-authentication-to-context request-context params headers)
+              cache (get-in context [:system :caches (keyword cache-name)])
+              result (-> cache
+                         :atom
+                         deref
+                         (get cache-key))]
           (acl/verify-ingest-management-permission context :read)
-          (identity))))
+          (when result
+            {:status 200
+             :body (pr-str result)}))))
 
     (POST "/clear-cache" {:keys [request-context params headers]}
       (let [context (acl/add-authentication-to-context request-context params headers)]
