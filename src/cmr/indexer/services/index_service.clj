@@ -124,10 +124,7 @@
         echo-rest-health (rest/health context)
         metadata-db-health (meta-db/get-metadata-db-health context)
         index-set-health (tis/get-index-set-health context)
-        ok? (and (:ok? elastic-health)
-                 (:ok? echo-rest-health)
-                 (:ok? metadata-db-health)
-                 (:ok? index-set-health))]
+        ok? (every? :ok? [elastic-health echo-rest-health metadata-db-health index-set-health])]
     {:ok? ok?
      :dependencies {:elastic_search elastic-health
                     :echo echo-rest-health

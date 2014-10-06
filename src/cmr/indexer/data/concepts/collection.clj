@@ -16,6 +16,7 @@
             [cmr.indexer.data.concepts.spatial :as spatial]
             [cmr.indexer.data.concepts.keyword :as k]
             [cmr.indexer.data.concepts.organization :as org]
+            [cmr.indexer.data.concepts.atom-helper :as ah]
             [cmr.acl.core :as acl])
   (:import cmr.spatial.mbr.Mbr))
 
@@ -106,7 +107,7 @@
             :browsable browsable
             :atom-links atom-links
             :summary summary
-            :original-format (str/upper-case (name (mt/mime-type->format format)))
+            :original-format (ah/mime-type->atom-origianl-format format)
             :update-time update-time
             :associated-difs associated-difs
             :associated-difs.lowercase (map str/lower-case associated-difs)
