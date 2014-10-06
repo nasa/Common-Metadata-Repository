@@ -363,3 +363,26 @@
                                             {:granule-ur "Granule1"}
                                             {:url-extension "json"})
                  [:status :results])))))))
+
+(deftest search-iso-smap-granule-atom-and-json
+  (let [coll1 (d/ingest "PROV1"(dc/collection {}) :iso-smap)
+        gran1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule1"}) :iso-smap)
+        gran2 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule2"}) :iso-smap)]
+    (index/refresh-elastic-index)
+
+    (let [;; set the original-format to "SMAP_ISO"
+          gran1 (assoc gran1 :original-format "SMAP_ISO")
+          expected-atom (da/granules->expected-atom [gran1] [coll1] "granules.atom?granule_ur=Granule1")
+          response (search/find-concepts-atom :granule {:granule-ur "Granule1"})
+          {:keys [status results]} response]
+      (is (= [200 expected-atom]
+             [status results])))
+
+    ; search json format
+    (let [;; set the original-format to "SMAP_ISO"
+          gran1 (assoc gran1 :original-format "SMAP_ISO")
+          expected-json (dj/granules->expected-json [gran1] [coll1] "granules.json?granule_ur=Granule1")
+          response (search/find-concepts-json :granule {:granule-ur "Granule1"})
+          {:keys [status results]} response]
+      (is (= [200 expected-json]
+             [status results])))))

@@ -94,16 +94,16 @@
   [attribs]
   (when (seq attribs)
     (let [{:keys [swathWidth period inclinationAngle numberOfOrbits startCircularLatitude]} attribs]
-    (util/remove-nil-keys {:swath-width (when swathWidth
-                                          (Double/parseDouble swathWidth))
-                           :period (when period
-                                     (Double/parseDouble period))
-                           :inclination-angle (when inclinationAngle
-                                                (Double/parseDouble inclinationAngle))
-                           :number-of-orbits (when numberOfOrbits
-                                               (Double/parseDouble numberOfOrbits))
-                           :start-circular-latitude (when startCircularLatitude
-                                                      (Double/parseDouble startCircularLatitude))}))))
+      (util/remove-nil-keys {:swath-width (when swathWidth
+                                            (Double/parseDouble swathWidth))
+                             :period (when period
+                                       (Double/parseDouble period))
+                             :inclination-angle (when inclinationAngle
+                                                  (Double/parseDouble inclinationAngle))
+                             :number-of-orbits (when numberOfOrbits
+                                                 (Double/parseDouble numberOfOrbits))
+                             :start-circular-latitude (when startCircularLatitude
+                                                        (Double/parseDouble startCircularLatitude))}))))
 
 (defn- parse-ocsd-attribs
   "Convert orbit-calculated-spatial-domains attributes to their proper keys / value types"
@@ -253,7 +253,7 @@
         end (when range-date-time
               (f/unparse (f/formatters :date-time-no-ms) (:ending-date-time range-date-time)))
         shapes (map (partial umm-s/set-coordinate-system spatial-representation)
-                            (get-in collection [:spatial-coverage :geometries]))]
+                    (get-in collection [:spatial-coverage :geometries]))]
     (util/remove-nil-keys
       {:id concept-id
        :title entry-title
@@ -315,7 +315,7 @@
        :updated (str update-time)
        :coordinate-system coordinate-system
        :size size
-       :original-format "ECHO10"
+       :original-format (get granule :original-format "ECHO10")
        :data-center (:provider-id (cu/parse-concept-id concept-id))
        :links (seq (related-urls->links related-urls))
        :orbit-calculated-spatial-domains (seq orbit-calculated-spatial-domains)

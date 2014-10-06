@@ -359,6 +359,30 @@
                                               {:url-extension "json"})
                    [:status :results])))))))
 
+(deftest search-iso-smap-collection-atom-and-json
+  (let [coll1 (d/ingest "PROV1"
+                        (dc/collection {:entry-title "Dataset1"}) :iso-smap)
+        coll2 (d/ingest "PROV1"
+                        (dc/collection {:entry-title "Dataset2"}) :iso-smap)]
+    (index/refresh-elastic-index)
+
+    (let [;; set the original-format to "SMAP_ISO"
+          coll1 (assoc coll1 :original-format "SMAP_ISO")
+          expected-atom (da/collections->expected-atom [coll1] "collections.atom?dataset_id=Dataset1")
+          response (search/find-concepts-atom :collection {:dataset-id "Dataset1"})
+          {:keys [status results]} response]
+      (is (= [200 expected-atom]
+             [status results])))
+
+    ; search json format
+    (let [;; set the original-format to "SMAP_ISO"
+          coll1 (assoc coll1 :original-format "SMAP_ISO")
+          expected-json (da/collections->expected-atom [coll1] "collections.json?dataset_id=Dataset1")
+          response (search/find-concepts-json :collection {:dataset-id "Dataset1"})
+          {:keys [status results]} response]
+      (is (= [200 expected-json]
+             [status results])))))
+
 (deftest formats-have-scores-test
   (let [coll1 (d/ingest "PROV1" (dc/collection {:long-name "ABC!XYZ" :entry-title "Foo"}))]
     (index/refresh-elastic-index)
