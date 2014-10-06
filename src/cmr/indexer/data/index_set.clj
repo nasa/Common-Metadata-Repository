@@ -196,7 +196,7 @@
                                     :browsable (stored bool-field-mapping)
                                     :atom-links (not-indexed (stored string-field-mapping))
                                     :summary (not-indexed (stored string-field-mapping))
-                                    :original-format (not-indexed (stored string-field-mapping))
+                                    :metadata-format (not-indexed (stored string-field-mapping))
                                     :update-time (not-indexed (stored string-field-mapping))
                                     :associated-difs (stored string-field-mapping)
                                     :associated-difs.lowercase string-field-mapping
@@ -236,7 +236,7 @@
 
                    ;; fields added for atom
                    :entry-title (not-indexed (stored string-field-mapping))
-                   :original-format (not-indexed (stored string-field-mapping))
+                   :metadata-format (not-indexed (stored string-field-mapping))
                    :update-time (not-indexed (stored string-field-mapping))
                    :coordinate-system (not-indexed (stored string-field-mapping))
 
