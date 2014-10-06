@@ -17,7 +17,6 @@
             [cmr.elastic-utils.config :as es-config]
             [cmr.acl.core :as acl]))
 
-
 (def collections-with-separate-indexes
   "Configuration function that will return a list of collections with separate indexes for their
   granule data."
@@ -40,12 +39,9 @@
              ;; This is set as a dynamic lookup to enable easy replacement of the value for testing.
              :colls-with-separate-indexes-fn collections-with-separate-indexes
              :web (web/create-web-server (transmit-config/indexer-port) routes/make-api)
-             ;; This cache is used to cache parent collection umm models of granules if
-             ;; it is not nil. The bootstrap app will initialize this.
-             :parent-collection-cache nil
              :zipkin (context/zipkin-config "Indexer" false)
-             :caches {:acls (ac/create-acl-cache)
-                      :general (cache/create-cache)
+             :caches {ac/acl-cache-key (ac/create-acl-cache)
+                      cache/general-cache-key (cache/create-cache)
                       acl/token-imp-cache-key (acl/create-token-imp-cache)}
              :scheduler (jobs/create-scheduler
                           `system-holder

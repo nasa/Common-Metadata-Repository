@@ -18,6 +18,10 @@
             [cmr.common.cache :as cache])
   (:import cmr.spatial.mbr.Mbr))
 
+(def parent-collection-cache-key
+  "The key to be used for the parent collection cache in the system cache map."
+  :parent-collection-cache)
+
 (defn unrecognized-gsr-msg
   "The granule spatial representaiton (gsr) is not of a known type."
   [gsr]
@@ -26,13 +30,14 @@
 (defn- fetch-parent-collection
   "Retrieve the parent collection umm from the db"
   [context parent-collection-id]
-  (let [parent-collection-cache (get-in context [:system :parent-collection-cache])
+  (let [parent-collection-cache (get-in context
+                                        [:system :caches parent-collection-cache-key])
         concept (mdb/get-latest-concept context parent-collection-id)]
     (assoc (umm/parse-concept concept) :concept-id parent-collection-id)))
 
 (defn- get-parent-collection
   [context parent-collection-id]
-  (if-let [cache (get-in context [:system :parent-collection-cache])]
+  (if-let [cache (get-in context [:system :caches parent-collection-cache-key])]
     (cache/cache-lookup cache parent-collection-id
                         (partial fetch-parent-collection context parent-collection-id))
     (fetch-parent-collection context parent-collection-id)))

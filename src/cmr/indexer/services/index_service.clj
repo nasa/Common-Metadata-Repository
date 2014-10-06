@@ -100,7 +100,7 @@
   "Delegate reset elastic indices operation to index-set app"
   [context]
   (info "Clearing the indexer application cache")
-  (cache/reset-cache (-> context :system :caches :general))
+  (cache/reset-cache (-> context :system :caches cache/general-cache-key))
   (acl-cache/reset context))
 
 (deftracefn reset
