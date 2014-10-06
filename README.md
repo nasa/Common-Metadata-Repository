@@ -233,7 +233,9 @@ curl http://localhost:3001/providers
       (GET "/" {request-context :request-context}
         (get-providers request-context)))
 
+### Check application health
 
+    curl -i -XGET "http://localhost:3001/health"
 
 Different ways to retrieve concepts
 1 - by concept-id and revision-id
