@@ -1,8 +1,11 @@
 (ns cmr.ingest.services.ingest
   (:require [clj-time.core :as t]
             [cmr.common.time-keeper :as tk]
+            [cmr.oracle.connection :as conn]
             [cmr.transmit.metadata-db :as mdb]
+            [cmr.transmit.echo.rest :as rest]
             [cmr.ingest.data.indexer :as indexer]
+            [cmr.ingest.data.provider-acl-hash :as pah]
             [cmr.ingest.services.messages :as msg]
             [cmr.ingest.services.validation :as v]
             [cmr.common.log :refer (debug info warn error)]
@@ -69,3 +72,17 @@
         revision-id (mdb/delete-concept context concept-id)]
     (indexer/delete-concept-from-index context concept-id revision-id)
     {:concept-id concept-id, :revision-id revision-id}))
+
+(deftracefn health
+  "Returns the health state of the app."
+  [context]
+  (let [db-health (conn/health (pah/context->db context))
+        echo-rest-health (rest/health context)
+        metadata-db-health (mdb/get-metadata-db-health context)
+        indexer-health (indexer/get-indexer-health context)
+        ok? (every? :ok? [db-health echo-rest-health metadata-db-health indexer-health])]
+    {:ok? ok?
+     :dependencies {:oracle db-health
+                    :echo echo-rest-health
+                    :metadata-db metadata-db-health
+                    :indexer indexer-health}}))

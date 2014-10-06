@@ -62,3 +62,16 @@
     (when-not (some #{200, 204} [status])
       (errors/internal-error! (str "Delete concept operation failed. Indexer app response status code: "  status " " response)))))
 
+(defn get-indexer-health
+  "Returns the health status of the indexer app"
+  [context]
+  (let [conn (transmit-config/context->app-connection context :indexer)
+        request-url (str (transmit-conn/root-url conn) "/health")
+        response (client/get request-url {:accept :json
+                                          :throw-exceptions false
+                                          :connection-manager (transmit-conn/conn-mgr conn)})
+        {:keys [status body]} response
+        result (json/decode body true)]
+    (if (= 200 status)
+      {:ok? true :dependencies result}
+      {:ok? false :problem result})))
