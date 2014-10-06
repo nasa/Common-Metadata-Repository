@@ -286,13 +286,13 @@
         (acl/verify-ingest-management-permission
           (acl/add-authentication-to-context request-context params headers))
         (query-svc/clear-cache request-context)
-        {:status 204}))
+        {:status 204})
 
-    (GET "/health" {request-context :request-context}
-      (let [{:keys [ok? dependencies]} (hs/health request-context)]
-        {:status (if ok? 200 503)
-         :headers {"Content-Type" "application/json; charset=utf-8"}
-         :body dependencies}))
+      (GET "/health" {request-context :request-context}
+        (let [{:keys [ok? dependencies]} (hs/health request-context)]
+          {:status (if ok? 200 503)
+           :headers {"Content-Type" "application/json; charset=utf-8"}
+           :body dependencies})))
 
     (route/not-found "Not Found")))
 
