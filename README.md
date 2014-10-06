@@ -34,6 +34,9 @@ Every CMR application has a reset function to reset it back to it's initial stat
 
     curl -i -XPOST http://localhost:3003/clear-cache
 
+### Check application health
+
+    curl -i -XGET "http://localhost:3003/health"
 
 ### Ignore version conflict
 
