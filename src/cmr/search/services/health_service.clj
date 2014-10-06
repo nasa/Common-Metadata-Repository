@@ -15,5 +15,5 @@
         ok? (every? :ok? [echo-rest-health metadata-db-health index-set-health])]
     {:ok? ok?
      :dependencies {:echo echo-rest-health
-                    :metadata-db metadata-db-health
+                    :internal-metadata-db metadata-db-health
                     :index-set index-set-health}}))
