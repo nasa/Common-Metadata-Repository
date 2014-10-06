@@ -47,7 +47,6 @@
   "Gets the current cached acls."
   [context]
   (let [acl-cache (context->acl-cache context)]
-    (info "CACHE....." acl-cache)
     (cache/cache-lookup
       acl-cache
       :acls
