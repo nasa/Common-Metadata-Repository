@@ -299,89 +299,62 @@
                         (dc/collection
                           {:entry-title "Dataset3"
                            :spatial-coverage (dc/spatial {:gsr :orbit
-                                                          :orbit op1})}))]
+                                                          :orbit op1})}))
+        coll4 (d/ingest "PROV1"
+                        (dc/collection {:entry-title "Dataset4"}) :iso-smap)]
 
     (index/refresh-elastic-index)
 
     (testing "kml"
       (let [results (search/find-concepts-kml :collection {})]
-        (dk/assert-collection-kml-results-match [coll1 coll2 coll3] results)))
+        (dk/assert-collection-kml-results-match [coll1 coll2 coll3 coll4] results)))
 
     (testing "ATOM XML"
-        (let [coll-atom (da/collections->expected-atom [coll1] "collections.atom?dataset_id=Dataset1")
-              response (search/find-concepts-atom :collection {:dataset-id "Dataset1"})]
-          (is (= 200 (:status response)))
-          (is (= coll-atom
-                 (:results response))))
+      (let [coll-atom (da/collections->expected-atom [coll1] "collections.atom?dataset_id=Dataset1")
+            response (search/find-concepts-atom :collection {:dataset-id "Dataset1"})
+            {:keys [status results]} response]
+        (is (= [200 coll-atom] [status results])))
 
-        (let [coll-atom (da/collections->expected-atom [coll1 coll2 coll3] "collections.atom")
-              response (search/find-concepts-atom :collection {})]
-          (is (= 200 (:status response)))
-          (is (= coll-atom
-                 (:results response))))
+      (let [coll-atom (da/collections->expected-atom [coll1 coll2 coll3 coll4] "collections.atom")
+            response (search/find-concepts-atom :collection {})
+            {:keys [status results]} response]
+        (is (= [200 coll-atom] [status results])))
 
-        (let [coll-atom (da/collections->expected-atom [coll3] "collections.atom?dataset_id=Dataset3")
-              response (search/find-concepts-atom :collection {:dataset-id "Dataset3"})]
-          (is (= 200 (:status response)))
-          (is (= coll-atom
-                 (:results response))))
+      (let [coll-atom (da/collections->expected-atom [coll3] "collections.atom?dataset_id=Dataset3")
+            response (search/find-concepts-atom :collection {:dataset-id "Dataset3"})
+            {:keys [status results]} response]
+        (is (= [200 coll-atom] [status results])))
 
-        (testing "as extension"
-          (is (= (select-keys
-                   (search/find-concepts-atom :collection {:dataset-id "Dataset1"})
-                   [:status :results])
-                 (select-keys
-                   (search/find-concepts-atom :collection
-                                              {:dataset-id "Dataset1"}
-                                              {:url-extension "atom"})
-                   [:status :results])))))
+      (testing "as extension"
+        (is (= (select-keys
+                 (search/find-concepts-atom :collection {:dataset-id "Dataset1"})
+                 [:status :results])
+               (select-keys
+                 (search/find-concepts-atom :collection
+                                            {:dataset-id "Dataset1"}
+                                            {:url-extension "atom"})
+                 [:status :results])))))
 
     (testing "JSON"
-        (let [coll-json (da/collections->expected-atom [coll1] "collections.json?dataset_id=Dataset1")
-              response (search/find-concepts-json :collection {:dataset-id "Dataset1"})]
-          (is (= 200 (:status response)))
-          (is (= coll-json
-                 (:results response))))
+      (let [coll-json (da/collections->expected-atom [coll1] "collections.json?dataset_id=Dataset1")
+            response (search/find-concepts-json :collection {:dataset-id "Dataset1"})
+            {:keys [status results]} response]
+        (is (= [200 coll-json] [status results])))
 
-        (let [coll-json (da/collections->expected-atom [coll1 coll2 coll3] "collections.json")
-              response (search/find-concepts-json :collection {})]
-          (is (= 200 (:status response)))
-          (is (= coll-json
-                 (:results response))))
+      (let [coll-json (da/collections->expected-atom [coll1 coll2 coll3 coll4] "collections.json")
+            response (search/find-concepts-json :collection {})
+            {:keys [status results]} response]
+        (is (= [200 coll-json] [status results])))
 
-        (testing "as extension"
-          (is (= (select-keys
-                   (search/find-concepts-json :collection {:dataset-id "Dataset1"})
-                   [:status :results])
-                 (select-keys
-                   (search/find-concepts-json :collection
-                                              {:dataset-id "Dataset1"}
-                                              {:url-extension "json"})
-                   [:status :results])))))))
-
-(deftest search-iso-smap-collection-atom-and-json
-  (let [coll1 (d/ingest "PROV1"
-                        (dc/collection {:entry-title "Dataset1"}) :iso-smap)
-        coll2 (d/ingest "PROV1"
-                        (dc/collection {:entry-title "Dataset2"}) :iso-smap)]
-    (index/refresh-elastic-index)
-
-    (let [;; set the original-format to "SMAP_ISO"
-          coll1 (assoc coll1 :original-format "SMAP_ISO")
-          expected-atom (da/collections->expected-atom [coll1] "collections.atom?dataset_id=Dataset1")
-          response (search/find-concepts-atom :collection {:dataset-id "Dataset1"})
-          {:keys [status results]} response]
-      (is (= [200 expected-atom]
-             [status results])))
-
-    ; search json format
-    (let [;; set the original-format to "SMAP_ISO"
-          coll1 (assoc coll1 :original-format "SMAP_ISO")
-          expected-json (da/collections->expected-atom [coll1] "collections.json?dataset_id=Dataset1")
-          response (search/find-concepts-json :collection {:dataset-id "Dataset1"})
-          {:keys [status results]} response]
-      (is (= [200 expected-json]
-             [status results])))))
+      (testing "as extension"
+        (is (= (select-keys
+                 (search/find-concepts-json :collection {:dataset-id "Dataset1"})
+                 [:status :results])
+               (select-keys
+                 (search/find-concepts-json :collection
+                                            {:dataset-id "Dataset1"}
+                                            {:url-extension "json"})
+                 [:status :results])))))))
 
 (deftest formats-have-scores-test
   (let [coll1 (d/ingest "PROV1" (dc/collection {:long-name "ABC!XYZ" :entry-title "Foo"}))]
