@@ -41,6 +41,9 @@ This should return the granule including the echo-10 xml.
 
 	curl -v -XPOST  -H "Content-Type: application/json" -d '{"provider_id": "FIX_PROV1"}' http://localhost:3006/bulk_index/providers
 
+### Check application health
+
+    curl -i -XGET "http://localhost:3006/health"
 
 ## License
 
