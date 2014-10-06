@@ -9,7 +9,8 @@
             [cmr.common.api.errors :as errors]
             [cmr.system-trace.http :as http-trace]
             [cmr.bootstrap.services.data-migration :as dm]
-            [cmr.bootstrap.services.bulk-index :as bulk]))
+            [cmr.bootstrap.services.bulk-index :as bulk]
+            [cmr.bootstrap.services.health-service :as hs]))
 
 
 (defn- migrate-collection
@@ -71,7 +72,13 @@
         (bulk-index-provider request-context body params))
 
       (POST "/collections" {:keys [request-context body params]}
-        (bulk-index-collection request-context body params)))))
+        (bulk-index-collection request-context body params)))
+
+    (GET "/health" {request-context :request-context}
+      (let [{:keys [ok? dependencies]} (hs/health request-context)]
+        {:status (if ok? 200 503)
+         :headers {"Content-Type" "application/json; charset=utf-8"}
+         :body dependencies}))))
 
 (defn make-api [system]
   (-> (build-routes system)
