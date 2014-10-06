@@ -4,6 +4,9 @@
   (:require [cmr.common.log :as log :refer (debug info warn error)]
             [clojure.core.cache :as cc]))
 
+(def general-cache-key
+  "The key used to store he general cache in the system cache map."
+  :general)
 
 (defn cache-lookup
   "Looks up the value of the cached item using the key. If there is a cache miss it will invoke
