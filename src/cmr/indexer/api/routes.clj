@@ -55,7 +55,6 @@
     ;; Querying cache
     (context "/caches" []
       (GET "/" {:keys [params request-context headers]}
-        (debug "Getting caches...")
         (let [context (acl/add-authentication-to-context request-context params headers)
               caches (keys (get-in context [:system :caches]))]
           (acl/verify-ingest-management-permission context :read)
