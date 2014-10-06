@@ -15,7 +15,6 @@
             [cmr.indexer.data.concepts.attribute :as attrib]
             [cmr.indexer.data.concepts.orbit-calculated-spatial-domain :as ocsd]
             [cmr.indexer.data.concepts.spatial :as spatial]
-            [cmr.indexer.data.concepts.atom-helper :as ah]
             [cmr.common.cache :as cache])
   (:import cmr.spatial.mbr.Mbr))
 
@@ -134,7 +133,7 @@
             :collection-concept-id parent-collection-id
 
             :entry-title (:entry-title parent-collection)
-            :original-format (ah/mime-type->atom-origianl-format format)
+            :metadata-format (name (mt/base-mime-type-to-format format))
             :update-time update-time
             :coordinate-system (when granule-spatial-representation (csk/->SNAKE_CASE_STRING granule-spatial-representation))
 

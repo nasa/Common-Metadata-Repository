@@ -8,6 +8,7 @@
             [ring.middleware.json :as ring-json]
             [clojure.stacktrace :refer [print-stack-trace]]
             [clojure.walk :as walk]
+            [cheshire.core :as json]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.api.errors :as errors]
             [cmr.acl.core :as acl]
@@ -113,11 +114,12 @@
           (index-svc/delete-concept context concept-id revision-id ignore-conflict)
           {:status 204})))
 
-    (GET "/health" {request-context :request-context}
-      (let [{:keys [ok? dependencies]} (index-svc/health request-context)]
+    (GET "/health" {request-context :request-context params :params}
+      (let [{pretty? :pretty} params
+            {:keys [ok? dependencies]} (index-svc/health request-context)]
         {:status (if ok? 200 503)
          :headers {"Content-Type" "application/json; charset=utf-8"}
-         :body dependencies}))
+         :body (json/generate-string dependencies {:pretty pretty?})}))
 
     (route/not-found "Not Found")))
 
