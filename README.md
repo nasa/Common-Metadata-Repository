@@ -32,11 +32,11 @@ Every CMR application has a reset function to reset it back to it's initial stat
 
 ### Clear the cache cache
 
-    curl -i -XPOST http://localhost:3003/clear-cache
+    curl -i -XPOST http://localhost:3004/clear-cache
 
 ### Check application health
 
-    curl -i -XGET "http://localhost:3003/health"
+    curl -i -XGET "http://localhost:3004/health"
 
 ### Ignore version conflict
 
