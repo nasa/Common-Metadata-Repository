@@ -12,8 +12,7 @@
     (cache/set-cache!
       acl-cache
       (cc/basic-cache-factory {:acls acls}))
-    ;(swap! acl-cache assoc :acls acls)
-    {:system {:caches {:acls acl-cache}}}))
+    {:system {:caches {ac/acl-cache-key acl-cache}}}))
 
 (defn group-ace
   [group-guid & permissions]

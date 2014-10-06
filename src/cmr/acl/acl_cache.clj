@@ -11,6 +11,10 @@
             [cmr.common.cache :as cache]
             [clojure.core.cache :as cc]))
 
+(def acl-cache-key
+  "The key used to store the acl cache in the system cache map."
+  :acls)
+
 (defn create-acl-cache
   "Creates a new empty ACL cache."
   []
