@@ -1,6 +1,5 @@
 (ns cmr.acl.test.core
   (:require [clojure.test :refer :all]
-            [clojure.core.cache :as cc]
             [cmr.common.cache :as cache]
             [cmr.acl.core :as a]
             [cmr.acl.acl-cache :as ac]))
@@ -9,9 +8,10 @@
   "Creates a fake context with the acls in an acl cache"
   [& acls]
   (let [acl-cache (ac/create-acl-cache)]
-    (cache/set-cache!
+    #_(cache/set-cache-key-value acl-cache :acls acls)
+    (cache/update-cache
       acl-cache
-      (cc/basic-cache-factory {:acls acls}))
+      (fn [_] {:acls acls}))
     {:system {:caches {ac/acl-cache-key acl-cache}}}))
 
 (defn group-ace

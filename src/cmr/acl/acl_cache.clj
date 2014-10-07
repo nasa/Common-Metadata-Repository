@@ -3,13 +3,11 @@
   ACLs fresh available instantly for callers without any caller having to pay the price to fetch
   the acls."
   (:require [cmr.common.services.errors :as errors]
-            [clj-time.core :as t]
             [cmr.common.time-keeper :as tk]
             [cmr.common.jobs :refer [defjob]]
             [cmr.transmit.echo.acls :as echo-acls]
             [cmr.common.log :as log :refer (debug info warn error)]
-            [cmr.common.cache :as cache]
-            [clojure.core.cache :as cc]))
+            [cmr.common.cache :as cache]))
 
 (def acl-cache-key
   "The key used to store the acl cache in the system cache map."
@@ -38,10 +36,9 @@
   caller is responsible for catching and logging the exception."
   [context]
   (let [acl-cache (context->acl-cache context)]
-    (cache/set-cache!
+    (cache/update-cache
       acl-cache
-      (cc/basic-cache-factory
-        {:acls (echo-acls/get-acls-by-type context "CATALOG_ITEM")}))))
+      (fn [_] {:acls (echo-acls/get-acls-by-type context "CATALOG_ITEM")}))))
 
 (defn get-acls
   "Gets the current cached acls."
