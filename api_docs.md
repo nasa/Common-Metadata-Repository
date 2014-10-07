@@ -82,6 +82,10 @@ Every CMR application has a reset function to reset it back to it's initial stat
 
     curl -i -XPOST %CMR-ENDPOINT%/reset
 
+### Check application health
+
+    curl -i -XGET %CMR-ENDPOINT%/health
+
 ### Search for Collections
 
 #### Find all collections

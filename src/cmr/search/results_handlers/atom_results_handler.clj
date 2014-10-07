@@ -18,6 +18,13 @@
             [cmr.search.results-handlers.atom-links-results-handler :as atom-links]
             [cmr.search.results-handlers.orbit-swath-results-helper :as orbit-swath-helper]))
 
+(def metadata-format->atom-original-format
+  "Defines the concept metadata format to atom original-format mapping"
+  {"echo10" "ECHO10"
+   "iso-smap" "SMAP_ISO"
+   "iso19115" "ISO19115"
+   "dif" "DIF"})
+
 (defmethod elastic-search-index/concept-type+result-format->fields [:collection :atom]
   [concept-type query]
   ["short-name"
@@ -29,7 +36,7 @@
    "data-center"
    "archive-center"
    "processing-level-id"
-   "original-format"
+   "metadata-format"
    "provider-id"
    "start-date"
    "end-date"
@@ -57,7 +64,7 @@
                       "entry-title"
                       "producer-gran-id"
                       "size"
-                      "original-format"
+                      "metadata-format"
                       "provider-id"
                       "start-date"
                       "end-date"
@@ -74,10 +81,6 @@
                       "access-value"}]
     (vec (into atom-fields orbit-swath-helper/orbit-elastic-fields))))
 
-
-
-
-
 (defn- collection-elastic-result->query-result-item
   [elastic-result]
   (let [{concept-id :_id
@@ -89,7 +92,7 @@
           [entry-title] :entry-title
           [collection-data-type] :collection-data-type
           [processing-level-id] :processing-level-id
-          [original-format] :original-format
+          [metadata-format] :metadata-format
           [provider-id] :provider-id
           [archive-center] :archive-center
           [start-date] :start-date
@@ -120,7 +123,7 @@
      :dataset-id entry-title
      :collection-data-type collection-data-type
      :processing-level-id processing-level-id
-     :original-format original-format
+     :original-format (metadata-format->atom-original-format metadata-format)
      :data-center provider-id
      :archive-center archive-center
      :start-date start-date
@@ -151,7 +154,7 @@
           [entry-title] :entry-title
           [producer-gran-id] :producer-gran-id
           [size] :size
-          [original-format] :original-format
+          [metadata-format] :metadata-format
           [provider-id] :provider-id
           [start-date] :start-date
           [end-date] :end-date
@@ -182,7 +185,7 @@
      :dataset-id entry-title
      :producer-gran-id producer-gran-id
      :size (str size)
-     :original-format original-format
+     :original-format (metadata-format->atom-original-format metadata-format)
      :data-center provider-id
      :start-date start-date
      :end-date end-date

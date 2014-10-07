@@ -16,6 +16,7 @@
             [cmr.system-trace.http :as http-trace]
             [cmr.search.services.parameters.legacy-parameters :as lp]
             [cmr.search.services.messages.common-messages :as msg]
+            [cmr.search.services.health-service :as hs]
             [cmr.acl.core :as acl]
 
             ;; Result handlers
@@ -300,7 +301,14 @@
         (acl/verify-ingest-management-permission
           (acl/add-authentication-to-context request-context params headers))
         (query-svc/clear-cache request-context)
-        {:status 204}))
+        {:status 204})
+
+      (GET "/health" {request-context :request-context}
+        (let [{:keys [ok? dependencies]} (hs/health request-context)]
+          {:status (if ok? 200 503)
+           :headers {"Content-Type" "application/json; charset=utf-8"}
+           :body dependencies})))
+
     (route/not-found "Not Found")))
 
 ;; Copies the body into a new attribute called :body-copy so that after a post of form content type
@@ -326,24 +334,24 @@
                  #"(^|&)(.*?)=.*?\2\["
                  #"(^|&)(.*?)\[.*?\2="]))))
 
-    ;; Ring parameter handling is causing crashes when single value params are mixed with multivalue.
-    ;; The specific case of this is for improperly expressed options, e.g.,
-    ;; granule_ur=*&granules_ur[pattern]=true, but it is a problem for mixed single/multivalue
-    ;; parameters. This middleware returns a 400 early to avoid 500 errors from Ring.
-    (defn mixed-arity-param-handler
-      [f]
-      (fn [request]
-        (when-let [mixed-param (find-query-str-mixed-arity-param (:query-string request))]
-          (svc-errors/throw-service-errors
-            :bad-request
-            [(msg/mixed-arity-parameter-msg mixed-param)]))
-        (f request)))
+;; Ring parameter handling is causing crashes when single value params are mixed with multivalue.
+;; The specific case of this is for improperly expressed options, e.g.,
+;; granule_ur=*&granules_ur[pattern]=true, but it is a problem for mixed single/multivalue
+;; parameters. This middleware returns a 400 early to avoid 500 errors from Ring.
+(defn mixed-arity-param-handler
+  [f]
+  (fn [request]
+    (when-let [mixed-param (find-query-str-mixed-arity-param (:query-string request))]
+      (svc-errors/throw-service-errors
+        :bad-request
+        [(msg/mixed-arity-parameter-msg mixed-param)]))
+    (f request)))
 
-    (defn make-api [system]
-      (-> (build-routes system)
-          (http-trace/build-request-context-handler system)
-          handler/site
-          mixed-arity-param-handler
-          copy-of-body-handler
-          errors/exception-handler
-          ring-json/wrap-json-response))
+(defn make-api [system]
+  (-> (build-routes system)
+      (http-trace/build-request-context-handler system)
+      handler/site
+      mixed-arity-param-handler
+      copy-of-body-handler
+      errors/exception-handler
+      ring-json/wrap-json-response))

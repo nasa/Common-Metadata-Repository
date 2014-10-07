@@ -2,7 +2,8 @@
   "Defines various query models and conditions."
   (:require [cmr.common.services.errors :as errors]
             [cmr.common.parameter-parser :as pp]
-            [clojure.string :as s]))
+            [clojure.string :as s]
+            [cmr.common.dev.record-pretty-printer :as record-pretty-printer]))
 
 (def default-page-size 10)
 (def default-page-num 1)
@@ -445,4 +446,42 @@
   [field value]
   (let [{:keys [min-value max-value]} (pp/numeric-range-parameter->map value)]
     (->NumericRangeCondition field min-value max-value)))
+
+
+;; Enable pretty printing of records
+(record-pretty-printer/enable-record-pretty-printing
+  Query
+  ConditionGroup
+  NestedCondition
+  TextCondition
+  StringCondition
+  StringsCondition
+  NegatedCondition
+  BooleanCondition
+  SpatialCondition
+  ScriptCondition
+  ExistCondition
+  MissingCondition
+  DateValueCondition
+  DateRangeCondition
+  NumericValueCondition
+  NumericRangeCondition
+  NumericRangeIntersectionCondition
+  StringRangeCondition
+  TemporalCondition
+  OrbitNumberValueCondition
+  OrbitNumberRangeCondition
+  EquatorCrossingLongitudeValueCondition
+  EquatorCrossingLongitudeRangeCondition
+  CoordinateValueCondition
+  CoordinateRangeCondition
+  TwoDCoordinateCondition
+  TwoDCoordinateSystemCondition
+  EquatorCrossingDateCondition
+  CollectionQueryCondition
+  MatchAllCondition
+  MatchNoneCondition
+  AttributeNameCondition
+  AttributeValueCondition
+  AttributeRangeCondition)
 
