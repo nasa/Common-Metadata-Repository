@@ -19,22 +19,52 @@
                  (cc/miss cache key (f)))))
       (get key)))
 
+(defmulti create-core-cache
+  "Create a cache using cmr.core-cache of the given type."
+  (fn [type value opts]
+    type))
+
+(defmethod create-core-cache :default
+  [type value opts]
+  (cc/basic-cache-factory value))
+
+(defmethod create-core-cache :lru
+  [type value opts]
+  (cc/lru-cache-factory opts))
+
 (defn create-cache
   "Create system level cache."
   ([]
-   (create-cache (cc/basic-cache-factory {})))
-  ([initial-cache]
-   {:initial initial-cache
-    :atom (atom initial-cache)}))
+   (create-cache :basic {} {}))
+  ([cache-type]
+   (create-cache cache-type {} {}))
+  ([cache-type initial-cache-value]
+   (create-cache cache-type initial-cache-value {}))
+  ([cache-type initial-cache-value opts]
+   (let [initial-cache (create-core-cache cache-type initial-cache-value opts)]
+     {:initial initial-cache
+      :atom (atom initial-cache)})))
 
 (defn reset-cache
   [cmr-cache]
   (reset! (:atom cmr-cache) (:initial cmr-cache)))
 
-(defn set-cache!
-  [cmr-cache value]
-  (swap! (:atom cmr-cache)
-         (fn [_] value)))
+(defn update-cache
+  "Update the cache contents with the output of the given funciton, f. f takes the
+  current cache as its input and returns the new cache state."
+  [cmr-cache f]
+  (let [core-cache (deref (:atom cmr-cache))
+        new-state (f cmr-cache)
+        ;; FIXME - this relies on an implementation details of cmr.core.cache, which is BAD
+        new-cache (merge core-cache new-state)]
+    (swap! (:atom cmr-cache) (fn [_] new-cache))))
+
+(defn set-cache-key-value
+  "Set a single key/value pair for the cache."
+  [cmr-cache cache-key value]
+  (let [core-cache (deref (:atom cmr-cache))]
+    (swap! (:atom cmr-cache)
+           (fn [_] (cc/miss core-cache cache-key value)))))
 
 
 
