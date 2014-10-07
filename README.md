@@ -235,7 +235,36 @@ curl http://localhost:3001/providers
 
 ### Check application health
 
-    curl -i -XGET "http://localhost:3001/health"
+This will report the current health of the application. It checks all resources and services used by the application and reports their healthes in the response body in JSON format. For resources, the report includes an "ok?" status and a "problem" field if the resource is not OK. For services, the report includes an overall "ok?" status for the service and health reports for each of its dependencies. It returns HTTP status code 200 when the application is healthy, which means all its interfacing resources and services are healthy; or HTTP status code 503 when one of the resources or services is not healthy. It also takes pretty parameter for pretty printing the response.
+
+    curl -i -XGET "http://localhost:3001/health?pretty=true"
+
+Example healthy response body:
+
+```
+{
+  "oracle" : {
+    "ok?" : true
+  },
+  "echo" : {
+    "ok?" : true
+  }
+}
+```
+
+Example un-healthy response body:
+
+```
+{
+  "oracle" : {
+    "ok?" : false,
+    "problem" : "Exception occurred while getting connection: oracle.ucp.UniversalConnectionPoolException: Cannot get Connection from Datasource: java.sql.SQLRecoverableException: IO Error: The Network Adapter could not establish the connection"
+  },
+  "echo" : {
+    "ok?" : true
+  }
+}
+```
 
 Different ways to retrieve concepts
 1 - by concept-id and revision-id
