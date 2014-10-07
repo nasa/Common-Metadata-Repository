@@ -7,6 +7,11 @@
             [clj-http.conn-mgr :as conn-mgr]
             [cmr.common.api.web-server :as web-server]))
 
+(def ELASTIC_CONNECTION_TIMOUT
+  "The number of milliseconds to wait before timeing out a connection attempt to elasticsearch.
+  Currently set to 5 minutes."
+  (* 5 60 1000))
+
 (defn- connect-with-config
   "Connects to ES with the given config"
   [config]
@@ -17,8 +22,8 @@
                                    :threads web-server/MAX_THREADS
                                    ;; Maximum number of simultaneous connections per host
                                    :default-per-route 10})
-                      :socket-timeout 10000
-                      :conn-timeout 10000}]
+                      :socket-timeout ELASTIC_CONNECTION_TIMOUT
+                      :conn-timeout ELASTIC_CONNECTION_TIMOUT}]
     (info (format "Connecting to single ES on %s %d" host port))
     (esr/connect (str "http://" host ":" port) http-options)))
 
