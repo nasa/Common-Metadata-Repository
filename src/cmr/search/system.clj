@@ -59,7 +59,7 @@
              :web (web/create-web-server (transmit-config/search-port) routes/make-api)
              ;; Caches added to this list must be explicitly cleared in query-service/clear-cache
              :caches {idx/index-cache-name (cache/create-cache)
-                      :acls (ac/create-acl-cache)
+                      ac/acl-cache-key (ac/create-acl-cache)
                       ;; Caches a map of tokens to the security identifiers
                       ah/token-sid-cache-name (cache/create-cache
                                                 (clj-cache/ttl-cache-factory {} :ttl TOKEN_CACHE_TIME))

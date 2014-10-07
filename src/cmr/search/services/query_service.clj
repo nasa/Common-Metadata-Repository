@@ -184,7 +184,7 @@
   (cache/reset-cache (idx/context->index-cache context))
   (cache/reset-cache (ah/context->token-sid-cache context))
   (cache/reset-cache (xslt/context->xsl-transformer-cache context))
-  (acl-cache/reset context)
+  (cache/reset-cache (acl-cache/context->acl-cache context))
   (hgrf/reset context)
   (coll-cache/reset context))
 
