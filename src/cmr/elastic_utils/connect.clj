@@ -35,11 +35,21 @@
       (errors/internal-error!
         (format "Unable to connect to elasticsearch at: %s. with %s" config e)))))
 
+(defn- get-elastic-health
+  "Returns the elastic health by calling elasticsearch cluster health api"
+  [conn]
+  (try
+    (admin/cluster-health conn :wait_for_status "yellow" :timeout "30s")
+    (catch Exception e
+      {:status "Unaccessible"
+       :problem (format "Unable to get elasticsearch cluster health, caught exception: %s"
+                        (.getMessage e))})))
+
 (defn health
   "Returns the health state of elasticsearch."
   [context elastic-key-in-context]
   (let [conn (get-in context [:system elastic-key-in-context :conn])
-        health-detail (admin/cluster-health conn :wait_for_status "yellow" :timeout "30s")
+        health-detail (get-elastic-health conn)
         status (:status health-detail)]
     (if (some #{status} ["green" "yellow"])
       {:ok? true}
