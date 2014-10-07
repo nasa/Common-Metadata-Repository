@@ -8,7 +8,6 @@
   "Creates a fake context with the acls in an acl cache"
   [& acls]
   (let [acl-cache (ac/create-acl-cache)]
-    #_(cache/set-cache-key-value acl-cache :acls acls)
     (cache/update-cache
       acl-cache
       (fn [_] {:acls acls}))
@@ -40,6 +39,8 @@
                 :catalog-item-identity {:provider-id "PROV1"
                                         :collection-applicable true}}
           context (context-with-acls acl1 acl2 acl3)]
+    (println "CONTEXT.......")
+      (println context)
       (is (= ["read-order" "just-read" "order-read" "group3"]
              (a/get-coll-permitted-group-ids context "PROV1" {:fake-coll "foo"})))))
 

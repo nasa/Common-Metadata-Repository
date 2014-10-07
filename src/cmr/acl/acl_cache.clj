@@ -18,17 +18,10 @@
   []
   (cache/create-cache))
 
-(defn- context->acl-cache
+(defn context->acl-cache
   "Gets the acl cache from the context"
   [context]
   (get-in context [:system :caches :acls]))
-
-(defn reset
-  "Resets the cache back to it's initial state"
-  [context]
-  (-> context
-      context->acl-cache
-      (cache/reset-cache)))
 
 (defn refresh-acl-cache
   "Refreshes the acls stored in the cache. This should be called from a background job on a timer
@@ -49,6 +42,7 @@
       :acls
       (fn []
         (echo-acls/get-acls-by-type context "CATALOG_ITEM")))))
+
 
 (defjob RefreshAclCacheJob
   [ctx system]
