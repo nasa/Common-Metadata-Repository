@@ -5,7 +5,7 @@
             [clojure.core.cache :as cc]))
 
 (def general-cache-key
-  "The key used to store he general cache in the system cache map."
+  "The key used to store the general cache in the system cache map."
   :general)
 
 (defn cache-lookup
@@ -30,12 +30,16 @@
 
 (defmethod create-core-cache :lru
   [type value opts]
-  (cc/lru-cache-factory opts))
+  (cc/lru-cache-factory value opts))
 
 (defn create-cache
-  "Create system level cache."
+  "Create system level cache. The currently supported cache types are :defalut and :lru.
+  The :default type does not do cache evictions - cache items must be explicitly removed.
+  The :lru (Least Recently Used) cache evicts items that have not been used recently when
+  the cache size exceeds the threshold (default 32). This threshold can be set using the
+  :threshold key in the opts parameter."
   ([]
-   (create-cache :basic {} {}))
+   (create-cache :default {} {}))
   ([cache-type]
    (create-cache cache-type {} {}))
   ([cache-type initial-cache-value]
