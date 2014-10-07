@@ -1,5 +1,6 @@
 (ns cmr.search.models.results
-  "Defines types for search results")
+  "Defines types for search results"
+  (:require [cmr.common.dev.record-pretty-printer :as record-pretty-printer]))
 
 ;; Defines a single faceted field.
 (defrecord Facet
@@ -40,6 +41,10 @@
    facets
 
   ])
+
+(record-pretty-printer/enable-record-pretty-printing
+  Facet
+  Results)
 
 (defn normalize-score
   "The score is divided by 2 to mimic the Catalog REST logic that tries to keep the boosts normalized
