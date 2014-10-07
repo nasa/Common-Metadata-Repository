@@ -68,3 +68,4 @@ cd ../cmr-system-int-test
 lein do clean, install, clean
 
 cd ../cmr-dev-system
+lein clean
