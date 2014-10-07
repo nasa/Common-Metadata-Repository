@@ -128,7 +128,7 @@
             :collection-concept-id parent-collection-id
 
             :entry-title (:entry-title parent-collection)
-            :original-format (s/upper-case (name (mt/mime-type->format format)))
+            :metadata-format (name (mt/base-mime-type-to-format format))
             :update-time update-time
             :coordinate-system (when granule-spatial-representation (csk/->SNAKE_CASE_STRING granule-spatial-representation))
 

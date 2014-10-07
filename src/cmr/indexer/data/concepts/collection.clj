@@ -106,7 +106,7 @@
             :browsable browsable
             :atom-links atom-links
             :summary summary
-            :original-format (str/upper-case (name (mt/mime-type->format format)))
+            :metadata-format (name (mt/base-mime-type-to-format format))
             :update-time update-time
             :associated-difs associated-difs
             :associated-difs.lowercase (map str/lower-case associated-difs)
