@@ -43,7 +43,141 @@ This should return the granule including the echo-10 xml.
 
 ### Check application health
 
-    curl -i -XGET "http://localhost:3006/health"
+This will report the current health of the application. It checks all resources and services used by the application and reports their healthes in the response body in JSON format. For resources, the report includes an "ok?" status and a "problem" field if the resource is not OK. For services, the report includes an overall "ok?" status for the service and health reports for each of its dependencies. It returns HTTP status code 200 when the application is healthy, which means all its interfacing resources and services are healthy; or HTTP status code 503 when one of the resources or services is not healthy. It also takes pretty parameter for pretty printing the response.
+
+    curl -i -XGET "http://localhost:3006/health?pretty=true"
+
+Example healthy response body:
+
+```
+{
+  "metadata-db" : {
+    "ok?" : true,
+    "dependencies" : {
+      "oracle" : {
+        "ok?" : true
+      },
+      "echo" : {
+        "ok?" : true
+      }
+    }
+  },
+  "internal-metadata-db" : {
+    "ok?" : true,
+    "dependencies" : {
+      "oracle" : {
+        "ok?" : true
+      },
+      "echo" : {
+        "ok?" : true
+      }
+    }
+  },
+  "indexer" : {
+    "ok?" : true,
+    "dependencies" : {
+      "elastic_search" : {
+        "ok?" : true
+      },
+      "echo" : {
+        "ok?" : true
+      },
+      "metadata-db" : {
+        "ok?" : true,
+        "dependencies" : {
+          "oracle" : {
+            "ok?" : true
+          },
+          "echo" : {
+            "ok?" : true
+          }
+        }
+      },
+      "index-set" : {
+        "ok?" : true,
+        "dependencies" : {
+          "elastic_search" : {
+            "ok?" : true
+          },
+          "echo" : {
+            "ok?" : true
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+Example un-healthy response body:
+
+```
+{
+  "metadata-db" : {
+    "ok?" : true,
+    "dependencies" : {
+      "oracle" : {
+        "ok?" : true
+      },
+      "echo" : {
+        "ok?" : true
+      }
+    }
+  },
+  "internal-metadata-db" : {
+    "ok?" : true,
+    "dependencies" : {
+      "oracle" : {
+        "ok?" : true
+      },
+      "echo" : {
+        "ok?" : true
+      }
+    }
+  },
+  "indexer" : {
+    "ok?" : false,
+    "dependencies" : {
+      "elastic_search" : {
+        "ok?" : false,
+        "problem" : {
+          "status" : "Unaccessible",
+          "problem" : "Unable to get elasticsearch cluster health, caught exception: Connection refused"
+        }
+      },
+      "echo" : {
+        "ok?" : true
+      },
+      "metadata-db" : {
+        "ok?" : true,
+        "dependencies" : {
+          "oracle" : {
+            "ok?" : true
+          },
+          "echo" : {
+            "ok?" : true
+          }
+        }
+      },
+      "index-set" : {
+        "ok?" : false,
+        "problem" : {
+          "elastic_search" : {
+            "ok?" : false,
+            "problem" : {
+              "status" : "Unaccessible",
+              "problem" : "Unable to get elasticsearch cluster health, caught exception: Connection refused"
+            }
+          },
+          "echo" : {
+            "ok?" : true
+          }
+        }
+      }
+    }
+  }
+}
+```
 
 ## License
 
