@@ -144,7 +144,7 @@ Example un-healthy response body:
       "elastic_search" : {
         "ok?" : false,
         "problem" : {
-          "status" : "Unaccessible",
+          "status" : "Inaccessible",
           "problem" : "Unable to get elasticsearch cluster health, caught exception: Connection refused"
         }
       },
