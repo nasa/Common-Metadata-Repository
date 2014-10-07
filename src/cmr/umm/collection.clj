@@ -1,5 +1,6 @@
 (ns cmr.umm.collection
-  "Defines the UMM Collection record. See the UMM Overview document for more information on the breakdown.")
+  "Defines the UMM Collection record. See the UMM Overview document for more information on the breakdown."
+  (:require [cmr.common.dev.record-pretty-printer :as record-pretty-printer]))
 
 (defrecord Product
   [
@@ -221,3 +222,23 @@
 
    associated-difs
    ])
+
+
+(record-pretty-printer/enable-record-pretty-printing
+  Product
+  DataProviderTimestamps
+  RangeDateTime
+  PeriodicDateTime
+  Temporal
+  ScienceKeyword
+  ProductSpecificAttribute
+  Sensor
+  Instrument
+  Platform
+  Project
+  TwoDCoordinateSystem
+  Organization
+  RelatedURL
+  OrbitParameters
+  SpatialCoverage
+  UmmCollection)

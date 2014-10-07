@@ -1,5 +1,6 @@
 (ns cmr.umm.granule
-  "Defines the UMM Granule record.")
+  "Defines the UMM Granule record."
+  (:require [cmr.common.dev.record-pretty-printer :as record-pretty-printer]))
 
 (defrecord CollectionRef
   [
@@ -143,3 +144,18 @@
    (map->CollectionRef {:short-name short-name :version-id version-id}))
   ([entry-title short-name version-id]
    (map->CollectionRef {:entry-title entry-title :short-name short-name :version-id version-id})))
+
+
+(record-pretty-printer/enable-record-pretty-printing
+  CollectionRef
+  DataGranule
+  GranuleTemporal
+  OrbitCalculatedSpatialDomain
+  Orbit
+  ProductSpecificAttributeRef
+  SensorRef
+  InstrumentRef
+  PlatformRef
+  SpatialCoverage
+  TwoDCoordinateSystem
+  UmmGranule)

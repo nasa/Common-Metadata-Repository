@@ -4,7 +4,8 @@
             [cmr.spatial.point :as p]
             [cmr.spatial.polygon]
             [cmr.spatial.line-string]
-            [cmr.common.services.errors :as errors])
+            [cmr.common.services.errors :as errors]
+            [cmr.common.dev.record-pretty-printer :as record-pretty-printer])
   (:import cmr.spatial.polygon.Polygon
            cmr.spatial.line_string.LineString))
 
@@ -16,6 +17,7 @@
    coordinate-system
    points
    ])
+(record-pretty-printer/enable-record-pretty-printing GenericRing)
 
 (defn ring
   "Constructs a generic ring with the specified points"
