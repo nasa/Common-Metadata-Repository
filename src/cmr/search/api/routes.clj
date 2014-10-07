@@ -8,6 +8,7 @@
             [ring.util.request :as request]
             [ring.util.codec :as codec]
             [ring.middleware.json :as ring-json]
+            [cheshire.core :as json]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.api.errors :as errors]
             [cmr.common.services.errors :as svc-errors]
@@ -288,11 +289,12 @@
         (query-svc/clear-cache request-context)
         {:status 204})
 
-      (GET "/health" {request-context :request-context}
-        (let [{:keys [ok? dependencies]} (hs/health request-context)]
+      (GET "/health" {request-context :request-context params :params}
+        (let [{pretty? :pretty} params
+              {:keys [ok? dependencies]} (hs/health request-context)]
           {:status (if ok? 200 503)
            :headers {"Content-Type" "application/json; charset=utf-8"}
-           :body dependencies})))
+           :body (json/generate-string dependencies {:pretty pretty?})})))
 
     (route/not-found "Not Found")))
 
