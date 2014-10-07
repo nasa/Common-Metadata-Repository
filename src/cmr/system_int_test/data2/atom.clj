@@ -15,7 +15,8 @@
             [cmr.umm.spatial :as umm-s]
             [cmr.common.util :as util]
             [cmr.system-int-test.data2.granule :as dg]
-            [cmr.system-int-test.data2.facets :as facets]))
+            [cmr.system-int-test.data2.facets :as facets]
+            [cmr.search.results-handlers.atom-results-handler :as atom-results-handler]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Parsing the ATOM results
@@ -94,16 +95,16 @@
   [attribs]
   (when (seq attribs)
     (let [{:keys [swathWidth period inclinationAngle numberOfOrbits startCircularLatitude]} attribs]
-    (util/remove-nil-keys {:swath-width (when swathWidth
-                                          (Double/parseDouble swathWidth))
-                           :period (when period
-                                     (Double/parseDouble period))
-                           :inclination-angle (when inclinationAngle
-                                                (Double/parseDouble inclinationAngle))
-                           :number-of-orbits (when numberOfOrbits
-                                               (Double/parseDouble numberOfOrbits))
-                           :start-circular-latitude (when startCircularLatitude
-                                                      (Double/parseDouble startCircularLatitude))}))))
+      (util/remove-nil-keys {:swath-width (when swathWidth
+                                            (Double/parseDouble swathWidth))
+                             :period (when period
+                                       (Double/parseDouble period))
+                             :inclination-angle (when inclinationAngle
+                                                  (Double/parseDouble inclinationAngle))
+                             :number-of-orbits (when numberOfOrbits
+                                                 (Double/parseDouble numberOfOrbits))
+                             :start-circular-latitude (when startCircularLatitude
+                                                        (Double/parseDouble startCircularLatitude))}))))
 
 (defn- parse-ocsd-attribs
   "Convert orbit-calculated-spatial-domains attributes to their proper keys / value types"
@@ -239,7 +240,7 @@
   "Returns the atom map of the collection"
   [collection]
   (let [{{:keys [short-name version-id processing-level-id collection-data-type]} :product
-         :keys [concept-id summary entry-title
+         :keys [concept-id summary entry-title format-key
                 related-urls beginning-date-time ending-date-time associated-difs organizations]} collection
         update-time (get-in collection [:data-provider-timestamps :update-time])
         spatial-representation (get-in collection [:spatial-coverage :spatial-representation])
@@ -253,7 +254,7 @@
         end (when range-date-time
               (f/unparse (f/formatters :date-time-no-ms) (:ending-date-time range-date-time)))
         shapes (map (partial umm-s/set-coordinate-system spatial-representation)
-                            (get-in collection [:spatial-coverage :geometries]))]
+                    (get-in collection [:spatial-coverage :geometries]))]
     (util/remove-nil-keys
       {:id concept-id
        :title entry-title
@@ -262,7 +263,7 @@
        :dataset-id entry-title
        :short-name short-name
        :version-id version-id
-       :original-format (get collection :original-format "ECHO10")
+       :original-format (atom-results-handler/metadata-format->atom-original-format (name format-key))
        :collection-data-type collection-data-type
        :data-center (:provider-id (cu/parse-concept-id concept-id))
        :archive-center archive-center
@@ -296,7 +297,7 @@
   "Returns the atom map of the granule"
   [granule coll]
   (let [{:keys [concept-id granule-ur producer-gran-id size related-urls
-                beginning-date-time ending-date-time day-night cloud-cover
+                beginning-date-time ending-date-time day-night cloud-cover format-key
                 orbit-calculated-spatial-domains]} granule
         related-urls (add-collection-links coll related-urls)
         dataset-id (get-in granule [:collection-ref :entry-title])
@@ -315,7 +316,7 @@
        :updated (str update-time)
        :coordinate-system coordinate-system
        :size size
-       :original-format "ECHO10"
+       :original-format (atom-results-handler/metadata-format->atom-original-format (name format-key))
        :data-center (:provider-id (cu/parse-concept-id concept-id))
        :links (seq (related-urls->links related-urls))
        :orbit-calculated-spatial-domains (seq orbit-calculated-spatial-domains)

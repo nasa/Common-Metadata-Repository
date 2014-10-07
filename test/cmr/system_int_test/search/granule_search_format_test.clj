@@ -294,13 +294,15 @@
                                   :start-orbit-number 3.0
                                   :stop-orbit-number 4.0
                                   :equator-crossing-longitude -45.0
-                                  :equator-crossing-date-time "2011-01-01T12:00:00.000Z"}]})]
+                                  :equator-crossing-date-time "2011-01-01T12:00:00.000Z"}]})
+        gran4 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule4"}) :iso-smap)]
 
     (index/refresh-elastic-index)
 
     (testing "kml"
       (let [results (search/find-concepts-kml :granule {})]
-        (dk/assert-granule-kml-results-match [gran1 gran2 gran3] [coll1 coll2 coll3] results)))
+        (dk/assert-granule-kml-results-match
+          [gran1 gran2 gran3 gran4] [coll1 coll2 coll3 coll1] results)))
 
     (testing "atom"
       (let [coll-atom (da/collections->expected-atom [coll1] "collections.atom?entry_title=Dataset1")
@@ -313,7 +315,8 @@
         (is (= 200 (:status response)))
         (is (= gran-atom
                (:results response))))
-      (let [gran-atom (da/granules->expected-atom [gran1 gran2 gran3] [coll1 coll2 coll3] "granules.atom")
+      (let [gran-atom (da/granules->expected-atom
+                        [gran1 gran2 gran3 gran4] [coll1 coll2 coll3 coll1] "granules.atom")
             response (search/find-concepts-atom :granule {})]
         (is (= 200 (:status response)))
         (is (= gran-atom
@@ -348,7 +351,8 @@
         (is (= gran-json
                (:results response))))
 
-      (let [gran-json (dj/granules->expected-json [gran1 gran2 gran3] [coll1 coll2 coll3] "granules.json")
+      (let [gran-json (dj/granules->expected-json
+                        [gran1 gran2 gran3 gran4] [coll1 coll2 coll3 coll1] "granules.json")
             response (search/find-concepts-json :granule {})]
         (is (= 200 (:status response)))
         (is (= gran-json

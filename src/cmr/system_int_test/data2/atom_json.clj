@@ -37,10 +37,10 @@
                               :geodetic
                               coordinate-system)]
       (seq (map (partial umm-s/set-coordinate-system coordinate-system)
-                  (concat (json-polygons->polygons polygons)
-                          (json-points->points points)
-                          (json-lines->lines lines)
-                          (json-boxes->bounding-rectangles boxes)))))))
+                (concat (json-polygons->polygons polygons)
+                        (json-points->points points)
+                        (json-lines->lines lines)
+                        (json-boxes->bounding-rectangles boxes)))))))
 
 (defmulti json-entry->entry
   "Retrns an entry from a parsed json entry"
@@ -156,11 +156,18 @@
     (update-in link [:inherited] = "true")
     link))
 
+(defn- update-inherited-links
+  "Update the inherited links for the given entry"
+  [entry]
+  (if (seq (:links entry))
+    (update-in entry [:links] (partial map update-inherited-link))
+    entry))
+
 (defn- update-entries
   "Update the entries by fixing the inherited field for each link.
   The atom value is string true and the json value is boolean true."
   [entries]
-  (map #(update-in % [:links] (partial map update-inherited-link)) entries))
+  (map update-inherited-links entries))
 
 (defn granules->expected-json
   "Returns the json map of the granules"
