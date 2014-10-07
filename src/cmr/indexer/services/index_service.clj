@@ -97,11 +97,13 @@
 
 
 (deftracefn clear-cache
-  "Delegate reset elastic indices operation to index-set app"
+  "Clear all caches."
   [context]
-  (info "Clearing the indexer application cache")
-  (cache/reset-cache (-> context :system :caches cache/general-cache-key))
-  (acl-cache/reset context))
+  (info "Clearing the indexer application caches")
+  (doall (map (fn [[k v]]
+                (debug "Clearing cache " k)
+                (cache/reset-cache v))
+              (get-in context [:system :caches]))))
 
 (deftracefn reset
   "Delegate reset elastic indices operation to index-set app"
