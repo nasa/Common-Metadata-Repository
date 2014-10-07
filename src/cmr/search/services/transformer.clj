@@ -17,7 +17,7 @@
   :xml)
 
 (def types->xsl
-  "Defines the [original-format target-format] to xsl mapping"
+  "Defines the [metadata-format target-format] to xsl mapping"
   {[:echo10 :iso19115] (io/resource "xslt/echo10_to_iso19115.xsl")})
 
 (defn context->metadata-db-context
