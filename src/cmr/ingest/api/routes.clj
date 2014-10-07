@@ -63,11 +63,12 @@
                                  :concept-type :granule}]
             (r/response (ingest/delete-concept request-context concept-attribs))))))
 
-    (GET "/health" {request-context :request-context}
-      (let [{:keys [ok? dependencies]} (ingest/health request-context)]
+    (GET "/health" {request-context :request-context params :params}
+      (let [{pretty? :pretty} params
+            {:keys [ok? dependencies]} (ingest/health request-context)]
         {:status (if ok? 200 503)
          :headers {"Content-Type" "application/json; charset=utf-8"}
-         :body dependencies}))
+         :body (cheshire/generate-string dependencies {:pretty pretty?})}))
 
     (route/not-found "Not Found")))
 
