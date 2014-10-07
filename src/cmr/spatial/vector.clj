@@ -1,6 +1,7 @@
 (ns cmr.spatial.vector
   (:require [cmr.spatial.math :refer :all]
-            [primitive-math]))
+            [primitive-math]
+            [cmr.common.dev.record-pretty-printer :as record-pretty-printer]))
 (primitive-math/use-primitive-operators)
 
 (defrecord Vector
@@ -9,6 +10,7 @@
    ^double y
    ^double z
   ])
+(record-pretty-printer/enable-record-pretty-printing Vector)
 
 (defn new-vector
   [x y z]

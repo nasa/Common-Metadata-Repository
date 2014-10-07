@@ -10,7 +10,8 @@
             [cmr.common.services.errors :as errors]
             [cmr.spatial.derived :as d]
             [cmr.common.util :as util]
-            [clojure.math.combinatorics :as combo])
+            [clojure.math.combinatorics :as combo]
+            [cmr.common.dev.record-pretty-printer :as record-pretty-printer])
   (:import cmr.spatial.point.Point
            cmr.spatial.mbr.Mbr))
 
@@ -37,6 +38,7 @@
    ;; The minimum bounding rectangle of the segment
    ^Mbr mbr
    ])
+(record-pretty-printer/enable-record-pretty-printing LineSegment)
 
 (defn line-segment
   "Creates a new line segment"

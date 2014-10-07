@@ -6,7 +6,8 @@
             [cmr.common.services.errors :as errors]
             [pjstadig.assertions :as pj]
             [cmr.spatial.validation :as v]
-            [cmr.spatial.messages :as msg])
+            [cmr.spatial.messages :as msg]
+            [cmr.common.dev.record-pretty-printer :as record-pretty-printer])
   (:import cmr.spatial.point.Point))
 
 (primitive-math/use-primitive-operators)
@@ -19,6 +20,7 @@
    ^double east
    ^double south
   ])
+(record-pretty-printer/enable-record-pretty-printing Mbr)
 
 (defn mbr
   "Creates a new minimum bounding rectangle"

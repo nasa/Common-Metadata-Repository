@@ -10,7 +10,8 @@
             [clojure.math.combinatorics :as combo]
             [cmr.spatial.validation :as v]
             [cmr.spatial.messages :as msg]
-            [cmr.spatial.arc-line-segment-intersections :as asi])
+            [cmr.spatial.arc-line-segment-intersections :as asi]
+            [cmr.common.dev.record-pretty-printer :as record-pretty-printer])
   (:import cmr.spatial.arc.Arc))
 (primitive-math/use-primitive-operators)
 
@@ -37,6 +38,7 @@
    ;; the minimum bounding rectangle
    mbr
    ])
+(record-pretty-printer/enable-record-pretty-printing CartesianRing)
 
 (defn covers-point?
   "Determines if a ring covers the given point. The algorithm works by counting the number of times

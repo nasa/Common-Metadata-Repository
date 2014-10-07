@@ -6,7 +6,8 @@
             [cmr.spatial.mbr :as mbr]
             [cmr.spatial.conversion :as c]
             [cmr.spatial.arc :as a]
-            [cmr.spatial.derived :as d])
+            [cmr.spatial.derived :as d]
+            [cmr.common.dev.record-pretty-printer :as record-pretty-printer])
   (:import cmr.spatial.arc.Arc))
 (primitive-math/use-primitive-operators)
 
@@ -47,6 +48,7 @@
    ;; point is antipodal to a point we're checking is inside a ring.
    external-points
    ])
+(record-pretty-printer/enable-record-pretty-printing GeodeticRing)
 
 (defn covers-point?
   "Determines if a ring covers the given point. The algorithm works by counting the number of times

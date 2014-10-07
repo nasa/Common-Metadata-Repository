@@ -7,7 +7,8 @@
             [cmr.spatial.mbr :as mbr]
             [cmr.spatial.conversion :as c]
             [cmr.spatial.derived :as d]
-            [cmr.common.util :as util])
+            [cmr.common.util :as util]
+            [cmr.common.dev.record-pretty-printer :as record-pretty-printer])
   (:import cmr.spatial.point.Point))
 (primitive-math/use-primitive-operators)
 
@@ -49,6 +50,10 @@
    mbr1
    mbr2
    ])
+
+(record-pretty-printer/enable-record-pretty-printing
+  GreatCircle
+  Arc)
 
 (defn- great-circle
   "Creates great circle information from a west point and east point."

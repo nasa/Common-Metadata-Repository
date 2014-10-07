@@ -10,7 +10,8 @@
             [cmr.spatial.arc :as a]
             [cmr.spatial.derived :as d]
             [cmr.spatial.validation :as v]
-            [cmr.spatial.messages :as msg]))
+            [cmr.spatial.messages :as msg]
+            [cmr.common.dev.record-pretty-printer :as record-pretty-printer]))
 
 (primitive-math/use-primitive-operators)
 
@@ -23,6 +24,7 @@
    ;; Derived fields
    mbr
    ])
+(record-pretty-printer/enable-record-pretty-printing Polygon)
 
 (defn polygon
   "Creates a polygon"

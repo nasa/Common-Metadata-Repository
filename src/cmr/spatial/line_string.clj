@@ -12,7 +12,8 @@
             [cmr.spatial.derived :as d]
             [cmr.spatial.validation :as v]
             [cmr.spatial.points-validation-helpers :as pv]
-            [cmr.spatial.messages :as msg])
+            [cmr.spatial.messages :as msg]
+            [cmr.common.dev.record-pretty-printer :as record-pretty-printer])
   (:import cmr.spatial.arc.Arc
            cmr.spatial.line_segment.LineSegment))
 (primitive-math/use-primitive-operators)
@@ -56,6 +57,7 @@
 
    mbr
    ])
+(record-pretty-printer/enable-record-pretty-printing LineString)
 
 (defn line-string
   ([points]
