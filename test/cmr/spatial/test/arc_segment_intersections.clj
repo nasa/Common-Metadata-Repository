@@ -41,10 +41,10 @@
                                             point
                                             :point-not-on-vertical-segment)
                                           (p/point lon (s/segment+lon->lat ls lon)))
-                             arc-point (if (a/vertical? arc)
-                                         (first (a/points-at-lat arc (:lat point)))
-                                         (a/point-at-lon arc lon))]
-                         (approx= line-point arc-point 0.01)))
+                             arc-points (if (a/vertical? arc)
+                                         (a/points-at-lat arc (:lat point))
+                                         [(a/point-at-lon arc lon)])]
+                         (some #(approx= line-point % 0.01) arc-points)))
                      intersections)
              (every? (partial m/covers-point? :geodetic ls-mbr) intersections)
              (every? (fn [point]

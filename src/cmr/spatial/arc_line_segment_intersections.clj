@@ -22,16 +22,20 @@
         arc-segments (cond
                        ;; A vertical arc could cross a pole. It gets divided in half at the pole in that case.
                        (a/crosses-north-pole? arc)
-                       [(s/line-segment point1 p/north-pole)
-                        (s/line-segment point2 p/north-pole)]
+                       [(s/line-segment point1 (p/point (:lon point1) 90))
+                        (s/line-segment point2 (p/point (:lon point2) 90))]
 
                        (a/crosses-south-pole? arc)
-                       [(s/line-segment point1 p/south-pole)
-                        (s/line-segment point2 p/south-pole)]
+                       [(s/line-segment point1 (p/point (:lon point1) -90))
+                        (s/line-segment point2 (p/point (:lon point2) -90))]
 
                        (p/is-north-pole? point2)
                        ;; Create a vertical line segment ignoring the original point2 lon
                        [(s/line-segment point1 (p/point (:lon point1) 90))]
+
+                       (p/is-north-pole? point1)
+                       ;; Create a vertical line segment ignoring the original point1 lon
+                       [(s/line-segment point2 (p/point (:lon point2) 90))]
 
                        (p/is-south-pole? point2)
                        ;; Create a vertical line segment ignoring the original point2 lon
