@@ -94,6 +94,12 @@
         (is (= 200 (:status response)))
         (is (= (set (get all-holdings "PROV1"))
                (set (:results response))))))
+    (testing "retrieve provider holdings in xml with echo-compatible true"
+      (let [response (search/provider-holdings-in-format
+                       :xml {:token user-token} {:echo-compatible? true})]
+        (is (= 200 (:status response)))
+        (is (= expected-all-holdings
+               (set (:results response))))))
     (testing "as extension"
       (is (= (select-keys
                (search/provider-holdings-in-format :xml {:provider_id "PROV1"
@@ -118,6 +124,12 @@
                (set (:results response)))))
       (let [response (search/provider-holdings-in-format :json {:provider_id ["PROV1" "PROV2"]
                                                                 :token user-token})]
+        (is (= 200 (:status response)))
+        (is (= expected-all-holdings
+               (set (:results response))))))
+    (testing "retrieve provider holdings in JSON with echo-compatible true"
+      (let [response (search/provider-holdings-in-format
+                       :json {:token user-token} {:echo-compatible? true})]
         (is (= 200 (:status response)))
         (is (= expected-all-holdings
                (set (:results response))))))

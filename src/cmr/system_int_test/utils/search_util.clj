@@ -351,6 +351,21 @@
                              :connection-manager (url/conn-mgr)}
                             options)))))
 
+(defn- provider-holdings-url
+  "Returns the provider holdings url string with url extension and echo-compatible param added"
+  [url-extension echo-compatible?]
+  (let [add-url-extension-fn (fn [url-str extension]
+                               (if extension
+                                 (str url-str "." extension)
+                                 url-str))
+        add-compatible-param-fn (fn [url-str echo-compatible?]
+                                  (if echo-compatible?
+                                    (str url-str "?echo_compatible=true")
+                                    url-str))]
+    (-> (url/provider-holdings-url)
+        (add-url-extension-fn url-extension)
+        (add-compatible-param-fn echo-compatible?))))
+
 (defn provider-holdings-in-format
   "Returns the provider holdings."
   ([format-key]
@@ -359,11 +374,11 @@
    (provider-holdings-in-format format-key params {}))
   ([format-key params options]
    (let [format-mime-type (mime-types/format->mime-type format-key)
-         {:keys [url-extension]} options
+         {:keys [url-extension echo-compatible?]} options
+         echo-compatible? (if echo-compatible? true false)
          params (params->snake_case (util/map-keys csk/->snake_case_keyword params))
-         [url accept] (if url-extension
-                        [(str (url/provider-holdings-url) "." url-extension)]
-                        [(url/provider-holdings-url) format-mime-type])
+         url (provider-holdings-url url-extension echo-compatible?)
+         accept (when-not url-extension format-mime-type)
          response (client/get url {:accept accept
                                    :query-params params
                                    :connection-manager (url/conn-mgr)})
@@ -371,5 +386,5 @@
      (if (= status 200)
        {:status status
         :headers headers
-        :results (ph/parse-provider-holdings format-key body)}
+        :results (ph/parse-provider-holdings format-key echo-compatible? body)}
        response))))
