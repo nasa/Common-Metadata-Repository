@@ -233,6 +233,21 @@ curl http://localhost:3001/providers
       (GET "/" {request-context :request-context}
         (get-providers request-context)))
 
+### Querying caches
+
+Endpoints are provided for querying the contents of the various caches used by the application.
+The following curl will return the list of caches:
+
+    curl -i http://localhost:3004/caches
+
+The following curl will return the keys for a specific cache:
+
+    curl -i http://localhost:3004/caches/cache-name
+
+This curl will return the value for a specific key in the named cache:
+
+    curl -i http://localhost:3004/caches/cache-name/cache-key
+
 ### Check application health
 
     curl -i -XGET "http://localhost:3001/health"
