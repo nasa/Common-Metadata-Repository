@@ -3,6 +3,7 @@
   (:require [cmr.common.services.errors :as errors]
             [cmr.common.jobs :refer [defjob]]
             [cmr.common.log :as log :refer (debug info warn error)]
+            [cmr.common.cache :as cache]
             [cmr.search.models.query :as q]
             [cmr.search.services.query-execution :as qe]))
 
@@ -11,9 +12,9 @@
   nil)
 
 (defn create-cache
-  "Creates a new empty collections cache. The cache itself is just an atom with a map."
+  "Creates a new empty collections cache."
   []
-  (atom initial-cache-state))
+  (cache/create-cache))
 
 (def cache-key
   :collections-for-gran-acls)
@@ -34,12 +35,6 @@
 
   )
 
-(defn reset
-  "Resets the cache back to it's initial state"
-  [context]
-  (-> context
-      context->cache
-      (reset! initial-cache-state)))
 
 (defn fetch-collections
   [context]
@@ -56,23 +51,25 @@
   to keep the cache fresh. This will throw an exception if there is a problem fetching collections. The
   caller is responsible for catching and logging the exception."
   [context]
-  (let [cache-atom (context->cache context)
+  (let [cache (context->cache context)
         collections (fetch-collections context)
         by-concept-id (into {} (for [{:keys [concept-id] :as coll} collections]
                                  [concept-id coll]))
         by-provider-id-entry-title (into {} (for [{:keys [provider-id entry-title] :as coll} collections]
                                               [[provider-id entry-title] coll]))]
-    (reset! cache-atom {:by-concept-id by-concept-id
-                        :by-provider-id-entry-title by-provider-id-entry-title})))
+    (cache/update-cache cache
+                        #(-> %
+                             (assoc :by-concept-id by-concept-id)
+                             (assoc :by-provider-id-entry-title by-provider-id-entry-title)))))
 
 (defn get-collections-map
   "Gets the cached value."
   [context]
-  (let [cache-atom (context->cache context)]
-    (when-not @cache-atom
+  (let [cache (context->cache context)]
+    (when (empty? (deref (:atom cache)))
       (info "No collections for granule acls found in cache. Manually triggering cache refresh")
       (refresh-cache context))
-    (if-let [collections-map @cache-atom]
+    (if-let [collections-map (deref (:atom cache))]
       collections-map
       (errors/internal-error! "Collections were not in cache."))))
 

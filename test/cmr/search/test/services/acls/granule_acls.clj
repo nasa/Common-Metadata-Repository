@@ -1,5 +1,6 @@
 (ns cmr.search.test.services.acls.granule-acls
   (:require [clojure.test :refer :all]
+            [cmr.common.cache :as cache]
             [cmr.search.services.acls.granule-acls :as g]
             [cmr.search.services.acls.collections-cache :as coll-cache]))
 
@@ -8,9 +9,9 @@
   ([min-v max-v]
    (access-value min-v max-v nil))
   ([min-v max-v include-undefined?]
-    {:include-undefined include-undefined?
-     :min-value min-v
-     :max-value max-v}))
+   {:include-undefined include-undefined?
+    :min-value min-v
+    :max-value max-v}))
 
 (defn coll-id
   "Creates an ACL collection identifier"
@@ -60,12 +61,15 @@
 (defn context-with-cached-collections
   "Creates a context with the specified collections in the collections cache"
   [collections]
-  {:system
-   {:caches
-    {coll-cache/cache-key
-     (atom {:by-concept-id
-            (into {} (for [{:keys [concept-id] :as coll} collections]
-                       [concept-id coll]))})}}})
+  (let [coll-cache (-> (cache/create-cache)
+                       (cache/update-cache
+                         #(assoc %
+                                 :by-concept-id
+                                 (into {} (for [{:keys [concept-id] :as coll} collections]
+                                            [concept-id coll])))))]
+    {:system
+     {:caches
+      {coll-cache/cache-key coll-cache}}}))
 
 (deftest acl-match-granule-concept-test
   (testing "provider ids"

@@ -4,6 +4,7 @@
   any granules at all as indicated by provider holdings."
   (:require [cmr.search.services.query-execution :as query-execution]
             [cmr.common.jobs :refer [defjob]]
+            [cmr.common.cache :as cache]
             [cmr.search.data.elastic-search-index :as idx]))
 
 (def REFRESH_HAS_GRANULES_MAP_JOB_INTERVAL
@@ -13,18 +14,11 @@
 (defn create-has-granules-map-cache
   "Returns a 'cache' which will contain the cached has granules map."
   []
-  (atom nil))
+  (cache/create-cache))
 
 (defn context->has-granules-map-cache
   [context]
   (get-in context [:system :caches :has-granules-map]))
-
-(defn reset
-  "Resets the cache back to it's initial state"
-  [context]
-  (-> context
-      context->has-granules-map-cache
-      (reset! nil)))
 
 (defn- collection-granule-counts->has-granules-map
   "Converts a map of collection ids to granule counts to a map of collection ids to true or false
@@ -36,19 +30,18 @@
 (defn refresh-has-granules-map
   "Gets the latest provider holdings and updates the has-granules-map stored in the cache."
   [context]
-  (reset! (context->has-granules-map-cache context)
-          (collection-granule-counts->has-granules-map
-            (idx/get-collection-granule-counts context nil))))
-
+  (cache/update-cache (context->has-granules-map-cache context)
+                      #(assoc % :has-granules (collection-granule-counts->has-granules-map
+                                                (idx/get-collection-granule-counts context nil)))))
 (defn get-has-granules-map
   "Gets the cached has granules map from the context which contains collection ids to true or false
   of whether the collections have granules or not. If the has-granules-map has not yet been cached
   it will retrieve it and cache it."
   [context]
   (let [has-granules-map-cache (context->has-granules-map-cache context)]
-    (when-not (deref has-granules-map-cache)
+    (when (empty? (deref (:atom has-granules-map-cache)))
       (refresh-has-granules-map context))
-    (deref has-granules-map-cache)))
+    (:has-granules (deref (:atom has-granules-map-cache)))))
 
 ;; This returns a boolean flag with collection results if a collection has any granules in provider holdings
 (defmethod query-execution/post-process-query-result-feature :has-granules

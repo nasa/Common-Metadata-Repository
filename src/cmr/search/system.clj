@@ -61,8 +61,7 @@
              :caches {idx/index-cache-name (cache/create-cache)
                       ac/acl-cache-key (ac/create-acl-cache)
                       ;; Caches a map of tokens to the security identifiers
-                      ah/token-sid-cache-name (cache/create-cache
-                                                (clj-cache/ttl-cache-factory {} :ttl TOKEN_CACHE_TIME))
+                      ah/token-sid-cache-name (cache/create-cache :ttl {} {:ttl TOKEN_CACHE_TIME})
                       :has-granules-map (hgrf/create-has-granules-map-cache)
                       coll-cache/cache-key (coll-cache/create-cache)
                       xslt/xsl-transformer-cache-name (cache/create-cache)

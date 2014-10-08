@@ -8,8 +8,10 @@
             [ring.util.request :as request]
             [ring.util.codec :as codec]
             [ring.middleware.json :as ring-json]
+            [cheshire.core :as json]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.api.errors :as errors]
+            [cmr.common.cache :as cache]
             [cmr.common.services.errors :as svc-errors]
             [cmr.common.mime-types :as mt]
             [cmr.search.services.query-service :as query-svc]
@@ -278,30 +280,54 @@
       (POST "/reset" {:keys [request-context params headers]}
         (acl/verify-ingest-management-permission
           (acl/add-authentication-to-context request-context params headers))
-        (query-svc/clear-cache request-context)
+        (cache/reset-caches request-context)
         {:status 204})
 
       ;; Querying cache
     (context "/caches" []
-      (GET "/" {:keys [params]}
-        {:status 200})
+      ;; Get the list of caches
+      (GET "/" {:keys [params request-context headers]}
+        (let [context (acl/add-authentication-to-context request-context params headers)
+              caches (map name (keys (get-in context [:system :caches])))]
+          (acl/verify-ingest-management-permission context :read)
+          {:status 200
+           :body (json/generate-string caches)}))
+      ;; Get the keys for the given cache
       (GET "/:cache-name" {{:keys [cache-name] :as params} :params
                            request-context :request-context
                            headers :headers}
         (let [context (acl/add-authentication-to-context request-context params headers)
-              ;_ (acl/verify-ingest-management-permission context :read)
-              result (keys (get-in context [:system :caches (keyword cache-name)]))]
-          (println "CACHES.....")
-          (println (get-in context [:system :caches]))
-          (when result {:status 200
-                        :body result}))))
+              cache (get-in context [:system :caches (keyword cache-name)])]
+          (acl/verify-ingest-management-permission context :read)
+          (when cache
+            (let [result (->> cache
+                             :atom
+                             deref
+                             keys
+                             (map name))]
+              {:status 200
+               :body (json/generate-string result)}))))
+      ;; Get the value for the given key for the given cache
+      (GET "/:cache-name/:cache-key" {{:keys [cache-name cache-key] :as params} :params
+                                      request-context :request-context
+                                      headers :headers}
+        (let [cache-key (keyword cache-key)
+              context (acl/add-authentication-to-context request-context params headers)
+              cache (get-in context [:system :caches (keyword cache-name)])
+              result (-> cache
+                         :atom
+                         deref
+                         (get cache-key))]
+          (acl/verify-ingest-management-permission context :read)
+          (when result
+            {:status 200
+             :body (pr-str result)}))))
 
-      ;; Clears the cache.
-      (POST "/clear-cache" {:keys [request-context params headers]}
-        (acl/verify-ingest-management-permission
-          (acl/add-authentication-to-context request-context params headers))
-        (query-svc/clear-cache request-context)
-        {:status 204})
+    (POST "/clear-cache" {:keys [request-context params headers]}
+      (let [context (acl/add-authentication-to-context request-context params headers)]
+        (acl/verify-ingest-management-permission context :update)
+        (cache/reset-caches context))
+      {:status 200})
 
       (GET "/health" {request-context :request-context}
         (let [{:keys [ok? dependencies]} (hs/health request-context)]
