@@ -21,7 +21,7 @@
 (def metadata-format->atom-original-format
   "Defines the concept metadata format to atom original-format mapping"
   {"echo10" "ECHO10"
-   "iso-smap" "SMAP_ISO"
+   "iso-smap" "ISO-SMAP"
    "iso19115" "ISO19115"
    "dif" "DIF"})
 
