@@ -26,6 +26,6 @@
       (reset! counter 0)
       (c/cache-lookup cache-atom "key" increment-counter)
       (is (= 1 (c/cache-lookup cache-atom "key" increment-counter)))
-      (c/update-cache cache-atom (fn [_] {"key" (increment-counter)}))
+      (c/update-cache cache-atom #(assoc % "key" (increment-counter)))
       (is (= 2 (c/cache-lookup cache-atom "key" increment-counter))))))
 

@@ -8,6 +8,11 @@
   "The key used to store the general cache in the system cache map."
   :general)
 
+(defn cache-from-context
+  "Get the cache for the given key from the context"
+  [context cache-key]
+  (get-in context [:system :caches cache-key]))
+
 (defn cache-lookup
   "Looks up the value of the cached item using the key. If there is a cache miss it will invoke
   the function given with no arguments, save the value in the cache and return the value."
@@ -30,7 +35,11 @@
 
 (defmethod create-core-cache :lru
   [type value opts]
-  (cc/lru-cache-factory value opts))
+  (apply cc/lru-cache-factory value (flatten opts)))
+
+(defmethod create-core-cache :ttl
+  [type value opts]
+  (apply cc/ttl-cache-factory value (flatten opts)))
 
 (defn create-cache
   "Create system level cache. The currently supported cache types are :defalut and :lru.
@@ -53,23 +62,17 @@
   [cmr-cache]
   (reset! (:atom cmr-cache) (:initial cmr-cache)))
 
+(defn reset-caches
+  "Clear all caches."
+  [context]
+  (doall (map (fn [[k v]]
+                (debug "Clearing cache " k)
+                (reset-cache v))
+              (get-in context [:system :caches]))))
+
 (defn update-cache
   "Update the cache contents with the output of the given funciton, f. f takes the
-  current cache as its input and returns the new cache state."
+  current cache as its input and returns the new cache."
   [cmr-cache f]
-  (let [core-cache (deref (:atom cmr-cache))
-        new-state (f cmr-cache)
-        ;; FIXME - this relies on an implementation details of cmr.core.cache, which is BAD
-        new-cache (merge core-cache new-state)]
-    (swap! (:atom cmr-cache) (fn [_] new-cache))))
-
-(defn set-cache-key-value
-  "Set a single key/value pair for the cache."
-  [cmr-cache cache-key value]
-  (let [core-cache (deref (:atom cmr-cache))]
-    (swap! (:atom cmr-cache)
-           (fn [_] (cc/miss core-cache cache-key value)))))
-
-
-
-
+  (swap! (:atom cmr-cache) f)
+  cmr-cache)
