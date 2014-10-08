@@ -15,9 +15,9 @@
             [cmr.transmit.config :as transmit-config]
             [cmr.metadata-db.system :as mdb-system]
             [cmr.indexer.system :as idx-system]
+            [cmr.indexer.data.concepts.granule :as g]
             [cmr.common.cache :as cache]
-            [cmr.common.config :as config]
-            [clojure.core.cache :as cc]))
+            [cmr.common.config :as config]))
 
 (def db-batch-size (config/config-value-fn :db-batch-size 100 #(Long. %)))
 
@@ -35,8 +35,8 @@
                     (dissoc :log :web)
                     ;; Setting the parent-collection-cache to cache parent collection umm
                     ;; of granules during bulk indexing.
-                    (assoc :parent-collection-cache
-                           (cache/create-cache (cc/lru-cache-factory {:threshold 2000}))))
+                    (assoc-in [:caches g/parent-collection-cache-key]
+                           (cache/create-cache :lru {} {:threshold 2000})))
         sys {:log (log/create-logger)
              :metadata-db metadata-db
              :indexer indexer
