@@ -66,6 +66,9 @@
         east-hemi-poly1 (make-coll :geodetic "east-hemi-poly1"
                                    (polygon 0.0001 -89.9999, 180 -89.9999, 180 89.9999,
                                             0.0001 89.9999, 0.0001 -89.9999))
+        east-hemi-poly2 (make-coll :geodetic "east-hemi-poly2"
+                                   (polygon 0.0001,-89.9999, 180.0,-89.9999, 180.0,-45.0, 180.0,0.0,
+                                            180.0,45.0, 180.0,89.9999, 0.0001,89.9999, 0.0001,-89.9999))
         ;; Combines west-hemi-poly3 and east-hemi-poly1
         combined (make-coll :geodetic "combined"
                             (polygon -179.9999 75, -179.9 75, -179.9 0, -179.9999 0,
@@ -73,7 +76,7 @@
                                      -179.9999 89.9999, -179.9999 75)
                             (polygon 0.0001 -89.9999, 180 -89.9999, 180 89.9999,
                                      0.0001 89.9999, 0.0001 -89.9999))
-        all-colls [west-hemi-poly1 west-hemi-poly2 west-hemi-poly3 east-hemi-poly1 combined]]
+        all-colls [west-hemi-poly1 west-hemi-poly2 west-hemi-poly3 east-hemi-poly1 east-hemi-poly2 combined]]
 
     (index/refresh-elastic-index)
 
@@ -93,7 +96,7 @@
          [0 -90] all-colls
 
          ;; antimerdian
-         [180 0] [east-hemi-poly1 combined]
+         [180 0] [east-hemi-poly1 east-hemi-poly2 combined]
          [-180 0] [west-hemi-poly1 west-hemi-poly2 west-hemi-poly3 combined]
 
          ;; prime meridian
@@ -102,7 +105,7 @@
          [0 -10] all-colls
 
          ;; middle of east hemisphere
-         [90 45] [east-hemi-poly1 combined]
+         [90 45] [east-hemi-poly1 east-hemi-poly2 combined]
 
          ;; middle of west hemisphere
          [-90 45] [west-hemi-poly1 west-hemi-poly2 west-hemi-poly3 combined])))
