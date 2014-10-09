@@ -301,13 +301,15 @@
                            :spatial-coverage (dc/spatial {:gsr :orbit
                                                           :orbit op1})}))
         coll4 (d/ingest "PROV1"
-                        (dc/collection {:entry-title "Dataset4"}) :iso-smap)]
+                        (dc/collection {:entry-title "Dataset4"}) :iso-smap)
+        coll5 (d/ingest "PROV1"
+                        (dc/collection {:entry-title "Dataset5"}) :dif)]
 
     (index/refresh-elastic-index)
 
     (testing "kml"
       (let [results (search/find-concepts-kml :collection {})]
-        (dk/assert-collection-kml-results-match [coll1 coll2 coll3 coll4] results)))
+        (dk/assert-collection-kml-results-match [coll1 coll2 coll3 coll4 coll5] results)))
 
     (testing "ATOM XML"
       (let [coll-atom (da/collections->expected-atom [coll1] "collections.atom?dataset_id=Dataset1")
@@ -315,7 +317,7 @@
             {:keys [status results]} response]
         (is (= [200 coll-atom] [status results])))
 
-      (let [coll-atom (da/collections->expected-atom [coll1 coll2 coll3 coll4] "collections.atom")
+      (let [coll-atom (da/collections->expected-atom [coll1 coll2 coll3 coll4 coll5] "collections.atom")
             response (search/find-concepts-atom :collection {})
             {:keys [status results]} response]
         (is (= [200 coll-atom] [status results])))
@@ -341,7 +343,7 @@
             {:keys [status results]} response]
         (is (= [200 coll-json] [status results])))
 
-      (let [coll-json (da/collections->expected-atom [coll1 coll2 coll3 coll4] "collections.json")
+      (let [coll-json (da/collections->expected-atom [coll1 coll2 coll3 coll4 coll5] "collections.json")
             response (search/find-concepts-json :collection {})
             {:keys [status results]} response]
         (is (= [200 coll-json] [status results])))
