@@ -437,7 +437,7 @@ For granule additional attributes search, the default is searching for the attri
 
 Polygon points are provided in counter-clockwise order. The last point should match the first point to close the polygon. The values are listed comma separated in longitude latitude order, i.e. lon1,lat1,lon2,lat2,...
 
-    curl "%CMR-ENDPOINT%/granules?polygon=10,10,10,20,30,20,30,10,10,10"
+    curl "%CMR-ENDPOINT%/granules?polygon=10,10,30,10,30,20,10,20,10,10"
 
 #### Bounding Box
 
