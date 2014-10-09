@@ -361,6 +361,7 @@
    (let [format-mime-type (mime-types/format->mime-type format-key)
          {:keys [url-extension]} options
          params (params->snake_case (util/map-keys csk/->snake_case_keyword params))
+         echo-compatible? (if (:echo_compatible params) true false)
          [url accept] (if url-extension
                         [(str (url/provider-holdings-url) "." url-extension)]
                         [(url/provider-holdings-url) format-mime-type])
@@ -371,5 +372,5 @@
      (if (= status 200)
        {:status status
         :headers headers
-        :results (ph/parse-provider-holdings format-key body)}
+        :results (ph/parse-provider-holdings format-key echo-compatible? body)}
        response))))
