@@ -197,12 +197,11 @@
 (deftracefn get-provider-holdings
   "Executes elasticsearch search to get provider holdings"
   [context params]
-  (let [{provider-ids :provider-id legacy-provider-ids :provider_id pretty? :pretty} params
-        provider-ids (or provider-ids legacy-provider-ids)
+  (let [{:keys [provider-id echo-compatible pretty]} (u/map-keys->kebab-case params)
         ;; make sure provider-ids is sequential
-        provider-ids (if (or (nil? provider-ids) (sequential? provider-ids))
-                       provider-ids
-                       [provider-ids])
+        provider-ids (if (or (nil? provider-id) (sequential? provider-id))
+                       provider-id
+                       [provider-id])
         ;; get all collections limited by the list of providers in json format
         collections (get-collections-by-providers context provider-ids false)
         ;; get a mapping of collection to granule count
@@ -211,4 +210,6 @@
         provider-holdings (map #(assoc % :granule-count (get collection-granule-count (:concept-id %) 0))
                                collections)]
     [provider-holdings
-     (ph/provider-holdings->string (:result-format params) provider-holdings pretty?)]))
+     (ph/provider-holdings->string
+       (:result-format params) provider-holdings {:pretty? (= "true" pretty)
+                                                  :echo-compatible? (= "true" echo-compatible)})]))
