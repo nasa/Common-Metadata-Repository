@@ -81,3 +81,36 @@
    (when facets
      (x/element (key-with-prefix ns-prefix :facets) {}
                 (map (partial facet->xml-element ns-prefix) facets)))))
+
+(def cmr-facet-name->echo-facet-keyword
+  "A mapping of CMR facet names to ECHO facet keywords"
+  {"project" :campaign-sn
+   "platform" :platform-sn
+   "instrument" :instrument-sn
+   "sensor" :sensor-sn
+   "two_d_coordinate_system_name" :twod-coord-name
+   "processing_level_id" :processing-level
+   "category" :category-keyword
+   "topic" :topic-keyword
+   "term" :term-keyword
+   "variable_level_1" :variable-level-1-keyword
+   "variable_level_2" :variable-level-2-keyword
+   "variable_level_3" :variable-level-3-keyword
+   "detailed_variable" :detailed-variable-keyword})
+
+(defn facet->echo-xml-element
+  [facet]
+  (let [{:keys [field value-counts]} facet
+        field-key (cmr-facet-name->echo-facet-keyword field)]
+    (x/element field-key {:type "array"}
+               (for [[value value-count] value-counts]
+                 (x/element field-key {}
+                            (x/element :term {} value)
+                            (x/element :count {:type "integer"} value-count))))))
+
+(defn facets->echo-xml-element
+  "Helper function for converting facets into an XML element in echo format"
+  [facets]
+  (when facets
+    (x/element :hash {}
+               (map facet->echo-xml-element facets))))
