@@ -8,7 +8,7 @@
   "The key used to store the general cache in the system cache map."
   :general)
 
-(defn cache->context
+(defn context->cache
   "Get the cache for the given key from the context"
   [context cache-key]
   (get-in context [:system :caches cache-key]))
