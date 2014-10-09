@@ -63,10 +63,11 @@
   [collections]
   (let [coll-cache (-> (cache/create-cache)
                        (cache/update-cache
-                         #(assoc %
-                                 :by-concept-id
-                                 (into {} (for [{:keys [concept-id] :as coll} collections]
-                                            [concept-id coll])))))]
+                         #(assoc
+                            %
+                            :collections {:by-concept-id
+                                         (into {} (for [{:keys [concept-id] :as coll} collections]
+                                                    [concept-id coll]))})))]
     {:system
      {:caches
       {coll-cache/cache-key coll-cache}}}))

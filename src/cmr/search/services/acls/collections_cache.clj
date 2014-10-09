@@ -39,32 +39,40 @@
                         :fields [:entry-title :access-value :provider-id]})]
     (:items (qe/execute-query context query))))
 
+(defn- fetch-collections-map
+  "Retrieve collections from search and return a map by concpet-id and provider-id"
+  [context]
+  (let [collections (fetch-collections context)
+        by-concept-id (into {} (for [{:keys [concept-id] :as coll} collections]
+                                 [concept-id coll]))
+        by-provider-id-entry-title (into {}
+                                         (for [{:keys [provider-id entry-title] :as coll}
+                                               collections]
+                                           [[provider-id entry-title] coll]))]
+    {:by-concept-id by-concept-id
+     :by-provider-id-entry-title by-provider-id-entry-title}))
+
+
 (defn refresh-cache
   "Refreshes the collections stored in the cache. This should be called from a background job on a timer
   to keep the cache fresh. This will throw an exception if there is a problem fetching collections. The
   caller is responsible for catching and logging the exception."
   [context]
   (let [cache (cache/context->cache context cache-key)
-        collections (fetch-collections context)
-        by-concept-id (into {} (for [{:keys [concept-id] :as coll} collections]
-                                 [concept-id coll]))
-        by-provider-id-entry-title (into {} (for [{:keys [provider-id entry-title] :as coll} collections]
-                                              [[provider-id entry-title] coll]))]
-    (cache/update-cache cache
-                        #(-> %
-                             (assoc :by-concept-id by-concept-id)
-                             (assoc :by-provider-id-entry-title by-provider-id-entry-title)))))
+        collections-map (fetch-collections-map context)]
+    (cache/update-cache cache #(assoc % :collections collections-map))))
 
 (defn get-collections-map
   "Gets the cached value."
   [context]
-  (let [cache (cache/context->cache context cache-key)]
-    (when (empty? (deref (:atom cache)))
-      (info "No collections for granule acls found in cache. Manually triggering cache refresh")
-      (refresh-cache context))
-    (if-let [collections-map (deref (:atom cache))]
-      collections-map
-      (errors/internal-error! "Collections were not in cache."))))
+  (let [coll-cache (cache/context->cache context cache-key)
+        collection-map (cache/cache-lookup
+                         coll-cache
+                         :collections
+                         (fn [] (fetch-collections-map context)))]
+    (if (empty? collection-map)
+      (errors/internal-error! "Collections were not in cache.")
+      collection-map)))
 
 (defn get-collection
   "Gets a single collection from the cache by concept id. Handles refreshing the cache if it is not found in it.
