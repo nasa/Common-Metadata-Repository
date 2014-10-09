@@ -61,13 +61,11 @@
 (defn context-with-cached-collections
   "Creates a context with the specified collections in the collections cache"
   [collections]
-  (let [coll-cache (-> (cache/create-cache)
-                       (cache/update-cache
-                         #(assoc
-                            %
-                            :collections {:by-concept-id
-                                         (into {} (for [{:keys [concept-id] :as coll} collections]
-                                                    [concept-id coll]))})))]
+  (let [coll-cache (cache/create-cache
+                     :default
+                     {:collections {:by-concept-id
+                                    (into {} (for [{:keys [concept-id] :as coll} collections]
+                                               [concept-id coll]))}})]
     {:system
      {:caches
       {coll-cache/cache-key coll-cache}}}))
