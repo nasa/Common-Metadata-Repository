@@ -16,51 +16,52 @@
 
 (defn- build-routes [system]
   (routes
-    (context "/index-sets" []
-      (POST "/" {body :body request-context :request-context params :params headers :headers}
-        (let [index-set (walk/keywordize-keys body)
-              context (acl/add-authentication-to-context request-context params headers)]
-          (acl/verify-ingest-management-permission context :update)
-          (r/created (index-svc/create-index-set request-context index-set))))
-
-      ;; respond with index-sets in elastic
-      (GET "/" {request-context :request-context params :params headers :headers}
-        (let [context (acl/add-authentication-to-context request-context params headers)]
-          (acl/verify-ingest-management-permission context :read)
-          (r/response (index-svc/get-index-sets request-context))))
-
-      (context "/:id" [id]
-        (GET "/" {request-context :request-context params :params headers :headers}
-          (let [context (acl/add-authentication-to-context request-context params headers)]
-            (acl/verify-ingest-management-permission context :read)
-            (r/response (index-svc/get-index-set request-context id))))
-
-        (PUT "/" {request-context :request-context body :body params :params headers :headers}
+    (context (:relative-root-url system) []
+      (context "/index-sets" []
+        (POST "/" {body :body request-context :request-context params :params headers :headers}
           (let [index-set (walk/keywordize-keys body)
                 context (acl/add-authentication-to-context request-context params headers)]
             (acl/verify-ingest-management-permission context :update)
-            (index-svc/update-index-set request-context index-set)
-            {:status 200}))
+            (r/created (index-svc/create-index-set request-context index-set))))
 
-        (DELETE "/" {request-context :request-context params :params headers :headers}
+        ;; respond with index-sets in elastic
+        (GET "/" {request-context :request-context params :params headers :headers}
           (let [context (acl/add-authentication-to-context request-context params headers)]
-            (acl/verify-ingest-management-permission context :update)
-            (index-svc/delete-index-set request-context id)
-            {:status 204}))))
+            (acl/verify-ingest-management-permission context :read)
+            (r/response (index-svc/get-index-sets request-context))))
 
-    ;; delete all of the indices associated with index-sets and index-set docs in elastic
-    (POST "/reset" {request-context :request-context params :params headers :headers}
-      (let [context (acl/add-authentication-to-context request-context params headers)]
-        (acl/verify-ingest-management-permission context :update)
-        (index-svc/reset request-context)
-        {:status 204}))
+        (context "/:id" [id]
+          (GET "/" {request-context :request-context params :params headers :headers}
+            (let [context (acl/add-authentication-to-context request-context params headers)]
+              (acl/verify-ingest-management-permission context :read)
+              (r/response (index-svc/get-index-set request-context id))))
 
-    (GET "/health" {request-context :request-context params :params}
-      (let [{pretty? :pretty} params
-            {:keys [ok? dependencies]} (index-svc/health request-context)]
-        {:status (if ok? 200 503)
-         :headers {"Content-Type" "application/json; charset=utf-8"}
-         :body (json/generate-string dependencies {:pretty pretty?})}))
+          (PUT "/" {request-context :request-context body :body params :params headers :headers}
+            (let [index-set (walk/keywordize-keys body)
+                  context (acl/add-authentication-to-context request-context params headers)]
+              (acl/verify-ingest-management-permission context :update)
+              (index-svc/update-index-set request-context index-set)
+              {:status 200}))
+
+          (DELETE "/" {request-context :request-context params :params headers :headers}
+            (let [context (acl/add-authentication-to-context request-context params headers)]
+              (acl/verify-ingest-management-permission context :update)
+              (index-svc/delete-index-set request-context id)
+              {:status 204}))))
+
+      ;; delete all of the indices associated with index-sets and index-set docs in elastic
+      (POST "/reset" {request-context :request-context params :params headers :headers}
+        (let [context (acl/add-authentication-to-context request-context params headers)]
+          (acl/verify-ingest-management-permission context :update)
+          (index-svc/reset request-context)
+          {:status 204}))
+
+      (GET "/health" {request-context :request-context params :params}
+        (let [{pretty? :pretty} params
+              {:keys [ok? dependencies]} (index-svc/health request-context)]
+          {:status (if ok? 200 503)
+           :headers {"Content-Type" "application/json; charset=utf-8"}
+           :body (json/generate-string dependencies {:pretty pretty?})})))
 
     (route/not-found "Not Found")))
 
