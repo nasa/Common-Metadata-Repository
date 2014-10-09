@@ -3,6 +3,7 @@
   (:require [cmr.common.services.errors :as errors]
             [cmr.common.jobs :refer [defjob]]
             [cmr.common.log :as log :refer (debug info warn error)]
+            [cmr.common.cache :as cache]
             [cmr.search.models.query :as q]
             [cmr.search.services.query-execution :as qe]))
 
@@ -11,35 +12,22 @@
   nil)
 
 (defn create-cache
-  "Creates a new empty collections cache. The cache itself is just an atom with a map."
+  "Creates a new empty collections cache."
   []
-  (atom initial-cache-state))
+  (cache/create-cache))
 
 (def cache-key
   :collections-for-gran-acls)
-
-(defn- context->cache
-  "Gets the collections cache from the context"
-  [context]
-  (get-in context [:system :caches cache-key]))
-
 
 (comment
 
   (def context {:system (get-in user/system [:apps :search])})
   (get-collection context "PROV2" "coll3")
   (get-collection context "C1200000006-PROV2")
-  (context->cache context)
+  (cache/context->cache context cache-key)
   (refresh-cache context)
 
   )
-
-(defn reset
-  "Resets the cache back to it's initial state"
-  [context]
-  (-> context
-      context->cache
-      (reset! initial-cache-state)))
 
 (defn fetch-collections
   [context]
@@ -51,30 +39,40 @@
                         :fields [:entry-title :access-value :provider-id]})]
     (:items (qe/execute-query context query))))
 
+(defn- fetch-collections-map
+  "Retrieve collections from search and return a map by concpet-id and provider-id"
+  [context]
+  (let [collections (fetch-collections context)
+        by-concept-id (into {} (for [{:keys [concept-id] :as coll} collections]
+                                 [concept-id coll]))
+        by-provider-id-entry-title (into {}
+                                         (for [{:keys [provider-id entry-title] :as coll}
+                                               collections]
+                                           [[provider-id entry-title] coll]))]
+    {:by-concept-id by-concept-id
+     :by-provider-id-entry-title by-provider-id-entry-title}))
+
+
 (defn refresh-cache
   "Refreshes the collections stored in the cache. This should be called from a background job on a timer
   to keep the cache fresh. This will throw an exception if there is a problem fetching collections. The
   caller is responsible for catching and logging the exception."
   [context]
-  (let [cache-atom (context->cache context)
-        collections (fetch-collections context)
-        by-concept-id (into {} (for [{:keys [concept-id] :as coll} collections]
-                                 [concept-id coll]))
-        by-provider-id-entry-title (into {} (for [{:keys [provider-id entry-title] :as coll} collections]
-                                              [[provider-id entry-title] coll]))]
-    (reset! cache-atom {:by-concept-id by-concept-id
-                        :by-provider-id-entry-title by-provider-id-entry-title})))
+  (let [cache (cache/context->cache context cache-key)
+        collections-map (fetch-collections-map context)]
+    (cache/update-cache cache #(assoc % :collections collections-map))))
 
 (defn get-collections-map
   "Gets the cached value."
   [context]
-  (let [cache-atom (context->cache context)]
-    (when-not @cache-atom
-      (info "No collections for granule acls found in cache. Manually triggering cache refresh")
-      (refresh-cache context))
-    (if-let [collections-map @cache-atom]
-      collections-map
-      (errors/internal-error! "Collections were not in cache."))))
+  (let [coll-cache (cache/context->cache context cache-key)
+        collection-map (cache/cache-lookup
+                         coll-cache
+                         :collections
+                         (fn [] (fetch-collections-map context)))]
+    (if (empty? collection-map)
+      (errors/internal-error! "Collections were not in cache.")
+      collection-map)))
 
 (defn get-collection
   "Gets a single collection from the cache by concept id. Handles refreshing the cache if it is not found in it.

@@ -177,17 +177,6 @@
         results (qe/execute-query context query)]
     (search-results->response context query results)))
 
-(deftracefn clear-cache
-  "Clear the cache for search app"
-  [context]
-  (info "Clearing the search application cache")
-  (cache/reset-cache (idx/context->index-cache context))
-  (cache/reset-cache (ah/context->token-sid-cache context))
-  (cache/reset-cache (xslt/context->xsl-transformer-cache context))
-  (acl-cache/reset context)
-  (hgrf/reset context)
-  (coll-cache/reset context))
-
 (deftracefn get-collections-by-providers
   "Returns all collections limited optionally by the given provider ids"
   ([context skip-acls?]
