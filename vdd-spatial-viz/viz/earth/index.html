@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Earth Visualization</title>
+    <!-- These are required for using vdd-core. -->
+    <link href="/jquery-ui/jquery-ui.min.css" rel="stylesheet">
+    <link href="/vdd/vdd.css" rel="stylesheet">
+
+    <!-- visualization css -->
+    <link href="/plugins/earth/earth.css" rel="stylesheet">
+
+    <!--
+      Javascript libraries
+    -->
+    <!-- These libraries are required for using vdd-core. -->
+    <script src="/jquery/jquery.min.js"></script>
+    <script src="/jquery-ui/jquery-ui.min.js"></script>
+    <script src="/autobahn/autobahn.min.js"></script>
+    <script src="/vdd/vdd-core.js"></script>
+
+    <!-- visualization specific -->
+
+    <!-- third party libs -->
+    <script src="/plugins/earth/lib/underscore-1.6.0/underscore-min.js" type="text/javascript"></script>
+    <script src="/plugins/earth/lib/geojs-0.2/geo-0.2.js" type="text/javascript"></script>
+    <script src="/plugins/earth/lib/gearth-extensions-0.2.1/extensions-0.2.1.js" type="text/javascript"></script>
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+
+    <!-- Our javascript -->
+    <script src="/plugins/common/compiled/utils/auto_style.js" type="text/javascript"></script>
+    <script src="/plugins/common/compiled/utils/extensions.js" type="text/javascript"></script>
+    <script src="/plugins/common/compiled/utils/module.js" type="text/javascript"></script>
+    <script src="/plugins/common/compiled/utils/gui_events.js" type="text/javascript"></script>
+
+    <script src="/plugins/earth/compiled/utils/google_earth_events.js" type="text/javascript"></script>
+    <script src="/plugins/earth/compiled/map.js" type="text/javascript"></script>
+    <script src="/plugins/earth/compiled/geom/placemark.js" type="text/javascript"></script>
+    <script src="/plugins/earth/compiled/geom/point.js" type="text/javascript"></script>
+    <script src="/plugins/earth/compiled/geom/draggable_point.js" type="text/javascript"></script>
+    <script src="/plugins/earth/compiled/geom/ring.js" type="text/javascript"></script>
+    <script src="/plugins/earth/compiled/geom/draggable_ring.js" type="text/javascript"></script>
+    <script src="/plugins/earth/compiled/geom/bounding_rectangle.js" type="text/javascript"></script>
+    <script src="/plugins/earth/compiled/geom/draggable_bounding_rectangle.js" type="text/javascript"></script>
+    <script src="/plugins/earth/compiled/geom/cartesian_ring.js" type="text/javascript"></script>
+    <script src="/plugins/earth/compiled/geom/draggable_cartesian_ring.js" type="text/javascript"></script>
+    <script src="/plugins/earth/compiled/earth.js"></script>
+  </head>
+  <body>
+    <div id="map"></div>
+    <footer>
+      <div class="controls">
+        <span class="label">Appearance Controls:</span>
+        <ul class="checkboxes">
+          <li>
+            <label for="enable_grid">Enable Grid</label>
+            <input checked="checked" name="enable_grid" type="checkbox"></input>
+          </li>
+          <li>
+            <label for="enable_auto_zoom">Enable Auto Zoom</label>
+            <input checked="checked" name="enable_auto_zoom" type="checkbox"></input>
+          </li>
+          <li>
+            <label for="dbl_clk_add_points">Double Click Add Points</label>
+            <input name="dbl_clk_add_points" type="checkbox"></input>
+          </li>
+          <li>
+            <a class="button" id="clear_button" href="#">Clear</a>
+          </li>
+        </ul>
+      </div>
+    </footer>
+
+
+
+    <!--
+    Originally from spatial-viz. Probably won't need these.
+    <script src="js/utils/gui_events.js" type="text/javascript"></script>
+    <script src="js/utils/lazy_cacher.js" type="text/javascript"></script>
+    <script src="js/calc.js" type="text/javascript"></script>
+    <script src="js/calc/vector.js" type="text/javascript"></script>
+    <script src="js/calc/great_circle.js" type="text/javascript"></script>
+    <script src="js/calc/arc.js" type="text/javascript"></script>
+    <script src="js/calc/lon_range.js" type="text/javascript"></script>
+    <script src="js/calc/bounding_rectangle.js" type="text/javascript"></script>
+    <script src="js/maps/multi_ring_map.js" type="text/javascript"></script>
+    <script src="js/polygon.js" type="text/javascript"></script>
+    <script src="js/draggable_ring.js" type="text/javascript"></script>
+    <script src="js/arc_info.js" type="text/javascript"></script>
+    <script src="js/great_circle.js" type="text/javascript"></script>
+    <script src="js/features/feature.js" type="text/javascript"></script>
+    <script src="js/features/arc_info_feature.js" type="text/javascript"></script>
+    <script src="js/features/ring_bounding_rectangle_feature.js" type="text/javascript"></script>
+  -->
+
+  </body>
+</html>
