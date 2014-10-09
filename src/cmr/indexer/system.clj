@@ -31,6 +31,13 @@
   "Required for jobs"
   (atom nil))
 
+(def relative-root-url
+  "Defines a root path that will appear on all requests sent to this application. For example if
+  the relative-root-url is '/cmr-app' and the path for a URL is '/foo' then the full url would be
+  http://host:port/cmr-app/foo. This should be set when this application is deployed in an
+  environment where it is accessed through a VIP."
+  (cfg/config-value-fn :indexer-relative-root-url ""))
+
 (defn create-system
   "Returns a new instance of the whole application."
   []
@@ -40,6 +47,7 @@
              :colls-with-separate-indexes-fn collections-with-separate-indexes
              :web (web/create-web-server (transmit-config/indexer-port) routes/make-api)
              :zipkin (context/zipkin-config "Indexer" false)
+             :relative-root-url (relative-root-url)
              :caches {ac/acl-cache-key (ac/create-acl-cache)
                       cache/general-cache-key (cache/create-cache)
                       acl/token-imp-cache-key (acl/create-token-imp-cache)}
