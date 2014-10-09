@@ -72,11 +72,6 @@ Here is a list of supported extensions that their corresponding MimeTypes:
 
 iso is an alias for iso\_mends.
 
-## Administrative Tasks
-
-These tasks require an admin user token with the INGEST_MANAGEMENT_ACL with read or update
-permission.
-
 ### Clear the cache cache
 
     curl -i -XPOST %CMR-ENDPOINT%/clear-cache
@@ -92,15 +87,15 @@ Every CMR application has a reset function to reset it back to it's initial stat
 Endpoints are provided for querying the contents of the various caches used by the application.
 The following curl will return the list of caches:
 
-    curl -i %CMR-ENDPOINT%/caches
+    curl -i http://localhost:3004/caches
 
 The following curl will return the keys for a specific cache:
 
-    curl -i %CMR-ENDPOINT%/caches/cache-name
+    curl -i http://localhost:3004/caches/cache-name
 
 This curl will return the value for a specific key in the named cache:
 
-    curl -i %CMR-ENDPOINT%/caches/cache-name/cache-key
+    curl -i http://localhost:3004/caches/cache-name/cache-key
 
 ### Check application health
 

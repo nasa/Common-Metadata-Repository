@@ -297,7 +297,7 @@
                              request-context :request-context
                              headers :headers}
           (let [context (acl/add-authentication-to-context request-context params headers)
-                cache (cache/context->cache (keyword cache-name))]
+                cache (get-in context [:system :caches (keyword cache-name)])]
             (acl/verify-ingest-management-permission context :read)
             (when cache
               (let [result (->> cache
@@ -313,7 +313,7 @@
                                         headers :headers}
           (let [cache-key (keyword cache-key)
                 context (acl/add-authentication-to-context request-context params headers)
-                cache (cache/context->cache context (keyword cache-name))
+                cache (get-in context [:system :caches (keyword cache-name)])
                 result (-> cache
                            :atom
                            deref

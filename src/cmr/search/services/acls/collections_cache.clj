@@ -19,12 +19,18 @@
 (def cache-key
   :collections-for-gran-acls)
 
+(defn- context->cache
+  "Gets the collections cache from the context"
+  [context]
+  (get-in context [:system :caches cache-key]))
+
+
 (comment
 
   (def context {:system (get-in user/system [:apps :search])})
   (get-collection context "PROV2" "coll3")
   (get-collection context "C1200000006-PROV2")
-  (cache/context->cache context cache-key)
+  (context->cache context)
   (refresh-cache context)
 
   )
@@ -45,7 +51,7 @@
   to keep the cache fresh. This will throw an exception if there is a problem fetching collections. The
   caller is responsible for catching and logging the exception."
   [context]
-  (let [cache (cache/context->cache context cache-key)
+  (let [cache (context->cache context)
         collections (fetch-collections context)
         by-concept-id (into {} (for [{:keys [concept-id] :as coll} collections]
                                  [concept-id coll]))
@@ -59,7 +65,7 @@
 (defn get-collections-map
   "Gets the cached value."
   [context]
-  (let [cache (cache/context->cache context cache-key)]
+  (let [cache (context->cache context)]
     (when (empty? (deref (:atom cache)))
       (info "No collections for granule acls found in cache. Manually triggering cache refresh")
       (refresh-cache context))

@@ -30,11 +30,14 @@
 (def index-cache-name
   :index-names)
 
+(defn context->index-cache
+  [context]
+  (get-in context [:system :caches index-cache-name]))
+
 (defn- get-granule-index-names
   "Fetch index names associated with concepts."
   [context]
-  (let [index-names (cache/cache-lookup (cache/context->cache context index-cache-name)
-                                        :concept-indices
+  (let [index-names (cache/cache-lookup (context->index-cache context) :concept-indices
                                         (partial fetch-concept-type-index-names context))]
     (get index-names :granule)))
 
