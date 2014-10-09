@@ -23,11 +23,10 @@
   to keep the cache fresh. This will throw an exception if there is a problem fetching ACLs. The
   caller is responsible for catching and logging the exception."
   [context]
-  (let [acl-cache (cache/context->cache context acl-cache-key)
-        updated-acls (echo-acls/get-acls-by-type context "CATALOG_ITEM")]
+(let [acl-cache (context->acl-cache context)]
     (cache/update-cache
       acl-cache
-      #(assoc % :acls updated-acls))))
+      (fn [_] {:acls (echo-acls/get-acls-by-type context "CATALOG_ITEM")}))))
 
 (defn get-acls
   "Gets the current cached acls."
