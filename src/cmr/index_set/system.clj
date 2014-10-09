@@ -20,6 +20,8 @@
     :private true}
   component-order [:log :index :web])
 
+(def relative-root-url (cfg/config-value-fn :index-set-relative-root-url ""))
+
 (defn create-system
   "Returns a new instance of the whole application."
   []
@@ -27,7 +29,8 @@
              :index (es/create-elasticsearch-store (es-config/elastic-config))
              :web (web/create-web-server (app-port) routes/make-api)
              :caches {acl/token-imp-cache-key (acl/create-token-imp-cache)}
-             :zipkin (context/zipkin-config "index-set" false)}]
+             :zipkin (context/zipkin-config "index-set" false)
+             :relative-root-url (relative-root-url)}]
     (transmit-config/system-with-connections sys [:echo-rest])))
 
 (defn start
