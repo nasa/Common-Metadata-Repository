@@ -299,7 +299,10 @@
 (defn- parse-refs-response
   "Parse the find-refs response based on expected format and retruns the parsed result"
   [concept-type params options]
-  (let [{:keys [echo-compatible include-facets]} params
+  (let [;; params is not a map for catalog-rest style tests,
+        ;; we cannot destructing params as a map for the next two lines.
+        echo-compatible (:echo-compatible params)
+        include-facets (:include-facets params)
         response (find-concepts-in-format "application/xml" concept-type params options)]
     (if (and echo-compatible include-facets)
       (parse-echo-facets-response response)
