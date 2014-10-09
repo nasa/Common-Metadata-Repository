@@ -55,7 +55,7 @@
 
 (defmulti results->xml-element
   "Converts the results into an XML element"
-  (fn [echo-compatible? results]
+  (fn [echo-compatible? include-facets? results]
     echo-compatible?))
 
 ;; Normal CMR Search response implementations
@@ -76,7 +76,7 @@
                (when score (x/element :score {} score)))))
 
 (defmethod results->xml-element false
-  [_ results]
+  [_ include-facets? results]
   (let [{:keys [hits took items facets]} results]
     (x/element :results {}
                (x/element :hits {} (str hits))
@@ -97,17 +97,17 @@
                (when score (x/element :score {} score)))))
 
 (defmethod results->xml-element true
-  [_ results]
-  (x/->Element :references {"type" "array"}
-               (map (partial reference->xml-element true results) (:items results))))
+  [_ include-facets? results]
+  (if include-facets?
+    ;; Both echo-compatible and include-facets are true,
+    ;; we generate response in catalog-rest search-facet format.
+    (frf/facets->echo-xml-element (:facets results))
+    (x/->Element :references {"type" "array"}
+                 (map (partial reference->xml-element true results) (:items results)))))
 
 (defmethod qs/search-results->response :xml
   [context query results]
-  (let [{:keys [pretty? echo-compatible?]} query
+  (let [{:keys [pretty? echo-compatible? result-features]} query
+        include-facets? (boolean (some #{:facets} result-features))
         xml-fn (if pretty? x/indent-str x/emit-str)]
-    (xml-fn (results->xml-element echo-compatible? results))))
-
-
-
-
-
+    (xml-fn (results->xml-element echo-compatible? include-facets? results))))
