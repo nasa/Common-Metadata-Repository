@@ -25,50 +25,51 @@
 
 (defn- build-routes [system]
   (routes
-    (POST "/reindex-collection-permitted-groups" {:keys [headers request-context]}
-      (jobs/reindex-collection-permitted-groups request-context)
-      {:status 200})
-    (POST "/cleanup-expired-collections" {:keys [headers request-context]}
-      (jobs/cleanup-expired-collections request-context)
-      {:status 200})
-    (context "/providers/:provider-id" [provider-id]
-      (context ["/collections/:native-id" :native-id #".*$"] [native-id]
-        (PUT "/" {:keys [body content-type headers request-context]}
-          (let [metadata (string/trim (slurp body))
-                base-concept {:metadata metadata
-                              :format content-type
-                              :provider-id provider-id
-                              :native-id native-id
-                              :concept-type :collection}
-                concept (set-concept-id base-concept headers)]
-            (r/response (ingest/save-concept request-context concept))))
-        (DELETE "/" {:keys [request-context]}
-          (let [concept-attribs {:provider-id provider-id
-                                 :native-id native-id
-                                 :concept-type :collection}]
-            (r/response (ingest/delete-concept request-context concept-attribs)))))
-      (context ["/granules/:native-id" :native-id #".*$"] [native-id]
-        (PUT "/" {:keys [body content-type headers request-context]}
-          (let [metadata (string/trim (slurp body))
-                base-concept {:metadata metadata
-                              :format content-type
-                              :provider-id provider-id
-                              :native-id native-id
-                              :concept-type :granule}
-                concept (set-concept-id base-concept headers)]
-            (r/response (ingest/save-concept request-context concept))))
-        (DELETE "/" {:keys [request-context]}
-          (let [concept-attribs {:provider-id provider-id
-                                 :native-id native-id
-                                 :concept-type :granule}]
-            (r/response (ingest/delete-concept request-context concept-attribs))))))
+    (context (:relative-root-url system) []
+      (POST "/reindex-collection-permitted-groups" {:keys [headers request-context]}
+        (jobs/reindex-collection-permitted-groups request-context)
+        {:status 200})
+      (POST "/cleanup-expired-collections" {:keys [headers request-context]}
+        (jobs/cleanup-expired-collections request-context)
+        {:status 200})
+      (context "/providers/:provider-id" [provider-id]
+        (context ["/collections/:native-id" :native-id #".*$"] [native-id]
+          (PUT "/" {:keys [body content-type headers request-context]}
+            (let [metadata (string/trim (slurp body))
+                  base-concept {:metadata metadata
+                                :format content-type
+                                :provider-id provider-id
+                                :native-id native-id
+                                :concept-type :collection}
+                  concept (set-concept-id base-concept headers)]
+              (r/response (ingest/save-concept request-context concept))))
+          (DELETE "/" {:keys [request-context]}
+            (let [concept-attribs {:provider-id provider-id
+                                   :native-id native-id
+                                   :concept-type :collection}]
+              (r/response (ingest/delete-concept request-context concept-attribs)))))
+        (context ["/granules/:native-id" :native-id #".*$"] [native-id]
+          (PUT "/" {:keys [body content-type headers request-context]}
+            (let [metadata (string/trim (slurp body))
+                  base-concept {:metadata metadata
+                                :format content-type
+                                :provider-id provider-id
+                                :native-id native-id
+                                :concept-type :granule}
+                  concept (set-concept-id base-concept headers)]
+              (r/response (ingest/save-concept request-context concept))))
+          (DELETE "/" {:keys [request-context]}
+            (let [concept-attribs {:provider-id provider-id
+                                   :native-id native-id
+                                   :concept-type :granule}]
+              (r/response (ingest/delete-concept request-context concept-attribs))))))
 
-    (GET "/health" {request-context :request-context params :params}
-      (let [{pretty? :pretty} params
-            {:keys [ok? dependencies]} (ingest/health request-context)]
-        {:status (if ok? 200 503)
-         :headers {"Content-Type" "application/json; charset=utf-8"}
-         :body (cheshire/generate-string dependencies {:pretty pretty?})}))
+      (GET "/health" {request-context :request-context params :params}
+        (let [{pretty? :pretty} params
+              {:keys [ok? dependencies]} (ingest/health request-context)]
+          {:status (if ok? 200 503)
+           :headers {"Content-Type" "application/json; charset=utf-8"}
+           :body (cheshire/generate-string dependencies {:pretty pretty?})})))
 
     (route/not-found "Not Found")))
 
