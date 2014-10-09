@@ -18,12 +18,17 @@
   []
   (cache/create-cache))
 
+(defn context->acl-cache
+  "Gets the acl cache from the context"
+  [context]
+  (get-in context [:system :caches :acls]))
+
 (defn refresh-acl-cache
   "Refreshes the acls stored in the cache. This should be called from a background job on a timer
   to keep the cache fresh. This will throw an exception if there is a problem fetching ACLs. The
   caller is responsible for catching and logging the exception."
   [context]
-  (let [acl-cache (cache/context->cache context acl-cache-key)
+  (let [acl-cache (context->acl-cache context)
         updated-acls (echo-acls/get-acls-by-type context "CATALOG_ITEM")]
     (cache/update-cache
       acl-cache
@@ -32,7 +37,7 @@
 (defn get-acls
   "Gets the current cached acls."
   [context]
-  (let [acl-cache (context->cache context acl-cache-key)]
+  (let [acl-cache (context->acl-cache context)]
     (cache/cache-lookup
       acl-cache
       :acls
