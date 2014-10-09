@@ -8,10 +8,10 @@ chmod +x support/stop.sh
 ./support/stop.sh
 ./support/build-and-run.sh
 
-cd ../cmr-system-int-test
+cd ../system-int-test
 CMR_ELASTIC_PORT=9206 lein test-out
 
-cd ../cmr-dev-system
+cd ../dev-system
 ./support/stop.sh
 
 lein clean

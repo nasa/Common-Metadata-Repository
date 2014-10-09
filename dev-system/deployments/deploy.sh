@@ -10,15 +10,15 @@ fi
 
 support/clean-and-install-dependencies.sh
 
-cd ../cmr-metadata-db-app
+cd ../metadata-db-app
 cmr_deploy $1
-cd ../cmr-index-set-app
+cd ../index-set-app
 cmr_deploy $1
-cd ../cmr-indexer-app
+cd ../indexer-app
 cmr_deploy $1
-cd ../cmr-search-app
+cd ../search-app
 cmr_deploy $1
-cd ../cmr-ingest-app
+cd ../ingest-app
 cmr_deploy $1
-cd ../cmr-bootstrap-app
+cd ../bootstrap-app
 cmr_deploy $1

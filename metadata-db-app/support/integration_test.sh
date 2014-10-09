@@ -5,15 +5,15 @@
 echo "Installing dependent libraries"
 
 ## Install CMR common
-cd ../cmr-common-lib
+cd ../common-lib
 lein install
 
 ## Install System trace lib
-cd ../cmr-system-trace-lib
+cd ../system-trace-lib
 lein install
 
 ## Build metadata db uber jar
-cd ../cmr-metadata-db-app
+cd ../metadata-db-app
 lein uberjar
 
 ## Capture the uberjar filename

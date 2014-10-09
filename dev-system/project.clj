@@ -31,7 +31,7 @@
     (apply concat ["do"
                    "shell" "mkdir" "checkouts,"]
            (map (fn [project-name]
-                  ["shell" "ln" "-s" (str "../../" (name project-name)) "checkouts/,"])
+                  ["shell" "ln" "-s" (str "../../" (subs (name project-name) 4)) "checkouts/,"])
                 (keys projects)))))
 
 ;; The version number here is for the sprint number. It will be incremented each sprint. The second
