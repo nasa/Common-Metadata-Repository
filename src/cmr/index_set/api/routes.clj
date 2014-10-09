@@ -63,7 +63,7 @@
                            request-context :request-context
                            headers :headers}
         (let [context (acl/add-authentication-to-context request-context params headers)
-              cache (get-in context [:system :caches (keyword cache-name)])]
+              cache (cache/context->cache (keyword cache-name))]
           (acl/verify-ingest-management-permission context :read)
           (when cache
             (let [result (->> cache
@@ -79,7 +79,7 @@
                                       headers :headers}
         (let [cache-key (keyword cache-key)
               context (acl/add-authentication-to-context request-context params headers)
-              cache (get-in context [:system :caches (keyword cache-name)])
+              cache (cache/context->cache context (keyword cache-name))
               result (-> cache
                          :atom
                          deref
@@ -94,6 +94,7 @@
         (acl/verify-ingest-management-permission context :update)
         (cache/reset-caches context))
       {:status 200})
+
 
     ;; delete all of the indices associated with index-sets and index-set docs in elastic
     (POST "/reset" {request-context :request-context params :params headers :headers}
