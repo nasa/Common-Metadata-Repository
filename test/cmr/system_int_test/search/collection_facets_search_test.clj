@@ -197,6 +197,10 @@
         (testing "refs"
           (is (= expected-facets
                  (:facets (search/find-refs :collection {:include-facets true})))))
+        (testing "refs echo-compatible true"
+          (is (= expected-facets
+                 (search/find-refs :collection {:include-facets true
+                                                :echo-compatible true}))))
         (testing "metadata items and direct transformer"
           (is (= expected-facets
                  (:facets (search/find-metadata :collection
@@ -287,8 +291,8 @@
 
           (is (= expected-facets
                  (:facets (search/find-refs :collection {:include-facets true
-                                                        :project ["PROJ2" "proj3"]
-                                                        "options[project][and]" true}))))))
+                                                         :project ["PROJ2" "proj3"]
+                                                         "options[project][and]" true}))))))
 
       (testing "search finding one document"
         (let [expected-facets [{:field "project" :value-counts []}
@@ -328,6 +332,3 @@
         (testing "search finding no documents"
           (is (= empty-facets
                  (:facets (search/find-refs :collection {:include-facets true :entry-title "foo"})))))))))
-
-
-

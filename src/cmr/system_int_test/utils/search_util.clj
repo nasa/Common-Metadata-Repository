@@ -290,14 +290,28 @@
       {:refs refs
        :type references-type})))
 
+(defn- parse-echo-facets-response
+  "Returns the parsed facets by parsing the given facets according to catalog-rest facets format"
+  [response]
+  (let [parsed (-> response :body x/parse-str)]
+    (f/parse-echo-facets-xml parsed)))
+
+(defn- parse-refs-response
+  "Parse the find-refs response based on expected format and retruns the parsed result"
+  [concept-type params options]
+  (let [{:keys [echo-compatible include-facets]} params
+        response (find-concepts-in-format "application/xml" concept-type params options)]
+    (if (and echo-compatible include-facets)
+      (parse-echo-facets-response response)
+      (parse-reference-response echo-compatible response))))
+
 (defn find-refs
   "Returns the references that are found by searching with the input params"
   ([concept-type params]
    (find-refs concept-type params {}))
   ([concept-type params options]
    (get-search-failure-xml-data
-     (parse-reference-response (:echo-compatible params)
-                               (find-concepts-in-format "application/xml" concept-type params options)))))
+     (parse-refs-response concept-type params options))))
 
 (defn find-refs-with-post
   "Returns the references that are found by searching through POST request with the input params"
