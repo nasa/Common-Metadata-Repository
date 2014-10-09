@@ -4,9 +4,13 @@
             [cmr.spatial.point :as p]
             [cmr.spatial.polygon]
             [cmr.spatial.line-string]
+            [cmr.spatial.geodetic-ring :as gr]
+            [cmr.spatial.cartesian-ring :as cr]
             [cmr.common.services.errors :as errors]
             [cmr.common.dev.record-pretty-printer :as record-pretty-printer])
   (:import cmr.spatial.polygon.Polygon
+           cmr.spatial.geodetic_ring.GeodeticRing
+           cmr.spatial.cartesian_ring.CartesianRing
            cmr.spatial.line_string.LineString))
 
 ;; Represents a ring in which the coordinate system is not known at the time the data is constructed/
@@ -49,6 +53,14 @@
 (defmethod set-coordinate-system LineString
   [coordinate-system line]
   (assoc line :coordinate-system coordinate-system))
+
+(defmethod set-coordinate-system GeodeticRing
+  [coordinate-system {:keys [points]}]
+  (rr/ring coordinate-system points))
+
+(defmethod set-coordinate-system CartesianRing
+  [coordinate-system {:keys [points]}]
+  (rr/ring coordinate-system points))
 
 (defmethod set-coordinate-system GenericRing
   [coordinate-system {:keys [points]}]
