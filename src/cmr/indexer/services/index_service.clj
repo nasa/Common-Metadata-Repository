@@ -6,6 +6,7 @@
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.concepts :as cs]
             [cmr.common.date-time-parser :as date]
+            [cmr.common.cache :as cache]
             [cmr.transmit.metadata-db :as meta-db]
             [cmr.transmit.index-set :as tis]
             [cmr.transmit.echo.rest :as rest]
@@ -14,7 +15,6 @@
             [cmr.umm.core :as umm]
             [cheshire.core :as cheshire]
             [cmr.indexer.data.index-set :as idx-set]
-            [cmr.common.cache :as cache]
             [cmr.acl.acl-cache :as acl-cache]
             [cmr.common.services.errors :as errors]
             [cmr.system-trace.core :refer [deftracefn]]))
@@ -95,27 +95,19 @@
         (concept-mapping-types :granule)
         {:term {:collection-concept-id id}}))))
 
-
-(deftracefn clear-cache
-  "Delegate reset elastic indices operation to index-set app"
-  [context]
-  (info "Clearing the indexer application cache")
-  (cache/reset-cache (-> context :system :caches :general))
-  (acl-cache/reset context))
-
 (deftracefn reset
   "Delegate reset elastic indices operation to index-set app"
   [context]
-  (clear-cache context)
+  (cache/reset-caches context)
   (es/reset-es-store context)
-  (clear-cache context))
+  (cache/reset-caches context))
 
 (deftracefn update-indexes
   "Updates the index mappings and settings."
   [context]
-  (clear-cache context)
+  (cache/reset-cache context)
   (es/update-indexes context)
-  (clear-cache context))
+  (cache/reset-cache context))
 
 (deftracefn health
   "Returns the health state of the app."

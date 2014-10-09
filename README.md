@@ -10,7 +10,12 @@ This is the indexer application for the CMR. It is responsible for indexing modi
 
     curl -i -XDELETE -H "Content-Type: application/json" http://localhost:3004/C1234-PROV1/2
 
-## Reset elastic and cache
+## Administrative Tasks
+
+These tasks require an admin user token with the INGEST_MANAGEMENT_ACL with read or update
+permission.
+
+### Reset elastic and cache
 
 *WARNING - this endpoint drops all data from the index.*
 
@@ -21,6 +26,21 @@ Every CMR application has a reset function to reset it back to it's initial stat
 ### Clear the cache cache
 
     curl -i -XPOST http://localhost:3004/clear-cache?token=XXXX
+
+### Querying caches
+
+Endpoints are provided for querying the contents of the various caches used by the application.
+The following curl will return the list of caches:
+
+    curl -i http://localhost:3004/caches
+
+The following curl will return the keys for a specific cache:
+
+    curl -i http://localhost:3004/caches/cache-name
+
+This curl will return the value for a specific key in the named cache:
+
+    curl -i http://localhost:3004/caches/cache-name/cache-key
 
 ### Check application health
 
