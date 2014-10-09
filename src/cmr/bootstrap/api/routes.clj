@@ -61,25 +61,26 @@
 
 (defn- build-routes [system]
   (routes
-    (context "/bulk_migration" []
-      (POST "/providers" {:keys [request-context body]}
-        (migrate-provider request-context body))
-      (POST "/collections" {:keys [request-context body]}
-        (migrate-collection request-context body)))
+    (context (:relative-root-url system) []
+      (context "/bulk_migration" []
+        (POST "/providers" {:keys [request-context body]}
+          (migrate-provider request-context body))
+        (POST "/collections" {:keys [request-context body]}
+          (migrate-collection request-context body)))
 
-    (context "/bulk_index" []
-      (POST "/providers" {:keys [request-context body params]}
-        (bulk-index-provider request-context body params))
+      (context "/bulk_index" []
+        (POST "/providers" {:keys [request-context body params]}
+          (bulk-index-provider request-context body params))
 
-      (POST "/collections" {:keys [request-context body params]}
-        (bulk-index-collection request-context body params)))
+        (POST "/collections" {:keys [request-context body params]}
+          (bulk-index-collection request-context body params)))
 
-    (GET "/health" {request-context :request-context params :params}
-      (let [{pretty? :pretty} params
-            {:keys [ok? dependencies]} (hs/health request-context)]
-        {:status (if ok? 200 503)
-         :headers {"Content-Type" "application/json; charset=utf-8"}
-         :body (json/generate-string dependencies {:pretty pretty?})}))))
+      (GET "/health" {request-context :request-context params :params}
+        (let [{pretty? :pretty} params
+              {:keys [ok? dependencies]} (hs/health request-context)]
+          {:status (if ok? 200 503)
+           :headers {"Content-Type" "application/json; charset=utf-8"}
+           :body (json/generate-string dependencies {:pretty pretty?})})))))
 
 (defn make-api [system]
   (-> (build-routes system)
