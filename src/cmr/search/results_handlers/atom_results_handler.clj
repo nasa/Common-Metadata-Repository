@@ -112,7 +112,9 @@
           [start-circular-latitude] :start-circular-latitude} :fields} elastic-result
         start-date (when start-date (str/replace (str start-date) #"\+0000" "Z"))
         end-date (when end-date (str/replace (str end-date) #"\+0000" "Z"))
-        atom-links (map #(json/decode % true) atom-links)]
+        atom-links (map #(json/decode % true) atom-links)
+        ;; DIF collection has a special case on associated-difs where it is set to its entry-id
+        associated-difs (if (= "dif" metadata-format) [entry-title] associated-difs)]
     {:id concept-id
      :score (r/normalize-score score)
      :title entry-title
