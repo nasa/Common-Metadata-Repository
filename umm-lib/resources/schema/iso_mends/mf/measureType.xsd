@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+Ce fichier contient la définition de type de bases pouvant être référencés depuis la propriété valueType de
+DQ_QuantitativeResult pour un résultat quantitatif ou depuis la propriété attributeDescription de DQ_CoverageDescription pour une couche de qualification. En terme de métadonnées, c'est l'élément MTRESq pour un résultat quantitatif ou l'élément QBTYPEqb pour une couche de qualification qui détermine le type XML à utiliser. Les valeurs de ces éléments de métadonnées sont définies par la liste de choix "Type de donnée". La correspondance entre les valeurs symboliques de cette liste de choix et les types XML définis dans ce fichier est précisée ci-après.
+ 
+Pour les couches de qualification, ces types répondent au cas général où la couverture de données géographiques de la couche de qualification ne contient qu'une bande contenant le résultat de la mesure. Dans le cas où le domaine sémantique de la couverture est plus complexe, la définition de la couche de qualification doit comprendre la définition d'un type XML définissant le contenu des bandes. Au moins une bande doit être nommée measure et avoir un type correspondant à la valeur de MTRESq ou QBTYPEqb. Cette définition de type XML doit être stockée dans un fichier XSD qui peut accompagner le produit unitaire où l'ensemble de produits ou être posté à un endroit bien défini, tel que le répertoire http://eden.ign.fr/catalogue/cargene/20050620/mesure.
+
+-->
+<xs:schema targetNamespace="http://eden.ign.fr/xsd/metafor/20050620/mf" elementFormDefault="qualified" xmlns:mf="http://eden.ign.fr/xsd/metafor/20050620/mf" xmlns:gco="http://www.isotc211.org/2005/gco" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:gmd="http://www.isotc211.org/2005/gmd" xmlns:gmx="http://www.isotc211.org/2005/gmx">
+	<xs:import namespace="http://www.isotc211.org/2005/gco" schemaLocation="../../gco/1.0/gco.xsd"/>
+	<xs:import namespace="http://www.isotc211.org/2005/gmd" schemaLocation="../../gmd/1.0/gmd.xsd"/>
+	<xs:import namespace="http://www.isotc211.org/2005/gmx" schemaLocation="../../gmx/1.0/gmx.xsd"/>
+	<!-- Mesure dont le resultat est un booléen (valeur symbolique boolean de Type de données) -->
+	<xs:complexType name="BooleanMeasure_Type" id="boolean">
+		<xs:sequence>
+			<xs:element name="measure" type="gco:Boolean_PropertyType"/>
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Mesure dont le resultat est une Date (valeur symbolique date de Type de données) -->
+	<xs:complexType name="DateMeasure_Type" id="date">
+		<xs:sequence>
+			<xs:element name="measure" type="gco:Date_PropertyType"/>
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Mesure dont le resultat est un Instant (valeur symbolique dateTime de Type de donnée ) -->
+	<xs:complexType name="DateTimeMeasure_Type" id="dateTime">
+		<xs:sequence>
+			<xs:element name="measure" type="gco:DateTime_PropertyType"/>
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Mesure dont le resultat est un entier (valeur symbolique integer de Type de donnée )-->
+	<xs:complexType name="IntegerMeasure_Type" id="integer">
+		<xs:sequence>
+			<xs:element name="measure" type="gco:Integer_PropertyType"/>
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Mesure dont le resultat est un réel (valeur symbolique real de Type de donnée ) -->
+	<xs:complexType name="RealMeasure_Type" id="real">
+		<xs:sequence>
+			<xs:element name="measure" type="gco:Real_PropertyType"/>
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Mesure dont le resultat est une citation (valeur symbolique citation de Type de donnée )-->
+	<xs:complexType name="CitationMeasure_Type" id="citation">
+		<xs:sequence>
+			<xs:element name="measure" type="gmd:CI_Citation_PropertyType"/>
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Mesure dont le resultat est un Fichier (valeur symbolique file de Type de donnée ). Dans ce cas, le fichier contient un raapport détaillé de l'évaluation  de la qualité. Ce fichier est un fichier de support. -->
+	<xs:complexType name="FileMeasure_Type" id="file">
+		<xs:sequence>
+			<xs:element name="measure" type="gmx:MX_SupportFile_PropertyType"/>
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Mesure dont le resultat est une chaîne de car. multilingue (valeur symbolique string de Type de donnée ) -->
+	<xs:complexType name="StringMeasure_Type" id="string">
+		<xs:sequence>
+			<xs:element name="measure" type="gmd:PT_FreeText_PropertyType"/>
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Mesure dont le resultat est une Ancre (valeur symbolique anchorl de Type de donnée ) -->
+	<xs:complexType name="AnchorMeasureType" id="anchor">
+		<xs:sequence>
+			<xs:element name="measure" type="gmx:Anchor_PropertyType"/>
+		</xs:sequence>
+	</xs:complexType>
+</xs:schema>

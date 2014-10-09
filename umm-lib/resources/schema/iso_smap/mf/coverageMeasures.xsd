@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema targetNamespace="http://eden.ign.fr/xsd/metafor/20050620/mf" elementFormDefault="qualified" xmlns:mf="http://eden.ign.fr/xsd/metafor/20050620/mf" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<!-- ================================== Imports ================================== -->
+	<xs:import namespace="http://www.opengis.net/gml/3.2" schemaLocation="../gml/gml.xsd"/>
+	<!-- ########################################################################### -->
+	<!-- ########################################################################### -->
+	<!--List of the XML definition of caverage quality measures for GML encoding-->
+	<!-- ================================== Classes ================================= -->
+	<!--=========Coverage file root==========-->
+	<xs:element name="CargeneCoverage">
+		<xs:complexType>
+			<xs:choice>
+				<xs:element ref="gml:MultiPointCoverage"/>
+				<xs:element ref="gml:MultiCurveCoverage"/>
+				<xs:element ref="gml:MultiSurfaceCoverage"/>
+			</xs:choice>
+		</xs:complexType>
+	</xs:element>
+	<!--==========================================================================-->
+	<!--====== 4 types de mesures -> 4 modeles de mesures ======-->
+	<!--==== A: Quantity ====-->
+	<!--<xs:element name="QuantityMeasure" type="mf:QuantityMeasureType" substitutionGroup="gml:AbstractScalarValue" nillable="true"/>-->
+	<!--data model: copy of gml:Quantity-->
+	<xs:complexType name="QuantityMeasureType">
+		<xs:simpleContent>
+			<xs:extension base="gml:MeasureType">
+				<xs:attribute name="nilReason" type="gml:NilReasonType"/>
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+	<!--==== B: Category ====-->
+	<!--<xs:element name="CategoryMeasure" type="mf:CategoryMeasureType" substitutionGroup="gml:AbstractScalarValue" nillable="true"/>-->
+	<!--data model: copy of gml:Category-->
+	<xs:complexType name="CategoryMeasureType">
+		<xs:simpleContent>
+			<xs:extension base="gml:CodeType">
+				<xs:attribute name="nilReason" type="gml:NilReasonType"/>
+			</xs:extension>
+			<!--NB: gml:CodeType porte un attribut codeSpace optionnel qui peut porter une référence vers le domaine où est défini la liste de valeurs-->
+		</xs:simpleContent>
+	</xs:complexType>
+	<!--==== C: Count ====-->
+	<!--<xs:element name="CountMeasure" type="mf:CountMeasureType" substitutionGroup="gml:AbstractScalarValue" nillable="true"/>-->
+	<!--data model: copy of gml:Count-->
+	<xs:complexType name="CountMeasureType">
+		<xs:simpleContent>
+			<xs:extension base="xs:integer">
+				<xs:attribute name="nilReason" type="gml:NilReasonType"/>
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+	<!--==== D: Boolean ====-->
+	<!--<xs:element name="BooleantMeasure" type="mf:BooleanMeasureType" substitutionGroup="gml:AbstractScalarValue" nillable="true"/>-->
+	<!--data model: copy of gml:Boolean-->
+	<xs:complexType name="BooleanMeasureType">
+		<xs:simpleContent>
+			<xs:extension base="xs:boolean">
+				<xs:attribute name="nilReason" type="gml:NilReasonType"/>
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+	<!--End Of File-->
+	<!-- ######################################################################### -->
+	<!-- ######################################################################### -->
+	<!-- ######################################################################### -->
+	<!--====================================-->
+	<!--========= Data quality : HorizontalAbsoluteAccuracy ==========-->
+	<!--type: Quantity / geometry: multisurface-->
+	<xs:element name="HorizontalAbsoluteAccuracy" type="mf:QuantityMeasureType" substitutionGroup="gml:AbstractScalarValue" nillable="true"/>
+	<!--====================================-->
+	<!--========= Data quality : Absolute or external accuracy ==========-->
+	<!--type: Boolean / geometry: multicurve-->
+	<xs:element name="DSCGEO01" type="mf:BooleanMeasureType" substitutionGroup="gml:AbstractScalarValue" nillable="true"/>
+	<!--=======EOF=======-->
+	<!-- http://eden.ign.fr/xsd/metafor/20050620/uom/gmxUom.xml# -->
+</xs:schema>
