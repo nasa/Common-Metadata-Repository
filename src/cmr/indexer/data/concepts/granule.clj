@@ -30,7 +30,7 @@
 (defn- fetch-parent-collection
   "Retrieve the parent collection umm from the db"
   [context parent-collection-id]
-  (let [parent-collection-cache (cache/cache->context context parent-collection-cache-key)
+  (let [parent-collection-cache (cache/cache-from-context context parent-collection-cache-key)
         concept (mdb/get-latest-concept context parent-collection-id)]
     (assoc (umm/parse-concept concept) :concept-id parent-collection-id)))
 
