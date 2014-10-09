@@ -28,12 +28,7 @@
   ;; Set the default job start delay to avoid jobs kicking off with tests etc.
   (config/set-config-value! :default-job-start-delay (str (* 3 3600)))
 
-  ; ;; Temporary to enable use of local ECHO
-  ; (config/set-config-value! :echo-rest-port 10000)
-  ; (config/set-config-value! :echo-rest-context "/echo-rest")
-  ; (config/set-config-value! :echo-system-token "E09BD9529FB25FE2E040007F01003E55")
-
-    (let [s (system/create-system system-type)]
+  (let [s (system/create-system system-type)]
     (alter-var-root #'system
                     (constantly
                       (system/start s))))
