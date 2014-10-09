@@ -8,7 +8,7 @@
   "The key used to store the general cache in the system cache map."
   :general)
 
-(defn cache-from-context
+(defn context->cache
   "Get the cache for the given key from the context"
   [context cache-key]
   (get-in context [:system :caches cache-key]))
@@ -65,13 +65,13 @@
 (defn reset-caches
   "Clear all caches."
   [context]
-  (doall (map (fn [[k v]]
-                (debug "Clearing cache " k)
-                (reset-cache v))
-              (get-in context [:system :caches]))))
+  (doseq [[k v] (get-in context [:system :caches])]
+    (fn [[k v]]
+      (debug "Clearing cache " k)
+      (reset-cache v))))
 
 (defn update-cache
-  "Update the cache contents with the output of the given funciton, f. f takes the
+  "Update the cache contents with the output of the given function, f. f takes the
   current cache as its input and returns the new cache."
   [cmr-cache f]
   (swap! (:atom cmr-cache) f)
