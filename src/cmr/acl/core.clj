@@ -95,6 +95,10 @@
   (cache/create-cache
     (clj-cache/ttl-cache-factory {} :ttl TOKEN_IMP_CACHE_TIME)))
 
+(defn context->token-imp-cache
+  [context]
+  (get-in context [:system :caches token-imp-cache-key]))
+
 (defn- has-ingest-management-permission?
   "Returns true if the user identified by the token in the cache has been granted
   INGEST_MANAGEMENT_PERMISSION in ECHO ACLS for the given permission type."
@@ -114,7 +118,7 @@
    (verify-ingest-management-permission context :update))
   ([context permission-type]
    (let [cache-key [(:token context) permission-type]
-         has-permission? (cache/cache-lookup (cache/context->cache context token-imp-cache-key)
+         has-permission? (cache/cache-lookup (context->token-imp-cache context)
                                              cache-key
                                              #(has-ingest-management-permission? context permission-type))]
      (when-not has-permission?
