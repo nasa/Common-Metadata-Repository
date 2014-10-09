@@ -17,10 +17,6 @@
   http://www.onjava.com/pub/a/onjava/excerpt/java_xslt_ch5/?page=9"
   :xsl-transformer-templates)
 
-(defn context->xsl-transformer-cache
-  [context]
-  (get-in context [:system :caches xsl-transformer-cache-name]))
-
 (defn- create-uri-resolver
   "Creates an instance of the URIResolver interface that will direct all paths within the xslt
   folder on the classpath."
@@ -43,7 +39,7 @@
   "Transforms the given xml by appling the given xsl"
   [context xml xsl]
   (let [^Templates template (cache/cache-lookup
-                              (context->xsl-transformer-cache context)
+                              (cache/context->cache context xsl-transformer-cache-name)
                               xsl
                               #(xsl->transformer-template xsl))
         transformer (.newTransformer template)
