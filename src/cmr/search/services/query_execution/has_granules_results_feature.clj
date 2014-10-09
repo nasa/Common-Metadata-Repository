@@ -11,6 +11,9 @@
   "The frequency in seconds of the refresh-has-granules-map-job"
   (* 6 3600))
 
+(def has-granule-cache-key
+  :has-granules-map)
+
 (defn create-has-granules-map-cache
   "Returns a 'cache' which will contain the cached has granules map."
   []
@@ -30,7 +33,7 @@
 (defn refresh-has-granules-map
   "Gets the latest provider holdings and updates the has-granules-map stored in the cache."
   [context]
-  (cache/update-cache (context->has-granules-map-cache context)
+  (cache/update-cache (cache/context->cache context has-granule-cache-key)
                       #(assoc % :has-granules (collection-granule-counts->has-granules-map
                                                 (idx/get-collection-granule-counts context nil)))))
 (defn get-has-granules-map
@@ -38,7 +41,7 @@
   of whether the collections have granules or not. If the has-granules-map has not yet been cached
   it will retrieve it and cache it."
   [context]
-  (let [has-granules-map-cache (context->has-granules-map-cache context)]
+  (let [has-granules-map-cache (cache/context->cache context has-granule-cache-key)]
     (when (empty? (deref (:atom has-granules-map-cache)))
       (refresh-has-granules-map context))
     (:has-granules (deref (:atom has-granules-map-cache)))))
