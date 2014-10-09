@@ -32,7 +32,7 @@
 (defn get-acls
   "Gets the current cached acls."
   [context]
-  (let [acl-cache (context->cache context acl-cache-key)]
+  (let [acl-cache (cache/context->cache context acl-cache-key)]
     (cache/cache-lookup
       acl-cache
       :acls
