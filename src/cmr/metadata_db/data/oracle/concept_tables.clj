@@ -41,7 +41,7 @@
                                  revision_date TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP NOT NULL,
                                  deleted INTEGER DEFAULT 0 NOT NULL,
                                  short_name VARCHAR(85) NOT NULL,
-                                 version_id VARCHAR(80) NOT NULL,
+                                 version_id VARCHAR(80),
                                  entry_title VARCHAR(1030) NOT NULL,
                                  delete_time TIMESTAMP WITH TIME ZONE,
                                  CONSTRAINT %s_pk PRIMARY KEY (id),

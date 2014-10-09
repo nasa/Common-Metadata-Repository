@@ -24,6 +24,13 @@
     (is (= revision-id 1))
     (is (util/verify-concept-was-saved (assoc concept :revision-id revision-id :concept-id concept-id)))))
 
+(deftest save-collection-without-version-id-test
+  (let [concept (assoc-in (util/collection-concept "PROV1" 1) [:extra-fields :version-id] nil)
+        {:keys [status revision-id concept-id]} (util/save-concept concept)]
+    (is (= 201 status))
+    (is (= revision-id 1))
+    (is (util/verify-concept-was-saved (assoc concept :revision-id revision-id :concept-id concept-id)))))
+
 (deftest save-granule-test
   (let [collection (util/collection-concept "PROV1" 1)
         parent-collection-id (:concept-id (util/save-concept collection))
