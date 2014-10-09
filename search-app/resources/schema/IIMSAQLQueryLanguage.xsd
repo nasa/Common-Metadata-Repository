@@ -1,0 +1,706 @@
+
+<xs:schema xmlns:xs='http://www.w3.org/2001/XMLSchema' elementFormDefault='qualified' version='1.0'>
+  <!-- Ported from DTD using: http://www.w3.org/2000/04/schema_hack/ -->
+  <xs:element name='query' type='query'/>
+
+  <xs:complexType name='query'>
+    <xs:sequence>
+      <xs:element name='for' type='for'/>
+      <xs:element name='dataCenterId' type='ValueListOrAll'/>
+      <xs:element name='where' type='where'/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name='for'>
+    <xs:attribute name='value'>
+      <xs:annotation>
+        <xs:documentation>Value must be 'collections' or 'granules'</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:restriction base='xs:string'>
+          <xs:enumeration value='collections'/>
+          <xs:enumeration value='granules'/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+  </xs:complexType>
+
+  <xs:complexType name='where'>
+    <xs:annotation><xs:documentation>List of search conditions.</xs:documentation></xs:annotation>
+    <xs:sequence>
+      <xs:element minOccurs='0' maxOccurs='unbounded' name='granuleCondition' type='granuleCondition'/>
+      <xs:element minOccurs='0' maxOccurs='unbounded' name='collectionCondition' type='collectionCondition'/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name='collectionCondition'>
+    <xs:choice>
+      <xs:element name='CampaignShortName' type='ListValueOrPattern'>
+        <xs:annotation><xs:documentation>Select collections with the given campaign short name(s).</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name='dataSetId' type='ListValueOrPattern'>
+        <xs:annotation><xs:documentation>Select collections with the given Dataset IDs</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name='ECHOLastUpdate' type='DateRangeContainer'>
+        <xs:annotation><xs:documentation>Select collections with update times within the given range.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name='onlineOnly' type='flag'>
+        <xs:annotation><xs:documentation>Restrict search to collections which have online data.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name='ECHOCollectionID' type='ValueOrList'>
+        <xs:annotation><xs:documentation>Select collections with the given echo collection id(s).</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name='processingLevel' type='ListValueOrPattern'>
+        <xs:annotation><xs:documentation>Select collections with the given processing level(s).</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name='sensorName' type='ListValueOrPatternWithOperator'>
+        <xs:annotation><xs:documentation>Select collections with the given sensor short name(s).</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name='shortName' type='ListValueOrPattern'>
+        <xs:annotation><xs:documentation>Select collections with the given short name(s).</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name='sourceName' type='ListValueOrPatternWithOperator'>
+        <xs:annotation><xs:documentation>Select collections with the given platform short name(s).</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name='instrumentShortName' type='ListValueOrPatternWithOperator'>
+        <xs:annotation><xs:documentation>Select collections with the given instrument short name(s).</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name='spatial' type='spatial'>
+        <xs:annotation><xs:documentation>Select collections intersecting the given spatial boundaries.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name='spatialKeywords' type='ListValueOrPattern'>
+        <xs:annotation><xs:documentation>Select collections with the given spatial keyword(s).</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name='temporal' type='temporal'>
+        <xs:annotation><xs:documentation>Select collections intersecting the given temporal boundaries.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name='additionalAttributeNames' type='ListValueOrPattern'>
+        <xs:annotation><xs:documentation>Select collections with the given additional attribute name(s).</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name='additionalAttributes' type='additionalAttributes'>
+        <xs:annotation><xs:documentation>Select collections with the given additional attribute(s).</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name='versionId' type='ListValueOrPattern'>
+        <xs:annotation><xs:documentation>Select collections with the given version id(s).</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name='archiveCenter' type='ListValueOrPattern'>
+        <xs:annotation><xs:documentation>Select collections with the given archive center(s).</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name='difEntryId' type='ListValueOrPattern'>
+        <xs:annotation><xs:documentation>Select collections with the given DIF entry ID(s).</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name='scienceKeywords' type='scienceKeywords'>
+        <xs:annotation><xs:documentation>Select collections with the given science keyword(s).</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name='TwoDCoordinateSystemName' type='ListValueOrPattern'>
+        <xs:annotation><xs:documentation>Select collections with the given two dimensional coordinate system name(s).</xs:documentation></xs:annotation>
+      </xs:element>
+    </xs:choice>
+  </xs:complexType>
+
+  <xs:complexType name='granuleCondition'>
+    <xs:choice>
+      <xs:element name='browseOnly' type='flag'>
+        <xs:annotation><xs:documentation>Restrict search to granules which have browse images.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name='CampaignShortName' type='ListValueOrPattern'>
+        <xs:annotation><xs:documentation>Select granules with the given campaign short name(s).</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name='cloudCover' type='cloudCover'>
+        <xs:annotation><xs:documentation>Select granules with cloud cover extent within the given range.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name='dataSetId' type='ListValueOrPattern'>
+        <xs:annotation><xs:documentation>Select granules with the given dataset ID(s)</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name='dayNightFlag' type='dayNightFlag'>
+        <xs:annotation><xs:documentation>Select granules with the given day/night flag value.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name='ECHOLastUpdate' type='DateRangeContainer'>
+        <xs:annotation><xs:documentation>Select granules with update times within the given range.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name='ECHOCollectionID' type='ValueOrList'>
+        <xs:annotation><xs:documentation>Select granules with the given echo collection id.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name='ECHOGranuleID' type='ListValueOrPattern'>
+        <xs:annotation><xs:documentation>Select granules with the given echo granule id.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name='GranuleUR' type='ValueListPatternOrPatternList'>
+        <xs:annotation><xs:documentation>Select granules with the given granule UR.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name='onlineOnly' type='flag'>
+        <xs:annotation><xs:documentation>Restrict search to granules which have online data.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name='TwoDCoordinateSystem' type='TwoDCoordinateSystem'>
+        <xs:annotation><xs:documentation>Select granules with the given two dimensional coordinate system coordinates.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name='ProducerGranuleID' type='ValueListPatternOrPatternList'>
+        <xs:annotation><xs:documentation>Select granules with the given producer granule ID.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name='sensorName' type='ListValueOrPatternWithOperator'>
+        <xs:annotation><xs:documentation>Select granules with the given sensor short name(s).</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name='sourceName' type='ListValueOrPatternWithOperator'>
+        <xs:annotation><xs:documentation>Select granules with the given platform short name(s).</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name='instrumentShortName' type='ListValueOrPatternWithOperator'>
+        <xs:annotation><xs:documentation>Select granules with the given instrument short name(s).</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name='spatial' type='spatial'>
+        <xs:annotation><xs:documentation>Select granules intersecting the given spatial boundaries.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name='temporal' type='temporal'>
+        <xs:annotation><xs:documentation>Select granules intersecting the given temporal boundaries.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name='additionalAttributes' type='additionalAttributes'>
+        <xs:annotation><xs:documentation>Select granules with the given additional attribute(s).</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name='collectionVersionId' type='ListValueOrPattern'>
+        <xs:annotation><xs:documentation>Select granules belonging to a collection with the given version ID.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name='collectionShortName' type='ListValueOrPattern'>
+        <xs:annotation><xs:documentation>Select granules belonging to a collection with the given short name.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name='orbitNumber' type='orbitNumber'>
+        <xs:annotation><xs:documentation>Select granules with the given orbit number or orbit number range.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name='equatorCrossingLongitude' type='equatorCrossingLongitude'>
+        <xs:annotation><xs:documentation>Select granules with the given equator crossing longitude.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name='equatorCrossingDate' type='DateRangeContainer'>
+        <xs:annotation><xs:documentation>Select granules with the given equator crossing date.</xs:documentation></xs:annotation>
+      </xs:element>
+    </xs:choice>
+  </xs:complexType>
+
+  <xs:complexType name='ValueListOrAll'>
+    <xs:annotation><xs:documentation>Specify a single value, a list of values, or allow all values.</xs:documentation></xs:annotation>
+    <xs:choice>
+      <xs:element name='list' type='list'/>
+      <xs:element name='value' type='value'/>
+      <xs:element name='all'/>
+    </xs:choice>
+  </xs:complexType>
+
+  <xs:complexType name='ListValueOrPattern'>
+    <xs:annotation><xs:documentation>Specify a single value, a list of values, or a text pattern.</xs:documentation></xs:annotation>
+    <xs:choice>
+      <xs:element name='value' type='value'/>
+      <xs:element name='list' type='list'/>
+      <xs:element name='textPattern' type='textPattern'/>
+    </xs:choice>
+  </xs:complexType>
+
+  <xs:complexType name='IIMSPoint'>
+    <xs:annotation><xs:documentation>A geographic (Lat/Lon) point.</xs:documentation></xs:annotation>
+    <xs:attribute name='lat' type='lat' use='required'/>
+    <xs:attribute name='long' type='long' use='required'/>
+  </xs:complexType>
+
+  <xs:simpleType name='long'>
+    <xs:annotation><xs:documentation>A longitude coordinate.</xs:documentation></xs:annotation>
+    <xs:restriction base='xs:decimal'>
+      <xs:minInclusive value='-180'/>
+      <xs:maxInclusive value='180'/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name='lat'>
+    <xs:annotation><xs:documentation>A latitude coordinate.</xs:documentation></xs:annotation>
+    <xs:restriction base='xs:decimal'>
+      <xs:minInclusive value='-90'/>
+      <xs:maxInclusive value='90'/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name='IIMSPolygon'>
+    <xs:annotation><xs:documentation>A polygon on the globe.</xs:documentation></xs:annotation>
+    <xs:sequence maxOccurs='unbounded'>
+      <xs:element name='IIMSLRing' type='IIMSLRing'/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name='IIMSLine'>
+    <xs:annotation><xs:documentation>A line (2 or more points) on the globe.</xs:documentation></xs:annotation>
+    <xs:sequence>
+      <xs:element name='IIMSPoint' type='IIMSPoint' minOccurs='2' maxOccurs='unbounded'/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name='IIMSLRing'>
+    <xs:annotation><xs:documentation>A ring on the globe containing 4 or more points.</xs:documentation></xs:annotation>
+    <xs:sequence>
+      <xs:element name='IIMSPoint' type='IIMSPoint' minOccurs='4' maxOccurs='unbounded'/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name='IIMSBox'>
+    <xs:annotation><xs:documentation>A spatial bounding box.</xs:documentation></xs:annotation>
+    <xs:sequence>
+      <xs:element name='IIMSPoint' type='IIMSPoint' minOccurs='2' maxOccurs='2'/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name='ValueListPatternOrPatternList'>
+    <xs:annotation><xs:documentation>Value, list of values, pattern, or pattern list.</xs:documentation></xs:annotation>
+    <xs:choice>
+      <xs:element name='value' type='value'/>
+      <xs:element name='list' type='list'/>
+      <xs:element name='textPattern' type='textPattern'/>
+      <xs:element name='patternList' type='patternList'/>
+    </xs:choice>
+  </xs:complexType>
+
+  <xs:complexType name='ListValueOrPatternWithOperator'>
+    <xs:annotation><xs:documentation>A value, list of values, or text pattern with an operator specifying whether to AND or OR multiple values.</xs:documentation></xs:annotation>
+    <xs:complexContent>
+      <xs:extension base='ListValueOrPattern'>
+        <xs:attribute name='operator'>
+          <xs:annotation><xs:documentation>Valid values: 'AND' and 'OR'</xs:documentation></xs:annotation>
+          <xs:simpleType>
+            <xs:restriction base='xs:string'>
+              <xs:enumeration value='AND'/>
+              <xs:enumeration value='OR'/>
+            </xs:restriction>
+          </xs:simpleType>
+        </xs:attribute>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name='spatial'>
+    <xs:annotation><xs:documentation>Spatial search area.</xs:documentation></xs:annotation>
+    <xs:sequence>
+      <xs:choice>
+        <!-- DTD clearly requires one of the following, even if a 2d search is specified.  Dont know if that should be the case. -->
+        <xs:element name='IIMSPolygon' type='IIMSPolygon'/>
+        <xs:element name='IIMSLine' type='IIMSLine'/>
+        <xs:element name='IIMSPoint' type='IIMSPoint'/>
+        <xs:element name='IIMSBox' type='IIMSBox'/>
+      </xs:choice>
+      <xs:element name='TwoDCoordinateSystem' type='TwoDCoordinateSystem' minOccurs='0' maxOccurs='1'/>
+      <xs:element name='SpatialType' type='ValueOrList' minOccurs='0' maxOccurs='1'/>
+    </xs:sequence>
+    <xs:attribute name='operator'>
+      <xs:simpleType>
+        <xs:restriction base='xs:string'>
+          <xs:enumeration value='EQUAL'/>
+          <xs:enumeration value='TOUCH'/>
+          <xs:enumeration value='WITHIN'/>
+          <xs:enumeration value='CONTAINS'/>
+          <xs:enumeration value='RELATE'/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+  </xs:complexType>
+
+  <xs:complexType name='Day'>
+    <xs:annotation><xs:documentation>Day of the year.</xs:documentation></xs:annotation>
+    <xs:attribute name='value' use='required'>
+      <xs:simpleType>
+        <xs:restriction base='xs:integer'>
+          <xs:minInclusive value='0'/>
+          <xs:maxInclusive value='366'/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+  </xs:complexType>
+
+  <xs:complexType name='temporal'>
+    <xs:annotation><xs:documentation>Temporal search area.</xs:documentation></xs:annotation>
+    <xs:sequence>
+      <xs:element name='startDate' type='DateContainerType'>
+        <xs:annotation>
+          <xs:documentation>
+            Represents the date to get items with a temporal extent starting on or after the given date
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name='stopDate' type='DateContainerType' minOccurs='0' maxOccurs='1'>
+        <xs:annotation>
+          <xs:documentation>
+            Represents the date to get items with a temporal extent ending on or before the given date
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:sequence minOccurs='0' maxOccurs='1'>
+        <xs:element name='startDay' type='Day'>
+          <xs:annotation>
+            <xs:documentation>
+              Represents the day to get items with a temporal extent over a recurring annual period starting on or after the given day, must be accompanied by a StartDate
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name='endDay' type='Day' minOccurs='0' maxOccurs='1'>
+          <xs:annotation>
+            <xs:documentation>
+              Represents the day to get items with a temporal extent over a recurring annual period starting on or after the given day, must be accompanied by a EndDate
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
+      </xs:sequence>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name='scienceKeywords'>
+    <xs:annotation><xs:documentation>List of one or more science keywords and an operator specifying whether to AND or OR multiple values.</xs:documentation></xs:annotation>
+    <xs:sequence>
+      <xs:element name='scienceKeyword' type='scienceKeyword' maxOccurs='unbounded'/>
+    </xs:sequence>
+    <xs:attribute name='operator'>
+      <xs:annotation><xs:documentation>AND or OR</xs:documentation></xs:annotation>
+      <xs:simpleType>
+        <xs:restriction base='xs:string'>
+          <xs:enumeration value='AND'/>
+          <xs:enumeration value='OR'/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+  </xs:complexType>
+
+  <xs:complexType name='scienceKeyword'>
+    <xs:annotation><xs:documentation>A science keyword.</xs:documentation></xs:annotation>
+    <xs:sequence>
+      <xs:element name='categoryKeyword' type='ValueOrPattern' minOccurs='0' maxOccurs='1'/>
+      <xs:element name='topicKeyword' type='ValueOrPattern' minOccurs='0' maxOccurs='1'/>
+      <xs:element name='termKeyword' type='ValueOrPattern' minOccurs='0' maxOccurs='1'/>
+      <xs:element name='variableLevel1Keyword' type='ValueOrPattern' minOccurs='0' maxOccurs='1'/>
+      <xs:element name='variableLevel2Keyword' type='ValueOrPattern' minOccurs='0' maxOccurs='1'/>
+      <xs:element name='variableLevel3Keyword' type='ValueOrPattern' minOccurs='0' maxOccurs='1'/>
+      <xs:element name='detailedVariableKeyword' type='ValueOrPattern' minOccurs='0' maxOccurs='1'/>
+      <xs:element name='anyKeyword' type='ValueOrPattern' minOccurs='0' maxOccurs='1'/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name='ValueOrPattern'>
+    <xs:annotation><xs:documentation>A value or a text pattern.</xs:documentation></xs:annotation>
+    <xs:choice>
+      <xs:element name='value' type='value'/>
+      <xs:element name='textPattern' type='textPattern'/>
+    </xs:choice>
+  </xs:complexType>
+
+  <xs:complexType name='flag'>
+    <xs:attribute name='value'>
+      <xs:annotation>
+        <xs:documentation>Must be set to 'Y' (true).  Omit the element entirely for false.</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:restriction base='xs:string'>
+          <xs:enumeration value='Y'/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+  </xs:complexType>
+
+  <xs:complexType name='cloudCover'>
+    <xs:annotation><xs:documentation>Cloud cover range.</xs:documentation></xs:annotation>
+    <xs:sequence>
+      <xs:element name='range' type='range'/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name='dayNightFlag'>
+    <xs:annotation><xs:documentation>Day/night flag.</xs:documentation></xs:annotation>
+    <xs:attribute name='value'>
+      <xs:simpleType>
+        <xs:restriction base='xs:string'>
+          <xs:enumeration value='DAY'/>
+          <xs:enumeration value='day'/>
+          <xs:enumeration value='NIGHT'/>
+          <xs:enumeration value='night'/>
+          <xs:enumeration value='both'/>
+          <xs:enumeration value='BOTH'/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+  </xs:complexType>
+
+  <xs:complexType name='orbitNumber'>
+    <xs:annotation><xs:documentation>Orbit number value or range.</xs:documentation></xs:annotation>
+    <xs:choice>
+      <xs:element name='value' type='value'/>
+      <xs:element name='range' type='range'/>
+    </xs:choice>
+  </xs:complexType>
+
+  <xs:complexType name='equatorCrossingLongitude'>
+    <xs:annotation><xs:documentation>One or more equator crossing longitude range(s).</xs:documentation></xs:annotation>
+    <xs:sequence>
+      <xs:element name='range' type='range'/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name='additionalAttributes'>
+    <xs:annotation><xs:documentation>One or more additional attributes and an operator specifying whether to AND or OR multiple values.</xs:documentation></xs:annotation>
+    <xs:sequence>
+      <xs:element name='additionalAttribute' type='additionalAttribute' maxOccurs='unbounded'/>
+    </xs:sequence>
+    <xs:attribute name='operator'>
+      <xs:annotation><xs:documentation>AND or OR.</xs:documentation></xs:annotation>
+      <xs:simpleType>
+        <xs:restriction base='xs:string'>
+          <xs:enumeration value='AND'/>
+          <xs:enumeration value='OR'/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+  </xs:complexType>
+
+  <xs:complexType name='additionalAttribute'>
+    <xs:annotation><xs:documentation>An additional attribute name/value pair.</xs:documentation></xs:annotation>
+    <xs:sequence>
+      <xs:element name='additionalAttributeName' type='xs:string'/>
+      <xs:element name='additionalAttributeValue' type='additionalAttributeValue'/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name='additionalAttributeValue'>
+    <xs:annotation><xs:documentation>Various options for selecting additional attribute value.</xs:documentation></xs:annotation>
+    <xs:choice>
+      <xs:element name='list' type='list'/>
+      <xs:element name='value' type='value'/>
+      <xs:element name='textPattern' type='textPattern'/>
+      <xs:element name='range' type='range'/>
+      <xs:element name='dateRange' type='dateRange'/>
+      <xs:element name='Date' type='DateElementType'/>
+      <xs:element name='int' type='xs:integer'/>
+      <xs:element name='intRange' type='intRange'/>
+      <xs:element name='float' type='xs:float'/>
+      <xs:element name='floatRange' type='floatRange'/>
+      <xs:element name='time' type='time'/>
+      <xs:element name='timeRange' type='timeRange'/>
+    </xs:choice>
+  </xs:complexType>
+
+  <xs:complexType name='ValueOrList'>
+    <xs:annotation><xs:documentation>A value or a list of values.</xs:documentation></xs:annotation>
+    <xs:choice>
+      <xs:element name='value' type='value'/>
+      <xs:element name='list' type='list'/>
+    </xs:choice>
+  </xs:complexType>
+
+  <xs:complexType name='providerInsertDate'>
+    <xs:annotation><xs:documentation>Date Range of provider insert date.</xs:documentation></xs:annotation>
+    <xs:sequence>
+      <xs:element name='dateRange' type='dateRange'/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name='TwoDCoordinateSystem'>
+    <xs:sequence>
+      <xs:element name='TwoDCoordinateSystemName' type='ListValueOrPattern'>
+        <xs:annotation>
+          <xs:documentation>
+            Note: ECHO doesn't support list or text pattern on the coordinate system name for
+            granules because searching multiple coordinate systems with the same coordinates
+            does not make logical sense. It is a DTD limitation and backward compatibility
+            issue that requires the TwoDCoordinateSystemName element to be shared between
+            granules and collections. Using list or textPattern on a granule query will
+            result in a query validation error.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name='coordinate1' type='ValueOrRange'/>
+      <xs:element name='coordinate2' type='ValueOrRange'/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name='ValueOrRange'>
+    <xs:choice>
+      <xs:element name='value' type='value'/>
+      <xs:element name='range' type='range'/>
+    </xs:choice>
+  </xs:complexType>
+
+  <xs:complexType name='DateContainerType'>
+    <xs:annotation><xs:documentation>A date.</xs:documentation></xs:annotation>
+    <xs:sequence>
+      <xs:element name='Date' type='DateElementType'/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name='DateElementType'>
+    <xs:annotation><xs:documentation>A date.</xs:documentation></xs:annotation>
+    <xs:attribute name='YYYY' use='required'>
+      <xs:simpleType>
+        <xs:restriction base='xs:string'><xs:pattern value='[0-9]{1,4}'/></xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name='MM' use='required'>
+      <xs:simpleType>
+        <xs:restriction base='xs:string'><xs:pattern value='[0-9]{1,2}'/></xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name='DD' use='required'>
+      <xs:simpleType>
+        <xs:restriction base='xs:string'><xs:pattern value='[0-9]{1,2}'/></xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name='HH' use='optional'>
+      <xs:simpleType>
+        <xs:restriction base='xs:string'><xs:pattern value='[0-9]{1,2}'/></xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name='MI' use='optional'>
+      <xs:simpleType>
+        <xs:restriction base='xs:string'><xs:pattern value='[0-9]{1,2}'/></xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name='SS' use='optional'>
+      <xs:simpleType>
+        <xs:restriction base='xs:string'><xs:pattern value='[0-9]{1,2}'/></xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+  </xs:complexType>
+
+  <xs:complexType name='patternList'>
+    <xs:annotation><xs:documentation>A list of text patterns.</xs:documentation></xs:annotation>
+    <xs:choice maxOccurs='unbounded'>
+      <xs:element name='value' type='value'/>
+      <xs:element name='textPattern' type='textPattern'/>
+    </xs:choice>
+  </xs:complexType>
+
+  <xs:complexType name='list'>
+    <xs:annotation><xs:documentation>A list of values.</xs:documentation></xs:annotation>
+    <xs:sequence>
+      <xs:element name='value' type='value' maxOccurs='unbounded'/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType mixed='true' name='value'>
+    <xs:annotation><xs:documentation>A value.</xs:documentation></xs:annotation>
+    <xs:simpleContent>
+      <xs:extension base='text'>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+
+  <xs:complexType mixed='true' name='textPattern'>
+    <xs:annotation><xs:documentation>A text pattern.  '%' - A substitute for zero or more characters '_' - A substitute for exactly one character</xs:documentation></xs:annotation>
+    <xs:simpleContent>
+      <xs:extension base='text'>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+
+  <xs:complexType mixed='true' name='text'>
+    <xs:simpleContent>
+      <xs:extension base='xs:string'>
+        <xs:attribute name='caseInsensitive'>
+          <xs:annotation>
+            <xs:documentation>Y|y for case insensitive pattern, N|n otherwise.</xs:documentation>
+          </xs:annotation>
+          <xs:simpleType>
+            <xs:restriction base='xs:string'>
+              <xs:enumeration value='y'/>
+              <xs:enumeration value='Y'/>
+              <xs:enumeration value='n'/>
+              <xs:enumeration value='N'/>
+            </xs:restriction>
+          </xs:simpleType>
+        </xs:attribute>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+
+  <xs:complexType name='range'>
+    <xs:annotation><xs:documentation>A range of values.</xs:documentation></xs:annotation>
+    <xs:attribute name='lower' type='xs:string' use='optional'/>
+    <xs:attribute name='upper' type='xs:string' use='optional'/>
+  </xs:complexType>
+
+  <xs:complexType name='dateRange'>
+    <xs:annotation><xs:documentation>A range of dates.</xs:documentation></xs:annotation>
+    <xs:sequence>
+      <xs:element minOccurs='0' name='startDate' type='DateContainerType'/>
+      <xs:element minOccurs='0' name='stopDate' type='DateContainerType'/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name='DateRangeContainer'>
+    <xs:annotation><xs:documentation>A range of dates.</xs:documentation></xs:annotation>
+    <xs:sequence>
+      <xs:element name='dateRange' type='dateRange'/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name='intRange'>
+    <xs:annotation><xs:documentation>A range of integers.</xs:documentation></xs:annotation>
+    <xs:attribute name='lower' type='integerType' use='optional'/>
+    <xs:attribute name='upper' type='integerType' use='optional'/>
+  </xs:complexType>
+
+  <xs:complexType name='floatRange'>
+    <xs:annotation><xs:documentation>A range of floats.</xs:documentation></xs:annotation>
+    <xs:attribute name='lower' type='floatType' use='optional'/>
+    <xs:attribute name='upper' type='floatType' use='optional'/>
+  </xs:complexType>
+
+  <xs:complexType name='time'>
+    <xs:annotation><xs:documentation>A time value.</xs:documentation></xs:annotation>
+    <xs:attribute name='HH' use='required'>
+      <xs:simpleType>
+        <xs:restriction base='xs:string'><xs:pattern value='[0-9]{1,2}'/></xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name='MI' use='required'>
+      <xs:simpleType>
+        <xs:restriction base='xs:string'><xs:pattern value='[0-9]{1,2}'/></xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name='SS' use='required'>
+      <xs:simpleType>
+        <xs:restriction base='xs:string'><xs:pattern value='[0-9]{1,2}'/></xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+  </xs:complexType>
+
+  <xs:complexType name='startTime'>
+    <xs:sequence>
+      <xs:element name='time' type='time'/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name='stopTime'>
+    <xs:sequence>
+      <xs:element name='time' type='time'/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name='timeRange'>
+    <xs:annotation><xs:documentation>A range of time values.</xs:documentation></xs:annotation>
+    <xs:sequence>
+      <xs:element minOccurs='0' name='startTime' type='startTime'/>
+      <xs:element minOccurs='0' name='stopTime' type='stopTime'/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:simpleType name="integerType">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base='xs:integer'/>
+      </xs:simpleType>
+      <xs:simpleType>
+       <xs:restriction base='xs:string'>
+         <xs:length value='0' fixed='true'/>
+       </xs:restriction>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+
+  <xs:simpleType name="floatType">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base='xs:float'/>
+      </xs:simpleType>
+      <xs:simpleType>
+       <xs:restriction base='xs:string'>
+         <xs:length value='0' fixed='true'/>
+       </xs:restriction>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+
+</xs:schema>

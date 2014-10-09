@@ -1,0 +1,16 @@
+/target
+/lib
+/classes
+/checkouts
+/log
+pom.xml
+pom.xml.asc
+*.jar
+*.class
+.lein-deps-sum
+.lein-failures
+.lein-plugins
+.lein-repl-history
+.nrepl-port
+testreports.xml
+/resources/public/site/api_docs.html
