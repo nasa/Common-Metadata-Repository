@@ -11,7 +11,8 @@
             [cmr.common.config :as cfg])
   (:use [clojure.test :only [run-all-tests]]
         [clojure.repl]
-        [alex-and-georges.debug-repl]))
+        [alex-and-georges.debug-repl]
+        [cmr.common.dev.capture-reveal]))
 
 (def system nil)
 
@@ -56,11 +57,33 @@
   (cfg/set-config-value! :echo-system-token "XXXXX")
   (cfg/set-config-value! :metadata-db-password "XXXXX"))
 
+(defn tunnel-system-sit
+  "Allows tunneling the search to a indexer and elasticsearch running on a different system"
+  []
+  ;; sit can be tunnelled by running these
+  ;; ssh -L4005:localhost:3005 cmr-sit-app1.dev.echo.nasa.gov
+  ;; ssh -L9212:localhost:9200 cmr-sit-elastic1.dev.echo.nasa.gov
+  ;; ssh -L1558:tbdb.dev.echo.nasa.gov:1521 tbkernel4.dev.echo.nasa.gov
+  (cfg/set-config-value! :elastic-port 9212)
+  (cfg/set-config-value! :index-set-port 4005)
+
+  (cfg/set-config-value! :echo-rest-protocol "https")
+  (cfg/set-config-value! :echo-rest-host "testbed.echo.nasa.gov")
+  (cfg/set-config-value! :echo-rest-port 443)
+  (cfg/set-config-value! :echo-rest-context "/echo-rest")
+
+  (cfg/set-config-value! :db-url "thin:@localhost:1558/tbdb.dev.echo.nasa.gov")
+
+  ;; Set the following but do not commit them
+  (cfg/set-config-value! :echo-system-token "XXXXXX")
+  (cfg/set-config-value! :metadata-db-password "XXXXXX"))
+
 (defn create-system
   []
   ;; Uncomment this to tunnel to another system for testing.
   ; (tunnel-system-uat)
   ; (tunnel-system-wl)
+  ; (tunnel-system-sit)
 
   ;; Set the default job start delay to avoid jobs kicking off with tests etc.
   (cfg/set-config-value! :default-job-start-delay (str (* 3 3600)))
