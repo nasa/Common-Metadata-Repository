@@ -30,58 +30,58 @@
 ;; Note for future. We should cleanup this API. It's not very well layed out.
 (defn- build-routes [system]
   (routes
-
-    ;; Index a concept
-    (POST "/" {body :body context :request-context params :params headers :headers}
-      (let [{:keys [concept-id revision-id]} (walk/keywordize-keys body)
-            ignore-conflict (ignore-conflict? params)
-            context (acl/add-authentication-to-context context params headers)]
-        (r/created (index-svc/index-concept context concept-id revision-id ignore-conflict))))
-
-    ;; reset operation available just for development purposes
-    ;; delete configured elastic indexes and create them back
-    (POST "/reset" {:keys [request-context params headers]}
-      (let [context (acl/add-authentication-to-context request-context params headers)]
-        (acl/verify-ingest-management-permission context :update)
-        (index-svc/reset context))
-      {:status 204})
-
-    ;; Sends an update to the index set to update mappings and index settings.
-    (POST "/update-indexes" {:keys [request-context params headers]}
-      (let [context (acl/add-authentication-to-context request-context params headers)]
-        (acl/verify-ingest-management-permission context :update)
-        (index-svc/update-indexes context))
-      {:status 200})
-
-    (POST "/clear-cache" {:keys [request-context params headers]}
-      (let [context (acl/add-authentication-to-context request-context params headers)]
-        (acl/verify-ingest-management-permission context :update)
-        (index-svc/clear-cache context))
-      {:status 200})
-
-    (POST "/reindex-provider-collections"
-      {context :request-context params :params headers :headers body :body}
-      (let [context (acl/add-authentication-to-context context params headers)]
-        (acl/verify-ingest-management-permission context :update)
-        (index-svc/reindex-provider-collections
-          context
-          body))
-      {:status 200})
-
-    ;; Unindex a concept
-    (context "/:concept-id/:revision-id" [concept-id revision-id]
-      (DELETE "/" {context :request-context params :params headers :headers}
-        (let [ignore-conflict (ignore-conflict? params)
+    (context (:relative-root-url system) []
+      ;; Index a concept
+      (POST "/" {body :body context :request-context params :params headers :headers}
+        (let [{:keys [concept-id revision-id]} (walk/keywordize-keys body)
+              ignore-conflict (ignore-conflict? params)
               context (acl/add-authentication-to-context context params headers)]
-          (index-svc/delete-concept context concept-id revision-id ignore-conflict)
-          {:status 204})))
+          (r/created (index-svc/index-concept context concept-id revision-id ignore-conflict))))
 
-    (GET "/health" {request-context :request-context params :params}
-      (let [{pretty? :pretty} params
-            {:keys [ok? dependencies]} (index-svc/health request-context)]
-        {:status (if ok? 200 503)
-         :headers {"Content-Type" "application/json; charset=utf-8"}
-         :body (json/generate-string dependencies {:pretty pretty?})}))
+      ;; reset operation available just for development purposes
+      ;; delete configured elastic indexes and create them back
+      (POST "/reset" {:keys [request-context params headers]}
+        (let [context (acl/add-authentication-to-context request-context params headers)]
+          (acl/verify-ingest-management-permission context :update)
+          (index-svc/reset context))
+        {:status 204})
+
+      ;; Sends an update to the index set to update mappings and index settings.
+      (POST "/update-indexes" {:keys [request-context params headers]}
+        (let [context (acl/add-authentication-to-context request-context params headers)]
+          (acl/verify-ingest-management-permission context :update)
+          (index-svc/update-indexes context))
+        {:status 200})
+
+      (POST "/clear-cache" {:keys [request-context params headers]}
+        (let [context (acl/add-authentication-to-context request-context params headers)]
+          (acl/verify-ingest-management-permission context :update)
+          (index-svc/clear-cache context))
+        {:status 200})
+
+      (POST "/reindex-provider-collections"
+        {context :request-context params :params headers :headers body :body}
+        (let [context (acl/add-authentication-to-context context params headers)]
+          (acl/verify-ingest-management-permission context :update)
+          (index-svc/reindex-provider-collections
+            context
+            body))
+        {:status 200})
+
+      ;; Unindex a concept
+      (context "/:concept-id/:revision-id" [concept-id revision-id]
+        (DELETE "/" {context :request-context params :params headers :headers}
+          (let [ignore-conflict (ignore-conflict? params)
+                context (acl/add-authentication-to-context context params headers)]
+            (index-svc/delete-concept context concept-id revision-id ignore-conflict)
+            {:status 204})))
+
+      (GET "/health" {request-context :request-context params :params}
+        (let [{pretty? :pretty} params
+              {:keys [ok? dependencies]} (index-svc/health request-context)]
+          {:status (if ok? 200 503)
+           :headers {"Content-Type" "application/json; charset=utf-8"}
+           :body (json/generate-string dependencies {:pretty pretty?})})))
 
     (route/not-found "Not Found")))
 

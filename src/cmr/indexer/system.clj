@@ -32,6 +32,8 @@
   "Required for jobs"
   (atom nil))
 
+(def relative-root-url (cfg/config-value-fn :indexer-relative-root-url ""))
+
 (defn create-system
   "Returns a new instance of the whole application."
   []
@@ -44,6 +46,7 @@
              ;; it is not nil. The bootstrap app will initialize this.
              :parent-collection-cache nil
              :zipkin (context/zipkin-config "Indexer" false)
+             :relative-root-url (relative-root-url)
              :caches {:acls (ac/create-acl-cache)
                       :general (cache/create-cache)
                       acl/token-imp-cache-key (acl/create-token-imp-cache)}
