@@ -37,9 +37,10 @@ class window.CartesianRing extends Module
       displayedPoints = _.map(@points, (p)-> p.displayedPoint)
       @lines = []
       _.eachCons(displayedPoints, 2, (pair)=>
-        @lines.push(board.create('line', displayedPoints, CartesianRing.LINE_STYLE)))
+        @lines.push(board.create('line', pair, CartesianRing.LINE_STYLE)))
       if @closed
-        @lines.push(board.create("line", [displayedPoints[0], displayedPoints[displayedPoints.length - 1]]))
+        pair = [displayedPoints[0], displayedPoints[displayedPoints.length - 1]]
+        @lines.push(board.create("line", pair, CartesianRing.LINE_STYLE))
 
   undisplay: (board)->
     p.undisplay(board) for p in @points
