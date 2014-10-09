@@ -10,7 +10,7 @@
   (let [acl-cache (ac/create-acl-cache)]
     (cache/update-cache
       acl-cache
-      (fn [_] {:acls acls}))
+      #(assoc % :acls acls))
     {:system {:caches {ac/acl-cache-key acl-cache}}}))
 
 (defn group-ace
@@ -39,8 +39,6 @@
                 :catalog-item-identity {:provider-id "PROV1"
                                         :collection-applicable true}}
           context (context-with-acls acl1 acl2 acl3)]
-    (println "CONTEXT.......")
-      (println context)
       (is (= ["read-order" "just-read" "order-read" "group3"]
              (a/get-coll-permitted-group-ids context "PROV1" {:fake-coll "foo"})))))
 
