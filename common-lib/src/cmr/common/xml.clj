@@ -1,0 +1,148 @@
+(ns cmr.common.xml
+  "Contains XML helpers for extracting data from XML structs created using clojure.data.xml.
+  See the test file for examples."
+  (:require [cmr.common.date-time-parser :as p]
+            [clojure.string :as str]
+            [clojure.java.io :as io])
+  (:import javax.xml.validation.SchemaFactory
+           javax.xml.XMLConstants
+           javax.xml.transform.stream.StreamSource
+           org.xml.sax.ext.DefaultHandler2
+           java.io.StringReader))
+
+(defn remove-xml-processing-instructions
+  "Removes xml processing instructions from XML so it can be embedded in another XML document"
+  [xml]
+  (let [processing-regex #"<\?.*?\?>"
+        doctype-regex #"<!DOCTYPE.*?>"]
+    (-> xml
+        (str/replace processing-regex "")
+        (str/replace doctype-regex ""))))
+
+(defn- children-by-tag
+  "Extracts the child elements with the given tag name."
+  [element tag]
+  (filter #(= tag (:tag %)) (:content element)))
+
+(defn elements-at-path
+  "Extracts the children down the specified path."
+  [element path]
+  (reduce (fn [elements tag]
+            (mapcat #(children-by-tag % tag) elements))
+          [element]
+          path))
+
+(defn update-elements-at-path
+  "Calls updater-fn with each element at the specified path. Replaces the element with the result of
+  calling the function. This has not been optimized for speed. Works by recursively replacing elements
+  that are the parents of the updated nodes. Calls updater-fn with the element and any supplied args."
+  [element path updater-fn & args]
+  (if (= 0 (count path))
+    (apply updater-fn (cons element args))
+    (let [tag (first path)
+          rest-of-path (rest path)]
+      (update-in
+        element [:content]
+        (fn [children]
+          (map (fn [child]
+                 (if (= tag (:tag child))
+                   (apply update-elements-at-path
+                          (concat [child rest-of-path updater-fn] args))
+                   child))
+               children))))))
+
+(defn element-at-path
+  "Returns a single element from within an XML structure at the given path."
+  [xml-struct path]
+  (first (elements-at-path xml-struct path)))
+
+(defn contents-at-path
+  "Pulls the contents from the elements found at the given path."
+  [xml-struct path]
+  (map :content (elements-at-path xml-struct path)))
+
+(defn content-at-path
+  "Extracts the content from the first element at the given path."
+  [xml-struct path]
+  (first (contents-at-path xml-struct path)))
+
+(defn attrs-at-path
+  "This is a helper that will pull the XML attributes from the xml-struct at the given path."
+  [xml-struct path]
+  (some-> (element-at-path xml-struct path)
+          :attrs))
+
+(defn strings-at-path
+  "Extracts all the strings from the given path in the XML structure."
+  [xml-struct path]
+  (map str (apply concat (contents-at-path xml-struct path))))
+
+(defn string-at-path
+  "Extracts a string from the given path in the XML structure."
+  [xml-struct path]
+  (first (strings-at-path xml-struct path)))
+
+(defn long-at-path
+  "Extracts a long number from the given path in the XML structure."
+  [xml-struct path]
+  (when-let [^String s (string-at-path xml-struct path)]
+    (Long. s)))
+
+(defn double-at-path
+  "Extracts a double number from the given path in the XML structure."
+  [xml-struct path]
+  (when-let [^String s (string-at-path xml-struct path)]
+    (Double. s)))
+
+(defn bool-at-path
+  "Extracts a boolean from the given path in the XML structure."
+  [xml-struct path]
+  (when-let [^String s (string-at-path xml-struct path)]
+    (Boolean. s)))
+
+(defn datetimes-at-path
+  "Extracts all the datetimes from the given path in the XML structure."
+  [xml-struct path]
+  (map p/parse-datetime (strings-at-path xml-struct path)))
+
+(defn datetime-at-path
+  "Extracts a datetime from the given path in the XML structure."
+  [xml-struct path]
+  (first (datetimes-at-path xml-struct path)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; XML Schema Validation
+
+
+(defn- sax-parse-exception->str
+  "Converts a SaxParseException to a String"
+  [e]
+  (format "Line %d - %s" (.getLineNumber e) (.getMessage e)))
+
+(defn- create-error-handler
+  "Creates an instance of DefaultHandler2 that will save all schema errors in the errors-atom."
+  [errors-atom]
+  (proxy [DefaultHandler2] []
+    (error
+      [e]
+      (swap! errors-atom conj (sax-parse-exception->str e)))
+    (fatalError
+      [e]
+      (swap! errors-atom conj (sax-parse-exception->str e)))))
+
+(defn validate-xml
+  "Validates the XML against the schema in the given resource. schema-resource should be a classpath
+  resource as returned by clojure.java.io/resource.
+  Returns a list of errors in the XML schema."
+  [schema-resource xml]
+  (let [factory (SchemaFactory/newInstance XMLConstants/W3C_XML_SCHEMA_NS_URI)
+        schema (.newSchema factory schema-resource)
+        validator (.newValidator schema)
+        errors-atom (atom [])]
+    (.setErrorHandler validator (create-error-handler errors-atom))
+    (try
+      (.validate validator (StreamSource. (StringReader. xml)))
+      (catch org.xml.sax.SAXParseException e
+        ;; An exception can be thrown if it is completely invalid XML.
+        (reset! errors-atom [(sax-parse-exception->str e)])))
+    (seq @errors-atom)))
