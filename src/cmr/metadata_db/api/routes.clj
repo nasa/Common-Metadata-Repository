@@ -157,71 +157,72 @@
 
 (defn- build-routes [system]
   (routes
-    (context "/concepts" []
+    (context (:relative-root-url system) []
+      (context "/concepts" []
 
-      (context "/search" []
-        ;; get multiple concepts by concept-id and revision-id
-        (POST "/concept-revisions" {:keys [params request-context body]}
-          (get-concepts request-context params body))
-        (POST "/latest-concept-revisions" {:keys [params request-context body]}
-          (get-latest-concepts request-context params body))
-        (GET "/expired-collections" {:keys [params request-context]}
-          (get-expired-collections-concept-ids request-context params))
-        ;; Find concepts by parameters
-        (GET "/:concept-type" {:keys [params request-context]}
-          (find-concepts request-context params)))
+        (context "/search" []
+          ;; get multiple concepts by concept-id and revision-id
+          (POST "/concept-revisions" {:keys [params request-context body]}
+            (get-concepts request-context params body))
+          (POST "/latest-concept-revisions" {:keys [params request-context body]}
+            (get-latest-concepts request-context params body))
+          (GET "/expired-collections" {:keys [params request-context]}
+            (get-expired-collections-concept-ids request-context params))
+          ;; Find concepts by parameters
+          (GET "/:concept-type" {:keys [params request-context]}
+            (find-concepts request-context params)))
 
-      ;; saves a concept
-      (POST "/" {:keys [request-context params body]}
-        (save-concept request-context params body))
-      ;; mark a concept as deleted (add a tombstone) specifying the revision the tombstone should have
-      (DELETE "/:concept-id/:revision-id" {{:keys [concept-id revision-id] :as params} :params
-                                           request-context :request-context}
-        (delete-concept request-context params concept-id revision-id))
-      ;; mark a concept as deleted (add a tombstone)
-      (DELETE "/:concept-id" {{:keys [concept-id] :as params} :params
-                              request-context :request-context}
-        (delete-concept request-context params concept-id nil))
-      ;; remove a specific revision of a concept form the database
-      (DELETE "/force-delete/:concept-id/:revision-id" {{:keys [concept-id revision-id] :as params} :params
-                                                        request-context :request-context}
-        (force-delete request-context params concept-id revision-id))
-      ;; get a specific revision of a concept
-      (GET "/:concept-id/:revision-id" {{:keys [concept-id revision-id] :as params} :params
-                                        request-context :request-context}
-        (get-concept request-context params concept-id revision-id))
-      ;; get the latest revision of a concept
-      (GET "/:concept-id" {{:keys [concept-id] :as params} :params request-context :request-context}
-        (get-concept request-context params concept-id)))
+        ;; saves a concept
+        (POST "/" {:keys [request-context params body]}
+          (save-concept request-context params body))
+        ;; mark a concept as deleted (add a tombstone) specifying the revision the tombstone should have
+        (DELETE "/:concept-id/:revision-id" {{:keys [concept-id revision-id] :as params} :params
+                                             request-context :request-context}
+          (delete-concept request-context params concept-id revision-id))
+        ;; mark a concept as deleted (add a tombstone)
+        (DELETE "/:concept-id" {{:keys [concept-id] :as params} :params
+                                request-context :request-context}
+          (delete-concept request-context params concept-id nil))
+        ;; remove a specific revision of a concept form the database
+        (DELETE "/force-delete/:concept-id/:revision-id" {{:keys [concept-id revision-id] :as params} :params
+                                                          request-context :request-context}
+          (force-delete request-context params concept-id revision-id))
+        ;; get a specific revision of a concept
+        (GET "/:concept-id/:revision-id" {{:keys [concept-id revision-id] :as params} :params
+                                          request-context :request-context}
+          (get-concept request-context params concept-id revision-id))
+        ;; get the latest revision of a concept
+        (GET "/:concept-id" {{:keys [concept-id] :as params} :params request-context :request-context}
+          (get-concept request-context params concept-id)))
 
-    ;; get the concept id for a given concept-type, provider-id, and native-id
-    (GET ["/concept-id/:concept-type/:provider-id/:native-id" :native-id #".*$"]
-      {{:keys [concept-type provider-id native-id] :as params} :params request-context :request-context}
-      (get-concept-id request-context params concept-type provider-id native-id))
+      ;; get the concept id for a given concept-type, provider-id, and native-id
+      (GET ["/concept-id/:concept-type/:provider-id/:native-id" :native-id #".*$"]
+        {{:keys [concept-type provider-id native-id] :as params} :params request-context :request-context}
+        (get-concept-id request-context params concept-type provider-id native-id))
 
-    (context "/providers" []
-      ;; create a new provider
-      (POST "/" {:keys [request-context params body]}
-        (save-provider request-context params (get body "provider-id")))
-      ;; delete a provider
-      (DELETE "/:provider-id" {{:keys [provider-id] :as params} :params request-context :request-context}
-        (delete-provider request-context params provider-id))
-      ;; get a list of providers
-      (GET "/" {:keys [request-context params]}
-        (get-providers request-context params)))
+      (context "/providers" []
+        ;; create a new provider
+        (POST "/" {:keys [request-context params body]}
+          (save-provider request-context params (get body "provider-id")))
+        ;; delete a provider
+        (DELETE "/:provider-id" {{:keys [provider-id] :as params} :params request-context :request-context}
+          (delete-provider request-context params provider-id))
+        ;; get a list of providers
+        (GET "/" {:keys [request-context params]}
+          (get-providers request-context params)))
 
-    ;; delete the entire database
-    (POST "/reset" {:keys [request-context params headers]}
-      (let [context (acl/add-authentication-to-context request-context params headers)]
-        (acl/verify-ingest-management-permission context :update)
-        (reset context params)))
+      ;; delete the entire database
+      (POST "/reset" {:keys [request-context params headers]}
+        (let [context (acl/add-authentication-to-context request-context params headers)]
+          (acl/verify-ingest-management-permission context :update)
+          (reset context params)))
 
-    (GET "/health" {request-context :request-context params :params}
-      (let [{pretty? :pretty} params
-            {:keys [ok? dependencies]} (hs/health request-context)]
-        {:status (if ok? 200 503)
-         :headers {"Content-Type" "application/json; charset=utf-8"}
-         :body (json/generate-string dependencies {:pretty pretty?})}))
+      (GET "/health" {request-context :request-context params :params}
+        (let [{pretty? :pretty} params
+              {:keys [ok? dependencies]} (hs/health request-context)]
+          {:status (if ok? 200 503)
+           :headers {"Content-Type" "application/json; charset=utf-8"}
+           :body (json/generate-string dependencies {:pretty pretty?})})))
 
     (route/not-found "Not Found")))
 
