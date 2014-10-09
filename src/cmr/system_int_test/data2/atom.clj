@@ -240,7 +240,7 @@
   "Returns the atom map of the collection"
   [collection]
   (let [{{:keys [short-name version-id processing-level-id collection-data-type]} :product
-         :keys [concept-id summary entry-title format-key
+         :keys [concept-id summary entry-title format-key entry-id
                 related-urls beginning-date-time ending-date-time associated-difs organizations]} collection
         update-time (get-in collection [:data-provider-timestamps :update-time])
         spatial-representation (get-in collection [:spatial-coverage :spatial-representation])
@@ -254,7 +254,10 @@
         end (when range-date-time
               (f/unparse (f/formatters :date-time-no-ms) (:ending-date-time range-date-time)))
         shapes (map (partial umm-s/set-coordinate-system spatial-representation)
-                    (get-in collection [:spatial-coverage :geometries]))]
+                    (get-in collection [:spatial-coverage :geometries]))
+        ;; DIF collections have special cases on short-name and associated-difs
+        short-name (if (= :dif format-key) entry-id short-name)
+        associated-difs (if (= :dif format-key) [entry-title] associated-difs)]
     (util/remove-nil-keys
       {:id concept-id
        :title entry-title
