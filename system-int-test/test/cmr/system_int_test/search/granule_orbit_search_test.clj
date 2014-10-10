@@ -52,10 +52,10 @@
         ;; orbit parameters with missing start-circular latititude to test guards that prevent
         ;; previous null pointer exception caused by this
         op3-bad {:swath-width 1450
-             :period 98.88
-             :inclination-angle 98.15
-             :number-of-orbits 0.5
-             :start-circular-latitude nil}
+                 :period 98.88
+                 :inclination-angle 98.15
+                 :number-of-orbits 0.5
+                 :start-circular-latitude nil}
         coll1 (d/ingest "PROV1"
                         (dc/collection
                           {:entry-title "orbit-params1"
@@ -70,7 +70,7 @@
                         (dc/collection
                           {:entry-title "orbit-params3"
                            :spatial-coverage (dc/spatial {:gsr :orbit
-                                                           :orbit op3-bad})}))
+                                                          :orbit op3-bad})}))
         g1 (make-gran coll1 "gran1" -158.1 81.8 :desc  -81.8 :desc)
         g2 (make-gran coll1 "gran2" 177.16 -81.8 :asc 81.8 :asc)
         g3 (make-gran coll1 "gran3" 127.73 81.8 :desc -81.8 :desc)
@@ -109,10 +109,10 @@
     (testing "point searches"
       (are [items lon_lat params]
            (let [found (search/find-refs :granule {:point (codec/url-encode (apply p/point lon_lat))
-                                                     :page-size 50})
-                   matches? (d/refs-match? items found)]
+                                                   :page-size 50})
+                 matches? (d/refs-match? items found)]
              (when-not matches?
-                (println "Expected:" (->> items (map :granule-ur) sort pr-str))
+               (println "Expected:" (->> items (map :granule-ur) sort pr-str))
                (println "Actual:" (->> found :refs (map :name) sort pr-str)))
              matches?)
 
@@ -129,7 +129,7 @@
                           :page-size 50})
                  matches? (d/refs-match? items found)]
              (when-not matches?
-                (println "Expected:" (->> items (map :granule-ur) sort pr-str))
+               (println "Expected:" (->> items (map :granule-ur) sort pr-str))
                (println "Actual:" (->> found :refs (map :name) sort pr-str)))
              matches?)
 
@@ -150,7 +150,7 @@
                                  :page-size 50} params))
                  matches? (d/refs-match? items found)]
              (when-not matches?
-                (println "Expected:" (->> items (map :granule-ur) sort pr-str))
+               (println "Expected:" (->> items (map :granule-ur) sort pr-str))
                (println "Actual:" (->> found :refs (map :name) sort pr-str)))
              matches?)
 
