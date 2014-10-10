@@ -114,11 +114,7 @@
   ([collection attribs]
    (let [timestamps {:data-provider-timestamps (dc/data-provider-timestamps attribs)}
          {:keys [format-key entry-title short-name version-id]} collection
-         ;; Here we infer the granule format based on collection format
-         ;; Added the special case for SMAP ISO granule to cover CMR-956.
-         coll-ref (if (= :iso-smap format-key)
-                    (g/collection-ref entry-title short-name version-id)
-                    (g/collection-ref entry-title))
+         coll-ref (g/collection-ref entry-title short-name version-id)
          minimal-gran {:granule-ur (d/unique-str "ur")
                        :collection-ref coll-ref
                        ;; Including the parent collection concept id so it's available later.
