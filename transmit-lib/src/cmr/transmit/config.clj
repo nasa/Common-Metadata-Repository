@@ -31,6 +31,8 @@
 (def bootstrap-port (cfg/config-value-fn :bootstrap-port 3006 parse-port))
 (def bootstrap-relative-root-url (cfg/config-value-fn :bootstrap-relative-root-url ""))
 
+(def search-relative-root-url (cfg/config-value-fn :search-relative-root-url ""))
+
 (def echo-rest-port (cfg/config-value-fn :echo-rest-port 3008 parse-port))
 
 (def echo-system-token (cfg/config-value-fn :echo-system-token "mock-echo-system-token"))

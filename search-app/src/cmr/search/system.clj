@@ -33,7 +33,7 @@
   {:protocol search-public-protocol
    :host search-public-host
    :port search-public-port
-   :relative-root-url transmit-config/search-relative-root-url})
+   :relative-root-url (transmit-config/search-relative-root-url)})
 
 (def
   ^{:doc "Defines the order to start the components."
