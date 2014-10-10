@@ -86,7 +86,7 @@
                   number-of-orbits
                   start-circular-latitude]} orbit-params]
       (when (and type
-                 (some? coords)
+                 (seq coords)
                  (and swath-width
                       period
                       inclination-angle
