@@ -49,6 +49,13 @@
              :inclination-angle 94
              :number-of-orbits 0.25
              :start-circular-latitude -50}
+        ;; orbit parameters with missing start-circular latititude to test guards that prevent
+        ;; previous null pointer exception caused by this
+        op3-bad {:swath-width 1450
+             :period 98.88
+             :inclination-angle 98.15
+             :number-of-orbits 0.5
+             :start-circular-latitude nil}
         coll1 (d/ingest "PROV1"
                         (dc/collection
                           {:entry-title "orbit-params1"
@@ -59,6 +66,11 @@
                           {:entry-title "orbit-params2"
                            :spatial-coverage (dc/spatial {:gsr :orbit
                                                           :orbit op2})}))
+        coll3 (d/ingest "PROV1"
+                        (dc/collection
+                          {:entry-title "orbit-params3"
+                           :spatial-coverage (dc/spatial {:gsr :orbit
+                                                           :orbit op3-bad})}))
         g1 (make-gran coll1 "gran1" -158.1 81.8 :desc  -81.8 :desc)
         g2 (make-gran coll1 "gran2" 177.16 -81.8 :asc 81.8 :asc)
         g3 (make-gran coll1 "gran3" 127.73 81.8 :desc -81.8 :desc)
@@ -66,7 +78,8 @@
         g5 (make-gran coll2 "gran5" 79.88192 50 :asc 50 :desc)
         g6 (make-gran coll2 "gran6" 55.67938 -50 :asc 50 :asc)
         g7 (make-gran coll2 "gran7" 31.48193 50 :desc -50 :desc)
-        g8 (make-gran coll2 "gran8" 7.28116 -50 :asc 50 :asc)]
+        g8 (make-gran coll2 "gran8" 7.28116 -50 :asc 50 :asc)
+        g9 (make-gran coll3 "gran9" 127.73 81.8 :desc -81.8 :desc)]
     (index/refresh-elastic-index)
 
     (testing "bounding rectangle searches"
