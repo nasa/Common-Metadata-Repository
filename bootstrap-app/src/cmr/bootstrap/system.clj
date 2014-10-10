@@ -26,13 +26,6 @@
     :private true}
   component-order [:log :db :web])
 
-(def relative-root-url
-  "Defines a root path that will appear on all requests sent to this application. For example if
-  the relative-root-url is '/cmr-app' and the path for a URL is '/foo' then the full url would be
-  http://host:port/cmr-app/foo. This should be set when this application is deployed in an
-  environment where it is accessed through a VIP."
-  (cfg/config-value-fn :bootstrap-relative-root-url ""))
-
 (defn create-system
   "Returns a new instance of the whole application."
   []
@@ -66,7 +59,7 @@
              :db (oracle/create-db (mdb-config/db-spec "bootstrap-pool"))
              :web (web/create-web-server (transmit-config/bootstrap-port) routes/make-api)
              :zipkin (context/zipkin-config "bootstrap" false)
-             :relative-root-url (relative-root-url)}]
+             :relative-root-url (transmit-config/bootstrap-relative-root-url)}]
     (transmit-config/system-with-connections sys [:metadata-db])))
 
 (defn start

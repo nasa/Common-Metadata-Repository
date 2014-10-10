@@ -28,13 +28,12 @@
 (def search-public-protocol (cfg/config-value :search-public-protocol "http"))
 (def search-public-host (cfg/config-value :search-public-host "localhost"))
 (def search-public-port (cfg/config-value :search-public-port 3003 transmit-config/parse-port))
-(def search-relative-root-url (cfg/config-value :search-relative-root-url ""))
 
 (def search-public-conf
   {:protocol search-public-protocol
    :host search-public-host
    :port search-public-port
-   :relative-root-url search-relative-root-url})
+   :relative-root-url (transmit-config/search-relative-root-url)})
 
 (def
   ^{:doc "Defines the order to start the components."
