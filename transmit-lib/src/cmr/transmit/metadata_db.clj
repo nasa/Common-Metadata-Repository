@@ -165,6 +165,31 @@
         (format "Collection search failed. status: %s body: %s"
                 status body)))))
 
+(defn create-provider
+  "Create the provider with the given provider id"
+  [context provider-id]
+  (let [conn (config/context->app-connection context :metadata-db)
+        request-url (str (conn/root-url conn) "/providers")
+        {:keys [status body]} (client/post request-url
+                                           {:body (format "{\"provider-id\": \"%s\"}" provider-id)
+                                            :content-type :json
+                                            :throw-exceptions false})]
+    (when-not (= status 201)
+      (errors/internal-error!
+        (format "Failed to create provider status: %s body: %s"
+                status body)))))
+
+(defn delete-provider
+  "Delete the provider with the matching provider-id from the CMR metadata repo."
+  [context provider-id]
+  (let [conn (config/context->app-connection context :metadata-db)
+        request-url (str (conn/root-url conn) "/providers/" provider-id)
+        {:keys [status body]} (client/delete request-url {:throw-exceptions false})]
+    (when-not (or (= status 200) (= status 404))
+      (errors/internal-error!
+        (format "Failed to delete provider status: %s body: %s"
+                status body)))))
+
 (defn get-providers
   "Returns the list of provider ids configured in the metadata db"
   [context]

@@ -2,7 +2,6 @@
   "Functions to support migration of data form catlog rest to metadata db."
   (:require [cmr.common.log :refer (debug info warn error)]
             [clojure.java.jdbc :as j]
-            [clj-http.client :as client]
             [clojure.string :as str]
             [cheshire.core :as json]
             [sqlingvo.core :as sql :refer [sql select insert from where with order-by desc delete as]]
@@ -12,6 +11,7 @@
             [cmr.oracle.connection :as oc]
             [cmr.metadata-db.data.oracle.concept-tables :as tables]
             [cmr.transmit.config :as transmit-config]
+            [cmr.transmit.metadata-db :as transmit-mdb]
             [cmr.oracle.config :as oracle-config]))
 
 ;; FIXME - Why not just use the metadata db code directly for creating the provider instead of using http?
@@ -51,27 +51,6 @@
   "Get the collection/granule table name for a given provider."
   [system provider-id concept-type]
   (str (metadata-db-user system) "." (tables/get-table-name provider-id concept-type)))
-
-(defn create-provider-url
-  [system]
-  (format "%s/providers" (system->metadata-db-url system)))
-
-(defn delete-provider-url
-  [system provider-id]
-  (format "%s/providers/%s" (system->metadata-db-url system) provider-id))
-
-(defn- create-provider
-  "Create the provider with the given provider id"
-  [system provider-id]
-  (client/post (create-provider-url system)
-               {:body (format "{\"provider-id\": \"%s\"}" provider-id)
-                :content-type :json}))
-
-(defn- delete-provider
-  "Delete the provider with the matching provider-id from the CMR metadata repo."
-  [system provider-id]
-  (client/delete (delete-provider-url system provider-id)
-                 {:throw-exceptions false}))
 
 (defn- delete-collection-sql
   "Generate SQL to delete a collection from a provider's collection table."
@@ -215,8 +194,8 @@
   "Copy all data for a given provider (including datasets and granules from the catalog-rest
   database into the metadata db database."
   [system provider-id]
-  (delete-provider system provider-id)
-  (create-provider system provider-id)
+  (transmit-mdb/delete-provider {:system system} provider-id)
+  (transmit-mdb/create-provider {:system system} provider-id)
   (copy-collection-data system provider-id)
   (copy-granule-data-for-provider system provider-id)
   (info "Processing of provider" provider-id "completed."))
