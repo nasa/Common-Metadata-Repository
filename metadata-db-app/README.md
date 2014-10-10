@@ -152,8 +152,9 @@ __Example Curl:__
 ### GET /concepts/search/:concept-types?param1=value&...
 
 Supported combinations of concept type and parameters:
-  * colllections, provider-id, short-name, version-id
-  * colllections, provider-id, entry-title
+  * collections, provider-id, short-name, version-id
+  * collections, provider-id, entry-title
+  * collections, provider-id, entry-title, short-name, version-id
   * collections, provider-id
 
 __Example Curl:__
