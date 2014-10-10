@@ -27,7 +27,7 @@
         value-elems (cx/elements-at-path facet-elem [elem-name])
         value-counts (for [value-elem value-elems]
                        [(cx/string-at-path value-elem [:term])
-                        (Long. (cx/string-at-path value-elem [:count]))])]
+                        (cx/long-at-path value-elem [:count])])]
     {:field (echo-facet-key->cmr-facet-name elem-name)
      :value-counts value-counts}))
 

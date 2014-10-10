@@ -100,7 +100,8 @@
   [_ include-facets? results]
   (if include-facets?
     ;; Both echo-compatible and include-facets are true,
-    ;; we generate response in catalog-rest search-facet format.
+    ;; We generate response in catalog-rest search-facet format.
+    ;; Only facets are returned, not query results
     (frf/facets->echo-xml-element (:facets results))
     (x/->Element :references {"type" "array"}
                  (map (partial reference->xml-element true results) (:items results)))))
