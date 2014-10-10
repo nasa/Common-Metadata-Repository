@@ -113,7 +113,8 @@
    (granule collection {}))
   ([collection attribs]
    (let [timestamps {:data-provider-timestamps (dc/data-provider-timestamps attribs)}
-         coll-ref (g/collection-ref (:entry-title collection))
+         {:keys [format-key entry-title short-name version-id]} collection
+         coll-ref (g/collection-ref entry-title short-name version-id)
          minimal-gran {:granule-ur (d/unique-str "ur")
                        :collection-ref coll-ref
                        ;; Including the parent collection concept id so it's available later.

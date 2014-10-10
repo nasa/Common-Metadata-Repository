@@ -89,6 +89,7 @@
 (def supported-parameter-combinations
   #{#{:short-name :provider-id :version-id}
     #{:entry-title :provider-id}
+    #{:entry-title :short-name :provider-id :version-id}
     ;; Metadata db needs to support retrieving all collections in a provider for reindexing.
     #{:provider-id}})
 
