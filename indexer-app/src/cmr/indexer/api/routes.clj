@@ -77,6 +77,7 @@
                 cache (cache/context->cache context (keyword cache-name))]
             (acl/verify-ingest-management-permission context :read)
             (when cache
+            ;; TODO James This should be updated to use CMR common cache functions
               (let [result (->> cache
                                 :atom
                                 deref
@@ -91,6 +92,7 @@
           (let [cache-key (keyword cache-key)
                 context (acl/add-authentication-to-context request-context params headers)
                 cache (cache/context->cache context (keyword cache-name))
+                ;; TODO James This should be updated to use CMR common cache functions
                 result (-> cache
                            :atom
                            deref
