@@ -107,22 +107,29 @@
         coll3 (make-coll 3)
         coll4 (make-coll 4)]
     (index/refresh-elastic-index)
-    ;; invalid query parameter
-    (is (= {:errors ["Parameter [foo] was not recognized."]
-            :status 400}
-           (search/find-refs-with-aql :collection [] {} {:query-params {:foo true}})))
-    (are [params items]
-         (let [refs (search/find-refs-with-aql :collection []
-                                               {} {:query-params params})
-               result (d/refs-match? items refs)]
-           (when-not result
-             (println "Expected:" (pr-str (map :entry-title items)))
-             (println "Actual:" (pr-str (map :name (:refs refs)))))
-           result)
 
-         {:page-size 1} [coll1]
-         {:page-size 1 :page-num 3} [coll3]
-         {} [coll1 coll2 coll3 coll4])))
+    (testing "invalid query parameter"
+      (is (= {:errors ["Parameter [foo] was not recognized."]
+              :status 400}
+             (search/find-refs-with-aql :collection [] {} {:query-params {:foo true}}))))
+
+    (testing "without content-type in header is OK"
+      (is (= (dissoc (search/find-refs-with-aql :collection []) :took)
+             (dissoc (search/find-refs-with-aql-without-content-type :collection []) :took))))
+
+    (testing "valid query parameters"
+      (are [params items]
+           (let [refs (search/find-refs-with-aql :collection []
+                                                 {} {:query-params params})
+                 result (d/refs-match? items refs)]
+             (when-not result
+               (println "Expected:" (pr-str (map :entry-title items)))
+               (println "Actual:" (pr-str (map :name (:refs refs)))))
+             result)
+
+           {:page-size 1} [coll1]
+           {:page-size 1 :page-num 3} [coll3]
+           {} [coll1 coll2 coll3 coll4]))))
 
 
 (deftest aql-search-with-multiple-conditions
@@ -160,7 +167,7 @@
                             (search/find-refs-with-aql-string aql-string)))
 
            [coll1] ["<dataSetId><value>Dataset1</value></dataSetId>"
-                          "<shortName><value>SHORT</value></shortName>"]
+                    "<shortName><value>SHORT</value></shortName>"]
            [coll1 coll3] ["<dataSetId><value>Dataset1</value></dataSetId>"
                           "<shortName><value caseInsensitive=\"Y\">SHORT</value></shortName>"]
            [coll1] ["<dataSetId><value>Dataset1</value></dataSetId>"
