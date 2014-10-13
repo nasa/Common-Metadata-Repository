@@ -9,6 +9,7 @@
             [ring.middleware.json :as ring-json]
             [clojure.stacktrace :refer [print-stack-trace]]
             [cheshire.core :as json]
+            [clojurewerkz.quartzite.scheduler :as qs]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.api.errors :as errors]
             [cmr.common.services.errors :as serv-err]
@@ -121,6 +122,20 @@
   "Delete all concepts from the data store"
   [context params]
   (concept-service/reset context)
+  {:status 204})
+
+(defn- pause-jobs
+  "Pause all jobs"
+  []
+  (qs/pause-all!)
+  (info "Paused all scheduled jobs.")
+  {:status 204})
+
+(defn- resume-jobs
+  "Resume all jobs"
+  []
+  (qs/resume-all!)
+  (info "Resumed all scheduled jobs.")
   {:status 204})
 
 (defn- get-concept-id
@@ -263,6 +278,19 @@
         (let [context (acl/add-authentication-to-context request-context params headers)]
           (acl/verify-ingest-management-permission context :update)
           (reset context params)))
+
+      (context "/jobs" []
+        ;; pause all jobs
+        (POST "/pause" {:keys [request-context params headers]}
+          (let [context (acl/add-authentication-to-context request-context params headers)]
+            (acl/verify-ingest-management-permission context :update)
+            (pause-jobs)))
+
+        ;; resume all jobs
+        (POST "/resume" {:keys [request-context params headers]}
+          (let [context (acl/add-authentication-to-context request-context params headers)]
+            (acl/verify-ingest-management-permission context :update)
+            (resume-jobs))))
 
       (GET "/health" {request-context :request-context params :params}
         (let [{pretty? :pretty} params
