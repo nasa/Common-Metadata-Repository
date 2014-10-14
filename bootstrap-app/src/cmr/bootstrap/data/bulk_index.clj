@@ -16,6 +16,27 @@
             [cmr.transmit.config :as transmit-config]
             [cmr.bootstrap.data.bulk-migration :as bm]))
 
+(def ^:private elastic-http-try-count->wait-before-retry-time
+  "A map of of the previous number of tries to communicate with Elasticsearch over http to the amount
+  of time to wait before retrying an http request. Will stop retrying if the number of requests
+  exceeds what is configured here. Bulk indexing is expected to succeed everytime so this is fairly
+  aggressive about retrying and waiting a "
+  {1 100
+   2 1000
+   ;; 10 seconds
+   3 (* 10 1000)
+   ;; 5 minutes
+   4 (* 5 60 1000)})
+
+(defn elastic-retry-handler
+  "A custom http retry handler for use with elastic connections"
+  [ex try-count http-context]
+  (when-let [sleep-time (elastic-http-try-count->wait-before-retry-time try-count)]
+    (warn (format "Elasticsearch HTTP Request failed due to %s. %s try. Waiting %s ms before retrying."
+                  (.getMessage ex) try-count sleep-time))
+    (Thread/sleep sleep-time)
+    true))
+
 (defn- get-provider-collection-list
   "Get the list of collecitons belonging to the given provider."
   [system provider-id]
