@@ -290,7 +290,6 @@
                                 :spatial-coverage (dg/spatial (dg/orbit 120.0 50.0 "A" 50.0 "A"))
                                 :orbit-calculated-spatial-domains
                                 [{:orbital-model-name "MODEL NAME"
-                                  :orbit-number 2
                                   :start-orbit-number 3.0
                                   :stop-orbit-number 4.0
                                   :equator-crossing-longitude -45.0
