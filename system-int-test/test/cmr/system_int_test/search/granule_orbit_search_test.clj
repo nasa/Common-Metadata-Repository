@@ -49,12 +49,11 @@
              :inclination-angle 94
              :number-of-orbits 0.25
              :start-circular-latitude -50}
-        ;; orbit parameters with missing values to test guards that prevent
-        ;; previous null pointer exception caused by this
-        op3-bad {:swath-width 1450
-                 :period 98.88
-                 :inclination-angle 98.15
-                 :number-of-orbits 0.5
+        ;; orbit parameters with missing value to test defaulting to 0
+        op3-bad {:swath-width 2
+                 :period 96.7
+                 :inclination-angle 94
+                 :number-of-orbits 0.25
                  :start-circular-latitude nil}
         coll1 (d/ingest "PROV1"
                         (dc/collection
@@ -96,9 +95,9 @@
              matches?)
 
            ;; Search for orbits crossing a rectangle over the equator and anti-meridian
-           [g2 g7] [145 45 -145 -45] nil
+           [g2 g7 g9] [145 45 -145 -45] nil
            ;; Search for orbits crossing a rectangle over the equator and meridian
-           [g1 g3 g8] [-45 45 45 -45] nil
+           [g1 g3 g8 g9] [-45 45 45 -45] nil
            ;; Search for orbits crossing a rectangle in the western hemisphere near the north pole
            [g5] [-90 89 -45 85] nil
            ;; Search for orbits crossing a rectangle in the southern hemisphere crossing the anti-meridian
@@ -157,9 +156,9 @@
            ;; Trangle crossing prime meridian
            [g1 g8] [-45,-45 45,-45 45,0, -45,-45] nil
            ;; Pentagon over the north pole
-           [g1 g2 g3 g4 g5] [0,80 72,80 144,80 -144,80 -72,80 0,80] nil
+           [g1 g2 g3 g4 g5 g9] [0,80 72,80 144,80 -144,80 -72,80 0,80] nil
            ;; Concave polygon crossing antimeridian and equator
-           [g2 g4 g7] [170,-70 -170,-80 -175,20 -179,-10 175,25 170,-70] nil))))
+           [g2 g4 g7 g9] [170,-70 -170,-80 -175,20 -179,-10 175,25 170,-70] nil))))
 
 (deftest multi-orbit-search
   (let [;; orbit parameters

@@ -84,14 +84,10 @@
                   period
                   inclination-angle
                   number-of-orbits
-                  start-circular-latitude]} orbit-params]
+                  start-circular-latitude]} orbit-params
+          start-circular-latitude (or start-circular-latitude 0)]
       (when (and shape-type
-                 (seq coords)
-                 (and swath-width
-                      period
-                      inclination-angle
-                      number-of-orbits
-                      start-circular-latitude))
+                 (seq coords))
         (let [asc-crossing (.areaCrossingRange
                              orbits
                              shape-type
