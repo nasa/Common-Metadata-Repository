@@ -209,7 +209,7 @@ params: none
 returns: nothing (status 204)
 
 __Example Curl:__
-curl -v -H "Echo-Token: mock-echo-system-token" -XPOST localhost:3001/jobs/pause
+curl -v -XPOST -H "Echo-Token: mock-echo-system-token" http://localhost:3001/jobs/pause
 
 ### POST /jobs/resume
 Requires token with UPDATE ingest management permission.
@@ -217,7 +217,7 @@ params: none
 returns: nothing (status 204)
 
 __Example Curl:__
-curl -v -H "Echo-Token: mock-echo-system-token" -XPOST localhost:3001/jobs/resume
+curl -v -XPOST -H "Echo-Token: mock-echo-system-token" http://localhost:3001/jobs/resume
 
 ## Providers API
 

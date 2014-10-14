@@ -11,6 +11,8 @@
             [cheshire.core :as cheshire]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.api.errors :as errors]
+            [cmr.common.jobs :as common-jobs]
+            [cmr.acl.core :as acl]
             [cmr.ingest.services.ingest :as ingest]
             [cmr.system-trace.http :as http-trace]
             [cmr.ingest.services.jobs :as jobs]))
@@ -63,6 +65,19 @@
                                    :native-id native-id
                                    :concept-type :granule}]
               (r/response (ingest/delete-concept request-context concept-attribs))))))
+
+      (context "/jobs" []
+        ;; pause all jobs
+        (POST "/pause" {:keys [request-context params headers]}
+          (let [context (acl/add-authentication-to-context request-context params headers)]
+            (acl/verify-ingest-management-permission context :update)
+            (common-jobs/pause-jobs)))
+
+        ;; resume all jobs
+        (POST "/resume" {:keys [request-context params headers]}
+          (let [context (acl/add-authentication-to-context request-context params headers)]
+            (acl/verify-ingest-management-permission context :update)
+            (common-jobs/resume-jobs))))
 
       (GET "/health" {request-context :request-context params :params}
         (let [{pretty? :pretty} params

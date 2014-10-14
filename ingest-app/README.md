@@ -154,6 +154,18 @@ Example un-healthy response body:
 }
 ```
 
+### Pause ingest scheduled jobs
+
+Requires token with UPDATE ingest management permission.
+
+    curl -v -XPOST -H "Echo-Token: mock-echo-system-token" http://localhost:3002/jobs/pause
+
+### Resume ingest scheduled jobs
+
+Requires token with UPDATE ingest management permission.
+
+    curl -v -XPOST -H "Echo-Token: mock-echo-system-token" http://localhost:3002/jobs/resume
+
 ## License
 
 Copyright © 2014 NASA
