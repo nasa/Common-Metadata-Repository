@@ -33,7 +33,7 @@ to make sure the new data is available:
 
 This should return the granule including the echo-10 xml.
 
-### Copy a single collection and all its granules
+### Copy a single collection's granules
 
 	curl -v -XPOST  -H "Content-Type: application/json" -d '{"provider_id": "FIX_PROV1", "collection_id": "C1000000073-FIX_PROV1"}' http://localhost:3006/bulk_migration/collections
 
