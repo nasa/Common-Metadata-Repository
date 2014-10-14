@@ -39,7 +39,8 @@
     (let [{:keys [producer-gran-id
                   day-night
                   production-date-time
-                  size]} data-granule]
+                  size]} data-granule
+          day-night (if day-night day-night "UNSPECIFIED")]
       (x/element :DataGranule {}
                  (when size
                    (x/element :SizeMBDataGranule {} size))
