@@ -105,6 +105,14 @@
       (update-in [:sort-key] #(when % (if (sequential? %)
                                         (map sanitize-sort-key % )
                                         (sanitize-sort-key %))))))
+
+(defn- sanitize-aql-params
+  "When content-type is not set for aql searches, the aql will get mistakenly parsed into params.
+  This function removes it, santizes the params and returns the end result."
+  [params]
+  (-> (select-keys params (filter keyword? (keys params)))
+      sanitize-params))
+
 (defn- find-concepts
   "Common functionality for find-concepts-by-parameters and find-concepts-by-aql."
   [context concept-type params query-creation-time query]
@@ -144,7 +152,7 @@
   "Executes a search for concepts using the given aql. The concepts will be returned with
   concept id and native provider id along with hit count and timing info."
   [context params aql]
-  (let [params (sanitize-params params)
+  (let [params (sanitize-aql-params params)
         [query-creation-time query] (u/time-execution (a/aql->query params aql))
         concept-type (:concept-type query)
         results (find-concepts context concept-type params query-creation-time query)]

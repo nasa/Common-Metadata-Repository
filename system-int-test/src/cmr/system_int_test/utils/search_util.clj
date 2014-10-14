@@ -332,10 +332,12 @@
   ([aql]
    (find-refs-with-aql-string aql {}))
   ([aql options]
+   (find-refs-with-aql-string aql options "application/xml"))
+  ([aql options content-type]
    (get-search-failure-xml-data
      (let [response (client/post (url/aql-url)
                                  (merge {:accept "application/xml"
-                                         :content-type "application/xml"
+                                         :content-type content-type
                                          :body aql
                                          :query-params {:page-size 100}
                                          :connection-manager (url/conn-mgr)}
@@ -350,6 +352,12 @@
    (find-refs-with-aql concept-type conditions data-center-condition {}))
   ([concept-type conditions data-center-condition options]
    (find-refs-with-aql-string (aql/generate-aql concept-type data-center-condition conditions) options)))
+
+(defn find-refs-with-aql-without-content-type
+  "Returns the references that are found by searching through POST request with aql for the given
+  conditions without providing a content-type in header."
+  [concept-type conditions]
+  (find-refs-with-aql-string (aql/generate-aql concept-type {} conditions) {} ""))
 
 (defn get-concept-by-concept-id
   "Returns the concept metadata by searching metadata-db using the given cmr concept id"

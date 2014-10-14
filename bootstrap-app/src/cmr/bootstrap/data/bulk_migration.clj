@@ -139,7 +139,6 @@
   ([system provider-id collection-id]
    (info "Copying collection data for provider" provider-id)
    (let [stmt (copy-collection-data-sql system provider-id collection-id)]
-     (println stmt)
      (j/with-db-transaction
        [conn (:db system)]
        (j/execute! conn [stmt])))))
@@ -179,16 +178,12 @@
       (info result))))
 
 (defn copy-single-collection
-  "Delete a collection from the provider's collection table and all associated granules and
-  then copy the data from the catalog-rest db."
+  "Delete a collection's associated granules and then copy the data from the catalog-rest db."
   [system provider-id collection-id]
   (let [dataset-record-id (get-dataset-record-id-for-collection system provider-id collection-id)]
     (delete-collection-granules system provider-id collection-id)
-    (delete-collection system provider-id collection-id)
-    (copy-collection-data system provider-id collection-id)
     (copy-granule-data-for-collection system provider-id collection-id dataset-record-id)
     (info "Processing of collection" collection-id "for provider" provider-id "completed.")))
-
 
 (defn copy-provider
   "Copy all data for a given provider (including datasets and granules from the catalog-rest
