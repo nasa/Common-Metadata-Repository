@@ -72,7 +72,7 @@
                        :granule_count (when granule-counts-map (get granule-counts-map id 0))
                        :links (seq (map atom/atom-link->attribute-map atom-links))
                        :coordinate_system coordinate-system
-                       :orbit-parameters (when orbit-parameters
+                       :orbit_parameters (when orbit-parameters
                                            (fix-ocsd-values orbit-parameters))}
                       shape-result)]
     ;; remove entries with nil value

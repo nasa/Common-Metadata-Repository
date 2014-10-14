@@ -105,9 +105,9 @@
 (deftracefn update-indexes
   "Updates the index mappings and settings."
   [context]
-  (cache/reset-cache context)
+  (cache/reset-caches context)
   (es/update-indexes context)
-  (cache/reset-cache context))
+  (cache/reset-caches context))
 
 (deftracefn health
   "Returns the health state of the app."

@@ -357,7 +357,7 @@
                        table (tables/get-table-name provider-id concept-type)
                        conditions [`(>= :id ~start-index)
                                    `(< :id ~(+ start-index batch-size))]
-                       _ (debug "Finding batch from id >=" start-index " and id <" (+ start-index batch-size))
+                       _ (debug "Finding batch for provider" provider-id "from id >=" start-index " and id <" (+ start-index batch-size))
                        conditions (if (empty? params)
                                     conditions
                                     (cons (find-params->sql-clause params) conditions))
