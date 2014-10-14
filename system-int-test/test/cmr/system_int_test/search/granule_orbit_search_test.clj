@@ -52,9 +52,9 @@
         ;; orbit parameters with missing values to test guards that prevent
         ;; previous null pointer exception caused by this
         op3-bad {:swath-width 1450
-                 :period nil
-                 :inclination-angle nil
-                 :number-of-orbits nil
+                 :period 98.88
+                 :inclination-angle 98.15
+                 :number-of-orbits 0.5
                  :start-circular-latitude nil}
         coll1 (d/ingest "PROV1"
                         (dc/collection

@@ -77,7 +77,7 @@
   [stored-ords orbit-params]
   ;; Use the orbit parameters to perform orbital back tracking to longitude ranges to be used
   ;; in the search.
-  (let [type (resolve-shape-type (name (:type (first stored-ords))))
+  (let [shape-type (resolve-shape-type (name (:type (first stored-ords))))
         coords (double-array (map srl/stored->ordinate
                                   (:ords (first stored-ords))))]
     (let [{:keys [swath-width
@@ -85,7 +85,7 @@
                   inclination-angle
                   number-of-orbits
                   start-circular-latitude]} orbit-params]
-      (when (and type
+      (when (and shape-type
                  (seq coords)
                  (and swath-width
                       period
@@ -94,7 +94,7 @@
                       start-circular-latitude))
         (let [asc-crossing (.areaCrossingRange
                              orbits
-                             type
+                             shape-type
                              coords
                              true
                              inclination-angle
@@ -104,7 +104,7 @@
                              number-of-orbits)
               desc-crossing (.areaCrossingRange
                               orbits
-                              type
+                              shape-type
                               coords
                               false
                               inclination-angle
