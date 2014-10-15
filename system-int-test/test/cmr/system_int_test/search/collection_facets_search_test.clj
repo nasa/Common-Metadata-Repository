@@ -40,7 +40,7 @@
    {:platforms
     (for [pn (range 0 num-platforms)
           :let [platform-name (str prefix "-p" pn)]]
-      (apply dc/platform platform-name nil
+      (apply dc/platform platform-name nil nil
              (for [in (range 0 num-instruments)
                    :let [instrument-name (str platform-name "-i" in)]]
                (apply dc/instrument instrument-name nil

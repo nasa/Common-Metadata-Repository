@@ -104,8 +104,8 @@
 (defn psa->keywords
   "Converts a PSA into a vector of terms to be used in keyword searches"
   [psa]
-  (let [{:keys [name data-type value]} psa]
-    [name (value->elastic-value data-type value)]))
+  (let [{:keys [name data-type value description]} psa]
+    [name (value->elastic-value data-type value) description]))
 
 (defn psas->keywords
   [collection]

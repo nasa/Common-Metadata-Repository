@@ -77,9 +77,11 @@
 (defn sensor
   "Return an sensor based on sensor short-name"
   ([sensor-sn]
-   (sensor sensor-sn nil))
+   (sensor sensor-sn nil nil))
   ([sensor-sn long-name]
-   (c/->Sensor sensor-sn long-name)))
+   (c/->Sensor sensor-sn long-name nil))
+  ([sensor-sn long-name technique]
+   (c/->Sensor sensor-sn long-name technique)))
 
 (defn instrument
   "Return an instrument based on instrument attribs"
@@ -91,17 +93,27 @@
       :long-name long-name
       :sensors sensors})))
 
+(defn characteristic
+  "Returns a platform characteristic"
+  ([name]
+   (characteristic name nil))
+  ([name description]
+   (c/map->Characteristic {:name name :description description})))
+
 (defn platform
   "Return a platform based on platform attribs"
   ([platform-sn]
    (platform platform-sn (d/unique-str "long-name")))
   ([platform-sn long-name]
-   (platform platform-sn long-name nil))
-  ([platform-sn long-name & instruments]
+   (platform platform-sn long-name nil nil))
+  ([platform-sn long-name characteristics]
+   (platform platform-sn long-name characteristics nil))
+  ([platform-sn long-name characteristics & instruments]
    (c/map->Platform
      {:short-name platform-sn
       :long-name long-name
       :type (d/unique-str "Type")
+      :characteristics characteristics
       :instruments instruments})))
 
 (defn projects

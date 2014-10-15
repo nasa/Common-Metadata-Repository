@@ -44,6 +44,9 @@
 (def summary
   (ext-gen/string-alpha-numeric 1 10))
 
+(def sensor-techniques
+  (ext-gen/string-ascii 1 10))
+
 (def sensor-long-names
   (ext-gen/string-ascii 1 10))
 
@@ -51,7 +54,9 @@
   (ext-gen/string-ascii 1 10))
 
 (def sensors
-  (ext-gen/model-gen c/->Sensor sensor-short-names (ext-gen/optional sensor-long-names)))
+  (ext-gen/model-gen c/->Sensor sensor-short-names
+                     (ext-gen/optional sensor-long-names)
+                     (ext-gen/optional sensor-techniques)))
 
 (def instrument-long-names
   (ext-gen/string-ascii 1 10))
@@ -64,6 +69,29 @@
                      instrument-short-names
                      (ext-gen/optional instrument-long-names)
                      (ext-gen/nil-if-empty (gen/vector sensors 0 4))))
+
+
+(def characterstic-values
+  (ext-gen/string-ascii 1 10))
+
+(def characterstic-units
+  (ext-gen/string-ascii 1 10))
+
+(def characterstic-datatypes
+  (ext-gen/string-ascii 1 10))
+
+(def characteric-descriptions
+  (ext-gen/string-ascii 1 10))
+
+(def characteric-names
+  (ext-gen/string-ascii 1 10))
+
+(def characterstics
+  (ext-gen/model-gen c/->Characteristic characteric-names
+                     characteric-descriptions
+                     characterstic-datatypes
+                     characterstic-units
+                     characterstic-values))
 
 (def platform-short-names
   (ext-gen/string-ascii 1 10))
@@ -79,7 +107,8 @@
                      platform-short-names
                      platform-long-names
                      platform-types
-                     (ext-gen/nil-if-empty (gen/vector instruments 0 4))))
+                     (ext-gen/nil-if-empty (gen/vector instruments 0 4))
+                     (ext-gen/nil-if-empty (gen/vector characterstics 0 4))))
 
 (def campaign-short-names
   (ext-gen/string-ascii 1 10))

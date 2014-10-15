@@ -22,6 +22,29 @@
   [related-urls]
   (seq (map #(assoc % :size nil) related-urls)))
 
+(defn- sensors->expected-parsed
+  "Return the expected parsed sensors for the given sensors."
+  [sensors]
+  (seq (map #(assoc % :technique nil) sensors)))
+
+(defn- instruments->expected-parsed
+  "Return the expected parsed instruments for the given instruments."
+  [instruments]
+  (seq (map #(assoc % :sensors (sensors->expected-parsed (:sensors %))) instruments)))
+
+(defn- platform->expected-parsed
+  "Return the expected parsed platform for the given platform."
+  [platform]
+  (let [instruments (:instruments platform)]
+    (-> platform
+        (assoc :characteristics nil)
+        (assoc :instruments (instruments->expected-parsed instruments)))))
+
+(defn- platforms->expected-parsed
+  "Returns the expected parsed platforms for the given platforms."
+  [platforms]
+  (seq (map platform->expected-parsed platforms)))
+
 (defn- umm->expected-parsed-iso
   "Modifies the UMM record for testing ISO. ISO contains a subset of the total UMM fields so certain
   fields are removed for comparison of the parsed record"
@@ -51,6 +74,8 @@
         (assoc :temporal temporal)
         ;; ISO does not have distribution centers as Organization
         (assoc :organizations organizations)
+        ;; ISO does not support sensor technique or platform characteristics
+        (update-in [:platforms] platforms->expected-parsed)
         ;; ISO spatial mapping is incomplete right now
         (dissoc :spatial-coverage)
         ;; ISO AdditionalAttributes mapping is incomplete right now
@@ -157,8 +182,8 @@
                         :instruments [(umm-c/->Instrument
                                         "SAR"
                                         "SAR long name"
-                                        [(umm-c/->Sensor "SNA" "SNA long name")
-                                         (umm-c/->Sensor "SNB" nil)])
+                                        [(umm-c/->Sensor "SNA" "SNA long name" nil)
+                                         (umm-c/->Sensor "SNB" nil nil)])
                                       (umm-c/->Instrument "MAR" nil nil)]})
                      (umm-c/map->Platform
                        {:short-name "RADARSAT-2"

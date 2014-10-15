@@ -12,7 +12,7 @@
                                       [:identifier :MD_Identifier :code :CharacterString])
         long-name (cx/string-at-path sensor-elem
                                      [:identifier :MD_Identifier :description :CharacterString])]
-    (c/->Sensor short-name long-name)))
+    (c/->Sensor short-name long-name nil)))
 
 (defn xml-elem->Sensors
   [instrument-element]
