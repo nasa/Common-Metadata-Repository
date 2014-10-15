@@ -17,11 +17,14 @@
         psa4 (dc/psa "case" :string "up")
         p1 (dc/platform "platform_SnB" "platform_Ln B" nil
                         (dc/instrument "isnA" "ilnA"
-                                       (dc/sensor "ssnA" "slnA")))
+                                       (dc/sensor "ssnA" "slnA")
+                                       (dc/sensor "ssnD" "slnD" "techniqueD")))
         p2 (dc/platform "platform_SnA spoonA" "platform_LnA"
-                        [(dc/characteristic "char1" "char1desc")]
+                        [(dc/characteristic "char1" "char1desc")
+                         (dc/characteristic "char2" "char2desc")]
                         (dc/instrument "isnB" "ilnB"
-                                       (dc/sensor "ssnB" "slnB" "techniqueB")))
+                                       (dc/sensor "ssnB" "slnB" "techniqueB")
+                                       (dc/sensor "ssnC" "slnC" "techniqueC")))
         p3 (dc/platform "spoonA")
         pr1 (dc/projects "project-short-name")
         sk1 (dc/science-keyword {:category "Cat1"
@@ -83,7 +86,7 @@
 
            ;; Checking specific fields
 
-           ;; provier
+           ;; provider
            "PROV1" [coll1 coll2 coll3 coll23]
 
            ;; entry title
@@ -147,8 +150,12 @@
            "platform_ln" [coll15]
            ;; - characteristic name
            "char1" [coll11]
+           "char2" [coll11]
+           "char1 char2" [coll11]
            ;; - chracteristic description
            "char1desc" [coll11]
+           "char2desc" [coll11]
+           "char1desc char2desc" [coll11]
 
            ;; Instruments
            ;; - short name
@@ -163,6 +170,8 @@
            "slnB" [coll11]
            ;; - technique
            "techniqueB" [coll11]
+           "techniqueD" [coll15]
+           "techniqueB techniqueC" [coll11]
 
            ;; Science keywords
            ;; - category
