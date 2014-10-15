@@ -75,6 +75,7 @@
   [
    short-name
    long-name
+   technique
   ])
 
 (defrecord Instrument
@@ -84,12 +85,22 @@
    sensors
   ])
 
+(defrecord Characteristic
+  [
+   name
+   description
+   data-type
+   unit
+   value
+   ])
+
 (defrecord Platform
   [
    short-name
    long-name
    type
    instruments
+   characteristics
   ])
 
 (defrecord Project
@@ -235,6 +246,7 @@
   Sensor
   Instrument
   Platform
+  Characteristic
   Project
   TwoDCoordinateSystem
   Organization
