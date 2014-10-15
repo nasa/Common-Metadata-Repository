@@ -212,7 +212,11 @@
                  (:facets (:results (search/find-concepts-atom :collection {:include-facets true}))))))
         (testing "json"
           (is (= expected-facets
-                 (:facets (:results (search/find-concepts-json :collection {:include-facets true}))))))))
+                 (:facets (:results (search/find-concepts-json :collection {:include-facets true}))))))
+        (testing "json echo-compatible true"
+          (is (= (sort-by :field expected-facets)
+                 (sort-by :field (search/find-concepts-json :collection {:include-facets true
+                                                                         :echo-compatible true})))))))
 
     (testing "Search conditions narrow reduce facet values found"
       (testing "search finding two documents"

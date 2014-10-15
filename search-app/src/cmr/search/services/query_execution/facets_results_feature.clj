@@ -114,3 +114,23 @@
   (when facets
     (x/element :hash {}
                (map facet->echo-xml-element facets))))
+
+(defn- value-count->echo-json
+  "Returns value count in echo json format"
+  [value-count]
+  (let [[value value-count] value-count]
+    {:count value-count
+     :term value}))
+
+(defn facet->echo-json
+  [facet]
+  (let [{:keys [field value-counts]} facet
+        field-key (csk/->snake_case_string (cmr-facet-name->echo-facet-keyword field))]
+    [field-key (map value-count->echo-json value-counts)]))
+
+(defn facets->echo-json
+  "Helper function for converting facets into an XML element in echo format"
+  [facets]
+  (when facets
+    (into {} (map facet->echo-json facets))))
+
