@@ -15,12 +15,13 @@
         psa2 (dc/psa "bravo" :string "bf")
         psa3 (dc/psa "charlie" :string "foo")
         psa4 (dc/psa "case" :string "up")
-        p1 (dc/platform "platform_SnB" "platform_Ln B"
+        p1 (dc/platform "platform_SnB" "platform_Ln B" nil
                         (dc/instrument "isnA" "ilnA"
                                        (dc/sensor "ssnA" "slnA")))
         p2 (dc/platform "platform_SnA spoonA" "platform_LnA"
+                        [(dc/characteristic "char1" "char1desc")]
                         (dc/instrument "isnB" "ilnB"
-                                       (dc/sensor "ssnB" "slnB")))
+                                       (dc/sensor "ssnB" "slnB" "techniqueB")))
         p3 (dc/platform "spoonA")
         pr1 (dc/projects "project-short-name")
         sk1 (dc/science-keyword {:category "Cat1"
@@ -138,6 +139,10 @@
            "platform_SnA" [coll11]
            ;; - long name
            "platform_ln" [coll15]
+           ;; - characteristic name
+           "char1" [coll11]
+           ;; - chracteristic description
+           "char1desc" [coll11]
 
            ;; Instruments
            ;; - short name
@@ -150,6 +155,7 @@
            "ssnA" [coll15]
            ;; - long name
            "slnB" [coll11]
+           "techniqueB" [coll11]
 
            ;; Science keywords
            ;; - category

@@ -1,6 +1,7 @@
 (ns cmr.indexer.data.concepts.keyword
   "Contains functions to create keyword fields"
   (:require [clojure.string :as str]
+            [cmr.common.concepts :as concepts]
             [cmr.indexer.data.concepts.science-keyword :as sk]
             [cmr.indexer.data.concepts.attribute :as attrib]
             [cmr.indexer.data.concepts.organization :as org]))
@@ -28,13 +29,13 @@
       (into [field-value] (str/split field-value keywords-separator-regex)))))
 
 (defn create-keywords-field
-  [collection]
+  [concept-id collection]
   "Create a keyword field for keyword searches by concatenating several other fields
   into a single string"
-  (let [{:keys [concept-id]} collection
-        {{:keys [short-name long-name version-id processing-level-id collection-data-type]} :product
+  (let [{{:keys [short-name long-name version-id processing-level-id collection-data-type]} :product
          :keys [entry-id entry-title summary spatial-keywords temporal-keywords associated-difs
                 projects]} collection
+        provider-id (:provider-id (concepts/parse-concept-id concept-id))
         collection-data-type (if (= "NEAR_REAL_TIME" collection-data-type)
                                nrt-aliases
                                collection-data-type)
@@ -49,11 +50,16 @@
         sensors (mapcat :sensors instruments)
         sensor-short-names (keep :short-name sensors)
         sensor-long-names (keep :long-name sensors)
+        sensor-techniques (keep :technique sensors)
+        characteristics (mapcat :characteristics platforms)
+        char-names (keep :name characteristics)
+        char-descs (keep :description characteristics)
         two-d-coord-names (map :name (:two-d-coordinate-systems collection))
         archive-centers (org/extract-archive-centers collection)
         science-keywords (sk/science-keywords->keywords collection)
         attrib-keywords (attrib/psas->keywords collection)
-        all-fields (flatten (conj concept-id
+        all-fields (flatten (conj [concept-id]
+                                  provider-id
                                   entry-title
                                   collection-data-type
                                   short-name
@@ -75,7 +81,10 @@
                                   instrument-short-names
                                   instrument-long-names
                                   sensor-short-names
-                                  sensor-long-names))
+                                  sensor-long-names
+                                  sensor-techniques
+                                  char-names
+                                  char-descs))
         split-fields (set (mapcat prepare-keyword-field all-fields))]
 
     (str/join " " split-fields)))

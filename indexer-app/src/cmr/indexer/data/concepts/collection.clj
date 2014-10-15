@@ -112,7 +112,7 @@
             :associated-difs.lowercase (map str/lower-case associated-difs)
             :coordinate-system (when spatial-representation (csk/->SNAKE_CASE_STRING spatial-representation))
             ;; fields added to support keyword searches
-            :keyword (k/create-keywords-field collection)
+            :keyword (k/create-keywords-field concept-id collection)
             :long-name.lowercase (when long-name (str/lower-case long-name))
             :platform-ln.lowercase (map str/lower-case platform-long-names)
             :instrument-ln.lowercase (map str/lower-case instrument-long-names)
