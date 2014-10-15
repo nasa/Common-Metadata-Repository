@@ -12,6 +12,7 @@
             [cmr.ingest.config :as config]
             [cmr.ingest.services.jobs :as ingest-jobs]
             [cmr.common.jobs :as jobs]
+            [cmr.acl.core :as acl]
             [cmr.oracle.connection :as oracle]
             [cmr.common.config :as cfg]))
 
@@ -34,6 +35,7 @@
               :db (oracle/create-db (config/db-spec connection-pool-name))
               :zipkin (context/zipkin-config "Ingest" false)
               :scheduler (jobs/create-clustered-scheduler `system-holder ingest-jobs/jobs)
+              :caches {acl/token-imp-cache-key (acl/create-token-imp-cache)}
               :relative-root-url (transmit-config/ingest-relative-root-url)}]
      (transmit-config/system-with-connections sys [:metadata-db :indexer :echo-rest]))))
 
