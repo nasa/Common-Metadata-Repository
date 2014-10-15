@@ -72,6 +72,11 @@
   []
   (format "http://localhost:%s/health" (transmit-config/ingest-port)))
 
+(defn ingest-jobs-url
+  "URL to ingest jobs api."
+  []
+  (format "http://localhost:%s/jobs/" (transmit-config/ingest-port)))
+
 (defn search-url
   [type]
   (format "http://localhost:%s/%ss" (transmit-config/search-port) (name type)))
@@ -149,6 +154,11 @@
   "URL to check metadata db health."
   []
   (format "http://localhost:%s/health" (transmit-config/metadata-db-port)))
+
+(defn mdb-jobs-url
+  "URL to metadata db jobs api"
+  []
+  (format "http://localhost:%s/jobs/" (transmit-config/metadata-db-port)))
 
 (defn index-set-reset-url
   "Delete and re-create the index set in elastic. Only development team to use this functionality."
