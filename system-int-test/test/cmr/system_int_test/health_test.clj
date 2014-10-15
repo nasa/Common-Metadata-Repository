@@ -1,5 +1,5 @@
 (ns cmr.system-int-test.health-test
-  "This tests the index-set health api."
+  "This tests the health api for CMR applications."
   (:require [clojure.test :refer :all]
             [clj-http.client :as client]
             [cheshire.core :as json]

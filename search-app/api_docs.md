@@ -706,7 +706,7 @@ exactly matches the Platform/Instrument/short-name field - weight 1.2
 
 ### Facets
 
-Facets are counts of unique values from fields in items matching search results. Facets are supported with collection search results and are enabled with the `include_facets=true` parameter. Facets are supported on all collection search response formats.
+Facets are counts of unique values from fields in items matching search results. Facets are supported with collection search results and are enabled with the `include_facets=true` parameter. Facets are supported on all collection search response formats. When `echo_compatible=true` parameter is also present, the facets are returned in the catalog-rest search_facet style in xml or json format.
 
 #### Facets in XML Responses
 
