@@ -2,6 +2,7 @@
   "Handles the JSON results format and related functions"
   (:require [cmr.search.data.elastic-results-to-query-results :as elastic-results]
             [cmr.search.data.elastic-search-index :as elastic-search-index]
+            [cmr.search.services.query-execution.facets-results-feature :as frf]
             [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]
             [cmr.search.services.query-service :as qs]
             [cheshire.core :as json]
@@ -108,18 +109,34 @@
     ;; remove entries with nil value
     (util/remove-nil-keys result)))
 
+(defmulti results->json
+  "Converts search results into json"
+  (fn [context echo-compatible? include-facets? concept-type results]
+    (and echo-compatible? include-facets?)))
+
+(defmethod results->json true
+  [context echo-compatible? include-facets? concept-type results]
+  (let [{:keys [facets]} results]
+    (frf/facets->echo-json facets)))
+
+(defmethod results->json false
+  [context echo-compatible? include-facets? concept-type results]
+  (let [{:keys [items facets]} results
+        items (if (= :granule concept-type)
+                (atom/append-collection-links context items)
+                items)]
+    {:feed
+     (util/remove-nil-keys
+       {:updated (str (time/now))
+        :id (url/atom-request-url context concept-type :json)
+        :title (atom/concept-type->atom-title concept-type)
+        :entry (map (partial atom-reference->json results concept-type) items)
+        :facets facets})}))
+
 (defmethod qs/search-results->response :json
   [context query results]
-  (let [{:keys [items facets]} results
-        {:keys [concept-type result-format]} query
-        items (if (= :granule (:concept-type query))
-                (atom/append-collection-links context items)
-                items)
-        response-results {:feed
-                          (util/remove-nil-keys
-                            {:updated (str (time/now))
-                             :id (url/atom-request-url context concept-type result-format)
-                             :title (atom/concept-type->atom-title concept-type)
-                             :entry (map (partial atom-reference->json results concept-type) items)
-                             :facets facets})}]
-    (json/generate-string response-results {:pretty (:pretty? query)})))
+  (let [{:keys [concept-type pretty? echo-compatible? result-features]} query
+        include-facets? (boolean (some #{:facets} result-features))
+        response-results (results->json
+                           context echo-compatible? include-facets? concept-type results)]
+    (json/generate-string response-results {:pretty pretty?})))

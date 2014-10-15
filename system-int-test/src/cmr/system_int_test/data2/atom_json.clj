@@ -7,8 +7,10 @@
             [cheshire.core :as json]
             [cmr.common.util :as util]
             [clojure.string :as str]
+            [camel-snake-kebab :as csk]
             [cmr.umm.spatial :as umm-s]
-            [cmr.system-int-test.data2.atom :as atom]))
+            [cmr.system-int-test.data2.atom :as atom]
+            [cmr.system-int-test.data2.facets :as f]))
 
 (defn json-polygons->polygons
   [polygons]
@@ -137,6 +139,24 @@
        :cloud-cover (parse-double cloud-cover)
        :coordinate-system coordinate-system
        :shapes shapes})))
+
+(defn- echo-term-count->cmr-value-count
+  "Converts echo term count map into cmr value count vector"
+  [term-count]
+  (let [{:keys [term count]} term-count]
+    [term count]))
+
+(defn- echo-facet->cmr-facet
+  "Converts the echo-facet into cmr-facet format"
+  [[field values]]
+  {:value-counts (map echo-term-count->cmr-value-count values)
+   :field (f/echo-facet-key->cmr-facet-name (csk/->kebab-case-keyword field))})
+
+(defn parse-echo-json-result
+  "Returns the json result from a echo json string"
+  [json-str]
+  (let [json-struct (json/decode json-str true)]
+    (map echo-facet->cmr-facet json-struct)))
 
 (defn parse-json-result
   "Returns the json result from a json string"
