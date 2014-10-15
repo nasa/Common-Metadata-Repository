@@ -77,7 +77,7 @@
   [stored-ords orbit-params]
   ;; Use the orbit parameters to perform orbital back tracking to longitude ranges to be used
   ;; in the search.
-  (let [type (resolve-shape-type (name (:type (first stored-ords))))
+  (let [shape-type (resolve-shape-type (name (:type (first stored-ords))))
         coords (double-array (map srl/stored->ordinate
                                   (:ords (first stored-ords))))]
     (let [{:keys [swath-width
@@ -85,29 +85,32 @@
                   inclination-angle
                   number-of-orbits
                   start-circular-latitude]} orbit-params
-          asc-crossing (.areaCrossingRange
-                         orbits
-                         type
-                         coords
-                         true
-                         inclination-angle
-                         period
-                         swath-width
-                         start-circular-latitude
-                         number-of-orbits)
-          desc-crossing (.areaCrossingRange
-                          orbits
-                          type
-                          coords
-                          false
-                          inclination-angle
-                          period
-                          swath-width
-                          start-circular-latitude
-                          number-of-orbits)]
-      (when (or (seq asc-crossing)
-                (seq desc-crossing))
-        [asc-crossing desc-crossing]))))
+          start-circular-latitude (or start-circular-latitude 0)]
+      (when (and shape-type
+                 (seq coords))
+        (let [asc-crossing (.areaCrossingRange
+                             orbits
+                             shape-type
+                             coords
+                             true
+                             inclination-angle
+                             period
+                             swath-width
+                             start-circular-latitude
+                             number-of-orbits)
+              desc-crossing (.areaCrossingRange
+                              orbits
+                              shape-type
+                              coords
+                              false
+                              inclination-angle
+                              period
+                              swath-width
+                              start-circular-latitude
+                              number-of-orbits)]
+          (when (or (seq asc-crossing)
+                    (seq desc-crossing))
+            [asc-crossing desc-crossing]))))))
 
 (defn- range->numeric-range-intersection-condition
   "Create a condtion to test for a numberic range intersection with multiple ranges."
