@@ -39,9 +39,10 @@
 
 (defn- fix-ocsd-values
   "Convert the keys in a map to underscore form and converts values to strings (because
-  that is how it is in ECHO json)."
+  that is how it is in ECHO json). The final result is filtered of keys whose values are empty."
   [input-map]
-  (into {} (for [[k v] input-map] [(csk/->snake_case_string (name k)) (str v)])))
+  (into {} (filter (fn [[k v]] (seq v))
+                   (for [[k v] input-map] [(csk/->snake_case_string (name k)) (str v)]))))
 
 (defmethod atom-reference->json :collection
   [results concept-type reference]

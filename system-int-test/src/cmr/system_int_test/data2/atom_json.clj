@@ -73,10 +73,11 @@
 (defn- parse-ocsd
   "Parse orbit-calculated-spatial-domain map"
   [ocsd]
-  (into ocsd {:orbit-number (parse-long (:orbit-number ocsd))
-              :start-orbit-number (parse-double (:start-orbit-number ocsd))
-              :stop-orbit-number (parse-double (:stop-orbit-number ocsd))
-              :equator-crossing-longitude (parse-double (:equator-crossing-longitude ocsd))}))
+  (into ocsd (util/remove-nil-keys
+               {:orbit-number (parse-long (:orbit-number ocsd))
+                :start-orbit-number (parse-double (:start-orbit-number ocsd))
+                :stop-orbit-number (parse-double (:stop-orbit-number ocsd))
+                :equator-crossing-longitude (parse-double (:equator-crossing-longitude ocsd))})))
 
 (defmethod json-entry->entry :collection
   [concept-type json-entry]
