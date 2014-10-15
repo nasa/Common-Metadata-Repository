@@ -83,6 +83,9 @@
 
            ;; Checking specific fields
 
+           ;; provier
+           "PROV1" [coll1 coll2 coll3 coll23]
+
            ;; entry title
            "coll1" [coll1]
 
@@ -132,7 +135,10 @@
            "some" [coll6]
 
            ;; attributes
+           ;; - name
            "charlie" [coll12]
+           ;; - description
+           "Generated" [coll12]
 
            ;; Platforms
            ;; - short name
@@ -155,6 +161,7 @@
            "ssnA" [coll15]
            ;; - long name
            "slnB" [coll11]
+           ;; - technique
            "techniqueB" [coll11]
 
            ;; Science keywords
