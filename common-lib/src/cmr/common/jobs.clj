@@ -191,3 +191,17 @@
   [system-holder-var jobs]
   (->JobScheduler system-holder-var jobs true false))
 
+(defn pause-jobs
+  "Pause all jobs"
+  []
+  (qs/pause-all!)
+  (info "Paused all scheduled jobs.")
+  {:status 204})
+
+(defn resume-jobs
+  "Resume all jobs"
+  []
+  (qs/resume-all!)
+  (info "Resumed all scheduled jobs.")
+  {:status 204})
+

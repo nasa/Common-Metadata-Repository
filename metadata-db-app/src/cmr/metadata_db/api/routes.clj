@@ -9,6 +9,7 @@
             [ring.middleware.json :as ring-json]
             [clojure.stacktrace :refer [print-stack-trace]]
             [cheshire.core :as json]
+            [cmr.common.jobs :as jobs]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.api.errors :as errors]
             [cmr.common.services.errors :as serv-err]
@@ -263,6 +264,19 @@
         (let [context (acl/add-authentication-to-context request-context params headers)]
           (acl/verify-ingest-management-permission context :update)
           (reset context params)))
+
+      (context "/jobs" []
+        ;; pause all jobs
+        (POST "/pause" {:keys [request-context params headers]}
+          (let [context (acl/add-authentication-to-context request-context params headers)]
+            (acl/verify-ingest-management-permission context :update)
+            (jobs/pause-jobs)))
+
+        ;; resume all jobs
+        (POST "/resume" {:keys [request-context params headers]}
+          (let [context (acl/add-authentication-to-context request-context params headers)]
+            (acl/verify-ingest-management-permission context :update)
+            (jobs/resume-jobs))))
 
       (GET "/health" {request-context :request-context params :params}
         (let [{pretty? :pretty} params

@@ -197,11 +197,14 @@
   ([concept-type params options]
    (let [response (get-search-failure-data
                     (find-concepts-in-format "application/json" concept-type params options))
-         {:keys [status body]} response]
-     (if (= status 200)
-       {:status status
-        :results (dj/parse-json-result concept-type body)}
-       response))))
+         {:keys [status body]} response
+         {:keys [echo-compatible include-facets]} params]
+     (if (and echo-compatible include-facets)
+       (dj/parse-echo-json-result body)
+       (if (= status 200)
+         {:status status
+          :results (dj/parse-json-result concept-type body)}
+         response)))))
 
 (defn find-concepts-kml
   "Returns the response of search in KML format"

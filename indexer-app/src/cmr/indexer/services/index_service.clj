@@ -60,6 +60,11 @@
   "Index the given concept and revision-id"
   [context concept-id revision-id ignore-conflict]
   (info (format "Indexing concept %s, revision-id %s" concept-id revision-id))
+  (when-not (and concept-id revision-id)
+    (errors/throw-service-error
+      :bad-request
+      (format "Concept-id %s and revision-id %s cannot be null" concept-id revision-id)))
+
   (let [concept-type (cs/concept-id->type concept-id)
         concept-mapping-types (idx-set/get-concept-mapping-types context)
         concept (meta-db/get-concept context concept-id revision-id)
