@@ -44,57 +44,57 @@
               (index-svc/update-index-set request-context index-set)
               {:status 200}))
 
-          ;; Querying cache
-          (context "/caches" []
-            ;; Get the list of caches
-            (GET "/" {:keys [params request-context headers]}
-              (let [context (acl/add-authentication-to-context request-context params headers)
-                    caches (map name (keys (get-in context [:system :caches])))]
-                (acl/verify-ingest-management-permission context :read)
-                {:status 200
-                 :body (json/generate-string caches)}))
-            ;; Get the keys for the given cache
-            (GET "/:cache-name" {{:keys [cache-name] :as params} :params
-                                 request-context :request-context
-                                 headers :headers}
-              (let [context (acl/add-authentication-to-context request-context params headers)
-                    cache (cache/context->cache (keyword cache-name))]
-                (acl/verify-ingest-management-permission context :read)
-                (when cache
-                  (let [result (->> cache
-                                    :atom
-                                    deref
-                                    keys
-                                    (map name))]
-                    {:status 200
-                     :body (json/generate-string result)}))))
-            ;; Get the value for the given key for the given cache
-            (GET "/:cache-name/:cache-key" {{:keys [cache-name cache-key] :as params} :params
-                                            request-context :request-context
-                                            headers :headers}
-              (let [cache-key (keyword cache-key)
-                    context (acl/add-authentication-to-context request-context params headers)
-                    cache (cache/context->cache context (keyword cache-name))
-                    result (-> cache
-                               :atom
-                               deref
-                               (get cache-key))]
-                (acl/verify-ingest-management-permission context :read)
-                (when result
-                  {:status 200
-                   :body (pr-str result)}))))
-
-          (POST "/clear-cache" {:keys [request-context params headers]}
-            (let [context (acl/add-authentication-to-context request-context params headers)]
-              (acl/verify-ingest-management-permission context :update)
-              (cache/reset-caches context))
-            {:status 200})
-
           (DELETE "/" {request-context :request-context params :params headers :headers}
             (let [context (acl/add-authentication-to-context request-context params headers)]
               (acl/verify-ingest-management-permission context :update)
               (index-svc/delete-index-set request-context id)
               {:status 204}))))
+
+      ;; Querying cache
+      (context "/caches" []
+        ;; Get the list of caches
+        (GET "/" {:keys [params request-context headers]}
+          (let [context (acl/add-authentication-to-context request-context params headers)
+                caches (map name (keys (get-in context [:system :caches])))]
+            (acl/verify-ingest-management-permission context :read)
+            {:status 200
+             :body (json/generate-string caches)}))
+        ;; Get the keys for the given cache
+        (GET "/:cache-name" {{:keys [cache-name] :as params} :params
+                             request-context :request-context
+                             headers :headers}
+          (let [context (acl/add-authentication-to-context request-context params headers)
+                cache (cache/context->cache (keyword cache-name))]
+            (acl/verify-ingest-management-permission context :read)
+            (when cache
+              (let [result (->> cache
+                                :atom
+                                deref
+                                keys
+                                (map name))]
+                {:status 200
+                 :body (json/generate-string result)}))))
+        ;; Get the value for the given key for the given cache
+        (GET "/:cache-name/:cache-key" {{:keys [cache-name cache-key] :as params} :params
+                                        request-context :request-context
+                                        headers :headers}
+          (let [cache-key (keyword cache-key)
+                context (acl/add-authentication-to-context request-context params headers)
+                cache (cache/context->cache context (keyword cache-name))
+                result (-> cache
+                           :atom
+                           deref
+                           (get cache-key))]
+            (acl/verify-ingest-management-permission context :read)
+            (when result
+              {:status 200
+               :body (pr-str result)}))))
+
+      (POST "/clear-cache" {:keys [request-context params headers]}
+        (let [context (acl/add-authentication-to-context request-context params headers)]
+          (acl/verify-ingest-management-permission context :update)
+          (cache/reset-caches context))
+        {:status 200})
 
       ;; delete all of the indices associated with index-sets and index-set docs in elastic
       (POST "/reset" {request-context :request-context params :params headers :headers}

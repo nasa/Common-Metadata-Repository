@@ -99,15 +99,15 @@
   []
   (format "http://localhost:%s/clear-cache" (transmit-config/search-port)))
 
+(defn search-read-caches-url
+  "URL to read the search caches."
+  []
+  (format "http://localhost:%s/caches" (transmit-config/search-port)))
+
 (defn search-health-url
   "URL to check search health."
   []
   (format "http://localhost:%s/health" (transmit-config/search-port)))
-
-(defn indexer-clear-cache-url
-  "Clear cache in indexer app."
-  []
-  (format "http://localhost:%s/clear-cache" (transmit-config/indexer-port)))
 
 (defn provider-holdings-url
   "Returns the URL for retrieving provider holdings."
@@ -150,6 +150,11 @@
   []
   (format "http://localhost:%s/reset" (transmit-config/metadata-db-port)))
 
+(defn mdb-read-caches-url
+  "URL to read the mdb caches."
+  []
+  (format "http://localhost:%s/caches" (transmit-config/metadata-db-port)))
+
 (defn mdb-health-url
   "URL to check metadata db health."
   []
@@ -165,6 +170,11 @@
   []
   (format "http://localhost:%s/reset" (transmit-config/index-set-port)))
 
+(defn index-set-read-caches-url
+  "URL to read the index-set caches."
+  []
+  (format "http://localhost:%s/caches" (transmit-config/index-set-port)))
+
 (defn index-set-health-url
   "URL to check index-set health."
   []
@@ -179,6 +189,16 @@
   "Updates the indexes in the indexer to update mappings and settings"
   []
   (format "http://localhost:%s/update-indexes" (transmit-config/indexer-port)))
+
+(defn indexer-read-caches-url
+  "URL to read the indexer caches."
+  []
+  (format "http://localhost:%s/caches" (transmit-config/indexer-port)))
+
+(defn indexer-clear-cache-url
+  "Clear cache in indexer app."
+  []
+  (format "http://localhost:%s/clear-cache" (transmit-config/indexer-port)))
 
 (defn indexer-health-url
   "URL to check indexer health."
