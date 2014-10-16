@@ -177,16 +177,17 @@
                         atom-links)
         orbit-calculated-spatial-domains (map orbit-swath-helper/ocsd-json->map
                                               orbit-calculated-spatial-domains-json)
-        shapes (concat (srl/ords-info->shapes ords-info ords)
+        shapes (when (and start-date end-date)
+                 (concat (srl/ords-info->shapes ords-info ords)
                        (orbit-swath-helper/elastic-result->swath-shapes
-                         orbits-by-collection elastic-result))]
+                         orbits-by-collection elastic-result)))]
     {:id concept-id
      :title granule-ur
      :collection-concept-id collection-concept-id
      :updated update-time
      :dataset-id entry-title
      :producer-gran-id producer-gran-id
-     :size (str size)
+     :size (when size (str size))
      :original-format (metadata-format->atom-original-format metadata-format)
      :data-center provider-id
      :start-date start-date
@@ -196,7 +197,7 @@
      :online-access-flag downloadable
      :browse-flag browsable
      :day-night day-night
-     :cloud-cover (str cloud-cover)
+     :cloud-cover (when cloud-cover (str cloud-cover))
      :coordinate-system coordinate-system
      :shapes shapes
 
