@@ -12,11 +12,26 @@
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2" "provguid3" "PROV3"}
                                           false))
 
-(defn list-caches-for-app
-  "Attempts to perform the given action using the url and method with the token. Returns true
-  if the action was successful."
+(defn- list-caches-for-app
+  "Gets a list of the caches for the given url."
   [url token]
   (let [response (client/request {:url url
+                                  :method :get
+                                  :query-params {:token token}
+                                  :connection-manager (url/conn-mgr)
+                                  :throw-exceptions false})
+        status (:status response)]
+
+    ;; Make sure the status returned is success
+    (when (< status 200)
+      (throw (Exception. (str "Unexpected status " status " response:" (:body response)))))
+    (json/decode (:body response) true)))
+
+(defn- list-cache-keys
+  "Gets a list of the cache keys for the given cache at the given url."
+  [url cache-name token]
+  (let [full-url (str url "/" cache-name)
+        response (client/request {:url full-url
                                   :method :get
                                   :query-params {:token token}
                                   :connection-manager (url/conn-mgr)
@@ -47,4 +62,16 @@
                                          "index-names"
                                          "token-imp"
                                          "token-sid"
-                                         "xsl-transformer-templates"]))))
+                                         "xsl-transformer-templates"]))
+
+    (testing "list cache keys"
+      (are [url cache cache-keys]
+           (let [response (list-cache-keys url cache admin-read-token)]
+             (is (= (set cache-keys) (set response))))
+
+           (url/indexer-read-caches-url) "acls" []
+           (url/indexer-read-caches-url) "general" []
+           (url/indexer-read-caches-url) "token-imp" []
+           (url/index-set-read-caches-url) "token-imp" []
+           (url/mdb-read-caches-url) "token-imp" []
+           (url/search-read-caches-url) "acls" []))))
