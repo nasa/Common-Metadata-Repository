@@ -19,8 +19,7 @@
   (->> cmr-cache
        :atom
        deref
-       keys
-       (map name)))
+       keys))
 
 (defn cache-lookup
   "Looks up the value of the cached item using the key. If there is a cache miss
@@ -51,11 +50,11 @@
 
 (defmethod create-core-cache :lru
   [type value opts]
-  (apply cc/lru-cache-factory value (flatten opts)))
+  (apply cc/lru-cache-factory value (flatten (seq opts))))
 
 (defmethod create-core-cache :ttl
   [type value opts]
-  (apply cc/ttl-cache-factory value (flatten opts)))
+  (apply cc/ttl-cache-factory value (flatten (seq opts))))
 
 (defn create-cache
   "Create system level cache. The currently supported cache types are :defalut and :lru.

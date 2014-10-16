@@ -92,8 +92,7 @@
 (defn create-token-imp-cache
   "Creates a cache for which tokens have ingest management permission."
   []
-  (cache/create-cache
-    (clj-cache/ttl-cache-factory {} :ttl TOKEN_IMP_CACHE_TIME)))
+  (cache/create-cache :ttl {} {:ttl TOKEN_IMP_CACHE_TIME}))
 
 (defn- has-ingest-management-permission?
   "Returns true if the user identified by the token in the cache has been granted
