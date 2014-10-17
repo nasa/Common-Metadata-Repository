@@ -189,9 +189,10 @@
                         :instruments [(umm-c/->Instrument
                                         "SAR"
                                         "SAR long name"
+                                        nil
                                         [(umm-c/->Sensor "SNA" "SNA long name" nil)
                                          (umm-c/->Sensor "SNB" nil nil)])
-                                      (umm-c/->Instrument "MAR" nil nil)]})
+                                      (umm-c/->Instrument "MAR" nil nil nil)]})
                      (umm-c/map->Platform
                        {:short-name "RADARSAT-2"
                         :long-name "RADARSAT-LONG-2"

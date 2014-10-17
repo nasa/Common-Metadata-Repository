@@ -170,6 +170,7 @@
                                                      nil
                                                      (apply dc/instrument (d/unique-str "instrument")
                                                             nil
+                                                            nil
                                                             (map dc/sensor sensors)))]})))
         c1 (make-collection "c10" "c41")
         c2 (make-collection "c20" "c51")
