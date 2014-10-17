@@ -37,7 +37,7 @@
   (fn [results concept-type reference]
     concept-type))
 
-(defn- fix-ocsd-values
+(defn- fix-map-for-echo-json
   "Convert the keys in a map to underscore form and converts values to strings (because
   that is how it is in ECHO json). The final result is filtered of keys whose values are empty."
   [input-map]
@@ -75,7 +75,7 @@
                        :links (seq (map atom/atom-link->attribute-map atom-links))
                        :coordinate_system coordinate-system
                        :orbit_parameters (when orbit-parameters
-                                           (fix-ocsd-values orbit-parameters))}
+                                           (fix-map-for-echo-json orbit-parameters))}
                       shape-result)]
     ;; remove entries with nil value
     (util/remove-nil-keys result)))
@@ -85,7 +85,7 @@
   (let [{:keys [id title updated dataset-id producer-gran-id size original-format
                 data-center start-date end-date atom-links online-access-flag browse-flag
                 day-night cloud-cover coordinate-system shapes
-                orbit-calculated-spatial-domains]} reference
+                orbit orbit-calculated-spatial-domains]} reference
         shape-result (atom-spatial/shapes->json shapes)
         result (merge {:id id
                        :title title
@@ -103,9 +103,10 @@
                        :day_night_flag day-night
                        :cloud_cover cloud-cover
                        :coordinate_system coordinate-system
-                       :orbit_calculated_spatial_domains (map
-                                                           fix-ocsd-values
-                                                           orbit-calculated-spatial-domains)}
+                       :orbit (when orbit (fix-map-for-echo-json orbit))
+                       :orbit_calculated_spatial_domains (seq (map
+                                                                fix-map-for-echo-json
+                                                                orbit-calculated-spatial-domains))}
                       shape-result)]
     ;; remove entries with nil value
     (util/remove-nil-keys result)))

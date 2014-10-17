@@ -287,7 +287,7 @@
                                 :size 80.0
                                 :cloud-cover 30.0
                                 :related-urls [ru3]
-                                :spatial-coverage (dg/spatial (dg/orbit 120.0 50.0 "A" 50.0 "A"))
+                                :spatial-coverage (dg/spatial (dg/orbit 120.0 50.0 :asc 50.0 :asc))
                                 :orbit-calculated-spatial-domains
                                 [{:orbital-model-name "MODEL NAME"
                                   :start-orbit-number 3.0

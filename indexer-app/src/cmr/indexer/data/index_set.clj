@@ -301,8 +301,9 @@
                    ;; So we are saving the links in json string, then parse it out when we need it.
                    :atom-links (not-indexed (stored string-field-mapping))
 
-                   ;; :orbit-calculated-spatial-domains-json is a json string stored for
-                   ;; retrieval similar to :atom-links above
+                   ;; :orbit-json and :orbit-calculated-spatial-domains-json are json strings
+                   ;; stored for retrieval similar to :atom-links above
+                   :orbit-json (not-indexed (stored string-field-mapping))
                    :orbit-calculated-spatial-domains-json (not-indexed (stored string-field-mapping))
                    }
                   spatial-coverage-fields)}})

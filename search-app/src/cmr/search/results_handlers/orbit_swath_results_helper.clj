@@ -41,7 +41,7 @@
     (zipmap (map :concept-id collection-orbits) collection-orbits)))
 
 (def ocsd-fields
-  "The fields for orbit calculated spatil domains, in the order that they are stored in the jason
+  "The fields for orbit calculated spatil domains, in the order that they are stored in the json
   string in the index."
   [:equator-crossing-date-time
    :equator-crossing-longitude
