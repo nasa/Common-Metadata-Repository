@@ -12,7 +12,7 @@
             [cheshire.core :as json]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2" "provguid3" "PROV3"}
-                                          false))
+                                          true))
 
 (defn- list-caches-for-app
   "Gets a list of the caches for the given url."
@@ -61,15 +61,13 @@
 
 (deftest cache-apis
   ;; needed to remove any caching from previous tests
-  (ingest/clear-caches)
+  ;(ingest/clear-caches)
   ;; grant permission and ingest a collection to give us some cached data
   ;; grant read permission to group "admin-read-group-guid"
   (e/grant-group-admin "admin-read-group-guid" :read)
-  ;; Grant permissions before creating data
-  ;; Grant guests permission to coll1
-  (e/grant-guest (e/coll-catalog-item-id "provguid1" (e/coll-id ["coll1" "notexist"])))
   ;; login as a member of group 1
  	(let [admin-read-token (e/login "admin" ["admin-read-group-guid"])
+        normal-user-token (e/login "user")
         coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}))]
     (testing "list caches"
       (are [url caches]
@@ -87,6 +85,46 @@
                                          "token-sid"
                                          "xsl-transformer-templates"]))
 
+    (testing "normal user cannot retrieve cache list from indexer"
+      (let [response (client/request {:url (url/indexer-read-caches-url)
+                                      :method :get
+                                      :query-params {:token normal-user-token}
+                                      :connection-manager (url/conn-mgr)
+                                      :throw-exceptions false})
+            errors (:errors (json/decode (:body response) true))]
+        (is (= 401 (:status response)))
+        (is (= ["You do not have permission to perform that action."] errors))))
+
+    (testing "normal user cannot retrieve cache list from index-set"
+      (let [response (client/request {:url (url/index-set-read-caches-url)
+                                      :method :get
+                                      :query-params {:token normal-user-token}
+                                      :connection-manager (url/conn-mgr)
+                                      :throw-exceptions false})
+            errors (:errors (json/decode (:body response) true))]
+        (is (= 401 (:status response)))
+        (is (= ["You do not have permission to perform that action."] errors))))
+
+    (testing "normal user cannot retrieve cache list from metadata-db"
+      (let [response (client/request {:url (url/mdb-read-caches-url)
+                                      :method :get
+                                      :query-params {:token normal-user-token}
+                                      :connection-manager (url/conn-mgr)
+                                      :throw-exceptions false})
+            errors (:errors (json/decode (:body response) true))]
+        (is (= 401 (:status response)))
+        (is (= ["You do not have permission to perform that action."] errors))))
+
+    (testing "normal user cannot retrieve cache list from search"
+      (let [response (client/request {:url (url/search-read-caches-url)
+                                      :method :get
+                                      :query-params {:token normal-user-token}
+                                      :connection-manager (url/conn-mgr)
+                                      :throw-exceptions false})
+            errors (:errors (json/decode (:body response) true))]
+        (is (= 401 (:status response)))
+        (is (= ["You do not have permission to perform that action."] errors))))
+
     (testing "retrieval of keys for non-existent cache results in a 404"
       (let [response (client/request {:url (str (url/indexer-read-caches-url) "/INVALID-CACHE-ABC")
                                       :method :get
@@ -96,6 +134,46 @@
         (is (= 404 (:status response)))
         (is (= "Not Found" (:body response)))))
 
+    (testing "normal user cannot retrieve cache keys from indexer"
+      (let [response (client/request {:url (str (url/indexer-read-caches-url) "/acls")
+                                      :method :get
+                                      :query-params {:token normal-user-token}
+                                      :connection-manager (url/conn-mgr)
+                                      :throw-exceptions false})
+            errors (:errors (json/decode (:body response) true))]
+        (is (= 401 (:status response)))
+        (is (= ["You do not have permission to perform that action."] errors))))
+
+    (testing "normal user cannot retrieve cache keys from index-set"
+      (let [response (client/request {:url (str (url/index-set-read-caches-url) "/acls")
+                                      :method :get
+                                      :query-params {:token normal-user-token}
+                                      :connection-manager (url/conn-mgr)
+                                      :throw-exceptions false})
+            errors (:errors (json/decode (:body response) true))]
+        (is (= 401 (:status response)))
+        (is (= ["You do not have permission to perform that action."] errors))))
+
+    (testing "normal user cannot retrieve cache keys from metadata-db"
+      (let [response (client/request {:url (str (url/mdb-read-caches-url) "/acls")
+                                      :method :get
+                                      :query-params {:token normal-user-token}
+                                      :connection-manager (url/conn-mgr)
+                                      :throw-exceptions false})
+            errors (:errors (json/decode (:body response) true))]
+        (is (= 401 (:status response)))
+        (is (= ["You do not have permission to perform that action."] errors))))
+
+    (testing "normal user cannot retrieve cache keys from search"
+      (let [response (client/request {:url (str (url/search-read-caches-url) "/acls")
+                                      :method :get
+                                      :query-params {:token normal-user-token}
+                                      :connection-manager (url/conn-mgr)
+                                      :throw-exceptions false})
+            errors (:errors (json/decode (:body response) true))]
+        (is (= 401 (:status response)))
+        (is (= ["You do not have permission to perform that action."] errors))))
+
     (testing "list cache keys"
       (are [url cache cache-keys]
            (let [response (list-cache-keys url cache admin-read-token)]
@@ -103,17 +181,60 @@
 
            (url/indexer-read-caches-url) "acls" ["acls"]
            (url/indexer-read-caches-url) "general" ["concept-indices" "concept-mapping-types"]
-           (url/indexer-read-caches-url) "token-imp" [["ABC-1" "read"]]
-           (url/index-set-read-caches-url) "token-imp" [["mock-echo-system-token" "read"]
-                                                        ["ABC-1" "read"]]
-           (url/mdb-read-caches-url) "token-imp" [["ABC-1" "read"]]
+           (url/indexer-read-caches-url) "token-imp" [["ABC-2" "read"] ["ABC-1" "read"]]
+           (url/index-set-read-caches-url) "token-imp" [["mock-echo-system-token" "update"]
+                                                        ["mock-echo-system-token" "read"]
+                                                        ["ABC-1" "read"]
+                                                        ["ABC-2" "read"]]
+           (url/mdb-read-caches-url) "token-imp" [["ABC-1" "read"] ["ABC-2" "read"]]
            (url/search-read-caches-url) "acls" []
            (url/search-read-caches-url) "collections-for-gran-acls" []
            (url/search-read-caches-url) "has-granules-map" []
            (url/search-read-caches-url) "index-names" []
-           (url/search-read-caches-url) "token-imp" [["ABC-1" "read"]]
+           (url/search-read-caches-url) "token-imp" [["ABC-1" "read"] ["ABC-2" "read"]]
            (url/search-read-caches-url) "token-sid" []
            (url/search-read-caches-url) "xsl-transformer-templates" []))
+
+
+    (testing "normal user cannot retrieve cache values from indexer"
+      (let [response (client/request {:url (str (url/indexer-read-caches-url) "/acls/acls")
+                                      :method :get
+                                      :query-params {:token normal-user-token}
+                                      :connection-manager (url/conn-mgr)
+                                      :throw-exceptions false})
+            errors (:errors (json/decode (:body response) true))]
+        (is (= 401 (:status response)))
+        (is (= ["You do not have permission to perform that action."] errors))))
+
+    (testing "normal user cannot retrieve cache values from index-set"
+      (let [response (client/request {:url (str (url/index-set-read-caches-url) "/acls/acls")
+                                      :method :get
+                                      :query-params {:token normal-user-token}
+                                      :connection-manager (url/conn-mgr)
+                                      :throw-exceptions false})
+            errors (:errors (json/decode (:body response) true))]
+        (is (= 401 (:status response)))
+        (is (= ["You do not have permission to perform that action."] errors))))
+
+    (testing "normal user cannot retrieve cache values from metadata-db"
+      (let [response (client/request {:url (str (url/mdb-read-caches-url) "/acls/acls")
+                                      :method :get
+                                      :query-params {:token normal-user-token}
+                                      :connection-manager (url/conn-mgr)
+                                      :throw-exceptions false})
+            errors (:errors (json/decode (:body response) true))]
+        (is (= 401 (:status response)))
+        (is (= ["You do not have permission to perform that action."] errors))))
+
+    (testing "normal user cannot retrieve cache values from search"
+      (let [response (client/request {:url (str (url/search-read-caches-url) "/acls/acls")
+                                      :method :get
+                                      :query-params {:token normal-user-token}
+                                      :connection-manager (url/conn-mgr)
+                                      :throw-exceptions false})
+            errors (:errors (json/decode (:body response) true))]
+        (is (= 401 (:status response)))
+        (is (= ["You do not have permission to perform that action."] errors))))
 
     (testing "retrieval of value for non-existent key results in a 404"
       (let [response (client/request {:url (str (url/indexer-read-caches-url)
@@ -130,13 +251,35 @@
            (let [response (get-cache-value url cache cache-key admin-read-token)]
              (is (= value response)))
 
-           (url/indexer-read-caches-url) "acls" "acls" '({:aces [{:permissions ["read"] :user-type "guest"}],
-                                                          :catalog-item-identity
-                                                          {:provider-id "PROV1"
-                                                           :collection-applicable true
-                                                           :collection-identifier
-                                                           {:entry-titles ["coll1" "notexist"]}
-                                                           :granule-identifier nil}
-                                                          :system-object-identity nil})
+           (url/indexer-read-caches-url) "acls" "acls" [{:aces
+                                                         [{:permissions ["read"], :user-type "guest"}
+                                                          {:permissions ["read"], :user-type "registered"}],
+                                                         :catalog-item-identity
+                                                         {:provider-id "PROV3",
+                                                          :granule-applicable true,
+                                                          :collection-applicable true,
+                                                          :collection-identifier nil,
+                                                          :granule-identifier nil},
+                                                         :system-object-identity nil}
+                                                        {:aces
+                                                         [{:permissions ["read"], :user-type "guest"}
+                                                          {:permissions ["read"], :user-type "registered"}],
+                                                         :catalog-item-identity
+                                                         {:provider-id "PROV2",
+                                                          :granule-applicable true,
+                                                          :collection-applicable true,
+                                                          :collection-identifier nil,
+                                                          :granule-identifier nil},
+                                                         :system-object-identity nil}
+                                                        {:aces
+                                                         [{:permissions ["read"], :user-type "guest"}
+                                                          {:permissions ["read"], :user-type "registered"}],
+                                                         :catalog-item-identity
+                                                         {:provider-id "PROV1",
+                                                          :granule-applicable true,
+                                                          :collection-applicable true,
+                                                          :collection-identifier nil,
+                                                          :granule-identifier nil},
+                                                         :system-object-identity nil}]
            (url/indexer-read-caches-url) "general" "concept-mapping-types" {:collection "collection"
                                                                             :granule "granule"}))))

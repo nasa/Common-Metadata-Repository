@@ -97,7 +97,7 @@
 (defn search-clear-cache-url
   "Clear cache in search app."
   []
-  (format "http://localhost:%s/clear-cache" (transmit-config/search-port)))
+  (format "http://localhost:%s/caches/clear-cache" (transmit-config/search-port)))
 
 (defn search-read-caches-url
   "URL to read the search caches."
@@ -198,7 +198,7 @@
 (defn indexer-clear-cache-url
   "Clear cache in indexer app."
   []
-  (format "http://localhost:%s/clear-cache" (transmit-config/indexer-port)))
+  (format "http://localhost:%s/caches/clear-cache" (transmit-config/indexer-port)))
 
 (defn indexer-health-url
   "URL to check indexer health."
