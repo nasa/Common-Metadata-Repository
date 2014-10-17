@@ -32,7 +32,7 @@
   [instrument]
   (-> instrument
       (assoc :technique nil)
-      (#(assoc % :sensors (sensors->expected-parsed (:sensors %))))))
+      (update-in [:sensors] sensors->expected-parsed)))
 
 (defn- instruments->expected-parsed
   "Return the expected parsed instruments for the given instruments."
