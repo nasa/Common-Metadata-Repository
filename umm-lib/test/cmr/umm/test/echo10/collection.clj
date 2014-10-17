@@ -166,6 +166,7 @@
           <Instrument>
             <LongName>SAR long name</LongName>
             <ShortName>SAR</ShortName>
+            <Technique>itechnique</Technique>
             <Sensors>
               <Sensor>
                 <LongName>SNA long name</LongName>

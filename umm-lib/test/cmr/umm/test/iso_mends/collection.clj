@@ -27,10 +27,17 @@
   [sensors]
   (seq (map #(assoc % :technique nil) sensors)))
 
+(defn- instrument->expected-parsed
+  "Return the expected parsed instrument for the given instrument."
+  [instrument]
+  (-> instrument
+      (assoc :technique nil)
+      (#(assoc % :sensors (sensors->expected-parsed (:sensors %))))))
+
 (defn- instruments->expected-parsed
   "Return the expected parsed instruments for the given instruments."
   [instruments]
-  (seq (map #(assoc % :sensors (sensors->expected-parsed (:sensors %))) instruments)))
+  (seq (map instrument->expected-parsed instruments)))
 
 (defn- platform->expected-parsed
   "Return the expected parsed platform for the given platform."

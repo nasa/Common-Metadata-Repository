@@ -58,6 +58,9 @@
                      (ext-gen/optional sensor-long-names)
                      (ext-gen/optional sensor-techniques)))
 
+(def instrument-techniques
+  (ext-gen/string-ascii 1 10))
+
 (def instrument-long-names
   (ext-gen/string-ascii 1 10))
 
@@ -68,6 +71,7 @@
   (ext-gen/model-gen c/->Instrument
                      instrument-short-names
                      (ext-gen/optional instrument-long-names)
+                     (ext-gen/optional instrument-techniques)
                      (ext-gen/nil-if-empty (gen/vector sensors 0 4))))
 
 

@@ -82,6 +82,7 @@
   [
    short-name
    long-name
+   technique
    sensors
   ])
 
