@@ -130,13 +130,13 @@
            (let [response (get-cache-value url cache cache-key admin-read-token)]
              (is (= value response)))
 
-           (url/indexer-read-caches-url) "acls" "acls" '({:aces [{:permissions ["read"], :user-type "guest"}],
+           (url/indexer-read-caches-url) "acls" "acls" '({:aces [{:permissions ["read"] :user-type "guest"}],
                                                           :catalog-item-identity
-                                                          {:provider-id "PROV1",
-                                                           :collection-applicable true,
+                                                          {:provider-id "PROV1"
+                                                           :collection-applicable true
                                                            :collection-identifier
-                                                           {:entry-titles ["coll1" "notexist"]},
-                                                           :granule-identifier nil},
+                                                           {:entry-titles ["coll1" "notexist"]}
+                                                           :granule-identifier nil}
                                                           :system-object-identity nil})
-           (url/indexer-read-caches-url) "general" "concept-indices" {:granule {:small_collections "1_small_collections"},
-                                                                      :collection {:collections "1_collections"}}))))
+           (url/indexer-read-caches-url) "general" "concept-mapping-types" {:collection "collection"
+                                                                            :granule "granule"}))))
