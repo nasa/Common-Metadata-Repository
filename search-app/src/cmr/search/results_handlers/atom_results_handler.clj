@@ -177,10 +177,10 @@
                         atom-links)
         orbit-calculated-spatial-domains (map orbit-swath-helper/ocsd-json->map
                                               orbit-calculated-spatial-domains-json)
-        shapes (when (and start-date end-date)
-                 (concat (srl/ords-info->shapes ords-info ords)
-                       (orbit-swath-helper/elastic-result->swath-shapes
-                         orbits-by-collection elastic-result)))]
+        shapes (concat (srl/ords-info->shapes ords-info ords)
+                       (when (and start-date end-date)
+                         (orbit-swath-helper/elastic-result->swath-shapes
+                           orbits-by-collection elastic-result)))]
     {:id concept-id
      :title granule-ur
      :collection-concept-id collection-concept-id
