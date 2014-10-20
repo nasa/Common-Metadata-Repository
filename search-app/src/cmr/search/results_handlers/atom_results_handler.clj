@@ -11,6 +11,7 @@
             [clojure.set :as set]
             [clj-time.core :as time]
             [cheshire.core :as json]
+            [cmr.common.util :as util]
             [cmr.search.models.results :as r]
             [cmr.spatial.serialize :as srl]
             [cmr.search.services.url-helper :as url]
@@ -186,10 +187,10 @@
                           (update-in (json/decode link-str true) [:size] #(when % (str %))))
                         atom-links)
         orbit (when ascending-crossing
-                {:ascending-crossing (str ascending-crossing)
-                 :start-lat (str start-lat)
+                {:ascending-crossing (util/double->string ascending-crossing)
+                 :start-lat (util/double->string start-lat)
                  :start-direction start-direction
-                 :end-lat (str end-lat)
+                 :end-lat (util/double->string end-lat)
                  :end-direction end-direction})
         orbit-calculated-spatial-domains (map orbit-swath-helper/ocsd-json->map
                                               orbit-calculated-spatial-domains-json)

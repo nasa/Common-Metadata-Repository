@@ -110,16 +110,16 @@
 (defn- parse-orbit-attribs
   "Convert orbit attributes to their proper keys / value types"
   [attribs]
-  (when-not (empty? attribs)
-    (let [{:keys [ascendingCrossing startLatitude startDirection endLatitude endDirection]} attribs]
-      {:ascending-crossing (when ascendingCrossing
-                             (Double/parseDouble ascendingCrossing))
-       :start-lat (when startLatitude
-                    (Double/parseDouble startLatitude))
-       :start-direction (echo-s/orbit-direction->key startDirection)
-       :end-lat (when endLatitude
-                  (Double/parseDouble endLatitude))
-       :end-direction (echo-s/orbit-direction->key endDirection)})))
+  (when-let [{:keys [ascendingCrossing startLatitude startDirection endLatitude endDirection]}
+             (not-empty attribs)]
+    {:ascending-crossing (when ascendingCrossing
+                           (Double/parseDouble ascendingCrossing))
+     :start-lat (when startLatitude
+                  (Double/parseDouble startLatitude))
+     :start-direction (echo-s/orbit-direction->key startDirection)
+     :end-lat (when endLatitude
+                (Double/parseDouble endLatitude))
+     :end-direction (echo-s/orbit-direction->key endDirection)}))
 
 (defn- parse-ocsd-attribs
   "Convert orbit-calculated-spatial-domains attributes to their proper keys / value types"
