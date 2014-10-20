@@ -170,8 +170,7 @@
     (testing "lookup value for cache key"
       (are [url cache cache-key value]
            (let [response (get-cache-value url cache cache-key admin-read-token)]
-             (is (= value response)))
-
+             (is (= (set value) (set response))))
            (url/indexer-read-caches-url) "acls" "acls" [{:aces
                                                          [{:permissions ["read"], :user-type "guest"}
                                                           {:permissions ["read"], :user-type "registered"}],
