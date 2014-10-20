@@ -47,6 +47,7 @@
         instruments (mapcat :instruments platforms)
         instrument-short-names (keep :short-name instruments)
         instrument-long-names (keep :long-name instruments)
+        instrument-techiques (keep :technique instruments)
         sensors (mapcat :sensors instruments)
         sensor-short-names (keep :short-name sensors)
         sensor-long-names (keep :long-name sensors)
@@ -80,6 +81,7 @@
                                   platform-long-names
                                   instrument-short-names
                                   instrument-long-names
+                                  instrument-techiques
                                   sensor-short-names
                                   sensor-long-names
                                   sensor-techniques

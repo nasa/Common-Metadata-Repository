@@ -86,11 +86,14 @@
 (defn instrument
   "Return an instrument based on instrument attribs"
   ([instrument-sn]
-   (instrument instrument-sn nil))
-  ([instrument-sn long-name & sensors]
+   (instrument instrument-sn nil nil))
+  ([instrument-sn instrument-ln]
+   (instrument instrument-sn instrument-ln nil))
+  ([instrument-sn long-name technique & sensors]
    (c/map->Instrument
      {:short-name instrument-sn
       :long-name long-name
+      :technique technique
       :sensors sensors})))
 
 (defn characteristic

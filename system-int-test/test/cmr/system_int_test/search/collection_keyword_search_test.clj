@@ -16,13 +16,13 @@
         psa3 (dc/psa "charlie" :string "foo")
         psa4 (dc/psa "case" :string "up")
         p1 (dc/platform "platform_SnB" "platform_Ln B" nil
-                        (dc/instrument "isnA" "ilnA"
+                        (dc/instrument "isnA" "ilnA" "itechniqueA"
                                        (dc/sensor "ssnA" "slnA")
                                        (dc/sensor "ssnD" "slnD" "techniqueD")))
         p2 (dc/platform "platform_SnA spoonA" "platform_LnA"
                         [(dc/characteristic "char1" "char1desc")
                          (dc/characteristic "char2" "char2desc")]
-                        (dc/instrument "isnB" "ilnB"
+                        (dc/instrument "isnB" "ilnB" "itechniqueB"
                                        (dc/sensor "ssnB" "slnB" "techniqueB")
                                        (dc/sensor "ssnC" "slnC" "techniqueC")))
         p3 (dc/platform "spoonA")
@@ -162,6 +162,9 @@
            "isnA" [coll15]
            ;; - long name
            "ilnB" [coll11]
+           ;; - technique
+           "itechniqueB" [coll11]
+           "itechniqueA" [coll15]
 
            ;; Sensors
            ;; - short name

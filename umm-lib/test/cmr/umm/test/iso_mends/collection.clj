@@ -27,10 +27,17 @@
   [sensors]
   (seq (map #(assoc % :technique nil) sensors)))
 
+(defn- instrument->expected-parsed
+  "Return the expected parsed instrument for the given instrument."
+  [instrument]
+  (-> instrument
+      (assoc :technique nil)
+      (update-in [:sensors] sensors->expected-parsed)))
+
 (defn- instruments->expected-parsed
   "Return the expected parsed instruments for the given instruments."
   [instruments]
-  (seq (map #(assoc % :sensors (sensors->expected-parsed (:sensors %))) instruments)))
+  (seq (map instrument->expected-parsed instruments)))
 
 (defn- platform->expected-parsed
   "Return the expected parsed platform for the given platform."
@@ -182,9 +189,10 @@
                         :instruments [(umm-c/->Instrument
                                         "SAR"
                                         "SAR long name"
+                                        nil
                                         [(umm-c/->Sensor "SNA" "SNA long name" nil)
                                          (umm-c/->Sensor "SNB" nil nil)])
-                                      (umm-c/->Instrument "MAR" nil nil)]})
+                                      (umm-c/->Instrument "MAR" nil nil nil)]})
                      (umm-c/map->Platform
                        {:short-name "RADARSAT-2"
                         :long-name "RADARSAT-LONG-2"
