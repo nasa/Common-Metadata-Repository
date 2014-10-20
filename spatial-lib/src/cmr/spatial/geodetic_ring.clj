@@ -83,7 +83,6 @@
                 ;; if the point itself is one of the intersections then the ring covers it
                 (intersections point)))))))
 
-
 (defn- arcs->course-rotation-direction
   "Calculates the rotation direction of the arcs of a ring. Will be one of :clockwise,
   :counter_clockwise, or :none.

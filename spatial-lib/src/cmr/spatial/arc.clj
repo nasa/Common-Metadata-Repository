@@ -451,7 +451,6 @@
       [intersection-point1 intersection-point2]
       a1 a2)))
 
-
 ;; Performance enhancement: Add a bounding rectangle's intersects check first.
 ;; Actually that might not help anything. When we're searching in elastic we'll only find those
 ;; items where the rings bounding rectangles intersect. Still might be worth it to check with arcs though.

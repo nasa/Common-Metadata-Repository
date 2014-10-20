@@ -166,6 +166,7 @@
           <Instrument>
             <LongName>SAR long name</LongName>
             <ShortName>SAR</ShortName>
+            <Technique>itechnique</Technique>
             <Sensors>
               <Sensor>
                 <LongName>SNA long name</LongName>
@@ -350,9 +351,10 @@
                         :instruments [(umm-c/->Instrument
                                         "SAR"
                                         "SAR long name"
+                                        "itechnique"
                                         [(umm-c/->Sensor "SNA" "SNA long name" "technique")
                                          (umm-c/->Sensor "SNB" nil nil)])
-                                      (umm-c/->Instrument "MAR" nil nil)]})
+                                      (umm-c/->Instrument "MAR" nil nil nil)]})
                      (umm-c/map->Platform
                        {:short-name "RADARSAT-2"
                         :long-name "RADARSAT-LONG-2"

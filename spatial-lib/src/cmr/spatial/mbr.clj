@@ -49,7 +49,7 @@
 (def ^:const COVERS_TOLERANCE
   "Tolerance used for the covers method. Longitudes and latitudes technically outside the bounding rectangle
   but within this tolerance will be considered covered by the bounding rectangle"
-  0.00000001)
+  0.0000000001)
 
 (defn point->mbr
   "Returns an mbr that covers only a single point"

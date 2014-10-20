@@ -198,7 +198,7 @@
 (deftest search-by-sensor-short-names
   (let [s0 (dc/sensor "sensor-Inherit")
         s01 (dc/sensor "sensor-ONE")
-        i0 (dc/instrument "collection_instrument" nil s0 s01)
+        i0 (dc/instrument "collection_instrument" nil nil s0 s01)
         p0 (dc/platform "collection_platform" "collection_platform" nil i0)
         s1 (dg/sensor-ref "sensor-Sn A")
         s2 (dg/sensor-ref "sensor-Sn b")
