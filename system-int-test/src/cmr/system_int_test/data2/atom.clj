@@ -13,6 +13,7 @@
             [clj-time.format :as f]
             [camel-snake-kebab :as csk]
             [cmr.umm.spatial :as umm-s]
+            [cmr.umm.echo10.spatial :as echo-s]
             [cmr.common.util :as util]
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.facets :as facets]
@@ -106,6 +107,20 @@
                              :start-circular-latitude (when startCircularLatitude
                                                         (Double/parseDouble startCircularLatitude))}))))
 
+(defn- parse-orbit-attribs
+  "Convert orbit attributes to their proper keys / value types"
+  [attribs]
+  (when-let [{:keys [ascendingCrossing startLatitude startDirection endLatitude endDirection]}
+             (not-empty attribs)]
+    {:ascending-crossing (when ascendingCrossing
+                           (Double/parseDouble ascendingCrossing))
+     :start-lat (when startLatitude
+                  (Double/parseDouble startLatitude))
+     :start-direction (echo-s/orbit-direction->key startDirection)
+     :end-lat (when endLatitude
+                (Double/parseDouble endLatitude))
+     :end-direction (echo-s/orbit-direction->key endDirection)}))
+
 (defn- parse-ocsd-attribs
   "Convert orbit-calculated-spatial-domains attributes to their proper keys / value types"
   [attribs]
@@ -171,6 +186,7 @@
      :original-format (cx/string-at-path entry-elem [:originalFormat])
      :data-center (cx/string-at-path entry-elem [:dataCenter])
      :links (seq (map :attrs (cx/elements-at-path entry-elem [:link])))
+     :orbit (parse-orbit-attribs (cx/attrs-at-path entry-elem [:orbit]))
      :orbit-calculated-spatial-domains (seq
                                          (map
                                            #(parse-ocsd-attribs (:attrs %))
@@ -308,6 +324,7 @@
         granule-spatial-representation (get-in coll [:spatial-coverage :granule-spatial-representation])
         coordinate-system (when granule-spatial-representation
                             (csk/->SNAKE_CASE_STRING granule-spatial-representation))
+        orbit (get-in granule [:spatial-coverage :orbit])
         granule-shapes (map (partial umm-s/set-coordinate-system granule-spatial-representation)
                             (get-in granule [:spatial-coverage :geometries]))
         shapes (concat granule-shapes (dg/granule->orbit-shapes granule coll))]
@@ -322,6 +339,7 @@
        :original-format (atom-results-handler/metadata-format->atom-original-format (name format-key))
        :data-center (:provider-id (cu/parse-concept-id concept-id))
        :links (seq (related-urls->links related-urls))
+       :orbit (when orbit (into {} orbit))
        :orbit-calculated-spatial-domains (seq orbit-calculated-spatial-domains)
        :start beginning-date-time
        :end ending-date-time

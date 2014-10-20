@@ -9,6 +9,7 @@
             [clojure.string :as str]
             [camel-snake-kebab :as csk]
             [cmr.umm.spatial :as umm-s]
+            [cmr.umm.echo10.spatial :as echo-s]
             [cmr.system-int-test.data2.atom :as atom]
             [cmr.system-int-test.data2.facets :as f]))
 
@@ -70,6 +71,17 @@
       (when (seq result)
         result))))
 
+(defn- parse-orbit
+  "Parse orbit map"
+  [orbit]
+  (when orbit
+    (-> orbit
+        (update-in [:ascending-crossing] parse-double)
+        (update-in [:start-lat] parse-double)
+        (update-in [:start-direction] echo-s/orbit-direction->key)
+        (update-in [:end-lat] parse-double)
+        (update-in [:end-direction] echo-s/orbit-direction->key))))
+
 (defn- parse-ocsd
   "Parse orbit-calculated-spatial-domain map"
   [ocsd]
@@ -119,7 +131,7 @@
         {:keys [id title updated dataset-id producer-granule-id granule-size original-format
                 data-center links time-start time-end online-access-flag browse-flag day-night-flag
                 cloud-cover coordinate-system points boxes polygons lines
-                orbit-calculated-spatial-domains]} json-entry
+                orbit orbit-calculated-spatial-domains]} json-entry
         shapes (json-geometry->shapes coordinate-system points boxes polygons lines)]
     (util/remove-nil-keys
       {:id id
@@ -131,6 +143,7 @@
        :original-format original-format
        :data-center data-center
        :links (seq links)
+       :orbit (parse-orbit orbit)
        :orbit-calculated-spatial-domains (seq (map parse-ocsd orbit-calculated-spatial-domains))
        :start time-start
        :end time-end

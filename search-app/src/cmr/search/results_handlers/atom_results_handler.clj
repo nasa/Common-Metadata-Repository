@@ -11,6 +11,7 @@
             [clojure.set :as set]
             [clj-time.core :as time]
             [cheshire.core :as json]
+            [cmr.common.util :as util]
             [cmr.search.models.results :as r]
             [cmr.spatial.serialize :as srl]
             [cmr.search.services.url-helper :as url]
@@ -69,6 +70,11 @@
                       "start-date"
                       "end-date"
                       "atom-links"
+                      "orbit-asc-crossing-lon"
+                      "start-lat"
+                      "start-direction"
+                      "end-lat"
+                      "end-direction"
                       "orbit-calculated-spatial-domains-json"
                       "downloadable"
                       "browsable"
@@ -161,6 +167,11 @@
           [start-date] :start-date
           [end-date] :end-date
           atom-links :atom-links
+          [ascending-crossing] :orbit-asc-crossing-lon
+          [start-lat] :start-lat
+          [start-direction] :start-direction
+          [end-lat] :end-lat
+          [end-direction] :end-direction
           orbit-calculated-spatial-domains-json :orbit-calculated-spatial-domains-json
           [downloadable] :downloadable
           [browsable] :browsable
@@ -175,6 +186,12 @@
         atom-links (map (fn [link-str]
                           (update-in (json/decode link-str true) [:size] #(when % (str %))))
                         atom-links)
+        orbit (when ascending-crossing
+                {:ascending-crossing (util/double->string ascending-crossing)
+                 :start-lat (util/double->string start-lat)
+                 :start-direction start-direction
+                 :end-lat (util/double->string end-lat)
+                 :end-direction end-direction})
         orbit-calculated-spatial-domains (map orbit-swath-helper/ocsd-json->map
                                               orbit-calculated-spatial-domains-json)
         shapes (concat (srl/ords-info->shapes ords-info ords)
@@ -193,6 +210,7 @@
      :start-date start-date
      :end-date end-date
      :atom-links atom-links
+     :orbit orbit
      :orbit-calculated-spatial-domains orbit-calculated-spatial-domains
      :online-access-flag downloadable
      :browse-flag browsable
@@ -321,6 +339,18 @@
   [ocsd]
   (x/element :echo:orbitCalSpatialDomain (ocsd->attribute-map ocsd)))
 
+(defn- orbit->xml-element
+  "Convert an oribt to an XML element"
+  [orbit]
+  (let [{:keys [ascending-crossing start-lat start-direction end-lat end-direction]} orbit
+        orbit-attrib-map (-> {}
+                             (add-attribs :ascendingCrossing ascending-crossing)
+                             (add-attribs :startLatitude start-lat)
+                             (add-attribs :startDirection start-direction)
+                             (add-attribs :endLatitude end-lat)
+                             (add-attribs :endDirection end-direction))]
+    (x/element :echo:orbit orbit-attrib-map)))
+
 (defmulti atom-reference->xml-element
   (fn [results concept-type reference]
     concept-type))
@@ -365,7 +395,7 @@
   (let [{:keys [id score title updated dataset-id producer-gran-id size original-format
                 data-center start-date end-date atom-links online-access-flag browse-flag
                 day-night cloud-cover coordinate-system shapes
-                orbit-calculated-spatial-domains]} reference]
+                orbit orbit-calculated-spatial-domains]} reference]
     (x/element :entry {}
                (x/element :id {} id)
                (x/element :title {:type "text"} title)
@@ -378,8 +408,8 @@
                (when start-date (x/element :time:start {} start-date))
                (when end-date (x/element :time:end {} end-date))
                (map atom-link->xml-element atom-links)
+               (when orbit (orbit->xml-element orbit))
                (map ocsd->xml-element orbit-calculated-spatial-domains)
-
                (when coordinate-system (x/element :echo:coordinateSystem {} coordinate-system))
                (map atom-spatial/shape->xml-element shapes)
                (x/element :echo:onlineAccessFlag {} online-access-flag)

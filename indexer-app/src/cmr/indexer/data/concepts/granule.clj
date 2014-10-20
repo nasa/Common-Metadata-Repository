@@ -7,6 +7,7 @@
             [cmr.indexer.data.elasticsearch :as es]
             [cmr.umm.core :as umm]
             [cmr.umm.related-url-helper :as ru]
+            [cmr.umm.echo10.spatial :as umm-spatial]
             [cmr.transmit.metadata-db :as mdb]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.mime-types :as mt]
@@ -70,18 +71,22 @@
 
       (= gsr :orbit)
       (let [orbit (get-in granule [:spatial-coverage :orbit])
-            orbit-asc-crossing-lon (:ascending-crossing orbit)
+            {:keys [ascending-crossing start-lat start-direction end-lat end-direction]} orbit
             [^double orbit-start-clat ^double orbit-end-clat] (orbit->circular-latitude-range orbit)]
-        {:orbit-asc-crossing-lon orbit-asc-crossing-lon
+        {:orbit-asc-crossing-lon ascending-crossing
          :orbit-start-clat orbit-start-clat
          :orbit-end-clat (if (= orbit-end-clat orbit-start-clat)
                            (+ orbit-end-clat 360.0)
-                           orbit-end-clat)})
+                           orbit-end-clat)
+         :start-lat start-lat
+         :start-direction (umm-spatial/key->orbit-direction start-direction)
+         :end-lat end-lat
+         :end-direction (umm-spatial/key->orbit-direction end-direction)})
       :else
       (errors/throw-service-error :invalid-data (unrecognized-gsr-msg gsr)))))
 
 (def ocsd-fields
-  "The fields for orbit calculated spatil domains, in the order that they are stored in the jason
+  "The fields for orbit calculated spatil domains, in the order that they are stored in the json
   string in the index."
   [:equator-crossing-date-time
    :equator-crossing-longitude
@@ -99,8 +104,8 @@
   "Create a json string from the orbitial calculated spatial domains."
   [umm-granule]
   (map #(json/generate-string
-                          (ocsd-map->vector %))
-                       (ocsd/ocsds->elastic-docs umm-granule)))
+          (ocsd-map->vector %))
+       (ocsd/ocsds->elastic-docs umm-granule)))
 
 (defmethod es/concept->elastic-doc :granule
   [context concept umm-granule]
