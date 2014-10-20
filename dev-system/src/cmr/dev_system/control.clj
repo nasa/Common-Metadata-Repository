@@ -54,6 +54,8 @@
 (def service-clear-cache-fns
   "A map of services to reset functions."
   {:indexer cache/reset-caches
+   :index-set cache/reset-caches
+   :metadata-db cache/reset-caches
    :search cache/reset-caches})
 
 

@@ -13,16 +13,31 @@
   [context cache-key]
   (get-in context [:system :caches cache-key]))
 
+(defn cache-keys
+  "Return the list of keys for the given cache. The keys are conveted to non-keyword strings."
+  [cmr-cache]
+  (->> cmr-cache
+       :atom
+       deref
+       keys))
+
 (defn cache-lookup
-  "Looks up the value of the cached item using the key. If there is a cache miss it will invoke
-  the function given with no arguments, save the value in the cache and return the value."
-  [cmr-cache key f]
-  (-> (swap! (:atom cmr-cache)
-             (fn [cache]
-               (if (cc/has? cache key)
-                 (cc/hit cache key)
-                 (cc/miss cache key (f)))))
-      (get key)))
+  "Looks up the value of the cached item using the key. If there is a cache miss
+  and a function is provided it will invoke the function given with no arguments, save the
+  value in the cache, and return the value. If no function is provided it will return nil
+  for cache misses."
+  ([cmr-cache key]
+   (-> cmr-cache
+       :atom
+       deref
+       (get key)))
+  ([cmr-cache key f]
+   (-> (swap! (:atom cmr-cache)
+              (fn [cache]
+                (if (cc/has? cache key)
+                  (cc/hit cache key)
+                  (cc/miss cache key (f)))))
+       (get key))))
 
 (defmulti create-core-cache
   "Create a cache using cmr.core-cache of the given type."
@@ -35,11 +50,11 @@
 
 (defmethod create-core-cache :lru
   [type value opts]
-  (apply cc/lru-cache-factory value (flatten opts)))
+  (apply cc/lru-cache-factory value (flatten (seq opts))))
 
 (defmethod create-core-cache :ttl
   [type value opts]
-  (apply cc/ttl-cache-factory value (flatten opts)))
+  (apply cc/ttl-cache-factory value (flatten (seq opts))))
 
 (defn create-cache
   "Create system level cache. The currently supported cache types are :defalut and :lru.
