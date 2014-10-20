@@ -294,6 +294,10 @@
                    :orbit-asc-crossing-lon (stored double-field-mapping)
                    :orbit-start-clat double-field-mapping
                    :orbit-end-clat double-field-mapping
+                   :start-lat (stored double-field-mapping)
+                   :start-direction (stored string-field-mapping)
+                   :end-lat (stored double-field-mapping)
+                   :end-direction (stored string-field-mapping)
 
                    ;; atom-links is a json string that contains the atom-links, which is a list of
                    ;; maps of atom link attributes. We tried to use nested document to save atom-links

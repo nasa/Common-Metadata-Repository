@@ -71,13 +71,17 @@
 
       (= gsr :orbit)
       (let [orbit (get-in granule [:spatial-coverage :orbit])
-            orbit-asc-crossing-lon (:ascending-crossing orbit)
+            {:keys [ascending-crossing start-lat start-direction end-lat end-direction]} orbit
             [^double orbit-start-clat ^double orbit-end-clat] (orbit->circular-latitude-range orbit)]
-        {:orbit-asc-crossing-lon orbit-asc-crossing-lon
+        {:orbit-asc-crossing-lon ascending-crossing
          :orbit-start-clat orbit-start-clat
          :orbit-end-clat (if (= orbit-end-clat orbit-start-clat)
                            (+ orbit-end-clat 360.0)
-                           orbit-end-clat)})
+                           orbit-end-clat)
+         :start-lat start-lat
+         :start-direction (umm-spatial/key->orbit-direction start-direction)
+         :end-lat end-lat
+         :end-direction (umm-spatial/key->orbit-direction end-direction)})
       :else
       (errors/throw-service-error :invalid-data (unrecognized-gsr-msg gsr)))))
 
@@ -103,23 +107,6 @@
           (ocsd-map->vector %))
        (ocsd/ocsds->elastic-docs umm-granule)))
 
-(def orbit-fields
-  "The fields for orbit, in the order that they are stored in the json string in the index."
-  [:ascending-crossing
-   :start-lat
-   :start-direction
-   :end-lat
-   :end-direction])
-
-(defn- granule->orbit-json
-  "Create a json string from the orbit spatial."
-  [umm-granule]
-  (when-let [orbit (get-in umm-granule [:spatial-coverage :orbit])]
-    (let [orbit (-> orbit
-                    (update-in [:start-direction] umm-spatial/key->orbit-direction)
-                    (update-in [:end-direction] umm-spatial/key->orbit-direction))]
-      (json/generate-string (map #(str (% orbit)) orbit-fields)))))
-
 (defmethod es/concept->elastic-doc :granule
   [context concept umm-granule]
   (let [{:keys [concept-id extra-fields provider-id revision-date format]} concept
@@ -138,7 +125,6 @@
         start-date (temporal/start-date :granule temporal)
         end-date (temporal/end-date :granule temporal)
         atom-links (map json/generate-string (ru/atom-links related-urls))
-        orbit-json (granule->orbit-json umm-granule)
         ocsd-json (granule->ocsd-json umm-granule)
         ;; not empty is used below to get a real true false value
         downloadable (not (empty? (ru/downloadable-urls related-urls)))
@@ -196,6 +182,5 @@
             :start-coordinate-2 start-coordinate-2
             :end-coordinate-2 end-coordinate-2
             :atom-links atom-links
-            :orbit-json orbit-json
             :orbit-calculated-spatial-domains-json ocsd-json}
            (spatial->elastic parent-collection umm-granule))))

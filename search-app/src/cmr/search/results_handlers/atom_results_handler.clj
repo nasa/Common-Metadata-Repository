@@ -69,7 +69,11 @@
                       "start-date"
                       "end-date"
                       "atom-links"
-                      "orbit-json"
+                      "orbit-asc-crossing-lon"
+                      "start-lat"
+                      "start-direction"
+                      "end-lat"
+                      "end-direction"
                       "orbit-calculated-spatial-domains-json"
                       "downloadable"
                       "browsable"
@@ -148,14 +152,6 @@
      :access-value access-value
      :entry-title entry-title}))
 
-(def orbit-fields
-  "The fields for orbit, in the order that they are stored in the json string in the index."
-  [:ascending-crossing
-   :start-lat
-   :start-direction
-   :end-lat
-   :end-direction])
-
 (defn- granule-elastic-result->query-result-item
   [orbits-by-collection elastic-result]
   (let [{concept-id :_id
@@ -170,7 +166,11 @@
           [start-date] :start-date
           [end-date] :end-date
           atom-links :atom-links
-          [orbit-json] :orbit-json
+          [ascending-crossing] :orbit-asc-crossing-lon
+          [start-lat] :start-lat
+          [start-direction] :start-direction
+          [end-lat] :end-lat
+          [end-direction] :end-direction
           orbit-calculated-spatial-domains-json :orbit-calculated-spatial-domains-json
           [downloadable] :downloadable
           [browsable] :browsable
@@ -185,7 +185,12 @@
         atom-links (map (fn [link-str]
                           (update-in (json/decode link-str true) [:size] #(when % (str %))))
                         atom-links)
-        orbit (when orbit-json (zipmap orbit-fields (json/decode orbit-json)))
+        orbit (when ascending-crossing
+                {:ascending-crossing (str ascending-crossing)
+                 :start-lat (str start-lat)
+                 :start-direction start-direction
+                 :end-lat (str end-lat)
+                 :end-direction end-direction})
         orbit-calculated-spatial-domains (map orbit-swath-helper/ocsd-json->map
                                               orbit-calculated-spatial-domains-json)
         shapes (concat (srl/ords-info->shapes ords-info ords)
