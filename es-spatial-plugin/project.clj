@@ -1,4 +1,11 @@
-(def version "0.1.0-SNAPSHOT")
+(def version
+  "Parses the version out of this file to use in names of referenced files"
+  (let [project-clj-lines (-> "project.clj" slurp (clojure.string/split #"\n"))]
+    (-> (filter (partial re-find #"^\(defproject") project-clj-lines)
+        first
+        (clojure.string/split #" ")
+        last
+        (clojure.string/replace "\"" ""))))
 
 (def uberjar-name
   (str "target/cmr-es-spatial-plugin-" version "-standalone.jar"))
@@ -6,7 +13,7 @@
 (def plugin-zip-name
   (str "target/cmr-es-spatial-plugin-" version ".zip"))
 
-(defproject nasa-cmr/cmr-es-spatial-plugin version
+(defproject nasa-cmr/cmr-es-spatial-plugin "0.1.0-SNAPSHOT"
   :description "A Elastic Search plugin that enables spatial search entirely within elastic."
   :url "***REMOVED***projects/CMR/repos/cmr-es-spatial-plugin/browse"
   :dependencies [[org.clojure/clojure "1.6.0"]
@@ -20,8 +27,6 @@
   :plugins [[lein-shell "0.4.0"]
             [lein-test-out "0.3.1"]]
 
-  :global-vars {*warn-on-reflection* true
-                *assert* false}
 
   ;; This is the minimum that must be AOT'd for running in an embeded elastic. AOT :all for installing
   ;; in an elastic vm.
@@ -33,6 +38,9 @@
   {:dev {:dependencies [[nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]
                         [org.clojure/tools.namespace "0.2.5"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]]
+
+         :global-vars {*warn-on-reflection* true
+                       *assert* false}
 
          ;; The ^replace is done to disable the tiered compilation for accurate benchmarks
          ;; See https://github.com/technomancy/leiningen/wiki/Faster
