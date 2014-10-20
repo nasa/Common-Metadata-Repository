@@ -60,13 +60,9 @@
     (json/decode (:body response) true)))
 
 (deftest cache-apis
-  ;; needed to remove any caching from previous tests
-  ;(ingest/clear-caches)
-  ;; grant permission and ingest a collection to give us some cached data
-  ;; grant read permission to group "admin-read-group-guid"
   (e/grant-group-admin "admin-read-group-guid" :read)
   ;; login as a member of group 1
- 	(let [admin-read-token (e/login "admin" ["admin-read-group-guid"])
+  (let [admin-read-token (e/login "admin" ["admin-read-group-guid"])
         normal-user-token (e/login "user")
         coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}))]
     (testing "list caches"
@@ -85,45 +81,20 @@
                                          "token-sid"
                                          "xsl-transformer-templates"]))
 
-    (testing "normal user cannot retrieve cache list from indexer"
-      (let [response (client/request {:url (url/indexer-read-caches-url)
-                                      :method :get
-                                      :query-params {:token normal-user-token}
-                                      :connection-manager (url/conn-mgr)
-                                      :throw-exceptions false})
-            errors (:errors (json/decode (:body response) true))]
-        (is (= 401 (:status response)))
-        (is (= ["You do not have permission to perform that action."] errors))))
-
-    (testing "normal user cannot retrieve cache list from index-set"
-      (let [response (client/request {:url (url/index-set-read-caches-url)
-                                      :method :get
-                                      :query-params {:token normal-user-token}
-                                      :connection-manager (url/conn-mgr)
-                                      :throw-exceptions false})
-            errors (:errors (json/decode (:body response) true))]
-        (is (= 401 (:status response)))
-        (is (= ["You do not have permission to perform that action."] errors))))
-
-    (testing "normal user cannot retrieve cache list from metadata-db"
-      (let [response (client/request {:url (url/mdb-read-caches-url)
-                                      :method :get
-                                      :query-params {:token normal-user-token}
-                                      :connection-manager (url/conn-mgr)
-                                      :throw-exceptions false})
-            errors (:errors (json/decode (:body response) true))]
-        (is (= 401 (:status response)))
-        (is (= ["You do not have permission to perform that action."] errors))))
-
-    (testing "normal user cannot retrieve cache list from search"
-      (let [response (client/request {:url (url/search-read-caches-url)
-                                      :method :get
-                                      :query-params {:token normal-user-token}
-                                      :connection-manager (url/conn-mgr)
-                                      :throw-exceptions false})
-            errors (:errors (json/decode (:body response) true))]
-        (is (= 401 (:status response)))
-        (is (= ["You do not have permission to perform that action."] errors))))
+    (testing "normal user cannot access cache list API"
+      (are [url]
+           (let [response (client/request {:url url
+                                           :method :get
+                                           :query-params {:token normal-user-token}
+                                           :connection-manager (url/conn-mgr)
+                                           :throw-exceptions false})
+                 errors (:errors (json/decode (:body response) true))]
+             (is (= 401 (:status response)))
+             (is (= ["You do not have permission to perform that action."] errors)))
+           (url/indexer-read-caches-url)
+           (url/index-set-read-caches-url)
+           (url/mdb-read-caches-url)
+           (url/search-read-caches-url)))
 
     (testing "retrieval of keys for non-existent cache results in a 404"
       (let [response (client/request {:url (str (url/indexer-read-caches-url) "/INVALID-CACHE-ABC")
@@ -134,45 +105,20 @@
         (is (= 404 (:status response)))
         (is (= "Not Found" (:body response)))))
 
-    (testing "normal user cannot retrieve cache keys from indexer"
-      (let [response (client/request {:url (str (url/indexer-read-caches-url) "/acls")
-                                      :method :get
-                                      :query-params {:token normal-user-token}
-                                      :connection-manager (url/conn-mgr)
-                                      :throw-exceptions false})
-            errors (:errors (json/decode (:body response) true))]
-        (is (= 401 (:status response)))
-        (is (= ["You do not have permission to perform that action."] errors))))
-
-    (testing "normal user cannot retrieve cache keys from index-set"
-      (let [response (client/request {:url (str (url/index-set-read-caches-url) "/acls")
-                                      :method :get
-                                      :query-params {:token normal-user-token}
-                                      :connection-manager (url/conn-mgr)
-                                      :throw-exceptions false})
-            errors (:errors (json/decode (:body response) true))]
-        (is (= 401 (:status response)))
-        (is (= ["You do not have permission to perform that action."] errors))))
-
-    (testing "normal user cannot retrieve cache keys from metadata-db"
-      (let [response (client/request {:url (str (url/mdb-read-caches-url) "/acls")
-                                      :method :get
-                                      :query-params {:token normal-user-token}
-                                      :connection-manager (url/conn-mgr)
-                                      :throw-exceptions false})
-            errors (:errors (json/decode (:body response) true))]
-        (is (= 401 (:status response)))
-        (is (= ["You do not have permission to perform that action."] errors))))
-
-    (testing "normal user cannot retrieve cache keys from search"
-      (let [response (client/request {:url (str (url/search-read-caches-url) "/acls")
-                                      :method :get
-                                      :query-params {:token normal-user-token}
-                                      :connection-manager (url/conn-mgr)
-                                      :throw-exceptions false})
-            errors (:errors (json/decode (:body response) true))]
-        (is (= 401 (:status response)))
-        (is (= ["You do not have permission to perform that action."] errors))))
+    (testing "normal user cannot retrieve cache keys"
+      (are [url]
+           (let [response (client/request {:url url
+                                           :method :get
+                                           :query-params {:token normal-user-token}
+                                           :connection-manager (url/conn-mgr)
+                                           :throw-exceptions false})
+                 errors (:errors (json/decode (:body response) true))]
+             (is (= 401 (:status response)))
+             (is (= ["You do not have permission to perform that action."] errors)))
+           (str (url/indexer-read-caches-url) "/acls")
+           (str (url/index-set-read-caches-url) "/acls")
+           (str (url/mdb-read-caches-url) "/acls")
+           (str (url/search-read-caches-url) "/acls")))
 
     (testing "list cache keys"
       (are [url cache cache-keys]
@@ -196,45 +142,20 @@
            (url/search-read-caches-url) "xsl-transformer-templates" []))
 
 
-    (testing "normal user cannot retrieve cache values from indexer"
-      (let [response (client/request {:url (str (url/indexer-read-caches-url) "/acls/acls")
-                                      :method :get
-                                      :query-params {:token normal-user-token}
-                                      :connection-manager (url/conn-mgr)
-                                      :throw-exceptions false})
-            errors (:errors (json/decode (:body response) true))]
-        (is (= 401 (:status response)))
-        (is (= ["You do not have permission to perform that action."] errors))))
-
-    (testing "normal user cannot retrieve cache values from index-set"
-      (let [response (client/request {:url (str (url/index-set-read-caches-url) "/acls/acls")
-                                      :method :get
-                                      :query-params {:token normal-user-token}
-                                      :connection-manager (url/conn-mgr)
-                                      :throw-exceptions false})
-            errors (:errors (json/decode (:body response) true))]
-        (is (= 401 (:status response)))
-        (is (= ["You do not have permission to perform that action."] errors))))
-
-    (testing "normal user cannot retrieve cache values from metadata-db"
-      (let [response (client/request {:url (str (url/mdb-read-caches-url) "/acls/acls")
-                                      :method :get
-                                      :query-params {:token normal-user-token}
-                                      :connection-manager (url/conn-mgr)
-                                      :throw-exceptions false})
-            errors (:errors (json/decode (:body response) true))]
-        (is (= 401 (:status response)))
-        (is (= ["You do not have permission to perform that action."] errors))))
-
-    (testing "normal user cannot retrieve cache values from search"
-      (let [response (client/request {:url (str (url/search-read-caches-url) "/acls/acls")
-                                      :method :get
-                                      :query-params {:token normal-user-token}
-                                      :connection-manager (url/conn-mgr)
-                                      :throw-exceptions false})
-            errors (:errors (json/decode (:body response) true))]
-        (is (= 401 (:status response)))
-        (is (= ["You do not have permission to perform that action."] errors))))
+    (testing "normal user cannot retrieve cache values"
+      (are [url]
+           (let [response (client/request {:url url
+                                           :method :get
+                                           :query-params {:token normal-user-token}
+                                           :connection-manager (url/conn-mgr)
+                                           :throw-exceptions false})
+                 errors (:errors (json/decode (:body response) true))]
+             (is (= 401 (:status response)))
+             (is (= ["You do not have permission to perform that action."] errors)))
+           (str (url/indexer-read-caches-url) "/acls/acls")
+           (str (url/index-set-read-caches-url) "/acls/acls")
+           (str (url/mdb-read-caches-url) "/acls/acls")
+           (str (url/search-read-caches-url) "/acls/acls")))
 
     (testing "retrieval of value for non-existent key results in a 404"
       (let [response (client/request {:url (str (url/indexer-read-caches-url)
