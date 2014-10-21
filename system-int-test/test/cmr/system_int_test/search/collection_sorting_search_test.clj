@@ -23,8 +23,22 @@
 (deftest invalid-sort-key-test
   (is (= {:status 400
           :errors [(msg/invalid-sort-key "foo_bar" :collection)]}
-         (search/find-refs :collection {:sort-key "foo_bar"}))))
+         (search/find-refs :collection {:sort-key "foo_bar"})))
+  (is (= {:status 400
+          :errors [(msg/invalid-sort-key "foo_bar" :collection)]}
+         (search/find-refs-with-aql :collection [] {}
+                                    {:query-params {:sort-key "foo_bar"}}))))
 
+(defn- sort-order-correct?
+  [items sort-key]
+  (and
+    (d/refs-match-order?
+      items
+      (search/find-refs :collection {:page-size 20 :sort-key sort-key}))
+    (d/refs-match-order?
+      items
+      (search/find-refs-with-aql :collection [] {}
+                                 {:query-params {:page-size 20 :sort-key sort-key}}))))
 
 (deftest sorting-test
   (let [c1 (make-coll "PROV1" "et99" 10 20)
@@ -46,35 +60,30 @@
 
 
     (testing "Sort by entry title ascending"
-      (are [sort-key] (d/refs-match-order?
-                        (sort-by (comp str/lower-case :entry-title) all-colls)
-                        (search/find-refs :collection {:page-size 20
-                                                       :sort-key sort-key}))
-           "entry_title"
-           "+entry_title"
-           "dataset_id" ; this is an alias for entry title
-           "+dataset_id"))
+      (let [sorted-colls (sort-by (comp str/lower-case :entry-title) all-colls)]
+        (are [sort-key]
+             (sort-order-correct? sorted-colls sort-key)
+             "entry_title"
+             "+entry_title"
+             "dataset_id" ; this is an alias for entry title
+             "+dataset_id")))
 
     (testing "Sort by entry title descending"
-      (are [sort-key] (d/refs-match-order?
-                        (reverse (sort-by (comp str/lower-case :entry-title) all-colls))
-                        (search/find-refs :collection {:page-size 20 :sort-key sort-key}))
-           "-entry_title"
-           "-dataset_id"))
+      (let [sorted-colls (reverse (sort-by (comp str/lower-case :entry-title) all-colls))]
+        (are [sort-key]
+             (sort-order-correct? sorted-colls sort-key)
+             "-entry_title"
+             "-dataset_id")))
 
     (testing "temporal start date"
-      (are [sort-key items] (d/refs-match-order?
-                              items
-                              (search/find-refs :collection {:page-size 20
-                                                             :sort-key sort-key}))
+      (are [sort-key items]
+           (sort-order-correct? items sort-key)
            "start_date" [c5 c1 c11 c2 c6 c3 c7 c4 c8 c9 c10 c12]
            "-start_date" [c8 c4 c7 c3 c6 c2 c11 c1 c5 c9 c10 c12]))
 
     (testing "temporal end date"
-      (are [sort-key items] (d/refs-match-order?
-                              items
-                              (search/find-refs :collection {:page-size 20
-                                                             :sort-key sort-key}))
+      (are [sort-key items]
+           (sort-order-correct? items sort-key)
            "end_date" [c5 c1 c12 c2 c6 c7 c3 c4 c8 c9 c10 c11]
            "-end_date" [c8 c4 c3 c7 c6 c2 c12 c1 c5 c9 c10 c11]))))
 
@@ -85,9 +94,15 @@
         c4 (make-coll "PROV1" "et80" 24 35)
         all-colls [c1 c2 c3 c4]]
     (index/refresh-elastic-index)
-    (is (d/refs-match-order?
-      (sort-by (juxt (comp str/lower-case :entry-title) (comp str/lower-case :provider-id)) all-colls)
-      (search/find-refs :collection {:page-size 20})))))
+    (let [sorted-colls (sort-by (juxt (comp str/lower-case :entry-title)
+                                      (comp str/lower-case :provider-id)) all-colls)]
+      (is (d/refs-match-order?
+            sorted-colls
+            (search/find-refs :collection {:page-size 20})))
+      (is (d/refs-match-order?
+            sorted-colls
+            (search/find-refs-with-aql :collection [] {}
+                                       {:query-params {:page-size 20}}))))))
 
 (deftest multiple-sort-key-test
   (let [c1 (make-coll "PROV1" "et10" 10 nil)
@@ -101,10 +116,8 @@
         c8 (make-coll "PROV2" "et40" 20 nil)]
     (index/refresh-elastic-index)
 
-    (are [sort-key items] (d/refs-match-order?
-                            items
-                            (search/find-refs :collection {:page-size 20
-                                                           :sort-key sort-key}))
+    (are [sort-key items]
+         (sort-order-correct? items sort-key)
          ["entry_title" "start_date"] [c1 c5 c2 c6 c3 c7 c4 c8]
          ["entry_title" "-start_date"] [c5 c1 c6 c2 c7 c3 c8 c4]
          ["start_date" "entry_title"] [c1 c2 c3 c4 c5 c6 c7 c8]
@@ -127,9 +140,7 @@
         c5 (make-collection "c50")]
     (index/refresh-elastic-index)
     (are [sort-key items]
-         (d/refs-match-order? items
-                              (search/find-refs :collection {:page-size 20
-                                                             :sort-key sort-key}))
+         (sort-order-correct? items sort-key)
 
          ;; Descending sorts by the min value of a multi value fields
          "platform" [c1 c2 c3 c4 c5]
@@ -151,9 +162,7 @@
         c5 (make-collection "c50")]
     (index/refresh-elastic-index)
     (are [sort-key items]
-         (d/refs-match-order? items
-                              (search/find-refs :collection {:page-size 20
-                                                             :sort-key sort-key}))
+         (sort-order-correct? items sort-key)
 
          ;; Descending sorts by the min value of a multi value fields
          "instrument" [c1 c2 c3 c4 c5]
@@ -179,9 +188,7 @@
         c5 (make-collection "c50")]
     (index/refresh-elastic-index)
     (are [sort-key items]
-         (d/refs-match-order? items
-                              (search/find-refs :collection {:page-size 20
-                                                             :sort-key sort-key}))
+         (sort-order-correct? items sort-key)
 
          ;; Descending sorts by the min value of a multi value fields
          "sensor" [c1 c2 c3 c4 c5]

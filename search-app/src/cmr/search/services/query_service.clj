@@ -152,7 +152,9 @@
   "Executes a search for concepts using the given aql. The concepts will be returned with
   concept id and native provider id along with hit count and timing info."
   [context params aql]
-  (let [params (sanitize-aql-params params)
+  (let [params (-> params
+                   sanitize-aql-params
+                   lp/replace-parameter-aliases)
         [query-creation-time query] (u/time-execution (a/aql->query params aql))
         concept-type (:concept-type query)
         results (find-concepts context concept-type params query-creation-time query)]
