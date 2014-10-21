@@ -16,7 +16,11 @@
 (deftest invalid-sort-key-test
   (is (= {:status 400
           :errors [(msg/invalid-sort-key "foo_bar" :granule)]}
-         (search/find-refs :granule {:sort-key "foo_bar"}))))
+         (search/find-refs :granule {:sort-key "foo_bar"})))
+  (is (= {:status 400
+          :errors [(msg/invalid-sort-key "foo_bar" :granule)]}
+         (search/find-refs-with-aql :granule [] {}
+                                    {:query-params {:sort-key "foo_bar"}}))))
 
 (deftest granule-identifier-sorting-test
   (let [coll (d/ingest "PROV1" (dc/collection {}))
@@ -29,18 +33,24 @@
         g4 (make-gran "gur40" "pg30")
         g5 (make-gran "gur50" nil)]
     (index/refresh-elastic-index)
-    (are [sort-key items]
-         (d/refs-match-order? items
-                              (search/find-refs :granule {:page-size 20
-                                                          :sort-key sort-key}))
-         "granule_ur" [g1 g2 g3 g4 g5]
-         "-granule_ur" (reverse [g1 g2 g3 g4 g5])
+    (testing "parameter search and aql search"
+      (are [sort-key items]
+           (and
+             (d/refs-match-order? items
+                                  (search/find-refs :granule {:page-size 20
+                                                              :sort-key sort-key}))
+             (d/refs-match-order? items
+                                  (search/find-refs-with-aql :granule [] {}
+                                                             {:query-params {:page-size 20
+                                                                             :sort-key sort-key}})))
+           "granule_ur" [g1 g2 g3 g4 g5]
+           "-granule_ur" (reverse [g1 g2 g3 g4 g5])
 
-         "producer_granule_id" [g4 g3 g2 g1 g5]
-         "-producer_granule_id" [g2 g3 g4 g1 g5]
+           "producer_granule_id" [g4 g3 g2 g1 g5]
+           "-producer_granule_id" [g2 g3 g4 g1 g5]
 
-         "readable_granule_name" [g1 g5 g4 g3 g2]
-         "-readable_granule_name" (reverse [g1 g5 g4 g3 g2]))))
+           "readable_granule_name" [g1 g5 g4 g3 g2]
+           "-readable_granule_name" (reverse [g1 g5 g4 g3 g2])))))
 
 (deftest granule-campaign-sorting-test
   (let [coll (d/ingest "PROV1" (dc/collection {}))
@@ -52,17 +62,23 @@
         g4 (make-gran "c40")
         g5 (make-gran "c50")]
     (index/refresh-elastic-index)
-    (are [sort-key items]
-         (d/refs-match-order? items
-                              (search/find-refs :granule {:page-size 20
-                                                          :sort-key sort-key}))
+    (testing "parameter search and aql search"
+      (are [sort-key items]
+           (and
+             (d/refs-match-order? items
+                                  (search/find-refs :granule {:page-size 20
+                                                              :sort-key sort-key}))
+             (d/refs-match-order? items
+                                  (search/find-refs-with-aql :granule [] {}
+                                                             {:query-params {:page-size 20
+                                                                             :sort-key sort-key}})))
 
-         ;; Descending sorts by the min value of a multi value fields
-         "campaign" [g1 g2 g3 g4 g5]
-         ;; Descending sorts by the max value of a multi value fields
-         "-campaign" [g2 g5 g1 g4 g3]
-         "project" [g1 g2 g3 g4 g5]
-         "-project" [g2 g5 g1 g4 g3])))
+           ;; Descending sorts by the min value of a multi value fields
+           "campaign" [g1 g2 g3 g4 g5]
+           ;; Descending sorts by the max value of a multi value fields
+           "-campaign" [g2 g5 g1 g4 g3]
+           "project" [g1 g2 g3 g4 g5]
+           "-project" [g2 g5 g1 g4 g3]))))
 
 (deftest granule-numeric-sorting-test
   (let [coll (d/ingest "PROV1" (dc/collection {}))
@@ -75,15 +91,21 @@
         g4 (make-gran nil)
         g5 (make-gran 25)]
     (index/refresh-elastic-index)
-    (are [sort-key items]
-         (d/refs-match-order? items
-                              (search/find-refs :granule {:page-size 20
-                                                          :sort-key sort-key}))
-         "data_size" [g3 g1 g5 g2 g4]
-         "-data_size" [g2 g5 g1 g3 g4]
-         "cloud_cover" [g3 g1 g5 g2 g4]
-         "-cloud_cover" [g2 g5 g1 g3 g4])))
 
+    (testing "parameter search and aql search"
+      (are [sort-key items]
+           (and
+             (d/refs-match-order? items
+                                  (search/find-refs :granule {:page-size 20
+                                                              :sort-key sort-key}))
+             (d/refs-match-order? items
+                                  (search/find-refs-with-aql :granule [] {}
+                                                             {:query-params {:page-size 20
+                                                                             :sort-key sort-key}})))
+           "data_size" [g3 g1 g5 g2 g4]
+           "-data_size" [g2 g5 g1 g3 g4]
+           "cloud_cover" [g3 g1 g5 g2 g4]
+           "-cloud_cover" [g2 g5 g1 g3 g4]))))
 
 (deftest coll-identifier-sorting-test
   (let [make-gran (fn [provider entry-title short-name version]
@@ -102,23 +124,29 @@
         g8 (make-gran "PROV2" "ET45" "sn10" "v45")]
     (index/refresh-elastic-index)
 
-    (are [sort-key items]
-         (d/refs-match-order? items
-                              (search/find-refs :granule {:page-size 20
-                                                          :sort-key sort-key}))
-         "entry_title" [g1 g5 g2 g6 g3 g7 g4 g8]
-         "-entry_title" (reverse [g1 g5 g2 g6 g3 g7 g4 g8])
-         "dataset_id" [g1 g5 g2 g6 g3 g7 g4 g8]
-         "-dataset_id" (reverse [g1 g5 g2 g6 g3 g7 g4 g8])
-         "short_name" [g8 g4 g7 g3 g6 g2 g5 g1]
-         "-short_name" (reverse [g8 g4 g7 g3 g6 g2 g5 g1])
-         "version" [g1 g5 g2 g6 g3 g7 g4 g8]
-         "-version" (reverse [g1 g5 g2 g6 g3 g7 g4 g8])
+    (testing "parameter search and aql search"
+      (are [sort-key items]
+           (and
+             (d/refs-match-order? items
+                                  (search/find-refs :granule {:page-size 20
+                                                              :sort-key sort-key}))
+             (d/refs-match-order? items
+                                  (search/find-refs-with-aql :granule [] {}
+                                                             {:query-params {:page-size 20
+                                                                             :sort-key sort-key}})))
+           "entry_title" [g1 g5 g2 g6 g3 g7 g4 g8]
+           "-entry_title" (reverse [g1 g5 g2 g6 g3 g7 g4 g8])
+           "dataset_id" [g1 g5 g2 g6 g3 g7 g4 g8]
+           "-dataset_id" (reverse [g1 g5 g2 g6 g3 g7 g4 g8])
+           "short_name" [g8 g4 g7 g3 g6 g2 g5 g1]
+           "-short_name" (reverse [g8 g4 g7 g3 g6 g2 g5 g1])
+           "version" [g1 g5 g2 g6 g3 g7 g4 g8]
+           "-version" (reverse [g1 g5 g2 g6 g3 g7 g4 g8])
 
-         ;; Multiple keys and provider
-         ["provider" "version"] [g1 g2 g3 g4 g5 g6 g7 g8]
-         ["provider" "-version"] [g4 g3 g2 g1 g8 g7 g6 g5]
-         ["-provider" "version"] [g5 g6 g7 g8 g1 g2 g3 g4])))
+           ;; Multiple keys and provider
+           ["provider" "version"] [g1 g2 g3 g4 g5 g6 g7 g8]
+           ["provider" "-version"] [g4 g3 g2 g1 g8 g7 g6 g5]
+           ["-provider" "version"] [g5 g6 g7 g8 g1 g2 g3 g4]))))
 
 
 (deftest temporal-sorting-test
@@ -146,23 +174,39 @@
     (index/refresh-elastic-index)
 
     (testing "default sorting is by provider id and start date"
-      (is (d/refs-match-order?
-            [g1 g11 g2 g3 g4 g5 g6 g7 g8 g12]
-            (search/find-refs :granule {:page-size 20}))))
+      (are [items]
+           (and (d/refs-match-order? items
+                                     (search/find-refs :granule {:page-size 20}))
+                (d/refs-match-order? items
+                                     (search/find-refs-with-aql :granule [] {}
+                                                                {:query-params {:page-size 20}})))
+           [g1 g11 g2 g3 g4 g5 g6 g7 g8 g12]))
 
     (testing "temporal start date"
-      (are [sort-key items] (d/refs-match-order?
-                              items
-                              (search/find-refs :granule {:page-size 20
-                                                          :sort-key sort-key}))
+      (are [sort-key items]
+           (and (d/refs-match-order?
+                  items
+                  (search/find-refs :granule {:page-size 20
+                                              :sort-key sort-key}))
+                (d/refs-match-order?
+                  items
+                  (search/find-refs-with-aql :granule [] {}
+                                             {:query-params {:page-size 20
+                                                             :sort-key sort-key}})))
            "start_date" [g5 g1 g11 g2 g6 g3 g7 g4 g8 g12]
            "-start_date" [g8 g4 g7 g3 g6 g2 g11 g1 g5 g12]))
 
     (testing "temporal end date"
-      (are [sort-key items] (d/refs-match-order?
-                              items
-                              (search/find-refs :granule {:page-size 20
-                                                          :sort-key sort-key}))
+      (are [sort-key items]
+           (and (d/refs-match-order?
+                  items
+                  (search/find-refs :granule {:page-size 20
+                                              :sort-key sort-key}))
+                (d/refs-match-order?
+                  items
+                  (search/find-refs-with-aql :granule [] {}
+                                             {:query-params {:page-size 20
+                                                             :sort-key sort-key}})))
            "end_date" [g5 g1 g12 g2 g6 g7 g3 g4 g8 g11]
            "-end_date" [g8 g4 g3 g7 g6 g2 g12 g1 g5 g11]))))
 
@@ -179,9 +223,13 @@
         g5 (make-gran "c50")]
     (index/refresh-elastic-index)
     (are [sort-key items]
-         (d/refs-match-order? items
-                              (search/find-refs :granule {:page-size 20
-                                                          :sort-key sort-key}))
+         (and (d/refs-match-order? items
+                                   (search/find-refs :granule {:page-size 20
+                                                               :sort-key sort-key}))
+              (d/refs-match-order? items
+                                   (search/find-refs-with-aql :granule [] {}
+                                                              {:query-params {:page-size 20
+                                                                              :sort-key sort-key}})))
 
          ;; Descending sorts by the min value of a multi value fields
          "platform" [g1 g2 g3 g4 g5]
@@ -203,14 +251,19 @@
         g5 (make-gran "c50")]
     (index/refresh-elastic-index)
     (are [sort-key items]
-         (d/refs-match-order? items
-                              (search/find-refs :granule {:page-size 20
-                                                          :sort-key sort-key}))
+         (and
+           (d/refs-match-order? items
+                                (search/find-refs :granule {:page-size 20
+                                                            :sort-key sort-key}))
+           (d/refs-match-order? items
+                                (search/find-refs-with-aql :granule [] {}
+                                                           {:query-params {:page-size 20
+                                                                           :sort-key sort-key}})))
 
          ;; Descending sorts by the min value of a multi value fields
          "instrument" [g1 g2 g3 g4 g5]
          ;; Descending sorts by the max value of a multi value fields
-        "-instrument" [g2 g5 g1 g4 g3])))
+         "-instrument" [g2 g5 g1 g4 g3])))
 
 (deftest granule-sensor-sorting-test
   (let [coll (d/ingest "PROV1" (dc/collection {}))
@@ -229,9 +282,14 @@
         g5 (make-gran "c50")]
     (index/refresh-elastic-index)
     (are [sort-key items]
-         (d/refs-match-order? items
-                              (search/find-refs :granule {:page-size 20
-                                                          :sort-key sort-key}))
+         (and
+           (d/refs-match-order? items
+                                (search/find-refs :granule {:page-size 20
+                                                            :sort-key sort-key}))
+           (d/refs-match-order? items
+                                (search/find-refs-with-aql :granule [] {}
+                                                           {:query-params {:page-size 20
+                                                                           :sort-key sort-key}})))
 
          ;; Descending sorts by the min value of a multi value fields
          "sensor" [g1 g2 g3 g4 g5]
@@ -246,9 +304,15 @@
         g4 (d/ingest "PROV1" (dg/granule coll {:day-night "UNSPECIFIED"}))]
     (index/refresh-elastic-index)
     (are [sort-key items]
-         (d/refs-match-order? items
-                              (search/find-refs :granule {:page-size 20
-                                                          :sort-key sort-key}))
+         (and
+           (d/refs-match-order? items
+                                (search/find-refs :granule {:page-size 20
+                                                            :sort-key sort-key}))
+           true
+           #_(d/refs-match-order? items
+                                  (search/find-refs-with-aql :granule [] {}
+                                                             {:query-params {:page-size 20
+                                                                             :sort-key sort-key}})))
 
          "day_night_flag" [g3 g1 g2 g4]
          "-day_night_flag" [g4 g2 g1 g3])))
@@ -260,9 +324,14 @@
         g2 (d/ingest "PROV1" (dg/granule coll {}))]
     (index/refresh-elastic-index)
     (are [sort-key items]
-         (d/refs-match-order? items
-                              (search/find-refs :granule {:page-size 20
-                                                          :sort-key sort-key}))
+         (and
+           (d/refs-match-order? items
+                                (search/find-refs :granule {:page-size 20
+                                                            :sort-key sort-key}))
+           (d/refs-match-order? items
+                                (search/find-refs-with-aql :granule [] {}
+                                                           {:query-params {:page-size 20
+                                                                           :sort-key sort-key}})))
 
          "downloadable" [g2 g1]
          "online_only" [g2 g1]
@@ -276,9 +345,14 @@
         g2 (d/ingest "PROV1" (dg/granule coll {}))]
     (index/refresh-elastic-index)
     (are [sort-key items]
-         (d/refs-match-order? items
-                              (search/find-refs :granule {:page-size 20
-                                                          :sort-key sort-key}))
+         (and
+           (d/refs-match-order? items
+                                (search/find-refs :granule {:page-size 20
+                                                            :sort-key sort-key}))
+           (d/refs-match-order? items
+                                (search/find-refs-with-aql :granule [] {}
+                                                           {:query-params {:page-size 20
+                                                                           :sort-key sort-key}})))
 
          "browse_only" [g2 g1]
          "-browse_only" [g1 g2]
