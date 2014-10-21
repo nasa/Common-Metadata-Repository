@@ -346,7 +346,7 @@
                        (d/ingest "PROV3" (dc/collection {:entry-title coll :summary summary}))))]
     (index/refresh-elastic-index)
     (are [keyword-str indexes]
-         (let [refs (search/find-refs :collection {:keyword keyword-str})
+         (let [refs (search/find-refs :collection {:keyword keyword-str :page_size 51})
                items (map (partial nth colls) indexes)
                matches? (d/refs-match? items refs)]
            (when-not matches?
@@ -357,5 +357,8 @@
          "begin\\end" [19]
          "begin<end" [27]
          "begin\\?end" [29]
+         "begin~end" [31]
+         "begin\\*end" [50]
+         "begin" [1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 47 50]
          )))
 

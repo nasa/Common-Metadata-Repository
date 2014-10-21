@@ -15,7 +15,7 @@
 ;;   :version-description
 
 ;; Regex to split strings with special characters into multiple words for keyword searches
-(def keywords-separator-regex #"[!@#$%^&()\-=_+{}\[\]|;'.,\"/:<>?`~* ]")
+(def keywords-separator-regex #"[!@#$%^&()\-=_+{}\[\]|;'.,\\\"/:<>?`~* ]")
 
 ;; Aliases for NEAR_REAL_TIME
 (def nrt-aliases

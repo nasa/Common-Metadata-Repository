@@ -35,14 +35,14 @@
 
 (def query-string-reserved-characters-regex
   "Characters reserved for elastic query_string queries. These must be escaped."
-  #"([+\-\[\]!\^:/{}\\\(\)\"]|&&)")
+  #"([+\-\[\]!\^:/{}\\\(\)\"\~]|&&)")
 
 (defn fix-double-escapes
   "Fixes escaped wildcards that were double escaped bye the reserved character escaping."
   [query]
   (-> query
       (str/replace "\\\\?" "\\?")
-      (str/replace "\\\\&" "\\&")))
+      (str/replace "\\\\*" "\\*")))
 
 (defprotocol ConditionToElastic
   "Defines a function to map from a query to elastic search query"
