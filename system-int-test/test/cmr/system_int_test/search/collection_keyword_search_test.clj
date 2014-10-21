@@ -291,7 +291,7 @@
 
 (deftest search-by-keywords-with-special-chars
   ;; needed for special charatcter tests
-  (let [coll-data [["coll00" "dummy"]
+  (let [coll-data [["coll00" "dummy && ||"]
                    ["coll01" "begin!end"]
                    ["coll02" "begin@end"]
                    ["coll03" "begin#end"]
@@ -360,5 +360,10 @@
          "begin~end" [31]
          "begin\\*end" [50]
          "begin" [1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 47 50]
+         "end" [1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 47 50]
+         "&&" [0]
+         "||" [0]
+         "AND" [48]
+         "OR" [49]
          )))
 
