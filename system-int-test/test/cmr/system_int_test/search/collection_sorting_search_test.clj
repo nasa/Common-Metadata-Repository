@@ -29,6 +29,17 @@
          (search/find-refs-with-aql :collection [] {}
                                     {:query-params {:sort-key "foo_bar"}}))))
 
+(defn- sort-order-correct?
+  [items sort-key]
+  (and
+    (d/refs-match-order?
+      items
+      (search/find-refs :collection {:page-size 20 :sort-key sort-key}))
+    (d/refs-match-order?
+      items
+      (search/find-refs-with-aql :collection [] {}
+                                 {:query-params {:page-size 20 :sort-key sort-key}}))))
+
 (deftest sorting-test
   (let [c1 (make-coll "PROV1" "et99" 10 20)
         c2 (make-coll "PROV1" "et90" 14 24)
@@ -51,16 +62,7 @@
     (testing "Sort by entry title ascending"
       (let [sorted-colls (sort-by (comp str/lower-case :entry-title) all-colls)]
         (are [sort-key]
-             (and
-               (d/refs-match-order?
-                 sorted-colls
-                 (search/find-refs :collection {:page-size 20
-                                                :sort-key sort-key}))
-               (d/refs-match-order?
-                 sorted-colls
-                 (search/find-refs-with-aql :collection [] {}
-                                            {:query-params {:page-size 20
-                                                            :sort-key sort-key}})))
+             (sort-order-correct? sorted-colls sort-key)
              "entry_title"
              "+entry_title"
              "dataset_id" ; this is an alias for entry title
@@ -69,45 +71,19 @@
     (testing "Sort by entry title descending"
       (let [sorted-colls (reverse (sort-by (comp str/lower-case :entry-title) all-colls))]
         (are [sort-key]
-             (and
-               (d/refs-match-order?
-                 sorted-colls
-                 (search/find-refs :collection {:page-size 20 :sort-key sort-key}))
-               (d/refs-match-order?
-                 sorted-colls
-                 (search/find-refs-with-aql :collection [] {}
-                                            {:query-params {:page-size 20
-                                                            :sort-key sort-key}})))
+             (sort-order-correct? sorted-colls sort-key)
              "-entry_title"
              "-dataset_id")))
 
     (testing "temporal start date"
       (are [sort-key items]
-           (and
-             (d/refs-match-order?
-               items
-               (search/find-refs :collection {:page-size 20
-                                              :sort-key sort-key}))
-             (d/refs-match-order?
-               items
-               (search/find-refs-with-aql :collection [] {}
-                                          {:query-params {:page-size 20
-                                                          :sort-key sort-key}})))
+           (sort-order-correct? items sort-key)
            "start_date" [c5 c1 c11 c2 c6 c3 c7 c4 c8 c9 c10 c12]
            "-start_date" [c8 c4 c7 c3 c6 c2 c11 c1 c5 c9 c10 c12]))
 
     (testing "temporal end date"
       (are [sort-key items]
-           (and
-             (d/refs-match-order?
-               items
-               (search/find-refs :collection {:page-size 20
-                                              :sort-key sort-key}))
-             (d/refs-match-order?
-               items
-               (search/find-refs-with-aql :collection [] {}
-                                          {:query-params {:page-size 20
-                                                          :sort-key sort-key}})))
+           (sort-order-correct? items sort-key)
            "end_date" [c5 c1 c12 c2 c6 c7 c3 c4 c8 c9 c10 c11]
            "-end_date" [c8 c4 c3 c7 c6 c2 c12 c1 c5 c9 c10 c11]))))
 
@@ -141,16 +117,7 @@
     (index/refresh-elastic-index)
 
     (are [sort-key items]
-         (and
-           (d/refs-match-order?
-             items
-             (search/find-refs :collection {:page-size 20
-                                            :sort-key sort-key}))
-           (d/refs-match-order?
-             items
-             (search/find-refs-with-aql :collection [] {}
-                                        {:query-params {:page-size 20
-                                                        :sort-key sort-key}})))
+         (sort-order-correct? items sort-key)
          ["entry_title" "start_date"] [c1 c5 c2 c6 c3 c7 c4 c8]
          ["entry_title" "-start_date"] [c5 c1 c6 c2 c7 c3 c8 c4]
          ["start_date" "entry_title"] [c1 c2 c3 c4 c5 c6 c7 c8]
@@ -173,15 +140,7 @@
         c5 (make-collection "c50")]
     (index/refresh-elastic-index)
     (are [sort-key items]
-         (and
-           (d/refs-match-order? items
-                                (search/find-refs :collection {:page-size 20
-                                                               :sort-key sort-key}))
-           (d/refs-match-order?
-             items
-             (search/find-refs-with-aql :collection [] {}
-                                        {:query-params {:page-size 20
-                                                        :sort-key sort-key}})))
+         (sort-order-correct? items sort-key)
 
          ;; Descending sorts by the min value of a multi value fields
          "platform" [c1 c2 c3 c4 c5]
@@ -203,15 +162,7 @@
         c5 (make-collection "c50")]
     (index/refresh-elastic-index)
     (are [sort-key items]
-         (and
-           (d/refs-match-order? items
-                                (search/find-refs :collection {:page-size 20
-                                                               :sort-key sort-key}))
-           (d/refs-match-order?
-             items
-             (search/find-refs-with-aql :collection [] {}
-                                        {:query-params {:page-size 20
-                                                        :sort-key sort-key}})))
+         (sort-order-correct? items sort-key)
 
          ;; Descending sorts by the min value of a multi value fields
          "instrument" [c1 c2 c3 c4 c5]
@@ -237,15 +188,7 @@
         c5 (make-collection "c50")]
     (index/refresh-elastic-index)
     (are [sort-key items]
-         (and
-           (d/refs-match-order? items
-                                (search/find-refs :collection {:page-size 20
-                                                               :sort-key sort-key}))
-           (d/refs-match-order?
-             items
-             (search/find-refs-with-aql :collection [] {}
-                                        {:query-params {:page-size 20
-                                                        :sort-key sort-key}})))
+         (sort-order-correct? items sort-key)
 
          ;; Descending sorts by the min value of a multi value fields
          "sensor" [c1 c2 c3 c4 c5]
