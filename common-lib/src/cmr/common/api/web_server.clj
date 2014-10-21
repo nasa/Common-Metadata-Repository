@@ -4,7 +4,9 @@
             [ring.adapter.jetty :as jetty]
             [cmr.common.log :refer (debug info warn error)])
   (:import org.eclipse.jetty.server.Server
-           org.eclipse.jetty.server.handler.GzipHandler))
+           org.eclipse.jetty.server.NCSARequestLog
+           org.eclipse.jetty.server.handler.GzipHandler
+           org.eclipse.jetty.server.handler.RequestLogHandler))
 
 (def MIN_THREADS
   "The minimum number of threads for Jetty to use to process requests. The was originally set to the
@@ -54,19 +56,38 @@
                                                     :min-threads MIN_THREADS
                                                     :max-threads MAX_THREADS})]
 
-        (when use-compression?
+
+
+            ; ;; Replace the existing handler with the gzip handler
+            ; (doto server
+            ;   (.stop)
+            ;   (.setHandler new-handler)
+            ;   (.start))))
+
+        (let [access-log-handler (doto (RequestLogHandler.)
+                                   (.setHandler (.getHandler server))
+                                   (.setRequestLog
+                                     (doto (NCSARequestLog.)
+                                       (.setLogLatency true))))]
+
+
+
+          (when use-compression?
           ;; Create a GZIP handler to handle compression of responses
-          (let [new-handler (doto (GzipHandler.)
-                              (.setHandler (.getHandler server))
+            (let [gzip-handler (doto (GzipHandler.)
+                              (.setHandler access-log-handler)
                               (.setMinGzipSize MIN_GZIP_SIZE))]
-            ;; Replace the existing handler with the gzip handler
+              (doto server
+                (.stop)
+                (.setHandler gzip-handler)
+                (.start)))
             (doto server
               (.stop)
-              (.setHandler new-handler)
-              (.start))))
+              (.setHandler access-log-handler)
+              (.start)))))
 
         (info "Jetty started on port" port)
-        (assoc this :server server))
+        (assoc this :server server)
       (catch Exception e
         (info "Failed to start jetty on port" port)
         (throw e))))
