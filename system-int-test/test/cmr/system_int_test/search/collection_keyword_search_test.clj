@@ -8,7 +8,7 @@
             [cmr.system-int-test.data2.core :as d]
             [cmr.search.data.keywords-to-elastic :as k2e]))
 
-(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2" "provguid3" "PROV3"}))
 
 (deftest search-by-keywords
   (let [psa1 (dc/psa "alpha" :string "ab")
@@ -56,8 +56,8 @@
         coll13 (d/ingest "PROV2" (dc/collection {:entry-title "coll13" :two-d-coordinate-systems [tdcs1]}))
         coll14 (d/ingest "PROV2" (dc/collection {:entry-title "coll14" :long-name "spoonA laser"}))
         coll15 (d/ingest "PROV2" (dc/collection {:entry-title "coll15" :processing-level-id "plid1"
-                                                     :collection-data-type "cldt" :platforms [p1]
-                                                     :summary "summary" :temporal-keywords ["tk1" "tk2"]}))
+                                                 :collection-data-type "cldt" :platforms [p1]
+                                                 :summary "summary" :temporal-keywords ["tk1" "tk2"]}))
         coll16 (d/ingest "PROV2" (dc/collection {:entry-id "entryid4"}) :dif)
         coll17 (d/ingest "PROV2" (dc/collection {:associated-difs ["DIF-1" "DIF-2"]}))
         coll18 (d/ingest "PROV2" (dc/collection {:short-name "SNFoobar"}))
@@ -214,7 +214,7 @@
            ;; instrument long-name
            (:long-name (first (:instruments p1))) [k2e/instrument-boost]
 
-            ;; sensor short-name
+           ;; sensor short-name
            (:short-name (first (:sensors (first (:instruments p1))))) [k2e/sensor-boost]
            ;; sensor long-name
            (:long-name (first (:sensors (first (:instruments p1))))) [k2e/sensor-boost]
@@ -288,3 +288,82 @@
             {:keys [status errors]} resp]
         (is (= 400 status))
         (is (= "Parameter [keyword] must have a single value." (first errors)))))))
+
+(deftest search-by-keywords-with-special-chars
+  ;; needed for special charatcter tests
+  (let [coll-data [["coll00" "dummy && ||"]
+                   ["coll01" "begin!end"]
+                   ["coll02" "begin@end"]
+                   ["coll03" "begin#end"]
+                   ["coll04" "begin$end"]
+                   ["coll05" "begin%end"]
+                   ["coll06" "begin^end"]
+                   ["coll07" "begin&end"]
+                   ["coll08" "begin(end"]
+                   ["coll09" "begin)end"]
+                   ["coll10" "begin-end"]
+                   ["coll11" "begin=end"]
+                   ["coll12" "begin_end"]
+                   ["coll13" "begin+end"]
+                   ["coll14" "begin{end"]
+                   ["coll15" "begin}end"]
+                   ["coll16" "begin[end"]
+                   ["coll17" "begin]end"]
+                   ["coll18" "begin|end"]
+                   ["coll19" "begin\\end"]
+                   ["coll20" "begin;end"]
+                   ["coll21" "begin'end"]
+                   ["coll22" "begin.end"]
+                   ["coll23" "begin,end"]
+                   ["coll24" "begin/end"]
+                   ["coll25" "begin:end"]
+                   ["coll26" "begin\"end"]
+                   ["coll27" "begin<end"]
+                   ["coll28" "begin>end"]
+                   ["coll29" "begin?end"]
+                   ["coll30" "begin`end"]
+                   ["coll31" "begin~end"]
+                   ["coll32" "modis foobar"]
+                   ["coll33" "bleep blop blorp"]
+                   ["coll34" "abcdefghijklmnop"]
+                   ["coll35" "foo modis bar"]
+                   ["coll36" "akdi modis/terra dke"]
+                   ["coll37" "akdi modis-terra dke"]
+                   ["coll38" "Dataset with foobar"]
+                   ["coll39" "foo54"]
+                   ["coll40" "foo67"]
+                   ["coll41" "moding"]
+                   ["coll42" "outmoded"]
+                   ["coll43" "outmodising"]
+                   ["coll44" "out-modis-ed"]
+                   ["coll45" "carbon*oxygen"]
+                   ["coll46" "Dataset no withword"]
+                   ["coll47" "begin&&end"]
+                   ["coll48" "choco and taco"]
+                   ["coll49" "choco or taco"]
+                   ["coll50" "begin*end"]]
+        colls (doall (for [[coll summary] coll-data]
+                       (d/ingest "PROV3" (dc/collection {:entry-title coll :summary summary}))))]
+    (index/refresh-elastic-index)
+    (are [keyword-str indexes]
+         (let [refs (search/find-refs :collection {:keyword keyword-str :page_size 51})
+               items (map (partial nth colls) indexes)
+               matches? (d/refs-match? items refs)]
+           (when-not matches?
+             (println "Expected:" (map :entry-title items))
+             (println "Actual:" (map :name (:refs refs))))
+           matches?)
+         "begin!end" [1]
+         "begin\\end" [19]
+         "begin<end" [27]
+         "begin\\?end" [29]
+         "begin~end" [31]
+         "begin\\*end" [50]
+         "begin" [1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 47 50]
+         "end" [1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 47 50]
+         "&&" [0]
+         "||" [0]
+         "AND" [48]
+         "OR" [49]
+         )))
+

@@ -33,9 +33,18 @@
   [field concept-type]
   (get-in field-mappings [concept-type field] field))
 
-(def query_string-reserved-characters-regex
+(def query-string-reserved-characters-regex
   "Characters reserved for elastic query_string queries. These must be escaped."
-  #"([+\-\[\]!\^:\\/{}\(\)\"]|&&)")
+  #"([+\-\[\]!\^:/{}\\\(\)\"\~]|&&|\|\|)")
+
+(defn fix-double-escapes
+  "Fixes special characters that were doubly escaped by the reserved character escaping."
+  [query]
+  (-> query
+      (str/replace "\\\\?" "\\?")
+      (str/replace "\\\\*" "\\*")
+      (str/replace "\\\\&&" "\\&&")
+      (str/replace "\\\\||" "\\||")))
 
 (defprotocol ConditionToElastic
   "Defines a function to map from a query to elastic search query"
@@ -131,9 +140,10 @@
   (condition->elastic
     [{:keys [field query-str]} concept-type]
     (let [field (query-field->elastic-field field concept-type)]
-      {:query {:query_string {:query (str/replace query-str
-                                                  query_string-reserved-characters-regex
-                                                  "\\\\$1")
+      {:query {:query_string {:query (fix-double-escapes
+                                       (str/replace query-str
+                                                  query-string-reserved-characters-regex
+                                                  "\\\\$1"))
                               :analyzer :whitespace
                               :default_field field
                               :default_operator :and}}}))
