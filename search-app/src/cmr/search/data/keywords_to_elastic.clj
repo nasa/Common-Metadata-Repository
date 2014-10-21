@@ -75,7 +75,7 @@
 
 (def elastic-regex-special-chars-re
   "Regex to match characters that need to be escaped for an elastic regexp query"
-  #"([\.\+\|\{\}\[\]\(\)\"\\])")
+  #"([\.\+\|\{\}\[\]\(\)\"\\\<\>])")
 
 (defn process-keyword
   "Appends a '.' to wildcard symbols (? and *) and escapes characters that are Regex operators
