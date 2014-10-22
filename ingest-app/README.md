@@ -47,13 +47,13 @@ lein drop-user
 1. Create the user
 
 ```
-CMR_DB_URL=thin:@localhost:1521:orcl CMR_METADATA_DB_PASSWORD=CMR_INGEST java -cp target/cmr-ingest-app-0.1.0-SNAPSHOT-standalone.jar cmr.db create-user
+CMR_DB_URL=thin:@localhost:1521:orcl CMR_INGEST_PASSWORD=****** java -cp target/cmr-ingest-app-0.1.0-SNAPSHOT-standalone.jar cmr.db create-user
 ```
 
 2. Run db migration
 
 ```
-CMR_DB_URL=thin:@localhost:1521:orcl CMR_METADATA_DB_PASSWORD=CMR_INGEST java -cp target/cmr-ingest-app-0.1.0-SNAPSHOT-standalone.jar cmr.db migrate
+CMR_DB_URL=thin:@localhost:1521:orcl CMR_INGEST_PASSWORD=****** java -cp target/cmr-ingest-app-0.1.0-SNAPSHOT-standalone.jar cmr.db migrate
 ```
 
 You can provider additional arguments to migrate the database to a given version as in lein migrate.
@@ -61,7 +61,7 @@ You can provider additional arguments to migrate the database to a given version
 3. Remove the user
 
 ```
-CMR_DB_URL=thin:@localhost:1521:orcl CMR_METADATA_DB_PASSWORD=CMR_INGEST java -cp target/cmr-ingest-app-0.1.0-SNAPSHOT-standalone.jar cmr.db drop-user
+CMR_DB_URL=thin:@localhost:1521:orcl CMR_INGEST_PASSWORD=****** java -cp target/cmr-ingest-app-0.1.0-SNAPSHOT-standalone.jar cmr.db drop-user
 ```
 
 ## Curl statements
