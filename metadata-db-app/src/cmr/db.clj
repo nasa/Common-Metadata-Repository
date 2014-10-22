@@ -1,4 +1,4 @@
-(ns cmr.metadata-db.db
+(ns cmr.db
   "Entry point for the db related operations. Defines a main method that accepts arguments."
   (:require [cmr.common.log :refer (debug info warn error)]
             [drift.execute :as drift]
@@ -22,7 +22,7 @@
     (o/drop-user db metadata-db-user)))
 
 (defn -main
-  "Starts the App."
+  "Execute the given database operation specified by input arguments."
   [& args]
   (info "Running " args)
   (let [op (first args)]
@@ -40,7 +40,7 @@
         :else
         (info "Unsupported operation: " op))
 
-      (catch Exception e
-        (error "Caught exception: " e))))
+      (catch Throwable e
+        (error e (.getMessage e)))))
 
   (System/exit 0))

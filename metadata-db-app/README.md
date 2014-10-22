@@ -52,6 +52,11 @@
 
 
 ### Setting up the database
+
+There are two ways database operations can be done. It can happen through leiningen commands for local development or using the built uberjar.
+
+#### leiningen commands
+
 1. Create the user
 
 ```
@@ -74,10 +79,26 @@ completely.
     lein drop-user
 ```
 
-You can also run database related operations through uberjar with the same arguments as in lein tasks. For example:
+#### java commands through uberjar
+
+1. Create the user
 
 ```
-    CMR_DB_URL=thin:@localhost:1521:orcl CMR_METADATA_DB_PASSWORD=METADATA_DB java -cp target/cmr-metadata-db-app-0.1.0-SNAPSHOT-standalone.jar cmr.metadata_db.db migrate
+    CMR_DB_URL=thin:@localhost:1521:orcl CMR_METADATA_DB_PASSWORD=METADATA_DB java -cp target/cmr-metadata-db-app-0.1.0-SNAPSHOT-standalone.jar cmr.db create-user
+```
+
+2. Run db migration
+
+```
+    CMR_DB_URL=thin:@localhost:1521:orcl CMR_METADATA_DB_PASSWORD=METADATA_DB java -cp target/cmr-metadata-db-app-0.1.0-SNAPSHOT-standalone.jar cmr.db migrate
+```
+
+You can provider additional arguments to migrate the database to a given version as in lein migrate.
+
+3. Remove the user
+
+```
+    CMR_DB_URL=thin:@localhost:1521:orcl CMR_METADATA_DB_PASSWORD=METADATA_DB java -cp target/cmr-metadata-db-app-0.1.0-SNAPSHOT-standalone.jar cmr.db drop-user
 ```
 
 General Workflow
