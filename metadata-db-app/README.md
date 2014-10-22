@@ -5,6 +5,7 @@
 ### Sample Concept JSON
 
 #### Collection
+
   	{
       "concept-type": "collection",
       "native-id": "provider collection id",
@@ -36,6 +37,7 @@
     }
 
 ### Sample Tombstone (deleted concept) JSON
+
   	{
   		"concept-type": "collection"
   		"native-id": "provider collection id"
@@ -101,9 +103,9 @@ You can provider additional arguments to migrate the database to a given version
 CMR_DB_URL=thin:@localhost:1521:orcl CMR_METADATA_DB_PASSWORD=METADATA_DB java -cp target/cmr-metadata-db-app-0.1.0-SNAPSHOT-standalone.jar cmr.db drop-user
 ```
 
-General Workflow
+## General Workflow
 
-Update Flow
+### Update Flow
 
   - Retrieve latest revision from DB using provider-id, concept-type, and native id.
   - Compare revision from client if given to DB revision. If the revision from the client is not the next one we send a conflict error back to the client.
@@ -114,7 +116,7 @@ Update Flow
   - Insert into table
   - If we get a conflict from a uniqueness constraint restart from beginning of this flow
 
-Insert Flow
+### Insert Flow
 
   - Retrieve latest revision from DB (and none are found)
   - Check if revision id sent by client is 0 if present. If the revision from the client is not 0 we send a conflict error back to the client.
@@ -131,41 +133,38 @@ Insert Flow
 
 
 ### GET /concept-id/:concept-type/:provider-id/:native-id
-TODO consider changing this to use query params instead of URL vars
+
 returns: new or existing concept-id
 
-__Example Curl:__
-curl -v http://localhost:3001/concept-id/collection/PROV1/native-id
+    curl -v http://localhost:3001/concept-id/collection/PROV1/native-id
 
 ### POST /concepts
+
 params: [concept] - revision-id optionally in concept
 returns: revision-id.  revision-id begins at 0.
 throws error if revision-id does not match what it will be when saved
 
-__Example Curl:__
-curl -v -XPOST -H "Content-Type: application/json" -d '{"concept-type": "collection", "native-id": "native-id", "concept-id": "C1-PROV1", "provider-id": "PROV1", "metadata": "<Collection><ShortName>MINIMAL</ShortName></Collection>", "format": "application/echo10+xml", "extra-fields": {"short-name": "MINIMAL", "version-id": "V01", "entry-title": "native-id"}}' http://localhost:3001/concepts/
+    curl -v -XPOST -H "Content-Type: application/json" -d '{"concept-type": "collection", "native-id": "native-id", "concept-id": "C1-PROV1", "provider-id": "PROV1", "metadata": "<Collection><ShortName>MINIMAL</ShortName></Collection>", "format": "application/echo10+xml", "extra-fields": {"short-name": "MINIMAL", "version-id": "V01", "entry-title": "native-id"}}' http://localhost:3001/concepts/
 
 ### GET /concepts/#concept-id
+
 params: none
 returns: latest revision of a concept with the given concept-id
 
-__Example Curl:__
-curl -v http://localhost:3001/concepts/C1-PROV1
+    curl -v http://localhost:3001/concepts/C1-PROV1
 
 ### GET /concepts/#concept-id/#revision-id
+
 params: none
 returns: concept with the given concept-id and revision-id
 
-__Example Curl:__
-curl -v http://localhost:3001/concepts/C1-PROV1/2
+    curl -v http://localhost:3001/concepts/C1-PROV1/2
 
 ### POST /concepts/search/concept-revisions
 
 params: as JSON body: [[concept-id/revision-id tuple] ...]
 url param: allow_missing - if true missing concepts will not result in a 404 - defaults to false
 returns: list of concepts matching the tuples provided in the body of the POST
-
-__Example Curl:__
 
     curl -v -XPOST -H "Content-Type: application/json" -d '[["C1-PROV1", 1], ["C2-PROV1", 1]]' http://localhost:3001/concepts/search/concept-revisions?allow_missing=true
 
@@ -174,8 +173,6 @@ __Example Curl:__
 params: as JSON body: [concept-id1, concept-id2 ...]
 url param: allow_missing - if true missing concepts will not result in a 404 - defaults to false
 returns: list of the latest revisions of concepts matching the ids provided in the body of the POST
-
-__Example Curl:__
 
     curl -v -XPOST -H "Content-Type: application/json" -d '["C1-PROV1", "C2-PROV1"]' http://localhost:3001/concepts/search/latest-concept-revisions?allow_missing=true
 
@@ -187,8 +184,6 @@ Supported combinations of concept type and parameters:
   * collections, provider-id, entry-title, short-name, version-id
   * collections, provider-id
 
-__Example Curl:__
-
 ```
 curl "http://localhost:3001/concepts/search/collections?provider-id=PROV1&short-name=s&version-id=1"
 curl "http://localhost:3001/concepts/search/collections?provider-id=PROV1&entry-title=et"
@@ -199,37 +194,35 @@ curl "http://localhost:3001/concepts/search/collections?provider-id=PROV1&entry-
 url params: provider id to search
 returns: list of concept ids for collections that have a latest revision with an expiration date that has been passed.
 
-__Example Curl:__
-
     curl http://localhost:3001/concepts/search/expired-collections?provider=PROV1
 
 ### DELETE /concepts/#concept-id/#revision-id
+
 params: none
 returns: the revision id of the tombstone generated for the concept
 
-__Example Curl:__
-curl -v -XDELETE localhost:3001/concepts/C1-PROV1/1
+    curl -v -XDELETE localhost:3001/concepts/C1-PROV1/1
 
 ### DELETE /concepts/#concept-id
+
 params: none
 returns: the revision id of the tombstone generated for the concept
 
-__Example Curl:__
-curl -v -XDELETE localhost:3001/concepts/C1-PROV1
+    curl -v -XDELETE localhost:3001/concepts/C1-PROV1
 
 ### DELETE /concepts/force-delete/:concept-id/:revision-id
+
 params: none
 returns: nothing (status 204)
 
-__Example Curl:__
-curl -v -XDELETE /concepts/force-delete/C1-PROV1/1
+    curl -v -XDELETE /concepts/force-delete/C1-PROV1/1
 
 ### POST /reset
+
 params: none
 returns: nothing (status 204)
 
-__Example Curl:__
-curl -v -XPOST localhost:3001/reset
+    curl -v -XPOST localhost:3001/reset
 
 ## Jobs API
 
@@ -238,49 +231,37 @@ Requires token with UPDATE ingest management permission.
 params: none
 returns: nothing (status 204)
 
-__Example Curl:__
-curl -v -XPOST -H "Echo-Token: mock-echo-system-token" http://localhost:3001/jobs/pause
+    curl -v -XPOST -H "Echo-Token: mock-echo-system-token" http://localhost:3001/jobs/pause
 
 ### POST /jobs/resume
+
 Requires token with UPDATE ingest management permission.
 params: none
 returns: nothing (status 204)
 
-__Example Curl:__
-curl -v -XPOST -H "Echo-Token: mock-echo-system-token" http://localhost:3001/jobs/resume
+    curl -v -XPOST -H "Echo-Token: mock-echo-system-token" http://localhost:3001/jobs/resume
 
 ## Providers API
 
 ### POST /providers
+
 params: [provider]
 returns: provider-id
 
-__Example Curl:__
-curl -v -XPOST -H "Content-Type: application/json" -d '{"provider-id": "PROV1"}' http://localhost:3001/providers
+    curl -v -XPOST -H "Content-Type: application/json" -d '{"provider-id": "PROV1"}' http://localhost:3001/providers
 
-###   /providers/#provider-id
+###  /providers/#provider-id
+
 params: none
 returns: nothing (status 204)
 
-__Example Curl:__
-curl -v -XDELETE http://localhost:3001/providers/PROV1
+    curl -v -XDELETE http://localhost:3001/providers/PROV1
 
 ### GET "/providers"
 params: none
 returns: list of provider-ids
 
-__Example Curl:__
-curl http://localhost:3001/providers
-
- ;; create a new provider
-      (POST "/" {:keys [request-context body]}
-        (save-provider request-context (get body "provider-id")))
-      ;; delete a provider
-      (DELETE "/:provider-id" {{:keys [provider-id]} :params request-context :request-context}
-        (delete-provider request-context provider-id))
-      ;; get a list of providers
-      (GET "/" {request-context :request-context}
-        (get-providers request-context)))
+    curl http://localhost:3001/providers
 
 ### Querying caches
 
