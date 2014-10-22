@@ -28,4 +28,6 @@
   "Migrates the database down from version 1."
   []
   (println "migrations.001-setup-concept-table down...")
-  (h/sql "DROP TABLE METADATA_DB.concept"))
+  (try
+    (h/sql "DROP TABLE METADATA_DB.concept")
+    (catch Exception e)))

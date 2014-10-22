@@ -7,7 +7,9 @@
   "Migrates the database up to version 4."
   []
   (println "migrations.004-drop-concept-table up...")
-  (h/sql "DROP TABLE METADATA_DB.concept"))
+  (try
+    (h/sql "DROP TABLE METADATA_DB.concept")
+    (catch Exception e)))
 
 (defn down
   "Migrates the database down from version 4."
