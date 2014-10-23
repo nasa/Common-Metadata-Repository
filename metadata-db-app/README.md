@@ -227,6 +227,7 @@ returns: nothing (status 204)
 ## Jobs API
 
 ### POST /jobs/pause
+
 Requires token with UPDATE ingest management permission.
 params: none
 returns: nothing (status 204)
@@ -240,6 +241,19 @@ params: none
 returns: nothing (status 204)
 
     curl -v -XPOST -H "Echo-Token: mock-echo-system-token" http://localhost:3001/jobs/resume
+
+### POST /jobs/old-revision-concept-cleanup
+
+Synchronously runs the old revision concept cleanup job. Requires token with UPDATE ingest management permission.
+
+    curl -v -XPOST -H "Echo-Token: mock-echo-system-token" http://localhost:3001/jobs/old-revision-concept-cleanup
+
+### POST /jobs/expired-concept-cleanup
+
+Synchronously runs the expired concept cleanup job. Requires token with UPDATE ingest management permission.
+
+    curl -v -XPOST -H "Echo-Token: mock-echo-system-token" http://localhost:3001/jobs/expired-concept-cleanup
+
 
 ## Providers API
 
