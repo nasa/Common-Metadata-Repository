@@ -28,6 +28,12 @@
   #{:keyword :page-size :page-num :result-format :pretty :echo-compatible
     :include-granule-counts :include-has-granules :include-facets})
 
+(def vector-value-params
+  "Parameters that must take a single value or a vector of values, never a map of values."
+  #{:entry-title :entry-id :project :concept-id :provider :processing-level-id :short-name :version
+    :platform :instrument :sensor :collection-data-type :dif-entry-id :two-d-coordinate-system-name
+    :collection-concept-id :granule-ur :producer-granule-id})
+
 (def search-paging-depth-limit
   "The maximum value for page-num * page-size"
   (cfg/config-value-fn :search-paging-depth-limit 1000000 #(Integer. %)))
@@ -67,12 +73,22 @@
 
 (defn single-value-validation
   "Validates that parameters which, if present, must have a single value and cannot not be
-   passed as a vector of values."
+  passed as a vector of values."
   [concept-type params]
   (->> (select-keys params single-value-params)
        (filter #(sequential? (second %)))
        (map first)
        (map #(format "Parameter [%s] must have a single value." (csk/->snake_case_string %)))
+       vec))
+
+(defn vector-value-validation
+  "Validates that parameters which, if present, must have a single value or a vector of values."
+  [concept-type params]
+  (->> (select-keys params vector-value-params)
+       (filter #(not (or (string? (second %)) (vector? (second %)))))
+       (map first)
+       (map #(format "Parameter [%s] must have a single value or a vector of values."
+                     (csk/->snake_case_string %)))
        vec))
 
 (defn page-size-validation
@@ -504,7 +520,7 @@
 
 (defn- assoc-keys->param-name
   "Given a set of parameter assoc keys, returns the URL string for the parameter at that path.  For
-   instance, [:foo :bar :baz] returns \"foo[bar][baz]\""
+  instance, [:foo :bar :baz] returns \"foo[bar][baz]\""
   [keys]
   (let [[root & descendants] (map csk/->snake_case_string keys)
         subscripts (s/join (map #(str "[" % "]") descendants))]
@@ -512,12 +528,12 @@
 
 (defn- validate-map
   "Validates that the parameter value found by following keys is a map or null.  Dissocs the
-   parameter from params if it is invalid, returning [valid-params error-strings].
-   Examples:
-      => (validate-map [:parent :child] {:parent {:child {:gchild 0}}})
-      [{:parent {:child {:gchild 0}}} []]
-      => (validate-map [:parent :child] {:parent {:child 0}})
-      [{:parent {}} [\"Parameter [parent[child]] must contain a nested value, parent[child][...]=value.\"]]"
+  parameter from params if it is invalid, returning [valid-params error-strings].
+  Examples:
+    => (validate-map [:parent :child] {:parent {:child {:gchild 0}}})
+    [{:parent {:child {:gchild 0}}} []]
+    => (validate-map [:parent :child] {:parent {:child 0}})
+    [{:parent {}} [\"Parameter [parent[child]] must contain a nested value, parent[child][...]=value.\"]]"
   [keys params]
   (let [value (get-in params keys)]
     (if (or (nil? value) (map? value))
@@ -528,8 +544,8 @@
 
 (defn- apply-type-validations
   "Validates data types of parameters.  Returns a tuple of [safe-params errors] where errors
-   contains a list of type error strings and safe-params contains the original params with
-   error those that have type errors dissoc'ed out."
+  contains a list of type error strings and safe-params contains the original params with
+  error those that have type errors dissoc'ed out."
   [params validation-functions]
   (loop [[validation & validations] validation-functions
          safe-params params
@@ -542,7 +558,7 @@
 
 (defn- validate-all-map-values
   "Applies the validation function to all values in the map and aggregates the result.  Useful
-   for places like science keywords where we don't know all of the keys up front."
+  for places like science keywords where we don't know all of the keys up front."
   [validation-fn path params]
   (let [entries (get-in params path)]
     (if (seq entries)
@@ -554,6 +570,7 @@
   "A list of the functions that can validate parameters. They all accept parameters as an argument
   and return a list of errors."
   [single-value-validation
+   vector-value-validation
    page-size-validation
    page-num-validation
    paging-depth-validation
@@ -595,7 +612,7 @@
 
 (def parameter-data-type-validations
   "Validations of the data type of various parameters, used to ensure the data is the correct
-   shape before we manipulate it further."
+  shape before we manipulate it further."
   [(partial validate-map [:options])
    (partial validate-map [:options :entry-title])
    (partial validate-map [:options :platform])
@@ -607,9 +624,9 @@
 
 (defn validate-parameter-data-types
   "Validates data types of parameters.  Unlike other validations, this returns a tuple of
-   [safe-params errors] where errors contains the usual list of errors and safe-params
-   contains only params whose data type is correct.  Dissoc'ing invalid data types from
-   the list allows other validations to make assumptions about their shapes / types."
+  [safe-params errors] where errors contains the usual list of errors and safe-params
+  contains only params whose data type is correct.  Dissoc'ing invalid data types from
+  the list allows other validations to make assumptions about their shapes / types."
   [params]
   (apply-type-validations params parameter-data-type-validations))
 
