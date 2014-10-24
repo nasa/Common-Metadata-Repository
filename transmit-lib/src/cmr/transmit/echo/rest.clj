@@ -77,12 +77,21 @@
     (format "Unexpected status %d from response. body: %s"
             status (pr-str body))))
 
+(defn- get-rest-health
+  "Returns the echo-rest health by calling its availability api"
+  [url]
+  (try
+    (client/get url {:throw-exceptions false})
+    (catch Exception e
+      {:status 503
+       :body (format "Unable to get echo health, caught exception: %s" (.getMessage e))})))
+
 (defn health
   "Returns the availability status of echo-rest by calling its availability endpoint"
   [context]
   (let [conn (config/context->app-connection context :echo-rest)
         url (format "%s%s" (conn/root-url conn) "/availability")
-        response (client/get url {:throw-exceptions false})
+        response (get-rest-health url)
         status-code (:status response)]
     (if (= 200 status-code)
       {:ok? true}
