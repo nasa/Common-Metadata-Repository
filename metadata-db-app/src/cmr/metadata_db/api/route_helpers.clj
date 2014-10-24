@@ -8,4 +8,4 @@
   "Converts the object to JSON. If the pretty parameter is passed with true formats the response for
   easy reading"
   [obj params]
-  (json/generate-string obj {:pretty (= (get params :pretty) "true")}))
+  (json/generate-string obj {:pretty (= "true" (get params :pretty))}))

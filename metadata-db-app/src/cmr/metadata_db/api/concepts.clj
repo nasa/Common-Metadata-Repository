@@ -9,26 +9,32 @@
             [cmr.metadata-db.services.concept-service :as concept-service]
             [cmr.common.log :refer (debug info warn error)]))
 
+(defn as-int
+  "Parses the string to return an integer"
+  [^String v]
+  (when v (Integer. v)))
 
 (defn- get-concept
   "Get a concept by concept-id and optional revision"
   ([context params concept-id]
-   {:status 200
-    :body (rh/to-json (concept-service/get-concept context concept-id) params)
-    :headers rh/json-header})
-  ([context params concept-id ^String revision]
-   (try (let [revision-id (if revision (Integer. revision) nil)]
-          {:status 200
-           :body (rh/to-json (concept-service/get-concept context concept-id revision-id) params)
-           :headers rh/json-header})
+   (get-concept context params concept-id nil))
+  ([context params concept-id revision]
+   (try
+     {:status 200
+      :body (rh/to-json (concept-service/get-concept context concept-id (as-int revision)) params)
+      :headers rh/json-header}
      (catch NumberFormatException e
        (serv-err/throw-service-error :invalid-data (.getMessage e))))))
+
+(defn- allow-missing?
+  "Returns true if the allow_missing parameter is set to true"
+  [params]
+  (= "true" (some-> params :allow_missing str/lower-case)))
 
 (defn- get-concepts
   "Get concepts using concept-id/revision-id tuples."
   [context params concept-id-revisions]
-  (let [allow-missing? (= "true" (some-> params :allow_missing str/lower-case))
-        concepts (concept-service/get-concepts context concept-id-revisions allow-missing?)]
+  (let [concepts (concept-service/get-concepts context concept-id-revisions (allow-missing? params))]
     {:status 200
      :body (rh/to-json concepts params)
      :headers rh/json-header}))
@@ -36,8 +42,7 @@
 (defn- get-latest-concepts
   "Get latest version of concepts using a list of concept-ids"
   [context params concept-ids]
-  (let [allow-missing? (= "true" (some-> params :allow_missing str/lower-case))
-        concepts (concept-service/get-latest-concepts context concept-ids allow-missing?)]
+  (let [concepts (concept-service/get-latest-concepts context concept-ids (allow-missing? params))]
     {:status 200
      :body (rh/to-json concepts params)
      :headers rh/json-header}))
@@ -45,12 +50,11 @@
 (defn- get-expired-collections-concept-ids
   "Gets collections that have gone past their expiration date."
   [context params]
-  (let [provider (:provider params)]
-    (when-not provider
-      (serv-err/throw-service-error :bad-request (msg/provider-id-parameter-required)))
+  (if-let [provider (:provider params)]
     {:status 200
      :body (rh/to-json (concept-service/get-expired-collections-concept-ids context provider) params)
-     :headers rh/json-header}))
+     :headers rh/json-header}
+    (serv-err/throw-service-error :bad-request (msg/provider-id-parameter-required))))
 
 (defn- find-concepts
   "Find concepts for a concept type with specific params"
@@ -75,22 +79,23 @@
 (defn- delete-concept
   "Mark a concept as deleted (create a tombstone)."
   [context params concept-id revision-id]
-  (try (let [revision-id (if revision-id (Integer. revision-id) nil)]
-         (let [{:keys [revision-id]} (concept-service/delete-concept context concept-id revision-id)]
-           {:status 200
-            :body (rh/to-json {:revision-id revision-id} params)
-            :headers rh/json-header}))
+  (try
+    (let [{:keys [revision-id]} (concept-service/delete-concept
+                                  context concept-id (as-int revision-id))]
+      {:status 200
+       :body (rh/to-json {:revision-id revision-id} params)
+       :headers rh/json-header})
     (catch NumberFormatException e
       (serv-err/throw-service-error :invalid-data (.getMessage e)))))
 
 (defn- force-delete
   "Permanently remove a concept version from the database."
   [context params concept-id revision-id]
-  (try (let [revision-id (Integer. revision-id)]
-         (let [{:keys [revision-id]} (concept-service/force-delete context concept-id revision-id)]
-           {:status 200
-            :body (rh/to-json {:revision-id revision-id} params)
-            :headers rh/json-header}))
+  (try
+    (let [{:keys [revision-id]} (concept-service/force-delete context concept-id (as-int revision-id))]
+      {:status 200
+       :body (rh/to-json {:revision-id revision-id} params)
+       :headers rh/json-header})
     (catch NumberFormatException e
       (serv-err/throw-service-error :invalid-data (.getMessage e)))))
 

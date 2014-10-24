@@ -395,8 +395,7 @@
           (recur))))))
 
 (defn delete-old-revisions
-  "Delete concepts to keep a fixed number of revisions around as well as tombstoned versions
-  and earlier."
+  "Delete concepts to keep a fixed number of revisions around."
   [context provider concept-type]
   (let [db (util/context->db context)
         concept-type-name (str (name concept-type) "s")]
