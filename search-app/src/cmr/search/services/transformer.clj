@@ -87,7 +87,7 @@
   (let [^String metadata (:metadata concept)]
     ;; This contains check is a performance enhancement. This saves a lot of time versus the regular
     ;; expression below when the metadata is a large string.
-    (when (.contains metadata "Restriction")
+    (when (.contains metadata "<RestrictionFlag>")
       (when-let [[_ restriction-flag-str] (re-matches #"(?s).*<RestrictionFlag>(.+)</RestrictionFlag>.*"
                                                       metadata)]
         (Double. ^String restriction-flag-str)))))
