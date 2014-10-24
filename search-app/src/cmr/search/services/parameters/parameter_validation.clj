@@ -28,7 +28,7 @@
   #{:keyword :page-size :page-num :result-format :pretty :echo-compatible
     :include-granule-counts :include-has-granules :include-facets})
 
-(def vector-value-params
+(def multiple-value-params
   "Parameters that must take a single value or a vector of values, never a map of values."
   #{:entry-title :entry-id :project :concept-id :provider :processing-level-id :short-name :version
     :platform :instrument :sensor :collection-data-type :dif-entry-id :two-d-coordinate-system-name
@@ -78,18 +78,16 @@
   (->> (select-keys params single-value-params)
        (filter #(sequential? (second %)))
        (map first)
-       (map #(format "Parameter [%s] must have a single value." (csk/->snake_case_string %)))
-       vec))
+       (map #(format "Parameter [%s] must have a single value." (csk/->snake_case_string %)))))
 
-(defn vector-value-validation
+(defn multiple-value-validation
   "Validates that parameters which, if present, must have a single value or a vector of values."
   [concept-type params]
-  (->> (select-keys params vector-value-params)
-       (filter #(not (or (string? (second %)) (vector? (second %)))))
+  (->> (select-keys params multiple-value-params)
+       (filter #(not (or (string? (second %)) (sequential? (second %)))))
        (map first)
-       (map #(format "Parameter [%s] must have a single value or a vector of values."
-                     (csk/->snake_case_string %)))
-       vec))
+       (map #(format "Parameter [%s] must have a single value or multiple values."
+                     (csk/->snake_case_string %)))))
 
 (defn page-size-validation
   "Validates that the page-size (if present) is a number in the valid range."
@@ -570,7 +568,7 @@
   "A list of the functions that can validate parameters. They all accept parameters as an argument
   and return a list of errors."
   [single-value-validation
-   vector-value-validation
+   multiple-value-validation
    page-size-validation
    page-num-validation
    paging-depth-validation

@@ -50,12 +50,12 @@
     (is (= []
            (pv/single-value-validation :collection {}))))
   (testing "for a parameter requiring vector of values validating a value map returns an error"
-    (is (= ["Parameter [concept_id] must have a single value or a vector of values."]
-           (pv/vector-value-validation :collection {:concept-id {0 "C1-PROV1"}}))))
+    (is (= ["Parameter [concept_id] must have a single value or multiple values."]
+           (pv/multiple-value-validation :collection {:concept-id {0 "C1-PROV1"}}))))
   (testing "for multiple parameters requiring vector of values validating value maps returns multiple errors"
-    (is (= ["Parameter [platform] must have a single value or a vector of values."
-            "Parameter [concept_id] must have a single value or a vector of values."]
-           (pv/vector-value-validation :collection {:concept-id {0 "C1-PROV1"}
+    (is (= ["Parameter [platform] must have a single value or multiple values."
+            "Parameter [concept_id] must have a single value or multiple values."]
+           (pv/multiple-value-validation :collection {:concept-id {0 "C1-PROV1"}
                                                     :platform {0 "bar"}
                                                     :page-size 10}))))
 
