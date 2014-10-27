@@ -382,34 +382,23 @@
 
 (defn delete-expired-concepts
   "Delete concepts that have not been deleted and have a delete-time before now"
-  [db provider concept-type]
-  (loop []
-    (let [expired-concepts (c/get-expired-concepts db provider concept-type)]
-      (when (seq expired-concepts)
-        (info "Deleting expired" (name concept-type) "concepts: " (map :concept-id expired-concepts))
-        (doseq [coll expired-concepts]
-          (let [revision-id (inc (:revision-id coll))
-                tombstone (merge coll {:revision-id revision-id :deleted true :metadata ""})]
-            (try-to-save db tombstone revision-id)))
-        (recur)))))
+  [context provider concept-type]
+  (let [db (util/context->db context)]
+    (loop []
+      (let [expired-concepts (c/get-expired-concepts db provider concept-type)]
+        (when (seq expired-concepts)
+          (info "Deleting expired" (name concept-type) "concepts: " (map :concept-id expired-concepts))
+          (doseq [coll expired-concepts]
+            (let [revision-id (inc (:revision-id coll))
+                  tombstone (merge coll {:revision-id revision-id :deleted true :metadata ""})]
+              (try-to-save db tombstone revision-id)))
+          (recur))))))
 
 (defn delete-old-revisions
-  "Delete concepts to keep a fixed number of revisions around as well as tombstoned versions
-  and earlier."
-  [db provider concept-type]
-  (let [concept-type-name (str (name concept-type) "s")]
-    (info "Starting deletion of tombstoned" concept-type-name "for provider" provider)
-    (loop []
-      (let [tombstoned-concept-id-revision-id-tuples
-            (c/get-tombstoned-concept-revisions db
-                                                provider
-                                                concept-type
-                                                concept-truncation-batch-size)]
-        (when (seq tombstoned-concept-id-revision-id-tuples)
-          (info "Deleting" (count tombstoned-concept-id-revision-id-tuples)
-                "tombstoned concept revisions for provider" provider)
-          (c/force-delete-concepts db provider concept-type tombstoned-concept-id-revision-id-tuples)
-          (recur))))
+  "Delete concepts to keep a fixed number of revisions around."
+  [context provider concept-type]
+  (let [db (util/context->db context)
+        concept-type-name (str (name concept-type) "s")]
     (info "Starting deletion of old" concept-type-name "for provider" provider)
     (loop []
       (let [old-concept-id-revision-id-tuples

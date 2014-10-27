@@ -29,6 +29,12 @@
 
 (def reset-url (str "http://localhost:" (config/app-port) "/reset"))
 
+(def old-revision-concept-cleanup-url
+  (str "http://localhost:" (config/app-port) "/jobs/old-revision-concept-cleanup"))
+
+(def expired-concept-cleanup-url
+  (str "http://localhost:" (config/app-port) "/jobs/expired-concept-cleanup"))
+
 (def providers-url (str "http://localhost:" (config/app-port) "/providers"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -328,14 +334,31 @@
 ;;; miscellaneous
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn old-revision-concept-cleanup
+  "Runs the old revision concept cleanup job"
+  []
+  (:status
+    (client/post old-revision-concept-cleanup-url
+                 {:throw-exceptions false
+                  :headers {acl/token-header (transmit-config/echo-system-token)}
+                  :connection-manager (conn-mgr)})))
+
+(defn expired-concept-cleanup
+  "Runs the expired concept cleanup job"
+  []
+  (:status
+    (client/post expired-concept-cleanup-url
+                 {:throw-exceptions false
+                  :headers {acl/token-header (transmit-config/echo-system-token)}
+                  :connection-manager (conn-mgr)})))
+
 (defn reset-database
   "Make a request to reset the database by clearing out all stored concepts."
   []
-  (let [response (client/post reset-url {:throw-exceptions false
-                                         :headers {acl/token-header (transmit-config/echo-system-token)}
-                                         :connection-manager (conn-mgr)})
-        status (:status response)]
-    status))
+  (:status
+    (client/post reset-url {:throw-exceptions false
+                            :headers {acl/token-header (transmit-config/echo-system-token)}
+                            :connection-manager (conn-mgr)})))
 
 ;;; fixtures
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
