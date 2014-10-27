@@ -2,6 +2,10 @@
 
 ### General Request Details
 
+#### Maximum URL Length
+
+The Maximum URL length supported by CMR is 6032 characters. Clients using the Search API with query parameters should be careful not to exceed this limit or they will get an HTTP response of 413 FULL HEAD. If a client expects they will sometimes need to send more than 6032 characters in a query they should use the POST API for searching.
+
 #### Query Parameters
 
  * `page_size` - number of results per page - default is 10, max is 2000
