@@ -12,19 +12,19 @@
 (defn as-int
   "Parses the string to return an integer"
   [^String v]
-  (when v (Integer. v)))
+  (try
+    (when v (Integer. v))
+    (catch NumberFormatException e
+      (serv-err/throw-service-error :invalid-data (.getMessage e)))))
 
 (defn- get-concept
   "Get a concept by concept-id and optional revision"
   ([context params concept-id]
    (get-concept context params concept-id nil))
   ([context params concept-id revision]
-   (try
-     {:status 200
-      :body (rh/to-json (concept-service/get-concept context concept-id (as-int revision)) params)
-      :headers rh/json-header}
-     (catch NumberFormatException e
-       (serv-err/throw-service-error :invalid-data (.getMessage e))))))
+   {:status 200
+    :body (rh/to-json (concept-service/get-concept context concept-id (as-int revision)) params)
+    :headers rh/json-header}))
 
 (defn- allow-missing?
   "Returns true if the allow_missing parameter is set to true"
@@ -79,25 +79,19 @@
 (defn- delete-concept
   "Mark a concept as deleted (create a tombstone)."
   [context params concept-id revision-id]
-  (try
-    (let [{:keys [revision-id]} (concept-service/delete-concept
-                                  context concept-id (as-int revision-id))]
-      {:status 200
-       :body (rh/to-json {:revision-id revision-id} params)
-       :headers rh/json-header})
-    (catch NumberFormatException e
-      (serv-err/throw-service-error :invalid-data (.getMessage e)))))
+  (let [{:keys [revision-id]} (concept-service/delete-concept
+                                context concept-id (as-int revision-id))]
+    {:status 200
+     :body (rh/to-json {:revision-id revision-id} params)
+     :headers rh/json-header}))
 
 (defn- force-delete
   "Permanently remove a concept version from the database."
   [context params concept-id revision-id]
-  (try
-    (let [{:keys [revision-id]} (concept-service/force-delete context concept-id (as-int revision-id))]
-      {:status 200
-       :body (rh/to-json {:revision-id revision-id} params)
-       :headers rh/json-header})
-    (catch NumberFormatException e
-      (serv-err/throw-service-error :invalid-data (.getMessage e)))))
+  (let [{:keys [revision-id]} (concept-service/force-delete context concept-id (as-int revision-id))]
+    {:status 200
+     :body (rh/to-json {:revision-id revision-id} params)
+     :headers rh/json-header}))
 
 (defn- get-concept-id
   "Get the concept id for a given concept."
