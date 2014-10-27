@@ -30,6 +30,9 @@
   860)
 
 (defn get-access-log-handler
+  "Setup access logging for each application.  Access log entries will go to stdout similar to
+  application logging.  As a result the access log entries will be in the same log as the
+  application log."
   [existing-handler]
   (doto (RequestLogHandler.)
     (.setHandler existing-handler)
@@ -38,10 +41,12 @@
         (.setLogLatency true)))))
 
 (defn get-gzip-handler
-  [existing-handler]
+  "Setup gzip compression for responses.  Compression will be used for any response larger than
+  the configured minimum size."
+  [existing-handler min_gzip_size]
   (doto (GzipHandler.)
     (.setHandler existing-handler)
-    (.setMinGzipSize MIN_GZIP_SIZE)))
+    (.setMinGzipSize min_gzip_size)))
 
 (defrecord WebServer
   [
@@ -72,7 +77,7 @@
 
         (let [handler
               (when use-compression?
-                (get-gzip-handler (get-access-log-handler (.getHandler server)))
+                (get-gzip-handler (get-access-log-handler (.getHandler server)) MIN_GZIP_SIZE)
                 (get-access-log-handler (.getHandler server)))]
           (doto server
             (.stop)
