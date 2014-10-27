@@ -30,12 +30,18 @@
   860)
 
 (defn get-access-log-handler
-  [server]
+  [existing-handler]
   (doto (RequestLogHandler.)
-    (.setHandler (.getHandler server))
+    (.setHandler existing-handler)
     (.setRequestLog
       (doto (NCSARequestLog.)
         (.setLogLatency true)))))
+
+(defn get-gzip-handler
+  [existing-handler]
+  (doto (GzipHandler.)
+    (.setHandler existing-handler)
+    (.setMinGzipSize MIN_GZIP_SIZE)))
 
 (defrecord WebServer
   [
@@ -64,26 +70,17 @@
                                                     :min-threads MIN_THREADS
                                                     :max-threads MAX_THREADS})]
 
-        (let [access-log-handler (get-access-log-handler server)]
+        (let [handler
+              (when use-compression?
+                (get-gzip-handler (get-access-log-handler (.getHandler server)))
+                (get-access-log-handler (.getHandler server)))]
+          (doto server
+            (.stop)
+            (.setHandler handler)
+            (.start))))
 
-
-
-          (when use-compression?
-          ;; Create a GZIP handler to handle compression of responses
-            (let [gzip-handler (doto (GzipHandler.)
-                              (.setHandler access-log-handler)
-                              (.setMinGzipSize MIN_GZIP_SIZE))]
-              (doto server
-                (.stop)
-                (.setHandler gzip-handler)
-                (.start)))
-            (doto server
-              (.stop)
-              (.setHandler access-log-handler)
-              (.start)))))
-
-        (info "Jetty started on port" port)
-        (assoc this :server server)
+      (info "Jetty started on port" port)
+      (assoc this :server server)
       (catch Exception e
         (info "Failed to start jetty on port" port)
         (throw e))))
