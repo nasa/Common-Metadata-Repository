@@ -14,6 +14,56 @@ To start a web server for the application, run:
 
     lein ring server
 
+## Setting up the database
+
+There are two ways database operations can be done. It can happen through leiningen commands for local development or using the built uberjar.
+
+### leiningen commands
+
+1. Create the user
+
+```
+lein create-user
+```
+
+2. Run the migration scripts
+
+```
+lein migrate
+```
+
+You can use `lein migrate -version version` to restore the database to
+a given version. `lein migrate -version 0` will clean the datbase
+completely.
+
+3. Remove the user
+
+```
+lein drop-user
+```
+
+### java commands through uberjar
+
+1. Create the user
+
+```
+CMR_DB_URL=thin:@localhost:1521:orcl CMR_INGEST_PASSWORD=****** java -cp target/cmr-ingest-app-0.1.0-SNAPSHOT-standalone.jar cmr.db create-user
+```
+
+2. Run db migration
+
+```
+CMR_DB_URL=thin:@localhost:1521:orcl CMR_INGEST_PASSWORD=****** java -cp target/cmr-ingest-app-0.1.0-SNAPSHOT-standalone.jar cmr.db migrate
+```
+
+You can provider additional arguments to migrate the database to a given version as in lein migrate.
+
+3. Remove the user
+
+```
+CMR_DB_URL=thin:@localhost:1521:orcl CMR_INGEST_PASSWORD=****** java -cp target/cmr-ingest-app-0.1.0-SNAPSHOT-standalone.jar cmr.db drop-user
+```
+
 ## Curl statements
 - ensure Metadata db, ES, Indexer, Ingest are functioning
 

@@ -160,7 +160,7 @@
 (defn double->string
   "Converts a double to string without using exponential notation or loss of accuracy."
   [d]
-  (.format (DecimalFormat. "#.#####################") d))
+  (when d (.format (DecimalFormat. "#.#####################") d)))
 
 (defn rename-keys-with [m kmap merge-fn]
   "Returns the map with the keys in kmap renamed to the vals in kmap. Values of renamed keys for which

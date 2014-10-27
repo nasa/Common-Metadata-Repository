@@ -61,7 +61,7 @@
   (info "Transforming" (count concepts-tuples) "concept(s) to" format)
   (let [mdb-context (context->metadata-db-context context)
         [t1 concepts] (u/time-execution
-                        (metadata-db/get-concepts mdb-context concepts-tuples allow-missing?))
+                        (doall (metadata-db/get-concepts mdb-context concepts-tuples allow-missing?)))
         [t2 values] (u/time-execution
                       (doall (pmap #(concept->value-map context % format) concepts)))]
     (debug "get-concept-revisions time:" t1
@@ -84,9 +84,13 @@
 
 (defmethod extract-access-value "application/echo10+xml"
   [concept]
-  (when-let [[_ restriction-flag-str] (re-matches #"(?s).*<RestrictionFlag>(.+)</RestrictionFlag>.*"
-                                                  (:metadata concept))]
-    (Double. ^String restriction-flag-str)))
+  (let [^String metadata (:metadata concept)]
+    ;; This contains check is a performance enhancement. This saves a lot of time versus the regular
+    ;; expression below when the metadata is a large string.
+    (when (.contains metadata "<RestrictionFlag>")
+      (when-let [[_ restriction-flag-str] (re-matches #"(?s).*<RestrictionFlag>(.+)</RestrictionFlag>.*"
+                                                      metadata)]
+        (Double. ^String restriction-flag-str)))))
 
 (defmethod extract-access-value "application/dif+xml"
   [concept]
@@ -128,14 +132,14 @@
    (info "Getting latest version of" (count concept-ids) "concept(s) in" format "format")
    (let [mdb-context (context->metadata-db-context context)
          [t1 concepts] (u/time-execution
-                         (metadata-db/get-latest-concepts mdb-context concept-ids true))
+                         (doall (metadata-db/get-latest-concepts mdb-context concept-ids true)))
          [t2 concepts] (u/time-execution (if skip-acls?
                                            concepts
-                                           (acl-service/filter-concepts
-                                             context
-                                             (map add-acl-enforcement-fields concepts))))
+                                           (doall (acl-service/filter-concepts
+                                                    context
+                                                    (pmap add-acl-enforcement-fields concepts)))))
          ;; Filtering deleted concepts
-         [t3 concepts] (u/time-execution (filter #(not (:deleted %)) concepts))
+         [t3 concepts] (u/time-execution (doall (filter #(not (:deleted %)) concepts)))
          [t4 values] (u/time-execution
                        (doall (pmap #(concept->value-map context % format) concepts)))]
      (debug "get-latest-concepts time:" t1
@@ -143,3 +147,6 @@
             "tombstone-filter time:" t3
             "concept->value-map time:" t4)
      values)))
+
+
+

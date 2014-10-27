@@ -165,7 +165,7 @@
           field (if case-sensitive? field (str (name field) ".lowercase"))
           values (if case-sensitive? values (map str/lower-case values))]
       {:terms {field values
-               :execution "bool"}}))
+               :execution "plain"}}))
 
   cmr.search.models.query.BooleanCondition
   (condition->elastic
