@@ -22,6 +22,10 @@
             concepts)
     concepts))
 
+(defn- concept->tuple
+  "Converts a concept into a concept id revision id tuple"
+  [concept]
+  [(:concept-id concept) (:revision-id concept)])
 
 (defrecord MemoryDB
   [concepts-atom
@@ -159,8 +163,8 @@
 
   (force-delete-concepts
     [db provider-id concept-type concept-id-revision-id-tuples]
-    ;; NOTE - this is not needed for in-memory db
-    )
+    (doseq [[concept-id revision-id] concept-id-revision-id-tuples]
+      (concepts/force-delete db concept-type provider-id concept-id revision-id)))
 
   (reset
     [db]
@@ -180,14 +184,25 @@
       @concepts-atom))
 
   (get-tombstoned-concept-revisions
-  [db provider concept-type limit]
-  ;; NOTE - this is not needed for in-memory db
-  )
+    [db provider concept-type limit]
+    ;; NOTE - this is not needed for in-memory db
+    )
 
   (get-old-concept-revisions
-  [db provider concept-type max-versions limit]
-  ;; NOTE - this is not needed for in-memory db
-  )
+    [db provider concept-type max-versions limit]
+    (letfn [(drop-highest
+              [concepts]
+              (->> concepts
+                   (sort-by :revision-id)
+                   (drop-last max-versions)))]
+      (->> @concepts-atom
+           (filter #(= concept-type (:concept-type %)))
+           (filter #(= provider (:provider-id %)))
+           (group-by :concept-id)
+           vals
+           (filter #(> (count %) max-versions))
+           (mapcat drop-highest)
+           (map concept->tuple))))
 
   providers/ProvidersStore
 

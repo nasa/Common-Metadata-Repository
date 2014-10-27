@@ -524,7 +524,7 @@
                           max-revisions
                           limit)]
             result (sql-utils/query conn stmt)
-            ;; create a map of concept-ids to vectors of all returned revisions
+            ;; create a map of concept-ids to sequences of all returned revisions
             concept-id-rev-ids-map (reduce (fn [memo concept-map]
                                              (let [{:keys [concept_id revision_id]} concept-map]
                                                (update-in memo [concept_id] conj revision_id)))
