@@ -2,6 +2,10 @@
 
 ### General Request Details
 
+#### Maximum URL Length
+
+The Maximum URL length supported by CMR is 6032 characters.
+
 #### Query Parameters
 
  * `page_size` - number of results per page - default is 10, max is 2000
