@@ -29,6 +29,14 @@
   Akamai recommend 860 bytes. We're transmitting UTF-8 which should be about a byte a character."
   860)
 
+(defn get-access-log-handler
+  [server]
+  (doto (RequestLogHandler.)
+    (.setHandler (.getHandler server))
+    (.setRequestLog
+      (doto (NCSARequestLog.)
+        (.setLogLatency true)))))
+
 (defrecord WebServer
   [
    ;; The port Jetty will be running on
@@ -56,19 +64,7 @@
                                                     :min-threads MIN_THREADS
                                                     :max-threads MAX_THREADS})]
 
-
-
-            ; ;; Replace the existing handler with the gzip handler
-            ; (doto server
-            ;   (.stop)
-            ;   (.setHandler new-handler)
-            ;   (.start))))
-
-        (let [access-log-handler (doto (RequestLogHandler.)
-                                   (.setHandler (.getHandler server))
-                                   (.setRequestLog
-                                     (doto (NCSARequestLog.)
-                                       (.setLogLatency true))))]
+        (let [access-log-handler (get-access-log-handler server)]
 
 
 
