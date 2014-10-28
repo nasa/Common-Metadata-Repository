@@ -72,12 +72,14 @@
       (debug "dev system /reset")
       (doseq [[service-name reset-fn] service-reset-fns]
         (reset-fn (app-context system service-name)))
+      (debug "dev system /reset complete")
       {:status 200})
 
     (POST "/clear-cache" []
       (debug "dev system /clear-cache")
       (doseq [[service-name clear-cache-fn] service-clear-cache-fns]
         (clear-cache-fn (app-context system service-name)))
+      (debug "dev system /clear-cache complete")
       {:status 200})
 
     (POST "/stop" []
