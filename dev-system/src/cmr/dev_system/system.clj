@@ -75,7 +75,7 @@
   (config/set-config-value! :elastic-port in-memory-elastic-port-for-connection)
   ;; The same in memory db is used for metadata db by itself and in search so they contain the same data
   (let [in-memory-db (memory/create-db)
-        control-server (web/create-web-server 2999 control/make-api)]
+        control-server (web/create-web-server 2999 control/make-api use-compression? use-access-log?)]
     {:apps {:mock-echo (mock-echo-system/create-system)
             :metadata-db (-> (mdb-system/create-system)
                              (assoc :db in-memory-db)
@@ -99,7 +99,7 @@
 
 (defmethod create-system :external-dbs
   [type]
-  (let [control-server (web/create-web-server 2999 control/make-api)]
+  (let [control-server (web/create-web-server 2999 control/make-api use-compression? use-access-log?)]
     {:apps {:mock-echo (mock-echo-system/create-system)
             :metadata-db (mdb-system/create-system)
             :bootstrap (bootstrap-system/create-system)
