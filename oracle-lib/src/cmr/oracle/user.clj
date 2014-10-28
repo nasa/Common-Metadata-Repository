@@ -26,6 +26,12 @@
 (def grant-select-template
   "grant select on %%FROM_USER%%.%%TABLE%% to %%CMR_USER%%")
 
+(def grant-any-table-template
+  "Grants ability to create and drop tables at will to the user. It also adds create any index which
+  is needed if creating a table with an index."
+  (str "grant create any table, drop any table, create any index, insert any table, "
+       "update any table, delete any table, select any table to %%CMR_USER%%"))
+
 (defn replace-values
   "Replaces values in a sql template using the key values given"
   [key-values template]
@@ -66,4 +72,13 @@
                                         "CMR_USER" to-user}
                                        grant-select-template)]
       (j/db-do-commands db grant-sql)))))
+
+  (j/db-do-commands db (replace-values {"CMR_USER" to-user} grant-modify-any-table-template)))
+
+(defn grant-create-drop-any-table-privileges
+  "Grant privileges to create and drop any table or modify any table. This is useful in testing
+  situations where we want to create test tables and data in another schema."
+  [db to-user]
+  (println "Granting create and drop any table privileges to" to-user)
+  (j/db-do-commands db (replace-values {"CMR_USER" to-user} grant-any-table-template)))
 

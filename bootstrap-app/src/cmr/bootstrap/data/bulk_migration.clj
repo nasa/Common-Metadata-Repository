@@ -5,21 +5,17 @@
             [clojure.string :as str]
             [cheshire.core :as json]
             [sqlingvo.core :as sql :refer [sql select insert from where with order-by desc delete as]]
-            [sqlingvo.vendor :as v]
             [cmr.metadata-db.data.oracle.sql-utils :as su]
             [clojure.core.async :as ca :refer [thread alts!! <!!]]
-            [cmr.oracle.connection :as oc]
             [cmr.metadata-db.data.oracle.concept-tables :as tables]
             [cmr.transmit.config :as transmit-config]
-            [cmr.transmit.metadata-db :as transmit-mdb]
-            [cmr.oracle.config :as oracle-config]))
+            [cmr.transmit.metadata-db :as transmit-mdb]))
 
 ;; FIXME - Why not just use the metadata db code directly for creating the provider instead of using http?
 (defn system->metadata-db-url
   [system]
   (let [{:keys [host port]} (transmit-config/context->app-connection {:system system} :metadata-db)]
     (format "http://%s:%s" host port)))
-
 
 ;; To copy a provider
 ;; 1. Tell the metadata db to drop the provider
@@ -35,7 +31,6 @@
 (defn metadata-db-user
   [system]
   (get-in system [:db :spec :user]))
-
 
 (defn catalog-rest-dataset-table
   "Get the dataset table name for a given provider."
@@ -129,7 +124,6 @@
      (if collection-id
        (format "%s WHERE echo_collection_id = '%s'" stmt collection-id)
        stmt))))
-
 
 (defn- copy-collection-data
   "Copy the dataset/collection data from the catalog rest database to the metadata db

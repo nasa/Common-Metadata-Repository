@@ -17,18 +17,16 @@
   "Copy collections data from catalog-rest to metadata db (including granules)"
   [context provider-id-collection-map]
   (let [provider-id (get provider-id-collection-map "provider_id")
-        collection-id (get provider-id-collection-map "collection_id")
-        system (:system context)]
-    (dm/migrate-collection system provider-id collection-id)
+        collection-id (get provider-id-collection-map "collection_id")]
+    (dm/migrate-collection context provider-id collection-id)
     {:status 202
      :body {:message (str "Processing collection " collection-id "for provider " provider-id)}}))
 
 (defn- migrate-provider
   "Copy a single provider's data from catalog-rest to metadata db (including collections and granules)"
   [context provider-id-map]
-  (let [provider-id (get provider-id-map "provider_id")
-        system (:system context)]
-    (dm/migrate-provider system provider-id)
+  (let [provider-id (get provider-id-map "provider_id")]
+    (dm/migrate-provider context provider-id)
     {:status 202 :body {:message (str "Processing provider " provider-id)}}))
 
 (defn- bulk-index-provider
@@ -37,8 +35,7 @@
   (let [provider-id (get provider-id-map "provider_id")
         synchronous (:synchronous params)
         start-index (Long/parseLong (get params :start_index "0"))
-        system (:system context)
-        result (bulk/index-provider system provider-id synchronous start-index)
+        result (bulk/index-provider context provider-id synchronous start-index)
         msg (if synchronous
               result
               (str "Processing provider " provider-id " for bulk indexing from start index " start-index))]
@@ -51,8 +48,7 @@
   (let [provider-id (get provider-id-collection-map "provider_id")
         collection-id (get provider-id-collection-map "collection_id")
         synchronous (:synchronous params)
-        system (:system context)
-        result (bulk/index-collection system provider-id collection-id synchronous)
+        result (bulk/index-collection context provider-id collection-id synchronous)
         msg (if synchronous
               result
               (str "Processing collection " collection-id " for bulk indexing."))]
