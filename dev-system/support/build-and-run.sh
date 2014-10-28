@@ -7,4 +7,4 @@
 lein clean
 rm -rf es_data
 LEIN_SNAPSHOTS_IN_RELEASE=true lein uberjar
-CMR_COLLS_WITH_SEPARATE_INDEXES='C1-SEP_PROV1,C2-SEP_PROV1' nohup java -XX:MaxPermSize=256m -jar target/cmr-dev-system-1.15.2-standalone.jar&
+CMR_COLLS_WITH_SEPARATE_INDEXES='C1-SEP_PROV1,C2-SEP_PROV1' nohup java -XX:MaxPermSize=256m -jar target/cmr-dev-system-1.15.3-standalone.jar&
