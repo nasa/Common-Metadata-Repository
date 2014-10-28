@@ -61,6 +61,8 @@
         browsable (not (empty? (ru/browse-urls related-urls)))
         update-time (get-in collection [:data-provider-timestamps :update-time])
         update-time (f/unparse (f/formatters :date-time) update-time)
+        insert-time (get-in collection [:data-provider-timestamps :insert-time])
+        insert-time (f/unparse (f/formatters :date-time) insert-time)
         spatial-representation (get-in collection [:spatial-coverage :spatial-representation])
         permitted-group-ids (acl/get-coll-permitted-group-ids context provider-id collection)]
     (merge {:concept-id concept-id
@@ -98,6 +100,7 @@
             :spatial-keyword.lowercase  (map str/lower-case spatial-keywords)
             :attributes (attrib/psas->elastic-docs collection)
             :science-keywords (sk/science-keywords->elastic-doc collection)
+            :science-keywords-flat (sk/flatten-science-keywords collection)
             :start-date (when start-date (f/unparse (f/formatters :date-time) start-date))
             :end-date (when end-date (f/unparse (f/formatters :date-time) end-date))
             :archive-center archive-center-val
@@ -108,6 +111,7 @@
             :summary summary
             :metadata-format (name (mt/base-mime-type-to-format format))
             :update-time update-time
+            :insert-time insert-time
             :associated-difs associated-difs
             :associated-difs.lowercase (map str/lower-case associated-difs)
             :coordinate-system (when spatial-representation (csk/->SNAKE_CASE_STRING spatial-representation))

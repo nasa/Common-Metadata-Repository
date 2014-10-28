@@ -164,7 +164,7 @@
                                     :instrument-sn.lowercase string-field-mapping
                                     :sensor-sn             string-field-mapping
                                     :sensor-sn.lowercase   string-field-mapping
-                                    :project-sn            string-field-mapping
+                                    :project-sn            (stored string-field-mapping)
                                     :project-sn.lowercase  string-field-mapping
                                     :archive-center        (stored string-field-mapping)
                                     :archive-center.lowercase string-field-mapping
@@ -201,6 +201,12 @@
                                     :associated-difs (stored string-field-mapping)
                                     :associated-difs.lowercase string-field-mapping
                                     :coordinate-system (not-indexed (stored string-field-mapping))
+
+                                    ;; mappings added for opendata
+                                    :insert-time (not-indexed (stored string-field-mapping))
+
+                                    ;; mappings added for opendata
+                                    :science-keywords-flat (stored string-field-mapping)
 
                                     ;; analyzed field for keyword searches
                                     :keyword text-field-mapping
