@@ -3,10 +3,12 @@
   (:require [cmr.common.lifecycle :as lifecycle]
             [ring.adapter.jetty :as jetty]
             [cmr.common.log :refer (debug info warn error)])
-  (:import org.eclipse.jetty.server.Server
-           org.eclipse.jetty.server.NCSARequestLog
-           org.eclipse.jetty.server.handler.GzipHandler
-           org.eclipse.jetty.server.handler.RequestLogHandler))
+  (:import [org.eclipse.jetty.server
+            Server
+            NCSARequestLog]
+           [org.eclipse.jetty.server.handler
+            GzipHandler
+            RequestLogHandler]))
 
 (def MIN_THREADS
   "The minimum number of threads for Jetty to use to process requests. The was originally set to the
@@ -29,9 +31,9 @@
   Akamai recommend 860 bytes. We're transmitting UTF-8 which should be about a byte a character."
   860)
 
-(defn get-access-log-handler
-  "Setup access logging for each application.  Access log entries will go to stdout similar to
-  application logging.  As a result the access log entries will be in the same log as the
+(defn create-access-log-handler
+  "Setup access logging for each application. Access log entries will go to stdout similar to
+  application logging. As a result the access log entries will be in the same log as the
   application log."
   [existing-handler]
   (doto (RequestLogHandler.)
@@ -40,13 +42,14 @@
       (doto (NCSARequestLog.)
         (.setLogLatency true)))))
 
-(defn get-gzip-handler
+(defn create-gzip-handler
   "Setup gzip compression for responses.  Compression will be used for any response larger than
   the configured minimum size."
   [existing-handler min_gzip_size]
   (doto (GzipHandler.)
     (.setHandler existing-handler)
     (.setMinGzipSize min_gzip_size)))
+
 
 (defrecord WebServer
   [
@@ -55,6 +58,9 @@
 
    ;; Whether gzip compressed responses are enabled or not
    use-compression?
+
+   ;; Whether access log is enabled or not.
+   use-access-log?
 
    ;; A function that will return the routes. Should accept a single argument of the system.
    routes-fn
@@ -75,24 +81,27 @@
                                                     :min-threads MIN_THREADS
                                                     :max-threads MAX_THREADS})]
 
-        (let [handler
-              (when use-compression?
-                (get-gzip-handler (get-access-log-handler (.getHandler server)) MIN_GZIP_SIZE)
-                (get-access-log-handler (.getHandler server)))]
+        (let [request-handler (if use-compression?
+                                (create-gzip-handler (.getHandler server) MIN_GZIP_SIZE)
+                                (.getHandler server))
+              request-handler (if use-access-log?
+                                (create-access-log-handler request-handler)
+                                request-handler)]
           (doto server
             (.stop)
-            (.setHandler handler)
-            (.start))))
+            (.setHandler request-handler)
+            (.start)))
 
-      (info "Jetty started on port" port)
-      (assoc this :server server)
+
+        (info "Jetty started on port" port)
+        (assoc this :server server))
       (catch Exception e
         (info "Failed to start jetty on port" port)
         (throw e))))
 
   (stop
     [this system]
-    (if-let [^Server server (:server this)]
+    (when-let [^Server server (:server this)]
       (.stop server))
     (assoc this :server nil)))
 
@@ -101,8 +110,9 @@
   "Creates a new web server. Accepts argument of port and a routes function that should accept
   system argument and return compojure routes to use."
   ([port routes-fn]
-   (create-web-server port routes-fn true))
-  ([port routes-fn use-compression]
+   (create-web-server port routes-fn true true))
+  ([port routes-fn use-compression use-access-log]
    (map->WebServer {:port port
                     :use-compression? use-compression
+                    :use-access-log? use-access-log
                     :routes-fn routes-fn})))

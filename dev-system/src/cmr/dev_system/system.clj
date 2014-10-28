@@ -48,16 +48,20 @@
   "Indicates whether the servers will use gzip compression. Disable this to make tcpmon usable"
   true)
 
-(defn- set-app-compression
-  "Modifies the app server instances to configure the use of compression or not. Takes the system
+(def use-access-log?
+  "Indicates whether the servers will use the access log."
+  false)
+
+(defn- set-web-server-options
+  "Modifies the app server instances to configure web server options. Takes the system
   and returns it with the updates made. Should be run a system before it is started"
   [system]
   (update-in system [:apps]
              (fn [app-map]
                (into {} (for [[app-name app-system] app-map]
-                          [app-name (assoc-in app-system
-                                              [:web :use-compression?]
-                                              use-compression?)])))))
+                          [app-name (-> app-system
+                                        (assoc-in [:web :use-compression?] use-compression?)
+                                        (assoc-in [:web :use-access-log?] use-access-log?))])))))
 
 (defmulti create-system
   "Returns a new instance of the whole application."
@@ -140,7 +144,7 @@
 
 (defn- start-apps
   [system]
-  (let [system (set-app-compression system)]
+  (let [system (set-web-server-options system)]
     (reduce (fn [system app]
               (let [{start-fn :start} (app-control-functions app)]
                 (update-in system [:apps app]
