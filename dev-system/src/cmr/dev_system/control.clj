@@ -46,7 +46,7 @@
 (def service-reset-fns
   "A map of services to reset functions."
   {:metadata-db mdb-service/reset
-   :index-set index-set-service/reset
+   ;; The index set app is not reset as part of this because the indexer will handle it.
    :indexer indexer-service/reset
    :search cache/reset-caches
    :mock-echo mock-echo-api/reset})
