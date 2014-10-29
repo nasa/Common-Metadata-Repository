@@ -31,6 +31,7 @@
             [cmr.search.results-handlers.metadata-results-handler]
             [cmr.search.results-handlers.query-specified-results-handler]
             [cmr.search.results-handlers.timeline-results-handler]
+            [cmr.search.results-handlers.opendata-results-handler]
 
             ;; ACL support. Required here to avoid circular dependencies
             [cmr.search.services.acls.collection-acls]
