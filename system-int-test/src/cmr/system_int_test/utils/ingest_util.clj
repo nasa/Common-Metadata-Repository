@@ -118,7 +118,10 @@
                                :connection-manager (url/conn-mgr)})]
      (is (some #{200 404} [(:status response)]))
      (when (= (:status response) 200)
-       (json/decode (:body response) true)))))
+       (-> response
+           :body
+           (json/decode true)
+           (update-in [:concept-type] keyword))))))
 
 (defn concept-exists-in-mdb?
   "Check concept in mdb with the given concept and revision-id"

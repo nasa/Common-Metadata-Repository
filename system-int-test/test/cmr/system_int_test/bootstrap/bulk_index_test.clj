@@ -5,10 +5,10 @@
             [cmr.umm.echo10.core :as echo10]
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.index-util :as index]
+            [cmr.system-int-test.utils.bootstrap-util :as bootstrap]
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.core :as d]
-            [cmr.common.config :as config]
             [clj-time.core :as t]
             [cmr.system-int-test.utils.test-environment :as test-env]))
 
@@ -68,7 +68,7 @@
           gran1 (ingest/save-concept gran1-map)]
       (ingest/tombstone-concept coll2-tombstone)
 
-      (index/bulk-index-provider "PROV1")
+      (bootstrap/bulk-index-provider "PROV1")
       (index/refresh-elastic-index)
 
       (testing "Expired documents are not indexed during bulk indexing and deleted documents
@@ -136,7 +136,7 @@
                                                               (d/ingest "PROV1" gran))
                                                             granules2)))))]
 
-      (index/bulk-index-provider "PROV1")
+      (bootstrap/bulk-index-provider "PROV1")
       ;; force our future to complete
       @f
       (index/refresh-elastic-index)

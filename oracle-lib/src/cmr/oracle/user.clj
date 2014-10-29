@@ -73,8 +73,6 @@
                                        grant-select-template)]
       (j/db-do-commands db grant-sql)))))
 
-  (j/db-do-commands db (replace-values {"CMR_USER" to-user} grant-modify-any-table-template)))
-
 (defn grant-create-drop-any-table-privileges
   "Grant privileges to create and drop any table or modify any table. This is useful in testing
   situations where we want to create test tables and data in another schema."

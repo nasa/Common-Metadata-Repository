@@ -80,7 +80,7 @@
   (execute-sql system (create-datasets-table-sql system provider-id))
   (execute-sql system (create-granules-table-sql system provider-id)))
 
-(defn drop-provider
+(defn delete-provider
   "Removes the provider related tables in the Catalog REST schema."
   [system provider-id]
   (execute-sql system (drop-granules-table-sql system provider-id))

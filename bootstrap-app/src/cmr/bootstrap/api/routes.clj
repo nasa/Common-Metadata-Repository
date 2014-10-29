@@ -15,18 +15,20 @@
 
 (defn- migrate-collection
   "Copy collections data from catalog-rest to metadata db (including granules)"
-  [context provider-id-collection-map]
+  [context provider-id-collection-map params]
   (let [provider-id (get provider-id-collection-map "provider_id")
+        synchronous (:synchronous params)
         collection-id (get provider-id-collection-map "collection_id")]
-    (dm/migrate-collection context provider-id collection-id)
+    (dm/migrate-collection context provider-id collection-id synchronous)
     {:status 202
      :body {:message (str "Processing collection " collection-id "for provider " provider-id)}}))
 
 (defn- migrate-provider
   "Copy a single provider's data from catalog-rest to metadata db (including collections and granules)"
-  [context provider-id-map]
-  (let [provider-id (get provider-id-map "provider_id")]
-    (dm/migrate-provider context provider-id)
+  [context provider-id-map params]
+  (let [provider-id (get provider-id-map "provider_id")
+        synchronous (:synchronous params)]
+    (dm/migrate-provider context provider-id synchronous)
     {:status 202 :body {:message (str "Processing provider " provider-id)}}))
 
 (defn- bulk-index-provider
@@ -59,10 +61,10 @@
   (routes
     (context (:relative-root-url system) []
       (context "/bulk_migration" []
-        (POST "/providers" {:keys [request-context body]}
-          (migrate-provider request-context body))
-        (POST "/collections" {:keys [request-context body]}
-          (migrate-collection request-context body)))
+        (POST "/providers" {:keys [request-context body params]}
+          (migrate-provider request-context body params))
+        (POST "/collections" {:keys [request-context body params]}
+          (migrate-collection request-context body params)))
 
       (context "/bulk_index" []
         (POST "/providers" {:keys [request-context body params]}

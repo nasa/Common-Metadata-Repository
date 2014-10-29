@@ -13,6 +13,9 @@
                  ;; included for access to messages
                  [nasa-cmr/cmr-search-app "0.1.0-SNAPSHOT"]
 
+                 ;; included to allow access to catalog rest and db connection code
+                 [nasa-cmr/cmr-bootstrap-app "0.1.0-SNAPSHOT"]
+
                  ; include ring-core to support encoding of params
                  [ring/ring-core "1.3.1" :exclusions [clj-time]]
                  [cheshire "5.3.1"]]
