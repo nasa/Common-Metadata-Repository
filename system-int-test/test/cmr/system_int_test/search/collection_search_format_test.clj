@@ -21,7 +21,8 @@
             [cmr.umm.spatial :as umm-s]
             [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
-            [cmr.system-int-test.data2.kml :as dk]))
+            [cmr.system-int-test.data2.kml :as dk]
+            [cmr.system-int-test.data2.opendata :as od]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
@@ -243,7 +244,7 @@
            [0 90 180 -90] []
            [-180 90 0 -90] [g2]))))
 
-(deftest search-collection-atom-and-json-and-kml
+(deftest search-collection-various-formats
   (let [ru1 (dc/related-url "GET DATA" "http://example.com")
         ru2 (dc/related-url "GET DATA" "http://example2.com")
         ru3 (dc/related-url "GET RELATED VISUALIZATION" "http://example.com/browse")
@@ -310,6 +311,10 @@
     (testing "kml"
       (let [results (search/find-concepts-kml :collection {})]
         (dk/assert-collection-kml-results-match [coll1 coll2 coll3 coll4 coll5] results)))
+
+    (testing "opendata"
+      (let [results (search/find-concepts-opendata :collection {})]
+        (od/assert-collection-opendata-results-match [coll1 coll2 coll3 coll4 coll5] results)))
 
     (testing "ATOM XML"
       (let [coll-atom (da/collections->expected-atom [coll1] "collections.atom?dataset_id=Dataset1")
