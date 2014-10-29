@@ -25,8 +25,9 @@
 
 (defn provider-id-format-validation
   [provider-id]
-  (when-not (re-matches #"^[a-zA-Z](\w|_)*" provider-id)
-    [(msg/invalid-provider-id provider-id)]))
+  (when provider-id
+    (when-not (re-matches #"^[a-zA-Z](\w|_)*" provider-id)
+      [(msg/invalid-provider-id provider-id)])))
 
 (def provider-id-validation
   "Verify that a provider-id is in the correct form and return a list of errors if not."

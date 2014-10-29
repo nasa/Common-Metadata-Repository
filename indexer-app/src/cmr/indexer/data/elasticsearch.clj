@@ -1,7 +1,5 @@
 (ns cmr.indexer.data.elasticsearch
   (:require [cmr.common.lifecycle :as lifecycle]
-            [clojurewerkz.elastisch.rest :as esr]
-            [clojurewerkz.elastisch.rest.index :as esi]
             [clojurewerkz.elastisch.rest.document :as doc]
             [clojurewerkz.elastisch.rest.bulk :as bulk]
             [cmr.indexer.data.bulk :as cmr-bulk]
