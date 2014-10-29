@@ -157,6 +157,35 @@
       (x/emit-str (frf/facets->xml-element facets)))
     ""))
 
+(defmulti fix-parsed-xml-namespace
+  "Since clojure.data.xml does not handle namespaces fully from parse-str to emit-str,
+  we fix the parsed xml namespace by assuming DIF will always have a fixed namespace definition
+  and ECHO10 will be stripped off any namespace definitions."
+  (fn [result-format concept-type parsed]
+    [result-format concept-type]))
+
+(defmethod fix-parsed-xml-namespace [:dif :collection]
+  [result-format concept-type parsed]
+  (cx/update-elements-at-path
+    parsed [:result :DIF]
+    assoc :attrs dif-c/dif-header-attributes))
+
+(defmethod fix-parsed-xml-namespace [:echo10 :collection]
+  [result-format concept-type parsed]
+  (cx/update-elements-at-path
+    parsed [:result :Collection]
+    assoc :attrs {}))
+
+(defmethod fix-parsed-xml-namespace [:echo10 :granule]
+  [result-format concept-type parsed]
+  (cx/update-elements-at-path
+    parsed [:result :Granule]
+    assoc :attrs {}))
+
+(defmethod fix-parsed-xml-namespace :default
+  [result-format concept-type parsed]
+  parsed)
+
 (defn search-results->metadata-response
   [context query results]
   (let [{:keys [hits took items facets]} results
@@ -176,12 +205,8 @@
     ;; we don't support pretty print for ISO result which has namespace prefixes on element names.
     (if (and pretty? (not (= :iso19115 result-format)))
       (let [parsed (x/parse-str response)
-            ;; Fix for DIF emitting XML
-            parsed (if (= :dif result-format)
-                     (cx/update-elements-at-path
-                       parsed [:result :DIF]
-                       assoc :attrs dif-c/dif-header-attributes)
-                     parsed)]
+            ;; Fix for ECHO and DIF emitting XML
+            parsed (fix-parsed-xml-namespace result-format concept-type parsed)]
         (x/indent-str parsed))
 
       response)))
