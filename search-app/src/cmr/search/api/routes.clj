@@ -28,7 +28,7 @@
             [cmr.search.results-handlers.atom-json-results-handler]
             [cmr.search.results-handlers.reference-results-handler]
             [cmr.search.results-handlers.kml-results-handler]
-            [cmr.search.results-handlers.metadata-results-handler]
+            [cmr.search.results-handlers.metadata-results-handler :as mrh]
             [cmr.search.results-handlers.query-specified-results-handler]
             [cmr.search.results-handlers.timeline-results-handler]
 
@@ -226,6 +226,14 @@
         results (query-svc/find-concepts-by-aql context params aql)]
     (search-response params results)))
 
+(defn- concept->response-body
+  "Returns the response body of concept metadata potentially prettified if necessary"
+  [concept params]
+  (let [{:keys [format metadata]} concept
+        concept-format (mt/mime-type->format format)
+        pretty? (= "true" (:pretty params))]
+    (mrh/prettified-xml (:metadata concept) pretty? concept-format [])))
+
 (defn- find-concept-by-cmr-concept-id
   "Invokes query service to find concept metadata by cmr concept id and returns the response"
   [context path-w-extension params headers]
@@ -238,7 +246,7 @@
         concept (query-svc/find-concept-by-id context result-format concept-id)]
     {:status 200
      :headers {CONTENT_TYPE_HEADER (str (:format concept) "; charset=utf-8")}
-     :body (:metadata concept)}))
+     :body (concept->response-body concept params)}))
 
 (defn- get-provider-holdings
   "Invokes query service to retrieve provider holdings and returns the response"
