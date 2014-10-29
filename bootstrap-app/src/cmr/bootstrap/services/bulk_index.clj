@@ -7,19 +7,19 @@
 
 (defn index-provider
   "Bulk index all the collections and granules for a provider."
-  [system provider-id synchronous start-index]
+  [context provider-id synchronous start-index]
   (if synchronous
-    (bulk/index-provider system provider-id start-index)
-    (let [channel (:provider-index-channel system)]
+    (bulk/index-provider (:system context) provider-id start-index)
+    (let [channel (get-in context [:system :provider-index-channel])]
       (info "Adding provider" provider-id "to provider index channel")
       (go (>! channel {:provider-id provider-id
                        :start-index start-index})))))
 
 (defn index-collection
   "Bulk index all the granules in a collection"
-  [system provider-id collection-id synchronous]
+  [context provider-id collection-id synchronous]
   (if synchronous
-    (bulk/index-granules-for-collection system provider-id collection-id)
-    (let [channel (:collection-index-channel system)]
+    (bulk/index-granules-for-collection (:system context) provider-id collection-id)
+    (let [channel (get-in context [:system :collection-index-channel])]
       (info "Adding collection" collection-id "to collection index channel")
       (go (>! channel [provider-id collection-id])))))
