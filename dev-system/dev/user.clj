@@ -4,7 +4,7 @@
             [cmr.dev-system.system :as system]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.dev.util :as d]
-            [cmr.system-int-test.data2.core :as data]
+            [cmr.system-int-test.system :as sit-sys]
             [cmr.common.config :as config]
             [earth.driver :as earth-viz]
             [common-viz.util :as common-viz]
@@ -23,7 +23,6 @@
   "Starts the current development system."
   []
   (config/reset-config-values)
-  (data/reset-uniques)
 
   ;; Set the default job start delay to avoid jobs kicking off with tests etc.
   (config/set-config-value! :default-job-start-delay (str (* 3 3600)))
@@ -42,6 +41,8 @@
                     (when s (system/stop s)))))
 
 (defn reset []
+  ;; Stop the system integration test system
+  (sit-sys/stop)
   ; Stops the running code
   (stop)
   ; Refreshes all of the code and then restarts the system
