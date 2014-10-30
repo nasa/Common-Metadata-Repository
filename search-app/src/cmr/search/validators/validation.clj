@@ -2,6 +2,7 @@
   "Defines protocols and functions to validate conditions"
   (:require [cmr.search.models.query :as qm]
             [cmr.spatial.validation :as spatial-validation]
+            [cmr.search.validators.result-format :as rfmt]
 
             ;; Must be required to be available.
             [cmr.spatial.geodetic-ring-validations]))
@@ -16,7 +17,8 @@
 (extend-protocol Validator
   cmr.search.models.query.Query
   (validate
-    [{:keys [condition]}]
+    [{:keys [concept-type result-format condition]}]
+    (rfmt/validate concept-type result-format)
     (validate condition))
 
   cmr.search.models.query.ConditionGroup
