@@ -39,6 +39,18 @@
         body (json/decode (:body response) true)]
     (assoc body :status (:status response))))
 
+(defn synchronize-databases
+  "TODO"
+  []
+  (let [response (client/request {:method :post
+                                  :url (url/db-synchronize-url)
+                                  :query-params {:synchronous true}
+                                  :accept :json
+                                  :throw-exceptions false
+                                  :connection-manager (url/conn-mgr)})
+        body (json/decode (:body response) true)]
+    (assoc body :status (:status response))))
+
 (defn system
   "Returns a system suitable for calling the Catalog REST test code to create providers and add concepts."
   []

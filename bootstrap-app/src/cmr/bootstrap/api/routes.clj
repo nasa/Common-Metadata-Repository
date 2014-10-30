@@ -8,8 +8,7 @@
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.api.errors :as errors]
             [cmr.system-trace.http :as http-trace]
-            [cmr.bootstrap.services.data-migration :as dm]
-            [cmr.bootstrap.services.bulk-index :as bulk]
+            [cmr.bootstrap.services.bootstrap-service :as bs]
             [cmr.bootstrap.services.health-service :as hs]))
 
 
@@ -19,7 +18,7 @@
   (let [provider-id (get provider-id-collection-map "provider_id")
         synchronous (:synchronous params)
         collection-id (get provider-id-collection-map "collection_id")]
-    (dm/migrate-collection context provider-id collection-id synchronous)
+    (bs/migrate-collection context provider-id collection-id synchronous)
     {:status 202
      :body {:message (str "Processing collection " collection-id "for provider " provider-id)}}))
 
@@ -28,8 +27,15 @@
   [context provider-id-map params]
   (let [provider-id (get provider-id-map "provider_id")
         synchronous (:synchronous params)]
-    (dm/migrate-provider context provider-id synchronous)
+    (bs/migrate-provider context provider-id synchronous)
     {:status 202 :body {:message (str "Processing provider " provider-id)}}))
+
+(defn- db-synchronize
+  "TODO"
+  [context params]
+  (let [synchronous (:synchronous params)]
+    (bs/db-synchronize context synchronous)
+    {:status 202 :body {:message "Synchronizing databases."}}))
 
 (defn- bulk-index-provider
   "Index all the collections and granules for a given provider."
@@ -37,7 +43,7 @@
   (let [provider-id (get provider-id-map "provider_id")
         synchronous (:synchronous params)
         start-index (Long/parseLong (get params :start_index "0"))
-        result (bulk/index-provider context provider-id synchronous start-index)
+        result (bs/index-provider context provider-id synchronous start-index)
         msg (if synchronous
               result
               (str "Processing provider " provider-id " for bulk indexing from start index " start-index))]
@@ -50,7 +56,7 @@
   (let [provider-id (get provider-id-collection-map "provider_id")
         collection-id (get provider-id-collection-map "collection_id")
         synchronous (:synchronous params)
-        result (bulk/index-collection context provider-id collection-id synchronous)
+        result (bs/index-collection context provider-id collection-id synchronous)
         msg (if synchronous
               result
               (str "Processing collection " collection-id " for bulk indexing."))]
@@ -65,6 +71,9 @@
           (migrate-provider request-context body params))
         (POST "/collections" {:keys [request-context body params]}
           (migrate-collection request-context body params)))
+      (context "/db_synchronize" []
+        (POST "/" {:keys [request-context params]}
+          (db-synchronize request-context params)))
 
       (context "/bulk_index" []
         (POST "/providers" {:keys [request-context body params]}

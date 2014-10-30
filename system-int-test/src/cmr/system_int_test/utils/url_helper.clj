@@ -121,6 +121,10 @@
   []
   (format "http://localhost:%s/bulk_migration/providers" (transmit-config/bootstrap-port)))
 
+(defn db-synchronize-url
+  []
+  (format "http://localhost:%s/db_synchronize" (transmit-config/bootstrap-port)))
+
 (defn bootstrap-health-url
   "URL to check bootstrap health."
   []

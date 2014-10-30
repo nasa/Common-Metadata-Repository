@@ -81,14 +81,18 @@
   (let [{:keys [concept-id concept-type provider-id revision-id]} concept
         latest-revision (or previous-revision (c/get-concept db concept-type provider-id concept-id))
         expected-revision-id (inc (:revision-id latest-revision))]
+    (cmr.common.dev.capture-reveal/capture revision-id expected-revision-id)
     (if (= revision-id expected-revision-id)
       {:status :pass}
       {:status :fail
        :expected expected-revision-id})))
 
 (defn validate-concept-revision-id
-  "Validate that the revision-id for a concept (if given) is one greater than
-  the current maximum revision-id for this concept."
+  "Validate that the revision-id for a concept (if given) is one greater than the current maximum
+  revision-id for this concept. A third argument of the previous revision of the concept can be
+  provided to avoid looking up the concept again."
+  ([db concept]
+   (validate-concept-revision-id db concept nil))
   ([db concept previous-revision]
    (let [{:keys [concept-id revision-id]} concept]
      (cond
@@ -312,7 +316,7 @@
   (cv/validate-concept concept)
   (let [db (util/context->db context)]
     (validate-providers-exist db [(:provider-id concept)])
-    (validate-concept-revision-id db concept nil)
+    (validate-concept-revision-id db concept)
     (let [revision-id-provided? (:revision-id concept)
           concept (->> concept
                        (set-or-generate-concept-id db)

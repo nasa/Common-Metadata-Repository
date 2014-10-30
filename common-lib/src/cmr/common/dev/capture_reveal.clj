@@ -17,7 +17,7 @@
 
 <snippet>
   <content><![CDATA[
-(cmr.common.dev.capture-reveal/capture )
+cmr.common.dev.capture-reveal/capture
 ]]></content>
   <tabTrigger>capture</tabTrigger>
   <scope>source.clojure</scope>
@@ -27,7 +27,7 @@
 
 <snippet>
   <content><![CDATA[
-(cmr.common.dev.capture-reveal/reveal )
+cmr.common.dev.capture-reveal/reveal
 ]]></content>
   <tabTrigger>reveal</tabTrigger>
   <scope>source.clojure</scope>
