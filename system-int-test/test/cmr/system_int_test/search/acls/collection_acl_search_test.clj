@@ -9,6 +9,7 @@
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.core :as d]
             [cmr.system-int-test.data2.atom :as da]
+            [cmr.system-int-test.data2.opendata :as od]
             [cmr.system-int-test.utils.echo-util :as e]))
 
 
@@ -20,7 +21,7 @@
   (ingest/create-provider "provguid1" "PROV1")
   (ingest/create-provider "provguid2" "PROV2")
   (ingest/create-provider "provguid3" "PROV3")
-)
+  )
 
 (deftest invalid-security-token-test
   (is (= {:errors ["Token ABC123 does not exist"], :status 401}
@@ -68,7 +69,7 @@
         ;; PROV3
         coll9 (d/ingest "PROV3" (dc/collection {:entry-title "coll9"}))
         coll10 (d/ingest "PROV3" (dc/collection {:entry-title "coll10"
-                                                :access-value 12}))
+                                                 :access-value 12}))
 
         all-colls [coll1 coll2 coll3 coll4 coll5 coll6 coll7 coll8 coll9 coll10]
         guest-permitted-collections [coll1 coll4 coll6 coll7 coll8 coll9]
@@ -153,7 +154,21 @@
                                (str/join "&concept_id=" concept-ids)))]
           (is (= coll-json (:results (search/find-concepts-json :collection {:token guest-token
                                                                              :page-size 100
-                                                                             :concept-id concept-ids})))))))))
+                                                                             :concept-id concept-ids})))))))
+
+    (testing "opendata ACL enforcement"
+      (testing "all items"
+        (let [coll-od (:results (od/collections->expected-opendata guest-permitted-collections))]
+          (is (= coll-od (set (:results (search/find-concepts-opendata :collection {:token guest-token
+                                                                                    :page-size 100})))))))
+
+      (testing "by concept id"
+        (let [concept-ids (map :concept-id all-colls)
+              coll-od (:results (od/collections->expected-opendata guest-permitted-collections))]
+          (is (= coll-od (set (:results (search/find-concepts-opendata :collection
+                                                                       {:token guest-token
+                                                                        :page-size 100
+                                                                        :concept-id concept-ids}))))))))))
 
 
 ;; This tests that when acls change after collections have been indexed that collections will be
@@ -203,7 +218,7 @@
     ;; A logged out token is normally not useful
     (e/logout user2-token)
     (is (= {:errors ["Token ABC-2 does not exist"], :status 401}
-         (search/find-refs :collection {:token user2-token})))
+           (search/find-refs :collection {:token user2-token})))
 
     ;; Use user1-token so it will be cached
     (is (d/refs-match? [coll1] (search/find-refs :collection {:token user1-token})))

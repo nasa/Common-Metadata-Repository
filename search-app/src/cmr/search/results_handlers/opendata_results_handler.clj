@@ -42,7 +42,9 @@
    "project-sn"
    "opendata-format"
    "access-url"
-   "access-value" ;; needed for acl enforcment
+   ;; needed for acl enforcment
+   "access-value"
+   "provider-id"
    ])
 
 (defmethod elastic-results/elastic-result->query-result-item :opendata
@@ -89,7 +91,6 @@
   [context concept-type item]
   (let [{:keys [id summary short-name project-sn update-time insert-time provider-id access-value
                 keywords entry-title opendata-format access-url]} item]
-    (println (str "FORMAT....." opendata-format))
     (util/remove-nil-keys {:title entry-title
                            :description summary
                            :keyword keywords

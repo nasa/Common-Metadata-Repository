@@ -15,7 +15,7 @@
 (def non-transformer-supported-formats
   "Formats that the transformer does not support because they're implemented in search. Assumed
   that the transformer will support any format not listed here."
-  #{:csv :json :xml :atom :atom-links})
+  #{:csv :json :xml :atom :atom-links :opendata})
 
 (def transformer-supported-format?
   "Returns true if the format is supported by the transformer."
@@ -136,7 +136,7 @@
         query-results (if (:skip-acls? query)
                         query-results
                         (update-in query-results [:items]
-                                   #(acl-service/filter-concepts context %)))]
+                                   (partial acl-service/filter-concepts context)))]
     (post-process-query-result-features context query elastic-results query-results)))
 
 
