@@ -2,12 +2,8 @@
   "Defines protocols and functions to validate conditions"
   (:require [cmr.search.models.query :as qm]
             [cmr.spatial.validation :as spatial-validation]
-<<<<<<< HEAD
             [clojure.set]
             [cmr.common.mime-types :as mt]
-=======
-            [cmr.search.validators.result-format :as rfmt]
->>>>>>> CMR-599: search result format validation moved to Query validation.
 
             ;; Must be required to be available.
             [cmr.spatial.geodetic-ring-validations]))
