@@ -4,6 +4,8 @@
   (:require [clojure.test :refer :all]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.bootstrap-util :as bootstrap]
+            [cmr.system-int-test.utils.search-util :as search]
+            [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.umm.core :as umm]
@@ -22,8 +24,6 @@
 ;; - Thread 2: Run the synchronization
 ;; - Wait for threads to join
 ;; - Check that items at the end are all correct
-
-
 
 (comment
   (do
@@ -77,7 +77,6 @@
      :provider-id provider-id
      :native-id entry-title}))
 
-
 (defn updated-concept
   "TODO"
   [concept]
@@ -97,8 +96,22 @@
     (is (= concept
            (dissoc (ingest/get-concept (:concept-id concept)) :revision-date)))))
 
-;; TODO we need tests with multiple collections, inserts, updates, deletes all being different
-;; and multiple providers
+(defn assert-concepts-indexed
+  "TODO"
+  [concepts]
+  (index/refresh-elastic-index)
+  (doseq [[concept-type type-concepts] (group-by :concept-type concepts)]
+    (let [expected-tuples (map #(vector (:concept-id %) (:revision-id %)) type-concepts)
+          results (search/find-refs concept-type {:concept-id (map :concept-id type-concepts)})
+          found-tuples (map #(vector (:id %) (:revision-id %)) (:refs results))]
+      (is (= (set expected-tuples) (set found-tuples))))))
+
+;; TODO add a test that allows many items across multiple providers to be out of synch and checks
+;; that they are all correct at the end.
+
+;; TODO Add delete tests
+
+;; TODO add tests that send start and end times for checking for missing items.
 
 (deftest db-synchronize-inserts-test
   (test-env/only-with-real-database
@@ -124,8 +137,10 @@
 
       ;; Migrate the providers. Catalog REST and Metadata DB are in sync
       (bootstrap/bulk-migrate-providers "CPROV1" "CPROV2")
+      (bootstrap/bulk-index-providers "CPROV1" "CPROV2")
 
       (assert-concepts-in-mdb orig-colls)
+      (assert-concepts-indexed orig-colls)
 
       ;; Update the concepts in catalog rest.
       (cat-rest/update-concepts system [coll1-2 coll2-2 coll3-2])
@@ -139,10 +154,6 @@
 
       ;; Check that they are synchronized now with the latest data.
       (assert-concepts-in-mdb updated-colls)
-
-      ;; TODO check that we can search for an item and find it. (all items have been indexed)
-
-
-      )))
+      (assert-concepts-indexed updated-colls))))
 
 

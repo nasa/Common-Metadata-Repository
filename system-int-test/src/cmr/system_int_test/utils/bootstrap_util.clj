@@ -47,6 +47,13 @@
     (is (= 202
            (:status (bulk-migrate-provider provider-id))))))
 
+(defn bulk-index-providers
+  "Bulk indexes all the providers. Assumes they should all be successful"
+  [& provider-ids]
+  (doseq [provider-id provider-ids]
+    (is (= 202
+           (:status (bulk-index-provider provider-id))))))
+
 (defn synchronize-databases
   "TODO"
   []
@@ -69,8 +76,8 @@
   [& provider-ids]
   (let [system (system)]
     (ingest/reset)
-    ;; Create Catalog REST providers
-    (doseq [provider-id provider-ids]
+    (doseq [provider-id provider-ids :let [guid (str provider-id "-guid")]]
+      (ingest/create-provider guid provider-id true)
       (cat-rest/create-provider system provider-id))))
 
 (defn db-fixture-tear-down

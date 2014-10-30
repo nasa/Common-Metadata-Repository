@@ -14,7 +14,8 @@
             [cmr.metadata-db.data.oracle.sql-utils :as sql-utils]
             [cmr.metadata-db.data.oracle.concepts :as mdb-concepts]
             [cmr.metadata-db.services.concept-service :as concept-service]
-            [cmr.metadata-db.services.provider-service :as provider-service]))
+            [cmr.metadata-db.services.provider-service :as provider-service]
+            [cmr.indexer.services.index-service :as index-service]))
 
 ;; TODO document and rename
 (def BATCH_SIZE 1000)
@@ -171,26 +172,15 @@
 (defn process-concept-insert
   "TODO"
   [system concept]
-
-  (concept-service/save-concept {:system system} concept)
-
-  ;; Things that could happen between finding a concept to copy and actually trying to insert it.
-  ;; - It's the first time an item is going to be sent to the metadata db. In the meantime the item
-  ;; could have been had any of the following
-  ;;   - deleted -> The delete would be sent to ingest and return a 404 to Cat Rest. We would go
-  ;; ahead and copy the item into metadata db. It would then be found during the delete synchronization.
-  ;;   - updated -> The update would arrive in Mdb as the save revision id we're trying to save with.
-  ;; A conflict would be found and thrown.
-  ;; - An item is already in metadata db. Catalog REST got an update that wasn't sent to metadata db.
-  ;; While we're synching that update another one comes:
-  ;;   - delete -> The delete would result in a tombstone in mdb. That should be a revision conflict
-  ;; when we try to save.
-  ;;   - update -> The update would result in a new revision in mdb. That should be a revision
-  ;; conflict when we try to save.
-
-
-  ;; TODO index using the indexer
-
+  ;; This is going to copy the item to metadata db. If it was never added to MDB in the first place
+  ;; and was deleted in Catalog REST in the mean time Ingest would return a 404 from the delete
+  ;; and Catalog REST would ignore it. This would end up saving the item in Metadata DB making them
+  ;; out of sync. The delete processing should happen after this step and put it back in sync.
+  (let [mdb-context {:system (:metadata-db system)}
+        indexer-context {:system (:indexer system)}
+        {:keys [concept-id revision-id]} concept]
+    (concept-service/save-concept mdb-context concept)
+    (index-service/index-concept indexer-context concept-id revision-id true))
 
   ;; TODO catch conflict failures and log them. They're ok.
 
