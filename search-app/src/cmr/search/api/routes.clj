@@ -4,6 +4,7 @@
             [compojure.core :refer :all]
             [clojure.string :as str]
             [clojure.java.io :as io]
+            [clojure.set :as set]
             [ring.util.response :as r]
             [ring.util.request :as request]
             [ring.util.codec :as codec]
@@ -299,7 +300,7 @@
         (GET "/" {params :params headers :headers context :request-context}
           (find-concept-by-cmr-concept-id context path-w-extension params headers)))
 
-      ;; Find concepts
+      ;; Find concepts:1
       (context ["/:path-w-extension" :path-w-extension #"(?:(?:granules)|(?:collections))(?:\..+)?"] [path-w-extension]
         (GET "/" {params :params headers :headers context :request-context query-string :query-string}
           (find-concepts context path-w-extension params headers query-string))
