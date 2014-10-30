@@ -13,7 +13,7 @@
             [cmr.common.concepts :as concepts]))
 
 
-(use-fixtures :each (bootstrap/db-fixture "CPROV1"))
+(use-fixtures :each (bootstrap/db-fixture "CPROV1" "CPROV2"))
 
 ;; Consider doing a concurrency test with db synchronization and Catalog REST updates
 ;; Testing the conflicts
@@ -88,39 +88,49 @@
            :revision-id new-revision-id
            :metadata updated-metadata)))
 
-(defn assert-concept-in-mdb
+(defn assert-concepts-in-mdb
   "TODO"
-  [concept]
-  (is (= concept
-         (dissoc (ingest/get-concept (:concept-id concept)) :revision-date))))
+  [concepts]
+  (doseq [concept concepts]
+    (is (= concept
+           (dissoc (ingest/get-concept (:concept-id concept)) :revision-date)))))
 
 ;; TODO we need tests with multiple collections, inserts, updates, deletes all being different
 ;; and multiple providers
 
-(deftest db-synchronization-test
+(deftest db-synchronize-inserts-test
   (test-env/only-with-real-database
     (let [concept-counter (atom 1)
           coll1-1 (coll-concept concept-counter "CPROV1" "coll1")
           coll1-2 (updated-concept coll1-1)
+          coll2-1 (coll-concept concept-counter "CPROV1" "coll2")
+          coll2-2 (updated-concept coll2-1)
+          coll3-1 (coll-concept concept-counter "CPROV2" "coll3")
+          coll3-2 (updated-concept coll3-1)
+          ;; Collection 4 will not be updated but it will still get a newer revision id
+          coll4-1 (coll-concept concept-counter "CPROV2" "coll4")
+          coll4-2 (assoc coll4-1 :revision-id 2)
+          orig-colls [coll1-1 coll2-1 coll3-1 coll4-1]
+          updated-colls [coll1-2 coll2-2 coll3-2 coll4-2]
           system (bootstrap/system)]
 
-      ;; Save the concept in Catalog REST
-      (cat-rest/insert-concept system coll1-1)
-      ;; Migrate the provider. Catalog REST and Metadata DB are in sync
-      (bootstrap/bulk-migrate-provider "CPROV1")
+      ;; Save the concepts in Catalog REST
+      (cat-rest/insert-concepts system orig-colls)
 
-      (assert-concept-in-mdb coll1-1)
+      ;; Migrate the providers. Catalog REST and Metadata DB are in sync
+      (bootstrap/bulk-migrate-providers "CPROV1" "CPROV2")
 
-      ;; Update the concept in catalog rest.
-      ;; TODO is this a delete and insert or an update? update
-      (cat-rest/update-concept system coll1-2)
+      (assert-concepts-in-mdb orig-colls)
+
+      ;; Update the concepts in catalog rest.
+      (cat-rest/update-concepts system [coll1-2 coll2-2 coll3-2])
 
       ;; Catalog REST and Metadata DB are not in sync now.
       ;; Put them back in sync
       (bootstrap/synchronize-databases)
 
       ;; Check that they are synchronized now with the latest data.
-      (assert-concept-in-mdb coll1-2)
+      (assert-concepts-in-mdb updated-colls)
 
       ;; TODO check that we can search for an item and find it. (all items have been indexed)
 

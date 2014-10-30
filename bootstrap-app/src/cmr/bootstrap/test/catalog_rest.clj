@@ -15,7 +15,8 @@
 (defn- execute-sql
   "Executes the sql which presumably has side effects. Returns nil."
   [system sql]
-  (info "Executing sql:" sql)
+  ;; Uncomment to print out the sql
+  ; (info "Executing sql:" sql)
   (j/execute! (:db system) [sql]))
 
 (defn- create-datasets-table-sql
@@ -91,10 +92,22 @@
   (fn [system concept]
     (:concept-type concept)))
 
+(defn insert-concepts
+  "Inserts all the concepts"
+  [system concepts]
+  (doseq [concept concepts]
+    (insert-concept system concept)))
+
 (defmulti update-concept
   "Updates the concept in the Catalog REST database"
   (fn [system concept]
     (:concept-type concept)))
+
+(defn update-concepts
+  "Updates all the concepts"
+  [system concepts]
+  (doseq [concept concepts]
+    (update-concept system concept)))
 
 (defn- concept-id->numeric-id
   [concept-id]

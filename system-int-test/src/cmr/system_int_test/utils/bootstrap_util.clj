@@ -1,6 +1,7 @@
 (ns cmr.system-int-test.utils.bootstrap-util
   "Contains utilities for working with the bootstrap application."
   (:require [cheshire.core :as json]
+            [clojure.test :refer [is]]
             [clj-http.client :as client]
             [cmr.system-int-test.utils.url-helper :as url]
             [cmr.system-int-test.utils.ingest-util :as ingest]
@@ -38,6 +39,13 @@
                     :connection-manager (url/conn-mgr)})
         body (json/decode (:body response) true)]
     (assoc body :status (:status response))))
+
+(defn bulk-migrate-providers
+  "Bulk migrates all the providers. Assumes they should all be successful"
+  [& provider-ids]
+  (doseq [provider-id provider-ids]
+    (is (= 202
+           (:status (bulk-migrate-provider provider-id))))))
 
 (defn synchronize-databases
   "TODO"
