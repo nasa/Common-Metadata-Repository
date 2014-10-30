@@ -31,6 +31,7 @@
     (util/remove-nil-keys {:identifier concept-id
                            :description summary
                            :accessLevel (odrh/short-name->access-level short-name)
+                           :accessURL (c/related-urls->opendata-access-url related-urls)
                            :programCode odrh/PROGRAM_CODE
                            :bureauCode odrh/BUREAU_CODE
                            :publisher odrh/PUBLISHER

@@ -35,6 +35,11 @@
   [related-urls]
   (:mime-type (first related-urls)))
 
+(defn related-urls->opendata-access-url
+  "Return the opendata 'accessURL' field based on the related-urls"
+  [related-urls]
+  (:url (first related-urls)))
+
 (defmethod es/concept->elastic-doc :collection
   [context concept collection]
   (let [{:keys [concept-id provider-id revision-date format]} concept
@@ -116,6 +121,7 @@
             :summary summary
             :metadata-format (name (mt/base-mime-type-to-format format))
             :opendata-format (related-urls->opendata-format related-urls)
+            :access-url (related-urls->opendata-access-url related-urls)
             :update-time update-time
             :insert-time insert-time
             :associated-difs associated-difs

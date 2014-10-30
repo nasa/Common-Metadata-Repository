@@ -209,6 +209,7 @@
                                     ;; each science keyword
                                     :science-keywords-flat (stored string-field-mapping)
                                     :opendata-format (stored string-field-mapping)
+                                    :access-url (stored string-field-mapping)
 
                                     ;; analyzed field for keyword searches
                                     :keyword text-field-mapping

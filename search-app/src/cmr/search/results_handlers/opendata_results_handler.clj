@@ -41,6 +41,7 @@
    "short-name"
    "project-sn"
    "opendata-format"
+   "access-url"
    "access-value" ;; needed for acl enforcment
    ])
 
@@ -57,6 +58,7 @@
           [access-value] :access-value
           [science-keywords-flat] :science-keywords-flat
           [opendata-format] :opendata-format
+          [access-url] :access-url
           [entry-title] :entry-title} :fields} elastic-result]
     {:id concept-id
      :score (r/normalize-score score)
@@ -67,6 +69,7 @@
      :insert-time insert-time
      :concept-type :collection
      :opendata-format opendata-format
+     :access-url access-url
      :project-sn project-sn
      :provider-id provider-id
      :access-value access-value ;; needed for acl enforcment
@@ -85,7 +88,7 @@
   "Converts a search result item to opendata."
   [context concept-type item]
   (let [{:keys [id summary short-name project-sn update-time insert-time provider-id access-value
-                keywords entry-title opendata-format]} item]
+                keywords entry-title opendata-format access-url]} item]
     (println (str "FORMAT....." opendata-format))
     (util/remove-nil-keys {:title entry-title
                            :description summary
@@ -99,7 +102,7 @@
                            :bureauCode BUREAU_CODE
                            :programCode PROGRAM_CODE
                            ;; TODO :accessLevelComment :access-constraints
-                           ;; TODO :accessURL
+                           :accessURL access-url
                            :format opendata-format
                            ;; TODO :spatial
                            ;; TODO :temporal
