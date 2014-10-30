@@ -12,7 +12,7 @@
             [cheshire.core :as json]
             [cmr.common.util :as util]
             [cmr.search.results-handlers.opendata-results-handler :as odrh]
-            [cmr.indexer.data.concepts.collection :as c])
+            [cmr.umm.related-url-helper :as ru])
   (:import cmr.umm.collection.UmmCollection
            cmr.spatial.mbr.Mbr))
 
@@ -31,13 +31,13 @@
     (util/remove-nil-keys {:identifier concept-id
                            :description summary
                            :accessLevel (odrh/short-name->access-level short-name)
-                           :accessURL (c/related-urls->opendata-access-url related-urls)
+                           :accessURL (ru/related-urls->opendata-access-url related-urls)
                            :programCode odrh/PROGRAM_CODE
                            :bureauCode odrh/BUREAU_CODE
                            :publisher odrh/PUBLISHER
                            :language odrh/LANGUAGE_CODE
                            :title entry-title
-                           :format (c/related-urls->opendata-format related-urls)
+                           :format (ru/related-urls->opendata-format related-urls)
                            :modified (str update-time)
                            :issued (str insert-time)})))
 
