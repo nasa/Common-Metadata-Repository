@@ -14,6 +14,7 @@
             [cmr.common.cache :as cache]
             [cmr.common.services.errors :as svc-errors]
             [cmr.common.mime-types :as mt]
+            [cmr.common.xml :as cx]
             [cmr.search.services.query-service :as query-svc]
             [cmr.system-trace.http :as http-trace]
             [cmr.search.services.parameters.legacy-parameters :as lp]
@@ -28,7 +29,7 @@
             [cmr.search.results-handlers.atom-json-results-handler]
             [cmr.search.results-handlers.reference-results-handler]
             [cmr.search.results-handlers.kml-results-handler]
-            [cmr.search.results-handlers.metadata-results-handler :as mrh]
+            [cmr.search.results-handlers.metadata-results-handler]
             [cmr.search.results-handlers.query-specified-results-handler]
             [cmr.search.results-handlers.timeline-results-handler]
 
@@ -226,14 +227,6 @@
         results (query-svc/find-concepts-by-aql context params aql)]
     (search-response params results)))
 
-(defn- concept->response-body
-  "Returns the response body of concept metadata potentially prettified if necessary"
-  [concept params]
-  (let [{:keys [format metadata]} concept
-        concept-format (mt/mime-type->format format)
-        pretty? (= "true" (:pretty params))]
-    (mrh/prettified-xml (:metadata concept) pretty? concept-format [])))
-
 (defn- find-concept-by-cmr-concept-id
   "Invokes query service to find concept metadata by cmr concept id and returns the response"
   [context path-w-extension params headers]
@@ -243,10 +236,14 @@
                                                  "application/xml")
         concept-id (path-w-extension->concept-id path-w-extension)
         _ (info (format "Search for concept with cmr-concept-id [%s]" concept-id))
-        concept (query-svc/find-concept-by-id context result-format concept-id)]
+        concept (query-svc/find-concept-by-id context result-format concept-id)
+        {:keys [metadata]} concept
+        body (if (= "true" (:pretty params))
+               (cx/pretty-print-xml metadata)
+               metadata)]
     {:status 200
      :headers {CONTENT_TYPE_HEADER (str (:format concept) "; charset=utf-8")}
-     :body (concept->response-body concept params)}))
+     :body body}))
 
 (defn- get-provider-holdings
   "Invokes query service to retrieve provider holdings and returns the response"

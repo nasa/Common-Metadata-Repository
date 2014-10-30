@@ -157,46 +157,6 @@
       (x/emit-str (frf/facets->xml-element facets)))
     ""))
 
-(defmulti fix-parsed-xml-namespace
-  "Since clojure.data.xml does not handle namespaces fully from parse-str to emit-str,
-  we fix the parsed xml namespace by assuming DIF will always have a fixed namespace definition
-  and ECHO10 will be stripped off any namespace definitions."
-  (fn [parsed result-format concept-path]
-    result-format))
-
-(defmethod fix-parsed-xml-namespace :dif
-  [parsed result-format concept-path]
-  (cx/update-elements-at-path
-    parsed concept-path
-    assoc :attrs dif-c/dif-header-attributes))
-
-(defmethod fix-parsed-xml-namespace :echo10
-  [parsed result-format concept-path]
-  (cx/update-elements-at-path
-    parsed concept-path
-    assoc :attrs {}))
-
-(defmethod fix-parsed-xml-namespace :default
-  [parsed result-format concept-path]
-  parsed)
-
-(defn prettified-xml
-  "Returns the prettified xml after fixing the xml namespace attributes on the given concept-path"
-  [xml pretty? result-format concept-path]
-  ;; Since clojure.data.xml does not handle namespaces fully from parse-str to emit-str,
-  ;; we don't support pretty print for ISO result which has namespace prefixes on element names.
-  (if (and pretty? (not (= :iso19115 result-format)))
-    (let [parsed (-> (x/parse-str xml)
-                     (fix-parsed-xml-namespace result-format concept-path))]
-      (x/indent-str parsed))
-    xml))
-
-(def search-results-concept-path
-  "Defines the result-format and concept-type to search results concept path mapping"
-  {[:dif :collection] [:result :DIF]
-   [:echo10 :collection] [:result :Collection]
-   [:echo10 :granule] [:result :Granule]})
-
 (defn search-results->metadata-response
   [context query results]
   (let [{:keys [hits took items facets]} results
@@ -212,8 +172,9 @@
         facets-strs (when-not echo-compatible? [(facets->xml-string facets)])
         footers ["</results>"]
         response (apply str (concat headers result-strings facets-strs footers))]
-    (prettified-xml response pretty? result-format
-                    (get search-results-concept-path [result-format concept-type]))))
+    (if pretty?
+      (cx/pretty-print-xml response)
+      response)))
 
 (defmethod qs/search-results->response :echo10
   [context query results]
