@@ -4,7 +4,6 @@
             [compojure.core :refer :all]
             [clojure.string :as str]
             [clojure.java.io :as io]
-            [clojure.set :as set]
             [ring.util.response :as r]
             [ring.util.request :as request]
             [ring.util.codec :as codec]
@@ -165,36 +164,20 @@
          mime-type (or ext-mime-type
                        (mt/mime-type-from-headers headers valid-mime-types)
                        default-mime-type)]
+     ;; this validate check retained here to fail early if search accept headers are
+     ;; not in search-result-supported-mime-types.
+     ;; Concept specific format validation done by result-format validator.
      (mt/validate-request-mime-type mime-type valid-mime-types)
      ;; set the default format to xml
      (mt/mime-type->format mime-type default-mime-type))))
 
-(defn- get-search-results-format-by-concept
-  "Establishes valid mime types by concept and delegates requested search results format determination to get-search-results-format fn."
-  [concept-type path-w-extension headers default-mime-type]
-  (let [invalid-gran-mime-types #{"application/dif+xml"}
-        invalid-coll-mime-types #{}
-        gran-mime-types (set/difference search-result-supported-mime-types invalid-gran-mime-types)
-        coll-mime-types (set/difference search-result-supported-mime-types invalid-coll-mime-types)]
-    (cond
-      (= :collection concept-type)
-      (get-search-results-format path-w-extension headers coll-mime-types default-mime-type)
-      (= :granule concept-type)
-      (get-search-results-format path-w-extension headers gran-mime-types default-mime-type)
-      :else (get-search-results-format path-w-extension headers default-mime-type))))
-
 (defn process-params
   "Processes the parameters by removing unecessary keys and adding other keys like result format."
-  ([params path-w-extension headers default-mime-type]
+  [params path-w-extension headers default-mime-type]
    (-> params
        (dissoc :path-w-extension)
        (dissoc :token)
        (assoc :result-format (get-search-results-format path-w-extension headers default-mime-type))))
-  ([concept-type params path-w-extension headers default-mime-type]
-   (-> params
-       (dissoc :path-w-extension)
-       (dissoc :token)
-       (assoc :result-format (get-search-results-format-by-concept concept-type path-w-extension headers default-mime-type)))))
 
 (defn- search-response
   "Generate the response map for finding concepts by params or AQL."
@@ -213,7 +196,7 @@
             context (-> context
                         (acl/add-authentication-to-context params headers)
                         (assoc :query-string query-string))
-            params (process-params concept-type params path-w-extension headers "application/xml")
+            params (process-params params path-w-extension headers "application/xml")
             result-format (:result-format params)
             _ (info (format "Searching for %ss from client %s in format %s with params %s."
                             (name concept-type) (:client-id context) result-format
@@ -316,7 +299,7 @@
         (GET "/" {params :params headers :headers context :request-context}
           (find-concept-by-cmr-concept-id context path-w-extension params headers)))
 
-      ;; Find concepts
+      ;; Find concepts:1
       (context ["/:path-w-extension" :path-w-extension #"(?:(?:granules)|(?:collections))(?:\..+)?"] [path-w-extension]
         (GET "/" {params :params headers :headers context :request-context query-string :query-string}
           (find-concepts context path-w-extension params headers query-string))
