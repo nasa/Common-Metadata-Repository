@@ -74,7 +74,6 @@
             [cmr.search.services.xslt :as xslt]
             [camel-snake-kebab :as csk]
             [cheshire.core :as json]
-            [clojure.pprint :as pprint]
             [cmr.common.log :refer (debug info warn error)]))
 
 (deftracefn validate-query

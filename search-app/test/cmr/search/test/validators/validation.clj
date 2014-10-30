@@ -27,11 +27,19 @@
                                  (assoc sample-query
                                         :concept-type concept-type
                                         :result-format result-format))))
+         [] :collection :xml
          [] :collection :json
-         [] :granule :json
-         [] :collection :atom
-         [] :granule :atom
+         [] :collection :echo10
          [] :collection :dif
-         ["The mime type [application/dif+xml] is not supported for granules."] :granule :dif)))
-
-
+         [] :collection :atom
+         [] :collection :iso19115
+         [] :collection :csv
+         [] :collection :kml
+         [] :granule :xml
+         [] :granule :json
+         [] :granule :echo10
+         ["The mime type [application/dif+xml] is not supported for granules."] :granule :dif
+         [] :granule :atom
+         [] :granule :iso19115
+         [] :granule :csv
+         [] :granule :kml)))
