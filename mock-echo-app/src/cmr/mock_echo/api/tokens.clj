@@ -88,6 +88,7 @@
         (GET "/current_sids" {context :request-context}
           ;; Does not require sys admin token
           (if (= "expired-token" token-id)
+            ;; echo-rest returns status code 400 for request with expired token
             (ah/status-bad-request {:errors ["Token [expired-token] has expired."]})
             (ah/status-ok (get-current-sids context token-id))))
         (GET "/token_info" {context :request-context headers :headers }
