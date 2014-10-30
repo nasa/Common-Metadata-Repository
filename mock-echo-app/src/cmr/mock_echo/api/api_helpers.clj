@@ -20,6 +20,12 @@
    :headers {"Content-type" "application/json"}
    :body (prepare-body body)})
 
+(defn status-bad-request
+  [body]
+  {:status 400
+   :headers {"Content-type" "application/json"}
+   :body (prepare-body body)})
+
 (defn status-created
   [body]
   {:status 201

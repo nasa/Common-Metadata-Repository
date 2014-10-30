@@ -87,7 +87,9 @@
           {:status 200})
         (GET "/current_sids" {context :request-context}
           ;; Does not require sys admin token
-          (ah/status-ok (get-current-sids context token-id)))
+          (if (= "expired-token" token-id)
+            (ah/status-bad-request {:errors ["Token [expired-token] has expired."]})
+            (ah/status-ok (get-current-sids context token-id))))
         (GET "/token_info" {context :request-context headers :headers }
           (ah/require-sys-admin-token headers)
           (ah/status-ok (get-token-info context token-id)))))
