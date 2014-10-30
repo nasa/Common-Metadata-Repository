@@ -4,6 +4,7 @@
             [cmr.common.log :refer (debug info warn error)]
             [clojure.java.jdbc :as j]
             [clojure.string :as str]
+            [clojure.set :as set]
             [sqlingvo.core :as sql :refer [sql select insert from where with order-by desc delete as]]
             [cmr.metadata-db.data.oracle.sql-utils :as su]
             [cmr.bootstrap.data.migration-utils :as mu]
@@ -19,18 +20,6 @@
 (def BATCH_SIZE 1000)
 
 (comment
-
-
-  async/timeout
-  async/alts!!
-
-  (let [main (async/chan)]
-    (go
-      (Thread/sleep 200)
-      (>! main :hello))
-    (println (async/alts!! [main (async/timeout 500)]))
-    )
-
 
   (def system (get-in user/system [:apps :bootstrap]))
 
@@ -79,21 +68,25 @@
         partial-ins (when (> num-in-partial 0) [(make-in num-in-partial)])]
     (str/join " or " (concat full-ins partial-ins))))
 
+
 (defn get-latest-concept-id-revision-ids
   "Finds the revision ids for the given concept ids in metadata db. Returns tuples of concept id and
   revision id"
   [system provider-id concept-type concept-ids]
-  ;; TODO handle the case that the item doesn't exist in the metadata db
-  ;; It won't be returned from this query and should be revision id 1
   (let [sql (format
               "select concept_id, revision_id from %s where %s"
               (tables/get-table-name provider-id concept-type)
               (in-clause "concept_id" (count concept-ids)))
-        stmt (cons sql concept-ids)]
-    (mapv (fn [{:keys [concept_id revision_id]}]
-            {:concept-id concept_id
-             :revision-id (long revision_id)})
-          (sql-utils/query (:db system) stmt))))
+        stmt (cons sql concept-ids)
+        tuples (mapv (fn [{:keys [concept_id revision_id]}]
+                       [concept_id (long revision_id)])
+                     (sql-utils/query (:db system) stmt))]
+    (concat tuples
+            ;; Find concept ids that didn't exist in Metadata DB at all.
+            ;; A revision 0 indicates they don't exist yet. This will be incremented to the first
+            ;; revision number of 1.
+            (for [concept-id (set/difference (set concept-ids) (set (map first tuples)))]
+              [concept-id 0]))))
 
 (defmulti get-concept-from-catalog-rest
   "TODO"
@@ -129,32 +122,6 @@
   ;; TODO implement this
   )
 
-(defn- <!t
-  "Similar to the existing core.async read method except can timeout. Returns nil if it times out.
-  Must be called within a go block."
-  ([c]
-   (<!t c 15000))
-  ([c msecs]
-
-   (let [timeout-chan (async/timeout msecs)
-         [v port] (async/alts! [c (async/timeout msecs)] :priority true)]
-     (when (identical? timeout-chan port)
-       ;; a timeout occurred
-       (throw (Exception. "Timeout reading")))
-     v)))
-
-(defn- <!!t
-  "Similar to the existing core.async read method except can timeout. Returns nil if it times out."
-  ([c]
-   (<!t c 15000))
-  ([c msecs]
-   (let [timeout-chan (async/timeout msecs)
-         [v port] (async/alts!! [c (async/timeout msecs)] :priority true)]
-     (when (identical? timeout-chan port)
-       ;; a timeout occurred
-       (throw (Exception. "Timeout reading")))
-     v)))
-
 (defn process-items-from-work-table
   "TODO"
   [system]
@@ -184,8 +151,8 @@
           (when-let [items (<! missing-items-chan)]
             (do
               (debug "map-missing-items-to-concepts: Received" (count items) "items")
-              (doseq [{:keys [concept-id revision-id]} (get-latest-concept-id-revision-ids
-                                                         system provider-id concept-type items)]
+              (doseq [[concept-id revision-id] (get-latest-concept-id-revision-ids
+                                                 system provider-id concept-type items)]
                 (debug "map-missing-items-to-concepts: Processing" concept-id "-" revision-id)
                 (>! concepts-chan (get-concept-from-catalog-rest
                                     system provider-id concept-type concept-id (inc revision-id))))

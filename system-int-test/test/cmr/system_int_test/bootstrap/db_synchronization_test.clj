@@ -32,17 +32,19 @@
     (def concept-counter (atom 0))
     (def coll1-1 (coll-concept concept-counter "CPROV1" "coll1"))
     (def coll1-2 (updated-concept coll1-1))
+    (def coll2-1 (coll-concept concept-counter "CPROV1" "coll2"))
 
     (cat-rest/insert-concept (bootstrap/system) coll1-1)
     (bootstrap/bulk-migrate-provider "CPROV1")
-    (assert-concept-in-mdb coll1-1)
+    (assert-concepts-in-mdb [coll1-1])
 
-    (cat-rest/update-concept (bootstrap/system) coll1-2))
+    (cat-rest/update-concept (bootstrap/system) coll1-2)
+    (cat-rest/insert-concept (bootstrap/system) coll2-1))
 
 
   (bootstrap/synchronize-databases)
 
-    (assert-concept-in-mdb coll1-2)
+  (assert-concepts-in-mdb [coll1-2 (assoc coll2-1 :revision-id 2)])
 
   (bootstrap/db-fixture-tear-down "CPROV1")
 
@@ -110,8 +112,11 @@
           ;; Collection 4 will not be updated but it will still get a newer revision id
           coll4-1 (coll-concept concept-counter "CPROV2" "coll4")
           coll4-2 (assoc coll4-1 :revision-id 2)
+
+          ;; Collection 5 will be a new one
+          coll5-1 (coll-concept concept-counter "CPROV2" "coll5")
           orig-colls [coll1-1 coll2-1 coll3-1 coll4-1]
-          updated-colls [coll1-2 coll2-2 coll3-2 coll4-2]
+          updated-colls [coll1-2 coll2-2 coll3-2 coll4-2 coll5-1]
           system (bootstrap/system)]
 
       ;; Save the concepts in Catalog REST
@@ -124,6 +129,9 @@
 
       ;; Update the concepts in catalog rest.
       (cat-rest/update-concepts system [coll1-2 coll2-2 coll3-2])
+      ;; Collection 5 is inserted for the first time so it's not yet in Metadata DB
+      (cat-rest/insert-concept system coll5-1)
+
 
       ;; Catalog REST and Metadata DB are not in sync now.
       ;; Put them back in sync

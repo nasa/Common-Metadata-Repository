@@ -79,9 +79,11 @@
   the current maximum revision-id for this concept."
   [db concept previous-revision]
   (let [{:keys [concept-id concept-type provider-id revision-id]} concept
-        latest-revision (or previous-revision (c/get-concept db concept-type provider-id concept-id))
+        latest-revision (or previous-revision
+                            (c/get-concept db concept-type provider-id concept-id)
+                            ;; or it doesn't exist and the next should be 1
+                            {:revision-id 0})
         expected-revision-id (inc (:revision-id latest-revision))]
-    (cmr.common.dev.capture-reveal/capture revision-id expected-revision-id)
     (if (= revision-id expected-revision-id)
       {:status :pass}
       {:status :fail
