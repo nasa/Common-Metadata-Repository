@@ -30,6 +30,11 @@
         :else
         (errors/internal-error! (str "Unknown spatial representation [" sr "]"))))))
 
+(defn related-urls->opendata-format
+  "Return the opendata 'format' field based on the related-urls"
+  [related-urls]
+  (:mime-type (first related-urls)))
+
 (defmethod es/concept->elastic-doc :collection
   [context concept collection]
   (let [{:keys [concept-id provider-id revision-date format]} concept
@@ -110,6 +115,7 @@
             :atom-links atom-links
             :summary summary
             :metadata-format (name (mt/base-mime-type-to-format format))
+            :opendata-format (related-urls->opendata-format related-urls)
             :update-time update-time
             :insert-time insert-time
             :associated-difs associated-difs

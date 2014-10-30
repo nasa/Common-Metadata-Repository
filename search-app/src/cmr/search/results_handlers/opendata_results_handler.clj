@@ -40,13 +40,12 @@
    "concept-id"
    "short-name"
    "project-sn"
-   "_score"
-   "provider-id"
+   "opendata-format"
    "access-value" ;; needed for acl enforcment
    ])
 
-(defn- collection-elastic-result->query-result-item
-  [elastic-result]
+(defmethod elastic-results/elastic-result->query-result-item :opendata
+  [_ _ elastic-result]
   (let [{concept-id :_id
          score :_score
          {[short-name] :short-name
@@ -57,6 +56,7 @@
           [project-sn] :project-sn
           [access-value] :access-value
           [science-keywords-flat] :science-keywords-flat
+          [opendata-format] :opendata-format
           [entry-title] :entry-title} :fields} elastic-result]
     {:id concept-id
      :score (r/normalize-score score)
@@ -66,9 +66,10 @@
      :update-time update-time
      :insert-time insert-time
      :concept-type :collection
+     :opendata-format opendata-format
      :project-sn project-sn
      :provider-id provider-id
-     :access-value access-value
+     :access-value access-value ;; needed for acl enforcment
      :keywords science-keywords-flat
      :entry-title entry-title}))
 
@@ -79,22 +80,13 @@
     "restricted public"
     "public"))
 
-(defmethod elastic-results/elastic-results->query-results :opendata
-  [context query elastic-results]
-  (let [hits (get-in elastic-results [:hits :total])
-        elastic-matches (get-in elastic-results [:hits :hits])
-        items (map collection-elastic-result->query-result-item elastic-matches)]
-    (r/map->Results {:hits hits :items items :result-format (:result-format query)})))
 
-(defmulti result->opendata
+(defn result->opendata
   "Converts a search result item to opendata."
-  (fn [context concept-type item]
-    concept-type))
-
-(defmethod result->opendata :collection
   [context concept-type item]
   (let [{:keys [id summary short-name project-sn update-time insert-time provider-id access-value
-                keywords entry-title]} item]
+                keywords entry-title opendata-format]} item]
+    (println (str "FORMAT....." opendata-format))
     (util/remove-nil-keys {:title entry-title
                            :description summary
                            :keyword keywords
@@ -108,7 +100,7 @@
                            :programCode PROGRAM_CODE
                            ;; TODO :accessLevelComment :access-constraints
                            ;; TODO :accessURL
-                           ;; TODO :format
+                           :format opendata-format
                            ;; TODO :spatial
                            ;; TODO :temporal
                            :theme (not-empty (str/join "," project-sn))
@@ -119,12 +111,8 @@
                            ;; TODO :references related-urls
                            :issued insert-time})))
 
-(defmulti results->opendata
+(defn results->opendata
   "Convert search results to opendata."
-  (fn [context concept-type results]
-    concept-type))
-
-(defmethod results->opendata :collection
   [context concept-type results]
   (let [{:keys [items]} results]
     (map (partial result->opendata context concept-type) items)))

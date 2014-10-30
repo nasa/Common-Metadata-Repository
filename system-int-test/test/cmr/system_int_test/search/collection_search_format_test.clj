@@ -247,7 +247,7 @@
 (deftest search-collection-various-formats
   (let [ru1 (dc/related-url "GET DATA" "http://example.com")
         ru2 (dc/related-url "GET DATA" "http://example2.com")
-        ru3 (dc/related-url "GET RELATED VISUALIZATION" "http://example.com/browse")
+        ru3 (dc/related-url "GET RELATED VISUALIZATION" "application/xml" "http://example.com/browse")
         op1 {:swath-width 1450.0
              :period 98.88
              :inclination-angle 98.15
@@ -314,7 +314,14 @@
 
     (testing "opendata"
       (let [results (search/find-concepts-opendata :collection {})]
-        (od/assert-collection-opendata-results-match [coll1 coll2 coll3 coll4 coll5] results)))
+        (od/assert-collection-opendata-results-match [coll1 coll2 coll3 coll4 coll5] results))
+      (testing "as extension"
+        (let [results (search/find-concepts-opendata :collection {} {:url-extension "opendata"})]
+          (od/assert-collection-opendata-results-match [coll1 coll2 coll3 coll4 coll5] results)))
+      #_(testing "no opendata support for granules"
+        (is (= {:errors ["The mime type [application/opendata+json] is not supported."],
+                :status 400}
+               (search/find-concepts-opendata :granule {})))))
 
     (testing "ATOM XML"
       (let [coll-atom (da/collections->expected-atom [coll1] "collections.atom?dataset_id=Dataset1")

@@ -11,7 +11,8 @@
             [clojure.test]
             [cheshire.core :as json]
             [cmr.common.util :as util]
-            [cmr.search.results-handlers.opendata-results-handler :as odrh])
+            [cmr.search.results-handlers.opendata-results-handler :as odrh]
+            [cmr.indexer.data.concepts.collection :as c])
   (:import cmr.umm.collection.UmmCollection
            cmr.spatial.mbr.Mbr))
 
@@ -24,7 +25,7 @@
 (defn collection->expected-opendata
   [collection]
   (let [{:keys [short-name keywords project-sn summary entry-title
-                access-value concept-id]} collection
+                access-value concept-id related-urls]} collection
         update-time (get-in collection [:data-provider-timestamps :update-time])
         insert-time (get-in collection [:data-provider-timestamps :insert-time])]
     (util/remove-nil-keys {:identifier concept-id
@@ -35,6 +36,7 @@
                            :publisher odrh/PUBLISHER
                            :language odrh/LANGUAGE_CODE
                            :title entry-title
+                           :format (c/related-urls->opendata-format related-urls)
                            :modified (str update-time)
                            :issued (str insert-time)})))
 

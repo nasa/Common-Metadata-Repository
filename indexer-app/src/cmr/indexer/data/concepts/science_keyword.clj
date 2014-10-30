@@ -7,7 +7,7 @@
   [collection]
   (mapcat (fn [science-keyword]
             (let [{:keys [category topic term]} science-keyword]
-              [category topic term]))
+              (filter identity [category topic term])))
           (:science-keywords collection)))
 
 (defn science-keyword->keywords

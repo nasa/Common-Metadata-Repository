@@ -23,7 +23,7 @@
 
 (def specific-elastic-items-format?
   "The set of formats that are supported for the :specific-elastic-items query execution strategy"
-  #{:json :atom :csv})
+  #{:json :atom :csv :opendata})
 
 (defn- specific-items-query?
   "Returns true if the query is only for specific items."
