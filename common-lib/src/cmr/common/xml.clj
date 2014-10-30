@@ -157,18 +157,15 @@
 (defn pretty-print-xml
   "Returns the pretty printed xml for the given xml string"
   [xml]
-  (try
-    (let [src (InputSource. (StringReader. xml))
-          builder (.newDocumentBuilder (DocumentBuilderFactory/newInstance))
-          document (.getDocumentElement (.parse builder src))
-          ^Boolean keep-declaration (.startsWith xml "<?xml")
-          registry (DOMImplementationRegistry/newInstance)
-          ^DOMImplementationLS impl (.getDOMImplementation registry "LS")
-          writer (.createLSSerializer impl)
-          dom-config (.getDomConfig writer)]
-      (.setParameter dom-config "format-pretty-print" true)
-      (.setParameter dom-config "xml-declaration" keep-declaration)
-      (.writeToString writer document))
-    (catch Throwable e
-      (errors/internal-error! "Failed to pretty print xml" e))))
+  (let [src (InputSource. (StringReader. xml))
+        builder (.newDocumentBuilder (DocumentBuilderFactory/newInstance))
+        document (.getDocumentElement (.parse builder src))
+        ^Boolean keep-declaration (.startsWith xml "<?xml")
+        registry (DOMImplementationRegistry/newInstance)
+        ^DOMImplementationLS impl (.getDOMImplementation registry "LS")
+        writer (.createLSSerializer impl)
+        dom-config (.getDomConfig writer)]
+    (.setParameter dom-config "format-pretty-print" true)
+    (.setParameter dom-config "xml-declaration" keep-declaration)
+    (.writeToString writer document)))
 
