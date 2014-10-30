@@ -8,10 +8,8 @@
             ;; Must be required to be available.
             [cmr.spatial.geodetic-ring-validations]))
 
-;; Records search result supported formats by concept.
-;; TODO - its hard to discover supported search result formats are maintained here.
-;; Find a better way.
 (def concept-type->supported-result-formats
+  "Supported search result formats by concept."
   {:collection #{:xml, :json, :echo10, :dif, :atom, :iso19115, :csv, :kml}
    :granule #{:xml, :json, :echo10, :atom, :iso19115, :csv, :kml}})
 
@@ -19,9 +17,11 @@
   "Validate requested search result format."
   [concept-type result-format]
   (let [mime-type (mt/format->mime-type result-format)
-        valid-mime-types (set (map #(mt/format->mime-type %)
+        valid-mime-types (set (map mt/format->mime-type
                                    (concept-type->supported-result-formats concept-type)))]
-    (mt/validate-request-mime-type mime-type valid-mime-types)))
+    (if-not (get valid-mime-types mime-type)
+      [(format "The mime type [%s] is not supported for %ss." mime-type (name concept-type))]
+      [])))
 
 (defprotocol Validator
   "Defines the protocol for validating query conditions.
@@ -34,8 +34,10 @@
   cmr.search.models.query.Query
   (validate
     [{:keys [concept-type result-format condition]}]
-    (validate-result-format concept-type result-format)
-    (validate condition))
+    (let [errors (validate-result-format concept-type result-format)]
+      (if-not (empty? errors)
+        errors
+        (validate condition))))
 
   cmr.search.models.query.ConditionGroup
   (validate

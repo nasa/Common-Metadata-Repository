@@ -164,9 +164,9 @@
          mime-type (or ext-mime-type
                        (mt/mime-type-from-headers headers valid-mime-types)
                        default-mime-type)]
-     ;; this validate check retained here to fail early if search accept headers are
+     ;; This validate check retained here to fail early if search accept headers are
      ;; not in search-result-supported-mime-types.
-     ;; Concept specific format validation done by result-format validator.
+     ;; Concept specific format validation done during query validation.
      (mt/validate-request-mime-type mime-type valid-mime-types)
      ;; set the default format to xml
      (mt/mime-type->format mime-type default-mime-type))))
@@ -299,7 +299,7 @@
         (GET "/" {params :params headers :headers context :request-context}
           (find-concept-by-cmr-concept-id context path-w-extension params headers)))
 
-      ;; Find concepts:1
+      ;; Find concepts
       (context ["/:path-w-extension" :path-w-extension #"(?:(?:granules)|(?:collections))(?:\..+)?"] [path-w-extension]
         (GET "/" {params :params headers :headers context :request-context query-string :query-string}
           (find-concepts context path-w-extension params headers query-string))
