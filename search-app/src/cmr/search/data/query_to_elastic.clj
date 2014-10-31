@@ -204,7 +204,7 @@
   (condition->elastic
     [{:keys [field min-value max-value]} concept-type]
     (range-condition->elastic (query-field->elastic-field field concept-type)
-                              min-value max-value "fielddata"))
+                              min-value max-value "index"))
 
   cmr.search.models.query.NumericRangeIntersectionCondition
   (condition->elastic
@@ -212,19 +212,19 @@
     {:or [(range-condition->elastic (query-field->elastic-field min-field concept-type)
                                     min-value
                                     max-value
-                                    "fielddata")
+                                    "index")
           (range-condition->elastic (query-field->elastic-field max-field concept-type)
                                     min-value
                                     max-value
-                                    "fielddata")
+                                    "index")
           {:and [(range-condition->elastic (query-field->elastic-field min-field concept-type)
                                            nil
                                            min-value
-                                           "fielddata")
+                                           "index")
                  (range-condition->elastic (query-field->elastic-field max-field concept-type)
                                            max-value
                                            nil
-                                           "fielddata")]}]})
+                                           "index")]}]})
 
   cmr.search.models.query.StringRangeCondition
   (condition->elastic

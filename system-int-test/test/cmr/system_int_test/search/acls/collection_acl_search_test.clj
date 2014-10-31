@@ -27,6 +27,10 @@
   (is (= {:errors ["Token ABC123 does not exist"], :status 401}
          (search/find-refs :collection {:token "ABC123"}))))
 
+(deftest expired-security-token-test
+  (is (= {:errors ["Token [expired-token] has expired."], :status 401}
+         (search/find-refs :collection {:token "expired-token"}))))
+
 (deftest collection-search-with-acls-test
   ;; Grant permissions before creating data
   ;; Grant guests permission to coll1

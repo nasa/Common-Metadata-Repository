@@ -2,7 +2,9 @@
   "Contains functions for working with tokens using the echo-rest api."
   (:require [cmr.transmit.echo.rest :as r]
             [cmr.transmit.echo.conversion :as c]
-            [cmr.common.services.errors :as errors]))
+            [cmr.common.services.errors :as errors]
+            [clojure.string :as s]
+            [cheshire.core :as json]))
 
 (defn login
   "Logs into ECHO and returns the token"
@@ -39,5 +41,7 @@
       401 (errors/throw-service-error
             :unauthorized
             (format "Token %s does not exist" token))
+      ;; catalog-rest returns 401 when echo-rest returns 400 for expired token, we do the same in CMR
+      400 (errors/throw-service-error :unauthorized (s/join ", " (:errors (json/decode body true))))
       (r/unexpected-status-error! status body))))
 
