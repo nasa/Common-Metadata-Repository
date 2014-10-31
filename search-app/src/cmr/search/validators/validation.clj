@@ -16,12 +16,9 @@
 (defn validate-result-format
   "Validate requested search result format."
   [concept-type result-format]
-  (let [mime-type (mt/format->mime-type result-format)
-        valid-mime-types (set (map mt/format->mime-type
-                                   (concept-type->supported-result-formats concept-type)))]
-    (if-not (get valid-mime-types mime-type)
-      [(format "The mime type [%s] is not supported for %ss." mime-type (name concept-type))]
-      [])))
+  (let [mime-type (mt/format->mime-type result-format)]
+    (when-not (get (concept-type->supported-result-formats concept-type) result-format)
+      [(format "The mime type [%s] is not supported for %ss." mime-type (name concept-type))])))
 
 (defprotocol Validator
   "Defines the protocol for validating query conditions.
@@ -35,9 +32,7 @@
   (validate
     [{:keys [concept-type result-format condition]}]
     (let [errors (validate-result-format concept-type result-format)]
-      (if-not (empty? errors)
-        errors
-        (validate condition))))
+      (if (seq errors) errors (validate condition))))
 
   cmr.search.models.query.ConditionGroup
   (validate
