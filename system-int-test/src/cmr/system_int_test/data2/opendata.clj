@@ -12,7 +12,8 @@
             [cheshire.core :as json]
             [cmr.common.util :as util]
             [cmr.search.results-handlers.opendata-results-handler :as odrh]
-            [cmr.umm.related-url-helper :as ru])
+            [cmr.umm.related-url-helper :as ru]
+            [cmr.umm.temporal :as temporal])
   (:import cmr.umm.collection.UmmCollection
            cmr.spatial.mbr.Mbr))
 
@@ -27,7 +28,12 @@
   (let [{:keys [short-name keywords project-sn summary entry-title
                 access-value concept-id related-urls]} collection
         update-time (get-in collection [:data-provider-timestamps :update-time])
-        insert-time (get-in collection [:data-provider-timestamps :insert-time])]
+        insert-time (get-in collection [:data-provider-timestamps :insert-time])
+        temporal (:temporal collection)
+        start-date (temporal/start-date :collection temporal)
+        end-date (temporal/end-date :collection temporal)
+        start-date (when start-date (str/replace (str start-date) #"\.000Z" "Z"))
+        end-date (when end-date (str/replace (str end-date) #"\.000Z" "Z"))]
     (util/remove-nil-keys {:identifier concept-id
                            :description summary
                            :accessLevel (odrh/short-name->access-level short-name)
@@ -39,7 +45,8 @@
                            :title entry-title
                            :format (ru/related-urls->opendata-format related-urls)
                            :modified (str update-time)
-                           :issued (str insert-time)})))
+                           :issued (str insert-time)
+                           :temporal (odrh/temporal start-date end-date)})))
 
 (defn collections->expected-opendata
   [collections]

@@ -10,7 +10,7 @@
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.services.errors :as errors]
             [cmr.umm.related-url-helper :as ru]
-            [cmr.indexer.data.concepts.temporal :as temporal]
+            [cmr.umm.temporal :as temporal]
             [cmr.indexer.data.concepts.attribute :as attrib]
             [cmr.indexer.data.concepts.science-keyword :as sk]
             [cmr.indexer.data.concepts.spatial :as spatial]

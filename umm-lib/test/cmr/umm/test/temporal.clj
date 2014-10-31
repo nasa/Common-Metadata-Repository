@@ -1,4 +1,4 @@
-(ns cmr.indexer.test.data.concepts.temporal
+(ns cmr.umm.test.temporal
   "Tests for temporal to start-date/end-date conversion"
   (:require [clojure.test :refer :all]
             [cmr.umm.collection :as c]

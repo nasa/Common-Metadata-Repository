@@ -12,7 +12,7 @@
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.mime-types :as mt]
             [cmr.common.services.errors :as errors]
-            [cmr.indexer.data.concepts.temporal :as temporal]
+            [cmr.umm.temporal :as temporal]
             [cmr.indexer.data.concepts.attribute :as attrib]
             [cmr.indexer.data.concepts.orbit-calculated-spatial-domain :as ocsd]
             [cmr.indexer.data.concepts.spatial :as spatial]

@@ -93,9 +93,13 @@
 
 (defn temporal
   "Get the temporal field from the start-date and end-date"
+  ;; TODO Eventually this should handle peridoc-date-times as well, but opendata only allows one
+  ;; entry whereas UMM-C allows multiple periodic-date-time entries. This will have to wait until
+  ;; a decision is made about how to resolve multiple periodic-date-time entries.
   [start-date end-date]
-  (when (and start-date end-date)
-    (str start-date "/" end-date)))
+  (not-empty (if (and start-date end-date)
+               (str start-date "/" end-date)
+               start-date)))
 
 (defn result->opendata
   "Converts a search result item to opendata."
