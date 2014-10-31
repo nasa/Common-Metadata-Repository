@@ -42,6 +42,8 @@
    "project-sn"
    "opendata-format"
    "access-url"
+   "start-date"
+   "end-date"
    ;; needed for acl enforcment
    "access-value"
    "provider-id"
@@ -50,7 +52,6 @@
 (defmethod elastic-results/elastic-result->query-result-item :opendata
   [_ _ elastic-result]
   (let [{concept-id :_id
-         score :_score
          {[short-name] :short-name
           [summary] :summary
           [update-time] :update-time
@@ -61,9 +62,12 @@
           [science-keywords-flat] :science-keywords-flat
           [opendata-format] :opendata-format
           [access-url] :access-url
-          [entry-title] :entry-title} :fields} elastic-result]
+          [entry-title] :entry-title
+          [start-date] :start-date
+          [end-date] :end-date} :fields} elastic-result
+        start-date (when start-date (str/replace (str start-date) #"\+0000" "Z"))
+        end-date (when end-date (str/replace (str end-date) #"\+0000" "Z"))]
     {:id concept-id
-     :score (r/normalize-score score)
      :title entry-title
      :short-name short-name
      :summary summary
@@ -73,6 +77,8 @@
      :opendata-format opendata-format
      :access-url access-url
      :project-sn project-sn
+     :start-date start-date
+     :end-date end-date
      :provider-id provider-id
      :access-value access-value ;; needed for acl enforcment
      :keywords science-keywords-flat
@@ -85,12 +91,17 @@
     "restricted public"
     "public"))
 
+(defn temporal
+  "Get the temporal field from the start-date and end-date"
+  [start-date end-date]
+  (when (and start-date end-date)
+    (str start-date "/" end-date)))
 
 (defn result->opendata
   "Converts a search result item to opendata."
   [context concept-type item]
   (let [{:keys [id summary short-name project-sn update-time insert-time provider-id access-value
-                keywords entry-title opendata-format access-url]} item]
+                keywords entry-title opendata-format access-url start-date end-date]} item]
     (util/remove-nil-keys {:title entry-title
                            :description summary
                            :keyword keywords
@@ -106,7 +117,7 @@
                            :accessURL access-url
                            :format opendata-format
                            ;; TODO :spatial
-                           ;; TODO :temporal
+                           :temporal (temporal start-date end-date)
                            :theme (not-empty (str/join "," project-sn))
                            ;; TODO :distribution
                            ;; TODO :accrualPeriodicity
