@@ -318,8 +318,8 @@
       (testing "as extension"
         (let [results (search/find-concepts-opendata :collection {} {:url-extension "opendata"})]
           (od/assert-collection-opendata-results-match [coll1 coll2 coll3 coll4 coll5] results)))
-      #_(testing "no opendata support for granules"
-        (is (= {:errors ["The mime type [application/opendata+json] is not supported."],
+      (testing "no opendata support for granules"
+        (is (= {:errors ["The mime type [application/opendata+json] is not supported for granules."],
                 :status 400}
                (search/find-concepts-opendata :granule {})))))
 
