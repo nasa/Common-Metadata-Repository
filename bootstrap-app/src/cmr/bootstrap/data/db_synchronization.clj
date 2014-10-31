@@ -20,6 +20,14 @@
 ;; TODO document and rename
 (def BATCH_SIZE 1000)
 
+(def NUM_PROCESS_INSERT_THREADS
+  "TODO"
+  5)
+
+(def NUM_PROCESS_DELETE_THREADS
+  "TODO"
+  5)
+
 (comment
 
   (def system (get-in user/system [:apps :bootstrap]))
@@ -28,35 +36,46 @@
 
   (get-work-items-batch system 1 10)
 
-  (get-latest-concept-id-revision-ids system "CPROV1" :collection (get-work-items-batch system 1 10))
+  (get-latest-concept-id-revision-ids system "CPROV1" :collection (map :concept-id (get-work-items-batch system 1 10)))
 
   (get-concept-from-catalog-rest system "CPROV1" :collection "C1-CPROV1" 1)
 
 
 )
 
-(defn add-missing-items-to-work-table
+(defn- truncate-work-table
+  "Removes everything from the sync work table."
+  [system]
+  (j/execute! (:db system) ["delete from sync_work"]))
+
+
+(defn- query-for-concept-rev-id-pairs
+  "Executes the give statement that should find concept_id and revision_id pairs. Returns the results
+  as tuples of concept ids and revision ids."
+  [conn stmt]
+  (mapv (fn [{:keys [concept_id revision_id]}]
+          [concept_id (when revision_id (long revision_id))])
+        (sql-utils/query conn stmt)))
+
+(defn- add-missing-items-to-work-table
   "TODO"
   [system provider-id concept-type]
 
   ;; TODO this sql should be updated to find items that were INGEST_UPDATED_AT > start date and
   ;; INGEST_UPDATED_AT < end date
-  (let [delete-sql "delete from sync_work"
-        sql (format "insert into sync_work (id, concept_id)
+  (truncate-work-table system)
+  (let [sql (format "insert into sync_work (id, concept_id)
                     select ROWNUM, %s from %s"
                     (mu/concept-type->catalog-rest-id-field concept-type)
                     (mu/catalog-rest-table system provider-id concept-type))]
-    (j/with-db-transaction
-      [conn (:db system)]
-      (j/execute! conn [delete-sql])
-      (j/execute! conn [sql]))))
+      (j/execute! (:db system) [sql])))
 
 (defn get-work-items-batch
   "Selects n work items from the table starting at the given index and retrieving up to n items"
   [system start-index n]
-  (let [sql "select id, concept_id from sync_work where id >= ? and id < ?"
+  (let [sql "select concept_id, revision_id from sync_work where id >= ? and id < ?"
         stmt [sql start-index (+ start-index n)]]
-    (mapv :concept_id (sql-utils/query (:db system) stmt))))
+    (query-for-concept-rev-id-pairs (:db system) stmt)))
 
 (defn- in-clause
   "TODO"
@@ -79,9 +98,7 @@
               (tables/get-table-name provider-id concept-type)
               (in-clause "concept_id" (count concept-ids)))
         stmt (cons sql concept-ids)
-        tuples (mapv (fn [{:keys [concept_id revision_id]}]
-                       [concept_id (long revision_id)])
-                     (sql-utils/query (:db system) stmt))]
+        tuples (query-for-concept-rev-id-pairs (:db system) stmt)]
     (concat tuples
             ;; Find concept ids that didn't exist in Metadata DB at all.
             ;; A revision 0 indicates they don't exist yet. This will be incremented to the first
@@ -123,6 +140,10 @@
   ;; TODO implement this
   )
 
+(defn debug-with-prefix
+  [prefix & args]
+  (debug prefix (str/join " " args)))
+
 (defn process-items-from-work-table
   "TODO"
   [system]
@@ -132,14 +153,20 @@
       (try
         (loop [start-index 1]
           (when-let [items (seq (get-work-items-batch system start-index BATCH_SIZE))]
-            (do
-              (debug "process-items-from-work-table: Found" (count items) "items")
-              (>! missing-items-chan items)
-              (recur (+ start-index (count items))))))
+            (debug "process-items-from-work-table: Found" (count items) "items")
+            (>! missing-items-chan items)
+            (recur (+ start-index (count items)))))
         (finally
           (async/close! missing-items-chan)
           (debug "process-items-from-work-table completed"))))
     missing-items-chan))
+
+(defmacro while-let
+  [bindings & body]
+  `(loop []
+     (when-let ~bindings
+       ~@body
+       (recur))))
 
 (defn map-missing-items-to-concepts
   "TODO"
@@ -148,26 +175,18 @@
     (go
       (debug "map-missing-items-to-concepts starting")
       (try
-        (loop []
-          (when-let [items (<! missing-items-chan)]
-            (do
-              (debug "map-missing-items-to-concepts: Received" (count items) "items")
-              (doseq [[concept-id revision-id] (get-latest-concept-id-revision-ids
-                                                 system provider-id concept-type items)]
-                (debug "map-missing-items-to-concepts: Processing" concept-id "-" revision-id)
-                (>! concepts-chan (get-concept-from-catalog-rest
-                                    system provider-id concept-type concept-id (inc revision-id))))
-              (recur))))
+        (while-let [items (<! missing-items-chan)]
+          (debug "map-missing-items-to-concepts: Received" (count items) "items")
+          (doseq [[concept-id revision-id] (get-latest-concept-id-revision-ids
+                                             system provider-id concept-type (map first items))]
+            (debug "map-missing-items-to-concepts: Processing" concept-id "-" revision-id)
+            (>! concepts-chan (get-concept-from-catalog-rest
+                                system provider-id concept-type concept-id (inc revision-id)))))
         (finally
           (async/close! concepts-chan)
           (async/close! missing-items-chan)
           (debug "map-missing-items-to-concepts completed"))))
     concepts-chan))
-
-
-(def NUM_PROCESS_INSERT_THREADS
-  "TODO"
-  5)
 
 (defn process-concept-insert
   "TODO"
@@ -194,12 +213,9 @@
                        (async/thread
                          (log "starting")
                          (try
-                           (loop []
-                             (when-let [concept (<!! concepts-chan)]
-                               (do
-                                 (log "Inserting" (:concept-id concept))
-                                 (process-concept-insert system concept)
-                                 (recur))))
+                           (while-let [concept (<!! concepts-chan)]
+                             (log "Inserting" (:concept-id concept) (:revision-id concept))
+                             (process-concept-insert system concept))
                            (finally
                              (async/close! concepts-chan)
                              (log "completed")))))]
@@ -218,12 +234,128 @@
        (map-missing-items-to-concepts system provider-id concept-type)
        (process-concept-inserts system)))
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Delete code
+
+(defn- truncate-delete-work-table
+  "Removes everything from the sync delete work table."
+  [system]
+  (j/execute! (:db system) ["delete from sync_delete_work"]))
+
+(defn- add-deleted-items-to-delete-work-table
+  "Find items that exist in Metadata DB but do not exist in Catalog REST. This includes all
+  revisions and tombstones. These items are inserted into sync_delete_work."
+  [system provider-id concept-type]
+  (truncate-delete-work-table system)
+  (let [sql (format "insert into sync_delete_work (concept_id, revision_id, deleted)
+                    select concept_id, revision_id, deleted from %s
+                    where concept_id not in (select %s from %s)"
+                    (tables/get-table-name provider-id concept-type)
+                    (mu/concept-type->catalog-rest-id-field concept-type)
+                    (mu/catalog-rest-table system provider-id concept-type))]
+    (j/execute! (:db system) [sql])))
+
+(defn- get-max-of-multi-revisions
+  "Finds the concept id, and maximum revision id of items in the delete work table that have more
+  than one revision."
+  [system]
+  (query-for-concept-rev-id-pairs
+    (:db system)
+    ["select concept_id, max(revision_id) revision_id from sync_delete_work
+     group by concept_id
+     having count(concept_id) > 1"]))
+
+(defn- delete-smaller-revisions
+  "Deletes items from the delete work table that have revision ids smaller than given in the
+  concept id revision id tuples."
+  [system tuples]
+  (when (seq tuples)
+    (apply j/db-do-prepared (:db system)
+           "delete from sync_delete_work where concept_id = ? and revision_id < ?"
+           tuples)))
+
+(defn- transfer-delete-work-items-to-work-table
+  "Copies the items from the sync_delete_work table to the normal work table so that deletes can be
+  processed. Skips items that are tombstones in the delete work table since these will not need
+  deleting in the metadata db."
+  [system]
+  (truncate-work-table system)
+  (j/execute! (:db system)
+              ["insert into sync_work (id, concept_id, revision_id)
+               select rownum, concept_id, revision_id from sync_delete_work
+               where deleted = 0"]))
+
+(defn add-deleted-items-to-work-table
+  "Populates the work table with deleted items. This is a several step process to find the items
+  that are missing and require a tombstone in metadata db."
+  [system provider-id concept-type]
+  ;; Find items that exist in Metadata DB but do not exist in Catalog REST. This includes
+  ;; all revisions and tombstones. These items are inserted into sync_delete_work.
+  (add-deleted-items-to-delete-work-table system provider-id concept-type)
+  ;; Keep the max revision of each concept in sync_delete_work. We do this by getting the maximum
+  ;; revision for each concept having multiple revisions and deleting any less than the max revision
+  (delete-smaller-revisions system (get-max-of-multi-revisions system))
+  ;; Copy the items from sync_delete_work to sync_work. This allows us to add a rownum id for
+  ;; batch processing. We also skip any revisions that are a tombstone.
+  (transfer-delete-work-items-to-work-table system))
+
+(defn map-extra-items-batches-to-deletes
+  "TODO"
+  [system provider-id concept-type item-batch-chan]
+  (let [tuples-chan (async/chan 10)]
+    (go
+      (debug "map-extra-items-batches-to-deletes starting")
+      (try
+        (while-let [items (<! item-batch-chan)]
+          (debug "map-extra-items-batches-to-deletes: Received" (count items) "items")
+          (doseq [[concept-id revision-id] items]
+            (>! tuples-chan [concept-id (inc revision-id)])))
+        (finally
+          (async/close! tuples-chan)
+          (async/close! item-batch-chan)
+          (debug "map-extra-items-batches-to-deletes completed"))))
+    tuples-chan))
+
+
+(defn process-delete
+  "TODO"
+  [system [concept-id revision-id]]
+  (let [mdb-context {:system (:metadata-db system)}
+        indexer-context {:system (:indexer system)}]
+    (concept-service/delete-concept mdb-context concept-id revision-id)
+    (index-service/delete-concept indexer-context concept-id revision-id true))
+  ;; TODO catch conflict failures and log them. They're ok.
+  )
+
+
+(defn process-deletes
+  [system tuples-chan]
+  (let [thread-chans (for [n (range 0 NUM_PROCESS_DELETE_THREADS)
+                           :let [log (fn [& args]
+                                       (debug "process-deletes" n ":" (str/join " " args)))]]
+                       (async/thread
+                         (log "starting")
+                         (try
+                           (while-let [tuple (<!! tuples-chan)]
+                             (log "Deleting" (pr-str tuple))
+                             (process-delete system tuple))
+                           (finally
+                             (async/close! tuples-chan)
+                             (log "completed")))))]
+    ;; Force iteration over all thread chans
+    (doseq [thread-chan (doall thread-chans)]
+      ;; Wait for the thread to close the channel/return a result indicating it's done.
+      (<!! thread-chan))))
+
+
 (defn synchronize-deletes
   "TODO"
   [system provider-id concept-type]
-  ;; TODO implement this
-
-  )
+  (add-deleted-items-to-work-table system provider-id concept-type)
+  (->> (process-items-from-work-table system)
+       (map-extra-items-batches-to-deletes system provider-id concept-type)
+       (process-deletes system)))
 
 (defn synchronize-databases
   "TODO"

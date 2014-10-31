@@ -109,6 +109,17 @@
   (doseq [concept concepts]
     (update-concept system concept)))
 
+(defmulti delete-concept
+  "Deletes the concept in the Catalog REST database"
+  (fn [system concept]
+    (:concept-type concept)))
+
+(defn delete-concepts
+  "Deletes all the concepts"
+  [system concepts]
+  (doseq [concept concepts]
+    (delete-concept system concept)))
+
 (defn- concept-id->numeric-id
   [concept-id]
   (-> concept-id concepts/parse-concept-id :sequence-number))
@@ -145,6 +156,14 @@
                   numeric-id]]
     (j/db-do-prepared (:db system) stmt sql-args)))
 
+(defmethod delete-concept :collection
+  [system concept]
+  (let [{:keys [provider-id concept-id]} concept
+        table (mu/catalog-rest-table system provider-id :collection)
+        numeric-id (concept-id->numeric-id concept-id)
+        stmt (format "delete from %s where id = ?" table)]
+    (j/db-do-prepared (:db system) stmt [numeric-id])))
+
 ;; Note that this assumes the native id of the granule is the granule ur.
 (defmethod insert-concept :granule
   [system concept]
@@ -165,7 +184,7 @@
 
 ;; TODO update concept for granule
 
-;; TODO delete concept for granule and collection
+;; TODO delete concept for granule
 
 
 (comment
