@@ -164,6 +164,9 @@
          mime-type (or ext-mime-type
                        (mt/mime-type-from-headers headers valid-mime-types)
                        default-mime-type)]
+     ;; This validate check retained here to fail early if search accept headers are
+     ;; not in search-result-supported-mime-types.
+     ;; Concept specific format validation done during query validation.
      (mt/validate-request-mime-type mime-type valid-mime-types)
      ;; set the default format to xml
      (mt/mime-type->format mime-type default-mime-type))))
