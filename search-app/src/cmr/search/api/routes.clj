@@ -174,10 +174,10 @@
 (defn process-params
   "Processes the parameters by removing unecessary keys and adding other keys like result format."
   [params path-w-extension headers default-mime-type]
-   (-> params
-       (dissoc :path-w-extension)
-       (dissoc :token)
-       (assoc :result-format (get-search-results-format path-w-extension headers default-mime-type))))
+  (-> params
+      (dissoc :path-w-extension)
+      (dissoc :token)
+      (assoc :result-format (get-search-results-format path-w-extension headers default-mime-type))))
 
 (defn- search-response
   "Generate the response map for finding concepts by params or AQL."
