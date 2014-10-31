@@ -37,6 +37,7 @@
         (info "Unsupported operation: " op))
 
       (catch Throwable e
-        (error e (.getMessage e)))))
+        (error e (.getMessage e))
+        (System/exit 1))))
 
   (System/exit 0))
