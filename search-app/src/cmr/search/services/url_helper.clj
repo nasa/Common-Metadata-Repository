@@ -1,5 +1,6 @@
 (ns cmr.search.services.url-helper
-  "Defines functions to construct search urls")
+  "Defines functions to construct search urls"
+  (:require [cmr.common.config :as cfg]))
 
 (defn search-root
   "Returns the url root for search app"
@@ -19,3 +20,6 @@
   (let [{:keys [query-string]} context
         query-string (if (empty? query-string) "" (str "?" query-string))]
     (format "%s%ss.%s%s" (search-root context) (name concept-type) (name result-format) query-string)))
+
+;; Needed to construct opendata fields
+(def public-reverb-root (cfg/config-value :public-reverb-root "http://localhost:10000/reverb"))

@@ -38,12 +38,16 @@
                            :description summary
                            :accessLevel (odrh/short-name->access-level short-name)
                            :accessURL (ru/related-urls->opendata-access-url related-urls)
+                           :references (not-empty (map :url related-urls))
                            :programCode odrh/PROGRAM_CODE
                            :bureauCode odrh/BUREAU_CODE
                            :publisher odrh/PUBLISHER
                            :language odrh/LANGUAGE_CODE
+                           :landingPage (odrh/landing-page concept-id)
                            :title entry-title
                            :format (ru/related-urls->opendata-format related-urls)
+                           :distribution (odrh/distribution concept-id
+                                                            (map :url related-urls))
                            :modified (str update-time)
                            :issued (str insert-time)
                            :temporal (odrh/temporal start-date end-date)})))

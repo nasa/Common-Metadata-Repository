@@ -11,7 +11,8 @@
             [cmr.common.util :as util]
             [cmr.search.models.results :as r]
             [cmr.spatial.serialize :as srl]
-            [cmr.search.services.url-helper :as url]))
+            [cmr.search.services.url-helper :as url]
+            [cmr.umm.related-url-helper :as rurl]))
 
 (def BUREAU_CODE
   "opendata bureauCode for NASA"
@@ -42,6 +43,7 @@
    "project-sn"
    "opendata-format"
    "access-url"
+   "related-urls"
    "start-date"
    "end-date"
    ;; needed for acl enforcment
@@ -62,6 +64,7 @@
           [science-keywords-flat] :science-keywords-flat
           [opendata-format] :opendata-format
           [access-url] :access-url
+          related-urls :related-urls
           [entry-title] :entry-title
           [start-date] :start-date
           [end-date] :end-date} :fields} elastic-result
@@ -76,6 +79,7 @@
      :concept-type :collection
      :opendata-format opendata-format
      :access-url access-url
+     :related-urls related-urls
      :project-sn project-sn
      :start-date start-date
      :end-date end-date
@@ -101,11 +105,23 @@
                (str start-date "/" end-date)
                start-date)))
 
+(defn distribution
+  "Creates the distribution field for the given collection with the given related-urls."
+  [id related-urls]
+  (let [online-access-urls (rurl/downloadable-urls related-urls)]
+    (concat [(str url/public-reverb-root "?selected=" id)] online-access-urls)))
+
+(defn landing-page
+  "Creates the landingPage field for the given collection with the given concept-id."
+  [id]
+  (str url/public-reverb-root "?selected=" id))
+
 (defn result->opendata
   "Converts a search result item to opendata."
   [context concept-type item]
   (let [{:keys [id summary short-name project-sn update-time insert-time provider-id access-value
-                keywords entry-title opendata-format access-url start-date end-date]} item]
+                keywords entry-title opendata-format access-url start-date end-date
+                related-urls]} item]
     (util/remove-nil-keys {:title entry-title
                            :description summary
                            :keyword keywords
@@ -123,11 +139,16 @@
                            ;; TODO :spatial
                            :temporal (temporal start-date end-date)
                            :theme (not-empty (str/join "," project-sn))
-                           ;; TODO :distribution
-                           ;; TODO :accrualPeriodicity
-                           ;; TODO :landingPage
+                           :distribution (distribution id related-urls)
+                           ;; TODO :accrualPeriodicity - this maps to MaintenanceAndUpdateFrequency
+                           ;; in ECHO, but MaintenanceAndUpdateFrequency is not mapped to UMM-C
+                           ;; yet. This is an expanded (not required) field, so it may not be
+                           ;; needed.
+                           ;; TODO verify id is the proper value here
+                           ;; (echo_concept_id in catalog-rest)
+                           :landingPage (landing-page id)
                            :language  LANGUAGE_CODE
-                           ;; TODO :references related-urls
+                           :references (not-empty related-urls)
                            :issued insert-time})))
 
 (defn results->opendata

@@ -112,6 +112,7 @@
             :metadata-format (name (mt/base-mime-type-to-format format))
             :opendata-format (ru/related-urls->opendata-format related-urls)
             :access-url (ru/related-urls->opendata-access-url related-urls)
+            :related-urls (map :url related-urls)
             :update-time update-time
             :insert-time insert-time
             :associated-difs associated-difs
