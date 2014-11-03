@@ -13,7 +13,7 @@
             [cmr.common.util :as util]
             [cmr.search.results-handlers.opendata-results-handler :as odrh]
             [cmr.umm.related-url-helper :as ru]
-            [cmr.umm.temporal :as temporal])
+            [cmr.umm.start-end-date :as sed])
   (:import cmr.umm.collection.UmmCollection
            cmr.spatial.mbr.Mbr))
 
@@ -30,8 +30,8 @@
         update-time (get-in collection [:data-provider-timestamps :update-time])
         insert-time (get-in collection [:data-provider-timestamps :insert-time])
         temporal (:temporal collection)
-        start-date (temporal/start-date :collection temporal)
-        end-date (temporal/end-date :collection temporal)
+        start-date (sed/start-date :collection temporal)
+        end-date (sed/end-date :collection temporal)
         start-date (when start-date (str/replace (str start-date) #"\.000Z" "Z"))
         end-date (when end-date (str/replace (str end-date) #"\.000Z" "Z"))]
     (util/remove-nil-keys {:identifier concept-id
@@ -39,15 +39,13 @@
                            :accessLevel (odrh/short-name->access-level short-name)
                            :accessURL (ru/related-urls->opendata-access-url related-urls)
                            :references (not-empty (map :url related-urls))
-                           :programCode odrh/PROGRAM_CODE
-                           :bureauCode odrh/BUREAU_CODE
+                           :programCode [odrh/PROGRAM_CODE]
+                           :bureauCode [odrh/BUREAU_CODE]
                            :publisher odrh/PUBLISHER
-                           :language odrh/LANGUAGE_CODE
+                           :language [odrh/LANGUAGE_CODE]
                            :landingPage (odrh/landing-page concept-id)
                            :title entry-title
-                           :format (ru/related-urls->opendata-format related-urls)
-                           :distribution (odrh/distribution concept-id
-                                                            (map :url related-urls))
+                           :distribution (odrh/distribution related-urls)
                            :modified (str update-time)
                            :issued (str insert-time)
                            :temporal (odrh/temporal start-date end-date)})))

@@ -12,7 +12,7 @@
             [cmr.search.models.results :as r]
             [cmr.spatial.serialize :as srl]
             [cmr.search.services.url-helper :as url]
-            [cmr.umm.related-url-helper :as rurl]))
+            [cmr.umm.related-url-helper :as ru]))
 
 (def BUREAU_CODE
   "opendata bureauCode for NASA"
@@ -42,7 +42,6 @@
    "short-name"
    "project-sn"
    "opendata-format"
-   "access-url"
    "related-urls"
    "start-date"
    "end-date"
@@ -77,8 +76,7 @@
      :update-time update-time
      :insert-time insert-time
      :concept-type :collection
-     :opendata-format opendata-format
-     :access-url access-url
+     :access-url (ru/related-urls->opendata-access-url related-urls)
      :related-urls related-urls
      :project-sn project-sn
      :start-date start-date
@@ -97,7 +95,7 @@
 
 (defn temporal
   "Get the temporal field from the start-date and end-date"
-  ;; TODO Eventually this should handle peridoc-date-times as well, but opendata only allows one
+  ;; NOTE: Eventually this should handle peridoc-date-times as well, but opendata only allows one
   ;; entry whereas UMM-C allows multiple periodic-date-time entries. This will have to wait until
   ;; a decision is made about how to resolve multiple periodic-date-time entries.
   [start-date end-date]
@@ -106,22 +104,32 @@
                start-date)))
 
 (defn distribution
-  "Creates the distribution field for the given collection with the given related-urls."
-  [id related-urls]
-  (let [online-access-urls (rurl/downloadable-urls related-urls)]
-    (concat [(str url/public-reverb-root "?selected=" id)] online-access-urls)))
+  "Creates the distribution field for the collection with the given related-urls."
+  [related-urls]
+  (let [online-access-urls (ru/downloadable-urls related-urls)]
+    (map (fn [url]
+           (let [mime-type (or (:mime-type url)
+                               "application/octet-stream")]
+             {:accessURL (:url url)
+              :format mime-type}))
+         online-access-urls)))
 
 (defn landing-page
-  "Creates the landingPage field for the given collection with the given concept-id."
-  [id]
-  (str url/public-reverb-root "?selected=" id))
+  "Creates the landingPage field for the collection with the given related-urls."
+  [related-urls]
+  (some (fn [related-url]
+          (let [{:keys [url type]} related-url]
+            (when (= "VIEW PROJECT HOME PAGE" type)
+              url)))
+        related-urls))
 
 (defn result->opendata
   "Converts a search result item to opendata."
   [context concept-type item]
   (let [{:keys [id summary short-name project-sn update-time insert-time provider-id access-value
-                keywords entry-title opendata-format access-url start-date end-date
-                related-urls]} item]
+                keywords entry-title opendata-format start-date end-date
+                related-urls]} item
+        related-urls (map #(json/decode % true) related-urls)]
     (util/remove-nil-keys {:title entry-title
                            :description summary
                            :keyword keywords
@@ -131,24 +139,23 @@
                            ;; TODO :mbox
                            :identifier id
                            :accessLevel (short-name->access-level short-name)
-                           :bureauCode BUREAU_CODE
-                           :programCode PROGRAM_CODE
+                           :bureauCode [BUREAU_CODE]
+                           :programCode [PROGRAM_CODE]
                            ;; TODO :accessLevelComment :access-constraints
-                           :accessURL access-url
+                           :accessURL (:url (first (ru/downloadable-urls related-urls)))
                            :format opendata-format
                            ;; TODO :spatial
                            :temporal (temporal start-date end-date)
                            :theme (not-empty (str/join "," project-sn))
-                           :distribution (distribution id related-urls)
+                           :distribution (distribution related-urls)
                            ;; TODO :accrualPeriodicity - this maps to MaintenanceAndUpdateFrequency
                            ;; in ECHO, but MaintenanceAndUpdateFrequency is not mapped to UMM-C
                            ;; yet. This is an expanded (not required) field, so it may not be
                            ;; needed.
-                           ;; TODO verify id is the proper value here
-                           ;; (echo_concept_id in catalog-rest)
-                           :landingPage (landing-page id)
-                           :language  LANGUAGE_CODE
-                           :references (not-empty related-urls)
+                           ;; TODO figure out what landingPage should be
+                           :landingPage (landing-page related-urls)
+                           :language  [LANGUAGE_CODE]
+                           :references (not-empty (map :url related-urls))
                            :issued insert-time})))
 
 (defn results->opendata
@@ -159,7 +166,7 @@
 
 (defmethod qs/search-results->response :opendata
   [context query results]
-  (let [{:keys [concept-type pretty? echo-compatible? result-features]} query
+  (let [{:keys [concept-type pretty? result-features]} query
         response-results (results->opendata
                            context concept-type results)]
     (json/generate-string response-results {:pretty pretty?})))

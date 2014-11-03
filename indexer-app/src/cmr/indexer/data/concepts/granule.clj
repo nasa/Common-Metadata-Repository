@@ -12,7 +12,7 @@
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.mime-types :as mt]
             [cmr.common.services.errors :as errors]
-            [cmr.umm.temporal :as temporal]
+            [cmr.umm.start-end-date :as sed]
             [cmr.indexer.data.concepts.attribute :as attrib]
             [cmr.indexer.data.concepts.orbit-calculated-spatial-domain :as ocsd]
             [cmr.indexer.data.concepts.spatial :as spatial]
@@ -122,8 +122,8 @@
         instrument-short-names (remove nil? (map :short-name instrument-refs))
         sensor-refs (mapcat :sensor-refs instrument-refs)
         sensor-short-names (remove nil? (map :short-name sensor-refs))
-        start-date (temporal/start-date :granule temporal)
-        end-date (temporal/end-date :granule temporal)
+        start-date (sed/start-date :granule temporal)
+        end-date (sed/end-date :granule temporal)
         atom-links (map json/generate-string (ru/atom-links related-urls))
         ocsd-json (granule->ocsd-json umm-granule)
         ;; not empty is used below to get a real true false value

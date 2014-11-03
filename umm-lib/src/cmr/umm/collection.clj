@@ -56,7 +56,7 @@
    variable-level-2
    variable-level-3
    detailed-variable
-  ])
+   ])
 
 (def product-specific-attribute-types
   [:string :float :int :boolean :date :time :datetime :date-string :time-string :datetime-string])
@@ -69,14 +69,14 @@
    parameter-range-begin
    parameter-range-end
    value
-  ])
+   ])
 
 (defrecord Sensor
   [
    short-name
    long-name
    technique
-  ])
+   ])
 
 (defrecord Instrument
   [
@@ -84,7 +84,7 @@
    long-name
    technique
    sensors
-  ])
+   ])
 
 (defrecord Characteristic
   [
@@ -102,7 +102,7 @@
    type
    instruments
    characteristics
-  ])
+   ])
 
 (defrecord Project
   [
@@ -148,7 +148,7 @@
 
    ;; only used by browse urls, it is the file size of the browse file referenced by the URL
    size
-  ])
+   ])
 
 (def granule-spatial-representations
   [:cartesian :geodetic :orbit :no-spatial])
@@ -191,6 +191,47 @@
    orbit-parameters
    ])
 
+(defrecord Phone
+  [
+   ;; Number of the organization or individual who is point of contact.
+   number
+
+   ;; The type of telephone number being provided in this instance of the phone number.
+   type
+   ])
+
+(defrecord ContactPerson
+  [
+   ;; This entity contains the address details for each contact.
+   address
+
+   ;; The address of the electronic mailbox of the organization or individual.
+   email
+
+   ;; First name of the individual which the contact applies.
+   first-name
+
+   ;; Last name of the individual which the contact applies.
+   last-name
+
+   ;; Middle name of the individual which the contact applies.
+   middle-name
+
+   ;; This entity contains the telephone details associated with the contact.
+   phone
+   ])
+
+
+
+(defrecord personnel
+  [
+   ;; This entity contains the contact person's name and address details.
+   contact-person
+
+   ;; The role of the contact (investigator, technical contact, metadata author)
+   role
+   ])
+
 (defrecord UmmCollection
   [
    ;; A combination of shortname and version id with an underscore.
@@ -229,6 +270,8 @@
 
    ;; Records Archive Center, Processing Center
    organizations
+
+   personnel
 
    spatial-coverage
 

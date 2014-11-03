@@ -84,12 +84,9 @@
   [related-urls]
   (map related-url->atom-link related-urls))
 
-(defn related-urls->opendata-format
-  "Return the opendata 'format' field based on the related-urls"
-  [related-urls]
-  (:mime-type (first related-urls)))
-
 (defn related-urls->opendata-access-url
   "Return the opendata 'accessURL' field based on the related-urls"
   [related-urls]
-  (:url (first related-urls)))
+  (-> (downloadable-urls related-urls)
+      first
+      :url))

@@ -10,7 +10,7 @@
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.services.errors :as errors]
             [cmr.umm.related-url-helper :as ru]
-            [cmr.umm.temporal :as temporal]
+            [cmr.umm.start-end-date :as sed]
             [cmr.indexer.data.concepts.attribute :as attrib]
             [cmr.indexer.data.concepts.science-keyword :as sk]
             [cmr.indexer.data.concepts.spatial :as spatial]
@@ -53,8 +53,8 @@
         project-long-names (remove nil? (map :long-name (:projects collection)))
         two-d-coord-names (map :name (:two-d-coordinate-systems collection))
         archive-center-val (org/extract-archive-centers collection)
-        start-date (temporal/start-date :collection temporal)
-        end-date (temporal/end-date :collection temporal)
+        start-date (sed/start-date :collection temporal)
+        end-date (sed/end-date :collection temporal)
         atom-links (map json/generate-string (ru/atom-links related-urls))
         ;; not empty is used below to get a real true/false value
         downloadable (not (empty? (ru/downloadable-urls related-urls)))
@@ -110,9 +110,7 @@
             :atom-links atom-links
             :summary summary
             :metadata-format (name (mt/base-mime-type-to-format format))
-            :opendata-format (ru/related-urls->opendata-format related-urls)
-            :access-url (ru/related-urls->opendata-access-url related-urls)
-            :related-urls (map :url related-urls)
+            :related-urls (map json/generate-string related-urls)
             :update-time update-time
             :insert-time insert-time
             :associated-difs associated-difs

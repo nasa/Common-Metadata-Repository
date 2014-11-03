@@ -206,10 +206,10 @@
                                     :insert-time (not-indexed (stored string-field-mapping))
                                     ;; This field contains multiple values obtained by
                                     ;; concatenating the category, topic, and term from
-                                    ;; each science keyword
+                                    ;; each science keyword. It represents the 'keywords'
+                                    ;; field in the opendata format.
                                     :science-keywords-flat (stored string-field-mapping)
                                     :opendata-format (stored string-field-mapping)
-                                    :access-url (stored string-field-mapping)
                                     :related-urls (stored string-field-mapping)
 
                                     ;; analyzed field for keyword searches
