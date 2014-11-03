@@ -7,12 +7,13 @@
             [cmr.spatial.geodetic-ring :as gr]
             [cmr.spatial.cartesian-ring :as cr]
             [cmr.spatial.line-string :as l]
-            [clojure.string :as str]))
+            [clojure.string :as s]
+            [cmr.common.util :as u]))
 
 (defn- points-map->points-str
   "Converts a map containing :points into the lat lon space separated points string of atom"
   [{:keys [points]}]
-  (str/join " " (mapcat #(vector (:lat %) (:lon %)) points)))
+  (s/join " " (mapcat #(vector (u/double->string (:lat %)) (u/double->string (:lon %))) points)))
 
 
 (defprotocol AtomSpatialHandler
@@ -28,7 +29,7 @@
   cmr.spatial.point.Point
   (shape->string
     [{:keys [lon lat]}]
-    (str lat " " lon))
+    (str (u/double->string lat) " " (u/double->string lon)))
 
   (shape->xml-element
     [point]
@@ -48,7 +49,7 @@
   cmr.spatial.mbr.Mbr
   (shape->string
     [{:keys [west north east south]}]
-    (str/join " " [south west north east]))
+    (s/join " " (map u/double->string [south west north east])))
 
   (shape->xml-element
     [mbr]
