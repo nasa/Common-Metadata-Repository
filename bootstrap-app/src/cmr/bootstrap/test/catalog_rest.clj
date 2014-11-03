@@ -87,6 +87,10 @@
   (execute-sql system (drop-granules-table-sql system provider-id))
   (execute-sql system (drop-datasets-table-sql system provider-id)))
 
+(defn- concept-id->numeric-id
+  [concept-id]
+  (-> concept-id concepts/parse-concept-id :sequence-number))
+
 (defmulti insert-concept
   "Inserts the given concept"
   (fn [system concept]
@@ -98,10 +102,23 @@
   (doseq [concept concepts]
     (insert-concept system concept)))
 
-(defmulti update-concept
+(defn update-concept
   "Updates the concept in the Catalog REST database"
-  (fn [system concept]
-    (:concept-type concept)))
+  [system concept]
+  (let [{:keys [provider-id concept-id metadata concept-type]} concept
+        {:keys [delete-time]} (:extra-fields concept)
+        table (mu/catalog-rest-table system provider-id concept-type)
+        numeric-id (concept-id->numeric-id concept-id)
+        stmt (format "update %s
+                     set compressed_xml = ?, ingest_updated_at = ?, xml_mime_type = ?, delete_time = ?
+                     where id = ?"
+                     table)
+        sql-args [(mdb-concepts/string->gzip-bytes metadata)
+                  (cr/to-sql-time (t/now))
+                  (mdb-concepts/mime-type->db-format (:format concept))
+                  (when delete-time (cr/to-sql-time (p/parse-datetime delete-time)))
+                  numeric-id]]
+    (j/db-do-prepared (:db system) stmt sql-args)))
 
 (defn update-concepts
   "Updates all the concepts"
@@ -109,20 +126,20 @@
   (doseq [concept concepts]
     (update-concept system concept)))
 
-(defmulti delete-concept
+(defn delete-concept
   "Deletes the concept in the Catalog REST database"
-  (fn [system concept]
-    (:concept-type concept)))
+  [system concept]
+  (let [{:keys [provider-id concept-id concept-type]} concept
+        table (mu/catalog-rest-table system provider-id concept-type)
+        numeric-id (concept-id->numeric-id concept-id)
+        stmt (format "delete from %s where id = ?" table)]
+    (j/db-do-prepared (:db system) stmt [numeric-id])))
 
 (defn delete-concepts
   "Deletes all the concepts"
   [system concepts]
   (doseq [concept concepts]
     (delete-concept system concept)))
-
-(defn- concept-id->numeric-id
-  [concept-id]
-  (-> concept-id concepts/parse-concept-id :sequence-number))
 
 (defmethod insert-concept :collection
   [system concept]
@@ -138,31 +155,6 @@
                   (mdb-concepts/mime-type->db-format (:format concept))
                   (when delete-time (cr/to-sql-time (p/parse-datetime delete-time)))]]
     (j/db-do-prepared (:db system) stmt sql-args)))
-
-(defmethod update-concept :collection
-  [system concept]
-  (let [{:keys [provider-id concept-id metadata]} concept
-        {:keys [delete-time]} (:extra-fields concept)
-        table (mu/catalog-rest-table system provider-id :collection)
-        numeric-id (concept-id->numeric-id concept-id)
-        stmt (format "update %s
-                     set compressed_xml = ?, ingest_updated_at = ?, xml_mime_type = ?, delete_time = ?
-                     where id = ?"
-                     table)
-        sql-args [(mdb-concepts/string->gzip-bytes metadata)
-                  (cr/to-sql-time (t/now))
-                  (mdb-concepts/mime-type->db-format (:format concept))
-                  (when delete-time (cr/to-sql-time (p/parse-datetime delete-time)))
-                  numeric-id]]
-    (j/db-do-prepared (:db system) stmt sql-args)))
-
-(defmethod delete-concept :collection
-  [system concept]
-  (let [{:keys [provider-id concept-id]} concept
-        table (mu/catalog-rest-table system provider-id :collection)
-        numeric-id (concept-id->numeric-id concept-id)
-        stmt (format "delete from %s where id = ?" table)]
-    (j/db-do-prepared (:db system) stmt [numeric-id])))
 
 ;; Note that this assumes the native id of the granule is the granule ur.
 (defmethod insert-concept :granule
@@ -181,11 +173,6 @@
                   (cr/to-sql-time (t/now))
                   (when delete-time (cr/to-sql-time (p/parse-datetime delete-time)))]]
     (j/db-do-prepared (:db system) stmt sql-args)))
-
-;; TODO update concept for granule
-
-;; TODO delete concept for granule
-
 
 (comment
 

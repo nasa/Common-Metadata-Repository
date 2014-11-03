@@ -79,17 +79,52 @@
      :provider-id provider-id
      :native-id entry-title}))
 
+(defn gran-concept
+  "Creates a new granule concept."
+  [concept-counter collection-concept granule-ur]
+  (let [provider-id (:provider-id collection-concept)
+        coll (umm/parse-concept collection-concept)
+        gran (dg/granule coll {:granule-ur granule-ur
+                               ;; The producer granule id  will contain the revision number so
+                               ;; subsequent revisions will have slightly different metadata.
+                               :producer-gran-id "rev1"})]
+    {:concept-type :granule
+     :format "application/echo10+xml"
+     :metadata (umm/umm->xml gran :echo10)
+     :concept-id (next-concept-id concept-counter :granule provider-id)
+     :revision-id 1
+     :deleted false
+     :extra-fields {:parent-collection-id (:concept-id collection-concept)
+                    :delete-time nil}
+     :provider-id provider-id
+     :native-id granule-ur}))
+
+(defmulti update-concept-metadata
+  "Makes a superficial change to the concept for the new revision id."
+  (fn [concept new-revision-id]
+    (:concept-type concept)))
+
+(defmethod update-concept-metadata :collection
+  [concept new-revision-id]
+  (-> concept
+      umm/parse-concept
+      (assoc :summary (str "rev" new-revision-id))
+      (umm/umm->xml :echo10)))
+
+(defmethod update-concept-metadata :granule
+  [concept new-revision-id]
+  (-> concept
+      umm/parse-concept
+      (assoc-in [:data-granule :producer-gran-id] (str "rev" new-revision-id))
+      (umm/umm->xml :echo10)))
+
 (defn updated-concept
   "Makes a superficial change to the concept and increments its revision id."
   [concept]
-  (let [new-revision-id (inc (:revision-id concept))
-        updated-metadata (-> concept
-                             umm/parse-concept
-                             (assoc :summary (str "rev" new-revision-id))
-                             (umm/umm->xml :echo10))]
+  (let [new-revision-id (inc (:revision-id concept))]
     (assoc concept
            :revision-id new-revision-id
-           :metadata updated-metadata)))
+           :metadata (update-concept-metadata concept new-revision-id))))
 
 (defn assert-concepts-in-mdb
   "Checks that all of the concepts with the indicated revisions are in metadata db."
@@ -179,8 +214,7 @@
           coll1-2 (updated-concept coll1-1)
           coll2-1 (coll-concept concept-counter "CPROV1" "coll2")
           coll2-2 (updated-concept coll2-1)
-          ;; Collection 3 will have multiple revisions and then will be deleted. This will be in synch
-          ;; with what Catalog REST has.
+          ;; Collection 3 will have multiple revisions and then will be deleted.
           coll3-1 (coll-concept concept-counter "CPROV2" "coll3")
           coll3-2 (updated-concept coll3-1)
           coll3-3 (updated-concept coll3-2)
@@ -238,46 +272,62 @@
       (assert-tombstones-in-mdb deleted-colls)
       (assert-concepts-not-indexed deleted-colls))))
 
-#_(deftest db-synchronize-granules-test
+(deftest db-synchronize-granules-test
   (test-env/only-with-real-database
     (let [concept-counter (atom 0)
           coll1-1 (coll-concept concept-counter "CPROV1" "coll1")
           coll2-1 (coll-concept concept-counter "CPROV1" "coll2")
           coll3-1 (coll-concept concept-counter "CPROV2" "coll3")
 
+          gran1-1 (gran-concept concept-counter coll1-1 "gran1")
+          gran1-2 (updated-concept gran1-1)
+          gran2-1 (gran-concept concept-counter coll2-1 "gran2")
+          gran2-2 (updated-concept gran2-1)
+          ;; Granule 3 will have multiple revisions and then will be deleted.
+          gran3-1 (gran-concept concept-counter coll3-1 "gran3")
+          gran3-2 (updated-concept gran3-1)
+          gran3-3 (updated-concept gran3-2)
+          ;; granule 4 will not be updated but it will still get a newer revision id
+          gran4-1 (gran-concept concept-counter coll3-1 "gran4")
+          gran4-2 (assoc gran4-1 :revision-id 2)
+          ;; granule 5 will be a new one
+          gran5-1 (gran-concept concept-counter coll3-1 "gran5")
+          ;; granule 6 will be deleted
+          gran6-1 (gran-concept concept-counter coll3-1 "gran6")
 
+          ;; granule 7 will have a tombstone
+          gran7-1 (gran-concept concept-counter coll3-1 "gran7")
 
-
-
-          orig-colls [coll1-1 coll2-1 coll3-1 coll4-1 coll6-1 coll7-1] ;; 5 not added originally
-          active-updates [coll1-2 coll2-2]
-          deleted-colls [coll3-1 coll6-1 coll7-1]
-          expected-colls [coll1-2 coll2-2 coll4-2 coll5-1]
+          orig-grans [gran1-1 gran2-1 gran3-1 gran4-1 gran6-1 gran7-1] ;; 5 not added originally
+          active-updates [gran1-2 gran2-2]
+          deleted-grans [gran3-1 gran6-1 gran7-1]
+          expected-grans [gran1-2 gran2-2 gran4-2 gran5-1]
           system (bootstrap/system)]
 
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
       ;; 1. Setup
       ;; Save the concepts in Catalog REST
-      (cat-rest/insert-concepts system orig-colls)
+      (cat-rest/insert-concepts system [coll1-1 coll2-1 coll3-1])
+      (cat-rest/insert-concepts system orig-grans)
       ;; Migrate the providers. Catalog REST and Metadata DB are in sync
       (bootstrap/bulk-migrate-providers "CPROV1" "CPROV2")
       (bootstrap/bulk-index-providers "CPROV1" "CPROV2")
 
-      (assert-concepts-in-mdb orig-colls)
-      (assert-concepts-indexed orig-colls)
+      (assert-concepts-in-mdb orig-grans)
+      (assert-concepts-indexed orig-grans)
 
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
       ;; 2. Make Catalog REST out of sync with Metadata DB
       (cat-rest/update-concepts system active-updates)
-      ;; Collection 5 is inserted for the first time so it's not yet in Metadata DB
-      (cat-rest/insert-concept system coll5-1)
-      ;; Add a few more revisions for coll3
-      (ingest/save-concept coll3-2)
-      (ingest/save-concept coll3-3)
-      (cat-rest/delete-concepts system deleted-colls)
+      ;; granule 5 is inserted for the first time so it's not yet in Metadata DB
+      (cat-rest/insert-concept system gran5-1)
+      ;; Add a few more revisions for gran3
+      (ingest/save-concept gran3-2)
+      (ingest/save-concept gran3-3)
+      (cat-rest/delete-concepts system deleted-grans)
 
-      ;; Collection 7 was also deleted from metadata db
-      (ingest/delete-concept coll7-1)
+      ;; granule 7 was also deleted from metadata db
+      (ingest/delete-concept gran7-1)
 
 
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -286,11 +336,11 @@
 
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
       ;; 4. Verify
-      (assert-concepts-in-mdb expected-colls)
-      (assert-concepts-indexed expected-colls)
+      (assert-concepts-in-mdb expected-grans)
+      (assert-concepts-indexed expected-grans)
       ;; Check that the deleted items have tombstones in Metadata DB and are not indexed.
-      (assert-tombstones-in-mdb deleted-colls)
-      (assert-concepts-not-indexed deleted-colls))))
+      (assert-tombstones-in-mdb deleted-grans)
+      (assert-concepts-not-indexed deleted-grans))))
 
 
 

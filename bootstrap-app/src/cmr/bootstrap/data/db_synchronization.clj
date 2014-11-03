@@ -141,8 +141,29 @@
 
 (defmethod get-concept-from-catalog-rest :granule
   [system provider-id concept-type concept-id revision-id]
-  ;; TODO implement this
-  )
+  (j/with-db-transaction
+    [conn (:db system)]
+    (let [sql (format "select granule_ur, compressed_xml, ingest_updated_at, dataset_record_id,
+                      xml_mime_type, delete_time from %s where echo_granule_id = ?"
+                      (mu/catalog-rest-table system provider-id concept-type))
+          stmt [sql concept-id]
+          [{:keys [granule_ur compressed_xml ingest_updated_at dataset_record_id xml_mime_type
+                   delete_time]}] (sql-utils/query conn stmt)]
+      {:concept-type concept-type
+       :format (mdb-concepts/db-format->mime-type xml_mime_type)
+       :metadata (mdb-concepts/blob->string compressed_xml)
+       :concept-id concept-id
+       :revision-id revision-id
+       :deleted false
+       :extra-fields {:granule-ur granule_ur
+                      :parent-collection-id (concepts/build-concept-id
+                                              {:concept-type :collection
+                                               :sequence-number (long dataset_record_id)
+                                               :provider-id provider-id})
+                      :delete-time (when delete_time
+                                     (mdb-concepts/oracle-timestamp-tz->clj-time conn delete_time))}
+       :provider-id provider-id
+       :native-id granule_ur})))
 
 (defn process-items-from-work-table
   "Starts a process that will retrieve items in batches from the work table and writes them to a
@@ -375,7 +396,5 @@
   (doseq [provider (provider-service/get-providers {:system system})]
     (synchronize-missing-items system provider :collection)
     (synchronize-deletes system provider :collection)
-
-    ;; TODO add granules
-
-    ))
+    (synchronize-missing-items system provider :granule)
+    (synchronize-deletes system provider :granule)))
