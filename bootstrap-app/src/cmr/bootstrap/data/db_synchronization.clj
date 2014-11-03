@@ -1,5 +1,6 @@
 (ns cmr.bootstrap.data.db-synchronization
-  "TODO"
+  "Contains functions for finding differences between Metadata DB and Catalog REST and putting them
+  back in sync."
   (:require [clojure.core.async :as async :refer [go >! go-loop <! <!!]]
             [cmr.common.log :refer (debug info warn error)]
             [clojure.java.jdbc :as j]
@@ -17,15 +18,16 @@
             [cmr.metadata-db.services.provider-service :as provider-service]
             [cmr.indexer.services.index-service :as index-service]))
 
-;; TODO document and rename
-(def BATCH_SIZE 1000)
+(def WORK_ITEMS_BATCH_SIZE
+  "The number of work items to fetch at a time from the work items table during processing"
+  1000)
 
 (def NUM_PROCESS_INSERT_THREADS
-  "TODO"
+  "The number of concurrent threads that should process items for insert."
   5)
 
 (def NUM_PROCESS_DELETE_THREADS
-  "TODO"
+  "The number of concurrent threads that should process deleting items"
   5)
 
 (comment
@@ -58,9 +60,8 @@
         (sql-utils/query conn stmt)))
 
 (defn- add-missing-items-to-work-table
-  "TODO"
+  "Finds items that are missing in Metadata DB and adds it to the sync_work table."
   [system provider-id concept-type]
-
   ;; TODO this sql should be updated to find items that were INGEST_UPDATED_AT > start date and
   ;; INGEST_UPDATED_AT < end date
   (truncate-work-table system)
@@ -78,7 +79,8 @@
     (query-for-concept-rev-id-pairs (:db system) stmt)))
 
 (defn- in-clause
-  "TODO"
+  "Generates a sql in clause string. If there are more than the max values to put in the in clause
+  it creates multiple an ANDs them together."
   [field num-values]
   (let [num-full (int (/ num-values 1000))
         num-in-partial (mod num-values 1000)
@@ -107,7 +109,9 @@
               [concept-id 0]))))
 
 (defmulti get-concept-from-catalog-rest
-  "TODO"
+  "Retrieves a concept from the Catalog REST. Provider id and concept type are redundant given that
+  the concept id is provided. They're included because they're available and would avoid having to
+  parse the concept id."
   (fn [system provider-id concept-type concept-id revision-id]
     concept-type))
 
@@ -140,28 +144,28 @@
   ;; TODO implement this
   )
 
-(defn debug-with-prefix
-  [prefix & args]
-  (debug prefix (str/join " " args)))
-
 (defn process-items-from-work-table
-  "TODO"
+  "Starts a process that will retrieve items in batches from the work table and writes them to a
+  channel. The channel is returned. Each message on the channel is a sequence of batched items.
+  Items are tuples of concept id and revision id."
   [system]
-  (let [missing-items-chan (async/chan 1)]
+  (let [item-batch-chan (async/chan 1)]
     (go
       (debug "process-items-from-work-table starting")
       (try
         (loop [start-index 1]
-          (when-let [items (seq (get-work-items-batch system start-index BATCH_SIZE))]
+          (when-let [items (seq (get-work-items-batch system start-index WORK_ITEMS_BATCH_SIZE))]
             (debug "process-items-from-work-table: Found" (count items) "items")
-            (>! missing-items-chan items)
+            (>! item-batch-chan items)
             (recur (+ start-index (count items)))))
         (finally
-          (async/close! missing-items-chan)
+          (async/close! item-batch-chan)
           (debug "process-items-from-work-table completed"))))
-    missing-items-chan))
+    item-batch-chan))
 
 (defmacro while-let
+  "A macro that's similar to when let. It will continually evaluate the bindings and execute the body
+  until the binding results in a nil value."
   [bindings & body]
   `(loop []
      (when-let ~bindings
@@ -169,13 +173,14 @@
        (recur))))
 
 (defn map-missing-items-to-concepts
-  "TODO"
-  [system provider-id concept-type missing-items-chan]
+  "Starts a process that will map batches of items to individual concepts from Catalog REST that
+  should be saved in the Metadata DB. Returns the channel that will contain the concepts to save."
+  [system provider-id concept-type item-batch-chan]
   (let [concepts-chan (async/chan 10)]
     (go
       (debug "map-missing-items-to-concepts starting")
       (try
-        (while-let [items (<! missing-items-chan)]
+        (while-let [items (<! item-batch-chan)]
           (debug "map-missing-items-to-concepts: Received" (count items) "items")
           (doseq [[concept-id revision-id] (get-latest-concept-id-revision-ids
                                              system provider-id concept-type (map first items))]
@@ -184,12 +189,12 @@
                                 system provider-id concept-type concept-id (inc revision-id)))))
         (finally
           (async/close! concepts-chan)
-          (async/close! missing-items-chan)
+          (async/close! item-batch-chan)
           (debug "map-missing-items-to-concepts completed"))))
     concepts-chan))
 
-(defn process-concept-insert
-  "TODO"
+(defn save-and-index-concept
+  "Saves the concept to the Metadata DB and indexes it using the indexer"
   [system concept]
   ;; This is going to copy the item to metadata db. If it was never added to MDB in the first place
   ;; and was deleted in Catalog REST in the mean time Ingest would return a 404 from the delete
@@ -205,17 +210,19 @@
 
   )
 
-(defn process-concept-inserts
+(defn process-missing-concepts
+  "Starts a series of threads that read concepts one at a time off the channel, save, and index them.
+  Returns when all concepts have been processed or an error has occured."
   [system concepts-chan]
   (let [thread-chans (for [n (range 0 NUM_PROCESS_INSERT_THREADS)
                            :let [log (fn [& args]
-                                       (debug "process-concept-inserts" n ":" (str/join " " args)))]]
+                                       (debug "process-missing-concepts" n ":" (str/join " " args)))]]
                        (async/thread
                          (log "starting")
                          (try
                            (while-let [concept (<!! concepts-chan)]
                              (log "Inserting" (:concept-id concept) (:revision-id concept))
-                             (process-concept-insert system concept))
+                             (save-and-index-concept system concept))
                            (finally
                              (async/close! concepts-chan)
                              (log "completed")))))]
@@ -225,14 +232,15 @@
       (<!! thread-chan))))
 
 
-(defn synchronize-inserts
-  "TODO"
+(defn synchronize-missing-items
+  "Finds items missing from Metadata DB, loads the concepts from Catalog REST, saves them in the
+  Metadata DB and indexes them."
   [system provider-id concept-type]
   (info "Synchronizing" concept-type "inserts for" provider-id)
   (add-missing-items-to-work-table system provider-id concept-type)
   (->> (process-items-from-work-table system)
        (map-missing-items-to-concepts system provider-id concept-type)
-       (process-concept-inserts system)))
+       (process-missing-concepts system)))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -301,7 +309,9 @@
   (transfer-delete-work-items-to-work-table system))
 
 (defn map-extra-items-batches-to-deletes
-  "TODO"
+  "Starts a process that maps batches of items to delete to individual tuples of concept ids and
+  revision ids of a tombstone that should be created. Returns that channel that will receive the
+  individual tombstones."
   [system provider-id concept-type item-batch-chan]
   (let [tuples-chan (async/chan 10)]
     (go
@@ -317,10 +327,9 @@
           (debug "map-extra-items-batches-to-deletes completed"))))
     tuples-chan))
 
-
-(defn process-delete
-  "TODO"
-  [system [concept-id revision-id]]
+(defn create-tombstone-and-unindex-concept
+  "Creates a tombstone with the given concept id and revision id and unindexes the concept."
+  [system concept-id revision-id]
   (let [mdb-context {:system (:metadata-db system)}
         indexer-context {:system (:indexer system)}]
     (concept-service/delete-concept mdb-context concept-id revision-id)
@@ -328,8 +337,9 @@
   ;; TODO catch conflict failures and log them. They're ok.
   )
 
-
 (defn process-deletes
+  "Starts a series of threads that read items one at a time off the channel then creates a tombstone
+  and unindexes them. Returns when all items have been processed or an error has occured."
   [system tuples-chan]
   (let [thread-chans (for [n (range 0 NUM_PROCESS_DELETE_THREADS)
                            :let [log (fn [& args]
@@ -337,9 +347,9 @@
                        (async/thread
                          (log "starting")
                          (try
-                           (while-let [tuple (<!! tuples-chan)]
-                             (log "Deleting" (pr-str tuple))
-                             (process-delete system tuple))
+                           (while-let [[concept-id revision-id] (<!! tuples-chan)]
+                             (log "Deleting" concept-id "-" revision-id)
+                             (create-tombstone-and-unindex-concept system concept-id revision-id))
                            (finally
                              (async/close! tuples-chan)
                              (log "completed")))))]
@@ -348,9 +358,9 @@
       ;; Wait for the thread to close the channel/return a result indicating it's done.
       (<!! thread-chan))))
 
-
 (defn synchronize-deletes
-  "TODO"
+  "Finds items that exist in Metadata DB but do not exist in Catalog REST. It creates tombstones
+  for these items and unindexes them."
   [system provider-id concept-type]
   (add-deleted-items-to-work-table system provider-id concept-type)
   (->> (process-items-from-work-table system)
@@ -358,12 +368,12 @@
        (process-deletes system)))
 
 (defn synchronize-databases
-  "TODO"
+  "Finds differences in Metadata DB and Catalog REST and brings Metadata DB along with the indexer
+  back in sync with Catalog REST."
   [system]
   ;; TODO pass the start date and end data around to make the select performance better
-  ;; TODO get providers from metadata db
   (doseq [provider (provider-service/get-providers {:system system})]
-    (synchronize-inserts system provider :collection)
+    (synchronize-missing-items system provider :collection)
     (synchronize-deletes system provider :collection)
 
     ;; TODO add granules

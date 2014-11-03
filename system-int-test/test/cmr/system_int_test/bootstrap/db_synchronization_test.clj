@@ -53,14 +53,14 @@
   )
 
 (defn next-concept-id
-  "TODO"
+  "Returns the next concept id to use from the counter, concept type, and provider id."
   [concept-counter concept-type provider-id]
   (concepts/build-concept-id {:concept-type concept-type
                               :sequence-number (swap! concept-counter inc)
                               :provider-id provider-id}))
 
 (defn coll-concept
-  "TODO"
+  "Creates a new collection concept."
   [concept-counter provider-id entry-title]
   (let [coll (dc/collection {:entry-title entry-title
                              ;; The summary will contain the revision number so subsequent revisions
@@ -80,7 +80,7 @@
      :native-id entry-title}))
 
 (defn updated-concept
-  "TODO"
+  "Makes a superficial change to the concept and increments its revision id."
   [concept]
   (let [new-revision-id (inc (:revision-id concept))
         updated-metadata (-> concept
@@ -92,20 +92,20 @@
            :metadata updated-metadata)))
 
 (defn assert-concepts-in-mdb
-  "TODO"
+  "Checks that all of the concepts with the indicated revisions are in metadata db."
   [concepts]
   (doseq [concept concepts]
     (is (= concept
            (dissoc (ingest/get-concept (:concept-id concept)) :revision-date)))))
 
 (defn assert-tombstones-in-mdb
-  "TODO"
+  "Checks that tombstones for each of the concepts are the latest revisions in the metadata db"
   [concepts]
   (doseq [concept concepts]
     (is (:deleted (ingest/get-concept (:concept-id concept))))))
 
 (defn assert-concepts-indexed
-  "TODO"
+  "Check that all of the concepts are indexed for searching with the indicated revisions."
   [concepts]
   (index/refresh-elastic-index)
   (doseq [[concept-type type-concepts] (group-by :concept-type concepts)]
@@ -115,7 +115,7 @@
       (is (= (set expected-tuples) (set found-tuples))))))
 
 (defn assert-concepts-not-indexed
-  "TODO"
+  "Checks that all the concepts given are not in the search index."
   [concepts]
   (index/refresh-elastic-index)
   (doseq [[concept-type type-concepts] (group-by :concept-type concepts)]
@@ -123,17 +123,12 @@
           results (search/find-refs concept-type {:concept-id (map :concept-id type-concepts)})]
       (is (= 0 (:hits results)) (str "Expected 0 found " (pr-str results))))))
 
-;; TODO add a test that allows _many_ items across multiple providers to be out of synch and checks
+;; TODO add a test that allows _many_ (thousands of) items across multiple providers to be out of synch and checks
 ;; that they are all correct at the end.
-
-;; TODO Add delete tests
 
 ;; TODO add tests that send start and end times for checking for missing items.
 
-;; TODO add some tombstones in metadata db befor the sync.
-;; Some of the tombstoned items will be readded before the sync.
-
-(deftest db-synchronize-inserts-test
+(deftest db-synchronize-collection-inserts-test
   (test-env/only-with-real-database
     (let [concept-counter (atom 1)
           coll1-1 (coll-concept concept-counter "CPROV1" "coll1")
@@ -174,10 +169,7 @@
 
       ;; Check that they are synchronized now with the latest data.
       (assert-concepts-in-mdb updated-colls)
-      (assert-concepts-indexed updated-colls)
-
-      )))
-
+      (assert-concepts-indexed updated-colls))))
 
 
 (deftest db-synchronize-collections-test
@@ -187,7 +179,8 @@
           coll1-2 (updated-concept coll1-1)
           coll2-1 (coll-concept concept-counter "CPROV1" "coll2")
           coll2-2 (updated-concept coll2-1)
-          ;; Collection 3 will have multiple revisions and then will be deleted
+          ;; Collection 3 will have multiple revisions and then will be deleted. This will be in synch
+          ;; with what Catalog REST has.
           coll3-1 (coll-concept concept-counter "CPROV2" "coll3")
           coll3-2 (updated-concept coll3-1)
           coll3-3 (updated-concept coll3-2)
@@ -243,9 +236,61 @@
       (assert-concepts-indexed expected-colls)
       ;; Check that the deleted items have tombstones in Metadata DB and are not indexed.
       (assert-tombstones-in-mdb deleted-colls)
-      (assert-concepts-not-indexed deleted-colls)
+      (assert-concepts-not-indexed deleted-colls))))
 
-      )))
+#_(deftest db-synchronize-granules-test
+  (test-env/only-with-real-database
+    (let [concept-counter (atom 0)
+          coll1-1 (coll-concept concept-counter "CPROV1" "coll1")
+          coll2-1 (coll-concept concept-counter "CPROV1" "coll2")
+          coll3-1 (coll-concept concept-counter "CPROV2" "coll3")
+
+
+
+
+
+          orig-colls [coll1-1 coll2-1 coll3-1 coll4-1 coll6-1 coll7-1] ;; 5 not added originally
+          active-updates [coll1-2 coll2-2]
+          deleted-colls [coll3-1 coll6-1 coll7-1]
+          expected-colls [coll1-2 coll2-2 coll4-2 coll5-1]
+          system (bootstrap/system)]
+
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+      ;; 1. Setup
+      ;; Save the concepts in Catalog REST
+      (cat-rest/insert-concepts system orig-colls)
+      ;; Migrate the providers. Catalog REST and Metadata DB are in sync
+      (bootstrap/bulk-migrate-providers "CPROV1" "CPROV2")
+      (bootstrap/bulk-index-providers "CPROV1" "CPROV2")
+
+      (assert-concepts-in-mdb orig-colls)
+      (assert-concepts-indexed orig-colls)
+
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+      ;; 2. Make Catalog REST out of sync with Metadata DB
+      (cat-rest/update-concepts system active-updates)
+      ;; Collection 5 is inserted for the first time so it's not yet in Metadata DB
+      (cat-rest/insert-concept system coll5-1)
+      ;; Add a few more revisions for coll3
+      (ingest/save-concept coll3-2)
+      (ingest/save-concept coll3-3)
+      (cat-rest/delete-concepts system deleted-colls)
+
+      ;; Collection 7 was also deleted from metadata db
+      (ingest/delete-concept coll7-1)
+
+
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+      ;; 3. Synchronize
+      (bootstrap/synchronize-databases)
+
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+      ;; 4. Verify
+      (assert-concepts-in-mdb expected-colls)
+      (assert-concepts-indexed expected-colls)
+      ;; Check that the deleted items have tombstones in Metadata DB and are not indexed.
+      (assert-tombstones-in-mdb deleted-colls)
+      (assert-concepts-not-indexed deleted-colls))))
 
 
 
