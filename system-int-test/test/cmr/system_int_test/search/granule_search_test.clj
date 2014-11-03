@@ -269,11 +269,6 @@
         (is (= {:status 400
                 :errors [(msg/invalid-numeric-range-msg num-range)]}
                (search/find-refs :granule {"cloud_cover" num-range})))))
-    (testing "search by cloud-cover with empty str"
-      (let [num-range ""]
-        (is (= {:status 400
-                :errors [(msg/invalid-msg java.lang.Double "")]}
-               (search/find-refs :granule {"cloud_cover" num-range})))))
     (testing "search by cloud-cover with invalid range"
       (let [num-range "30,c9c"]
         (is (= {:status 400
