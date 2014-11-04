@@ -10,7 +10,7 @@
             [cmr.common.config :as cfg]))
 
 (def numeric-range-execution-mode (cfg/config-value-fn :numeric-range-execution-mode "index"))
-(def numeric-range-use-cache (cfg/config-value-fn "true" :numeric-range-use-cache #(= "true" %)))
+(def numeric-range-use-cache (cfg/config-value-fn :numeric-range-use-cache "false" #(Boolean. ^String %)))
 
 (def field-mappings
   "A map of fields in the query to the field name in elastic. Field names are excluded from this
