@@ -377,6 +377,7 @@
   "Finds items that exist in Metadata DB but do not exist in Catalog REST. It creates tombstones
   for these items and unindexes them."
   [system provider-id concept-type]
+  (info "Synchronizing deletes for" provider-id concept-type)
   (add-deleted-items-to-work-table system provider-id concept-type)
   (->> (process-items-from-work-table system)
        (map-extra-items-batches-to-deletes system provider-id concept-type)
@@ -390,4 +391,21 @@
     (synchronize-missing-items system provider :collection start-date end-date)
     (synchronize-deletes system provider :collection)
     (synchronize-missing-items system provider :granule start-date end-date)
-    (synchronize-deletes system provider :granule)))
+    (synchronize-deletes system provider :granule))
+  (info "Synchronization complete"))
+
+
+;; Background task to handle provider bulk index requests
+(defn handle-db-synchronization-requests
+  "Handle any requests for indexing providers."
+  [system]
+  (info "Starting background task for monitoring db synchronize channel.")
+  (let [channel (:db-synchronize-channel system)]
+    (async/thread
+      (while true
+        (try ; catch any errors and log them, but don't let the thread die
+          (let [{:keys [start-date end-date]} (<!! channel)]
+            (synchronize-databases system start-date end-date))
+          (catch Throwable e
+            (error e (.getMessage e))))))))
+

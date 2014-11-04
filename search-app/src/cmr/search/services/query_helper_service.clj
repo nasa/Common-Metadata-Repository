@@ -48,7 +48,7 @@
    collections should be fetched).
    If treat-empty-as-all? is false, treats collection-ids as an additional condition.
    null or empty collection ids implies that no results should be found.
-   TODO: The scoping rules are kind of ugly, but we need it both ways."
+   The scoping rules are kind of ugly, but we need it both ways."
   ([context collection-ids]
      (collection-orbit-parameters context collection-ids false))
   ([context collection-ids treat-empty-as-all?]

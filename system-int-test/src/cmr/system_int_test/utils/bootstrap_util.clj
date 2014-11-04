@@ -97,8 +97,8 @@
       (cat-rest/delete-provider system provider-id))))
 
 (defn db-fixture
-  "This is a fixture that sets up things for bootstrap database integration tests.
-  TODO more info"
+  "This is a fixture that sets up things for bootstrap database integration tests. It resets the CMR,
+  then creates CMR providers and Catalog REST providers. All data is cleaned up at the end."
   [& provider-ids]
   (fn [f]
     (try

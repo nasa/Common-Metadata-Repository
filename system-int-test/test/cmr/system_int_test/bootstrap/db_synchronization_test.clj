@@ -177,8 +177,6 @@
           results (search/find-refs-with-post concept-type {:concept-id (map :concept-id type-concepts)})]
       (is (= 0 (:hits results)) (str "Expected 0 found " (pr-str results))))))
 
-;; TODO add tests that send start and end times for checking for missing items.
-
 (deftest db-synchronize-collection-inserts-test
   (test-env/only-with-real-database
     (let [concept-counter (atom 1)

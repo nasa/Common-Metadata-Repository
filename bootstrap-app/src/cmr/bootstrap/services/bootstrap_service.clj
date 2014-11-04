@@ -51,4 +51,6 @@
   [context synchronous start-date end-date]
   (if synchronous
     (dbs/synchronize-databases (:system context) start-date end-date)
-    (throw (Exception. "TODO non synchronous"))))
+    (let [channel (get-in context [:system :db-synchronize-channel])]
+      (info "Adding message to the database synchronize channel.")
+      (go (>! channel {:start-date start-date :end-date end-date})))))
