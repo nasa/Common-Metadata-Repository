@@ -11,6 +11,7 @@
             [cmr.bootstrap.data.migration-utils :as mu]
             [cmr.common.util :as util]
             [cmr.common.concepts :as concepts]
+            [cmr.common.config :as config]
             [clj-time.coerce :as cr]
             [clj-time.core :as t]
             [cmr.metadata-db.data.oracle.concept-tables :as tables]
@@ -22,15 +23,15 @@
 
 (def WORK_ITEMS_BATCH_SIZE
   "The number of work items to fetch at a time from the work items table during processing"
-  1000)
+  (config/config-value :db-sync-work-items-batch-size "1000" #(Long. ^String %)))
 
 (def NUM_PROCESS_INSERT_THREADS
   "The number of concurrent threads that should process items for insert."
-  5)
+  (config/config-value :db-sync-num-insert-threads "5" #(Long. ^String %)))
 
 (def NUM_PROCESS_DELETE_THREADS
   "The number of concurrent threads that should process deleting items"
-  5)
+  (config/config-value :db-sync-num-delete-threads "5" #(Long. ^String %)))
 
 (comment
 
@@ -52,7 +53,9 @@
         (sql-utils/query conn stmt)))
 
 (defn- add-missing-items-to-work-table
-  "Finds items that are missing in Metadata DB and adds it to the sync_work table."
+  "Finds all the items that were ingested between start-date and end-date in Catalog REST and adds
+  them to the sync_work table. These are all not necessarily missing from Metadata DB. We'll treat
+  them as if they were since we know ingest into Metadata DB is idempotent."
   [system provider-id concept-type start-date end-date]
   (truncate-work-table system)
   (let [sql (format "insert into sync_work (id, concept_id)
@@ -71,7 +74,7 @@
 
 (defn- in-clause
   "Generates a sql in clause string. If there are more than the max values to put in the in clause
-  it creates multiple an ANDs them together."
+  it creates multiple an ORs them together."
   [field num-values]
   (let [num-full (int (/ num-values 1000))
         num-in-partial (mod num-values 1000)
