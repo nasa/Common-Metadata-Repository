@@ -46,7 +46,6 @@
                                              #(when % (lifecycle/start % system))))
                                 system
                                 component-order)]
-     (info "system-int-test System started")
      (reset! saved-system started-system))))
 
 (defn stop
@@ -62,7 +61,6 @@
                                                #(when % (lifecycle/stop % system))))
                                   system
                                   (reverse component-order))]
-       (info "system-int-test System stopped")
        (reset! saved-system nil)
        stopped-system))))
 
