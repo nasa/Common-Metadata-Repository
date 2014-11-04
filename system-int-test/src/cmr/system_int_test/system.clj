@@ -40,7 +40,6 @@
   ([]
    (start (create-system)))
   ([system]
-   (info "system-int-test System starting")
    (let [started-system (reduce (fn [system component-name]
                                   (update-in system [component-name]
                                              #(when % (lifecycle/start % system))))
@@ -54,7 +53,6 @@
   ([]
    (stop @saved-system))
   ([system]
-   (info "system-int-test System shutting down")
    (when system
      (let [stopped-system (reduce (fn [system component-name]
                                     (update-in system [component-name]
