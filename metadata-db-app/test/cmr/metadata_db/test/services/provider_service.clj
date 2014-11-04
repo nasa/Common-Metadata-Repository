@@ -19,6 +19,10 @@
     (let [provider-id ""]
       (is (thrown-with-msg? ExceptionInfo (du/message->regex (messages/provider-id-empty provider-id))
                             (util/validate-provider-id provider-id)))))
+  (testing "nil provider-id"
+    (let [provider-id nil]
+      (is (thrown-with-msg? ExceptionInfo (du/message->regex (messages/provider-id-empty provider-id))
+                            (util/validate-provider-id provider-id)))))
   (testing "provider-id too long"
     (let [provider-id "ab123456789"]
       (is (thrown-with-msg? ExceptionInfo (du/message->regex (messages/provider-id-too-long provider-id))

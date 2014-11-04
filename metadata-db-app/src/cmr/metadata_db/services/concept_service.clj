@@ -16,6 +16,7 @@
             [cmr.metadata-db.data.oracle.concepts]
             [cmr.metadata-db.data.oracle.concepts.collection]
             [cmr.metadata-db.data.oracle.concepts.granule]
+            [cmr.metadata-db.data.oracle.providers]
 
             [cmr.common.log :refer (debug info warn error)]
             [cmr.system-trace.core :refer [deftracefn]]

@@ -7,8 +7,7 @@
             [clj-time.core :as t]
             [cmr.common.time-keeper :as tk]
             [clj-time.format :as f]
-            [cmr.common.date-time-parser :as p]
-            [cmr.metadata-db.data.oracle.concepts]))
+            [cmr.common.date-time-parser :as p]))
 
 
 

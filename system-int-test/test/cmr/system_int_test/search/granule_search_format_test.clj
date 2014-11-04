@@ -87,6 +87,18 @@
                  (search/find-concepts-in-format
                    nil :granule {} {:url-extension "iso_smap"}))))))
 
+    (testing "Retrieving granule results in DIF format is not supported"
+      (is (= {:errors ["The mime type [application/dif+xml] is not supported for granules."],
+              :status 400}
+             (search/get-search-failure-xml-data
+               (search/find-metadata :granule :dif {}))))
+      (testing "as extension"
+        (is (= {:errors ["The mime type [application/dif+xml] is not supported for granules."],
+                :status 400}
+               (search/get-search-failure-data
+                 (search/find-concepts-in-format
+                   nil :granule {} {:url-extension "dif"}))))))
+
     (testing "Retrieving results in ISO19115"
       (d/assert-metadata-results-match
         :iso19115 all-granules

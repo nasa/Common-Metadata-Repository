@@ -46,7 +46,7 @@
 (def service-reset-fns
   "A map of services to reset functions."
   {:metadata-db mdb-service/reset
-   :index-set index-set-service/reset
+   ;; The index set app is not reset as part of this because the indexer will handle it.
    :indexer indexer-service/reset
    :search cache/reset-caches
    :mock-echo mock-echo-api/reset})
@@ -72,12 +72,14 @@
       (debug "dev system /reset")
       (doseq [[service-name reset-fn] service-reset-fns]
         (reset-fn (app-context system service-name)))
+      (debug "dev system /reset complete")
       {:status 200})
 
     (POST "/clear-cache" []
       (debug "dev system /clear-cache")
       (doseq [[service-name clear-cache-fn] service-clear-cache-fns]
         (clear-cache-fn (app-context system service-name)))
+      (debug "dev system /clear-cache complete")
       {:status 200})
 
     (POST "/stop" []

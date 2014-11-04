@@ -172,18 +172,8 @@
         facets-strs (when-not echo-compatible? [(facets->xml-string facets)])
         footers ["</results>"]
         response (apply str (concat headers result-strings facets-strs footers))]
-    ;; Since clojure.data.xml does not handle namespaces fully from parse-str to emit-str,
-    ;; we don't support pretty print for ISO result which has namespace prefixes on element names.
-    (if (and pretty? (not (= :iso19115 result-format)))
-      (let [parsed (x/parse-str response)
-            ;; Fix for DIF emitting XML
-            parsed (if (= :dif result-format)
-                     (cx/update-elements-at-path
-                       parsed [:result :DIF]
-                       assoc :attrs dif-c/dif-header-attributes)
-                     parsed)]
-        (x/indent-str parsed))
-
+    (if pretty?
+      (cx/pretty-print-xml response)
       response)))
 
 (defmethod qs/search-results->response :echo10

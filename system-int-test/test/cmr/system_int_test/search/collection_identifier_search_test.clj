@@ -287,7 +287,13 @@
               :errors [(smsg/invalid-opt-for-param :entry-title :unsupported)]}
              (search/find-refs
                :collection
-               {:entry-title "dummy" "options[entry-title][unsupported]" "unsupported"}))))))
+               {:entry-title "dummy" "options[entry-title][unsupported]" "unsupported"}))))
+
+    (testing "empty parameters are ignored"
+      (is (d/refs-match? [c1-p1] (search/find-refs :collection {:concept-id (:concept-id c1-p1)
+                                                                :short-name ""
+                                                                :version "    "
+                                                                :entry-title "  \n \t"}))))))
 
 ;; Create 2 collection sets of which only 1 set has processing-level-id
 (deftest processing-level-search-test
@@ -488,7 +494,7 @@
     (testing "dif entry id search with aql"
       (are [items id options]
            (let [condition (merge {:difEntryId id} options)]
-           (d/refs-match? items (search/find-refs-with-aql :collection [condition])))
+             (d/refs-match? items (search/find-refs-with-aql :collection [condition])))
 
            [coll1] "S1_V1" {}
            [coll2] "S2" {}

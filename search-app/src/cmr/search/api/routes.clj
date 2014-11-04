@@ -14,6 +14,7 @@
             [cmr.common.cache :as cache]
             [cmr.common.services.errors :as svc-errors]
             [cmr.common.mime-types :as mt]
+            [cmr.common.xml :as cx]
             [cmr.search.services.query-service :as query-svc]
             [cmr.system-trace.http :as http-trace]
             [cmr.search.services.parameters.legacy-parameters :as lp]
@@ -164,6 +165,9 @@
          mime-type (or ext-mime-type
                        (mt/mime-type-from-headers headers valid-mime-types)
                        default-mime-type)]
+     ;; This validate check retained here to fail early if search accept headers are
+     ;; not in search-result-supported-mime-types.
+     ;; Concept specific format validation done during query validation.
      (mt/validate-request-mime-type mime-type valid-mime-types)
      ;; set the default format to xml
      (mt/mime-type->format mime-type default-mime-type))))
@@ -235,10 +239,14 @@
                                                  "application/xml")
         concept-id (path-w-extension->concept-id path-w-extension)
         _ (info (format "Search for concept with cmr-concept-id [%s]" concept-id))
-        concept (query-svc/find-concept-by-id context result-format concept-id)]
+        concept (query-svc/find-concept-by-id context result-format concept-id)
+        {:keys [metadata]} concept
+        body (if (= "true" (:pretty params))
+               (cx/pretty-print-xml metadata)
+               metadata)]
     {:status 200
      :headers {CONTENT_TYPE_HEADER (str (:format concept) "; charset=utf-8")}
-     :body (:metadata concept)}))
+     :body body}))
 
 (defn- get-provider-holdings
   "Invokes query service to retrieve provider holdings and returns the response"
