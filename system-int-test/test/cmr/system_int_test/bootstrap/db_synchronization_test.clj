@@ -18,14 +18,6 @@
 
 (use-fixtures :each (bootstrap/db-fixture "CPROV1" "CPROV2"))
 
-;; Consider doing a concurrency test with db synchronization and Catalog REST updates
-;; Testing the conflicts
-;; - Get the database in an inconsistent state with N items
-;; - Thread 1: Update N/2 items in CR 5 times
-;; - Thread 2: Run the synchronization
-;; - Wait for threads to join
-;; - Check that items at the end are all correct
-
 (comment
   (do
     (bootstrap/db-fixture-setup "CPROV1" "CPROV2")

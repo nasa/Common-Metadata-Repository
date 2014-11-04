@@ -17,7 +17,7 @@
           (assoc-in [:extra-fields :parent-collection-id] (:parent_collection_id result))
           (assoc-in [:extra-fields :delete-time]
                     (when (:delete_time result)
-                      (oracle/oracle-timestamp-tz->clj-time db (:delete_time result))))))
+                      (c/oracle-timestamp-tz->str-time db (:delete_time result))))))
 
 (defmethod c/concept->insert-args :granule
   [concept]
