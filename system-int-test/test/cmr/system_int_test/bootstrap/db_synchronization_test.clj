@@ -126,12 +126,21 @@
            :revision-id new-revision-id
            :metadata (update-concept-metadata concept new-revision-id))))
 
+(defn deleted-concept
+  "Returns the deleted version of this concept"
+  [concept]
+  (-> concept
+      (update-in [:revision-id] inc)
+      (assoc :metadata nil
+             :deleted true)))
+
 (defn assert-concepts-in-mdb
   "Checks that all of the concepts with the indicated revisions are in metadata db."
   [concepts]
   (doseq [concept concepts]
     (is (= concept
-           (dissoc (ingest/get-concept (:concept-id concept)) :revision-date)))))
+           (-> (ingest/get-concept (:concept-id concept) (:revision-id concept))
+               (dissoc :revision-date))))))
 
 (defn assert-tombstones-in-mdb
   "Checks that tombstones for each of the concepts are the latest revisions in the metadata db"
@@ -143,9 +152,11 @@
   "Check that all of the concepts are indexed for searching with the indicated revisions."
   [concepts]
   (index/refresh-elastic-index)
-  (doseq [[concept-type type-concepts] (group-by :concept-type concepts)]
-    (let [expected-tuples (map #(vector (:concept-id %) (:revision-id %)) type-concepts)
-          results (search/find-refs concept-type {:concept-id (map :concept-id type-concepts)})
+  (doseq [[concept-type type-concepts] (group-by :concept-type concepts)
+          concept-set (partition 1000 type-concepts)]
+    (let [expected-tuples (map #(vector (:concept-id %) (:revision-id %)) concept-set)
+          results (search/find-refs-with-post concept-type {:concept-id (map :concept-id concept-set)
+                                                     :page-size 2000})
           found-tuples (map #(vector (:id %) (:revision-id %)) (:refs results))]
       (is (= (set expected-tuples) (set found-tuples))))))
 
@@ -153,13 +164,11 @@
   "Checks that all the concepts given are not in the search index."
   [concepts]
   (index/refresh-elastic-index)
-  (doseq [[concept-type type-concepts] (group-by :concept-type concepts)]
+  (doseq [[concept-type type-concepts] (group-by :concept-type concepts)
+          concept-set (partition 1000 type-concepts)]
     (let [expected-tuples (map #(vector (:concept-id %) (:revision-id %)) type-concepts)
-          results (search/find-refs concept-type {:concept-id (map :concept-id type-concepts)})]
+          results (search/find-refs-with-post concept-type {:concept-id (map :concept-id type-concepts)})]
       (is (= 0 (:hits results)) (str "Expected 0 found " (pr-str results))))))
-
-;; TODO add a test that allows _many_ (thousands of) items across multiple providers to be out of synch and checks
-;; that they are all correct at the end.
 
 ;; TODO add tests that send start and end times for checking for missing items.
 
@@ -342,5 +351,237 @@
       (assert-tombstones-in-mdb deleted-grans)
       (assert-concepts-not-indexed deleted-grans))))
 
+(defn sorted-concept-id-map
+  "Creates an empty sorted map that sorts the concept id keys by their numeric value."
+  []
+  (sorted-map-by
+    (fn [cid1 cid2]
+      (compare (:sequence-number (concepts/parse-concept-id cid1))
+               (:sequence-number (concepts/parse-concept-id cid2))))))
 
+(defn initial-holdings
+  "Returns an in memory representation of the holdings that are expected to be in Metadata DB. It is
+  a map of provider ids to a map of concept types to a map of concept ids to vector of concepts.
+  The map of concept ids is sorted by the numeric id in the concept id. The vectors of concepts
+  are in revision order."
+  [& provider-ids]
+  (into {} (for [provider-id provider-ids]
+            [provider-id {:collection (sorted-concept-id-map)
+                          :granule (sorted-concept-id-map)}])))
+
+(defn holdings-append-concepts
+  "Appends the given concepts to the in memory representation of the holdings"
+  [holdings provider-id concept-type concepts]
+  (update-in holdings [provider-id concept-type]
+             (fn [concept-id-map]
+               (reduce (fn [concept-id-map concept]
+                         (update-in concept-id-map [(:concept-id concept)]
+                                    (fn [concepts]
+                                      (if (seq concepts)
+                                        (conj concepts concept)
+                                        [concept]))))
+                       concept-id-map
+                       concepts))))
+
+(defn holdings->concepts
+  "Returns all the concepts in the holdings."
+  [holdings]
+  (apply concat (for [[provider-id concept-type-map] holdings
+                      [concept-type concepts-map] concept-type-map
+                      [concept-id concepts] concepts-map]
+                  concepts)))
+
+(defn holdings->latest-concepts
+  "Returns the latests revision of every concept in the holdings"
+  [holdings]
+  (for [[provider-id concept-type-map] holdings
+        [concept-type concepts-map] concept-type-map
+        [concept-id concepts] concepts-map]
+    (last concepts)))
+
+(defn first-n-holdings
+  "Gets the first n holdings from the specified provider and concept type."
+  ([holdings provider-id concept-type]
+   (->> (holdings provider-id)
+        concept-type
+        vals
+        (map last)))
+  ([holdings provider-id concept-type n]
+   (take n (first-n-holdings holdings provider-id concept-type))))
+
+(defn last-n-holdings
+  "Gets the last n holdings from the specified provider and concept type."
+  [holdings provider-id concept-type n]
+  (->> (first-n-holdings holdings provider-id concept-type)
+       reverse
+       (take n)))
+
+(defn prettify-holdings
+  "Simplify the holdings for pretty print."
+  [holdings]
+  (into {}
+        (for [[provider-id concept-type-map] holdings]
+          [provider-id
+           (into {}
+                 (for [[concept-type concept-id-map] concept-type-map]
+                   [concept-type
+                    (into (sorted-concept-id-map)
+                          (for [[concept-id concepts] concept-id-map]
+                            [concept-id
+                             (mapv #(select-keys % [:deleted :revision-id])
+                                   concepts)]))]))])))
+
+(defn simulate-insert-sync
+  "During synchronization of Catalog REST and Metadata DB every item in the date range will be
+  copied to mdb as a new revision. This simulates that change in the holdings by looking for
+  concepts that haven't changed from the old-holdings to the new-holdings and creating a new
+  revision."
+  [new-holdings old-holdings]
+  (reduce (fn [holdings latest-concept]
+            (let [concept-id (:concept-id latest-concept)
+                  {:keys [provider-id concept-type]} (concepts/parse-concept-id concept-id)
+                  latest-old-concept (last (get-in old-holdings [provider-id concept-type concept-id]))]
+              (if (= (:revision-id latest-concept) (:revision-id latest-old-concept))
+                ;; This concept isn't being updated so we need to add a copy with a different revision id.
+                (holdings-append-concepts holdings provider-id concept-type
+                                          [(update-in latest-concept [:revision-id] inc)])
+                ;; No change needed
+                holdings)))
+          new-holdings
+          (filter (complement :deleted)
+                  (holdings->latest-concepts new-holdings))))
+
+
+(defmulti insert-concepts
+  "Inserts the concepts into Catalog REST, the in memory holdings, and optionally metadata db."
+  (fn [holdings concept-counter concept-type num-inserts modify-mdb?]
+    concept-type))
+
+(defmethod insert-concepts :collection
+  [holdings concept-counter concept-type num-inserts modify-mdb?]
+  (let [system (bootstrap/system)]
+    (reduce (fn [holdings provider-id]
+              (let [num-existing (-> holdings (get provider-id) concept-type count)
+                    concepts (for [n (range num-inserts)]
+                               (coll-concept concept-counter provider-id
+                                             (str "coll" (inc (+ num-existing n)))))]
+                (cat-rest/insert-concepts system concepts)
+                (when modify-mdb? (ingest/ingest-concepts concepts))
+                (holdings-append-concepts holdings provider-id concept-type concepts)))
+            holdings
+            (keys holdings))))
+
+(defmethod insert-concepts :granule
+  [holdings concept-counter concept-type num-inserts modify-mdb?]
+  (let [system (bootstrap/system)]
+    (reduce (fn [holdings provider-id]
+              (let [num-existing (-> holdings (get provider-id) concept-type count)
+                    concepts (map (fn [n coll]
+                                    (gran-concept concept-counter coll
+                                                  (str "gran" (inc (+ num-existing n)))))
+                                  (range num-inserts)
+                                  (cycle (filter (complement :deleted)
+                                                 (first-n-holdings holdings provider-id :collection))))]
+                (cat-rest/insert-concepts system concepts)
+                (when modify-mdb? (ingest/ingest-concepts concepts))
+                (holdings-append-concepts holdings provider-id concept-type concepts)))
+            holdings
+            (keys holdings))))
+
+(defn update-concepts
+  "Updates the first N concepts into Catalog REST, the in memory holdings, and optionally metadata
+  db."
+  [holdings concept-type num-updates modify-mdb?]
+  (let [system (bootstrap/system)]
+    (reduce (fn [holdings provider-id]
+              (let [concepts (map updated-concept
+                                  (first-n-holdings holdings provider-id concept-type num-updates))]
+                (cat-rest/update-concepts system concepts)
+                (when modify-mdb? (ingest/ingest-concepts concepts))
+                (holdings-append-concepts holdings provider-id concept-type concepts)))
+            holdings
+            (keys holdings))))
+
+(defn delete-concepts
+ "Deletes the last N concepts in Catalog REST, the in memory holdings, and optionally metadata
+  db."
+  [holdings concept-type num-deletes modify-mdb?]
+  (let [system (bootstrap/system)]
+    (reduce (fn [holdings provider-id]
+              (let [tombstones (map deleted-concept
+                                    (filter (complement :deleted)
+                                            (last-n-holdings
+                                              holdings provider-id concept-type num-deletes)))]
+                (cat-rest/delete-concepts system tombstones)
+                (when modify-mdb? (ingest/delete-concepts tombstones))
+                (holdings-append-concepts holdings provider-id concept-type tombstones)))
+            holdings
+            (keys holdings))))
+
+
+(defn modify-holdings
+  "Makes changes to the holdings based on the counts of changes per concept type in the counts map."
+  [holdings concept-counter modify-mdb? counts]
+  (reduce (fn [holdings [concept-type {:keys [num-inserts num-updates num-deletes]}]]
+            (-> holdings
+                (insert-concepts concept-counter concept-type (or num-inserts 0) modify-mdb?)
+                (update-concepts concept-type (or num-updates 0) modify-mdb?)
+                (delete-concepts concept-type (or num-deletes 0) modify-mdb?)))
+          holdings
+          (sort-by first counts)))
+
+(defn verify-holdings
+  "Verifies that the latest version of all concepts in the holdings are in metadata db and indexed
+  or not in the index if they are tombstones."
+  [holdings]
+  (let [latest-concepts (holdings->latest-concepts holdings)
+        {tombstones true
+         non-tombstones false} (group-by :deleted latest-concepts)]
+    (assert-concepts-in-mdb non-tombstones)
+    (assert-tombstones-in-mdb tombstones)
+    (assert-concepts-indexed non-tombstones)
+    (assert-concepts-not-indexed tombstones))
+  holdings)
+
+;; This test will simulate the problem that occurred in ops.
+;; Catalog REST and Metadata DB were in sync. Then new operations against Metadata DB stopped but
+;; continued to Catalog REST. Then the problem was resolved but the data was now out of sync.
+
+;; 1. Put a bunch of data in Metadata DB and Catalog REST. They should be in sync
+;; 2. Make a bunch of changes in Catalog REST only making them out of sync.
+;; 3. Make a bunch of changes in both.
+;; 4. Run synchronize.
+;; 5. Verify data is correct in MDB and Indexer
+
+(def NUM_GRANULES_FACTOR 2)
+
+(deftest db-synchronize-many-items
+  (test-env/only-with-real-database
+    (let [concept-counter (atom 0)
+          ;; Map of provider ids to maps of concept types to maps of concept ids to sequences of concept revisions
+          increase-by-factor #(* % NUM_GRANULES_FACTOR)
+          orig-holdings (-> (initial-holdings "CPROV1" "CPROV2")
+                            ;; Setup initial holdings
+                            (modify-holdings concept-counter true
+                                             {:collection {:num-inserts 10
+                                                           :num-updates 2}
+                                              :granule {:num-inserts (increase-by-factor 10)
+                                                        :num-updates (increase-by-factor 1)
+                                                        :num-deletes (increase-by-factor 1)}})
+                            ;; We should be in sync
+                            verify-holdings)
+          ;; Make Catalog REST out of sync with Metadata db
+          updated-holdings (-> orig-holdings
+                               (modify-holdings concept-counter false
+                                                {:granule {:num-deletes (increase-by-factor 4)}})
+                               (modify-holdings concept-counter false
+                                                {:collection {:num-inserts 2
+                                                              :num-updates 4}
+                                                 :granule {:num-inserts (increase-by-factor 1)
+                                                           :num-updates (increase-by-factor 2)}})
+                               (simulate-insert-sync orig-holdings))]
+
+      (bootstrap/synchronize-databases)
+
+      (verify-holdings updated-holdings))))
 

@@ -90,17 +90,21 @@
         partial-ins (when (> num-in-partial 0) [(make-in num-in-partial)])]
     (str/join " or " (concat full-ins partial-ins))))
 
+(comment
+
+
+  (get-latest-concept-id-revision-ids
+    system "CPROV1" :collection ["C1-CPROV1"])
+
+  )
+
 
 (defn get-latest-concept-id-revision-ids
   "Finds the revision ids for the given concept ids in metadata db. Returns tuples of concept id and
   revision id"
   [system provider-id concept-type concept-ids]
-  (let [sql (format
-              "select concept_id, revision_id from %s where %s"
-              (tables/get-table-name provider-id concept-type)
-              (in-clause "concept_id" (count concept-ids)))
-        stmt (cons sql concept-ids)
-        tuples (query-for-concept-rev-id-pairs (:db system) stmt)]
+  (let [tuples (mdb-concepts/get-latest-concept-id-revision-id-tuples
+                 (:db system) concept-type provider-id concept-ids)]
     (concat tuples
             ;; Find concept ids that didn't exist in Metadata DB at all.
             ;; A revision 0 indicates they don't exist yet. This will be incremented to the first

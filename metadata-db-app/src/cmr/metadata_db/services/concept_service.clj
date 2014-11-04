@@ -104,6 +104,7 @@
          (when (= (:status result) :fail)
            (cmsg/data-error :conflict
                             msg/invalid-revision-id
+                            concept-id
                             (:expected result)
                             revision-id)))
 
@@ -112,6 +113,7 @@
        (when-not (= revision-id 1)
          (cmsg/data-error :conflict
                           msg/invalid-revision-id
+                          concept-id
                           1
                           revision-id))
 

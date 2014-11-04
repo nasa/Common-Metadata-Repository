@@ -215,6 +215,38 @@
          ;; we want the temp table to persist for the main select
          (concat concept-id-revision-id-tuples [:transaction? false])))
 
+(defn get-latest-concept-id-revision-id-tuples
+  "Finds the latest pairs of concept id and revision ids for the given concept ids. If no revisions
+  exist for a given concept id it will not be returned."
+  [db concept-type provider-id concept-ids]
+  (let [start (System/currentTimeMillis)]
+    (j/with-db-transaction
+      [conn db]
+      ;; use a temporary table to insert our values so we can use a join to
+      ;; pull everything in one select
+      (apply j/insert! conn
+             "get_concepts_work_area"
+             ["concept_id"]
+             ;; set :transaction? false since we are already inside a transaction, and
+             ;; we want the temp table to persist for the main select
+             (concat (map vector concept-ids) [:transaction? false]))
+      ;; pull back all revisions of each concept-id and then take the latest
+      ;; instead of using group-by in SQL
+      (let [table (tables/get-table-name provider-id concept-type)
+            stmt (su/build (select [:c.concept-id :c.revision-id]
+                             (from (as (keyword table) :c)
+                                   (as :get-concepts-work-area :t))
+                             (where `(and (= :c.concept-id :t.concept-id)))))
+            cid-rid-maps (sql-utils/query conn stmt)
+            concept-id-to-rev-id-maps (map #(hash-map (:concept_id %) (long (:revision_id %)))
+                                           cid-rid-maps)
+            latest (apply merge-with safe-max {}
+                          concept-id-to-rev-id-maps)
+            concept-id-revision-id-tuples (seq latest)
+            latest-time (- (System/currentTimeMillis) start)]
+        (debug (format "Retrieving latest revision-ids took [%d] ms" latest-time))
+        concept-id-revision-id-tuples))))
+
 (extend-protocol c/ConceptsStore
   OracleStore
 
@@ -302,32 +334,9 @@
 
   (get-latest-concepts
     [db concept-type provider-id concept-ids]
-    (let [start (System/currentTimeMillis)]
-      (j/with-db-transaction
-        [conn db]
-        ;; use a temporary table to insert our values so we can use a join to
-        ;; pull everything in one select
-        (apply j/insert! conn
-               "get_concepts_work_area"
-               ["concept_id"]
-               ;; set :transaction? false since we are already inside a transaction, and
-               ;; we want the temp table to persist for the main select
-               (concat (map vector concept-ids) [:transaction? false]))
-        ;; pull back all revisions of each concept-id and then take the latest
-        ;; instead of using group-by in SQL
-        (let [table (tables/get-table-name provider-id concept-type)
-              stmt (su/build (select [:c.concept-id :c.revision-id]
-                               (from (as (keyword table) :c)
-                                     (as :get-concepts-work-area :t))
-                               (where `(and (= :c.concept-id :t.concept-id)))))
-              cid-rid-maps (sql-utils/query conn stmt)
-              concept-id-to-rev-id-maps (map #(hash-map (:concept_id %) (:revision_id %)) cid-rid-maps)
-              latest (apply merge-with safe-max {}
-                            concept-id-to-rev-id-maps)
-              concept-id-revision-id-tuples (seq latest)
-              latest-time (- (System/currentTimeMillis) start)]
-          (debug (format "Retrieving latest revision-ids took [%d] ms" latest-time))
-          (c/get-concepts db concept-type provider-id concept-id-revision-id-tuples)))))
+    (c/get-concepts
+      db concept-type provider-id
+      (get-latest-concept-id-revision-id-tuples db concept-type provider-id concept-ids)))
 
   (find-concepts
     [db params]

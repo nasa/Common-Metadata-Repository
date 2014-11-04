@@ -68,8 +68,10 @@
         (cs/validate-concept-revision-id (memory/create-db [example-concept]) concept previous-concept)))
     (testing "invalid concept revision-id"
       (let [concept (assoc previous-concept :revision-id 3)]
-        (is (thrown-with-msg? ExceptionInfo (du/message->regex (messages/invalid-revision-id 2 3))
-                              (cs/validate-concept-revision-id (memory/create-db [example-concept]) concept previous-concept)))))
+        (is (thrown-with-msg?
+              ExceptionInfo
+              (du/message->regex (messages/invalid-revision-id (:concept-id concept) 2 3))
+              (cs/validate-concept-revision-id (memory/create-db [example-concept]) concept previous-concept)))))
     (testing "missing concept-id no revision-id"
       (let [concept (dissoc previous-concept :concept-id)]
         (cs/validate-concept-revision-id (memory/create-db [example-concept]) concept previous-concept)))
@@ -78,8 +80,10 @@
         (cs/validate-concept-revision-id (memory/create-db [example-concept]) concept previous-concept)))
     (testing "missing concept-id invalid revision-id"
       (let [concept (-> previous-concept (dissoc :concept-id) (assoc :revision-id 2))]
-        (is (thrown-with-msg? ExceptionInfo (du/message->regex (messages/invalid-revision-id 1 2))
-                              (cs/validate-concept-revision-id (memory/create-db [example-concept]) concept previous-concept)))))))
+        (is (thrown-with-msg?
+              ExceptionInfo
+              (du/message->regex (messages/invalid-revision-id (:concept-id concept) 1 2))
+              (cs/validate-concept-revision-id (memory/create-db [example-concept]) concept previous-concept)))))))
 
 
 ;;; Verify that the try-to-save logic is correct.

@@ -18,10 +18,10 @@
     "Concept with concept-id [%s] and revision-id [%s] does not exist."
     concept-id revision-id))
 
-(defn invalid-revision-id [expected-id received-id]
+(defn invalid-revision-id [concept-id expected-id received-id]
   (format
-    "Expected revision-id of [%s] got [%s]"
-    expected-id received-id))
+    "Expected revision-id of [%s] got [%s] for [%s]"
+    expected-id received-id concept-id))
 
 (defn invalid-revision-id-unknown-expected [revision-id]
   (format
