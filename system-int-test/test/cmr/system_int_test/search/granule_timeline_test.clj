@@ -74,7 +74,7 @@
           (is (= {:status 400 :errors ["Parameter [foo] was not recognized."
                                        "start_date is a required parameter for timeline searches"
                                        "end_date is a required parameter for timeline searches"
-                                       interval-msg]}
+                                       "interval is a required parameter for timeline searches"]}
                  (search/get-granule-timeline {:foo 5}))))
 
         (testing "invalid start-date"
