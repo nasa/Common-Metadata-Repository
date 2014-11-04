@@ -46,8 +46,9 @@
       (go (>! channel [provider-id collection-id])))))
 
 (defn db-synchronize
-  "TODO"
-  [context synchronous]
+  "Synchronizes Catalog REST and Metadata DB looking for differences that were ingested between
+  start date and end date"
+  [context synchronous start-date end-date]
   (if synchronous
-    (dbs/synchronize-databases (:system context))
+    (dbs/synchronize-databases (:system context) start-date end-date)
     (throw (Exception. "TODO non synchronous"))))

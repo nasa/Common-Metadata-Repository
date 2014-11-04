@@ -8,7 +8,9 @@
             [cmr.metadata-db.config :as mdb-config]
             [cmr.bootstrap.test.catalog-rest :as cat-rest]
             [cmr.common.lifecycle :as lifecycle]
-            [cmr.system-int-test.system :as s]))
+            [cmr.system-int-test.system :as s]
+            [clj-time.core :as t]
+            [clj-time.format :as f]))
 
 (defn bulk-index-provider
   "Call the bootstrap app to bulk index a provider."
@@ -55,16 +57,22 @@
            (:status (bulk-index-provider provider-id))))))
 
 (defn synchronize-databases
-  "TODO"
-  []
-  (let [response (client/request {:method :post
-                                  :url (url/db-synchronize-url)
-                                  :query-params {:synchronous true}
-                                  :accept :json
-                                  :throw-exceptions false
-                                  :connection-manager (url/conn-mgr)})
-        body (json/decode (:body response) true)]
-    (assoc body :status (:status response))))
+  "Tells the bootstrap application to synchronize Catalog REST and CMR."
+  ([]
+   (synchronize-databases (t/date-time 2010) (t/date-time 2020)))
+  ([start-time end-time]
+   (let [start-time (f/unparse (f/formatters :date-time) start-time)
+         end-time (f/unparse (f/formatters :date-time) end-time)
+         response (client/request {:method :post
+                                   :url (url/db-synchronize-url)
+                                   :query-params {:synchronous true
+                                                  :start_date start-time
+                                                  :end_date end-time}
+                                   :accept :json
+                                   :throw-exceptions false
+                                   :connection-manager (url/conn-mgr)})
+         body (json/decode (:body response) true)]
+     (assoc body :status (:status response)))))
 
 (defn system
   "Returns a system suitable for calling the Catalog REST test code to create providers and add concepts."

@@ -12,7 +12,8 @@
             [cmr.system-int-test.data2.core :as d]
             [cmr.system-int-test.utils.test-environment :as test-env]
             [cmr.bootstrap.test.catalog-rest :as cat-rest]
-            [cmr.common.concepts :as concepts]))
+            [cmr.common.concepts :as concepts]
+            [cmr.oracle.connection :as oracle]))
 
 
 (use-fixtures :each (bootstrap/db-fixture "CPROV1" "CPROV2"))
@@ -142,6 +143,12 @@
            (-> (ingest/get-concept (:concept-id concept) (:revision-id concept))
                (dissoc :revision-date))))))
 
+(defn assert-concepts-not-in-mdb
+  "Checks that all of the concepts with the indicated revisions are not in metadata db."
+  [concepts]
+  (doseq [concept concepts]
+    (is (nil? (ingest/get-concept (:concept-id concept) (:revision-id concept))))))
+
 (defn assert-tombstones-in-mdb
   "Checks that tombstones for each of the concepts are the latest revisions in the metadata db"
   [concepts]
@@ -156,7 +163,7 @@
           concept-set (partition 1000 type-concepts)]
     (let [expected-tuples (map #(vector (:concept-id %) (:revision-id %)) concept-set)
           results (search/find-refs-with-post concept-type {:concept-id (map :concept-id concept-set)
-                                                     :page-size 2000})
+                                                            :page-size 2000})
           found-tuples (map #(vector (:id %) (:revision-id %)) (:refs results))]
       (is (= (set expected-tuples) (set found-tuples))))))
 
@@ -215,6 +222,68 @@
       (assert-concepts-in-mdb updated-colls)
       (assert-concepts-indexed updated-colls))))
 
+
+(comment
+
+  (bootstrap/db-fixture-setup "CPROV1" "CPROV2")
+
+  (bootstrap/db-fixture-tear-down "CPROV1"  "CPROV2")
+
+  )
+
+
+(deftest db-synchronize-collection-inserts-between-dates-test
+  (test-env/only-with-real-database
+    (let [concept-counter (atom 1)
+          ;; Original in sync concepts
+          coll1-1 (coll-concept concept-counter "CPROV1" "coll1")
+          coll2-1 (coll-concept concept-counter "CPROV1" "coll2")
+          coll3-1 (coll-concept concept-counter "CPROV1" "coll3")
+          orig-colls [coll1-1 coll2-1 coll3-1]
+
+          ;; Changes before start time
+          coll2-2 (updated-concept coll2-1)
+          coll4-1 (coll-concept concept-counter "CPROV1" "coll4")
+
+          ;; Changes between start and end time
+          coll3-2 (updated-concept coll3-1)
+          coll5-1 (coll-concept concept-counter "CPROV1" "coll5")
+          coll6-1 (coll-concept concept-counter "CPROV1" "coll6")
+
+          ;; Changes after end time
+          coll7-1 (coll-concept concept-counter "CPROV1" "coll7")
+          system (bootstrap/system)]
+      ;; Save the concepts in Catalog REST
+      (cat-rest/insert-concepts system orig-colls)
+
+      ;; Migrate the providers. Catalog REST and Metadata DB are in sync
+      (bootstrap/bulk-migrate-providers "CPROV1")
+      (bootstrap/bulk-index-providers "CPROV1")
+
+      ;; Make changes before the start time
+      (cat-rest/update-concepts system [coll2-2])
+      (cat-rest/insert-concepts system [coll4-1])
+      (let [start-time (oracle/current-db-time (:db system))
+            ;; Make changes within the captured times
+            _ (cat-rest/update-concepts system [coll3-2])
+            _ (cat-rest/insert-concepts system [coll5-1 coll6-1])
+            end-time (oracle/current-db-time (:db system))]
+
+        ;; Make changes after end time that will be ignored
+        (cat-rest/insert-concepts system [coll7-1])
+
+        ;; Catalog REST and Metadata DB are not in sync now.
+        ;; Put them back in sync
+        (bootstrap/synchronize-databases start-time end-time))
+
+
+      ;; Check that they are synchronized now with the latest data.
+      (assert-concepts-in-mdb [coll1-1 coll2-1 coll3-1 coll3-2 coll5-1 coll6-1])
+      (assert-concepts-indexed [coll1-1 coll2-1 coll3-2 coll5-1 coll6-1])
+
+      ;; Check that concepts before start and after end were not found
+      (assert-concepts-not-in-mdb [coll2-2 coll4-1 coll7-1])
+      (assert-concepts-not-indexed [coll4-1 coll7-1]))))
 
 (deftest db-synchronize-collections-test
   (test-env/only-with-real-database
@@ -366,8 +435,8 @@
   are in revision order."
   [& provider-ids]
   (into {} (for [provider-id provider-ids]
-            [provider-id {:collection (sorted-concept-id-map)
-                          :granule (sorted-concept-id-map)}])))
+             [provider-id {:collection (sorted-concept-id-map)
+                           :granule (sorted-concept-id-map)}])))
 
 (defn holdings-append-concepts
   "Appends the given concepts to the in memory representation of the holdings"
@@ -503,7 +572,7 @@
             (keys holdings))))
 
 (defn delete-concepts
- "Deletes the last N concepts in Catalog REST, the in memory holdings, and optionally metadata
+  "Deletes the last N concepts in Catalog REST, the in memory holdings, and optionally metadata
   db."
   [holdings concept-type num-deletes modify-mdb?]
   (let [system (bootstrap/system)]

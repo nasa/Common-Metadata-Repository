@@ -11,6 +11,8 @@
             [cmr.bootstrap.data.migration-utils :as mu]
             [cmr.common.util :as util]
             [cmr.common.concepts :as concepts]
+            [clj-time.coerce :as cr]
+            [clj-time.core :as t]
             [cmr.metadata-db.data.oracle.concept-tables :as tables]
             [cmr.metadata-db.data.oracle.sql-utils :as sql-utils]
             [cmr.metadata-db.data.oracle.concepts :as mdb-concepts]
@@ -34,22 +36,12 @@
 
   (def system (get-in user/system [:apps :bootstrap]))
 
-  (add-missing-items-to-work-table system "CPROV1" :collection)
-
-  (get-work-items-batch system 1 10)
-
-  (get-latest-concept-id-revision-ids system "CPROV1" :collection (map :concept-id (get-work-items-batch system 1 10)))
-
-  (get-concept-from-catalog-rest system "CPROV1" :collection "C1-CPROV1" 1)
-
-
-)
+  )
 
 (defn- truncate-work-table
   "Removes everything from the sync work table."
   [system]
   (j/execute! (:db system) ["delete from sync_work"]))
-
 
 (defn- query-for-concept-rev-id-pairs
   "Executes the give statement that should find concept_id and revision_id pairs. Returns the results
@@ -61,15 +53,14 @@
 
 (defn- add-missing-items-to-work-table
   "Finds items that are missing in Metadata DB and adds it to the sync_work table."
-  [system provider-id concept-type]
-  ;; TODO this sql should be updated to find items that were INGEST_UPDATED_AT > start date and
-  ;; INGEST_UPDATED_AT < end date
+  [system provider-id concept-type start-date end-date]
   (truncate-work-table system)
   (let [sql (format "insert into sync_work (id, concept_id)
-                    select ROWNUM, %s from %s"
+                    select ROWNUM, %s from %s
+                    where ingest_updated_at >= ? and ingest_updated_at <= ?"
                     (mu/concept-type->catalog-rest-id-field concept-type)
                     (mu/catalog-rest-table system provider-id concept-type))]
-      (j/execute! (:db system) [sql])))
+      (j/execute! (:db system) [sql (cr/to-sql-time start-date) (cr/to-sql-time end-date)])))
 
 (defn get-work-items-batch
   "Selects n work items from the table starting at the given index and retrieving up to n items"
@@ -89,15 +80,6 @@
         full-ins (repeat num-full full-in)
         partial-ins (when (> num-in-partial 0) [(make-in num-in-partial)])]
     (str/join " or " (concat full-ins partial-ins))))
-
-(comment
-
-
-  (get-latest-concept-id-revision-ids
-    system "CPROV1" :collection ["C1-CPROV1"])
-
-  )
-
 
 (defn get-latest-concept-id-revision-ids
   "Finds the revision ids for the given concept ids in metadata db. Returns tuples of concept id and
@@ -139,7 +121,7 @@
                       :entry-title dataset_id
                       :version-id version_id
                       :delete-time (when delete_time
-                                     (mdb-concepts/oracle-timestamp-tz->clj-time conn delete_time))}
+                                     (mdb-concepts/oracle-timestamp-tz->str-time conn delete_time))}
        :provider-id provider-id
        :native-id dataset_id})))
 
@@ -165,7 +147,7 @@
                                                :sequence-number (long dataset_record_id)
                                                :provider-id provider-id})
                       :delete-time (when delete_time
-                                     (mdb-concepts/oracle-timestamp-tz->clj-time conn delete_time))}
+                                     (mdb-concepts/oracle-timestamp-tz->str-time conn delete_time))}
        :provider-id provider-id
        :native-id granule_ur})))
 
@@ -228,12 +210,15 @@
   (let [mdb-context {:system (:metadata-db system)}
         indexer-context {:system (:indexer system)}
         {:keys [concept-id revision-id]} concept]
-    (concept-service/save-concept mdb-context concept)
-    (index-service/index-concept indexer-context concept-id revision-id true))
-
-  ;; TODO catch conflict failures and log them. They're ok.
-
-  )
+    (try
+      (concept-service/save-concept mdb-context concept)
+      (index-service/index-concept indexer-context concept-id revision-id true)
+      (catch clojure.lang.ExceptionInfo e
+        (let [data (ex-data e)]
+          (if (= (:type data) :conflict)
+            (warn (format "Ignoring conflict saving revision for %s %s: %s"
+                          concept-id revision-id (pr-str (:errors data))))
+            (throw e)))))))
 
 (defn process-missing-concepts
   "Starts a series of threads that read concepts one at a time off the channel, save, and index them.
@@ -260,9 +245,9 @@
 (defn synchronize-missing-items
   "Finds items missing from Metadata DB, loads the concepts from Catalog REST, saves them in the
   Metadata DB and indexes them."
-  [system provider-id concept-type]
+  [system provider-id concept-type start-date end-date]
   (info "Synchronizing" concept-type "inserts for" provider-id)
-  (add-missing-items-to-work-table system provider-id concept-type)
+  (add-missing-items-to-work-table system provider-id concept-type start-date end-date)
   (->> (process-items-from-work-table system)
        (map-missing-items-to-concepts system provider-id concept-type)
        (process-missing-concepts system)))
@@ -355,12 +340,17 @@
 (defn create-tombstone-and-unindex-concept
   "Creates a tombstone with the given concept id and revision id and unindexes the concept."
   [system concept-id revision-id]
-  (let [mdb-context {:system (:metadata-db system)}
-        indexer-context {:system (:indexer system)}]
-    (concept-service/delete-concept mdb-context concept-id revision-id)
-    (index-service/delete-concept indexer-context concept-id revision-id true))
-  ;; TODO catch conflict failures and log them. They're ok.
-  )
+  (try
+    (let [mdb-context {:system (:metadata-db system)}
+          indexer-context {:system (:indexer system)}]
+      (concept-service/delete-concept mdb-context concept-id revision-id)
+      (index-service/delete-concept indexer-context concept-id revision-id true))
+    (catch clojure.lang.ExceptionInfo e
+      (let [data (ex-data e)]
+        (if (= (:type data) :conflict)
+          (warn (format "Ignoring conflict creating tombstone for %s %s: %s"
+                        concept-id revision-id (pr-str (:errors data))))
+          (throw e))))))
 
 (defn process-deletes
   "Starts a series of threads that read items one at a time off the channel then creates a tombstone
@@ -395,10 +385,9 @@
 (defn synchronize-databases
   "Finds differences in Metadata DB and Catalog REST and brings Metadata DB along with the indexer
   back in sync with Catalog REST."
-  [system]
-  ;; TODO pass the start date and end data around to make the select performance better
+  [system start-date end-date]
   (doseq [provider (provider-service/get-providers {:system system})]
-    (synchronize-missing-items system provider :collection)
+    (synchronize-missing-items system provider :collection start-date end-date)
     (synchronize-deletes system provider :collection)
-    (synchronize-missing-items system provider :granule)
+    (synchronize-missing-items system provider :granule start-date end-date)
     (synchronize-deletes system provider :granule)))

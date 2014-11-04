@@ -16,7 +16,7 @@
             [clj-time.coerce :as cr]
             [clj-time.core :as t]
             [cmr.common.concepts :as cc]
-            [cmr.oracle.connection]
+            [cmr.oracle.connection :as oracle]
             [cmr.metadata-db.data.oracle.sql-utils :as sql-utils])
   (:import cmr.oracle.connection.OracleStore
            java.util.zip.GZIPInputStream
@@ -87,23 +87,12 @@
     (.finish gzip)
     (.toByteArray output)))
 
-(defn db->oracle-conn
-  "Gets an oracle connection from the outer database connection. Should be called from within as
-  with-db-transaction block."
-  [db]
-  (if-let [proxy-conn (:connection db)]
-    proxy-conn
-    (errors/internal-error!
-      (str "Called db->oracle-conn with connection that was not within a db transaction. "
-           "It must be called from within call j/with-db-transaction"))))
-
-(defn oracle-timestamp-tz->clj-time
-  "Converts oracle.sql.TIMESTAMPTZ instance into a clj-time. Must be called within
-  a with-db-transaction block with the connection"
-  [db ^oracle.sql.TIMESTAMPTZ ot]
-  (let [^java.sql.Connection conn (db->oracle-conn db)
-        result (cr/from-sql-time (.timestampValue ot conn))]
-    (f/unparse (f/formatters :date-time) result)))
+(defn oracle-timestamp-tz->str-time
+  "Converts oracle.sql.TIMESTAMPTZ instance into a string representation of the time. Must be called
+  within a with-db-transaction block with the connection"
+  [db ot]
+  (f/unparse (f/formatters :date-time)
+             (oracle/oracle-timestamp-tz->clj-time db ot)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Multi methods for concept types to implement
@@ -144,7 +133,7 @@
        :metadata (blob->string metadata)
        :format (db-format->mime-type format)
        :revision-id (int revision_id)
-       :revision-date (oracle-timestamp-tz->clj-time db revision_date)
+       :revision-date (oracle-timestamp-tz->str-time db revision_date)
        :deleted (not= (int deleted) 0)})))
 
 (defmethod concept->insert-args :default

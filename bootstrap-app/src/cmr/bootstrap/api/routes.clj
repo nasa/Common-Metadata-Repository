@@ -7,10 +7,11 @@
             [cheshire.core :as json]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.api.errors :as errors]
+            [cmr.common.services.errors :as srv-errors]
             [cmr.system-trace.http :as http-trace]
             [cmr.bootstrap.services.bootstrap-service :as bs]
-            [cmr.bootstrap.services.health-service :as hs]))
-
+            [cmr.bootstrap.services.health-service :as hs]
+            [cmr.common.date-time-parser :as date-time-parser]))
 
 (defn- migrate-collection
   "Copy collections data from catalog-rest to metadata db (including granules)"
@@ -31,10 +32,15 @@
     {:status 202 :body {:message (str "Processing provider " provider-id)}}))
 
 (defn- db-synchronize
-  "TODO"
+  "Synchronizes Catalog REST and Metadata DB looking for differences that were ingested between
+  start date and end date"
   [context params]
-  (let [synchronous (:synchronous params)]
-    (bs/db-synchronize context synchronous)
+  (let [{:keys [synchronous start_date end_date]} params]
+    (when-not (and start_date end_date)
+      (srv-errors/throw-service-error :bad-request "start_date and end_date are required parameters"))
+    (bs/db-synchronize context synchronous
+                       (date-time-parser/parse-datetime start_date)
+                       (date-time-parser/parse-datetime end_date))
     {:status 202 :body {:message "Synchronizing databases."}}))
 
 (defn- bulk-index-provider

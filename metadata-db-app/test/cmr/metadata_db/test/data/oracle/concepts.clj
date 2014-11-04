@@ -54,7 +54,7 @@
       (j/with-db-transaction
         [db db]
         (let [revision-time (t/date-time 1986 10 14 4 3 27 456)
-              oracle-timestamp (TIMESTAMPTZ. ^java.sql.Connection (c/db->oracle-conn db)
+              oracle-timestamp (TIMESTAMPTZ. ^java.sql.Connection (oracle/db->oracle-conn db)
                                              ^java.sql.Timestamp (cr/to-sql-time revision-time))]
           (testing "collection results"
             (let [result {:native_id "foo"

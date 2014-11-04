@@ -9,6 +9,7 @@
             [cmr.common.concepts :as concepts]
             [cmr.common.date-time-parser :as p]
             [cmr.metadata-db.data.oracle.concepts :as mdb-concepts]
+            [cmr.oracle.connection :as oracle]
             [clj-time.core :as t]
             [clj-time.coerce :as cr]))
 
@@ -114,7 +115,7 @@
                      where id = ?"
                      table)
         sql-args [(mdb-concepts/string->gzip-bytes metadata)
-                  (cr/to-sql-time (t/now))
+                  (cr/to-sql-time (oracle/current-db-time (:db system)))
                   (mdb-concepts/mime-type->db-format (:format concept))
                   (when delete-time (cr/to-sql-time (p/parse-datetime delete-time)))
                   numeric-id]]
@@ -151,7 +152,7 @@
                      short_name, version_id, xml_mime_type, delete_time) values (?,?,?,?,?,?,?,?,?)"
                      table)
         sql-args [numeric-id concept-id entry-title (mdb-concepts/string->gzip-bytes metadata)
-                  (cr/to-sql-time (t/now)) short-name version-id
+                  (cr/to-sql-time (oracle/current-db-time (:db system))) short-name version-id
                   (mdb-concepts/mime-type->db-format (:format concept))
                   (when delete-time (cr/to-sql-time (p/parse-datetime delete-time)))]]
     (j/db-do-prepared (:db system) stmt sql-args)))
@@ -170,7 +171,7 @@
                      table)
         sql-args [numeric-id concept-id native-id (mdb-concepts/string->gzip-bytes metadata)
                   numeric-collection-id (mdb-concepts/mime-type->db-format (:format concept))
-                  (cr/to-sql-time (t/now))
+                  (cr/to-sql-time (oracle/current-db-time (:db system)))
                   (when delete-time (cr/to-sql-time (p/parse-datetime delete-time)))]]
     (j/db-do-prepared (:db system) stmt sql-args)))
 
