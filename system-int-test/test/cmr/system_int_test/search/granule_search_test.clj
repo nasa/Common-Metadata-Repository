@@ -131,16 +131,16 @@
 
 (def provider-granules
   {"PROV1" [{:entry-title "OneCollectionV1"
-                 :granule-ur "Granule1"}
-                {:entry-title "OneCollectionV1"
-                 :granule-ur "Granule2"}
-                {:entry-title "AnotherCollectionV1"
-                 :granule-ur "Granule3"}]
+             :granule-ur "Granule1"}
+            {:entry-title "OneCollectionV1"
+             :granule-ur "Granule2"}
+            {:entry-title "AnotherCollectionV1"
+             :granule-ur "Granule3"}]
 
    "PROV2" [{:entry-title "OneCollectionV1"
-                 :granule-ur "Granule4"}
-                {:entry-title "OtherCollectionV1"
-                 :granule-ur "Granule5"}]
+             :granule-ur "Granule4"}
+            {:entry-title "OtherCollectionV1"
+             :granule-ur "Granule5"}]
 
    "CMR_T_PROV" [{:entry-title "TestCollection"
                   :granule-ur "Granule4"}
@@ -236,18 +236,18 @@
         gran5 (d/ingest "PROV2" (dg/granule coll2 {:cloud-cover 0.0}))
         gran6 (d/ingest "PROV2" (dg/granule coll2 {:granule-ur "sampleur3"}))]
     (index/refresh-elastic-index)
-    (testing "search granules with lower bound cloud-cover value"
-      (are [cc-search items] (d/refs-match? items (search/find-refs :granule cc-search))
-           {"cloud_cover" "0.2,"} [gran1 gran2 gran3]))
-    (testing "search granules with upper bound cloud-cover value"
-      (are [cc-search items] (d/refs-match? items (search/find-refs :granule cc-search))
-           {"cloud_cover" ",0.7"} [gran4 gran5]))
-    (testing "search by cloud-cover range values that would not cover all granules in store"
-      (are [cc-search items] (d/refs-match? items (search/find-refs :granule cc-search))
-           {"cloud_cover" "-70.0,31.0"} [gran1 gran2 gran4 gran5]))
-    (testing "search by cloud-cover range values that would not cover all granules in store"
-      (are [cc-search items] (d/refs-match? items (search/find-refs :granule cc-search))
-           {"cloud_cover" "-70.0,120.0"} [gran1 gran2 gran3 gran4 gran5]))
+    (testing "search granules with valid cloud-cover value"
+      (are [cloud-cover items]
+           (d/refs-match? items (search/find-refs :granule {"cloud_cover" cloud-cover}))
+
+           "0.2," [gran1 gran2 gran3]
+           ",0.7" [gran4 gran5]
+           "-70.0,31.0" [gran1 gran2 gran4 gran5]
+           "-70.0,120.0" [gran1 gran2 gran3 gran4 gran5]
+           ;; Empty cloud cover is allowed.
+           ;; It is as if no cloud cover parameter is present and will find everything.
+           "" [gran1 gran2 gran3 gran4 gran5 gran6]))
+
     (testing "search by cloud-cover with min value greater than max value"
       (let [min-value 30.0
             max-value 0.0]
