@@ -197,16 +197,38 @@
    number
 
    ;; The type of telephone number being provided in this instance of the phone number.
-   type
+   number-type
+   ])
+
+(defrecord Address
+  [
+   ;; The city of the person or organization.
+   city
+
+   ;; The country of the address.
+   country
+
+   ;; The zip or other postal code of the address.
+   postal-code
+
+   ;; The state or province of the address.
+   state-province
+
+   ;; A list of address lines for the address, used for mailing or physical addresses of organizations
+   ;; or individuals who serve as points of contact.
+   street-address-lines
    ])
 
 (defrecord ContactPerson
   [
-   ;; This entity contains the address details for each contact.
-   address
+   ;; One of the following: Investigator, Technical Contact, or Metadata Author.
+   role
 
-   ;; The address of the electronic mailbox of the organization or individual.
-   email
+   ;; This entity contains the address details for each contact.
+   addresses
+
+   ;; The list of addresses of the electronic mailbox of the organization or individual.
+   emails
 
    ;; First name of the individual which the contact applies.
    first-name
@@ -217,19 +239,8 @@
    ;; Middle name of the individual which the contact applies.
    middle-name
 
-   ;; This entity contains the telephone details associated with the contact.
-   phone
-   ])
-
-
-
-(defrecord personnel
-  [
-   ;; This entity contains the contact person's name and address details.
-   contact-person
-
-   ;; The role of the contact (investigator, technical contact, metadata author)
-   role
+   ;; The list of telephone details associated with the contact.
+   phones
    ])
 
 (defrecord UmmCollection
@@ -297,4 +308,6 @@
   RelatedURL
   OrbitParameters
   SpatialCoverage
-  UmmCollection)
+  UmmCollection
+  ContactPerson
+  Phone)

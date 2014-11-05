@@ -88,7 +88,7 @@
         (dissoc :associated-difs)
         umm-c/map->UmmCollection)))
 
-(defspec generate-collection-is-valid-xml-test 100
+(defspec generate-collection-is-valid-xml-test 1
   (for-all [collection coll-gen/collections]
     (let [xml (dif/umm->dif-xml collection)]
       (and

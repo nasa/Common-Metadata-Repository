@@ -152,7 +152,6 @@
                            ;; in ECHO, but MaintenanceAndUpdateFrequency is not mapped to UMM-C
                            ;; yet. This is an expanded (not required) field, so it may not be
                            ;; needed.
-                           ;; TODO figure out what landingPage should be
                            :landingPage (landing-page related-urls)
                            :language  [LANGUAGE_CODE]
                            :references (not-empty (map :url related-urls))
