@@ -21,7 +21,9 @@
 
 (def app-control-functions
   "A map of application name to the start function"
-  {:metadata-db {:start mdb-system/start
+  {:mock-echo {:start mock-echo-system/start
+               :stop mock-echo-system/stop}
+   :metadata-db {:start mdb-system/start
                  :stop mdb-system/stop}
    :index-set {:start index-set-system/start
                :stop index-set-system/stop}
@@ -32,9 +34,7 @@
    :search {:start search-system/start
             :stop search-system/stop}
    :bootstrap {:start bootstrap-system/start
-               :stop bootstrap-system/stop}
-   :mock-echo {:start mock-echo-system/start
-               :stop mock-echo-system/stop}})
+               :stop bootstrap-system/stop}})
 
 (def app-startup-order
   "Defines the order in which applications should be started"

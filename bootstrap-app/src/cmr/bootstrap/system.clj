@@ -11,6 +11,7 @@
             [clojure.core.async :as ca :refer [chan]]
             [cmr.bootstrap.data.bulk-migration :as bm]
             [cmr.bootstrap.data.bulk-index :as bi]
+            [cmr.bootstrap.data.db-synchronization :as dbs]
             [cmr.metadata-db.config :as mdb-config]
             [cmr.transmit.config :as transmit-config]
             [cmr.metadata-db.system :as mdb-system]
@@ -57,6 +58,9 @@
              ;; Channel for processing collections to index.
              :collection-index-channel (chan 100)
 
+             ;; Channel for asynchronously sending database synchronization requests
+             :db-synchronize-channel (chan)
+
              :catalog-rest-user (mdb-config/catalog-rest-db-username)
              :db (oracle/create-db (mdb-config/db-spec "bootstrap-pool"))
              :web (web/create-web-server (transmit-config/bootstrap-port) routes/make-api)
@@ -82,6 +86,7 @@
     (oracle/test-db-connection! (:db started-system))
     (bm/handle-copy-requests started-system)
     (bi/handle-bulk-index-requests started-system)
+    (dbs/handle-db-synchronization-requests started-system)
     (info "Bootstrap System started")
     started-system))
 

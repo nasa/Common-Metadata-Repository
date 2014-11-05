@@ -80,7 +80,10 @@
   the current maximum revision-id for this concept."
   [db concept previous-revision]
   (let [{:keys [concept-id concept-type provider-id revision-id]} concept
-        latest-revision (or previous-revision (c/get-concept db concept-type provider-id concept-id))
+        latest-revision (or previous-revision
+                            (c/get-concept db concept-type provider-id concept-id)
+                            ;; or it doesn't exist and the next should be 1
+                            {:revision-id 0})
         expected-revision-id (inc (:revision-id latest-revision))]
     (if (= revision-id expected-revision-id)
       {:status :pass}
@@ -88,8 +91,11 @@
        :expected expected-revision-id})))
 
 (defn validate-concept-revision-id
-  "Validate that the revision-id for a concept (if given) is one greater than
-  the current maximum revision-id for this concept."
+  "Validate that the revision-id for a concept (if given) is one greater than the current maximum
+  revision-id for this concept. A third argument of the previous revision of the concept can be
+  provided to avoid looking up the concept again."
+  ([db concept]
+   (validate-concept-revision-id db concept nil))
   ([db concept previous-revision]
    (let [{:keys [concept-id revision-id]} concept]
      (cond
@@ -99,6 +105,7 @@
          (when (= (:status result) :fail)
            (cmsg/data-error :conflict
                             msg/invalid-revision-id
+                            concept-id
                             (:expected result)
                             revision-id)))
 
@@ -107,6 +114,7 @@
        (when-not (= revision-id 1)
          (cmsg/data-error :conflict
                           msg/invalid-revision-id
+                          concept-id
                           1
                           revision-id))
 
@@ -313,7 +321,7 @@
   (cv/validate-concept concept)
   (let [db (util/context->db context)]
     (validate-providers-exist db [(:provider-id concept)])
-    (validate-concept-revision-id db concept nil)
+    (validate-concept-revision-id db concept)
     (let [revision-id-provided? (:revision-id concept)
           concept (->> concept
                        (set-or-generate-concept-id db)

@@ -108,6 +108,22 @@
         body (json/decode (:body response) true)]
     (assoc body :status (:status response))))
 
+
+(defn ingest-concepts
+  "Ingests all the given concepts assuming that they should all be successful."
+  [concepts]
+  (doseq [concept concepts]
+    (is (= {:status 200
+            :concept-id (:concept-id concept)
+            :revision-id (:revision-id concept)}
+           (ingest-concept concept)))))
+
+(defn delete-concepts
+  "Deletes all the given concepts assuming that they should all be successful."
+  [concepts]
+  (doseq [concept concepts]
+    (is (#{404 200} (:status (delete-concept concept))))))
+
 (defn get-concept
   ([concept-id]
    (get-concept concept-id nil))
@@ -118,7 +134,10 @@
                                :connection-manager (url/conn-mgr)})]
      (is (some #{200 404} [(:status response)]))
      (when (= (:status response) 200)
-       (json/decode (:body response) true)))))
+       (-> response
+           :body
+           (json/decode true)
+           (update-in [:concept-type] keyword))))))
 
 (defn concept-exists-in-mdb?
   "Check concept in mdb with the given concept and revision-id"

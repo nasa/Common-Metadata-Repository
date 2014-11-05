@@ -13,7 +13,11 @@
         catalog-rest-user (mdb-config/catalog-rest-db-username)
         metadata-db-user (mdb-config/db-username)]
     (o/create-user db metadata-db-user (mdb-config/db-password))
-    (o/grant-select-privileges db catalog-rest-user metadata-db-user)))
+    (o/grant-select-privileges db catalog-rest-user metadata-db-user)
+
+    ;; This is done to allow bootstrap tests to create and drop test tables in the Catalog REST
+    ;; database schema.
+    (o/grant-create-drop-any-table-privileges db metadata-db-user)))
 
 (defn drop-user
   []

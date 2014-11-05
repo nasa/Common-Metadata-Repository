@@ -61,10 +61,12 @@
      :summary (cx/string-at-path xml-struct [:Summary :Abstract])
      :product (xml-elem->Product xml-struct)
      :data-provider-timestamps (xml-elem->DataProviderTimestamps xml-struct)
+     ;; See CMR-588
      ;:spatial-keywords (seq (cx/strings-at-path xml-struct [:Location]))
      :temporal-keywords (seq (cx/strings-at-path xml-struct [:Data_Resolution :Temporal_Resolution]))
      :temporal (t/xml-elem->Temporal xml-struct)
      :science-keywords (sk/xml-elem->ScienceKeywords xml-struct)
+     ;; Waiting on CMR-590 and CMRIN-4 for more info on DIF platforms
      ;:platforms (platform/xml-elem->Platforms xml-struct)
      :product-specific-attributes (psa/xml-elem->ProductSpecificAttributes xml-struct)
      :projects (pj/xml-elem->Projects xml-struct)
