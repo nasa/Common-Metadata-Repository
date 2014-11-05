@@ -60,9 +60,9 @@
         gran14 (make-gran coll2 14 "1995-08-03T08:30:45Z" "1995-08-03T17:20:00Z")
         gran15 (make-gran coll2 15 "1995-08-04T08:30:45Z" "1995-08-04T17:20:00Z")
         gran16 (make-gran coll2 16 "1995-08-05T08:30:45Z" "1995-08-05T17:20:00Z")
+        ;; granule with start-date that is represented as Integer in elasticsearch result (CMR-1061)
+        gran17 (make-gran coll2 17 "1970-01-01T00:00:45Z" "1995-01-05T17:20:00Z")
 
-        all-grans [gran1 gran2 gran3 gran4 gran5 gran6 gran7 gran8 gran9 gran10 gran11 gran12 gran13
-                   gran14 gran15 gran16]
         all-colls [coll1 coll2]
         coll-ids (map :concept-id all-colls)]
     (index/refresh-elastic-index)
@@ -105,7 +105,7 @@
               :results [{:concept-id (:concept-id coll1)
                          :intervals [["2000-01-01T00:00:00.000Z" "2001-05-01T00:00:00.000Z" 8]]}
                         {:concept-id (:concept-id coll2)
-                         :intervals [["1995-01-01T00:00:00.000Z" "1996-01-01T00:00:00.000Z" 5]]}]}
+                         :intervals [["1994-01-01T00:00:00.000Z" "1996-01-01T00:00:00.000Z" 6]]}]}
              (search/get-granule-timeline {:start-date "1994-01-01T00:00:00Z"
                                            :end-date "2001-05-01T00:00:00Z"
                                            :interval :year}))))
