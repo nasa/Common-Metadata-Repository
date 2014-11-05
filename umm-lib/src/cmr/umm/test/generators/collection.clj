@@ -112,15 +112,18 @@
   (ext-gen/string-ascii 1 1024))
 
 (def contact-persons
-  (ext-gen/model-gen c/->ContactPerson (gen/elements ["Investigator"
+  (ext-gen/model-gen c/->ContactPerson
+                     (gen/vector (gen/elements ["Investigator"
                                                 "Technical Contact"
                                                 "Metadata Author"])
-                     (gen/vector addresses 1 3)
-                     (gen/vector emails 0 4)
+                                 1
+                                 3)
+                     (ext-gen/nil-if-empty (gen/vector addresses 1 3))
+                     (ext-gen/nil-if-empty (gen/vector emails 0 4))
+                     (ext-gen/optional (ext-gen/string-ascii 1 30))
                      (ext-gen/string-ascii 1 30)
-                     (ext-gen/string-ascii 1 30)
-                     (ext-gen/string-ascii 1 30)
-                     (gen/vector phones 1 3)))
+                     (ext-gen/optional (ext-gen/string-ascii 1 30))
+                     (ext-gen/nil-if-empty (gen/vector phones 1 3))))
 
 (def platform-short-names
   (ext-gen/string-ascii 1 10))

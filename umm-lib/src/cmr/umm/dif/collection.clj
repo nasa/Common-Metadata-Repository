@@ -137,8 +137,8 @@
                     (when collection-data-type
                       (em/generate-extended-metadatas [{:name COLLECTION_DATA_TYPE_EXTERNAL_META_NAME
                                                         :value collection-data-type}] false))
-                    (when-not (empty? personnel)
-                      )))))))
+
+                      ))))))
 
 (defn validate-xml
   "Validates the XML against the DIF schema."
