@@ -161,13 +161,22 @@
   (ext-gen/string-ascii 1 10))
 
 (def archive-center-organizations
-  (ext-gen/model-gen c/->Organization (gen/return :archive-center) org-names))
+  (ext-gen/model-gen c/->Organization
+                     (gen/return :archive-center)
+                     org-names
+                     (gen/vector contact-persons 1 3)))
 
 (def processing-center-organizations
-  (ext-gen/model-gen c/->Organization (gen/return :processing-center) org-names))
+  (ext-gen/model-gen c/->Organization
+                     (gen/return :processing-center)
+                     org-names
+                     (gen/vector contact-persons 1 3)))
 
 (def distribution-center-organizations
-  (ext-gen/model-gen c/->Organization (gen/return :distribution-center) org-names))
+  (ext-gen/model-gen c/->Organization
+                     (gen/return :distribution-center)
+                     org-names
+                     (gen/vector contact-persons 1 3)))
 
 (def related-url-types
   (gen/elements ["GET DATA" "GET RELATED VISUALIZATION" "VIEW RELATED INFORMATION"]))
@@ -224,7 +233,6 @@
                 :temporal-keywords (ext-gen/nil-if-empty (gen/vector (ext-gen/string-alpha-numeric 1 10) 0 4))
                 ;; DIF requires science-keyowrds to always exist, not ideal here for ECHO10. As science-keywords is optional for ECHO10
                 :science-keywords (gen/vector sk/science-keywords 1 3)
-                :personnel (gen/vector contact-persons 1 3)
                 :platforms (ext-gen/nil-if-empty (gen/vector platforms 0 4))
                 :product-specific-attributes (ext-gen/nil-if-empty (gen/vector psa/product-specific-attributes 0 10))
                 :projects (ext-gen/nil-if-empty (gen/vector campaigns 0 4))

@@ -59,7 +59,6 @@
   (c/map->UmmCollection
     {:entry-id (cx/string-at-path xml-struct [:Entry_ID])
      :entry-title (cx/string-at-path xml-struct [:Entry_Title])
-     :personnel (pe/xml-elem->personnel xml-struct)
      :summary (cx/string-at-path xml-struct [:Summary :Abstract])
      :product (xml-elem->Product xml-struct)
      :data-provider-timestamps (xml-elem->DataProviderTimestamps xml-struct)
