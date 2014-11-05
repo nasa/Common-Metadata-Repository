@@ -5,6 +5,7 @@
             [clj-http.client :as client]
             [cmr.system-int-test.utils.url-helper :as url]
             [cmr.system-int-test.utils.ingest-util :as ingest]
+            [cmr.system-int-test.utils.test-environment :as test-env]
             [cmr.metadata-db.config :as mdb-config]
             [cmr.bootstrap.test.catalog-rest :as cat-rest]
             [cmr.common.lifecycle :as lifecycle]
@@ -82,23 +83,26 @@
 
 (defn db-fixture-setup
   [& provider-ids]
-  (let [system (system)]
-    (ingest/reset)
-    (doseq [provider-id provider-ids :let [guid (str provider-id "-guid")]]
-      (ingest/create-provider guid provider-id true)
-      (cat-rest/create-provider system provider-id))))
+  (test-env/only-with-real-database
+    (let [system (system)]
+      (ingest/reset)
+      (doseq [provider-id provider-ids :let [guid (str provider-id "-guid")]]
+        (ingest/create-provider guid provider-id true)
+        (cat-rest/create-provider system provider-id)))))
 
 (defn db-fixture-tear-down
   [& provider-ids]
-  (let [system (system)]
-    (ingest/reset)
-    ;; Delete catalog rest providers
-    (doseq [provider-id provider-ids]
-      (cat-rest/delete-provider system provider-id))))
+  (test-env/only-with-real-database
+    (let [system (system)]
+      (ingest/reset)
+      ;; Delete catalog rest providers
+      (doseq [provider-id provider-ids]
+        (cat-rest/delete-provider system provider-id)))))
 
 (defn db-fixture
   "This is a fixture that sets up things for bootstrap database integration tests. It resets the CMR,
-  then creates CMR providers and Catalog REST providers. All data is cleaned up at the end."
+  then creates CMR providers and Catalog REST providers. All data is cleaned up at the end.
+  If we're not connected to a real database then the setup is skipped."
   [& provider-ids]
   (fn [f]
     (try
