@@ -61,7 +61,7 @@
   [event-type bucket]
   {:event-type event-type
    :hits (:doc_count bucket)
-   :event-time (c/from-long (:key bucket))})
+   :event-time (c/from-long (long (:key bucket)))})
 
 (defn collection-bucket->ordered-events
   "Returns a list of ordered events within the collection bucket."
