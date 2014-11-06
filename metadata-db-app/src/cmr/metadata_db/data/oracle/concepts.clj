@@ -46,7 +46,11 @@
 
 (def db-format->mime-type
   "A mapping of the format strings stored in the database to the equivalent mime type in concepts"
-  (set/map-invert mime-type->db-format))
+  ;; We add "SMAP_ISO" mapping here to work with data that are bootstrapped or synchronized directly
+  ;; from catalog-rest. Since catalog-rest uses SMAP_ISO as the format value in its database and
+  ;; CMR bootstrap-app simply copies this format into CMR database, we could have "SMAP_ISO" as
+  ;; a format in CMR database.
+  (assoc (set/map-invert mime-type->db-format) "SMAP_ISO" "application/iso:smap+xml"))
 
 (defn safe-max
   "Return the maximimum of two numbers, treating nil as the lowest possible number"
