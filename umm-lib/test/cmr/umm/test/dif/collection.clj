@@ -125,15 +125,8 @@
   (for-all [collection coll-gen/collections]
 
     (let [xml (dif/umm->dif-xml collection)
-          _ (cmr.common.dev.capture-reveal/capture collection)
-          _ (cmr.common.dev.capture-reveal/capture xml)
-
           parsed (c/parse-collection xml)
-          _ (cmr.common.dev.capture-reveal/capture parsed)
-
-          expected-parsed (umm->expected-parsed-dif collection)
-          _ (cmr.common.dev.capture-reveal/capture expected-parsed)
-          ]
+          expected-parsed (umm->expected-parsed-dif collection)]
       (= parsed expected-parsed))))
 
 (comment
@@ -146,17 +139,17 @@
          (cmr.common.dev.capture-reveal/reveal expected-parsed)))
 
 
-  (let [x #cmr.umm.collection.UmmCollection{:entry-id "0", :entry-title "0", :summary "0", :product #cmr.umm.collection.Product{:short-name "0", :long-name "0", :version-id "0", :processing-level-id nil, :collection-data-type nil}, :access-value nil, :data-provider-timestamps #cmr.umm.collection.DataProviderTimestamps{:insert-time #=(org.joda.time.DateTime. 0), :update-time #=(org.joda.time.DateTime. 0), :delete-time nil}, :spatial-keywords nil, :temporal-keywords nil, :temporal #cmr.umm.collection.Temporal{:time-type nil, :date-type nil, :temporal-range-type nil, :precision-of-seconds nil, :ends-at-present-flag nil, :range-date-times [#cmr.umm.collection.RangeDateTime{:beginning-date-time #=(org.joda.time.DateTime. 0), :ending-date-time nil}], :single-date-times [], :periodic-date-times []}, :science-keywords [#cmr.umm.collection.ScienceKeyword{:category "0", :topic "0", :term "0", :variable-level-1 "0", :variable-level-2 nil, :variable-level-3 nil, :detailed-variable nil}], :platforms nil, :product-specific-attributes nil, :projects nil, :two-d-coordinate-systems nil, :related-urls nil, :organizations (#cmr.umm.collection.Organization{:type :distribution-center, :org-name "!", :personnel [#cmr.umm.collection.ContactPerson{:roles ["Investigator"], :addresses [#cmr.umm.collection.Address{:city "!", :country "!", :postal-code "!", :state-province "!", :street-address-lines ["!"]}], :emails nil, :first-name nil, :last-name "!", :middle-name nil, :phones [#cmr.umm.collection.Phone{:number "!", :number-type "!"}]}]}), :spatial-coverage nil, :associated-difs nil}
-        xml (dif/umm->dif-xml x)
-        _ (cmr.common.dev.capture-reveal/capture xml)
-        expected (umm->expected-parsed-dif x)
-        parsed (c/parse-collection xml)]
-    (is (= expected parsed))
-    ;expected
-    (println xml)
-    (println expected)
-    (println parsed)
-    )
+  ; (let [x #cmr.umm.collection.UmmCollection{:entry-id "0", :entry-title "0", :summary "0", :product #cmr.umm.collection.Product{:short-name "0", :long-name "0", :version-id "0", :processing-level-id nil, :collection-data-type nil}, :access-value nil, :data-provider-timestamps #cmr.umm.collection.DataProviderTimestamps{:insert-time #=(org.joda.time.DateTime. 0), :update-time #=(org.joda.time.DateTime. 0), :delete-time nil}, :spatial-keywords nil, :temporal-keywords nil, :temporal #cmr.umm.collection.Temporal{:time-type nil, :date-type nil, :temporal-range-type nil, :precision-of-seconds nil, :ends-at-present-flag nil, :range-date-times [#cmr.umm.collection.RangeDateTime{:beginning-date-time #=(org.joda.time.DateTime. 0), :ending-date-time nil}], :single-date-times [], :periodic-date-times []}, :science-keywords [#cmr.umm.collection.ScienceKeyword{:category "0", :topic "0", :term "0", :variable-level-1 "0", :variable-level-2 nil, :variable-level-3 nil, :detailed-variable nil}], :platforms nil, :product-specific-attributes nil, :projects nil, :two-d-coordinate-systems nil, :related-urls nil, :organizations (#cmr.umm.collection.Organization{:type :distribution-center, :org-name "!", :personnel [#cmr.umm.collection.ContactPerson{:roles ["Investigator"], :addresses [#cmr.umm.collection.Address{:city "!", :country "!", :postal-code "!", :state-province "!", :street-address-lines ["!"]}], :emails nil, :first-name nil, :last-name "!", :middle-name nil, :phones [#cmr.umm.collection.Phone{:number "!", :number-type "!"}]}]}), :spatial-coverage nil, :associated-difs nil}
+  ;       xml (dif/umm->dif-xml x)
+  ;       _ (cmr.common.dev.capture-reveal/capture xml)
+  ;       expected (umm->expected-parsed-dif x)
+  ;       parsed (c/parse-collection xml)]
+  ;   (is (= expected parsed))
+  ;   ;expected
+  ;   (println xml)
+  ;   (println expected)
+  ;   (println parsed)
+  ;   )
 
   ;(c/validate-xml (cmr.common.dev.capture-reveal/reveal xml)
   )
