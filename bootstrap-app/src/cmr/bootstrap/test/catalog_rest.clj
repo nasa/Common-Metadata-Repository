@@ -103,6 +103,11 @@
   (doseq [concept concepts]
     (insert-concept system concept)))
 
+(def mime-type->db-format
+  "Map of mime types to the format to store in the database. Modified to store what Catalog REST uses"
+  (assoc mdb-concepts/mime-type->db-format
+         "application/iso:smap+xml" "ISO-SMAP"))
+
 (defn update-concept
   "Updates the concept in the Catalog REST database"
   [system concept]
@@ -116,7 +121,7 @@
                      table)
         sql-args [(mdb-concepts/string->gzip-bytes metadata)
                   (cr/to-sql-time (oracle/current-db-time (:db system)))
-                  (mdb-concepts/mime-type->db-format (:format concept))
+                  (mime-type->db-format (:format concept))
                   (when delete-time (cr/to-sql-time (p/parse-datetime delete-time)))
                   numeric-id]]
     (j/db-do-prepared (:db system) stmt sql-args)))
@@ -153,7 +158,7 @@
                      table)
         sql-args [numeric-id concept-id entry-title (mdb-concepts/string->gzip-bytes metadata)
                   (cr/to-sql-time (oracle/current-db-time (:db system))) short-name version-id
-                  (mdb-concepts/mime-type->db-format (:format concept))
+                  (mime-type->db-format (:format concept))
                   (when delete-time (cr/to-sql-time (p/parse-datetime delete-time)))]]
     (j/db-do-prepared (:db system) stmt sql-args)))
 
@@ -170,7 +175,7 @@
                      values (?,?,?,?,?,?,?,?)"
                      table)
         sql-args [numeric-id concept-id native-id (mdb-concepts/string->gzip-bytes metadata)
-                  numeric-collection-id (mdb-concepts/mime-type->db-format (:format concept))
+                  numeric-collection-id (mime-type->db-format (:format concept))
                   (cr/to-sql-time (oracle/current-db-time (:db system)))
                   (when delete-time (cr/to-sql-time (p/parse-datetime delete-time)))]]
     (j/db-do-prepared (:db system) stmt sql-args)))

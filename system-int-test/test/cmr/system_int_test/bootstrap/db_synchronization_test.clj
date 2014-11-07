@@ -13,7 +13,8 @@
             [cmr.system-int-test.utils.test-environment :as test-env]
             [cmr.bootstrap.test.catalog-rest :as cat-rest]
             [cmr.common.concepts :as concepts]
-            [cmr.oracle.connection :as oracle]))
+            [cmr.oracle.connection :as oracle]
+            [cmr.common.mime-types :as mime-types]))
 
 
 (use-fixtures :each (bootstrap/db-fixture "CPROV1" "CPROV2"))
@@ -54,23 +55,25 @@
 
 (defn coll-concept
   "Creates a new collection concept."
-  [concept-counter provider-id entry-title]
-  (let [coll (dc/collection {:entry-title entry-title
-                             ;; The summary will contain the revision number so subsequent revisions
-                             ;; will have slightly different metadata
-                             :summary "rev1"})]
-    {:concept-type :collection
-     :format "application/echo10+xml"
-     :metadata (umm/umm->xml coll :echo10)
-     :concept-id (next-concept-id concept-counter :collection provider-id)
-     :revision-id 1
-     :deleted false
-     :extra-fields {:short-name (get-in coll [:product :short-name])
-                    :entry-title entry-title
-                    :version-id (get-in coll [:product :version-id])
-                    :delete-time nil}
-     :provider-id provider-id
-     :native-id entry-title}))
+  ([concept-counter provider-id entry-title]
+   (coll-concept concept-counter provider-id entry-title :echo10))
+  ([concept-counter provider-id entry-title xml-format]
+   (let [coll (dc/collection {:entry-title entry-title
+                              ;; The summary will contain the revision number so subsequent revisions
+                              ;; will have slightly different metadata
+                              :summary "rev1"})]
+     {:concept-type :collection
+      :format (mime-types/format->mime-type xml-format)
+      :metadata (umm/umm->xml coll xml-format)
+      :concept-id (next-concept-id concept-counter :collection provider-id)
+      :revision-id 1
+      :deleted false
+      :extra-fields {:short-name (get-in coll [:product :short-name])
+                     :entry-title entry-title
+                     :version-id (get-in coll [:product :version-id])
+                     :delete-time nil}
+      :provider-id provider-id
+      :native-id entry-title})))
 
 (defn gran-concept
   "Creates a new granule concept."
@@ -102,14 +105,14 @@
   (-> concept
       umm/parse-concept
       (assoc :summary (str "rev" new-revision-id))
-      (umm/umm->xml :echo10)))
+      (umm/umm->xml (mime-types/base-mime-type-to-format (:format concept)))))
 
 (defmethod update-concept-metadata :granule
   [concept new-revision-id]
   (-> concept
       umm/parse-concept
       (assoc-in [:data-granule :producer-gran-id] (str "rev" new-revision-id))
-      (umm/umm->xml :echo10)))
+      (umm/umm->xml (mime-types/base-mime-type-to-format (:format concept)))))
 
 (defn updated-concept
   "Makes a superficial change to the concept and increments its revision id."
@@ -172,7 +175,7 @@
 (deftest db-synchronize-collection-inserts-test
   (test-env/only-with-real-database
     (let [concept-counter (atom 1)
-          coll1-1 (coll-concept concept-counter "CPROV1" "coll1")
+          coll1-1 (coll-concept concept-counter "CPROV1" "coll1" :iso-smap)
           coll1-2 (updated-concept coll1-1)
           coll2-1 (coll-concept concept-counter "CPROV1" "coll2")
           coll2-2 (updated-concept coll2-1)

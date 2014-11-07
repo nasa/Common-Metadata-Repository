@@ -16,7 +16,8 @@
 
 (def system nil)
 
-(def system-type #_:external-dbs :in-memory)
+(def system-type :in-memory)
+; (def system-type :external-dbs)
 
 
 (defn start

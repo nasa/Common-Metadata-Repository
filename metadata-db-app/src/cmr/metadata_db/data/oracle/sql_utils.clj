@@ -34,7 +34,8 @@
         start (System/currentTimeMillis)
         result (j/query db (cons {:fetch-size fetch-size} stmt-and-params))
         millis (- (System/currentTimeMillis) start)]
-    (debug (format "Query execution took [%d] ms" millis))
+    (when (> millis 100)
+      (debug (format "Query execution took [%d] ms" millis)))
     result))
 
 (defn find-one
