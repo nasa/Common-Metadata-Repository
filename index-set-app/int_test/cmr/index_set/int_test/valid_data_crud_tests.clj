@@ -44,13 +44,10 @@
 (deftest get-index-set-test
   (testing "index-set fetch by id"
     (let [index-set util/sample-index-set
-          suffix-idx-name "C99-Collections"
-          mod-index-set (-> index-set
-                            (assoc-in [:index-set :collection :index-names] (vec (list suffix-idx-name)))
-                            (assoc-in [:index-set :id] 77))
-          index-set-id (get-in mod-index-set [:index-set :id])
+          suffix-idx-name "C4-collections"
+          index-set-id (get-in index-set [:index-set :id])
           expected-idx-name (svc/gen-valid-index-name index-set-id suffix-idx-name)
-          {:keys [status]} (util/submit-create-index-set-req mod-index-set)
+          {:keys [status]} (util/submit-create-index-set-req index-set)
           body (-> (util/get-index-set index-set-id) :response :body)
           fetched-index-set (cheshire.core/decode body true)
           actual-idx-name (get-in fetched-index-set [:index-set :concepts :collection (keyword suffix-idx-name)])]
@@ -63,12 +60,10 @@
 (deftest delete-index-set-test
   (testing "create index-set"
     (let [index-set util/sample-index-set
-          suffix-idx-name "C99-Collections"
-          mod-index-set (-> index-set
-                            (assoc-in [:index-set :collection :index-names] (vec (list suffix-idx-name))))
-          index-set-id (get-in mod-index-set [:index-set :id])
+          suffix-idx-name "C4-collections"
+          index-set-id (get-in index-set [:index-set :id])
           expected-idx-name (svc/gen-valid-index-name index-set-id suffix-idx-name)
-          {:keys [status]} (util/submit-create-index-set-req mod-index-set)]
+          {:keys [status]} (util/submit-create-index-set-req index-set)]
       (is (= 201 status))
       (is (esi/exists? @util/elastic-connection expected-idx-name))))
   (testing "delete index-set"
@@ -90,11 +85,9 @@
     (let [index-set util/sample-index-set
           _ (util/submit-create-index-set-req index-set)
           _ (util/submit-create-index-set-req (assoc-in index-set [:index-set :id] 77))
-          indices-cnt (reduce (fn [cnt concept]
-                                (+ cnt (count (get-in util/sample-index-set
-                                                      [:index-set concept :index-names]))))
-                              0
-                              util/cmr-concepts)
+          indices-cnt (->> util/cmr-concepts (map (:index-set index-set))
+                           (mapcat :indexes)
+                           count)
           expected-idx-cnt (* 2 indices-cnt)
           body (-> (util/get-index-sets) :response :body (cheshire.core/decode true))
           actual-es-indices (util/list-es-indices body)]
