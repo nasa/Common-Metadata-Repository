@@ -16,7 +16,8 @@
             [cmr.indexer.data.concepts.attribute :as attrib]
             [cmr.indexer.data.concepts.orbit-calculated-spatial-domain :as ocsd]
             [cmr.indexer.data.concepts.spatial :as spatial]
-            [cmr.common.cache :as cache])
+            [cmr.common.cache :as cache]
+            [cmr.common.concepts :as concepts])
   (:import cmr.spatial.mbr.Mbr))
 
 (def parent-collection-cache-key
@@ -133,6 +134,7 @@
         {:keys [short-name version-id]} (:product parent-collection)
         granule-spatial-representation (get-in parent-collection [:spatial-coverage :granule-spatial-representation])]
     (merge {:concept-id concept-id
+            :concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))
             :collection-concept-id parent-collection-id
 
             :entry-title (:entry-title parent-collection)

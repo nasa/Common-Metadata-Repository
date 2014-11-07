@@ -142,6 +142,9 @@
                 :_ttl {:enabled true},
                 :properties (merge {:permitted-group-ids (stored string-field-mapping)
                                     :concept-id   (stored string-field-mapping)
+                                    ;; This is used explicitly for sorting. The values take up less space in the
+                                    ;; fielddata cache.
+                                    :concept-seq-id int-field-mapping
                                     :entry-id           (stored string-field-mapping)
                                     :entry-id.lowercase string-field-mapping
                                     :entry-title           (stored string-field-mapping)
@@ -234,7 +237,12 @@
     :_id  {:path "concept-id"},
     :_ttl {:enabled true},
     :properties (merge
-                  {:concept-id            (stored string-field-mapping)
+                  {:concept-id (stored string-field-mapping)
+
+                   ;; This is used explicitly for sorting. The values take up less space in the
+                   ;; fielddata cache.
+                   :concept-seq-id int-field-mapping
+
                    :collection-concept-id (stored string-field-mapping)
 
                    ;; fields added for atom
