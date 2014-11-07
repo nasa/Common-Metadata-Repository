@@ -245,6 +245,9 @@
 
                    :collection-concept-id (stored string-field-mapping)
 
+                   ;; Used for aggregations. It takes up less space in the field data cache.
+                   :collection-concept-seq-id int-field-mapping
+
                    ;; fields added for atom
                    :entry-title (not-indexed (stored string-field-mapping))
                    :metadata-format (not-indexed (stored string-field-mapping))

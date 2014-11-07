@@ -136,6 +136,7 @@
     (merge {:concept-id concept-id
             :concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))
             :collection-concept-id parent-collection-id
+            :collection-concept-seq-id (:sequence-number (concepts/parse-concept-id parent-collection-id))
 
             :entry-title (:entry-title parent-collection)
             :metadata-format (name (mt/base-mime-type-to-format format))
