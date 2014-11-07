@@ -9,20 +9,34 @@
   {:index-set {:name "cmr-base-index-set"
                :id 3
                :create-reason "include message about reasons for creating this index set"
-               :collection {:index-names ["C4-collections", "c6_Collections"]
-                            :settings {:index {:number_of_shards 1,
-                                               :number_of_replicas 0,
-                                               :refresh_interval "20s"}}
+               :collection {:indexes
+                            [{:name "C4-collections"
+                             :settings {:index {:number_of_shards 1,
+                                                :number_of_replicas 0,
+                                                :refresh_interval "20s"}}}
+                            {:name "c6_Collections"
+                             :settings {:index {:number_of_shards 1,
+                                                :number_of_replicas 0,
+                                                :refresh_interval "20s"}}}]
                             :mapping {:collection {:dynamic "strict",
                                                    :_source {:enabled false},
                                                    :_all {:enabled false},
                                                    :_id   {:path "concept-id"},
                                                    :properties {:concept-id  {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"},
                                                                 :entry-title {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}}}}}
-               :granule {:index-names ["G2-PROV1", "G4-Prov3", "g5_prov5"]
-                         :settings {:index {:number_of_shards 1,
-                                            :number_of_replicas 0,
-                                            :refresh_interval "10s"}}
+               :granule {:indexes
+                         [{:name "G2-PROV1"
+                          :settings {:index {:number_of_shards 1,
+                                             :number_of_replicas 0,
+                                             :refresh_interval "10s"}}}
+                         {:name "G4-Prov3"
+                          :settings {:index {:number_of_shards 1,
+                                             :number_of_replicas 0,
+                                             :refresh_interval "10s"}}}
+                         {:name "g5_prov5"
+                          :settings {:index {:number_of_shards 1,
+                                             :number_of_replicas 0,
+                                             :refresh_interval "10s"}}}]
                          :mapping {:granule {:dynamic "strict",
                                              :_source { "enabled" false},
                                              :_all {"enabled" false},

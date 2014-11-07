@@ -33,9 +33,10 @@
   [idx-set]
   (let [prefix-id (get-in idx-set [:index-set :id])]
     (for [concept cmr-concepts
-          suffix-index-name (get-in idx-set [:index-set concept :index-names])]
-      (let [indices-config (get-in idx-set [:index-set concept])
-            {:keys [settings mapping]} indices-config]
+          elastic-index (get-in idx-set [:index-set concept :indexes])]
+      (let [mapping (get-in idx-set [:index-set concept :mapping])
+            suffix-index-name (get elastic-index :name)
+            settings (get elastic-index :settings)]
         {:index-name (gen-valid-index-name prefix-id suffix-index-name)
          :settings settings
          :mapping mapping}))))
@@ -45,8 +46,9 @@
   [idx-set]
   (let [prefix-id (get-in idx-set [:index-set :id])]
     (for [concept cmr-concepts
-          suffix-index-name (get-in idx-set [:index-set concept :index-names])]
-      (gen-valid-index-name prefix-id suffix-index-name))))
+          elastic-index (get-in idx-set [:index-set concept :indexes])]
+      (let [suffix-index-name (get elastic-index :name)]
+        (gen-valid-index-name prefix-id suffix-index-name)))))
 
 (defn given-index-names->es-index-names
   "Map given names with generated elastic index names."
@@ -55,11 +57,34 @@
          (for [index-name index-names-array]
            {(keyword index-name)  (gen-valid-index-name prefix-id index-name)})))
 
+
+(comment
+
+       (def my-map {:root
+                    {:elements
+                     [{:test "a" :b "b"}
+                      {:test "c" :b "D"}]}})
+
+       (let [all-elements (get-in my-map [:root :elements])]
+         (for [element all-elements]
+           (get element :test))))
+
 (defn prune-index-set
   "Given a full index-set, just retain index-set-id, index-set-name, concepts, index-names info."
   [index-set]
   (let [id (:id index-set)
         name (:name index-set)
+        ; (for [concept cmr-concepts]
+        ;   (let [individual-indexes (get-in index-set [:index-set concept :indexes])]
+        ;     (for [individual-index individual-indexes]
+        ;       (let [index-names (get individual-index :name)]
+
+
+
+
+        ; index-names (for [concept cmr-concepts
+        ;   elastic-index (get-in idx-set [:index-set concept :indexes])]
+        ;     (get elastic-index :name))
         stripped-index-set (first (walk/postwalk #(if (map? %) (dissoc % :create-reason :settings :mapping) %)
                                                  (list index-set)))]
     {:id id

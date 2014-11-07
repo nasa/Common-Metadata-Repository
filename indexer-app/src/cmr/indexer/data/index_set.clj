@@ -10,13 +10,23 @@
             [cmr.transmit.config :as transmit-config]
             [cmr.transmit.connection :as transmit-conn]
             [cmr.common.cache :as cache]
+            [cmr.common.config :as cfg]
             [cmr.system-trace.core :refer [deftracefn]]
             [cmr.acl.core :as acl]))
 
+;; The number of shards to use for the collections index, the granule indexes containing granules
+;; for a single collection, and the granule index containing granules for the remaining collections
+;; can all be configured separately.
+(def elastic-collection-index-num-shards (cfg/config-value-fn :elastic-collection-index-num-shards 5 #(Long. %)))
+(def elastic-granule-index-num-shards (cfg/config-value-fn :elastic-granule-index-num-shards 5 #(Long. %)))
+(def elastic-small-collections-index-num-shards (cfg/config-value-fn :elastic-small-collections-index-num-shards 20 #(Long. %)))
+
 (def collection-setting {:index
-                         {:number_of_shards 6,
+                         {:number_of_shards (elastic-collection-index-num-shards),
                           :number_of_replicas 1,
                           :refresh_interval "1s"}})
+
+
 
 (def string-field-mapping
   {:type "string" :index "not_analyzed"})
@@ -219,9 +229,15 @@
                                     :start-circular-latitude (stored double-field-mapping)}
                                    spatial-coverage-fields)}})
 
-(def granule-setting {:index {:number_of_shards 6,
-                              :number_of_replicas 1,
-                              :refresh_interval "1s"}})
+(def granule-settings-for-individual-indexes
+  {:index {:number_of_shards (elastic-granule-index-num-shards),
+           :number_of_replicas 1,
+           :refresh_interval "1s"}})
+
+(def granule-settings-for-small-collections-index
+  {:index {:number_of_shards (elastic-small-collections-index-num-shards),
+           :number_of_replicas 1,
+           :refresh_interval "1s"}})
 
 (def granule-mapping
   {:granule
@@ -315,16 +331,40 @@
   "Returns the index-set configuration"
   [context]
   (let [colls-w-separate-indexes ((get-in context [:system :colls-with-separate-indexes-fn]))
-        granule-indices (remove empty? (concat colls-w-separate-indexes ["small_collections"]))]
+        granule-indices (remove empty? colls-w-separate-indexes )]
     {:index-set {:name "cmr-base-index-set"
                  :id 1
                  :create-reason "indexer app requires this index set"
-                 :collection {:index-names ["collections"]
-                              :settings collection-setting
+                 :collection {:indexes
+                              [{:name "collections"
+                                :settings collection-setting}]
                               :mapping collection-mapping}
-                 :granule {:index-names granule-indices
-                           :settings granule-setting
+                 :granule {:indexes
+                           (cons {:name "small_collections"
+                                  :settings granule-settings-for-small-collections-index}
+                                 (map (fn [collection]
+                                        {:name collection
+                                         :settings granule-settings-for-individual-indexes})
+                                      granule-indices))
                            :mapping granule-mapping}}}))
+
+(comment
+(index-set {:system (get-in user/system [:apps :indexer])})
+
+
+(def colls-w-separate-indexes ["a" "b"])
+
+
+[{:name "a"
+  :settings nil}
+ {:name "b"
+  :settings nil}]
+
+(map (fn [collection]
+       {:name collection
+        :settings granule-settings-for-individual-indexes})
+     colls-w-separate-indexes))
+
 
 (defn reset
   "Reset configured elastic indexes"
