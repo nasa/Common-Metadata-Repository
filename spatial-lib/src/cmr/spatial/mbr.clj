@@ -154,6 +154,8 @@
 (defn round-to-float-map
   "Converts a bounding rectangles values from double to float. It will round the bounding rectangle
   from double to float such that the bounding rectangle will slightly increase in size or decrease.
+  If increase? is true if will round to a larger size. If false it will round to a smaller size. No
+  rounding will occur if float is capable of representing the exact value.
   The values are returned in a map since the Mbr record fields are type hinted as double."
   [m increase?]
   (let [{:keys [west north east south]} m
