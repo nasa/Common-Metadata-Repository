@@ -12,19 +12,19 @@
             [cmr.umm.spatial :as umm-s]))
 
 (defn mbr->elastic-attribs
-  [prefix mbr]
+  [prefix {:keys [west north east south]} crosses-antimeridian?]
   (let [with-prefix #(->> %
                           name
                           (str prefix "-")
                           keyword)]
-    {(with-prefix :west) (:west mbr)
-     (with-prefix :north) (:north mbr)
-     (with-prefix :east) (:east mbr)
-     (with-prefix :south) (:south mbr)
-     (with-prefix :crosses-antimeridian) (mbr/crosses-antimeridian? mbr)}))
+    {(with-prefix :west) west
+     (with-prefix :north) north
+     (with-prefix :east) east
+     (with-prefix :south) south
+     (with-prefix :crosses-antimeridian) crosses-antimeridian?}))
 
 (def west-hemisphere
-  "an mbr that covers the western hemispher"
+  "an mbr that covers the western hemisphere"
   (mbr/mbr -180 90 0 -90))
 
 (def east-hemisphere
@@ -57,7 +57,6 @@
             [(poly/polygon :geodetic [(apply rr/ords->ring :geodetic ords)])
              equiv]))))
 
-
 (defn shapes->elastic-doc
   "Converts a spatial shapes into the nested elastic attributes"
   [shapes coordinate-system]
@@ -75,12 +74,14 @@
                 reverse
                 first)]
     (merge ords-info-map
-           (mbr->elastic-attribs "mbr" mbr)
-           (mbr->elastic-attribs "lr" lr))))
-
+           (mbr->elastic-attribs
+             "mbr" (mbr/round-to-float-map mbr true) (mbr/crosses-antimeridian? mbr))
+           (mbr->elastic-attribs
+             "lr"  (mbr/round-to-float-map lr false) (mbr/crosses-antimeridian? lr)))))
 
 (defn spatial->elastic-docs
   "Converts the spatial area of the given catalog item to the elastic documents"
   [coordinate-system catalog-item]
   (when-let [geometries (get-in catalog-item [:spatial-coverage :geometries])]
     (shapes->elastic-doc geometries coordinate-system)))
+

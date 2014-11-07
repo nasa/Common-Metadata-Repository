@@ -41,6 +41,9 @@
 (def double-field-mapping
   {:type "double"})
 
+(def float-field-mapping
+  {:type "float"})
+
 (def int-field-mapping
   {:type "integer"})
 
@@ -111,18 +114,18 @@
   "Defines the sets of fields shared by collections and granules for indexing spatial data."
   {;; Minimum Bounding Rectangle Fields
    ;; If a granule has multiple shapes then the MBR will cover all of the shapes
-   :mbr-west double-field-mapping
-   :mbr-north double-field-mapping
-   :mbr-east double-field-mapping
-   :mbr-south double-field-mapping
+   :mbr-west float-field-mapping
+   :mbr-north float-field-mapping
+   :mbr-east float-field-mapping
+   :mbr-south float-field-mapping
    :mbr-crosses-antimeridian bool-field-mapping
 
    ;; Largest Interior Rectangle Fields
    ;; If a granule has multiple shapes then the LR will be the largest in one of the shapes
-   :lr-west double-field-mapping
-   :lr-north double-field-mapping
-   :lr-east double-field-mapping
-   :lr-south double-field-mapping
+   :lr-west float-field-mapping
+   :lr-north float-field-mapping
+   :lr-east float-field-mapping
+   :lr-south float-field-mapping
    :lr-crosses-antimeridian bool-field-mapping
 
    ;; ords-info contains tuples of shapes stored in ords
@@ -151,7 +154,7 @@
                                     :version-id.lowercase  string-field-mapping
                                     :revision-date         date-field-mapping
                                     ;; Stored to allow retrieval for implementing granule acls
-                                    :access-value          (stored double-field-mapping)
+                                    :access-value          (stored float-field-mapping)
                                     :processing-level-id   (stored string-field-mapping)
                                     :processing-level-id.lowercase string-field-mapping
                                     :collection-data-type  (stored string-field-mapping)
@@ -257,7 +260,7 @@
 
                    ;; Access value is stored to allow us to enforce acls after retrieving results
                    ;; for certain types of queries.
-                   :access-value (stored double-field-mapping)
+                   :access-value (stored float-field-mapping)
 
                    ;; We need to sort by a combination of producer granule and granule ur
                    ;; It should use producer granule id if present otherwise the granule ur is used
@@ -274,8 +277,8 @@
                    :sensor-sn.lowercase   string-field-mapping
                    :start-date (stored date-field-mapping)
                    :end-date (stored date-field-mapping)
-                   :size (stored double-field-mapping)
-                   :cloud-cover (stored double-field-mapping)
+                   :size (stored float-field-mapping)
+                   :cloud-cover (stored float-field-mapping)
                    :orbit-calculated-spatial-domains orbit-calculated-spatial-domain-mapping
                    :project-refs string-field-mapping
                    :project-refs.lowercase string-field-mapping

@@ -51,6 +51,49 @@
       (.setScale precision BigDecimal/ROUND_HALF_UP)
       (.doubleValue)))
 
+(defn float->double
+  "Converts a float to a double in a way that will keep the double value closer to the original
+  float value than a cast would do.
+  (double (float 0.1)) => 0.10000000149011612
+  (float->double (float 0.1)) => 0.1
+  See http://programmingjungle.blogspot.com/2013/03/float-to-double-conversion-in-java.html"
+  ^double [v]
+  (.doubleValue (sun.misc.FloatingDecimal. ^float v)))
+
+(defn- shift-float
+  "Shifts the mantissa of the float by 1 in the positive of negative direction to increase the float
+  or decrease it to the very next possible value representable by a float."
+  [v up?]
+  (when (zero? ^float v)
+    (throw (Exception. "Cannot shift float that is 0.")))
+
+  (let [shiftfn (if (> ^float v 0.0)
+                  (if up? clojure.core/inc clojure.core/dec)
+                  (if up? clojure.core/dec clojure.core/inc))]
+    (Float/intBitsToFloat (shiftfn (Float/floatToIntBits v)))))
+
+(defn double->float
+  "Converts a double to a float rounding either up or down as indicated"
+  [^double d round-up?]
+  (if (zero? d)
+    (float 0.0)
+    (let [f (float d)
+          increased? (> (float->double f) d)]
+      (cond
+        (= round-up? increased?) f
+
+        ;; It decreased and it should be rounded up
+        round-up? (shift-float f true)
+
+        ;; It increased and it should be rounded down
+        :else (shift-float f false)))))
+
+
+(defn float-type?
+  "Returns true if value is a java Float"
+  [v]
+  (= Float (type v)))
+
 (defn within-range?
   "Returns true if v is within min and max."
   [^double v ^double min ^double max]
@@ -66,6 +109,15 @@
   "Returns the midpoint between two values"
   ^double [^double v1 ^double v2]
   (/ (+ v1 v2) 2.0))
+
+(defmacro constrain
+  "Constrains the value to within the range.
+  Written as a macro so it doesn't dictate the value types"
+  [v min-v max-v]
+  `(cond
+    (> ~v ~max-v) ~max-v
+    (< ~v ~min-v) ~min-v
+    :else ~v))
 
 (defn mid-lon
   "Returns the middle longitude between two lons. Order matters"
