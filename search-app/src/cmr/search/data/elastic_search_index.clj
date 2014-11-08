@@ -16,7 +16,8 @@
             [cmr.search.services.query-walkers.collection-concept-id-extractor :as cex]
             [cmr.search.services.query-walkers.provider-id-extractor :as pex]
             [cmr.system-trace.core :refer [deftracefn]]
-            [cmr.common.services.errors :as e]))
+            [cmr.common.services.errors :as e]
+            [cmr.common.concepts :as concepts]))
 
 ;; id of the index-set that CMR is using, hard code for now
 (def index-set-id 1)
@@ -190,13 +191,22 @@
         query (qm/query {:concept-type :granule
                          :condition condition
                          :page-size 0
-                         :aggregations {:provider-holdings
-                                        {:terms {:field :collection-concept-id
-                                                 :size 10000}}}})
+                         :aggregations {:by-provider
+                                        {:terms {:field :provider-id
+                                                 :size 10000}
+                                         :aggs {:by-collection-id
+                                                {:terms {:field :collection-concept-seq-id
+                                                         :size 10000}}}}}})
         results (execute-query context query)]
-    (let [aggs (get-in results [:aggregations :provider-holdings :buckets])]
-      (into {} (for [{collection-id :key num-granules :doc_count} aggs]
-                 [collection-id num-granules])))))
+    (into {} (for [provider-bucket (get-in results [:aggregations :by-provider :buckets])
+                   coll-bucket (get-in provider-bucket [:by-collection-id :buckets])]
+               (let [provider-id (:key provider-bucket)
+                     coll-seq-id (:key coll-bucket)
+                     num-granules (:doc_count coll-bucket)]
+                 [(concepts/build-concept-id {:sequence-number coll-seq-id
+                                              :provider-id provider-id
+                                              :concept-type :collection})
+                  num-granules])))))
 
 
 

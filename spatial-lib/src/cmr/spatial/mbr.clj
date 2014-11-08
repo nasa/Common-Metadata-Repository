@@ -1,5 +1,5 @@
 (ns cmr.spatial.mbr
-  (:require [cmr.spatial.math :refer :all]
+  (:require [cmr.spatial.math :as math :refer :all]
             [primitive-math]
             [cmr.spatial.point :as p]
             [cmr.spatial.derived :as d]
@@ -150,6 +150,33 @@
         lat-center (mid s n)
         lon-center (mid-lon w e)]
     (p/point lon-center lat-center)))
+
+(defn round-to-float-map
+  "Converts a bounding rectangles values from double to float. It will round the bounding rectangle
+  from double to float such that the bounding rectangle will slightly increase in size or decrease.
+  If increase? is true if will round to a larger size. If false it will round to a smaller size. No
+  rounding will occur if float is capable of representing the exact value.
+  The values are returned in a map since the Mbr record fields are type hinted as double."
+  [m increase?]
+  (let [{:keys [west north east south]} m
+        max-lon (float 180)
+        min-lon (float -180)
+        max-lat (float 90)
+        min-lat (float -90)
+        [new-west new-east] (if (and (= east west) (not increase?))
+                              ;; We can't shrink between west and east anymore
+                              [(float west) (float east)]
+                              [(double->float west (not increase?))
+                               (double->float east increase?)])
+        [new-south new-north] (if (and (= north south) (not increase?))
+                                ;; We can't shrink between south and north anymore
+                                [(float south) (float north)]
+                                [(double->float south (not increase?))
+                                 (double->float north increase?)])]
+    {:west (math/constrain ^float new-west min-lon max-lon)
+     :north (math/constrain ^float new-north min-lat max-lat)
+     :east (math/constrain ^float new-east min-lon max-lon)
+     :south (math/constrain ^float new-south min-lat max-lat)}))
 
 (def whole-world
   "an mbr that covers the whole world"

@@ -54,6 +54,53 @@
     (is (= (p/point 0 0)
            (m/center-point (m/mbr -180 90 180 -90))))))
 
+(defn larger?
+  "Returns true if an mbr is larger than or equal to another mbr"
+  [m1 m2]
+  (let [{m1w :west m1n :north m1e :east m1s :south} m1
+        {m2w :west m2n :north m2e :east m2s :south} m2]
+    (and (>= (float->double m1n) (float->double m2n))
+         (<= (float->double m1s) (float->double m2s))
+         (>= (float->double m1e) (float->double m2e))
+         (<= (float->double m1w) (float->double m2w)))))
+
+(defn float-map->Mbr
+  "Converts a map of floating point values into an Mbr"
+  [{:keys [west north east south]}]
+  (m/mbr (float->double west) (float->double north) (float->double east) (float->double south)))
+
+(defspec round-to-float-map 1000
+  (for-all [mbr sgen/mbrs]
+    (let [rounded-smaller-map (m/round-to-float-map mbr false)
+          rounded-larger-map (m/round-to-float-map mbr true)
+          rounded-smaller (float-map->Mbr rounded-smaller-map)
+          rounded-larger (float-map->Mbr rounded-larger-map)
+          all-floats? #(every? float-type? (map % [:west :north :east :south]))]
+      (and
+        ;; Any rounded mbr is valid
+        (empty? (v/validate rounded-smaller))
+        (empty? (v/validate rounded-larger))
+
+        ;; If the original crossed the antimeridian the rounded does as well
+        (= (m/crosses-antimeridian? mbr) (m/crosses-antimeridian? rounded-smaller))
+        (= (m/crosses-antimeridian? mbr) (m/crosses-antimeridian? rounded-larger))
+
+        ;; The rounded to increase is larger than the mbr
+        (larger? rounded-larger-map mbr)
+        ;; The rounded to shrink is smaller than the mbr
+        (larger? mbr rounded-smaller-map)
+
+        ;; The values of the mbr are all floating points.
+        (all-floats? rounded-smaller-map)
+        (all-floats? rounded-larger-map)))))
+
+(deftest round-to-float-map
+  (testing "whole world"
+    (testing "Cant grow larger than whole world"
+      (is (= m/whole-world (float-map->Mbr (m/round-to-float-map m/whole-world true)))))
+    (is (= (m/mbr -179.99998 90.0 180.0 -89.99999)
+           (float-map->Mbr (m/round-to-float-map m/whole-world false))))))
+
 (deftest br-validation-test
   (testing "valid br"
     (is (empty? (v/validate (m/mbr 0 0 0 0)))))

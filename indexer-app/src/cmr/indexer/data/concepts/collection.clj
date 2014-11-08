@@ -16,7 +16,8 @@
             [cmr.indexer.data.concepts.spatial :as spatial]
             [cmr.indexer.data.concepts.keyword :as k]
             [cmr.indexer.data.concepts.organization :as org]
-            [cmr.acl.core :as acl])
+            [cmr.acl.core :as acl]
+            [cmr.common.concepts :as concepts])
   (:import cmr.spatial.mbr.Mbr))
 
 (defn spatial->elastic
@@ -64,6 +65,7 @@
         spatial-representation (get-in collection [:spatial-coverage :spatial-representation])
         permitted-group-ids (acl/get-coll-permitted-group-ids context provider-id collection)]
     (merge {:concept-id concept-id
+            :concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))
             :permitted-group-ids permitted-group-ids
             :entry-id entry-id
             :entry-id.lowercase (str/lower-case entry-id)

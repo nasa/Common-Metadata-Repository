@@ -97,7 +97,7 @@
   "Converts a query into the elastic parameters for sorting results"
   [query]
   (let [{:keys [concept-type sort-keys]} query
-        concept-id-sort {:concept-id {:order "asc"}}
+        concept-id-sort {:concept-seq-id {:order "asc"}}
         specified-sort (map (fn [{:keys [order field]}]
                               {(get-in sort-key-field->elastic-field [concept-type field] (name field))
                                {:order order}})
