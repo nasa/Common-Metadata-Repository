@@ -17,7 +17,7 @@
   (:import clojure.lang.ExceptionInfo))
 
 ;; configured list of cmr concepts
-(def cmr-concepts [:collection :granule])
+(def concept-types [:collection :granule])
 
 (defn context->es-store
   [context]
@@ -29,14 +29,14 @@
   (s/lower-case (s/replace (format "%s_%s" prefix-id suffix) #"-" "_")))
 
 (defn- build-indices-list-w-config
-  "Given a index-set, build list of indices with config."
+  "Given an index-set, build list of indices with config."
   [idx-set]
   (let [prefix-id (get-in idx-set [:index-set :id])]
-    (for [concept cmr-concepts
-          suffix-index-name (get-in idx-set [:index-set concept :index-names])]
-      (let [indices-config (get-in idx-set [:index-set concept])
-            {:keys [settings mapping]} indices-config]
-        {:index-name (gen-valid-index-name prefix-id suffix-index-name)
+    (for [concept-type concept-types
+          idx (get-in idx-set [:index-set concept-type :indexes])]
+      (let [mapping (get-in idx-set [:index-set concept-type :mapping])
+            {idx-name :name settings :settings} idx]
+        {:index-name (gen-valid-index-name prefix-id idx-name)
          :settings settings
          :mapping mapping}))))
 
@@ -44,29 +44,27 @@
   "Given a index set build list of index names."
   [idx-set]
   (let [prefix-id (get-in idx-set [:index-set :id])]
-    (for [concept cmr-concepts
-          suffix-index-name (get-in idx-set [:index-set concept :index-names])]
-      (gen-valid-index-name prefix-id suffix-index-name))))
+    (for [concept-type concept-types
+          idx (get-in idx-set [:index-set concept-type :indexes])]
+      (gen-valid-index-name prefix-id (:name idx)))))
 
 (defn given-index-names->es-index-names
   "Map given names with generated elastic index names."
   [index-names-array prefix-id]
   (apply merge
          (for [index-name index-names-array]
-           {(keyword index-name)  (gen-valid-index-name prefix-id index-name)})))
+           {(keyword index-name) (gen-valid-index-name prefix-id index-name)})))
 
 (defn prune-index-set
-  "Given a full index-set, just retain index-set-id, index-set-name, concepts, index-names info."
+  "Returns the index set with only the id, name, and a map of concept types to the index name map."
   [index-set]
-  (let [id (:id index-set)
-        name (:name index-set)
-        stripped-index-set (first (walk/postwalk #(if (map? %) (dissoc % :create-reason :settings :mapping) %)
-                                                 (list index-set)))]
-    {:id id
-     :name name
-     :concepts (apply merge (for [k (keys stripped-index-set)]
-                              (when (map? (k stripped-index-set))
-                                {k (given-index-names->es-index-names (first (vals (k stripped-index-set))) id)})))}))
+  (let [prefix (:id index-set)]
+    {:id (:id index-set)
+     :name (:name index-set)
+     :concepts (into {} (for [concept-type concept-types]
+                          [concept-type
+                           (into {} (for [idx (get-in index-set [concept-type :indexes])]
+                                      [(keyword (:name idx)) (gen-valid-index-name prefix (:name idx))]))]))}))
 
 (deftracefn get-index-sets
   "Fetch all index-sets in elastic."
@@ -74,8 +72,9 @@
   (let [{:keys [index-name mapping]} es-config/idx-cfg-for-index-sets
         idx-mapping-type (first (keys mapping))
         index-sets (es/get-index-sets (context->es-store context) index-name idx-mapping-type)]
-    (vec (map #(let [{:keys [id name concepts]} (:index-set %)]
-                 {:id id :name name :concepts concepts}) index-sets))))
+    ;; TODO remove vec call
+    (vec (map #(select-keys (:index-set %) [:id :name :concepts])
+              index-sets))))
 
 (deftracefn index-set-exists?
   "Check index-set existsence"
