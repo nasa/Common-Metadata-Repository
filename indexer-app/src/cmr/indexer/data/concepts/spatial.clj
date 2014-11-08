@@ -78,7 +78,7 @@
            ;; This takes up less space in the fielddata cache when using a numeric range filter with
            ;; fielddata execution mode. During conversion from double to float any loss in precision
            ;; is handled by making the mbr slightly larger than it was and the lr slightly smaller.
-           ;; A slightly larger MBR will match a few more items but will still be accurate do to
+           ;; A slightly larger MBR will match a few more items but will still be accurate due to
            ;; the spatial search plugin. A slightly smaller LR will match fewer granules but this
            ;; won't hurt query performance much or accuracy at all.
            ;; This is all a little excessive as the accurracy loss from double to float should be in

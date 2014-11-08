@@ -55,7 +55,7 @@
            (m/center-point (m/mbr -180 90 180 -90))))))
 
 (defn larger?
-  "Returns true if an mbr is larger than or equal to another mber"
+  "Returns true if an mbr is larger than or equal to another mbr"
   [m1 m2]
   (let [{m1w :west m1n :north m1e :east m1s :south} m1
         {m2w :west m2n :north m2e :east m2s :south} m2]
