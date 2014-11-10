@@ -71,143 +71,203 @@
       (let [interval-msg (str "Timeline interval is a required parameter for timeline search "
                               "and must be one of year, month, day, hour, minute, or second.")]
         (testing "missing parameters"
-          (is (= {:status 400 :errors ["Parameter [foo] was not recognized."
-                                       "start_date is a required parameter for timeline searches"
-                                       "end_date is a required parameter for timeline searches"
-                                       "interval is a required parameter for timeline searches"]}
-                 (search/get-granule-timeline {:foo 5}))))
+          (are [search-fn]
+               (= {:status 400
+                   :errors ["Parameter [foo] was not recognized."
+                            "start_date is a required parameter for timeline searches"
+                            "end_date is a required parameter for timeline searches"
+                            "interval is a required parameter for timeline searches"]}
+                  (search-fn {:foo 5}))
+               search/get-granule-timeline
+               search/get-granule-timeline-with-post))
 
         (testing "invalid start-date"
-          (is (= {:status 400 :errors ["Timeline parameter start_date datetime is invalid: [foo] is not a valid datetime."]}
-                 (search/get-granule-timeline {:start-date "foo"
-                                               :end-date "2000-01-01T00:00:00Z"
-                                               :interval :month}))))
+          (are [search-fn]
+               (= {:status 400
+                   :errors ["Timeline parameter start_date datetime is invalid: [foo] is not a valid datetime."]}
+                  (search-fn {:start-date "foo"
+                              :end-date "2000-01-01T00:00:00Z"
+                              :interval :month}))
+               search/get-granule-timeline
+               search/get-granule-timeline-with-post))
         (testing "invalid end-date"
-          (is (= {:status 400 :errors ["Timeline parameter end_date datetime is invalid: [foo] is not a valid datetime."]}
-                 (search/get-granule-timeline {:end-date "foo"
-                                               :start-date "2000-01-01T00:00:00Z"
-                                               :interval :month}))))
+          (are [search-fn]
+               (= {:status 400
+                   :errors ["Timeline parameter end_date datetime is invalid: [foo] is not a valid datetime."]}
+                  (search-fn {:end-date "foo"
+                              :start-date "2000-01-01T00:00:00Z"
+                              :interval :month}))
+               search/get-granule-timeline
+               search/get-granule-timeline-with-post))
         (testing "invalid interval"
-          (is (= {:status 400 :errors [interval-msg]}
-                 (search/get-granule-timeline {:start-date "1999-01-01T00:00:00Z"
-                                               :end-date "2000-01-01T00:00:00Z"
-                                               :interval :foo}))))
+          (are [search-fn]
+               (= {:status 400
+                   :errors [interval-msg]}
+                  (search-fn {:start-date "1999-01-01T00:00:00Z"
+                              :end-date "2000-01-01T00:00:00Z"
+                              :interval :foo}))
+               search/get-granule-timeline
+               search/get-granule-timeline-with-post))
         (testing "start after end"
-          (is (= {:status 400
-                  :errors ["start_date [2000-01-01T00:00:00Z] must be before the end_date [1999-01-01T00:00:00Z]"]}
-                 (search/get-granule-timeline {:end-date "1999-01-01T00:00:00Z"
-                                               :start-date "2000-01-01T00:00:00Z"
-                                               :interval :month}))))))
+          (are [search-fn]
+               (= {:status 400
+                   :errors ["start_date [2000-01-01T00:00:00Z] must be before the end_date [1999-01-01T00:00:00Z]"]}
+                  (search-fn {:end-date "1999-01-01T00:00:00Z"
+                              :start-date "2000-01-01T00:00:00Z"
+                              :interval :month}))
+               search/get-granule-timeline
+               search/get-granule-timeline-with-post))))
 
 
     (testing "multiple collections"
-      (is (= {:status 200
-              :results [{:concept-id (:concept-id coll1)
-                         :intervals [["2000-01-01T00:00:00.000Z" "2001-05-01T00:00:00.000Z" 8]]}
-                        {:concept-id (:concept-id coll2)
-                         :intervals [["1994-01-01T00:00:00.000Z" "1996-01-01T00:00:00.000Z" 6]]}]}
-             (search/get-granule-timeline {:start-date "1994-01-01T00:00:00Z"
-                                           :end-date "2001-05-01T00:00:00Z"
-                                           :interval :year}))))
+      (are [search-fn]
+           (= {:status 200
+               :results [{:concept-id (:concept-id coll1)
+                          :intervals [["2000-01-01T00:00:00.000Z" "2001-05-01T00:00:00.000Z" 8]]}
+                         {:concept-id (:concept-id coll2)
+                          :intervals [["1994-01-01T00:00:00.000Z" "1996-01-01T00:00:00.000Z" 6]]}]}
+              (search-fn {:start-date "1994-01-01T00:00:00Z"
+                          :end-date "2001-05-01T00:00:00Z"
+                          :interval :year}))
+
+           search/get-granule-timeline
+           search/get-granule-timeline-with-post))
 
     (testing "query parameters apply to granule counts"
       (let [selected-granules [gran1 gran2 gran3 gran8 gran9 gran12 gran13]]
-        (is (= {:status 200
-                :results [{:concept-id (:concept-id coll1)
-                           :intervals [["2000-01-01T00:00:00.000Z" "2001-01-01T00:00:00.000Z" 5]]}
-                          {:concept-id (:concept-id coll2)
-                           :intervals [["1995-01-01T00:00:00.000Z" "1996-01-01T00:00:00.000Z" 2]]}]}
-               (search/get-granule-timeline {:concept-id coll-ids
-                                             :granule-ur (map :granule-ur selected-granules)
-                                             :start-date "1994-01-01T00:00:00Z"
-                                             :end-date "2001-05-01T00:00:00Z"
-                                             :interval :year})))))
+        (are [search-fn]
+             (= {:status 200
+                 :results [{:concept-id (:concept-id coll1)
+                            :intervals [["2000-01-01T00:00:00.000Z" "2001-01-01T00:00:00.000Z" 5]]}
+                           {:concept-id (:concept-id coll2)
+                            :intervals [["1995-01-01T00:00:00.000Z" "1996-01-01T00:00:00.000Z" 2]]}]}
+                (search-fn {:concept-id coll-ids
+                            :granule-ur (map :granule-ur selected-granules)
+                            :start-date "1994-01-01T00:00:00Z"
+                            :end-date "2001-05-01T00:00:00Z"
+                            :interval :year}))
+             search/get-granule-timeline
+             search/get-granule-timeline-with-post)))
 
     (testing "different intervals granulations"
       (testing "year interval"
-        (is (= {:status 200
-                :results [{:concept-id (:concept-id coll1)
-                           :intervals [["2000-01-01T00:00:00.000Z" "2002-02-01T00:00:00.000Z" 11]]}]}
-               (search/get-granule-timeline {:concept-id (:concept-id coll1)
-                                             :start-date "2000-01-01T00:00:00Z"
-                                             :end-date "2002-02-01T00:00:00Z"
-                                             :interval :year}))))
+        (are [search-fn]
+             (= {:status 200
+                 :results [{:concept-id (:concept-id coll1)
+                            :intervals [["2000-01-01T00:00:00.000Z" "2002-02-01T00:00:00.000Z" 11]]}]}
+                (search-fn {:concept-id (:concept-id coll1)
+                            :start-date "2000-01-01T00:00:00Z"
+                            :end-date "2002-02-01T00:00:00Z"
+                            :interval :year}))
+             search/get-granule-timeline
+             search/get-granule-timeline-with-post))
 
 
       ;; This doesn't match Catalog REST but that's because it appears to have a bug with times.
       ;; It expects the first interval end date to be 965001600 which is 2000-07-31T00:00:00.000Z
       ;; It should return 965088000 which is 2000-08-01 00:00:00 UTC
       (testing "month interval ending after neverending granule"
-        (is (= {:status 200
-                :results [{:concept-id (:concept-id coll1)
-                           :intervals [["2000-02-01T00:00:00.000Z" "2000-08-01T00:00:00.000Z" 4]
-                                       ["2000-09-01T00:00:00.000Z" "2000-10-01T00:00:00.000Z" 1]
-                                       ["2000-11-01T00:00:00.000Z" "2001-04-01T00:00:00.000Z" 3]
-                                       ["2001-06-01T00:00:00.000Z" "2002-02-01T00:00:00.000Z" 3]]}]}
-               (search/get-granule-timeline {:concept-id (:concept-id coll1)
-                                             :start-date "2000-01-01T00:00:00Z"
-                                             :end-date "2002-02-01T00:00:00Z"
-                                             :interval :month}))))
+        (are [search-fn]
+             (= {:status 200
+                 :results [{:concept-id (:concept-id coll1)
+                            :intervals [["2000-02-01T00:00:00.000Z" "2000-08-01T00:00:00.000Z" 4]
+                                        ["2000-09-01T00:00:00.000Z" "2000-10-01T00:00:00.000Z" 1]
+                                        ["2000-11-01T00:00:00.000Z" "2001-04-01T00:00:00.000Z" 3]
+                                        ["2001-06-01T00:00:00.000Z" "2002-02-01T00:00:00.000Z" 3]]}]}
+                (search-fn {:concept-id (:concept-id coll1)
+                            :start-date "2000-01-01T00:00:00Z"
+                            :end-date "2002-02-01T00:00:00Z"
+                            :interval :month}))
+             search/get-granule-timeline
+             search/get-granule-timeline-with-post))
 
       (testing "month interval after ending granules"
-        (is (= {:status 200
-                :results [{:concept-id (:concept-id coll1)
-                           :intervals [["2000-02-01T00:00:00.000Z" "2000-08-01T00:00:00.000Z" 4]
-                                       ["2000-09-01T00:00:00.000Z" "2000-10-01T00:00:00.000Z" 1]]}]}
-               (search/get-granule-timeline {:concept-id (:concept-id coll1)
-                                             :start-date "2000-01-01T00:00:00Z"
-                                             :end-date "2000-10-01T00:00:00Z"
-                                             :interval :month}))))
+        (are [search-fn]
+             (= {:status 200
+                 :results [{:concept-id (:concept-id coll1)
+                            :intervals [["2000-02-01T00:00:00.000Z" "2000-08-01T00:00:00.000Z" 4]
+                                        ["2000-09-01T00:00:00.000Z" "2000-10-01T00:00:00.000Z" 1]]}]}
+                (search-fn {:concept-id (:concept-id coll1)
+                            :start-date "2000-01-01T00:00:00Z"
+                            :end-date "2000-10-01T00:00:00Z"
+                            :interval :month}))
+             search/get-granule-timeline
+             search/get-granule-timeline-with-post))
 
       (testing "day"
-        (is (= {:status 200
-                :results [{:concept-id (:concept-id coll1)
-                           :intervals [["2000-02-01T00:00:00.000Z" "2000-07-02T00:00:00.000Z" 4]
-                                       ["2000-09-01T00:00:00.000Z" "2000-09-02T00:00:00.000Z" 1]
-                                       ["2000-11-01T00:00:00.000Z" "2001-03-02T00:00:00.000Z" 3]
-                                       ["2001-06-01T00:00:00.000Z" "2001-08-02T00:00:00.000Z" 2]
-                                       ["2001-09-01T00:00:00.000Z" "2002-02-01T00:00:00.000Z" 1]]}]}
-               (search/get-granule-timeline {:concept-id (:concept-id coll1)
-                                             :start-date "2000-01-01T00:00:00Z"
-                                             :end-date "2002-02-01T00:00:00Z"
-                                             :interval :day}))))
+        (are [search-fn]
+             (= {:status 200
+                 :results [{:concept-id (:concept-id coll1)
+                            :intervals [["2000-02-01T00:00:00.000Z" "2000-07-02T00:00:00.000Z" 4]
+                                        ["2000-09-01T00:00:00.000Z" "2000-09-02T00:00:00.000Z" 1]
+                                        ["2000-11-01T00:00:00.000Z" "2001-03-02T00:00:00.000Z" 3]
+                                        ["2001-06-01T00:00:00.000Z" "2001-08-02T00:00:00.000Z" 2]
+                                        ["2001-09-01T00:00:00.000Z" "2002-02-01T00:00:00.000Z" 1]]}]}
+                (search-fn {:concept-id (:concept-id coll1)
+                            :start-date "2000-01-01T00:00:00Z"
+                            :end-date "2002-02-01T00:00:00Z"
+                            :interval :day}))
+             search/get-granule-timeline
+             search/get-granule-timeline-with-post))
 
       (testing "hour"
-        (is (= {:status 200
-                :results [{:concept-id (:concept-id coll1)
-                           :intervals [["2000-02-01T00:00:00.000Z" "2000-07-01T01:00:00.000Z" 4]
-                                       ["2000-09-01T00:00:00.000Z" "2000-09-01T01:00:00.000Z" 1]
-                                       ["2000-11-01T00:00:00.000Z" "2001-03-01T01:00:00.000Z" 3]
-                                       ["2001-06-01T00:00:00.000Z" "2001-08-01T01:00:00.000Z" 2]
-                                       ["2001-09-01T00:00:00.000Z" "2002-02-01T00:00:00.000Z" 1]]}]}
-               (search/get-granule-timeline {:concept-id (:concept-id coll1)
-                                             :start-date "2000-01-01T00:00:00Z"
-                                             :end-date "2002-02-01T00:00:00Z"
-                                             :interval :hour}))))
+        (are [search-fn]
+             (= {:status 200
+                 :results [{:concept-id (:concept-id coll1)
+                            :intervals [["2000-02-01T00:00:00.000Z" "2000-07-01T01:00:00.000Z" 4]
+                                        ["2000-09-01T00:00:00.000Z" "2000-09-01T01:00:00.000Z" 1]
+                                        ["2000-11-01T00:00:00.000Z" "2001-03-01T01:00:00.000Z" 3]
+                                        ["2001-06-01T00:00:00.000Z" "2001-08-01T01:00:00.000Z" 2]
+                                        ["2001-09-01T00:00:00.000Z" "2002-02-01T00:00:00.000Z" 1]]}]}
+                (search-fn {:concept-id (:concept-id coll1)
+                            :start-date "2000-01-01T00:00:00Z"
+                            :end-date "2002-02-01T00:00:00Z"
+                            :interval :hour}))
+             search/get-granule-timeline
+             search/get-granule-timeline-with-post))
       (testing "minute"
-        (is (= {:status 200
-                :results [{:concept-id (:concept-id coll1)
-                           :intervals [["2000-02-01T00:00:00.000Z" "2000-07-01T00:01:00.000Z" 4]
-                                       ["2000-09-01T00:00:00.000Z" "2000-09-01T00:01:00.000Z" 1]
-                                       ["2000-11-01T00:00:00.000Z" "2001-03-01T00:01:00.000Z" 3]
-                                       ["2001-06-01T00:00:00.000Z" "2001-08-01T00:01:00.000Z" 2]
-                                       ["2001-09-01T00:00:00.000Z" "2002-02-01T00:00:00.000Z" 1]]}]}
-               (search/get-granule-timeline {:concept-id (:concept-id coll1)
-                                             :start-date "2000-01-01T00:00:00Z"
-                                             :end-date "2002-02-01T00:00:00Z"
-                                             :interval :minute}))))
+        (are [search-fn]
+             (= {:status 200
+                 :results [{:concept-id (:concept-id coll1)
+                            :intervals [["2000-02-01T00:00:00.000Z" "2000-07-01T00:01:00.000Z" 4]
+                                        ["2000-09-01T00:00:00.000Z" "2000-09-01T00:01:00.000Z" 1]
+                                        ["2000-11-01T00:00:00.000Z" "2001-03-01T00:01:00.000Z" 3]
+                                        ["2001-06-01T00:00:00.000Z" "2001-08-01T00:01:00.000Z" 2]
+                                        ["2001-09-01T00:00:00.000Z" "2002-02-01T00:00:00.000Z" 1]]}]}
+                (search-fn {:concept-id (:concept-id coll1)
+                            :start-date "2000-01-01T00:00:00Z"
+                            :end-date "2002-02-01T00:00:00Z"
+                            :interval :minute}))
+             search/get-granule-timeline
+             search/get-granule-timeline-with-post))
       (testing "second"
-        (is (= {:status 200
-                :results [{:concept-id (:concept-id coll1)
-                           :intervals [["2000-02-01T00:00:00.000Z" "2000-07-01T00:00:01.000Z" 4]
-                                       ["2000-09-01T00:00:00.000Z" "2000-09-01T00:00:01.000Z" 1]
-                                       ["2000-11-01T00:00:00.000Z" "2001-03-01T00:00:01.000Z" 3]
-                                       ["2001-06-01T00:00:00.000Z" "2001-08-01T00:00:01.000Z" 2]
-                                       ["2001-09-01T00:00:00.000Z" "2002-02-01T00:00:00.000Z" 1]]}]}
-               (search/get-granule-timeline {:concept-id (:concept-id coll1)
-                                             :start-date "2000-01-01T00:00:00Z"
-                                             :end-date "2002-02-01T00:00:00Z"
-                                             :interval :second})))))))
+        (are [search-fn]
+             (= {:status 200
+                 :results [{:concept-id (:concept-id coll1)
+                            :intervals [["2000-02-01T00:00:00.000Z" "2000-07-01T00:00:01.000Z" 4]
+                                        ["2000-09-01T00:00:00.000Z" "2000-09-01T00:00:01.000Z" 1]
+                                        ["2000-11-01T00:00:00.000Z" "2001-03-01T00:00:01.000Z" 3]
+                                        ["2001-06-01T00:00:00.000Z" "2001-08-01T00:00:01.000Z" 2]
+                                        ["2001-09-01T00:00:00.000Z" "2002-02-01T00:00:00.000Z" 1]]}]}
+                (search-fn {:concept-id (:concept-id coll1)
+                            :start-date "2000-01-01T00:00:00Z"
+                            :end-date "2002-02-01T00:00:00Z"
+                            :interval :second}))
+             search/get-granule-timeline
+             search/get-granule-timeline-with-post))
 
+      (testing "more search parameters"
+        (are [search-params]
+             (= (search/get-granule-timeline search-params)
+                (search/get-granule-timeline-with-post search-params))
 
+             {:concept-id [(:concept-id coll1) (:concept-id coll2)]
+              :start-date "1992-01-01T00:00:00Z"
+              :end-date "2002-02-01T00:00:00Z"
+              :interval :year}
+
+             {:entry-title ["Dataset1" "Dataset2"]
+              :start-date "1992-01-01T00:00:00Z"
+              :end-date "2002-02-01T00:00:00Z"
+              :interval :month})))))
 

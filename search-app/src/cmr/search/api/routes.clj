@@ -315,7 +315,9 @@
       ;; Granule timeline
       (context ["/granules/:path-w-extension" :path-w-extension #"(?:timeline)(?:\..+)?"] [path-w-extension]
         (GET "/" {params :params headers :headers context :request-context query-string :query-string}
-          (get-granules-timeline context path-w-extension params headers query-string)))
+          (get-granules-timeline context path-w-extension params headers query-string))
+        (POST "/" {params :params headers :headers context :request-context body :body-copy}
+          (get-granules-timeline context path-w-extension params headers body)))
 
       ;; AQL search - xml
       (context ["/concepts/:path-w-extension" :path-w-extension #"(?:search)(?:\..+)?"] [path-w-extension]
