@@ -146,8 +146,8 @@
 (defn get-granule-timeline
   "Requests search response as a granule timeline. Parses the granule timeline response."
   ([params]
-   (get-granule-timeline params {} true))
-  ([params options get-request?]
+   (get-granule-timeline params {:method :get}))
+  ([params options]
    (let [url-extension (get options :url-extension)
          snake-kebab? (get options :snake-kebab? true)
          headers (get options :headers {})
@@ -159,6 +159,7 @@
          [url accept] (if url-extension
                         [(str (url/timeline-url) "." url-extension)]
                         [(url/timeline-url) "application/json"])
+         get-request? (= :get (:method options))
          response (get-search-failure-data
                     (if get-request?
                       (client/get url {:accept accept
@@ -179,7 +180,7 @@
 (defn get-granule-timeline-with-post
   "Requests search response as a granule timeline through POST. Parses the granule timeline response."
   [params]
-  (get-granule-timeline params {} false))
+  (get-granule-timeline params {:method :post}))
 
 (defn find-grans-csv
   "Returns the response of granule search in csv format"
