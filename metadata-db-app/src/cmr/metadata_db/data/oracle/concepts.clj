@@ -51,7 +51,10 @@
   ;; CMR bootstrap-app simply copies this format into CMR database, we could have "ISO-SMAP" as
   ;; a format in CMR database.
   (assoc (set/map-invert mime-type->db-format)
-         "ISO-SMAP" "application/iso:smap+xml"))
+         "ISO-SMAP" "application/iso:smap+xml"
+         ;; We also have to support whatever the original version of the the string Metadata DB originally used.
+         "SMAP_ISO"  "application/iso:smap+xml"))
+
 
 (defn safe-max
   "Return the maximimum of two numbers, treating nil as the lowest possible number"
