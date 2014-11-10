@@ -25,7 +25,7 @@
 
 (defn invalid-revision-id-unknown-expected [revision-id]
   (format
-    "Invalid revison-id [%s]"
+    "Invalid revision-id [%s]"
     revision-id))
 
 (defn missing-concept-type []

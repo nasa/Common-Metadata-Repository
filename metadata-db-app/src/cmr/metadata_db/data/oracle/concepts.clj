@@ -53,8 +53,10 @@
   (assoc (set/map-invert mime-type->db-format)
          "ISO-SMAP" "application/iso:smap+xml"
          ;; We also have to support whatever the original version of the the string Metadata DB originally used.
-         "SMAP_ISO"  "application/iso:smap+xml"))
+         "SMAP_ISO"  "application/iso:smap+xml"
 
+         ;; Other Catalog REST formats
+         "ISO" "application/iso19115+xml"))
 
 (defn safe-max
   "Return the maximimum of two numbers, treating nil as the lowest possible number"
