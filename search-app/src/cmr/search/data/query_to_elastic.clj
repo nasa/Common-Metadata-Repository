@@ -151,8 +151,8 @@
     (let [field (query-field->elastic-field field concept-type)]
       {:query {:query_string {:query (fix-double-escapes
                                        (str/replace query-str
-                                                  query-string-reserved-characters-regex
-                                                  "\\\\$1"))
+                                                    query-string-reserved-characters-regex
+                                                    "\\\\$1"))
                               :analyzer :whitespace
                               :default_field field
                               :default_operator :and}}}))
@@ -253,7 +253,9 @@
           from-value (if start-date (h/utc-time->elastic-time start-date) h/earliest-echo-start-date)
           value {:from from-value}
           value (if end-date (assoc value :to (h/utc-time->elastic-time end-date)) value)]
-      {:range { field value }}))
+      {:range {field value
+               :execution (numeric-range-execution-mode)
+               :_cache (numeric-range-use-cache)}}))
 
   cmr.search.models.query.DateValueCondition
   (condition->elastic
