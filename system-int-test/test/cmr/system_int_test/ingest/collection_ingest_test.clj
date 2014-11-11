@@ -49,6 +49,17 @@
       (is (apply = (map :concept-id created-concepts)))
       (is (= (range 1 (inc n)) (map :revision-id created-concepts))))))
 
+(deftest update-collection-with-different-formats-test
+  (testing "update collection in different formats ..."
+    (let [collection-formats [:echo10 :dif :iso19115 :iso-smap]
+          colls (map (partial d/ingest "PROV1" (dc/collection {:entry-id "S1"
+                                                               :short-name "S1"
+                                                               :version-id "V1"
+                                                               :entry-title "ET1"
+                                                               :long-name "L4"}))
+                     (shuffle collection-formats))]
+      (is (apply = (map :concept-id colls)))
+      (is (= (range 1 (inc (count collection-formats))) (map :revision-id colls))))))
 
 ;; Verify ingest behaves properly if empty body is presented in the request.
 (deftest empty-collection-ingest-test
@@ -90,7 +101,7 @@
   (def coll1 (d/ingest "PROV1" (dc/collection)))
   (ingest/delete-concept coll1)
   (get-in user/system [:apps :metadata-db :db])
-)
+  )
 
 (deftest delete-collection-test
   (let [coll1 (d/ingest "PROV1" (dc/collection))
