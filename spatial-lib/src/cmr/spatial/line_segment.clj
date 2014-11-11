@@ -132,13 +132,15 @@
 (defn point-on-segment?
   "Returns true if the point is approximately on the segment."
   [ls point]
-  (let [mbr (:mbr ls)]
-    (when (m/covers-point? :cartesian mbr point)
-      (if (horizontal? ls)
-        (approx= ^double (get-in ls [:point1 :lat])
-                 ^double (:lat point) COVERS_TOLERANCE)
-        (when-let [expected-lon (segment+lat->lon ls (:lat point))]
-          (approx= expected-lon ^double (:lon point) COVERS_TOLERANCE))))))
+  (or (= (:point1 ls) point)
+      (= (:point2 ls) point)
+      (let [mbr (:mbr ls)]
+        (when (m/covers-point? :cartesian mbr point)
+          (if (horizontal? ls)
+            (approx= ^double (get-in ls [:point1 :lat])
+                     ^double (:lat point) COVERS_TOLERANCE)
+            (when-let [expected-lon (segment+lat->lon ls (:lat point))]
+              (approx= expected-lon ^double (:lon point) COVERS_TOLERANCE)))))))
 
 (defn distance
   "Calculates the distance of the line segment using the equation for a right triangle's hypotenuse."

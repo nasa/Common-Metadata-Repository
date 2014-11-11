@@ -49,6 +49,7 @@
                        [(s/line-segment point1 point2)])]
     (filter identity (map (partial s/intersection ls) arc-segments))))
 
+
 (defn line-segment-arc-intersections-with-densification
   "Performs the intersection between a line segment and the arc using densification of the line segment"
   [ls arc mbrs]
@@ -74,9 +75,17 @@
 
   (let [ls-mbr (:mbr ls)
         intersecting-mbrs (seq (filter (partial m/intersects-br? :geodetic ls-mbr)
-                                       (a/mbrs arc)))]
+                                       (a/mbrs arc)))
+        arc-points (a/arc->points arc)
+        ls-points [(:point1 ls) (:point2 ls)]]
     (when intersecting-mbrs
       (cond
+        ;; Do both the Arc and Line Segment start or end on the same pole?
+        (and (some p/is-north-pole? arc-points) (some p/is-north-pole? ls-points))
+        [p/north-pole]
+
+        (and (some p/is-south-pole? arc-points) (some p/is-south-pole? ls-points))
+        [p/south-pole]
 
         (s/vertical? ls)
         ;; Treat as line segment as a vertical arc.
