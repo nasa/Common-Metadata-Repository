@@ -70,6 +70,14 @@
   [field-mapping]
   (assoc field-mapping :index "no"))
 
+(defn doc-values
+  "Modifies a mapping to indicate that it should use doc values instead of the field data cache
+  for this field.  The tradeoff is slightly slower performance, but the field no longer takes
+  up memory in the field data cache.  Only use doc values for fields which require a large
+  amount of memory and are not frequently used for sorting."
+  [field-mapping]
+  (assoc field-mapping :doc_values true))
+
 (def attributes-field-mapping
   "Defines mappings for attributes."
   {:type "nested"
@@ -280,8 +288,11 @@
 
                    :granule-ur            (stored string-field-mapping)
                    :granule-ur.lowercase  string-field-mapping
+                   :granule-ur.lowercase2 (doc-values string-field-mapping)
                    :producer-gran-id (stored string-field-mapping)
                    :producer-gran-id.lowercase string-field-mapping
+                   :producer-gran-id.lowercase2 (doc-values string-field-mapping)
+
                    :day-night (stored string-field-mapping)
                    :day-night.lowercase string-field-mapping
 
@@ -295,6 +306,8 @@
                    ;; will default to granule-ur. This avoids the solution Catalog REST uses which is
                    ;; to use a sort script which is (most likely) much slower.
                    :readable-granule-name-sort string-field-mapping
+                   :readable-granule-name-sort2 (doc-values string-field-mapping)
+
 
                    :platform-sn           string-field-mapping
                    :platform-sn.lowercase string-field-mapping
