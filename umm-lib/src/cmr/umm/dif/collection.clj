@@ -2,6 +2,7 @@
   "Contains functions for parsing and generating the DIF dialect."
   (:require [clojure.data.xml :as x]
             [clojure.java.io :as io]
+            [cmr.common.util :as util]
             [cmr.common.xml :as cx]
             [cmr.umm.dif.core :as dif-core]
             [cmr.umm.collection :as c]
@@ -23,17 +24,12 @@
 (def COLLECTION_DATA_TYPE_EXTERNAL_META_NAME
   "CollectionDataType")
 
-(defn trunc
-  "Returns the given string truncated to n characters."
-  [s n]
-  (subs s 0 (min (count s) n)))
-
 (defn- xml-elem->Product
   "Returns a UMM Product from a parsed Collection Content XML structure"
   [collection-content]
   (let [short-name (cx/string-at-path collection-content [:Entry_ID])
         long-name (cx/string-at-path collection-content [:Entry_Title])
-        long-name (trunc long-name 1024)
+        long-name (util/trunc long-name 1024)
         version-id (cx/string-at-path collection-content [:Data_Set_Citation :Version])
         processing-level-id (em/extended-metadatas-value collection-content PRODUCT_LEVEL_ID_EXTERNAL_META_NAME)
         collection-data-type (em/extended-metadatas-value collection-content COLLECTION_DATA_TYPE_EXTERNAL_META_NAME)]

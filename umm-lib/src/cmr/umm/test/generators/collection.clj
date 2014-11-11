@@ -120,7 +120,7 @@
                                  3)
                      (ext-gen/nil-if-empty (gen/vector addresses 1 3))
                      (ext-gen/nil-if-empty (gen/vector emails 0 4))
-                     (ext-gen/optional (ext-gen/string-ascii 1 30))
+                     (ext-gen/string-ascii 1 30)
                      (ext-gen/string-ascii 1 30)
                      (ext-gen/optional (ext-gen/string-ascii 1 30))
                      (ext-gen/nil-if-empty (gen/vector phones 1 3))))
@@ -164,13 +164,13 @@
   (ext-gen/model-gen c/->Organization
                      (gen/return :archive-center)
                      org-names
-                     (gen/vector contact-persons 1 3)))
+                     (gen/return nil)))
 
 (def processing-center-organizations
   (ext-gen/model-gen c/->Organization
                      (gen/return :processing-center)
                      org-names
-                     (gen/vector contact-persons 1 3)))
+                     (gen/return nil)))
 
 (def distribution-center-organizations
   (ext-gen/model-gen c/->Organization
