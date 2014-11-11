@@ -71,24 +71,28 @@
       (let [interval-msg (str "Timeline interval is a required parameter for timeline search "
                               "and must be one of year, month, day, hour, minute, or second.")]
         (testing "missing parameters"
-          (is (= {:status 400 :errors ["Parameter [foo] was not recognized."
-                                       "start_date is a required parameter for timeline searches"
-                                       "end_date is a required parameter for timeline searches"
-                                       "interval is a required parameter for timeline searches"]}
+          (is (= {:status 400
+                  :errors ["Parameter [foo] was not recognized."
+                           "start_date is a required parameter for timeline searches"
+                           "end_date is a required parameter for timeline searches"
+                           "interval is a required parameter for timeline searches"]}
                  (search/get-granule-timeline {:foo 5}))))
 
         (testing "invalid start-date"
-          (is (= {:status 400 :errors ["Timeline parameter start_date datetime is invalid: [foo] is not a valid datetime."]}
+          (is (= {:status 400
+                  :errors ["Timeline parameter start_date datetime is invalid: [foo] is not a valid datetime."]}
                  (search/get-granule-timeline {:start-date "foo"
                                                :end-date "2000-01-01T00:00:00Z"
                                                :interval :month}))))
         (testing "invalid end-date"
-          (is (= {:status 400 :errors ["Timeline parameter end_date datetime is invalid: [foo] is not a valid datetime."]}
+          (is (= {:status 400
+                  :errors ["Timeline parameter end_date datetime is invalid: [foo] is not a valid datetime."]}
                  (search/get-granule-timeline {:end-date "foo"
                                                :start-date "2000-01-01T00:00:00Z"
                                                :interval :month}))))
         (testing "invalid interval"
-          (is (= {:status 400 :errors [interval-msg]}
+          (is (= {:status 400
+                  :errors [interval-msg]}
                  (search/get-granule-timeline {:start-date "1999-01-01T00:00:00Z"
                                                :end-date "2000-01-01T00:00:00Z"
                                                :interval :foo}))))
@@ -97,7 +101,14 @@
                   :errors ["start_date [2000-01-01T00:00:00Z] must be before the end_date [1999-01-01T00:00:00Z]"]}
                  (search/get-granule-timeline {:end-date "1999-01-01T00:00:00Z"
                                                :start-date "2000-01-01T00:00:00Z"
-                                               :interval :month}))))))
+                                               :interval :month}))))
+
+        (testing "missing parameters with post"
+          (is (= {:status 400 :errors ["Parameter [foo] was not recognized."
+                                       "start_date is a required parameter for timeline searches"
+                                       "end_date is a required parameter for timeline searches"
+                                       "interval is a required parameter for timeline searches"]}
+                 (search/get-granule-timeline-with-post {:foo 5}))))))
 
 
     (testing "multiple collections"
@@ -207,7 +218,20 @@
                (search/get-granule-timeline {:concept-id (:concept-id coll1)
                                              :start-date "2000-01-01T00:00:00Z"
                                              :end-date "2002-02-01T00:00:00Z"
-                                             :interval :second})))))))
+                                             :interval :second}))))
 
+      (testing "get and post matches"
+        (are [search-params]
+             (= (search/get-granule-timeline search-params)
+                (search/get-granule-timeline-with-post search-params))
 
+             {:concept-id [(:concept-id coll1) (:concept-id coll2)]
+              :start-date "1992-01-01T00:00:00Z"
+              :end-date "2002-02-01T00:00:00Z"
+              :interval :year}
+
+             {:entry-title ["Dataset1" "Dataset2"]
+              :start-date "1992-01-01T00:00:00Z"
+              :end-date "2002-02-01T00:00:00Z"
+              :interval :month})))))
 
