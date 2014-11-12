@@ -52,6 +52,10 @@
         (assoc :organizations organizations)
         ;; ECHO10 OnlineResources' title is built as description plus resource-type
         (assoc :related-urls related-urls)
+        ;; We don't use these two fields during xml generation as they are not needed for ECHO10
+        ;; so we set them to the defaults here.
+        (assoc :contact-email "support@earthdata.nasa.gov")
+        (assoc :contact-name "undefined")
         umm-c/map->UmmCollection)))
 
 (defspec generate-collection-is-valid-xml-test 100
@@ -68,6 +72,16 @@
           parsed (c/parse-collection xml)
           expected-parsed (umm->expected-parsed-echo10 collection)]
       (= parsed expected-parsed))))
+
+
+(comment
+
+  (let [x #cmr.umm.collection.UmmCollection{:entry-id "0", :entry-title "0", :summary "0", :product #cmr.umm.collection.Product{:short-name "0", :long-name "0", :version-id "0", :processing-level-id nil, :collection-data-type nil}, :access-value nil, :data-provider-timestamps #cmr.umm.collection.DataProviderTimestamps{:insert-time #=(org.joda.time.DateTime. 0), :update-time #=(org.joda.time.DateTime. 0), :delete-time nil}, :spatial-keywords nil, :temporal-keywords nil, :temporal #cmr.umm.collection.Temporal{:time-type nil, :date-type nil, :temporal-range-type nil, :precision-of-seconds nil, :ends-at-present-flag nil, :range-date-times [#cmr.umm.collection.RangeDateTime{:beginning-date-time #=(org.joda.time.DateTime. 0), :ending-date-time nil}], :single-date-times [], :periodic-date-times []}, :science-keywords [#cmr.umm.collection.ScienceKeyword{:category "0", :topic "0", :term "0", :variable-level-1 "0", :variable-level-2 nil, :variable-level-3 nil, :detailed-variable nil}], :platforms nil, :product-specific-attributes nil, :projects nil, :two-d-coordinate-systems nil, :related-urls nil, :organizations (#cmr.umm.collection.Organization{:type :distribution-center, :org-name "!"}), :personnel nil, :spatial-coverage nil, :associated-difs nil, :contact-email "         !", :contact-name "0"}]
+    (let [xml (echo10/umm->echo10-xml x)]
+    (println xml)))
+
+
+  )
 
 ;; This is a made-up include all fields collection xml sample for the parse collection test
 (def all-fields-collection-xml
@@ -116,6 +130,36 @@
         <PeriodCycleDurationValue>7</PeriodCycleDurationValue>
       </PeriodicDateTime>
     </Temporal>
+    <Contacts>
+      <Contact>
+        <Role>INVESTIGATOR</Role>
+        <OrganizationName>Undefined</OrganizationName>
+        <OrganizationAddresses>
+        <Address>
+          <StreetAddress>Laboratory for Hydrospheric Processes Cryospheric Sciences Branch NASA/Goddard Space Flight Center Code 614 </StreetAddress>
+          <City>Greenbelt</City>
+          <StateProvince>MD</StateProvince>
+          <PostalCode>20771</PostalCode>
+          <Country>USA</Country>
+        </Address>
+        </OrganizationAddresses>
+        <OrganizationPhones>
+        <Phone>
+        <Number>301 614-5708</Number>
+        <Type>Telephone</Type>
+        </Phone>
+        </OrganizationPhones>
+        <OrganizationEmails>
+        <Email>josefino.c.comiso@nasa.gov</Email>
+        </OrganizationEmails>
+        <ContactPersons>
+          <ContactPerson>
+            <FirstName>JOSEPHINO 'JOEY'</FirstName>
+            <LastName>COMISO</LastName>
+          </ContactPerson>
+        </ContactPersons>
+      </Contact>
+    </Contacts>
     <ScienceKeywords>
       <ScienceKeyword>
         <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
@@ -398,7 +442,9 @@
                         :org-name "SEDAC PC"})
                      (umm-c/map->Organization
                        {:type :archive-center
-                        :org-name "SEDAC AC"})]})
+                        :org-name "SEDAC AC"})]
+                    :contact-email "josefino.c.comiso@nasa.gov"
+                    :contact-name "JOSEPHINO 'JOEY' COMISO"})
         actual (c/parse-collection all-fields-collection-xml)]
     (is (= expected actual))))
 

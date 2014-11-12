@@ -86,13 +86,6 @@
      :keywords science-keywords-flat
      :entry-title entry-title}))
 
-(defn short-name->access-level
-  "Return the access-level value based on the given short-name."
-  [short-name]
-  (if (and short-name (re-find #"AST" short-name))
-    "restricted public"
-    "public"))
-
 (defn temporal
   "Get the temporal field from the start-date and end-date"
   ;; NOTE: Eventually this should handle peridoc-date-times as well, but opendata only allows one
@@ -138,10 +131,9 @@
                            ;; TODO :conctactPoint
                            ;; TODO :mbox
                            :identifier id
-                           :accessLevel (short-name->access-level short-name)
+                           :accessLevel "public"
                            :bureauCode [BUREAU_CODE]
                            :programCode [PROGRAM_CODE]
-                           ;; TODO :accessLevelComment :access-constraints
                            :accessURL (:url (first (ru/downloadable-urls related-urls)))
                            :format opendata-format
                            ;; TODO :spatial
@@ -152,7 +144,6 @@
                            ;; in ECHO, but MaintenanceAndUpdateFrequency is not mapped to UMM-C
                            ;; yet. This is an expanded (not required) field, so it may not be
                            ;; needed.
-                           ;; TODO figure out what landingPage should be
                            :landingPage (landing-page related-urls)
                            :language  [LANGUAGE_CODE]
                            :references (not-empty (map :url related-urls))

@@ -97,6 +97,15 @@
                    (generate-orbit-parameters orbit-parameters)
                    (x/element :GranuleSpatialRepresentation {} gsr))))))
 
+(defn- xml-elem->contact-name
+  "Returns the contact name from a parsed Collection XML structure"
+  [xml-struct]
+  (let [last-name (cx/string-at-path xml-struct [:Contacts :Contact :ContactPersons :ContactPerson :LastName])
+        first-name (cx/string-at-path xml-struct [:Contacts :Contact :ContactPersons :ContactPerson :FirstName])]
+    (if (and first-name last-name)
+      (str first-name " " last-name)
+      "undefined")))
+
 (defn- xml-elem->Collection
   "Returns a UMM Product from a parsed Collection XML structure"
   [xml-struct]
@@ -120,8 +129,10 @@
        :related-urls (ru/xml-elem->related-urls xml-struct)
        :spatial-coverage (xml-elem->SpatialCoverage xml-struct)
        :organizations (org/xml-elem->Organizations xml-struct)
-       :associated-difs (seq (cx/strings-at-path xml-struct [:AssociatedDIFs :DIF :EntryId]))})))
-
+       :associated-difs (seq (cx/strings-at-path xml-struct [:AssociatedDIFs :DIF :EntryId]))
+       :contact-email (or (cx/string-at-path xml-struct [:Contacts :Contact :OrganizationEmails :Email])
+                          "support@earthdata.nasa.gov")
+       :contact-name (xml-elem->contact-name xml-struct)})))
 
 (defn parse-collection
   "Parses ECHO10 XML into a UMM Collection record."

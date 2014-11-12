@@ -36,7 +36,7 @@
         end-date (when end-date (str/replace (str end-date) #"\.000Z" "Z"))]
     (util/remove-nil-keys {:identifier concept-id
                            :description summary
-                           :accessLevel (odrh/short-name->access-level short-name)
+                           :accessLevel "public"
                            :accessURL (ru/related-urls->opendata-access-url related-urls)
                            :references (not-empty (map :url related-urls))
                            :programCode [odrh/PROGRAM_CODE]
