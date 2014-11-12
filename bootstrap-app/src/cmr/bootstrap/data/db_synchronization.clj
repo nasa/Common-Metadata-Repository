@@ -33,12 +33,6 @@
   "The number of concurrent threads that should process deleting items"
   (config/config-value :db-sync-num-delete-threads "5" #(Long. ^String %)))
 
-(comment
-
-  (def system (get-in user/system [:apps :bootstrap]))
-
-  )
-
 (defn- truncate-work-table
   "Removes everything from the sync work table."
   [system]
@@ -60,9 +54,10 @@
   (truncate-work-table system)
   (let [sql (format "insert into sync_work (id, concept_id)
                     select ROWNUM, %s from %s
-                    where ingest_updated_at >= ? and ingest_updated_at <= ?"
+                    where ingest_updated_at >= ? and ingest_updated_at <= ? and %s"
                     (mu/concept-type->catalog-rest-id-field concept-type)
-                    (mu/catalog-rest-table system provider-id concept-type))]
+                    (mu/catalog-rest-table system provider-id concept-type)
+                    mu/CATALOG_REST_SKIPPED_ITEMS_CLAUSE)]
       (j/execute! (:db system) [sql (cr/to-sql-time start-date) (cr/to-sql-time end-date)])))
 
 (defn get-work-items-batch
@@ -275,10 +270,11 @@
   (truncate-delete-work-table system)
   (let [sql (format "insert into sync_delete_work (concept_id, revision_id, deleted)
                     select concept_id, revision_id, deleted from %s
-                    where concept_id not in (select %s from %s)"
+                    where concept_id not in (select %s from %s where %s)"
                     (tables/get-table-name provider-id concept-type)
                     (mu/concept-type->catalog-rest-id-field concept-type)
-                    (mu/catalog-rest-table system provider-id concept-type))]
+                    (mu/catalog-rest-table system provider-id concept-type)
+                    mu/CATALOG_REST_SKIPPED_ITEMS_CLAUSE)]
     (j/execute! (:db system) [sql])))
 
 (defn- get-max-of-multi-revisions

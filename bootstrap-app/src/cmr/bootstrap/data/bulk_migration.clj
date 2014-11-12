@@ -88,18 +88,17 @@
   ([system provider-id collection-id]
    (let [dataset-table (mu/catalog-rest-table system provider-id :collection)
          collection-table (mu/metadata-db-concept-table system provider-id :collection)
-         ;; FIXME: Format is incorrect when copied over. Catalog REST has a constant like "ECHO10"
-         ;; but we expect application/echo10+xml
          stmt (format (str "INSERT INTO %s (id, concept_id, native_id, metadata, format, short_name, "
                            "version_id, entry_title, delete_time, revision_date) SELECT %s_seq.NEXTVAL,"
                            "echo_collection_id, dataset_id, compressed_xml, xml_mime_type, short_name,"
-                           "version_id, dataset_id, delete_time, ingest_updated_at FROM %s")
+                           "version_id, dataset_id, delete_time, ingest_updated_at "
+                           "FROM %s where %s")
                       collection-table
                       collection-table
                       dataset-table
-                      collection-id)]
+                      mu/CATALOG_REST_SKIPPED_ITEMS_CLAUSE)]
      (if collection-id
-       (format "%s WHERE echo_collection_id = '%s'" stmt collection-id)
+       (format "%s and echo_collection_id = '%s'" stmt collection-id)
        stmt))))
 
 (defn- copy-collection-data
@@ -123,12 +122,13 @@
                           "metadata, format, delete_time, revision_date) "
                           "SELECT %s_seq.NEXTVAL, echo_granule_id, granule_ur, '%s', "
                           "compressed_xml, xml_mime_type, delete_time, ingest_updated_at "
-                          "FROM %s WHERE dataset_record_id = %d")
+                          "FROM %s WHERE dataset_record_id = %d and %s")
                      granule-mdb-table
                      granule-mdb-table
                      collection-id
                      granule-echo-table
-                     (.intValue dataset-record-id))]
+                     (.intValue dataset-record-id)
+                     mu/CATALOG_REST_SKIPPED_ITEMS_CLAUSE)]
     stmt))
 
 (defn- copy-granule-data-for-collection
