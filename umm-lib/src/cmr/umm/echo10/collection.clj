@@ -12,6 +12,7 @@
             [cmr.umm.echo10.collection.two-d-coordinate-system :as two-d]
             [cmr.umm.echo10.related-url :as ru]
             [cmr.umm.echo10.collection.org :as org]
+            [cmr.umm.echo10.collection.personnel :as pe]
             [cmr.umm.echo10.collection.science-keyword :as sk]
             [cmr.umm.echo10.spatial :as s]
             [cmr.umm.echo10.core]
@@ -173,7 +174,7 @@
                                  (for [temporal-keyword temporal-keywords]
                                    (x/element :Keyword {} temporal-keyword))))
                     (t/generate-temporal temporal)
-                    (org/generate-contacts organizations)
+                    (pe/generate-contacts organizations)
                     (sk/generate-science-keywords science-keywords)
                     (platform/generate-platforms platforms)
                     (psa/generate-product-specific-attributes product-specific-attributes)

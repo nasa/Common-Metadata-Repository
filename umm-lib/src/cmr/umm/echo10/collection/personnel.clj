@@ -1,6 +1,9 @@
 (ns cmr.umm.echo10.collection.personnel
-  "Provides functions to parse and generate DIF Personnel elements."
+  "Provides functions to parse and generate ECHO10 Contact elements for the UMM ContactPerson
+  personnel attribute."
   (:require [clojure.data.xml :as x]
+            [clojure.string :as str]
+            [cmr.common.util :as util]
             [cmr.common.xml :as cx]
             [cmr.umm.collection :as c]))
 
@@ -20,7 +23,7 @@
 (defn- xml-elem->phones
   "Return a list of Phone records for the parsed xml structure."
   [contact-element]
-  (for [phone-element (cx/elements-at-path contact-element [:OrganizatonPhones :Phone])]
+  (for [phone-element (cx/elements-at-path contact-element [:OrganizationPhones :Phone])]
     (c/map->Phone {:number (cx/string-at-path phone-element [:Number])
                    :number-type (cx/string-at-path phone-element [:Type])})))
 
@@ -37,7 +40,8 @@
           country (cx/string-at-path address-element [:Country])
           postal-code (cx/string-at-path address-element [:PostalCode])
           state-province (cx/string-at-path address-element [:StateProvince])
-          street-address-lines [(cx/string-at-path address-element [:StreetAddress])]]
+          street-address-lines (str/split (cx/string-at-path address-element [:StreetAddress])
+                                          #"\n")]
       (c/map->Address {:city city
                        :country country
                        :postal-code postal-code
@@ -69,58 +73,85 @@
   [contact-element]
   ;; Note: ECHO10 splits the emails, phones, addresses out from the contact persons list, so it is
   ;; in theory impossible to know which contact person is associated with which email, phone, etc.
-  ;; In practice, there seems to be only one contact person listed per collection, so we
+  ;; In practice, however, there seems to be only one contact person listed per collection, so we
   ;; associate all email, phones, etc. with that one contact.
   (let [role (cx/string-at-path contact-element [:Role])
         first-name (cx/string-at-path contact-element [:ContactPersons :ContactPerson :FirstName])
         last-name (cx/string-at-path contact-element [:ContactPersons :ContactPerson :LastName])
         middle-name (cx/string-at-path contact-element [:ContactPersons :ContactPerson :MiddleName])
-        addresses (xml-elem->addresses contact-element)
-        emails (xml-elem->emails contact-element)
+        addresses (seq (xml-elem->addresses contact-element))
+        emails (seq (xml-elem->emails contact-element))
         phones (xml-elem->phones contact-element)]
-    [(c/map->ContactPerson {:first-name first-name
-                            :middle-name middle-name
-                            :last-name last-name
-                            :roles [role]
-                            :addresses (seq addresses)
-                            :emails (seq emails)
-                            :phones (seq phones)})]))
+    (when (or first-name last-name addresses emails)
+      [(c/map->ContactPerson {:first-name first-name
+                              :middle-name middle-name
+                              :last-name last-name
+                              :roles [role]
+                              :addresses (seq addresses)
+                              :emails (seq emails)
+                              :phones (seq phones)})])))
 
-(defn generate-address
-  [address]
-  (let [{:keys [city state-province country postal-code street-address-lines]} address]
-    (x/element :Contact_Address {}
-               (for [line street-address-lines]
-                 (x/element :Address {} line))
-               (when city
-                 (x/element :City {} city))
-               (when state-province
-                 (x/element :Province_or_State {} state-province))
-               (when postal-code
-                 (x/element :Postal_Code {} postal-code))
-               (when country
-                 (x/element :Country {} country)))))
+(defn- generate-contact-phones
+  "Returns the Phone entries for the given organization."
+  [org]
+  (x/element :OrganizationPhones {}
+             (for [person (:personnel org)
+                   phone (:phones person)]
+               (let [{:keys [number number-type]} phone]
+                 (x/element :Phone {}
+                            (x/element :Number {} number)
+                            (x/element :Type {} number-type))))))
+
+(defn- generate-contact-addresses
+  "Returns the Address entries for the given organization."
+  [org]
+  (x/element :OrganizationAddresses {}
+             (for [person (:personnel org)
+                   address (:addresses person)]
+               (let [{:keys [city country state-province postal-code
+                             street-address-lines]} address]
+                 (x/element :Address {}
+                            (x/element :StreetAddress {}
+                                       (util/trunc (str/join "\n" street-address-lines) 1024))
+                            (x/element :City {} (util/trunc city 80))
+                            (x/element :StateProvince {} (util/trunc state-province 30))
+                            (x/element :PostalCode {} (util/trunc postal-code 20))
+                            (x/element :Country {} (util/trunc country 10)))))))
+
+(defn- generate-contact-emails
+  "Returns the Email entries for the given organization."
+  [org]
+  (x/element :OrganizationEmails {}
+             (for [person (:personnel org)
+                   email (:emails person)]
+               (x/element :Email {} email))))
+
+(defn- generate-contact-persons
+  "Returns the ContactPersons entry for the given organization."
+  [org]
+  (x/element :ContactPersons {}
+             (for [person (:personnel org)]
+               (let [{:keys [first-name middle-name last-name]} person]
+                 (x/element :ContactPerson {}
+                            (when first-name
+                              (x/element :FirstName {} first-name))
+                            (when middle-name
+                              (x/element :MiddleName {} middle-name))
+                            (when last-name
+                              (x/element :LastName {} last-name)))))))
 
 (defn generate-contacts
-  [personnel]
-  (when (not-empty personnel)
-    (x/element :Contacts {}
-               (for [contact personnel]
-                 (let [{:keys [roles first-name middle-name last-name emails phones address]} contact]
-                   (x/element :Contact {}
-                              (x/element :Role {} (first roles))
-                              (let [person (first personnel)
-                                    {:keys [roles first-name middle-name last-name emails phones addresses]} person]
-                                (x/element :Personnel {}
-                                           (for [role roles]
-                                             (x/element :Role {} role))
-                                           (when first-name
-                                             (x/element :First_Name {} first-name))
-                                           (when middle-name
-                                             (x/element :Middle_Name {} middle-name))
-                                           (x/element :Last_Name {} last-name)
-                                           (for [email emails]
-                                             (x/element :Email {} email))
-                                           (for [phone phones]
-                                             (x/element :Phone {} (:number phone)))
-                                           (generate-address (first addresses))))))))))
+  "Return Contacts from the organizations that are not archive centers or processing centers."
+  [orgs]
+  (x/element :Contacts {}
+             (for [org orgs
+                   :when (and (not= :archive-center (:org-type org))
+                              (not= :processing-center (:org-type org)))]
+               (let [{:keys [org-type org-name]} org]
+                 (x/element :Contact {}
+                            (x/element :Role {} (name org-type))
+                            (x/element :OrganizationName {} org-name)
+                            (generate-contact-addresses org)
+                            (generate-contact-phones org)
+                            (generate-contact-emails org)
+                            (generate-contact-persons org))))))
