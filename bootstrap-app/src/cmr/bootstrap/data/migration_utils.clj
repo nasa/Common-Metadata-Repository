@@ -30,3 +30,7 @@
           (catalog-rest-user system)
           provider-id
           (concept-type->catalog-rest-table-prefix concept-type)))
+
+(def CATALOG_REST_SKIPPED_ITEMS_CLAUSE
+  "A sql clause that will skip items with xml mime types that Metadata DB does not support."
+  "xml_mime_type not in ('ISO', 'GRACE_ISO', 'ISO-GRACE')")
