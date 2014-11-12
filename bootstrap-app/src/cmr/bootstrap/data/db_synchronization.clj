@@ -205,22 +205,22 @@
   ;; and was deleted in Catalog REST in the mean time Ingest would return a 404 from the delete
   ;; and Catalog REST would ignore it. This would end up saving the item in Metadata DB making them
   ;; out of sync. The delete processing should happen after this step and put it back in sync.
-  (if (:format concept)
-    (let [mdb-context {:system (:metadata-db system)}
-          indexer-context {:system (:indexer system)}
-          {:keys [concept-id revision-id]} concept]
-      (try
-        (concept-service/save-concept mdb-context concept)
-        (index-service/index-concept indexer-context concept-id revision-id true)
-        (catch clojure.lang.ExceptionInfo e
-          (let [data (ex-data e)]
-            (if (= (:type data) :conflict)
-              (warn (format "Ignoring conflict saving revision for %s %s: %s"
-                            concept-id revision-id (pr-str (:errors data))))
-              (throw e))))))
-    (warn (str "Skipping item "
-               (:concept-id concept)
-               " from Catalog REST. It did not have a supported mime type in Metadata DB."))))
+  (let [mdb-context {:system (:metadata-db system)}
+        indexer-context {:system (:indexer system)}
+        {:keys [concept-id revision-id]} concept]
+    (try
+      (concept-service/save-concept mdb-context concept)
+      (index-service/index-concept indexer-context concept-id revision-id true)
+      (catch clojure.lang.ExceptionInfo e
+        (let [data (ex-data e)]
+          (if (= (:type data) :conflict)
+            (warn (format "Ignoring conflict saving revision for %s %s: %s"
+                          concept-id revision-id (pr-str (:errors data))))
+            (error e (format "Error saving or indexing concept %s with revision %s. Message: %s"
+                             concept-id revision-id (.getMessage e))))))
+      (catch Exception e
+        (error e (format "Error saving or indexing concept %s with revision %s. Message: %s"
+                         concept-id revision-id (.getMessage e)))))))
 
 (defn process-missing-concepts
   "Starts a series of threads that read concepts one at a time off the channel, save, and index them.
@@ -353,7 +353,11 @@
         (if (= (:type data) :conflict)
           (warn (format "Ignoring conflict creating tombstone for %s %s: %s"
                         concept-id revision-id (pr-str (:errors data))))
-          (throw e))))))
+          (error e (format "Error deleting or unindexing concept %s with revision %s. Message: %s"
+                           concept-id revision-id (.getMessage e))))))
+    (catch Exception e
+      (error e (format "Error deleting or unindexing concept %s with revision %s. Message: %s"
+                       concept-id revision-id (.getMessage e))))))
 
 (defn process-deletes
   "Starts a series of threads that read items one at a time off the channel then creates a tombstone
