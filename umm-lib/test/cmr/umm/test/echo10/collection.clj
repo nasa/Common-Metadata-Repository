@@ -65,14 +65,14 @@
         (assoc :related-urls related-urls)
         umm-c/map->UmmCollection)))
 
-(defspec generate-collection-is-valid-xml-test 1
+(defspec generate-collection-is-valid-xml-test 100
   (for-all [collection coll-gen/collections]
     (let [xml (echo10/umm->echo10-xml collection)]
       (and
         (> (count xml) 0)
         (= 0 (count (c/validate-xml xml)))))))
 
-(defspec generate-and-parse-collection-test 1
+(defspec generate-and-parse-collection-test 100
   (for-all [collection coll-gen/collections]
     (let [{{:keys [short-name version-id]} :product} collection
           xml (echo10/umm->echo10-xml collection)
