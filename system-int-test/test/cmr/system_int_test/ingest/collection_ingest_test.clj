@@ -49,6 +49,20 @@
       (is (apply = (map :concept-id created-concepts)))
       (is (= (range 1 (inc n)) (map :revision-id created-concepts))))))
 
+(deftest update-collection-with-different-formats-test
+  (testing "update collection in different formats ..."
+    (doseq [[expected-rev coll-format] (map-indexed #(vector (inc %1) %2) [:echo10 :dif :iso19115 :iso-smap])]
+      (let [coll (d/ingest "PROV1"
+                           (dc/collection {:entry-id "S1"
+                                           :short-name "S1"
+                                           :version-id "V1"
+                                           :entry-title "ET1"
+                                           :long-name "L4"
+                                           :summary (name coll-format)})
+                           coll-format)]
+        (index/refresh-elastic-index)
+        (is (= expected-rev (:revision-id coll)))
+        (is (= 1 (:hits (search/find-refs :collection {:keyword (name coll-format)}))))))))
 
 ;; Verify ingest behaves properly if empty body is presented in the request.
 (deftest empty-collection-ingest-test
@@ -90,7 +104,7 @@
   (def coll1 (d/ingest "PROV1" (dc/collection)))
   (ingest/delete-concept coll1)
   (get-in user/system [:apps :metadata-db :db])
-)
+  )
 
 (deftest delete-collection-test
   (let [coll1 (d/ingest "PROV1" (dc/collection))

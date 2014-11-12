@@ -28,3 +28,12 @@
   []
   (map #(concept-tables/get-table-name % :granule) (get-provider-ids)))
 
+(defn concept-id-seq-missing?
+  "Returns true if concept_id_seq does not exist"
+  []
+  (let [result (j/query
+                 (config/db)
+                 "select count(*) as c from all_sequences where sequence_name='CONCEPT_ID_SEQ'")
+        seq-count (:c (first result))]
+    (= 0 (int seq-count))))
+
