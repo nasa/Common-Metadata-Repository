@@ -46,6 +46,8 @@
                                            :single-date-times single-date-times
                                            :periodic-date-times []})))
         organizations (seq (filter #(not (= :distribution-center (:type %))) (:organizations coll)))
+        org-name (some :org-name organizations)
+        contact-name (or org-name "undefined")
         associated-difs (when (first associated-difs) [(first associated-difs)])]
     (-> coll
         ;; SMAP ISO does not have entry-id and we generate it as concatenation of short-name and version-id
@@ -82,6 +84,10 @@
         (dissoc :related-urls)
         ;; SMAP ISO does not support two-d-coordinate-systems
         (dissoc :two-d-coordinate-systems)
+        ;; We don't use these two fields during xml generation as they are not needed for ISO
+        ;; so we set them to the defaults here.
+        (assoc :contact-email "support@earthdata.nasa.gov")
+        (assoc :contact-name contact-name)
         umm-c/map->UmmCollection)))
 
 (defspec generate-collection-is-valid-xml-test 100
@@ -107,6 +113,20 @@
           expected-parsed (test-echo10/umm->expected-parsed-echo10 (umm->expected-parsed-smap-iso collection))]
       (and (= parsed-echo10 expected-parsed)
            (= 0 (count (echo10-c/validate-xml echo10-xml)))))))
+
+(comment
+
+  (let [x #cmr.umm.collection.UmmCollection{:entry-id "0", :entry-title "0", :summary "0", :product #cmr.umm.collection.Product{:short-name "0", :long-name "0", :version-id "0", :processing-level-id nil, :collection-data-type nil}, :access-value nil, :data-provider-timestamps #cmr.umm.collection.DataProviderTimestamps{:insert-time #=(org.joda.time.DateTime. 0), :update-time #=(org.joda.time.DateTime. 0), :delete-time nil}, :spatial-keywords nil, :temporal-keywords nil, :temporal #cmr.umm.collection.Temporal{:time-type nil, :date-type nil, :temporal-range-type nil, :precision-of-seconds nil, :ends-at-present-flag nil, :range-date-times [#cmr.umm.collection.RangeDateTime{:beginning-date-time #=(org.joda.time.DateTime. 0), :ending-date-time nil}], :single-date-times [], :periodic-date-times []}, :science-keywords [#cmr.umm.collection.ScienceKeyword{:category "0", :topic "0", :term "0", :variable-level-1 "0", :variable-level-2 nil, :variable-level-3 nil, :detailed-variable nil}], :platforms nil, :product-specific-attributes nil, :projects nil, :two-d-coordinate-systems nil, :related-urls nil, :organizations (#cmr.umm.collection.Organization{:type :processing-center, :org-name "!"} #cmr.umm.collection.Organization{:type :archive-center, :org-name "\""} #cmr.umm.collection.Organization{:type :distribution-center, :org-name "!"}), :personnel nil, :spatial-coverage nil, :associated-difs nil, :contact-email "         !", :contact-name "0"}
+        xml (iso/umm->iso-smap-xml x)
+        parsed (c/parse-collection xml)
+        expected-parsed (umm->expected-parsed-smap-iso x)]
+    (println xml)
+    (println parsed)
+    (println expected-parsed))
+
+
+
+  )
 
 (def sample-collection-xml
   (slurp (io/file (io/resource "data/iso_smap/sample_smap_iso_collection.xml"))))
@@ -144,7 +164,8 @@
                      (umm-c/map->Organization
                        {:type :archive-center
                         :org-name "Alaska Satellite Facility"})]
-                    })
+                    :contact-email "support@earthdata.nasa.gov"
+                    :contact-name "National Aeronautics and Space Administration (NASA)"})
         actual (c/parse-collection sample-collection-xml)]
     (is (= expected actual))))
 

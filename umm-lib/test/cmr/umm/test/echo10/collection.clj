@@ -73,16 +73,6 @@
           expected-parsed (umm->expected-parsed-echo10 collection)]
       (= parsed expected-parsed))))
 
-
-(comment
-
-  (let [x #cmr.umm.collection.UmmCollection{:entry-id "0", :entry-title "0", :summary "0", :product #cmr.umm.collection.Product{:short-name "0", :long-name "0", :version-id "0", :processing-level-id nil, :collection-data-type nil}, :access-value nil, :data-provider-timestamps #cmr.umm.collection.DataProviderTimestamps{:insert-time #=(org.joda.time.DateTime. 0), :update-time #=(org.joda.time.DateTime. 0), :delete-time nil}, :spatial-keywords nil, :temporal-keywords nil, :temporal #cmr.umm.collection.Temporal{:time-type nil, :date-type nil, :temporal-range-type nil, :precision-of-seconds nil, :ends-at-present-flag nil, :range-date-times [#cmr.umm.collection.RangeDateTime{:beginning-date-time #=(org.joda.time.DateTime. 0), :ending-date-time nil}], :single-date-times [], :periodic-date-times []}, :science-keywords [#cmr.umm.collection.ScienceKeyword{:category "0", :topic "0", :term "0", :variable-level-1 "0", :variable-level-2 nil, :variable-level-3 nil, :detailed-variable nil}], :platforms nil, :product-specific-attributes nil, :projects nil, :two-d-coordinate-systems nil, :related-urls nil, :organizations (#cmr.umm.collection.Organization{:type :distribution-center, :org-name "!"}), :personnel nil, :spatial-coverage nil, :associated-difs nil, :contact-email "         !", :contact-name "0"}]
-    (let [xml (echo10/umm->echo10-xml x)]
-    (println xml)))
-
-
-  )
-
 ;; This is a made-up include all fields collection xml sample for the parse collection test
 (def all-fields-collection-xml
   "<Collection>

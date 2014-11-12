@@ -30,6 +30,9 @@
   "opendata language code for NASA data"
   "en-US")
 
+(def ACCESS_LEVEL
+  "public")
+
 (defmethod elastic-search-index/concept-type+result-format->fields [:collection :opendata]
   [concept-type query]
   ;; TODO add spatial, etc.
@@ -121,17 +124,17 @@
   [context concept-type item]
   (let [{:keys [id summary short-name project-sn update-time insert-time provider-id access-value
                 keywords entry-title opendata-format start-date end-date
-                related-urls]} item
+                related-urls contact-name contact-email]} item
         related-urls (map #(json/decode % true) related-urls)]
     (util/remove-nil-keys {:title entry-title
                            :description summary
                            :keyword keywords
                            :modified update-time
                            :publisher PUBLISHER
-                           ;; TODO :conctactPoint
-                           ;; TODO :mbox
+                           :conctactPoint contact-name
+                           :mbox contact-email
                            :identifier id
-                           :accessLevel "public"
+                           :accessLevel ACCESS_LEVEL
                            :bureauCode [BUREAU_CODE]
                            :programCode [PROGRAM_CODE]
                            :accessURL (:url (first (ru/downloadable-urls related-urls)))
@@ -140,10 +143,6 @@
                            :temporal (temporal start-date end-date)
                            :theme (not-empty (str/join "," project-sn))
                            :distribution (distribution related-urls)
-                           ;; TODO :accrualPeriodicity - this maps to MaintenanceAndUpdateFrequency
-                           ;; in ECHO, but MaintenanceAndUpdateFrequency is not mapped to UMM-C
-                           ;; yet. This is an expanded (not required) field, so it may not be
-                           ;; needed.
                            :landingPage (landing-page related-urls)
                            :language  [LANGUAGE_CODE]
                            :references (not-empty (map :url related-urls))
