@@ -148,6 +148,11 @@
   []
   (format "http://localhost:%s/concepts" (transmit-config/metadata-db-port)))
 
+(defn mdb-provider-holdings-url
+  "URL retrieve provider holdings in mdb."
+  []
+  (format "http://localhost:%s/provider_holdings" (transmit-config/metadata-db-port)))
+
 (defn mdb-reset-url
   "Force delete all concepts from mdb."
   []

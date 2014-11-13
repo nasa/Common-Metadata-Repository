@@ -101,6 +101,13 @@
      :body (rh/to-json {:concept-id concept-id} params)
      :headers rh/json-header}))
 
+(defn- get-provider-holdings
+  "Returns the provider holdings within metadata db"
+  [context params]
+  {:status 200
+   :body (rh/to-json (concept-service/get-provider-holdings context) params)
+   :headers rh/json-header})
+
 (def concepts-api-routes
   (routes
     (context "/concepts" []
@@ -143,4 +150,9 @@
     ;; get the concept id for a given concept-type, provider-id, and native-id
     (GET ["/concept-id/:concept-type/:provider-id/:native-id" :native-id #".*$"]
       {{:keys [concept-type provider-id native-id] :as params} :params request-context :request-context}
-      (get-concept-id request-context params concept-type provider-id native-id))))
+      (get-concept-id request-context params concept-type provider-id native-id))
+
+    (GET "/provider_holdings" {context :request-context params :params}
+      (get-provider-holdings context params))))
+
+

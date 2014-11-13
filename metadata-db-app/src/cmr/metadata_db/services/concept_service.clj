@@ -389,6 +389,31 @@
                        provider-id
                        native-id))))
 
+(deftracefn get-provider-holdings
+  "Gets provider holdings within Metadata DB"
+  [context]
+  (let [db (util/context->db context)
+        ;; Get a map of provider id to counts of granules per collection concept id
+        provider-to-count-maps (into {} (pmap (fn [provider-id]
+                                                [provider-id (c/get-concept-type-counts-by-collection
+                                                               db :granule provider-id)])
+                                              (provider-db/get-providers db)))
+        ;; Flatten the map to a set of provider holdings except for entry title.
+        holdings (for [[provider-id counts-map] provider-to-count-maps
+                       [concept-id granule-count] counts-map]
+                   {:provider-id provider-id
+                    :concept-id concept-id
+                    :granule-count granule-count})]
+    ;; Populate entry title for each of the collections. This is slower than it has to be. We select
+    ;; each entry title separately along with all of that other collection metadata. We can
+    ;; speed this up if needed by adding a specific method to get a specific field of a bunch of
+    ;; concepts all at once.
+    (pmap (fn [{:keys [provider-id concept-id] :as holding}]
+            (assoc holding :entry-title
+                   (get-in (c/get-concept db :collection provider-id concept-id)
+                           [:extra-fields :entry-title])))
+          holdings)))
+
 (defn delete-expired-concepts
   "Delete concepts that have not been deleted and have a delete-time before now"
   [context provider concept-type]

@@ -452,6 +452,24 @@
                             table)]]
           (j/execute! conn stmt)))))
 
+  (get-concept-type-counts-by-collection
+    [db concept-type provider-id]
+    (let [table (tables/get-table-name provider-id :granule)
+          stmt [(format "select count(1) concept_count, a.parent_collection_id
+                        from %s a,
+                        (select concept_id, max(revision_id) revision_id
+                        from %s group by concept_id) b
+                        where  a.deleted = 0
+                        and    a.concept_id = b.concept_id
+                        and    a.revision_id = b.revision_id
+                        group by a.parent_collection_id"
+                        table table)]
+          result (sql-utils/query db stmt)]
+      (reduce (fn [count-map {:keys [parent_collection_id concept_count]}]
+                (assoc count-map parent_collection_id (long concept_count)))
+              {}
+              result)))
+
   (reset
     [this]
     (try

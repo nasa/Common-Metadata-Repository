@@ -119,7 +119,11 @@
                                  table-name
                                  table-name))
 
-    ))
+    ;; This index makes it faster to find counts by collection of undeleted granules for metadata db holdings
+    (j/db-do-commands
+      db (format "create index %s_pdcr on %s (parent_collection_id, deleted, concept_id, revision_id)"
+                 table-name
+                 table-name))))
 
 
 (defn create-provider-concept-tables
