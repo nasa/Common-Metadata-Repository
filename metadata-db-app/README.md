@@ -220,7 +220,7 @@ returns: nothing (status 204)
 ### GET /provider_holdings
 
 params: pretty
-returns: list of maps containing granule counts per collection
+returns: list of maps containing granule counts per collection in JSON
 
     curl http://localhost:3001/provider_holdings?pretty=true
     [ {

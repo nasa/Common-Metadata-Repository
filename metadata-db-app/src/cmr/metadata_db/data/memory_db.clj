@@ -165,6 +165,15 @@
     (doseq [[concept-id revision-id] concept-id-revision-id-tuples]
       (concepts/force-delete db concept-type provider-id concept-id revision-id)))
 
+  (get-concept-type-counts-by-collection
+    [db concept-type provider-id]
+    (->> @concepts-atom
+         (filter #(= provider-id (:provider-id %)))
+         (filter #(= concept-type (:concept-type %)))
+         (group-by (comp :parent-collection-id :extra-fields))
+         (map #(update-in % [1] count))
+         (into {})))
+
   (reset
     [db]
     (reset! concepts-atom [])
