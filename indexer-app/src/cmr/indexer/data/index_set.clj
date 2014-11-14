@@ -211,6 +211,8 @@
                                     :science-keywords-flat (stored string-field-mapping)
                                     :opendata-format (stored string-field-mapping)
                                     :related-urls (stored string-field-mapping)
+                                    :contact-email (stored string-field-mapping)
+                                    :contact-name (stored string-field-mapping)
 
                                     ;; analyzed field for keyword searches
                                     :keyword text-field-mapping

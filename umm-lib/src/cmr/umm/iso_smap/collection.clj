@@ -59,7 +59,6 @@
 (defn- xml-elem->contact-name
   "Returns the contact name from a parsed IdentificationInfo XML structure"
   [xml-struct]
-  (cmr.common.dev.capture-reveal/capture xml-struct)
   (let [person-name (cx/string-at-path xml-struct [:pointOfContact
                                                    :CI_ResponsibleParty
                                                    :individualName
