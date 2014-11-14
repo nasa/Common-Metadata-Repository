@@ -173,4 +173,4 @@
          (create-provider provider-guid provider-id grant-all?))
        (f)
        (finally
-         #_(reset))))))
+         (reset))))))
