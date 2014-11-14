@@ -217,6 +217,25 @@ returns: nothing (status 204)
 
     curl -v -XDELETE /concepts/force-delete/C1-PROV1/1
 
+### GET /provider_holdings
+
+params: pretty
+returns: list of maps containing granule counts per collection in JSON
+
+    curl http://localhost:3001/provider_holdings?pretty=true
+    [ {
+      "entry-title" : "long-name86 V87",
+      "provider-id" : "PROV1",
+      "concept-id" : "C1200000004-PROV1",
+      "granule-count" : 10
+    }, {
+      "entry-title" : "long-name77 V78",
+      "provider-id" : "PROV1",
+      "concept-id" : "C1200000001-PROV1",
+      "granule-count" : 4
+    } ... ]
+
+
 ### POST /reset
 
 params: none
