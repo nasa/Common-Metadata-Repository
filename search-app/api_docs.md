@@ -8,7 +8,7 @@ The Maximum URL length supported by CMR is 6032 characters. Clients using the Se
 
 #### CORS Header support
 
-The CORS headers are supported on search and health endpoints.
+The CORS headers are supported on search endpoints. Check [CORS Documentation](https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS) for an explanation of CORS headers.
 
 #### Query Parameters
 

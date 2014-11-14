@@ -43,9 +43,14 @@
 (def TOOK_HEADER "CMR-Took")
 (def CMR_GRANULE_COUNT_HEADER "CMR-Granule-Hits")
 (def CMR_COLLECTION_COUNT_HEADER "CMR-Collection-Hits")
+;; CORS header to restrict access to the resource to be only from the defined origins,
+;; value of "*" means all request origins have access to the resource
 (def CORS_ORIGIN_HEADER "Access-Control-Allow-Origin")
+;; CORS header to define the allowed access methods
 (def CORS_METHODS_HEADER "Access-Control-Allow-Methods")
+;; CORS header to define the allowed custom headers
 (def CORS_CUSTOM_HEADERS_HEADER "Access-Control-Allow-Headers")
+;; CORS header to define how long in seconds the response of the preflight request can be cached
 (def CORS_MAX_AGE_HEADER "Access-Control-Max-Age")
 
 (def extension->mime-type
@@ -371,8 +376,7 @@
         (let [{pretty? :pretty} params
               {:keys [ok? dependencies]} (hs/health request-context)]
           {:status (if ok? 200 503)
-           :headers {CONTENT_TYPE_HEADER "application/json; charset=utf-8"
-                     CORS_ORIGIN_HEADER "*"}
+           :headers {CONTENT_TYPE_HEADER "application/json; charset=utf-8"}
            :body (json/generate-string dependencies {:pretty pretty?})})))
 
     (route/not-found "Not Found")))
