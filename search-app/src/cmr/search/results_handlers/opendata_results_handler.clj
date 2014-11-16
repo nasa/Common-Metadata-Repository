@@ -149,7 +149,7 @@
                            :keyword keywords
                            :modified update-time
                            :publisher PUBLISHER
-                           :conctactPoint contact-name
+                           :contactPoint contact-name
                            :mbox contact-email
                            :identifier id
                            :accessLevel ACCESS_LEVEL

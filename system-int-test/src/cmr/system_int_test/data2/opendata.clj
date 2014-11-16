@@ -8,6 +8,9 @@
             [cmr.spatial.line-string :as l]
             [clojure.string :as str]
             [cmr.spatial.relations :as r]
+            [camel-snake-kebab :as csk]
+            [cmr.umm.spatial :as umm-s]
+            [cmr.umm.echo10.spatial :as echo-s]
             [clojure.test]
             [cheshire.core :as json]
             [cmr.common.util :as util]
@@ -26,14 +29,18 @@
 (defn collection->expected-opendata
   [collection]
   (let [{:keys [short-name keywords project-sn summary entry-title
-                access-value concept-id related-urls]} collection
+                access-value concept-id related-urls contact-name contact-email]} collection
+        spatial-representation (get-in collection [:spatial-coverage :spatial-representation])
+        coordinate-system (when spatial-representation (csk/->SNAKE_CASE_STRING spatial-representation))
         update-time (get-in collection [:data-provider-timestamps :update-time])
         insert-time (get-in collection [:data-provider-timestamps :insert-time])
         temporal (:temporal collection)
         start-date (sed/start-date :collection temporal)
         end-date (sed/end-date :collection temporal)
         start-date (when start-date (str/replace (str start-date) #"\.000Z" "Z"))
-        end-date (when end-date (str/replace (str end-date) #"\.000Z" "Z"))]
+        end-date (when end-date (str/replace (str end-date) #"\.000Z" "Z"))
+        shapes (map (partial umm-s/set-coordinate-system spatial-representation)
+                    (get-in collection [:spatial-coverage :geometries]))]
     (util/remove-nil-keys {:identifier concept-id
                            :description summary
                            :accessLevel "public"
@@ -48,7 +55,10 @@
                            :distribution (odrh/distribution related-urls)
                            :modified (str update-time)
                            :issued (str insert-time)
-                           :temporal (odrh/temporal start-date end-date)})))
+                           :temporal (odrh/temporal start-date end-date)
+                           :spatial (odrh/spatial shapes false)
+                           :mbox contact-email
+                           :contactPoint contact-name})))
 
 (defn collections->expected-opendata
   [collections]
