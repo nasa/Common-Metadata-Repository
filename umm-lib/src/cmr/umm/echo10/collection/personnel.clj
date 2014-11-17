@@ -44,21 +44,6 @@
                      :state-province state-province
                      :street-address-lines street-address-lines})))
 
-(defn- xml-elem->personnel
-  "Return a list of ContactPersons for the parsed xml structure."
-  [collection-element]
-  (for [contact-element (cx/elements-at-path contact-element [:Contacts])]
-        (let [role (cx/string-at-path contact-element [:Role])
-        first-name (cx/string-at-path contact-element [:ContactPersons :ContactPerson :FirstName])
-        last-name (cx/string-at-path contact-element [:ContactPersons :ContactPerson :LastName])
-        middle-name (cx/string-at-path contact-element [:ContactPersons :ContactPerson :MiddleName])
-        addresses (xml-elem->addresses contact-element)
-        emails (xml-elem->emails contact-element)
-        phones (xml-elem->phones contact-element)]
-          (c/map->ContactPerson {
-
-
-
 
  roles
 
@@ -81,9 +66,9 @@
    phones
 
 
-(defn xml-elem->personnels
+(defn xml-elem->personnel
   [collection-element]
-  (let [pe (cx/element-at-path collection-element [:Personnel])
+  (let [contacts (cx/element-at-path collection-element [:Contacts])
         roles (cx/strings-at-path pe [:Role])
         first-name (cx/string-at-path pe [:First_Name])
         middle-name (cx/string-at-path pe [:Middle_Name])
