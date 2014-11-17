@@ -221,9 +221,8 @@
 
 (defrecord ContactPerson
   [
-   ;; List where each entry is ne of the following: Investigator, Technical Contact, or
-   ;; Metadata Author.
-   roles
+   ;; One of the following: Investigator, Technical Contact, or Metadata Author.
+   role
 
    ;; This entity contains the address details for each contact.
    addresses
