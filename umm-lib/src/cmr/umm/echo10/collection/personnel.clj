@@ -17,58 +17,9 @@
                      :postal-code postal-code
                      :street-address-lines street-address-lines})))
 
-(defn- xml-elem->phones
-  "Return a list of Phone records for the parsed xml structure."
-  [contact-element]
-  (for [phone-element (cx/elements-at-path contact-element [:OrganizatonPhones :Phone])]
-    (c/map->Phone {:number (cx/string-at-path phone-element [:Number])
-                   :number-type (cx/string-at-path phone-element [:Type])})))
-
-(defn- xml-elem->emails
-  "Return a list of emails for the parsed xml structure."
-  [contact-element]
-  (strings-at-path contact-element [:OrganizatonEmails :Email]))
-
-(defn- xml-elem->addresses
-  "Return a list of Addresses for the parsed xml structure."
-  [contact-element]
-  (for [address-element (cx/elements-at-path contact-element [:OrganizatonAddresses :Address])
-        city (cx/string-at-path address-element [:City])
-        country (cx/string-at-path address-element [:Country])
-        postal-code (cx/string-at-path address-element [:PostalCode])
-        state-province (cx/string-at-path address-element [:StateProvince])
-        street-address-lines [(string-at-path address-element [:StreetAddress])]]
-    (c/map->Address {:city city
-                     :country country
-                     :postal-code postal-code
-                     :state-province state-province
-                     :street-address-lines street-address-lines})))
-
-
- roles
-
-   ;; This entity contains the address details for each contact.
-   addresses
-
-   ;; The list of addresses of the electronic mailbox of the organization or individual.
-   emails
-
-   ;; First name of the individual which the contact applies.
-   first-name
-
-   ;; Last name of the individual which the contact applies.
-   last-name
-
-   ;; Middle name of the individual which the contact applies.
-   middle-name
-
-   ;; The list of telephone details associated with the contact.
-   phones
-
-
 (defn xml-elem->personnel
   [collection-element]
-  (let [contacts (cx/element-at-path collection-element [:Contacts])
+  (let [pe (cx/element-at-path collection-element [:Personnel])
         roles (cx/strings-at-path pe [:Role])
         first-name (cx/string-at-path pe [:First_Name])
         middle-name (cx/string-at-path pe [:Middle_Name])
