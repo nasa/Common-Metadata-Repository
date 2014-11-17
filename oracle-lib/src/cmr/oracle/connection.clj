@@ -54,12 +54,22 @@
       (str "Called db->oracle-conn with connection that was not within a db transaction. "
            "It must be called from within call j/with-db-transaction"))))
 
-(defn oracle-timestamp-tz->clj-time
-  "Converts oracle.sql.TIMESTAMPTZ instance into a clj-time. Must be called within
+(defmulti oracle-timestamp->clj-time
+  "Converts oracle.sql.TIMESTAMP and related instances into a clj-time. Must be called within
   a with-db-transaction block with the connection"
+  (fn [db ot]
+    (type ot)))
+
+(defmethod oracle-timestamp->clj-time oracle.sql.TIMESTAMPTZ
   [db ^oracle.sql.TIMESTAMPTZ ot]
   (let [^java.sql.Connection conn (db->oracle-conn db)]
     (cr/from-sql-time (.timestampValue ot conn))))
+
+(defmethod oracle-timestamp->clj-time oracle.sql.TIMESTAMP
+  [db ^oracle.sql.TIMESTAMP ot]
+  (let [cal (java.util.Calendar/getInstance)]
+    (.setTimeZone cal (java.util.TimeZone/getTimeZone "GMT"))
+    (cr/from-sql-time (.timestampValue ot cal))))
 
 (defn current-db-time
   "Retrieves the current time from the database as a clj-time instance."
@@ -69,7 +79,7 @@
     (->> (j/query conn "select systimestamp from dual")
          first
          :systimestamp
-         (oracle-timestamp-tz->clj-time conn))))
+         (oracle-timestamp->clj-time conn))))
 
 (defn pool
   [spec]

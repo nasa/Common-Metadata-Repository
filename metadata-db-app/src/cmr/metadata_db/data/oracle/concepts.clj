@@ -94,12 +94,12 @@
     (.finish gzip)
     (.toByteArray output)))
 
-(defn oracle-timestamp-tz->str-time
-  "Converts oracle.sql.TIMESTAMPTZ instance into a string representation of the time. Must be called
+(defn oracle-timestamp->str-time
+  "Converts oracle.sql.TIMESTAMP instance into a string representation of the time. Must be called
   within a with-db-transaction block with the connection"
   [db ot]
   (f/unparse (f/formatters :date-time)
-             (oracle/oracle-timestamp-tz->clj-time db ot)))
+             (oracle/oracle-timestamp->clj-time db ot)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Multi methods for concept types to implement
@@ -140,7 +140,7 @@
        :metadata (blob->string metadata)
        :format (db-format->mime-type format)
        :revision-id (int revision_id)
-       :revision-date (oracle-timestamp-tz->str-time db revision_date)
+       :revision-date (oracle-timestamp->str-time db revision_date)
        :deleted (not= (int deleted) 0)})))
 
 (defmethod concept->insert-args :default

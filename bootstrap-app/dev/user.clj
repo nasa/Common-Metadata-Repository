@@ -12,7 +12,8 @@
             [cmr.bootstrap.api.routes :as routes]
             [cmr.common.dev.repeat-last-request :as repeat-last-request :refer (repeat-last-request)]
             [cmr.common.dev.util :as d]
-            [cmr.transmit.config :as transmit-config]))
+            [cmr.transmit.config :as transmit-config]
+            [cmr.common.config :as cfg]))
 
 (def system nil)
 
