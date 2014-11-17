@@ -61,6 +61,11 @@
     [db params]
     "Deletes concepts by the given parameters")
 
+  (get-concept-type-counts-by-collection
+    [db concept-type provider-id]
+    "Returns a counts of the concept type per collection for the given provider. Returns a map of
+    collection concept id to counts of the concept type.")
+
   (reset
     [db]
     "Resets concept related data back to an initial fresh state. WARNING: For dev use only.")

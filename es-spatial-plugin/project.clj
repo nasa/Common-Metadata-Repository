@@ -18,7 +18,7 @@
   :url "***REMOVED***projects/CMR/repos/cmr-es-spatial-plugin/browse"
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [org.clojure/tools.logging "0.3.0"]
-                 [org.elasticsearch/elasticsearch "1.3.2"]
+                 [org.elasticsearch/elasticsearch "1.4.0"]
 
                  ;; Version set to match elastic search numbers. Look in elasticsearch pom.xml
                  [log4j/log4j "1.2.17"]
@@ -63,7 +63,7 @@
             ;; Packages and installs the plugin into the local elastic search vm
             "install-local" ["do"
                              "package,"
-                             "shell" "../cmr-vms/elastic_local/install_plugin.sh" ~plugin-zip-name "spatialsearch-plugin,"
+                             "shell" "../../cmr-vms/elastic_local/install_plugin.sh" ~plugin-zip-name "spatialsearch-plugin,"
                              "clean"]
 
             "install-aws" ["do"

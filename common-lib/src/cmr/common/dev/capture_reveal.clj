@@ -17,7 +17,7 @@
 
 <snippet>
   <content><![CDATA[
-(cmr.common.dev.capture-reveal/capture )
+cmr.common.dev.capture-reveal/capture
 ]]></content>
   <tabTrigger>capture</tabTrigger>
   <scope>source.clojure</scope>
@@ -27,7 +27,7 @@
 
 <snippet>
   <content><![CDATA[
-(cmr.common.dev.capture-reveal/reveal )
+cmr.common.dev.capture-reveal/reveal
 ]]></content>
   <tabTrigger>reveal</tabTrigger>
   <scope>source.clojure</scope>
@@ -36,7 +36,7 @@
   After typing in those files 'capture' or 'reveal' typed into a clojure file will give the option
   of autocompleting to the text shown above.")
 
-;; TODO idea for extension
+;; Idea for extension:
 ;; Consider that in sublime we like to execute blocks of code using cmd+alt+b. Often times the variables
 ;; for the block were passed in somewhere above that. We could capture the variables and then add
 ;; a new keystroke (cmd+alt+shift+b) that will execute the block with all the captured vars set

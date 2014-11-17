@@ -14,14 +14,24 @@
       (println "Exception indicates this is not is most likely an in memory database")
       (= :in-memory expected-env))))
 
+(defn real-database?
+  "Returns true if running with a real database"
+  []
+  (runnable-env? :external-dbs))
+
+(defn in-memory-database?
+  "Returns true if running with a in-memory database"
+  []
+  (runnable-env? :in-memory))
+
 (defmacro only-with-real-database
   "Executes the body of the call if the test environment is running with the real Oracle DB."
   [& body]
-  `(when (runnable-env? :external-dbs)
+  `(when (real-database?)
      ~@body))
 
 (defmacro only-with-in-memory-database
   "Executes the body of the call if the test environment is running with the in memory database"
   [& body]
-  `(when (runnable-env? :in-memory)
+  `(when (in-memory-database?)
      ~@body))

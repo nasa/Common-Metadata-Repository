@@ -60,9 +60,9 @@
         gran14 (make-gran coll2 14 "1995-08-03T08:30:45Z" "1995-08-03T17:20:00Z")
         gran15 (make-gran coll2 15 "1995-08-04T08:30:45Z" "1995-08-04T17:20:00Z")
         gran16 (make-gran coll2 16 "1995-08-05T08:30:45Z" "1995-08-05T17:20:00Z")
+        ;; granule with start-date that is represented as Integer in elasticsearch result (CMR-1061)
+        gran17 (make-gran coll2 17 "1970-01-01T00:00:45Z" "1995-01-05T17:20:00Z")
 
-        all-grans [gran1 gran2 gran3 gran4 gran5 gran6 gran7 gran8 gran9 gran10 gran11 gran12 gran13
-                   gran14 gran15 gran16]
         all-colls [coll1 coll2]
         coll-ids (map :concept-id all-colls)]
     (index/refresh-elastic-index)
@@ -71,24 +71,28 @@
       (let [interval-msg (str "Timeline interval is a required parameter for timeline search "
                               "and must be one of year, month, day, hour, minute, or second.")]
         (testing "missing parameters"
-          (is (= {:status 400 :errors ["Parameter [foo] was not recognized."
-                                       "start_date is a required parameter for timeline searches"
-                                       "end_date is a required parameter for timeline searches"
-                                       interval-msg]}
+          (is (= {:status 400
+                  :errors ["Parameter [foo] was not recognized."
+                           "start_date is a required parameter for timeline searches"
+                           "end_date is a required parameter for timeline searches"
+                           "interval is a required parameter for timeline searches"]}
                  (search/get-granule-timeline {:foo 5}))))
 
         (testing "invalid start-date"
-          (is (= {:status 400 :errors ["Timeline parameter start_date datetime is invalid: [foo] is not a valid datetime."]}
+          (is (= {:status 400
+                  :errors ["Timeline parameter start_date datetime is invalid: [foo] is not a valid datetime."]}
                  (search/get-granule-timeline {:start-date "foo"
                                                :end-date "2000-01-01T00:00:00Z"
                                                :interval :month}))))
         (testing "invalid end-date"
-          (is (= {:status 400 :errors ["Timeline parameter end_date datetime is invalid: [foo] is not a valid datetime."]}
+          (is (= {:status 400
+                  :errors ["Timeline parameter end_date datetime is invalid: [foo] is not a valid datetime."]}
                  (search/get-granule-timeline {:end-date "foo"
                                                :start-date "2000-01-01T00:00:00Z"
                                                :interval :month}))))
         (testing "invalid interval"
-          (is (= {:status 400 :errors [interval-msg]}
+          (is (= {:status 400
+                  :errors [interval-msg]}
                  (search/get-granule-timeline {:start-date "1999-01-01T00:00:00Z"
                                                :end-date "2000-01-01T00:00:00Z"
                                                :interval :foo}))))
@@ -97,7 +101,14 @@
                   :errors ["start_date [2000-01-01T00:00:00Z] must be before the end_date [1999-01-01T00:00:00Z]"]}
                  (search/get-granule-timeline {:end-date "1999-01-01T00:00:00Z"
                                                :start-date "2000-01-01T00:00:00Z"
-                                               :interval :month}))))))
+                                               :interval :month}))))
+
+        (testing "missing parameters with post"
+          (is (= {:status 400 :errors ["Parameter [foo] was not recognized."
+                                       "start_date is a required parameter for timeline searches"
+                                       "end_date is a required parameter for timeline searches"
+                                       "interval is a required parameter for timeline searches"]}
+                 (search/get-granule-timeline-with-post {:foo 5}))))))
 
 
     (testing "multiple collections"
@@ -105,7 +116,7 @@
               :results [{:concept-id (:concept-id coll1)
                          :intervals [["2000-01-01T00:00:00.000Z" "2001-05-01T00:00:00.000Z" 8]]}
                         {:concept-id (:concept-id coll2)
-                         :intervals [["1995-01-01T00:00:00.000Z" "1996-01-01T00:00:00.000Z" 5]]}]}
+                         :intervals [["1994-01-01T00:00:00.000Z" "1996-01-01T00:00:00.000Z" 6]]}]}
              (search/get-granule-timeline {:start-date "1994-01-01T00:00:00Z"
                                            :end-date "2001-05-01T00:00:00Z"
                                            :interval :year}))))
@@ -207,7 +218,20 @@
                (search/get-granule-timeline {:concept-id (:concept-id coll1)
                                              :start-date "2000-01-01T00:00:00Z"
                                              :end-date "2002-02-01T00:00:00Z"
-                                             :interval :second})))))))
+                                             :interval :second}))))
 
+      (testing "get and post matches"
+        (are [search-params]
+             (= (search/get-granule-timeline search-params)
+                (search/get-granule-timeline-with-post search-params))
 
+             {:concept-id [(:concept-id coll1) (:concept-id coll2)]
+              :start-date "1992-01-01T00:00:00Z"
+              :end-date "2002-02-01T00:00:00Z"
+              :interval :year}
+
+             {:entry-title ["Dataset1" "Dataset2"]
+              :start-date "1992-01-01T00:00:00Z"
+              :end-date "2002-02-01T00:00:00Z"
+              :interval :month})))))
 

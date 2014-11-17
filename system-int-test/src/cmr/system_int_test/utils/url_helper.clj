@@ -4,7 +4,7 @@
             [cmr.common.config :as config]
             [cmr.transmit.config :as transmit-config]
             [cmr.elastic-utils.config :as es-config]
-            [clj-http.conn-mgr :as conn-mgr]
+            [cmr.system-int-test.system :as s]
             [ring.util.codec :as codec]))
 
 (def search-public-protocol (config/config-value :search-public-protocol "http"))
@@ -16,16 +16,11 @@
   "The port number for the dev system control api"
   2999)
 
-(def conn-mgr-atom (atom nil))
-
 (defn conn-mgr
   "Returns the HTTP connection manager to use. This allows system integration tests to use persistent
   HTTP connections"
   []
-  (when-not @conn-mgr-atom
-    (reset! conn-mgr-atom  (conn-mgr/make-reusable-conn-manager {})))
-
-  @conn-mgr-atom)
+  (:conn-mgr (s/system)))
 
 (defn dev-system-reset-url
   "The reset url on the dev system control api."
@@ -120,7 +115,15 @@
 
 (defn bulk-index-provider-url
   []
-  (format "http://localhost:%s/bulk_index/providers?synchronous=true" (transmit-config/bootstrap-port)))
+  (format "http://localhost:%s/bulk_index/providers" (transmit-config/bootstrap-port)))
+
+(defn bulk-migrate-provider-url
+  []
+  (format "http://localhost:%s/bulk_migration/providers" (transmit-config/bootstrap-port)))
+
+(defn db-synchronize-url
+  []
+  (format "http://localhost:%s/db_synchronize" (transmit-config/bootstrap-port)))
 
 (defn bootstrap-health-url
   "URL to check bootstrap health."
@@ -144,6 +147,11 @@
   "URL to concept operations in mdb."
   []
   (format "http://localhost:%s/concepts" (transmit-config/metadata-db-port)))
+
+(defn mdb-provider-holdings-url
+  "URL to retrieve provider holdings in mdb."
+  []
+  (format "http://localhost:%s/provider_holdings" (transmit-config/metadata-db-port)))
 
 (defn mdb-reset-url
   "Force delete all concepts from mdb."

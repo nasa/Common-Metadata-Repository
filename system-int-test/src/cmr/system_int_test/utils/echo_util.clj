@@ -2,19 +2,13 @@
   "Contains helper functions for working with the echo mock"
   (:require [cmr.transmit.echo.mock :as mock]
             [cmr.transmit.echo.tokens :as tokens]
-            [cmr.transmit.config :as config]))
-
-(def context-atom
-  "Cached context"
-  (atom nil))
+            [cmr.transmit.config :as config]
+            [cmr.system-int-test.system :as s]))
 
 (defn- context
   "Returns a context to pass to the mock transmit api"
   []
-  (when-not @context-atom
-    (reset! context-atom {:system (config/system-with-connections {} [:echo-rest])}))
-  @context-atom)
-
+  {:system (s/system)})
 
 (defn reset
   "Resets the mock echo."
@@ -49,7 +43,6 @@
   "Logs out the specified token."
   [token]
   (tokens/logout (context) token))
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ACL related

@@ -3,7 +3,10 @@
   backed by an Oracle database."
   (:require [cmr.common.lifecycle :as lifecycle]
             [cmr.common.log :refer (debug info warn error)]
-            [clojure.java.jdbc :as j])
+            [clojure.java.jdbc :as j]
+            [clj-time.coerce :as cr]
+            [clj-time.core :as t]
+            [cmr.common.services.errors :as errors])
   (:import oracle.ucp.jdbc.PoolDataSourceFactory
            oracle.ucp.admin.UniversalConnectionPoolManagerImpl))
 
@@ -40,6 +43,43 @@
   (let [db-health (health oracle-store)]
     (when-not (:ok? db-health)
       (throw (Exception. (:problem db-health))))))
+
+(defn db->oracle-conn
+  "Gets an oracle connection from the outer database connection. Should be called from within as
+  with-db-transaction block."
+  [db]
+  (if-let [proxy-conn (:connection db)]
+    proxy-conn
+    (errors/internal-error!
+      (str "Called db->oracle-conn with connection that was not within a db transaction. "
+           "It must be called from within call j/with-db-transaction"))))
+
+(defmulti oracle-timestamp->clj-time
+  "Converts oracle.sql.TIMESTAMP and related instances into a clj-time. Must be called within
+  a with-db-transaction block with the connection"
+  (fn [db ot]
+    (type ot)))
+
+(defmethod oracle-timestamp->clj-time oracle.sql.TIMESTAMPTZ
+  [db ^oracle.sql.TIMESTAMPTZ ot]
+  (let [^java.sql.Connection conn (db->oracle-conn db)]
+    (cr/from-sql-time (.timestampValue ot conn))))
+
+(defmethod oracle-timestamp->clj-time oracle.sql.TIMESTAMP
+  [db ^oracle.sql.TIMESTAMP ot]
+  (let [cal (java.util.Calendar/getInstance)]
+    (.setTimeZone cal (java.util.TimeZone/getTimeZone "GMT"))
+    (cr/from-sql-time (.timestampValue ot cal))))
+
+(defn current-db-time
+  "Retrieves the current time from the database as a clj-time instance."
+  [oracle-store]
+  (j/with-db-transaction
+    [conn oracle-store]
+    (->> (j/query conn "select systimestamp from dual")
+         first
+         :systimestamp
+         (oracle-timestamp->clj-time conn))))
 
 (defn pool
   [spec]

@@ -80,7 +80,10 @@
   the current maximum revision-id for this concept."
   [db concept previous-revision]
   (let [{:keys [concept-id concept-type provider-id revision-id]} concept
-        latest-revision (or previous-revision (c/get-concept db concept-type provider-id concept-id))
+        latest-revision (or previous-revision
+                            (c/get-concept db concept-type provider-id concept-id)
+                            ;; or it doesn't exist and the next should be 1
+                            {:revision-id 0})
         expected-revision-id (inc (:revision-id latest-revision))]
     (if (= revision-id expected-revision-id)
       {:status :pass}
@@ -88,8 +91,11 @@
        :expected expected-revision-id})))
 
 (defn validate-concept-revision-id
-  "Validate that the revision-id for a concept (if given) is one greater than
-  the current maximum revision-id for this concept."
+  "Validate that the revision-id for a concept (if given) is one greater than the current maximum
+  revision-id for this concept. A third argument of the previous revision of the concept can be
+  provided to avoid looking up the concept again."
+  ([db concept]
+   (validate-concept-revision-id db concept nil))
   ([db concept previous-revision]
    (let [{:keys [concept-id revision-id]} concept]
      (cond
@@ -99,6 +105,7 @@
          (when (= (:status result) :fail)
            (cmsg/data-error :conflict
                             msg/invalid-revision-id
+                            concept-id
                             (:expected result)
                             revision-id)))
 
@@ -107,6 +114,7 @@
        (when-not (= revision-id 1)
          (cmsg/data-error :conflict
                           msg/invalid-revision-id
+                          concept-id
                           1
                           revision-id))
 
@@ -313,7 +321,7 @@
   (cv/validate-concept concept)
   (let [db (util/context->db context)]
     (validate-providers-exist db [(:provider-id concept)])
-    (validate-concept-revision-id db concept nil)
+    (validate-concept-revision-id db concept)
     (let [revision-id-provided? (:revision-id concept)
           concept (->> concept
                        (set-or-generate-concept-id db)
@@ -380,6 +388,31 @@
                        concept-type
                        provider-id
                        native-id))))
+
+(deftracefn get-provider-holdings
+  "Gets provider holdings within Metadata DB"
+  [context]
+  (let [db (util/context->db context)
+        ;; Get a map of provider id to counts of granules per collection concept id
+        provider-to-count-maps (into {} (pmap (fn [provider-id]
+                                                [provider-id (c/get-concept-type-counts-by-collection
+                                                               db :granule provider-id)])
+                                              (provider-db/get-providers db)))
+        ;; Flatten the map to a set of provider holdings except for entry title.
+        holdings (for [[provider-id counts-map] provider-to-count-maps
+                       [concept-id granule-count] counts-map]
+                   {:provider-id provider-id
+                    :concept-id concept-id
+                    :granule-count granule-count})]
+    ;; Populate entry title for each of the collections. This is slower than it has to be. We select
+    ;; each entry title separately along with all of that other collection metadata. We can
+    ;; speed this up if needed by adding a specific method to get a specific field of a bunch of
+    ;; concepts all at once.
+    (pmap (fn [{:keys [provider-id concept-id] :as holding}]
+            (assoc holding :entry-title
+                   (get-in (c/get-concept db :collection provider-id concept-id)
+                           [:extra-fields :entry-title])))
+          holdings)))
 
 (defn delete-expired-concepts
   "Delete concepts that have not been deleted and have a delete-time before now"

@@ -2,13 +2,21 @@
   "Contains XML helpers for extracting data from XML structs created using clojure.data.xml.
   See the test file for examples."
   (:require [cmr.common.date-time-parser :as p]
+            [cmr.common.services.errors :as errors]
             [clojure.string :as str]
             [clojure.java.io :as io])
   (:import javax.xml.validation.SchemaFactory
            javax.xml.XMLConstants
            javax.xml.transform.stream.StreamSource
            org.xml.sax.ext.DefaultHandler2
-           java.io.StringReader))
+           java.io.StringReader
+           java.io.StringWriter
+           org.w3c.dom.Node
+           org.w3c.dom.bootstrap.DOMImplementationRegistry
+           org.w3c.dom.ls.DOMImplementationLS
+           org.w3c.dom.ls.LSSerializer
+           org.xml.sax.InputSource
+           javax.xml.parsers.DocumentBuilderFactory))
 
 (defn remove-xml-processing-instructions
   "Removes xml processing instructions from XML so it can be embedded in another XML document"
@@ -146,3 +154,23 @@
         ;; An exception can be thrown if it is completely invalid XML.
         (reset! errors-atom [(sax-parse-exception->str e)])))
     (seq @errors-atom)))
+
+(defn pretty-print-xml
+  "Returns the pretty printed xml for the given xml string"
+  [xml]
+  (let [src (InputSource. (StringReader. xml))
+        builder (.newDocumentBuilder (DocumentBuilderFactory/newInstance))
+        document (.getDocumentElement (.parse builder src))
+        ^Boolean keep-declaration (.startsWith xml "<?xml")
+        registry (DOMImplementationRegistry/newInstance)
+        ^DOMImplementationLS impl (.getDOMImplementation registry "LS")
+        writer (.createLSSerializer impl)
+        dom-config (.getDomConfig writer)
+        output (.createLSOutput impl)]
+    (.setParameter dom-config "format-pretty-print" true)
+    (.setParameter dom-config "xml-declaration" keep-declaration)
+    (.setCharacterStream output (new StringWriter))
+    (.setEncoding output "UTF-8")
+    (.write writer document output)
+    (.toString (.getCharacterStream output))))
+

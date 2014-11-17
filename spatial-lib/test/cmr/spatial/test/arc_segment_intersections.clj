@@ -22,7 +22,23 @@
   (sgen/print-failed-line-segments type ls))
 
 
-(defspec arc-segment-intersections-spec {:times 1000 :printer-fn print-failure}
+(defn valid-intersection-point?
+  [arc ls point]
+  (or (let [lon (:lon point)
+            line-point (if (s/vertical? ls)
+                         (if (s/point-on-segment? ls point)
+                           point
+                           ;; Failure case but return something to help debugging
+                           :point-not-on-vertical-segment)
+                         (p/point lon (s/segment+lon->lat ls lon)))
+            arc-points (if (a/vertical? arc)
+                         (a/points-at-lat arc (:lat point))
+                         [(a/point-at-lon arc lon)])]
+        (some #(approx= line-point % 0.01) arc-points))
+      (and (s/point-on-segment? ls point)
+           (a/point-on-arc? arc point))))
+
+(defspec arc-segment-intersections-spec {:times 100 :printer-fn print-failure}
   (for-all [arc sgen/arcs
             ls sgen/line-segments]
     (let [intersections (asi/intersections ls arc)
@@ -34,22 +50,12 @@
         (empty? (asi/line-segment-arc-intersections-with-densification ls arc [m/whole-world]))
 
         ;; They do intersect
-        (and (every? (fn [point]
-                       (let [lon (:lon point)
-                             line-point (if (s/vertical? ls)
-                                          (if (s/point-on-segment? ls point)
-                                            point
-                                            :point-not-on-vertical-segment)
-                                          (p/point lon (s/segment+lon->lat ls lon)))
-                             arc-points (if (a/vertical? arc)
-                                         (a/points-at-lat arc (:lat point))
-                                         [(a/point-at-lon arc lon)])]
-                         (some #(approx= line-point % 0.01) arc-points)))
-                     intersections)
+        (and (every? (partial valid-intersection-point? arc ls) intersections)
              (every? (partial m/covers-point? :geodetic ls-mbr) intersections)
              (every? (fn [point]
                        (some #(m/covers-point? :geodetic % point) arc-mbrs))
                      intersections))))))
+
 
 (deftest example-arc-line-segment-intersections
   (are [ls-ords arc-ords intersection-ords]
@@ -74,6 +80,9 @@
        [0 0 -25 -30] [85 -90 -14 -7] [-14 -16.8]
        ;; arc ends on south pole
        [0 0 -25 -30] [-14 -7 85 -90] [-14 -16.8]
+
+       ;; arc ends on south pole and they intersect there
+       [-117.0 -90.0 27.0 51.0] [-14.0 -36.0 1.0 -90.0] [0 -90]
 
        ;; arc starts on north pole
        [0 0 -25 -30] [85 90 -14 -20] [-14 -16.8]

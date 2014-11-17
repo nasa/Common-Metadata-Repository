@@ -147,7 +147,7 @@
 (defn get-granule-timeline
   "Requests search response as a granule timeline. Parses the granule timeline response."
   ([params]
-   (get-granule-timeline params {}))
+   (get-granule-timeline params {:method :get}))
   ([params options]
    (let [url-extension (get options :url-extension)
          snake-kebab? (get options :snake-kebab? true)
@@ -156,19 +156,32 @@
                   (params->snake_case (util/map-keys csk/->snake_case_keyword params))
                   params)
          ;; allow interval to be specified as a keyword
-         params (update-in params [:interval] #(some-> % name))
+         params (update-in params [:interval] #(if % (name %) ""))
          [url accept] (if url-extension
                         [(str (url/timeline-url) "." url-extension)]
                         [(url/timeline-url) "application/json"])
+         get-request? (= :get (:method options))
          response (get-search-failure-data
-                    (client/get url {:accept accept
-                                     :headers headers
-                                     :query-params params
-                                     :connection-manager (url/conn-mgr)}))]
+                    (if get-request?
+                      (client/get url {:accept accept
+                                       :headers headers
+                                       :query-params params
+                                       :connection-manager (url/conn-mgr)})
+                      (client/post url
+                                   {:accept accept
+                                    :headers headers
+                                    :content-type "application/x-www-form-urlencoded"
+                                    :body (codec/form-encode params)
+                                    :connection-manager (url/conn-mgr)})))]
      (if (= 200 (:status response))
        {:status (:status response)
         :results (parse-timeline-response (:body response))}
        response))))
+
+(defn get-granule-timeline-with-post
+  "Requests search response as a granule timeline through POST. Parses the granule timeline response."
+  [params]
+  (get-granule-timeline params {:method :post}))
 
 (defn find-grans-csv
   "Returns the response of granule search in csv format"

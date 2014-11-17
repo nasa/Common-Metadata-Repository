@@ -5,6 +5,7 @@
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.date-time-parser :as p]
             [clj-time.coerce :as cr]
+            [cmr.oracle.connection :as oracle]
             [clojure.java.jdbc :as j]
             [sqlingvo.core :refer [select from where with order-by desc delete as]]
             [cmr.metadata-db.data.oracle.sql-utils :as su]
@@ -17,13 +18,15 @@
           (assoc-in [:extra-fields :short-name] (:short_name result))
           (assoc-in [:extra-fields :version-id] (:version_id result))
           (assoc-in [:extra-fields :entry-title] (:entry_title result))
-          (assoc-in [:extra-fields :delete-time] (when (:delete_time result) (c/oracle-timestamp-tz->clj-time db (:delete_time result))))))
+          (assoc-in [:extra-fields :delete-time]
+                    (when (:delete_time result)
+                      (c/oracle-timestamp->str-time db (:delete_time result))))))
 
 (defmethod c/concept->insert-args :collection
   [concept]
   (let [{{:keys [short-name version-id entry-title delete-time]} :extra-fields} concept
         [cols values] (c/concept->insert-args (assoc concept :concept-type :default))
-        delete-time (when delete-time (cr/to-sql-time (p/parse-datetime  delete-time)))]
+        delete-time (when delete-time (cr/to-sql-time (p/parse-datetime delete-time)))]
     [(concat cols ["short_name" "version_id" "entry_title" "delete_time"])
      (concat values [short-name version-id entry-title delete-time])]))
 

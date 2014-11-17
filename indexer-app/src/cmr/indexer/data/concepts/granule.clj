@@ -16,7 +16,8 @@
             [cmr.indexer.data.concepts.attribute :as attrib]
             [cmr.indexer.data.concepts.orbit-calculated-spatial-domain :as ocsd]
             [cmr.indexer.data.concepts.spatial :as spatial]
-            [cmr.common.cache :as cache])
+            [cmr.common.cache :as cache]
+            [cmr.common.concepts :as concepts])
   (:import cmr.spatial.mbr.Mbr))
 
 (def parent-collection-cache-key
@@ -31,8 +32,7 @@
 (defn- fetch-parent-collection
   "Retrieve the parent collection umm from the db"
   [context parent-collection-id]
-  (let [parent-collection-cache (cache/context->cache context parent-collection-cache-key)
-        concept (mdb/get-latest-concept context parent-collection-id)]
+  (let [concept (mdb/get-latest-concept context parent-collection-id)]
     (assoc (umm/parse-concept concept) :concept-id parent-collection-id)))
 
 (defn- get-parent-collection
@@ -134,7 +134,9 @@
         {:keys [short-name version-id]} (:product parent-collection)
         granule-spatial-representation (get-in parent-collection [:spatial-coverage :granule-spatial-representation])]
     (merge {:concept-id concept-id
+            :concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))
             :collection-concept-id parent-collection-id
+            :collection-concept-seq-id (:sequence-number (concepts/parse-concept-id parent-collection-id))
 
             :entry-title (:entry-title parent-collection)
             :metadata-format (name (mt/base-mime-type-to-format format))
@@ -149,14 +151,17 @@
             :provider-id.lowercase (s/lower-case provider-id)
             :granule-ur granule-ur
             :granule-ur.lowercase (s/lower-case granule-ur)
+            :granule-ur.lowercase2 (s/lower-case granule-ur)
             :producer-gran-id producer-gran-id
             :producer-gran-id.lowercase (when producer-gran-id (s/lower-case producer-gran-id))
+            :producer-gran-id.lowercase2 (when producer-gran-id (s/lower-case producer-gran-id))
             :day-night day-night
             :day-night.lowercase (when day-night (s/lower-case day-night))
             :access-value access-value
 
             ;; Provides sorting on a combination of producer granule id and granule ur
             :readable-granule-name-sort (s/lower-case (or producer-gran-id granule-ur))
+            :readable-granule-name-sort2 (s/lower-case (or producer-gran-id granule-ur))
 
             :platform-sn platform-short-names
             :platform-sn.lowercase  (map s/lower-case platform-short-names)

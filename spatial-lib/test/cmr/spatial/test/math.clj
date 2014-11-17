@@ -13,6 +13,8 @@
             [cmr.spatial.point :as p]
             [cmr.spatial.math :refer :all]))
 
+(primitive-math/use-primitive-operators)
+
 (defn math-values-close?
   "Helper for testing math value accuracy"
   [^double v1 ^double v2]
@@ -20,10 +22,13 @@
            (Double/isNaN v2))
       (< (Math/abs (- v1 v2)) 0.000000000001)))
 
+(def doubles-gen
+  (gen/fmap double gen/ratio))
+
 ;; Tests the accuracy of the math functions provided by the Jafama library. It ensures they are up
 ;; to par with the Java Math.
 (defspec test-math-accuracy 2000
-  (for-all [dvalue (gen/fmap double gen/ratio)]
+  (for-all [dvalue doubles-gen]
     (let [^double d dvalue]
       (and
         (math-values-close? (Math/cos d) (cos d))
@@ -36,11 +41,25 @@
         (math-values-close? (Math/sqrt d) (sqrt d))))))
 
 (defspec test-math-atan2-accuracy 2000
-  (for-all [dvalue1 (gen/fmap double gen/ratio)
-            dvalue2 (gen/fmap double gen/ratio)]
+  (for-all [dvalue1 doubles-gen
+            dvalue2 doubles-gen]
     (let [^double d1 dvalue1
           ^double d2 dvalue2]
       (math-values-close? (Math/atan2 d1 d2) (atan2 d1 d2)))))
+
+(defspec double-to-float-round-up-spec 2000
+  (for-all [^double dvalue doubles-gen]
+    (let [fvalue (double->float dvalue true)
+          dvalue2 (float->double fvalue)]
+      (and (float-type? fvalue)
+           (>= dvalue2 dvalue)))))
+
+(defspec double-to-float-round-down-spec 2000
+  (for-all [^double dvalue doubles-gen]
+    (let [fvalue (double->float dvalue false)
+          dvalue2 (float->double fvalue)]
+      (and (float-type? fvalue)
+           (<= dvalue2 dvalue)))))
 
 (defspec round-spec 2000
   (for-all [precision (gen/choose 0 10)
@@ -57,7 +76,7 @@
         (approx= d d2)
 
         ;; Radians should be within -2 PI and +2 PI
-        (within-range? r (* -2 PI) (* 2 PI))))))
+        (within-range? r (* -2.0 PI) (* 2.0 PI))))))
 
 (deftest approx-equal-test
   (testing "changing the delta"

@@ -2,17 +2,13 @@
   "Functions to support migration of data form catlog rest to metadata db."
   (:require [cmr.common.log :refer (debug info warn error)]
             [clojure.java.jdbc :as j]
-            [clojure.string :as str]
-            [cheshire.core :as json]
             [sqlingvo.core :as sql :refer [sql select insert from where with order-by desc delete as]]
-            [sqlingvo.vendor :as v]
             [cmr.metadata-db.data.oracle.sql-utils :as su]
             [clojure.core.async :as ca :refer [thread alts!! <!!]]
-            [cmr.oracle.connection :as oc]
             [cmr.metadata-db.data.oracle.concept-tables :as tables]
             [cmr.transmit.config :as transmit-config]
             [cmr.transmit.metadata-db :as transmit-mdb]
-            [cmr.oracle.config :as oracle-config]))
+            [cmr.bootstrap.data.migration-utils :as mu]))
 
 ;; FIXME - Why not just use the metadata db code directly for creating the provider instead of using http?
 (defn system->metadata-db-url
@@ -20,37 +16,12 @@
   (let [{:keys [host port]} (transmit-config/context->app-connection {:system system} :metadata-db)]
     (format "http://%s:%s" host port)))
 
-
 ;; To copy a provider
 ;; 1. Tell the metadata db to drop the provider
 ;; 2. Tell the metadata db to create the provider
 ;; 3. Insert collections by selecting from dataset table.
 ;; 4. Iterate over dataset ids for provider and insert granules into metadata db table
 ;; by selecting from catlaog-rest table.
-
-(defn catalog-rest-user
-  [system]
-  (get-in system [:catalog-rest-user]))
-
-(defn metadata-db-user
-  [system]
-  (get-in system [:db :spec :user]))
-
-
-(defn catalog-rest-dataset-table
-  "Get the dataset table name for a given provider."
-  [system provider-id]
-  (str (catalog-rest-user system) "." provider-id "_dataset_records"))
-
-(defn catalog-rest-granule-table
-  "Get the granule table name for a given provider."
-  [system provider-id]
-  (str (catalog-rest-user system) "." provider-id "_granule_records"))
-
-(defn metadata-db-concept-table
-  "Get the collection/granule table name for a given provider."
-  [system provider-id concept-type]
-  (str (metadata-db-user system) "." (tables/get-table-name provider-id concept-type)))
 
 (defn- delete-collection-sql
   "Generate SQL to delete a collection from a provider's collection table."
@@ -83,7 +54,7 @@
 (defn- get-dataset-record-id-for-collection-sql
   "Generate SQL to retrieve the id for a given collection/dataset from the catalog-rest table."
   [system provider-id collection-id]
-  (su/build (select [:id] (from (catalog-rest-dataset-table system provider-id))
+  (su/build (select [:id] (from (mu/catalog-rest-table system provider-id :collection))
                     (where `(= :echo-collection-id ~collection-id)))))
 
 (defn- get-dataset-record-id-for-collection
@@ -99,7 +70,8 @@
 (defn- get-provider-collection-list-sql
   "Gengerate SQL to get the list of collections (datasets) for the given provider."
   [system provider-id]
-  (su/build (select [:id :echo-collection-id] (from (catalog-rest-dataset-table system provider-id)))))
+  (su/build (select [:id :echo-collection-id]
+              (from (mu/catalog-rest-table system provider-id :collection)))))
 
 (defn get-provider-collection-list
   "Get the list of collections (datasets) for the given provider."
@@ -113,23 +85,21 @@
   metadata db for the given provider for all the provider's collections or a single collection."
   ([system provider-id]
    (copy-collection-data-sql system provider-id nil))
-  ([system provider-id  collection-id]
-   (let [dataset-table (catalog-rest-dataset-table system provider-id)
-         collection-table (metadata-db-concept-table system provider-id :collection)
-         ;; FIXME: Format is incorrect when copied over. Catalog REST has a constant like "ECHO10"
-         ;; but we expect application/echo10+xml
+  ([system provider-id collection-id]
+   (let [dataset-table (mu/catalog-rest-table system provider-id :collection)
+         collection-table (mu/metadata-db-concept-table system provider-id :collection)
          stmt (format (str "INSERT INTO %s (id, concept_id, native_id, metadata, format, short_name, "
                            "version_id, entry_title, delete_time, revision_date) SELECT %s_seq.NEXTVAL,"
                            "echo_collection_id, dataset_id, compressed_xml, xml_mime_type, short_name,"
-                           "version_id, dataset_id, delete_time, ingest_updated_at FROM %s")
+                           "version_id, dataset_id, delete_time, ingest_updated_at "
+                           "FROM %s where %s")
                       collection-table
                       collection-table
                       dataset-table
-                      collection-id)]
+                      mu/CATALOG_REST_SKIPPED_ITEMS_CLAUSE)]
      (if collection-id
-       (format "%s WHERE echo_collection_id = '%s'" stmt collection-id)
+       (format "%s and echo_collection_id = '%s'" stmt collection-id)
        stmt))))
-
 
 (defn- copy-collection-data
   "Copy the dataset/collection data from the catalog rest database to the metadata db
@@ -146,18 +116,19 @@
 (defn- copy-granule-data-for-collection-sql
   "Generate the SQL to copy the granule data from the catalog reset datbase to the metadata db."
   [system provider-id collection-id dataset-record-id]
-  (let [granule-echo-table (catalog-rest-granule-table system provider-id)
-        granule-mdb-table (metadata-db-concept-table system provider-id :granule)
+  (let [granule-echo-table (mu/catalog-rest-table system provider-id :granule)
+        granule-mdb-table (mu/metadata-db-concept-table system provider-id :granule)
         stmt (format (str "INSERT INTO %s (id, concept_id, native_id, parent_collection_id, "
                           "metadata, format, delete_time, revision_date) "
                           "SELECT %s_seq.NEXTVAL, echo_granule_id, granule_ur, '%s', "
                           "compressed_xml, xml_mime_type, delete_time, ingest_updated_at "
-                          "FROM %s WHERE dataset_record_id = %d")
+                          "FROM %s WHERE dataset_record_id = %d and %s")
                      granule-mdb-table
                      granule-mdb-table
                      collection-id
                      granule-echo-table
-                     (.intValue dataset-record-id))]
+                     (.intValue dataset-record-id)
+                     mu/CATALOG_REST_SKIPPED_ITEMS_CLAUSE)]
     stmt))
 
 (defn- copy-granule-data-for-collection
@@ -232,6 +203,6 @@
   (get-provider-collection-list-sql  "FIX_PROV1")
   (copy-granule-data-for-provider (oc/create-db (mdb-config/db-spec)) "FIX_PROV1")
   (delete-collection-granules-sql "FIX_PROV1" "C1000000073-FIX_PROV1")
-  (metadata-db-concept-table "FIX_PROV1" :collection)
+  (mu/metadata-db-concept-table "FIX_PROV1" :collection)
   )
 

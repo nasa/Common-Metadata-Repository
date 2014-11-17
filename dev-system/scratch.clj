@@ -25,4 +25,45 @@
                     reverse
                     (take 10))
 
+(defn holdings->nested-map
+  [holdings]
+  (reduce (fn [pic {:keys [provider-id granule-count concept-id]}]
+            (assoc-in pic [provider-id concept-id] granule-count))
+          {}
+          holdings))
+
+(defn holdings-map->total
+  [holdings-map]
+  (reduce + (for [[_ concept-id-map] holdings-map
+                  [_ num-granules] concept-id-map]
+              num-granules)))
+
+(def testbed-holdings
+  (->> (decode (slurp "testbed_holdings.json") true)
+       (map #(update-in % [:granule_count] (fn [v] (Long. v))))
+       (map (fn [{:keys [dataset_id echo_collection_id granule_count provider_id]}]
+              {:granule-count granule_count
+               :provider-id provider_id
+               :entry-title dataset_id
+               :concept-id echo_collection_id}))
+       holdings->nested-map))
+
+
+(def sit-holdings
+  (holdings->nested-map (decode (slurp "sit_holdings.json") true)))
+
+(holdings-map->total sit-holdings)
+(holdings-map->total testbed-holdings)
+
+(let [[sit-extra tb-extra _] (clojure.data/diff sit-holdings testbed-holdings)]
+  {:sit-extra sit-extra
+   :tb-extra tb-extra})
+
+(get-in sit-holdings ["EDF_OPS" "C1000000261-EDF_OPS"])
+(get-in testbed-holdings ["EDF_OPS" "C1000000261-EDF_OPS"])
+
+(get-in sit-holdings ["EDF_OPS" "C1000000104-EDF_OPS"])
+(get-in testbed-holdings ["EDF_OPS" "C1000000104-EDF_OPS"])
+
+
 

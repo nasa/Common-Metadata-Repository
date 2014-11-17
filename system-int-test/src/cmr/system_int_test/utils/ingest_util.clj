@@ -5,6 +5,7 @@
             [cheshire.core :as json]
             [cmr.system-int-test.data.collection-helper :as ch]
             [cmr.system-int-test.data.granule-helper :as gh]
+            [cmr.system-int-test.data2.provider-holdings :as ph]
             [cmr.umm.echo10.collection :as c]
             [cmr.umm.echo10.granule :as g]
             [cmr.umm.echo10.core :as echo10]
@@ -81,6 +82,19 @@
         body (json/decode (:body response) true)]
     (assoc body :status (:status response))))
 
+(defn provider-holdings
+  "Returns the provider holdings from metadata db."
+  []
+  (let [url (url/mdb-provider-holdings-url)
+        response (client/get url {:accept :json
+                                  :connection-manager (url/conn-mgr)})
+        {:keys [status body headers]} response]
+    (if (= status 200)
+      {:status status
+       :headers headers
+       :results (ph/parse-provider-holdings :json false body)}
+      response)))
+
 (defn tombstone-concept
   "Create a tombstone in mdb for the concept, but don't delete it from elastic."
   [concept]
@@ -108,6 +122,22 @@
         body (json/decode (:body response) true)]
     (assoc body :status (:status response))))
 
+
+(defn ingest-concepts
+  "Ingests all the given concepts assuming that they should all be successful."
+  [concepts]
+  (doseq [concept concepts]
+    (is (= {:status 200
+            :concept-id (:concept-id concept)
+            :revision-id (:revision-id concept)}
+           (ingest-concept concept)))))
+
+(defn delete-concepts
+  "Deletes all the given concepts assuming that they should all be successful."
+  [concepts]
+  (doseq [concept concepts]
+    (is (#{404 200} (:status (delete-concept concept))))))
+
 (defn get-concept
   ([concept-id]
    (get-concept concept-id nil))
@@ -118,7 +148,10 @@
                                :connection-manager (url/conn-mgr)})]
      (is (some #{200 404} [(:status response)]))
      (when (= (:status response) 200)
-       (json/decode (:body response) true)))))
+       (-> response
+           :body
+           (json/decode true)
+           (update-in [:concept-type] keyword))))))
 
 (defn concept-exists-in-mdb?
   "Check concept in mdb with the given concept and revision-id"

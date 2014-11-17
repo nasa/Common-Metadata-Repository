@@ -9,7 +9,8 @@
             [cmr.common.util :as util]
             [clj-time.core :as t]
             [clj-time.format :as f]
-            [cheshire.core :as json])
+            [cheshire.core :as json]
+            [cmr.system-int-test.system :as s])
   (:import cmr.umm.collection.UmmCollection
            cmr.umm.granule.UmmGranule))
 
@@ -185,18 +186,10 @@
       (println (pr-str search-result)))
     result))
 
-(def unique-num-atom
-  (atom 0))
-
-(defn reset-uniques
-  "Resets the unique num value"
-  []
-  (reset! unique-num-atom 0))
-
 (defn unique-num
   "Creates a unique number and returns it"
   []
-  (swap! unique-num-atom inc))
+  (swap! (:unique-num-atom (s/system)) inc))
 
 (defn unique-str
   "Creates a unique string and returns it"

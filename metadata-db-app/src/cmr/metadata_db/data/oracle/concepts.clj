@@ -16,7 +16,7 @@
             [clj-time.coerce :as cr]
             [clj-time.core :as t]
             [cmr.common.concepts :as cc]
-            [cmr.oracle.connection]
+            [cmr.oracle.connection :as oracle]
             [cmr.metadata-db.data.oracle.sql-utils :as sql-utils])
   (:import cmr.oracle.connection.OracleStore
            java.util.zip.GZIPInputStream
@@ -46,7 +46,14 @@
 
 (def db-format->mime-type
   "A mapping of the format strings stored in the database to the equivalent mime type in concepts"
-  (set/map-invert mime-type->db-format))
+  ;; We add "ISO-SMAP" mapping here to work with data that are bootstrapped or synchronized directly
+  ;; from catalog-rest. Since catalog-rest uses ISO-SMAP as the format value in its database and
+  ;; CMR bootstrap-app simply copies this format into CMR database, we could have "ISO-SMAP" as
+  ;; a format in CMR database.
+  (assoc (set/map-invert mime-type->db-format)
+         "ISO-SMAP" "application/iso:smap+xml"
+         ;; We also have to support whatever the original version of the the string Metadata DB originally used.
+         "SMAP_ISO"  "application/iso:smap+xml"))
 
 (defn safe-max
   "Return the maximimum of two numbers, treating nil as the lowest possible number"
@@ -87,23 +94,12 @@
     (.finish gzip)
     (.toByteArray output)))
 
-(defn db->oracle-conn
-  "Gets an oracle connection from the outer database connection. Should be called from within as
-  with-db-transaction block."
-  [db]
-  (if-let [proxy-conn (:connection db)]
-    proxy-conn
-    (errors/internal-error!
-      (str "Called db->oracle-conn with connection that was not within a db transaction. "
-           "It must be called from within call j/with-db-transaction"))))
-
-(defn oracle-timestamp-tz->clj-time
-  "Converts oracle.sql.TIMESTAMPTZ instance into a clj-time. Must be called within
-  a with-db-transaction block with the connection"
-  [db ^oracle.sql.TIMESTAMPTZ ot]
-  (let [^java.sql.Connection conn (db->oracle-conn db)
-        result (cr/from-sql-time (.timestampValue ot conn))]
-    (f/unparse (f/formatters :date-time) result)))
+(defn oracle-timestamp->str-time
+  "Converts oracle.sql.TIMESTAMP instance into a string representation of the time. Must be called
+  within a with-db-transaction block with the connection"
+  [db ot]
+  (f/unparse (f/formatters :date-time)
+             (oracle/oracle-timestamp->clj-time db ot)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Multi methods for concept types to implement
@@ -144,7 +140,7 @@
        :metadata (blob->string metadata)
        :format (db-format->mime-type format)
        :revision-id (int revision_id)
-       :revision-date (oracle-timestamp-tz->clj-time db revision_date)
+       :revision-date (oracle-timestamp->str-time db revision_date)
        :deleted (not= (int deleted) 0)})))
 
 (defmethod concept->insert-args :default
@@ -214,6 +210,38 @@
          ;; set :transaction? false since we are already inside a transaction, and
          ;; we want the temp table to persist for the main select
          (concat concept-id-revision-id-tuples [:transaction? false])))
+
+(defn get-latest-concept-id-revision-id-tuples
+  "Finds the latest pairs of concept id and revision ids for the given concept ids. If no revisions
+  exist for a given concept id it will not be returned."
+  [db concept-type provider-id concept-ids]
+  (let [start (System/currentTimeMillis)]
+    (j/with-db-transaction
+      [conn db]
+      ;; use a temporary table to insert our values so we can use a join to
+      ;; pull everything in one select
+      (apply j/insert! conn
+             "get_concepts_work_area"
+             ["concept_id"]
+             ;; set :transaction? false since we are already inside a transaction, and
+             ;; we want the temp table to persist for the main select
+             (concat (map vector concept-ids) [:transaction? false]))
+      ;; pull back all revisions of each concept-id and then take the latest
+      ;; instead of using group-by in SQL
+      (let [table (tables/get-table-name provider-id concept-type)
+            stmt (su/build (select [:c.concept-id :c.revision-id]
+                             (from (as (keyword table) :c)
+                                   (as :get-concepts-work-area :t))
+                             (where `(and (= :c.concept-id :t.concept-id)))))
+            cid-rid-maps (sql-utils/query conn stmt)
+            concept-id-to-rev-id-maps (map #(hash-map (:concept_id %) (long (:revision_id %)))
+                                           cid-rid-maps)
+            latest (apply merge-with safe-max {}
+                          concept-id-to-rev-id-maps)
+            concept-id-revision-id-tuples (seq latest)
+            latest-time (- (System/currentTimeMillis) start)]
+        (debug (format "Retrieving latest revision-ids took [%d] ms" latest-time))
+        concept-id-revision-id-tuples))))
 
 (extend-protocol c/ConceptsStore
   OracleStore
@@ -302,32 +330,9 @@
 
   (get-latest-concepts
     [db concept-type provider-id concept-ids]
-    (let [start (System/currentTimeMillis)]
-      (j/with-db-transaction
-        [conn db]
-        ;; use a temporary table to insert our values so we can use a join to
-        ;; pull everything in one select
-        (apply j/insert! conn
-               "get_concepts_work_area"
-               ["concept_id"]
-               ;; set :transaction? false since we are already inside a transaction, and
-               ;; we want the temp table to persist for the main select
-               (concat (map vector concept-ids) [:transaction? false]))
-        ;; pull back all revisions of each concept-id and then take the latest
-        ;; instead of using group-by in SQL
-        (let [table (tables/get-table-name provider-id concept-type)
-              stmt (su/build (select [:c.concept-id :c.revision-id]
-                               (from (as (keyword table) :c)
-                                     (as :get-concepts-work-area :t))
-                               (where `(and (= :c.concept-id :t.concept-id)))))
-              cid-rid-maps (sql-utils/query conn stmt)
-              concept-id-to-rev-id-maps (map #(hash-map (:concept_id %) (:revision_id %)) cid-rid-maps)
-              latest (apply merge-with safe-max {}
-                            concept-id-to-rev-id-maps)
-              concept-id-revision-id-tuples (seq latest)
-              latest-time (- (System/currentTimeMillis) start)]
-          (debug (format "Retrieving latest revision-ids took [%d] ms" latest-time))
-          (c/get-concepts db concept-type provider-id concept-id-revision-id-tuples)))))
+    (c/get-concepts
+      db concept-type provider-id
+      (get-latest-concept-id-revision-id-tuples db concept-type provider-id concept-ids)))
 
   (find-concepts
     [db params]
@@ -446,6 +451,24 @@
                             tmp.revision_id = t1.revision_id)"
                             table)]]
           (j/execute! conn stmt)))))
+
+  (get-concept-type-counts-by-collection
+    [db concept-type provider-id]
+    (let [table (tables/get-table-name provider-id :granule)
+          stmt [(format "select count(1) concept_count, a.parent_collection_id
+                        from %s a,
+                        (select concept_id, max(revision_id) revision_id
+                        from %s group by concept_id) b
+                        where  a.deleted = 0
+                        and    a.concept_id = b.concept_id
+                        and    a.revision_id = b.revision_id
+                        group by a.parent_collection_id"
+                        table table)]
+          result (sql-utils/query db stmt)]
+      (reduce (fn [count-map {:keys [parent_collection_id concept_count]}]
+                (assoc count-map parent_collection_id (long concept_count)))
+              {}
+              result)))
 
   (reset
     [this]

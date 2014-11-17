@@ -74,6 +74,7 @@
             [cmr.search.services.xslt :as xslt]
             [camel-snake-kebab :as csk]
             [cheshire.core :as json]
+            [clojure.string :as s]
             [cmr.common.log :refer (debug info warn error)]))
 
 (deftracefn validate-query
@@ -97,10 +98,19 @@
     (str dir-char (csk/->kebab-case field))
     sort-key))
 
+(defn- remove-empty-params
+  "Returns the params after removing the ones with value of an empty string
+  or string with just whitespaces"
+  [params]
+  (let [not-empty-string? (fn [value]
+                            (not (and (string? value) (= "" (s/trim value)))))]
+    (into {} (filter (comp not-empty-string? second) params))))
+
 (defn- sanitize-params
   "Manipulates the parameters to make them easier to process"
   [params]
   (-> params
+      remove-empty-params
       u/map-keys->kebab-case
       (update-in [:sort-key] #(when % (if (sequential? %)
                                         (map sanitize-sort-key % )
