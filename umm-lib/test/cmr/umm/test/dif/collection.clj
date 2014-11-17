@@ -45,36 +45,12 @@
   [related-urls]
   (seq (map #(assoc % :size nil) related-urls)))
 
-(defn- phone->expected-parsed
-  "Returns the expected parsed phone for the given phone."
-  [phone]
-  ;; DIF has no number-type, phones are just numbers
-  (assoc phone :number-type nil))
-
-(defn- personnel->expected-parsed
-  "Returns the expected parsed personnel for the given personnel."
-  [personnel]
-  (seq (map (fn [person]
-              ;; DIF only allows one address per person
-              (let [person (assoc person :addresses (take 1 (:addresses person)))
-                    phones (:phones person)
-                    phones (map phone->expected-parsed phones)]
-                (assoc person :phones phones)))
-            personnel)))
-
-(defn- organization->expected-parsed
-  "Returns the expected parsed organization for the given organization."
-  [organization]
-  (let [personnel (:personnel organization)]
-    (assoc organization :personnel (personnel->expected-parsed personnel))))
-
-
 (defn- umm->expected-parsed-dif
   "Modifies the UMM record for testing DIF. DIF contains a subset of the total UMM fields so certain
   fields are removed for comparison of the parsed record"
   [coll]
   (let [{{:keys [version-id processing-level-id collection-data-type]} :product
-         :keys [entry-id entry-title spatial-coverage]} coll
+         :keys [entry-id entry-title spatial-coverage personnel]} coll
         range-date-times (get-in coll [:temporal :range-date-times])
         temporal (if (seq range-date-times)
                    (umm-c/map->Temporal {:range-date-times range-date-times
@@ -82,8 +58,16 @@
                                          :periodic-date-times []})
                    nil)
         organizations (filter #(= :distribution-center (:type %)) (:organizations coll))
-        ;; Fix the personnel fields.
-        organizations (map organization->expected-parsed organizations)]
+        ;; DIF has no 'type' field for phones, they're just numbers, and only supports one entry
+        ;; in the Personnel field with one Address
+        person (first personnel)
+        person (assoc person :addresses (take 1 (:addresses person)))
+        phones (:phones person)
+        phones (map (fn [phone]
+                      (umm-c/map->Phone {:number (:number phone)
+                                         :number-type nil}))
+                    phones)
+        personnel [(assoc person :phones phones)]]
     (-> coll
         ;; DIF does not have short-name or long-name, so we assign them to be entry-id and entry-title respectively
         ;; long-name will only take the first 1024 characters of entry-title if entry-title is too long
@@ -92,6 +76,7 @@
                                              :version-id version-id
                                              :processing-level-id processing-level-id
                                              :collection-data-type collection-data-type}))
+        (assoc :personnel personnel)
         ;; AccessValue is optional in dif and hasn't be specified.
         (dissoc :access-value)
         ;; There is no delete-time in DIF
@@ -146,19 +131,19 @@
          (cmr.common.dev.capture-reveal/reveal expected-parsed)))
 
 
-  (let [x #cmr.umm.collection.UmmCollection{:entry-id "0", :entry-title "0", :summary "0", :product #cmr.umm.collection.Product{:short-name "0", :long-name "0", :version-id "0", :processing-level-id nil, :collection-data-type nil}, :access-value nil, :data-provider-timestamps #cmr.umm.collection.DataProviderTimestamps{:insert-time #=(org.joda.time.DateTime. 0), :update-time #=(org.joda.time.DateTime. 0), :delete-time nil}, :spatial-keywords nil, :temporal-keywords nil, :temporal #cmr.umm.collection.Temporal{:time-type nil, :date-type nil, :temporal-range-type nil, :precision-of-seconds nil, :ends-at-present-flag nil, :range-date-times [#cmr.umm.collection.RangeDateTime{:beginning-date-time #=(org.joda.time.DateTime. 0), :ending-date-time nil}], :single-date-times [], :periodic-date-times []}, :science-keywords [#cmr.umm.collection.ScienceKeyword{:category "0", :topic "0", :term "0", :variable-level-1 "0", :variable-level-2 nil, :variable-level-3 nil, :detailed-variable nil}], :platforms nil, :product-specific-attributes nil, :projects nil, :two-d-coordinate-systems nil, :related-urls nil, :organizations (#cmr.umm.collection.Organization{:type :distribution-center, :org-name "!", :personnel [#cmr.umm.collection.ContactPerson{:roles ["Investigator"], :addresses [#cmr.umm.collection.Address{:city "!", :country "!", :postal-code "!", :state-province "!", :street-address-lines ["!"]}], :emails nil, :first-name nil, :last-name "!", :middle-name nil, :phones [#cmr.umm.collection.Phone{:number "!", :number-type "!"}]}]}), :spatial-coverage nil, :associated-difs nil}
+  (let [x #cmr.umm.collection.UmmCollection{:entry-id "0", :entry-title "0", :summary "0", :product #cmr.umm.collection.Product{:short-name "0", :long-name "0", :version-id "0", :processing-level-id nil, :collection-data-type nil}, :access-value nil, :data-provider-timestamps #cmr.umm.collection.DataProviderTimestamps{:insert-time #=(org.joda.time.DateTime. 0), :update-time #=(org.joda.time.DateTime. 0), :delete-time nil}, :spatial-keywords nil, :temporal-keywords nil, :temporal #cmr.umm.collection.Temporal{:time-type nil, :date-type nil, :temporal-range-type nil, :precision-of-seconds nil, :ends-at-present-flag nil, :range-date-times [#cmr.umm.collection.RangeDateTime{:beginning-date-time #=(org.joda.time.DateTime. 0), :ending-date-time nil}], :single-date-times [], :periodic-date-times []}, :science-keywords [#cmr.umm.collection.ScienceKeyword{:category "0", :topic "0", :term "0", :variable-level-1 "0", :variable-level-2 nil, :variable-level-3 nil, :detailed-variable nil}], :platforms nil, :product-specific-attributes nil, :projects nil, :two-d-coordinate-systems nil, :related-urls nil, :organizations (#cmr.umm.collection.Organization{:type :distribution-center, :org-name "!"}), :personnel [#cmr.umm.collection.ContactPerson{:roles ["Investigator" "Investigator"], :addresses [#cmr.umm.collection.Address{:city "!", :country "!", :postal-code "!", :state-province "!", :street-address-lines ["!"]}], :emails nil, :first-name nil, :last-name "!", :middle-name nil, :phones [#cmr.umm.collection.Phone{:number "!", :number-type "!"}]}], :spatial-coverage nil, :associated-difs nil}
         xml (dif/umm->dif-xml x)
-        _ (cmr.common.dev.capture-reveal/capture xml)
         expected (umm->expected-parsed-dif x)
         parsed (c/parse-collection xml)]
-    (is (= expected parsed))
-    ;expected
-    (println xml)
-    (println expected)
-    (println parsed)
+   ;(is (= expected parsed))
+;expected
+(println xml)
+(println expected)
+(println parsed)
     )
 
-  ;(c/validate-xml (cmr.common.dev.capture-reveal/reveal xml)
+
+
   )
 
 (defspec generate-and-parse-collection-between-formats-test 100
@@ -401,6 +386,11 @@
   (let [expected (umm-c/map->UmmCollection
                    {:entry-id "geodata_1848"
                     :entry-title "Global Land Cover 2000 (GLC 2000)"
+                    :personnel [(umm-c/map->ContactPerson
+                                  {:emails ["geo@unepgrid.ch"]
+                                   :first-name "ANDREA"
+                                   :last-name "DE BONO"
+                                   :roles ["DIF AUTHOR" "TECHNICAL CONTACT"]})]
                     :summary "Summary of collection."
                     :product (umm-c/map->Product
                                {:short-name "geodata_1848"
@@ -477,33 +467,10 @@
                     :organizations
                     [(umm-c/map->Organization
                        {:type :distribution-center
-                        :org-name "EU/JRC/IES"
-                        :personnel [(umm-c/map->ContactPerson
-                                  {:emails ["etienne.bartholome@jrc.it"]
-                                   :phones [(umm-c/map->Phone {:number "+39 332 789908"})]
-                                   :addresses [(umm-c/map->Address
-                                                 {:country "Italy"
-                                                  :city "Ispra (VA)"
-                                                  :postal-code "21020"
-                                                  :street-address-lines ["Space Applications Institute, T.P. 440"
-                                                                        "EC Joint Research Centre JRC"]})]
-                                   :first-name "ETIENNE"
-                                   :last-name "BARTHOLOME"
-                                   :roles ["DATA CENTER CONTACT"]})]})
+                        :org-name "EU/JRC/IES"})
                      (umm-c/map->Organization
                        {:type :distribution-center
-                        :org-name "UNEP/DEWA/GRID-EUROPE"
-                        :personnel [(umm-c/map->ContactPerson
-                                  {:emails ["gridinfo@unep.org"]
-                                   :phones [(umm-c/map->Phone {:number "+254-2-621234"})]
-                                   :addresses [(umm-c/map->Address
-                                                 {:country "KENYA"
-                                                  :state-province "Nairobi"
-                                                  :street-address-lines ["United Nations Environment Programme"
-                                                                         "Global Resource Information Database UNEP/GRID"
-                                                                         "P.O.Box 30552"]})]
-                                   :last-name "UNEP/GRID"
-                                   :roles ["DATA CENTER CONTACT"]})]})]})
+                        :org-name "UNEP/DEWA/GRID-EUROPE"})]})
         actual (c/parse-collection all-fields-collection-xml)]
     (is (= expected actual))))
 

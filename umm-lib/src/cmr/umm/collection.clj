@@ -130,9 +130,6 @@
 
    ;; maps to Echo10 Collection/ArchiveCenter | Collection/ProcessingCenter element values
    org-name
-
-   ;; Contact information for the data including name, email, phone, FAX, and address information.
-   personnel
    ])
 
 (defrecord RelatedURL
@@ -285,6 +282,8 @@
 
    ;; Records Archive Center, Processing Center
    organizations
+
+   personnel
 
    spatial-coverage
 
