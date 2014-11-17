@@ -45,7 +45,6 @@
    "concept-id"
    "short-name"
    "project-sn"
-   "opendata-format"
    "related-urls"
    "start-date"
    "end-date"
@@ -79,6 +78,7 @@
           [contact-name] :contact-name
           [start-date] :start-date
           [end-date] :end-date} :fields} elastic-result
+        related-urls  (map #(json/decode % true) related-urls)
         start-date (when start-date (str/replace (str start-date) #"\+0000" "Z"))
         end-date (when end-date (str/replace (str end-date) #"\+0000" "Z"))]
     {:id concept-id
@@ -88,7 +88,6 @@
      :update-time update-time
      :insert-time insert-time
      :concept-type :collection
-     :access-url (ru/related-urls->opendata-access-url related-urls)
      :related-urls related-urls
      :project-sn project-sn
      :shapes (srl/ords-info->shapes ords-info ords)
@@ -121,12 +120,12 @@
   "Creates the distribution field for the collection with the given related-urls."
   [related-urls]
   (let [online-access-urls (ru/downloadable-urls related-urls)]
-    (map (fn [url]
+    (not-empty (map (fn [url]
            (let [mime-type (or (:mime-type url)
                                "application/octet-stream")]
              {:accessURL (:url url)
               :format mime-type}))
-         online-access-urls)))
+         online-access-urls))))
 
 (defn landing-page
   "Creates the landingPage field for the collection with the given related-urls."
@@ -143,7 +142,8 @@
   (let [{:keys [id summary short-name project-sn update-time insert-time provider-id access-value
                 keywords entry-title opendata-format start-date end-date
                 related-urls contact-name contact-email shapes]} item
-        related-urls (map #(json/decode % true) related-urls)]
+        access-url (first (ru/downloadable-urls related-urls))
+        distribution (distribution related-urls)]
     (util/remove-nil-keys {:title entry-title
                            :description summary
                            :keyword (not-empty keywords)
@@ -155,12 +155,12 @@
                            :accessLevel ACCESS_LEVEL
                            :bureauCode [BUREAU_CODE]
                            :programCode [PROGRAM_CODE]
-                           :accessURL (:url (first (ru/downloadable-urls related-urls)))
-                           :format opendata-format
+                           :accessURL (:accessURL (first distribution))
+                           :format (:format (first distribution))
                            :spatial (spatial shapes pretty?)
                            :temporal (temporal start-date end-date)
                            :theme (not-empty (str/join "," project-sn))
-                           :distribution (seq (distribution related-urls))
+                           :distribution distribution
                            :landingPage (landing-page related-urls)
                            :language  [LANGUAGE_CODE]
                            :references (not-empty (map :url related-urls))

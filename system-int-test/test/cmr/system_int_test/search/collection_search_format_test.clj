@@ -33,6 +33,61 @@
     (ingest/create-provider "provguid1" "PROV1")
     (ingest/create-provider "provguid2" "PROV2")  )
 
+
+
+  (let [x {:description "Summary of coll1",
+                :accessLevel "public",
+                :bureauCode ["026:00"],
+                :format "application/octet-stream",
+                :publisher
+                "National Aeronautics and Space Administration",
+                :mbox "support@earthdata.nasa.gov",
+                :spatial
+                "<gml:Polygon srsName=\"EPSG:4326\"><gml:outerBoundaryIs><gml:LinearRing><gml:posList>20.0 -70.0 20.0 70.0 30.0 70.0 30.0 -70.0 20.0 -70.0</gml:posList></gml:LinearRing></gml:outerBoundaryIs><gml:innerBoundaryIs></gml:innerBoundaryIs></gml:Polygon>",
+                :references
+                ["http://example.com" "http://example2.com"],
+                :contactPoint "undefined",
+                :modified "2012-01-19T18:00:00.000Z",
+                :title "Dataset1",
+                :language ["en-US"],
+                :programCode ["026:001"],
+                :identifier "C1200000000-PROV1",
+                :distribution
+                [{:accessURL "http://example.com",
+                  :format "application/octet-stream"}
+                 {:accessURL "http://example2.com",
+                  :format "application/octet-stream"}],
+                :issued "2012-01-11T10:00:00.000Z",
+                :accessURL "http://example.com",
+                :temporal "2010-01-01T12:00:00Z/2010-01-11T12:00:00Z"}
+        y {:description "Summary of coll1",
+                :accessLevel "public",
+                :bureauCode ["026:00"],
+                :format "application/octet-stream",
+                :publisher
+                "National Aeronautics and Space Administration",
+                :mbox "support@earthdata.nasa.gov",
+                :spatial
+                "<gml:Polygon srsName=\"EPSG:4326\"><gml:outerBoundaryIs><gml:LinearRing><gml:posList>20.0 -70.0 20.0 70.0 30.0 70.0 30.0 -70.0 20.0 -70.0</gml:posList></gml:LinearRing></gml:outerBoundaryIs><gml:innerBoundaryIs></gml:innerBoundaryIs></gml:Polygon>",
+                :references
+                ["http://example.com" "http://example2.com"],
+                :contactPoint "undefined",
+                :modified "2012-01-19T18:00:00.000Z",
+                :title "Dataset1",
+                :keyword (),
+                :language ["en-US"],
+                :programCode ["026:001"],
+                :identifier "C1200000000-PROV1",
+                :distribution
+                [{:accessURL "http://example.com",
+                  :format "application/octet-stream"}
+                 {:accessURL "http://example2.com",
+                  :format "application/octet-stream"}],
+                :issued "2012-01-11T10:00:00.000Z",
+                :accessURL "http://example.com",
+                :temporal "2010-01-01T12:00:00Z/2010-01-11T12:00:00Z"}]
+    (clojure.data/diff x y))
+
   )
 
 ;; Tests that we can ingest and find items in different formats

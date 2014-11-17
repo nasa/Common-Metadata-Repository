@@ -83,10 +83,3 @@
   "Returns a sequence of atom links for the given related urls"
   [related-urls]
   (map related-url->atom-link related-urls))
-
-(defn related-urls->opendata-access-url
-  "Return the opendata 'accessURL' field based on the related-urls"
-  [related-urls]
-  (-> (downloadable-urls related-urls)
-      first
-      :url))

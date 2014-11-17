@@ -35,7 +35,7 @@
   (let [{:keys [concept-id provider-id revision-date format]} concept
         {{:keys [short-name long-name version-id processing-level-id collection-data-type]} :product
          :keys [entry-id entry-title summary temporal related-urls spatial-keywords associated-difs
-                temporal-keywords access-value contact-email contact-name]} collection
+                temporal-keywords access-value contact-email contact-name distribution]} collection
         collection-data-type (if (= "NEAR_REAL_TIME" collection-data-type)
                                ;; add in all the aliases for NEAR_REAL_TIME
                                (concat [collection-data-type] k/nrt-aliases)

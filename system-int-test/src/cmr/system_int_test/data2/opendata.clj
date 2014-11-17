@@ -30,7 +30,8 @@
 (defn collection->expected-opendata
   [collection]
   (let [{:keys [short-name keywords project-sn summary entry-title
-                access-value concept-id related-urls contact-name contact-email]} collection
+                access-value concept-id related-urls contact-name contact-email
+                data-format]} collection
         spatial-representation (get-in collection [:spatial-coverage :spatial-representation])
         update-time (get-in collection [:data-provider-timestamps :update-time])
         insert-time (get-in collection [:data-provider-timestamps :insert-time])
@@ -40,10 +41,11 @@
         start-date (when start-date (str/replace (str start-date) #"\.000Z" "Z"))
         end-date (when end-date (str/replace (str end-date) #"\.000Z" "Z"))
         shapes (map (partial umm-s/set-coordinate-system spatial-representation)
-                    (get-in collection [:spatial-coverage :geometries]))]
+                    (get-in collection [:spatial-coverage :geometries]))
+        distribution (not-empty (odrh/distribution related-urls))]
     (util/remove-nil-keys {:title entry-title
                            :description summary
-                           :keyword (sk/flatten-science-keywords collection)
+                           :keyword (not-empty (sk/flatten-science-keywords collection))
                            :modified (str update-time)
                            :publisher odrh/PUBLISHER
                            :contactPoint contact-name
@@ -52,12 +54,12 @@
                            :accessLevel "public"
                            :bureauCode [odrh/BUREAU_CODE]
                            :programCode [odrh/PROGRAM_CODE]
-                           :accessURL (ru/related-urls->opendata-access-url related-urls)
-                           :format "B"
+                           :accessURL (:accessURL (first distribution))
+                           :format (:format (first distribution))
                            :spatial (odrh/spatial shapes false)
                            :temporal (odrh/temporal start-date end-date)
                            :theme (not-empty (str/join "," project-sn))
-                           :distribution (not-empty (odrh/distribution related-urls))
+                           :distribution distribution
                            :landingPage (odrh/landing-page concept-id)
                            :language [odrh/LANGUAGE_CODE]
                            :references (not-empty (map :url related-urls))

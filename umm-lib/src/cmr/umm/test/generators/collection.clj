@@ -144,22 +144,28 @@
 (def related-url-types
   (gen/elements ["GET DATA" "GET RELATED VISUALIZATION" "VIEW RELATED INFORMATION"]))
 
+(def related-url-mime-types
+  (gen/elements ["application/json" "text/csv" "text/xml"]))
+
 (def related-url
-  (gen/fmap (fn [[type url description size]]
+  (gen/fmap (fn [[type url description size mime-type]]
               (if (= type "GET RELATED VISUALIZATION")
                 (c/map->RelatedURL {:url url
                                     :type type
                                     :description description
                                     :title description
-                                    :size size})
+                                    :size size
+                                    :mime-type mime-type})
                 (c/map->RelatedURL {:url url
                                     :type type
                                     :description description
-                                    :title description})))
+                                    :title description
+                                    :mime-type mime-type})))
             (gen/tuple related-url-types
                        ext-gen/file-url-string
                        (ext-gen/string-ascii 1 10)
-                       gen/s-pos-int)))
+                       gen/s-pos-int
+                       related-url-mime-types)))
 
 (def orbit-params
   (gen/fmap (fn [[swath-width period incl-angle num-orbits start-clat]]

@@ -209,7 +209,6 @@
                                     ;; each science keyword. It represents the 'keywords'
                                     ;; field in the opendata format.
                                     :science-keywords-flat (stored string-field-mapping)
-                                    :opendata-format (stored string-field-mapping)
                                     :related-urls (stored string-field-mapping)
                                     :contact-email (stored string-field-mapping)
                                     :contact-name (stored string-field-mapping)

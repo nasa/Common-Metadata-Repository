@@ -43,7 +43,7 @@
 (defn- related-urls->expected-parsed
   "Returns the expected parsed related-urls for the given related-urls."
   [related-urls]
-  (seq (map #(assoc % :size nil) related-urls)))
+  (seq (map #(assoc % :size nil :mime-type nil) related-urls)))
 
 (defn- umm->expected-parsed-dif
   "Modifies the UMM record for testing DIF. DIF contains a subset of the total UMM fields so certain
@@ -76,7 +76,7 @@
         (assoc :organizations organizations)
         ;; DIF only support some portion of the spatial
         (update-in [:spatial-coverage] spatial-coverage->expected-parsed)
-        ;; DIF does not support size in RelatedURLs
+        ;; DIF does not support size or mime-type in RelatedURLs
         (update-in [:related-urls] related-urls->expected-parsed)
         ;; CMR-588: UMM doesn't have a good recommendation on how to handle spatial-keywords
         (dissoc :spatial-keywords)

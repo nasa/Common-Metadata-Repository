@@ -52,6 +52,11 @@
   [platforms]
   (seq (map platform->expected-parsed platforms)))
 
+(defn- related-urls->expected-parsed
+  "Returns the expected parsed related-urls for the given related-urls."
+  [related-urls]
+  (seq (map #(assoc % :size nil :mime-type nil) related-urls)))
+
 (defn- umm->expected-parsed-iso
   "Modifies the UMM record for testing ISO. ISO contains a subset of the total UMM fields so certain
   fields are removed for comparison of the parsed record"
@@ -79,6 +84,8 @@
         (assoc-in [:data-provider-timestamps :delete-time] nil)
         ;; ISO does not have periodic-date-times
         (assoc :temporal temporal)
+        ;; ISO does not support mime-type in RelatedURLs
+        (update-in [:related-urls] related-urls->expected-parsed)
         ;; ISO does not have distribution centers as Organization
         (assoc :organizations organizations)
         ;; ISO does not support sensor technique or platform characteristics

@@ -87,11 +87,13 @@
 (defn xml-elem->online-access-url
   [elem]
   (let [url (cx/string-at-path elem [:URL])
-        description (cx/string-at-path elem [:URLDescription])]
+        description (cx/string-at-path elem [:URLDescription])
+        mime-type (cx/string-at-path elem [:MimeType])]
     (c/map->RelatedURL
       {:url url
        :description description
        :title description
+       :mime-type mime-type
        :type "GET DATA"})))
 
 (defn- xml-elem->online-access-urls
