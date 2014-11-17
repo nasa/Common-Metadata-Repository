@@ -103,8 +103,8 @@
 
 (def addresses
   (ext-gen/model-gen c/->Address (ext-gen/string-ascii 1 30)
+                     (ext-gen/string-ascii 1 30)
                      (ext-gen/string-ascii 1 10)
-                     (ext-gen/string-ascii 1 20)
                      (ext-gen/string-ascii 1 30)
                      (gen/vector (ext-gen/string-ascii 1 30) 1 2)))
 
@@ -176,8 +176,7 @@
   (ext-gen/model-gen c/->Organization
                      (gen/return :distribution-center)
                      org-names
-                     ;; ECHO10 mapping breaks with more than one contact
-                     (ext-gen/nil-if-empty (gen/vector contact-persons 0 1))))
+                     (gen/vector contact-persons 1 3)))
 
 (def related-url-types
   (gen/elements ["GET DATA" "GET RELATED VISUALIZATION" "VIEW RELATED INFORMATION"]))

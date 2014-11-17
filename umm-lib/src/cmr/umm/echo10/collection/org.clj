@@ -2,6 +2,7 @@
   "Archive and Processing Center elements of echo10 are mapped umm organization elements."
   (:require [clojure.data.xml :as x]
             [clojure.string :as str]
+            [cmr.common.util :as util]
             [cmr.common.xml :as cx]
             [cmr.umm.collection :as c]
             [cmr.umm.echo10.collection.personnel :as pe]
@@ -11,7 +12,7 @@
   "Return organizations for the contacts in the parsed xml structure."
   [contact-elements]
   (for [contact-element contact-elements]
-    (let [role (keyword (cx/string-at-path contact-element [:Role]))
+    (let [role (cx/string-at-path contact-element [:Role])
           org-name (cx/string-at-path contact-element [:OrganizationName])
           personnel (pe/xml-elem->personnel contact-element)]
       (c/map->Organization {:org-type role
@@ -56,7 +57,70 @@
   [orgs]
   (generate-center :processing-center orgs))
 
+(defn- generate-contact-phones
+  "Returns the Phone entries for the given organization."
+  [org]
+  (x/element :OrganizationPhones {}
+             (for [person (:personnel org)
+                   phone (:phones person)]
+               (let [{:keys [number number-type]} phone]
+                 (x/element :Phone {}
+                            (x/element :Number {} number)
+                            (x/element :Type {} number-type))))))
 
+(defn- generate-contact-addresses
+  "Returns the Address entries for the given organization."
+  [org]
+  (x/element :OrganizationAddresses {}
+             (for [person (:personnel org)
+                   address (:addresses person)]
+                 (let [{:keys [city country state-province postal-code
+                               street-address-lines]} address]
+                   (x/element :Address {}
+                              (x/element :StreetAddress {}
+                                         (util/trunc (str/join "\n" street-address-lines) 1024))
+                              (x/element :City {} city)
+                              (x/element :StateProvince {} state-province)
+                              (x/element :PostalCode {} postal-code)
+                              (x/element :Country {} country))))))
+
+(defn- generate-contact-emails
+  "Returns the Email entries for the given organization."
+  [org]
+  (x/element :OrganizationEmails {}
+             (for [person (:personnel org)
+                   email (:emails person)]
+                   (x/element :Email {} email))))
+
+(defn- generate-contact-persons
+  "Returns the ContactPersons entry for the given organization."
+  [org]
+  (x/element :ContactPersons {}
+             (for [person (:personnel org)]
+               (let [{:keys [first-name middle-name last-name]} person]
+                 (x/element :ContactPerson {}
+                            (when first-name
+                              (x/element :FirstName {} first-name))
+                            (when middle-name
+                              (x/element :MiddleName {} middle-name))
+                            (when last-name
+                              (x/element :LastName {} last-name)))))))
+
+(defn generate-contacts
+  "Return Contacts from the organizations that are not archive centers or processing centers."
+  [orgs]
+  (x/element :Contacts {}
+             (for [org orgs
+                   :when (and (not= :archive-center (:org-type org))
+                              (not= :processing-center (:org-type org)))]
+               (let [{:keys [org-type org-name]} org]
+                 (x/element :Contact {}
+                            (x/element :Role {} (name org-type))
+                            (x/element :OrganizationName {} org-name)
+                            (generate-contact-emails org)
+                            (generate-contact-addresses org)
+                            (generate-contact-phones org)
+                            (generate-contact-persons org))))))
 
 (comment
   ;;;;;;;;;
