@@ -52,6 +52,10 @@
         (assoc :organizations organizations)
         ;; ECHO10 OnlineResources' title is built as description plus resource-type
         (assoc :related-urls related-urls)
+        ;; We don't use these two fields during xml generation as they are not needed for ECHO10
+        ;; so we set them to the defaults here.
+        (assoc :contact-email "support@earthdata.nasa.gov")
+        (assoc :contact-name "undefined")
         umm-c/map->UmmCollection)))
 
 (defspec generate-collection-is-valid-xml-test 100
@@ -116,6 +120,36 @@
         <PeriodCycleDurationValue>7</PeriodCycleDurationValue>
       </PeriodicDateTime>
     </Temporal>
+    <Contacts>
+      <Contact>
+        <Role>INVESTIGATOR</Role>
+        <OrganizationName>Undefined</OrganizationName>
+        <OrganizationAddresses>
+        <Address>
+          <StreetAddress>Laboratory for Hydrospheric Processes Cryospheric Sciences Branch NASA/Goddard Space Flight Center Code 614 </StreetAddress>
+          <City>Greenbelt</City>
+          <StateProvince>MD</StateProvince>
+          <PostalCode>20771</PostalCode>
+          <Country>USA</Country>
+        </Address>
+        </OrganizationAddresses>
+        <OrganizationPhones>
+        <Phone>
+        <Number>301 614-5708</Number>
+        <Type>Telephone</Type>
+        </Phone>
+        </OrganizationPhones>
+        <OrganizationEmails>
+        <Email>josefino.c.comiso@nasa.gov</Email>
+        </OrganizationEmails>
+        <ContactPersons>
+          <ContactPerson>
+            <FirstName>JOSEPHINO 'JOEY'</FirstName>
+            <LastName>COMISO</LastName>
+          </ContactPerson>
+        </ContactPersons>
+      </Contact>
+    </Contacts>
     <ScienceKeywords>
       <ScienceKeyword>
         <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
@@ -398,7 +432,9 @@
                         :org-name "SEDAC PC"})
                      (umm-c/map->Organization
                        {:type :archive-center
-                        :org-name "SEDAC AC"})]})
+                        :org-name "SEDAC AC"})]
+                    :contact-email "josefino.c.comiso@nasa.gov"
+                    :contact-name "JOSEPHINO 'JOEY' COMISO"})
         actual (c/parse-collection all-fields-collection-xml)]
     (is (= expected actual))))
 

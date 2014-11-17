@@ -46,6 +46,8 @@
                                            :single-date-times single-date-times
                                            :periodic-date-times []})))
         organizations (seq (filter #(not (= :distribution-center (:type %))) (:organizations coll)))
+        org-name (some :org-name organizations)
+        contact-name (or org-name "undefined")
         associated-difs (when (first associated-difs) [(first associated-difs)])]
     (-> coll
         ;; SMAP ISO does not have entry-id and we generate it as concatenation of short-name and version-id
@@ -82,6 +84,10 @@
         (dissoc :related-urls)
         ;; SMAP ISO does not support two-d-coordinate-systems
         (dissoc :two-d-coordinate-systems)
+        ;; We don't use these two fields during xml generation as they are not needed for ISO
+        ;; so we set them to the defaults here.
+        (assoc :contact-email "support@earthdata.nasa.gov")
+        (assoc :contact-name contact-name)
         umm-c/map->UmmCollection)))
 
 (defspec generate-collection-is-valid-xml-test 100
@@ -144,7 +150,8 @@
                      (umm-c/map->Organization
                        {:type :archive-center
                         :org-name "Alaska Satellite Facility"})]
-                    })
+                    :contact-email "support@earthdata.nasa.gov"
+                    :contact-name "National Aeronautics and Space Administration (NASA)"})
         actual (c/parse-collection sample-collection-xml)]
     (is (= expected actual))))
 

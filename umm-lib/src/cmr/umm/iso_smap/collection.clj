@@ -56,6 +56,41 @@
                  [:citation :CI_Citation :identifier :MD_Identifier :code :CharacterString])]
     (when dif-id [dif-id])))
 
+(defn- xml-elem->contact-name
+  "Returns the contact name from a parsed IdentificationInfo XML structure"
+  [xml-struct]
+  (let [person-name (cx/string-at-path xml-struct [:pointOfContact
+                                                   :CI_ResponsibleParty
+                                                   :individualName
+                                                   :CharacterString])
+        org-name (or (cx/string-at-path xml-struct [:citation
+                                                    :CI_Citation
+                                                    :citedResponsibleParty
+                                                    :CI_ResponsibleParty
+                                                    :organisationName
+                                                    :CharacterString])
+                     (cx/string-at-path xml-struct [:pointOfContact
+                                                    :CI_ResponsibleParty
+                                                    :organisationName
+                                                    :CharacterString]))
+        contact-name (or person-name org-name)]
+    (if contact-name
+      contact-name
+      "undefined")))
+
+(defn- xml-elem->email
+  "Returns the contact email from a parsed IdentificationInfo XML structure"
+  [xml-struct]
+  (or (cx/string-at-path xml-struct [:pointOfContact
+                                     :CI_ResponsibleParty
+                                     :contactInfo
+                                     :CI_Contact
+                                     :address
+                                     :CI_Address
+                                     :electronicMailAddress
+                                     :CharacterString])
+      "support@earthdata.nasa.gov"))
+
 (defn- xml-elem->Collection
   "Returns a UMM Product from a parsed Collection XML structure"
   [xml-struct]
@@ -78,7 +113,10 @@
        :spatial-coverage (spatial/xml-elem->SpatialCoverage xml-struct)
        :organizations (org/xml-elem->Organizations id-elems)
        :associated-difs (xml-elem->associated-difs id-elems)
-       })))
+       :contact-email (some #(xml-elem->email %)
+                            id-elems)
+       :contact-name (some #(xml-elem->contact-name %)
+                           id-elems)})))
 
 (defn parse-collection
   "Parses ISO XML into a UMM Collection record."

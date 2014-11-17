@@ -2,7 +2,7 @@
   "Contains functions for parsing and generating the MENDS ISO dialect."
   (:require [clojure.data.xml :as x]
             [clojure.java.io :as io]
-            [clojure.string :as s]
+            [clojure.string :as str]
             [clj-time.core :as time]
             [cmr.common.xml :as cx]
             [cmr.umm.iso-mends.core :as core]
@@ -65,8 +65,37 @@
   (let [constraints (cx/strings-at-path id-elem [:resourceConstraints :MD_LegalConstraints
                                                  :otherConstraints :CharacterString])
         restriction (first (filter (partial re-find #"Restriction Flag:") constraints))
-        restriction-flag (when restriction (s/replace restriction #"Restriction Flag:" ""))]
+        restriction-flag (when restriction (str/replace restriction #"Restriction Flag:" ""))]
     (when (seq restriction-flag) (Double. restriction-flag))))
+
+(defn- xml-elem->contact-name
+  "Returns the contact name from a parsed IdentificationInfo XML structure"
+  [xml-struct]
+  (let [person-name (cx/string-at-path xml-struct [:pointOfContact
+                                                   :CI_ResponsibleParty
+                                                   :individualName
+                                                   :CharacterString])
+        org-name (cx/string-at-path xml-struct [:pointOfContact
+                                                :CI_ResponsibleParty
+                                                :organisationName
+                                                :CharacterString])
+        contact-name (or person-name org-name)]
+    (if contact-name
+      contact-name
+      "undefined")))
+
+(defn- xml-elem->email
+  "Returns the contact email from a parsed IdentificationInfo XML structure"
+  [xml-struct]
+  (or (cx/string-at-path xml-struct [:pointOfContact
+                                     :CI_ResponsibleParty
+                                     :contactInfo
+                                     :CI_Contact
+                                     :address
+                                     :CI_Address
+                                     :electronicMailAddress
+                                     :CharacterString])
+      "support@earthdata.nasa.gov"))
 
 (defn- xml-elem->Collection
   "Returns a UMM Product from a parsed Collection XML structure"
@@ -96,7 +125,8 @@
        ; :spatial-coverage (xml-elem->SpatialCoverage xml-struct)
        :organizations (org/xml-elem->Organizations xml-struct)
        :associated-difs (dif/xml-elem->associated-difs id-elem)
-       })))
+       :contact-email (xml-elem->email id-elem)
+       :contact-name (xml-elem->contact-name id-elem)})))
 
 (defn parse-collection
   "Parses ISO XML into a UMM Collection record."

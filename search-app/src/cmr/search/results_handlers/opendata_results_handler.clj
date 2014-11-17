@@ -3,6 +3,7 @@
   (:require [cmr.search.data.elastic-results-to-query-results :as elastic-results]
             [cmr.search.data.elastic-search-index :as elastic-search-index]
             [cmr.search.services.query-service :as qs]
+            [cmr.search.results-handlers.opendata-spatial-results-handler :as opendata-spatial]
             [clojure.walk :as walk]
             [clojure.string :as str]
             [clojure.set :as set]
@@ -30,6 +31,9 @@
   "opendata language code for NASA data"
   "en-US")
 
+(def ACCESS_LEVEL
+  "public")
+
 (defmethod elastic-search-index/concept-type+result-format->fields [:collection :opendata]
   [concept-type query]
   ;; TODO add spatial, etc.
@@ -45,6 +49,10 @@
    "related-urls"
    "start-date"
    "end-date"
+   "ords-info"
+   "ords"
+   "contact-email"
+   "contact-name"
    ;; needed for acl enforcment
    "access-value"
    "provider-id"
@@ -65,6 +73,10 @@
           [access-url] :access-url
           related-urls :related-urls
           [entry-title] :entry-title
+          ords-info :ords-info
+          ords :ords
+          [contact-email] :contact-email
+          [contact-name] :contact-name
           [start-date] :start-date
           [end-date] :end-date} :fields} elastic-result
         start-date (when start-date (str/replace (str start-date) #"\+0000" "Z"))
@@ -79,19 +91,15 @@
      :access-url (ru/related-urls->opendata-access-url related-urls)
      :related-urls related-urls
      :project-sn project-sn
+     :shapes (srl/ords-info->shapes ords-info ords)
+     :contact-email contact-email
+     :contact-name contact-name
      :start-date start-date
      :end-date end-date
      :provider-id provider-id
      :access-value access-value ;; needed for acl enforcment
      :keywords science-keywords-flat
      :entry-title entry-title}))
-
-(defn short-name->access-level
-  "Return the access-level value based on the given short-name."
-  [short-name]
-  (if (and short-name (re-find #"AST" short-name))
-    "restricted public"
-    "public"))
 
 (defn temporal
   "Get the temporal field from the start-date and end-date"
@@ -102,6 +110,12 @@
   (not-empty (if (and start-date end-date)
                (str start-date "/" end-date)
                start-date)))
+
+(defn spatial
+  "Get the spatial field from the spatial elements of the collection."
+  [spatial pretty?]
+  (opendata-spatial/shapes->json spatial pretty?))
+
 
 (defn distribution
   "Creates the distribution field for the collection with the given related-urls."
@@ -125,34 +139,28 @@
 
 (defn result->opendata
   "Converts a search result item to opendata."
-  [context concept-type item]
+  [context concept-type pretty? item]
   (let [{:keys [id summary short-name project-sn update-time insert-time provider-id access-value
                 keywords entry-title opendata-format start-date end-date
-                related-urls]} item
+                related-urls contact-name contact-email shapes]} item
         related-urls (map #(json/decode % true) related-urls)]
     (util/remove-nil-keys {:title entry-title
                            :description summary
                            :keyword keywords
                            :modified update-time
                            :publisher PUBLISHER
-                           ;; TODO :conctactPoint
-                           ;; TODO :mbox
+                           :contactPoint contact-name
+                           :mbox contact-email
                            :identifier id
-                           :accessLevel (short-name->access-level short-name)
+                           :accessLevel ACCESS_LEVEL
                            :bureauCode [BUREAU_CODE]
                            :programCode [PROGRAM_CODE]
-                           ;; TODO :accessLevelComment :access-constraints
                            :accessURL (:url (first (ru/downloadable-urls related-urls)))
                            :format opendata-format
-                           ;; TODO :spatial
+                           :spatial (spatial shapes pretty?)
                            :temporal (temporal start-date end-date)
                            :theme (not-empty (str/join "," project-sn))
                            :distribution (distribution related-urls)
-                           ;; TODO :accrualPeriodicity - this maps to MaintenanceAndUpdateFrequency
-                           ;; in ECHO, but MaintenanceAndUpdateFrequency is not mapped to UMM-C
-                           ;; yet. This is an expanded (not required) field, so it may not be
-                           ;; needed.
-                           ;; TODO figure out what landingPage should be
                            :landingPage (landing-page related-urls)
                            :language  [LANGUAGE_CODE]
                            :references (not-empty (map :url related-urls))
@@ -160,13 +168,13 @@
 
 (defn results->opendata
   "Convert search results to opendata."
-  [context concept-type results]
+  [context concept-type pretty? results]
   (let [{:keys [items]} results]
-    (map (partial result->opendata context concept-type) items)))
+    (map (partial result->opendata context concept-type pretty?) items)))
 
 (defmethod qs/search-results->response :opendata
   [context query results]
   (let [{:keys [concept-type pretty? result-features]} query
         response-results (results->opendata
-                           context concept-type results)]
+                           context concept-type pretty? results)]
     (json/generate-string response-results {:pretty pretty?})))

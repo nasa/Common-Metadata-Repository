@@ -169,7 +169,9 @@
          minimal-coll {:entry-id (str (:short-name product) "_" (:version-id product))
                        :entry-title (str (:long-name product) " " (:version-id product))
                        :product product
-                       :data-provider-timestamps data-provider-timestamps}
+                       :data-provider-timestamps data-provider-timestamps
+                       :contact-email "support@earthdata.nasa.gov"
+                       :contact-name "undefined"}
          attribs (select-keys attribs (concat (util/record-fields UmmCollection) [:concept-id :revision-id]))
          attribs (merge minimal-coll temporal attribs)]
      (c/map->UmmCollection attribs))))

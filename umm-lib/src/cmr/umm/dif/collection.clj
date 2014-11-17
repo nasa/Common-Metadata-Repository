@@ -52,6 +52,17 @@
         {:insert-time (t/string->datetime insert-time)
          :update-time (t/string->datetime update-time)}))))
 
+(defn- xml-elem->contact-name
+  "Returns the contact name from a parsed Collection XML structure"
+  [xml-struct]
+  (let [last-name (or (cx/string-at-path xml-struct [:Personnel :Last_Name])
+                      (cx/string-at-path xml-struct [:DataCenter :Personnel :Last_Name]))
+        first-name (or (cx/string-at-path xml-struct [:Personnel :First_Name])
+                       (cx/string-at-path xml-struct [:DataCenter :Personnel :First_Name]))]
+    (if (and first-name last-name)
+      (str first-name " " last-name)
+      "undefined")))
+
 (defn- xml-elem->Collection
   "Returns a UMM Product from a parsed Collection XML structure"
   [xml-struct]
@@ -70,7 +81,11 @@
      :projects (pj/xml-elem->Projects xml-struct)
      :related-urls (ru/xml-elem->RelatedURLs xml-struct)
      :spatial-coverage (sc/xml-elem->SpatialCoverage xml-struct)
-     :organizations (org/xml-elem->Organizations xml-struct)}))
+     :organizations (org/xml-elem->Organizations xml-struct)
+     :contact-email (or (cx/string-at-path xml-struct [:Personnel :Email])
+                        (cx/string-at-path xml-struct [:DataCenter :Personnel :Email])
+                        "support@earthdata.nasa.gov")
+     :contact-name (xml-elem->contact-name xml-struct)}))
 
 (defn parse-collection
   "Parses DIF XML into a UMM Collection record."
