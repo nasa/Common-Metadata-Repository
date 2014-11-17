@@ -11,7 +11,7 @@
 
 (def CARTESIAN_SRS
   ;; TODO - replace this with the correct value
-  "EPSG:4326")
+  "EPSG:9825")
 
 (def GEODETIC_SRS
   ;; WGS-84
@@ -43,7 +43,10 @@
     (points-map->points-str line))
   (shape->gml
     [line]
-    (x/element :gml:LineString {} (shape->string line)))
+    (let [srs-name (if (= :geodetic (:coordinate-system line))
+                     GEODETIC_SRS
+                     CARTESIAN_SRS)]
+      (x/element :gml:LineString {:srsName srs-name} (shape->string line))))
 
   cmr.spatial.mbr.Mbr
   (shape->string
@@ -72,14 +75,17 @@
 
   cmr.spatial.polygon.Polygon
   (shape->gml
-    [{:keys [rings]}]
-    (x/element :gml:Polygon {}
-               (x/element :gml:outerBoundaryIs {}
-                          (shape->gml (first rings)))
-               (when-let [holes (rest rings)]
-                 (x/element :gml:innerBoundaryIs {}
-                            (for [ring holes]
-                              (shape->gml ring)))))))
+    [{:keys [rings] :as shape}]
+    (let [srs-name (if (= :geodetic (:coordinate-system shape))
+                     GEODETIC_SRS
+                     CARTESIAN_SRS)]
+      (x/element :gml:Polygon {:srsName srs-name}
+                 (x/element :gml:outerBoundaryIs {}
+                            (shape->gml (first rings)))
+                 (when-let [holes (rest rings)]
+                   (x/element :gml:innerBoundaryIs {}
+                              (for [ring holes]
+                                (shape->gml ring))))))))
 
 (defn shapes->json
   "Returns the json representation of the given shapes"

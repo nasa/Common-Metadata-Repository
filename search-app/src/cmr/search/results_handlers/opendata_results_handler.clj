@@ -146,7 +146,7 @@
         related-urls (map #(json/decode % true) related-urls)]
     (util/remove-nil-keys {:title entry-title
                            :description summary
-                           :keyword keywords
+                           :keyword (not-empty keywords)
                            :modified update-time
                            :publisher PUBLISHER
                            :contactPoint contact-name
@@ -160,7 +160,7 @@
                            :spatial (spatial shapes pretty?)
                            :temporal (temporal start-date end-date)
                            :theme (not-empty (str/join "," project-sn))
-                           :distribution (distribution related-urls)
+                           :distribution (seq (distribution related-urls))
                            :landingPage (landing-page related-urls)
                            :language  [LANGUAGE_CODE]
                            :references (not-empty (map :url related-urls))

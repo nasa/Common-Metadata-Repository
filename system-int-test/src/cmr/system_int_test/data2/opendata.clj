@@ -15,6 +15,7 @@
             [cheshire.core :as json]
             [cmr.common.util :as util]
             [cmr.search.results-handlers.opendata-results-handler :as odrh]
+            [cmr.indexer.data.concepts.science-keyword :as sk]
             [cmr.umm.related-url-helper :as ru]
             [cmr.umm.start-end-date :as sed])
   (:import cmr.umm.collection.UmmCollection
@@ -31,7 +32,6 @@
   (let [{:keys [short-name keywords project-sn summary entry-title
                 access-value concept-id related-urls contact-name contact-email]} collection
         spatial-representation (get-in collection [:spatial-coverage :spatial-representation])
-        coordinate-system (when spatial-representation (csk/->SNAKE_CASE_STRING spatial-representation))
         update-time (get-in collection [:data-provider-timestamps :update-time])
         insert-time (get-in collection [:data-provider-timestamps :insert-time])
         temporal (:temporal collection)
@@ -41,24 +41,27 @@
         end-date (when end-date (str/replace (str end-date) #"\.000Z" "Z"))
         shapes (map (partial umm-s/set-coordinate-system spatial-representation)
                     (get-in collection [:spatial-coverage :geometries]))]
-    (util/remove-nil-keys {:identifier concept-id
+    (util/remove-nil-keys {:title entry-title
                            :description summary
-                           :accessLevel "public"
-                           :accessURL (ru/related-urls->opendata-access-url related-urls)
-                           :references (not-empty (map :url related-urls))
-                           :programCode [odrh/PROGRAM_CODE]
-                           :bureauCode [odrh/BUREAU_CODE]
-                           :publisher odrh/PUBLISHER
-                           :language [odrh/LANGUAGE_CODE]
-                           :landingPage (odrh/landing-page concept-id)
-                           :title entry-title
-                           :distribution (odrh/distribution related-urls)
+                           :keyword (sk/flatten-science-keywords collection)
                            :modified (str update-time)
-                           :issued (str insert-time)
-                           :temporal (odrh/temporal start-date end-date)
-                           :spatial (odrh/spatial shapes false)
+                           :publisher odrh/PUBLISHER
+                           :contactPoint contact-name
                            :mbox contact-email
-                           :contactPoint contact-name})))
+                           :identifier concept-id
+                           :accessLevel "public"
+                           :bureauCode [odrh/BUREAU_CODE]
+                           :programCode [odrh/PROGRAM_CODE]
+                           :accessURL (ru/related-urls->opendata-access-url related-urls)
+                           :format "B"
+                           :spatial (odrh/spatial shapes false)
+                           :temporal (odrh/temporal start-date end-date)
+                           :theme (not-empty (str/join "," project-sn))
+                           :distribution (not-empty (odrh/distribution related-urls))
+                           :landingPage (odrh/landing-page concept-id)
+                           :language [odrh/LANGUAGE_CODE]
+                           :references (not-empty (map :url related-urls))
+                           :issued (str insert-time)})))
 
 (defn collections->expected-opendata
   [collections]
