@@ -173,7 +173,6 @@
                                  (for [temporal-keyword temporal-keywords]
                                    (x/element :Keyword {} temporal-keyword))))
                     (t/generate-temporal temporal)
-                    (org/generate-contacts organizations)
                     (sk/generate-science-keywords science-keywords)
                     (platform/generate-platforms platforms)
                     (psa/generate-product-specific-attributes product-specific-attributes)

@@ -4,7 +4,6 @@
             [clojure.java.io :as io]
             [clojure.string :as s]
             [clj-time.core :as time]
-            [cmr.common.util :as util]
             [cmr.common.xml :as cx]
             [cmr.umm.iso-mends.core :as core]
             [cmr.umm.collection :as c]
@@ -19,6 +18,11 @@
             [cmr.umm.iso-mends.collection.helper :as h])
   (:import cmr.umm.collection.UmmCollection))
 
+(defn trunc
+  "Returns the given string truncated to n characters."
+  [s n]
+  (subs s 0 (min (count s) n)))
+
 (defn- xml-elem->Product
   "Returns a UMM Product from a parsed XML structure"
   [id-elem]
@@ -28,7 +32,7 @@
         long-name (cx/string-at-path
                     id-elem
                     [:citation :CI_Citation :identifier :MD_Identifier :description :CharacterString])
-        long-name (util/trunc long-name 1024)
+        long-name (trunc long-name 1024)
         version-id (cx/string-at-path id-elem [:citation :CI_Citation :edition :CharacterString])
         processing-level-id (cx/string-at-path
                               id-elem

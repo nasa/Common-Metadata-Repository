@@ -27,64 +27,77 @@
 (defn- xml-elem->emails
   "Return a list of emails for the parsed xml structure."
   [contact-element]
-  (cx/strings-at-path contact-element [:OrganizationEmails :Email]))
+  (strings-at-path contact-element [:OrganizatonEmails :Email]))
 
 (defn- xml-elem->addresses
   "Return a list of Addresses for the parsed xml structure."
   [contact-element]
-  (for [address-element (cx/elements-at-path contact-element [:OrganizationAddresses :Address])]
-    (let [city (cx/string-at-path address-element [:City])
-          country (cx/string-at-path address-element [:Country])
-          postal-code (cx/string-at-path address-element [:PostalCode])
-          state-province (cx/string-at-path address-element [:StateProvince])
-          street-address-lines [(cx/string-at-path address-element [:StreetAddress])]]
-      (c/map->Address {:city city
-                       :country country
-                       :postal-code postal-code
-                       :state-province state-province
-                       :street-address-lines street-address-lines}))))
+  (for [address-element (cx/elements-at-path contact-element [:OrganizatonAddresses :Address])
+        city (cx/string-at-path address-element [:City])
+        country (cx/string-at-path address-element [:Country])
+        postal-code (cx/string-at-path address-element [:PostalCode])
+        state-province (cx/string-at-path address-element [:StateProvince])
+        street-address-lines [(string-at-path address-element [:StreetAddress])]]
+    (c/map->Address {:city city
+                     :country country
+                     :postal-code postal-code
+                     :state-province state-province
+                     :street-address-lines street-address-lines})))
 
-(comment
-
-  ; (cmr.common.dev.capture-reveal/reveal contact-element)
-
-  ; (let [x #clojure.data.xml.Element{:tag :Contact, :attrs {}, :content (#clojure.data.xml.Element{:tag :Role, :attrs {}, :content ("distribution-center")} #clojure.data.xml.Element{:tag :OrganizationName, :attrs {}, :content ("!")} #clojure.data.xml.Element{:tag :OrganizationEmails, :attrs {}, :content ()} #clojure.data.xml.Element{:tag :OrganizationAddresses, :attrs {}, :content (#clojure.data.xml.Element{:tag :Address, :attrs {}, :content (#clojure.data.xml.Element{:tag :StreetAddress, :attrs {}, :content ("!")} #clojure.data.xml.Element{:tag :City, :attrs {}, :content ("!")} #clojure.data.xml.Element{:tag :StateProvince, :attrs {}, :content ("!")} #clojure.data.xml.Element{:tag :PostalCode, :attrs {}, :content ("!")} #clojure.data.xml.Element{:tag :Country, :attrs {}, :content ("!")})})} #clojure.data.xml.Element{:tag :OrganizationPhones, :attrs {}, :content (#clojure.data.xml.Element{:tag :Phone, :attrs {}, :content (#clojure.data.xml.Element{:tag :Number, :attrs {}, :content ("!")} #clojure.data.xml.Element{:tag :Type, :attrs {}, :content ("!")})})} #clojure.data.xml.Element{:tag :ContactPersons, :attrs {}, :content (#clojure.data.xml.Element{:tag :ContactPerson, :attrs {}, :content (#clojure.data.xml.Element{:tag :FirstName, :attrs {}, :content ("!")} #clojure.data.xml.Element{:tag :LastName, :attrs {}, :content ("!")})})})}
-  ;       y (cx/elements-at-path x [:OrganizationAddresses :Address])]
-  ;   y)
-
-  ; (cmr.common.dev.capture-reveal/reveal addresses)
-
-  ; (let [x (cmr.common.dev.capture-reveal/reveal contact-element)]
-  ;       (for [a (cx/elements-at-path x [:OrganizationAddresses :Address])]
-  ;         (let [city (cx/string-at-path a [:City])]
-  ;           {:city city})))
-
-
-  )
-
-
-
-(defn xml-elem->personnel
+(defn- xml-elem->personnel
   "Return a list of ContactPersons for the parsed xml structure."
-  [contact-element]
-  ;; Note: ECHO10 splits the emails, phones, addresses out from the contact persons list, so it is
-  ;; in theory impossible to know which contact person is associated with which email, phone, etc.
-  ;; In practice, there seems to be only one contact person listed per collection, so we
-  ;; associate all email, phones, etc. with that one contact.
-  (let [role (cx/string-at-path contact-element [:Role])
+  [collection-element]
+  (for [contact-element (cx/elements-at-path contact-element [:Contacts])]
+        (let [role (cx/string-at-path contact-element [:Role])
         first-name (cx/string-at-path contact-element [:ContactPersons :ContactPerson :FirstName])
         last-name (cx/string-at-path contact-element [:ContactPersons :ContactPerson :LastName])
         middle-name (cx/string-at-path contact-element [:ContactPersons :ContactPerson :MiddleName])
         addresses (xml-elem->addresses contact-element)
         emails (xml-elem->emails contact-element)
         phones (xml-elem->phones contact-element)]
-    [(c/map->ContactPerson {:first-name first-name
+          (c/map->ContactPerson {
+
+
+
+
+ roles
+
+   ;; This entity contains the address details for each contact.
+   addresses
+
+   ;; The list of addresses of the electronic mailbox of the organization or individual.
+   emails
+
+   ;; First name of the individual which the contact applies.
+   first-name
+
+   ;; Last name of the individual which the contact applies.
+   last-name
+
+   ;; Middle name of the individual which the contact applies.
+   middle-name
+
+   ;; The list of telephone details associated with the contact.
+   phones
+
+
+(defn xml-elem->personnels
+  [collection-element]
+  (let [pe (cx/element-at-path collection-element [:Personnel])
+        roles (cx/strings-at-path pe [:Role])
+        first-name (cx/string-at-path pe [:First_Name])
+        middle-name (cx/string-at-path pe [:Middle_Name])
+        last-name (cx/string-at-path pe [:Last_Name])
+        emails (cx/strings-at-path pe [:Email])
+        phones (cx/strings-at-path pe [:Phone])
+        addresses (map xml-elem->Address (cx/elements-at-path pe [:Contact_Address]))]
+    [(c/map->ContactPerson {:roles roles
+                            :first-name first-name
                             :middle-name middle-name
                             :last-name last-name
-                            :roles [role]
                             :addresses (seq addresses)
-                            :emails (seq emails)
-                            :phones (seq phones)})]))
+                            :phones (seq (map #(c/->Phone % nil) phones))
+                            :emails (seq emails)})]))
 
 (defn generate-address
   [address]
@@ -109,6 +122,8 @@
                  (let [{:keys [roles first-name middle-name last-name emails phones address]} contact]
                    (x/element :Contact {}
                               (x/element :Role {} (first roles))
+
+
                               (let [person (first personnel)
                                     {:keys [roles first-name middle-name last-name emails phones addresses]} person]
                                 (x/element :Personnel {}

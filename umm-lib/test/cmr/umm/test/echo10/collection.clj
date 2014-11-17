@@ -36,28 +36,13 @@
         browse-urls (ru/browse-urls related-urls)]
     (seq (concat downloadable-urls resource-urls browse-urls))))
 
-(defn- fix-contact-roles
-  "Fix the roles for organizations that represent Contacts."
-  [org]
-  (let [role (:org-type org)
-        persons (map (fn [p]
-                       (assoc p :roles [role]))
-                     (:personnel org))]
-    (assoc org :personnel persons)))
-
 (defn umm->expected-parsed-echo10
   "Modifies the UMM record for testing ECHO10. ECHO10 contains a subset of the total UMM fields so certain
-  fields are removed for comparison to the parsed record"
+  fields are removed for comparison of the parsed record"
   [coll]
   (let [{{:keys [short-name long-name version-id]} :product} coll
         entry-id (str short-name "_" version-id)
-        organizations (map (fn [org]
-                             (let [org-type (:org-type org)]
-                               (assoc org :org-type (name org-type))))
-                           (:organizations coll))
-        organizations (map fix-contact-roles organizations)
-
-        ;organizations (seq (filter #(not= :distribution-center (:type %)) (:organizations coll)))
+        organizations (seq (filter #(not= :distribution-center (:type %)) (:organizations coll)))
         related-urls (umm-related-urls->expected-related-urls (:related-urls coll))]
     (-> coll
         ;; ECHO10 does not have entry-id and we generate it as concatenation of short-name and version-id
@@ -76,25 +61,13 @@
         (> (count xml) 0)
         (= 0 (count (c/validate-xml xml)))))))
 
-(defspec generate-and-parse-collection-test 1
+(defspec generate-and-parse-collection-test 100
   (for-all [collection coll-gen/collections]
     (let [{{:keys [short-name version-id]} :product} collection
           xml (echo10/umm->echo10-xml collection)
           parsed (c/parse-collection xml)
           expected-parsed (umm->expected-parsed-echo10 collection)]
       (= parsed expected-parsed))))
-
-
-(comment
-
-  (let [x #cmr.umm.collection.UmmCollection{:entry-id "0", :entry-title "0", :summary "0", :product #cmr.umm.collection.Product{:short-name "0", :long-name "0", :version-id "0", :processing-level-id nil, :collection-data-type nil}, :access-value nil, :data-provider-timestamps #cmr.umm.collection.DataProviderTimestamps{:insert-time #=(org.joda.time.DateTime. 0), :update-time #=(org.joda.time.DateTime. 0), :delete-time nil}, :spatial-keywords nil, :temporal-keywords nil, :temporal #cmr.umm.collection.Temporal{:time-type nil, :date-type nil, :temporal-range-type nil, :precision-of-seconds nil, :ends-at-present-flag nil, :range-date-times [#cmr.umm.collection.RangeDateTime{:beginning-date-time #=(org.joda.time.DateTime. 0), :ending-date-time nil}], :single-date-times [], :periodic-date-times []}, :science-keywords [#cmr.umm.collection.ScienceKeyword{:category "0", :topic "0", :term "0", :variable-level-1 "0", :variable-level-2 nil, :variable-level-3 nil, :detailed-variable nil}], :platforms nil, :product-specific-attributes nil, :projects nil, :two-d-coordinate-systems nil, :related-urls nil, :organizations (#cmr.umm.collection.Organization{:org-type :distribution-center, :org-name "!", :personnel [#cmr.umm.collection.ContactPerson{:roles ["Investigator"], :addresses [#cmr.umm.collection.Address{:city "!", :country "!", :postal-code "!", :state-province "!", :street-address-lines ["!"]}], :emails nil, :first-name "!", :last-name "!", :middle-name nil, :phones [#cmr.umm.collection.Phone{:number "!", :number-type "!"}]}]}), :spatial-coverage nil, :associated-difs nil}]
-    (let [xml (echo10/umm->echo10-xml x)]
-      (println xml)
-      (c/validate-xml xml)
-      (println (umm->expected-parsed-echo10 x))
-      (println (c/parse-collection xml))))
-
-  )
 
 ;; This is a made-up include all fields collection xml sample for the parse collection test
 (def all-fields-collection-xml
@@ -143,36 +116,6 @@
         <PeriodCycleDurationValue>7</PeriodCycleDurationValue>
       </PeriodicDateTime>
     </Temporal>
-    <Contacts>
-      <Contact>
-          <Role>INVESTIGATOR</Role>
-          <OrganizationName>Undefined</OrganizationName>
-          <OrganizationAddresses>
-            <Address>
-              <StreetAddress>Laboratory for Hydrospheric Processes Cryospheric Sciences Branch NASA/Goddard Space Flight Center Code 614 </StreetAddress>
-              <City>Greenbelt</City>
-              <StateProvince>MD</StateProvince>
-              <PostalCode>20771</PostalCode>
-              <Country>USA</Country>
-            </Address>
-          </OrganizationAddresses>
-          <OrganizationPhones>
-            <Phone>
-              <Number>301 614-5708</Number>
-              <Type>Telephone</Type>
-            </Phone>
-          </OrganizationPhones>
-          <OrganizationEmails>
-            <Email>josefino.c.comiso@nasa.gov</Email>
-          </OrganizationEmails>
-          <ContactPersons>
-            <ContactPerson>
-              <FirstName>JOSEPHINO 'JOEY'</FirstName>
-              <LastName>COMISO</LastName>
-            </ContactPerson>
-          </ContactPersons>
-      </Contact>
-    </Contacts>
     <ScienceKeywords>
       <ScienceKeyword>
         <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
@@ -451,18 +394,11 @@
                     :associated-difs ["DIF-255" "DIF-256" "DIF-257"]
                     :organizations
                     [(umm-c/map->Organization
-                       {:org-type :processing-center
+                       {:type :processing-center
                         :org-name "SEDAC PC"})
                      (umm-c/map->Organization
-                       {:org-type :archive-center
-                        :org-name "SEDAC AC"})
-                     (umm-c/map->Organization
-                       {:org-type "INVESTIGATOR"
-                        :org-name "Undefined"
-                        :personnel (umm-c/map->ContactPerson {:roles ["INVESTIGATOR"]
-                                                              :first-name "JOSEPHINO 'JOEY'"
-                                                              :last-name "COMISO"
-                                                              :emails ["josefino.c.comiso@nasa.gov"]})})]})
+                       {:type :archive-center
+                        :org-name "SEDAC AC"})]})
         actual (c/parse-collection all-fields-collection-xml)]
     (is (= expected actual))))
 

@@ -11,7 +11,6 @@
             [clojure.string :as s]
             [cmr.common.joda-time]
             [cmr.common.date-time-parser :as p]
-            [cmr.common.util :as util]
             [cmr.umm.test.generators.collection :as coll-gen]
             [cmr.umm.dif.collection :as c]
             [cmr.umm.echo10.collection :as echo10-c]
@@ -89,7 +88,7 @@
         ;; DIF does not have short-name or long-name, so we assign them to be entry-id and entry-title respectively
         ;; long-name will only take the first 1024 characters of entry-title if entry-title is too long
         (assoc :product (umm-c/map->Product {:short-name entry-id
-                                             :long-name (util/trunc entry-title 1024)
+                                             :long-name (c/trunc entry-title 1024)
                                              :version-id version-id
                                              :processing-level-id processing-level-id
                                              :collection-data-type collection-data-type}))

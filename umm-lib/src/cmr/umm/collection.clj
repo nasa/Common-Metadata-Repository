@@ -120,11 +120,13 @@
    name
    ])
 
+(def organization-types [:archive-center :processing-center :distribution-center])
+
 ;; See CMR-202 issue description
 (defrecord Organization
   [
    ;; maps to Echo10 Collection/ArchiveCenter | Collection/ProcessingCenter element names
-   org-type
+   type
 
    ;; maps to Echo10 Collection/ArchiveCenter | Collection/ProcessingCenter element values
    org-name
