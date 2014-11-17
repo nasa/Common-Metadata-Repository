@@ -7,7 +7,6 @@
             [cmr.umm.collection :as c]
             [cmr.common.xml :as v]
             [cmr.umm.dif.collection.project :as pj]
-            [cmr.umm.dif.collection.personnel :as pe]
             [cmr.umm.dif.collection.related-url :as ru]
             [cmr.umm.dif.collection.science-keyword :as sk]
             [cmr.umm.dif.collection.org :as org]
@@ -59,7 +58,6 @@
   (c/map->UmmCollection
     {:entry-id (cx/string-at-path xml-struct [:Entry_ID])
      :entry-title (cx/string-at-path xml-struct [:Entry_Title])
-     :personnel (pe/xml-elem->personnel xml-struct)
      :summary (cx/string-at-path xml-struct [:Summary :Abstract])
      :product (xml-elem->Product xml-struct)
      :data-provider-timestamps (xml-elem->DataProviderTimestamps xml-struct)
@@ -92,13 +90,11 @@
     ([collection]
      (cmr.umm.dif.core/umm->dif-xml collection false))
     ([collection indent?]
-         ;(cmr.common.dev.capture-reveal/capture collection)
-
      (let [{{:keys [version-id processing-level-id collection-data-type]} :product
             {:keys [insert-time update-time]} :data-provider-timestamps
             :keys [entry-id entry-title summary temporal organizations science-keywords platforms
                    product-specific-attributes projects related-urls spatial-coverage
-                   temporal-keywords personnel]} collection
+                   temporal-keywords]} collection
            ;; DIF only has range-date-times, so we ignore the temporal field if it is not of range-date-times
            temporal (when (seq (:range-date-times temporal)) temporal)
            emit-fn (if indent? x/indent-str x/emit-str)]
@@ -109,8 +105,6 @@
                     (when version-id
                       (x/element :Data_Set_Citation {}
                                  (x/element :Version {} version-id)))
-                    (when (not-empty personnel)
-                      (pe/generate-personnel personnel))
                     (sk/generate-science-keywords science-keywords)
                     (t/generate-temporal temporal)
                     (sc/generate-spatial-coverage spatial-coverage)
@@ -136,17 +130,10 @@
                                                         :value processing-level-id}] false))
                     (when collection-data-type
                       (em/generate-extended-metadatas [{:name COLLECTION_DATA_TYPE_EXTERNAL_META_NAME
-                                                        :value collection-data-type}] false))
-                    (when-not (empty? personnel)
-                      )))))))
+                                                        :value collection-data-type}] false))))))))
 
 (defn validate-xml
   "Validates the XML against the DIF schema."
   [xml]
   (v/validate-xml (io/resource "schema/dif/dif.xsd") xml))
-
-; (let [x (cmr.common.dev.capture-reveal/reveal collection)
-;       xml (cmr.umm.dif.core/umm->dif-xml x)]
-;   (println xml)
-;   (validate-xml xml))
 

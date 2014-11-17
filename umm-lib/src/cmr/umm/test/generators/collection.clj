@@ -97,31 +97,6 @@
                      characterstic-units
                      characterstic-values))
 
-(def phones
-  (ext-gen/model-gen c/->Phone (ext-gen/string-ascii 1 23)
-                    (ext-gen/string-ascii 1 30)))
-
-(def addresses
-  (ext-gen/model-gen c/->Address (ext-gen/string-ascii 1 30)
-                     (ext-gen/string-ascii 1 30)
-                     (ext-gen/string-ascii 1 10)
-                     (ext-gen/string-ascii 1 30)
-                     (gen/vector (ext-gen/string-ascii 1 30) 1 2)))
-
-(def emails
-  (ext-gen/string-ascii 1 1024))
-
-(def contact-persons
-  (ext-gen/model-gen c/->ContactPerson (gen/elements ["Investigator"
-                                                "Technical Contact"
-                                                "Metadata Author"])
-                     (gen/vector addresses 1 3)
-                     (gen/vector emails 0 4)
-                     (ext-gen/string-ascii 1 30)
-                     (ext-gen/string-ascii 1 30)
-                     (ext-gen/string-ascii 1 30)
-                     (gen/vector phones 1 3)))
-
 (def platform-short-names
   (ext-gen/string-ascii 1 10))
 
@@ -221,7 +196,6 @@
                 :temporal-keywords (ext-gen/nil-if-empty (gen/vector (ext-gen/string-alpha-numeric 1 10) 0 4))
                 ;; DIF requires science-keyowrds to always exist, not ideal here for ECHO10. As science-keywords is optional for ECHO10
                 :science-keywords (gen/vector sk/science-keywords 1 3)
-                :personnel (gen/vector contact-persons 1 3)
                 :platforms (ext-gen/nil-if-empty (gen/vector platforms 0 4))
                 :product-specific-attributes (ext-gen/nil-if-empty (gen/vector psa/product-specific-attributes 0 10))
                 :projects (ext-gen/nil-if-empty (gen/vector campaigns 0 4))
