@@ -218,7 +218,7 @@
                           concept-id revision-id (pr-str (:errors data))))
             (error e (format "Error saving or indexing concept %s with revision %s. Message: %s"
                              concept-id revision-id (.getMessage e))))))
-      (catch Exception e
+      (catch Throwable e
         (error e (format "Error saving or indexing concept %s with revision %s. Message: %s"
                          concept-id revision-id (.getMessage e)))))))
 
@@ -355,7 +355,7 @@
                         concept-id revision-id (pr-str (:errors data))))
           (error e (format "Error deleting or unindexing concept %s with revision %s. Message: %s"
                            concept-id revision-id (.getMessage e))))))
-    (catch Exception e
+    (catch Throwable e
       (error e (format "Error deleting or unindexing concept %s with revision %s. Message: %s"
                        concept-id revision-id (.getMessage e))))))
 
