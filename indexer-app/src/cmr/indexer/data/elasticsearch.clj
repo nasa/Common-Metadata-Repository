@@ -252,12 +252,14 @@
   "Delete the document from Elasticsearch, raise error if failed."
   [context es-index es-type id revision-id ignore-conflict]
   ;; Cannot use elastisch for deletion as we require special headers on delete
-  (let [{:keys [host port admin-token]} (context->es-config context)
-        delete-url (format "http://%s:%s/%s/%s/%s?version=%s&version_type=external_gte" host port es-index es-type id revision-id)
+  (let [{:keys [admin-token]} (context->es-config context)
+        {:keys [uri http-opts]} (context->conn context)
+        delete-url (format "%s/%s/%s/%s?version=%s&version_type=external_gte" uri es-index es-type id revision-id)
         response (client/delete delete-url
-                                {:headers {"Authorization" admin-token
-                                           "Confirm-delete-action" "true"}
-                                 :throw-exceptions false})
+                                (merge http-opts
+                                       {:headers {"Authorization" admin-token
+                                                  "Confirm-delete-action" "true"}
+                                        :throw-exceptions false}))
         status (:status response)]
     (if-not (some #{200 404} [status])
       (if (= 409 status)
@@ -269,9 +271,11 @@
 (deftracefn delete-by-query
   "Delete document that match the given query"
   [context es-index es-type query]
-  (let [{:keys [host port admin-token]} (context->es-config context)
-        delete-url (format "http://%s:%s/%s/%s/_query" host port es-index es-type)]
+  (let [{:keys [admin-token]} (context->es-config context)
+        {:keys [uri http-opts]} (context->conn context)
+        delete-url (format "%s/%s/%s/_query" uri es-index es-type)]
     (client/delete delete-url
-                   {:headers {"Authorization" admin-token
-                              "Confirm-delete-action" "true"}
-                    :body (json/generate-string {:query query})})))
+                   (merge http-opts
+                          {:headers {"Authorization" admin-token
+                                     "Confirm-delete-action" "true"}
+                           :body (json/generate-string {:query query})}))))
