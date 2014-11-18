@@ -55,12 +55,18 @@
 (defn- xml-elem->contact-name
   "Returns the contact name from a parsed Collection XML structure"
   [xml-struct]
-  (let [last-name (or (cx/string-at-path xml-struct [:Personnel :Last_Name])
-                      (cx/string-at-path xml-struct [:DataCenter :Personnel :Last_Name]))
-        first-name (or (cx/string-at-path xml-struct [:Personnel :First_Name])
-                       (cx/string-at-path xml-struct [:DataCenter :Personnel :First_Name]))]
-    (if (and first-name last-name)
-      (str first-name " " last-name)
+  (let [last-name-personnel (cx/string-at-path xml-struct [:Personnel :Last_Name])
+        last-name-datacenter (cx/string-at-path xml-struct [:DataCenter :Personnel :Last_Name])
+        first-name-personnel (cx/string-at-path xml-struct [:Personnel :First_Name])
+        first-name-datacenter (cx/string-at-path xml-struct [:DataCenter :Personnel :First_Name])]
+    (cond
+      (and first-name-personnel last-name-personnel)
+      (str first-name-personnel " " last-name-personnel)
+
+      (and first-name-datacenter last-name-datacenter)
+      (str first-name-datacenter " " last-name-datacenter)
+
+      :else
       "undefined")))
 
 (defn- xml-elem->Collection
