@@ -20,6 +20,3 @@
   (let [{:keys [query-string]} context
         query-string (if (empty? query-string) "" (str "?" query-string))]
     (format "%s%ss.%s%s" (search-root context) (name concept-type) (name result-format) query-string)))
-
-;; Needed to construct opendata fields
-(def public-reverb-root (cfg/config-value :public-reverb-root "http://localhost:10000/reverb"))
