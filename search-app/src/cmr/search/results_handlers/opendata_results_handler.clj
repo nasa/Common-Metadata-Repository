@@ -65,7 +65,7 @@
           [update-time] :update-time
           [insert-time] :insert-time
           [provider-id] :provider-id
-          [project-sn] :project-sn
+          project-sn :project-sn
           [access-value] :access-value
           [science-keywords-flat] :science-keywords-flat
           [opendata-format] :opendata-format

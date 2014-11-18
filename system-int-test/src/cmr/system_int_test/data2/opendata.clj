@@ -29,7 +29,7 @@
 
 (defn collection->expected-opendata
   [collection]
-  (let [{:keys [short-name keywords project-sn summary entry-title
+  (let [{:keys [short-name keywords projects summary entry-title
                 access-value concept-id related-urls contact-name contact-email
                 data-format]} collection
         spatial-representation (get-in collection [:spatial-coverage :spatial-representation])
@@ -42,7 +42,8 @@
         end-date (when end-date (str/replace (str end-date) #"\.000Z" "Z"))
         shapes (map (partial umm-s/set-coordinate-system spatial-representation)
                     (get-in collection [:spatial-coverage :geometries]))
-        distribution (not-empty (odrh/distribution related-urls))]
+        distribution (not-empty (odrh/distribution related-urls))
+        project-sn (not-empty (map :short-name projects))]
     (util/remove-nil-keys {:title entry-title
                            :description summary
                            :keyword (not-empty (sk/flatten-science-keywords collection))

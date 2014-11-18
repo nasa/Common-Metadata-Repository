@@ -303,6 +303,8 @@
   (let [ru1 (dc/related-url "GET DATA" "application/json" "http://example.com")
         ru2 (dc/related-url "GET DATA" "text/xml" "http://example2.com")
         ru3 (dc/related-url "GET RELATED VISUALIZATION" "application/xml" "http://example.com/browse")
+        ru4 (dc/related-url "VIEW PROJECT HOME PAGE" "http://example.com")
+        pr1 (dc/projects "project-short-name1" "project-short-name2" "project-short-name3")
         op1 {:swath-width 1450.0
              :period 98.88
              :inclination-angle 98.15
@@ -366,6 +368,8 @@
                                         :version-id "Version6"
                                         :summary "Summary of coll6"
                                         :organizations [(dc/org :archive-center "Larc")]
+                                        :projects pr1
+                                        :related-urls [ru4]
                                         :beginning-date-time "2010-01-01T12:00:00Z"
                                         :ending-date-time "2010-01-11T12:00:00Z"
                                         :spatial-coverage
