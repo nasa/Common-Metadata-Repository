@@ -69,15 +69,15 @@
         concept-mapping-types (idx-set/get-concept-mapping-types context)
         concept (meta-db/get-concept context concept-id revision-id)
         umm-concept (umm/parse-concept concept)
-        delete-time (get-in umm-concept [:data-provider-timestamps :delete-time])
-        ttl (when delete-time (t/in-millis (t/interval (tk/now) delete-time)))
-        concept-index (idx-set/get-concept-index-name context concept-id revision-id concept)
-        es-doc (es/concept->elastic-doc context concept umm-concept)]
-    (when-not (and ttl (<= ttl 0))
-      (es/save-document-in-elastic
-        context
-        concept-index
-        (concept-mapping-types concept-type) es-doc revision-id ttl ignore-conflict))))
+        delete-time (get-in umm-concept [:data-provider-timestamps :delete-time])]
+    (when (or (nil? delete-time) (> (compare delete-time (tk/now)) 0))
+      (let [ttl (when delete-time (t/in-millis (t/interval (tk/now) delete-time)))
+            concept-index (idx-set/get-concept-index-name context concept-id revision-id concept)
+            es-doc (es/concept->elastic-doc context concept umm-concept)]
+        (es/save-document-in-elastic
+          context
+          concept-index
+          (concept-mapping-types concept-type) es-doc revision-id ttl ignore-conflict)))))
 
 
 (deftracefn delete-concept
