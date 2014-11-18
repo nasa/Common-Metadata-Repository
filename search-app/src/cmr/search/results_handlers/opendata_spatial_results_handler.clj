@@ -10,7 +10,6 @@
             [clojure.string :as str]))
 
 (def CARTESIAN_SRS
-  ;; TODO - replace this with the correct value
   "EPSG:9825")
 
 (def GEODETIC_SRS
