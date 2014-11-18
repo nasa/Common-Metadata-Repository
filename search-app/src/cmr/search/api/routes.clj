@@ -44,6 +44,15 @@
 (def TOOK_HEADER "CMR-Took")
 (def CMR_GRANULE_COUNT_HEADER "CMR-Granule-Hits")
 (def CMR_COLLECTION_COUNT_HEADER "CMR-Collection-Hits")
+;; CORS header to restrict access to the resource to be only from the defined origins,
+;; value of "*" means all request origins have access to the resource
+(def CORS_ORIGIN_HEADER "Access-Control-Allow-Origin")
+;; CORS header to define the allowed access methods
+(def CORS_METHODS_HEADER "Access-Control-Allow-Methods")
+;; CORS header to define the allowed custom headers
+(def CORS_CUSTOM_HEADERS_HEADER "Access-Control-Allow-Headers")
+;; CORS header to define how long in seconds the response of the preflight request can be cached
+(def CORS_MAX_AGE_HEADER "Access-Control-Max-Age")
 
 (def extension->mime-type
   "A map of URL file extensions to the mime type they represent."
@@ -133,6 +142,7 @@
   "Generate headers for search response."
   [content-type results]
   {CONTENT_TYPE_HEADER (str content-type "; charset=utf-8")
+   CORS_ORIGIN_HEADER "*"
    HITS_HEADER (str (:hits results))
    TOOK_HEADER (str (:took results))})
 
@@ -190,6 +200,17 @@
    :headers (search-response-headers (mt/format->mime-type (:result-format params)) results)
    :body (:results results)})
 
+(def options-response
+  "Generate the response map for finding concepts by params or AQL."
+  {:status 200
+   :headers {CONTENT_TYPE_HEADER "text/plain; charset=utf-8"
+             CORS_ORIGIN_HEADER "*"
+             CORS_METHODS_HEADER "POST, GET, OPTIONS"
+             CORS_CUSTOM_HEADERS_HEADER "Echo-Token"
+             ;; the value in seconds for how long the response to the preflight request can be cached
+             ;; set to 30 days
+             CORS_MAX_AGE_HEADER "2592000"}})
+
 (defn- find-concepts
   "Invokes query service to find results and returns the response"
   [context path-w-extension params headers query-string]
@@ -209,6 +230,7 @@
             results (query-svc/find-concepts-by-parameters context concept-type search-params)]
         (search-response params results))
       {:status 415
+       :headers {CORS_ORIGIN_HEADER "*"}
        :body (str "Unsupported content type ["
                   (get headers (str/lower-case CONTENT_TYPE_HEADER)) "]")})))
 
@@ -221,7 +243,9 @@
                         (:client-id context) (pr-str params)))
         search-params (lp/process-legacy-psa params query-string)
         results (query-svc/get-granule-timeline context search-params)]
-    (r/response results)))
+    {:status 200
+     :headers {CORS_ORIGIN_HEADER "*"}
+     :body results}))
 
 (defn- find-concepts-by-aql
   "Invokes query service to parse the AQL query, find results and returns the response"
@@ -248,7 +272,8 @@
                (cx/pretty-print-xml metadata)
                metadata)]
     {:status 200
-     :headers {CONTENT_TYPE_HEADER (str (:format concept) "; charset=utf-8")}
+     :headers {CONTENT_TYPE_HEADER (str (:format concept) "; charset=utf-8")
+               CORS_ORIGIN_HEADER "*"}
      :body body}))
 
 (defn- get-provider-holdings
@@ -265,7 +290,8 @@
     {:status 200
      :headers {CONTENT_TYPE_HEADER (str (mt/format->mime-type (:result-format params)) "; charset=utf-8")
                CMR_COLLECTION_COUNT_HEADER (str collection-count)
-               CMR_GRANULE_COUNT_HEADER (str granule-count)}
+               CMR_GRANULE_COUNT_HEADER (str granule-count)
+               CORS_ORIGIN_HEADER "*"}
      :body provider-holdings-formatted}))
 
 (defmacro force-trailing-slash
@@ -304,11 +330,15 @@
 
       ;; Retrieve by cmr concept id -
       (context ["/concepts/:path-w-extension" :path-w-extension #"(?:[A-Z][0-9]+-[0-9A-Z_]+)(?:\..+)?"] [path-w-extension]
+        ;; OPTIONS method is needed to support CORS when custom headers are used in requests to the endpoint.
+        ;; In this case, the Echo-Token header is used in the GET request.
+        (OPTIONS "/" req options-response)
         (GET "/" {params :params headers :headers context :request-context}
           (find-concept-by-cmr-concept-id context path-w-extension params headers)))
 
       ;; Find concepts
       (context ["/:path-w-extension" :path-w-extension #"(?:(?:granules)|(?:collections))(?:\..+)?"] [path-w-extension]
+        (OPTIONS "/" req options-response)
         (GET "/" {params :params headers :headers context :request-context query-string :query-string}
           (find-concepts context path-w-extension params headers query-string))
         ;; Find concepts - form encoded
@@ -317,6 +347,7 @@
 
       ;; Granule timeline
       (context ["/granules/:path-w-extension" :path-w-extension #"(?:timeline)(?:\..+)?"] [path-w-extension]
+        (OPTIONS "/" req options-response)
         (GET "/" {params :params headers :headers context :request-context query-string :query-string}
           (get-granules-timeline context path-w-extension params headers query-string))
         (POST "/" {params :params headers :headers context :request-context body :body-copy}
@@ -324,11 +355,13 @@
 
       ;; AQL search - xml
       (context ["/concepts/:path-w-extension" :path-w-extension #"(?:search)(?:\..+)?"] [path-w-extension]
+        (OPTIONS "/" req options-response)
         (POST "/" {params :params headers :headers context :request-context body :body-copy}
           (find-concepts-by-aql context path-w-extension params headers body)))
 
       ;; Provider holdings
       (context ["/:path-w-extension" :path-w-extension #"(?:provider_holdings)(?:\..+)?"] [path-w-extension]
+        (OPTIONS "/" req options-response)
         (GET "/" {params :params headers :headers context :request-context}
           (get-provider-holdings context path-w-extension params headers)))
 
@@ -346,7 +379,7 @@
         (let [{pretty? :pretty} params
               {:keys [ok? dependencies]} (hs/health request-context)]
           {:status (if ok? 200 503)
-           :headers {"Content-Type" "application/json; charset=utf-8"}
+           :headers {CONTENT_TYPE_HEADER "application/json; charset=utf-8"}
            :body (json/generate-string dependencies {:pretty pretty?})})))
 
     (route/not-found "Not Found")))
