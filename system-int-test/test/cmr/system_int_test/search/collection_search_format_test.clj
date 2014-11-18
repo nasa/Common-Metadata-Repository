@@ -33,8 +33,6 @@
     (ingest/create-provider "provguid1" "PROV1")
     (ingest/create-provider "provguid2" "PROV2")  )
 
-
-
   )
 
 ;; Tests that we can ingest and find items in different formats
