@@ -145,9 +145,9 @@
         access-url (first (ru/downloadable-urls related-urls))
         distribution (distribution related-urls)]
     (util/remove-nil-keys {:title entry-title
-                           :description summary
+                           :description (not-empty summary)
                            :keyword (not-empty keywords)
-                           :modified update-time
+                           :modified (not-empty update-time)
                            :publisher PUBLISHER
                            :contactPoint contact-name
                            :mbox contact-email
@@ -164,7 +164,7 @@
                            :landingPage (landing-page related-urls)
                            :language  [LANGUAGE_CODE]
                            :references (not-empty (map :url related-urls))
-                           :issued insert-time})))
+                           :issued (not-empty insert-time)})))
 
 (defn results->opendata
   "Convert search results to opendata."
