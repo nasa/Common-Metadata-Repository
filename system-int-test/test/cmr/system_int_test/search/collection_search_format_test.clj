@@ -300,8 +300,8 @@
            [-180 90 0 -90] [g2]))))
 
 (deftest search-collection-various-formats
-  (let [ru1 (dc/related-url "GET DATA" "http://example.com")
-        ru2 (dc/related-url "GET DATA" "http://example2.com")
+  (let [ru1 (dc/related-url "GET DATA" "application/json" "http://example.com")
+        ru2 (dc/related-url "GET DATA" "text/xml" "http://example2.com")
         ru3 (dc/related-url "GET RELATED VISUALIZATION" "application/xml" "http://example.com/browse")
         op1 {:swath-width 1450.0
              :period 98.88
@@ -359,20 +359,62 @@
         coll4 (d/ingest "PROV1"
                         (dc/collection {:entry-title "Dataset4"}) :iso-smap)
         coll5 (d/ingest "PROV1"
-                        (dc/collection {:entry-title "Dataset5"}) :dif)]
+                        (dc/collection {:entry-title "Dataset5"}) :dif)
+        coll6 (d/ingest "PROV1"
+                        (dc/collection {:entry-title "Dataset6"
+                                        :short-name "ShortName#6"
+                                        :version-id "Version6"
+                                        :summary "Summary of coll6"
+                                        :organizations [(dc/org :archive-center "Larc")]
+                                        :beginning-date-time "2010-01-01T12:00:00Z"
+                                        :ending-date-time "2010-01-11T12:00:00Z"
+                                        :spatial-coverage
+                                        (dc/spatial {:sr :cartesian
+                                                     :gsr :cartesian
+                                                     :geometries [(p/point 1 2)
+                                                                  (p/point -179.9 89.4)]})}))
+        coll7 (d/ingest "PROV1"
+                        (dc/collection {:entry-title "Dataset7"
+                                        :short-name "ShortName#7"
+                                        :version-id "Version7"
+                                        :summary "Summary of coll7"
+                                        :organizations [(dc/org :archive-center "Larc")]
+                                        :beginning-date-time "2010-01-01T12:00:00Z"
+                                        :ending-date-time "2010-01-11T12:00:00Z"
+                                        :spatial-coverage
+                                        (dc/spatial {:sr :cartesian
+                                                     :gsr :cartesian
+                                                     :geometries [(l/ords->line-string nil 0 0, 0 1, 0 -90, 180 0)
+                                                                  (l/ords->line-string nil 1 2, 3 4, 5 6, 7 8)]})}))
+        coll8 (d/ingest "PROV1"
+                        (dc/collection {:entry-title "Dataset8"
+                                        :short-name "ShortName#8"
+                                        :version-id "Version8"
+                                        :summary "Summary of coll8"
+                                        :organizations [(dc/org :archive-center "Larc")]
+                                        :beginning-date-time "2010-01-01T12:00:00Z"
+                                        :ending-date-time "2010-01-11T12:00:00Z"
+                                        :spatial-coverage
+                                        (dc/spatial {:sr :cartesian
+                                                     :gsr :cartesian
+                                                     :geometries [(m/mbr -180 90 180 -90)
+                                                                  (m/mbr -10 20 30 -40)]})}))]
 
     (index/refresh-elastic-index)
 
     (testing "kml"
       (let [results (search/find-concepts-kml :collection {})]
-        (dk/assert-collection-kml-results-match [coll1 coll2 coll3 coll4 coll5] results)))
+        (dk/assert-collection-kml-results-match [coll1 coll2 coll3 coll4 coll5 coll6 coll7
+                                                 coll8] results)))
 
     (testing "opendata"
       (let [results (search/find-concepts-opendata :collection {})]
-        (od/assert-collection-opendata-results-match [coll1 coll2 coll3 coll4 coll5] results))
+        (od/assert-collection-opendata-results-match [coll1 coll2 coll3 coll4 coll5 coll6 coll7
+                                                      coll8] results))
       (testing "as extension"
         (let [results (search/find-concepts-opendata :collection {} {:url-extension "opendata"})]
-          (od/assert-collection-opendata-results-match [coll1 coll2 coll3 coll4 coll5] results)))
+          (od/assert-collection-opendata-results-match [coll1 coll2 coll3 coll4 coll5 coll6 coll7
+                                                        coll8] results)))
       (testing "no opendata support for granules"
         (is (= {:errors ["The mime type [application/opendata+json] is not supported for granules."],
                 :status 400}
@@ -384,7 +426,8 @@
             {:keys [status results]} response]
         (is (= [200 coll-atom] [status results])))
 
-      (let [coll-atom (da/collections->expected-atom [coll1 coll2 coll3 coll4 coll5] "collections.atom")
+      (let [coll-atom (da/collections->expected-atom [coll1 coll2 coll3 coll4 coll5 coll6 coll7
+                                                      coll8] "collections.atom")
             response (search/find-concepts-atom :collection {})
             {:keys [status results]} response]
         (is (= [200 coll-atom] [status results])))
@@ -410,7 +453,8 @@
             {:keys [status results]} response]
         (is (= [200 coll-json] [status results])))
 
-      (let [coll-json (da/collections->expected-atom [coll1 coll2 coll3 coll4 coll5] "collections.json")
+      (let [coll-json (da/collections->expected-atom [coll1 coll2 coll3 coll4 coll5 coll6 coll7
+                                                      coll8] "collections.json")
             response (search/find-concepts-json :collection {})
             {:keys [status results]} response]
         (is (= [200 coll-json] [status results])))
