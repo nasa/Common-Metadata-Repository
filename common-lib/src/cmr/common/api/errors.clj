@@ -9,8 +9,14 @@
    :invalid-data 422
    :conflict 409})
 
+(def CONTENT_TYPE_HEADER "Content-Type")
+(def CORS_ORIGIN_HEADER "Access-Control-Allow-Origin")
+
 (def internal-error-ring-response
-  {:status 500 :body {:errors ["An Internal Error has occurred."]} :content-type :json})
+  {:status 500
+   :headers {CONTENT_TYPE_HEADER :json
+             CORS_ORIGIN_HEADER "*"}
+   :body {:errors ["An Internal Error has occurred."]}})
 
 (defn- response-type-body
   "Returns the response content-type and body for the given errors and format"
@@ -39,7 +45,8 @@
                   status-code (type->http-status-code type)
                   [content-type response-body] (response-type-body errors xml-format?)]
               {:status status-code
-               :headers {"Content-Type" content-type}
+               :headers {CONTENT_TYPE_HEADER content-type
+                         CORS_ORIGIN_HEADER "*"}
                :body response-body})
             (do
               (error e)
