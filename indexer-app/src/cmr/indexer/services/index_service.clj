@@ -100,6 +100,27 @@
         (concept-mapping-types :granule)
         {:term {:collection-concept-id id}}))))
 
+(deftracefn delete-provider
+  "Delete all the concepts within the given provider"
+  [context provider-id]
+  (info (format "Deleting provider-id %s" provider-id))
+  (let [collection-index (get-in (idx-set/get-concept-type-index-names context)
+                                 [:collection :collections])
+        concept-mapping-types (idx-set/get-concept-mapping-types context)]
+    ;; delete the collections
+    (es/delete-by-query
+      context
+      collection-index
+      (concept-mapping-types :collection)
+      {:term {:provider-id provider-id}})
+    ;; delete the granules
+    (doseq [index-name (idx-set/get-index-names-for-provider-delete context provider-id)]
+      (es/delete-by-query
+        context
+        index-name
+        (concept-mapping-types :granule)
+        {:term {:provider-id provider-id}}))))
+
 (deftracefn reset
   "Delegate reset elastic indices operation to index-set app"
   [context]

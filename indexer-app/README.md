@@ -10,6 +10,12 @@ This is the indexer application for the CMR. It is responsible for indexing modi
 
     curl -i -XDELETE -H "Content-Type: application/json" http://localhost:3004/C1234-PROV1/2
 
+### Delete a provider
+
+This will un-index all concepts within the given provider.
+
+    curl -i -XDELETE http://localhost:3004/PROV1
+
 ## Administrative Tasks
 
 These tasks require an admin user token with the INGEST_MANAGEMENT_ACL with read or update

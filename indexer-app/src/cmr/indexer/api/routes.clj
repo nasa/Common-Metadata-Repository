@@ -110,6 +110,13 @@
             body))
         {:status 200})
 
+      ;; Unindex all concepts within a provider
+      (context "/provider/:provider-id" [provider-id]
+        (DELETE "/" {context :request-context params :params headers :headers}
+          (let [context (acl/add-authentication-to-context context params headers)]
+            (index-svc/delete-provider context provider-id)
+            {:status 200})))
+
       ;; Unindex a concept
       (context "/:concept-id/:revision-id" [concept-id revision-id]
         (DELETE "/" {context :request-context params :params headers :headers}
