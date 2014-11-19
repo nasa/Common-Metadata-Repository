@@ -48,37 +48,32 @@
     (when-not (= 201 status)
       (errors/internal-error! (str "Operation to index a concept failed. Indexer app response status code: "  status  " " response)))))
 
-(defn- get-indexer-url
-  "Returns the indexer url"
-  [context]
-  (let [conn (transmit-config/context->app-connection context :indexer)]
-    (transmit-conn/root-url conn)))
-
 (defn- delete-from-index
   "Execute http delete of the given url on the indexer"
   [context delete-url]
   (let [conn (transmit-config/context->app-connection context :indexer)
-        response (client/delete delete-url
+        indexer-root (transmit-conn/root-url conn)
+        response (client/delete (format "%s/%s" indexer-root delete-url)
                                 {:accept :json
                                  :throw-exceptions false
                                  :headers (get-headers context)
                                  :connection-manager (transmit-conn/conn-mgr conn)})
         status (:status response)]
     (when-not (some #{200, 204} [status])
-      (errors/internal-error! (str "Delete provider operation failed. Indexer app response status code: "  status " " response)))
+      (errors/internal-error!
+        (format "Delete %s operation failed. Indexer app response status code: %s %s"
+                delete-url status response)))
     response))
 
 (deftracefn delete-concept-from-index
   "Delete a concept with given revision-id from index."
   [context concept-id revision-id]
-  (let [indexer-url (get-indexer-url context)]
-    (delete-from-index context (format "%s/%s/%s" indexer-url concept-id revision-id))))
+  (delete-from-index context (format "%s/%s" concept-id revision-id)))
 
 (deftracefn delete-provider-from-index
   "Delete a provider with given provider-id from index."
   [context provider-id]
-  (let [indexer-url (get-indexer-url context)]
-    (delete-from-index context (format "%s/provider/%s" indexer-url provider-id))))
+  (delete-from-index context (format "provider/%s" provider-id)))
 
 (defn get-indexer-health
   "Returns the health status of the indexer app"

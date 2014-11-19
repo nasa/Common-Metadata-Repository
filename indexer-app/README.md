@@ -14,7 +14,7 @@ This is the indexer application for the CMR. It is responsible for indexing modi
 
 This will un-index all concepts within the given provider.
 
-    curl -i -XDELETE http://localhost:3004/PROV1
+    curl -i -XDELETE http://localhost:3004/provider/PROV1
 
 ## Administrative Tasks
 
