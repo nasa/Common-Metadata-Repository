@@ -52,10 +52,6 @@
         (assoc :organizations organizations)
         ;; ECHO10 OnlineResources' title is built as description plus resource-type
         (assoc :related-urls related-urls)
-        ;; We don't use these two fields during xml generation as they are not needed for ECHO10
-        ;; so we set them to the defaults here.
-        (assoc :contact-email "support@earthdata.nasa.gov")
-        (assoc :contact-name "undefined")
         umm-c/map->UmmCollection)))
 
 (defspec generate-collection-is-valid-xml-test 100

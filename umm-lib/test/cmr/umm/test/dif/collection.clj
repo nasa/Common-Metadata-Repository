@@ -86,10 +86,6 @@
         (dissoc :two-d-coordinate-systems)
         ;; DIF does not have associated-difs
         (dissoc :associated-difs)
-        ;; We don't use these two fields during xml generation as they are not needed for DIF
-        ;; so we set them to the defaults here.
-        (assoc :contact-email "support@earthdata.nasa.gov")
-        (assoc :contact-name "undefined")
         umm-c/map->UmmCollection)))
 
 (defspec generate-collection-is-valid-xml-test 100
