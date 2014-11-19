@@ -53,7 +53,8 @@
          :update-time (t/string->datetime update-time)}))))
 
 (defn- xml-elem->contact-name
-  "Returns the contact name from a parsed Collection XML structure"
+  "Returns the contact name from a parsed Collection XML structure or nil if the elements
+  are not available."
   [xml-struct]
   (let [last-name-personnel (cx/string-at-path xml-struct [:Personnel :Last_Name])
         last-name-datacenter (cx/string-at-path xml-struct [:DataCenter :Personnel :Last_Name])
@@ -64,10 +65,7 @@
       (str first-name-personnel " " last-name-personnel)
 
       (and first-name-datacenter last-name-datacenter)
-      (str first-name-datacenter " " last-name-datacenter)
-
-      :else
-      "undefined")))
+      (str first-name-datacenter " " last-name-datacenter))))
 
 (defn- xml-elem->Collection
   "Returns a UMM Product from a parsed Collection XML structure"
@@ -91,8 +89,7 @@
      :spatial-coverage (sc/xml-elem->SpatialCoverage xml-struct)
      :organizations (org/xml-elem->Organizations xml-struct)
      :contact-email (or (cx/string-at-path xml-struct [:Personnel :Email])
-                        (cx/string-at-path xml-struct [:DataCenter :Personnel :Email])
-                        "support@earthdata.nasa.gov")
+                        (cx/string-at-path xml-struct [:DataCenter :Personnel :Email]))
      :contact-name (xml-elem->contact-name xml-struct)}))
 
 (defn parse-collection

@@ -230,8 +230,6 @@
    ;; Records Archive Center, Processing Center
    organizations
 
-   personnel
-
    spatial-coverage
 
    associated-difs

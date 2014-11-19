@@ -1,6 +1,7 @@
 (ns cmr.search.results-handlers.opendata-spatial-results-handler
   "A helper for converting spatial shapes into opendata results"
   (:require [clojure.data.xml :as x]
+            [cmr.common.xml :as cx]
             [cmr.spatial.polygon :as poly]
             [cmr.spatial.point :as p]
             [cmr.spatial.mbr :as m]
@@ -9,12 +10,10 @@
             [cmr.spatial.line-string :as l]
             [clojure.string :as str]))
 
-(def CARTESIAN_SRS
-  "EPSG:9825")
-
-(def GEODETIC_SRS
-  ;; WGS-84
-  "EPSG:4326")
+(def coordinate-syste->srs-name
+  {:catesian "EPSG:9825" ; Psuedo Plate Carree
+   :geodetic "EPSG:4326" ; WGS-84
+   })
 
 (defn- points-map->points-str
   "Converts a map containing :points into the lat lon space separated points string of GML"
@@ -42,9 +41,7 @@
     (points-map->points-str line))
   (shape->gml
     [line]
-    (let [srs-name (if (= :geodetic (:coordinate-system line))
-                     GEODETIC_SRS
-                     CARTESIAN_SRS)]
+    (let [srs-name (coordinate-syste->srs-name (:coordinate-system line))]
       (x/element :gml:LineString {:srsName srs-name} (shape->string line))))
 
   cmr.spatial.mbr.Mbr
@@ -75,9 +72,7 @@
   cmr.spatial.polygon.Polygon
   (shape->gml
     [{:keys [rings] :as shape}]
-    (let [srs-name (if (= :geodetic (:coordinate-system shape))
-                     GEODETIC_SRS
-                     CARTESIAN_SRS)]
+    (let [srs-name (coordinate-syste->srs-name (:coordinate-system shape))]
       (x/element :gml:Polygon {:srsName srs-name}
                  (x/element :gml:outerBoundaryIs {}
                             (shape->gml (first rings)))
@@ -96,11 +91,7 @@
         boxes (when-let [boxes (get shapes-by-type cmr.spatial.mbr.Mbr)]
                 (shape->string (first boxes)))
         polygons (when-let [polygons (get shapes-by-type cmr.spatial.polygon.Polygon)]
-                   (str/replace (xml-fn (shape->gml (first polygons)))
-                                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-                                ""))
+                   (cx/remove-xml-processing-instructions (xml-fn (shape->gml (first polygons)))))
         lines (when-let [lines (get shapes-by-type cmr.spatial.line_string.LineString)]
-                (str/replace (xml-fn (shape->gml (first lines)))
-                             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-                             ""))]
+                (cx/remove-xml-processing-instructions (xml-fn (shape->gml (first lines)))))]
     (or polygons lines boxes points)))

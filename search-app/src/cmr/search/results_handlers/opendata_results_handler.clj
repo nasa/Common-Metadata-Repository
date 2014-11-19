@@ -34,9 +34,14 @@
 (def ACCESS_LEVEL
   "public")
 
+(def DEFAULT_CONTACT_EMAIL
+  "support@earthdata.nasa.gov")
+
+(def DEFAULT_CONTACT_NAME
+  "undefined")
+
 (defmethod elastic-search-index/concept-type+result-format->fields [:collection :opendata]
   [concept-type query]
-  ;; TODO add spatial, etc.
   ["entry-title"
    "summary"
    "science-keywords-flat"
@@ -149,8 +154,8 @@
                            :keyword (not-empty keywords)
                            :modified (not-empty update-time)
                            :publisher PUBLISHER
-                           :contactPoint contact-name
-                           :mbox contact-email
+                           :contactPoint (or contact-name DEFAULT_CONTACT_NAME)
+                           :mbox (or contact-email DEFAULT_CONTACT_EMAIL)
                            :identifier id
                            :accessLevel ACCESS_LEVEL
                            :bureauCode [BUREAU_CODE]
