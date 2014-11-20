@@ -114,6 +114,7 @@
       (context "/provider/:provider-id" [provider-id]
         (DELETE "/" {context :request-context params :params headers :headers}
           (let [context (acl/add-authentication-to-context context params headers)]
+            (acl/verify-ingest-management-permission context :update)
             (index-svc/delete-provider context provider-id)
             {:status 200})))
 

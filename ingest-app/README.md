@@ -69,11 +69,11 @@ CMR_DB_URL=thin:@localhost:1521:orcl CMR_INGEST_PASSWORD=****** java -cp target/
 
 ### Create provider
 
-    curl -v -XPOST -H "Content-Type: application/json" -d '{"provider-id": "PROV1"}' http://localhost:3002/providers
+    curl -v -XPOST -H "Content-Type: application/json" -H "Echo-Token: mock-echo-system-token" -d '{"provider-id": "PROV1"}' http://localhost:3002/providers
 
 ### Delete provider
 
-    curl -v -XDELETE http://localhost:3002/providers/PROV1
+    curl -v -XDELETE -H "Echo-Token: mock-echo-system-token" http://localhost:3002/providers/PROV1
 
 ### Get providers
 

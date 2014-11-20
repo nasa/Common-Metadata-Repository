@@ -1,11 +1,13 @@
 (ns cmr.system-int-test.ingest.provider-ingest-test
   "CMR provider ingest integration test"
   (:require [clojure.test :refer :all]
+            [clj-http.client :as client]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.core :as d]
+            [cmr.system-int-test.utils.url-helper :as url]
             [cmr.system-int-test.utils.search-util :as search]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
@@ -66,3 +68,10 @@
 
 (deftest delete-non-existent-provider-test
   (is (= 404 (ingest/delete-ingest-provider "NonExistentProvider"))))
+
+(deftest delete-provider-without-permission-test
+  (let [response (client/delete (url/ingest-delete-provider-url "PROV1")
+                                {:throw-exceptions false
+                                 :connection-manager (url/conn-mgr)
+                                 :query-params {:token "dummy-token"}})]
+    (is (= 401 (:status response)))))

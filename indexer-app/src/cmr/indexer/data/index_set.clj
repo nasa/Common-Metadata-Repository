@@ -485,14 +485,14 @@
        (let [coll-concept-id (:parent-collection-id (:extra-fields concept))]
          (get indexes (keyword coll-concept-id) (get indexes :small_collections)))))))
 
-(defn get-index-name-for-granule-delete
-  "Return the concept index name for granule delete based on the input collection concept id"
+(defn get-granule-index-name-for-collection
+  "Return the granule index name for the input collection concept id"
   [context coll-concept-id]
   (let [indexes (get (get-concept-type-index-names context) :granule)]
     (get indexes (keyword coll-concept-id) (get indexes :small_collections))))
 
-(defn get-index-names-for-provider-delete
-  "Return the concept index names for granule delete based on the input provider id"
+(defn get-granule-index-names-for-provider
+  "Return the granule index names for the input provider id"
   [context provider-id]
   (let [indexes (get (get-concept-type-index-names context) :granule)
         filter-fn (fn [[k v]]

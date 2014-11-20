@@ -96,7 +96,7 @@
     (when (= :collection concept-type)
       (es/delete-by-query
         context
-        (idx-set/get-index-name-for-granule-delete context id)
+        (idx-set/get-granule-index-name-for-collection context id)
         (concept-mapping-types :granule)
         {:term {:collection-concept-id id}}))))
 
@@ -114,7 +114,7 @@
       (concept-mapping-types :collection)
       {:term {:provider-id provider-id}})
     ;; delete the granules
-    (doseq [index-name (idx-set/get-index-names-for-provider-delete context provider-id)]
+    (doseq [index-name (idx-set/get-granule-index-names-for-provider context provider-id)]
       (es/delete-by-query
         context
         index-name
