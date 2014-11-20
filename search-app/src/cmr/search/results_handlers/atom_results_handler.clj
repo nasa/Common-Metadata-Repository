@@ -297,7 +297,7 @@
   [atom-link]
   (x/element :link (atom-link->attribute-map atom-link)
              (when (:inherited atom-link)
-               (x/element :inherited))))
+               (x/element :echo:inherited))))
 
 (defn- orbit-parameters->attribute-map
   "Convert orbit parameters into attributes for an XML element"
