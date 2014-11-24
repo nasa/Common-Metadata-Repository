@@ -24,6 +24,7 @@
                      email-contacts (map #(c/->Contact :email %) emails)
                      role (cx/string-at-path contact [:Role])]]
            (c/map->Personnel {:first-name first-name
+                              :middle-name middle-name
                               :last-name last-name
                               :contacts email-contacts
                               :roles [role]})))))
