@@ -376,21 +376,21 @@
                            :mapping granule-mapping}}}))
 
 (comment
-(index-set {:system (get-in user/system [:apps :indexer])})
+  (index-set {:system (get-in user/system [:apps :indexer])})
 
 
-(def colls-w-separate-indexes ["a" "b"])
+  (def colls-w-separate-indexes ["a" "b"])
 
 
-[{:name "a"
-  :settings nil}
- {:name "b"
-  :settings nil}]
+  [{:name "a"
+    :settings nil}
+   {:name "b"
+    :settings nil}]
 
-(map (fn [collection]
-       {:name collection
-        :settings granule-settings-for-individual-indexes})
-     colls-w-separate-indexes))
+  (map (fn [collection]
+         {:name collection
+          :settings granule-settings-for-individual-indexes})
+       colls-w-separate-indexes))
 
 
 (defn reset
@@ -485,11 +485,21 @@
        (let [coll-concept-id (:parent-collection-id (:extra-fields concept))]
          (get indexes (keyword coll-concept-id) (get indexes :small_collections)))))))
 
-(defn get-index-name-for-granule-delete
-  "Return the concept index name for granule delete based on the input collection concept id"
+(defn get-granule-index-name-for-collection
+  "Return the granule index name for the input collection concept id"
   [context coll-concept-id]
   (let [indexes (get (get-concept-type-index-names context) :granule)]
     (get indexes (keyword coll-concept-id) (get indexes :small_collections))))
+
+(defn get-granule-index-names-for-provider
+  "Return the granule index names for the input provider id"
+  [context provider-id]
+  (let [indexes (get (get-concept-type-index-names context) :granule)
+        filter-fn (fn [[k v]]
+                    (or
+                      (.endsWith (name k) (str "_" provider-id))
+                      (= :small_collections k)))]
+    (map second (filter filter-fn indexes))))
 
 (defn get-concept-mapping-types
   "Fetch mapping types associated with concepts."

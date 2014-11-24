@@ -9,34 +9,65 @@
             [cmr.umm.echo10.collection :as c]
             [cmr.umm.echo10.granule :as g]
             [cmr.umm.echo10.core :as echo10]
+            [cmr.acl.core :as acl]
+            [cmr.transmit.config :as transmit-config]
             [cmr.system-int-test.utils.url-helper :as url]
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.utils.echo-util :as echo-util]))
 
 
+(defn- create-provider-through-url
+  "Create the provider by http POST on the given url"
+  [provider-id endpoint-url]
+  (client/post endpoint-url
+               {:body (format "{\"provider-id\": \"%s\"}" provider-id)
+                :content-type :json
+                :connection-manager (url/conn-mgr)
+                :headers {acl/token-header (transmit-config/echo-system-token)}}))
+
 (defn create-mdb-provider
   "Create the provider with the given provider id in the metadata db"
   [provider-id]
-  (client/post (url/create-provider-url)
-               {:body (format "{\"provider-id\": \"%s\"}" provider-id)
-                :content-type :json
-                :connection-manager (url/conn-mgr)}))
+  (create-provider-through-url provider-id (url/create-provider-url)))
 
-(defn get-providers
-  []
-  (-> (client/get (url/create-provider-url) {:connection-manager (url/conn-mgr)})
+(defn create-ingest-provider
+  "Create the provider with the given provider id through ingest app"
+  [provider-id]
+  (create-provider-through-url provider-id (url/ingest-create-provider-url)))
+
+(defn get-providers-through-url
+  [provider-url]
+  (-> (client/get provider-url {:connection-manager (url/conn-mgr)})
       :body
       (json/decode true)
       :providers))
+
+(defn get-providers
+  []
+  (get-providers-through-url (url/create-provider-url)))
+
+(defn get-ingest-providers
+  []
+  (get-providers-through-url (url/ingest-create-provider-url)))
 
 (defn delete-provider
   "Delete the provider with the matching provider-id from the CMR metadata repo."
   [provider-id]
   (let [response (client/delete (url/delete-provider-url provider-id)
                                 {:throw-exceptions false
-                                 :connection-manager (url/conn-mgr)})
+                                 :connection-manager (url/conn-mgr)
+                                 :headers {acl/token-header (transmit-config/echo-system-token)}})
         status (:status response)]
     (is (some #{200 404} [status]))))
+
+(defn delete-ingest-provider
+  "Delete the provider with the matching provider-id through the CMR ingest app."
+  [provider-id]
+  (let [response (client/delete (url/ingest-delete-provider-url provider-id)
+                                {:throw-exceptions false
+                                 :connection-manager (url/conn-mgr)
+                                 :headers {acl/token-header (transmit-config/echo-system-token)}})]
+    (:status response)))
 
 (defn reindex-collection-permitted-groups
   "Tells ingest to run the reindex-collection-permitted-groups job"

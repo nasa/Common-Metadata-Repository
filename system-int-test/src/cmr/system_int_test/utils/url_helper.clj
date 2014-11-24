@@ -62,6 +62,14 @@
           (name type)
           (codec/url-encode native-id)))
 
+(defn ingest-create-provider-url
+  []
+  (format "http://localhost:%s/providers" (transmit-config/ingest-port)))
+
+(defn ingest-delete-provider-url
+  [provider-id]
+  (format "http://localhost:%s/providers/%s" (transmit-config/ingest-port) provider-id))
+
 (defn ingest-health-url
   "URL to check ingest health."
   []

@@ -43,15 +43,19 @@
 (def TOOK_HEADER "CMR-Took")
 (def CMR_GRANULE_COUNT_HEADER "CMR-Granule-Hits")
 (def CMR_COLLECTION_COUNT_HEADER "CMR-Collection-Hits")
-;; CORS header to restrict access to the resource to be only from the defined origins,
-;; value of "*" means all request origins have access to the resource
-(def CORS_ORIGIN_HEADER "Access-Control-Allow-Origin")
-;; CORS header to define the allowed access methods
-(def CORS_METHODS_HEADER "Access-Control-Allow-Methods")
-;; CORS header to define the allowed custom headers
-(def CORS_CUSTOM_HEADERS_HEADER "Access-Control-Allow-Headers")
-;; CORS header to define how long in seconds the response of the preflight request can be cached
-(def CORS_MAX_AGE_HEADER "Access-Control-Max-Age")
+(def CORS_ORIGIN_HEADER
+  "This CORS header is to restrict access to the resource to be only from the defined origins,
+  value of \"*\" means all request origins have access to the resource"
+  "Access-Control-Allow-Origin")
+(def CORS_METHODS_HEADER
+  "This CORS header is to define the allowed access methods"
+  "Access-Control-Allow-Methods")
+(def CORS_CUSTOM_HEADERS_HEADER
+  "This CORS header is to define the allowed custom headers"
+  "Access-Control-Allow-Headers")
+(def CORS_MAX_AGE_HEADER
+  "This CORS header is to define how long in seconds the response of the preflight request can be cached"
+  "Access-Control-Max-Age")
 
 (def extension->mime-type
   "A map of URL file extensions to the mime type they represent."

@@ -276,23 +276,15 @@ Synchronously runs the expired concept cleanup job. Requires token with UPDATE i
 
 ## Providers API
 
-### POST /providers
+### Create provider
 
-params: [provider]
-returns: provider-id
+    curl -v -XPOST -H "Content-Type: application/json" -H "Echo-Token: mock-echo-system-token" -d '{"provider-id": "PROV1"}' http://localhost:3001/providers
 
-    curl -v -XPOST -H "Content-Type: application/json" -d '{"provider-id": "PROV1"}' http://localhost:3001/providers
+### Delete provider
 
-###  /providers/#provider-id
+    curl -v -XDELETE -H "Echo-Token: mock-echo-system-token" http://localhost:3001/providers/PROV1
 
-params: none
-returns: nothing (status 204)
-
-    curl -v -XDELETE http://localhost:3001/providers/PROV1
-
-### GET "/providers"
-params: none
-returns: list of provider-ids
+### Get providers
 
     curl http://localhost:3001/providers
 
