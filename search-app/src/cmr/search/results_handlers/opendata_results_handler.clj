@@ -55,8 +55,7 @@
    "end-date"
    "ords-info"
    "ords"
-   "contact-email"
-   "contact-name"
+   "personnel"
    ;; needed for acl enforcment
    "access-value"
    "provider-id"
@@ -79,8 +78,7 @@
           [entry-title] :entry-title
           ords-info :ords-info
           ords :ords
-          [contact-email] :contact-email
-          [contact-name] :contact-name
+          personnel :personnel
           [start-date] :start-date
           [end-date] :end-date} :fields} elastic-result
         related-urls  (map #(json/decode % true) related-urls)
@@ -96,8 +94,7 @@
      :related-urls related-urls
      :project-sn project-sn
      :shapes (srl/ords-info->shapes ords-info ords)
-     :contact-email contact-email
-     :contact-name contact-name
+     :personnel (first personnel)
      :start-date start-date
      :end-date end-date
      :provider-id provider-id
@@ -146,7 +143,7 @@
   [context concept-type pretty? item]
   (let [{:keys [id summary short-name project-sn update-time insert-time provider-id access-value
                 keywords entry-title opendata-format start-date end-date
-                related-urls contact-name contact-email shapes]} item
+                related-urls personnel shapes]} item
         access-url (first (ru/downloadable-urls related-urls))
         distribution (distribution related-urls)]
     (util/remove-nil-keys {:title entry-title
@@ -154,8 +151,8 @@
                            :keyword (not-empty keywords)
                            :modified (not-empty update-time)
                            :publisher PUBLISHER
-                           :contactPoint (or contact-name DEFAULT_CONTACT_NAME)
-                           :mbox (or contact-email DEFAULT_CONTACT_EMAIL)
+                           :contactPoint (or (:name personnel) DEFAULT_CONTACT_NAME)
+                           :mbox (or (:email personnel) DEFAULT_CONTACT_EMAIL)
                            :identifier id
                            :accessLevel ACCESS_LEVEL
                            :bureauCode [BUREAU_CODE]

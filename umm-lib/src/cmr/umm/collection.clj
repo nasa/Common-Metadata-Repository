@@ -191,6 +191,30 @@
    orbit-parameters
    ])
 
+(defrecord Contact
+  [
+   ;; Phone, email, etc.
+   type
+
+   ;; Actual contact info (phone number, email address, etc.)
+   value
+   ])
+
+(defrecord Personnel
+  [
+   first-name
+
+   middle-name
+
+   last-name
+
+   ;; the roles of the person - investigator, technical contact, metadata author
+   roles
+
+   ;; contact points (email, phone, etc.)
+   contacts
+   ])
+
 (defrecord UmmCollection
   [
    ;; A combination of shortname and version id with an underscore.
@@ -234,10 +258,8 @@
 
    associated-difs
 
-   ;; email of the contact for this collection
-   contact-email
-   ;; name of the contact for this collection
-   contact-name
+   personnel
+
    ])
 
 

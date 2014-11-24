@@ -36,7 +36,7 @@
   (let [{:keys [concept-id provider-id revision-date format]} concept
         {{:keys [short-name long-name version-id processing-level-id collection-data-type]} :product
          :keys [entry-id entry-title summary temporal related-urls spatial-keywords associated-difs
-                temporal-keywords access-value contact-email contact-name distribution]} collection
+                temporal-keywords access-value personnel distribution]} collection
         collection-data-type (if (= "NEAR_REAL_TIME" collection-data-type)
                                ;; add in all the aliases for NEAR_REAL_TIME
                                (concat [collection-data-type] k/nrt-aliases)
@@ -103,8 +103,7 @@
             :attributes (attrib/psas->elastic-docs collection)
             :science-keywords (sk/science-keywords->elastic-doc collection)
             :science-keywords-flat (sk/flatten-science-keywords collection)
-            :contact-email contact-email
-            :contact-name contact-name
+            :personnel (map json/generate-string personnel)
             :start-date (when start-date (f/unparse (f/formatters :date-time) start-date))
             :end-date (when end-date (f/unparse (f/formatters :date-time) end-date))
             :archive-center archive-center-val

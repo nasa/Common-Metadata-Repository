@@ -69,6 +69,17 @@
           expected-parsed (umm->expected-parsed-echo10 collection)]
       (= parsed expected-parsed))))
 
+
+(comment
+  (let [collection #cmr.umm.collection.UmmCollection{:entry-id "0", :entry-title "0", :summary "0", :product #cmr.umm.collection.Product{:short-name "0", :long-name "0", :version-id "0", :processing-level-id nil, :collection-data-type nil}, :access-value nil, :data-provider-timestamps #cmr.umm.collection.DataProviderTimestamps{:insert-time #=(org.joda.time.DateTime. 0), :update-time #=(org.joda.time.DateTime. 0), :delete-time nil}, :spatial-keywords nil, :temporal-keywords nil, :temporal #cmr.umm.collection.Temporal{:time-type nil, :date-type nil, :temporal-range-type nil, :precision-of-seconds nil, :ends-at-present-flag nil, :range-date-times [#cmr.umm.collection.RangeDateTime{:beginning-date-time #=(org.joda.time.DateTime. 0), :ending-date-time nil}], :single-date-times [], :periodic-date-times []}, :science-keywords [#cmr.umm.collection.ScienceKeyword{:category "0", :topic "0", :term "0", :variable-level-1 "0", :variable-level-2 nil, :variable-level-3 nil, :detailed-variable nil}], :platforms nil, :product-specific-attributes nil, :projects nil, :two-d-coordinate-systems nil, :related-urls nil, :organizations (#cmr.umm.collection.Organization{:type :distribution-center, :org-name "!"}), :spatial-coverage nil, :associated-difs nil, :personnel [#cmr.umm.collection.Personnel{:first-name nil, :middle-name nil, :last-name "0", :roles ["0"], :contacts []}]}
+               xml (echo10/umm->echo10-xml collection)
+               parsed (c/parse-collection xml)
+               expected-parsed (umm->expected-parsed-echo10 collection)]
+            (println xml)
+            (println parsed)
+            (println expected-parsed))
+)
+
 ;; This is a made-up include all fields collection xml sample for the parse collection test
 (def all-fields-collection-xml
   "<Collection>
@@ -429,8 +440,12 @@
                      (umm-c/map->Organization
                        {:type :archive-center
                         :org-name "SEDAC AC"})]
-                    :contact-email "josefino.c.comiso@nasa.gov"
-                    :contact-name "JOSEPHINO 'JOEY' COMISO"})
+                    :personnel [#cmr.umm.collection.Personnel{:first-name "JOSEPHINO 'JOEY'"
+                                                              :middle-name nil
+                                                              :last-name "COMISO"
+                                                              :roles ["INVESTIGATOR"]
+                                                              :contacts (#cmr.umm.collection.Contact{:type :email
+                                                                                                     :value "josefino.c.comiso@nasa.gov"})}]})
         actual (c/parse-collection all-fields-collection-xml)]
     (is (= expected actual))))
 
@@ -454,4 +469,3 @@
     (clojure.data/diff parsed collection))
   ;;;;;;;;;;;;'
   )
-

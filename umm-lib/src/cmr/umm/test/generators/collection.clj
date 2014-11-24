@@ -184,6 +184,23 @@
                        (ext-gen/optional (gen/vector spatial-gen/geometries 1 5))
                        orbit-params)))
 
+(def person-names
+  (ext-gen/string-alpha-numeric 1 20))
+
+(def contacts
+  (gen/fmap (fn [[type value]]
+              (c/->Contact type value))
+            (gen/tuple (gen/elements [:email :phone :fax])
+                       (ext-gen/string-ascii 10 30))))
+(def personnels
+  (gen/fmap (fn [[first-name middle-name last-name roles contacts]]
+              (c/->Personnel first-name middle-name last-name roles contacts))
+            (gen/tuple person-names
+                       (ext-gen/optional person-names)
+                       person-names
+                       (gen/vector (ext-gen/string-alpha-numeric 1 20) 1 3)
+                       (gen/vector contacts 0 3))))
+
 (def collections
   (gen/fmap (fn [[attribs proc-org archive-org dist-org]]
               (let [product (:product attribs)]
@@ -209,8 +226,7 @@
                 :related-urls (ext-gen/nil-if-empty (gen/vector related-url 0 5))
                 :associated-difs (ext-gen/nil-if-empty (gen/vector (ext-gen/string-alpha-numeric 1 10) 0 4))
                 :spatial-coverage (ext-gen/optional spatial-coverages)
-                :contact-name (ext-gen/string-alpha-numeric 1 20)
-                :contact-email (ext-gen/string-ascii 10 30))
+                :personnel (ext-gen/nil-if-empty (gen/vector personnels 0 3)))
               (ext-gen/optional processing-center-organizations)
               (ext-gen/optional archive-center-organizations)
               (gen/vector distribution-center-organizations 1 3))))
