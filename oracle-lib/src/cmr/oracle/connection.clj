@@ -6,7 +6,8 @@
             [clojure.java.jdbc :as j]
             [clj-time.coerce :as cr]
             [clj-time.core :as t]
-            [cmr.common.services.errors :as errors])
+            [cmr.common.services.errors :as errors]
+            [cmr.common.services.health-helper :as hh])
   (:import oracle.ucp.jdbc.PoolDataSourceFactory
            oracle.ucp.admin.UniversalConnectionPoolManagerImpl))
 
@@ -23,7 +24,7 @@
    :ons-config ons-config})
 
 
-(defn health
+(defn health-fn
   "Returns the health status of the database by executing some sql."
   [oracle-store]
   (try
@@ -36,6 +37,11 @@
                                              :spec
                                              (assoc :password "*****"))))
       {:ok? false :problem (.getMessage e)})))
+
+(defn health
+  "Returns the oracle health with timeout handling."
+  [oracle-store]
+  (hh/get-health #(health-fn oracle-store)))
 
 (defn test-db-connection!
   "Tests the database connection. Throws an exception if the database is unhealthy."

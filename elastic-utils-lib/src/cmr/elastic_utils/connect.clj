@@ -4,6 +4,7 @@
             [clojurewerkz.elastisch.rest.admin :as admin]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.services.errors :as errors]
+            [cmr.common.services.health-helper :as hh]
             [clj-http.conn-mgr :as conn-mgr]
             [cmr.common.api.web-server :as web-server]))
 
@@ -45,13 +46,13 @@
   "Returns the elastic health by calling elasticsearch cluster health api"
   [conn]
   (try
-    (admin/cluster-health conn :wait_for_status "yellow" :timeout "30s")
+    (admin/cluster-health conn :wait_for_status "yellow" :timeout "10s")
     (catch Exception e
       {:status "Inaccessible"
        :problem (format "Unable to get elasticsearch cluster health, caught exception: %s"
                         (.getMessage e))})))
 
-(defn health
+(defn health-fn
   "Returns the health state of elasticsearch."
   [context elastic-key-in-context]
   (let [conn (get-in context [:system elastic-key-in-context :conn])
@@ -61,3 +62,8 @@
       {:ok? true}
       {:ok? false
        :problem health-detail})))
+
+(defn health
+  "Returns the elasticsearch health with timeout handling."
+  [context elastic-key-in-context]
+  (hh/get-health #(health-fn context elastic-key-in-context) 12000))
