@@ -7,6 +7,7 @@
             [cheshire.core :as json]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.api.errors :as errors]
+            [cmr.common.util :as util]
             [cmr.common.services.errors :as srv-errors]
             [cmr.system-trace.http :as http-trace]
             [cmr.bootstrap.services.bootstrap-service :as bs]
@@ -35,12 +36,15 @@
   "Synchronizes Catalog REST and Metadata DB looking for differences that were ingested between
   start date and end date"
   [context params]
-  (let [{:keys [synchronous start_date end_date]} params]
-    (when-not (and start_date end_date)
-      (srv-errors/throw-service-error :bad-request "start_date and end_date are required parameters"))
+  (let [{:keys [synchronous start_date end_date provider_id entry_title]} params]
+    (when (and entry_title (not provider_id))
+      (srv-errors/throw-service-error :bad-request "If entry_title is provided provider_id must be provided as well."))
     (bs/db-synchronize context synchronous
-                       (date-time-parser/parse-datetime start_date)
-                       (date-time-parser/parse-datetime end_date))
+                       (util/remove-nil-keys
+                         {:start-date (date-time-parser/parse-datetime (or start_date "1970-01-01T00:00:00Z"))
+                          :end-date (date-time-parser/parse-datetime (or end_date "2100-01-01T00:00:00Z"))
+                          :provider-id provider_id
+                          :entry-title entry_title}))
     {:status 202 :body {:message "Synchronizing databases."}}))
 
 (defn- bulk-index-provider

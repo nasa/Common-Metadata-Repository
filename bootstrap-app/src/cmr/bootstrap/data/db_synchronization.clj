@@ -11,6 +11,7 @@
             [cmr.bootstrap.data.migration-utils :as mu]
             [cmr.common.util :as util]
             [cmr.common.concepts :as concepts]
+            [cmr.common.services.errors :as errors]
             [cmr.common.config :as config]
             [clj-time.coerce :as cr]
             [clj-time.core :as t]
@@ -46,19 +47,76 @@
           [concept_id (when revision_id (long revision_id))])
         (sql-utils/query conn stmt)))
 
+(defmulti concept-matches-dataset-id-clause
+  "Returns a sql clause to find items in the given concept type table by dataset id in a Catalog REST
+  table."
+  (fn [system provider-id concept-type]
+    concept-type))
+
+(defmethod concept-matches-dataset-id-clause :collection
+  [system provider-id concept-type]
+  "dataset_id = ?")
+
+(defmethod concept-matches-dataset-id-clause :granule
+  [system provider-id concept-type]
+  (format "dataset_record_id = (select id from %s where dataset_id = ?)"
+          (mu/catalog-rest-table system provider-id :collection)))
+
+(defmulti concept-matches-entry-title-clause
+  "Returns a sql clause to find items in the given concept type table by entry title in a metadata db
+  table"
+  (fn [system provider-id concept-type]
+    concept-type))
+
+(defmethod concept-matches-entry-title-clause :collection
+  [system provider-id concept-type]
+  "entry_title = ?")
+
+(defmethod concept-matches-entry-title-clause :granule
+  [system provider-id concept-type]
+  (format "parent_collection_id = (select distinct concept_id from %s where entry_title = ?)"
+          (tables/get-table-name provider-id :collection)))
+
+(defmulti add-missing-items-to-work-table-stmt
+  (fn [system provider-id concept-type params]
+    (set (keys params))))
+
+(defmethod add-missing-items-to-work-table-stmt :default
+  [system provider-id concept-type params]
+  (errors/internal-error! (str "Can not handle parameter combination of: " (pr-str params))))
+
+(defmethod add-missing-items-to-work-table-stmt #{:start-date :end-date}
+  [system provider-id concept-type {:keys [start-date end-date]}]
+  [(format "insert into sync_work (id, concept_id)
+           select ROWNUM, %s from %s
+           where ingest_updated_at >= ? and ingest_updated_at <= ? and %s"
+           (mu/concept-type->catalog-rest-id-field concept-type)
+           (mu/catalog-rest-table system provider-id concept-type)
+           mu/CATALOG_REST_SKIPPED_ITEMS_CLAUSE)
+   (cr/to-sql-time start-date) (cr/to-sql-time end-date)])
+
+(defmethod add-missing-items-to-work-table-stmt #{:start-date :end-date :entry-title}
+  [system provider-id concept-type {:keys [entry-title start-date end-date]}]
+  (let [concept-clause (concept-matches-dataset-id-clause system provider-id concept-type)]
+    [(format "insert into sync_work (id, concept_id)
+             select ROWNUM, %s from %s
+             where ingest_updated_at >= ? and ingest_updated_at <= ?
+             and %s
+             and %s"
+             (mu/concept-type->catalog-rest-id-field concept-type)
+             (mu/catalog-rest-table system provider-id concept-type)
+             concept-clause
+             mu/CATALOG_REST_SKIPPED_ITEMS_CLAUSE)
+     (cr/to-sql-time start-date) (cr/to-sql-time end-date) entry-title]))
+
 (defn- add-missing-items-to-work-table
   "Finds all the items that were ingested between start-date and end-date in Catalog REST and adds
   them to the sync_work table. These are all not necessarily missing from Metadata DB. We'll treat
   them as if they were since we know ingest into Metadata DB is idempotent."
-  [system provider-id concept-type start-date end-date]
+  [system provider-id concept-type params]
   (truncate-work-table system)
-  (let [sql (format "insert into sync_work (id, concept_id)
-                    select ROWNUM, %s from %s
-                    where ingest_updated_at >= ? and ingest_updated_at <= ? and %s"
-                    (mu/concept-type->catalog-rest-id-field concept-type)
-                    (mu/catalog-rest-table system provider-id concept-type)
-                    mu/CATALOG_REST_SKIPPED_ITEMS_CLAUSE)]
-      (j/execute! (:db system) [sql (cr/to-sql-time start-date) (cr/to-sql-time end-date)])))
+  (let [stmt (add-missing-items-to-work-table-stmt system provider-id concept-type params)]
+    (j/execute! (:db system) stmt)))
 
 (defn get-work-items-batch
   "Selects n work items from the table starting at the given index and retrieving up to n items"
@@ -247,9 +305,9 @@
 (defn synchronize-missing-items
   "Finds items missing from Metadata DB, loads the concepts from Catalog REST, saves them in the
   Metadata DB and indexes them."
-  [system provider-id concept-type start-date end-date]
+  [system provider-id concept-type params]
   (info "Synchronizing" concept-type "inserts for" provider-id)
-  (add-missing-items-to-work-table system provider-id concept-type start-date end-date)
+  (add-missing-items-to-work-table system provider-id concept-type params)
   (->> (process-items-from-work-table system)
        (map-missing-items-to-concepts system provider-id concept-type)
        (process-missing-concepts system)))
@@ -263,19 +321,51 @@
   [system]
   (j/execute! (:db system) ["delete from sync_delete_work"]))
 
+(defmulti add-deleted-items-to-delete-work-table-stmt
+  (fn [system provider-id concept-type params]
+    (set (keys params))))
+
+(defmethod add-deleted-items-to-delete-work-table-stmt :default
+  [system provider-id concept-type params]
+  (errors/internal-error! (str "Can not handle parameter combination of: " (pr-str params))))
+
+(defmethod add-deleted-items-to-delete-work-table-stmt #{:start-date :end-date}
+  [system provider-id concept-type params]
+  ;; Note that start date and end date will not impact this query. This was a decision made early in
+  ;; the design. It could be changed if needed.
+  [(format "insert into sync_delete_work (concept_id, revision_id, deleted)
+           select concept_id, revision_id, deleted from %s
+           where concept_id not in (select %s from %s where %s)"
+           (tables/get-table-name provider-id concept-type)
+           (mu/concept-type->catalog-rest-id-field concept-type)
+           (mu/catalog-rest-table system provider-id concept-type)
+           mu/CATALOG_REST_SKIPPED_ITEMS_CLAUSE)])
+
+(defmethod add-deleted-items-to-delete-work-table-stmt #{:start-date :end-date :entry-title}
+  [system provider-id concept-type {:keys [entry-title]}]
+  ;; Note that start date and end date will not impact this query. This was a decision made early in
+  ;; the design. It could be changed if needed.
+  (let [match-dataset-id-clause (concept-matches-dataset-id-clause system provider-id concept-type)
+        match-entry-title-clause (concept-matches-entry-title-clause system provider-id concept-type)]
+    [(format "insert into sync_delete_work (concept_id, revision_id, deleted)
+             select concept_id, revision_id, deleted from %s
+             where %s and concept_id not in (select %s from %s where %s and %s)"
+             (tables/get-table-name provider-id concept-type)
+             match-entry-title-clause
+             (mu/concept-type->catalog-rest-id-field concept-type)
+             (mu/catalog-rest-table system provider-id concept-type)
+             match-dataset-id-clause
+             mu/CATALOG_REST_SKIPPED_ITEMS_CLAUSE)
+     entry-title
+     entry-title]))
+
 (defn- add-deleted-items-to-delete-work-table
   "Find items that exist in Metadata DB but do not exist in Catalog REST. This includes all
   revisions and tombstones. These items are inserted into sync_delete_work."
-  [system provider-id concept-type]
+  [system provider-id concept-type params]
   (truncate-delete-work-table system)
-  (let [sql (format "insert into sync_delete_work (concept_id, revision_id, deleted)
-                    select concept_id, revision_id, deleted from %s
-                    where concept_id not in (select %s from %s where %s)"
-                    (tables/get-table-name provider-id concept-type)
-                    (mu/concept-type->catalog-rest-id-field concept-type)
-                    (mu/catalog-rest-table system provider-id concept-type)
-                    mu/CATALOG_REST_SKIPPED_ITEMS_CLAUSE)]
-    (j/execute! (:db system) [sql])))
+  (j/execute! (:db system)
+              (add-deleted-items-to-delete-work-table-stmt system provider-id concept-type params)))
 
 (defn- get-max-of-multi-revisions
   "Finds the concept id, and maximum revision id of items in the delete work table that have more
@@ -310,10 +400,10 @@
 (defn add-deleted-items-to-work-table
   "Populates the work table with deleted items. This is a several step process to find the items
   that are missing and require a tombstone in metadata db."
-  [system provider-id concept-type]
+  [system provider-id concept-type params]
   ;; Find items that exist in Metadata DB but do not exist in Catalog REST. This includes
   ;; all revisions and tombstones. These items are inserted into sync_delete_work.
-  (add-deleted-items-to-delete-work-table system provider-id concept-type)
+  (add-deleted-items-to-delete-work-table system provider-id concept-type params)
   ;; Keep the max revision of each concept in sync_delete_work. We do this by getting the maximum
   ;; revision for each concept having multiple revisions and deleting any less than the max revision
   (delete-smaller-revisions system (get-max-of-multi-revisions system))
@@ -383,9 +473,9 @@
 (defn synchronize-deletes
   "Finds items that exist in Metadata DB but do not exist in Catalog REST. It creates tombstones
   for these items and unindexes them."
-  [system provider-id concept-type]
+  [system provider-id concept-type params]
   (info "Synchronizing deletes for" provider-id concept-type)
-  (add-deleted-items-to-work-table system provider-id concept-type)
+  (add-deleted-items-to-work-table system provider-id concept-type params)
   (->> (process-items-from-work-table system)
        (map-extra-items-batches-to-deletes system provider-id concept-type)
        (process-deletes system)))
@@ -393,12 +483,16 @@
 (defn synchronize-databases
   "Finds differences in Metadata DB and Catalog REST and brings Metadata DB along with the indexer
   back in sync with Catalog REST."
-  [system start-date end-date]
-  (doseq [provider (provider-service/get-providers {:system system})]
-    (synchronize-missing-items system provider :collection start-date end-date)
-    (synchronize-deletes system provider :collection)
-    (synchronize-missing-items system provider :granule start-date end-date)
-    (synchronize-deletes system provider :granule))
+  [system params]
+  (let [selected-provider-id (:provider-id params)
+        providers (filter #(or (nil? selected-provider-id) (= % selected-provider-id))
+                          (provider-service/get-providers {:system system}))
+        params (dissoc params :provider-id)]
+    (doseq [provider providers]
+      (synchronize-missing-items system provider :collection params)
+      (synchronize-deletes system provider :collection params)
+      (synchronize-missing-items system provider :granule params)
+      (synchronize-deletes system provider :granule params)))
   (info "Synchronization complete"))
 
 
@@ -411,8 +505,8 @@
     (async/thread
       (while true
         (try ; catch any errors and log them, but don't let the thread die
-          (let [{:keys [start-date end-date]} (<!! channel)]
-            (synchronize-databases system start-date end-date))
+          (let [params (<!! channel)]
+            (synchronize-databases system params))
           (catch Throwable e
             (error e (.getMessage e))))))))
 

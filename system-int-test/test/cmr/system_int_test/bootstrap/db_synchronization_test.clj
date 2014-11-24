@@ -215,16 +215,6 @@
       (assert-concepts-in-mdb updated-colls)
       (assert-concepts-indexed updated-colls))))
 
-
-(comment
-
-  (bootstrap/db-fixture-setup "CPROV1" "CPROV2")
-
-  (bootstrap/db-fixture-tear-down "CPROV1"  "CPROV2")
-
-  )
-
-
 (deftest db-synchronize-collection-inserts-between-dates-test
   (test-env/only-with-real-database
     (let [concept-counter (atom 1)
@@ -267,7 +257,7 @@
 
         ;; Catalog REST and Metadata DB are not in sync now.
         ;; Put them back in sync
-        (bootstrap/synchronize-databases start-time end-time))
+        (bootstrap/synchronize-databases {:start-time start-time :end-time end-time}))
 
 
       ;; Check that they are synchronized now with the latest data.
@@ -617,33 +607,61 @@
 
 (def NUM_GRANULES_FACTOR 2)
 
+(defn setup-holdings
+  []
+  (let [concept-counter (atom 0)
+        ;; Map of provider ids to maps of concept types to maps of concept ids to sequences of concept revisions
+        increase-by-factor #(* % NUM_GRANULES_FACTOR)
+        orig-holdings (-> (initial-holdings "CPROV1" "CPROV2")
+                          ;; Setup initial holdings
+                          (modify-holdings concept-counter true
+                                           {:collection {:num-inserts 10
+                                                         :num-updates 2}
+                                            :granule {:num-inserts (increase-by-factor 10)
+                                                      :num-updates (increase-by-factor 1)
+                                                      :num-deletes (increase-by-factor 1)}})
+                          ;; We should be in sync
+                          verify-holdings)]
+    ;; Make Catalog REST out of sync with Metadata db
+    (-> orig-holdings
+        (modify-holdings concept-counter false
+                         {:granule {:num-deletes (increase-by-factor 4)}})
+        (modify-holdings concept-counter false
+                         {:collection {:num-inserts 2
+                                       :num-updates 4}
+                          :granule {:num-inserts (increase-by-factor 1)
+                                    :num-updates (increase-by-factor 2)}})
+        (simulate-insert-sync orig-holdings))))
+
+(comment
+
+  (bootstrap/db-fixture-setup "CPROV1" "CPROV2")
+
+  (bootstrap/db-fixture-tear-down "CPROV1"  "CPROV2")
+
+  )
+
+
 (deftest db-synchronize-many-items
   (test-env/only-with-real-database
-    (let [concept-counter (atom 0)
-          ;; Map of provider ids to maps of concept types to maps of concept ids to sequences of concept revisions
-          increase-by-factor #(* % NUM_GRANULES_FACTOR)
-          orig-holdings (-> (initial-holdings "CPROV1" "CPROV2")
-                            ;; Setup initial holdings
-                            (modify-holdings concept-counter true
-                                             {:collection {:num-inserts 10
-                                                           :num-updates 2}
-                                              :granule {:num-inserts (increase-by-factor 10)
-                                                        :num-updates (increase-by-factor 1)
-                                                        :num-deletes (increase-by-factor 1)}})
-                            ;; We should be in sync
-                            verify-holdings)
-          ;; Make Catalog REST out of sync with Metadata db
-          updated-holdings (-> orig-holdings
-                               (modify-holdings concept-counter false
-                                                {:granule {:num-deletes (increase-by-factor 4)}})
-                               (modify-holdings concept-counter false
-                                                {:collection {:num-inserts 2
-                                                              :num-updates 4}
-                                                 :granule {:num-inserts (increase-by-factor 1)
-                                                           :num-updates (increase-by-factor 2)}})
-                               (simulate-insert-sync orig-holdings))]
-
+    (let [updated-holdings (setup-holdings)]
       (bootstrap/synchronize-databases)
+      (verify-holdings updated-holdings))))
 
+(deftest db-synchronize-by-collection
+  (test-env/only-with-real-database
+    (let [updated-holdings (setup-holdings)]
+      (doseq [[provider-id concept-type-map] updated-holdings
+              [concept-id concepts] (:collection concept-type-map)]
+        (bootstrap/synchronize-databases {:provider-id provider-id
+                                          :entry-title (:native-id (first concepts))}))
+
+      (verify-holdings updated-holdings))))
+
+(deftest db-synchronize-by-provider-id
+  (test-env/only-with-real-database
+    (let [updated-holdings (setup-holdings)]
+      (doseq [provider-id (keys updated-holdings)]
+        (bootstrap/synchronize-databases {:provider-id provider-id}))
       (verify-holdings updated-holdings))))
 

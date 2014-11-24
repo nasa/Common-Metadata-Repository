@@ -30,7 +30,14 @@ Due to an issue in Catalog REST the CMR and Catalog REST databases diverged for 
 
     curl -v -XPOST http://localhost:3006/db_synchronize?start_date=2014-10-01T00:00:00Z&end_date=2014-10-05T00:00:00Z
 
-The start date and end date should be used to indicate the time period during which Catalog REST and CMR went out of sync. This will start a synchronization process in the background and return immediately. The synchronization process iterates over each provider and executes the following steps:
+The following parameters are supported. All parameters are optional.
+
+  * `start_date`: The start date of the range to look for time changes. Uses ingest_updated_at column.
+  * `end_date`: The end date of the range to look for time changes. Uses ingest_updated_at column.
+  * `provider_id`: Limit the synchronization to a specific provider.
+  * `entry_title`: Limit the synchronization to a specific collection. If this is provided `provider_id` must also be provided.
+
+This will start a synchronization process in the background and return immediately. The synchronization process iterates over each provider and executes the following steps:
 
   1. Synchronize missing collections
   2. Synchronize deleted collections
@@ -39,7 +46,7 @@ The start date and end date should be used to indicate the time period during wh
 
 #### Synchronizing Missing Items
 
-  1. It finds any items in the Catalog REST database with an ingest_updated at between the start date and end date. These items are inserted into a table for processing.
+  1. It finds any items in the Catalog REST database matching the params. These items are inserted into a table for processing.
   2. For each batch of N items from the work table:
      1. Get the latest revision ids of the items from the work table.
      2. For each item in the batch:
@@ -53,6 +60,7 @@ Note that for every item found between start_date and end_date a new revision wi
 #### Synchronizing Deleted Items
 
   1. It finds any items which exist in Metadata DB and do not exist in Catalog REST. These items are inserted into a table for processing. The latest revision ids are retrieved at the same time.
+    * The start and end date parameters are ignored for this.
   2. For each batch of N items from the work table:
      1. For each item in the batch:
        1. Create a tombstone in Metadata DB
