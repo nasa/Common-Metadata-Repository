@@ -9,10 +9,39 @@
             [clojure.string :as string]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.old-ingest-util :as old-ingest]
-            ))
+            [cmr.system-int-test.data2.collection :as dc]
+            [cmr.system-int-test.data2.granule :as dg]
+            [cmr.system-int-test.data2.core :as d]))
 
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
+
+;; Tests that a granule referencing a collection that had multiple concept ids (the native id changed
+;; but the shortname or dataset id did not) will reference the correct collection.
+;; See CMR-1104
+(deftest granule-referencing-collection-with-changing-concept-id-test
+  (let [common-fields {:entry-title "coll1" :short-name "short1" :version-id "V1"}
+        orig-coll (d/ingest "PROV1" (assoc (dc/collection common-fields) :native-id "native1"))
+        ;; delete the collection
+        deleted-response (ingest/delete-concept (assoc orig-coll :concept-type :collection))
+        ;; Create collection again with same details but a different native id
+        new-coll (d/ingest "PROV1" (assoc (dc/collection common-fields) :native-id "native2"))
+
+        ;; Create granules associated with the collection fields.
+        gran1 (d/ingest "PROV1" (update-in (dg/granule new-coll) [:collection-ref]
+                                           dissoc :short-name :version-id))
+        gran2 (d/ingest "PROV1" (update-in (dg/granule new-coll) [:collection-ref]
+                                           dissoc :entry-title))]
+
+    ;; Make sure the granules reference the correct collection
+
+    (is (= (:concept-id new-coll)
+           (get-in (ingest/get-concept (:concept-id gran1) (:revision-id gran1))
+                   [:extra-fields :parent-collection-id])))
+
+    (is (= (:concept-id new-coll)
+           (get-in (ingest/get-concept (:concept-id gran2) (:revision-id gran2))
+                   [:extra-fields :parent-collection-id])))))
 
 ;;; Verify a new granule is ingested successfully.
 (deftest granule-ingest-test
