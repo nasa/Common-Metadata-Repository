@@ -46,7 +46,7 @@
   (let [format (mime-types/format->mime-type format-key)]
     (merge {:concept-type (item->concept-type item)
             :provider-id (:provider-id item)
-            :native-id (item->native-id item)
+            :native-id (or (:native-id item) (item->native-id item))
             :metadata (umm/umm->xml item format-key)
             :format format}
            (when (:concept-id item)

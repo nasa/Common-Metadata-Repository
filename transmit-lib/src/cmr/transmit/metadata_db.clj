@@ -7,6 +7,7 @@
             [clojure.walk :as walk]
             [cmr.system-trace.http :as ch]
             [ring.util.codec :as codec]
+            [cmr.acl.core :as acl]
             [cmr.transmit.connection :as conn]
             [cmr.common.log :refer (debug info warn error)]))
 
@@ -165,41 +166,59 @@
         (format "Collection search failed. status: %s body: %s"
                 status body)))))
 
+(defn create-provider-raw
+  "Create the provider with the given provider id, returns the raw response coming back from metadata-db"
+  [context provider-id]
+  (let [conn (config/context->app-connection context :metadata-db)
+        request-url (str (conn/root-url conn) "/providers")]
+    (client/post request-url
+                 {:body (format "{\"provider-id\": \"%s\"}" provider-id)
+                  :content-type :json
+                  :headers {acl/token-header (config/echo-system-token)}
+                  :throw-exceptions false})))
+
 (defn create-provider
   "Create the provider with the given provider id"
   [context provider-id]
-  (let [conn (config/context->app-connection context :metadata-db)
-        request-url (str (conn/root-url conn) "/providers")
-        {:keys [status body]} (client/post request-url
-                                           {:body (format "{\"provider-id\": \"%s\"}" provider-id)
-                                            :content-type :json
-                                            :throw-exceptions false})]
+  (let [{:keys [status body]} (create-provider-raw context provider-id)]
     (when-not (= status 201)
       (errors/internal-error!
         (format "Failed to create provider status: %s body: %s"
                 status body)))))
 
+(defn delete-provider-raw
+  "Delete the provider with the matching provider-id from the CMR metadata repo,
+  returns the raw response coming back from metadata-db."
+  [context provider-id]
+  (let [conn (config/context->app-connection context :metadata-db)
+        request-url (str (conn/root-url conn) "/providers/" provider-id)]
+    (client/delete request-url {:throw-exceptions false
+                                :headers {acl/token-header (config/echo-system-token)}})))
+
 (defn delete-provider
   "Delete the provider with the matching provider-id from the CMR metadata repo."
   [context provider-id]
-  (let [conn (config/context->app-connection context :metadata-db)
-        request-url (str (conn/root-url conn) "/providers/" provider-id)
-        {:keys [status body]} (client/delete request-url {:throw-exceptions false})]
+  (let [{:keys [status body]} (delete-provider-raw context provider-id)]
     (when-not (or (= status 200) (= status 404))
       (errors/internal-error!
         (format "Failed to delete provider status: %s body: %s"
                 status body)))))
 
+(defn get-providers-raw
+  "Returns the list of provider ids configured in the metadata db,
+  returns the raw response coming back from metadata-db"
+  [context]
+  (let [conn (config/context->app-connection context :metadata-db)
+        request-url (str (conn/root-url conn) "/providers")]
+    (client/get request-url {:accept :json
+                             :headers (ch/context->http-headers context)
+                             :throw-exceptions false
+                             :connection-manager (conn/conn-mgr conn)})))
+
 (defn get-providers
   "Returns the list of provider ids configured in the metadata db"
   [context]
-  (let [conn (config/context->app-connection context :metadata-db)
-        request-url (str (conn/root-url conn) "/providers")
-        response (client/get request-url {:accept :json
-                                          :headers (ch/context->http-headers context)
-                                          :throw-exceptions false
-                                          :connection-manager (conn/conn-mgr conn)})
-        {:keys [status body]} response]
+  (let [{:keys [status body]} (get-providers-raw context)]
     (case status
       200 (-> body (cheshire/decode true) :providers)
       ;; default

@@ -293,7 +293,8 @@
                                :content-type :json
                                :accept :json
                                :throw-exceptions false
-                               :connection-manager (conn-mgr)})
+                               :connection-manager (conn-mgr)
+                               :headers {acl/token-header (transmit-config/echo-system-token)}})
         status (:status response)
         body (cheshire/parse-string (:body response))
         errors (get body "errors")
@@ -319,7 +320,8 @@
   (let [response (client/delete (format "%s/%s" providers-url provider-id)
                                 {:accept :json
                                  :throw-exceptions false
-                                 :connection-manager (conn-mgr)})
+                                 :connection-manager (conn-mgr)
+                                 :headers {acl/token-header (transmit-config/echo-system-token)}})
         status (:status response)
         body (cheshire/parse-string (:body response))
         errors (get body "errors")]

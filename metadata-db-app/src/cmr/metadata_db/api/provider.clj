@@ -1,6 +1,7 @@
 (ns cmr.metadata-db.api.provider
   "Defines the HTTP URL routes for the application."
   (:require [compojure.core :refer :all]
+            [cmr.acl.core :as acl]
             [cmr.metadata-db.api.route-helpers :as rh]
             [cmr.metadata-db.services.provider-service :as provider-service]
             [cmr.common.log :refer (debug info warn error)]))
@@ -30,11 +31,17 @@
 (def provider-api-routes
   (context "/providers" []
     ;; create a new provider
-    (POST "/" {:keys [request-context params body]}
-      (save-provider request-context params (get body "provider-id")))
+    (POST "/" {:keys [request-context params headers body]}
+      (let [context (acl/add-authentication-to-context request-context params headers)]
+        (acl/verify-ingest-management-permission context :update)
+        (save-provider request-context params (get body "provider-id"))))
     ;; delete a provider
-    (DELETE "/:provider-id" {{:keys [provider-id] :as params} :params request-context :request-context}
-      (delete-provider request-context params provider-id))
+    (DELETE "/:provider-id" {{:keys [provider-id] :as params} :params
+                             request-context :request-context
+                             headers :headers}
+      (let [context (acl/add-authentication-to-context request-context params headers)]
+        (acl/verify-ingest-management-permission context :update)
+        (delete-provider request-context params provider-id)))
     ;; get a list of providers
     (GET "/" {:keys [request-context params]}
       (get-providers request-context params))))

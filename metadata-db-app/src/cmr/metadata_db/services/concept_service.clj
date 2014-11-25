@@ -134,7 +134,8 @@
   [concept result tries-left revision-id-provided?]
   (let [error-code (:error result)]
     (when (= tries-left 1)
-      (errors/internal-error! (msg/maximum-save-attempts-exceeded (:error-message result))))
+      (errors/internal-error! (msg/maximum-save-attempts-exceeded (:error-message result))
+                              (:throwable result)))
     (condp = error-code
       :revision-id-conflict
       (when revision-id-provided?
@@ -151,7 +152,7 @@
                          provider-id
                          native-id))
 
-      (errors/internal-error! (:error-message result)))))
+      (errors/internal-error! (:error-message result) (:throwable result)))))
 
 (defn try-to-save
   "Try to save a concept by looping until we find a good revision-id or give up."

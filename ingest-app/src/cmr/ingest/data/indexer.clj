@@ -48,19 +48,32 @@
     (when-not (= 201 status)
       (errors/internal-error! (str "Operation to index a concept failed. Indexer app response status code: "  status  " " response)))))
 
-(deftracefn delete-concept-from-index
-  "Delete a concept with given revision-id from index."
-  [context concept-id revision-id]
+(defn- delete-from-indexer
+  "Execute http delete of the given url on the indexer"
+  [context delete-url]
   (let [conn (transmit-config/context->app-connection context :indexer)
-        indexer-url (transmit-conn/root-url conn)
-        response (client/delete (format "%s/%s/%s" indexer-url concept-id revision-id)
+        indexer-root (transmit-conn/root-url conn)
+        response (client/delete (format "%s/%s" indexer-root delete-url)
                                 {:accept :json
                                  :throw-exceptions false
                                  :headers (get-headers context)
                                  :connection-manager (transmit-conn/conn-mgr conn)})
         status (:status response)]
     (when-not (some #{200, 204} [status])
-      (errors/internal-error! (str "Delete concept operation failed. Indexer app response status code: "  status " " response)))))
+      (errors/internal-error!
+        (format "Delete %s operation failed. Indexer app response status code: %s %s"
+                delete-url status response)))
+    response))
+
+(deftracefn delete-concept-from-index
+  "Delete a concept with given revision-id from index."
+  [context concept-id revision-id]
+  (delete-from-indexer context (format "%s/%s" concept-id revision-id)))
+
+(deftracefn delete-provider-from-index
+  "Delete a provider with given provider-id from index."
+  [context provider-id]
+  (delete-from-indexer context (format "provider/%s" provider-id)))
 
 (defn get-indexer-health
   "Returns the health status of the indexer app"

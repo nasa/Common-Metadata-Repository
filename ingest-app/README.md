@@ -67,10 +67,22 @@ CMR_DB_URL=thin:@localhost:1521:orcl CMR_INGEST_PASSWORD=****** java -cp target/
 ## Curl statements
 - ensure Metadata db, ES, Indexer, Ingest are functioning
 
+### Create provider
+
+    curl -v -XPOST -H "Content-Type: application/json" -H "Echo-Token: mock-echo-system-token" -d '{"provider-id": "PROV1"}' http://localhost:3002/providers
+
+### Delete provider
+
+    curl -v -XDELETE -H "Echo-Token: mock-echo-system-token" http://localhost:3002/providers/PROV1
+
+### Get providers
+
+    curl http://localhost:3002/providers
+
 ### Create concept
 
     curl -i -v  -X PUT -H "Content-Type: application/echo10+xml" -H "Accept:application/json" --data \
-"<Collection> <ShortName>ShortName_Larc</ShortName> <VersionId>Version01</VersionId> <InsertTime>1999-12-31T19:00:00-05:00</InsertTime> <LastUpdate>1999-12-31T19:00:00-05:00</LastUpdate> <DeleteTime>2014-05-23T22:30:59</DeleteTime><LongName>LarcLongName</LongName> <DataSetId>LarcDatasetId</DataSetId> <Description>A minimal valid collection</Description> <Orderable>true</Orderable> <Visible>true</Visible> </Collection>"  \
+"<Collection> <ShortName>ShortName_Larc</ShortName> <VersionId>Version01</VersionId> <InsertTime>1999-12-31T19:00:00-05:00</InsertTime> <LastUpdate>1999-12-31T19:00:00-05:00</LastUpdate> <DeleteTime>2015-05-23T22:30:59</DeleteTime><LongName>LarcLongName</LongName> <DataSetId>LarcDatasetId</DataSetId> <Description>A minimal valid collection</Description> <Orderable>true</Orderable> <Visible>true</Visible> </Collection>"  \
 http://localhost:3002/providers/PROV1/collections/nativeId8
 
 sample output:

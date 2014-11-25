@@ -48,9 +48,9 @@
 (defn db-synchronize
   "Synchronizes Catalog REST and Metadata DB looking for differences that were ingested between
   start date and end date"
-  [context synchronous start-date end-date]
+  [context synchronous params]
   (if synchronous
-    (dbs/synchronize-databases (:system context) start-date end-date)
+    (dbs/synchronize-databases (:system context) params)
     (let [channel (get-in context [:system :db-synchronize-channel])]
       (info "Adding message to the database synchronize channel.")
-      (go (>! channel {:start-date start-date :end-date end-date})))))
+      (go (>! channel params)))))
