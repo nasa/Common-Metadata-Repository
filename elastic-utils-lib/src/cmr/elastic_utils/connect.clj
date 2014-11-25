@@ -46,7 +46,8 @@
   "Returns the elastic health by calling elasticsearch cluster health api"
   [conn]
   (try
-    (admin/cluster-health conn :wait_for_status "yellow" :timeout "10s")
+    (admin/cluster-health conn :wait_for_status "yellow"
+                          :timeout (str (hh/health-check-timeout-seconds) "s"))
     (catch Exception e
       {:status "Inaccessible"
        :problem (format "Unable to get elasticsearch cluster health, caught exception: %s"
@@ -66,4 +67,6 @@
 (defn health
   "Returns the elasticsearch health with timeout handling."
   [context elastic-key-in-context]
-  (hh/get-health #(health-fn context elastic-key-in-context) 12000))
+  (let [;; We add 1 second to allow get-elastic-health operation to timeout first
+        timeout-ms (* 1000 (+ 1 (hh/health-check-timeout-seconds)))]
+    (hh/get-health #(health-fn context elastic-key-in-context) timeout-ms)))
