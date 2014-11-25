@@ -33,14 +33,34 @@
                                   :version-id version-id
                                   :delete-time (when delete-time (str delete-time))})))
 
+(defn- get-granule-parent-collection-id
+  "Find the parent collection id for a granule given its provider id and collection ref. This will
+  correctly handle situations where there might be multiple concept ids that used a short name and
+  version if or entry title but were previously deleted."
+  [context provider-id collection-ref]
+  (let [params (util/remove-nil-keys (merge {:provider-id provider-id}
+                                            collection-ref))
+        coll-concepts (mdb/find-collections context params)
+        ;; Find the latest version of the concepts that aren't deleted. There should be only one
+        matching-concepts (->> coll-concepts
+                               (group-by :concept-id)
+                               (map (fn [[concept-id concepts]]
+                                      (->> concepts (sort-by :revision-id) reverse first)))
+                               (filter (complement :deleted)))]
+    (when-not (<= (count matching-concepts) 1)
+      (serv-errors/internal-error!
+        (format (str "Found zero or multiple possible parent collections for a granule in provider %s"
+                     " referencing with %s. matching-concepts: %s")
+                provider-id (pr-str collection-ref) (pr-str matching-concepts))))
+    (:concept-id (first matching-concepts))))
+
 (defmethod add-extra-fields :granule
   [context concept]
   (let [granule (umm/parse-concept concept)
         {:keys [collection-ref granule-ur]
          {:keys [delete-time]} :data-provider-timestamps} granule
-        params (util/remove-nil-keys (merge {:provider-id (:provider-id concept)}
-                                            collection-ref))
-        parent-collection-id (-> (mdb/find-collections context params) first :concept-id)]
+        parent-collection-id (get-granule-parent-collection-id
+                               context (:provider-id concept) collection-ref)]
     (when-not parent-collection-id
       (cmsg/data-error :not-found
                        msg/parent-collection-does-not-exist

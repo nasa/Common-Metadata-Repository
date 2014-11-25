@@ -113,7 +113,7 @@
    (granule collection {}))
   ([collection attribs]
    (let [timestamps {:data-provider-timestamps (dc/data-provider-timestamps attribs)}
-         {:keys [format-key entry-title short-name version-id]} collection
+         {:keys [format-key entry-title] {:keys [short-name version-id]} :product} collection
          coll-ref (g/collection-ref entry-title short-name version-id)
          minimal-gran {:granule-ur (d/unique-str "ur")
                        :collection-ref coll-ref

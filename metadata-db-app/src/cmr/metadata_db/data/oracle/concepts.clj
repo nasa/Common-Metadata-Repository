@@ -418,7 +418,7 @@
 
                            :else
                            :unknown-error)]
-          {:error error-code :error-message error-message}))))
+          {:error error-code :error-message error-message :throwable e}))))
 
   (force-delete
     [this concept-type provider-id concept-id revision-id]
