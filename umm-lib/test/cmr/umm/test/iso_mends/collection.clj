@@ -98,10 +98,6 @@
         (update-in [:related-urls] related-urls->expected-parsed)
         ;; ISO does not fully support two-d-coordinate-systems
         (dissoc :two-d-coordinate-systems)
-        ;; We don't use these two fields during xml generation as they are not needed for ISO
-        ;; so we set them to the defaults here.
-        (assoc :contact-email "support@earthdata.nasa.gov")
-        (assoc :contact-name "undefined")
         umm-c/map->UmmCollection)))
 
 (defspec generate-collection-is-valid-xml-test 100
@@ -245,9 +241,13 @@
                      (umm-c/map->Organization
                        {:type :archive-center
                         :org-name "SEDAC AC"})]
-                    :contact-email "jsmith@nasa.gov"
-                    :contact-name "John Smith"
-                    })
+                    :personnel [(umm-c/map->Personnel
+                                  {:first-name nil
+                                   :middle-name nil
+                                   :last-name nil
+                                   :roles [nil]
+                                   :contacts [(umm-c/map->Contact
+                                                {:type :email :value nil})]})]})
         actual (c/parse-collection all-fields-collection-xml)]
     (is (= expected actual))))
 

@@ -10,6 +10,7 @@
             [cmr.umm.collection :as c]
             [cmr.common.xml :as v]
             [cmr.umm.iso-mends.collection.related-url :as ru]
+            [cmr.umm.iso-mends.collection.personnel :as pe]
             [cmr.umm.iso-mends.collection.org :as org]
             [cmr.umm.iso-mends.collection.temporal :as t]
             [cmr.umm.iso-mends.collection.platform :as platform]
@@ -64,35 +65,6 @@
         restriction-flag (when restriction (str/replace restriction #"Restriction Flag:" ""))]
     (when (seq restriction-flag) (Double. restriction-flag))))
 
-(defn- xml-elem->contact-name
-  "Returns the contact name from a parsed IdentificationInfo XML structure"
-  [xml-struct]
-  (let [person-name (cx/string-at-path xml-struct [:pointOfContact
-                                                   :CI_ResponsibleParty
-                                                   :individualName
-                                                   :CharacterString])
-        org-name (cx/string-at-path xml-struct [:pointOfContact
-                                                :CI_ResponsibleParty
-                                                :organisationName
-                                                :CharacterString])
-        contact-name (or person-name org-name)]
-    (if contact-name
-      contact-name
-      "undefined")))
-
-(defn- xml-elem->email
-  "Returns the contact email from a parsed IdentificationInfo XML structure"
-  [xml-struct]
-  (or (cx/string-at-path xml-struct [:pointOfContact
-                                     :CI_ResponsibleParty
-                                     :contactInfo
-                                     :CI_Contact
-                                     :address
-                                     :CI_Address
-                                     :electronicMailAddress
-                                     :CharacterString])
-      "support@earthdata.nasa.gov"))
-
 (defn- xml-elem->Collection
   "Returns a UMM Product from a parsed Collection XML structure"
   [xml-struct]
@@ -117,12 +89,11 @@
        ;; TwoDCoordinateSystems is not fully supported as documented in CMR-693
        ; :two-d-coordinate-systems (two-d/xml-elem->TwoDCoordinateSystems xml-struct)
        :related-urls (ru/xml-elem->related-urls xml-struct)
+       :personnel (pe/xml-elem->personnel xml-struct)
        ;; TODO: Ted has updated the xsl today, will try to add spatial support next.
        ; :spatial-coverage (xml-elem->SpatialCoverage xml-struct)
        :organizations (org/xml-elem->Organizations xml-struct)
-       :associated-difs (dif/xml-elem->associated-difs id-elem)
-       :contact-email (xml-elem->email id-elem)
-       :contact-name (xml-elem->contact-name id-elem)})))
+       :associated-difs (dif/xml-elem->associated-difs id-elem)})))
 
 (defn parse-collection
   "Parses ISO XML into a UMM Collection record."
@@ -196,16 +167,35 @@
       :gmd:MD_Identifier {}
       (h/iso-string-element :gmd:code processing-level-id))))
 
+(defn- first-email
+  "Return the first email address from the contact list, or nil."
+  [personnel]
+  (when-let [contacts (:contacts (first personnel))]
+    (when-let [emails (filter #(= :email (:type %)) contacts)]
+      (:value (first emails)))))
+
 (defn- generate-distributor-contact
   "Generate the distributorContact element"
-  [archive-center]
-  (x/element
-    :gmd:distributorContact {}
-    (x/element
-      :gmd:CI_ResponsibleParty {}
-      (h/iso-string-element :gmd:organisationName archive-center)
-      (x/element :gmd:role {}
-                 (x/element :gmd:CI_RoleCode (h/role-code-attributes "distributor") "distributor")))))
+  [archive-center personnel]
+  (let [email (first-email personnel)]
+    (x/element :gmd:distributorContact {}
+               (x/element :gmd:CI_ResponsibleParty {}
+                          (h/iso-string-element :gmd:organisationName archive-center)
+                          (when email
+                            (x/element
+                              :gmd:contactInfo {}
+                              (x/element
+                                :gmd:CI_Contact {}
+                                (x/element
+                                  :gmd:address {}
+                                  (x/element
+                                    :gmd:CI_Address {}
+                                    (x/element
+                                      :gmd:electronicMailAddress {}
+                                      (x/element
+                                        :gco:CharacterString {} email)))))))
+                          (x/element :gmd:role {}
+                                     (x/element :gmd:CI_RoleCode (h/role-code-attributes "distributor") "distributor"))))))
 
 (defn- generate-distributor-transfer-options
   "Generate the distributorTransferOptions element"
@@ -216,16 +206,15 @@
       :gmd:MD_DigitalTransferOptions {}
       (ru/generate-resource-urls related-urls))))
 
-
 (defn- generate-distribution-info
   "Generate the ISO distribution info part of the ISO xml with the given archive center and related urls"
-  [archive-center related-urls]
+  [archive-center related-urls personnel]
   (x/element
     :gmd:distributionInfo {}
     (x/element :gmd:MD_Distribution {}
                (x/element :gmd:distributor {}
                           (x/element :gmd:MD_Distributor {}
-                                     (generate-distributor-contact archive-center)
+                                     (generate-distributor-contact archive-center personnel)
                                      (generate-distributor-transfer-options related-urls))))))
 
 (extend-protocol cmr.umm.iso-mends.core/UmmToIsoMendsXml
@@ -240,7 +229,7 @@
             {:keys [insert-time update-time]} :data-provider-timestamps
             :keys [organizations spatial-keywords temporal-keywords temporal science-keywords
                    platforms product-specific-attributes projects two-d-coordinate-systems
-                   related-urls spatial-coverage summary associated-difs]} collection
+                   related-urls spatial-coverage summary associated-difs personnel]} collection
            archive-center (org/get-organization-name :archive-center organizations)
            platforms (platform/platforms-with-id platforms)
            emit-fn (if indent? x/indent-str x/emit-str)]
@@ -295,7 +284,7 @@
                                               ; (spatial/generate-spatial spatial-coverage)
                                               (t/generate-temporal temporal)))
                         (iso-processing-level-id-element processing-level-id)))
-                    (generate-distribution-info archive-center related-urls)
+                    (generate-distribution-info archive-center related-urls personnel)
                     (org/generate-processing-center organizations)
                     (x/element :gmi:acquisitionInformation {}
                                (x/element :gmi:MI_AcquisitionInformation {}
@@ -307,5 +296,3 @@
   "Validates the XML against the ISO schema."
   [xml]
   (v/validate-xml (io/resource "schema/iso_mends/schema/1.0/ISO19115-2_EOS.xsd") xml))
-
-
