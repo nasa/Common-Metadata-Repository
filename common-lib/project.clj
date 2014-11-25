@@ -15,7 +15,9 @@
                  [clj-time "0.8.0"]
 
                  ;; Needed for GzipHandler
-                 [org.eclipse.jetty/jetty-servlets "7.6.8.v20121106"]]
+                 [org.eclipse.jetty/jetty-servlets "7.6.8.v20121106"]
+                 ;; Needed for timeout a function execution
+                 [clojail "1.0.6"]]
 
    :plugins [[lein-test-out "0.3.1"]]
 
