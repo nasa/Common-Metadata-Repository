@@ -36,7 +36,7 @@
 (defn- get-granule-parent-collection-id
   "Find the parent collection id for a granule given its provider id and collection ref. This will
   correctly handle situations where there might be multiple concept ids that used a short name and
-  version if or entry title but were previously deleted."
+  version id or entry title but were previously deleted."
   [context provider-id collection-ref]
   (let [params (util/remove-nil-keys (merge {:provider-id provider-id}
                                             collection-ref))
@@ -47,9 +47,9 @@
                                (map (fn [[concept-id concepts]]
                                       (->> concepts (sort-by :revision-id) reverse first)))
                                (filter (complement :deleted)))]
-    (when-not (<= (count matching-concepts) 1)
+    (when (> (count matching-concepts) 1)
       (serv-errors/internal-error!
-        (format (str "Found zero or multiple possible parent collections for a granule in provider %s"
+        (format (str "Found multiple possible parent collections for a granule in provider %s"
                      " referencing with %s. matching-concepts: %s")
                 provider-id (pr-str collection-ref) (pr-str matching-concepts))))
     (:concept-id (first matching-concepts))))
