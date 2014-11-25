@@ -242,12 +242,14 @@
                        {:type :archive-center
                         :org-name "SEDAC AC"})]
                     :personnel [(umm-c/map->Personnel
-                                  {:first-name nil
-                                   :middle-name nil
-                                   :last-name nil
-                                   :roles [nil]
-                                   :contacts [(umm-c/map->Contact
-                                                {:type :email :value nil})]})]})
+                                  {:last-name "SEDAC AC"
+                                   :roles ["pointOfContact"]})
+                                  (umm-c/map->Personnel
+                                    {:last-name "John Smith"
+                                     :roles ["pointOfContact"]})
+                                  (umm-c/map->Personnel
+                                    {:last-name "SEDAC AC"
+                                     :roles ["distributor"]})]})
         actual (c/parse-collection all-fields-collection-xml)]
     (is (= expected actual))))
 
