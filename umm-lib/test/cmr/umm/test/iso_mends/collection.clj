@@ -128,28 +128,6 @@
           expected-parsed (umm->expected-parsed-iso collection)]
       (= parsed expected-parsed))))
 
-(comment
-
-  (let [collection #cmr.umm.collection.UmmCollection{:entry-id "0", :entry-title "0", :summary "0", :product #cmr.umm.collection.Product{:short-name "0", :long-name "0", :version-id "0", :processing-level-id nil, :collection-data-type nil}, :access-value nil, :data-provider-timestamps #cmr.umm.collection.DataProviderTimestamps{:insert-time #=(org.joda.time.DateTime. 0), :update-time #=(org.joda.time.DateTime. 0), :delete-time nil}, :spatial-keywords nil, :temporal-keywords nil, :temporal #cmr.umm.collection.Temporal{:time-type nil, :date-type nil, :temporal-range-type nil, :precision-of-seconds nil, :ends-at-present-flag nil, :range-date-times [#cmr.umm.collection.RangeDateTime{:beginning-date-time #=(org.joda.time.DateTime. 0), :ending-date-time nil}], :single-date-times [], :periodic-date-times []}, :science-keywords [#cmr.umm.collection.ScienceKeyword{:category "0", :topic "0", :term "0", :variable-level-1 "0", :variable-level-2 nil, :variable-level-3 nil, :detailed-variable nil}], :platforms nil, :product-specific-attributes nil, :projects nil, :two-d-coordinate-systems nil, :related-urls nil, :organizations (#cmr.umm.collection.Organization{:type :archive-center, :org-name "!"} #cmr.umm.collection.Organization{:type :distribution-center, :org-name "!"}), :spatial-coverage nil, :associated-difs nil, :personnel nil}
-        xml (iso/umm->iso-mends-xml collection)
-        parsed-iso (c/parse-collection xml)
-         expected-parsed-iso (umm->expected-parsed-iso collection)
-        echo10-xml (echo10/umm->echo10-xml parsed-iso)
-        parsed-echo10 (echo10-c/parse-collection echo10-xml)
-        expected-parsed (test-echo10/umm->expected-parsed-echo10 (umm->expected-parsed-iso collection))]
-    (println collection)
-    (println xml)
-    (println parsed-iso)
-    (println expected-parsed-iso)
-    (println echo10-xml)
-    (println parsed-echo10)
-    (println expected-parsed)
-    (echo10-c/validate-xml echo10-xml))
-
-
-
-  )
-
 (defspec generate-and-parse-collection-between-formats-test 100
   (for-all [collection coll-gen/collections]
     (let [xml (iso/umm->iso-mends-xml collection)
