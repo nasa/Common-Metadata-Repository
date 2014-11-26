@@ -9,7 +9,7 @@
             [cmr.umm.iso-smap.core :as core]
             [cmr.umm.collection :as c]
             [cmr.common.xml :as v]
-            [cmr.umm.iso-mends.collection.personnel :as pe]
+            [cmr.umm.iso-smap.collection.personnel :as pe]
             [cmr.umm.iso-smap.collection.org :as org]
             [cmr.umm.iso-smap.collection.temporal :as t]
             [cmr.umm.iso-smap.collection.spatial :as spatial]
