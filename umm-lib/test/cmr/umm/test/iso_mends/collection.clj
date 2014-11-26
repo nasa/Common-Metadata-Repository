@@ -57,6 +57,17 @@
   [related-urls]
   (seq (map #(assoc % :size nil :mime-type nil) related-urls)))
 
+(defn- collection->personnel
+  "Creates personnel from the distribution center contacts."
+  [coll]
+  (let [distrib-centers (filter #(= :archive-center (:type %)) (:organizations coll))]
+    (map (fn [distrib-center]
+           (umm-c/map->Personnel
+             {:last-name (:org-name distrib-center)
+              :roles ["distributor"]}))
+         distrib-centers)))
+
+
 (defn- umm->expected-parsed-iso
   "Modifies the UMM record for testing ISO. ISO contains a subset of the total UMM fields so certain
   fields are removed for comparison of the parsed record"
@@ -74,6 +85,7 @@
                      (umm-c/map->Temporal {:range-date-times []
                                            :single-date-times single-date-times
                                            :periodic-date-times []})))
+        personnel (not-empty (collection->personnel coll))
         organizations (seq (filter #(not (= :distribution-center (:type %))) (:organizations coll)))]
     (-> coll
         ;; ISO does not have entry-id and we generate it as concatenation of short-name and version-id
@@ -98,6 +110,8 @@
         (update-in [:related-urls] related-urls->expected-parsed)
         ;; ISO does not fully support two-d-coordinate-systems
         (dissoc :two-d-coordinate-systems)
+
+        (assoc :personnel personnel)
         umm-c/map->UmmCollection)))
 
 (defspec generate-collection-is-valid-xml-test 100
@@ -113,6 +127,21 @@
           parsed (c/parse-collection xml)
           expected-parsed (umm->expected-parsed-iso collection)]
       (= parsed expected-parsed))))
+
+(comment
+
+  (let [collection #cmr.umm.collection.UmmCollection{:entry-id "0", :entry-title "0", :summary "0", :product #cmr.umm.collection.Product{:short-name "0", :long-name "0", :version-id "0", :processing-level-id nil, :collection-data-type nil}, :access-value nil, :data-provider-timestamps #cmr.umm.collection.DataProviderTimestamps{:insert-time #=(org.joda.time.DateTime. 0), :update-time #=(org.joda.time.DateTime. 0), :delete-time nil}, :spatial-keywords nil, :temporal-keywords nil, :temporal #cmr.umm.collection.Temporal{:time-type nil, :date-type nil, :temporal-range-type nil, :precision-of-seconds nil, :ends-at-present-flag nil, :range-date-times [#cmr.umm.collection.RangeDateTime{:beginning-date-time #=(org.joda.time.DateTime. 0), :ending-date-time nil}], :single-date-times [], :periodic-date-times []}, :science-keywords [#cmr.umm.collection.ScienceKeyword{:category "0", :topic "0", :term "0", :variable-level-1 "0", :variable-level-2 nil, :variable-level-3 nil, :detailed-variable nil}], :platforms nil, :product-specific-attributes nil, :projects nil, :two-d-coordinate-systems nil, :related-urls nil, :organizations (#cmr.umm.collection.Organization{:type :distribution-center, :org-name "!"}), :spatial-coverage nil, :associated-difs nil, :personnel nil}
+        xml (iso/umm->iso-mends-xml collection)
+        parsed (c/parse-collection xml)
+        expected-parsed (umm->expected-parsed-iso collection)]
+    (println collection)
+    (println xml)
+    (println parsed)
+    (println expected-parsed))
+
+
+
+  )
 
 (defspec generate-and-parse-collection-between-formats-test 100
   (for-all [collection coll-gen/collections]
@@ -244,12 +273,12 @@
                     :personnel [(umm-c/map->Personnel
                                   {:last-name "SEDAC AC"
                                    :roles ["pointOfContact"]})
-                                  (umm-c/map->Personnel
-                                    {:last-name "John Smith"
-                                     :roles ["pointOfContact"]})
-                                  (umm-c/map->Personnel
-                                    {:last-name "SEDAC AC"
-                                     :roles ["distributor"]})]})
+                                (umm-c/map->Personnel
+                                  {:last-name "John Smith"
+                                   :roles ["pointOfContact"]})
+                                (umm-c/map->Personnel
+                                  {:last-name "SEDAC AC"
+                                   :roles ["distributor"]})]})
         actual (c/parse-collection all-fields-collection-xml)]
     (is (= expected actual))))
 

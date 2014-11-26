@@ -59,4 +59,5 @@
                                         :MD_Distributor
                                         :distributorContact
                                         :CI_ResponsibleParty]))))]
-    (map xml-elem->Personnel contact-elements)))
+    (not-empty (filter (complement nil?)
+                       (map xml-elem->Personnel contact-elements)))))
