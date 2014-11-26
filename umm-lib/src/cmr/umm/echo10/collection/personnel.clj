@@ -10,6 +10,13 @@
   not available."
   "unknown")
 
+(defn ignore-default-first-name
+  "Converts default first names to nil. This is necessary to fix broken format converison
+  ISO tests."
+  [first-name]
+  (when-not (= DEFAULT_FIRST_NAME first-name)
+    first-name))
+
 (defn xml-elem->personnel
   "Returns the personnel records for a parsed Collection XML structure or nil if the elements
   are not available."
@@ -23,7 +30,7 @@
                      emails (cx/strings-at-path contact [:OrganizationEmails :Email])
                      email-contacts (map #(c/->Contact :email %) emails)
                      role (cx/string-at-path contact [:Role])]]
-           (c/map->Personnel {:first-name first-name
+           (c/map->Personnel {:first-name (ignore-default-first-name first-name)
                               :middle-name middle-name
                               :last-name last-name
                               :contacts email-contacts
