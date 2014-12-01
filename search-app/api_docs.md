@@ -722,6 +722,10 @@ Facets in XML search response formats will be formatted like the following examp
 
 ```
 <facets>
+  <facet field="archive_center">
+    <value count="28989">LARC</value>
+    <value count="19965">GSFC</value>
+  </facet>
   <facet field="project">
     <value count="245">MANTIS</value>
     <value count="132">THUNDER</value>
@@ -755,6 +759,12 @@ Facets in JSON search response formats will be formatted like the following exam
   "feed": {
     "entry": [...],
     "facets": [{
+      "field": "archive_center",
+      "value-counts": [
+        ["LARC", 28989],
+        ["GSFC", 19965]
+      ]
+    }, {
       "field": "project",
       "value-counts": [
         ["MANTIS", 245],
