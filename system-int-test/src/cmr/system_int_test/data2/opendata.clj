@@ -16,6 +16,7 @@
             [cmr.common.util :as util]
             [cmr.search.results-handlers.opendata-results-handler :as odrh]
             [cmr.indexer.data.concepts.science-keyword :as sk]
+            [cmr.indexer.data.concepts.collection :as c]
             [cmr.umm.related-url-helper :as ru]
             [cmr.umm.start-end-date :as sed])
   (:import cmr.umm.collection.UmmCollection
@@ -30,8 +31,7 @@
 (defn collection->expected-opendata
   [collection]
   (let [{:keys [short-name keywords projects summary entry-title
-                access-value concept-id related-urls contact-name contact-email
-                data-format]} collection
+                access-value concept-id related-urls personnel data-format]} collection
         spatial-representation (get-in collection [:spatial-coverage :spatial-representation])
         update-time (get-in collection [:data-provider-timestamps :update-time])
         insert-time (get-in collection [:data-provider-timestamps :insert-time])
@@ -43,7 +43,10 @@
         shapes (map (partial umm-s/set-coordinate-system spatial-representation)
                     (get-in collection [:spatial-coverage :geometries]))
         distribution (not-empty (odrh/distribution related-urls))
-        project-sn (not-empty (map :short-name projects))]
+        project-sn (not-empty (map :short-name projects))
+        personnel (c/person-with-email personnel)
+        contact-name (odrh/personnel->contact-name personnel)
+        contact-email (odrh/personnel->contact-email personnel)]
     (util/remove-nil-keys {:title entry-title
                            :description summary
                            :keyword (not-empty (sk/flatten-science-keywords collection))

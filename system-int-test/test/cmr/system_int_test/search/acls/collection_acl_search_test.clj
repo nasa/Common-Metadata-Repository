@@ -174,7 +174,6 @@
                                                                         :page-size 100
                                                                         :concept-id concept-ids}))))))))))
 
-
 ;; This tests that when acls change after collections have been indexed that collections will be
 ;; reindexed when ingest detects the acl hash has change.
 (deftest acl-change-test

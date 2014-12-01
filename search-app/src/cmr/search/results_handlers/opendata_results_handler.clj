@@ -61,7 +61,7 @@
    "provider-id"
    ])
 
-(defn- personnel->contact-name
+(defn personnel->contact-name
   "Returns a contact name from the personnel record or the default if one
   is not available."
   [personnel]
@@ -72,7 +72,7 @@
         last-name))
     DEFAULT_CONTACT_NAME))
 
-(defn- personnel->contact-email
+(defn personnel->contact-email
   "Returns a contact email from the personnel record or the default if one
   is not available."
   [personnel]

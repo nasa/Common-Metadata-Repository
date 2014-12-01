@@ -86,249 +86,238 @@
           expected-parsed (umm->expected-parsed-echo10 collection)]
       (= parsed expected-parsed))))
 
-
-(comment
-  (let [collection #cmr.umm.collection.UmmCollection{:entry-id "0", :entry-title "0", :summary "0", :product #cmr.umm.collection.Product{:short-name "0", :long-name "0", :version-id "0", :processing-level-id nil, :collection-data-type nil}, :access-value nil, :data-provider-timestamps #cmr.umm.collection.DataProviderTimestamps{:insert-time #=(org.joda.time.DateTime. 0), :update-time #=(org.joda.time.DateTime. 0), :delete-time nil}, :spatial-keywords nil, :temporal-keywords nil, :temporal #cmr.umm.collection.Temporal{:time-type nil, :date-type nil, :temporal-range-type nil, :precision-of-seconds nil, :ends-at-present-flag nil, :range-date-times [#cmr.umm.collection.RangeDateTime{:beginning-date-time #=(org.joda.time.DateTime. 0), :ending-date-time nil}], :single-date-times [], :periodic-date-times []}, :science-keywords [#cmr.umm.collection.ScienceKeyword{:category "0", :topic "0", :term "0", :variable-level-1 "0", :variable-level-2 nil, :variable-level-3 nil, :detailed-variable nil}], :platforms nil, :product-specific-attributes nil, :projects nil, :two-d-coordinate-systems nil, :related-urls nil, :organizations (#cmr.umm.collection.Organization{:type :distribution-center, :org-name "!"}), :spatial-coverage nil, :associated-difs nil, :personnel [#cmr.umm.collection.Personnel{:first-name "0", :middle-name "0", :last-name "0", :roles ["0"], :contacts []}]}
-        xml (echo10/umm->echo10-xml collection)
-        parsed (c/parse-collection xml)
-        expected-parsed (umm->expected-parsed-echo10 collection)]
-    (println xml)
-    (println parsed)
-    (println expected-parsed))
-  )
-
 ;; This is a made-up include all fields collection xml sample for the parse collection test
 (def all-fields-collection-xml
   "<Collection>
-  <ShortName>MINIMAL</ShortName>
-  <VersionId>1</VersionId>
-  <InsertTime>1999-12-30T19:00:00-05:00</InsertTime>
-  <LastUpdate>1999-12-31T19:00:00-05:00</LastUpdate>
-  <DeleteTime>2000-12-31T19:00:00-05:00</DeleteTime>
-  <LongName>A minimal valid collection</LongName>
-  <DataSetId>A minimal valid collection V 1</DataSetId>
-  <Description>A minimal valid collection</Description>
-  <CollectionDataType>NEAR_REAL_TIME</CollectionDataType>
-  <Orderable>true</Orderable>
-  <Visible>true</Visible>
-  <ProcessingCenter>SEDAC PC</ProcessingCenter>
-  <ProcessingLevelId>1B</ProcessingLevelId>
-  <ArchiveCenter>SEDAC AC</ArchiveCenter>
-  <SpatialKeywords>
-  <Keyword>Word-2</Keyword>
-  <Keyword>Word-1</Keyword>
-  <Keyword>Word-0</Keyword>
-  </SpatialKeywords>
-  <Temporal>
-  <TimeType>Universal Time</TimeType>
-  <DateType>Eastern Daylight</DateType>
-  <TemporalRangeType>Long Range</TemporalRangeType>
-  <PrecisionOfSeconds>1</PrecisionOfSeconds>
-  <EndsAtPresentFlag>false</EndsAtPresentFlag>
-  <RangeDateTime>
-  <BeginningDateTime>1996-02-24T22:20:41-05:00</BeginningDateTime>
-  <EndingDateTime>1997-03-24T22:20:41-05:00</EndingDateTime>
-  </RangeDateTime>
-  <RangeDateTime>
-  <BeginningDateTime>1998-02-24T22:20:41-05:00</BeginningDateTime>
-  <EndingDateTime>1999-03-24T22:20:41-05:00</EndingDateTime>
-  </RangeDateTime>
-  <SingleDateTime>2010-01-05T05:30:30.550-05:00</SingleDateTime>
-  <PeriodicDateTime>
-  <Name>autumn, southwest</Name>
-  <StartDate>1998-08-12T20:00:00-04:00</StartDate>
-  <EndDate>1998-09-22T21:32:00-04:00</EndDate>
-  <DurationUnit>DAY</DurationUnit>
-  <DurationValue>3</DurationValue>
-  <PeriodCycleDurationUnit>MONTH</PeriodCycleDurationUnit>
-  <PeriodCycleDurationValue>7</PeriodCycleDurationValue>
-  </PeriodicDateTime>
-  </Temporal>
-  <Contacts>
-  <Contact>
-  <Role>INVESTIGATOR</Role>
-  <OrganizationName>Undefined</OrganizationName>
-  <OrganizationAddresses>
-  <Address>
-  <StreetAddress>Laboratory for Hydrospheric Processes Cryospheric Sciences Branch NASA/Goddard Space Flight Center Code 614 </StreetAddress>
-  <City>Greenbelt</City>
-  <StateProvince>MD</StateProvince>
-  <PostalCode>20771</PostalCode>
-  <Country>USA</Country>
-  </Address>
-  </OrganizationAddresses>
-  <OrganizationPhones>
-  <Phone>
-  <Number>301 614-5708</Number>
-  <Type>Telephone</Type>
-  </Phone>
-  </OrganizationPhones>
-  <OrganizationEmails>
-  <Email>josefino.c.comiso@nasa.gov</Email>
-  </OrganizationEmails>
-  <ContactPersons>
-  <ContactPerson>
-  <FirstName>JOSEPHINO 'JOEY'</FirstName>
-  <LastName>COMISO</LastName>
-  </ContactPerson>
-  </ContactPersons>
-  </Contact>
-  </Contacts>
-  <ScienceKeywords>
-  <ScienceKeyword>
-  <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
-  <TopicKeyword>CRYOSPHERE</TopicKeyword>
-  <TermKeyword>SNOW/ICE</TermKeyword>
-  <VariableLevel1Keyword>
-  <Value>ALBEDO</Value>
-  <VariableLevel2Keyword>
-  <Value>BETA</Value>
-  <VariableLevel3Keyword>GAMMA</VariableLevel3Keyword>
-  </VariableLevel2Keyword>
-  </VariableLevel1Keyword>
-  <DetailedVariableKeyword>DETAILED</DetailedVariableKeyword>
-  </ScienceKeyword>
-  <ScienceKeyword>
-  <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
-  <TopicKeyword>CRYOSPHERE</TopicKeyword>
-  <TermKeyword>SEA ICE</TermKeyword>
-  <VariableLevel1Keyword>
-  <Value>REFLECTANCE</Value>
-  </VariableLevel1Keyword>
-  </ScienceKeyword>
-  </ScienceKeywords>
-  <AdditionalAttributes>
-  <AdditionalAttribute>
-  <Name>String add attrib</Name>
-  <DataType>STRING</DataType>
-  <Description>something string</Description>
-  <ParameterRangeBegin>alpha</ParameterRangeBegin>
-  <ParameterRangeEnd>bravo</ParameterRangeEnd>
-  <Value>alpha1</Value>
-  </AdditionalAttribute>
-  <AdditionalAttribute>
-  <Name>Float add attrib</Name>
-  <DataType>FLOAT</DataType>
-  <Description>something float</Description>
-  <ParameterRangeBegin>0.1</ParameterRangeBegin>
-  <ParameterRangeEnd>100.43</ParameterRangeEnd>
-  <Value>12.3</Value>
-  </AdditionalAttribute>
-  </AdditionalAttributes>
-  <Platforms>
-  <Platform>
-  <ShortName>RADARSAT-1</ShortName>
-  <LongName>RADARSAT-LONG-1</LongName>
-  <Type>Spacecraft</Type>
-  <Instruments>
-  <Instrument>
-  <LongName>SAR long name</LongName>
-  <ShortName>SAR</ShortName>
-  <Technique>itechnique</Technique>
-  <Sensors>
-  <Sensor>
-  <LongName>SNA long name</LongName>
-  <ShortName>SNA</ShortName>
-  <Technique>technique</Technique>
-  </Sensor>
-  <Sensor>
-  <ShortName>SNB</ShortName>
-  </Sensor>
-  </Sensors>
-  </Instrument>
-  <Instrument>
-  <ShortName>MAR</ShortName>
-  </Instrument>
-  </Instruments>
-  </Platform>
-  <Platform>
-  <ShortName>RADARSAT-2</ShortName>
-  <LongName>RADARSAT-LONG-2</LongName>
-  <Type>Spacecraft-2</Type>
-  </Platform>
-  </Platforms>
-  <Campaigns>
-  <Campaign>
-  <ShortName>ESI</ShortName>
-  <LongName>Environmental Sustainability Index</LongName>
-  </Campaign>
-  <Campaign>
-  <ShortName>EVI</ShortName>
-  <LongName>Environmental Vulnerability Index</LongName>
-  </Campaign>
-  <Campaign>
-  <ShortName>EPI</ShortName>
-  <LongName>Environmental Performance Index</LongName>
-  </Campaign>
-  </Campaigns>
-  <TwoDCoordinateSystems>
-  <TwoDCoordinateSystem>
-  <TwoDCoordinateSystemName>name0</TwoDCoordinateSystemName>
-  <Coordinate1>
-  <MinimumValue>0</MinimumValue>
-  <MaximumValue>11</MaximumValue>
-  </Coordinate1>
-  <Coordinate2>
-  <MinimumValue>0</MinimumValue>
-  <MaximumValue>100</MaximumValue>
-  </Coordinate2>
-  </TwoDCoordinateSystem>
-  <TwoDCoordinateSystem>
-  <TwoDCoordinateSystemName>name1</TwoDCoordinateSystemName>
-  <Coordinate1>
-  <MinimumValue>1</MinimumValue>
-  <MaximumValue>12</MaximumValue>
-  </Coordinate1>
-  <Coordinate2>
-  <MinimumValue>-1</MinimumValue>
-  <MaximumValue>101</MaximumValue>
-  </Coordinate2>
-  </TwoDCoordinateSystem>
-  </TwoDCoordinateSystems>
-  <OnlineAccessURLs>
-  <OnlineAccessURL>
-  <URL>http://ghrc.nsstc.nasa.gov/hydro/details.pl?ds=dc8capac</URL>
-  </OnlineAccessURL>
-  </OnlineAccessURLs>
-  <OnlineResources>
-  <OnlineResource>
-  <URL>http://camex.nsstc.nasa.gov/camex3/</URL>
-  <Type>DATA ACCESS</Type>
-  </OnlineResource>
-  <OnlineResource>
-  <URL>http://ghrc.nsstc.nasa.gov/uso/ds_docs/camex3/dc8capac/dc8capac_dataset.html</URL>
-  <Type>Guide</Type>
-  </OnlineResource>
-  <OnlineResource>
-  <URL>ftp://camex.nsstc.nasa.gov/camex3/dc8capac/browse/</URL>
-  <Description>Some description.</Description>
-  <Type>Browse</Type>
-  </OnlineResource>
-  </OnlineResources>
-  <AssociatedDIFs>
-  <DIF>
-  <EntryId>DIF-255</EntryId>
-  </DIF>
-  <DIF>
-  <EntryId>DIF-256</EntryId>
-  </DIF>
-  <DIF>
-  <EntryId>DIF-257</EntryId>
-  </DIF>
-  </AssociatedDIFs>
+    <ShortName>MINIMAL</ShortName>
+    <VersionId>1</VersionId>
+    <InsertTime>1999-12-30T19:00:00-05:00</InsertTime>
+    <LastUpdate>1999-12-31T19:00:00-05:00</LastUpdate>
+    <DeleteTime>2000-12-31T19:00:00-05:00</DeleteTime>
+    <LongName>A minimal valid collection</LongName>
+    <DataSetId>A minimal valid collection V 1</DataSetId>
+    <Description>A minimal valid collection</Description>
+    <CollectionDataType>NEAR_REAL_TIME</CollectionDataType>
+    <Orderable>true</Orderable>
+    <Visible>true</Visible>
+    <ProcessingCenter>SEDAC PC</ProcessingCenter>
+    <ProcessingLevelId>1B</ProcessingLevelId>
+    <ArchiveCenter>SEDAC AC</ArchiveCenter>
+    <SpatialKeywords>
+      <Keyword>Word-2</Keyword>
+      <Keyword>Word-1</Keyword>
+      <Keyword>Word-0</Keyword>
+    </SpatialKeywords>
+    <Temporal>
+      <TimeType>Universal Time</TimeType>
+      <DateType>Eastern Daylight</DateType>
+      <TemporalRangeType>Long Range</TemporalRangeType>
+      <PrecisionOfSeconds>1</PrecisionOfSeconds>
+      <EndsAtPresentFlag>false</EndsAtPresentFlag>
+      <RangeDateTime>
+        <BeginningDateTime>1996-02-24T22:20:41-05:00</BeginningDateTime>
+        <EndingDateTime>1997-03-24T22:20:41-05:00</EndingDateTime>
+      </RangeDateTime>
+      <RangeDateTime>
+        <BeginningDateTime>1998-02-24T22:20:41-05:00</BeginningDateTime>
+        <EndingDateTime>1999-03-24T22:20:41-05:00</EndingDateTime>
+      </RangeDateTime>
+      <SingleDateTime>2010-01-05T05:30:30.550-05:00</SingleDateTime>
+      <PeriodicDateTime>
+        <Name>autumn, southwest</Name>
+        <StartDate>1998-08-12T20:00:00-04:00</StartDate>
+        <EndDate>1998-09-22T21:32:00-04:00</EndDate>
+        <DurationUnit>DAY</DurationUnit>
+        <DurationValue>3</DurationValue>
+        <PeriodCycleDurationUnit>MONTH</PeriodCycleDurationUnit>
+        <PeriodCycleDurationValue>7</PeriodCycleDurationValue>
+      </PeriodicDateTime>
+    </Temporal>
+    <Contacts>
+      <Contact>
+        <Role>INVESTIGATOR</Role>
+        <OrganizationName>Undefined</OrganizationName>
+        <OrganizationAddresses>
+          <Address>
+            <StreetAddress>Laboratory for Hydrospheric Processes Cryospheric Sciences Branch NASA/Goddard Space Flight Center Code 614 </StreetAddress>
+            <City>Greenbelt</City>
+            <StateProvince>MD</StateProvince>
+            <PostalCode>20771</PostalCode>
+            <Country>USA</Country>
+          </Address>
+        </OrganizationAddresses>
+        <OrganizationPhones>
+          <Phone>
+            <Number>301 614-5708</Number>
+            <Type>Telephone</Type>
+          </Phone>
+        </OrganizationPhones>
+        <OrganizationEmails>
+          <Email>josefino.c.comiso@nasa.gov</Email>
+        </OrganizationEmails>
+        <ContactPersons>
+          <ContactPerson>
+            <FirstName>JOSEPHINO 'JOEY'</FirstName>
+            <LastName>COMISO</LastName>
+          </ContactPerson>
+        </ContactPersons>
+      </Contact>
+    </Contacts>
+    <ScienceKeywords>
+      <ScienceKeyword>
+        <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+        <TopicKeyword>CRYOSPHERE</TopicKeyword>
+        <TermKeyword>SNOW/ICE</TermKeyword>
+        <VariableLevel1Keyword>
+          <Value>ALBEDO</Value>
+          <VariableLevel2Keyword>
+            <Value>BETA</Value>
+            <VariableLevel3Keyword>GAMMA</VariableLevel3Keyword>
+          </VariableLevel2Keyword>
+        </VariableLevel1Keyword>
+        <DetailedVariableKeyword>DETAILED</DetailedVariableKeyword>
+      </ScienceKeyword>
+      <ScienceKeyword>
+        <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+        <TopicKeyword>CRYOSPHERE</TopicKeyword>
+        <TermKeyword>SEA ICE</TermKeyword>
+        <VariableLevel1Keyword>
+          <Value>REFLECTANCE</Value>
+        </VariableLevel1Keyword>
+      </ScienceKeyword>
+    </ScienceKeywords>
+    <AdditionalAttributes>
+      <AdditionalAttribute>
+        <Name>String add attrib</Name>
+        <DataType>STRING</DataType>
+        <Description>something string</Description>
+        <ParameterRangeBegin>alpha</ParameterRangeBegin>
+        <ParameterRangeEnd>bravo</ParameterRangeEnd>
+        <Value>alpha1</Value>
+      </AdditionalAttribute>
+      <AdditionalAttribute>
+        <Name>Float add attrib</Name>
+        <DataType>FLOAT</DataType>
+        <Description>something float</Description>
+        <ParameterRangeBegin>0.1</ParameterRangeBegin>
+        <ParameterRangeEnd>100.43</ParameterRangeEnd>
+        <Value>12.3</Value>
+      </AdditionalAttribute>
+    </AdditionalAttributes>
+    <Platforms>
+      <Platform>
+        <ShortName>RADARSAT-1</ShortName>
+        <LongName>RADARSAT-LONG-1</LongName>
+        <Type>Spacecraft</Type>
+        <Instruments>
+          <Instrument>
+            <LongName>SAR long name</LongName>
+            <ShortName>SAR</ShortName>
+            <Technique>itechnique</Technique>
+            <Sensors>
+              <Sensor>
+                <LongName>SNA long name</LongName>
+                <ShortName>SNA</ShortName>
+                <Technique>technique</Technique>
+              </Sensor>
+              <Sensor>
+                <ShortName>SNB</ShortName>
+              </Sensor>
+            </Sensors>
+          </Instrument>
+          <Instrument>
+            <ShortName>MAR</ShortName>
+          </Instrument>
+        </Instruments>
+      </Platform>
+      <Platform>
+        <ShortName>RADARSAT-2</ShortName>
+        <LongName>RADARSAT-LONG-2</LongName>
+        <Type>Spacecraft-2</Type>
+      </Platform>
+    </Platforms>
+    <Campaigns>
+      <Campaign>
+        <ShortName>ESI</ShortName>
+        <LongName>Environmental Sustainability Index</LongName>
+      </Campaign>
+      <Campaign>
+        <ShortName>EVI</ShortName>
+        <LongName>Environmental Vulnerability Index</LongName>
+      </Campaign>
+      <Campaign>
+        <ShortName>EPI</ShortName>
+        <LongName>Environmental Performance Index</LongName>
+      </Campaign>
+    </Campaigns>
+    <TwoDCoordinateSystems>
+      <TwoDCoordinateSystem>
+        <TwoDCoordinateSystemName>name0</TwoDCoordinateSystemName>
+        <Coordinate1>
+          <MinimumValue>0</MinimumValue>
+          <MaximumValue>11</MaximumValue>
+        </Coordinate1>
+        <Coordinate2>
+          <MinimumValue>0</MinimumValue>
+          <MaximumValue>100</MaximumValue>
+        </Coordinate2>
+      </TwoDCoordinateSystem>
+      <TwoDCoordinateSystem>
+        <TwoDCoordinateSystemName>name1</TwoDCoordinateSystemName>
+        <Coordinate1>
+          <MinimumValue>1</MinimumValue>
+          <MaximumValue>12</MaximumValue>
+        </Coordinate1>
+        <Coordinate2>
+          <MinimumValue>-1</MinimumValue>
+          <MaximumValue>101</MaximumValue>
+        </Coordinate2>
+      </TwoDCoordinateSystem>
+    </TwoDCoordinateSystems>
+    <OnlineAccessURLs>
+      <OnlineAccessURL>
+        <URL>http://ghrc.nsstc.nasa.gov/hydro/details.pl?ds=dc8capac</URL>
+      </OnlineAccessURL>
+    </OnlineAccessURLs>
+    <OnlineResources>
+      <OnlineResource>
+        <URL>http://camex.nsstc.nasa.gov/camex3/</URL>
+        <Type>DATA ACCESS</Type>
+      </OnlineResource>
+      <OnlineResource>
+        <URL>http://ghrc.nsstc.nasa.gov/uso/ds_docs/camex3/dc8capac/dc8capac_dataset.html</URL>
+        <Type>Guide</Type>
+      </OnlineResource>
+      <OnlineResource>
+        <URL>ftp://camex.nsstc.nasa.gov/camex3/dc8capac/browse/</URL>
+        <Description>Some description.</Description>
+        <Type>Browse</Type>
+      </OnlineResource>
+    </OnlineResources>
+    <AssociatedDIFs>
+      <DIF>
+        <EntryId>DIF-255</EntryId>
+      </DIF>
+      <DIF>
+        <EntryId>DIF-256</EntryId>
+      </DIF>
+      <DIF>
+        <EntryId>DIF-257</EntryId>
+      </DIF>
+    </AssociatedDIFs>
   </Collection>")
 
 (def valid-collection-xml
   "<Collection>
-  <ShortName>MINIMAL</ShortName>
-  <VersionId>1</VersionId>
-  <InsertTime>1999-12-31T19:00:00-05:00</InsertTime>
-  <LastUpdate>1999-12-31T19:00:00-05:00</LastUpdate>
-  <LongName>A minimal valid collection</LongName>
-  <DataSetId>A minimal valid collection V 1</DataSetId>
-  <Description>A minimal valid collection</Description>
-  <Orderable>true</Orderable>
-  <Visible>true</Visible>
+    <ShortName>MINIMAL</ShortName>
+    <VersionId>1</VersionId>
+    <InsertTime>1999-12-31T19:00:00-05:00</InsertTime>
+    <LastUpdate>1999-12-31T19:00:00-05:00</LastUpdate>
+    <LongName>A minimal valid collection</LongName>
+    <DataSetId>A minimal valid collection V 1</DataSetId>
+    <Description>A minimal valid collection</Description>
+    <Orderable>true</Orderable>
+    <Visible>true</Visible>
   </Collection>")
 
 (deftest parse-collection-test

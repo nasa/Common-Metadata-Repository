@@ -31,20 +31,20 @@
         :else
         (errors/internal-error! (str "Unknown spatial representation [" sr "]"))))))
 
-(defn- person->email
-  "Return a contact email for the Personnel record or nil if none is available."
+(defn- person->email-contact
+  "Return an email contact for the Personnel record or nil if none is available."
   [person]
   (some (fn [contact]
           (= :email
              (:type contact)))
         (:contacts person)))
 
-(defn- person-with-email
+(defn person-with-email
   "Returns the first Personnel record for the list with an email contact or
   nil if none exists."
   [personnel]
   (some (fn [person]
-          (person->email person))
+          (person->email-contact person))
         personnel))
 
 (defmethod es/concept->elastic-doc :collection
