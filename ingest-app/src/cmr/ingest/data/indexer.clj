@@ -4,6 +4,7 @@
             [cheshire.core :as json]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.services.errors :as errors]
+            [cmr.common.services.health-helper :as hh]
             [cmr.system-trace.core :refer [deftracefn]]
             [cmr.system-trace.http :as ch]
             [cmr.transmit.config :as transmit-config]
@@ -75,7 +76,7 @@
   [context provider-id]
   (delete-from-indexer context (format "provider/%s" provider-id)))
 
-(defn get-indexer-health
+(defn- get-indexer-health-fn
   "Returns the health status of the indexer app"
   [context]
   (let [conn (transmit-config/context->app-connection context :indexer)
@@ -88,3 +89,9 @@
     (if (= 200 status)
       {:ok? true :dependencies result}
       {:ok? false :problem result})))
+
+(defn get-indexer-health
+  "Returns the indexer health with timeout handling."
+  [context]
+  (let [timeout-ms (* 1000 (+ 2 (hh/health-check-timeout-seconds)))]
+    (hh/get-health #(get-indexer-health-fn context) timeout-ms)))

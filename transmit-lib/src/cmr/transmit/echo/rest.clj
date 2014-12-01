@@ -2,6 +2,7 @@
   "A helper for making echo-rest requests"
   (:require [clj-http.client :as client]
             [cmr.common.services.errors :as errors]
+            [cmr.common.services.health-helper :as hh]
             [cheshire.core :as json]
             [cmr.transmit.config :as config]
             [cmr.transmit.connection :as conn]
@@ -86,7 +87,7 @@
       {:status 503
        :body (format "Unable to get echo health, caught exception: %s" (.getMessage e))})))
 
-(defn health
+(defn health-fn
   "Returns the availability status of echo-rest by calling its availability endpoint"
   [context]
   (let [conn (config/context->app-connection context :echo-rest)
@@ -97,3 +98,8 @@
       {:ok? true}
       {:ok? false
        :problem (format "Received %d from availability check. %s" status-code (:body response))})))
+
+(defn health
+  "Returns the echo-rest health with timeout handling."
+  [context]
+  (hh/get-health #(health-fn context)))

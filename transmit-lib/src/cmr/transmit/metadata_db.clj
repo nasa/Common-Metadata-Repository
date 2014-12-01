@@ -2,6 +2,7 @@
   "Provide functions to invoke metadata db app"
   (:require [clj-http.client :as client]
             [cmr.common.services.errors :as errors]
+            [cmr.common.services.health-helper :as hh]
             [cmr.transmit.config :as config]
             [cheshire.core :as cheshire]
             [clojure.walk :as walk]
@@ -279,7 +280,7 @@
                                    " "
                                    response)))))
 
-(defn get-metadata-db-health
+(defn get-metadata-db-health-fn
   "Returns the health status of the metadata db"
   [context]
   (let [conn (config/context->app-connection context :metadata-db)
@@ -292,3 +293,9 @@
     (if (= 200 status)
       {:ok? true :dependencies result}
       {:ok? false :problem result})))
+
+(defn get-metadata-db-health
+  "Returns the metadata-db health with timeout handling."
+  [context]
+  (let [timeout-ms (* 1000 (+ 2 (hh/health-check-timeout-seconds)))]
+    (hh/get-health #(get-metadata-db-health-fn context) timeout-ms)))
