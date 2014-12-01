@@ -22,6 +22,7 @@
             [cmr.system-int-test.data2.atom :as da]
             [cmr.system-int-test.data2.atom-json :as dj]
             [cmr.system-int-test.data2.kml :as dk]
+            [cmr.system-int-test.data2.opendata :as od]
             [cmr.system-int-test.data2.provider-holdings :as ph]
             [cmr.system-int-test.data2.aql :as aql]
             [cmr.system-int-test.data2.aql-additional-attribute]
@@ -231,6 +232,20 @@
      (if (= status 200)
        {:status status
         :results (dk/parse-kml-results body)}
+       response))))
+
+(defn find-concepts-opendata
+  "Returns the response of search in opendata format"
+   ([concept-type params]
+   (find-concepts-opendata concept-type params {}))
+  ([concept-type params options]
+   (let [response (get-search-failure-data
+                    (find-concepts-in-format "application/opendata+json"
+                                             concept-type params options))
+         {:keys [status body]} response]
+     (if (= status 200)
+       {:status status
+        :results (od/parse-opendata-result concept-type body)}
        response))))
 
 (defn find-metadata

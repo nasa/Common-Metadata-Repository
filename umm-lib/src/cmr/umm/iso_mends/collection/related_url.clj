@@ -5,12 +5,17 @@
             [cmr.umm.collection :as c]
             [cmr.umm.iso-mends.collection.helper :as h]))
 
-(defn- resource-name->types
+(def resource-name->types
   "Mapping of online resource name to related url type and sub-type"
-  [resource-name]
-  (get {"DATA ACCESS" "GET DATA"
-        "Guide" "VIEW RELATED INFORMATION"
-        "Browse" "GET RELATED VISUALIZATION"} resource-name))
+  {"DATA ACCESS" "GET DATA"
+   "Guide" "VIEW RELATED INFORMATION"
+   "Browse" "GET RELATED VISUALIZATION"})
+
+(def type->name
+  "Mapping of related url type to online resource name"
+  {"GET DATA" "DATA ACCESS"
+   "VIEW RELATED INFORMATION" "Guide"
+   "GET RELATED VISUALIZATION" "Browse"})
 
 (defn- xml-elem->related-url
   "Returns a related url from a parsed XML structure"
@@ -44,12 +49,6 @@
   [code]
   {:codeList "http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode"
    :codeListValue code})
-
-(def type->name
-  "Mapping of related url type to online resource name"
-  {"GET DATA" "DATA ACCESS"
-   "VIEW RELATED INFORMATION" "Guide"
-   "GET RELATED VISUALIZATION" "Browse"})
 
 (defn generate-resource-urls
   "Generates the ISO OnlineResources elements from a UMM related urls entry."

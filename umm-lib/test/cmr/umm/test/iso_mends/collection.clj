@@ -11,6 +11,7 @@
             [cmr.umm.test.generators.collection :as coll-gen]
             [cmr.umm.iso-mends.collection :as c]
             [cmr.umm.echo10.collection :as echo10-c]
+            [cmr.umm.echo10.collection.personnel :as echo-pe]
             [cmr.umm.echo10.core :as echo10]
             [cmr.umm.collection :as umm-c]
             [cmr.umm.iso-mends.core :as iso]
@@ -52,6 +53,21 @@
   [platforms]
   (seq (map platform->expected-parsed platforms)))
 
+(defn- related-urls->expected-parsed
+  "Returns the expected parsed related-urls for the given related-urls."
+  [related-urls]
+  (seq (map #(assoc % :size nil :mime-type nil) related-urls)))
+
+(defn- collection->personnel
+  "Creates personnel from the distribution center contacts."
+  [coll]
+  (let [distrib-centers (filter #(= :archive-center (:type %)) (:organizations coll))]
+    (map (fn [distrib-center]
+           (umm-c/map->Personnel
+             {:last-name (:org-name distrib-center)
+              :roles ["distributor"]}))
+         distrib-centers)))
+
 (defn- umm->expected-parsed-iso
   "Modifies the UMM record for testing ISO. ISO contains a subset of the total UMM fields so certain
   fields are removed for comparison of the parsed record"
@@ -69,6 +85,7 @@
                      (umm-c/map->Temporal {:range-date-times []
                                            :single-date-times single-date-times
                                            :periodic-date-times []})))
+        personnel (not-empty (collection->personnel coll))
         organizations (seq (filter #(not (= :distribution-center (:type %))) (:organizations coll)))]
     (-> coll
         ;; ISO does not have entry-id and we generate it as concatenation of short-name and version-id
@@ -79,6 +96,8 @@
         (assoc-in [:data-provider-timestamps :delete-time] nil)
         ;; ISO does not have periodic-date-times
         (assoc :temporal temporal)
+        ;; ISO does not support mime-type in RelatedURLs
+        (update-in [:related-urls] related-urls->expected-parsed)
         ;; ISO does not have distribution centers as Organization
         (assoc :organizations organizations)
         ;; ISO does not support sensor technique or platform characteristics
@@ -91,6 +110,8 @@
         (update-in [:related-urls] related-urls->expected-parsed)
         ;; ISO does not fully support two-d-coordinate-systems
         (dissoc :two-d-coordinate-systems)
+
+        (assoc :personnel personnel)
         umm-c/map->UmmCollection)))
 
 (defspec generate-collection-is-valid-xml-test 100
@@ -234,7 +255,15 @@
                      (umm-c/map->Organization
                        {:type :archive-center
                         :org-name "SEDAC AC"})]
-                    })
+                    :personnel [(umm-c/map->Personnel
+                                  {:last-name "SEDAC AC"
+                                   :roles ["pointOfContact"]})
+                                (umm-c/map->Personnel
+                                  {:last-name "John Smith"
+                                   :roles ["pointOfContact"]})
+                                (umm-c/map->Personnel
+                                  {:last-name "SEDAC AC"
+                                   :roles ["distributor"]})]})
         actual (c/parse-collection all-fields-collection-xml)]
     (is (= expected actual))))
 

@@ -7,6 +7,12 @@
             [clojure.string :as str])
   (:import java.text.DecimalFormat))
 
+(defn trunc
+  "Returns the given string truncated to n characters."
+  [s n]
+  (when s
+    (subs s 0 (min (count s) n))))
+
 (defn sequence->fn
   [vals]
   "Creates a stateful function that returns individual values from the sequence. It returns the first
@@ -189,4 +195,3 @@
         :less-than (recur current maxv (inc depth))
         :greater-than (recur minv current (inc depth))
         matches-result))))
-

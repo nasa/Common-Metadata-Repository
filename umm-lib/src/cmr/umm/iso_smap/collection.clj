@@ -9,6 +9,7 @@
             [cmr.umm.iso-smap.core :as core]
             [cmr.umm.collection :as c]
             [cmr.common.xml :as v]
+            [cmr.umm.iso-smap.collection.personnel :as pe]
             [cmr.umm.iso-smap.collection.org :as org]
             [cmr.umm.iso-smap.collection.temporal :as t]
             [cmr.umm.iso-smap.collection.spatial :as spatial]
@@ -78,7 +79,7 @@
        :spatial-coverage (spatial/xml-elem->SpatialCoverage xml-struct)
        :organizations (org/xml-elem->Organizations id-elems)
        :associated-difs (xml-elem->associated-difs id-elems)
-       })))
+       :personnel (pe/xml-elem->personnel xml-struct)})))
 
 (defn parse-collection
   "Parses ISO XML into a UMM Collection record."

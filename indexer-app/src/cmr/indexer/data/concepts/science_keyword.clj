@@ -2,6 +2,14 @@
   "Contains functions for converting science keyword domains into a elastic documents"
   (:require [clojure.string :as str]))
 
+(defn flatten-science-keywords
+  "Convert the science keywords into a flat list composed of the category, topic, and term values."
+  [collection]
+  (mapcat (fn [science-keyword]
+            (let [{:keys [category topic term]} science-keyword]
+              (filter identity [category topic term])))
+          (:science-keywords collection)))
+
 (defn science-keyword->keywords
   "Converts a science keyword into a vector of terms for keyword searches"
   [science-keyword]

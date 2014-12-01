@@ -1,5 +1,6 @@
 (ns cmr.search.services.url-helper
-  "Defines functions to construct search urls")
+  "Defines functions to construct search urls"
+  (:require [cmr.common.config :as cfg]))
 
 (defn search-root
   "Returns the url root for search app"

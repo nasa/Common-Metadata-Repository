@@ -56,7 +56,7 @@
    variable-level-2
    variable-level-3
    detailed-variable
-  ])
+   ])
 
 (def product-specific-attribute-types
   [:string :float :int :boolean :date :time :datetime :date-string :time-string :datetime-string])
@@ -69,14 +69,14 @@
    parameter-range-begin
    parameter-range-end
    value
-  ])
+   ])
 
 (defrecord Sensor
   [
    short-name
    long-name
    technique
-  ])
+   ])
 
 (defrecord Instrument
   [
@@ -84,7 +84,7 @@
    long-name
    technique
    sensors
-  ])
+   ])
 
 (defrecord Characteristic
   [
@@ -102,7 +102,7 @@
    type
    instruments
    characteristics
-  ])
+   ])
 
 (defrecord Project
   [
@@ -148,7 +148,7 @@
 
    ;; only used by browse urls, it is the file size of the browse file referenced by the URL
    size
-  ])
+   ])
 
 (def granule-spatial-representations
   [:cartesian :geodetic :orbit :no-spatial])
@@ -189,6 +189,30 @@
 
    ;; Parameters for the satellite with which the collection is associated
    orbit-parameters
+   ])
+
+(defrecord Contact
+  [
+   ;; Phone, email, etc.
+   type
+
+   ;; Actual contact info (phone number, email address, etc.)
+   value
+   ])
+
+(defrecord Personnel
+  [
+   first-name
+
+   middle-name
+
+   last-name
+
+   ;; the roles of the person - investigator, technical contact, metadata author
+   roles
+
+   ;; contact points (email, phone, etc.)
+   contacts
    ])
 
 (defrecord UmmCollection
@@ -233,6 +257,9 @@
    spatial-coverage
 
    associated-difs
+
+   personnel
+
    ])
 
 

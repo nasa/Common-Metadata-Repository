@@ -10,7 +10,7 @@
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.services.errors :as errors]
             [cmr.umm.related-url-helper :as ru]
-            [cmr.indexer.data.concepts.temporal :as temporal]
+            [cmr.umm.start-end-date :as sed]
             [cmr.indexer.data.concepts.attribute :as attrib]
             [cmr.indexer.data.concepts.science-keyword :as sk]
             [cmr.indexer.data.concepts.spatial :as spatial]
@@ -31,16 +31,33 @@
         :else
         (errors/internal-error! (str "Unknown spatial representation [" sr "]"))))))
 
+(defn- person->email-contact
+  "Return an email contact for the Personnel record or nil if none is available."
+  [person]
+  (some (fn [contact]
+          (= :email
+             (:type contact)))
+        (:contacts person)))
+
+(defn person-with-email
+  "Returns the first Personnel record for the list with an email contact or
+  nil if none exists."
+  [personnel]
+  (some (fn [person]
+          (person->email-contact person))
+        personnel))
+
 (defmethod es/concept->elastic-doc :collection
   [context concept collection]
   (let [{:keys [concept-id provider-id revision-date format]} concept
         {{:keys [short-name long-name version-id processing-level-id collection-data-type]} :product
          :keys [entry-id entry-title summary temporal related-urls spatial-keywords associated-difs
-                temporal-keywords access-value]} collection
+                temporal-keywords access-value personnel distribution]} collection
         collection-data-type (if (= "NEAR_REAL_TIME" collection-data-type)
                                ;; add in all the aliases for NEAR_REAL_TIME
                                (concat [collection-data-type] k/nrt-aliases)
                                collection-data-type)
+        personnel (person-with-email personnel)
         platforms (:platforms collection)
         platform-short-names (map :short-name platforms)
         platform-long-names (remove nil? (map :long-name platforms))
@@ -54,14 +71,16 @@
         project-long-names (remove nil? (map :long-name (:projects collection)))
         two-d-coord-names (map :name (:two-d-coordinate-systems collection))
         archive-center-val (org/extract-archive-centers collection)
-        start-date (temporal/start-date :collection temporal)
-        end-date (temporal/end-date :collection temporal)
+        start-date (sed/start-date :collection temporal)
+        end-date (sed/end-date :collection temporal)
         atom-links (map json/generate-string (ru/atom-links related-urls))
         ;; not empty is used below to get a real true/false value
         downloadable (not (empty? (ru/downloadable-urls related-urls)))
         browsable (not (empty? (ru/browse-urls related-urls)))
         update-time (get-in collection [:data-provider-timestamps :update-time])
         update-time (f/unparse (f/formatters :date-time) update-time)
+        insert-time (get-in collection [:data-provider-timestamps :insert-time])
+        insert-time (f/unparse (f/formatters :date-time) insert-time)
         spatial-representation (get-in collection [:spatial-coverage :spatial-representation])
         permitted-group-ids (acl/get-coll-permitted-group-ids context provider-id collection)]
     (merge {:concept-id concept-id
@@ -100,6 +119,8 @@
             :spatial-keyword.lowercase  (map str/lower-case spatial-keywords)
             :attributes (attrib/psas->elastic-docs collection)
             :science-keywords (sk/science-keywords->elastic-doc collection)
+            :science-keywords-flat (sk/flatten-science-keywords collection)
+            :personnel (map json/generate-string personnel)
             :start-date (when start-date (f/unparse (f/formatters :date-time) start-date))
             :end-date (when end-date (f/unparse (f/formatters :date-time) end-date))
             :archive-center archive-center-val
@@ -109,7 +130,9 @@
             :atom-links atom-links
             :summary summary
             :metadata-format (name (mt/base-mime-type-to-format format))
+            :related-urls (map json/generate-string related-urls)
             :update-time update-time
+            :insert-time insert-time
             :associated-difs associated-difs
             :associated-difs.lowercase (map str/lower-case associated-difs)
             :coordinate-system (when spatial-representation (csk/->SNAKE_CASE_STRING spatial-representation))

@@ -32,6 +32,7 @@
             [cmr.search.results-handlers.metadata-results-handler]
             [cmr.search.results-handlers.query-specified-results-handler]
             [cmr.search.results-handlers.timeline-results-handler]
+            [cmr.search.results-handlers.opendata-results-handler]
 
             ;; ACL support. Required here to avoid circular dependencies
             [cmr.search.services.acls.collection-acls]
@@ -68,7 +69,8 @@
    "dif" "application/dif+xml"
    "csv" "text/csv"
    "atom" "application/atom+xml"
-   "kml" "application/vnd.google-earth.kml+xml"})
+   "kml" "application/vnd.google-earth.kml+xml"
+   "opendata" "application/opendata+json"})
 
 (def search-result-supported-mime-types
   "The mime types supported by search."
@@ -79,6 +81,7 @@
     "application/dif+xml"
     "application/atom+xml"
     "application/iso19115+xml"
+    "application/opendata+json"
     "text/csv"
     "application/vnd.google-earth.kml+xml"})
 
