@@ -172,7 +172,7 @@
           results (search/find-refs-with-post concept-type {:concept-id (map :concept-id type-concepts)})]
       (is (= 0 (:hits results)) (str "Expected 0 found " (pr-str results))))))
 
-(deftest db-synchronize-collection-inserts-test
+(deftest db-synchronize-collection-updates-test
   (test-env/only-with-real-database
     (let [concept-counter (atom 1)
           coll1-1 (coll-concept concept-counter "CPROV1" "coll1" :iso-smap)
@@ -209,13 +209,13 @@
 
       ;; Catalog REST and Metadata DB are not in sync now.
       ;; Put them back in sync
-      (bootstrap/synchronize-databases)
+      (bootstrap/synchronize-databases {:sync-types [:updates]})
 
       ;; Check that they are synchronized now with the latest data.
       (assert-concepts-in-mdb updated-colls)
       (assert-concepts-indexed updated-colls))))
 
-(deftest db-synchronize-collection-inserts-between-dates-test
+(deftest db-synchronize-collection-updates-between-dates-test
   (test-env/only-with-real-database
     (let [concept-counter (atom 1)
           ;; Original in sync concepts
@@ -257,7 +257,7 @@
 
         ;; Catalog REST and Metadata DB are not in sync now.
         ;; Put them back in sync
-        (bootstrap/synchronize-databases {:start-time start-time :end-time end-time}))
+        (bootstrap/synchronize-databases {:sync-types [:updates] :start-time start-time :end-time end-time}))
 
 
       ;; Check that they are synchronized now with the latest data.
@@ -268,7 +268,154 @@
       (assert-concepts-not-in-mdb [coll2-2 coll4-1 coll7-1])
       (assert-concepts-not-indexed [coll4-1 coll7-1]))))
 
-(deftest db-synchronize-collections-test
+(deftest db-synchronize-collection-missing-items-test
+  (test-env/only-with-real-database
+    (let [concept-counter (atom 1)
+          ;; Coll1 will exist in both
+          coll1-1 (coll-concept concept-counter "CPROV1" "coll1" :iso-smap)
+          ;; Coll 1 has been updated but this particular synchronization will have missed it
+          coll1-2 (updated-concept coll1-1)
+          ;;Collections 2 - 4 will be missing
+          coll2-1 (coll-concept concept-counter "CPROV1" "coll2")
+          coll3-1 (coll-concept concept-counter "CPROV2" "coll3")
+          coll4-1 (coll-concept concept-counter "CPROV2" "coll4")
+
+          ;; Collection 5 will have a tombstone
+          coll5-1 (coll-concept concept-counter "CPROV2" "coll5")
+          ;; The updated version will be revision 3 (tombstone is 2)
+          coll5-3 (updated-concept (updated-concept coll5-1))
+
+          orig-colls [coll1-1 coll5-1]
+          updated-colls [coll1-1 coll2-1 coll3-1 coll4-1 coll5-3]
+          system (bootstrap/system)]
+
+      ;; Save the concepts in Catalog REST
+      (cat-rest/insert-concepts system orig-colls)
+
+      ;; Migrate the providers. Catalog REST and Metadata DB are in sync
+      (bootstrap/bulk-migrate-providers "CPROV1" "CPROV2")
+      (bootstrap/bulk-index-providers "CPROV1" "CPROV2")
+
+      (assert-concepts-in-mdb orig-colls)
+      (assert-concepts-indexed orig-colls)
+
+      ;; Create a tombstone for concept 5
+      (ingest/delete-concept coll5-1)
+
+      ;; Insert/Update the concepts in catalog rest.
+      (cat-rest/update-concepts system [coll1-2 coll5-3])
+      (cat-rest/insert-concepts system [coll2-1 coll3-1 coll4-1])
+
+      ;; Catalog REST and Metadata DB are not in sync now.
+      ;; Put them back in sync
+      (bootstrap/synchronize-databases {:sync-types [:missing]})
+
+      ;; Check that they are synchronized now with the latest data.
+      (assert-concepts-in-mdb updated-colls)
+      (assert-concepts-indexed updated-colls))))
+
+(deftest db-synchronize-collection-missing-with-specific-collection-test
+  (test-env/only-with-real-database
+    (let [concept-counter (atom 1)
+          coll1-1 (coll-concept concept-counter "CPROV1" "coll1")
+          ;;Collections 2 - 4 will be missing
+          coll2-1 (coll-concept concept-counter "CPROV1" "coll2")
+          system (bootstrap/system)]
+
+      ;; Save the concepts in Catalog REST
+      (cat-rest/insert-concepts system [coll1-1 coll2-1])
+
+      ;; Catalog REST and Metadata DB are not in sync now.
+      ;; Put them back in sync
+      (bootstrap/synchronize-databases {:sync-types [:missing] :entry-title "coll2"
+                                        :provider-id "CPROV1"})
+
+      ;; Check that they are synchronized now with the latest data.
+      (assert-concepts-in-mdb [coll2-1])
+      (assert-concepts-indexed [coll2-1])
+      ;; Only collection 2 should by synchronized
+      (assert-concepts-not-in-mdb [coll1-1])
+      (assert-concepts-not-indexed [coll1-1]))))
+
+
+(deftest db-synchronize-collection-deletes-test
+  (test-env/only-with-real-database
+    (let [concept-counter (atom 1)
+          coll1-1 (coll-concept concept-counter "CPROV1" "coll1" :iso-smap)
+          coll2-1 (coll-concept concept-counter "CPROV1" "coll2")
+          coll3-1 (coll-concept concept-counter "CPROV2" "coll3")
+          coll4-1 (coll-concept concept-counter "CPROV2" "coll4")
+          coll5-1 (coll-concept concept-counter "CPROV2" "coll5")
+          ;; collection 5 is already deleted as a tombstone
+
+          orig-colls [coll1-1 coll2-1 coll3-1 coll4-1 coll5-1]
+          deleted-colls [coll1-1 coll3-1 coll5-1]
+          non-deleted-colls [coll2-1 coll4-1]
+          system (bootstrap/system)]
+
+      ;; Save the concepts in Catalog REST
+      (cat-rest/insert-concepts system orig-colls)
+
+      ;; Migrate the providers. Catalog REST and Metadata DB are in sync
+      (bootstrap/bulk-migrate-providers "CPROV1" "CPROV2")
+      (bootstrap/bulk-index-providers "CPROV1" "CPROV2")
+
+      (assert-concepts-in-mdb orig-colls)
+      (assert-concepts-indexed orig-colls)
+
+      ;; Delete the collections from Catalog REST
+      (cat-rest/delete-concepts system deleted-colls)
+
+      ;; Create a tombstone for concept 5
+      (ingest/delete-concept coll5-1)
+
+      ;; Catalog REST and Metadata DB are not in sync now.
+      ;; Put them back in sync
+      (bootstrap/synchronize-databases {:sync-types [:deletes]})
+
+      ;; Check that they are synchronized now with the latest data.
+      (assert-concepts-in-mdb non-deleted-colls)
+      (assert-concepts-indexed non-deleted-colls)
+
+      ;; Make sure the deleted collections are gone
+      (assert-tombstones-in-mdb deleted-colls)
+      (assert-concepts-not-indexed deleted-colls))))
+
+(deftest db-synchronize-collection-deletes-specific-collection-test
+  (test-env/only-with-real-database
+    (let [concept-counter (atom 1)
+          coll1-1 (coll-concept concept-counter "CPROV1" "coll1")
+          coll2-1 (coll-concept concept-counter "CPROV1" "coll2")
+          colls [coll1-1 coll2-1]
+          system (bootstrap/system)]
+
+      ;; Save the concepts in Catalog REST
+      (cat-rest/insert-concepts system colls)
+
+      ;; Migrate the providers. Catalog REST and Metadata DB are in sync
+      (bootstrap/bulk-migrate-providers "CPROV1" "CPROV2")
+      (bootstrap/bulk-index-providers "CPROV1" "CPROV2")
+
+      (assert-concepts-in-mdb colls)
+      (assert-concepts-indexed colls)
+
+      ;; Delete the collections from Catalog REST
+      (cat-rest/delete-concepts system colls)
+
+      ;; Catalog REST and Metadata DB are not in sync now.
+      ;; Put them back in sync
+      (bootstrap/synchronize-databases {:sync-types [:deletes] :provider-id "CPROV1"
+                                        :entry-title "coll2"})
+
+      ;; Collection 1 was not targeted so it should still be in metadata db
+      (assert-concepts-in-mdb [coll1-1])
+      (assert-concepts-indexed [coll1-1])
+
+      ;; Make sure the deleted collections are gone
+      (assert-tombstones-in-mdb [coll2-1])
+      (assert-concepts-not-indexed [coll2-1]))))
+
+(deftest db-synchronize-collections-with-defaults-test
   (test-env/only-with-real-database
     (let [concept-counter (atom 0)
           coll1-1 (coll-concept concept-counter "CPROV1" "coll1")
@@ -333,7 +480,99 @@
       (assert-tombstones-in-mdb deleted-colls)
       (assert-concepts-not-indexed deleted-colls))))
 
-(deftest db-synchronize-granules-test
+(deftest db-synchronize-granules-missing-test
+  (test-env/only-with-real-database
+    (let [concept-counter (atom 1)
+          coll1 (coll-concept concept-counter "CPROV1" "coll1")
+          coll2 (coll-concept concept-counter "CPROV2" "coll2")
+          colls [coll1 coll2]
+          ;; gran1 will exist in both
+          gran1-1 (gran-concept concept-counter coll1 "gran1")
+          ;; gran 1 has been updated but this particular synchronization will miss it
+          gran1-2 (updated-concept gran1-1)
+          ;;Granules 2 - 4 will be missing
+          gran2-1 (gran-concept concept-counter coll1 "gran2")
+          gran3-1 (gran-concept concept-counter coll2 "gran3")
+          gran4-1 (gran-concept concept-counter coll2 "gran4")
+
+          ;; granule 5 will have a tombstone
+          gran5-1 (gran-concept concept-counter coll2 "gran5")
+          ;; The updated version will be revision 3 (tombstone is 2)
+          gran5-3 (updated-concept (updated-concept gran5-1))
+
+          orig-grans [gran1-1 gran5-1]
+          updated-grans [gran1-1 gran2-1 gran3-1 gran4-1 gran5-3]
+          system (bootstrap/system)]
+
+      ;; Save the concepts in Catalog REST
+      (cat-rest/insert-concepts system colls)
+      (cat-rest/insert-concepts system orig-grans)
+
+      ;; Migrate the providers. Catalog REST and Metadata DB are in sync
+      (bootstrap/bulk-migrate-providers "CPROV1" "CPROV2")
+      (bootstrap/bulk-index-providers "CPROV1" "CPROV2")
+
+      (assert-concepts-in-mdb orig-grans)
+      (assert-concepts-indexed orig-grans)
+
+      ;; Create a tombstone for concept 5
+      (ingest/delete-concept gran5-1)
+
+      ;; Insert/Update the concepts in catalog rest.
+      (cat-rest/update-concepts system [gran1-2 gran5-3])
+      (cat-rest/insert-concepts system [gran2-1 gran3-1 gran4-1])
+
+      ;; Catalog REST and Metadata DB are not in sync now.
+      ;; Put them back in sync
+      (bootstrap/synchronize-databases {:sync-types [:missing]})
+
+      ;; Check that they are synchronized now with the latest data.
+      (assert-concepts-in-mdb updated-grans)
+      (assert-concepts-indexed updated-grans))))
+
+(deftest db-synchronize-granules-missing-specific-collection-test
+  (test-env/only-with-real-database
+    (let [concept-counter (atom 1)
+          coll1 (coll-concept concept-counter "CPROV1" "coll1")
+          coll2 (coll-concept concept-counter "CPROV2" "coll2")
+          colls [coll1 coll2]
+          gran1-1 (gran-concept concept-counter coll1 "gran1")
+          ;;Granules 2 - 4 will be missing
+          gran2-1 (gran-concept concept-counter coll1 "gran2")
+          gran3-1 (gran-concept concept-counter coll2 "gran3")
+          gran4-1 (gran-concept concept-counter coll2 "gran4")
+
+          orig-grans [gran1-1]
+          system (bootstrap/system)]
+
+      ;; Save the concepts in Catalog REST
+      (cat-rest/insert-concepts system colls)
+      (cat-rest/insert-concepts system orig-grans)
+
+      ;; Migrate the providers. Catalog REST and Metadata DB are in sync
+      (bootstrap/bulk-migrate-providers "CPROV1" "CPROV2")
+      (bootstrap/bulk-index-providers "CPROV1" "CPROV2")
+
+      (assert-concepts-in-mdb orig-grans)
+      (assert-concepts-indexed orig-grans)
+
+      ;; Insert/Update the concepts in catalog rest.
+      (cat-rest/insert-concepts system [gran2-1 gran3-1 gran4-1])
+
+      ;; Catalog REST and Metadata DB are not in sync now.
+      ;; Put them back in sync
+      (bootstrap/synchronize-databases {:sync-types [:missing] :provider-id "CPROV2"
+                                        :entry-title "coll2"})
+
+      ;; Check that they are synchronized now with the latest data.
+      (assert-concepts-in-mdb [gran1-1 gran3-1 gran4-1])
+      (assert-concepts-indexed [gran1-1 gran3-1 gran4-1])
+
+      ;; Check that granules in other collections weren't synchronized
+      (assert-concepts-not-in-mdb [gran2-1])
+      (assert-concepts-not-indexed [gran2-1]))))
+
+(deftest db-synchronize-granules-defaults-test
   (test-env/only-with-real-database
     (let [concept-counter (atom 0)
           coll1-1 (coll-concept concept-counter "CPROV1" "coll1")
@@ -632,14 +871,6 @@
                           :granule {:num-inserts (increase-by-factor 1)
                                     :num-updates (increase-by-factor 2)}})
         (simulate-insert-sync orig-holdings))))
-
-(comment
-
-  (bootstrap/db-fixture-setup "CPROV1" "CPROV2")
-
-  (bootstrap/db-fixture-tear-down "CPROV1"  "CPROV2")
-
-  )
 
 
 (deftest db-synchronize-many-items
