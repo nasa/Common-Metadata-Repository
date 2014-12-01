@@ -111,21 +111,25 @@
                          (platforms "A" 2 2 1)
                          (twod-coords "Alpha")
                          (science-keywords sk1 sk4 sk5)
-                         (processing-level-id "PL1"))
+                         (processing-level-id "PL1")
+                         {:organizations [(dc/org :archive-center "Larc")]})
         coll2 (make-coll 2 "PROV2"
                          (projects "proj3" "PROJ2")
                          (platforms "B" 2 2 1)
                          (science-keywords sk1 sk2 sk3)
-                         (processing-level-id "pl1"))
+                         (processing-level-id "pl1")
+                         {:organizations [(dc/org :archive-center "GSFC")]})
         coll3 (make-coll 3 "PROV2"
                          (platforms "A" 1 1 1)
                          (twod-coords "Alpha" "Bravo")
                          (science-keywords sk5 sk6 sk7)
-                         (processing-level-id "PL1"))
+                         (processing-level-id "PL1")
+                         {:organizations [(dc/org :archive-center "Larc")]})
         coll4 (make-coll 4 "PROV1"
                          (twod-coords "alpha")
                          (science-keywords sk3)
-                         (processing-level-id "PL2"))
+                         (processing-level-id "PL2")
+                         {:organizations [(dc/org :archive-center "Larc")]})
         coll5 (make-coll 5 "PROV2")
 
         ;; Guests do not have permission to this collection so it will not appear in results
@@ -146,7 +150,9 @@
              (search/find-refs :granule {:include-facets true}))))
 
     (testing "retreving all facets in different formats"
-      (let [expected-facets [{:field "project"
+      (let [expected-facets [{:field "archive_center"
+                              :value-counts [["Larc" 3] ["GSFC" 1]]}
+                             {:field "project"
                               :value-counts [["PROJ2" 2] ["proj1" 1] ["proj3" 1]]}
                              {:field "platform"
                               :value-counts [["A-p0" 2] ["A-p1" 1] ["B-p0" 1] ["B-p1" 1]]}
@@ -220,7 +226,9 @@
 
     (testing "Search conditions narrow reduce facet values found"
       (testing "search finding two documents"
-        (let [expected-facets [{:field "project"
+        (let [expected-facets [{:field "archive_center"
+                                :value-counts [["GSFC" 1] ["Larc" 1]]}
+                               {:field "project"
                                 :value-counts [["PROJ2" 2] ["proj1" 1] ["proj3" 1]]}
                                {:field "platform"
                                 :value-counts [["A-p0" 1] ["A-p1" 1] ["B-p0" 1] ["B-p1" 1]]}
@@ -264,7 +272,9 @@
                                                          :project "PROJ2"}))))))
 
       (testing "AND conditions narrow facets via AND not OR"
-        (let [expected-facets [{:field "project" :value-counts [["PROJ2" 1] ["proj3" 1]]}
+        (let [expected-facets [{:field "archive_center"
+                                :value-counts [["GSFC" 1]]}
+                               {:field "project" :value-counts [["PROJ2" 1] ["proj3" 1]]}
                                {:field "platform" :value-counts [["B-p0" 1] ["B-p1" 1]]}
                                {:field "instrument"
                                 :value-counts [["B-p0-i0" 1]
@@ -299,7 +309,8 @@
                                                          "options[project][and]" true}))))))
 
       (testing "search finding one document"
-        (let [expected-facets [{:field "project" :value-counts []}
+        (let [expected-facets [{:field "archive_center" :value-counts [["Larc" 1]]}
+                               {:field "project" :value-counts []}
                                {:field "platform" :value-counts []}
                                {:field "instrument" :value-counts []}
                                {:field "sensor" :value-counts []}
@@ -316,7 +327,8 @@
                  (:facets (search/find-refs :collection {:include-facets true
                                                          :processing-level-id "PL2"}))))))
 
-      (let [empty-facets [{:field "project" :value-counts []}
+      (let [empty-facets [{:field "archive_center" :value-counts []}
+                          {:field "project" :value-counts []}
                           {:field "platform" :value-counts []}
                           {:field "instrument" :value-counts []}
                           {:field "sensor" :value-counts []}

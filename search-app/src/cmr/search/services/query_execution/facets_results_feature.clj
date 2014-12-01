@@ -12,7 +12,8 @@
 (def facet-aggregations
   "This is the aggregations map that will be passed to elasticsearch to request facetted results
   from a collection search."
-  {:project (terms-facet :project-sn)
+  {:archive-center (terms-facet :archive-center)
+   :project (terms-facet :project-sn)
    :platform (terms-facet :platform-sn)
    :instrument (terms-facet :instrument-sn)
    :sensor (terms-facet :sensor-sn)
@@ -54,9 +55,9 @@
         facets (bucket-map->facets
                  aggs
                  ;; Specified here so that order will be consistent with results
-                 [:project :platform :instrument :sensor :two-d-coordinate-system-name
-                  :processing-level-id :category :topic :term :variable-level-1
-                  :variable-level-2 :variable-level-3 :detailed-variable])]
+                 [:archive-center :project :platform :instrument :sensor
+                  :two-d-coordinate-system-name :processing-level-id :category :topic :term
+                  :variable-level-1 :variable-level-2 :variable-level-3 :detailed-variable])]
     (assoc query-results :facets facets)))
 
 (defn key-with-prefix
@@ -84,7 +85,8 @@
 
 (def cmr-facet-name->echo-facet-keyword
   "A mapping of CMR facet names to ECHO facet keywords"
-  {"project" :campaign-sn
+  {"archive_center" :archive-center
+   "project" :campaign-sn
    "platform" :platform-sn
    "instrument" :instrument-sn
    "sensor" :sensor-sn
