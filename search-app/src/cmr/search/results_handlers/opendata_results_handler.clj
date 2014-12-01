@@ -61,6 +61,27 @@
    "provider-id"
    ])
 
+(defn- personnel->contact-name
+  "Returns a contact name from the personnel record or the default if one
+  is not available."
+  [personnel]
+  (if personnel
+    (let [{:keys [first-name last-name]} personnel]
+      (if first-name
+        (str first-name " " last-name)
+        last-name))
+    DEFAULT_CONTACT_NAME))
+
+(defn- personnel->contact-email
+  "Returns a contact email from the personnel record or the default if one
+  is not available."
+  [personnel]
+  (or (when personnel
+        (when-let [contacts (:contacts personnel)]
+          (when-let [contact (some #(= :email (:type %)) contacts)]
+            (:value contact))))
+      DEFAULT_CONTACT_EMAIL))
+
 (defmethod elastic-results/elastic-result->query-result-item :opendata
   [_ _ elastic-result]
   (let [{concept-id :_id
@@ -78,7 +99,7 @@
           [entry-title] :entry-title
           ords-info :ords-info
           ords :ords
-          personnel :personnel
+          [personnel] :personnel
           [start-date] :start-date
           [end-date] :end-date} :fields} elastic-result
         related-urls  (map #(json/decode % true) related-urls)
@@ -94,7 +115,7 @@
      :related-urls related-urls
      :project-sn project-sn
      :shapes (srl/ords-info->shapes ords-info ords)
-     :personnel (first personnel)
+     :personnel personnel
      :start-date start-date
      :end-date end-date
      :provider-id provider-id
@@ -123,11 +144,11 @@
   [related-urls]
   (let [online-access-urls (ru/downloadable-urls related-urls)]
     (not-empty (map (fn [url]
-           (let [mime-type (or (:mime-type url)
-                               "application/octet-stream")]
-             {:accessURL (:url url)
-              :format mime-type}))
-         online-access-urls))))
+                      (let [mime-type (or (:mime-type url)
+                                          "application/octet-stream")]
+                        {:accessURL (:url url)
+                         :format mime-type}))
+                    online-access-urls))))
 
 (defn landing-page
   "Creates the landingPage field for the collection with the given related-urls."
@@ -151,8 +172,8 @@
                            :keyword (not-empty keywords)
                            :modified (not-empty update-time)
                            :publisher PUBLISHER
-                           :contactPoint (or (:name personnel) DEFAULT_CONTACT_NAME)
-                           :mbox (or (:email personnel) DEFAULT_CONTACT_EMAIL)
+                           :contactPoint (personnel->contact-name personnel)
+                           :mbox (personnel->contact-email personnel)
                            :identifier id
                            :accessLevel ACCESS_LEVEL
                            :bureauCode [BUREAU_CODE]

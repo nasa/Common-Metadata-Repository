@@ -31,6 +31,22 @@
         :else
         (errors/internal-error! (str "Unknown spatial representation [" sr "]"))))))
 
+(defn- person->email
+  "Return a contact email for the Personnel record or nil if none is available."
+  [person]
+  (some (fn [contact]
+          (= :email
+             (:type contact)))
+        (:contacts person)))
+
+(defn- person-with-email
+  "Returns the first Personnel record for the list with an email contact or
+  nil if none exists."
+  [personnel]
+  (some (fn [person]
+          (person->email person))
+        personnel))
+
 (defmethod es/concept->elastic-doc :collection
   [context concept collection]
   (let [{:keys [concept-id provider-id revision-date format]} concept
@@ -41,6 +57,7 @@
                                ;; add in all the aliases for NEAR_REAL_TIME
                                (concat [collection-data-type] k/nrt-aliases)
                                collection-data-type)
+        personnel (person-with-email personnel)
         platforms (:platforms collection)
         platform-short-names (map :short-name platforms)
         platform-long-names (remove nil? (map :long-name platforms))
