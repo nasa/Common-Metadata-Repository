@@ -31,6 +31,10 @@
   Akamai recommend 860 bytes. We're transmitting UTF-8 which should be about a byte a character."
   860)
 
+(def MAX_REQUEST_HEADER_SIZE
+  "The maximum request header size. This is set to 1MB to handle requests with long urls."
+  1048576)
+
 (defn create-access-log-handler
   "Setup access logging for each application. Access log entries will go to stdout similar to
   application logging. As a result the access log entries will be in the same log as the
@@ -76,10 +80,16 @@
     (try
       (let [{:keys [port routes-fn use-compression?]} this
             routes (routes-fn system)
-            ^Server server (jetty/run-jetty routes {:port port
-                                                    :join? false
-                                                    :min-threads MIN_THREADS
-                                                    :max-threads MAX_THREADS})]
+            ^Server server (jetty/run-jetty
+                             routes
+                             {:port port
+                              :join? false
+                              :min-threads MIN_THREADS
+                              :max-threads MAX_THREADS
+                              :configurator (fn [jetty]
+                                              (doseq [connector (.getConnectors jetty)]
+                                                (.setRequestHeaderSize connector
+                                                                       MAX_REQUEST_HEADER_SIZE)))})]
 
         (let [request-handler (if use-compression?
                                 (create-gzip-handler (.getHandler server) MIN_GZIP_SIZE)

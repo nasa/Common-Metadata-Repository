@@ -2,9 +2,9 @@
 
 ### General Request Details
 
-#### Maximum URL Length
+#### Maximum Request Header Size
 
-The Maximum URL length supported by CMR is 6032 characters. Clients using the Search API with query parameters should be careful not to exceed this limit or they will get an HTTP response of 413 FULL HEAD. If a client expects they will sometimes need to send more than 6032 characters in a query they should use the POST API for searching.
+The Maximum Request Header Size supported by CMR is 1MB. Clients using the Search API with query parameters should be careful not to exceed this limit or they will get an HTTP response of 413 FULL HEAD. If a client expects they will sometimes need to send extra long query url that might cause the total header size to exceed 1MB, they should use the POST API for searching.
 
 #### CORS Header support
 
