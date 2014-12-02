@@ -2,9 +2,9 @@
 
 ### General Request Details
 
-#### Maximum Request Header Size
+#### Maximum URL Length
 
-The Maximum Request Header Size supported by CMR is 1MB. Clients using the Search API with query parameters should be careful not to exceed this limit or they will get an HTTP response of 413 FULL HEAD. If a client expects they will sometimes need to send extra long query url that might cause the total header size to exceed 1MB, they should use the POST API for searching.
+The Maximum URL Length supported by CMR is indirectly controlled by the Request Header Size setting in Jetty which is at 1MB. This translates to roughly 500k characters. Clients using the Search API with query parameters should be careful not to exceed this limit or they will get an HTTP response of 413 FULL HEAD. If a client expects they will sometimes need to send extra long query url that might exceed 500k characters, they should use the POST API for searching.
 
 #### CORS Header support
 
