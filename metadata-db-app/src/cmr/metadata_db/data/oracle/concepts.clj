@@ -12,6 +12,7 @@
             [cmr.metadata-db.data.oracle.sql-utils :as su]
             [cmr.metadata-db.services.util :as util]
             [cmr.metadata-db.services.provider-service :as provider-service]
+            [cmr.common.date-time-parser :as p]
             [clj-time.format :as f]
             [clj-time.coerce :as cr]
             [clj-time.core :as t]
@@ -152,14 +153,19 @@
                 metadata
                 format
                 revision-id
-                deleted]} concept]
-    [["native_id" "concept_id" "metadata" "format" "revision_id" "deleted"]
-     [native-id
-      concept-id
-      (string->gzip-bytes metadata)
-      (mime-type->db-format format)
-      revision-id
-      deleted]]))
+                revision-date
+                deleted]} concept
+        fields ["native_id" "concept_id" "metadata" "format" "revision_id" "deleted"]
+        values [native-id
+                concept-id
+                (string->gzip-bytes metadata)
+                (mime-type->db-format format)
+                revision-id
+                deleted]]
+    (if revision-date
+      [(cons "revision_date" fields)
+       (cons (cr/to-sql-time (p/parse-datetime revision-date)) values)]
+      [fields values])))
 
 (defmethod after-save :default
   [db concept]
@@ -397,13 +403,15 @@
         (let [{:keys [concept-type provider-id]} concept
               table (tables/get-table-name provider-id concept-type)
               seq-name (str table "_seq")
-              insert-args (concept->insert-args concept)
+              [cols values] (concept->insert-args concept)
               stmt (format "INSERT INTO %s (id, %s) VALUES (%s.NEXTVAL,%s)"
                            table
-                           (str/join "," (first insert-args))
+                           (str/join "," cols)
                            seq-name
-                           (str/join "," (repeat (count (nth insert-args 1)) "?")))]
-          (j/db-do-prepared db stmt (nth insert-args 1))
+                           (str/join "," (repeat (count values) "?")))]
+          ;; Uncomment to debug what's inserted
+          ; (debug "Executing" stmt "with values" (pr-str values))
+          (j/db-do-prepared db stmt values)
           (after-save conn concept)
 
           nil))

@@ -160,17 +160,18 @@
   (j/with-db-transaction
     [conn (:db system)]
     (let [sql (format "select dataset_id, compressed_xml, short_name, version_id,
-                      xml_mime_type, delete_time from %s where echo_collection_id = ?"
+                      xml_mime_type, delete_time, ingest_updated_at from %s where echo_collection_id = ?"
                       (mu/catalog-rest-table system provider-id concept-type))
           stmt [sql concept-id]
           [{:keys [dataset_id compressed_xml short_name version_id xml_mime_type
-                   delete_time]}] (sql-utils/query conn stmt)]
+                   delete_time ingest_updated_at]}] (sql-utils/query conn stmt)]
       (if-let [mdb-format (mdb-concepts/db-format->mime-type xml_mime_type)]
         {:concept-type concept-type
          :format mdb-format
          :metadata (mdb-concepts/blob->string compressed_xml)
          :concept-id concept-id
          :revision-id revision-id
+         :revision-date (mdb-concepts/oracle-timestamp->str-time conn ingest_updated_at)
          :deleted false
          :extra-fields {:short-name short_name
                         :entry-title dataset_id
@@ -187,17 +188,18 @@
   (j/with-db-transaction
     [conn (:db system)]
     (let [sql (format "select granule_ur, compressed_xml, dataset_record_id,
-                      xml_mime_type, delete_time from %s where echo_granule_id = ?"
+                      xml_mime_type, delete_time, ingest_updated_at from %s where echo_granule_id = ?"
                       (mu/catalog-rest-table system provider-id concept-type))
           stmt [sql concept-id]
           [{:keys [granule_ur compressed_xml dataset_record_id xml_mime_type
-                   delete_time]}] (sql-utils/query conn stmt)]
+                   delete_time ingest_updated_at]}] (sql-utils/query conn stmt)]
       (if-let [mdb-format (mdb-concepts/db-format->mime-type xml_mime_type)]
         {:concept-type concept-type
          :format mdb-format
          :metadata (mdb-concepts/blob->string compressed_xml)
          :concept-id concept-id
          :revision-id revision-id
+         :revision-date (mdb-concepts/oracle-timestamp->str-time conn ingest_updated_at)
          :deleted false
          :extra-fields {:granule-ur granule_ur
                         :parent-collection-id (concepts/build-concept-id

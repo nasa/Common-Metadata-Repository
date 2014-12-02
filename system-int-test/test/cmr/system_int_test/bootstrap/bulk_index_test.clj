@@ -96,7 +96,7 @@
   (test-env/only-with-real-database
     (let [collections (for [x (range 1 11)]
                         (let [cmap {:short-name (str "short-name" x)
-                                    :entry-title (str "ttl" x)}
+                                    :entry-title (str "title" x)}
                               umm (dc/collection cmap)
                               xml (echo10/umm->echo10-xml umm)
                               concept-map {:concept-type :collection
@@ -107,34 +107,36 @@
                                                           :version-id "v1"}
                                            :provider-id "PROV1"
                                            :native-id (str "coll" x)
-                                           :short-name (str "short-name" x)}]
-                          (ingest/save-concept concept-map)))
+                                           :short-name (str "short-name" x)}
+                              {:keys [concept-id revision-id]} (ingest/save-concept concept-map)]
+                          (assoc umm :concept-id concept-id :revision-id revision-id)))
           granules1 (mapcat (fn [collection]
                               (doall
                                 (for [x (range 1 4)]
                                   (let [pid (:concept-id collection)
-                                        cmap {:native-id (str "gran-" pid "-" x)}
-                                        umm (dg/granule cmap)
+                                        umm (dg/granule collection)
                                         xml (echo10/umm->echo10-xml umm)
                                         concept-map {:concept-type :granule
                                                      :provider-id "PROV1"
                                                      :native-id (str "gran-" pid "-" x)
                                                      :extra-fields {:parent-collection-id pid}
                                                      :format "application/echo10+xml"
-                                                     :metadata xml}]
-                                    (ingest/save-concept concept-map)))))
+                                                     :metadata xml}
+                                        {:keys [concept-id revision-id]} (ingest/save-concept concept-map)]
+                                    (assoc umm :concept-id concept-id :revision-id revision-id)))))
                             collections)
           ;; granules2 and f (the future) are used to ingest ten granules five times each in
           ;; a separate thread to verify that bulk indexing with concurrent ingest does the right
           ;; thing.
           granules2 (let [collection (first collections)
-                          pid (:concept-id (first collections))]
+                          pid (:concept-id collection)]
                       (for [x (range 1 11)]
                         (dg/granule collection {:granule-ur (str "gran2-" pid "-" x)})))
-          f (future (doall (for [n (range 1 6)] (doall (map (fn [gran]
-                                                              (Thread/sleep 100)
-                                                              (d/ingest "PROV1" gran))
-                                                            granules2)))))]
+          f (future (dotimes [n 5]
+                      (doall (map (fn [gran]
+                                    (Thread/sleep 100)
+                                    (d/ingest "PROV1" gran))
+                                  granules2))))]
 
       (bootstrap/bulk-index-provider "PROV1")
       ;; force our future to complete

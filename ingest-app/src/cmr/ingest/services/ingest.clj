@@ -64,7 +64,8 @@
     (when-not parent-collection-id
       (cmsg/data-error :not-found
                        msg/parent-collection-does-not-exist
-                       granule-ur))
+                       granule-ur
+                       collection-ref))
     (assoc concept :extra-fields {:parent-collection-id parent-collection-id
                                   :delete-time (when delete-time (str delete-time))})))
 

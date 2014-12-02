@@ -24,6 +24,21 @@
     (is (= revision-id 1))
     (is (util/verify-concept-was-saved (assoc concept :revision-id revision-id :concept-id concept-id)))))
 
+(deftest save-collection-with-revision-date-test
+  (let [concept (assoc (util/collection-concept "PROV1" 1)
+                       :revision-date (t/date-time 2001 1 1 12 12 14))
+        {:keys [status revision-id concept-id]} (util/save-concept concept)]
+    (is (= 201 status))
+    (is (= revision-id 1))
+    (let [retrieved-concept (util/get-concept-by-id-and-revision concept-id revision-id)]
+      (is (= (:revision-date concept) (:revision-date (:concept retrieved-concept)))))))
+
+(deftest save-collection-with-bad-revision-date-test
+  (let [concept (assoc (util/collection-concept "PROV1" 1) :revision-date "foo")
+        {:keys [status errors]} (util/save-concept concept)]
+    (is (= 422 status))
+    (is (= ["[foo] is not a valid datetime"] errors))))
+
 (deftest save-collection-without-version-id-test
   (let [concept (assoc-in (util/collection-concept "PROV1" 1) [:extra-fields :version-id] nil)
         {:keys [status revision-id concept-id]} (util/save-concept concept)]
@@ -35,8 +50,8 @@
   (let [collection (util/collection-concept "PROV1" 1)
         parent-collection-id (:concept-id (util/save-concept collection))
         granule (util/granule-concept "PROV1" parent-collection-id 1)
-        {:keys [status revision-id concept-id]} (util/save-concept granule)]
-    (is (= 201 status))
+        {:keys [status revision-id concept-id] :as resp} (util/save-concept granule)]
+    (is (= 201 status) (pr-str resp))
     (is (= revision-id 1))
     (is (util/verify-concept-was-saved (assoc granule :revision-id revision-id :concept-id concept-id)))))
 

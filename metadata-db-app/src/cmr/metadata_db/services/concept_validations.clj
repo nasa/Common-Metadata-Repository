@@ -3,6 +3,7 @@
             [cmr.common.concepts :as cc]
             [clojure.set :as set]
             [cmr.common.services.errors :as errors]
+            [cmr.common.date-time-parser :as p]
             [cmr.common.util :as util]))
 
 (defn concept-type-missing-validation
@@ -42,7 +43,18 @@
                  (conj acc (msg/nil-field field))
                  acc))
              []
-             concept))
+             (dissoc concept :revision-date)))
+
+(defn datetime-validator
+  [field-path]
+  (fn [concept]
+    (when-let [value (get-in concept field-path)]
+      (try
+        (p/parse-datetime value)
+        nil
+        (catch clojure.lang.ExceptionInfo e
+          (let [data (ex-data e)]
+            (:errors data)))))))
 
 (defn nil-extra-fields-validation
   "Validates that among the extra fields, only delete-time and version-id can sometimes be nil."
@@ -63,6 +75,7 @@
                        (= provider-id (:provider-id concept)))
           [(msg/invalid-concept-id concept-id (:provider-id concept) (:concept-type concept))])))))
 
+
 (def concept-validation
   "Validates a concept and returns a list of errors"
   (util/compose-validations [concept-type-missing-validation
@@ -72,7 +85,9 @@
                              extra-fields-missing-validation
                              nil-fields-validation
                              nil-extra-fields-validation
-                             concept-id-match-fields-validation]))
+                             concept-id-match-fields-validation
+                             (datetime-validator [:revision-date])
+                             (datetime-validator [:extra-fields :delete-time])]))
 
 (def validate-concept
   "Validates a concept. Throws an error if invalid."

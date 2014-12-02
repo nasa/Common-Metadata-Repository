@@ -141,12 +141,7 @@
   (doseq [concept-type all-concept-types]
     (let [table-name (get-table-name provider-id concept-type)
           sequence-name (str table-name "_seq")]
-    (info "Dropping table" table-name)
-    (try
+      (info "Dropping table" table-name)
       (j/db-do-commands db (str "DROP TABLE " table-name))
-      (catch Exception e))
-
-    (info "Dropping sequence" sequence-name)
-    (try
-      (j/db-do-commands db (str "DROP SEQUENCE " sequence-name))
-      (catch Exception e)))))
+      (info "Dropping sequence" sequence-name)
+      (j/db-do-commands db (str "DROP SEQUENCE " sequence-name)))))

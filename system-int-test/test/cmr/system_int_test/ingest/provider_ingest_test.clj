@@ -67,7 +67,7 @@
           (search/find-refs :granule {:provider-id "PROV2"})))))
 
 (deftest delete-non-existent-provider-test
-  (is (= 404 (ingest/delete-ingest-provider "NonExistentProvider"))))
+  (is (= 404 (ingest/delete-ingest-provider "NON_EXIST"))))
 
 (deftest delete-provider-without-permission-test
   (let [response (client/delete (url/ingest-delete-provider-url "PROV1")

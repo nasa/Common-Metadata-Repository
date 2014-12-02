@@ -213,7 +213,12 @@
   "Make a POST request to save a concept with JSON encoding of the concept.  Returns a map with
   status, revision-id, and a list of error messages"
   [concept]
-  (let [response (client/post concepts-url
+  (let [concept (update-in concept [:revision-date]
+                           ;; Convert date times to string but allow invalid strings to be passed through
+                           #(if (= (type %) org.joda.time.DateTime)
+                              (f/unparse (f/formatters :date-time) %)
+                              %))
+        response (client/post concepts-url
                               {:body (cheshire/generate-string concept)
                                :content-type :json
                                :accept :json
