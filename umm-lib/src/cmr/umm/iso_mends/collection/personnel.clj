@@ -4,7 +4,7 @@
             [cmr.common.xml :as cx]
             [cmr.umm.collection :as c]))
 
-(defn- xml-elem->Personnel
+(defn- xml-elem->PersonnelRecord
   "Returns a Personnel record from a parsed xml structure"
   [xml-struct]
   (let [person-name (cx/string-at-path xml-struct [:individualName
@@ -60,4 +60,4 @@
                                         :distributorContact
                                         :CI_ResponsibleParty]))))]
     (not-empty (filter (complement nil?)
-                       (map xml-elem->Personnel contact-elements)))))
+                       (map xml-elem->PersonnelRecord contact-elements)))))
