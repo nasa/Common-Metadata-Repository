@@ -65,12 +65,11 @@
   "Returns a contact name from the personnel record or the default if one
   is not available."
   [personnel]
-  (if personnel
-    (let [{:keys [first-name last-name]} personnel]
-      (if first-name
-        (str first-name " " last-name)
-        last-name))
-    DEFAULT_CONTACT_NAME))
+  (or (let [{:keys [first-name last-name]} personnel]
+        (if first-name
+          (str first-name " " last-name)
+          last-name))
+      DEFAULT_CONTACT_NAME))
 
 (defn personnel->contact-email
   "Returns a contact email from the personnel record or the default if one
