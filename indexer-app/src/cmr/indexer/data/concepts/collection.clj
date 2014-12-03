@@ -34,18 +34,16 @@
 (defn- person->email-contact
   "Return an email contact for the Personnel record or nil if none is available."
   [person]
-  (some (fn [contact]
-          (= :email
-             (:type contact)))
-        (:contacts person)))
+  (first (filter (fn [contact]
+                   (= :email
+                      (:type contact)))
+                 (:contacts person))))
 
 (defn person-with-email
   "Returns the first Personnel record for the list with an email contact or
   nil if none exists."
   [personnel]
-  (some (fn [person]
-          (person->email-contact person))
-        personnel))
+  (first (filter person->email-contact personnel)))
 
 (defmethod es/concept->elastic-doc :collection
   [context concept collection]
@@ -120,7 +118,7 @@
             :attributes (attrib/psas->elastic-docs collection)
             :science-keywords (sk/science-keywords->elastic-doc collection)
             :science-keywords-flat (sk/flatten-science-keywords collection)
-            :personnel (map json/generate-string personnel)
+            :personnel (json/generate-string personnel)
             :start-date (when start-date (f/unparse (f/formatters :date-time) start-date))
             :end-date (when end-date (f/unparse (f/formatters :date-time) end-date))
             :archive-center archive-center-val
