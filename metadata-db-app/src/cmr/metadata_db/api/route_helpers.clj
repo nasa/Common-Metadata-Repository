@@ -2,7 +2,7 @@
   (:require [cheshire.core :as json]))
 
 (def json-header
-  {"Content-Type" "json; charset=utf-8"})
+  {"Content-Type" "application/json; charset=utf-8"})
 
 (defn to-json
   "Converts the object to JSON. If the pretty parameter is passed with true formats the response for

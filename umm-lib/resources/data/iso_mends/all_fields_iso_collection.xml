@@ -141,10 +141,24 @@
                <gmd:organisationName>
                   <gco:CharacterString>SEDAC AC</gco:CharacterString>
                </gmd:organisationName>
+               <gmd:individualName>
+                  <gco:CharacterString>John Smith</gco:CharacterString>
+               </gmd:individualName>
                <gmd:role>
                   <gmd:CI_RoleCode codeList="http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#CI_RoleCode"
                                    codeListValue="pointOfContact">pointOfContact</gmd:CI_RoleCode>
                </gmd:role>
+               <gmd:contactInfo>
+                  <gmd:CI_Contact>
+                     <gmd:address>
+                        <gmd:CI_Address>
+                           <gmd:electronicMailAddress>
+                              <gco:CharacterString>jsmith@nasa.gov</gco:CharacterString>
+                           </gmd:electronicMailAddress>
+                        </gmd:CI_Address>
+                     </gmd:address>
+                  </gmd:CI_Contact>
+               </gmd:contactInfo>
             </gmd:CI_ResponsibleParty>
          </gmd:pointOfContact>
          <gmd:graphicOverview>

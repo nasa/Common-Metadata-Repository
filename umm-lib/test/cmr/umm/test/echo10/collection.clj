@@ -36,6 +36,21 @@
         browse-urls (ru/browse-urls related-urls)]
     (seq (concat downloadable-urls resource-urls browse-urls))))
 
+(defn- umm-contacts->expected-contacts
+  "Removes non-email contacts since we don't use those yet and don't generate them in the XML."
+  [contacts]
+  (filter #(= :email (:type %)) contacts))
+
+(defn- umm-personnedl->expected-personnel
+  "Modifies the umm personnel field to the expected personnel field value."
+  [personnel]
+  (map (fn [person]
+         (-> person
+             (update-in [:contacts] umm-contacts->expected-contacts)
+             ;; only have one role
+             (update-in [:roles] (partial take 1))))
+       personnel))
+
 (defn umm->expected-parsed-echo10
   "Modifies the UMM record for testing ECHO10. ECHO10 contains a subset of the total UMM fields so certain
   fields are removed for comparison of the parsed record"
@@ -43,7 +58,8 @@
   (let [{{:keys [short-name long-name version-id]} :product} coll
         entry-id (str short-name "_" version-id)
         organizations (seq (filter #(not= :distribution-center (:type %)) (:organizations coll)))
-        related-urls (umm-related-urls->expected-related-urls (:related-urls coll))]
+        related-urls (umm-related-urls->expected-related-urls (:related-urls coll))
+        personnel (not-empty (umm-personnedl->expected-personnel (:personnel coll)))]
     (-> coll
         ;; ECHO10 does not have entry-id and we generate it as concatenation of short-name and version-id
         (assoc :entry-id entry-id)
@@ -52,6 +68,7 @@
         (assoc :organizations organizations)
         ;; ECHO10 OnlineResources' title is built as description plus resource-type
         (assoc :related-urls related-urls)
+        (assoc :personnel personnel)
         umm-c/map->UmmCollection)))
 
 (defspec generate-collection-is-valid-xml-test 100
@@ -116,6 +133,36 @@
         <PeriodCycleDurationValue>7</PeriodCycleDurationValue>
       </PeriodicDateTime>
     </Temporal>
+    <Contacts>
+      <Contact>
+        <Role>INVESTIGATOR</Role>
+        <OrganizationName>Undefined</OrganizationName>
+        <OrganizationAddresses>
+          <Address>
+            <StreetAddress>Laboratory for Hydrospheric Processes Cryospheric Sciences Branch NASA/Goddard Space Flight Center Code 614 </StreetAddress>
+            <City>Greenbelt</City>
+            <StateProvince>MD</StateProvince>
+            <PostalCode>20771</PostalCode>
+            <Country>USA</Country>
+          </Address>
+        </OrganizationAddresses>
+        <OrganizationPhones>
+          <Phone>
+            <Number>301 614-5708</Number>
+            <Type>Telephone</Type>
+          </Phone>
+        </OrganizationPhones>
+        <OrganizationEmails>
+          <Email>josefino.c.comiso@nasa.gov</Email>
+        </OrganizationEmails>
+        <ContactPersons>
+          <ContactPerson>
+            <FirstName>JOSEPHINO 'JOEY'</FirstName>
+            <LastName>COMISO</LastName>
+          </ContactPerson>
+        </ContactPersons>
+      </Contact>
+    </Contacts>
     <ScienceKeywords>
       <ScienceKeyword>
         <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
@@ -193,15 +240,15 @@
       <Campaign>
         <ShortName>ESI</ShortName>
         <LongName>Environmental Sustainability Index</LongName>
-     </Campaign>
+      </Campaign>
       <Campaign>
         <ShortName>EVI</ShortName>
         <LongName>Environmental Vulnerability Index</LongName>
-     </Campaign>
+      </Campaign>
       <Campaign>
         <ShortName>EPI</ShortName>
         <LongName>Environmental Performance Index</LongName>
-     </Campaign>
+      </Campaign>
     </Campaigns>
     <TwoDCoordinateSystems>
       <TwoDCoordinateSystem>
@@ -258,7 +305,7 @@
         <EntryId>DIF-257</EntryId>
       </DIF>
     </AssociatedDIFs>
- </Collection>")
+  </Collection>")
 
 (def valid-collection-xml
   "<Collection>
@@ -398,7 +445,13 @@
                         :org-name "SEDAC PC"})
                      (umm-c/map->Organization
                        {:type :archive-center
-                        :org-name "SEDAC AC"})]})
+                        :org-name "SEDAC AC"})]
+                    :personnel [#cmr.umm.collection.Personnel{:first-name "JOSEPHINO 'JOEY'"
+                                                              :middle-name nil
+                                                              :last-name "COMISO"
+                                                              :roles ["INVESTIGATOR"]
+                                                              :contacts (#cmr.umm.collection.Contact{:type :email
+                                                                                                     :value "josefino.c.comiso@nasa.gov"})}]})
         actual (c/parse-collection all-fields-collection-xml)]
     (is (= expected actual))))
 
@@ -422,4 +475,3 @@
     (clojure.data/diff parsed collection))
   ;;;;;;;;;;;;'
   )
-

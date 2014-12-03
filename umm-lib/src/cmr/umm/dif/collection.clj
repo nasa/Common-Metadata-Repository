@@ -2,6 +2,7 @@
   "Contains functions for parsing and generating the DIF dialect."
   (:require [clojure.data.xml :as x]
             [clojure.java.io :as io]
+            [cmr.common.util :as util]
             [cmr.common.xml :as cx]
             [cmr.umm.dif.core :as dif-core]
             [cmr.umm.collection :as c]
@@ -13,7 +14,8 @@
             [cmr.umm.dif.collection.temporal :as t]
             [cmr.umm.dif.collection.product-specific-attribute :as psa]
             [cmr.umm.dif.collection.spatial-coverage :as sc]
-            [cmr.umm.dif.collection.extended-metadata :as em])
+            [cmr.umm.dif.collection.extended-metadata :as em]
+            [cmr.umm.dif.collection.personnel :as personnel])
   (:import cmr.umm.collection.UmmCollection))
 
 (def PRODUCT_LEVEL_ID_EXTERNAL_META_NAME
@@ -22,17 +24,12 @@
 (def COLLECTION_DATA_TYPE_EXTERNAL_META_NAME
   "CollectionDataType")
 
-(defn trunc
-  "Returns the given string truncated to n characters."
-  [s n]
-  (subs s 0 (min (count s) n)))
-
 (defn- xml-elem->Product
   "Returns a UMM Product from a parsed Collection Content XML structure"
   [collection-content]
   (let [short-name (cx/string-at-path collection-content [:Entry_ID])
         long-name (cx/string-at-path collection-content [:Entry_Title])
-        long-name (trunc long-name 1024)
+        long-name (util/trunc long-name 1024)
         version-id (cx/string-at-path collection-content [:Data_Set_Citation :Version])
         processing-level-id (em/extended-metadatas-value collection-content PRODUCT_LEVEL_ID_EXTERNAL_META_NAME)
         collection-data-type (em/extended-metadatas-value collection-content COLLECTION_DATA_TYPE_EXTERNAL_META_NAME)]
@@ -72,7 +69,8 @@
      :projects (pj/xml-elem->Projects xml-struct)
      :related-urls (ru/xml-elem->RelatedURLs xml-struct)
      :spatial-coverage (sc/xml-elem->SpatialCoverage xml-struct)
-     :organizations (org/xml-elem->Organizations xml-struct)}))
+     :organizations (org/xml-elem->Organizations xml-struct)
+     :personnel (personnel/xml-elem->personnel xml-struct)}))
 
 (defn parse-collection
   "Parses DIF XML into a UMM Collection record."
@@ -96,7 +94,7 @@
             {:keys [insert-time update-time]} :data-provider-timestamps
             :keys [entry-id entry-title summary temporal organizations science-keywords platforms
                    product-specific-attributes projects related-urls spatial-coverage
-                   temporal-keywords]} collection
+                   temporal-keywords personnel]} collection
            ;; DIF only has range-date-times, so we ignore the temporal field if it is not of range-date-times
            temporal (when (seq (:range-date-times temporal)) temporal)
            emit-fn (if indent? x/indent-str x/emit-str)]
@@ -107,6 +105,7 @@
                     (when version-id
                       (x/element :Data_Set_Citation {}
                                  (x/element :Version {} version-id)))
+                    (personnel/generate-personnel personnel)
                     (sk/generate-science-keywords science-keywords)
                     (t/generate-temporal temporal)
                     (sc/generate-spatial-coverage spatial-coverage)

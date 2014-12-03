@@ -219,7 +219,8 @@
 (def resource-type->link-type-uri
   {"GET DATA" "http://esipfed.org/ns/fedsearch/1.1/data#"
    "GET RELATED VISUALIZATION" "http://esipfed.org/ns/fedsearch/1.1/browse#"
-   "ALGORITHM INFO" "http://esipfed.org/ns/fedsearch/1.1/metadata#"})
+   "ALGORITHM INFO" "http://esipfed.org/ns/fedsearch/1.1/metadata#"
+   "VIEW PROJECT HOME PAGE" "http://esipfed.org/ns/fedsearch/1.1/metadata#"})
 
 (defn- add-attribs
   "Returns the attribs with the field-value pair added if there is a value"
@@ -230,7 +231,9 @@
   "Returns the atom link of the given related url"
   [related-url]
   (let [{:keys [type url title mime-type size inherited]} related-url
-        title (if (= "ALGORITHM INFO" type) (str title " ()") title)
+        title (if (or (= "VIEW PROJECT HOME PAGE" type)
+                      (= "ALGORITHM INFO" type))
+                (str title " ()") title)
         attribs (-> {}
                     (add-attribs :inherited inherited)
                     (add-attribs :size size)

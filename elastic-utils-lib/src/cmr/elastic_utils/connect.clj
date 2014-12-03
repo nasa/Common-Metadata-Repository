@@ -22,7 +22,9 @@
                                    ;; Very important that this matches the maximum number of threads that will be running
                                    :threads web-server/MAX_THREADS
                                    ;; Maximum number of simultaneous connections per host
-                                   :default-per-route 10
+                                   ;; There's usually one elasticsearch hostname and we always connect
+                                   ;; to the same host so it makes sense to make this larger.
+                                   :default-per-route web-server/MAX_THREADS
                                    ;; This is the length of time in _seconds_ that a connection will
                                    ;; be left open for reuse. The default is 5 seconds which is way
                                    ;; too short.

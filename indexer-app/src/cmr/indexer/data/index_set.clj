@@ -188,7 +188,7 @@
                                     :instrument-sn.lowercase string-field-mapping
                                     :sensor-sn             string-field-mapping
                                     :sensor-sn.lowercase   string-field-mapping
-                                    :project-sn            string-field-mapping
+                                    :project-sn            (stored string-field-mapping)
                                     :project-sn.lowercase  string-field-mapping
                                     :archive-center        (stored string-field-mapping)
                                     :archive-center.lowercase string-field-mapping
@@ -225,6 +225,17 @@
                                     :associated-difs (stored string-field-mapping)
                                     :associated-difs.lowercase string-field-mapping
                                     :coordinate-system (not-indexed (stored string-field-mapping))
+
+                                    ;; mappings added for opendata
+                                    :insert-time (not-indexed (stored string-field-mapping))
+                                    ;; This field contains multiple values obtained by
+                                    ;; concatenating the category, topic, and term from
+                                    ;; each science keyword. It represents the 'keywords'
+                                    ;; field in the opendata format.
+                                    :science-keywords-flat (stored string-field-mapping)
+                                    :related-urls (stored string-field-mapping)
+                                    :contact-email (stored string-field-mapping)
+                                    :personnel (stored string-field-mapping)
 
                                     ;; analyzed field for keyword searches
                                     :keyword text-field-mapping

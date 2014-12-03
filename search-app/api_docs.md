@@ -4,7 +4,7 @@
 
 #### Maximum URL Length
 
-The Maximum URL length supported by CMR is 6032 characters. Clients using the Search API with query parameters should be careful not to exceed this limit or they will get an HTTP response of 413 FULL HEAD. If a client expects they will sometimes need to send more than 6032 characters in a query they should use the POST API for searching.
+The Maximum URL Length supported by CMR is indirectly controlled by the Request Header Size setting in Jetty which is at 1MB. This translates to roughly 500k characters. Clients using the Search API with query parameters should be careful not to exceed this limit or they will get an HTTP response of 413 FULL HEAD. If a client expects they will sometimes need to send extra long query url that might exceed 500k characters, they should use the POST API for searching.
 
 #### CORS Header support
 
@@ -722,6 +722,10 @@ Facets in XML search response formats will be formatted like the following examp
 
 ```
 <facets>
+  <facet field="archive_center">
+    <value count="28989">LARC</value>
+    <value count="19965">GSFC</value>
+  </facet>
   <facet field="project">
     <value count="245">MANTIS</value>
     <value count="132">THUNDER</value>
@@ -755,6 +759,12 @@ Facets in JSON search response formats will be formatted like the following exam
   "feed": {
     "entry": [...],
     "facets": [{
+      "field": "archive_center",
+      "value-counts": [
+        ["LARC", 28989],
+        ["GSFC", 19965]
+      ]
+    }, {
       "field": "project",
       "value-counts": [
         ["MANTIS", 245],

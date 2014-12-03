@@ -170,9 +170,11 @@
 (defn execute-query
   "Executes a query to find concepts. Returns concept id, native id, and revision id."
   [context query]
-  (let [e-results (send-query-to-elastic context query)
+  (let [start (System/currentTimeMillis)
+        e-results (send-query-to-elastic context query)
+        elapsed (- (System/currentTimeMillis) start)
         hits (get-in e-results [:hits :total])]
-    (debug "Elastic query took" (:took e-results) "ms")
+    (debug "Elastic query took" (:took e-results) "ms. Connection elapsed:" elapsed "ms")
     (when (and (= :unlimited (:page-size query)) (> hits (count (get-in e-results [:hits :hits])))
                (e/internal-error! "Failed to retrieve all hits.")))
     e-results))

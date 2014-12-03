@@ -11,6 +11,7 @@
             [clojure.string :as s]
             [cmr.common.joda-time]
             [cmr.common.date-time-parser :as p]
+            [cmr.common.util :as util]
             [cmr.umm.test.generators.collection :as coll-gen]
             [cmr.umm.dif.collection :as c]
             [cmr.umm.echo10.collection :as echo10-c]
@@ -43,26 +44,38 @@
 (defn- related-urls->expected-parsed
   "Returns the expected parsed related-urls for the given related-urls."
   [related-urls]
-  (seq (map #(assoc % :size nil) related-urls)))
+  (seq (map #(assoc % :size nil :mime-type nil) related-urls)))
+
+(defn- filter-contacts
+  "Remove contacts from a Personnel record that are not emails."
+  [person]
+  (update-in person [:contacts] (fn [contacts]
+                                  (filter #(= :email (:type %))
+                                          contacts))))
 
 (defn- umm->expected-parsed-dif
   "Modifies the UMM record for testing DIF. DIF contains a subset of the total UMM fields so certain
   fields are removed for comparison of the parsed record"
   [coll]
   (let [{{:keys [version-id processing-level-id collection-data-type]} :product
-         :keys [entry-id entry-title spatial-coverage]} coll
+         :keys [entry-id entry-title spatial-coverage personnel]} coll
         range-date-times (get-in coll [:temporal :range-date-times])
         temporal (if (seq range-date-times)
                    (umm-c/map->Temporal {:range-date-times range-date-times
                                          :single-date-times []
                                          :periodic-date-times []})
                    nil)
-        organizations (filter #(= :distribution-center (:type %)) (:organizations coll))]
+        organizations (filter #(= :distribution-center (:type %)) (:organizations coll))
+        personnel (not-empty (->> personnel
+                            ;; only support email right now
+                            (map filter-contacts)
+                            ;; DIF has no Middle_Name tag
+                            (map #(assoc % :middle-name nil))))]
     (-> coll
         ;; DIF does not have short-name or long-name, so we assign them to be entry-id and entry-title respectively
         ;; long-name will only take the first 1024 characters of entry-title if entry-title is too long
         (assoc :product (umm-c/map->Product {:short-name entry-id
-                                             :long-name (c/trunc entry-title 1024)
+                                             :long-name (util/trunc entry-title 1024)
                                              :version-id version-id
                                              :processing-level-id processing-level-id
                                              :collection-data-type collection-data-type}))
@@ -74,9 +87,10 @@
         (assoc :temporal temporal)
         ;; DIF only has distribution centers as Organization
         (assoc :organizations organizations)
+        (assoc :personnel personnel)
         ;; DIF only support some portion of the spatial
         (update-in [:spatial-coverage] spatial-coverage->expected-parsed)
-        ;; DIF does not support size in RelatedURLs
+        ;; DIF does not support size or mime-type in RelatedURLs
         (update-in [:related-urls] related-urls->expected-parsed)
         ;; CMR-588: UMM doesn't have a good recommendation on how to handle spatial-keywords
         (dissoc :spatial-keywords)
@@ -97,6 +111,8 @@
 
 (defspec generate-and-parse-collection-test 100
   (for-all [collection coll-gen/collections]
+    ;(cmr.common.dev.capture-reveal/capture collection)
+
     (let [xml (dif/umm->dif-xml collection)
           parsed (c/parse-collection xml)
           expected-parsed (umm->expected-parsed-dif collection)]
@@ -309,34 +325,34 @@
 
 (def valid-collection-xml
   "<DIF xmlns=\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\" xmlns:dif=\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.8.4.xsd\">
-   <Entry_ID>minimal_dif_dataset</Entry_ID>
-     <Entry_Title>A minimal dif dataset</Entry_Title>
-     <Data_Set_Citation>
-       <Dataset_Title>dataset_title</Dataset_Title>
-     </Data_Set_Citation>
-     <Parameters>
-       <Category>category</Category>
-       <Topic>topic</Topic>
-       <Term>term</Term>
-     </Parameters>
-     <ISO_Topic_Category>iso topic category</ISO_Topic_Category>
-     <Data_Center>
-       <Data_Center_Name>
-         <Short_Name>datacenter_short_name</Short_Name>
-         <Long_Name>data center long name</Long_Name>
-       </Data_Center_Name>
-       <Personnel>
-         <Role>DummyRole</Role>
-         <Last_Name>UNEP</Last_Name>
-       </Personnel>
-     </Data_Center>
-     <Summary>
-       <Abstract>summary of the dataset</Abstract>
-     </Summary>
-     <Metadata_Name>CEOS IDN DIF</Metadata_Name>
-     <Metadata_Version>VERSION 9.8.4</Metadata_Version>
-     <Last_DIF_Revision_Date>2013-10-22</Last_DIF_Revision_Date>
-   </DIF>")
+    <Entry_ID>minimal_dif_dataset</Entry_ID>
+    <Entry_Title>A minimal dif dataset</Entry_Title>
+    <Data_Set_Citation>
+      <Dataset_Title>dataset_title</Dataset_Title>
+    </Data_Set_Citation>
+    <Parameters>
+      <Category>category</Category>
+      <Topic>topic</Topic>
+      <Term>term</Term>
+    </Parameters>
+    <ISO_Topic_Category>iso topic category</ISO_Topic_Category>
+    <Data_Center>
+      <Data_Center_Name>
+        <Short_Name>datacenter_short_name</Short_Name>
+        <Long_Name>data center long name</Long_Name>
+      </Data_Center_Name>
+      <Personnel>
+        <Role>DummyRole</Role>
+        <Last_Name>UNEP</Last_Name>
+      </Personnel>
+    </Data_Center>
+    <Summary>
+      <Abstract>summary of the dataset</Abstract>
+    </Summary>
+    <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+    <Metadata_Version>VERSION 9.8.4</Metadata_Version>
+    <Last_DIF_Revision_Date>2013-10-22</Last_DIF_Revision_Date>
+  </DIF>")
 
 (deftest parse-collection-test
   (let [expected (umm-c/map->UmmCollection
@@ -421,10 +437,16 @@
                         :org-name "EU/JRC/IES"})
                      (umm-c/map->Organization
                        {:type :distribution-center
-                        :org-name "UNEP/DEWA/GRID-EUROPE"})]})
+                        :org-name "UNEP/DEWA/GRID-EUROPE"})]
+                    :personnel [(umm-c/map->Personnel
+                                  {:first-name "ANDREA"
+                                   :last-name "DE BONO"
+                                   :roles ["DIF AUTHOR" "TECHNICAL CONTACT"]
+                                   :contacts [(umm-c/map->Contact
+                                                {:type :email
+                                                 :value "geo@unepgrid.ch"})]})]})
         actual (c/parse-collection all-fields-collection-xml)]
     (is (= expected actual))))
-
 
 (deftest validate-xml
   (testing "valid xml"

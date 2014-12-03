@@ -28,6 +28,31 @@
          :spatial-representation :cartesian
          :geometries bounding-boxes}))))
 
+(defn- filter-center-type
+  "Filters a list of organizations to the given type."
+  [orgs org-type]
+  (filter #(= org-type (:type %)) orgs))
+
+(defn- centers->personnel
+  "Create Personnel records for the given centers."
+  [centers role]
+  (map (fn [center]
+         (umm-c/map->Personnel
+           {:last-name (:org-name center)
+            :roles [role]}))
+       centers))
+
+(defn- collection->personnel
+  "Creates personnel from the distribution center contacts."
+  [coll]
+  (let [orgs (:organizations coll)
+        distrib-centers (filter-center-type orgs :archive-center)
+        processing-centers (filter-center-type orgs :processing-center)]
+    (not-empty
+      (concat (centers->personnel processing-centers "originator")
+              (centers->personnel distrib-centers "distributor")))))
+
+
 (defn- umm->expected-parsed-smap-iso
   "Modifies the UMM record for testing SMAP ISO. ISO contains a subset of the total UMM fields
   so certain fields are removed for comparison of the parsed record"
@@ -45,7 +70,10 @@
                      (umm-c/map->Temporal {:range-date-times []
                                            :single-date-times single-date-times
                                            :periodic-date-times []})))
+        personnel (collection->personnel coll)
         organizations (seq (filter #(not (= :distribution-center (:type %))) (:organizations coll)))
+        org-name (some :org-name organizations)
+        contact-name (or org-name "undefined")
         associated-difs (when (first associated-difs) [(first associated-difs)])]
     (-> coll
         ;; SMAP ISO does not have entry-id and we generate it as concatenation of short-name and version-id
@@ -82,6 +110,8 @@
         (dissoc :related-urls)
         ;; SMAP ISO does not support two-d-coordinate-systems
         (dissoc :two-d-coordinate-systems)
+        ;; We don't write out personnel entries when generating SMAP XML
+        (assoc :personnel personnel)
         umm-c/map->UmmCollection)))
 
 (defspec generate-collection-is-valid-xml-test 100
@@ -144,7 +174,24 @@
                      (umm-c/map->Organization
                        {:type :archive-center
                         :org-name "Alaska Satellite Facility"})]
-                    })
+                    :personnel [(umm-c/map->Personnel
+                                  {:first-name nil
+                                   :middle-name nil
+                                   :last-name "National Aeronautics and Space Administration (NASA)"
+                                   :roles ["resourceProvider"]
+                                   :contacts nil})
+                                (umm-c/map->Personnel
+                                  {:first-name nil
+                                   :middle-name nil
+                                   :last-name "Jet Propulsion Laboratory"
+                                   :roles ["originator"]
+                                   :contacts nil})
+                                (umm-c/map->Personnel
+                                  {:first-name nil
+                                   :middle-name nil
+                                   :last-name "Alaska Satellite Facility"
+                                   :roles ["distributor"]
+                                   :contacts nil})]})
         actual (c/parse-collection sample-collection-xml)]
     (is (= expected actual))))
 
