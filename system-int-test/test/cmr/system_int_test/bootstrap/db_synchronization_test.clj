@@ -75,6 +75,27 @@
       :provider-id provider-id
       :native-id entry-title})))
 
+(defn coll-concept-with-delete-date-in-the-past
+  "Creates a new collection concept with a delete date in the past"
+  [concept-counter provider-id entry-title]
+  (let [coll (dc/collection {:entry-title entry-title
+                             ;; The summary will contain the revision number so subsequent revisions
+                             ;; will have slightly different metadata
+                             :summary "rev1"
+                             :delete-time "2000-01-01T12:00:00Z"})]
+    {:concept-type :collection
+     :format (mime-types/format->mime-type :echo10)
+     :metadata (umm/umm->xml coll :echo10)
+     :concept-id (next-concept-id concept-counter :collection provider-id)
+     :revision-id 1
+     :deleted false
+     :extra-fields {:short-name (get-in coll [:product :short-name])
+                    :entry-title entry-title
+                    :version-id (get-in coll [:product :version-id])
+                    :delete-time "2000-01-01T12:00:00Z"}
+     :provider-id provider-id
+     :native-id entry-title}))
+
 (defn gran-concept
   "Creates a new granule concept."
   [concept-counter collection-concept granule-ur]
@@ -187,6 +208,10 @@
 
           ;; Collection 5 will be a new one
           coll5-1 (coll-concept concept-counter "CPROV2" "coll5")
+
+          ;; Collection 6 will have a delete date in the past
+          coll6-1 (coll-concept-with-delete-date-in-the-past concept-counter "CPROV2" "coll6")
+
           orig-colls [coll1-1 coll2-1 coll3-1 coll4-1]
           updated-colls [coll1-2 coll2-2 coll3-2 coll4-2 coll5-1]
           system (bootstrap/system)]
@@ -205,6 +230,7 @@
       (cat-rest/update-concepts system [coll1-2 coll2-2 coll3-2])
       ;; Collection 5 is inserted for the first time so it's not yet in Metadata DB
       (cat-rest/insert-concept system coll5-1)
+      (cat-rest/insert-concept system coll6-1)
 
 
       ;; Catalog REST and Metadata DB are not in sync now.
@@ -213,7 +239,11 @@
 
       ;; Check that they are synchronized now with the latest data.
       (assert-concepts-in-mdb updated-colls)
-      (assert-concepts-indexed updated-colls))))
+      (assert-concepts-indexed updated-colls)
+
+      ;; Collection 6 should be skipped since it has a delete date in the past
+      (assert-concepts-not-in-mdb [coll6-1])
+      (assert-concepts-not-indexed [coll6-1]))))
 
 (deftest db-synchronize-collection-updates-between-dates-test
   (test-env/only-with-real-database

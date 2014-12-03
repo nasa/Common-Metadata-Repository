@@ -18,6 +18,7 @@
             [cmr.metadata-db.data.oracle.concept-tables :as tables]
             [cmr.metadata-db.data.oracle.sql-utils :as sql-utils]
             [cmr.metadata-db.data.oracle.concepts :as mdb-concepts]
+            [cmr.oracle.connection :as oracle]
             [cmr.metadata-db.services.concept-service :as concept-service]
             [cmr.metadata-db.services.provider-service :as provider-service]
             [cmr.indexer.services.index-service :as index-service]))
@@ -164,24 +165,29 @@
                       (mu/catalog-rest-table system provider-id concept-type))
           stmt [sql concept-id]
           [{:keys [dataset_id compressed_xml short_name version_id xml_mime_type
-                   delete_time ingest_updated_at]}] (sql-utils/query conn stmt)]
-      (if-let [mdb-format (mdb-concepts/db-format->mime-type xml_mime_type)]
-        {:concept-type concept-type
-         :format mdb-format
-         :metadata (mdb-concepts/blob->string compressed_xml)
-         :concept-id concept-id
-         :revision-id revision-id
-         :revision-date (mdb-concepts/oracle-timestamp->str-time conn ingest_updated_at)
-         :deleted false
-         :extra-fields {:short-name short_name
-                        :entry-title dataset_id
-                        :version-id version_id
-                        :delete-time (when delete_time
-                                       (mdb-concepts/oracle-timestamp->str-time conn delete_time))}
-         :provider-id provider-id
-         :native-id dataset_id}
-        (warn (format "Skipping Catalog REST Item %s with unsupported xml_mime_type of %s"
-                      concept-id xml_mime_type))))))
+                   delete_time ingest_updated_at]}] (sql-utils/query conn stmt)
+          delete-time (when delete_time
+                        (oracle/oracle-timestamp->clj-time conn delete_time))]
+      (if (or (nil? delete-time) (t/after? delete-time (t/now)))
+        (if-let [mdb-format (mdb-concepts/db-format->mime-type xml_mime_type)]
+          {:concept-type concept-type
+           :format mdb-format
+           :metadata (mdb-concepts/blob->string compressed_xml)
+           :concept-id concept-id
+           :revision-id revision-id
+           :revision-date (mdb-concepts/oracle-timestamp->str-time conn ingest_updated_at)
+           :deleted false
+           :extra-fields {:short-name short_name
+                          :entry-title dataset_id
+                          :version-id version_id
+                          :delete-time (when delete_time
+                                         (mdb-concepts/oracle-timestamp->str-time conn delete_time))}
+           :provider-id provider-id
+           :native-id dataset_id}
+          (warn (format "Skipping Catalog REST Item %s with unsupported xml_mime_type of %s"
+                        concept-id xml_mime_type)))
+        (warn (format "Skipping Catalog REST Item %s with delete time %s in the past"
+                        concept-id delete-time))))))
 
 (defmethod get-concept-from-catalog-rest :granule
   [system provider-id concept-type concept-id revision-id]
@@ -254,7 +260,8 @@
           (doseq [[concept-id revision-id] (get-latest-concept-id-revision-ids
                                              system provider-id concept-type (map first items))]
             (debug "map-missing-items-to-concepts: Processing" concept-id "-" revision-id)
-            ;; get-concept-from-catalog-rest can return nil if the item is an unsupported XML mime type
+            ;; get-concept-from-catalog-rest can return nil if the item is an unsupported XML mime
+            ;; type or we should skip it for other reasons
             (when-let [concept (get-concept-from-catalog-rest
                                  system provider-id concept-type concept-id (inc revision-id))]
               (>! concepts-chan concept))))
