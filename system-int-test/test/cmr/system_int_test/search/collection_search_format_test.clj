@@ -250,6 +250,10 @@
         ru3 (dc/related-url "GET RELATED VISUALIZATION" "application/xml" "http://example.com/browse")
         ru4 (dc/related-url "VIEW PROJECT HOME PAGE" "http://example.com")
         pr1 (dc/projects "project-short-name1" "project-short-name2" "project-short-name3")
+        p1 (dc/personnel "John" "Smith" "jsmith@nasa.gov")
+        p2 (dc/personnel "Jane" "Doe" nil)
+        p3 (dc/personnel nil "Johnson" "johnson@nasa.gov")
+        p4 (dc/personnel "John" nil "john@nasa.gov")
         op1 {:swath-width 1450.0
              :period 98.88
              :inclination-angle 98.15
@@ -269,6 +273,7 @@
                                         :version-id "Version1"
                                         :summary "Summary of coll1"
                                         :organizations [(dc/org :archive-center "Larc")]
+                                        :personnel [p1]
                                         :collection-data-type "NEAR_REAL_TIME"
                                         :processing-level-id "L1"
                                         :beginning-date-time "2010-01-01T12:00:00Z"
@@ -291,6 +296,7 @@
                                         :short-name "ShortName#2"
                                         :version-id "Version2"
                                         :summary "Summary of coll2"
+                                        :personnel [p2]
                                         :beginning-date-time "2010-01-01T12:00:00Z"
                                         :ending-date-time "2010-01-11T12:00:00Z"
                                         :related-urls [ru3]
@@ -301,6 +307,7 @@
         coll3 (d/ingest "PROV1"
                         (dc/collection
                           {:entry-title "Dataset3"
+                           :personnel [p3]
                            :spatial-coverage (dc/spatial {:gsr :orbit
                                                           :orbit op1})}))
         coll4 (d/ingest "PROV1"
@@ -328,6 +335,7 @@
                                         :version-id "Version7"
                                         :summary "Summary of coll7"
                                         :organizations [(dc/org :archive-center "Larc")]
+                                        :personnel [p4]
                                         :beginning-date-time "2010-01-01T12:00:00Z"
                                         :ending-date-time "2010-01-11T12:00:00Z"
                                         :spatial-coverage

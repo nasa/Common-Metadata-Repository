@@ -75,10 +75,9 @@
   "Returns a contact email from the personnel record or the default if one
   is not available."
   [personnel]
-  (or (when personnel
-        (when-let [contacts (:contacts personnel)]
-          (when-let [contact (some #(= :email (:type %)) contacts)]
-            (:value contact))))
+  (or (when-let [contacts (:contacts personnel)]
+        (when-let [contact (first (filter #(= "email" (:type %)) contacts))]
+          (:value contact)))
       DEFAULT_CONTACT_EMAIL))
 
 (defmethod elastic-results/elastic-result->query-result-item :opendata
@@ -101,6 +100,7 @@
           [personnel] :personnel
           [start-date] :start-date
           [end-date] :end-date} :fields} elastic-result
+        personnel (json/decode personnel true)
         related-urls  (map #(json/decode % true) related-urls)
         start-date (when start-date (str/replace (str start-date) #"\+0000" "Z"))
         end-date (when end-date (str/replace (str end-date) #"\+0000" "Z"))]

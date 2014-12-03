@@ -28,6 +28,15 @@
   (let [json-struct (json/decode json-str true)]
     json-struct))
 
+(defn personnel->contact-email
+  "Returns a contact email from the personnel record or the default if one
+  is not available."
+  [personnel]
+  (or (when-let [contacts (:contacts personnel)]
+        (when-let [contact (first (filter #(= :email (:type %)) contacts))]
+          (:value contact)))
+      odrh/DEFAULT_CONTACT_EMAIL))
+
 (defn collection->expected-opendata
   [collection]
   (let [{:keys [short-name keywords projects summary entry-title
@@ -46,7 +55,7 @@
         project-sn (not-empty (map :short-name projects))
         personnel (c/person-with-email personnel)
         contact-name (odrh/personnel->contact-name personnel)
-        contact-email (odrh/personnel->contact-email personnel)]
+        contact-email (personnel->contact-email personnel)]
     (util/remove-nil-keys {:title entry-title
                            :description summary
                            :keyword (not-empty (sk/flatten-science-keywords collection))
