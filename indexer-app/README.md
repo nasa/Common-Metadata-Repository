@@ -129,6 +129,10 @@ Example un-healthy response body:
 
     curl -XPOST http://localhost:3004/update-indexes?token=XXXX
 
+### Reindex collections in a provider
+
+    curl -XPOST -H "Content-Type: application/json" http://localhost:3004/reindex-provider-collections?token=XXXX -d '["PROV1","PROV2"]'
+
 
 ### Ignore version conflict
 
