@@ -198,26 +198,32 @@
                       (mu/catalog-rest-table system provider-id concept-type))
           stmt [sql concept-id]
           [{:keys [granule_ur compressed_xml dataset_record_id xml_mime_type
-                   delete_time ingest_updated_at]}] (sql-utils/query conn stmt)]
-      (if-let [mdb-format (mdb-concepts/db-format->mime-type xml_mime_type)]
-        {:concept-type concept-type
-         :format mdb-format
-         :metadata (mdb-concepts/blob->string compressed_xml)
-         :concept-id concept-id
-         :revision-id revision-id
-         :revision-date (mdb-concepts/oracle-timestamp->str-time conn ingest_updated_at)
-         :deleted false
-         :extra-fields {:granule-ur granule_ur
-                        :parent-collection-id (concepts/build-concept-id
-                                                {:concept-type :collection
-                                                 :sequence-number (long dataset_record_id)
-                                                 :provider-id provider-id})
-                        :delete-time (when delete_time
-                                       (mdb-concepts/oracle-timestamp->str-time conn delete_time))}
-         :provider-id provider-id
-         :native-id granule_ur}
-        (warn (format "Skipping Catalog REST Item %s with unsupported xml_mime_type of %s"
-                      concept-id xml_mime_type))))))
+                   delete_time ingest_updated_at]}] (sql-utils/query conn stmt)
+
+          delete-time (when delete_time
+                        (oracle/oracle-timestamp->clj-time conn delete_time))]
+      (if (or (nil? delete-time) (t/after? delete-time (t/now)))
+        (if-let [mdb-format (mdb-concepts/db-format->mime-type xml_mime_type)]
+          {:concept-type concept-type
+           :format mdb-format
+           :metadata (mdb-concepts/blob->string compressed_xml)
+           :concept-id concept-id
+           :revision-id revision-id
+           :revision-date (mdb-concepts/oracle-timestamp->str-time conn ingest_updated_at)
+           :deleted false
+           :extra-fields {:granule-ur granule_ur
+                          :parent-collection-id (concepts/build-concept-id
+                                                  {:concept-type :collection
+                                                   :sequence-number (long dataset_record_id)
+                                                   :provider-id provider-id})
+                          :delete-time (when delete_time
+                                         (mdb-concepts/oracle-timestamp->str-time conn delete_time))}
+           :provider-id provider-id
+           :native-id granule_ur}
+          (warn (format "Skipping Catalog REST Item %s with unsupported xml_mime_type of %s"
+                        concept-id xml_mime_type)))
+        (warn (format "Skipping Catalog REST Item %s with delete time %s in the past"
+                      concept-id delete-time))))))
 
 (defn process-items-from-work-table
   "Starts a process that will retrieve items in batches from the work table and writes them to a

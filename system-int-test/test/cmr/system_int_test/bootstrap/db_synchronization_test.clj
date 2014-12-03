@@ -116,6 +116,27 @@
      :provider-id provider-id
      :native-id granule-ur}))
 
+(defn gran-concept-with-delete-date-in-the-past
+  "Creates a new granule concept with a delete time in the past"
+  [concept-counter collection-concept granule-ur]
+  (let [provider-id (:provider-id collection-concept)
+        coll (umm/parse-concept collection-concept)
+        gran (dg/granule coll {:granule-ur granule-ur
+                               ;; The producer granule id  will contain the revision number so
+                               ;; subsequent revisions will have slightly different metadata.
+                               :producer-gran-id "rev1"
+                               :delete-time "2000-01-01T12:00:00Z"})]
+    {:concept-type :granule
+     :format "application/echo10+xml"
+     :metadata (umm/umm->xml gran :echo10)
+     :concept-id (next-concept-id concept-counter :granule provider-id)
+     :revision-id 1
+     :deleted false
+     :extra-fields {:parent-collection-id (:concept-id collection-concept)
+                    :delete-time "2000-01-01T12:00:00Z"}
+     :provider-id provider-id
+     :native-id granule-ur}))
+
 (defmulti update-concept-metadata
   "Makes a superficial change to the concept for the new revision id."
   (fn [concept new-revision-id]
@@ -530,6 +551,9 @@
           ;; The updated version will be revision 3 (tombstone is 2)
           gran5-3 (updated-concept (updated-concept gran5-1))
 
+          ;; Granule 6 will have a delete date in the past
+          gran6-1 (gran-concept-with-delete-date-in-the-past concept-counter coll2 "gran6")
+
           orig-grans [gran1-1 gran5-1]
           updated-grans [gran1-1 gran2-1 gran3-1 gran4-1 gran5-3]
           system (bootstrap/system)]
@@ -550,7 +574,7 @@
 
       ;; Insert/Update the concepts in catalog rest.
       (cat-rest/update-concepts system [gran1-2 gran5-3])
-      (cat-rest/insert-concepts system [gran2-1 gran3-1 gran4-1])
+      (cat-rest/insert-concepts system [gran2-1 gran3-1 gran4-1 gran6-1])
 
       ;; Catalog REST and Metadata DB are not in sync now.
       ;; Put them back in sync
@@ -558,7 +582,11 @@
 
       ;; Check that they are synchronized now with the latest data.
       (assert-concepts-in-mdb updated-grans)
-      (assert-concepts-indexed updated-grans))))
+      (assert-concepts-indexed updated-grans)
+
+      ;; Check that granule 6 wasn't synchronized
+      (assert-concepts-not-in-mdb [gran6-1])
+      (assert-concepts-not-indexed [gran6-1]))))
 
 (deftest db-synchronize-granules-missing-specific-collection-test
   (test-env/only-with-real-database
