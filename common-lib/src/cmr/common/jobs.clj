@@ -11,6 +11,7 @@
             [clojurewerkz.quartzite.jobs :as qj]
             [clojurewerkz.quartzite.stateful :as qst]
             [clojurewerkz.quartzite.schedule.calendar-interval :as qcal]
+            [clojurewerkz.quartzite.schedule.cron :as qcron]
             [clojurewerkz.quartzite.conversion :as qc]))
 
 (defn defjob*
@@ -103,29 +104,52 @@
 (def default-start-delay
   (config/config-value-fn :default-job-start-delay "5" #(Long. ^String %)))
 
+(defmulti create-trigger
+  "Creates a trigger for the given job."
+  (fn [job-key job]
+    (cond
+      (:interval job) :interval
+      (:daily-at-hour-and-minute job) :daily-at-hour-and-minute
+      :else :default)))
+
+(defmethod create-trigger :default
+  [job-key job]
+  (errors/internal-error! (str "Job could not be scheduled. One of :interval or "
+                                 ":daily-at-hour-and-minute should be set.")))
+
+(defmethod create-trigger :interval
+  [job-key {:keys [start-delay interval]}]
+  (info (format "Scheduling job %s with interval %s" job-key interval))
+  (qt/build
+    (qt/with-identity (qt/key (str job-key ".trigger")))
+    ;; Set start delay
+    (qt/start-at (-> (or start-delay (default-start-delay))
+                     t/seconds
+                     t/from-now))
+    (qt/with-schedule (qcal/schedule (qcal/with-interval-in-seconds interval)))))
+
+(defmethod create-trigger :daily-at-hour-and-minute
+  [job-key {[hour minute] :daily-at-hour-and-minute}]
+  (info (format "Scheduling job %s daily at %s:%s" job-key hour minute))
+  (qt/build
+    (qt/with-identity (qt/key (str job-key ".trigger")))
+    (qt/with-schedule (qcron/daily-at-hour-and-minute hour minute))))
+
 (defn- schedule-job
   "Schedules a quartzite job (stopping existing job first)."
   [system-holder-var-name job]
-  (let [{:keys [^Class job-type job-key interval start-delay]} job
-        ;; Defaults
-        start-delay (or start-delay (default-start-delay))
+  (let [{:keys [^Class job-type job-key]} job
         job-key (or job-key (str (.getSimpleName job-type) ".job"))
-
-        trigger-key (str job-key ".trigger")
-        job (qj/build
-              (qj/of-type job-type)
-              (qj/using-job-data {"system-holder-var-name" system-holder-var-name})
-              (qj/with-identity (qj/key job-key)))
-        trigger (qt/build
-                  (qt/with-identity (qt/key trigger-key))
-                  ;; Set start delay
-                  (qt/start-at (-> start-delay t/seconds t/from-now))
-                  ;; Set interval
-                  (qt/with-schedule (qcal/schedule (qcal/with-interval-in-seconds interval))))]
-    ;; We delete existing jobs and recreate them
-    (when (qs/get-job job-key)
-      (qs/delete-job (qj/key job-key)))
-    (qs/schedule job trigger)))
+        quartz-job (qj/build
+                     (qj/of-type job-type)
+                     (qj/using-job-data {"system-holder-var-name" system-holder-var-name})
+                     (qj/with-identity (qj/key job-key)))
+        trigger (create-trigger job-key job)]
+    (when trigger
+      ;; We delete existing jobs and recreate them
+      (when (qs/get-job job-key)
+        (qs/delete-job (qj/key job-key)))
+      (qs/schedule quartz-job trigger))))
 
 (defrecord JobScheduler
   [

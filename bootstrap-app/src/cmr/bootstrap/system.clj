@@ -12,8 +12,10 @@
             [cmr.bootstrap.data.bulk-migration :as bm]
             [cmr.bootstrap.data.bulk-index :as bi]
             [cmr.bootstrap.data.db-synchronization :as dbs]
+            [cmr.bootstrap.services.jobs :as bootstrap-jobs]
             [cmr.metadata-db.config :as mdb-config]
             [cmr.transmit.config :as transmit-config]
+            [cmr.common.jobs :as jobs]
             [cmr.metadata-db.system :as mdb-system]
             [cmr.indexer.system :as idx-system]
             [cmr.indexer.data.concepts.granule :as g]
@@ -25,7 +27,11 @@
 (def
   ^{:doc "Defines the order to start the components."
     :private true}
-  component-order [:log :db :web])
+  component-order [:log :db :web :scheduler])
+
+(def system-holder
+  "Required for jobs"
+  (atom nil))
 
 (defn create-system
   "Returns a new instance of the whole application."
@@ -64,6 +70,7 @@
              :catalog-rest-user (mdb-config/catalog-rest-db-username)
              :db (oracle/create-db (mdb-config/db-spec "bootstrap-pool"))
              :web (web/create-web-server (transmit-config/bootstrap-port) routes/make-api)
+             :scheduler (jobs/create-clustered-scheduler `system-holder bootstrap-jobs/jobs)
              :zipkin (context/zipkin-config "bootstrap" false)
              :relative-root-url (transmit-config/bootstrap-relative-root-url)}]
     (transmit-config/system-with-connections sys [:metadata-db])))
