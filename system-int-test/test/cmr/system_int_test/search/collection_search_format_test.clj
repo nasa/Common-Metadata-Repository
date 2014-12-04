@@ -259,6 +259,20 @@
              :inclination-angle 98.15
              :number-of-orbits 0.5
              :start-circular-latitude -90.0}
+        sk1 (dc/science-keyword {:category "Cat1"
+                                 :topic "Topic1"
+                                 :term "Term1"
+                                 :variable-level-1 "Level1-1"
+                                 :variable-level-2 "Level1-2"
+                                 :variable-level-3 "Level1-3"
+                                 :detailed-variable "Detail1"})
+        sk2 (dc/science-keyword {:category "Hurricane"
+                                 :topic "Popular"
+                                 :term "Extreme"
+                                 :variable-level-1 "Level2-1"
+                                 :variable-level-2 "Level2-2"
+                                 :variable-level-3 "Level2-3"
+                                 :detailed-variable "UNIVERSAL"})
 
         ;; polygon with holes
         outer (umm-s/ords->ring -5.26,-2.59, 11.56,-2.77, 10.47,8.71, -5.86,8.63, -5.26,-2.59)
@@ -280,6 +294,7 @@
                                         :ending-date-time "2010-01-11T12:00:00Z"
                                         :related-urls [ru1 ru2]
                                         :associated-difs ["DIF-1" "DIF-2"]
+                                        :science-keywords [sk1]
                                         :spatial-coverage
                                         (dc/spatial {:sr :geodetic
                                                      :gsr :geodetic
@@ -300,6 +315,7 @@
                                         :beginning-date-time "2010-01-01T12:00:00Z"
                                         :ending-date-time "2010-01-11T12:00:00Z"
                                         :related-urls [ru3]
+                                        :science-keywords [sk1 sk2]
                                         :spatial-coverage
                                         (dc/spatial {:sr :cartesian
                                                      :gsr :cartesian

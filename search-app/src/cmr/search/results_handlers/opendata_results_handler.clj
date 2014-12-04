@@ -90,7 +90,7 @@
           [provider-id] :provider-id
           project-sn :project-sn
           [access-value] :access-value
-          [science-keywords-flat] :science-keywords-flat
+          science-keywords-flat :science-keywords-flat
           [opendata-format] :opendata-format
           [access-url] :access-url
           related-urls :related-urls
