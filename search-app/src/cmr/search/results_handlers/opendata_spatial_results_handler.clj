@@ -11,7 +11,7 @@
             [clojure.string :as str]))
 
 (def coordinate-syste->srs-name
-  {:catesian "EPSG:9825" ; Psuedo Plate Carree
+  {:cartesian "EPSG:9825" ; Psuedo Plate Carree
    :geodetic "EPSG:4326" ; WGS-84
    })
 
