@@ -15,7 +15,7 @@
                       ;; Very important that this matches the maximum number of threads that will be running
                       :threads web-server/MAX_THREADS
                       ;; Maximum number of simultaneous connections per host
-                      :default-per-route 10
+                      :default-per-route web-server/MAX_THREADS
                       ;; This is the length of time in _seconds_ that a connection will
                       ;; be left open for reuse. The default is 5 seconds which is way
                       ;; too short.
