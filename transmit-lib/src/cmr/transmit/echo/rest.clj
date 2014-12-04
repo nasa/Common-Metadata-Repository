@@ -29,7 +29,6 @@
    (let [conn (config/context->app-connection context :echo-rest)
          url (format "%s%s" (conn/root-url conn) url-path)
          params (merge (request-options conn) options)
-         response (client/get url params)
          start (System/currentTimeMillis)
          response (client/get url params)
          _ (debug (format "Completed ECHO GET Request to %s in [%d] ms" url (- (System/currentTimeMillis) start)))
