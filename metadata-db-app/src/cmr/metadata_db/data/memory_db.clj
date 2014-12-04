@@ -139,7 +139,8 @@
     {:pre [(:revision-id concept)]}
 
     (let [{:keys [concept-type provider-id concept-id revision-id]} concept
-          concept (assoc concept :revision-date (f/unparse (f/formatters :date-time) (tk/now)))]
+          concept (update-in concept [:revision-date] #(or % (f/unparse (f/formatters :date-time)
+                                                                        (tk/now))))]
       (if (or (nil? revision-id)
               (concepts/get-concept this concept-type provider-id concept-id revision-id))
         {:error :revision-id-conflict}
