@@ -17,6 +17,10 @@
             [cmr.common.time-keeper :as tk]
             [cheshire.core :as json]))
 
+(def MAX_BULK_OPERATIONS_PER_REQUEST
+  "The maximum number of operations to batch in a single request"
+  100)
+
 (def supported-formats
   "Defines the set of supported concept forms, new forms shold be added once it is supported."
   #{"application/echo10+xml" "application/dif+xml" "application/iso:smap+xml"
@@ -216,20 +220,21 @@
 (deftracefn bulk-index
   "Save a batch of documents in Elasticsearch."
   [context docs]
-  (let [bulk-operations (cmr-bulk/bulk-index docs)
-        conn (context->conn context)
-        response (bulk/bulk conn bulk-operations)
-        ;; we don't care about version conflicts or deletes that aren't found
-        bad-errors (some (fn [item]
-                           (let [status (if (:index item)
-                                          (get-in item [:index :status])
-                                          (get-in item [:delete :status]))]
-                             (and (> status 399)
-                                  (not= 409 status)
-                                  (not= 404 status))))
-                         (:items response))]
-    (when bad-errors
-      (errors/internal-error! (format "Bulk indexing failed with response %s" response)))))
+  (doseq [docs-batch (partition-all MAX_BULK_OPERATIONS_PER_REQUEST docs)]
+    (let [bulk-operations (cmr-bulk/bulk-index docs-batch)
+          conn (context->conn context)
+          response (bulk/bulk conn bulk-operations)
+          ;; we don't care about version conflicts or deletes that aren't found
+          bad-errors (some (fn [item]
+                             (let [status (if (:index item)
+                                            (get-in item [:index :status])
+                                            (get-in item [:delete :status]))]
+                               (and (> status 399)
+                                    (not= 409 status)
+                                    (not= 404 status))))
+                           (:items response))]
+      (when bad-errors
+        (errors/internal-error! (format "Bulk indexing failed with response %s" response))))))
 
 (deftracefn save-document-in-elastic
   "Save the document in Elasticsearch, raise error if failed."
