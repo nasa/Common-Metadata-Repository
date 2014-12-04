@@ -8,6 +8,7 @@
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.api.errors :as errors]
             [cmr.common.util :as util]
+            [cmr.common.jobs :as jobs]
             [cmr.common.services.errors :as srv-errors]
             [cmr.system-trace.http :as http-trace]
             [cmr.bootstrap.services.bootstrap-service :as bs]
@@ -116,6 +117,15 @@
       (context "/db_synchronize" []
         (POST "/" {:keys [request-context params]}
           (db-synchronize request-context params)))
+
+      (context "/jobs" []
+        ;; pause all jobs
+        (POST "/pause" {:keys [request-context params headers]}
+          (jobs/pause-jobs))
+
+        ;; resume all jobs
+        (POST "/resume" {:keys [request-context params headers]}
+          (jobs/resume-jobs)))
 
       (context "/bulk_index" []
         (POST "/providers" {:keys [request-context body params]}

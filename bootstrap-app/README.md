@@ -70,6 +70,20 @@ Note that for every item found between start_date and end_date a new revision wi
 
 **Important** - This endpoint does not validate that there isn't a database synchronization already running. Do not run it multiple times in a row unless you're sure it's not running currently. This will cause issues if you attempt to run it on multiple hosts since the work tables are truncated during processing.
 
+### Pause Jobs
+
+params: none
+returns: nothing (status 204)
+
+    curl -v -XPOST http://localhost:3006/jobs/pause
+
+### Resume Jobs
+
+params: none
+returns: nothing (status 204)
+
+    curl -v -XPOST http://localhost:3006/jobs/resume
+
 ### Check application health
 
 This will report the current health of the application. It checks all resources and services used by the application and reports their healthes in the response body in JSON format. For resources, the report includes an "ok?" status and a "problem" field if the resource is not OK. For services, the report includes an overall "ok?" status for the service and health reports for each of its dependencies. It returns HTTP status code 200 when the application is healthy, which means all its interfacing resources and services are healthy; or HTTP status code 503 when one of the resources or services is not healthy. It also takes pretty parameter for pretty printing the response.
