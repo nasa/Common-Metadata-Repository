@@ -39,9 +39,9 @@ where paramter is the URL parameter whose behavior is to be affected, value is e
 
 These are query parameters specific to collections
 
-  * `include_has_granules` - If this parameter is set to "true" this will include a flag indicating true or false if the collection has any granules at all. Supported in all response formats.
-  * `include_granule_counts` - If this parameter is set to "true" this will include a count of the granules in each collection that would match the spatial and temporal conditions from the collection query. Supported in all response formats.
-  * `include_facets` - If this parameter is set to "true" facets will be included in the collection results. Facets are described in detail below.
+  * `include_has_granules` - If this parameter is set to "true" this will include a flag indicating true or false if the collection has any granules at all. Supported in all response formats except opendata.
+  * `include_granule_counts` - If this parameter is set to "true" this will include a count of the granules in each collection that would match the spatial and temporal conditions from the collection query. Supported in all response formats except opendata.
+  * `include_facets` - If this parameter is set to "true" facets will be included in the collection results (not applicable to opendata results). Facets are described in detail below.
 
 #### Headers
 
@@ -52,6 +52,7 @@ These are query parameters specific to collections
     * `curl -H "Accept: application/json" -i "%CMR-ENDPOINT%/granules"`
     * `curl -H "Accept: application/echo10+xml" -i "%CMR-ENDPOINT%/granules"`
     * `curl -H "Accept: application/dif+xml" -i "%CMR-ENDPOINT%/granules"`
+    * `curl -H "Accept: application/opendata+json" -i "%CMR-ENDPOINT%/collections"`
   * `Echo-Token` - specifies an ECHO token to use to authenticate yourself.
   * `Client-Id` - Indicates a name for the client using the CMR API. Specifying this helps Operations monitor query performance per client. It can also make it easier for them to identify your requests if you contact them for assistance.
 
@@ -60,14 +61,14 @@ These are query parameters specific to collections
 
 #### Extensions
 
-Besides MimeTypes, client can also use exetension to specify the format for search results. Default is xml.
+Besides MimeTypes, client can also use extensions to specify the format for search results. Default is xml.
 
   * `curl -i "%CMR-ENDPOINT%/collections"`
   * `curl -i "%CMR-ENDPOINT%/collections.json"`
   * `curl -i "%CMR-ENDPOINT%/collections.echo10"`
   * `curl -i "%CMR-ENDPOINT%/collections.iso_mends"`
 
-Here is a list of supported extensions that their corresponding MimeTypes:
+Here is a list of supported extensions and their corresponding MimeTypes:
 
   * `json`      "application/json"
   * `xml`       "application/xml"
@@ -77,6 +78,7 @@ Here is a list of supported extensions that their corresponding MimeTypes:
   * `dif`       "application/dif+xml"
   * `csv`       "text/csv"
   * `atom`      "application/atom+xml"
+  * `opendata`  "application/opendata+json" (only supported for collections)
 
 iso is an alias for iso\_mends.
 
