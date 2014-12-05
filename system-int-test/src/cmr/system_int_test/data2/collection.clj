@@ -158,6 +158,16 @@
                              :spatial-representation sr
                              :geometries (seq geometries)})))
 
+(defn personnel
+  "Creates a Personnel record for the opendata tests."
+  [first-name last-name email]
+  (let [contacts (when email
+                   [(c/map->Contact {:type :email
+                                     :value email})])]
+    (c/map->Personnel {:first-name first-name
+                       :last-name last-name
+                       :contacts contacts})))
+
 (defn collection
   "Creates a collection"
   ([]

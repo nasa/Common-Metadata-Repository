@@ -250,11 +250,29 @@
         ru3 (dc/related-url "GET RELATED VISUALIZATION" "application/xml" "http://example.com/browse")
         ru4 (dc/related-url "VIEW PROJECT HOME PAGE" "http://example.com")
         pr1 (dc/projects "project-short-name1" "project-short-name2" "project-short-name3")
+        p1 (dc/personnel "John" "Smith" "jsmith@nasa.gov")
+        p2 (dc/personnel "Jane" "Doe" nil)
+        p3 (dc/personnel nil "Johnson" "johnson@nasa.gov")
+        p4 (dc/personnel "John" nil "john@nasa.gov")
         op1 {:swath-width 1450.0
              :period 98.88
              :inclination-angle 98.15
              :number-of-orbits 0.5
              :start-circular-latitude -90.0}
+        sk1 (dc/science-keyword {:category "Cat1"
+                                 :topic "Topic1"
+                                 :term "Term1"
+                                 :variable-level-1 "Level1-1"
+                                 :variable-level-2 "Level1-2"
+                                 :variable-level-3 "Level1-3"
+                                 :detailed-variable "Detail1"})
+        sk2 (dc/science-keyword {:category "Hurricane"
+                                 :topic "Popular"
+                                 :term "Extreme"
+                                 :variable-level-1 "Level2-1"
+                                 :variable-level-2 "Level2-2"
+                                 :variable-level-3 "Level2-3"
+                                 :detailed-variable "UNIVERSAL"})
 
         ;; polygon with holes
         outer (umm-s/ords->ring -5.26,-2.59, 11.56,-2.77, 10.47,8.71, -5.86,8.63, -5.26,-2.59)
@@ -269,12 +287,14 @@
                                         :version-id "Version1"
                                         :summary "Summary of coll1"
                                         :organizations [(dc/org :archive-center "Larc")]
+                                        :personnel [p1]
                                         :collection-data-type "NEAR_REAL_TIME"
                                         :processing-level-id "L1"
                                         :beginning-date-time "2010-01-01T12:00:00Z"
                                         :ending-date-time "2010-01-11T12:00:00Z"
                                         :related-urls [ru1 ru2]
                                         :associated-difs ["DIF-1" "DIF-2"]
+                                        :science-keywords [sk1]
                                         :spatial-coverage
                                         (dc/spatial {:sr :geodetic
                                                      :gsr :geodetic
@@ -291,9 +311,11 @@
                                         :short-name "ShortName#2"
                                         :version-id "Version2"
                                         :summary "Summary of coll2"
+                                        :personnel [p2]
                                         :beginning-date-time "2010-01-01T12:00:00Z"
                                         :ending-date-time "2010-01-11T12:00:00Z"
                                         :related-urls [ru3]
+                                        :science-keywords [sk1 sk2]
                                         :spatial-coverage
                                         (dc/spatial {:sr :cartesian
                                                      :gsr :cartesian
@@ -301,6 +323,7 @@
         coll3 (d/ingest "PROV1"
                         (dc/collection
                           {:entry-title "Dataset3"
+                           :personnel [p3]
                            :spatial-coverage (dc/spatial {:gsr :orbit
                                                           :orbit op1})}))
         coll4 (d/ingest "PROV1"
@@ -328,6 +351,7 @@
                                         :version-id "Version7"
                                         :summary "Summary of coll7"
                                         :organizations [(dc/org :archive-center "Larc")]
+                                        :personnel [p4]
                                         :beginning-date-time "2010-01-01T12:00:00Z"
                                         :ending-date-time "2010-01-11T12:00:00Z"
                                         :spatial-coverage
