@@ -14,14 +14,13 @@
   [doc]
   (if (:deleted doc)
     {"delete" (select-keys doc special-operation-keys)}
-    {"index" (select-keys doc special-operation-keys)}))
+    [{"index" (select-keys doc special-operation-keys)}
+     (apply dissoc doc special-operation-keys)]))
 
 (defn bulk-index
   "generates the content for a bulk insert operation.  Elasticsearch's bulk operations take a
   series of lines of index information and documents to updates interleaved. This functions expects
   that the document will contain the index information. It extracts the index keys from each document
   and returns a sequence of index info, document, index info, document..., etc."
-  ([documents]
-   (let [operations (map index-operation documents)
-         documents  (map #(apply dissoc % special-operation-keys) documents)]
-     (interleave operations documents))))
+  [documents]
+  (flatten (map index-operation documents)))
