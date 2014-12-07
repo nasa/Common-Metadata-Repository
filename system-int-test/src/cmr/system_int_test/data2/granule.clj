@@ -88,7 +88,8 @@
   converted into a spatial shape. Given a granule and its collection, returns a sequence containing its
   orbit geometries, or a empty sequence if it is not an orbit granule"
   [granule coll]
-  (if (get-in granule [:spatial-coverage :orbit])
+  (if (and (get-in granule [:spatial-coverage :orbit])
+           (not-empty (:orbit-calculated-spatial-domains granule)))
     (swath/to-polygons (get-in coll [:spatial-coverage :orbit-parameters])
                        (get-in granule [:spatial-coverage :orbit :ascending-crossing])
                        (:orbit-calculated-spatial-domains granule)
