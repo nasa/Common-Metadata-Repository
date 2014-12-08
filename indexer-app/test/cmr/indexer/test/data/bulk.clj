@@ -5,20 +5,41 @@
 
 (deftest bulk-index
   (testing "interleaved deletes with indexing"
-    (let [doc1 {:id "A" :_index "A1"}
-          doc2 {:id "B" :_index "B1"}
-          doc3 {:id "C" :_index "C1"}
-          doc4 {:id "D" :_index "D1" :deleted true}
-          doc5 {:id "E" :_index "E1"}
-          all [doc1 doc2 doc3 doc4 doc5]
-          expected [{"index" {:_index "A1"}}
+    (let [doc1 {:id "A" :dumy-field "field-value1" :_index "1" :_type "doc" :_version 1
+                :_version_type "integer"}
+          doc2 {:id "B" :dummy-field "field-value2" :_index "1" :_type "doc" :_version 2 :_version_type "integer"}
+          doc3 {:id "C" :_index "2" :_type "doc" :_version 3 :_version_type "integer"}
+          doc4 {:id "D" :_index "2" :deleted true :_type "doc" :_version 2 :_version_type "integer"}
+          doc5 {:id "E" :_index "3" :_type "doc" :_version 1 :_version_type "integer"}
+          all-docs [doc1 doc2 doc3 doc4 doc5]
+          expected [{"index"
+                     {:_version_type "integer"
+                      :_version 1
+                      :_type "doc"
+                      :_index "1"}}
                     {:id "A"}
-                    {"index" {:_index "B1"}}
+                    {"index"
+                     {:_version_type "integer"
+                      :_version 2
+                      :_type "doc"
+                      :_index "1"}}
                     {:id "B"}
-                    {"index" {:_index "C1"}}
+                    {"index"
+                     {:_version_type "integer"
+                      :_version 3
+                      :_type "doc"
+                      :_index "2"}}
                     {:id "C"}
-                    {"delete" {:_index "D1"}}
-                    {"index" {:_index "E1"}}
+                    {"delete"
+                     {:_version_type "integer"
+                      :_version 2
+                      :_type "doc"
+                      :_index "2"}}
+                    {"index"
+                     {:_version_type "integer"
+                      :_version 1
+                      :_type "doc"
+                      :_index "3"}}
                     {:id "E"}]]
       (is (= expected
-             (bulk/bulk-index all))))))
+             (bulk/bulk-index all-docs))))))

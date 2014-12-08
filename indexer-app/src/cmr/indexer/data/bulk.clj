@@ -13,7 +13,7 @@
   If the document has a 'deleted' flag = true, then a delete operation is created instead."
   [doc]
   (if (:deleted doc)
-    {"delete" (select-keys doc special-operation-keys)}
+    [{"delete" (select-keys doc special-operation-keys)}]
     [{"index" (select-keys doc special-operation-keys)}
      (apply dissoc doc special-operation-keys)]))
 
@@ -23,4 +23,4 @@
   that the document will contain the index information. It extracts the index keys from each document
   and returns a sequence of index info, document, index info, document..., etc."
   [documents]
-  (flatten (map index-operation documents)))
+  (mapcat index-operation documents))
