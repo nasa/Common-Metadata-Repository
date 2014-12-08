@@ -69,10 +69,11 @@
         start-date (when start-date (str/replace (str start-date) #"\+0000" "Z"))
         end-date (when end-date (str/replace (str end-date) #"\+0000" "Z"))
         orbit-calculated-spatial-domains (map ocsd-json->map orbit-calculated-spatial-domains-json)]
-    (when orbit-asc-crossing-lon
+    (when (and orbit-asc-crossing-lon
+               (not-empty orbit-calculated-spatial-domains))
       (swath/to-polygons
-          (orbits-by-collection collection-concept-id)
-          orbit-asc-crossing-lon
-          orbit-calculated-spatial-domains
-          start-date
-          end-date))))
+        (orbits-by-collection collection-concept-id)
+        orbit-asc-crossing-lon
+        orbit-calculated-spatial-domains
+        start-date
+        end-date))))
