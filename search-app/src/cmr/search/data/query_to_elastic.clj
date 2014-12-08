@@ -7,7 +7,8 @@
             [cmr.common.services.errors :as errors]
             [cmr.search.data.messages :as m]
             [cmr.search.data.keywords-to-elastic :as k2e]
-            [cmr.common.config :as cfg]))
+            [cmr.common.config :as cfg]
+            [cmr.search.data.query-order-by-expense :as query-expense]))
 
 (def numeric-range-execution-mode (cfg/config-value-fn :numeric-range-execution-mode "index"))
 (def numeric-range-use-cache (cfg/config-value-fn :numeric-range-use-cache "false" #(Boolean. ^String %)))
@@ -59,7 +60,7 @@
 (defn query->elastic
   "Converts a query model into an elastic search query"
   [query]
-  (let [{:keys [concept-type condition keywords]} query
+  (let [{:keys [concept-type condition keywords]} (query-expense/order-conditions query)
         core-query (condition->elastic condition concept-type)]
     (if-let [keywords (:keywords query)]
       ;; function_score query allows us to compute a custom relevance score for each document
