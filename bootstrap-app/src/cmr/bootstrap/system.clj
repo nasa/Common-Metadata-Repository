@@ -65,8 +65,7 @@
              :collection-index-channel (chan 100)
 
              ;; Channel for asynchronously sending database synchronization requests
-             ;; Uncomment the following line before enabling db synchronization job
-             ;:db-synchronize-channel (chan)
+             :db-synchronize-channel (chan)
 
              :catalog-rest-user (mdb-config/catalog-rest-db-username)
              :db (oracle/create-db (mdb-config/db-spec "bootstrap-pool"))
