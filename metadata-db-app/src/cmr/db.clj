@@ -4,7 +4,8 @@
             [drift.execute :as drift]
             [cmr.oracle.user :as o]
             [cmr.oracle.config :as oracle-config]
-            [cmr.metadata-db.config :as mdb-config])
+            [cmr.metadata-db.config :as mdb-config]
+            [config.migrate-config :as mc])
   (:gen-class))
 
 (defn create-user
@@ -29,6 +30,7 @@
   "Execute the given database operation specified by input arguments."
   [& args]
   (info "Running " args)
+  (mc/db)
   (let [op (first args)]
     (try
       (cond
@@ -39,7 +41,9 @@
         (drop-user)
 
         (= "migrate" op)
-        (drift/run args)
+        (do
+          (info "-----migrate db")
+        (drift/run args))
 
         :else
         (info "Unsupported operation: " op))
