@@ -43,7 +43,7 @@
                     ;; Setting the parent-collection-cache to cache parent collection umm
                     ;; of granules during bulk indexing.
                     (assoc-in [:caches g/parent-collection-cache-key]
-                           (cache/create-cache :lru {} {:threshold 2000}))
+                              (cache/create-cache :lru {} {:threshold 2000}))
                     ;; Specify an Elasticsearch http retry handler
                     (assoc-in [:db :config :retry-handler] bi/elastic-retry-handler))
         sys {:log (log/create-logger)
@@ -65,12 +65,14 @@
              :collection-index-channel (chan 100)
 
              ;; Channel for asynchronously sending database synchronization requests
-             :db-synchronize-channel (chan)
+             ;; Uncomment the following line before enabling db synchronization job
+             ;:db-synchronize-channel (chan)
 
              :catalog-rest-user (mdb-config/catalog-rest-db-username)
              :db (oracle/create-db (mdb-config/db-spec "bootstrap-pool"))
              :web (web/create-web-server (transmit-config/bootstrap-port) routes/make-api)
-             :scheduler (jobs/create-clustered-scheduler `system-holder bootstrap-jobs/jobs)
+             ;; Uncomment the following line to enable db synchronization job
+             ;:scheduler (jobs/create-clustered-scheduler `system-holder bootstrap-jobs/jobs)
              :zipkin (context/zipkin-config "bootstrap" false)
              :relative-root-url (transmit-config/bootstrap-relative-root-url)}]
     (transmit-config/system-with-connections sys [:metadata-db])))
@@ -86,7 +88,7 @@
         started-system (update-in started-system [:metadata-db] mdb-system/start)
         started-system (reduce (fn [system component-name]
                                  (update-in system [component-name]
-                                            #(lifecycle/start % system)))
+                                            #(when % (lifecycle/start % system))))
                                started-system
                                component-order)]
 
@@ -105,7 +107,7 @@
   (info "bootstrap System shutting down")
   (let [stopped-system (reduce (fn [system component-name]
                                  (update-in system [component-name]
-                                            #(lifecycle/stop % system)))
+                                            #(when % (lifecycle/stop % system))))
                                this
                                (reverse component-order))
         stopped-system (update-in stopped-system [:metadata-db] mdb-system/stop)
