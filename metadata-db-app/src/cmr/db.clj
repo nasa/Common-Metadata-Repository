@@ -30,11 +30,6 @@
   "Execute the given database operation specified by input arguments."
   [& args]
   (info "Running " args)
-
-  ;; Set up db connection first before running migration
-  ;; to work around the transient connection issue as documented in CMR-1108
-  (mc/db)
-
   (let [op (first args)]
     (try
       (cond
