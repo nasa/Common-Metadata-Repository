@@ -4,7 +4,8 @@
             [drift.execute :as drift]
             [cmr.oracle.user :as o]
             [cmr.oracle.config :as oracle-config]
-            [cmr.ingest.config :as ingest-config])
+            [cmr.ingest.config :as ingest-config]
+            [config.migrate-config :as mc])
   (:gen-class))
 
 (defn create-user
@@ -21,6 +22,8 @@
   "Execute the given database operation specified by input arguments."
   [& args]
   (info "Running " args)
+  (mc/db)
+  (Thread/sleep 1000)
   (let [op (first args)]
     (try
       (cond

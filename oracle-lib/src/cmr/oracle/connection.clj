@@ -41,7 +41,7 @@
 (defn health
   "Returns the oracle health with timeout handling."
   [oracle-store]
-  (hh/get-health #(health-fn oracle-store)))
+  (hh/get-health #(health-fn oracle-store) 30000))
 
 (defn test-db-connection!
   "Tests the database connection. Throws an exception if the database is unhealthy."
