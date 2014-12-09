@@ -298,10 +298,8 @@
                    :provider-id.lowercase string-field-mapping
 
                    :granule-ur            (stored string-field-mapping)
-                   :granule-ur.lowercase  string-field-mapping
                    :granule-ur.lowercase2 (doc-values string-field-mapping)
                    :producer-gran-id (stored string-field-mapping)
-                   :producer-gran-id.lowercase string-field-mapping
                    :producer-gran-id.lowercase2 (doc-values string-field-mapping)
 
                    :day-night (stored string-field-mapping)
@@ -316,7 +314,6 @@
                    ;; The producer granule id will be put in this field if present otherwise it
                    ;; will default to granule-ur. This avoids the solution Catalog REST uses which is
                    ;; to use a sort script which is (most likely) much slower.
-                   :readable-granule-name-sort string-field-mapping
                    :readable-granule-name-sort2 (doc-values string-field-mapping)
 
 

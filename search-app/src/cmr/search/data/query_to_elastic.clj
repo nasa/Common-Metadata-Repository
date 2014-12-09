@@ -85,9 +85,9 @@
              :entry-title :entry-title.lowercase
              :short-name :short-name.lowercase
              :version :version-id.lowercase
-             :granule-ur :granule-ur.lowercase
-             :producer-granule-id :producer-gran-id.lowercase
-             :readable-granule-name :readable-granule-name-sort
+             :granule-ur :granule-ur.lowercase2
+             :producer-granule-id :producer-gran-id.lowercase2
+             :readable-granule-name :readable-granule-name-sort2
              :data-size :size
              :platform :platform-sn.lowercase
              :instrument :instrument-sn.lowercase

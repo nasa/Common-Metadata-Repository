@@ -150,17 +150,14 @@
             :provider-id provider-id
             :provider-id.lowercase (s/lower-case provider-id)
             :granule-ur granule-ur
-            :granule-ur.lowercase (s/lower-case granule-ur)
             :granule-ur.lowercase2 (s/lower-case granule-ur)
             :producer-gran-id producer-gran-id
-            :producer-gran-id.lowercase (when producer-gran-id (s/lower-case producer-gran-id))
             :producer-gran-id.lowercase2 (when producer-gran-id (s/lower-case producer-gran-id))
             :day-night day-night
             :day-night.lowercase (when day-night (s/lower-case day-night))
             :access-value access-value
 
             ;; Provides sorting on a combination of producer granule id and granule ur
-            :readable-granule-name-sort (s/lower-case (or producer-gran-id granule-ur))
             :readable-granule-name-sort2 (s/lower-case (or producer-gran-id granule-ur))
 
             :platform-sn platform-short-names
