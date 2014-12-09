@@ -108,6 +108,15 @@
     ;; paging and query results consistent.
     (concat specified-sort [concept-id-sort])))
 
+(defn field->lowercase-field
+  "Maps a field name to the name of the lowercase field to use within elastic.
+  If a mapping is not present it defaults the lowercase field as <field>.lowercase"
+  [field]
+  (or ((if (string? field) (keyword field) field)
+       {:granule-ur "granule-ur.lowercase2"
+        :producer-gran-id "producer-gran-id.lowercase2"})
+      (str (name field) ".lowercase")))
+
 (defn- range-condition->elastic
   "Convert a range condition to an elastic search condition. Execution
   should either by 'fielddata' or 'index'."
@@ -162,7 +171,7 @@
   (condition->elastic
     [{:keys [field value case-sensitive? pattern?]} concept-type]
     (let [field (query-field->elastic-field field concept-type)
-          field (if case-sensitive? field (str (name field) ".lowercase"))
+          field (if case-sensitive? field (field->lowercase-field field))
           value (if case-sensitive? value (str/lower-case value))]
       (if pattern?
         {:query {:wildcard {field value}}}
@@ -172,7 +181,7 @@
   (condition->elastic
     [{:keys [field values case-sensitive?]} concept-type]
     (let [field (query-field->elastic-field field concept-type)
-          field (if case-sensitive? field (str (name field) ".lowercase"))
+          field (if case-sensitive? field (field->lowercase-field field))
           values (if case-sensitive? values (map str/lower-case values))]
       {:terms {field values
                :execution "plain"}}))
