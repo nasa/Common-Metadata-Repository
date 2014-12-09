@@ -46,7 +46,6 @@
 (defn test-db-connection!
   "Tests the database connection. Throws an exception if the database is unhealthy."
   [oracle-store]
-  (info "------running test-db-connection!")
   (let [db-health (health oracle-store)]
     (when-not (:ok? db-health)
       (throw (Exception. (:problem db-health))))))

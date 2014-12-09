@@ -30,7 +30,11 @@
   "Execute the given database operation specified by input arguments."
   [& args]
   (info "Running " args)
+
+  ;; Set up db connection first before running migration
+  ;; to work around the transient connection issue as documented in CMR-1108
   (mc/db)
+
   (let [op (first args)]
     (try
       (cond
@@ -41,9 +45,7 @@
         (drop-user)
 
         (= "migrate" op)
-        (do
-          (info "-----migrate db")
-        (drift/run args))
+        (drift/run args)
 
         :else
         (info "Unsupported operation: " op))
