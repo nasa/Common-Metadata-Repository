@@ -4,7 +4,8 @@
             [drift.execute :as drift]
             [cmr.oracle.user :as o]
             [cmr.oracle.config :as oracle-config]
-            [cmr.metadata-db.config :as mdb-config])
+            [cmr.metadata-db.config :as mdb-config]
+            [config.migrate-config :as mc])
   (:gen-class))
 
 (defn create-user

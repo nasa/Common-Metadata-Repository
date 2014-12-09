@@ -41,7 +41,7 @@
 (defn health
   "Returns the oracle health with timeout handling."
   [oracle-store]
-  (hh/get-health #(health-fn oracle-store)))
+  (hh/get-health #(health-fn oracle-store) 30000))
 
 (defn test-db-connection!
   "Tests the database connection. Throws an exception if the database is unhealthy."
@@ -114,16 +114,6 @@
       (.setValidateConnectionOnBorrow true)
       (.setSQLForValidateConnection "select 1 from DUAL"))))
 
-(defn cleanup-connection-pool
-  [oracle-store]
-  (try
-    (let [pool-name (get-in oracle-store [:spec :connection-pool-name])
-          ucp-manager (UniversalConnectionPoolManagerImpl/getUniversalConnectionPoolManager)]
-      (.destroyConnectionPool ucp-manager pool-name))
-    (catch Exception e
-      (warn (str "Unable to destroy connection pool. It may not have started. Error: "
-                 (.getMessage e))))))
-
 (defrecord OracleStore
   [
    ;; The database spec.
@@ -139,21 +129,20 @@
 
   (start [this system]
          (let [this (assoc this :datasource (pool spec))]
-           (try
-             (test-db-connection! this)
-             (catch Exception e
-               ;; Handle the case during use of repl or database migrations where the connection pool
-               ;; may have already been created. If so we'll cleanup the connection pool and then
-               ;; try it again.
-               (if (.contains (.getMessage e) "Universal Connection Pool already exists in the Universal Connection Pool Manager.")
-                 (do
-                   (cleanup-connection-pool this)
-                   (test-db-connection! this))
-                 (throw e))))
+           (test-db-connection! this)
            this))
 
   (stop [this system]
-        (cleanup-connection-pool this)
+
+        (try
+          ;; Cleanup the connection pool
+          (let [pool-name (get-in this [:spec :connection-pool-name])
+                ucp-manager (UniversalConnectionPoolManagerImpl/getUniversalConnectionPoolManager)]
+            (.destroyConnectionPool ucp-manager pool-name))
+          (catch Exception e
+            (warn (str "Unable to destroy connection pool. It may not have started. Error: "
+                       (.getMessage e)))))
+
         (dissoc this :datasource)))
 
 

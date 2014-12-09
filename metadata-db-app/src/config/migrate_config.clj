@@ -14,7 +14,8 @@
   "Lazily connects to the database and caches it"
   []
   (when-not @db-atom
-    (reset! db-atom (lifecycle/start (oracle/create-db (mdb-config/db-spec "migrations")) nil)))
+    (reset! db-atom (lifecycle/start
+                      (oracle/create-db (mdb-config/db-spec "metadata-db-migrations")) nil)))
   @db-atom)
 
 (defn- maybe-create-schema-table

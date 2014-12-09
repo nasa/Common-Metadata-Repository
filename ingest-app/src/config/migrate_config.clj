@@ -13,7 +13,8 @@
   "Lazily connects to the database and caches it"
   []
   (when-not @db-atom
-    (reset! db-atom (lifecycle/start (oracle/create-db (ingest-config/db-spec "migrations")) nil)))
+    (reset! db-atom (lifecycle/start
+                      (oracle/create-db (ingest-config/db-spec "ingest-migrations")) nil)))
   @db-atom)
 
 
