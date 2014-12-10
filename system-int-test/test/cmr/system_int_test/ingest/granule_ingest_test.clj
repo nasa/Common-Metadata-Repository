@@ -106,12 +106,22 @@
         delete-revision-id (:revision-id delete-result)]
     (is (= 1 (- delete-revision-id ingest-revision-id)))))
 
+;; Verify ingest is successful for request with content type that has parameters
+(deftest content-type-with-parameter-ingest-test
+  (let [collection (old-ingest/collection-concept "PROV1" 5)
+        _ (ingest/ingest-concept collection)
+        granule (assoc (old-ingest/granule-concept "PROV1" "C1000000000-PROV1" 5 "G1-PROV1")
+                       :format "application/echo10+xml; charset=utf-8")
+        {:keys [status errors]} (ingest/ingest-concept granule)]
+    (is (= 200 status))))
+
 ;;; Verify ingest behaves properly if request is missing content type.
 (deftest missing-content-type-ingest-test
   (let [collection (old-ingest/collection-concept "PROV1" 5)
         _ (ingest/ingest-concept collection)
-        granule-with-no-content-type  (assoc (old-ingest/granule-concept "PROV1" "C1000000000-PROV1" 5 "G1-PROV1") :format "")
-        {:keys [status errors]} (ingest/ingest-concept granule-with-no-content-type)]
+        granule (assoc (old-ingest/granule-concept "PROV1" "C1000000000-PROV1" 5 "G1-PROV1")
+                       :format "")
+        {:keys [status errors]} (ingest/ingest-concept granule)]
     (is (= 400 status))
     (is (re-find #"Invalid content-type" (first errors)))))
 
@@ -119,8 +129,9 @@
 (deftest invalid-content-type-ingest-test
   (let [collection (old-ingest/collection-concept "PROV1" 5)
         _ (ingest/ingest-concept collection)
-        granule-with-no-content-type (assoc (old-ingest/granule-concept "PROV1" "C1000000000-PROV1" 5 "G1-PROV1") :format "blah")
-        {:keys [status errors]} (ingest/ingest-concept granule-with-no-content-type)]
+        granule (assoc (old-ingest/granule-concept "PROV1" "C1000000000-PROV1" 5 "G1-PROV1")
+                       :format "blah")
+        {:keys [status errors]} (ingest/ingest-concept granule)]
     (is (= 400 status))
     (is (re-find #"Invalid content-type" (first errors)))))
 

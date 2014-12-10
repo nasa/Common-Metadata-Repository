@@ -26,6 +26,11 @@
       concept
       (assoc concept :concept-id concept-id))))
 
+(defn- sanitize-concept-type
+  "Drops the parameter part of the MediaTypes from concept-type and returns the type/sub-type part"
+  [concept-type]
+  (first (string/split concept-type #";")))
+
 (defn- build-routes [system]
   (routes
     (context (:relative-root-url system) []
@@ -41,7 +46,7 @@
           (PUT "/" {:keys [body content-type headers request-context]}
             (let [metadata (string/trim (slurp body))
                   base-concept {:metadata metadata
-                                :format content-type
+                                :format (sanitize-concept-type content-type)
                                 :provider-id provider-id
                                 :native-id native-id
                                 :concept-type :collection}
@@ -56,7 +61,7 @@
           (PUT "/" {:keys [body content-type headers request-context]}
             (let [metadata (string/trim (slurp body))
                   base-concept {:metadata metadata
-                                :format content-type
+                                :format (sanitize-concept-type content-type)
                                 :provider-id provider-id
                                 :native-id native-id
                                 :concept-type :granule}

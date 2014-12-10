@@ -140,6 +140,13 @@
           (search/find-refs :granule {"concept-id" (:concept-id gran3)})))))
 
 
+;; Verify ingest is successful for request with content type that has parameters
+(deftest content-type-with-parameter-ingest-test
+  (let [concept  (assoc (old-ingest/distinct-concept "PROV1" 4)
+                        :format "application/echo10+xml; charset=utf-8")
+        {:keys [status]} (ingest/ingest-concept concept)]
+    (is (= status 200))))
+
 ;; Verify ingest behaves properly if request is missing content type.
 (deftest missing-content-type-ingest-test
   (let [concept-with-no-content-type  (assoc (old-ingest/distinct-concept "PROV1" 4) :format "")
@@ -149,8 +156,8 @@
 
 ;; Verify ingest behaves properly if request contains invalid  content type.
 (deftest invalid-content-type-ingest-test
-  (let [concept-with-no-content-type (assoc (old-ingest/distinct-concept "PROV1" 4) :format "blah")
-        {:keys [status errors]} (ingest/ingest-concept concept-with-no-content-type)]
+  (let [concept (assoc (old-ingest/distinct-concept "PROV1" 4) :format "blah")
+        {:keys [status errors]} (ingest/ingest-concept concept)]
     (is (= status 400))
     (is (re-find #"Invalid content-type" (first errors)))))
 
