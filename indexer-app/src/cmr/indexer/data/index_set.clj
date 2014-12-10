@@ -298,6 +298,16 @@
                    :provider-id.lowercase string-field-mapping
 
                    :granule-ur            (stored string-field-mapping)
+
+                   ;; Modified mappings for the lowercase fields for granule-ur, producer-gran-id,
+                   ;; and readable-granule-name-sort in order to prevent these values from being
+                   ;; stored in the elasticsearch field data cache (by specifying to use doc-values
+                   ;; for these fields). These 3 fields were taking more than 40% of the cache and
+                   ;; are rarely used to sort on.
+                   ;;
+                   ;; The convention used is to append a 2 to the name of the fields. Note that
+                   ;; for the search application to use the special lowercase2 fields, the fields
+                   ;; need to be mapped in cmr.search.data.query-to-elastic/field->lowercase-field.
                    :granule-ur.lowercase2 (doc-values string-field-mapping)
                    :producer-gran-id (stored string-field-mapping)
                    :producer-gran-id.lowercase2 (doc-values string-field-mapping)
