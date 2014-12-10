@@ -10,7 +10,7 @@
             [cmr.common.config :as cfg]
             [cmr.search.data.query-order-by-expense :as query-expense]))
 
-(def numeric-range-execution-mode (cfg/config-value-fn :numeric-range-execution-mode "index"))
+(def numeric-range-execution-mode (cfg/config-value-fn :numeric-range-execution-mode "fielddata"))
 (def numeric-range-use-cache (cfg/config-value-fn :numeric-range-use-cache "false" #(Boolean. ^String %)))
 
 (def field-mappings
