@@ -46,7 +46,8 @@
             stmt [sql token]]
         (when-let [{:keys [guest user_guid act_as_user_guid expires revoked]}
                    (first (sql-utils/query conn stmt))]
-          (when (and (in-the-future? (oracle/oracle-timestamp->clj-time conn expires))
+          (when (and (or (nil? expires)
+                         (in-the-future? (oracle/oracle-timestamp->clj-time conn expires)))
                      (nil? revoked))
             {:is-guest? (= (long guest) 1)
              ;; Use the act as user guid if it's set
