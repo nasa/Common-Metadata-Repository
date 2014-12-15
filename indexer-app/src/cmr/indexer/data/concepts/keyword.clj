@@ -10,9 +10,6 @@
 ;; and are therefore not used for keyword searches in the CMR:
 ;;    SuggestedUsage (ECHO10)
 ;;
-;; TODO - The following field is not mentioned in the UMM documentation. A CMRInbox ticket
-;; (CRMIN-28) was created inquiring about it.
-;;   :version-description
 
 ;; Regex to split strings with special characters into multiple words for keyword searches
 (def keywords-separator-regex #"[!@#$%^&()\-=_+{}\[\]|;'.,\\\"/:<>?`~* ]")
@@ -32,7 +29,8 @@
   [concept-id collection]
   "Create a keyword field for keyword searches by concatenating several other fields
   into a single string"
-  (let [{{:keys [short-name long-name version-id processing-level-id collection-data-type]} :product
+  (let [{{:keys [short-name long-name version-id version-description
+                 processing-level-id collection-data-type]} :product
          :keys [entry-id entry-title summary spatial-keywords temporal-keywords associated-difs
                 projects]} collection
         provider-id (:provider-id (concepts/parse-concept-id concept-id))
@@ -68,6 +66,7 @@
                                   two-d-coord-names
                                   summary
                                   version-id
+                                  version-description
                                   processing-level-id
                                   archive-centers
                                   science-keywords

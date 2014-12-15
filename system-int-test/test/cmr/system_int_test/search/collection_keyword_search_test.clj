@@ -42,8 +42,10 @@
                                  :variable-level-2 "Level2-2"
                                  :variable-level-3 "Level2-3"})
         tdcs1 (dc/two-d "XYZ")
-        coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1" }))
-        coll2 (d/ingest "PROV1" (dc/collection {:entry-title "coll2" :short-name "ABC!XYZ" :version-id "V001"}))
+        coll1 (d/ingest "PROV1" (dc/collection
+                                  {:entry-title "coll1" :version-description "VersionDescription"}))
+        coll2 (d/ingest "PROV1" (dc/collection
+                                  {:entry-title "coll2" :short-name "ABC!XYZ":version-id "V001" }))
         coll3 (d/ingest "PROV1" (dc/collection {:entry-title "coll3" :collection-data-type "Foo"}))
         coll4 (d/ingest "PROV2" (dc/collection {:entry-title "coll4" :collection-data-type "Bar"}))
         coll5 (d/ingest "PROV2" (dc/collection {:entry-title "coll5" :long-name "ABC" :short-name "Space!Laser"}))
@@ -105,6 +107,9 @@
 
            ;; version id
            "V001" [coll2]
+
+           ;; version description
+           "VersionDescription" [coll1]
 
            ;; processing level id
            "plid1" [coll15]
