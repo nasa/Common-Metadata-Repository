@@ -79,10 +79,10 @@
 (defn generate-spatial
   "Generates the Spatial element from spatial coverage"
   [spatial-coverage]
-  (when spatial-coverage
-    (let [{:keys [geometries]} spatial-coverage
-          geometries (filter (fn [g] (or (= cmr.spatial.mbr.Mbr (type g))
-                                         (= cmr.spatial.polygon.Polygon (type g)))) geometries)]
-      (map generate-geometry-element geometries))))
+  (for [geometry (:geometries spatial-coverage)
+        :let [gtype (type geometry)]
+        :when (or (= cmr.spatial.mbr.Mbr gtype)
+                  (= cmr.spatial.polygon.Polygon gtype))]
+    (generate-geometry-element geometry)))
 
 
