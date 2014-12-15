@@ -22,50 +22,27 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Parsing the ATOM results
 
-(comment
-  (deref parsed)
-
-  (ring-str->ring "6.92 5.18 7.01 -1.79 5.0 -2.65 5.05 4.29 6.92 5.18")
-
-  (map xml-elem->entry (cx/elements-at-path @parsed [:entry]))
-
-  )
-
-(defn point-str->points
-  "Converts a string of lat lon pairs separated by spaces into a list of points"
-  [s]
-  (->> (str/split s #" ")
-       (map #(Double. ^String %))
-       (partition 2)
-       (map (fn [[lat lon]]
-              (p/point lon lat)))))
-
-(defn ring-str->ring
-  "Parses a ring as represented in ATOM into a cmr.spatial.geodetic_ring.GeodeticRing"
-  [s]
-  (umm-s/ring (point-str->points s)))
-
 (defn xml-elem->polygons-without-holes
   [entry-elem]
-  (map #(poly/polygon [(ring-str->ring %)])
+  (map #(poly/polygon [(umm-s/ring-str->ring %)])
        (cx/strings-at-path entry-elem [:polygon])))
 
 (defn xml-elem->polygons-with-holes
   [entry-elem]
   (map (fn [elem]
-         (let [boundary (ring-str->ring (cx/string-at-path elem [:exterior :LinearRing :posList]))
-               holes (map ring-str->ring
+         (let [boundary (umm-s/ring-str->ring (cx/string-at-path elem [:exterior :LinearRing :posList]))
+               holes (map umm-s/ring-str->ring
                           (cx/strings-at-path elem [:interior :LinearRing :posList]))]
            (poly/polygon (cons boundary holes))))
        (cx/elements-at-path entry-elem [:where :Polygon])))
 
 (defn xml-elem->points
   [entry-elem]
-  (map (comp first point-str->points) (cx/strings-at-path entry-elem [:point])))
+  (map (comp first umm-s/point-str->points) (cx/strings-at-path entry-elem [:point])))
 
 (defn xml-elem->lines
   [entry-elem]
-  (map (comp l/line-string point-str->points) (cx/strings-at-path entry-elem [:line])))
+  (map (comp l/line-string umm-s/point-str->points) (cx/strings-at-path entry-elem [:line])))
 
 (defn xml-elem->bounding-rectangles
   [entry-elem]

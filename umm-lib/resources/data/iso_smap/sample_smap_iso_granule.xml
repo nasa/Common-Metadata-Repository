@@ -311,7 +311,7 @@
                         <gml:Polygon gml:id="swathPolygon">
                           <gml:exterior>
                             <gml:LinearRing>
-                              <gml:posList srsName="http://www.opengis.net/def/crs/EPSG/4326" srsDimension="2">0.0 0.0 4.0 0.0 6.0 5.0 2.0 5.0 0.0 0.0</gml:posList>
+                              <gml:posList srsName="http://www.opengis.net/def/crs/EPSG/4326" srsDimension="2">0.0 0.0 2.0 5.0 6.0 5.0 4.0 0.0 0.0 0.0</gml:posList>
                             </gml:LinearRing>
                           </gml:exterior>
                         </gml:Polygon>
