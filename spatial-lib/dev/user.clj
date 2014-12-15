@@ -6,7 +6,8 @@
   (:use [clojure.test :only [run-all-tests]]
         [clojure.repl]
         ;; Needed to make debug-repl available
-        [alex-and-georges.debug-repl]))
+        [alex-and-georges.debug-repl]
+        [cmr.common.dev.capture-reveal]))
 
 (def vdd-server nil)
 

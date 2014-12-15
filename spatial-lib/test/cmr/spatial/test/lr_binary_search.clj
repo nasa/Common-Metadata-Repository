@@ -53,7 +53,8 @@
     (polygon-has-valid-lr? polygon)))
 
 (deftest example-polygons-have-lrs
-  (let [polygons-ordses [[[-60.25739 -68.00377, -59.64225 -68.05437, -59.57187 -68.05437,
+  (let [polygons-ordses [[[-60 0 -60 1 -61 1 -61 0 -60 0]]
+                         [[-60.25739 -68.00377, -59.64225 -68.05437, -59.57187 -68.05437,
                            -59.5413 -68.05092, -59.49545 -68.04172, -59.49851 -68.03482,
                            -59.51381 -68.03597, -59.59335 -68.04747, -59.93609 -68.01872,
                            -60.21455 -67.99917, -60.25739 -67.99917, -60.25739 -68.00377]]
@@ -115,6 +116,9 @@
     (display-draggable-lr-polygon polygon))
 
 
+  (def ring (d/calculate-derived (rr/ords->ring :geodetic -60 0 -60 1 -61 1 -61 0 -60 0)))
+
+
   (def ring (d/calculate-derived
               (first (gen/sample (sgen/rings :geodetic) 1))))
 
@@ -122,29 +126,29 @@
 
   ;; Normal
   (display-draggable-lr-ring
-    (gr/ords->ring 0,0, 4,0, 6,5, 2,5, 0,0))
+    (rr/ords->ring :geodetic 0,0, 4,0, 6,5, 2,5, 0,0))
 
   ;; Very large
   (display-draggable-lr-ring
-    (gr/ords->ring -89.9 -45, 89.9 -45, 89.9 45, -89.9 45, -89 -45))
+    (rr/ords->ring :geodetic -89.9 -45, 89.9 -45, 89.9 45, -89.9 45, -89 -45))
 
   ;; around north pole
   (display-draggable-lr-ring
-    (gr/ords->ring 45 85, 90 85, 135 85, 180 85, -135 85, -45 85, 45 85))
+    (rr/ords->ring :geodetic 45 85, 90 85, 135 85, 180 85, -135 85, -45 85, 45 85))
 
   ;; around south pole
   (display-draggable-lr-ring
-    (gr/ords->ring 45 -85, -45 -85, -135 -85, 180 -85, 135 -85, 90 -85, 45 -85))
+    (rr/ords->ring :geodetic 45 -85, -45 -85, -135 -85, 180 -85, 135 -85, 90 -85, 45 -85))
 
   ;; across antimeridian
   (display-draggable-lr-ring
-    (gr/ords->ring 175 -10, -175 -10, -175 0, -175 10
+    (rr/ords->ring :geodetic 175 -10, -175 -10, -175 0, -175 10
                    175 10, 175 0, 175 -10))
 
   ;; Performance testing
   (require '[criterium.core :refer [with-progress-reporting bench]])
 
-  (let [ring (d/calculate-derived (gr/ords->ring 0,0, 4,0, 6,5, 2,5, 0,0))]
+  (let [ring (d/calculate-derived (rr/ords->ring :geodetic 0,0, 4,0, 6,5, 2,5, 0,0))]
     (with-progress-reporting
       (bench
         (lbs/find-lr ring))))

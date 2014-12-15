@@ -68,9 +68,13 @@
           (let [antipodal-point (p/antipodal point)
                 ;; Find an external point to use. We can't use an external point that is antipodal
                 ;; to the given point or equal to the point.
-                external-point (first (filter #(and (not= % antipodal-point)
-                                                    (not= % point))
+                external-point (first (filter #(and (not= (p/round-point 4 %) (p/round-point 4 antipodal-point))
+                                                    (not= (p/round-point 4 %) (p/round-point 4 point)))
                                               (:external-points ring)))
+                _ (when-not external-point
+                    (throw (Exception.
+                             (str "Could not find external point to use to check if ring covers"
+                                  " point. Ring: " (pr-str ring) " point: " (pr-str point)))))
                 ;; Create the test arc
                 crossing-arc (a/arc point external-point)
                 ;; Find all the points the arc passes through
