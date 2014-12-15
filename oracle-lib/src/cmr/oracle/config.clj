@@ -7,7 +7,7 @@
 
 (def db-fcf-enabled
   "Enables or disables fast connection failover in Oracle jdbc."
-  (cfg/config-value-fn :db-fcf-enabled "false" #(Boolean. ^String %)))
+  (cfg/config-value-fn :db-fcf-enabled "false" #(= "true" %)))
 
 (def db-ons-config (cfg/config-value-fn :db-ons-config ""))
 
