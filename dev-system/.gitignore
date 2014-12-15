@@ -12,3 +12,4 @@ pom.xml.asc
 /.nrepl-port
 /es_data
 *holdings.json
+/results_compare

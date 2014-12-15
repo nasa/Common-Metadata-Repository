@@ -15,6 +15,9 @@
 (def version-ids
   (ext-gen/string-alpha-numeric 1 10))
 
+(def version-descriptions
+  (ext-gen/string-alpha-numeric 1 10))
+
 (def long-names
   (ext-gen/string-alpha-numeric 1 10))
 
@@ -29,6 +32,7 @@
                      short-names
                      long-names
                      version-ids
+                     (ext-gen/optional version-descriptions)
                      (ext-gen/optional processing-level-ids)
                      (ext-gen/optional collection-data-types)))
 

@@ -15,6 +15,7 @@
         psa2 (dc/psa "bravo" :string "bf")
         psa3 (dc/psa "charlie" :string "foo")
         psa4 (dc/psa "case" :string "up")
+        psa5 (dc/psa "novalue" :string nil "description")
         p1 (dc/platform "platform_SnB" "platform_Ln B" nil
                         (dc/instrument "isnA" "ilnA" "itechniqueA"
                                        (dc/sensor "ssnA" "slnA")
@@ -41,8 +42,10 @@
                                  :variable-level-2 "Level2-2"
                                  :variable-level-3 "Level2-3"})
         tdcs1 (dc/two-d "XYZ")
-        coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1" }))
-        coll2 (d/ingest "PROV1" (dc/collection {:entry-title "coll2" :short-name "ABC!XYZ" :version-id "V001"}))
+        coll1 (d/ingest "PROV1" (dc/collection
+                                  {:entry-title "coll1" :version-description "VersionDescription"}))
+        coll2 (d/ingest "PROV1" (dc/collection
+                                  {:entry-title "coll2" :short-name "ABC!XYZ":version-id "V001" }))
         coll3 (d/ingest "PROV1" (dc/collection {:entry-title "coll3" :collection-data-type "Foo"}))
         coll4 (d/ingest "PROV2" (dc/collection {:entry-title "coll4" :collection-data-type "Bar"}))
         coll5 (d/ingest "PROV2" (dc/collection {:entry-title "coll5" :long-name "ABC" :short-name "Space!Laser"}))
@@ -51,7 +54,8 @@
         coll8 (d/ingest "PROV2" (dc/collection {:entry-title "coll8" :processing-level-id "PDQ123"}))
         coll9 (d/ingest "PROV2" (dc/collection {:entry-title "coll9" :science-keywords [sk1 sk2]}))
         coll10 (d/ingest "PROV2" (dc/collection {:entry-title "coll10" :spatial-keywords ["in out"]}))
-        coll11 (d/ingest "PROV2" (dc/collection {:entry-title "coll11" :platforms [p2 p3]}))
+        coll11 (d/ingest "PROV2" (dc/collection {:entry-title "coll11" :platforms [p2 p3]
+                                                 :product-specific-attributes [psa5]}))
         coll12 (d/ingest "PROV2" (dc/collection {:entry-title "coll12" :product-specific-attributes [psa1 psa2 psa3 psa4]}))
         coll13 (d/ingest "PROV2" (dc/collection {:entry-title "coll13" :two-d-coordinate-systems [tdcs1]}))
         coll14 (d/ingest "PROV2" (dc/collection {:entry-title "coll14" :long-name "spoonA laser"}))
@@ -104,6 +108,9 @@
            ;; version id
            "V001" [coll2]
 
+           ;; version description
+           "VersionDescription" [coll1]
+
            ;; processing level id
            "plid1" [coll15]
 
@@ -142,6 +149,8 @@
            "charlie" [coll12]
            ;; - description
            "Generated" [coll12]
+           ;; description with no value - see CMR-1129
+           "description" [coll11]
 
            ;; Platforms
            ;; - short name
