@@ -33,7 +33,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Generators
 
-(defn- generate-bounding-box-element
+(defn generate-bounding-box-element
   "Generates the EX_GeographicBoundingBox for a given geometry, only BoundingBox is supported in SMAP ISO"
   [geometry]
   (let [{:keys [west north east south]} geometry
