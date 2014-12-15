@@ -35,35 +35,47 @@
         coll10 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset10"
                                                  :single-date-time "2010-05-01T00:00:00Z"}))
         coll11 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset11"
-                                                 :single-date-time "1999-05-01T00:00:00Z"}))]
+                                                 :single-date-time "1999-05-01T00:00:00Z"}))
+
+        ;; Collection 12 is way in the past and has an ends at present flag set to false
+        coll12 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset12"
+                                                 :beginning-date-time "1965-12-12T12:00:00Z"
+                                                 :ending-date-time "1966-01-03T12:00:00Z"
+                                                 :ends-at-present? false}))
+
+        ;; Collection 13 is way in the past and has an ends at present flag set to true
+        coll13 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset13"
+                                                 :beginning-date-time "1965-12-12T12:00:00Z"
+                                                 :ending-date-time "1966-01-03T12:00:00Z"
+                                                 :ends-at-present? true}))]
     (index/refresh-elastic-index)
 
     (testing "search by temporal_start."
       (let [references (search/find-refs :collection
                                          {"temporal[]" "2010-12-12T12:00:00Z,"})]
-        (is (d/refs-match? [coll2 coll3 coll4 coll5 coll6 coll7 coll8] references))))
+        (is (d/refs-match? [coll2 coll3 coll4 coll5 coll6 coll7 coll8 coll13] references))))
     (testing "search by temporal_end."
       (let [references (search/find-refs :collection
                                          {"temporal[]" ",2010-12-12T12:00:00Z"})]
-        (is (d/refs-match? [coll1 coll2 coll3 coll4 coll6 coll7 coll10 coll11] references))))
+        (is (d/refs-match? [coll1 coll2 coll3 coll4 coll6 coll7 coll10 coll11 coll12 coll13] references))))
     (testing "search by temporal_range."
       (let [references (search/find-refs :collection
                                          {"temporal[]" "2010-01-01T10:00:00Z,2010-01-10T12:00:00Z"})]
-        (is (d/refs-match? [coll1] references))))
+        (is (d/refs-match? [coll1 coll13] references))))
     (testing "search by multiple temporal_range."
       (let [references (search/find-refs :collection
                                          {"temporal[]" ["2010-01-01T10:00:00Z,2010-01-10T12:00:00Z" "2009-02-22T10:00:00Z,2010-02-22T10:00:00Z"]})]
-        (is (d/refs-match? [coll1 coll2 coll6] references))))
+        (is (d/refs-match? [coll1 coll2 coll6 coll13] references))))
     (testing "search by multiple temporal_range, options :or."
       (let [references (search/find-refs :collection
                                          {"temporal[]" ["2010-01-01T10:00:00Z,2010-01-10T12:00:00Z" "2009-02-22T10:00:00Z,2010-02-22T10:00:00Z"]
                                           "options[temporal][or]" ""})]
-        (is (d/refs-match? [coll1 coll2 coll6] references))))
+        (is (d/refs-match? [coll1 coll2 coll6 coll13] references))))
     (testing "search by multiple temporal_range, options :and."
       (let [references (search/find-refs :collection
                                          {"temporal[]" ["2010-01-01T10:00:00Z,2010-01-10T12:00:00Z" "2009-02-22T10:00:00Z,2010-02-22T10:00:00Z"]
                                           "options[temporal][and]" "true"})]
-        (is (d/refs-match? [coll1] references))))
+        (is (d/refs-match? [coll1 coll13] references))))
 
     (testing "search by temporal date-range with aql"
       (are [items start-date stop-date]
@@ -71,11 +83,11 @@
                                                                                     :stop-date stop-date}}]))
 
            ;; search by temporal_start
-           [coll2 coll3 coll4 coll5 coll6 coll7 coll8] "2010-12-12T12:00:00Z" nil
+           [coll2 coll3 coll4 coll5 coll6 coll7 coll8 coll13] "2010-12-12T12:00:00Z" nil
 
            ;; search by temporal_range
-           [coll1] "2010-01-01T10:00:00Z" "2010-01-10T12:00:00Z"
-           [coll2 coll6 coll10] "2010-04-01T10:00:00Z" "2010-06-10T12:00:00Z"))))
+           [coll1 coll13] "2010-01-01T10:00:00Z" "2010-01-10T12:00:00Z"
+           [coll2 coll6 coll10 coll13] "2010-04-01T10:00:00Z" "2010-06-10T12:00:00Z"))))
 
 
 ;; Just some symbolic invalid temporal testing, more complete test coverage is in unit tests

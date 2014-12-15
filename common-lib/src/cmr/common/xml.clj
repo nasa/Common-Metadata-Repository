@@ -106,7 +106,7 @@
   "Extracts a boolean from the given path in the XML structure."
   [xml-struct path]
   (when-let [^String s (string-at-path xml-struct path)]
-    (Boolean. s)))
+    (= "true" s)))
 
 (defn datetimes-at-path
   "Extracts all the datetimes from the given path in the XML structure."

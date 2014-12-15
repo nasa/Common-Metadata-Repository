@@ -60,9 +60,9 @@
   (is (= nil (cx/double-at-path parsed-sample-xml [:inner :foo]))))
 
 (deftest bool-at-path-test
-  (is (= true (cx/bool-at-path parsed-sample-xml [:inner :trueflag])))
-  (is (= false (cx/bool-at-path parsed-sample-xml [:inner :falseflag])))
-  (is (= nil (cx/bool-at-path parsed-sample-xml [:inner :foo]))))
+  (is (identical? true (cx/bool-at-path parsed-sample-xml [:inner :trueflag])))
+  (is (identical? false (cx/bool-at-path parsed-sample-xml [:inner :falseflag])))
+  (is (nil? (cx/bool-at-path parsed-sample-xml [:inner :foo]))))
 
 (deftest datetime-at-path-test
   (is (= (t/date-time 1986 10 14 4 3 27 456) (cx/datetime-at-path parsed-sample-xml [:inner :datetime])))
