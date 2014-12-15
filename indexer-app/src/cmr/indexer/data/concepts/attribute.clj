@@ -105,11 +105,11 @@
   "Converts a PSA into a vector of terms to be used in keyword searches"
   [psa]
   (let [{:keys [name data-type value description]} psa]
-    [name (value->elastic-value data-type value) description]))
+    (filter identity [name (value->elastic-value data-type value) description])))
 
 (defn psas->keywords
   [collection]
   "Converts the psas into a vector to be used in keyword searches"
-  (mapcat psa->keywords (filter :value (:product-specific-attributes collection))))
+  (mapcat psa->keywords (:product-specific-attributes collection)))
 
 
