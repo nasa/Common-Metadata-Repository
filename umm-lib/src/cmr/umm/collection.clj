@@ -7,6 +7,7 @@
    short-name
    long-name
    version-id
+   version-description
    processing-level-id
    collection-data-type
    ])

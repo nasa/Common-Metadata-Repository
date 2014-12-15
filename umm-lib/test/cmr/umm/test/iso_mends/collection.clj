@@ -90,6 +90,8 @@
     (-> coll
         ;; ISO does not have entry-id and we generate it as concatenation of short-name and version-id
         (assoc :entry-id entry-id)
+        ;; ISO does not have version-description
+        (assoc-in [:product :version-description] nil)
         ;; ISO does not have collection-data-type
         (assoc-in [:product :collection-data-type] nil)
         ;; There is no delete-time in ISO

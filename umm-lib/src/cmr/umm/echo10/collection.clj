@@ -25,6 +25,7 @@
   (c/map->Product {:short-name (cx/string-at-path collection-content [:ShortName])
                    :long-name (cx/string-at-path collection-content [:LongName])
                    :version-id (cx/string-at-path collection-content [:VersionId])
+                   :version-description (cx/string-at-path collection-content [:VersionDescription])
                    :processing-level-id (cx/string-at-path collection-content [:ProcessingLevelId])
                    :collection-data-type (cx/string-at-path collection-content [:CollectionDataType])}))
 
@@ -135,7 +136,8 @@
     ([collection]
      (cmr.umm.echo10.core/umm->echo10-xml collection false))
     ([collection indent?]
-     (let [{{:keys [short-name long-name version-id processing-level-id collection-data-type]} :product
+     (let [{{:keys [short-name long-name version-id version-description
+                    processing-level-id collection-data-type]} :product
             dataset-id :entry-title
             restriction-flag :access-value
             {:keys [insert-time update-time delete-time]} :data-provider-timestamps
@@ -163,6 +165,8 @@
                     (when processing-level-id
                       (x/element :ProcessingLevelId {} processing-level-id))
                     (org/generate-archive-center organizations)
+                    (when version-description
+                      (x/element :VersionDescription {} version-description))
                     (when restriction-flag
                       (x/element :RestrictionFlag {} restriction-flag))
                     (when spatial-keywords

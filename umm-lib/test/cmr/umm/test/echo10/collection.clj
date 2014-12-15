@@ -103,6 +103,7 @@
     <ProcessingCenter>SEDAC PC</ProcessingCenter>
     <ProcessingLevelId>1B</ProcessingLevelId>
     <ArchiveCenter>SEDAC AC</ArchiveCenter>
+    <VersionDescription>Sample Version Description</VersionDescription>
     <SpatialKeywords>
       <Keyword>Word-2</Keyword>
       <Keyword>Word-1</Keyword>
@@ -329,6 +330,7 @@
                                {:short-name "MINIMAL"
                                 :long-name "A minimal valid collection"
                                 :version-id "1"
+                                :version-description "Sample Version Description"
                                 :processing-level-id "1B"
                                 :collection-data-type "NEAR_REAL_TIME"})
                     :data-provider-timestamps (umm-c/map->DataProviderTimestamps

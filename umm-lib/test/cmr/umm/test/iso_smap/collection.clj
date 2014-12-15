@@ -78,6 +78,8 @@
     (-> coll
         ;; SMAP ISO does not have entry-id and we generate it as concatenation of short-name and version-id
         (assoc :entry-id entry-id)
+        ;; It is unclear where the SMAP ISO version-description should be, for now we don't handle it
+        (assoc-in [:product :version-description] nil)
         ;; SMAP ISO does not have collection-data-type
         (assoc-in [:product :collection-data-type] nil)
         ;; SMAP ISO does not have processing-level-id
