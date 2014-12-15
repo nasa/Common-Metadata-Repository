@@ -24,8 +24,8 @@
         bounding-boxes (filter #(= cmr.spatial.mbr.Mbr (type %)) geometries)]
     (when (seq bounding-boxes)
       (umm-c/map->SpatialCoverage
-        {:granule-spatial-representation :cartesian
-         :spatial-representation :cartesian
+        {:granule-spatial-representation :geodetic
+         :spatial-representation :geodetic
          :geometries bounding-boxes}))))
 
 (defn- filter-center-type
@@ -163,8 +163,8 @@
                        []
                        :periodic-date-times []})
                     :spatial-coverage (umm-c/map->SpatialCoverage
-                                        {:granule-spatial-representation :cartesian
-                                         :spatial-representation :cartesian
+                                        {:granule-spatial-representation :geodetic
+                                         :spatial-representation :geodetic
                                          :geometries [(mbr/mbr -180.0 87.0 180.0 -87.0)]})
                     :associated-difs ["A_DIF_ID"]
                     :organizations
