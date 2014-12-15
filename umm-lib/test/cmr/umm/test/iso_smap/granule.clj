@@ -13,6 +13,8 @@
             [cmr.umm.test.generators.granule :as gran-gen]
             [cmr.common.date-time-parser :as p]
             [cmr.spatial.mbr :as mbr]
+            [cmr.spatial.polygon :as poly]
+            [cmr.umm.spatial :as spatial]
             [cmr.umm.iso-smap.granule :as g]
             [cmr.umm.iso-smap.core :as iso]
             [cmr.umm.collection :as umm-c]
@@ -26,13 +28,24 @@
         (assoc :day-night nil)
         (assoc :size nil))))
 
+(defn- remove-polygon-interior-ring
+  "Returns the geometry with interior ring removed if applicable; otherwise returns the geometry"
+  [geometry]
+  (if (= cmr.spatial.polygon.Polygon (type geometry))
+    (update-in geometry [:rings] (fn[v] (subvec v 0 1)))
+    geometry))
+
 (defn- spatial-coverage->expected-parsed
   "Returns the expected parsed spatial-coverage for the given spatial-coverage"
   [spatial-coverage]
-  (let [{:keys [geometries]} spatial-coverage
-        bounding-boxes (filter #(= cmr.spatial.mbr.Mbr (type %)) geometries)]
-    (when (seq bounding-boxes)
-      (umm-g/map->SpatialCoverage {:geometries bounding-boxes}))))
+  (when-let [geometries (seq
+                          (for [geometry (:geometries spatial-coverage)
+                                :let [gtype (type geometry)]
+                                :when (or (= cmr.spatial.mbr.Mbr gtype)
+                                          (= cmr.spatial.polygon.Polygon gtype))]
+                            ;; SMAP ISO polygon only has outer ring
+                            (remove-polygon-interior-ring geometry)))]
+    (umm-g/map->SpatialCoverage {:geometries geometries})))
 
 (defn- related-url->expected-parsed
   [related-url]
@@ -73,7 +86,7 @@
       (dissoc :two-d-coordinate-system)
       umm-g/map->UmmGranule))
 
-(defspec generate-collection-is-valid-xml-test 100
+(defspec generate-granule-is-valid-xml-test 100
   (for-all [granule gran-gen/granules]
     (let [xml (iso/umm->iso-smap-xml granule)]
       (and
@@ -92,13 +105,13 @@
 
 (deftest parse-granule-test
   (let [expected (umm-g/map->UmmGranule
-                   {:granule-ur "SC:SPL1CS0.001:12345"
+                   {:granule-ur "SC:SPL1AA.001:12345"
                     :data-provider-timestamps (umm-c/map->DataProviderTimestamps
                                                 {:insert-time (p/parse-datetime "2013-04-04T15:15:00Z")
                                                  :update-time (p/parse-datetime "2013-04-05T17:15:00Z")})
                     :collection-ref (umm-g/map->CollectionRef
                                       {:entry-title "SMAP Collection Dataset ID"
-                                       :short-name "SPL1CS0"
+                                       :short-name "SPL1AA"
                                        :version-id "002"})
                     :data-granule (umm-g/map->DataGranule
                                     {:producer-gran-id "SMAP_L1C_S0_HIRES_00016_A_20150530T160100_R03001_001.h5"
@@ -110,8 +123,11 @@
                        (umm-c/map->RangeDateTime
                          {:beginning-date-time (p/parse-datetime "2015-05-30T16:01:00.000Z")
                           :ending-date-time (p/parse-datetime "2015-05-30T16:01:06.003Z")})})
-                    :spatial-coverage (umm-g/map->SpatialCoverage
-                                        {:geometries [(mbr/mbr 0.4701165 0.322525 0.4704968 0.3221629)]})
+                    :spatial-coverage
+                    (umm-g/map->SpatialCoverage
+                      {:geometries
+                       [(mbr/mbr 0.4701165 0.322525 0.4704968 0.3221629)
+                        (poly/polygon [(spatial/ords->ring 0.0 0.0 5.0 2.0 5.0 6.0 0.0 4.0 0.0 0.0)])]})
                     :related-urls [(umm-c/map->RelatedURL
                                      {:type "GET DATA"
                                       :url "http://example.com/test1.hdf"
@@ -141,3 +157,4 @@
                  "\"http://www.isotc211.org/2005/gmd\":hierarchyLevelName, "
                  "\"http://www.isotc211.org/2005/gmd\":contact}' is expected.")]
            (g/validate-xml (s/replace sample-granule-xml "fileIdentifier" "XXXX"))))))
+

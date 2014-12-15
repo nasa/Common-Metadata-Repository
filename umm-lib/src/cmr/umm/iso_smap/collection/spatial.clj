@@ -26,14 +26,14 @@
     (when (seq spatial-elems)
       (let [geometries (map bounding-box-elem->geometry spatial-elems)]
         (c/map->SpatialCoverage
-          {:granule-spatial-representation :cartesian
-           :spatial-representation :cartesian
+          {:granule-spatial-representation :geodetic
+           :spatial-representation :geodetic
            :geometries geometries})))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Generators
 
-(defn- generate-bounding-box-element
+(defn generate-bounding-box-element
   "Generates the EX_GeographicBoundingBox for a given geometry, only BoundingBox is supported in SMAP ISO"
   [geometry]
   (let [{:keys [west north east south]} geometry

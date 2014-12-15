@@ -1,6 +1,7 @@
 (ns cmr.umm.spatial
   "Contains some code to assist in representing spatial areas in UMM"
-  (:require [cmr.spatial.ring-relations :as rr]
+  (:require [clojure.string :as str]
+            [cmr.spatial.ring-relations :as rr]
             [cmr.spatial.point :as p]
             [cmr.spatial.polygon]
             [cmr.spatial.line-string]
@@ -65,3 +66,22 @@
 (defmethod set-coordinate-system GenericRing
   [coordinate-system {:keys [points]}]
   (rr/ring coordinate-system points))
+
+(defn point-str->points
+  "Converts a string of lat lon pairs separated by spaces into a list of points"
+  [s]
+  (->> (str/split s #" ")
+       (map #(Double. ^String %))
+       (partition 2)
+       (map (fn [[lat lon]]
+              (p/point lon lat)))))
+
+(defn ring-str->ring
+  "Parses a string to a ring"
+  [s]
+  (ring (point-str->points s)))
+
+(defn ring->ring-str
+  "Returns the string representation of the ring"
+  [r]
+  (str/join " " (mapcat (fn [p] [(:lat p) (:lon p)]) (:points r))))
