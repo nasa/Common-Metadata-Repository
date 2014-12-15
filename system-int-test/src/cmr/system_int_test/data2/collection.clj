@@ -27,9 +27,11 @@
   ([name type]
    (psa name type nil))
   ([name type value]
+   (psa name type value "Generated"))
+  ([name type value desc]
    (c/map->ProductSpecificAttribute
      {:name name
-      :description "Generated"
+      :description desc
       :data-type type
       :value value})))
 

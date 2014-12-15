@@ -15,7 +15,7 @@
         psa2 (dc/psa "bravo" :string "bf")
         psa3 (dc/psa "charlie" :string "foo")
         psa4 (dc/psa "case" :string "up")
-        psa5 (dc/psa "novalue" :string)
+        psa5 (dc/psa "novalue" :string nil "description")
         p1 (dc/platform "platform_SnB" "platform_Ln B" nil
                         (dc/instrument "isnA" "ilnA" "itechniqueA"
                                        (dc/sensor "ssnA" "slnA")
@@ -143,7 +143,9 @@
            ;; - name
            "charlie" [coll12]
            ;; - description
-           "Generated" [coll11 coll12]
+           "Generated" [coll12]
+           ;; description with no value - see CMR-1129
+           "description" [coll11]
 
            ;; Platforms
            ;; - short name
