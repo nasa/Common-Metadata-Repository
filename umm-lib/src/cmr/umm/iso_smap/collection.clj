@@ -24,7 +24,7 @@
 
 (defn- xml-elem->Product
   "Returns a UMM Product from a parsed XML structure"
-  [product-elem]
+  [product-elem version-description]
   (let [long-name (cx/string-at-path product-elem [:citation :CI_Citation :title :CharacterString])
         id-elems (cx/elements-at-path product-elem [:citation :CI_Citation :identifier :MD_Identifier])
         short-name-elem (h/xml-elem-with-path-value id-elems [:description :CharacterString] "The ECS Short Name")
@@ -33,7 +33,8 @@
         version-id (cx/string-at-path version-elem [:code :CharacterString])]
     (c/map->Product {:short-name short-name
                      :long-name long-name
-                     :version-id version-id})))
+                     :version-id version-id
+                     :version-description version-description})))
 
 (defn xml-elem->DataProviderTimestamps
   "Returns a UMM DataProviderTimestamps from a parsed XML structure"
@@ -62,8 +63,12 @@
   [xml-struct]
   (let [id-elems (cx/elements-at-path xml-struct [:seriesMetadata :MI_Metadata :identificationInfo
                                                   :MD_DataIdentification])
+        version-description (cx/string-at-path
+                              xml-struct
+                              [:seriesMetadata :MI_Metadata :identificationInfo :MD_DataIdentification
+                               :citation :CI_Citation :otherCitationDetails :CharacterString])
         product-elem (xml-elem-with-id-tag id-elems "The ECS Short Name")
-        product (xml-elem->Product product-elem)
+        product (xml-elem->Product product-elem version-description)
         data-provider-timestamps (xml-elem->DataProviderTimestamps id-elems)
         dataset-id-elem (h/xml-elem-with-title-tag id-elems "DataSetId")]
     (c/map->UmmCollection
@@ -138,13 +143,34 @@
       (h/iso-string-element :gmd:purpose "DIFID")
       (h/iso-string-element :gmd:language "eng"))))
 
+(def publication-title
+  "Product Specification Document for the SMAP Level 1A Radar Product (L1A_Radar)")
+
+(def publication-abstract
+  "The Product Specification Document that fully describes the content and format of this data product.")
+
+(defn- generate-version-description-element
+  "Returns the smap iso version description element."
+  [version-description update-time]
+  (x/element
+    :gmd:identificationInfo {}
+    (x/element
+      :gmd:MD_DataIdentification {}
+      (x/element :gmd:citation {}
+                 (x/element :gmd:CI_Citation {}
+                            (h/iso-string-element :gmd:title publication-title)
+                            (h/iso-date-element "publication" update-time)
+                            (h/iso-string-element :gmd:otherCitationDetails version-description)))
+      (h/iso-string-element :gmd:abstract publication-abstract)
+      (h/iso-string-element :gmd:language "eng"))))
+
 (extend-protocol cmr.umm.iso-smap.core/UmmToIsoSmapXml
   UmmCollection
   (umm->iso-smap-xml
     ([collection]
      (cmr.umm.iso-smap.core/umm->iso-smap-xml collection false))
     ([collection indent?]
-     (let [{{:keys [short-name long-name version-id]} :product
+     (let [{{:keys [short-name long-name version-id version-description]} :product
             dataset-id :entry-title
             {:keys [insert-time update-time]} :data-provider-timestamps
             :keys [organizations temporal spatial-coverage summary associated-difs]} collection
@@ -192,6 +218,7 @@
                        :gmd:EX_Extent {}
                        (spatial/generate-spatial spatial-coverage)
                        (t/generate-temporal temporal)))))
+               (generate-version-description-element version-description update-time)
                (h/generate-dataset-id-element dataset-id update-time)
                (h/generate-datetime-element "InsertTime" "creation" insert-time)
                (h/generate-datetime-element "UpdateTime" "revision" update-time)
