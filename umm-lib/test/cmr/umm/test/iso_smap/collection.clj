@@ -78,8 +78,6 @@
     (-> coll
         ;; SMAP ISO does not have entry-id and we generate it as concatenation of short-name and version-id
         (assoc :entry-id entry-id)
-        ;; It is unclear where the SMAP ISO version-description should be, for now we don't handle it
-        (assoc-in [:product :version-description] nil)
         ;; SMAP ISO does not have collection-data-type
         (assoc-in [:product :collection-data-type] nil)
         ;; SMAP ISO does not have processing-level-id
@@ -151,7 +149,8 @@
                     :product (umm-c/map->Product
                                {:short-name "SPL1AA"
                                 :long-name "SMAP Level 1A Parsed Radar Instrument Telemetry"
-                                :version-id "002"})
+                                :version-id "002"
+                                :version-description "The initial version of the Level 1A Radar executable."})
                     :data-provider-timestamps (umm-c/map->DataProviderTimestamps
                                                 {:insert-time (p/parse-datetime "2013-04-04T15:15:00Z")
                                                  :update-time (p/parse-datetime "2013-04-05T17:15:00Z")})
