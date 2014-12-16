@@ -187,17 +187,17 @@
     (and (or (and (s/vertical? ls) (s/vertical? sub-ls))
              (and (approx-equal-within-magnitude (:m ls) (:m sub-ls) 0.01)
                   (approx-equal-within-magnitude (:b ls) (:b sub-ls) 0.01)))
-         (m/covers-point? :cartesian mbr point1)
-         (m/covers-point? :cartesian mbr point2)
-         (m/covers-point? :cartesian ls-mbr point1)
-         (m/covers-point? :cartesian ls-mbr point2))))
+         (m/covers-point? :cartesian mbr point1 0.00001)
+         (m/covers-point? :cartesian mbr point2 0.00001)
+         (m/covers-point? :cartesian ls-mbr point1 0.00001)
+         (m/covers-point? :cartesian ls-mbr point2 0.00001))))
 
 (defn valid-subselected-point?
   "Returns true if point is a valid point that was subselected from ls with mbr."
   [ls mbr point]
   (let [ls-mbr (:mbr ls)]
-    (and (m/covers-point? :cartesian mbr point)
-         (m/covers-point? :cartesian ls-mbr point)
+    (and (m/covers-point? :cartesian mbr point 0.00001)
+         (m/covers-point? :cartesian ls-mbr point 0.00001)
          (s/point-on-segment? ls point))))
 
 (defspec subselect-spec {:times 1000 :printer-fn print-subselect-failure}
@@ -217,4 +217,3 @@
              ;; The line segment shouldn't intersect any of the mbr sides.
              (not (some #(s/intersection ls %)
                         (s/mbr->line-segments mbr))))))))
-
