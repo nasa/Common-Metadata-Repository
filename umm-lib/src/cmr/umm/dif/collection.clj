@@ -13,6 +13,7 @@
             [cmr.umm.dif.collection.org :as org]
             [cmr.umm.dif.collection.temporal :as t]
             [cmr.umm.dif.collection.product-specific-attribute :as psa]
+            [cmr.umm.dif.collection.platform :as platform]
             [cmr.umm.dif.collection.spatial-coverage :as sc]
             [cmr.umm.dif.collection.extended-metadata :as em]
             [cmr.umm.dif.collection.personnel :as personnel])
@@ -63,8 +64,7 @@
      :temporal-keywords (seq (cx/strings-at-path xml-struct [:Data_Resolution :Temporal_Resolution]))
      :temporal (t/xml-elem->Temporal xml-struct)
      :science-keywords (sk/xml-elem->ScienceKeywords xml-struct)
-     ;; Waiting on CMR-590 and CMRIN-4 for more info on DIF platforms
-     ;:platforms (platform/xml-elem->Platforms xml-struct)
+     :platforms (platform/xml-elem->Platforms xml-struct)
      :product-specific-attributes (psa/xml-elem->ProductSpecificAttributes xml-struct)
      :projects (pj/xml-elem->Projects xml-struct)
      :related-urls (ru/xml-elem->RelatedURLs xml-struct)
@@ -107,6 +107,7 @@
                                  (x/element :Version {} version-id)))
                     (personnel/generate-personnel personnel)
                     (sk/generate-science-keywords science-keywords)
+                    (platform/generate-platforms platforms)
                     (t/generate-temporal temporal)
                     (sc/generate-spatial-coverage spatial-coverage)
                     (when (seq temporal-keywords)
