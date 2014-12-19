@@ -30,6 +30,10 @@
   {:collection 10
    :granule 1})
 
+(def days-to-keep-tombstone
+  "Number of days before a tombstone is removed from the database."
+  30)
+
 (def concept-truncation-batch-size
   "Maximum number of concepts to process in each iteration of the delete old concepts job."
   50000)
@@ -430,7 +434,8 @@
           (recur))))))
 
 (defn delete-old-revisions
-  "Delete concepts to keep a fixed number of revisions around."
+  "Delete concepts to keep a fixed number of revisions around. It also deletes old tombstones that
+  are older than a fixed number of days and any prior revisions of the deleted tombstone."
   [context provider concept-type]
   (let [db (util/context->db context)
         concept-type-name (str (name concept-type) "s")]
@@ -447,6 +452,20 @@
           (info "Deleting" (count old-concept-id-revision-id-tuples)
                 "old concept revisions for provider" provider)
           (c/force-delete-concepts db provider concept-type old-concept-id-revision-id-tuples)
+          (recur))))
+
+    (info "Starting deletion of tombstoned" concept-type-name "for provider" provider)
+    (loop []
+      (let [tombstoned-concept-id-revision-id-tuples
+            (c/get-tombstoned-concept-revisions db
+                                                provider
+                                                concept-type
+                                                days-to-keep-tombstone
+                                                concept-truncation-batch-size)]
+        (when (seq tombstoned-concept-id-revision-id-tuples)
+          (info "Deleting" (count tombstoned-concept-id-revision-id-tuples)
+                "tombstoned concept revisions for provider" provider)
+          (c/force-delete-concepts db provider concept-type tombstoned-concept-id-revision-id-tuples)
           (recur))))))
 
 

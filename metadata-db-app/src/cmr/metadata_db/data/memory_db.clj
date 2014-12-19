@@ -193,7 +193,7 @@
       @concepts-atom))
 
   (get-tombstoned-concept-revisions
-    [db provider concept-type limit]
+    [db provider concept-type days-to-grow-old limit]
     ;; NOTE - this is not needed for in-memory db
     )
 
