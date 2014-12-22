@@ -52,24 +52,36 @@
     (qm/map->TwoDCoordinateCondition {:coordinate-1-cond coord-1-cond
                                       :coordinate-2-cond coord-2-cond})))
 
+(defn- validate-two-d-param-str
+  "Validate the two-d parameter string, throws error if it is invalid."
+  [concept-type param-str]
+  (let [[two-d-name two-d-coord-str] (s/split param-str #":" 2)
+        param-name (if (= :collection concept-type) "two_d_coordinate_system[name]" "Grid name")]
+    (when (s/blank? two-d-name)
+      (errors/throw-service-error
+        :bad-request
+        (format "%s can not be empty, but is for [%s]" param-name param-str)))
+
+    (when (and (= :collection concept-type) (not-empty two-d-coord-str))
+      (errors/throw-service-error
+        :bad-request
+        "two_d_coordinate_system[coordinates] is not supported for collection search."))))
+
 (defn two-d-param-str->condition
-  [param-str]
+  [concept-type param-str]
+  (validate-two-d-param-str concept-type param-str)
   (let [[two-d-name two-d-coord-str] (s/split param-str #":" 2)
         coordinate-conds (when-not (empty? two-d-coord-str)
                            (->> (s/split two-d-coord-str #":")
                                 (map string->TwoDCoordinateCondition)
                                 (remove nil?)
                                 seq))]
-    (if (s/blank? two-d-name)
-      (errors/throw-service-error
-        :bad-request
-        (format "Grid name can not be empty, but is for [%s]" param-str))
-      (qm/map->TwoDCoordinateSystemCondition {:two-d-name two-d-name
-                                              :two-d-conditions coordinate-conds}))))
+    (qm/map->TwoDCoordinateSystemCondition {:two-d-name two-d-name
+                                            :two-d-conditions coordinate-conds})))
 
 ;; Converts two-d-coordinate-system parameter into a query condition
 (defmethod p/parameter->condition :two-d-coordinate-system
   [concept-type param values options]
   (if (string? values)
-    (two-d-param-str->condition values)
-    (gc/or-conds (map two-d-param-str->condition values))))
+    (two-d-param-str->condition concept-type values)
+    (gc/or-conds (map (partial two-d-param-str->condition concept-type) values))))

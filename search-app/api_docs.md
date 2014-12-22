@@ -350,9 +350,19 @@ The alias 'processing_level' also works for searching by processing level id.
 
     curl "%CMR-ENDPOINT%/collections?two_d_coordinate_system_name\[\]=Alpha"
 
-  Find collections matching any ofthe 'two\_d\_coordinate\_system\_name' param values
+  Find collections matching any of the 'two\_d\_coordinate\_system\_name' param values
 
     curl "%CMR-ENDPOINT%/collections?two_d_coordinate_system_name\[\]=Alpha&two_d_coordinate_system_name\[\]=Bravo"
+
+### Find collections by two\_d\_coordinate\_system\[name\] param, does not support pattern
+
+  Find collections matching 'two\_d\_coordinate\_system\[name\]' param value
+
+    curl "%CMR-ENDPOINT%/collections?two_d_coordinate_system\[name\]=Alpha"
+
+  Find collections matching any of the 'two\_d\_coordinate\_system\[name\]' param values
+
+    curl "%CMR-ENDPOINT%/collections?two_d_coordinate_system\[name\]=Alpha&two_d_coordinate_system\[name\]=Bravo"
 
 ### Find collections by collection\_data\_type param
 
