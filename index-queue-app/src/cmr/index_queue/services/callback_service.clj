@@ -9,11 +9,12 @@
             [langohr.channel :as lch]
             [langohr.queue :as lq]
             [langohr.consumers :as lc]
-            [langohr.basic :as lb]))
+            [langohr.basic :as lb]
+            [langohr.exchange  :as le]))
 
 (def exchange-name
   "The name of the queue exchange to use to retrieve messages"
-  (cfg/config-value :indexer-queue-exchange ""))
+  (cfg/config-value :indexer-queue-exchange "indexer.exchange"))
 
 (def queue-name
   "The name of the queue to use to retrieve messages"
@@ -66,15 +67,8 @@
   ;; prevents this.
   (lb/qos ch 1)
   (lq/declare ch queue-name {:exclusive false :auto-delete false})
-  ;(lq/bind ch queue-name exchange-name)
+  (lq/bind ch queue-name exchange-name {:routing-key queue-name})
   (lc/subscribe ch queue-name message-handler {:auto-ack false}))
-
-(defn create-queue-channels
-  "Creates channels for the indexing queue"
-  [num-channels]
-  (let [conn (rmq/connect)]
-    (for [n num-channels]
-      (lch/open conn))))
 
 (defrecord MessageConsumer
   [
@@ -116,7 +110,9 @@
   [num-channels]
   (let [conn (rmq/connect)
         channels (doall (for [_ (range num-channels)]
-                          (lch/open conn)))]
+                          (let [ch (lch/open conn)]
+                            (le/declare ch exchange-name "direct")
+                            ch)))]
 
     (->MessageConsumer conn channels false)))
 
@@ -124,7 +120,7 @@
 (comment
   (let [conn (rmq/connect)
         ch (lch/open conn)]
-    (lb/publish ch "" queue-name "Hi!" {:content-type "text/plain" :type "index-concept"}))
+    (lb/publish ch exchange-name queue-name "Hi!" {:routing-key queue-name :content-type "text/plain" :type "index-concept"}))
 
 
   )
