@@ -9,7 +9,8 @@
 
 (defrecord MemoryIndexQueue
   [
-   ;; this implementation has no state - requests are handled immediately
+   ;; This implementation has no state - asynchronous calling is handled with futures
+   ;; to simulate a queue.
    ]
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -26,19 +27,19 @@ index-queue/IndexQueue
 
 (index-concept
     [context concept-id revision-id]
-    "Index the given concpet revision")
+    (future (indexer/index-concept context concept-id revision-id)))
 
   (delete-concept-from-index
     [context concept-id revision-id]
-    "Remove the given concept revision")
+    (future (indexer/delete-concept-from-index context concept-id revision-id)))
 
   (delete-provider-from-index
     [context provider-id]
-    "Remove a provider and all its concepts from the index")
+    (future (indexer/delete-provider-from-index context provider-id)))
 
   (reindex-provider-collections
     [context provider-id]
-    "Reindexes all the concepts for the given provider"))
+    (future (indexer/reindex-provider-collections context provider-id))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
