@@ -5,7 +5,7 @@
             [cmr.common.log :as log :refer (debug info warn error)]
     				[cmr.common.config :as cfg]
         		[cmr.common.services.errors :as errors]
-    				[cmr.index-queue.queue.index-queue :as iq]))
+    				[cmr.index-queue.queue.index-queue :as index-queue]))
 
 (defn index-concept
   "Places a request to index the given concept revision on the indexing queue"

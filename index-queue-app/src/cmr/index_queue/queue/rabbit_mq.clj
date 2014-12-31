@@ -5,7 +5,8 @@
             [cmr.common.log :as log :refer (debug info warn error)]
     				[cmr.common.config :as cfg]
         		[cmr.common.services.errors :as errors]
-          	[cmr.index-queue.queue.index-queue :as iq]
+          	[cmr.index-queue.queue.index-queue :as index-queue]
+            [cmr.index-queue.data.indexer :as indexer]
           	[langohr.core :as rmq]
             [langohr.channel :as lch]
             [langohr.queue :as lq]
@@ -108,7 +109,7 @@
       (assoc this :running? false)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-iq/IndexQueue
+index-queue/IndexQueue
 
 (index-concept
     [context concept-id revision-id]
