@@ -3,16 +3,17 @@
   (:gen-class)
   (:require [cmr.common.lifecycle :as lifecycle]
             [cmr.common.log :as log :refer (debug info warn error)]
-    				[cmr.common.config :as cfg]
-        		[cmr.common.services.errors :as errors]
-          	[cmr.index-queue.queue.index-queue :as index-queue]
+            [cmr.common.config :as cfg]
+            [cmr.common.services.errors :as errors]
+            [cmr.index-queue.queue.index-queue :as index-queue]
             [cmr.index-queue.data.indexer :as indexer]
-          	[langohr.core :as rmq]
+            [langohr.core :as rmq]
             [langohr.channel :as lch]
             [langohr.queue :as lq]
             [langohr.consumers :as lc]
             [langohr.basic :as lb]
-            [langohr.exchange  :as le]))
+            [langohr.exchange  :as le]
+            [cheshire.core :as json]))
 
 (def exchange-name
   "The name of the queue exchange to use to retrieve messages"
@@ -27,39 +28,61 @@
   per worker."
   (cfg/config-value :queue-channel-count 4))
 
+(defn message-metadata
+  "Creates a map with the appropriate metadata for our messages"
+  [queue-name message-type]
+  ;; TODO - Should the :content-type be application/json? Does this matter?
+  {:routing-key queue-name :content-type "text/plain" :type message-type :persistent true})
+
 (defmulti handle-indexing-request
   "Handles indexing requests received from the message queue."
-  (fn [request-type ^bytes payload]
+  (fn [request-type msg]
     (keyword request-type)))
 
 (defmethod handle-indexing-request :index-concept
-  [request-type ^bytes payload]
-  (println (str "Received index-concept request: " (String. payload "UTF-8"))))
+  [request-type msg]
+  (let [{:keys [concept-id revision-id]} msg]
+    (debug "Received index-concept request for concept-id" concept-id "revision-id" revision-id)
+    ;; TODO make call here
+    ))
 
 (defmethod handle-indexing-request :delete-concept
-  [request-type ^bytes payload]
-  (println (str "Received message: " (String. payload "UTF-8"))))
+  [request-type msg]
+  (let [{:keys [concept-id revision-id]} msg]
+    (debug "Received delete-concept request for concept-id" concept-id "revision-id" revision-id)
+    ;; TODO make call here
+    ))
 
-(defmethod handle-indexing-request :index-provider
-  [request-type ^bytes payload]
-  (println (str "Received message: " (String. payload "UTF-8"))))
+(defmethod handle-indexing-request :re-index-provider
+  [request-type msg]
+  (let [{:keys [provider-id]} msg]
+    (debug "Received re-index-provider request for provider-id" provider-id)
+    ;; TODO make call here
+    ))
+
+(defmethod handle-indexing-request :delete-provider
+  [request-type msg]
+  (let [{:keys [provider-id]} msg]
+    (debug "Received delete-provider request for provider-id" provider-id)
+    ;; TODO make call here
+    ))
 
 (defmethod handle-indexing-request :default
-  [request-type ^bytes payload]
-  (println (str "request-type: " request-type))
-  (println (str "Received message: " (String. payload "UTF-8"))))
+  [request-type _]
+  (errors/internal-error! (str "Received unknown message type: " request-type)))
 
 (defn message-handler
   "Handle messages on the indexing queue."
   [ch {:keys [content-type delivery-tag type] :as meta} ^bytes payload]
-  (println meta)
-  (try
-    (handle-indexing-request type payload)
-    ;; Acknowledge message
-    (lb/ack ch delivery-tag)
-    (catch Throwable e
-      ;; Send a rejection to the queue
-      (lb/reject ch delivery-tag))))
+  (let [msg (json/parse-string (String. payload) true)]
+    (try
+      (handle-indexing-request type msg)
+      ;; Acknowledge message
+      (lb/ack ch delivery-tag)
+      (catch Throwable e
+        (error (.getMessage e))
+        ;; Send a rejection to the queue
+        (lb/reject ch delivery-tag)))))
 
 (defn start-consumer
   "Starts an index message consumer bound to the index exchange in a separate thread"
@@ -77,8 +100,11 @@
    ;; Connection to the message queue
    conn
 
-   ;; A list of the open channels
-   channels
+   ;; The channel used to publish messages
+   publisher-channel
+
+   ;; A list of the channels used by the listeners/workers
+   subscriber-channels
 
    ;; true or false to indicate it's running
    running?
@@ -92,7 +118,7 @@
     (info "Starting queue workers")
     (when (:running? this)
       (errors/internal-error! "MessageConsumer already running"))
-    (if-let [channels (:channels this)]
+    (if-let [channels (:subscriber-channels this)]
       (do
         (doseq [ch channels]
           (start-consumer ch))
@@ -103,47 +129,53 @@
     [this system]
     (when (:running? this)
       ;; close all the channels and then the connection
-      (doseq [ch (:channels this)]
+      (doseq [ch (:subscriber-channels this)]
         (rmq/close ch))
+      (rmq/close (:publisher-channel this))
       (rmq/close conn)
       (assoc this :running? false)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-index-queue/IndexQueue
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  index-queue/IndexQueue
 
-(index-concept
-    [context concept-id revision-id]
-    "Index the given concpet revision")
+  (index-concept
+    [this concept-id revision-id]
+    ;; add a request to the index queue
+    (let [pub-channel (:publisher-channel this)
+          metadata (message-metadata queue-name "index-concept")
+          msg {:concept-id concept-id :revision-id revision-id}]
+      (lb/publish pub-channel exchange-name queue-name msg metadata)))
 
   (delete-concept-from-index
-    [context concept-id revision-id]
+    [this concept-id revision-id]
     "Remove the given concept revision")
 
   (delete-provider-from-index
-    [context provider-id]
+    [This provider-id]
     "Remove a provider and all its concepts from the index")
 
   (reindex-provider-collections
-    [context provider-id]
+    [this provider-id]
     "Reindexes all the concepts for the given provider"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn create-index-queue
   "Set up a message consumer with the given channels"
-  [num-channels]
+  [num-worker-channels]
   (let [conn (rmq/connect)
-        channels (doall (for [_ (range num-channels)]
-                          (let [ch (lch/open conn)]
-                            (le/declare ch exchange-name "direct")
-                            ch)))]
-
-    (->RabbitMQIndexQueue conn channels false)))
+        pub-channel (lch/open conn)
+        ;; create an exchange for our queue using direct routing
+        _ (le/declare pub-channel exchange-name "direct")
+        sub-channels (doall (for [_ (range num-worker-channels)]
+                              (lch/open conn)))]
+    (->RabbitMQIndexQueue conn pub-channel sub-channels false)))
 
 (comment
   (let [conn (rmq/connect)
-        ch (lch/open conn)]
-    (lb/publish ch exchange-name queue-name "Hi!" {:routing-key queue-name :content-type "text/plain" :type "index-concept"}))
+        ch (lch/open conn)
+        msg (json/generate-string {:concept-id "C1000-PROV1" :revision-id 1})]
+    (lb/publish ch exchange-name queue-name msg {:routing-key queue-name :content-type "text/plain" :type "index-concept" :persistent true}))
 
 
   )

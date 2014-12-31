@@ -2,9 +2,9 @@
   "In-memory implementation of index-queue functionality"
   (:require [cmr.common.lifecycle :as lifecycle]
             [cmr.common.log :as log :refer (debug info warn error)]
-    				[cmr.common.config :as cfg]
-        		[cmr.common.services.errors :as errors]
-          	[cmr.index-queue.queue.index-queue :as index-queue]
+            [cmr.common.config :as cfg]
+            [cmr.common.services.errors :as errors]
+            [cmr.index-queue.queue.index-queue :as index-queue]
             [cmr.index-queue.data.indexer :as indexer]))
 
 (defrecord MemoryIndexQueue
@@ -22,24 +22,28 @@
   (stop [this system]
         this)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-index-queue/IndexQueue
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  index-queue/IndexQueue
 
-(index-concept
-    [context concept-id revision-id]
-    (future (indexer/index-concept context concept-id revision-id)))
+  (index-concept
+    [this concept-id revision-id]
+    (let [context {}]
+      (future (indexer/index-concept context concept-id revision-id))))
 
   (delete-concept-from-index
-    [context concept-id revision-id]
-    (future (indexer/delete-concept-from-index context concept-id revision-id)))
+    [this concept-id revision-id]
+    (let [context {}]
+      (future (indexer/delete-concept-from-index context concept-id revision-id))))
 
   (delete-provider-from-index
-    [context provider-id]
-    (future (indexer/delete-provider-from-index context provider-id)))
+    [this provider-id]
+    (let [context {}]
+      (future (indexer/delete-provider-from-index context provider-id))))
 
   (reindex-provider-collections
-    [context provider-id]
-    (future (indexer/reindex-provider-collections context provider-id))))
+    [this provider-id]
+    (let [context {}]
+      (future (indexer/reindex-provider-collections context provider-id)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
