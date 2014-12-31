@@ -1,11 +1,12 @@
-(ns cmr.index-queue.services.callback_service
-  "Defines callbacks to handle indexing request messages from the queue"
+(ns cmr.index-queue.queue.rabbit-mq
+  "Implements index-queue functionality using rabbit mq"
   (:gen-class)
   (:require [cmr.common.lifecycle :as lifecycle]
             [cmr.common.log :as log :refer (debug info warn error)]
     				[cmr.common.config :as cfg]
         		[cmr.common.services.errors :as errors]
-    				[langohr.core :as rmq]
+          	[cmr.index-queue.queue.index-queue :as iq]
+          	[langohr.core :as rmq]
             [langohr.channel :as lch]
             [langohr.queue :as lq]
             [langohr.consumers :as lc]
@@ -70,7 +71,7 @@
   (lq/bind ch queue-name exchange-name {:routing-key queue-name})
   (lc/subscribe ch queue-name message-handler {:auto-ack false}))
 
-(defrecord MessageConsumer
+(defrecord RabbitMQIndexQueue
   [
    ;; Connection to the message queue
    conn
@@ -82,6 +83,7 @@
    running?
    ]
 
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   lifecycle/Lifecycle
 
   (start
@@ -103,9 +105,30 @@
       (doseq [ch (:channels this)]
         (rmq/close ch))
       (rmq/close conn)
-      (assoc this :running? false))))
+      (assoc this :running? false)))
 
-(defn create-message-consumer
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+iq/IndexQueue
+
+(index-concept
+    [context concept-id revision-id]
+    "Index the given concpet revision")
+
+  (delete-concept-from-index
+    [context concept-id revision-id]
+    "Remove the given concept revision")
+
+  (delete-provider-from-index
+    [context provider-id]
+    "Remove a provider and all its concepts from the index")
+
+  (reindex-provider-collections
+    [context provider-id]
+    "Reindexes all the concepts for the given provider"))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn create-index-queue
   "Set up a message consumer with the given channels"
   [num-channels]
   (let [conn (rmq/connect)
@@ -114,8 +137,7 @@
                             (le/declare ch exchange-name "direct")
                             ch)))]
 
-    (->MessageConsumer conn channels false)))
-
+    (->RabbitMQIndexQueue conn channels false)))
 
 (comment
   (let [conn (rmq/connect)
@@ -124,4 +146,5 @@
 
 
   )
+
 

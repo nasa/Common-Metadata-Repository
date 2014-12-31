@@ -7,9 +7,7 @@
             [cmr.index-queue.api.routes :as routes]
             [cmr.common.api.web-server :as web]
             [cmr.system-trace.context :as context]
-            [langohr.core      :as rmq]
-            [langohr.channel   :as lch]
-            [cmr.index-queue.services.callback_service :as cs]))
+            [cmr.index-queue.queue.rabbit-mq :as rmq]))
 
 (def DEFAULT_PORT 3010)
 
@@ -24,7 +22,7 @@
   {:log (log/create-logger)
    :web (web/create-web-server DEFAULT_PORT routes/make-api)
    :zipkin (context/zipkin-config "index-queue" false)
-   :queue (cs/create-message-consumer cs/queue-channel-count)})
+   :queue (rmq/create-index-queue rmq/queue-channel-count)})
 
 (defn start
   "Performs side effects to initialize the system, acquire resources,
