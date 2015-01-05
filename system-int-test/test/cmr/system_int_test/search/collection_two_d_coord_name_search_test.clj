@@ -38,6 +38,8 @@
 
            ;; search by two d coordinate system name - wildcards
            [coll3 coll4] "three *" {:pattern true}
+           [] "three *" {:pattern false}
+           [] "three *" {}
 
            ;; search by two d coordinate system name - no match
            [] "NO MATCH" {}
@@ -46,24 +48,24 @@
            [coll2 coll5] "two CALIPSO" {}))
 
     (testing "two d coordinate search by two_d_coordinate_system[name] parameter"
-      (are [items two-ds options]
+      (are [items two-ds]
            (let [params {"two_d_coordinate_system[name]" two-ds}]
              (d/refs-match? items (search/find-refs :collection params)))
 
            ;; search by by two d coordinate system name - single value
-           [coll1] "one CALIPSO" {}
+           [coll1] "one CALIPSO"
 
            ;; search by two d coordinate system name - multiple values
-           [coll1 coll4] ["one CALIPSO" "three Bravo"] {}
+           [coll1 coll4] ["one CALIPSO" "three Bravo"]
 
            ;; search by two d coordinate system name - no match
-           [] "NO MATCH" {}
+           [] "NO MATCH"
 
            ;; search by two d coordinate system name - multiple in collection
-           [coll2 coll5] "two CALIPSO" {})
+           [coll2 coll5] "two CALIPSO")
 
       (is (= {:status 400,
-              :errors ["two_d_coordinate_system[name] can not be empty, but is for []"]}
+              :errors ["two_d_coordinate_system[name] can not be empty"]}
              (search/find-refs :collection {"two_d_coordinate_system[name]" ""})))
 
       (is (= {:status 400,

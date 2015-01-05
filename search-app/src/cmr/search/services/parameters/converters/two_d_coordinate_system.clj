@@ -56,11 +56,12 @@
   "Validate the two-d parameter string, throws error if it is invalid."
   [concept-type param-str]
   (let [[two-d-name two-d-coord-str] (s/split param-str #":" 2)
-        param-name (if (= :collection concept-type) "two_d_coordinate_system[name]" "Grid name")]
+        param-name (if (= :collection concept-type) "two_d_coordinate_system[name]" "Grid name")
+        msg (if (s/blank? param-str)
+              (format "%s can not be empty" param-name)
+              (format "%s can not be empty, but is for [%s]" param-name param-str))]
     (when (s/blank? two-d-name)
-      (errors/throw-service-error
-        :bad-request
-        (format "%s can not be empty, but is for [%s]" param-name param-str)))
+      (errors/throw-service-error :bad-request msg))
 
     (when (and (= :collection concept-type) (not-empty two-d-coord-str))
       (errors/throw-service-error
