@@ -3,7 +3,7 @@
   system integration tests."
   (:require [cmr.common.lifecycle :as lifecycle]
             [cmr.common.log :as log :refer (debug info warn error)]
-            [cmr.system-int-test.utils.test-environment :as test-env]
+            [cmr.common.test.test-environment :as test-env]
             [cmr.metadata-db.config :as mdb-config]
             [cmr.oracle.connection :as oracle]
             [clj-http.conn-mgr :as conn-mgr]

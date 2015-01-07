@@ -6,6 +6,7 @@
             [cmr.common.util :as cutil]
             [cmr.metadata-db.services.messages :as msg]
             [cmr.common.services.messages :as cmsg]
+            [cmr.common.config :as cfg]
             [cmr.metadata-db.services.util :as util]
             [cmr.metadata-db.services.concept-validations :as cv]
             [cmr.metadata-db.services.provider-service :as provider-service]
@@ -32,7 +33,7 @@
 
 (def days-to-keep-tombstone
   "Number of days before a tombstone is removed from the database."
-  30)
+  (cfg/config-value-fn :days-to-keep-tombstone 365 #(Integer. %)))
 
 (def concept-truncation-batch-size
   "Maximum number of concepts to process in each iteration of the delete old concepts job."
@@ -460,7 +461,7 @@
             (c/get-tombstoned-concept-revisions db
                                                 provider
                                                 concept-type
-                                                days-to-keep-tombstone
+                                                (days-to-keep-tombstone)
                                                 concept-truncation-batch-size)]
         (when (seq tombstoned-concept-id-revision-id-tuples)
           (info "Deleting" (count tombstoned-concept-id-revision-id-tuples)

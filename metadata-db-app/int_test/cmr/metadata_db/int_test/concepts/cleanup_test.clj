@@ -3,8 +3,12 @@
   (:require [clojure.test :refer :all]
             [clj-http.client :as client]
             [cheshire.core :as cheshire]
+            [clj-time.core :as t]
             [cmr.metadata-db.int-test.utility :as util]
-            [cmr.metadata-db.services.messages :as messages]))
+            [cmr.metadata-db.services.messages :as messages]
+            [cmr.metadata-db.services.concept-service :as concept-service]
+            [cmr.metadata-db.int-test.db-helper :as db-helper]
+            [cmr.common.test.test-environment :as test-env]))
 
 (use-fixtures :each (util/reset-database-fixture "PROV1" "PROV2"))
 
@@ -40,6 +44,11 @@
   "Returns true if all the listed revisions do not exist."
   [concept revisions]
   (every? (complement (partial concept-revision-exists? concept)) revisions))
+
+(defn- concept-exist?
+  "Returns true if the concept exists in metadata db as a record including tombstone"
+  [concept]
+  (= 200 (:status (util/get-concept-by-id (:concept-id concept)))))
 
 (deftest old-collection-revisions-are-cleaned-up
   (let [coll1 (util/create-and-save-collection "PROV1" 1 13)
@@ -86,3 +95,37 @@
 
     (is (every? #(revisions-removed? % (range 1 3)) granules))
     (is (every? #(concept-revision-exists? % 3) granules))))
+
+(deftest old-tombstones-are-cleaned-up
+  (test-env/only-with-real-database
+    (let [time-before-tombstone-cutoff (t/minus (t/now)
+                                                (t/days (+ (concept-service/days-to-keep-tombstone) 1)))
+          time-after-tombstone-cutoff (t/minus (t/now)
+                                               (t/days (- (concept-service/days-to-keep-tombstone) 1)))
+          coll1 (util/create-and-save-collection "PROV1" 1)
+          gran1 (util/create-and-save-granule "PROV1" (:concept-id coll1) 1)
+          gran2 (util/create-and-save-granule "PROV1" (:concept-id coll1) 2)
+          coll2 (util/create-and-save-collection "PROV2" 2)
+          coll3 (util/create-and-save-collection "PROV2" 3)]
+
+      (util/delete-concept (:concept-id coll2))
+      (util/delete-concept (:concept-id coll3))
+      (util/delete-concept (:concept-id gran1))
+      (util/delete-concept (:concept-id gran2))
+
+      ;; Update revision-dates to test cleanup of tombstones
+      (db-helper/update-concept-revision-date
+        (assoc coll2 :revision-id 2) time-before-tombstone-cutoff)
+      (db-helper/update-concept-revision-date
+        (assoc coll3 :revision-id 2) time-after-tombstone-cutoff)
+      (db-helper/update-concept-revision-date
+        (assoc gran1 :revision-id 2) time-before-tombstone-cutoff)
+      (db-helper/update-concept-revision-date
+        (assoc gran2 :revision-id 2) time-after-tombstone-cutoff)
+
+      (is (= 204 (util/old-revision-concept-cleanup)))
+      (is (concept-exist? coll1))
+      (is (not (concept-exist? coll2)))
+      (is (concept-exist? coll3))
+      (is (not (concept-exist? gran1)))
+      (is (concept-exist? gran2)))))

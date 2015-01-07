@@ -10,7 +10,7 @@
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.umm.core :as umm]
             [cmr.system-int-test.data2.core :as d]
-            [cmr.system-int-test.utils.test-environment :as test-env]
+            [cmr.common.test.test-environment :as test-env]
             [cmr.bootstrap.test.catalog-rest :as cat-rest]
             [cmr.common.concepts :as concepts]
             [cmr.oracle.connection :as oracle]

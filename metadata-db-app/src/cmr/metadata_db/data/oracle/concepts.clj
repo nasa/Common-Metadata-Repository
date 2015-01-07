@@ -31,7 +31,6 @@
   largest sequence in Catalog REST in operations which is 1005488460 as of this writing."
   1200000000)
 
-
 (def EXPIRED_CONCEPTS_BATCH_SIZE
   "The batch size to retrieve expired concepts"
   5000)
@@ -518,7 +517,7 @@
                     (sql-utils/query conn stmt))))))
 
   (get-tombstoned-concept-revisions
-    [this provider concept-type days-to-grow-old limit]
+    [this provider concept-type days-to-keep-tombstone limit]
     (j/with-db-transaction
       [conn this]
       (let [table (tables/get-table-name provider concept-type)
@@ -532,7 +531,7 @@
                           on t1.concept_id = t2.concept_id and t1.REVISION_ID <= t2.revision_id"
                           table
                           table
-                          days-to-grow-old
+                          days-to-keep-tombstone
                           limit)]
             result (sql-utils/query conn stmt)]
         ;; create tuples of concept-id/revision-id to remove

@@ -4,7 +4,7 @@
             [clj-http.client :as client]
             [cheshire.core :as json]
             [cmr.system-int-test.utils.url-helper :as url]
-            [cmr.system-int-test.utils.test-environment :as test-env]))
+            [cmr.common.test.test-environment :as test-env]))
 
 (defn- get-app-health
   "Returns the status code and health detail of the app with the given health endpoint url"

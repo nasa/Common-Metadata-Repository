@@ -76,7 +76,7 @@
     for the given provider and concept-type.")
 
   (get-tombstoned-concept-revisions
-    [db provider concept-type days-to-grow-old limit]
+    [db provider concept-type days-to-keep-tombstone limit]
     "Returns concpet-id and revision-id tuples for concept revisions that are tombstones that are
     older than the given number of days or any prior revisions of the old tomestone for the same concept-id.")
 
