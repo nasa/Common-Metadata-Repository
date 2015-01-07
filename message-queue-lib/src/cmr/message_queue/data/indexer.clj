@@ -1,4 +1,4 @@
-(ns cmr.index-queue.data.indexer
+(ns cmr.message-queue.data.indexer
   "Implements Ingest App datalayer access interface. Takes on the role of a proxy to indexer app."
   (:require [clj-http.client :as client]
             [cheshire.core :as json]
@@ -76,22 +76,39 @@
   [context provider-id]
   (delete-from-indexer context (format "provider/%s" provider-id)))
 
-(defn- get-indexer-health-fn
-  "Returns the health status of the indexer app"
-  [context]
-  (let [conn (transmit-config/context->app-connection context :indexer)
-        request-url (str (transmit-conn/root-url conn) "/health")
-        response (client/get request-url {:accept :json
-                                          :throw-exceptions false
-                                          :connection-manager (transmit-conn/conn-mgr conn)})
-        {:keys [status body]} response
-        result (json/decode body true)]
-    (if (= 200 status)
-      {:ok? true :dependencies result}
-      {:ok? false :problem result})))
+(defmulti handle-indexing-request
+  "Handles indexing requests received from the message queue."
+  (fn [request-type msg]
+    (keyword request-type)))
 
-(defn get-indexer-health
-  "Returns the indexer health with timeout handling."
-  [context]
-  (let [timeout-ms (* 1000 (+ 2 (hh/health-check-timeout-seconds)))]
-    (hh/get-health #(get-indexer-health-fn context) timeout-ms)))
+(defmethod handle-indexing-request :index-concept
+  [request-type msg]
+  (let [{:keys [concept-id revision-id]} msg]
+    (debug "Received index-concept request for concept-id" concept-id "revision-id" revision-id)
+    ;; TODO make call here
+    ))
+
+(defmethod handle-indexing-request :delete-concept
+  [request-type msg]
+  (let [{:keys [concept-id revision-id]} msg]
+    (debug "Received delete-concept request for concept-id" concept-id "revision-id" revision-id)
+    ;; TODO make call here
+    ))
+
+(defmethod handle-indexing-request :re-index-provider
+  [request-type msg]
+  (let [{:keys [provider-id]} msg]
+    (debug "Received re-index-provider request for provider-id" provider-id)
+    ;; TODO make call here
+    ))
+
+(defmethod handle-indexing-request :delete-provider
+  [request-type msg]
+  (let [{:keys [provider-id]} msg]
+    (debug "Received delete-provider request for provider-id" provider-id)
+    ;; TODO make call here
+    ))
+
+(defmethod handle-indexing-request :default
+  [request-type _]
+  (errors/internal-error! (str "Received unknown message type: " request-type)))

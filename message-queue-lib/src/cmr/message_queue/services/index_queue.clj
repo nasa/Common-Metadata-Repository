@@ -1,4 +1,4 @@
-(ns cmr.index-queue.queue.index-queue
+(ns cmr.message-queue.services.index-queue
   "Declares a protocol for publishing to a queue for concept indexing services"
   (:require [cmr.common.lifecycle :as lifecycle]
             [cmr.common.log :as log :refer (debug info warn error)]

@@ -1,12 +1,12 @@
-(ns cmr.index-queue.queue.rabbit-mq
+(ns cmr.message-queue.queue.rabbit-mq
   "Implements index-queue functionality using rabbit mq"
   (:gen-class)
   (:require [cmr.common.lifecycle :as lifecycle]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.config :as cfg]
             [cmr.common.services.errors :as errors]
-            [cmr.index-queue.queue.index-queue :as index-queue]
-            [cmr.index-queue.data.indexer :as indexer]
+            [cmr.message-queue.services.index-queue :as index-queue]
+            [cmr.message-queue.data.indexer :as indexer]
             [langohr.core :as rmq]
             [langohr.channel :as lch]
             [langohr.queue :as lq]
@@ -34,49 +34,13 @@
   ;; TODO - Should the :content-type be application/json? Does this matter?
   {:routing-key queue-name :content-type "text/plain" :type message-type :persistent true})
 
-(defmulti handle-indexing-request
-  "Handles indexing requests received from the message queue."
-  (fn [request-type msg]
-    (keyword request-type)))
-
-(defmethod handle-indexing-request :index-concept
-  [request-type msg]
-  (let [{:keys [concept-id revision-id]} msg]
-    (debug "Received index-concept request for concept-id" concept-id "revision-id" revision-id)
-    ;; TODO make call here
-    ))
-
-(defmethod handle-indexing-request :delete-concept
-  [request-type msg]
-  (let [{:keys [concept-id revision-id]} msg]
-    (debug "Received delete-concept request for concept-id" concept-id "revision-id" revision-id)
-    ;; TODO make call here
-    ))
-
-(defmethod handle-indexing-request :re-index-provider
-  [request-type msg]
-  (let [{:keys [provider-id]} msg]
-    (debug "Received re-index-provider request for provider-id" provider-id)
-    ;; TODO make call here
-    ))
-
-(defmethod handle-indexing-request :delete-provider
-  [request-type msg]
-  (let [{:keys [provider-id]} msg]
-    (debug "Received delete-provider request for provider-id" provider-id)
-    ;; TODO make call here
-    ))
-
-(defmethod handle-indexing-request :default
-  [request-type _]
-  (errors/internal-error! (str "Received unknown message type: " request-type)))
-
 (defn message-handler
   "Handle messages on the indexing queue."
   [ch {:keys [content-type delivery-tag type] :as meta} ^bytes payload]
+  (println "Got message")
   (let [msg (json/parse-string (String. payload) true)]
     (try
-      (handle-indexing-request type msg)
+      (indexer/handle-indexing-request type msg)
       ;; Acknowledge message
       (lb/ack ch delivery-tag)
       (catch Throwable e
@@ -160,23 +124,24 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn create-index-queue
-  "Set up a message consumer with the given channels"
-  [num-worker-channels]
+(defn create-queue
+  "Set up a message consumer with the given number of subscribers"
+  [num-subscribers]
   (let [conn (rmq/connect)
         pub-channel (lch/open conn)
         ;; create an exchange for our queue using direct routing
         _ (le/declare pub-channel exchange-name "direct")
-        sub-channels (doall (for [_ (range num-worker-channels)]
+        sub-channels (doall (for [_ (range num-subscribers)]
                               (lch/open conn)))]
     (->RabbitMQIndexQueue conn pub-channel sub-channels false)))
 
 (comment
-  (let [conn (rmq/connect)
+  (let [q (create-queue 4)
+        _ (lifecycle/start q {})
+        conn (rmq/connect)
         ch (lch/open conn)
         msg (json/generate-string {:concept-id "C1000-PROV1" :revision-id 1})]
     (lb/publish ch exchange-name queue-name msg {:routing-key queue-name :content-type "text/plain" :type "index-concept" :persistent true}))
-
 
   )
 
