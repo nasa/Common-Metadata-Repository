@@ -10,12 +10,18 @@
   (:import java.util.concurrent.LinkedBlockingQueue))
 
 (defn- push-message
-  "Push a message on the queue"
+  "Pushes a message on the queue whether it is running or not."
   [mem-queue msg]
-  (when-not (:running? mem-queue)
-    (errors/internal-error! "Queue is down!"))
   (let [queue @(:queue-atom mem-queue)]
     (future (.put queue msg))))
+
+(defn- push-message-with-validation
+  "Validates that the queue is running, then push a message onto it. If the queue
+  is not running, throws an exception."
+  [mem-queue msg]
+  (when-not @(:running-atom mem-queue)
+    (errors/internal-error! "Queue is down!"))
+  (push-message mem-queue msg))
 
 (defn- start-consumer
   "Repeatedly pulls messages off the queue and calls callbacks"
@@ -28,7 +34,8 @@
           msg (.take queue)
           _ (debug "GOT DATA" msg)]
       (try
-        (indexer/handle-indexing-request (:action msg) msg)
+        (when-not (= (:action msg) "quit")
+          (indexer/handle-indexing-request (:action msg) msg))
         (catch Throwable e
           (error (.getMessage e))
           ;; Requeue the message
@@ -67,15 +74,19 @@
                   (fn []
                     ;; Start threads running the queue listeners
                     (future (start-consumer this)))))
-    (assoc this :running? true :paused? false))
+    this)
 
   (stop
     [this system]
     (when @(:running-atom this)
-      (debug "Changing state to stopped")
+      (info "Changing state to stopped")
       (swap! (:running-atom this) (fn [_] false))
-      (debug "Removing queue")
-      #_(swap! (:queue-atom this) nil)))
+      (info "Stopping consumers")
+      (dorun
+        (repeatedly (:num-subscribers this)
+                    (fn []
+                      (push-message this {:action "quit"}))))
+      this))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   index-queue/IndexQueue
@@ -86,7 +97,7 @@
                :revision-id revision-id
                :action "index-concept"}
           payload (json/encode msg)]
-      (push-message this msg)))
+      (push-message-with-validation this msg)))
 
   (delete-concept-from-index
     [this concept-id revision-id]
@@ -118,4 +129,4 @@
 
   (swap! q #(lifecycle/stop % {}))
 
-)
+  )

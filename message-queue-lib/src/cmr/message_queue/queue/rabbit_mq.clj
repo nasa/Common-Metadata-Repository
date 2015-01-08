@@ -13,6 +13,7 @@
             [langohr.consumers :as lc]
             [langohr.basic :as lb]
             [langohr.exchange  :as le]
+            [langohr.http :as lhttp]
             [cheshire.core :as json]))
 
 (defn message-metadata
