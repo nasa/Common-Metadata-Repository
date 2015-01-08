@@ -23,16 +23,17 @@
   (info "Starting consumer")
   (while @(:running-atom memory-queue)
     ;; Use a blocking read
-    (info "WATING FOR DATA...")
+    (debug "WATING FOR DATA...")
     (let [queue @(:queue-atom memory-queue)
           msg (.take queue)
-          _ (info "GOT DATA" msg)]
+          _ (debug "GOT DATA" msg)]
       (try
         (indexer/handle-indexing-request (:action msg) msg)
         (catch Throwable e
           (error (.getMessage e))
           ;; Requeue the message
-          (push-message msg))))))
+          (push-message msg)))))
+  (info "Stopping consumer"))
 
 (defrecord MemoryIndexQueue
   [
@@ -56,12 +57,11 @@
   (start
     [this system]
     (info "Starting memory queue")
-    (when (:running? this)
+    (when @(:running-atom this)
       (errors/internal-error! "Queue is already running"))
-    (info "Swapping")
     (swap! (:queue-atom this) (fn [_] (new java.util.concurrent.LinkedBlockingQueue
                                            (:queue-capacity this))))
-    (swap! (:running-atom this) (fn [_] #(true)))
+    (swap! (:running-atom this) (fn [_] true))
     (dorun
       (repeatedly (:num-subscribers this)
                   (fn []
@@ -71,9 +71,11 @@
 
   (stop
     [this system]
-    (when (:running? this)
-      (swap! (:queue-atom this) nil)
-      (assoc this :running? false)))
+    (when @(:running-atom this)
+      (debug "Changing state to stopped")
+      (swap! (:running-atom this) (fn [_] false))
+      (debug "Removing queue")
+      #_(swap! (:queue-atom this) nil)))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   index-queue/IndexQueue
@@ -109,9 +111,11 @@
   (->MemoryIndexQueue capacity (atom nil) num-workers (atom false)))
 
 (comment
-  (def q (create-queue 25 4))
+  (def q (atom (create-queue 25 4)))
 
-  (let [q (lifecycle/start q {})]
-    (index-queue/index-concept q "G1000-PROV1" 1))
+  (swap! q #(lifecycle/start % {}))
+  (index-queue/index-concept @q "G1000-PROV1" 1)
 
-  )
+  (swap! q #(lifecycle/stop % {}))
+
+)

@@ -3,7 +3,7 @@
   (:gen-class)
   (:require [cmr.common.lifecycle :as lifecycle]
             [cmr.common.log :as log :refer (debug info warn error)]
-            [cmr.common.config :as cfg]
+            [cmr.message_queue.config :as cfg]
             [cmr.common.services.errors :as errors]
             [cmr.message-queue.services.index-queue :as index-queue]
             [cmr.message-queue.data.indexer :as indexer]
@@ -14,19 +14,6 @@
             [langohr.basic :as lb]
             [langohr.exchange  :as le]
             [cheshire.core :as json]))
-
-(def exchange-name
-  "The name of the queue exchange to use to retrieve messages"
-  (cfg/config-value :indexer-queue-exchange "indexer.exchange"))
-
-(def queue-name
-  "The name of the queue to use to retrieve messages"
-  (cfg/config-value :indexer-queue-name "indexer.queue"))
-
-(def queue-channel-count
-  "The number of channels to use to retreive messgages. There should be one channel
-  per worker."
-  (cfg/config-value :queue-channel-count 4))
 
 (defn message-metadata
   "Creates a map with the appropriate metadata for our messages"
@@ -55,9 +42,9 @@
   ;; lead to stalls as workers wait for other workers to complete. Setting QoS (prefetch) to 1
   ;; prevents this.
   (lb/qos ch 1)
-  (lq/declare ch queue-name {:exclusive false :auto-delete false})
-  (lq/bind ch queue-name exchange-name {:routing-key queue-name})
-  (lc/subscribe ch queue-name message-handler {:auto-ack false}))
+  (lq/declare ch cfg/queue-name {:exclusive false :auto-delete false})
+  (lq/bind ch cfg/queue-name cfg/exchange-name {:routing-key cfg/queue-name})
+  (lc/subscribe ch cfg/queue-name message-handler {:auto-ack false}))
 
 (defrecord RabbitMQIndexQueue
   [
@@ -106,9 +93,9 @@
     [this concept-id revision-id]
     ;; add a request to the index queue
     (let [pub-channel (:publisher-channel this)
-          metadata (message-metadata queue-name "index-concept")
+          metadata (message-metadata cfg/queue-name "index-concept")
           msg {:concept-id concept-id :revision-id revision-id}]
-      (lb/publish pub-channel exchange-name queue-name msg metadata)))
+      (lb/publish pub-channel cfg/exchange-name cfg/queue-name msg metadata)))
 
   (delete-concept-from-index
     [this concept-id revision-id]
@@ -127,10 +114,10 @@
 (defn create-queue
   "Set up a message consumer with the given number of subscribers"
   [num-subscribers]
-  (let [conn (rmq/connect)
+  (let [conn (rmq/connect {:host (cfg/rabbit-mq-host) :port (cfg/rabbit-mq-port)})
         pub-channel (lch/open conn)
         ;; create an exchange for our queue using direct routing
-        _ (le/declare pub-channel exchange-name "direct")
+        _ (le/declare pub-channel cfg/exchange-name "direct")
         sub-channels (doall (for [_ (range num-subscribers)]
                               (lch/open conn)))]
     (->RabbitMQIndexQueue conn pub-channel sub-channels false)))
@@ -141,7 +128,7 @@
         conn (rmq/connect)
         ch (lch/open conn)
         msg (json/generate-string {:concept-id "C1000-PROV1" :revision-id 1})]
-    (lb/publish ch exchange-name queue-name msg {:routing-key queue-name :content-type "text/plain" :type "index-concept" :persistent true}))
+    (lb/publish ch cfg/exchange-name cfg/queue-name msg {:routing-key cfg/queue-name :content-type "text/plain" :type "index-concept" :persistent true}))
 
   )
 
