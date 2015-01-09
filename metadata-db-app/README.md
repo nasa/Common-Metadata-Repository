@@ -263,7 +263,7 @@ returns: nothing (status 204)
 
 ### POST /jobs/old-revision-concept-cleanup
 
-Synchronously runs the old revision concept cleanup job. This will delete the old revisions as well as tombstones that are more than a month old. Requires token with UPDATE ingest management permission.
+Synchronously runs the old revision concept cleanup job. This will delete the old revisions as well as tombstones that are more than a configurable number of days old (through config parameter CMR_DAYS_TO_KEEP_TOMBSTONE which is default to 365). Requires token with UPDATE ingest management permission.
 
     curl -v -XPOST -H "Echo-Token: mock-echo-system-token" http://localhost:3001/jobs/old-revision-concept-cleanup
 
