@@ -11,7 +11,7 @@
       {:short-name short-name
        :long-name long-name
        ;; DIF does not have platform type in its xml, but it is a required field in ECHO10.
-       ;; We make a dummy type here to facilitate cross fromat conversion
+       ;; We make a dummy type here to facilitate cross format conversion
        :type "dummy"})))
 
 (defn xml-elem->Platforms
