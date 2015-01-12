@@ -44,7 +44,7 @@
 (defn- platforms->expected-parsed
   "Returns the expected parsed platforms for the given platforms."
   [platforms]
-  (seq (map #(assoc % :type "dummy" :instruments nil :characteristics nil) platforms)))
+  (seq (map #(assoc % :type "Not Specified" :instruments nil :characteristics nil) platforms)))
 
 (defn- related-urls->expected-parsed
   "Returns the expected parsed related-urls for the given related-urls."
@@ -382,11 +382,11 @@
                     :platforms [(umm-c/map->Platform
                                   {:short-name "SPOT-1"
                                    :long-name "Systeme Probatoire Pour l'Observation de la Terre-1"
-                                   :type "dummy"})
+                                   :type "Not Specified"})
                                 (umm-c/map->Platform
                                   {:short-name "SPOT-4"
                                    :long-name "Systeme Probatoire Pour l'Observation de la Terre-4"
-                                   :type "dummy"})]
+                                   :type "Not Specified"})]
                     :temporal
                     (umm-c/map->Temporal
                       {:range-date-times
