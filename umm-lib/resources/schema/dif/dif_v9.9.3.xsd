@@ -156,13 +156,13 @@
 <xs:element name="Variable_Level_3" type="xs:string"/>
 <xs:element name="Detailed_Variable" type="xs:string"/>
 <xs:element name="ISO_Topic_Category">
-	<xs:complexType>
-		<xs:simpleContent>
-			<xs:extension base="xs:string">
-				<xs:attribute name="uuid" type="xs:string"/>
-			</xs:extension>
-		</xs:simpleContent>
-	</xs:complexType>
+  <xs:complexType>
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute name="uuid" type="xs:string"/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
 </xs:element>
 <xs:element name="Keyword" type="xs:string"/>
 <xs:element name="Sensor_Name">
@@ -285,33 +285,33 @@
 <xs:element name="Latitude_Resolution" type="xs:string"/>
 <xs:element name="Longitude_Resolution" type="xs:string"/>
 <xs:element name="Horizontal_Resolution_Range">
-	<xs:complexType>
-		<xs:simpleContent>
-			<xs:extension base="xs:string">
-				<xs:attribute name="uuid" type="xs:string"/>
-			</xs:extension>
-		</xs:simpleContent>
-	</xs:complexType>
+  <xs:complexType>
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute name="uuid" type="xs:string"/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
 </xs:element>
 <xs:element name="Vertical_Resolution" type="xs:string"/>
 <xs:element name="Vertical_Resolution_Range">
-	<xs:complexType>
-		<xs:simpleContent>
-			<xs:extension base="xs:string">
-				<xs:attribute name="uuid" type="xs:string"/>
-			</xs:extension>
-		</xs:simpleContent>
-	</xs:complexType>
+  <xs:complexType>
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute name="uuid" type="xs:string"/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
 </xs:element>
 <xs:element name="Temporal_Resolution" type="xs:string"/>
 <xs:element name="Temporal_Resolution_Range">
-	<xs:complexType>
-		<xs:simpleContent>
-			<xs:extension base="xs:string">
-				<xs:attribute name="uuid" type="xs:string"/>
-			</xs:extension>
-		</xs:simpleContent>
-	</xs:complexType>
+  <xs:complexType>
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute name="uuid" type="xs:string"/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
 </xs:element>
 <xs:element name="Project">
    <xs:complexType>
