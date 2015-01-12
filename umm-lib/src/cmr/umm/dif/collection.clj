@@ -136,5 +136,5 @@
 (defn validate-xml
   "Validates the XML against the DIF schema."
   [xml]
-  (v/validate-xml (io/resource "schema/dif/dif.xsd") xml))
+  (v/validate-xml (io/resource "schema/dif/dif_v9.9.3.xsd") xml))
 
