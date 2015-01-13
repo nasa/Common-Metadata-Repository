@@ -82,7 +82,7 @@
   {:xmlns "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
    :xmlns:dif "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
    :xmlns:xsi "http://www.w3.org/2001/XMLSchema-instance"
-   :xsi:schemaLocation "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.8.4.xsd"})
+   :xsi:schemaLocation "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.9.3.xsd"})
 
 (extend-protocol cmr.umm.dif.core/UmmToDifXml
   UmmCollection
@@ -119,8 +119,8 @@
                     (x/element :Summary {} (x/element :Abstract {} summary))
                     (when-not (empty? related-urls)
                       (ru/generate-related-urls related-urls))
-                    (x/element :Metadata_Name {} "dummy")
-                    (x/element :Metadata_Version {} "dummy")
+                    (x/element :Metadata_Name {} "CEOS IDN DIF")
+                    (x/element :Metadata_Version {} "VERSION 9.9.3")
                     (when insert-time
                       (x/element :DIF_Creation_Date {} (str insert-time)))
                     (when update-time
