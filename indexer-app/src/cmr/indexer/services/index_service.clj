@@ -13,11 +13,23 @@
             [cmr.indexer.data.elasticsearch :as es]
             [cmr.elastic-utils.connect :as es-util]
             [cmr.umm.core :as umm]
+            [cmr.message-queue.services.queue :as queue]
             [cheshire.core :as cheshire]
             [cmr.indexer.data.index-set :as idx-set]
             [cmr.acl.acl-cache :as acl-cache]
             [cmr.common.services.errors :as errors]
             [cmr.system-trace.core :refer [deftracefn]]))
+
+(defn message-handler
+  "Handle messages on the indexing queue."
+  [ch {:keys [content-type delivery-tag type] :as meta} ^bytes payload]
+  (let [msg (cheshire/parse-string (String. payload) true)]
+    (try
+      ;;
+      (catch Throwable e
+        (error (.getMessage e))
+        ;; Send a rejection to the queue
+        (lb/reject ch delivery-tag)))))
 
 (defn filter-expired-concepts
   "Remove concepts that have an expired delete-time."

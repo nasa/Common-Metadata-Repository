@@ -23,7 +23,9 @@
                  ;; Needed for GzipHandler
                  [org.eclipse.jetty/jetty-servlets "7.6.8.v20121106"]
                  ;; Needed for timeout a function execution
-                 [clojail "1.0.6"]]
+                 [clojail "1.0.6"]
+                 ;; Used to compute ttls
+                 [org.clojure/math.numeric-tower "0.0.4"]]
   :plugins [[lein-test-out "0.3.1"]]
 
   :profiles

@@ -44,13 +44,15 @@ Rabbit MQ does not offer a retry delay feature, so we need to implement this our
 
 * Left to do for code
 	* Refactoring existing code - 1 day
-		* Log time from putting message on messge queue to getting response form elastic that it has been indexed. The time of queue insertion will need to be part of the message.
+		* Log time from putting message on messge queue to getting response from elastic that it has been indexed. The time of queue insertion will need to be part of the message.
 		* Log number of ingests and number of indexings performed.
 	* Implement in-memory cue - 1/2 day
 * Cluster/HA - 1/2 day
 	* Design/Document
 	* Configure rabbit mq with max memory size
 	* File EI to deploy cluster
+
+### Question - Can langohr channels be used from multiple threads? Is this advisable? Should we
 
 
 

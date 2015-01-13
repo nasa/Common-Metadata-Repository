@@ -4,8 +4,6 @@
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.config :as cfg]
             [cmr.common.services.errors :as errors]
-            [cmr.message-queue.services.index-queue :as index-queue]
-            [cmr.message-queue.data.indexer :as indexer]
             [cheshire.core :as json])
   (:import java.util.concurrent.LinkedBlockingQueue))
 
@@ -35,7 +33,8 @@
           _ (debug "GOT DATA" msg)]
       (try
         (when-not (= (:action msg) "quit")
-          (indexer/handle-indexing-request (:action msg) msg))
+          ;; Do do something
+          )
         (catch Throwable e
           (error (.getMessage e))
           ;; Requeue the message
@@ -86,33 +85,33 @@
         (repeatedly (:num-subscribers this)
                     (fn []
                       (push-message this {:action "quit"}))))
-      this))
+      this)))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  index-queue/IndexQueue
+  ; index-queue/IndexQueue
 
-  (index-concept
-    [this concept-id revision-id]
-    (let [msg {:concept-id concept-id
-               :revision-id revision-id
-               :action "index-concept"}
-          payload (json/encode msg)]
-      (push-message-with-validation this msg)))
+  ; (index-concept
+  ;   [this concept-id revision-id]
+  ;   (let [msg {:concept-id concept-id
+  ;              :revision-id revision-id
+  ;              :action "index-concept"}
+  ;         payload (json/encode msg)]
+  ;     (push-message-with-validation this msg)))
 
-  (delete-concept-from-index
-    [this concept-id revision-id]
-    (let [context {}]
-      (future (indexer/delete-concept-from-index context concept-id revision-id))))
+  ; (delete-concept-from-index
+  ;   [this concept-id revision-id]
+  ;   (let [context {}]
+  ;     (future (indexer/delete-concept-from-index context concept-id revision-id))))
 
-  (delete-provider-from-index
-    [this provider-id]
-    (let [context {}]
-      (future (indexer/delete-provider-from-index context provider-id))))
+  ; (delete-provider-from-index
+  ;   [this provider-id]
+  ;   (let [context {}]
+  ;     (future (indexer/delete-provider-from-index context provider-id))))
 
-  (reindex-provider-collections
-    [this provider-id]
-    (let [context {}]
-      (future (indexer/reindex-provider-collections context provider-id)))))
+  ; (reindex-provider-collections
+  ;   [this provider-id]
+  ;   (let [context {}]
+  ;     (future (indexer/reindex-provider-collections context provider-id)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

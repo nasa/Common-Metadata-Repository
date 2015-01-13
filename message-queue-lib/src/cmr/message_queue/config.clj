@@ -7,15 +7,10 @@
 (def rabbit-mq-host
   (cfg/config-value-fn :rabbit-mq-host "localhost"))
 
-(def exchange-name
-  "The name of the queue exchange to use to retrieve messages"
-  (cfg/config-value :indexer-queue-exchange "indexer.exchange"))
+(def rabbit-mq-username
+  "The name of the user to use when connecting"
+  (cfg/config-value-fn :rabbit-mq-user "cmr"))
 
-(def queue-name
-  "The name of the queue to use to retrieve messages"
-  (cfg/config-value :indexer-queue-name "indexer.queue"))
-
-(def queue-channel-count
-  "The number of channels to use to retreive messgages. There should be one channel
-  per worker."
-  (cfg/config-value :queue-channel-count 4))
+(def rabbit-mq-password
+  "The password to use when connecting"
+  (cfg/config-value-fn :rabbit-mq-password "cmr"))
