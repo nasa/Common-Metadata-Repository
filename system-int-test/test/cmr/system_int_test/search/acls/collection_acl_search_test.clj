@@ -62,11 +62,12 @@
         coll6 (d/ingest "PROV2" (dc/collection {:entry-title "coll6"}))
         coll7 (d/ingest "PROV2" (dc/collection {:entry-title "coll7"}))
         ;; A dif collection
-        coll8 (d/ingest "PROV2" (dc/collection {:entry-title "coll8"
-                                                :entry-id "S8"
-                                                :short-name "S8"
-                                                :version-id "V8"
-                                                :long-name "coll8"}) :dif)
+        coll8 (d/ingest "PROV2" (dc/collection-dif
+                                  {:entry-title "coll8"
+                                   :entry-id "S8"
+                                   :short-name "S8"
+                                   :version-id "V8"
+                                   :long-name "coll8"}) :dif)
         ;; added for atom results
         coll8 (assoc coll8 :original-format "DIF")
 

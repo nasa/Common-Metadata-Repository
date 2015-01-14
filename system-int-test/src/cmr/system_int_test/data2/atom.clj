@@ -210,7 +210,7 @@
   (let [{:keys [type url title mime-type size inherited]} related-url
         title (if (or (= "VIEW PROJECT HOME PAGE" type)
                       (= "ALGORITHM INFO" type))
-                (str title " ()") title)
+                (str title " (USER SUPPORT)") title)
         attribs (-> {}
                     (add-attribs :inherited inherited)
                     (add-attribs :size size)
@@ -242,7 +242,8 @@
         spatial-representation (get-in collection [:spatial-coverage :spatial-representation])
         coordinate-system (when spatial-representation (csk/->SNAKE_CASE_STRING spatial-representation))
         orbit-parameters (get-in collection [:spatial-coverage :orbit-parameters])
-        archive-center (when organizations (:org-name (first organizations)))
+        archive-org (first (filter #(= :archive-center (:type %)) organizations))
+        archive-center (when archive-org (:org-name archive-org))
         ;; not really fool proof to get start/end datetime, just get by with the current test setting
         range-date-time (first (get-in collection [:temporal :range-date-times]))
         start (when range-date-time

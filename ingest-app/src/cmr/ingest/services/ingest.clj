@@ -71,6 +71,7 @@
   "Store a concept in mdb and indexer and return concept-id and revision-id."
   [context concept]
   (v/validate-concept-request concept)
+  (v/validate-concept-xml concept)
   (let [umm-record (umm/parse-concept concept)
         concept (add-extra-fields context concept umm-record)
         time-to-compare (t/plus (tk/now) (t/minutes 1))
