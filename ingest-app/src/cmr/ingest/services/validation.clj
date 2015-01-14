@@ -2,7 +2,8 @@
   "Provides functions to validate concept"
   (:require [cmr.common.services.errors :as err]
             [clojure.string :as s]
-            [cmr.umm.mime-types :as umm-mime-types]))
+            [cmr.umm.mime-types :as umm-mime-types]
+            [cmr.umm.core :as umm]))
 
 (defn- format-validation
   "Validates the format of the concept."
@@ -24,11 +25,20 @@
 (def concept-validations
   "A list of the functions that can validate concept."
   [format-validation
-   metadata-length-validation])
+   metadata-length-validation
 
-(defn validate
-  "Validates the given concept. Throws exceptions to send to the user."
+   ;; TODO incorporate Leo's test fixes
+   ; umm/validate-concept-xml
+   ])
+
+(defn if-errors-throw
+  "Throws an error if there are any errors."
+  [errors]
+  (when (seq errors)
+    (err/throw-service-errors :bad-request errors)))
+
+(defn validate-concept-request
+  "Validates the initial request to ingest a concept. "
   [concept]
-  (let [errors (mapcat #(% concept) concept-validations)]
-    (when-not (empty? errors)
-      (err/throw-service-errors :bad-request errors))))
+  (if-errors-throw (mapcat #(% concept) concept-validations)))
+

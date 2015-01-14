@@ -19,13 +19,12 @@
 
 (defmulti add-extra-fields
   "Parse the metadata of concept, add the extra fields to it and return the concept."
-  (fn [context concept]
+  (fn [context concept umm-record]
     (:concept-type concept)))
 
 (defmethod add-extra-fields :collection
-  [context concept]
-  (let [collection (umm/parse-concept concept)
-        {{:keys [short-name version-id]} :product
+  [context concept collection]
+  (let [{{:keys [short-name version-id]} :product
          {:keys [delete-time]} :data-provider-timestamps
          entry-title :entry-title} collection]
     (assoc concept :extra-fields {:entry-title entry-title
@@ -55,9 +54,8 @@
     (:concept-id (first matching-concepts))))
 
 (defmethod add-extra-fields :granule
-  [context concept]
-  (let [granule (umm/parse-concept concept)
-        {:keys [collection-ref granule-ur]
+  [context concept granule]
+  (let [{:keys [collection-ref granule-ur]
          {:keys [delete-time]} :data-provider-timestamps} granule
         parent-collection-id (get-granule-parent-collection-id
                                context (:provider-id concept) collection-ref)]
@@ -72,8 +70,9 @@
 (deftracefn save-concept
   "Store a concept in mdb and indexer and return concept-id and revision-id."
   [context concept]
-  (v/validate concept)
-  (let [concept (add-extra-fields context concept)
+  (v/validate-concept-request concept)
+  (let [umm-record (umm/parse-concept concept)
+        concept (add-extra-fields context concept umm-record)
         time-to-compare (t/plus (tk/now) (t/minutes 1))
         delete-time (get-in concept [:extra-fields :delete-time])
         delete-time (if delete-time (p/parse-datetime delete-time) nil)]
