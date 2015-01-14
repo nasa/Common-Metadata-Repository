@@ -29,18 +29,23 @@
 
 (defn get-latest-concept
   "Retrieve the latest version of the concept"
-  [context concept-id]
-  (let [conn (config/context->app-connection context :metadata-db)
-        response (client/get (format "%s/concepts/%s" (conn/root-url conn) concept-id)
-                             {:accept :json
-                              :throw-exceptions false
-                              :headers (ch/context->http-headers context)
-                              :connection-manager (conn/conn-mgr conn)})]
-    (if (= 200 (:status response))
-      (cheshire/parse-string (:body response) true)
-      (errors/throw-service-error
-        :not-found
-        (str "Failed to retrieve concept " concept-id " from metadata-db: " (:body response))))))
+  ([context concept-id]
+   (get-latest-concept context concept-id true))
+  ([context concept-id throw-service-error?]
+   (let [conn (config/context->app-connection context :metadata-db)
+         response (client/get (format "%s/concepts/%s" (conn/root-url conn) concept-id)
+                              {:accept :json
+                               :throw-exceptions false
+                               :headers (ch/context->http-headers context)
+                               :connection-manager (conn/conn-mgr conn)})
+         status (:status response)]
+     (if (= 200 status)
+       (cheshire/parse-string (:body response) true)
+       (if (and (= false throw-service-error?) (= 404 status))
+         nil
+         (errors/throw-service-error
+           :not-found
+           (str "Failed to retrieve concept " concept-id " from metadata-db: " (:body response))))))))
 
 (defn get-concept-id
   "Return a distinct identifier for the given arguments."

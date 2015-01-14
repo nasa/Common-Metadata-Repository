@@ -159,7 +159,9 @@
           (x/element :OnlineResource {}
                      (x/element :URL {} url)
                      (when description (x/element :Description {} description))
-                     (x/element :Type {} (related-url-types->resource-types type))
+                     ;; There is not a well defined one to one mapping between related url type and resource type.
+                     ;; This default value of "USER SUPPORT" is to get us by the xml schema validation.
+                     (x/element :Type {} (get related-url-types->resource-types type "USER SUPPORT"))
                      (when mime-type (x/element :MimeType {} mime-type))))))))
 
 (defn generate-browse-urls

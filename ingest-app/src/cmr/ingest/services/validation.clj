@@ -25,11 +25,7 @@
 (def concept-validations
   "A list of the functions that can validate concept."
   [format-validation
-   metadata-length-validation
-
-   ;; TODO incorporate Leo's test fixes
-   ; umm/validate-concept-xml
-   ])
+   metadata-length-validation])
 
 (defn if-errors-throw
   "Throws an error if there are any errors."
@@ -41,4 +37,9 @@
   "Validates the initial request to ingest a concept. "
   [concept]
   (if-errors-throw (mapcat #(% concept) concept-validations)))
+
+(defn validate-concept-xml
+  "Validates the concept xml to ingest a concept. "
+  [concept]
+  (if-errors-throw (umm/validate-concept-xml concept)))
 
