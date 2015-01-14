@@ -41,8 +41,7 @@
          status (:status response)]
      (if (= 200 status)
        (cheshire/parse-string (:body response) true)
-       (if (and (= false throw-service-error?) (= 404 status))
-         nil
+       (when (and throw-service-error? (= 404 status))
          (errors/throw-service-error
            :not-found
            (str "Failed to retrieve concept " concept-id " from metadata-db: " (:body response))))))))
