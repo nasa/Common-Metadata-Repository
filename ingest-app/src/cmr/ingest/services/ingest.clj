@@ -13,9 +13,14 @@
             [cmr.common.services.messages :as cmsg]
             [cmr.common.date-time-parser :as p]
             [cmr.common.util :as util]
+            [cmr.common.config :as cfg]
             [cmr.umm.core :as umm]
             [clojure.string :as string]
             [cmr.system-trace.core :refer [deftracefn]]))
+
+(def ingest-validation-enabled?
+  "A configuration feature switch that turns on CMR ingest validation."
+  (cfg/config-value-fn :ingest-validation-enabled "true" #(= % "true")))
 
 (defmulti add-extra-fields
   "Parse the metadata of concept, add the extra fields to it and return the concept."
@@ -84,7 +89,8 @@
         ;; TODO
 
         ;; 5. Umm record validation
-        ;; TODO
+        _ (when (ingest-validation-enabled?)
+            (v/validate-umm-record (:format concept) umm-record))
 
         concept (add-extra-fields context concept umm-record)
 

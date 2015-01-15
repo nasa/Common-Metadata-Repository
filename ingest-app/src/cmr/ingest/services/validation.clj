@@ -3,7 +3,9 @@
   (:require [cmr.common.services.errors :as err]
             [clojure.string :as s]
             [cmr.umm.mime-types :as umm-mime-types]
-            [cmr.umm.core :as umm]))
+            [cmr.common.mime-types :as mt]
+            [cmr.umm.core :as umm]
+            [cmr.umm.validation.core :as umm-validation]))
 
 (defn- format-validation
   "Validates the format of the concept."
@@ -42,4 +44,8 @@
   "Validates the concept xml to ingest a concept. "
   [concept]
   (if-errors-throw (umm/validate-concept-xml concept)))
+
+(defn validate-umm-record
+  [metadata-format umm]
+  (if-errors-throw (umm-validation/validate (mt/mime-type->format metadata-format) umm)))
 
