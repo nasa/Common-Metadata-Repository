@@ -1,17 +1,29 @@
 (ns cmr.message-queue.services.queue
-  "Declares a protocol for publishing to a queue")
+  "Declares a protocol for creating and interacting with queues")
 
 (defprotocol Queue
-  "Function for adding messages to a message queue"
+  "Functions for adding messages to a message queue"
 
   (create-queue
     [this queue-name]
-    "Create a queue with the given parameter map")
+    "Creates a queue with the given parameter map")
 
    (publish
-    [this queue-name msg metadata]
-    "Publish a message on the queue")
+    [this queue-name msg]
+    "Publishes a message on the queue")
 
   (subscribe
     [this queue-name handler params]
-    "Subscribe to the given queue using the given handler with optonal params"))
+    "Subscribes to the given queue using the given handler with optonal params")
+
+  (message-count
+    [this queue-name]
+    "Returns the number of messages on the given queue")
+
+  (purge-queue
+    [this queue-name]
+    "Removes all the messages on a queue")
+
+  (delete-queue
+    [this queue-name]
+    "Deletes the queue with the given name"))

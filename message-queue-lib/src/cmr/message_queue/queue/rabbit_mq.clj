@@ -18,9 +18,9 @@
             [clojure.math.numeric-tower :as math]))
 
 (defn wait-queue-name
-  "Returns the name of the wait queue associated with the given queue name and ttl"
-  [queue-name ttl]
-  (str queue-name "-wait-" ttl))
+  "Returns the name of the wait queue associated with the given queue name and repeat-count"
+  [queue-name repeat-count]
+  (str queue-name "_wait_" repeat-count))
 
 (def ^{:const true}
   default-exchange-name "")
@@ -39,9 +39,19 @@
     ;; By default, RabbitMQ uses a round-robin approach to send messages to listeners. This can
     ;; lead to stalls as workers wait for other workers to complete. Setting QoS (prefetch) to 1
     ;; prevents this.
-    (debug "Setting channel prefect")
+    (debug "Setting channel prefetch")
     (lb/qos ch (or prefetch 1))
     (lc/subscribe ch queue-name handler {:auto-ack false})))
+
+(defn- safe-create-queue
+  "Creates a RabbitMQ queue if it does not already exist"
+  [ch queue-name opts]
+  ;; use status to determine if queue already exists
+  ;(try
+  ;  (lq/status ch queue-name)
+  ;  (catch IOException e
+      (lq/declare ch queue-name opts))
+;))
 
 (defrecord RabbitMQConnection
   [
@@ -87,37 +97,36 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   queue/Queue
 
-  ; (index-concept
-  ;   [this concept-id revision-id]
-  ;   ;; add a request to the index queue
-  ;   (let [pub-channel (:publisher-channel this)
-  ;         metadata (message-metadata cfg/queue-name "index-concept")
-  ;         msg {:concept-id concept-id :revision-id revision-id}]
-  ;     (lb/publish pub-channel cfg/exchange-name cfg/queue-name msg metadata)))
-
   (create-queue
     [this queue-name]
-    (let [{:keys [conn]} this
+    (let [conn (:conn this)
           ch (lch/open conn)]
       ;; create the queue
       (debug "Creating queue" queue-name)
-      (lq/declare ch queue-name {:exclusive false :auto-delete false})
+      (safe-create-queue ch queue-name {:exclusive false :auto-delete false :durable true})
       ;; create wait queues to use with the primary queue
       (debug "Creating wait queues")
-      (for [x [1 2 3 4 5]
-            :let [ttl (math/expt 5000 x)]]
-        (lq/declare ch
-                    (wait-queue-name queue-name ttl)
-                    {:exclusive false
-                     :auto-delete false
-                     :arguments {"x-dead-letter-exchange" queue-name
-                                 "x-message-ttl" ttl}}))
+      (doseq [x (range 1 (inc (config/rabbit-mq-max-retries)))
+              :let [ttl (* (config/rabbit-mq-ttl-base) (math/expt 4 (dec x)))
+                    wq (wait-queue-name queue-name x)
+                    _ (debug "Creating wait queue" wq)]]
+        (safe-create-queue ch
+                           wq
+                           {:exclusive false
+                            :auto-delete false
+                            :durable true
+                            :arguments {"x-dead-letter-exchange" default-exchange-name
+                                        "x-dead-letter-routing-key" queue-name
+                                        "x-message-ttl" ttl}}))
       (rmq/close ch)))
 
   (publish
-    [this queue-name msg metadata]
-    (let [ch (lch/open conn)
-          payload (json/generate-string msg)]
+    [this queue-name msg]
+    (debug "publishing msg:" msg " to queue:" queue-name)
+    (let [conn (:conn this)
+          ch (lch/open conn)
+          payload (json/generate-string msg)
+          metadata {:content-type "text/plain" :persistent true}]
       (lcf/select ch)
       (lb/publish ch default-exchange-name queue-name payload metadata)
       (lcf/wait-for-confirms ch)))
@@ -125,7 +134,27 @@
   (subscribe
     [this queue-name handler params]
     (let [conn (:conn this)]
-      (start-consumer conn queue-name handler params))))
+      (start-consumer conn queue-name handler params)))
+
+  (message-count
+    [this queue-name]
+    (let [conn (:conn this)
+          ch (lch/open conn)]
+      (debug "Getting message count for queue" queue-name " on channel" ch)
+      (lq/message-count ch queue-name)))
+
+  (purge-queue
+    [this queue-name]
+    (let [con (:conn this)
+          ch (lch/open conn)]
+      (info "Purging all messages from queue" queue-name)
+      (lq/purge ch queue-name)))
+
+  (delete-queue
+    [this queue-name]
+    (let [conn (:conn this)
+          ch (lch/open conn)]
+      (lq/delete ch queue-name))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -137,32 +166,67 @@
 
 (comment
 
+  (def q (let [q (create-queue {:host (config/rabbit-mq-host)
+                                :port (config/rabbit-mq-port)
+                                :username (config/rabbit-mq-username)
+                                :passowrd (config/rabbit-mq-password)})]
+           (lifecycle/start q {})))
+
   (defn test-message-handler
     "Handle messages on the queue."
-    [ch {:keys [delivery-tag type] :as meta} ^bytes payload]
-    (let [msg (json/parse-string (String. payload) true)]
+    [ch {:keys [delivery-tag type routing-key] :as meta} ^bytes payload]
+    (debug "META:" meta)
+    (let [msg (json/parse-string (String. payload) true)
+          repeat-count (get msg :repeat-count 0)]
+      (debug "Receieved message:" msg)
       (try
-        ;;
-        (debug "Receieved message:" msg)
+        ;; simulate processing with random failures
+        ;; will ack after processing so if the consumer dies first the queue will resend
+
+        (if false
+          (do
+            ;; processed successfully
+            (debug "Processed successfully")
+            (lb/ack ch delivery-tag))
+          (if true
+            (if (= repeat-count 5)
+              (do
+                ;; give up
+                (debug "Max retries exceeded for procesessing message:" msg)
+                (lb/nack ch delivery-tag false false))
+              (let [msg (assoc msg :repeat-count (inc repeat-count))
+                    wait-q (wait-queue-name routing-key (inc repeat-count))]
+                (debug "Retrying with repeat-count =" (inc repeat-count) " on queue" wait-q)
+                (queue/publish q wait-q msg)
+                (lb/ack ch delivery-tag)))
+            (do
+              ;; bad data - nack it
+              (debug "Rejecting bad datas")
+              (lb/nack ch delivery-tag false false))))
+
+
         (catch Throwable e
           (error (.getMessage e))
           ;; Send a rejection to the queue
           (lb/reject ch delivery-tag)))))
 
 
-  (let [q (create-queue {:host (config/rabbit-mq-host)
-                         :port (config/rabbit-mq-port)
-                         :username (config/rabbit-mq-username)
-                         :passowrd (config/rabbit-mq-password)})
-        q (lifecycle/start q {})
-        msg {:concept-id "C1000-PROV1" :revision-id 1}]
+  (let [msg {:type :index-concept :concept-id "C1000-PROV1" :revision-id 1}]
     (debug "Creating test queue")
     (queue/create-queue q "test.simple")
     (debug "Subscribing to test queue")
     (queue/subscribe q "test.simple" test-message-handler {})
     (debug "Publishing to test queue")
-    (queue/publish q "test.simple" msg {:content-type "text/plain" :type "index-concept" :persistent true}))
+    (queue/publish q "test.simple" msg))
 
+
+  (queue/purge-queue q "test.simple")
+  (queue/purge-queue q (wait-queue-name "test.simple" 3))
+  (queue/message-count q "test.simple")
+  (queue/message-count q (wait-queue-name "test.simple" 1))
+  (queue/delete-queue q "test.simple")
+  (doseq [n (range 1 (inc (config/rabbit-mq-max-retries)))]
+    (queue/delete-queue q (wait-queue-name "test.simple" n)))
   )
 
 
