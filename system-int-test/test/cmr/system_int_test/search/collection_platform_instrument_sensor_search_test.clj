@@ -50,6 +50,7 @@
              (d/refs-match? items (search/find-refs-with-aql :collection [condition])))
 
            [coll1 coll2] "platform_Sn A" {}
+           [coll1 coll2] "'platform_Sn A'" {}
            [coll7] "platform_x" {}
            [] "BLAH" {}
            [coll1 coll2 coll4] ["platform_SnA" "platform_Sn A"] {}

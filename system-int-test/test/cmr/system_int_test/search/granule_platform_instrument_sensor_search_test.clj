@@ -79,8 +79,8 @@
            [gran8] "platform-x" {}
            [] "BLAH" {}
 
-           ;; search by platform, multiple values"
-           [gran1 gran2 gran4] ["platform-SnA" "platform-Sn A"] {}
+           ;; search by platform, multiple values and single quotes
+           [gran1 gran2 gran4] ["'platform-SnA'" "'platform-Sn A'"] {}
            ;; search by platform, inheritance
            [gran6] ["platform-Inherit"] {}
            ;; search by platform, ignore case true
