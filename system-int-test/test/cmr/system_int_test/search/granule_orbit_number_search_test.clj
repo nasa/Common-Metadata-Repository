@@ -113,8 +113,10 @@
 
            ;; search by exact orbit number
            [gran1 gran2 gran3] 1
+           [gran1 gran2 gran3] "'1'"
            ;; search by orbit number range
            [gran1, gran2, gran3, gran4] [1 2]
+           [gran1, gran2, gran3, gran4] ["'1'" "'2'"]
            ;; search by orbit number range with rational numbers
            [gran4, gran5] [2 2.8]
            ;; search by orbit number range with min and max rational numbers

@@ -79,12 +79,14 @@
              (d/refs-match? items (search/find-refs-with-aql :collection [] data-center-condition)))
 
            all-prov1-colls ["PROV1"] {}
+           all-prov1-colls ["'PROV1'"] {}
            all-prov2-colls ["PROV2"] {}
            [] ["PROV3"] {}
 
            ;; Multiple values
            all-colls ["PROV1" "PROV2"] {}
            all-prov1-colls ["PROV1" "PROV3"] {}
+           all-prov1-colls ["'PROV1'" "'PROV3'"] {}
 
            ;; Ignore case
            [] "pRoV1" {}

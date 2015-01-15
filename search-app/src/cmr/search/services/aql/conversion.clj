@@ -71,6 +71,22 @@
              :equatorCrossingDate {:name :equator-crossing-date :type :equator-crossing-date}
              :TwoDCoordinateSystem {:name :two-d-coordinate-system :type :two-d-coordinate-system}}})
 
+(defn remove-outer-single-quotes
+  "AQL allows values to be wrapped in single quotes. This function will remove the outer single
+  quotes if they are present."
+  [value]
+  (if (and value
+           (string? value)
+           (> (count value) 1)
+           (= (first value) \')
+           (= (last value) \'))
+    (subs value 1 (dec (count value)))
+    value))
+
+(defn element->string-content
+  [element]
+  (-> element :content first remove-outer-single-quotes))
+
 (defn- elem-name->type
   "Returns the query condition type based on the given concept-type and aql element name."
   [concept-type elem-name]
@@ -158,7 +174,7 @@
   ([concept-type key elem]
    (string-value-elem->condition concept-type key elem false))
   ([concept-type key elem pattern?]
-   (let [value (first (:content elem))
+   (let [value (element->string-content elem)
          value (if pattern? (aql-pattern->cmr-pattern value) value)
          case-sensitive? (aql-elem-case-sensitive? elem)
          case-sensitive? (if (some? (pc/always-case-sensitive key)) true case-sensitive?)]
@@ -195,7 +211,7 @@
 
 (defn element->num-range
   [concept-type element]
-  (let [string-double-fn (fn [n] (when-not (str/blank? n) (Double. n)))
+  (let [string-double-fn #(when-not (str/blank? %) (Double. (remove-outer-single-quotes %)))
         range-val (-> (cx/attrs-at-path element [:range])
                       (set/rename-keys {:lower :min-value :upper :max-value})
                       (update-in [:min-value] string-double-fn)
@@ -264,7 +280,9 @@
 
 (defmethod element->condition :orbit-number
   [concept-type element]
-  (if-let [value (cx/double-at-path element [:value])]
+  (if-let [value (some-> (cx/string-at-path element [:value])
+                         remove-outer-single-quotes
+                         (Double.))]
     (qm/map->OrbitNumberValueCondition {:value value})
     (qm/map->OrbitNumberRangeCondition (element->num-range concept-type element))))
 

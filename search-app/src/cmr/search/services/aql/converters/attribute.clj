@@ -25,8 +25,8 @@
         condition (qm/map->AttributeRangeCondition
                     {:type attrib-type
                      :name attrib-name
-                     :min-value (when-not (s/blank? minv) minv)
-                     :max-value (when-not (s/blank? maxv) maxv)})]
+                     :min-value (when-not (s/blank? minv) (a/remove-outer-single-quotes minv))
+                     :max-value (when-not (s/blank? maxv) (a/remove-outer-single-quotes maxv))})]
     (p/parse-component-type condition)))
 
 (defn- time-from-strings
@@ -52,11 +52,11 @@
 
 (defmethod attrib-value-element->condition :value
   [attrib-name value-elem]
-  (attrib-value->condition :string attrib-name (first (:content value-elem))))
+  (attrib-value->condition :string attrib-name (a/element->string-content value-elem)))
 
 (defmethod attrib-value-element->condition :textPattern
   [attrib-name value-elem]
-  (let [value (-> value-elem :content first a/aql-pattern->cmr-pattern)]
+  (let [value (-> value-elem a/element->string-content a/aql-pattern->cmr-pattern)]
     (qm/map->AttributeValueCondition
       {:type :string
        :name attrib-name
@@ -75,7 +75,7 @@
 
 (defmethod attrib-value-element->condition :float
   [attrib-name value-elem]
-  (attrib-value->condition :float attrib-name (first (:content value-elem))))
+  (attrib-value->condition :float attrib-name (a/element->string-content value-elem)))
 
 (defmethod attrib-value-element->condition :floatRange
   [attrib-name value-elem]
@@ -83,7 +83,7 @@
 
 (defmethod attrib-value-element->condition :int
   [attrib-name value-elem]
-  (attrib-value->condition :int attrib-name (first (:content value-elem))))
+  (attrib-value->condition :int attrib-name (a/element->string-content value-elem)))
 
 (defmethod attrib-value-element->condition :intRange
   [attrib-name value-elem]
@@ -146,7 +146,7 @@
 (defn- additional-attribute-element->conditions
   "Returns the query conditions of the given additionalAttribute element"
   [additional-attribute]
-  (let [attrib-name (cx/string-at-path additional-attribute [:additionalAttributeName])
+  (let [attrib-name (a/remove-outer-single-quotes (cx/string-at-path additional-attribute [:additionalAttributeName]))
         attrib-value (first (cx/content-at-path additional-attribute [:additionalAttributeValue]))]
     (attrib-value-element->condition attrib-name attrib-value)))
 
