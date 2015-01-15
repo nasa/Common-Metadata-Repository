@@ -614,6 +614,8 @@
   [(partial validate-map [:options])
    (partial validate-map [:options :entry-title])
    (partial validate-map [:options :platform])
+   (partial validate-map [:options :instrument])
+   (partial validate-map [:options :sensor])
    (partial validate-map [:options :project])
    (partial validate-map [:options :attribute])
    (partial validate-map [:exclude])
