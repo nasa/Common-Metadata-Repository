@@ -75,17 +75,14 @@
   "AQL allows values to be wrapped in single quotes. This function will remove the outer single
   quotes if they are present."
   [value]
-  (if (and value
-           (string? value)
-           (> (count value) 1)
-           (= (first value) \')
-           (= (last value) \'))
-    (subs value 1 (dec (count value)))
+  (if-let [match (and value (re-matches #"'(.*)'" value))]
+    (nth match 1)
     value))
 
 (defn element->string-content
   [element]
-  (-> element :content first remove-outer-single-quotes))
+  ;; The (or "") avoids null values in the case of empty XML elements.
+  (-> element :content first (or "") remove-outer-single-quotes))
 
 (defn- elem-name->type
   "Returns the query condition type based on the given concept-type and aql element name."

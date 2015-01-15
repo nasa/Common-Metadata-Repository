@@ -98,6 +98,9 @@
          "'SHO?RT'" [coll2]
          "'SHO*RT'" [coll3]
 
+         "''" []
+         "" []
+
          ;; Using patterns
          "%" all-colls
          "SHO_RT" [coll2 coll3 coll4 coll5 coll6]

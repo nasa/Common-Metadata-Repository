@@ -20,13 +20,13 @@
 
 (defn- attrib-range-elem->condition
   [attrib-type attrib-name range-elem]
-  (let [minv (get-in range-elem [:attrs :lower])
-        maxv (get-in range-elem [:attrs :upper])
+  (let [minv (a/remove-outer-single-quotes (get-in range-elem [:attrs :lower]))
+        maxv (a/remove-outer-single-quotes (get-in range-elem [:attrs :upper]))
         condition (qm/map->AttributeRangeCondition
                     {:type attrib-type
                      :name attrib-name
-                     :min-value (when-not (s/blank? minv) (a/remove-outer-single-quotes minv))
-                     :max-value (when-not (s/blank? maxv) (a/remove-outer-single-quotes maxv))})]
+                     :min-value (when-not (s/blank? minv) minv)
+                     :max-value (when-not (s/blank? maxv) maxv)})]
     (p/parse-component-type condition)))
 
 (defn- time-from-strings
