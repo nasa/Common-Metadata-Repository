@@ -70,10 +70,26 @@
 (deftracefn save-concept
   "Store a concept in mdb and indexer and return concept-id and revision-id."
   [context concept]
+
+  ;; 1. Validate request
   (v/validate-concept-request concept)
+
+  ;;2. Validate XML
   (v/validate-concept-xml concept)
+
+  ;; 3. Parse concept
   (let [umm-record (umm/parse-concept concept)
+
+        ;; 4. Lookup Parent
+        ;; TODO
+
+        ;; 5. Umm record validation
+        ;; TODO
+
         concept (add-extra-fields context concept umm-record)
+
+
+        ;; TODO Move this to UMM validation
         time-to-compare (t/plus (tk/now) (t/minutes 1))
         delete-time (get-in concept [:extra-fields :delete-time])
         delete-time (if delete-time (p/parse-datetime delete-time) nil)]
@@ -81,6 +97,12 @@
       (serv-errors/throw-service-error
         :bad-request
         (format "DeleteTime %s is before the current time." (str delete-time)))
+
+      ;; 6. Ingest Validation
+        ;; TODO
+
+
+      ;; 7. Save concept
       (let [{:keys [concept-id revision-id]} (mdb/save-concept context concept)]
         (indexer/index-concept context concept-id revision-id)
         {:concept-id concept-id, :revision-id revision-id}))))
