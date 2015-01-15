@@ -30,7 +30,10 @@
 
 (def granule-validations
   "Defines validations for granules"
-  {})
+  {
+   ;; TODO this is a temporary validation. There must be at least one validation or else bouncer fails.
+   :access-value v/number
+   })
 
 (def umm-validations
   "A list of validations by type"
