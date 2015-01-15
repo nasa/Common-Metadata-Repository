@@ -17,7 +17,7 @@
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
-(defn- umm-granule->granule-concept
+(defn umm-granule->granule-concept
   "Returns the granule concept for ingest for the given umm granule"
   [gran]
   (assoc (d/item->concept gran :echo10) :provider-id "PROV1"))

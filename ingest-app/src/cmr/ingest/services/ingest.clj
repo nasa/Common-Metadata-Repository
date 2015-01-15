@@ -67,6 +67,13 @@
     (assoc concept :extra-fields {:parent-collection-id parent-collection-id
                                   :delete-time (when delete-time (str delete-time))})))
 
+(deftracefn validate-concept
+  "Validate that a concept is valid for ingest without actually ingesting the concept.
+  Return an appropriate error message indicating any validation failures."
+  [context concept]
+  (v/validate-concept-request concept)
+  (v/validate-concept-xml concept))
+
 (deftracefn save-concept
   "Store a concept in mdb and indexer and return concept-id and revision-id."
   [context concept]

@@ -62,6 +62,14 @@
           (name type)
           (codec/url-encode native-id)))
 
+(defn validate-url
+  [provider-id type native-id]
+  (format "http://localhost:%s/providers/%s/validate/%s/%s"
+          (transmit-config/ingest-port)
+          (codec/url-encode provider-id)
+          (name type)
+          (codec/url-encode native-id)))
+
 (defn ingest-create-provider-url
   []
   (format "http://localhost:%s/providers" (transmit-config/ingest-port)))
