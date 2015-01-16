@@ -31,7 +31,7 @@
 (defn- platform->expected-parsed
   "Returns the expected parsed platform for the given platform."
   [instruments platform]
-  (assoc platform :type "Not Specified" :instruments instruments :characteristics nil))
+  (assoc platform :type "Spacecraft" :instruments instruments :characteristics nil))
 
 (defn- platforms->expected-parsed
   "Returns the expected parsed platforms for the given platforms."
@@ -179,7 +179,7 @@
                     :platforms [(umm-c/map->Platform
                                   {:short-name "SMAP"
                                    :long-name "Soil Moisture Active and Passive Observatory"
-                                   :type "Not Specified"
+                                   :type "Spacecraft"
                                    :instruments [(umm-c/map->Instrument
                                                    {:short-name "SMAP L-BAND RADAR"
                                                     :long-name "SMAP L-Band Radar"})

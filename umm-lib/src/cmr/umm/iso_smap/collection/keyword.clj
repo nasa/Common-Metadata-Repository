@@ -68,7 +68,7 @@
     (c/map->Platform
       {:short-name short-name
        :long-name (if (empty? long-name) nil long-name)
-       :type "Not Specified"
+       :type "Spacecraft"
        :instruments instruments})))
 
 (defn xml-elem->Platforms
