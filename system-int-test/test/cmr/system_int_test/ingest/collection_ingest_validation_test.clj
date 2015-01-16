@@ -18,12 +18,15 @@
 
   )
 
-(deftest collection-product-specific-attribute-validation
+;; This tests that UMM type validations are applied during collection ingest.
+;; Thorough tests of UMM validations should go in cmr.umm.test.validation.core and related
+;; namespaces.
+(deftest collection-umm-validation-test
   (testing "additional attribute names must be unique"
     (let [response (d/ingest "PROV1"
                              (dc/collection {:product-specific-attributes
                                              [(dc/psa "bool" :boolean true)
                                               (dc/psa "bool" :boolean true)]}))]
       (is (= {:status 400
-              :errors ["AdditionalAttributes must be unique. It contained duplicate names [bool]."]}
+              :errors ["AdditionalAttributes must be unique. This contains duplicates named [bool]."]}
              (select-keys response [:status :errors]))))))

@@ -1,13 +1,24 @@
 (ns cmr.umm.validation.utils
-  "This contains utility methods for helping perform validations."
+  "This contains utility methods for helping perform validations.
+
+  The bouncer library (https://github.com/leonardoborges/bouncer) is used for defining validations.
+  We're using some of the features of bouncer to change how message formatting is done. We have a
+  requirement to use field names corresponding to the field names of the ingested format like ECHO10
+  and DIF. (See CMR-963) Bouncer by default will use the name of the field from the record being
+  validated. This namespace includes code to delay the setting of that field information until after
+  validation. The UMM field paths are translated into the equivalent paths in the source format.
+
+  An additional extension to the bouncer library is the addition of a :format-fn in the metadata of
+  a validator. The :format-fn defines a function that will take the message format string, field name,
+  and the value that had an error to generate an error message. The purpose of this is to allow error
+  messages to include details about the values that had an error. See unique-by-name-validator for
+  an example of defining a custom format-fn."
   (:require [bouncer.core :as b]
             [bouncer.validators :as v :refer [defvalidator]]
             [cmr.common.services.errors :as e]
             [clojure.string :as str])
   (:import cmr.umm.collection.UmmCollection
            cmr.umm.granule.UmmGranule))
-
-;; Utility functions
 
 (def umm-metadata-path-map
   "A map of metadata-format concept-type tuples to a map that maps UMM fields to the equivalent
@@ -25,13 +36,39 @@
    {;; This XPath will select the granule spatial representation.
     ;; /DIF/./Extended_Metadata/Metadata[Name="GranuleSpatialRepresentation"]/Value
     :product-specific-attributes "AdditionalAttributes"
+
+    ;; TODO this is a temporary example of how we might be able to have paths that can generate an
+    ;; XPath for errors as well as a human readable name for a field.
     :spatial-coverage ["." {:granule-spatial-representation
                             {:xpath "Extended_Metadata/Metadata[Name=\"GranuleSpatialRepresentation\"]/Value"
                              :human "GranuleSpatialRepresentation"}}]}
    })
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Utility functions
+
 (defn- umm-path->format-type-path
-  "Converts a path of UMM field keywords into a path specific for the metadata format and concept type."
+  "Converts a path of UMM field keywords into a path specific for the metadata format and concept
+  type.
+
+  Example:
+
+  (umm-path->format-type-path
+  :echo10 :collection [:spatial-coverage :granule-spatial-representation])
+  => [\"Spatial\" \"GranuleSpatialRepresentation\"]
+
+  [:spatial-coverage :granule-spatial-representation] represents a path within the UMM collection
+  record to a specific field that might have an error. This function converts it to
+  [\"Spatial\" \"GranuleSpatialRepresentation\"] which is the path to the equivalent item within
+  ECHO10 XML.
+
+  TODO For things like DIF the actual XPath to the granule spatial representation is
+  /DIF/Extended_Metadata/Metadata[Name=\"GranuleSpatialRepresentation\"]/Value
+  One of the requested features is the ability for error messages to include an XPath to the
+  problematic area of the metadata. I'm going to schedule a meeting to talk with Patrick about this.
+  He has asked for XPath but I'm not sure XPaths like the above are really usable in a client which
+  must annotate form fields.
+  See CMR-1169"
   [metadata-format concept-type umm-path]
   (loop [format-type-map (umm-metadata-path-map [metadata-format concept-type])
          field-path umm-path
@@ -53,11 +90,16 @@
         (recur submap (rest field-path) (conj new-path format-name)))
       new-path)))
 
+
 (defn- message-fn
   "The message function used with bouncer validation. Avoids constructing the individual messages
-  during validation so they can be customized per format later after validation is complete."
+  during validation so they can be customized per format later after validation is complete. Instead
+  of taking the message details and returning a string error it returns a subset of the data that
+  was passed in. After validation has completed these are used to construct format specific
+  error messages."
   [m]
   {:default-message-format (get-in m [:metadata :default-message-format])
+   ;; The :format-fn will default to the standard Clojure format function.
    :format-fn (get-in m [:metadata :format-fn] format)
    :value (:value m)})
 
@@ -97,12 +139,13 @@
        (create-format-specific-error-messages metadata-format (umm-type->concept-type (type umm)))))
 
 
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Common validations
 
 (defvalidator unique-by-name-validator
-  {:default-message-format "%s must be unique. It contained duplicate names [%s]."
-   :optional true
+  {:default-message-format "%s must be unique. This contains duplicates named [%s]."
+   :optional true ; don't run this validation if the value is nil.
+   ;; Define a custom :format-fn to include the duplicate values in the error message.
    :format-fn (fn [message-format field values]
                 (let [freqs (frequencies (map :name values))
                       duplicate-names (for [[v freq] freqs :when (> freq 1)] v)]

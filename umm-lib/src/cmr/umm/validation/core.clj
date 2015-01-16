@@ -1,4 +1,5 @@
 (ns cmr.umm.validation.core
+  "Defines validations UMM concept types."
   (:require [bouncer.core :as b]
             [bouncer.validators :as v]
             [cmr.umm.validation.utils :as vu]

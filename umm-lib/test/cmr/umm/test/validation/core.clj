@@ -1,4 +1,5 @@
 (ns cmr.umm.test.validation.core
+  "This has tests for UMM validations."
   (:require [clojure.test :refer :all]
             [cmr.umm.validation.core :as v]
             [cmr.umm.collection :as c]))
@@ -28,7 +29,7 @@
                                   {:name "charlie"}])]
         (assert-invalid
           coll :echo10
-          ["AdditionalAttributes must be unique. It contained duplicate names [foo, bar]."])
+          ["AdditionalAttributes must be unique. This contains duplicates named [foo, bar]."])
         (assert-invalid
           coll :dif
-          ["AdditionalAttributes must be unique. It contained duplicate names [foo, bar]."])))))
+          ["AdditionalAttributes must be unique. This contains duplicates named [foo, bar]."])))))
