@@ -95,6 +95,35 @@ sample output:
 sample output:
 {"concept-id":"C12-CurlPROV009","revision-id":1}
 
+### Validate collection
+
+    curl -i -XPOST -H "Content-type: application/echo10+xml" http://localhost:3002/providers/PROV1/validate/collection/sampleNativeId15 -d \
+    "<Collection> \
+      <ShortName>ShortName_Larc</ShortName> \
+      <VersionId>Version01</VersionId> \
+      <InsertTime>1999-12-31T19:00:00-05:00</InsertTime> \
+      <LastUpdate>1999-12-31T19:00:00-05:00</LastUpdate> \
+      <DeleteTime>2015-05-23T22:30:59</DeleteTime> \
+      <LongName>LarcLongName</LongName> \
+      <DataSetId>LarcDatasetId</DataSetId> \
+      <Description>A minimal valid collection</Description> \
+      <Orderable>true</Orderable> \
+      <Visible>true</Visible> \
+      </Collection>"
+
+### Validate granule
+
+    curl -i -XPOST -H "Content-type: application/echo10+xml" http://localhost:3002/providers/PROV1/validate/granule/sampleGranuleNativeId33 -d \
+    "<Granule> \
+        <GranuleUR>SC:AE_5DSno.002:30500511</GranuleUR> \
+        <InsertTime>2009-05-11T20:09:16.340Z</InsertTime> \
+        <LastUpdate>2014-03-19T09:59:12.207Z</LastUpdate> \
+        <Collection> \
+        <DataSetId>AMSR-E/Aqua 5-Day L3 Global Snow Water Equivalent EASE-Grids V002</DataSetId> \
+        </Collection> \
+        <Orderable>true</Orderable> \
+    </Granule>"
+
 ### Check application health
 
 This will report the current health of the application. It checks all resources and services used by the application and reports their healthes in the response body in JSON format. For resources, the report includes an "ok?" status and a "problem" field if the resource is not OK. For services, the report includes an overall "ok?" status for the service and health reports for each of its dependencies. It returns HTTP status code 200 when the application is healthy, which means all its interfacing resources and services are healthy; or HTTP status code 503 when one of the resources or services is not healthy. It also takes pretty parameter for pretty printing the response.
