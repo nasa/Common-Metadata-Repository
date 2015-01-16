@@ -14,12 +14,18 @@
             [cmr.common.jobs :as jobs]
             [cmr.acl.core :as acl]
             [cmr.oracle.connection :as oracle]
+            [cmr.message-queue.queue.rabbit-mq :as rmq]
+            [cmr.message-queue.config :as rmq-conf]
             [cmr.common.config :as cfg]))
 
 (def
   ^{:doc "Defines the order to start the components."
     :private true}
-  component-order [:log :db :web :scheduler])
+  component-order [:log :db :indexer-queue :web :scheduler])
+
+(def index-queue-name
+  "Queue used for requesting indexing of concepts"
+  (cfg/config-value-fn :index-queue-name "cmr_index.queue"))
 
 (def system-holder
   "Required for jobs"
@@ -36,32 +42,37 @@
               :zipkin (context/zipkin-config "Ingest" false)
               :scheduler (jobs/create-clustered-scheduler `system-holder ingest-jobs/jobs)
               :caches {acl/token-imp-cache-key (acl/create-token-imp-cache)}
-              :relative-root-url (transmit-config/ingest-relative-root-url)}]
+              :relative-root-url (transmit-config/ingest-relative-root-url)
+              :indexer-queue (rmq/create-queue {:host (rmq-conf/rabbit-mq-host)
+                                                :port (rmq-conf/rabbit-mq-port)
+                                                :username (rmq-conf/rabbit-mq-username)
+                                                :password (rmq-conf/rabbit-mq-password)
+                                                :required-queues [(index-queue-name)]})}]
      (transmit-config/system-with-connections sys [:metadata-db :indexer :echo-rest]))))
 
-   (defn start
-     "Performs side effects to initialize the system, acquire resources,
-     and start it running. Returns an updated instance of the system."
-     [this]
-     (info "System starting")
-     (let [started-system (reduce (fn [system component-name]
-                                    (update-in system [component-name]
-                                               #(when % (lifecycle/start % system))))
-                                  this
-                                  component-order)]
-       (info "System started")
-       started-system))
+(defn start
+  "Performs side effects to initialize the system, acquire resources,
+  and start it running. Returns an updated instance of the system."
+  [this]
+  (info "System starting")
+  (let [started-system (reduce (fn [system component-name]
+                                 (update-in system [component-name]
+                                            #(when % (lifecycle/start % system))))
+                               this
+                               component-order)]
+    (info "System started")
+    started-system))
 
-   (defn stop
-     "Performs side effects to shut down the system and release its
-     resources. Returns an updated instance of the system."
-     [this]
-     (info "System shutting down")
-     (let [stopped-system (reduce (fn [system component-name]
-                                    (update-in system [component-name]
-                                               #(when % (lifecycle/stop % system))))
-                                  this
-                                  (reverse component-order))]
-       (info "System stopped")
-       stopped-system))
+(defn stop
+  "Performs side effects to shut down the system and release its
+  resources. Returns an updated instance of the system."
+  [this]
+  (info "System shutting down")
+  (let [stopped-system (reduce (fn [system component-name]
+                                 (update-in system [component-name]
+                                            #(when % (lifecycle/stop % system))))
+                               this
+                               (reverse component-order))]
+    (info "System stopped")
+    stopped-system))
 

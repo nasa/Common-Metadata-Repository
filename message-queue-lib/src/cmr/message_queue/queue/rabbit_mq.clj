@@ -3,7 +3,7 @@
   (:gen-class)
   (:require [cmr.common.lifecycle :as lifecycle]
             [cmr.common.log :as log :refer (debug info warn error)]
-            [cmr.message_queue.config :as config]
+            [cmr.message-queue.config :as config]
             [cmr.common.services.errors :as errors]
             [cmr.message-queue.services.queue :as queue]
             [langohr.core :as rmq]
@@ -21,6 +21,11 @@
   "Returns the name of the wait queue associated with the given queue name and repeat-count"
   [queue-name repeat-count]
   (str queue-name "_wait_" repeat-count))
+
+(defn- wait-queue-ttl
+  "Returns the Time-To-Live (TTL) in milliseconds for the nth wait queue"
+  [n]
+  (* (config/rabbit-mq-ttl-base) (math/expt 4 (dec n))))
 
 (def ^{:const true}
   default-exchange-name "")
@@ -53,7 +58,7 @@
       (lq/declare ch queue-name opts))
 ;))
 
-(defrecord RabbitMQConnection
+(defrecord RabbitMQBroker
   [
    ;; RabbitMQ server host
    host
@@ -70,6 +75,9 @@
    ;; Connection to the message queue
    conn
 
+   ;; Queues that should be created on startup
+   required-queues
+
    ;; true or false to indicate it's running
    running?
    ]
@@ -83,9 +91,13 @@
     (when (:running? this)
       (errors/internal-error! "Already connected"))
     (let [{:keys [host port user password]} this
-          conn (rmq/connect {:host host :port port :username "cmr" :password "cmr"})]
+          conn (rmq/connect {:host host :port port :username "cmr" :password "cmr"})
+          this (assoc this :conn conn :running? true)]
       (debug "Connection started")
-      (assoc this :conn conn :running? true)))
+      (doseq [queue-name (:required-queues this)]
+        (queue/create-queue this queue-name))
+      (debug "Required queues created")
+      this))
 
   (stop
     [this system]
@@ -107,7 +119,7 @@
       ;; create wait queues to use with the primary queue
       (debug "Creating wait queues")
       (doseq [x (range 1 (inc (config/rabbit-mq-max-retries)))
-              :let [ttl (* (config/rabbit-mq-ttl-base) (math/expt 4 (dec x)))
+              :let [ttl (wait-queue-ttl x)
                     wq (wait-queue-name queue-name x)
                     _ (debug "Creating wait queue" wq)]]
         (safe-create-queue ch
@@ -154,22 +166,31 @@
     [this queue-name]
     (let [conn (:conn this)
           ch (lch/open conn)]
-      (lq/delete ch queue-name))))
+      (lq/delete ch queue-name)))
+
+  (ack
+    [this ch delivery-tag]
+    (lb/ack ch delivery-tag))
+
+  (nack
+    [this ch delivery-tag multiple requeue]
+    (lb/nack ch delivery-tag multiple requeue)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn create-queue
-  "Create a RabbitMQConnection"
+  "Create a RabbitMQBroker"
   [params]
-  (let [{:keys [host port username password]} params]
-    (->RabbitMQConnection host port username password nil false)))
+  (let [{:keys [host port username password required-queues]} params]
+    (->RabbitMQBroker host port username password nil required-queues false)))
 
 (comment
 
   (def q (let [q (create-queue {:host (config/rabbit-mq-host)
                                 :port (config/rabbit-mq-port)
                                 :username (config/rabbit-mq-username)
-                                :passowrd (config/rabbit-mq-password)})]
+                                :password (config/rabbit-mq-password)
+                                :required-queues ["test.simple"]})]
            (lifecycle/start q {})))
 
   (defn test-message-handler
@@ -195,13 +216,19 @@
                 (debug "Max retries exceeded for procesessing message:" msg)
                 (lb/nack ch delivery-tag false false))
               (let [msg (assoc msg :repeat-count (inc repeat-count))
-                    wait-q (wait-queue-name routing-key (inc repeat-count))]
-                (debug "Retrying with repeat-count =" (inc repeat-count) " on queue" wait-q)
+                    wait-q (wait-queue-name routing-key (inc repeat-count))
+                    ttl (wait-queue-ttl (inc repeat-count))]
+                (debug "Retrying with repeat-count ="
+                       (inc repeat-count)
+                       " on queue"
+                       wait-q
+                       "with ttl = "
+                       ttl)
                 (queue/publish q wait-q msg)
                 (lb/ack ch delivery-tag)))
             (do
               ;; bad data - nack it
-              (debug "Rejecting bad datas")
+              (debug "Rejecting bad data")
               (lb/nack ch delivery-tag false false))))
 
 
@@ -212,8 +239,6 @@
 
 
   (let [msg {:type :index-concept :concept-id "C1000-PROV1" :revision-id 1}]
-    (debug "Creating test queue")
-    (queue/create-queue q "test.simple")
     (debug "Subscribing to test queue")
     (queue/subscribe q "test.simple" test-message-handler {})
     (debug "Publishing to test queue")
