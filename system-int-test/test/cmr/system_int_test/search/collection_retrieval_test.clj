@@ -45,7 +45,7 @@
         guest-token (e/login-guest)
         user1-token (e/login "user1")]
     (ingest/delete-concept (d/item->concept del-coll :echo10))
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (testing "retrieval of a deleted collection results in a 404"
       (let [response (search/get-concept-by-concept-id (:concept-id del-coll)

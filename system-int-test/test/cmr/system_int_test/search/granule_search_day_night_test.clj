@@ -24,7 +24,7 @@
         gran8 (d/ingest "PROV2" (dg/granule coll2 {:day-night "BOTH"}))
         gran9 (d/ingest "PROV2" (dg/granule coll2 {:day-night "BOTH"}))
         gran10 (d/ingest "PROV2" (dg/granule coll2 {:day-night "UNSPECIFIED"}))]
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (testing "search by day-night-flag"
       (are [items day-night options]

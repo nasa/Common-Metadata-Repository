@@ -79,7 +79,7 @@
         g7 (make-gran coll2 "gran7" 31.48193 50 :desc -50 :desc)
         g8 (make-gran coll2 "gran8" 7.28116 -50 :asc 50 :asc)
         g9 (make-gran coll3 "gran9" 127.73 81.8 :desc -81.8 :desc)]
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (testing "bounding rectangle searches"
       (are [items wnes params]
@@ -184,7 +184,7 @@
                                                           :orbit op2})}))
         g1 (make-gran coll1 "gran1" 104.0852 50 :asc 50 :asc)
         g2 (make-gran coll2 "gran2" 31.946 70.113955 :asc  -71.344289 :desc)]
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (testing "bounding rectangle searches"
       (are [items wnes params]

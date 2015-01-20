@@ -141,7 +141,7 @@
                          (processing-level-id "PL1"))
         all-colls [coll1 coll2 coll3 coll4 coll5 coll6]]
 
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (testing "invalid include-facets"
       (is (= {:errors ["Parameter include_facets must take value of true, false, or unset, but was foo"] :status 400}

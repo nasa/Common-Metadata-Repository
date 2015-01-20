@@ -69,7 +69,7 @@
       (ingest/tombstone-concept coll2-tombstone)
 
       (bootstrap/bulk-index-provider "PROV1")
-      (index/refresh-elastic-index)
+      (index/wait-until-indexed)
 
       (testing "Expired documents are not indexed during bulk indexing and deleted documents
                get deleted."
@@ -141,7 +141,7 @@
       (bootstrap/bulk-index-provider "PROV1")
       ;; force our future to complete
       @f
-      (index/refresh-elastic-index)
+      (index/wait-until-indexed)
 
       (testing "retrieval after bulk indexing returns the latest revision."
         (doseq [collection collections]

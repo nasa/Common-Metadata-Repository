@@ -46,7 +46,7 @@
         coll19 (d/ingest "PROV2" (dc/collection {:beginning-date-time "2001-11-15T12:00:00Z"
                                                      :ending-date-time "2001-12-15T12:00:00Z"}))
         coll20 (d/ingest "PROV2" (dc/collection {}))]
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (testing "search by both start-day and end-day."
       (let [references (search/find-refs :collection

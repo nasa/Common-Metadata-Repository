@@ -60,7 +60,7 @@
           gran5 (make-gran coll5 "gran5")
           gran6 (make-gran coll6 "gran6")
           all-grans [gran1 gran2 gran3 gran4 gran5 gran6]]
-      (index/refresh-elastic-index)
+      (index/wait-until-indexed)
 
       (testing "We can find everything before they expire"
         (is (d/refs-match? all-colls (search/find-refs :collection {})))
@@ -68,21 +68,21 @@
 
       (testing "And after the job runs we can still find everything"
         (ingest/cleanup-expired-collections)
-        (index/refresh-elastic-index)
+        (index/wait-until-indexed)
         (is (d/refs-match? all-colls (search/find-refs :collection {})))
         (is (d/refs-match? all-grans (search/find-refs :granule {}))))
 
       (testing "Time can advance part way but the collections still won't be cleaned up"
         (tk/advance-time! 99)
         (ingest/cleanup-expired-collections)
-        (index/refresh-elastic-index)
+        (index/wait-until-indexed)
         (is (d/refs-match? all-colls (search/find-refs :collection {})))
         (is (d/refs-match? all-grans (search/find-refs :granule {}))))
 
       (testing "collections are removed after their expiration date"
         (tk/advance-time! 2)
         (ingest/cleanup-expired-collections)
-        (index/refresh-elastic-index)
+        (index/wait-until-indexed)
         (is (d/refs-match? [coll4 coll5 coll6] (search/find-refs :collection {})))
         (is (d/refs-match? [gran4 gran5 gran6] (search/find-refs :granule {})))))))
 

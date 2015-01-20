@@ -15,7 +15,7 @@
         coll3 (d/ingest "PROV1" (dc/collection {:collection-data-type "OTHER"}))
         coll4 (d/ingest "PROV1" (dc/collection {}))]
 
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (testing "search by collection data type."
       (are [items value options] (d/refs-match? items (search/find-refs

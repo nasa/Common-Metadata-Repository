@@ -24,7 +24,7 @@
         coll1 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2 psa3]}))
         coll2 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa2 psa3]}))
         coll3 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa3 psa4]}))]
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
     (are [v items]
          (d/refs-match? items (search/find-refs :collection {"attribute[]" v}))
          "string,bool,true" [coll1]
@@ -42,7 +42,7 @@
         coll1 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2]}))
         coll2 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa2 psa3]}))
         coll3 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa4]}))]
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
     (testing "search by value"
       (are [v items]
            (d/refs-match? items (search/find-refs :collection {"attribute[]" v}))
@@ -201,7 +201,7 @@
         psa3 (dc/psa "charlie" :float 45)
         coll1 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2]}))
         coll2 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa2 psa3]}))]
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (testing "search by value"
       (are [v items]
@@ -283,7 +283,7 @@
         psa3 (dc/psa "charlie" :int 45)
         coll1 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2]}))
         coll2 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa2 psa3]}))]
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (testing "search by value"
       (are [v items]
@@ -364,7 +364,7 @@
         psa3 (dc/psa "charlie" :datetime (d/make-datetime 45 false))
         coll1 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2]}))
         coll2 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa2 psa3]}))]
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (testing "search by value"
       (are [v n items]
@@ -459,7 +459,7 @@
         psa3 (dc/psa "charlie" :time (d/make-time 45 false))
         coll1 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2]}))
         coll2 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa2 psa3]}))]
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (testing "search by value"
       (are [v n items]
@@ -555,7 +555,7 @@
         coll1 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2]}))
         coll2 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa2 psa3]}))]
 
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (testing "search by value"
       (are [v n items]

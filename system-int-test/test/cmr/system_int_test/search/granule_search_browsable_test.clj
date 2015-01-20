@@ -22,7 +22,7 @@
         g5 (d/ingest "PROV1" (dg/granule coll {:related-urls [ru1 ru2]}))
         g6 (d/ingest "PROV1" (dg/granule coll {}))]
 
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (are [value items]
          (d/refs-match? items (search/find-refs :granule {:browsable value}))

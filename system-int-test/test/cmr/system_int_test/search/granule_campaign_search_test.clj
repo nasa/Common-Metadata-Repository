@@ -18,7 +18,7 @@
                                                        :project-refs ["ABC" "XYZ"]}))
         gran3 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule3"
                                                        :project-refs ["PDQ" "RST"]}))]
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (testing "search by campaign"
       (are [campaign-sn items] (d/refs-match? items (search/find-refs :granule {:campaign campaign-sn}))

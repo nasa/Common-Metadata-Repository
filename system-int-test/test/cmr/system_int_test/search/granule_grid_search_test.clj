@@ -98,7 +98,7 @@
                                                               :start-coordinate-2 300
                                                               :end-coordinate-2 320})}))
         gran12 (d/ingest "PROV1" (dg/granule coll1 {}))]
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (testing "search granules by grid"
       (are [items two-d]

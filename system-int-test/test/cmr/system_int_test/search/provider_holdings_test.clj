@@ -52,7 +52,7 @@
         (dotimes [m granule-count]
           (d/ingest "PROV2" (dg/granule coll)))))
 
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     {"PROV1" prov1-holdings
      "PROV2" prov2-holdings}))

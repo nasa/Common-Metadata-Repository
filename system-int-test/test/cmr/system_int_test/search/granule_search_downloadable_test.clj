@@ -22,7 +22,7 @@
         gran5 (d/ingest "PROV1" (dg/granule coll {:related-urls [ru1 ru2]}))
         gran6 (d/ingest "PROV1" (dg/granule coll {}))]
 
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (testing "search by downloadable true."
       (is (d/refs-match? [gran1 gran5]
@@ -49,7 +49,7 @@
         gran5 (d/ingest "PROV1" (dg/granule coll {:related-urls [ru1 ru2]}))
         gran6 (d/ingest "PROV1" (dg/granule coll {}))]
 
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (testing "search by online only true."
       (is (d/refs-match? [gran1 gran5]

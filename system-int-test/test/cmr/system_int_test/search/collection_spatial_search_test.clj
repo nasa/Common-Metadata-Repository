@@ -78,7 +78,7 @@
                                      0.0001 89.9999, 0.0001 -89.9999))
         all-colls [west-hemi-poly1 west-hemi-poly2 west-hemi-poly3 east-hemi-poly1 east-hemi-poly2 combined]]
 
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (are [lon_lat items]
          (let [found (search/find-refs :collection {:point (codec/url-encode (apply p/point lon_lat))
@@ -164,7 +164,7 @@
                    normal-point am-point very-wide-cart very-tall-cart wide-north-cart
                    wide-south-cart normal-poly-cart polygon-with-holes-cart normal-line
                    normal-line-cart along-am-line]]
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (testing "line searches"
       (are [ords items]

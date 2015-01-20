@@ -18,7 +18,7 @@
         coll5 (d/ingest "PROV2" (dc/collection {:projects (dc/projects "EVI" "EPI")}))
         coll6 (d/ingest "PROV2" (dc/collection {:projects (dc/projects "ESI" "EVI" "EPI")}))]
 
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (testing "search by single campaign term."
       (are [campaign-sn items] (d/refs-match? items (search/find-refs :collection {:campaign campaign-sn}))

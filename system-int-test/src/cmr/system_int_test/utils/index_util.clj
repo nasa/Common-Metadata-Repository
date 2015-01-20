@@ -1,11 +1,23 @@
 (ns ^{:doc "provides index related utilities."}
   cmr.system-int-test.utils.index-util
   (:require [clj-http.client :as client]
-            [cmr.system-int-test.utils.url-helper :as url]))
+            [cmr.system-int-test.utils.url-helper :as url]
+            [cmr.indexer.config :as config]
+            [cmr.system-int-test.utils.test-environment :as te]
+            [cmr.system-int-test.utils.queue :as queue]
+            [cmr.common.log :as log :refer (debug info warn error)]))
 
 (defn refresh-elastic-index
   []
   (client/post (url/elastic-refresh-url) {:connection-manager (url/conn-mgr)}))
+
+(defn wait-until-indexed
+  "Wait until ingested concepts have been indexed"
+  []
+  (when (and (te/real-database?)
+             (config/use-index-queue?))
+    (queue/wait-for-index-queue))
+  (refresh-elastic-index))
 
 
 

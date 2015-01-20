@@ -66,7 +66,7 @@
                                                                                    :term "Mild"})]
                                            :organizations [(dc/org :distribution-center "Larc")]})
                            coll-format)]
-        (index/refresh-elastic-index)
+        (index/wait-until-indexed)
         (is (= expected-rev (:revision-id coll)))
         (is (= 1 (:hits (search/find-refs :collection {:keyword (name coll-format)}))))))))
 
@@ -118,11 +118,11 @@
         gran2 (d/ingest "PROV1" (dg/granule coll1))
         coll2 (d/ingest "PROV1" (dc/collection))
         gran3 (d/ingest "PROV1" (dg/granule coll2))]
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     ;; delete collection
     (is (= 200 (:status (ingest/delete-concept (d/item->concept coll1 :echo10)))))
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (is (:deleted (ingest/get-concept (:concept-id coll1))) "The collection should be deleted")
     (is (not (ingest/concept-exists-in-mdb? (:concept-id gran1) (:revision-id gran1)))

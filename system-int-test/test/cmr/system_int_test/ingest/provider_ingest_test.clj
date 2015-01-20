@@ -26,14 +26,14 @@
         gran3 (d/ingest "PROV1" (dg/granule coll2))
         coll3 (d/ingest "PROV2" (dc/collection))
         gran4 (d/ingest "PROV2" (dg/granule coll3))]
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (is (= 2 (count (:refs (search/find-refs :collection {:provider-id "PROV1"})))))
     (is (= 3 (count (:refs (search/find-refs :granule {:provider-id "PROV1"})))))
 
     ;; delete provider PROV1
     (is (= 200 (ingest/delete-ingest-provider "PROV1")))
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     ;; PROV1 concepts are not in metadata-db
     (are [concept]

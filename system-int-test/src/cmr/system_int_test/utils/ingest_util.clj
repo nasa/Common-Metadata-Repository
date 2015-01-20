@@ -217,7 +217,7 @@
   "Resets the database and the elastic indexes"
   []
   (client/post (url/dev-system-reset-url) (admin-connect-options))
-  (index/refresh-elastic-index))
+  (index/wait-until-indexed))
 
 (defn clear-caches
   []

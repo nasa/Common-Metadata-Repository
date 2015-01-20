@@ -25,7 +25,7 @@
         gran5 (d/ingest "PROV2" (dg/granule coll5 {:granule-ur "Granule5"}))
         gran6 (d/ingest "PROV2" (dg/granule coll6 {:granule-ur "Granule6"}))
         gran7 (d/ingest "PROV2" (dg/granule coll7 {:granule-ur "Granule7"}))]
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (testing "search granule by short name."
       (are [items names options]
@@ -92,7 +92,7 @@
         gran5 (d/ingest "PROV2" (dg/granule coll5 {:granule-ur "Granule5"}))
         gran6 (d/ingest "PROV2" (dg/granule coll6 {:granule-ur "Granule6"}))
         gran7 (d/ingest "PROV2" (dg/granule coll7 {:granule-ur "Granule7"}))]
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (testing "search granule by version id"
       (are [items versions options]

@@ -19,7 +19,7 @@
                                        :short-name "ShortName2"}))
         coll3 (d/ingest "PROV1" (dc/collection {}))]
 
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (testing "search fields with special characters."
       (are [key value items] (d/refs-match? items
@@ -37,7 +37,7 @@
         gran2 (d/ingest "PROV1" (dg/granule coll2 {:granule-ur "Granule2"}))
         gran3 (d/ingest "PROV1" (dg/granule coll3 {:granule-ur "Granule3"}))]
 
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (testing "search fields with special characters."
       (are [key value items] (d/refs-match? items

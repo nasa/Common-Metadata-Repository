@@ -72,7 +72,7 @@
         coll10 (make-coll 10 "_SHORT")
         coll11 (make-coll 11 "\\SHORT")
         all-colls [coll1 coll2 coll3 coll4 coll5 coll6 coll7 coll8 coll9 coll10 coll11]]
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
     (are [search-str items]
          (let [refs (search/find-refs-with-aql :collection [{:shortName search-str :pattern true}])
                result (d/refs-match? items refs)]
@@ -114,7 +114,7 @@
         coll2 (make-coll 2)
         coll3 (make-coll 3)
         coll4 (make-coll 4)]
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (testing "invalid query parameter"
       (is (= {:errors ["Parameter [foo] was not recognized."]
@@ -149,7 +149,7 @@
                                                 :short-name "Short"}))
         coll4 (d/ingest "PROV2" (dc/collection {:entry-title "Dataset2"
                                                 :short-name "LongOne"}))]
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (testing "multiple conditions with aql"
       (are [items conditions data-center-condition]

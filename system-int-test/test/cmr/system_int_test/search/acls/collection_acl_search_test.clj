@@ -83,7 +83,7 @@
         user2-token (e/login "user2" ["group-guid1"])
         user3-token (e/login "user3" ["group-guid1" "group-guid2"])]
 
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (testing "parameter search acl enforcement"
       (are [token items]
@@ -185,9 +185,9 @@
         coll3 (d/ingest "PROV2" (dc/collection {:entry-title "coll3"}))
         coll4 (d/ingest "PROV2" (dc/collection {:entry-title "coll4"}))]
 
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
     (ingest/reindex-collection-permitted-groups)
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     ;; before acls change
     (is (d/refs-match? [coll1 coll3] (search/find-refs :collection {})))
@@ -204,7 +204,7 @@
 
     ;; Reindex collection permitted groups
     (ingest/reindex-collection-permitted-groups)
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     ;; Try searching again
     (is (d/refs-match? [coll1 coll2 coll4] (search/find-refs :collection {})))))
@@ -217,7 +217,7 @@
         user1-token (e/login "user1")
         user2-token (e/login "user2")]
 
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     ;; A logged out token is normally not useful
     (e/logout user2-token)
