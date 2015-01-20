@@ -7,6 +7,7 @@
             [clj-http.client :as client]
             [cheshire.core :as cheshire]
             [clojure.string :as string]
+            [cmr.common.mime-types :as mt]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.old-ingest-util :as old-ingest]
             [cmr.system-int-test.data2.collection :as dc]
@@ -165,4 +166,26 @@
     (is (= 1 revision-id))
     (is (= "Name/With/Slashes" (:native-id ingested-concept)))))
 
+(deftest granule-schema-validation-test
+  (are [concept-format validation-errors]
+       (let [collection (d/ingest "PROV1" (dc/collection {}))
+             umm-granule (dg/granule collection {:native-id "Name/With/Slashes"})
+             concept (dg/umm-granule->granule-concept
+                       (dg/granule collection {:beginning-date-time "2010-12-12T12:00:00Z"})
+                       concept-format)
+             {:keys [status errors]}
+             (ingest/ingest-concept
+               (assoc concept
+                      :format (mt/format->mime-type concept-format)
+                      :metadata (-> concept
+                                    :metadata
+                                    (string/replace "2010-12-12T12:00:00" "A")
+                                    ;; this is to cause validation error for iso-smap format
+                                    (string/replace "gmd:DS_Series" "XXXX"))))]
+         (= [400 validation-errors] [status errors]))
+
+       :echo10 ["Line 1 - cvc-datatype-valid.1.2.1: 'A.000Z' is not a valid value for 'dateTime'."
+                "Line 1 - cvc-type.3.1.3: The value 'A.000Z' of element 'BeginningDateTime' is not valid."]
+
+       :iso-smap ["Line 1 - cvc-elt.1: Cannot find the declaration of element 'XXXX'."]))
 

@@ -128,6 +128,8 @@
 
 (defn umm-granule->granule-concept
   "Returns the granule concept for ingest for the given umm granule"
-  [gran]
-  (assoc (d/item->concept gran :echo10) :provider-id "PROV1"))
+  ([gran]
+   (umm-granule->granule-concept gran :echo10))
+  ([gran concept-format]
+   (assoc (d/item->concept gran concept-format) :provider-id "PROV1")))
 

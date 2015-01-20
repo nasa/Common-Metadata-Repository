@@ -61,13 +61,13 @@
   ([provider-id item format-key]
    (let [response (ingest/ingest-concept
                     (item->concept (assoc item :provider-id provider-id) format-key))]
-     (is (= 200 (:status response))
-         (pr-str response))
-     (assoc item
-            :provider-id provider-id
-            :concept-id (:concept-id response)
-            :revision-id (:revision-id response)
-            :format-key format-key))))
+     (if (= 200 (:status response))
+       (assoc item
+              :provider-id provider-id
+              :concept-id (:concept-id response)
+              :revision-id (:revision-id response)
+              :format-key format-key)
+       response))))
 
 (defn item->ref
   "Converts an item into the expected reference"
