@@ -207,3 +207,14 @@
                                     :organizations [(org :distribution-center "Larc")]}
          attribs (merge required-extra-dif-fields attribs)]
      (collection attribs))))
+
+(defn collection-for-ingest
+  "Returns the collection for ingest with the given attributes"
+  ([attribs]
+   (collection-for-ingest attribs :echo10))
+  ([attribs concept-format]
+   (let [provider-id (or (:provider-id attribs) "PROV1")]
+     (-> attribs
+         collection
+         (d/item->concept concept-format)
+         (assoc :provider-id provider-id)))))

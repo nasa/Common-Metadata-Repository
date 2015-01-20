@@ -97,6 +97,8 @@ sample output:
 
 ### Validate collection
 
+Validates collection metadata by performing schema validation, UMM validation, and inventory specific validations. Returns status code 200 on successful validation, status code 400 with a list of validation errors on failed validation.
+
     curl -i -XPOST -H "Content-type: application/echo10+xml" http://localhost:3002/providers/PROV1/validate/collection/sampleNativeId15 -d \
     "<Collection> \
       <ShortName>ShortName_Larc</ShortName> \
@@ -112,6 +114,8 @@ sample output:
       </Collection>"
 
 ### Validate granule
+
+Validates granule metadata by performing schema validation, UMM validation, and inventory specific validations. Returns status code 200 on successful validation, status code 400 with a list of validation errors on failed validation.
 
     curl -i -XPOST -H "Content-type: application/echo10+xml" http://localhost:3002/providers/PROV1/validate/granule/sampleGranuleNativeId33 -d \
     "<Granule> \

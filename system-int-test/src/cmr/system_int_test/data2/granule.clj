@@ -126,3 +126,8 @@
          temporal {:temporal (temporal attribs)}]
      (g/map->UmmGranule (merge minimal-gran timestamps data-granule temporal attribs)))))
 
+(defn umm-granule->granule-concept
+  "Returns the granule concept for ingest for the given umm granule"
+  [gran]
+  (assoc (d/item->concept gran :echo10) :provider-id "PROV1"))
+
