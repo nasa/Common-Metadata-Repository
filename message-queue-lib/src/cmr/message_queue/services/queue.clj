@@ -14,7 +14,11 @@
 
   (subscribe
     [this queue-name handler params]
-    "Subscribes to the given queue using the given handler with optonal params")
+    "Subscribes to the given queue using the given handler with optonal params.
+    The handler must attempt to process the message and respond with one of the following:
+      :ok    - message was processed successfully
+      :retry - message could not be processed and should be requeued
+      :fail  - the message cannot be processed and should not be requeued")
 
   (message-count
     [this queue-name]

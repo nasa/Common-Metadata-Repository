@@ -16,20 +16,11 @@
             [cmr.message-queue.services.queue :as queue]
             [cheshire.core :as cheshire]
             [cmr.indexer.data.index-set :as idx-set]
+            [cmr.indexer.config :as config]
             [cmr.acl.acl-cache :as acl-cache]
             [cmr.common.services.errors :as errors]
-            [cmr.system-trace.core :refer [deftracefn]]))
-
-; (defn message-handler
-;   "Handle messages on the indexing queue."
-;   [ch {:keys [content-type delivery-tag type] :as meta} ^bytes payload]
-;   (let [msg (cheshire/parse-string (String. payload) true)]
-;     (try
-;       ;;
-;       (catch Throwable e
-;         (error (.getMessage e))
-;         ;; Send a rejection to the queue
-;         (lb/reject ch delivery-tag)))))
+            [cmr.system-trace.core :refer [deftracefn]]
+            [cmr.message-queue.config :as qcfg]))
 
 (defn filter-expired-concepts
   "Remove concepts that have an expired delete-time."
@@ -138,11 +129,16 @@
         {:term {:provider-id provider-id}}))))
 
 (deftracefn reset
+  ;; TODO This docstring doesn't seem accurate any longer
   "Delegate reset elastic indices operation to index-set app"
   [context]
   (cache/reset-caches context)
   (es/reset-es-store context)
-  (cache/reset-caches context))
+  (cache/reset-caches context)
+  (let [queue-broker (get-in context [:system :queue-broker])
+        queue-name (config/index-queue-name)]
+    (queue/purge-queue queue-broker queue-name)
+    (queue/create-queue queue-broker queue-name)))
 
 (deftracefn update-indexes
   "Updates the index mappings and settings."

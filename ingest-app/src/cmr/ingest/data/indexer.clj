@@ -2,6 +2,8 @@
   "Implements Ingest App datalayer access interface. Takes on the role of a proxy to indexer app."
   (:require [clj-http.client :as client]
             [cheshire.core :as json]
+            [cmr.ingest.config :as config]
+            [cmr.common.config :as cfg]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.services.errors :as errors]
             [cmr.common.services.health-helper :as hh]
@@ -9,12 +11,41 @@
             [cmr.system-trace.http :as ch]
             [cmr.transmit.config :as transmit-config]
             [cmr.transmit.connection :as transmit-conn]
+            [cmr.message-queue.services.queue :as queue]
             [cmr.acl.core :as acl]))
 
 (defn- get-headers
   "Gets the headers to use for communicating with the indexer."
   [context]
   (assoc (ch/context->http-headers context) acl/token-header (transmit-config/echo-system-token)))
+
+(defn- index-concept-via-http
+  "Index concept using indexer app endpoints via http"
+  [context concept-id revision-id]
+  (let [conn (transmit-config/context->app-connection context :indexer)
+        indexer-url (transmit-conn/root-url conn)
+        concept-attribs {:concept-id concept-id, :revision-id revision-id}
+        response (client/post indexer-url {:body (json/generate-string concept-attribs)
+                                           :content-type :json
+                                           :throw-exceptions false
+                                           :accept :json
+                                           :headers (get-headers context)
+                                           :connection-manager (transmit-conn/conn-mgr conn)})
+        status (:status response)]
+    (when-not (= 201 status)
+      (errors/internal-error! (str "Operation to index a concept failed. Indexer app response status code: "  status  " " response)))))
+
+(defn- index-concept-via-queue
+  "Put an index concept request on the queue to be consuemed by the indexer app"
+  [context concept-id revision-id]
+  (let [queue-broker (get-in context [:system :queue-broker])
+        queue-name (config/index-queue-name)
+        msg {:action :index-concept
+             :concept-id concept-id
+             :revision-id revision-id}]
+    (when-not (queue/publish queue-broker queue-name msg)
+      (errors/internal-error!
+        (str "Index queue broker refused queue message " msg)))))
 
 (deftracefn reindex-provider-collections
   "Reindexes all the collections in the provider"
@@ -36,18 +67,9 @@
 (deftracefn index-concept
   "Forward newly created concept for indexer app consumption."
   [context concept-id revision-id]
-  (let [conn (transmit-config/context->app-connection context :indexer)
-        indexer-url (transmit-conn/root-url conn)
-        concept-attribs {:concept-id concept-id, :revision-id revision-id}
-        response (client/post indexer-url {:body (json/generate-string concept-attribs)
-                                           :content-type :json
-                                           :throw-exceptions false
-                                           :accept :json
-                                           :headers (get-headers context)
-                                           :connection-manager (transmit-conn/conn-mgr conn)})
-        status (:status response)]
-    (when-not (= 201 status)
-      (errors/internal-error! (str "Operation to index a concept failed. Indexer app response status code: "  status  " " response)))))
+  (if ((cfg/config-value-fn :use-index-queue "true" #(Boolean. ^String %)))
+    (index-concept-via-queue context concept-id revision-id)
+    (index-concept-via-http context concept-id revision-id)))
 
 (defn- delete-from-indexer
   "Execute http delete of the given url on the indexer"

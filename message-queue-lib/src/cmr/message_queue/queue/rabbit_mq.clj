@@ -25,6 +25,7 @@
 (defn- wait-queue-ttl
   "Returns the Time-To-Live (TTL) in milliseconds for the nth wait queue"
   [n]
+  ;; ttl = ttl-base * 4^(n-1)
   (* (config/rabbit-mq-ttl-base) (math/expt 4 (dec n))))
 
 (def ^{:const true}
@@ -38,15 +39,46 @@
 
 (defn- start-consumer
   "Starts a message consumer in a separate thread"
-  [conn queue-name handler params]
+  [queue-broker queue-name client-handler params]
   (let [{:keys [prefetch]} params
-        ch (lch/open conn)]
+        conn (:conn queue-broker)
+        sub-ch (lch/open conn)
+        handler (fn [ch {:keys [delivery-tag type routing-key] :as meta} ^bytes payload]
+                  (let [msg (json/parse-string (String. payload) true)
+                        _ (debug "Received message:" msg)
+                        repeat-count (get msg :repeat-count 0)
+                        resp (client-handler msg)]
+                    (case (:status resp)
+                      :ok (do
+                            ;; processed successfully
+                            (debug "Processed successfully")
+                            (lb/ack ch delivery-tag))
+                      :retry (if (= repeat-count config/rabbit-mq-max-retries)
+                               (do
+                                 ;; give up
+                                 (debug "Max retries exceeded for procesessing message:" msg)
+                                 (lb/nack ch delivery-tag false false))
+                               (let [msg (assoc msg :repeat-count (inc repeat-count))
+                                     wait-q (wait-queue-name routing-key (inc repeat-count))
+                                     ttl (wait-queue-ttl (inc repeat-count))]
+                                 (debug "Retrying with repeat-count ="
+                                        (inc repeat-count)
+                                        " on queue"
+                                        wait-q
+                                        "with ttl = "
+                                        ttl)
+                                 (queue/publish queue-broker wait-q msg)
+                                 (lb/ack ch delivery-tag)))
+                      :fail (do
+                              ;; bad data - nack it
+                              (debug "Rejecting bad data:" (:message resp))
+                              (lb/nack ch delivery-tag false false)))))]
     ;; By default, RabbitMQ uses a round-robin approach to send messages to listeners. This can
     ;; lead to stalls as workers wait for other workers to complete. Setting QoS (prefetch) to 1
     ;; prevents this.
     (debug "Setting channel prefetch")
-    (lb/qos ch (or prefetch 1))
-    (lc/subscribe ch queue-name handler {:auto-ack false})))
+    (lb/qos sub-ch (or prefetch 1))
+    (lc/subscribe sub-ch queue-name handler {:auto-ack false})))
 
 (defn- safe-create-queue
   "Creates a RabbitMQ queue if it does not already exist"
@@ -55,7 +87,7 @@
   ;(try
   ;  (lq/status ch queue-name)
   ;  (catch IOException e
-      (lq/declare ch queue-name opts))
+  (lq/declare ch queue-name opts))
 ;))
 
 (defrecord RabbitMQBroker
@@ -139,14 +171,16 @@
           ch (lch/open conn)
           payload (json/generate-string msg)
           metadata {:content-type "text/plain" :persistent true}]
+      ;; put chnnel into confirmation mode
       (lcf/select ch)
+      ;; publish the message
       (lb/publish ch default-exchange-name queue-name payload metadata)
+      ;; block until the confirm arrives or return false if queue nacks the message
       (lcf/wait-for-confirms ch)))
 
   (subscribe
     [this queue-name handler params]
-    (let [conn (:conn this)]
-      (start-consumer conn queue-name handler params)))
+    (start-consumer this queue-name handler params))
 
   (message-count
     [this queue-name]
@@ -178,13 +212,54 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn create-queue
+
+
+(defrecord RabbitMQListener
+  [
+   ;; Number of worker threads
+   num-workers
+
+   ;; function to call to start a listener - takes a context as its sole argument
+   start-function
+
+   ;; true or false to indicate it's running
+   running?
+   ]
+
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  lifecycle/Lifecycle
+
+  (start
+    [this system]
+    (info "Starting queue listeners")
+    (when (:running? this)
+      (errors/internal-error! "Already running"))
+    (let [{:keys [num-workers start-function]} this]
+      (doseq [n (range 0 num-workers)]
+        (start-function {:system system})))
+    (assoc this :running? true))
+
+  (stop
+    [this system]
+    (assoc this :running? false)))
+
+
+
+(defn create-queue-broker
   "Create a RabbitMQBroker"
   [params]
   (let [{:keys [host port username password required-queues]} params]
     (->RabbitMQBroker host port username password nil required-queues false)))
 
+(defn create-queue-listener
+  "Create a RabbitMQListener"
+  [params]
+  (let [{:keys [num-workers start-function]} params]
+    (->RabbitMQListener num-workers start-function false)))
+
+
 (comment
+
 
   (def q (let [q (create-queue {:host (config/rabbit-mq-host)
                                 :port (config/rabbit-mq-port)
@@ -194,48 +269,15 @@
            (lifecycle/start q {})))
 
   (defn test-message-handler
-    "Handle messages on the queue."
-    [ch {:keys [delivery-tag type routing-key] :as meta} ^bytes payload]
-    (debug "META:" meta)
-    (let [msg (json/parse-string (String. payload) true)
-          repeat-count (get msg :repeat-count 0)]
-      (debug "Receieved message:" msg)
-      (try
-        ;; simulate processing with random failures
-        ;; will ack after processing so if the consumer dies first the queue will resend
-
-        (if false
-          (do
-            ;; processed successfully
-            (debug "Processed successfully")
-            (lb/ack ch delivery-tag))
-          (if true
-            (if (= repeat-count 5)
-              (do
-                ;; give up
-                (debug "Max retries exceeded for procesessing message:" msg)
-                (lb/nack ch delivery-tag false false))
-              (let [msg (assoc msg :repeat-count (inc repeat-count))
-                    wait-q (wait-queue-name routing-key (inc repeat-count))
-                    ttl (wait-queue-ttl (inc repeat-count))]
-                (debug "Retrying with repeat-count ="
-                       (inc repeat-count)
-                       " on queue"
-                       wait-q
-                       "with ttl = "
-                       ttl)
-                (queue/publish q wait-q msg)
-                (lb/ack ch delivery-tag)))
-            (do
-              ;; bad data - nack it
-              (debug "Rejecting bad data")
-              (lb/nack ch delivery-tag false false))))
-
-
-        (catch Throwable e
-          (error (.getMessage e))
-          ;; Send a rejection to the queue
-          (lb/reject ch delivery-tag)))))
+    [msg]
+    (info "Test handler")
+    (let [val (rand)
+          rval (cond
+                 (> val 0.33) :ok
+                 (> val 0.67) :retry
+                 :else :fail)]
+      (debug "Test handler responding with" rval)
+      rval))
 
 
   (let [msg {:type :index-concept :concept-id "C1000-PROV1" :revision-id 1}]
@@ -247,11 +289,14 @@
 
   (queue/purge-queue q "test.simple")
   (queue/purge-queue q (wait-queue-name "test.simple" 3))
-  (queue/message-count q "test.simple")
+  (queue/message-count q "cmr_index.queue")
   (queue/message-count q (wait-queue-name "test.simple" 1))
   (queue/delete-queue q "test.simple")
   (doseq [n (range 1 (inc (config/rabbit-mq-max-retries)))]
     (queue/delete-queue q (wait-queue-name "test.simple" n)))
+
+  (lifecycle/stop q {})
+
   )
 
 
