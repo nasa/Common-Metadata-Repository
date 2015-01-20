@@ -18,17 +18,6 @@
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
-(defn collection-for-ingest
-  "Returns the collection for ingest with the given attributes"
-  ([attribs]
-   (collection-for-ingest attribs :echo10))
-  ([attribs concept-format]
-   (let [provider-id (or (:provider-id attribs) "PROV1")]
-     (-> attribs
-         dc/collection
-         (d/item->concept concept-format)
-         (assoc :provider-id provider-id)))))
-
 ;; tests
 ;; ensure metadata, indexer and ingest apps are accessable on ports 3001, 3004 and 3002 resp;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -36,7 +25,7 @@
 ;; Verify a new concept is ingested successfully.
 (deftest collection-ingest-test
   (testing "ingest of a new concept"
-    (let [concept (collection-for-ingest {})
+    (let [concept (dc/collection-for-ingest {})
           {:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
       (is (ingest/concept-exists-in-mdb? concept-id revision-id))
       (is (= 1 revision-id)))))
@@ -44,7 +33,7 @@
 ;; Verify a new concept with concept-id is ingested successfully.
 (deftest collection-w-concept-id-ingest-test
   (testing "ingest of a new concept with concept-id present"
-    (let [concept (collection-for-ingest {:concept-id "C1000-PROV1"})
+    (let [concept (dc/collection-for-ingest {:concept-id "C1000-PROV1"})
           supplied-concept-id (:concept-id concept)
           {:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
       (is (ingest/concept-exists-in-mdb? concept-id revision-id))
@@ -56,7 +45,7 @@
 (deftest repeat-same-collection-ingest-test
   (testing "ingest same concept n times ..."
     (let [n 4
-          concept (collection-for-ingest {})
+          concept (dc/collection-for-ingest {})
           created-concepts (take n (repeatedly n #(ingest/ingest-concept concept)))]
       (is (apply = (map :concept-id created-concepts)))
       (is (= (range 1 (inc n)) (map :revision-id created-concepts))))))
@@ -83,7 +72,7 @@
 
 ;; Verify ingest behaves properly if empty body is presented in the request.
 (deftest empty-collection-ingest-test
-  (let [concept-with-empty-body  (assoc (collection-for-ingest {}) :metadata "")
+  (let [concept-with-empty-body  (assoc (dc/collection-for-ingest {}) :metadata "")
         {:keys [status errors]} (ingest/ingest-concept concept-with-empty-body)]
     (is (= status 400))
     (is (re-find #"XML content is too short." (first errors)))))
@@ -98,7 +87,7 @@
 
 ;; Verify non-existent concept deletion results in not found / 404 error.
 (deftest delete-non-existent-collection-test
-  (let [concept (collection-for-ingest {})
+  (let [concept (dc/collection-for-ingest {})
         fake-provider-id (str (:provider-id concept) (:native-id concept))
         non-existent-concept (assoc concept :provider-id fake-provider-id)
         {:keys [status]} (ingest/delete-concept non-existent-concept)]
@@ -107,7 +96,7 @@
 ;; Verify existing concept can be deleted and operation results in revision id 1 greater than
 ;; max revision id of the concept prior to the delete
 (deftest delete-collection-test-old
-  (let [concept (collection-for-ingest {})
+  (let [concept (dc/collection-for-ingest {})
         ingest-result (ingest/ingest-concept concept)
         delete-result (ingest/delete-concept concept)
         ingest-revision-id (:revision-id ingest-result)
@@ -159,28 +148,28 @@
 
 ;; Verify ingest is successful for request with content type that has parameters
 (deftest content-type-with-parameter-ingest-test
-  (let [concept  (assoc (collection-for-ingest {})
+  (let [concept  (assoc (dc/collection-for-ingest {})
                         :format "application/echo10+xml; charset=utf-8")
         {:keys [status]} (ingest/ingest-concept concept)]
     (is (= status 200))))
 
 ;; Verify ingest behaves properly if request is missing content type.
 (deftest missing-content-type-ingest-test
-  (let [concept-with-no-content-type  (assoc (collection-for-ingest {}) :format "")
+  (let [concept-with-no-content-type  (assoc (dc/collection-for-ingest {}) :format "")
         {:keys [status errors]} (ingest/ingest-concept concept-with-no-content-type)]
     (is (= status 400))
     (is (re-find #"Invalid content-type" (first errors)))))
 
 ;; Verify ingest behaves properly if request contains invalid  content type.
 (deftest invalid-content-type-ingest-test
-  (let [concept (assoc (collection-for-ingest {}) :format "blah")
+  (let [concept (assoc (dc/collection-for-ingest {}) :format "blah")
         {:keys [status errors]} (ingest/ingest-concept concept)]
     (is (= status 400))
     (is (re-find #"Invalid content-type" (first errors)))))
 
 ;; Verify deleting same concept twice is not an error if ignore conflict is true.
 (deftest delete-same-collection-twice-test
-  (let [concept (collection-for-ingest {})
+  (let [concept (dc/collection-for-ingest {})
         ingest-result (ingest/ingest-concept concept)
         delete1-result (ingest/delete-concept concept)
         delete2-result (ingest/delete-concept concept)]
@@ -191,7 +180,7 @@
 ;; Verify that collections with embedded / (%2F) in the native-id are handled correctly
 (deftest ingest-collection-with-slash-in-native-id-test
   (let [crazy-id "`1234567890-=qwertyuiop[]\\asdfghjkl;'zxcvbnm,./ ~!@#$%^&*()_+QWERTYUIOP{}ASDFGHJKL:\"ZXCVBNM<>?"
-        collection (collection-for-ingest {:entry-title crazy-id})
+        collection (dc/collection-for-ingest {:entry-title crazy-id})
         {:keys [concept-id revision-id] :as response} (ingest/ingest-concept collection)
         ingested-concept (ingest/get-concept concept-id)]
     (is (= 200 (:status response)))
@@ -205,7 +194,7 @@
 
 (deftest schema-validation-test
   (are [concept-format validation-errors]
-       (let [concept (collection-for-ingest
+       (let [concept (dc/collection-for-ingest
                        {:beginning-date-time "2010-12-12T12:00:00Z"} concept-format)
              {:keys [status errors]}
              (ingest/ingest-concept
