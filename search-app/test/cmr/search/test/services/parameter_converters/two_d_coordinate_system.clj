@@ -5,7 +5,7 @@
 
 (deftest two-d-param-str->condition-test
   (testing "two d param string to condition"
-    (are [s two-d-name condition] (= (t/two-d-param-str->condition s)
+    (are [s two-d-name condition] (= (t/two-d-param-str->condition :granule s)
                                      (qm/map->TwoDCoordinateSystemCondition
                                        {:two-d-name two-d-name
                                         :two-d-conditions condition}))

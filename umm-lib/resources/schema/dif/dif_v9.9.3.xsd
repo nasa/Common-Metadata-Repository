@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <xs:schema  xmlns:xs="http://www.w3.org/2001/XMLSchema"
             targetNamespace="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
             xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/">
+
 <xs:element name="DIF">
    <xs:complexType>
       <xs:sequence>

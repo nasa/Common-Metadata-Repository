@@ -12,6 +12,35 @@
             [cmr.umm.iso-smap.collection :as iso-smap-c]
             [cmr.umm.iso-smap.granule :as iso-smap-g]))
 
+(defmulti validate-concept-xml
+  "Validates the concept metadata against its xml schema."
+  (fn [concept]
+    [(keyword (:concept-type concept)) (:format concept)]))
+
+(defmethod validate-concept-xml [:collection "application/echo10+xml"]
+  [concept]
+  (echo10-c/validate-xml (:metadata concept)))
+
+(defmethod validate-concept-xml [:granule "application/echo10+xml"]
+  [concept]
+  (echo10-g/validate-xml (:metadata concept)))
+
+(defmethod validate-concept-xml [:collection "application/dif+xml"]
+  [concept]
+  (dif-c/validate-xml (:metadata concept)))
+
+(defmethod validate-concept-xml [:collection "application/iso19115+xml"]
+  [concept]
+  (iso-mends-c/validate-xml (:metadata concept)))
+
+(defmethod validate-concept-xml [:collection "application/iso:smap+xml"]
+  [concept]
+  (iso-smap-c/validate-xml (:metadata concept)))
+
+(defmethod validate-concept-xml [:granule "application/iso:smap+xml"]
+  [concept]
+  (iso-smap-g/validate-xml (:metadata concept)))
+
 (defmulti parse-concept
   "Convert a metadata db concept map into a umm record by parsing its metadata."
   (fn [concept]

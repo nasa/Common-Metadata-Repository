@@ -54,8 +54,7 @@
         c9 (make-coll "PROV1" "et95" nil nil)
         c10 (make-coll "PROV2" "et85" nil nil)
         c11 (make-coll "PROV1" "et96" 12 nil)
-        c12 (make-coll "PROV2" "et86" nil 22)
-        all-colls [c1 c2 c3 c4 c5 c6 c7 c8 c9 c10 c11 c12]]
+        all-colls [c1 c2 c3 c4 c5 c6 c7 c8 c9 c10 c11]]
     (index/refresh-elastic-index)
 
 
@@ -78,14 +77,14 @@
     (testing "temporal start date"
       (are [sort-key items]
            (sort-order-correct? items sort-key)
-           "start_date" [c5 c1 c11 c2 c6 c3 c7 c4 c8 c9 c10 c12]
-           "-start_date" [c8 c4 c7 c3 c6 c2 c11 c1 c5 c9 c10 c12]))
+           "start_date" [c5 c1 c11 c2 c6 c3 c7 c4 c8 c9 c10]
+           "-start_date" [c8 c4 c7 c3 c6 c2 c11 c1 c5 c9 c10]))
 
     (testing "temporal end date"
       (are [sort-key items]
            (sort-order-correct? items sort-key)
-           "end_date" [c5 c1 c12 c2 c6 c7 c3 c4 c8 c9 c10 c11]
-           "-end_date" [c8 c4 c3 c7 c6 c2 c12 c1 c5 c9 c10 c11]))))
+           "end_date" [c5 c1 c2 c6 c7 c3 c4 c8 c9 c10 c11]
+           "-end_date" [c8 c4 c3 c7 c6 c2 c1 c5 c9 c10 c11]))))
 
 (deftest default-sorting-test
   (let [c1 (make-coll "PROV1" "et99" 10 20)
@@ -152,7 +151,7 @@
                           (d/ingest "PROV1"
                                     (dc/collection
                                       {:platforms [(apply dc/platform (d/unique-str "platform")
-                                                          nil
+                                                          "long-name"
                                                           nil
                                                           (map dc/instrument instruments))]})))
         c1 (make-collection "c10" "c41")
@@ -175,7 +174,7 @@
                                     (dc/collection
                                       {:platforms [(dc/platform
                                                      (d/unique-str "platform")
-                                                     nil
+                                                     "long-name"
                                                      nil
                                                      (apply dc/instrument (d/unique-str "instrument")
                                                             nil

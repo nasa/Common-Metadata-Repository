@@ -13,19 +13,23 @@
             [cmr.common.services.messages :as cmsg]
             [cmr.common.date-time-parser :as p]
             [cmr.common.util :as util]
+            [cmr.common.config :as cfg]
             [cmr.umm.core :as umm]
             [clojure.string :as string]
             [cmr.system-trace.core :refer [deftracefn]]))
 
+(def ingest-validation-enabled?
+  "A configuration feature switch that turns on CMR ingest validation."
+  (cfg/config-value-fn :ingest-validation-enabled "true" #(= % "true")))
+
 (defmulti add-extra-fields
   "Parse the metadata of concept, add the extra fields to it and return the concept."
-  (fn [context concept]
+  (fn [context concept umm-record]
     (:concept-type concept)))
 
 (defmethod add-extra-fields :collection
-  [context concept]
-  (let [collection (umm/parse-concept concept)
-        {{:keys [short-name version-id]} :product
+  [context concept collection]
+  (let [{{:keys [short-name version-id]} :product
          {:keys [delete-time]} :data-provider-timestamps
          entry-title :entry-title} collection]
     (assoc concept :extra-fields {:entry-title entry-title
@@ -55,9 +59,8 @@
     (:concept-id (first matching-concepts))))
 
 (defmethod add-extra-fields :granule
-  [context concept]
-  (let [granule (umm/parse-concept concept)
-        {:keys [collection-ref granule-ur]
+  [context concept granule]
+  (let [{:keys [collection-ref granule-ur]
          {:keys [delete-time]} :data-provider-timestamps} granule
         parent-collection-id (get-granule-parent-collection-id
                                context (:provider-id concept) collection-ref)]
@@ -69,11 +72,37 @@
     (assoc concept :extra-fields {:parent-collection-id parent-collection-id
                                   :delete-time (when delete-time (str delete-time))})))
 
+(deftracefn validate-concept
+  "Validate that a concept is valid for ingest without actually ingesting the concept.
+  Return an appropriate error message indicating any validation failures."
+  [context concept]
+  (v/validate-concept-request concept)
+  (v/validate-concept-xml concept))
+
 (deftracefn save-concept
   "Store a concept in mdb and indexer and return concept-id and revision-id."
   [context concept]
-  (v/validate concept)
-  (let [concept (add-extra-fields context concept)
+
+  ;; 1. Validate request
+  (v/validate-concept-request concept)
+
+  ;;2. Validate XML
+  (v/validate-concept-xml concept)
+
+  ;; 3. Parse concept
+  (let [umm-record (umm/parse-concept concept)
+
+        ;; 4. Lookup Parent
+        ;; TODO
+
+        ;; 5. Umm record validation
+        _ (when (ingest-validation-enabled?)
+            (v/validate-umm-record (:format concept) umm-record))
+
+        concept (add-extra-fields context concept umm-record)
+
+
+        ;; TODO Move this to UMM validation
         time-to-compare (t/plus (tk/now) (t/minutes 1))
         delete-time (get-in concept [:extra-fields :delete-time])
         delete-time (if delete-time (p/parse-datetime delete-time) nil)]
@@ -81,6 +110,12 @@
       (serv-errors/throw-service-error
         :bad-request
         (format "DeleteTime %s is before the current time." (str delete-time)))
+
+      ;; 6. Ingest Validation
+        ;; TODO
+
+
+      ;; 7. Save concept
       (let [{:keys [concept-id revision-id]} (mdb/save-concept context concept)]
         (indexer/index-concept context concept-id revision-id)
         {:concept-id concept-id, :revision-id revision-id}))))

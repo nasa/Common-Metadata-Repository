@@ -14,6 +14,21 @@
         xml-struct (x/parse-str aql)]
     (a/element->condition :collection (cx/element-at-path xml-struct [:dataCenterId]))))
 
+(deftest remove-outer-single-quotes-test
+  (are [value expected]
+       (= expected (c/remove-outer-single-quotes value))
+       nil nil
+       "" ""
+       "'" "'"
+       "''" ""
+       "'''" "'"
+       "abc" "abc"
+       "a'b'c" "a'b'c"
+       "'a'b'c'" "a'b'c"
+       "'a'" "a"
+       "'abc" "'abc"
+       "abc'" "abc'"))
+
 (deftest aql-pattern-conversion
   (are [aql expected]
        (= expected (c/aql-pattern->cmr-pattern aql))

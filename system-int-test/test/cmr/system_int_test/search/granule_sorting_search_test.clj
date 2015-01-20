@@ -152,8 +152,7 @@
         g6 (make-gran c2 15 25)
         g7 (make-gran c2 20 29)
         g8 (make-gran c2 25 36)
-        g11 (make-gran c1 12 nil)
-        g12 (make-gran c2 nil 22)]
+        g11 (make-gran c1 12 nil)]
     (index/refresh-elastic-index)
 
     (testing "default sorting is by provider id and start date"
@@ -163,19 +162,19 @@
                 (d/refs-match-order? items
                                      (search/find-refs-with-aql :granule [] {}
                                                                 {:query-params {:page-size 20}})))
-           [g1 g11 g2 g3 g4 g5 g6 g7 g8 g12]))
+           [g1 g11 g2 g3 g4 g5 g6 g7 g8]))
 
     (testing "temporal start date"
       (are [sort-key items]
            (sort-order-correct? items sort-key)
-           "start_date" [g5 g1 g11 g2 g6 g3 g7 g4 g8 g12]
-           "-start_date" [g8 g4 g7 g3 g6 g2 g11 g1 g5 g12]))
+           "start_date" [g5 g1 g11 g2 g6 g3 g7 g4 g8]
+           "-start_date" [g8 g4 g7 g3 g6 g2 g11 g1 g5]))
 
     (testing "temporal end date"
       (are [sort-key items]
            (sort-order-correct? items sort-key)
-           "end_date" [g5 g1 g12 g2 g6 g7 g3 g4 g8 g11]
-           "-end_date" [g8 g4 g3 g7 g6 g2 g12 g1 g5 g11]))))
+           "end_date" [g5 g1 g2 g6 g7 g3 g4 g8 g11]
+           "-end_date" [g8 g4 g3 g7 g6 g2 g1 g5 g11]))))
 
 (deftest granule-platform-sorting-test
   (let [coll (d/ingest "PROV1" (dc/collection {}))

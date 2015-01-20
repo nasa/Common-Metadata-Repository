@@ -67,6 +67,7 @@
              (d/refs-match? items (search/find-refs-with-aql :collection [condition])))
 
            [coll1] [{:type :string :name "alpha" :value "ab"}]
+           [coll1] [{:type :string :name "'alpha'" :value "'ab'"}]
            [coll1] [{:type :string :name "alpha" :value "AB"}]
            [] [{:type :string :name "alpha" :value "c"}]
            [coll1 coll2] [{:type :string :name "bravo" :value "bf"}]
@@ -82,11 +83,14 @@
              (d/refs-match? items
                             (search/find-refs-with-aql :collection [condition])))
            [coll1] "alpha" {}
+           [coll1] "'alpha'" {}
            [coll1 coll2] "bravo" {}
            [coll2] "charlie" {}
            [coll3] "case" {}
            [] "BLAH" {}
            [coll1 coll3] ["alpha" "case"] {}
+           [coll1 coll3] ["'alpha'" "'case'"] {}
+
            [coll1 coll2 coll3] ["alpha" "charlie" "case"] {}
            [coll2 coll3] "c%" {:pattern true}
            [coll3] "cas_" {:pattern true}))
@@ -134,6 +138,10 @@
 
            [coll1] [{:type :string :name "alpha" :value "ab"}
                     {:type :range :name "bravo" :value [nil "bc"]}] {:or true}
+           ;; single quotes
+           [coll1] [{:type :string :name "'alpha'" :value "'ab'"}
+                    {:type :range :name "'bravo'" :value [nil "'bc'"]}] {:or true}
+
            [] [{:type :string :name "alpha" :value "ab"}
                {:type :range :name "bravo" :value [nil "bc"]}] {:and true}
            [] [{:type :string :name "alpha" :value "ab"}
@@ -181,6 +189,7 @@
              (d/refs-match? items (search/find-refs-with-aql :collection [condition])))
 
            [coll1] [{:type :range :name "alpha" :value ["aa" "ac"]}]
+           [coll1] [{:type :range :name "'alpha'" :value ["'aa'" "'ac'"]}]
            [coll1] [{:type :range :name "alpha" :value ["ab" "ac"]}]
            [coll1] [{:type :range :name "alpha" :value ["aa" "ab"]}]
            [coll1 coll2] [{:type :range :name "bravo" :value ["bc" nil]}]

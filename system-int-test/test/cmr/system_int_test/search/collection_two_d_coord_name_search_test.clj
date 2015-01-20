@@ -23,7 +23,7 @@
         coll6 (d/ingest "PROV1" (dc/collection {}))]
     (index/refresh-elastic-index)
 
-    (testing "two d coordinate search by parameters"
+    (testing "two d coordinate search by two_d_coordinate_system_name parameter"
       (are [items two-ds options]
            (let [params (merge {"two_d_coordinate_system_name[]" two-ds}
                                (when options
@@ -38,12 +38,40 @@
 
            ;; search by two d coordinate system name - wildcards
            [coll3 coll4] "three *" {:pattern true}
+           [] "three *" {:pattern false}
+           [] "three *" {}
 
            ;; search by two d coordinate system name - no match
            [] "NO MATCH" {}
 
            ;; search by two d coordinate system name - multiple in collection
            [coll2 coll5] "two CALIPSO" {}))
+
+    (testing "two d coordinate search by two_d_coordinate_system[name] parameter"
+      (are [items two-ds]
+           (let [params {"two_d_coordinate_system[name]" two-ds}]
+             (d/refs-match? items (search/find-refs :collection params)))
+
+           ;; search by by two d coordinate system name - single value
+           [coll1] "one CALIPSO"
+
+           ;; search by two d coordinate system name - multiple values
+           [coll1 coll4] ["one CALIPSO" "three Bravo"]
+
+           ;; search by two d coordinate system name - no match
+           [] "NO MATCH"
+
+           ;; search by two d coordinate system name - multiple in collection
+           [coll2 coll5] "two CALIPSO")
+
+      (is (= {:status 400,
+              :errors ["two_d_coordinate_system[name] can not be empty"]}
+             (search/find-refs :collection {"two_d_coordinate_system[name]" ""})))
+
+      (is (= {:status 400,
+              :errors ["two_d_coordinate_system[coordinates] is not supported for collection search."]}
+             (search/find-refs :collection {"two_d_coordinate_system[name]" "grid"
+                                            "two_d_coordinate_system[coordinates]" "dummy"}))))
 
     (testing "two d coordinate search by aql"
       (are [items two-ds options]

@@ -41,6 +41,11 @@
                :geometries geometries
                :orbit-parameters nil)))))
 
+(defn- platforms->expected-parsed
+  "Returns the expected parsed platforms for the given platforms."
+  [platforms]
+  (seq (map #(assoc % :type "Not Specified" :instruments nil :characteristics nil) platforms)))
+
 (defn- related-urls->expected-parsed
   "Returns the expected parsed related-urls for the given related-urls."
   [related-urls]
@@ -95,8 +100,8 @@
         (update-in [:related-urls] related-urls->expected-parsed)
         ;; CMR-588: UMM doesn't have a good recommendation on how to handle spatial-keywords
         (dissoc :spatial-keywords)
-        ;; CMR-590: UMM doesn't have a good recommendation on how to handle platforms
-        (dissoc :platforms)
+        ;; DIF platform does not have type, instruments or characteristics fields
+        (update-in [:platforms] platforms->expected-parsed)
         ;; DIF does not have two-d-coordinate-systems
         (dissoc :two-d-coordinate-systems)
         ;; DIF does not have associated-difs
@@ -172,6 +177,10 @@
       <Short_Name>VEGETATION-1</Short_Name>
       <Long_Name>VEGETATION INSTRUMENT 1 (SPOT 4)</Long_Name>
     </Sensor_Name>
+    <Source_Name>
+      <Short_Name>SPOT-1</Short_Name>
+      <Long_Name>Systeme Probatoire Pour l'Observation de la Terre-1</Long_Name>
+    </Source_Name>
     <Source_Name>
       <Short_Name>SPOT-4</Short_Name>
       <Long_Name>Systeme Probatoire Pour l'Observation de la Terre-4</Long_Name>
@@ -370,6 +379,14 @@
                                                 {:insert-time (p/parse-date "2013-02-21")
                                                  :update-time (p/parse-date "2013-10-22")})
                     ;:spatial-keywords ["Word-2" "Word-1" "Word-0"]
+                    :platforms [(umm-c/map->Platform
+                                  {:short-name "SPOT-1"
+                                   :long-name "Systeme Probatoire Pour l'Observation de la Terre-1"
+                                   :type "Not Specified"})
+                                (umm-c/map->Platform
+                                  {:short-name "SPOT-4"
+                                   :long-name "Systeme Probatoire Pour l'Observation de la Terre-4"
+                                   :type "Not Specified"})]
                     :temporal
                     (umm-c/map->Temporal
                       {:range-date-times
