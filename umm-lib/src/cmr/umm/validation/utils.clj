@@ -33,6 +33,7 @@
 
    [:iso19115 :collection]
    ;; TODO Update to use the :xpath notation once it is finished, for now just hardcode a string
+   ;; I emailed Katie to ask her what name should go here.
    {:projects "MI_Metadata/acquisitionInformation/MI_AcquisitionInformation/operation/MI_Operation"}
    })
 
