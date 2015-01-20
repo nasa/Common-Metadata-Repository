@@ -19,7 +19,8 @@
   "Defines validations for collections"
   {
 
-   :product-specific-attributes vu/unique-by-name-validator
+   :product-specific-attributes [[vu/unique-by-name-validator "product-specific-attributes"]]
+   :projects [[vu/unique-by-name-validator "projects"]]
 
    ;; Example of how you would
    ;:spatial-coverage spatial-coverage-validations

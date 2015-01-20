@@ -30,7 +30,8 @@
   {[:echo10 :collection]
    {:access-value "RestrictionFlag"
     :product-specific-attributes "AdditionalAttributes"
-    :spatial-coverage ["Spatial" {:granule-spatial-representation "GranuleSpatialRepresentation"}]}
+    :spatial-coverage ["Spatial" {:granule-spatial-representation "GranuleSpatialRepresentation"}]
+    :projects "Compaigns"}
 
    [:dif :collection]
    {;; This XPath will select the granule spatial representation.
@@ -41,7 +42,12 @@
     ;; XPath for errors as well as a human readable name for a field.
     :spatial-coverage ["." {:granule-spatial-representation
                             {:xpath "Extended_Metadata/Metadata[Name=\"GranuleSpatialRepresentation\"]/Value"
-                             :human "GranuleSpatialRepresentation"}}]}
+                             :human "GranuleSpatialRepresentation"}}]
+    :projects "Project"}
+
+   [:iso19115 :collection]
+   ;; TODO Update to use the :xpath notation once it is finished, for now just hardcode a string
+   {:projects "MI_Metadata/acquisitionInformation/MI_AcquisitionInformation/operation/MI_Operation"}
    })
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -115,6 +121,11 @@
                (flatten-field-errors v (conj field-path field))))
            field-errors)))
 
+(def uniqe-by-name-field
+  "This defines the UMM field to its unique name attribute field mapping."
+  {:product-specific-attributes :name
+   :projects :short-name})
+
 (defn- create-format-specific-error-messages
   "Takes a list of field error tuples and errors (as returned by message-fn) and formats each error
   using the name appropriate for the metadata format. For example RestrictionFlag would be returned
@@ -123,7 +134,8 @@
   (for [[field-path errors] field-errors
         :let [format-type-path (umm-path->format-type-path metadata-format concept-type field-path)]
         {:keys [default-message-format value format-fn]} errors]
-    (format-fn default-message-format (last format-type-path) value)))
+    (format-fn default-message-format
+               (last format-type-path) value (uniqe-by-name-field (last field-path)))))
 
 (def umm-type->concept-type
   {UmmCollection :collection
@@ -146,9 +158,9 @@
   {:default-message-format "%s must be unique. This contains duplicates named [%s]."
    :optional true ; don't run this validation if the value is nil.
    ;; Define a custom :format-fn to include the duplicate values in the error message.
-   :format-fn (fn [message-format field values]
-                (let [freqs (frequencies (map :name values))
+   :format-fn (fn [message-format field values attr-name]
+                (let [freqs (frequencies (map attr-name values))
                       duplicate-names (for [[v freq] freqs :when (> freq 1)] v)]
                   (format message-format field (str/join ", " duplicate-names))))}
-  [values]
-  (= (count values) (count (distinct (map :name values)))))
+  [values field]
+  (= (count values) (count (distinct (map (uniqe-by-name-field (keyword field)) values)))))
