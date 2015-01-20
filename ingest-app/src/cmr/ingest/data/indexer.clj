@@ -35,20 +35,57 @@
     (when-not (= 201 status)
       (errors/internal-error! (str "Operation to index a concept failed. Indexer app response status code: "  status  " " response)))))
 
-(defn- index-concept-via-queue
-  "Put an index concept request on the queue to be consuemed by the indexer app"
-  [context concept-id revision-id]
+(defn- put-message-on-queue
+  "Put an index operation on the message queue"
+  [context msg]
   (let [queue-broker (get-in context [:system :queue-broker])
-        queue-name (config/index-queue-name)
-        msg {:action :index-concept
-             :concept-id concept-id
-             :revision-id revision-id}]
+        queue-name (config/index-queue-name)]
     (when-not (queue/publish queue-broker queue-name msg)
       (errors/internal-error!
         (str "Index queue broker refused queue message " msg)))))
 
-(deftracefn reindex-provider-collections
-  "Reindexes all the collections in the provider"
+(defn- index-concept-via-queue
+  "Put an index concept request on the queue to be consuemed by the indexer app"
+  [context concept-id revision-id]
+  (let [msg {:action :index-concept
+             :concept-id concept-id
+             :revision-id revision-id}]
+    (put-message-on-queue context msg)))
+
+(defn- delete-from-index-via-http
+  "Execute http delete of the given url on the indexer"
+  [context delete-url]
+  (let [conn (transmit-config/context->app-connection context :indexer)
+        indexer-root (transmit-conn/root-url conn)
+        response (client/delete (format "%s/%s" indexer-root delete-url)
+                                {:accept :json
+                                 :throw-exceptions false
+                                 :headers (get-headers context)
+                                 :connection-manager (transmit-conn/conn-mgr conn)})
+        status (:status response)]
+    (when-not (some #{200, 204} [status])
+      (errors/internal-error!
+        (format "Delete %s operation failed. Indexer app response status code: %s %s"
+                delete-url status response)))))
+
+(defn- delete-concept-from-index-via-queue
+  "Put a delete concept request on the queue to be consumed by the indexer app"
+  [context concept-id revision-id]
+  (let [msg {:action :delete-concept
+             :concept-id concept-id
+             :revision-id revision-id}]
+    (put-message-on-queue context msg)))
+
+
+(defn- delete-provider-from-index-via-queue
+  "Put a delete provider request on the queue to be consumed by the indexer app"
+  [context provider-id]
+  (let [msg {:action :delete-provider
+             :provider-id provider-id}]
+    (put-message-on-queue context msg)))
+
+(defn- reindex-provider-collections-via-http
+  "Reindexes all the collections in the provider using http calls"
   [context provider-ids]
   (let [conn (transmit-config/context->app-connection context :indexer)
         url (format "%s/reindex-provider-collections"
@@ -64,39 +101,41 @@
       (errors/internal-error!
         (str "Unexpected status"  status  " " (:body response))))))
 
+(defn- reindex-provider-collections-via-queue
+  "Reindexes all the collections in the provider using the message queue"
+  [context provider-ids]
+  (let [msg {:action :reindex-provider-collections
+             :provider-ids provider-ids}]
+    (put-message-on-queue context msg)))
+
+
+(deftracefn reindex-provider-collections
+  "Reindexes all the collections in the provider"
+  [context provider-ids]
+  (if (config/use-index-queue?)
+    (reindex-provider-collections-via-queue context provider-ids)
+    (reindex-provider-collections-via-http context provider-ids)))
+
 (deftracefn index-concept
   "Forward newly created concept for indexer app consumption."
   [context concept-id revision-id]
-  (if ((cfg/config-value-fn :use-index-queue "true" #(Boolean. ^String %)))
+  (if (config/use-index-queue?)
     (index-concept-via-queue context concept-id revision-id)
     (index-concept-via-http context concept-id revision-id)))
-
-(defn- delete-from-indexer
-  "Execute http delete of the given url on the indexer"
-  [context delete-url]
-  (let [conn (transmit-config/context->app-connection context :indexer)
-        indexer-root (transmit-conn/root-url conn)
-        response (client/delete (format "%s/%s" indexer-root delete-url)
-                                {:accept :json
-                                 :throw-exceptions false
-                                 :headers (get-headers context)
-                                 :connection-manager (transmit-conn/conn-mgr conn)})
-        status (:status response)]
-    (when-not (some #{200, 204} [status])
-      (errors/internal-error!
-        (format "Delete %s operation failed. Indexer app response status code: %s %s"
-                delete-url status response)))
-    response))
 
 (deftracefn delete-concept-from-index
   "Delete a concept with given revision-id from index."
   [context concept-id revision-id]
-  (delete-from-indexer context (format "%s/%s" concept-id revision-id)))
+  (if (config/use-index-queue?)
+    (delete-concept-from-index-via-queue context concept-id revision-id)
+    (delete-from-index-via-http context (format "%s/%s" concept-id revision-id))))
 
 (deftracefn delete-provider-from-index
   "Delete a provider with given provider-id from index."
   [context provider-id]
-  (delete-from-indexer context (format "provider/%s" provider-id)))
+  (if (config/use-index-queue?)
+    (delete-provider-from-index-via-queue context provider-id)
+    (delete-from-index-via-http context (format "provider/%s" provider-id))))
 
 (defn- get-indexer-health-fn
   "Returns the health status of the indexer app"

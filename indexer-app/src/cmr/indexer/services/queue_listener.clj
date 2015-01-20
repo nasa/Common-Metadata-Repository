@@ -19,6 +19,15 @@
       (catch Exception e
         {:status :retry :message (.getMessage e)}))))
 
+(defmethod handle-index-action :delete-concept
+  [context msg]
+  (let [{:keys [concept-id revision-id]} msg]
+    (try
+      (indexer/delete-concept context concept-id revision-id true)
+      {:status :ok}
+      (catch Exception e
+        {:status :retry :message (.getMessage e)}))))
+
 (defn start-queue-message-handler
   "Subscribe to messages on the indexing queue."
   [context]
