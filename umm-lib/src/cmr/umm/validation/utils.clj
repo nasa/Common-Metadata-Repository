@@ -1,20 +1,6 @@
 (ns cmr.umm.validation.utils
-  "This contains utility methods for helping perform validations.
-
-  The bouncer library (https://github.com/leonardoborges/bouncer) is used for defining validations.
-  We're using some of the features of bouncer to change how message formatting is done. We have a
-  requirement to use field names corresponding to the field names of the ingested format like ECHO10
-  and DIF. (See CMR-963) Bouncer by default will use the name of the field from the record being
-  validated. This namespace includes code to delay the setting of that field information until after
-  validation. The UMM field paths are translated into the equivalent paths in the source format.
-
-  An additional extension to the bouncer library is the addition of a :format-fn in the metadata of
-  a validator. The :format-fn defines a function that will take the message format string, field name,
-  and the value that had an error to generate an error message. The purpose of this is to allow error
-  messages to include details about the values that had an error. See unique-by-name-validator for
-  an example of defining a custom format-fn."
-  (:require [bouncer.core :as b]
-            [bouncer.validators :as v :refer [defvalidator]]
+  "This contains utility methods for helping perform validations."
+  (:require [cmr.common.validations.core :as v]
             [cmr.common.services.errors :as e]
             [clojure.string :as str])
   (:import cmr.umm.collection.UmmCollection
@@ -96,46 +82,15 @@
         (recur submap (rest field-path) (conj new-path format-name)))
       new-path)))
 
-
-(defn- message-fn
-  "The message function used with bouncer validation. Avoids constructing the individual messages
-  during validation so they can be customized per format later after validation is complete. Instead
-  of taking the message details and returning a string error it returns a subset of the data that
-  was passed in. After validation has completed these are used to construct format specific
-  error messages."
-  [m]
-  {:default-message-format (get-in m [:metadata :default-message-format])
-   ;; The :format-fn will default to the standard Clojure format function.
-   :format-fn (get-in m [:metadata :format-fn] format)
-   :value (:value m)})
-
-(defn- flatten-field-errors
-  "Takes a nested set of errors as would be returned by bouncer and returns a flattened set of tuples
-  containing the umm field path and the errors."
-  ([field-errors]
-   (flatten-field-errors field-errors []))
-  ([field-errors field-path]
-   (mapcat (fn [[field v]]
-             (if (sequential? v)
-               [[(conj field-path field) v]]
-               (flatten-field-errors v (conj field-path field))))
-           field-errors)))
-
-(def uniqe-by-name-field
-  "This defines the UMM field to its unique name attribute field mapping."
-  {:product-specific-attributes :name
-   :projects :short-name})
-
 (defn- create-format-specific-error-messages
-  "Takes a list of field error tuples and errors (as returned by message-fn) and formats each error
-  using the name appropriate for the metadata format. For example RestrictionFlag would be returned
-  in an error message instead of the umm term Access value for ECHO10 format data."
-  [metadata-format concept-type field-errors]
+  "Takes a list of field error tuples and errors and formats each error using the name appropriate
+  for the metadata format. For example RestrictionFlag would be returned in an error message instead
+  of the umm term Access value for ECHO10 format data."
+  [metadata-format concept-type umm field-errors]
   (for [[field-path errors] field-errors
         :let [format-type-path (umm-path->format-type-path metadata-format concept-type field-path)]
-        {:keys [default-message-format value format-fn]} errors]
-    (format-fn default-message-format
-               (last format-type-path) value (uniqe-by-name-field (last field-path)))))
+        error-format errors]
+    (format error-format (last format-type-path))))
 
 (def umm-type->concept-type
   {UmmCollection :collection
@@ -144,23 +99,37 @@
 (defn perform-validation
   "Validates the umm record returning a list of error messages appropriate for the given metadata
   format and concept type. Returns an empty sequence if it is valid."
-  [metadata-format umm validations]
-  (->> (b/validate message-fn umm validations)
-       first
-       flatten-field-errors
-       (create-format-specific-error-messages metadata-format (umm-type->concept-type (type umm)))))
+  [metadata-format umm validation]
+  (->> (v/validate validation umm)
+       (create-format-specific-error-messages
+         metadata-format
+         (umm-type->concept-type (type umm))
+         umm)))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Common validations
 
-(defvalidator unique-by-name-validator
-  {:default-message-format "%s must be unique. This contains duplicates named [%s]."
-   :optional true ; don't run this validation if the value is nil.
-   ;; Define a custom :format-fn to include the duplicate values in the error message.
-   :format-fn (fn [message-format field values attr-name]
-                (let [freqs (frequencies (map attr-name values))
-                      duplicate-names (for [[v freq] freqs :when (> freq 1)] v)]
-                  (format message-format field (str/join ", " duplicate-names))))}
-  [values field]
-  (= (count values) (count (distinct (map (uniqe-by-name-field (keyword field)) values)))))
+
+(defn unique-by-name-validator
+  "Validates a list of items is unique by a specified field. Takes the name field and returns a
+  new validator."
+  [name-field]
+  (fn [field-path values]
+    (let [freqs (frequencies (map name-field values))]
+      (when-let [duplicate-names (seq (for [[v freq] freqs :when (> freq 1)] v))]
+        {field-path [(format "%%s must be unique. This contains duplicates named [%s]."
+                                    (str/join ", " duplicate-names))]}))))
+
+
+
+
+
+
+
+
+
+
+
+
+

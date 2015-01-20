@@ -1,7 +1,6 @@
 (ns cmr.umm.validation.core
   "Defines validations UMM concept types."
-  (:require [bouncer.core :as b]
-            [bouncer.validators :as v]
+  (:require [cmr.common.validations.core :as v]
             [cmr.umm.validation.utils :as vu]
             [cmr.umm.collection :as c]
             [cmr.umm.granule :as g])
@@ -19,14 +18,14 @@
   "Defines validations for collections"
   {
 
-   :product-specific-attributes [[vu/unique-by-name-validator "product-specific-attributes"]]
-   :projects [[vu/unique-by-name-validator "projects"]]
+   :product-specific-attributes [(vu/unique-by-name-validator :name)]
+   :projects [(vu/unique-by-name-validator :short-name)]
 
    ;; Example of how you would
    ;:spatial-coverage spatial-coverage-validations
 
    ;; Temporary example of how you would use multiple validations
-   ;;:access-value [v/required v/number]
+   ; :access-value [v/required v/integer]
 
    })
 
@@ -34,7 +33,7 @@
   "Defines validations for granules"
   {
    ;; TODO this is a temporary validation. There must be at least one validation or else bouncer fails.
-   :access-value v/number
+   :access-value v/integer
    })
 
 (def umm-validations
@@ -52,12 +51,13 @@
 (comment
 
   (validate :echo10
-            :collection
             (c/map->UmmCollection
               {:access-value "f"
                :product-specific-attributes [{:name "foo"}
                                              {:name "foo"}
-                                             {:name "bar"}]}))
+                                             {:name "bar"}]
+               :projects [{:short-name "jason"}
+                          {:short-name "jason"}]}))
 
 
   (validate :dif :collection (c/map->UmmCollection {}))
