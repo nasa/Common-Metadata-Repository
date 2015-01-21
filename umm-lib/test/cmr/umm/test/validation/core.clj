@@ -46,7 +46,7 @@
         (let [coll (c/map->UmmCollection {:projects [c1 c1 c2 c2 c3]})]
           (assert-invalid
             coll :echo10
-            ["Compaigns must be unique. This contains duplicates named [C1, C2]."])
+            ["Campaigns must be unique. This contains duplicates named [C1, C2]."])
           (assert-invalid
             coll :dif
             ["Project must be unique. This contains duplicates named [C1, C2]."])

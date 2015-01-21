@@ -17,7 +17,7 @@
    {:access-value "RestrictionFlag"
     :product-specific-attributes "AdditionalAttributes"
     :spatial-coverage ["Spatial" {:granule-spatial-representation "GranuleSpatialRepresentation"}]
-    :projects "Compaigns"}
+    :projects "Campaigns"}
 
    [:dif :collection]
    {;; This XPath will select the granule spatial representation.
