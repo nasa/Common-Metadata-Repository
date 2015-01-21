@@ -107,10 +107,8 @@
   cmr.spatial.polygon.Polygon
   (validate
     [{:keys [rings]}]
-    (if (> (count rings) 1)
-      ;; Hole validation is not supported yet. We only implemented validation of what was possible
-      ;; on the search API
-      (errors/internal-error! "Validation of polygons with holes is not yet supported")
-      (v/validate (first rings)))))
+    ;; Hole validation is not supported yet. We only implemented validation of what was possible
+    ;; on the search API
+    (v/validate (first rings))))
 
 

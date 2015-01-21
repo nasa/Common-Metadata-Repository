@@ -16,8 +16,9 @@
   {[:echo10 :collection]
    {:access-value "RestrictionFlag"
     :product-specific-attributes "AdditionalAttributes"
-    :spatial-coverage ["Spatial" {:granule-spatial-representation "GranuleSpatialRepresentation"}]
-    :projects "Compaigns"}
+    :spatial-coverage ["Spatial" {:granule-spatial-representation "GranuleSpatialRepresentation"
+                                  :geometries "Geometries"}]
+    :projects "Campaigns"}
 
    [:dif :collection]
    {;; This XPath will select the granule spatial representation.
@@ -28,17 +29,45 @@
     ;; XPath for errors as well as a human readable name for a field.
     :spatial-coverage ["." {:granule-spatial-representation
                             {:xpath "Extended_Metadata/Metadata[Name=\"GranuleSpatialRepresentation\"]/Value"
-                             :human "GranuleSpatialRepresentation"}}]
+                             :human "GranuleSpatialRepresentation"}
+                            :geometries "Geometry"}]
     :projects "Project"}
 
+   [:iso-smap :collection]
+   {:spatial-coverage ["." {:geometries "Geometry"}]}
+
    [:iso19115 :collection]
+
    ;; TODO Update to use the :xpath notation once it is finished, for now just hardcode a string
    ;; I emailed Katie to ask her what name should go here.
-   {:projects "MI_Metadata/acquisitionInformation/MI_AcquisitionInformation/operation/MI_Operation"}
-   })
+   {:projects "MI_Metadata/acquisitionInformation/MI_AcquisitionInformation/operation/MI_Operation"
+    :spatial-coverage ["." {:geometries "Geometry"}]}})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Utility functions
+
+(defmulti umm-field->format-type-field+submap
+  "Converts a umm field to the given format type field. Takes a umm field like :project and a
+  mapping of umm fields (at the level of the umm field) and returns the equivalent metadata format
+  specific field (like \"Campaign\""
+  (fn [umm-field format-type-map]
+    (type umm-field)))
+
+(defmethod umm-field->format-type-field+submap Long
+  [idx format-type-map]
+  ;; A long indicates an index into a list. There is no translation that is done here.
+  [idx format-type-map])
+
+(defmethod umm-field->format-type-field+submap clojure.lang.Keyword
+  [umm-field format-type-map]
+  (let [format-type-map-value (get format-type-map umm-field)
+        ;; The value in the map could be a vector containing the name of the equivalent element and a submap
+        ;; or in the case of a leaf node it will just be the name of the element.
+        [format-field-or-map submap] (if (sequential? format-type-map-value)
+                                      format-type-map-value
+                                      [format-type-map-value])]
+    [(or (:human format-field-or-map) format-field-or-map) submap]))
+
 
 (defn- umm-path->format-type-path
   "Converts a path of UMM field keywords into a path specific for the metadata format and concept
@@ -67,20 +96,15 @@
          field-path umm-path
          new-path []]
     (if (seq field-path)
-      (let [format-type-map-value (get format-type-map (first field-path))
-            ;; The value in the map could be a vector containing the name of the equivalent element and a submap
-            ;; or in the case of a leaf node it will just be the name of the element.
-            [format-name-or-map submap] (if (sequential? format-type-map-value)
-                                          format-type-map-value
-                                          [format-type-map-value])
-            format-name (or (:human format-name-or-map) format-name-or-map)]
-        (when-not format-type-map-value
+      (let [[format-field submap] (umm-field->format-type-field+submap
+                                    (first field-path) format-type-map)]
+        (when-not format-field
           (e/internal-error!
             (format
               "Could not find umm-metadata-path-map entry for %s of metadata-format %s and concept-type %s"
               (pr-str umm-path) metadata-format concept-type)))
 
-        (recur submap (rest field-path) (conj new-path format-name)))
+        (recur submap (rest field-path) (conj new-path format-field)))
       new-path)))
 
 (defn- create-format-specific-error-messages
