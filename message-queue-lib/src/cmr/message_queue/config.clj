@@ -17,7 +17,7 @@
 
 (def rabbit-mq-max-retries
   "The maximum number of times a message will be retried"
-  (cfg/config-value-fn :rabbit-mq-max-retries "5" #(Long. ^String %)))
+  (cfg/config-value-fn :rabbit-mq-max-retries "4" #(Long. ^String %)))
 
 (def rabbit-mq-ttl-base
   "The starting Time-To-Live (TTL) for retried messages. The TTL grows geometrically with each retry"

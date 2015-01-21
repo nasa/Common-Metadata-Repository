@@ -51,9 +51,9 @@
                     (case (:status resp)
                       :ok (do
                             ;; processed successfully
-                            (debug "Processed successfully")
+                            (debug "Message" msg "processed successfully")
                             (lb/ack ch delivery-tag))
-                      :retry (if (= repeat-count config/rabbit-mq-max-retries)
+                      :retry (if (> (inc repeat-count) (config/rabbit-mq-max-retries))
                                (do
                                  ;; give up
                                  (debug "Max retries exceeded for procesessing message:" msg)
@@ -61,6 +61,7 @@
                                (let [msg (assoc msg :repeat-count (inc repeat-count))
                                      wait-q (wait-queue-name routing-key (inc repeat-count))
                                      ttl (wait-queue-ttl (inc repeat-count))]
+                                 (debug "Message" msg "requeued with response:" (:message resp))
                                  (debug "Retrying with repeat-count ="
                                         (inc repeat-count)
                                         " on queue"
@@ -194,7 +195,19 @@
     (let [con (:conn this)
           ch (lch/open conn)]
       (info "Purging all messages from queue" queue-name)
-      (lq/purge ch queue-name)))
+      (lq/purge ch queue-name)
+      (doseq [x (range 1 (inc (config/rabbit-mq-max-retries)))
+              :let [ttl (wait-queue-ttl x)
+                    wq (wait-queue-name queue-name x)
+                    _ (debug "Creating wait queue" wq)]]
+        (safe-create-queue ch
+                           wq
+                           {:exclusive false
+                            :auto-delete false
+                            :durable true
+                            :arguments {"x-dead-letter-exchange" default-exchange-name
+                                        "x-dead-letter-routing-key" queue-name
+                                        "x-message-ttl" ttl}}))))
 
   (delete-queue
     [this queue-name]

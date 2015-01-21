@@ -137,8 +137,7 @@
   (cache/reset-caches context)
   (let [queue-broker (get-in context [:system :queue-broker])
         queue-name (config/index-queue-name)]
-    (queue/purge-queue queue-broker queue-name)
-    (queue/create-queue queue-broker queue-name)))
+    (queue/purge-queue queue-broker queue-name)))
 
 (deftracefn update-indexes
   "Updates the index mappings and settings."

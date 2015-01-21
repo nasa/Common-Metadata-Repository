@@ -9,14 +9,13 @@
   [queue-broker queue-name]
   (while (> (queue/message-count queue-broker queue-name) 0)
     (Thread/sleep 50))
-  (Thread/sleep 1000))
+  (Thread/sleep 5000))
 
 (defn wait-for-index-queue
   "Wait until the index queue is empty"
   []
   (debug "Waiting for index queue")
   (let [s (-> 'user/system find-var var-get)
-        _ (debug s)
         queue-broker (get-in s [:apps :indexer :queue-broker])
         queue-name (config/index-queue-name)]
     (wait-for-queue queue-broker queue-name)
