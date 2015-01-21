@@ -1,5 +1,9 @@
 (ns cmr.umm.iso-smap.collection.keyword
-  "Contains functions for parsing and generating the ISO SMAP descriptiveKeywords"
+  "Contains functions for parsing and generating the ISO SMAP descriptiveKeywords. SMAP ISO
+  collection science keywords, platforms and instruments are all represented as descriptiveKeywords.
+  It would be better if the type element within the descriptiveKeywords could identify the type of
+  the keywords. But currently it is always set to 'theme'. We will propose to get this changed,
+  but in the mean time, we will have to parse the keyword string to determine the type of the keyword."
   (:require [clojure.data.xml :as x]
             [clojure.string :as s]
             [cmr.common.xml :as cx]

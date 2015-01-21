@@ -176,6 +176,10 @@
             dataset-id :entry-title
             {:keys [insert-time update-time]} :data-provider-timestamps
             :keys [organizations temporal platforms spatial-coverage summary associated-difs]} collection
+           ;; UMM model has a nested relationship between instruments and platforms,
+           ;; but there is no nested relationship between instruments and platforms in SMAP ISO xml.
+           ;; To work around this problem, we list all instruments under each platform.
+           ;; In other words, all platforms will have the same instruments.
            instruments (when (first platforms) (:instruments (first platforms)))
            emit-fn (if indent? x/indent-str x/emit-str)]
        (emit-fn
