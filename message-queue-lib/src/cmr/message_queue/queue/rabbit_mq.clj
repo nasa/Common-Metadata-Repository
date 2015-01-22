@@ -198,22 +198,19 @@
       (lq/purge ch queue-name)
       (doseq [x (range 1 (inc (config/rabbit-mq-max-retries)))
               :let [ttl (wait-queue-ttl x)
-                    wq (wait-queue-name queue-name x)
-                    _ (debug "Creating wait queue" wq)]]
-        (safe-create-queue ch
-                           wq
-                           {:exclusive false
-                            :auto-delete false
-                            :durable true
-                            :arguments {"x-dead-letter-exchange" default-exchange-name
-                                        "x-dead-letter-routing-key" queue-name
-                                        "x-message-ttl" ttl}}))))
+                    wq (wait-queue-name queue-name x)]]
+        (debug "Purging messages from wait queue" wq)
+        (lq/purge ch wq))))
 
   (delete-queue
     [this queue-name]
     (let [conn (:conn this)
           ch (lch/open conn)]
-      (lq/delete ch queue-name)))
+      (lq/delete ch queue-name)
+      (doseq [x (range 1 (inc (config/rabbit-mq-max-retries)))
+              :let [ttl (wait-queue-ttl x)
+                    wq (wait-queue-name queue-name x)]]
+        (lq/delete ch wq))))
 
   (ack
     [this ch delivery-tag]

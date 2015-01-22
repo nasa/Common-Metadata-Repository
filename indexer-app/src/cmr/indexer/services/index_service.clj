@@ -20,7 +20,8 @@
             [cmr.acl.acl-cache :as acl-cache]
             [cmr.common.services.errors :as errors]
             [cmr.system-trace.core :refer [deftracefn]]
-            [cmr.message-queue.config :as qcfg]))
+            [cmr.message-queue.config :as qcfg]
+            [cmr.common.lifecycle :as lifecycle]))
 
 (defn filter-expired-concepts
   "Remove concepts that have an expired delete-time."
@@ -129,15 +130,27 @@
         {:term {:provider-id provider-id}}))))
 
 (deftracefn reset
-  ;; TODO This docstring doesn't seem accurate any longer
-  "Delegate reset elastic indices operation to index-set app"
+  "Delegates reset elastic indices operation to index-set app as well as resetting caches and
+  restarting queue listener."
   [context]
+  ; TODO figure out how to restart the queue listener to remove pending operations
+  ;; and to purge the queue
+
+  ; (let [s (:system context)
+  ;       queue-broker (get-in context [:system :queue-broker])
+  ;       queue-listener (get-in context [:system :queue-listener])
+  ;       queue-name (config/index-queue-name)
+  ;       queue-listener (lifecycle/stop queue-listener s)
+  ;       queue-broker (lifecycle/stop queue-broker s)
+  ;       queue-broker (lifecycle/start queue-broker s)]
+  ;   ;; purge the queue
+  ;   (queue/purge-queue queue-broker queue-name)
+  ;   ;; restart the queue-listener
+  ;   (lifecycle/start queue-listener s))
+
   (cache/reset-caches context)
   (es/reset-es-store context)
-  (cache/reset-caches context)
-  (let [queue-broker (get-in context [:system :queue-broker])
-        queue-name (config/index-queue-name)]
-    (queue/purge-queue queue-broker queue-name)))
+  (cache/reset-caches context))
 
 (deftracefn update-indexes
   "Updates the index mappings and settings."
