@@ -11,6 +11,7 @@
             [cmr.common.xml :as v]
             [cmr.umm.iso-smap.collection.personnel :as pe]
             [cmr.umm.iso-smap.collection.org :as org]
+            [cmr.umm.iso-smap.collection.keyword :as kw]
             [cmr.umm.iso-smap.collection.temporal :as t]
             [cmr.umm.iso-smap.collection.spatial :as spatial]
             [cmr.umm.iso-smap.helper :as h])
@@ -81,6 +82,7 @@
        :product product
        :data-provider-timestamps data-provider-timestamps
        :temporal (t/xml-elem->Temporal xml-struct)
+       :platforms (kw/xml-elem->Platforms xml-struct)
        :spatial-coverage (spatial/xml-elem->SpatialCoverage xml-struct)
        :organizations (org/xml-elem->Organizations id-elems)
        :associated-difs (xml-elem->associated-difs id-elems)
@@ -173,7 +175,12 @@
      (let [{{:keys [short-name long-name version-id version-description]} :product
             dataset-id :entry-title
             {:keys [insert-time update-time]} :data-provider-timestamps
-            :keys [organizations temporal spatial-coverage summary associated-difs]} collection
+            :keys [organizations temporal platforms spatial-coverage summary associated-difs]} collection
+           ;; UMM model has a nested relationship between instruments and platforms,
+           ;; but there is no nested relationship between instruments and platforms in SMAP ISO xml.
+           ;; To work around this problem, we list all instruments under each platform.
+           ;; In other words, all platforms will have the same instruments.
+           instruments (when (first platforms) (:instruments (first platforms)))
            emit-fn (if indent? x/indent-str x/emit-str)]
        (emit-fn
          (x/element
@@ -210,6 +217,8 @@
                    (h/iso-string-element :gmd:credit "National Aeronautics and Space Administration (NASA)")
                    iso-status-element
                    (org/generate-archive-center organizations)
+                   (kw/generate-instruments instruments)
+                   (kw/generate-platforms platforms)
                    (iso-aggregation-info-element dataset-id)
                    (h/iso-string-element :gmd:language "eng")
                    (x/element

@@ -2,6 +2,7 @@
   "Contains helper functions for data generation and ingest for example based testing in system
   integration tests."
   (:require [clojure.test :refer [is]]
+            [clojure.java.io :as io]
             [cmr.umm.core :as umm]
             [cmr.common.mime-types :as mime-types]
             [cmr.system-int-test.utils.ingest-util :as ingest]
@@ -68,6 +69,19 @@
               :revision-id (:revision-id response)
               :format-key format-key)
        response))))
+
+(defn ingest-concept-with-metadata-file
+  "Ingest the given concept with the metadata file. The metadata file has to be located under
+  dev-system/resources/data/... and referenced as 'data/...'"
+  [provider-id concept-type format-key metadata-file]
+  (let [metadata (slurp (io/file (io/resource metadata-file)))
+        concept {:concept-type concept-type
+                 :provider-id provider-id
+                 :native-id "native-id"
+                 :metadata metadata
+                 :format (mime-types/format->mime-type format-key)}
+        response (ingest/ingest-concept concept)]
+    (merge (umm/parse-concept concept) response)))
 
 (defn item->ref
   "Converts an item into the expected reference"
