@@ -28,6 +28,18 @@
          :spatial-representation :geodetic
          :geometries bounding-boxes}))))
 
+(defn- platform->expected-parsed
+  "Returns the expected parsed platform for the given platform."
+  [instruments platform]
+  (assoc platform :type "Spacecraft" :instruments instruments :characteristics nil))
+
+(defn- platforms->expected-parsed
+  "Returns the expected parsed platforms for the given platforms."
+  [platforms]
+  (let [{:keys [instruments]} (first platforms)
+        instruments (seq (map #(assoc % :technique nil :sensors nil) instruments))]
+    (seq (map (partial platform->expected-parsed instruments) platforms))))
+
 (defn- filter-center-type
   "Filters a list of organizations to the given type."
   [orgs org-type]
@@ -100,8 +112,9 @@
         (dissoc :temporal-keywords)
         ;; SMAP ISO does not support ScienceKeywords
         (dissoc :science-keywords)
-        ;; SMAP ISO does not support Platforms
-        (dissoc :platforms)
+        ;; SMAP ISO platform does not have characteristics field
+        ;; and instruments are the same for all platforms
+        (update-in [:platforms] platforms->expected-parsed)
         ;; SMAP ISO does not support Projects
         (dissoc :projects)
         ;; SMAP ISO does not support AdditionalAttributes
@@ -163,6 +176,16 @@
                        :single-date-times
                        []
                        :periodic-date-times []})
+                    :platforms [(umm-c/map->Platform
+                                  {:short-name "SMAP"
+                                   :long-name "Soil Moisture Active and Passive Observatory"
+                                   :type "Spacecraft"
+                                   :instruments [(umm-c/map->Instrument
+                                                   {:short-name "SMAP L-BAND RADAR"
+                                                    :long-name "SMAP L-Band Radar"})
+                                                 (umm-c/map->Instrument
+                                                   {:short-name "SMAP L-BAND RADIOMETER"
+                                                    :long-name "SMAP L-Band Radiometer"})]})]
                     :spatial-coverage (umm-c/map->SpatialCoverage
                                         {:granule-spatial-representation :geodetic
                                          :spatial-representation :geodetic
@@ -210,4 +233,18 @@
                  "\"http://www.isotc211.org/2005/gmd\":hierarchyLevelName, "
                  "\"http://www.isotc211.org/2005/gmd\":contact}' is expected.")]
            (c/validate-xml (s/replace sample-collection-xml "fileIdentifier" "XXXX"))))))
+
+(comment
+
+  (let [coll (c/parse-collection sample-collection-xml)
+        xml (iso/umm->iso-smap-xml coll)
+        parsed-iso (c/parse-collection xml)]
+    (println "------xml: " xml)
+    (println "------parsed-iso platform: " (:platforms parsed-iso))
+    (println "------equal?: " (= (:platforms coll) (:platforms parsed-iso)))
+    ))
+
+
+
+
 
