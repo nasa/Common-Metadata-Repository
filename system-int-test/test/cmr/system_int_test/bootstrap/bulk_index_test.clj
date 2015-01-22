@@ -12,8 +12,6 @@
             [clj-time.core :as t]
             [cmr.system-int-test.utils.test-environment :as test-env]))
 
-
-
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
 ;; This test runs bulk index with some concepts in mdb that are good, and some that are
@@ -79,8 +77,6 @@
                     {:concept-id (:concept-id coll2)} :collection []
                     {:concept-id (:concept-id coll3)} :collection []
                     {:concept-id (:concept-id umm1)} :granule [])))))
-
-
 
 ;; This test verifies that the bulk indexer can run concurrently with ingest and indexing of items.
 ;; This test performs the following steps:
@@ -160,3 +156,63 @@
                 response (search/find-refs :granule {:concept-id concept-id})
                 es-revision-id (:revision-id (first (:refs response)))]
             (is (= 5 es-revision-id))))))))
+
+(deftest provider-bulk-index-validation-test
+  (test-env/only-with-real-database
+    (testing "Validation of a provider supplied in a bulk-index request."
+      (let [{:keys [status errors] :as succ-stat} (bootstrap/bulk-index-provider "PROV1")
+            {:keys [status errors] :as fail-stat} (bootstrap/bulk-index-provider "NCD4580")]
+        (is (= [202 nil] [(:status succ-stat) (:errors succ-stat)]))
+        (is (= [400 ["Providers: [NCD4580] do not exist in the system"]]
+               [(:status fail-stat) (:errors fail-stat)]))))))
+
+(deftest collection-bulk-index-validation-test
+  (test-env/only-with-real-database
+    (testing "Validation of a collection supplied in a bulk-index request."
+      (let [coll1 {:short-name "coll1" :entry-title "coll1"}
+            umm1 (dc/collection coll1)
+            xml1 (echo10/umm->echo10-xml umm1)
+            coll1-map {:concept-type :collection
+                       :format "application/echo10+xml"
+                       :metadata xml1
+                       :extra-fields {:short-name "coll1"
+                                      :entry-title "coll1"
+                                      :version-id "v1"}
+                       :provider-id "PROV1"
+                       :native-id "coll1"
+                       :short-name "coll1"}
+            coll1 (ingest/save-concept coll1-map)
+            umm1 (merge umm1 (select-keys coll1 [:concept-id :revision-id]))
+            gran1 {:granule-ur "gran1"}
+            ummg1 (dg/granule coll1 gran1)
+            xmlg1 (echo10/umm->echo10-xml ummg1)
+            gran1-map {:concept-type :granule
+                       :provider-id "PROV1"
+                       :native-id "gran1"
+                       :format "application/echo10+xml"
+                       :metadata xmlg1
+                       :extra-fields {:parent-collection-id (:concept-id umm1)}}
+            gran1 (ingest/save-concept gran1-map)
+            valid-prov "PROV1"
+            valid-coll (:concept-id umm1)
+            invalid-prov "NCD4580"
+            invalid-coll "C12-PROV1"
+            err-msg1 (format "Providers: [%s] do not exist in the system" invalid-prov)
+            err-msg2 (format "Concept with concept-id [%s] and revision-id [null] does not exist."
+                             invalid-coll)
+            {:keys [status errors] :as succ-stat} (bootstrap/bulk-index-collection
+                                                    valid-prov valid-coll)
+            ;; invalid provider and collection
+            {:keys [status errors] :as fail-stat1} (bootstrap/bulk-index-collection
+                                                     invalid-prov invalid-coll)
+            ;; valid provider and invalid collection
+            {:keys [status errors] :as fail-stat2} (bootstrap/bulk-index-collection
+                                                     valid-prov invalid-coll)
+            ;; invalid provider and valid collection
+            {:keys [status errors] :as fail-stat3} (bootstrap/bulk-index-collection
+                                                     invalid-prov valid-coll)]
+        (is (= [202 nil] [(:status succ-stat) (:errors succ-stat)]))
+        (is (= [400 [err-msg1 err-msg2]] [(:status fail-stat1) (:errors fail-stat1)]))
+        (is (= [400 [err-msg2]] [(:status fail-stat2) (:errors fail-stat2)]))
+        (is (= [400 [err-msg1]] [(:status fail-stat3) (:errors fail-stat3)]))))))
+

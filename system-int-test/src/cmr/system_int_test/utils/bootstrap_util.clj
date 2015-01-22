@@ -29,6 +29,21 @@
         body (json/decode (:body response) true)]
     (assoc body :status (:status response))))
 
+(defn bulk-index-collection
+  "Call the bootstrap app to bulk index a collection."
+  [provider-id collection-id]
+  (let [response (client/request
+                   {:method :post
+                    :query-params {:synchronous true}
+                    :url (url/bulk-index-collection-url)
+                    :body (format "{\"provider_id\": \"%s\", \"collection_id\": \"%s\"}" provider-id collection-id)
+                    :content-type :json
+                    :accept :json
+                    :throw-exceptions false
+                    :connection-manager (url/conn-mgr)})
+        body (json/decode (:body response) true)]
+    (assoc body :status (:status response))))
+
 (defn bulk-migrate-provider
   "Call the bootstrap app to bulk db migrate a provider."
   [provider-id]
