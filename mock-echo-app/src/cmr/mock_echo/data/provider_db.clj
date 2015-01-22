@@ -29,3 +29,12 @@
       deref
       :providers
       vals))
+
+(defn provider-id->provider-guid
+  "Return the provider guid for the given provider id."
+  [context provider-id]
+  (->> (get-providers context)
+       (map :provider)
+       (filter #(= (:provider_id %) provider-id))
+       first
+       :id))

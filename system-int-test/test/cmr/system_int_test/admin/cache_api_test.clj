@@ -173,7 +173,8 @@
       (are [url cache cache-key value]
            (let [response (get-cache-value url cache cache-key admin-read-token)]
              (is (= (set value) (set response))))
-           (url/indexer-read-caches-url) "acls" "acls" [{:aces
+           (url/indexer-read-caches-url) "acls" "acls" [{:provider-object-identity nil,
+                                                         :aces
                                                          [{:permissions ["read"], :user-type "guest"}
                                                           {:permissions ["read"], :user-type "registered"}],
                                                          :catalog-item-identity
@@ -183,7 +184,8 @@
                                                           :collection-identifier nil,
                                                           :granule-identifier nil},
                                                          :system-object-identity nil}
-                                                        {:aces
+                                                        {:provider-object-identity nil,
+                                                         :aces
                                                          [{:permissions ["read"], :user-type "guest"}
                                                           {:permissions ["read"], :user-type "registered"}],
                                                          :catalog-item-identity
@@ -193,7 +195,8 @@
                                                           :collection-identifier nil,
                                                           :granule-identifier nil},
                                                          :system-object-identity nil}
-                                                        {:aces
+                                                        {:provider-object-identity nil,
+                                                         :aces
                                                          [{:permissions ["read"], :user-type "guest"}
                                                           {:permissions ["read"], :user-type "registered"}],
                                                          :catalog-item-identity

@@ -3,7 +3,9 @@
   (:require [cmr.transmit.echo.mock :as mock]
             [cmr.transmit.echo.tokens :as tokens]
             [cmr.transmit.config :as config]
-            [cmr.system-int-test.system :as s]))
+            [cmr.system-int-test.system :as s]
+            [cmr.system-int-test.utils.url-helper :as url]
+            [clj-http.client :as client]))
 
 (defn- context
   "Returns a context to pass to the mock transmit api"
@@ -46,6 +48,11 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ACL related
+
+;; Ingest management AKA admin granters
+(def ingest-management-acl
+  "An ACL for managing access to ingest management functions."
+  "INGEST_MANAGEMENT_ACL")
 
 (defn coll-id
   "Creates an ACL collection identifier"
@@ -93,11 +100,17 @@
 
 (defn grant
   "Creates an ACL in mock echo with the id, access control entries, identities"
-  [aces catalog-item-identity system-object-identity]
-  (let [acl {:aces aces
-             :catalog-item-identity catalog-item-identity
-             :system-object-identity system-object-identity}]
-    (mock/create-acl (context) acl)))
+  ([aces catalog-item-identity object-identity-type acl-type]
+   (grant aces catalog-item-identity object-identity-type acl-type nil))
+  ([aces catalog-item-identity object-identity-type acl-type provider-guid]
+   (let [acl {:aces aces
+              :catalog-item-identity catalog-item-identity
+              object-identity-type (if (or acl-type provider-guid)
+                                     (merge {}
+                                            (when provider-guid {:provider-guid provider-guid})
+                                            (when acl-type {:target acl-type}))
+                                     nil)}]
+     (mock/create-acl (context) acl))))
 
 (defn ungrant
   "Removes the acl"
@@ -124,37 +137,82 @@
   "Creates an ACL in mock echo granting guests and registered users access to catalog items
   identified by the catalog-item-identity"
   [catalog-item-identity]
-  (grant [guest-ace registered-user-ace] catalog-item-identity nil))
+  (grant [guest-ace registered-user-ace] catalog-item-identity :system-object-identity nil))
+
+(defn grant-all-ingest
+  "Creates an ACL in mock echo granting guests and registered users access to ingest for the given
+  provider."
+  [provider-guid]
+  (grant [{:permissions [:update :delete]
+           :user-type :guest}
+          {:permissions [:update :delete]
+           :user-type :registered}]
+         nil
+         :provider-object-identity
+         ingest-management-acl
+         provider-guid))
 
 (defn grant-guest
   "Creates an ACL in mock echo granting guests access to catalog items identified by the
   catalog-item-identity"
   [catalog-item-identity]
-  (grant [guest-ace] catalog-item-identity nil))
+  (grant [guest-ace] catalog-item-identity :system-object-identity nil))
 
 (defn grant-registered-users
-  "Creates an ACL in mock echo granting all registered users access to catalog items identified by the
-  catalog-item-identity"
+  "Creates an ACL in mock echo granting all registered users access to catalog items identified by
+  the catalog-item-identity"
   [catalog-item-identity]
-  (grant [registered-user-ace] catalog-item-identity nil))
+  (grant [registered-user-ace] catalog-item-identity :system-object-identity nil))
 
 (defn grant-group
-  "Creates an ACL in mock echo granting users in the group access to catalog items identified by the
-  catalog-item-identity"
+  "Creates an ACL in mock echo granting users in the group access to catalog items identified by
+  the catalog-item-identity"
   [group-guid catalog-item-identity]
-  (grant [(group-ace group-guid [:read])] catalog-item-identity nil))
-
-
-;; Ingest management AKA admin granters
-(def ingest-management-system-object-identity
-  "A system object identity for the ingest management acl which is used for managing admin access."
-  {:target "INGEST_MANAGEMENT_ACL"})
+  (grant [(group-ace group-guid [:read])] catalog-item-identity :system-object-identity nil))
 
 (defn grant-group-admin
+  "Creates an ACL in mock echo granting users in the group the given permissions for system ingest
+  management.  If no permissions are provided the group is given read and update permission."
   [group-guid & permission-types]
   (grant [(group-ace group-guid (or (seq permission-types)
                                     [:read :update]))]
          nil
-         ingest-management-system-object-identity))
+         :system-object-identity
+         ingest-management-acl))
+
+(defn grant-group-provider-admin
+  "Creates an ACL in mock echo granting users in the group the given permissions to ingest for the
+  given provider.  If no permissions are provided the group is given update and delete permissions."
+  [group-guid provider-guid & permission-types]
+  (grant [(group-ace group-guid (or (seq permission-types)
+                                    [:update :delete]))]
+         nil
+         :provider-object-identity
+         ingest-management-acl
+         provider-guid))
+
+(defn has-action-permission?
+  "Attempts to perform the given action using the url and method with the token. Returns true
+  if the action was successful."
+  ([url method token]
+   (has-action-permission? url method token nil nil))
+  ([url method token headers]
+   (has-action-permission? url method token headers nil))
+  ([url method token headers body]
+   (let [response (client/request {:url url
+                                   :method method
+                                   :query-params {:token token}
+                                   :headers headers
+                                   :body body
+                                   :connection-manager (url/conn-mgr)
+                                   :throw-exceptions false})
+         status (:status response)]
+
+     ;; Make sure the status returned is success or 401
+     (when (or (and (>= status 300)
+                    (not= status 401))
+               (< status 200))
+       (throw (Exception. (str "Unexpected status " status " response:" (:body response)))))
+     (not= status 401))))
 
 

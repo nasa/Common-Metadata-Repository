@@ -15,7 +15,6 @@
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.utils.echo-util :as echo-util]))
 
-
 (defn- create-provider-through-url
   "Create the provider by http POST on the given url"
   [provider-id endpoint-url]
@@ -83,10 +82,14 @@
 
 (defn ingest-concept
   "Ingest a concept and return a map with status, concept-id, and revision-id"
-  [{:keys [metadata format concept-type concept-id revision-id provider-id native-id] :as concept}]
+  ([concept]
+   (ingest-concept concept nil))
+  ([{:keys [metadata format concept-type concept-id revision-id provider-id native-id] :as concept}
+    token]
   (let [headers (merge {}
                        (when concept-id {"concept-id" concept-id})
-                       (when revision-id {"revision-id" revision-id}))
+                       (when revision-id {"revision-id" revision-id})
+                       (when token {"Echo-Token" token}))
         response (client/request
                    {:method :put
                     :url (url/ingest-url provider-id concept-type native-id)
@@ -97,7 +100,7 @@
                     :throw-exceptions false
                     :connection-manager (url/conn-mgr)})
         body (json/decode (:body response) true)]
-    (assoc body :status (:status response))))
+    (assoc body :status (:status response)))))
 
 (defn validate-concept
   "Validate a concept and return a map with status and error messages if applicable"
@@ -235,11 +238,13 @@
 
    (when grant-all?
      (echo-util/grant [echo-util/guest-ace
-                       echo-util/registered-user-ace]
-                      (assoc (echo-util/catalog-item-id provider-guid)
-                             :collection-applicable true
-                             :granule-applicable true)
-                      nil))))
+               echo-util/registered-user-ace]
+              (assoc (echo-util/catalog-item-id provider-guid)
+                     :collection-applicable true
+                     :granule-applicable true)
+              :system-object-identity
+              nil)
+     (echo-util/grant-all-ingest provider-guid))))
 
 (defn reset-fixture
   "Creates the given providers in ECHO and the CMR then clears out all data at the end."
