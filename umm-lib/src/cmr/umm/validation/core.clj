@@ -3,31 +3,33 @@
   (:require [cmr.common.validations.core :as v]
             [cmr.umm.validation.utils :as vu]
             [cmr.umm.collection :as c]
-            [cmr.umm.granule :as g])
+            [cmr.umm.granule :as g]
+            [cmr.umm.spatial :as umm-s]
+            [cmr.spatial.validation :as sv])
   (:import cmr.umm.collection.UmmCollection
            cmr.umm.granule.UmmGranule))
 
+(defn set-geometries-spatial-representation
+  "Sets the spatial represention from the spatial coverage on the geometries"
+  [spatial-coverage]
+  (let [{:keys [spatial-representation geometries]} spatial-coverage]
+    (assoc spatial-coverage
+           :geometries
+           (map #(umm-s/set-coordinate-system spatial-representation %) geometries))))
+
 (def spatial-coverage-validations
   "Defines spatial coverage validations for collections."
-  {
-   ;; temporary made up example
-   ;;:granule-spatial-representation [v/required]
-   })
+  (v/pre-validation
+    ;; The spatial representation has to be set on the geometries before the conversion because
+    ;;polygons etc do not know whether they are geodetic or not.
+    set-geometries-spatial-representation
+    {:geometries (v/every sv/spatial-validation)}))
 
 (def collection-validations
   "Defines validations for collections"
-  {
-
-   :product-specific-attributes [(vu/unique-by-name-validator :name)]
+  {:product-specific-attributes [(vu/unique-by-name-validator :name)]
    :projects [(vu/unique-by-name-validator :short-name)]
-
-   ;; Example of how you would
-   ;:spatial-coverage spatial-coverage-validations
-
-   ;; Temporary example of how you would use multiple validations
-   ; :access-value [v/required v/integer]
-
-   })
+   :spatial-coverage spatial-coverage-validations})
 
 (def granule-validations
   "Defines validations for granules"
@@ -55,6 +57,13 @@
                                              {:name "bar"}]
                :projects [{:short-name "jason"}
                           {:short-name "jason"}]}))
+
+  (require '[cmr.spatial.mbr :as m])
+  (require '[cmr.spatial.point :as p])
+  (validate :echo10
+            (c/map->UmmCollection
+              {:spatial-coverage {:geometries [(m/mbr -180 45 180 46)
+                                               (p/point 192 80)]}}))
 
 
   (validate :dif :collection (c/map->UmmCollection {}))

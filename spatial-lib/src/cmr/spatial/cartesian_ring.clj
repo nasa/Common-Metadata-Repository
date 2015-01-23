@@ -115,3 +115,11 @@
             (assoc ring :point-set (set (:points ring)))
             (assoc ring :line-segments (ring->line-segments ring))
             (assoc ring :mbr (ring->mbr ring))))))
+
+
+(extend-protocol v/SpatialValidation
+  cmr.spatial.cartesian_ring.CartesianRing
+  (validate
+    [ring]
+    ;; Does no validation for now. CMR-1172 was filed to add this.
+    ))

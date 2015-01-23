@@ -386,6 +386,38 @@
     ^Mbr [^Mbr mbr]
     mbr))
 
+(comment
+
+  ;; If we ever want to do spatial validation using cmr.common.validations. It could be done like this.
+
+(defn north-less-than-south-validation
+  [field-path {:keys [^double north ^double south]}]
+  (when (< north south)
+    {field-path [(msg/br-north-less-than-south north south)]}))
+
+(def validations
+  [{:west [v/required v/number (v/within-range -180.0 180.0)]
+    :north [v/required v/number (v/within-range -90.0 90.0)]
+    :east [v/required v/number (v/within-range -180.0 180.0)]
+    :south [v/required v/number (v/within-range -90.0 90.0)]}
+   north-less-than-south-validation])
+
+  ;; valid
+  (v/create-error-messages
+    (v/validate validations {:west 90 :north 85 :east 76 :south 84}))
+  ;; invalid number
+  (v/create-error-messages
+    (v/validate validations {:west 90 :north "85" :east 76 :south 84}))
+  ;; invalid latitude
+  (v/create-error-messages
+    (v/validate validations {:west 90 :north 857 :east 76 :south 84}))
+  ;; north less than south
+  (v/create-error-messages
+    (v/validate validations {:west 90 :north 85 :east 76 :south 85.01}))
+
+
+  )
+
 (extend-protocol v/SpatialValidation
   cmr.spatial.mbr.Mbr
   (validate

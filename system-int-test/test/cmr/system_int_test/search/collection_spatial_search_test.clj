@@ -26,14 +26,15 @@
 
 (comment
 
-  (ingest/reset)
-  (ingest/create-provider "provguid1" "PROV1")
+  (do
+    (ingest/reset)
+    (ingest/create-provider "provguid1" "PROV1"))
 
   )
 
 (defn polygon
-  "Creates a single ring polygon with the given ordinates. Points must be in counter clockwise order.
-  The polygon will be closed automatically."
+  "Creates a single ring polygon with the given ordinates. Points must be in counter clockwise
+  order."
   [& ords]
   (poly/polygon [(apply umm-s/ords->ring ords)]))
 
@@ -51,64 +52,6 @@
                  :spatial-coverage (dc/spatial {:gsr coord-sys
                                                 :sr coord-sys
                                                 :geometries shapes})}))))
-
-(deftest special-case-spatial-search-test
-  (let [west-hemi-poly1 (make-coll :geodetic "west-hemi-poly1"
-                                   (polygon -179.9999 0.0, -179.9999 -89.9999, 0.0 -89.9999,
-                                            0.0 0.0, 0.0 89.9999, -179.9999 89.9999, -179.9999 0.0))
-        west-hemi-poly2 (make-coll :geodetic "west-hemi-poly2"
-                                   (polygon -179.9999 -89.9999, 0.0 -89.9999, 0.0 89.9999,
-                                            -179.9999 89.9999, -179.9999 -89.9999))
-        west-hemi-poly3 (make-coll :geodetic "west-hemi-poly3"
-                                   (polygon -179.9999 75, -179.9 75, -179.9 0, -179.9999 0,
-                                            -179.9999 -89.9999, 0 -89.9999, 0 89.9999,
-                                            -179.9999 89.9999, -179.9999 75))
-        east-hemi-poly1 (make-coll :geodetic "east-hemi-poly1"
-                                   (polygon 0.0001 -89.9999, 180 -89.9999, 180 89.9999,
-                                            0.0001 89.9999, 0.0001 -89.9999))
-        east-hemi-poly2 (make-coll :geodetic "east-hemi-poly2"
-                                   (polygon 0.0001,-89.9999, 180.0,-89.9999, 180.0,-45.0, 180.0,0.0,
-                                            180.0,45.0, 180.0,89.9999, 0.0001,89.9999, 0.0001,-89.9999))
-        ;; Combines west-hemi-poly3 and east-hemi-poly1
-        combined (make-coll :geodetic "combined"
-                            (polygon -179.9999 75, -179.9 75, -179.9 0, -179.9999 0,
-                                     -179.9999 -89.9999, 0 -89.9999, 0 89.9999,
-                                     -179.9999 89.9999, -179.9999 75)
-                            (polygon 0.0001 -89.9999, 180 -89.9999, 180 89.9999,
-                                     0.0001 89.9999, 0.0001 -89.9999))
-        all-colls [west-hemi-poly1 west-hemi-poly2 west-hemi-poly3 east-hemi-poly1 east-hemi-poly2 combined]]
-
-    (index/refresh-elastic-index)
-
-    (are [lon_lat items]
-         (let [found (search/find-refs :collection {:point (codec/url-encode (apply p/point lon_lat))
-                                                    :page-size 50})
-               matches? (d/refs-match? items found)]
-           (when-not matches?
-             (println "Expected:" (->> items (map :entry-title) sort pr-str))
-             (println "Actual:" (->> found :refs (map :name) sort pr-str)))
-           matches?)
-
-         ;; north pole
-         [0 90] all-colls
-
-         ;; south pole
-         [0 -90] all-colls
-
-         ;; antimerdian
-         [180 0] [east-hemi-poly1 east-hemi-poly2 combined]
-         [-180 0] [west-hemi-poly1 west-hemi-poly2 west-hemi-poly3 combined]
-
-         ;; prime meridian
-         [0 0] all-colls
-         [0 10] all-colls
-         [0 -10] all-colls
-
-         ;; middle of east hemisphere
-         [90 45] [east-hemi-poly1 east-hemi-poly2 combined]
-
-         ;; middle of west hemisphere
-         [-90 45] [west-hemi-poly1 west-hemi-poly2 west-hemi-poly3 combined])))
 
 (deftest spatial-search-test
   (let [;; Lines

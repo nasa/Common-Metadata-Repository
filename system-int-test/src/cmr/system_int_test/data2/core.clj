@@ -64,6 +64,7 @@
                     (item->concept (assoc item :provider-id provider-id) format-key))]
      (if (= 200 (:status response))
        (assoc item
+              :status (:status response)
               :provider-id provider-id
               :concept-id (:concept-id response)
               :revision-id (:revision-id response)
