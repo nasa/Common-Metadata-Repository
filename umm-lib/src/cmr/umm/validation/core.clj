@@ -49,6 +49,47 @@
 
 (comment
 
+  (def address-validations
+    {:address-name v/required
+     :city v/required
+     :street v/required})
+
+  ;; A custom validation
+  (defn last-not-first
+    [field-path person-name]
+    (when (= (:last person-name) (:first person-name))
+      {field-path ["Last name must not equal first name"]}))
+
+  (def person-validations
+    {:addresses [(v/every address-validations)
+                 (vu/unique-by-name-validator :address-name)]
+     :name [{:first v/required
+             :last v/required}
+            last-not-first]
+     :age [v/required v/integer]})
+
+  (v/validate person-validations {:addresses [{:street "5 Main"
+                                               :city "Annapolis"}
+                                              {:city "dd"}
+                                              {:city "dd"}
+                                              {:street "dfkkd"}]
+                                  :name {:first "Jason"
+                                         :last "Jason"}
+                                  :age "35"})
+
+  (v/validate person-validations {:addresses [{:address-name "home"
+                                               :street "5 Main"
+                                               :city "Annapolis"}
+                                              {:address-name "home"
+                                               :street "5 Pratt St"
+                                               :city "Baltimore"}]
+                                  :name {:first "Jane"
+                                         :last "Smith"}
+                                  :age 35})
+
+
+
+
   (validate :echo10
             (c/map->UmmCollection
               {:access-value "f"
