@@ -27,7 +27,7 @@
         ;; Added to test SMAP ISO platform and instrument support
         coll9 (d/ingest-concept-with-metadata-file
                 "PROV1" :collection :iso-smap
-                "data/iso_smap/smap_iso_collection_with_platform_instrument.xml")]
+                "../../umm-lib/resources/data/iso_smap/sample_smap_iso_collection.xml")]
 
     (index/refresh-elastic-index)
 
@@ -91,7 +91,7 @@
         ;; Added to test SMAP ISO platform and instrument support
         coll10 (d/ingest-concept-with-metadata-file
                  "PROV1" :collection :iso-smap
-                 "data/iso_smap/smap_iso_collection_with_platform_instrument.xml")]
+                 "../../umm-lib/resources/data/iso_smap/sample_smap_iso_collection.xml")]
 
     (index/refresh-elastic-index)
 
