@@ -74,7 +74,7 @@
   "Ingest the given concept with the metadata file. The metadata file has to be located under
   dev-system/resources/data/... and referenced as 'data/...'"
   [provider-id concept-type format-key metadata-file]
-  (let [metadata (slurp (io/file (io/resource metadata-file)))
+  (let [metadata (slurp (io/resource metadata-file))
         concept {:concept-type concept-type
                  :provider-id provider-id
                  :native-id "native-id"
