@@ -37,7 +37,7 @@
     (Thread/sleep sleep-time)
     true))
 
-(defn- get-provider-collection-list
+(defn get-provider-collection-list
   "Get the list of collecitons belonging to the given provider."
   [system provider-id]
   (let [db (get-in system [:metadata-db :db])

@@ -157,14 +157,11 @@
                 es-revision-id (:revision-id (first (:refs response)))]
             (is (= 5 es-revision-id))))))))
 
-(deftest provider-bulk-index-validation-test
-  (test-env/only-with-real-database
-    (testing "Validation of a provider supplied in a bulk-index request."
-      (let [{:keys [status errors] :as succ-stat} (bootstrap/bulk-index-provider "PROV1")
-            {:keys [status errors] :as fail-stat} (bootstrap/bulk-index-provider "NCD4580")]
-        (is (= [202 nil] [(:status succ-stat) (:errors succ-stat)]))
-        (is (= [400 ["Providers: [NCD4580] do not exist in the system"]]
-               [(:status fail-stat) (:errors fail-stat)]))))))
+(deftest invalid-provider-bulk-index-validation-test
+  (testing "Validation of a provider supplied in a bulk-index request."
+    (let [{:keys [status errors]} (bootstrap/bulk-index-provider "NCD4580")]
+      (is (= [400 ["Providers: [NCD4580] do not exist in the system"]]
+             [status errors])))))
 
 (deftest collection-bulk-index-validation-test
   (test-env/only-with-real-database
@@ -212,7 +209,7 @@
             {:keys [status errors] :as fail-stat3} (bootstrap/bulk-index-collection
                                                      invalid-prov valid-coll)]
         (is (= [202 nil] [(:status succ-stat) (:errors succ-stat)]))
-        (is (= [400 [err-msg1 err-msg2]] [(:status fail-stat1) (:errors fail-stat1)]))
+        (is (= [400 [err-msg1]] [(:status fail-stat1) (:errors fail-stat1)]))
         (is (= [400 [err-msg2]] [(:status fail-stat2) (:errors fail-stat2)]))
         (is (= [400 [err-msg1]] [(:status fail-stat3) (:errors fail-stat3)]))))))
 
