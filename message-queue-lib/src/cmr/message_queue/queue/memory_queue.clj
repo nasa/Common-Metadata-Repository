@@ -4,13 +4,15 @@
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.config :as cfg]
             [cmr.common.services.errors :as errors]
-            [cheshire.core :as json])
+            [cmr.message-queue.config :as config]
+            [cheshire.core :as json]
+            [cmr.message-queue.services.queue :as queue])
   (:import java.util.concurrent.LinkedBlockingQueue))
 
 (defn- push-message
   "Pushes a message on the queue whether it is running or not."
-  [mem-queue msg]
-  (let [queue @(:queue-atom mem-queue)]
+  [mem-queue queue-name msg]
+  (let [queue (get @(:queue-atom) queue-name)]
     (future (.put queue msg))))
 
 (defn- push-message-with-validation
@@ -23,7 +25,7 @@
 
 (defn- start-consumer
   "Repeatedly pulls messages off the queue and calls callbacks"
-  [memory-queue]
+  [memory-queue queue-name handler params]
   (info "Starting consumer")
   (while @(:running-atom memory-queue)
     ;; Use a blocking read
@@ -46,11 +48,14 @@
    ;; maxiumum number of elements in the queue
    queue-capacity
 
-   ;; holds a Java BlockingQueue instance
+   ;; holds a map of names to Java BlockingQueue instances
    queue-atom
 
    ;; number of subscribers/workers
    num-subscribers
+
+   ;; queues that must be created on startup
+   required-queues
 
    ;; Atom holding true or false to indicate it's running
    ;; This needs to be an atom so we can set it to false so our worker threads will terminate.
@@ -68,11 +73,9 @@
     (swap! (:queue-atom this) (fn [_] (new java.util.concurrent.LinkedBlockingQueue
                                            (:queue-capacity this))))
     (swap! (:running-atom this) (fn [_] true))
-    (dorun
-      (repeatedly (:num-subscribers this)
-                  (fn []
-                    ;; Start threads running the queue listeners
-                    (future (start-consumer this)))))
+    (doseq [queue-name (:required-queues this)]
+        (queue/create-queue this queue-name))
+      (debug "Required queues created")
     this)
 
   (stop
@@ -85,47 +88,47 @@
         (repeatedly (:num-subscribers this)
                     (fn []
                       (push-message this {:action "quit"}))))
-      this)))
+      this))
 
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  ; index-queue/IndexQueue
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+queue/Queue
 
-  ; (index-concept
-  ;   [this concept-id revision-id]
-  ;   (let [msg {:concept-id concept-id
-  ;              :revision-id revision-id
-  ;              :action "index-concept"}
-  ;         payload (json/encode msg)]
-  ;     (push-message-with-validation this msg)))
+  (create-queue
+    [this queue-name]
+    (let [queue-atom (:queue-atom this)
+      ;; create the queue
+      _ (info "Creating queue" queue-name)
+      queue (new java.util.concurrent.LinkedBlockingQueue
+                                           (:queue-capacity this))]
+      (swap! queue-atom (fn [queue-map]
+                          (assoc queue-map queue-name queue)))))
 
-  ; (delete-concept-from-index
-  ;   [this concept-id revision-id]
-  ;   (let [context {}]
-  ;     (future (indexer/delete-concept-from-index context concept-id revision-id))))
 
-  ; (delete-provider-from-index
-  ;   [this provider-id]
-  ;   (let [context {}]
-  ;     (future (indexer/delete-provider-from-index context provider-id))))
+  (publish
+    [this queue-name msg]
+    (debug "publishing msg:" msg " to queue:" queue-name)
+    )
 
-  ; (reindex-provider-collections
-  ;   [this provider-id]
-  ;   (let [context {}]
-  ;     (future (indexer/reindex-provider-collections context provider-id)))))
+  (subscribe
+    [this queue-name handler params]
+    (start-consumer this queue-name handler params))
+
+  (message-count
+    [this queue-name]
+    )
+
+  (purge-queue
+    [this queue-name]
+    )
+
+  (delete-queue
+    [this queue-name]
+    ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn create-queue
-  "Creates a simple in-memory index-queue"
-  [capacity num-workers]
-  (->MemoryIndexQueue capacity (atom nil) num-workers (atom false)))
+  "Creates a simple in-memory queue"
+  [capacity num-workers required-queues]
+  (->MemoryIndexQueue capacity (atom nil) num-workers required-queues (atom false)))
 
-(comment
-  (def q (atom (create-queue 25 4)))
-
-  (swap! q #(lifecycle/start % {}))
-  (index-queue/index-concept @q "G1000-PROV1" 1)
-
-  (swap! q #(lifecycle/stop % {}))
-
-  )

@@ -15,7 +15,8 @@
             [langohr.exchange  :as le]
             [langohr.http :as lhttp]
             [cheshire.core :as json]
-            [clojure.math.numeric-tower :as math]))
+            [clojure.math.numeric-tower :as math])
+  (:import java.io.IOException))
 
 (defn wait-queue-name
   "Returns the name of the wait queue associated with the given queue name and repeat-count"
@@ -46,34 +47,38 @@
         handler (fn [ch {:keys [delivery-tag type routing-key] :as meta} ^bytes payload]
                   (let [msg (json/parse-string (String. payload) true)
                         _ (debug "Received message:" msg)
-                        repeat-count (get msg :repeat-count 0)
-                        resp (client-handler msg)]
-                    (case (:status resp)
-                      :ok (do
-                            ;; processed successfully
-                            (debug "Message" msg "processed successfully")
-                            (lb/ack ch delivery-tag))
-                      :retry (if (> (inc repeat-count) (config/rabbit-mq-max-retries))
-                               (do
-                                 ;; give up
-                                 (debug "Max retries exceeded for procesessing message:" msg)
-                                 (lb/nack ch delivery-tag false false))
-                               (let [msg (assoc msg :repeat-count (inc repeat-count))
-                                     wait-q (wait-queue-name routing-key (inc repeat-count))
-                                     ttl (wait-queue-ttl (inc repeat-count))]
-                                 (debug "Message" msg "requeued with response:" (:message resp))
-                                 (debug "Retrying with repeat-count ="
-                                        (inc repeat-count)
-                                        " on queue"
-                                        wait-q
-                                        "with ttl = "
-                                        ttl)
-                                 (queue/publish queue-broker wait-q msg)
-                                 (lb/ack ch delivery-tag)))
-                      :fail (do
-                              ;; bad data - nack it
-                              (debug "Rejecting bad data:" (:message resp))
-                              (lb/nack ch delivery-tag false false)))))]
+                        repeat-count (get msg :repeat-count 0)]
+                    (try
+                      (let [resp (client-handler msg)]
+                        (case (:status resp)
+                          :ok (do
+                                ;; processed successfully
+                                (debug "Message" msg "processed successfully")
+                                (lb/ack ch delivery-tag))
+                          :retry (if (> (inc repeat-count) (config/rabbit-mq-max-retries))
+                                   (do
+                                     ;; give up
+                                     (debug "Max retries exceeded for procesessing message:" msg)
+                                     (lb/nack ch delivery-tag false false))
+                                   (let [msg (assoc msg :repeat-count (inc repeat-count))
+                                         wait-q (wait-queue-name routing-key (inc repeat-count))
+                                         ttl (wait-queue-ttl (inc repeat-count))]
+                                     (debug "Message" msg "requeued with response:" (:message resp))
+                                     (debug "Retrying with repeat-count ="
+                                            (inc repeat-count)
+                                            " on queue"
+                                            wait-q
+                                            "with ttl = "
+                                            ttl)
+                                     (queue/publish queue-broker wait-q msg)
+                                     (lb/ack ch delivery-tag)))
+                          :fail (do
+                                  ;; bad data - nack it
+                                  (debug "Rejecting bad data:" (:message resp))
+                                  (lb/nack ch delivery-tag false false))))
+                      (catch Exception e
+                        (error "Message processing failed for message" msg "with error:"
+                               (.gettMessage e))))))]
     ;; By default, RabbitMQ uses a round-robin approach to send messages to listeners. This can
     ;; lead to stalls as workers wait for other workers to complete. Setting QoS (prefetch) to 1
     ;; prevents this.
@@ -84,12 +89,14 @@
 (defn- safe-create-queue
   "Creates a RabbitMQ queue if it does not already exist"
   [ch queue-name opts]
-  ;; use status to determine if queue already exists
-  ;(try
-  ;  (lq/status ch queue-name)
-  ;  (catch IOException e
-  (lq/declare ch queue-name opts))
-;))
+  ;; There is no built in check for a queue's existence, so we use status to determine if the queue
+  ;; already exists - this throws an IOException if not.
+  (try
+    (lq/status ch queue-name)
+    (info "Queue" queue-name "already exists")
+    (catch IOException e
+      (lq/declare ch queue-name opts)
+      (info "Created queue" queue-name))))
 
 (defrecord RabbitMQBroker
   [
@@ -147,10 +154,10 @@
     (let [conn (:conn this)
           ch (lch/open conn)]
       ;; create the queue
-      (debug "Creating queue" queue-name)
+      (info "Creating queue" queue-name)
       (safe-create-queue ch queue-name {:exclusive false :auto-delete false :durable true})
       ;; create wait queues to use with the primary queue
-      (debug "Creating wait queues")
+      (info "Creating wait queues")
       (doseq [x (range 1 (inc (config/rabbit-mq-max-retries)))
               :let [ttl (wait-queue-ttl x)
                     wq (wait-queue-name queue-name x)
@@ -210,15 +217,7 @@
       (doseq [x (range 1 (inc (config/rabbit-mq-max-retries)))
               :let [ttl (wait-queue-ttl x)
                     wq (wait-queue-name queue-name x)]]
-        (lq/delete ch wq))))
-
-  (ack
-    [this ch delivery-tag]
-    (lb/ack ch delivery-tag))
-
-  (nack
-    [this ch delivery-tag multiple requeue]
-    (lb/nack ch delivery-tag multiple requeue)))
+        (lq/delete ch wq)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -270,12 +269,12 @@
 
 (comment
 
-
-  (def q (let [q (create-queue {:host (config/rabbit-mq-host)
-                                :port (config/rabbit-mq-port)
-                                :username (config/rabbit-mq-username)
-                                :password (config/rabbit-mq-password)
-                                :required-queues ["test.simple"]})]
+(do
+  (def q (let [q (create-queue-broker {:host (config/rabbit-mq-host)
+                                       :port (config/rabbit-mq-port)
+                                       :username (config/rabbit-mq-username)
+                                       :password (config/rabbit-mq-password)
+                                       :required-queues ["test.simple"]})]
            (lifecycle/start q {})))
 
   (defn test-message-handler
@@ -283,27 +282,26 @@
     (info "Test handler")
     (let [val (rand)
           rval (cond
-                 (> val 0.33) :ok
-                 (> val 0.67) :retry
-                 :else :fail)]
-      (debug "Test handler responding with" rval)
+                 (> 0.5 val) {:status :ok}
+                 (> 0.97 val) {:status :retry :message "service down"}
+                 :else {:status :fail :message "bad data"})]
+
       rval))
 
+(queue/subscribe q "test.simple" test-message-handler {})
 
-  (let [msg {:type :index-concept :concept-id "C1000-PROV1" :revision-id 1}]
-    (debug "Subscribing to test queue")
-    (queue/subscribe q "test.simple" test-message-handler {})
-    (debug "Publishing to test queue")
+  (doseq [n (range 0 1000)
+          :let [concept-id (str "C" n "-PROV1")
+                msg {:action :index-concept
+                     :concept-id concept-id
+                     :revision-id 1}]]
     (queue/publish q "test.simple" msg))
 
+  )
 
   (queue/purge-queue q "test.simple")
-  (queue/purge-queue q (wait-queue-name "test.simple" 3))
-  (queue/message-count q "cmr_index.queue")
-  (queue/message-count q (wait-queue-name "test.simple" 1))
-  (queue/delete-queue q "test.simple")
-  (doseq [n (range 1 (inc (config/rabbit-mq-max-retries)))]
-    (queue/delete-queue q (wait-queue-name "test.simple" n)))
+
+  (queue/message-count q "test.simple")
 
   (lifecycle/stop q {})
 

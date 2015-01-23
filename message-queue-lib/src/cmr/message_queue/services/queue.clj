@@ -30,12 +30,4 @@
 
   (delete-queue
     [this queue-name]
-    "Deletes the queue with the given name")
-
-  (ack
-    [this ch delivery-tag]
-    "Acknowledges receipt of a message by a consumer")
-
-  (nack
-    [this ch delivery-tag multiple requeue]
-    "Negative acknowledgement of one or more messages with optional requeueing"))
+    "Deletes the queue with the given name"))

@@ -28,24 +28,6 @@
       (catch Exception e
         {:status :retry :message (.getMessage e)}))))
 
-(defmethod handle-index-action :delete-provider
-  [context msg]
-  (let [{:keys [provider-id]} msg]
-    (try
-      (indexer/delete-provider context provider-id)
-      {:status :ok}
-      (catch Exception e
-        {:status :retry :message (.getMessage e)}))))
-
-(defmethod handle-index-action :reindex-provider-collections
-  [context msg]
-  (let [{:keys [provider-ids]} msg]
-    (try
-      (indexer/reindex-provider-collections context provider-ids)
-      {:status :ok}
-      (catch Exception e
-        {:status :retry :message (.getMessage e)}))))
-
 (defn start-queue-message-handler
   "Subscribe to messages on the indexing queue."
   [context]
