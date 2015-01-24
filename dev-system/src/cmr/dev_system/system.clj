@@ -3,6 +3,7 @@
             [cmr.bootstrap.system :as bootstrap-system]
             [cmr.metadata-db.system :as mdb-system]
             [cmr.indexer.system :as indexer-system]
+            [cmr.indexer.config :as iconfig]
             [cmr.search.system :as search-system]
             [cmr.ingest.system :as ingest-system]
             [cmr.ingest.data.provider-acl-hash :as ingest-data]
@@ -15,6 +16,7 @@
             [cmr.spatial.dev.viz-helper :as viz-helper]
             [cmr.elastic-utils.embedded-elastic-server :as elastic-server]
             [cmr.common.config :as config]
+            [cmr.message-queue.queue.memory-queue :as queue]
             [cmr.dev-system.control :as control]
             [cmr.common.api.web-server :as web]))
 
@@ -74,17 +76,20 @@
   ;; Sets a bit of global state for the application and system integration tests that will know how to talk to elastic
   (config/set-config-value! :elastic-port in-memory-elastic-port-for-connection)
   ;; The same in memory db is used for metadata db by itself and in search so they contain the same data
+  ;; The same in-memory queue is sued for indexer and ingest for the same reason
   (let [in-memory-db (memory/create-db)
+        memory-queue-broker (queue/create-queue-broker 1000 [(iconfig/index-queue-name)])
         control-server (web/create-web-server 2999 control/make-api use-compression? use-access-log?)]
     {:apps {:mock-echo (mock-echo-system/create-system)
             :metadata-db (-> (mdb-system/create-system)
                              (assoc :db in-memory-db)
                              (dissoc :scheduler))
             ;; Bootstrap is not enabled for in-memory dev system
-            :indexer (indexer-system/create-system)
+            :indexer (assoc (indexer-system/create-system) :queue-broker memory-queue-broker)
             :index-set (index-set-system/create-system)
             :ingest (-> (ingest-system/create-system)
                         (assoc :db (ingest-data/create-in-memory-acl-hash-store))
+                        (assoc :queue-broker memory-queue-broker)
                         (dissoc :scheduler))
             :search (assoc-in (search-system/create-system)
                               [:metadata-db :db]

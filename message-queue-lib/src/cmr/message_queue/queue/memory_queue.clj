@@ -35,7 +35,7 @@
         (.put queue msg)))))
 
 (defn- start-consumer
-  "Repeatedly pulls messages off the queue and calls callbacks"
+  "Repeatedly pulls messages off the queue and calls a callback with each message"
   [queue-broker queue-name handler]
   (debug "Starting consumer for queue" queue-name)
   (let [queue-map-atom (:queue-map-atom queue-broker)
@@ -43,21 +43,32 @@
     (loop [msg (.take queue)]
       (let [action (:action msg)]
         (if (= :quit action)
-          (info "Quitting consumer for queueu" queue-name)
-          (try
-            (let [resp (handler msg)]
-              (case (:status resp)
-                :ok (debug "Message" msg "processed successfully")
+          (info "Quitting consumer for queue" queue-name)
+          (do (try
+                (let [resp (handler msg)]
+                  (case (:status resp)
+                    :ok (debug "Message" msg "processed successfully")
 
-                :retry (attempt-retry queue msg resp)
+                    :retry (attempt-retry queue msg resp)
 
-                :fail
-                ;; bad data - nack it
-                (debug "Rejecting bad data:" (:message resp))))
-            (catch Exception e
-              (error "Message processing failed for message" msg "with error:"
-                     (.gettMessage e))
-              (attempt-retry queue msg {:message (.gettMessage e)}))))))))
+                    :fail
+                    ;; bad data - nack it
+                    (debug "Rejecting bad data:" (:message resp))))
+                (catch Exception e
+                  (error "Message processing failed for message" msg "with error:"
+                         (.gettMessage e))
+                  (attempt-retry queue msg {:message (.gettMessage e)})))
+            (recur ((.take queue)))))))
+    ;; increment the listener count for the queue
+    (swap! queue-map-atom (fn [queue-map]
+                            (update-in queue-map [queue-name 1] inc)))))
+
+(defn- named-queue
+  "Get the queue entry [queue num-listeners] (if any) for the qiven name"
+  [queue-broker queue-name]
+  (let [queue-map @(:queue-map-atom queue-broker)]
+    (get queue-map queue-name)))
+
 
 (defrecord MemoryQueueBroker
   [
@@ -66,9 +77,6 @@
 
    ;; holds a map of names to Java BlockingQueue instances
    queue-map-atom
-
-   ;; number of subscribers/workers
-   num-subscribers
 
    ;; queues that must be created on startup
    required-queues
@@ -94,15 +102,11 @@
 
   (stop
     [this system]
-    (when @(:running-atom this)
-      (info "Changing state to stopped")
-      (swap! (:running-atom this) (fn [_] false))
-      (info "Stopping consumers")
-      (dorun
-        (repeatedly (:num-subscribers this)
-                    (fn []
-                      (push-message this {:action "quit"}))))
-      this))
+    (when (:running? this)
+      (info "Stopping memory queue and removing all queues")
+      (doseq [queue-name (keys @(:queue-map-atom this))]
+        (queue/delete-queue this queue-name))
+      (assoc this :running? false)))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   queue/Queue
@@ -115,13 +119,17 @@
           queue (new java.util.concurrent.LinkedBlockingQueue
                      (:queue-capacity this))]
       (swap! queue-map-atom (fn [queue-map]
-                              (assoc queue-map queue-name queue)))))
+                              ;; add an entry for the queue and its starting listner count (0)
+                              (assoc queue-map queue-name [queue 0])))))
 
 
   (publish
     [this queue-name msg]
     (debug "publishing msg:" msg " to queue:" queue-name)
-    )
+    (when-not (:running? this)
+      (errors/internal-error! "Queue is not running."))
+    (let [queue (named-queue this queue-name)]
+      (.put queue msg)))
 
   (subscribe
     [this queue-name handler params]
@@ -129,22 +137,32 @@
 
   (message-count
     [this queue-name]
-    )
+    (let [[queue _] (named-queue this queue-name)]
+      (.size queue)))
 
   (purge-queue
     [this queue-name]
-    )
+    (let [[queue _](named-queue this queue-name)]
+      (.clear queue)))
 
   (delete-queue
     [this queue-name]
-    ))
+    ;; get a reference to the queue so we can access it even after we remove it from the map
+    (let [queue-map-atom (:queue-map-atom this)
+          [queue num-listeners] (named-queue this queue-name)]
+      ;; remove it from the map so no new consumers will start listening to it
+      (swap! queue-map-atom (fn [queue-map] (dissoc queue-map queue-name)))
+      ;; now close all the listeners - TODO fix race condition of consumer getting added
+      ;; after we read num-listeners above
+      (doseq [n (range 0 num-listeners)]
+        (.put queue {:action :quit}))))
+  )
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-
-(defn create-queue-broker
-  "Creates a simple in-memory queue broker"
-  [capacity num-workers required-queues]
-  (->MemoryQueueBroker capacity (atom nil) num-workers required-queues false))
+    (defn create-queue-broker
+      "Creates a simple in-memory queue broker"
+      [capacity required-queues]
+      (->MemoryQueueBroker capacity (atom nil) required-queues false))
 
