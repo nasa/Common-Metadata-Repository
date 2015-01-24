@@ -38,6 +38,28 @@
   ;; TODO - Should the :content-type be application/json? Does this matter?
   {:routing-key queue-name :content-type "text/plain" :type message-type :persistent true})
 
+(defn- attempt-retry
+  "Retry a message if it has not already exceeded the allowable retries"
+  [queue-broker ch queue-name routing-key msg delivery-tag resp]
+  (let [repeat-count (get msg :repeat-count 0)]
+    (if (> (inc repeat-count) (config/rabbit-mq-max-retries))
+      (do
+        ;; give up
+        (debug "Max retries exceeded for procesessing message:" msg)
+        (lb/nack ch delivery-tag false false))
+      (let [msg (assoc msg :repeat-count (inc repeat-count))
+            wait-q (wait-queue-name routing-key (inc repeat-count))
+            ttl (wait-queue-ttl (inc repeat-count))]
+        (debug "Message" msg "requeued with response:" (:message resp))
+        (debug "Retrying with repeat-count ="
+               (inc repeat-count)
+               " on queue"
+               wait-q
+               "with ttl = "
+               ttl)
+        (queue/publish queue-broker wait-q msg)
+        (lb/ack ch delivery-tag)))))
+
 (defn- start-consumer
   "Starts a message consumer in a separate thread"
   [queue-broker queue-name client-handler params]
@@ -45,9 +67,8 @@
         conn (:conn queue-broker)
         sub-ch (lch/open conn)
         handler (fn [ch {:keys [delivery-tag type routing-key] :as meta} ^bytes payload]
-                  (let [msg (json/parse-string (String. payload) true)
-                        _ (debug "Received message:" msg)
-                        repeat-count (get msg :repeat-count 0)]
+                  (let [msg (json/parse-string (String. payload) true)]
+                    (debug "Received message:" msg)
                     (try
                       (let [resp (client-handler msg)]
                         (case (:status resp)
@@ -55,30 +76,17 @@
                                 ;; processed successfully
                                 (debug "Message" msg "processed successfully")
                                 (lb/ack ch delivery-tag))
-                          :retry (if (> (inc repeat-count) (config/rabbit-mq-max-retries))
-                                   (do
-                                     ;; give up
-                                     (debug "Max retries exceeded for procesessing message:" msg)
-                                     (lb/nack ch delivery-tag false false))
-                                   (let [msg (assoc msg :repeat-count (inc repeat-count))
-                                         wait-q (wait-queue-name routing-key (inc repeat-count))
-                                         ttl (wait-queue-ttl (inc repeat-count))]
-                                     (debug "Message" msg "requeued with response:" (:message resp))
-                                     (debug "Retrying with repeat-count ="
-                                            (inc repeat-count)
-                                            " on queue"
-                                            wait-q
-                                            "with ttl = "
-                                            ttl)
-                                     (queue/publish queue-broker wait-q msg)
-                                     (lb/ack ch delivery-tag)))
+                          :retry (attempt-retry queue-broker ch queue-name
+                                                routing-key msg delivery-tag resp)
                           :fail (do
                                   ;; bad data - nack it
                                   (debug "Rejecting bad data:" (:message resp))
                                   (lb/nack ch delivery-tag false false))))
                       (catch Exception e
                         (error "Message processing failed for message" msg "with error:"
-                               (.gettMessage e))))))]
+                               (.gettMessage e))
+                        (attempt-retry queue-broker ch queue-name routing-key msg delivery-tag
+                                       {:message (.gettMessage e)})))))]
     ;; By default, RabbitMQ uses a round-robin approach to send messages to listeners. This can
     ;; lead to stalls as workers wait for other workers to complete. Setting QoS (prefetch) to 1
     ;; prevents this.
@@ -260,44 +268,38 @@
   (let [{:keys [host port username password required-queues]} params]
     (->RabbitMQBroker host port username password nil required-queues false)))
 
-(defn create-queue-listener
-  "Create a RabbitMQListener"
-  [params]
-  (let [{:keys [num-workers start-function]} params]
-    (->RabbitMQListener num-workers start-function false)))
-
 
 (comment
 
-(do
-  (def q (let [q (create-queue-broker {:host (config/rabbit-mq-host)
-                                       :port (config/rabbit-mq-port)
-                                       :username (config/rabbit-mq-username)
-                                       :password (config/rabbit-mq-password)
-                                       :required-queues ["test.simple"]})]
-           (lifecycle/start q {})))
+  (do
+    (def q (let [q (create-queue-broker {:host (config/rabbit-mq-host)
+                                         :port (config/rabbit-mq-port)
+                                         :username (config/rabbit-mq-username)
+                                         :password (config/rabbit-mq-password)
+                                         :required-queues ["test.simple"]})]
+             (lifecycle/start q {})))
 
-  (defn test-message-handler
-    [msg]
-    (info "Test handler")
-    (let [val (rand)
-          rval (cond
-                 (> 0.5 val) {:status :ok}
-                 (> 0.97 val) {:status :retry :message "service down"}
-                 :else {:status :fail :message "bad data"})]
+    (defn test-message-handler
+      [msg]
+      (info "Test handler")
+      (let [val (rand)
+            rval (cond
+                   (> 0.5 val) {:status :ok}
+                   (> 0.97 val) {:status :retry :message "service down"}
+                   :else {:status :fail :message "bad data"})]
 
-      rval))
+        rval))
 
-(queue/subscribe q "test.simple" test-message-handler {})
+    (queue/subscribe q "test.simple" test-message-handler {})
 
-  (doseq [n (range 0 1000)
-          :let [concept-id (str "C" n "-PROV1")
-                msg {:action :index-concept
-                     :concept-id concept-id
-                     :revision-id 1}]]
-    (queue/publish q "test.simple" msg))
+    (doseq [n (range 0 1000)
+            :let [concept-id (str "C" n "-PROV1")
+                  msg {:action :index-concept
+                       :concept-id concept-id
+                       :revision-id 1}]]
+      (queue/publish q "test.simple" msg))
 
-  )
+    )
 
   (queue/purge-queue q "test.simple")
 

@@ -17,6 +17,7 @@
             [cmr.common.config :as cfg]
             [cmr.elastic-utils.config :as es-config]
             [cmr.acl.core :as acl]
+            [cmr.message-queue.services.queue :as queue]
             [cmr.message-queue.queue.rabbit-mq :as rmq]
             [cmr.message-queue.config :as rmq-conf]
             [cmr.indexer.services.queue-listener :as ql]))
@@ -56,7 +57,7 @@
                                                      :username (rmq-conf/rabbit-mq-username)
                                                      :password (rmq-conf/rabbit-mq-password)
                                                      :required-queues [(config/index-queue-name)]})
-             :queue-listener (rmq/create-queue-listener {:num-workers 5
+             :queue-listener (queue/create-queue-listener {:num-workers 5
                                                          :start-function ql/start-queue-message-handler})}]
     (transmit-config/system-with-connections sys [:metadata-db :index-set :echo-rest])))
 

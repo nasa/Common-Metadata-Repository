@@ -23,33 +23,49 @@
     (errors/internal-error! "Queue is down!"))
   (push-message mem-queue msg))
 
+(defn- attempt-retry
+  "Retry a message on the queue if the maximum number of retries has not been exceeded"
+  [queue msg resp]
+  (let [repeat-count (get msg :repeat-count 0)]
+    (if (> (inc repeat-count) (config/rabbit-mq-max-retries))
+      (debug "Max retries exceeded for procesessing message:" msg)
+      (let [msg (assoc msg :repeat-count (inc repeat-count))]
+        (debug "Message" msg "requeued with response:" (:message resp))
+        ;; We don't use any delay before requeueing with the in-memory queues
+        (.put queue msg)))))
+
 (defn- start-consumer
   "Repeatedly pulls messages off the queue and calls callbacks"
-  [memory-queue queue-name handler params]
-  (info "Starting consumer")
-  (while @(:running-atom memory-queue)
-    ;; Use a blocking read
-    (debug "WATING FOR DATA...")
-    (let [queue @(:queue-atom memory-queue)
-          msg (.take queue)
-          _ (debug "GOT DATA" msg)]
-      (try
-        (when-not (= (:action msg) "quit")
-          ;; Do do something
-          )
-        (catch Throwable e
-          (error (.getMessage e))
-          ;; Requeue the message
-          (push-message msg)))))
-  (info "Stopping consumer"))
+  [queue-broker queue-name handler]
+  (debug "Starting consumer for queue" queue-name)
+  (let [queue-map-atom (:queue-map-atom queue-broker)
+        queue (get queue-map-atom queue-name)]
+    (loop [msg (.take queue)]
+      (let [action (:action msg)]
+        (if (= :quit action)
+          (info "Quitting consumer for queueu" queue-name)
+          (try
+            (let [resp (handler msg)]
+              (case (:status resp)
+                :ok (debug "Message" msg "processed successfully")
 
-(defrecord MemoryIndexQueue
+                :retry (attempt-retry queue msg resp)
+
+                :fail
+                ;; bad data - nack it
+                (debug "Rejecting bad data:" (:message resp))))
+            (catch Exception e
+              (error "Message processing failed for message" msg "with error:"
+                     (.gettMessage e))
+              (attempt-retry queue msg {:message (.gettMessage e)}))))))))
+
+(defrecord MemoryQueueBroker
   [
    ;; maxiumum number of elements in the queue
    queue-capacity
 
    ;; holds a map of names to Java BlockingQueue instances
-   queue-atom
+   queue-map-atom
 
    ;; number of subscribers/workers
    num-subscribers
@@ -57,9 +73,8 @@
    ;; queues that must be created on startup
    required-queues
 
-   ;; Atom holding true or false to indicate it's running
-   ;; This needs to be an atom so we can set it to false so our worker threads will terminate.
-   running-atom
+   ;; Flagin indicating running or not
+   running?
    ]
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -68,15 +83,14 @@
   (start
     [this system]
     (info "Starting memory queue")
-    (when @(:running-atom this)
+    (when (:running-atom this)
       (errors/internal-error! "Queue is already running"))
-    (swap! (:queue-atom this) (fn [_] (new java.util.concurrent.LinkedBlockingQueue
-                                           (:queue-capacity this))))
-    (swap! (:running-atom this) (fn [_] true))
-    (doseq [queue-name (:required-queues this)]
+    (swap! (:queue-map-atom this) (fn [_] {}))
+    (let [this (assoc this :running? true)]
+      (doseq [queue-name (:required-queues this)]
         (queue/create-queue this queue-name))
       (debug "Required queues created")
-    this)
+      this))
 
   (stop
     [this system]
@@ -90,18 +104,18 @@
                       (push-message this {:action "quit"}))))
       this))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-queue/Queue
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  queue/Queue
 
   (create-queue
     [this queue-name]
-    (let [queue-atom (:queue-atom this)
-      ;; create the queue
-      _ (info "Creating queue" queue-name)
-      queue (new java.util.concurrent.LinkedBlockingQueue
-                                           (:queue-capacity this))]
-      (swap! queue-atom (fn [queue-map]
-                          (assoc queue-map queue-name queue)))))
+    (let [queue-map-atom (:queue-map-atom this)
+          ;; create the queue
+          _ (info "Creating queue" queue-name)
+          queue (new java.util.concurrent.LinkedBlockingQueue
+                     (:queue-capacity this))]
+      (swap! queue-map-atom (fn [queue-map]
+                              (assoc queue-map queue-name queue)))))
 
 
   (publish
@@ -127,8 +141,10 @@ queue/Queue
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn create-queue
-  "Creates a simple in-memory queue"
+
+
+(defn create-queue-broker
+  "Creates a simple in-memory queue broker"
   [capacity num-workers required-queues]
-  (->MemoryIndexQueue capacity (atom nil) num-workers required-queues (atom false)))
+  (->MemoryQueueBroker capacity (atom nil) num-workers required-queues false))
 
