@@ -23,7 +23,11 @@
         coll5 (d/ingest "PROV2" (dc/collection {:platforms [p4]}))
         coll6 (d/ingest "PROV2" (dc/collection {:platforms [p5]}))
         coll7 (d/ingest "PROV2" (dc/collection {:platforms [p6]}))
-        coll8 (d/ingest "PROV2" (dc/collection {}))]
+        coll8 (d/ingest "PROV2" (dc/collection {}))
+        ;; Added to test SMAP ISO platform and instrument support
+        coll9 (d/ingest-concept-with-metadata-file
+                "PROV1" :collection :iso-smap
+                "data/iso_smap/sample_smap_iso_collection.xml")]
 
     (index/wait-until-indexed)
 
@@ -37,6 +41,7 @@
            [coll1 coll2] "platform_Sn A" {}
            [coll6 coll7] "platform_x" {}
            [] "BLAH" {}
+           [coll9] "SMAP" {}
            [coll1 coll2 coll4] ["platform_SnA" "platform_Sn A"] {}
            [coll6 coll7] ["platform_x"] {:ignore-case true}
            [coll7] ["platform_x"] {:ignore-case false}
@@ -82,7 +87,11 @@
         coll6 (d/ingest "PROV2" (dc/collection {:platforms [p5]}))
         coll7 (d/ingest "PROV2" (dc/collection {:platforms [p6]}))
         coll8 (d/ingest "PROV2" (dc/collection {:platforms [p7]}))
-        coll9 (d/ingest "PROV2" (dc/collection {}))]
+        coll9 (d/ingest "PROV2" (dc/collection {}))
+        ;; Added to test SMAP ISO platform and instrument support
+        coll10 (d/ingest-concept-with-metadata-file
+                 "PROV1" :collection :iso-smap
+                 "data/iso_smap/sample_smap_iso_collection.xml")]
 
     (index/wait-until-indexed)
 
@@ -96,6 +105,8 @@
            [coll1 coll2 coll6] "instrument_Sn A" {}
            [coll7 coll8] "instrument_x" {}
            [] "BLAH" {}
+           [coll10] "SMAP L-BAND RADAR" {}
+           [coll10] ["SMAP L-BAND RADAR" "SMAP L-BAND RADIOMETER"] {}
            [coll1 coll2 coll4 coll6] ["instrument_SnA" "instrument_Sn A"] {}
            [coll7 coll8] ["instrument_x"] {:ignore-case true}
            [coll8] ["instrument_x"] {:ignore-case false}

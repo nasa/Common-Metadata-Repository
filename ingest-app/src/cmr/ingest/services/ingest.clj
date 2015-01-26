@@ -77,7 +77,9 @@
   Return an appropriate error message indicating any validation failures."
   [context concept]
   (v/validate-concept-request concept)
-  (v/validate-concept-xml concept))
+  (v/validate-concept-xml concept)
+  (let [umm-record (umm/parse-concept concept)]
+    (v/validate-umm-record (:format concept) umm-record)))
 
 (deftracefn save-concept
   "Store a concept in mdb and indexer and return concept-id and revision-id."

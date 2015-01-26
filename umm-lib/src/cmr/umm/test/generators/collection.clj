@@ -66,10 +66,10 @@
   (ext-gen/string-ascii 1 10))
 
 (def instrument-long-names
-  (ext-gen/string-ascii 1 10))
+  (ext-gen/string-alpha-numeric 1 10))
 
 (def instrument-short-names
-  (ext-gen/string-ascii 1 10))
+  (ext-gen/string-alpha-numeric 1 10))
 
 (def instruments
   (ext-gen/model-gen c/->Instrument
@@ -102,13 +102,13 @@
                      characterstic-values))
 
 (def platform-short-names
-  (ext-gen/string-ascii 1 10))
+  (ext-gen/string-alpha-numeric 1 10))
 
 (def platform-long-names
-  (ext-gen/string-ascii 1 10))
+  (ext-gen/string-alpha-numeric 1 10))
 
 (def platform-types
-  (ext-gen/string-ascii 1 10))
+  (ext-gen/string-alpha-numeric 1 10))
 
 (def platforms
   (ext-gen/model-gen c/->Platform
