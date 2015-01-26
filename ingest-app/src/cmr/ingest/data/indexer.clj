@@ -38,6 +38,7 @@
 (defn- put-message-on-queue
   "Put an index operation on the message queue"
   [context msg]
+  (debug "CONTEXT:" context)
   (let [queue-broker (get-in context [:system :queue-broker])
         queue-name (config/index-queue-name)]
     (when-not (queue/publish queue-broker queue-name msg)
@@ -84,8 +85,8 @@
              :provider-id provider-id}]
     (put-message-on-queue context msg)))
 
-(defn- reindex-provider-collections-via-http
-  "Reindexes all the collections in the provider using http calls"
+(deftracefn reindex-provider-collections
+  "Reindexes all the collections in the provider"
   [context provider-ids]
   (let [conn (transmit-config/context->app-connection context :indexer)
         url (format "%s/reindex-provider-collections"
@@ -101,24 +102,10 @@
       (errors/internal-error!
         (str "Unexpected status"  status  " " (:body response))))))
 
-(defn- reindex-provider-collections-via-queue
-  "Reindexes all the collections in the provider using the message queue"
-  [context provider-ids]
-  (let [msg {:action :reindex-provider-collections
-             :provider-ids provider-ids}]
-    (put-message-on-queue context msg)))
-
-
-(deftracefn reindex-provider-collections
-  "Reindexes all the collections in the provider"
-  [context provider-ids]
-  (if (config/use-index-queue?)
-    (reindex-provider-collections-via-queue context provider-ids)
-    (reindex-provider-collections-via-http context provider-ids)))
-
 (deftracefn index-concept
   "Forward newly created concept for indexer app consumption."
   [context concept-id revision-id]
+  (debug "USE-QUEUE?:" (config/use-index-queue?))
   (if (config/use-index-queue?)
     (index-concept-via-queue context concept-id revision-id)
     (index-concept-via-http context concept-id revision-id)))
@@ -133,9 +120,7 @@
 (deftracefn delete-provider-from-index
   "Delete a provider with given provider-id from index."
   [context provider-id]
-  (if (config/use-index-queue?)
-    (delete-provider-from-index-via-queue context provider-id)
-    (delete-from-index-via-http context (format "provider/%s" provider-id))))
+  (delete-from-index-via-http context (format "provider/%s" provider-id)))
 
 (defn- get-indexer-health-fn
   "Returns the health status of the indexer app"

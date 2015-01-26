@@ -39,26 +39,27 @@
   [queue-broker queue-name handler]
   (debug "Starting consumer for queue" queue-name)
   (let [queue-map-atom (:queue-map-atom queue-broker)
-        queue (get queue-map-atom queue-name)]
-    (loop [msg (.take queue)]
-      (let [action (:action msg)]
-        (if (= :quit action)
-          (info "Quitting consumer for queue" queue-name)
-          (do (try
-                (let [resp (handler msg)]
-                  (case (:status resp)
-                    :ok (debug "Message" msg "processed successfully")
+        queue (first (get @queue-map-atom queue-name))]
+    (future
+      (loop [msg (.take queue)]
+        (let [action (:action msg)]
+          (if (= :quit action)
+            (info "Quitting consumer for queue" queue-name)
+            (do (try
+                  (let [resp (handler msg)]
+                    (case (:status resp)
+                      :ok (debug "Message" msg "processed successfully")
 
-                    :retry (attempt-retry queue msg resp)
+                      :retry (attempt-retry queue msg resp)
 
-                    :fail
-                    ;; bad data - nack it
-                    (debug "Rejecting bad data:" (:message resp))))
-                (catch Exception e
-                  (error "Message processing failed for message" msg "with error:"
-                         (.gettMessage e))
-                  (attempt-retry queue msg {:message (.gettMessage e)})))
-            (recur ((.take queue)))))))
+                      :fail
+                      ;; bad data - nack it
+                      (debug "Rejecting bad data:" (:message resp))))
+                  (catch Exception e
+                    (error "Message processing failed for message" msg "with error:"
+                           (.gettMessage e))
+                    (attempt-retry queue msg {:message (.gettMessage e)})))
+              (recur ((.take queue))))))))
     ;; increment the listener count for the queue
     (swap! queue-map-atom (fn [queue-map]
                             (update-in queue-map [queue-name 1] inc)))))
@@ -81,8 +82,9 @@
    ;; queues that must be created on startup
    required-queues
 
-   ;; Flagin indicating running or not
-   running?
+   ;; Flag indicating running or not - this needs to be an ato since the same in-memory
+   ;; broker is used for both indexer and ingest
+   running-atom
    ]
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -91,10 +93,10 @@
   (start
     [this system]
     (info "Starting memory queue")
-    (when (:running-atom this)
-      (errors/internal-error! "Queue is already running"))
-    (swap! (:queue-map-atom this) (fn [_] {}))
-    (let [this (assoc this :running? true)]
+    (when-not @(:running-atom this)
+      (swap! (:queue-map-atom this) (fn [_] {}))
+      (swap! (:running-atom this) (fn [_] true))
+
       (doseq [queue-name (:required-queues this)]
         (queue/create-queue this queue-name))
       (debug "Required queues created")
@@ -102,11 +104,12 @@
 
   (stop
     [this system]
-    (when (:running? this)
+    (when @(:running-atom this)
       (info "Stopping memory queue and removing all queues")
       (doseq [queue-name (keys @(:queue-map-atom this))]
         (queue/delete-queue this queue-name))
-      (assoc this :running? false)))
+      (swap! (:running-atom this) (fn [_] false))
+      this))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   queue/Queue
@@ -126,14 +129,14 @@
   (publish
     [this queue-name msg]
     (debug "publishing msg:" msg " to queue:" queue-name)
-    (when-not (:running? this)
+    (when-not @(:running-atom this)
       (errors/internal-error! "Queue is not running."))
     (let [queue (named-queue this queue-name)]
       (.put queue msg)))
 
   (subscribe
     [this queue-name handler params]
-    (start-consumer this queue-name handler params))
+    (start-consumer this queue-name handler))
 
   (message-count
     [this queue-name]
@@ -158,11 +161,11 @@
         (.put queue {:action :quit}))))
   )
 
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-    (defn create-queue-broker
-      "Creates a simple in-memory queue broker"
-      [capacity required-queues]
-      (->MemoryQueueBroker capacity (atom nil) required-queues false))
+(defn create-queue-broker
+  "Creates a simple in-memory queue broker"
+  [capacity required-queues]
+  (->MemoryQueueBroker capacity (atom nil) required-queues (atom false)))
 
