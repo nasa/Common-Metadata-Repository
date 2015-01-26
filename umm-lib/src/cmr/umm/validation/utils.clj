@@ -18,7 +18,8 @@
     :product-specific-attributes "AdditionalAttributes"
     :spatial-coverage ["Spatial" {:granule-spatial-representation "GranuleSpatialRepresentation"
                                   :geometries "Geometries"}]
-    :projects "Campaigns"}
+    :projects "Campaigns"
+    :platforms ["Platforms" {:instruments ["Instruments" {:sensors "Sensors"}]}]}
 
    [:dif :collection]
    {;; This XPath will select the granule spatial representation.
@@ -145,13 +146,6 @@
       (when-let [duplicate-names (seq (for [[v freq] freqs :when (> freq 1)] v))]
         {field-path [(format "%%s must be unique. This contains duplicates named [%s]."
                                     (str/join ", " duplicate-names))]}))))
-
-
-
-
-
-
-
 
 
 
