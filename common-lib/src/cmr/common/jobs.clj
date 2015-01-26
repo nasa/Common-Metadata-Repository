@@ -174,14 +174,15 @@
       (errors/internal-error! "Job scheduler already running"))
     (if-let [jobs (:jobs this)]
       (do
-        (let [system-holder-var (:system-holder-var this)
+        (let [db (or (:jobs-db system) (:db system))
+              system-holder-var (:system-holder-var this)
               system-holder (-> system-holder-var find-var var-get)
               system-holder-var-name (str (namespace system-holder-var) "/"
                                           (name system-holder-var))]
           (reset! system-holder system)
 
           (when (:clustered? this)
-            (configure-quartz-clustering-system-properties (:db system)))
+            (configure-quartz-clustering-system-properties db))
 
           ;; Start quartz
           (qs/initialize)

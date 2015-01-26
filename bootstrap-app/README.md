@@ -2,6 +2,51 @@
 
 Bootstrap is a CMR application that can bootstrap the CMR with data from Catalog REST. It has API methods for copying data from Catalog REST to the metadata db. It can also bulk index everything in the Metadata DB.
 
+#### leiningen commands - used to create/remove user for bootstrap jobs
+
+1. Create the user
+
+```
+lein create-user
+```
+
+2. Run the migration scripts
+
+```
+lein migrate
+```
+
+You can use `lein migrate -version version` to restore the database to
+a given version. `lein migrate -version 0` will clean the datbase
+completely.
+
+3. Remove the user
+
+```
+lein drop-user
+```
+
+#### java commands through uberjar
+
+1. Create the user
+
+```
+CMR_DB_URL=thin:@localhost:1521:orcl CMR_BOOTSTRAP_DB_PASSWORD=****** java -cp target/cmr-bootstrap-app-0.1.0-SNAPSHOT-standalone.jar cmr.bootstrap create-user
+```
+
+2. Run db migration
+
+```
+CMR_DB_URL=thin:@localhost:1521:orcl CMR_BOOTSTRAP_DB_PASSWORD=****** java -cp target/cmr-bootstrap-app-0.1.0-SNAPSHOT-standalone.jar cmr.bootstrap migrate
+```
+
+You can provider additional arguments to migrate the database to a given version as in lein migrate.
+
+3. Remove the user
+
+```
+CMR_DB_URL=thin:@localhost:1521:orcl CMR_BOOTSTRAP_DB_PASSWORD=****** java -cp target/cmr-bootstrap-app-0.1.0-SNAPSHOT-standalone.jar cmr.bootstrap drop-user
+
 
 ## Example curls
 

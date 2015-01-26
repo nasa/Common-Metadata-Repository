@@ -20,14 +20,15 @@
             [cmr.indexer.system :as idx-system]
             [cmr.indexer.data.concepts.granule :as g]
             [cmr.common.cache :as cache]
-            [cmr.common.config :as cfg]))
+            [cmr.common.config :as cfg]
+            [cmr.bootstrap.config :as bootstrap-config]))
 
 (def db-batch-size (cfg/config-value-fn :db-batch-size 100 #(Long. %)))
 
 (def
   ^{:doc "Defines the order to start the components."
     :private true}
-  component-order [:log :db :web :scheduler])
+  component-order [:log :jobs-db :db :web :scheduler])
 
 (def system-holder
   "Required for jobs"
@@ -68,10 +69,10 @@
              :db-synchronize-channel (chan)
 
              :catalog-rest-user (mdb-config/catalog-rest-db-username)
+             :jobs-db (oracle/create-db (bootstrap-config/db-spec "db-sync-pool"))
              :db (oracle/create-db (mdb-config/db-spec "bootstrap-pool"))
              :web (web/create-web-server (transmit-config/bootstrap-port) routes/make-api)
-             ;; Uncomment the following line to enable db synchronization job
-             ;:scheduler (jobs/create-clustered-scheduler `system-holder bootstrap-jobs/jobs)
+             :scheduler (jobs/create-clustered-scheduler `system-holder bootstrap-jobs/jobs)
              :zipkin (context/zipkin-config "bootstrap" false)
              :relative-root-url (transmit-config/bootstrap-relative-root-url)}]
     (transmit-config/system-with-connections sys [:metadata-db])))
