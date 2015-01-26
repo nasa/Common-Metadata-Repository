@@ -3,6 +3,7 @@
   (:require [cmr.common.log :refer (debug info warn error)]
             [cmr.indexer.services.index-service :as index]
             [cmr.metadata-db.data.concepts :as db]
+            [cmr.metadata-db.services.provider-service :as provider-service]
             [clojure.java.jdbc :as j]
             [clj-http.client :as client]
             [clojure.string :as str]
@@ -45,6 +46,21 @@
                 :provider-id provider-id}
         collections (db/find-concepts db params)]
     (map :concept-id collections)))
+
+(defn provider-exists?
+  "Checks if the given provider exists in cmr."
+  [context provider-id]
+  (let [provider-list (provider-service/get-providers context)]
+    (some #{provider-id} provider-list)))
+
+(defn collection-exists?
+  "Checks if the given collection exists in cmr."
+  [context provider-id collection-id]
+  (let [coll (db/get-concept (-> (:system context) (get-in [:metadata-db :db]))
+                             :collection
+                             provider-id
+                             collection-id)]
+    (:concept-id coll)))
 
 (defn index-granules-for-collection
   "Index the granules for the given collection."
