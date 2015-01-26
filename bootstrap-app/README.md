@@ -70,6 +70,16 @@ Note that for every item found between start_date and end_date a new revision wi
 
 **Important** - This endpoint does not validate that there isn't a database synchronization already running. Do not run it multiple times in a row unless you're sure it's not running currently. This will cause issues if you attempt to run it on multiple hosts since the work tables are truncated during processing.
 
+**Important** - Metadata DB jobs should be paused before running synchronization. This can be accomplished with the following query:
+
+curl -v -XPOST -H "Echo-Token: mock-echo-system-token" http://localhost:3001/jobs/pause
+
+The Metadata DB jobs can be resumed after synchronziation has completed with the following query:
+
+curl -v -XPOST -H "Echo-Token: mock-echo-system-token" http://localhost:3001/jobs/resume
+
+These require a token with UPDATE ingest management permission.
+
 ### Pause Jobs
 
 params: none
