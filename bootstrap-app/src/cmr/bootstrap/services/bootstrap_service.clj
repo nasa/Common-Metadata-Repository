@@ -28,14 +28,14 @@
       (go (>! channel {:collection-id collection-id :provider-id provider-id})))))
 
 (defn validate-provider
-  "Validates to be bulk_indexed provider exists in cmr. Throws exceptions to send to the user."
+  "Validates to be bulk_indexed provider exists in cmr else an exception is thrown."
   [context provider-id]
   (when-not (bulk/provider-exists? context provider-id)
     (err/throw-service-errors :bad-request
                               [(format "Provider: [%s] does not exist in the system" provider-id)])))
 
 (defn validate-collection
-  "Validates to be bulk_indexed collection exists in cmr. Throws exceptions to send to the user."
+  "Validates to be bulk_indexed collection exists in cmr else an exception is thrown."
   [context provider-id collection-id]
   (validate-provider context provider-id)
   (when-not (bulk/get-collection context provider-id collection-id)
