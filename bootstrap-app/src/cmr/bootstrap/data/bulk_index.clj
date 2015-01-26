@@ -53,14 +53,10 @@
   (let [provider-list (provider-service/get-providers context)]
     (some #{provider-id} provider-list)))
 
-(defn collection-exists?
-  "Checks if the given collection exists in cmr."
+(defn get-collection
+  "Get specified collection from cmr."
   [context provider-id collection-id]
-  (let [coll (db/get-concept (-> (:system context) (get-in [:metadata-db :db]))
-                             :collection
-                             provider-id
-                             collection-id)]
-    (:concept-id coll)))
+  (db/get-concept (get-in (:system context) [:metadata-db :db]) :collection provider-id collection-id))
 
 (defn index-granules-for-collection
   "Index the granules for the given collection."

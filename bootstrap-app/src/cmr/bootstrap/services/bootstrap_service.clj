@@ -38,10 +38,9 @@
   "Validates to be bulk_indexed collection exists in cmr. Throws exceptions to send to the user."
   [context provider-id collection-id]
   (validate-provider context provider-id)
-  (when-not (bulk/collection-exists? context provider-id collection-id)
+  (when-not (bulk/get-collection context provider-id collection-id)
     (err/throw-service-errors :bad-request
-                              [(format "Concept with concept-id [%s] and revision-id [null] does not exist."
-                                       collection-id)])))
+                              [(format "Collection [%s] does not exist." collection-id)])))
 
 (defn index-provider
   "Bulk index all the collections and granules for a provider."

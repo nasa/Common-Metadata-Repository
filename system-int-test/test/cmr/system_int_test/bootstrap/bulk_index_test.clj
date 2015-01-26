@@ -183,7 +183,7 @@
           invalid-prov-id "NCD4580"
           invalid-coll-id "C12-PROV1"
           err-msg1 (format "Provider: [%s] does not exist in the system" invalid-prov-id)
-          err-msg2 (format "Concept with concept-id [%s] and revision-id [null] does not exist."
+          err-msg2 (format "Collection [%s] does not exist."
                            invalid-coll-id)
           {:keys [status errors] :as succ-stat} (bootstrap/bulk-index-collection
                                                   valid-prov-id valid-coll-id)
