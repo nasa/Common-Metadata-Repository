@@ -19,7 +19,8 @@
     :spatial-coverage ["Spatial" {:granule-spatial-representation "GranuleSpatialRepresentation"
                                   :geometries "Geometries"}]
     :projects "Campaigns"
-    :platforms ["Platforms" {:instruments ["Instruments" {:sensors "Sensors"}]}]}
+    :platforms ["Platforms" {:instruments ["Instruments" {:sensors "Sensors"}]}]
+    :associated-difs "AssociatedDIFs"}
 
    [:dif :collection]
    {;; This XPath will select the granule spatial representation.

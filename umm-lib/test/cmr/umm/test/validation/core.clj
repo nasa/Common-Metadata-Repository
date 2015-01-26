@@ -144,3 +144,14 @@
             ["Sensors must be unique. This contains duplicates named [S1]."
              "Sensors must be unique. This contains duplicates named [S2]."]))))))
 
+(deftest collection-associated-difs-validation
+  (testing "valid associated difs"
+    (assert-valid (c/map->UmmCollection {:associated-difs ["d1" "d2" "d3"]})))
+
+  (testing "invalid projects"
+    (testing "duplicate names"
+      (let [coll (c/map->UmmCollection {:associated-difs ["d1" "d2" "d1"]})]
+        (assert-invalid
+          coll :echo10
+          ["AssociatedDIFs must be unique. This contains duplicates named [d1]."])))))
+

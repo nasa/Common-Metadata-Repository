@@ -41,7 +41,8 @@
    :projects [(vu/unique-by-name-validator :short-name)]
    :spatial-coverage spatial-coverage-validations
    :platforms [(v/every platform-validations)
-               (vu/unique-by-name-validator :short-name)]})
+               (vu/unique-by-name-validator :short-name)]
+   :associated-difs [(vu/unique-by-name-validator identity)]})
 
 (def granule-validations
   "Defines validations for granules"
