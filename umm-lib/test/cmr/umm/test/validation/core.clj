@@ -128,8 +128,6 @@
             coll :echo10
             ["Sensors must be unique. This contains duplicates named [S1]."])))
       (testing "multiple errors"
-        ;; Since we short circuit validations in cmr.common.validations.core seq-of-validations,
-        ;; we only get the lowest level of validation errors.
         (let [coll (c/map->UmmCollection
                      {:platforms [(c/map->Platform
                                     {:short-name "P1"})
@@ -142,7 +140,9 @@
           (assert-invalid
             coll :echo10
             ["Sensors must be unique. This contains duplicates named [S1]."
-             "Sensors must be unique. This contains duplicates named [S2]."]))))))
+             "Sensors must be unique. This contains duplicates named [S2]."
+             "Instruments must be unique. This contains duplicates named [I1]."
+             "Platforms must be unique. This contains duplicates named [P1]."]))))))
 
 (deftest collection-associated-difs-validation
   (testing "valid associated difs"
