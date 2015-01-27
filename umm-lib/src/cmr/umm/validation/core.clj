@@ -28,7 +28,8 @@
 
 (def instrument-validations
   "Defines the instrument validations for collections"
-  {:sensors [(vu/unique-by-name-validator :short-name)]})
+  {:sensors [(vu/unique-by-name-validator :short-name)]
+   :characteristics [(vu/unique-by-name-validator :name)]})
 
 (def platform-validations
   "Defines the platform validations for collections"

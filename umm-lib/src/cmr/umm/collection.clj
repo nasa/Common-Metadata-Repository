@@ -85,6 +85,7 @@
    long-name
    technique
    sensors
+   characteristics
    ])
 
 (defrecord Characteristic

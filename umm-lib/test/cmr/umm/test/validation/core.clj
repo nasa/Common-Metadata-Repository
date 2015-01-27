@@ -96,13 +96,17 @@
         i1 (c/map->Instrument {:short-name "I1"
                                :sensors [s1 s2]})
         i2 (c/map->Instrument {:short-name "I2"
-                               :sensors [s1 s2]})]
+                               :sensors [s1 s2]})
+        c1 (c/map->Characteristic {:name "C1"})
+        c2 (c/map->Characteristic {:name "C2"})]
     (testing "valid platforms"
       (assert-valid (c/map->UmmCollection
                       {:platforms [(c/map->Platform {:short-name "P1"
-                                                     :instruments [i1 i2]})
+                                                     :instruments [i1 i2]
+                                                     :characteristics [c1 c2]})
                                    (c/map->Platform {:short-name "P2"
-                                                     :instruments [i1 i2]})]})))
+                                                     :instruments [i1 i2]
+                                                     :characteristics [c1 c2]})]})))
 
     (testing "invalid platforms"
       (testing "duplicate platform short names"
@@ -112,6 +116,13 @@
           (assert-invalid
             coll :echo10
             ["Platforms must be unique. This contains duplicates named [P1]."])))
+      (testing "duplicate platform characteristics names"
+        (let [coll (c/map->UmmCollection
+                     {:platforms [(c/map->Platform {:short-name "P1"
+                                                    :characteristics [c1 c1]})]})]
+          (assert-invalid
+            coll :echo10
+            ["Platform characteristics must be unique. This contains duplicates named [C1]."])))
       (testing "duplicate instrument short names"
         (let [coll (c/map->UmmCollection
                      {:platforms [(c/map->Platform {:short-name "P1"

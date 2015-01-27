@@ -19,7 +19,9 @@
     :spatial-coverage ["Spatial" {:granule-spatial-representation "GranuleSpatialRepresentation"
                                   :geometries "Geometries"}]
     :projects "Campaigns"
-    :platforms ["Platforms" {:instruments ["Instruments" {:sensors "Sensors"}]}]
+    :platforms ["Platforms" {:instruments ["Instruments" {:sensors "Sensors"
+                                                          :characteristics "Instrument characteristics"}]
+                             :characteristics "Platform characteristics"}]
     :associated-difs "AssociatedDIFs"
     :temporal ["Temporal" {:range-date-times "RangeDateTimes"}]}
 
