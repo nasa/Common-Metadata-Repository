@@ -20,7 +20,8 @@
                                   :geometries "Geometries"}]
     :projects "Campaigns"
     :platforms ["Platforms" {:instruments ["Instruments" {:sensors "Sensors"}]}]
-    :associated-difs "AssociatedDIFs"}
+    :associated-difs "AssociatedDIFs"
+    :temporal ["Temporal" {:range-date-times "RangeDateTimes"}]}
 
    [:dif :collection]
    {;; This XPath will select the granule spatial representation.

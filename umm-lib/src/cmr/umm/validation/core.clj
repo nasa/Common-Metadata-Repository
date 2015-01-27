@@ -1,6 +1,7 @@
 (ns cmr.umm.validation.core
   "Defines validations UMM concept types."
-  (:require [cmr.common.validations.core :as v]
+  (:require [clj-time.core :as t]
+            [cmr.common.validations.core :as v]
             [cmr.umm.validation.utils :as vu]
             [cmr.umm.collection :as c]
             [cmr.umm.granule :as g]
@@ -35,6 +36,14 @@
                  (vu/unique-by-name-validator :short-name)]
    :characteristics [(vu/unique-by-name-validator :name)]})
 
+(defn- range-date-time-validation
+  "Defines range-date-time validation"
+  [field-path value]
+  (let [{:keys [beginning-date-time ending-date-time]} value]
+    (when (and beginning-date-time ending-date-time (t/after? beginning-date-time ending-date-time))
+      {field-path [(format "BeginningDateTime [%s] must be no later than EndingDateTime [%s]"
+                           (str beginning-date-time) (str ending-date-time))]})))
+
 (def collection-validations
   "Defines validations for collections"
   {:product-specific-attributes [(vu/unique-by-name-validator :name)]
@@ -42,7 +51,8 @@
    :spatial-coverage spatial-coverage-validations
    :platforms [(v/every platform-validations)
                (vu/unique-by-name-validator :short-name)]
-   :associated-difs [(vu/unique-by-name-validator identity)]})
+   :associated-difs [(vu/unique-by-name-validator identity)]
+   :temporal {:range-date-times [(v/every range-date-time-validation)]}})
 
 (def granule-validations
   "Defines validations for granules"

@@ -4,7 +4,8 @@
             [cmr.umm.validation.core :as v]
             [cmr.umm.collection :as c]
             [cmr.spatial.mbr :as m]
-            [cmr.spatial.point :as p]))
+            [cmr.spatial.point :as p]
+            [cmr.common.date-time-parser :as dtp]))
 
 
 (defn assert-valid
@@ -155,3 +156,40 @@
           coll :echo10
           ["AssociatedDIFs must be unique. This contains duplicates named [d1]."])))))
 
+(defn- range-date-time
+  [begin-date-time end-date-time]
+  (let [begin-date-time (when begin-date-time (dtp/parse-datetime begin-date-time))
+        end-date-time (when end-date-time (dtp/parse-datetime end-date-time))]
+    (c/map->RangeDateTime
+      {:beginning-date-time begin-date-time
+       :ending-date-time end-date-time})))
+
+(defn coll-with-range-date-times
+  [range-date-times]
+  (c/map->UmmCollection
+    {:temporal (c/map->Temporal {:range-date-times range-date-times})}))
+
+(deftest collection-temporal-validation
+  (testing "valid temporal"
+    (let [r1 (range-date-time "1999-12-30T19:00:00Z" "1999-12-30T19:00:01Z")
+          r2 (range-date-time "1999-12-30T19:00:00Z" nil)]
+      (assert-valid (coll-with-range-date-times [r1]))
+      (assert-valid (coll-with-range-date-times [r2]))
+      (assert-valid (coll-with-range-date-times [r1 r2]))))
+
+  (testing "invalid temporal"
+    (testing "single error"
+      (let [r1 (range-date-time "1999-12-30T19:00:02Z" "1999-12-30T19:00:01Z")
+            coll (coll-with-range-date-times [r1])]
+        (assert-invalid
+          coll :echo10
+          ["BeginningDateTime [1999-12-30T19:00:02.000Z] must be no later than EndingDateTime [1999-12-30T19:00:01.000Z]"])))
+
+    (testing "multiple errors"
+      (let [r1 (range-date-time "1999-12-30T19:00:02Z" "1999-12-30T19:00:01Z")
+            r2 (range-date-time "2000-12-30T19:00:02Z" "2000-12-30T19:00:01Z")
+            coll (coll-with-range-date-times [r1 r2])]
+        (assert-invalid
+          coll :echo10
+          ["BeginningDateTime [1999-12-30T19:00:02.000Z] must be no later than EndingDateTime [1999-12-30T19:00:01.000Z]"
+           "BeginningDateTime [2000-12-30T19:00:02.000Z] must be no later than EndingDateTime [2000-12-30T19:00:01.000Z]"])))))
