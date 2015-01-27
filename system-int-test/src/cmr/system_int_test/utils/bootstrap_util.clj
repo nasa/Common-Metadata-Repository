@@ -21,7 +21,7 @@
                    {:method :post
                     :query-params {:synchronous true}
                     :url (url/bulk-index-provider-url)
-                    :body (format "{\"provider_id\": \"%s\"}" provider-id)
+                    :body (json/generate-string {:provider_id provider-id})
                     :content-type :json
                     :accept :json
                     :throw-exceptions false
@@ -36,7 +36,7 @@
                    {:method :post
                     :query-params {:synchronous true}
                     :url (url/bulk-index-collection-url)
-                    :body (format "{\"provider_id\": \"%s\", \"collection_id\": \"%s\"}" provider-id collection-id)
+                    :body (json/generate-string {:provider_id provider-id :collection_id collection-id})
                     :content-type :json
                     :accept :json
                     :throw-exceptions false
