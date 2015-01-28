@@ -66,7 +66,8 @@
                (vu/unique-by-name-validator :short-name)]
    :associated-difs [(vu/unique-by-name-validator identity)]
    :temporal {:range-date-times [(v/every range-date-time-validation)]}
-   :related-urls online-access-urls-validation})
+   :related-urls online-access-urls-validation
+   :two-d-coordinate-systems [(vu/unique-by-name-validator :name)]})
 
 (def granule-validations
   "Defines validations for granules"

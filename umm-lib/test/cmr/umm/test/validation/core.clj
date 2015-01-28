@@ -244,3 +244,17 @@
           (assert-invalid
             coll :echo10
             [(format "OnlineAccessURLs must be unique. This contains duplicates named [%s]." url)]))))))
+
+(deftest collection-two-d-coordinate-systems-validation
+  (let [t1 (c/map->TwoDCoordinateSystem {:name "T1"})
+        t2 (c/map->TwoDCoordinateSystem {:name "T2"})]
+    (testing "valid two-d-coordinate-systems"
+      (assert-valid (c/map->UmmCollection {:two-d-coordinate-systems [t1 t2]})))
+
+    (testing "invalid two-d-coordinate-systems"
+      (testing "duplicate names"
+        (let [coll (c/map->UmmCollection {:two-d-coordinate-systems [t1 t1]})]
+          (assert-invalid
+            coll :echo10
+            ["TwoDCoordinateSystems must be unique. This contains duplicates named [T1]."]))))))
+
