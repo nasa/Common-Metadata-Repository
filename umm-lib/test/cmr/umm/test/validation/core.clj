@@ -15,7 +15,8 @@
 (defn assert-invalid
   "Asserts that the given umm model is invalid and has the expected error messages."
   [umm metadata-format expected-errors]
-  (is (= expected-errors (v/validate metadata-format umm))))
+  (is (= (set expected-errors)
+         (set (v/validate metadata-format umm)))))
 
 (defn coll-with-psas
   [psas]
@@ -87,4 +88,70 @@
           (assert-invalid
             coll :iso19115
             ["MI_Metadata/acquisitionInformation/MI_AcquisitionInformation/operation/MI_Operation must be unique. This contains duplicates named [C1, C2]."]))))))
+
+(deftest collection-platforms-validation
+  (let [s1 (c/map->Sensor {:short-name "S1"})
+        s2 (c/map->Sensor {:short-name "S2"})
+        i1 (c/map->Instrument {:short-name "I1"
+                               :sensors [s1 s2]})
+        i2 (c/map->Instrument {:short-name "I2"
+                               :sensors [s1 s2]})]
+    (testing "valid platforms"
+      (assert-valid (c/map->UmmCollection
+                      {:platforms [(c/map->Platform {:short-name "P1"
+                                                     :instruments [i1 i2]})
+                                   (c/map->Platform {:short-name "P2"
+                                                     :instruments [i1 i2]})]})))
+
+    (testing "invalid platforms"
+      (testing "duplicate platform short names"
+        (let [coll (c/map->UmmCollection
+                     {:platforms [(c/map->Platform {:short-name "P1"})
+                                  (c/map->Platform {:short-name "P1"})]})]
+          (assert-invalid
+            coll :echo10
+            ["Platforms must be unique. This contains duplicates named [P1]."])))
+      (testing "duplicate instrument short names"
+        (let [coll (c/map->UmmCollection
+                     {:platforms [(c/map->Platform {:short-name "P1"
+                                                    :instruments [i1 i1]})]})]
+          (assert-invalid
+            coll :echo10
+            ["Instruments must be unique. This contains duplicates named [I1]."])))
+      (testing "duplicate sensor short names"
+        (let [coll (c/map->UmmCollection
+                     {:platforms [(c/map->Platform
+                                    {:short-name "P1"
+                                     :instruments [(c/map->Instrument {:short-name "I1"
+                                                                       :sensors [s1 s1]})]})]})]
+          (assert-invalid
+            coll :echo10
+            ["Sensors must be unique. This contains duplicates named [S1]."])))
+      (testing "multiple errors"
+        (let [coll (c/map->UmmCollection
+                     {:platforms [(c/map->Platform
+                                    {:short-name "P1"})
+                                  (c/map->Platform
+                                    {:short-name "P1"
+                                     :instruments [(c/map->Instrument {:short-name "I1"
+                                                                       :sensors [s1 s1]})
+                                                   (c/map->Instrument {:short-name "I1"
+                                                                       :sensors [s1 s2 s2]})]})]})]
+          (assert-invalid
+            coll :echo10
+            ["Sensors must be unique. This contains duplicates named [S1]."
+             "Sensors must be unique. This contains duplicates named [S2]."
+             "Instruments must be unique. This contains duplicates named [I1]."
+             "Platforms must be unique. This contains duplicates named [P1]."]))))))
+
+(deftest collection-associated-difs-validation
+  (testing "valid associated difs"
+    (assert-valid (c/map->UmmCollection {:associated-difs ["d1" "d2" "d3"]})))
+
+  (testing "invalid projects"
+    (testing "duplicate names"
+      (let [coll (c/map->UmmCollection {:associated-difs ["d1" "d2" "d1"]})]
+        (assert-invalid
+          coll :echo10
+          ["AssociatedDIFs must be unique. This contains duplicates named [d1]."])))))
 
