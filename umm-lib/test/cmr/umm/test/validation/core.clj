@@ -182,7 +182,7 @@
   (testing "valid associated difs"
     (assert-valid (c/map->UmmCollection {:associated-difs ["d1" "d2" "d3"]})))
 
-  (testing "invalid projects"
+  (testing "invalid associated difs"
     (testing "duplicate names"
       (let [coll (c/map->UmmCollection {:associated-difs ["d1" "d2" "d1"]})]
         (assert-invalid
@@ -226,3 +226,21 @@
           coll :echo10
           ["BeginningDateTime [1999-12-30T19:00:02.000Z] must be no later than EndingDateTime [1999-12-30T19:00:01.000Z]"
            "BeginningDateTime [2000-12-30T19:00:02.000Z] must be no later than EndingDateTime [2000-12-30T19:00:01.000Z]"])))))
+
+(deftest collection-online-access-urls-validation
+  (let [url "http://example.com/url2"
+        r1 (c/map->RelatedURL {:type "GET DATA"
+                               :url "http://example.com/url1"})
+        r2 (c/map->RelatedURL {:type "GET DATA"
+                               :url url})
+        r3 (c/map->RelatedURL {:type "GET RELATED VISUALIZATION"
+                               :url url})]
+    (testing "valid online access urls"
+      (assert-valid (c/map->UmmCollection {:related-urls [r1 r2 r3]})))
+
+    (testing "invalid online access urls"
+      (testing "duplicate names"
+        (let [coll (c/map->UmmCollection {:related-urls [r1 r2 r2]})]
+          (assert-invalid
+            coll :echo10
+            [(format "OnlineAccessURLs must be unique. This contains duplicates named [%s]." url)]))))))

@@ -6,7 +6,8 @@
             [cmr.umm.collection :as c]
             [cmr.umm.granule :as g]
             [cmr.umm.spatial :as umm-s]
-            [cmr.spatial.validation :as sv])
+            [cmr.spatial.validation :as sv]
+            [cmr.umm.related-url-helper :as ruh])
   (:import cmr.umm.collection.UmmCollection
            cmr.umm.granule.UmmGranule))
 
@@ -50,6 +51,12 @@
       {field-path [(format "BeginningDateTime [%s] must be no later than EndingDateTime [%s]"
                            (str beginning-date-time) (str ending-date-time))]})))
 
+(def online-access-urls-validation
+  "Defines online access urls validation for collections."
+  (v/pre-validation
+    ruh/downloadable-urls
+    [(vu/unique-by-name-validator :url)]))
+
 (def collection-validations
   "Defines validations for collections"
   {:product-specific-attributes [(vu/unique-by-name-validator :name)]
@@ -58,7 +65,8 @@
    :platforms [(v/every platform-validations)
                (vu/unique-by-name-validator :short-name)]
    :associated-difs [(vu/unique-by-name-validator identity)]
-   :temporal {:range-date-times [(v/every range-date-time-validation)]}})
+   :temporal {:range-date-times [(v/every range-date-time-validation)]}
+   :related-urls online-access-urls-validation})
 
 (def granule-validations
   "Defines validations for granules"

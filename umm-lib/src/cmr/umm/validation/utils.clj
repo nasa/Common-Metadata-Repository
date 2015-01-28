@@ -25,7 +25,8 @@
                                 :characteristics "Instrument characteristics"}]
                  :characteristics "Platform characteristics"}]
     :associated-difs "AssociatedDIFs"
-    :temporal ["Temporal" {:range-date-times "RangeDateTimes"}]}
+    :temporal ["Temporal" {:range-date-times "RangeDateTimes"}]
+    :related-urls "OnlineAccessURLs"}
 
    [:dif :collection]
    {;; This XPath will select the granule spatial representation.
