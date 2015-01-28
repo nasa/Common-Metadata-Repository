@@ -397,13 +397,15 @@
                        {:short-name "RADARSAT-1"
                         :long-name "RADARSAT-LONG-1"
                         :type "Spacecraft"
-                        :instruments [(umm-c/->Instrument
-                                        "SAR"
-                                        "SAR long name"
-                                        "itechnique"
-                                        [(umm-c/->Sensor "SNA" "SNA long name" "technique")
-                                         (umm-c/->Sensor "SNB" nil nil)])
-                                      (umm-c/->Instrument "MAR" nil nil nil)]})
+                        :instruments [(umm-c/map->Instrument
+                                        {:short-name "SAR"
+                                         :long-name "SAR long name"
+                                         :technique "itechnique"
+                                         :sensors [(umm-c/map->Sensor {:short-name "SNA"
+                                                                       :long-name "SNA long name"
+                                                                       :technique "technique"})
+                                                   (umm-c/map->Sensor {:short-name "SNB"})]})
+                                      (umm-c/map->Instrument {:short-name "MAR"})]})
                      (umm-c/map->Platform
                        {:short-name "RADARSAT-2"
                         :long-name "RADARSAT-LONG-2"

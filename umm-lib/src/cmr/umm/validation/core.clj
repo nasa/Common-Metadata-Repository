@@ -26,9 +26,14 @@
     set-geometries-spatial-representation
     {:geometries (v/every sv/spatial-validation)}))
 
+(def sensor-validations
+  "Defines the sensor validations for collections"
+  {:characteristics [(vu/unique-by-name-validator :name)]})
+
 (def instrument-validations
   "Defines the instrument validations for collections"
-  {:sensors [(vu/unique-by-name-validator :short-name)]
+  {:sensors [(v/every sensor-validations)
+             (vu/unique-by-name-validator :short-name)]
    :characteristics [(vu/unique-by-name-validator :name)]})
 
 (def platform-validations

@@ -19,9 +19,11 @@
     :spatial-coverage ["Spatial" {:granule-spatial-representation "GranuleSpatialRepresentation"
                                   :geometries "Geometries"}]
     :projects "Campaigns"
-    :platforms ["Platforms" {:instruments ["Instruments" {:sensors "Sensors"
-                                                          :characteristics "Instrument characteristics"}]
-                             :characteristics "Platform characteristics"}]
+    :platforms ["Platforms"
+                {:instruments ["Instruments"
+                               {:sensors ["Sensors" {:characteristics "Sensor characteristics"}]
+                                :characteristics "Instrument characteristics"}]
+                 :characteristics "Platform characteristics"}]
     :associated-difs "AssociatedDIFs"
     :temporal ["Temporal" {:range-date-times "RangeDateTimes"}]}
 
@@ -69,8 +71,8 @@
         ;; The value in the map could be a vector containing the name of the equivalent element and a submap
         ;; or in the case of a leaf node it will just be the name of the element.
         [format-field-or-map submap] (if (sequential? format-type-map-value)
-                                      format-type-map-value
-                                      [format-type-map-value])]
+                                       format-type-map-value
+                                       [format-type-map-value])]
     [(or (:human format-field-or-map) format-field-or-map) submap]))
 
 
@@ -149,7 +151,7 @@
     (let [freqs (frequencies (map name-field values))]
       (when-let [duplicate-names (seq (for [[v freq] freqs :when (> freq 1)] v))]
         {field-path [(format "%%s must be unique. This contains duplicates named [%s]."
-                                    (str/join ", " duplicate-names))]}))))
+                             (str/join ", " duplicate-names))]}))))
 
 
 

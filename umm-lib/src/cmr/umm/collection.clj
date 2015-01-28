@@ -77,6 +77,7 @@
    short-name
    long-name
    technique
+   characteristics
    ])
 
 (defrecord Instrument

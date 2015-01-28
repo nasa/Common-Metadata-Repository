@@ -130,6 +130,16 @@
           (assert-invalid
             coll :echo10
             ["Instruments must be unique. This contains duplicates named [I1]."])))
+      (testing "duplicate instrument characteristics names"
+        (let [coll (c/map->UmmCollection
+                     {:platforms [(c/map->Platform
+                                    {:short-name "P1"
+                                     :instruments [(c/map->Instrument
+                                                     {:short-name "I1"
+                                                      :characteristics [c1 c1]})]})]})]
+          (assert-invalid
+            coll :echo10
+            ["Instrument characteristics must be unique. This contains duplicates named [C1]."])))
       (testing "duplicate sensor short names"
         (let [coll (c/map->UmmCollection
                      {:platforms [(c/map->Platform
@@ -139,6 +149,18 @@
           (assert-invalid
             coll :echo10
             ["Sensors must be unique. This contains duplicates named [S1]."])))
+      (testing "duplicate sensor characteristics names"
+        (let [coll (c/map->UmmCollection
+                     {:platforms [(c/map->Platform
+                                    {:short-name "P1"
+                                     :instruments [(c/map->Instrument
+                                                     {:short-name "I1"
+                                                      :sensors [(c/map->Sensor
+                                                                  {:short-name "S1"
+                                                                   :characteristics [c2 c2]})]})]})]})]
+          (assert-invalid
+            coll :echo10
+            ["Sensor characteristics must be unique. This contains duplicates named [C2]."])))
       (testing "multiple errors"
         (let [coll (c/map->UmmCollection
                      {:platforms [(c/map->Platform
