@@ -27,11 +27,11 @@
   "Retry a message on the queue if the maximum number of retries has not been exceeded"
   [queue msg resp]
   (let [repeat-count (get msg :repeat-count 0)]
-    (if (> (inc repeat-count) (config/rabbit-mq-max-retries))
-      (debug "Max retries exceeded for procesessing message:" msg)
+    (if (> (inc repeat-count) (count (config/rabbit-mq-ttls)))
+      (debug "Max retries exceeded for processing message:" (pr-str msg))
       (let [msg (assoc msg :repeat-count (inc repeat-count))]
-        (debug "Message" msg "requeued with response:" (:message resp))
-        ;; We don't use any delay before requeueing with the in-memory queues
+        (debug "Message" (pr-str msg) "re-queued with response:" (pr-str (:message resp)))
+        ;; We don't use any delay before re-queuing with the in-memory queues
         (.put queue msg)))))
 
 (defn- start-consumer
@@ -73,7 +73,7 @@
 
 (defrecord MemoryQueueBroker
   [
-   ;; maxiumum number of elements in the queue
+   ;; maximum number of elements in the queue
    queue-capacity
 
    ;; holds a map of names to Java BlockingQueue instances
@@ -82,7 +82,7 @@
    ;; queues that must be created on startup
    required-queues
 
-   ;; Flag indicating running or not - this needs to be an ato since the same in-memory
+   ;; Flag indicating running or not - this needs to be an auto since the same in-memory
    ;; broker is used for both indexer and ingest
    running-atom
    ]
@@ -122,7 +122,7 @@
           queue (new java.util.concurrent.LinkedBlockingQueue
                      (:queue-capacity this))]
       (swap! queue-map-atom (fn [queue-map]
-                              ;; add an entry for the queue and its starting listner count (0)
+                              ;; add an entry for the queue and its starting listener count (0)
                               (assoc queue-map queue-name [queue 0])))))
 
 

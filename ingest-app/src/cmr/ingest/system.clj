@@ -39,11 +39,12 @@
               :scheduler (jobs/create-clustered-scheduler `system-holder ingest-jobs/jobs)
               :caches {acl/token-imp-cache-key (acl/create-token-imp-cache)}
               :relative-root-url (transmit-config/ingest-relative-root-url)
-              :queue-broker (rmq/create-queue-broker {:host (rmq-conf/rabbit-mq-host)
-                                                      :port (rmq-conf/rabbit-mq-port)
-                                                      :username (rmq-conf/rabbit-mq-username)
-                                                      :password (rmq-conf/rabbit-mq-password)
-                                                      :required-queues [(config/index-queue-name)]})}]
+              :queue-broker (when (config/use-index-queue?)
+                              (rmq/create-queue-broker {:host (rmq-conf/rabbit-mq-host)
+                                                        :port (rmq-conf/rabbit-mq-port)
+                                                        :username (rmq-conf/rabbit-mq-username)
+                                                        :password (rmq-conf/rabbit-mq-password)
+                                                        :required-queues [(config/index-queue-name)]}))}]
      (transmit-config/system-with-connections sys [:metadata-db :indexer :echo-rest]))))
 
 (defn start

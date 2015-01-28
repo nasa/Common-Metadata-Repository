@@ -20,6 +20,7 @@
             [cmr.dev-system.control :as control]
             [cmr.common.api.web-server :as web]))
 
+(def MEMORY_QUEUE_MESSAGE_CAPACITY 1000)
 
 (def app-control-functions
   "A map of application name to the start function"
@@ -78,7 +79,9 @@
   ;; The same in memory db is used for metadata db by itself and in search so they contain the same data
   ;; The same in-memory queue is sued for indexer and ingest for the same reason
   (let [in-memory-db (memory/create-db)
-        memory-queue-broker (queue/create-queue-broker 1000 [(iconfig/index-queue-name)])
+        memory-queue-broker (when (iconfig/use-index-queue?)
+                              (queue/create-queue-broker MEMORY_QUEUE_MESSAGE_CAPACITY
+                                                         [(iconfig/index-queue-name)]))
         control-server (web/create-web-server 2999 control/make-api use-compression? use-access-log?)]
     {:apps {:mock-echo (mock-echo-system/create-system)
             :metadata-db (-> (mdb-system/create-system)

@@ -52,13 +52,15 @@
              :scheduler (jobs/create-scheduler
                           `system-holder
                           [(ac/refresh-acl-cache-job "indexer-acl-cache-refresh")])
-             :queue-broker (rmq/create-queue-broker {:host (rmq-conf/rabbit-mq-host)
+             :queue-broker (when (config/use-index-queue?)
+                             (rmq/create-queue-broker {:host (rmq-conf/rabbit-mq-host)
                                                      :port (rmq-conf/rabbit-mq-port)
                                                      :username (rmq-conf/rabbit-mq-username)
                                                      :password (rmq-conf/rabbit-mq-password)
-                                                     :required-queues [(config/index-queue-name)]})
-             :queue-listener (queue/create-queue-listener {:num-workers 5
-                                                         :start-function ql/start-queue-message-handler})}]
+                                                     :required-queues [(config/index-queue-name)]}))
+             :queue-listener (when (config/use-index-queue?)
+                               (queue/create-queue-listener {:num-workers 5
+                                                         :start-function ql/start-queue-message-handler}))}]
     (transmit-config/system-with-connections sys [:metadata-db :index-set :echo-rest])))
 
 (defn start

@@ -46,7 +46,7 @@
         (str "Index queue broker refused queue message " msg)))))
 
 (defn- index-concept-via-queue
-  "Put an index concept request on the queue to be consuemed by the indexer app"
+  "Put an index concept request on the queue to be consumed by the indexer app"
   [context concept-id revision-id]
   (let [msg {:action :index-concept
              :concept-id concept-id
@@ -86,7 +86,7 @@
     (put-message-on-queue context msg)))
 
 (deftracefn reindex-provider-collections
-  "Reindexes all the collections in the provider"
+  "Re-indexes all the collections in the provider"
   [context provider-ids]
   (let [conn (transmit-config/context->app-connection context :indexer)
         url (format "%s/reindex-provider-collections"
