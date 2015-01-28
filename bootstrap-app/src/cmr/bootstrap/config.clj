@@ -5,10 +5,10 @@
             [cmr.oracle.connection :as conn]))
 
 (def db-username
-  (cfg/config-value-fn :cmr-bootstrap-username "CMR_BOOTSTRAP"))
+  (cfg/config-value-fn :bootstrap-username "CMR_BOOTSTRAP"))
 
 (def db-password
-  (cfg/config-value-fn :cmr-bootstrap-password "CMR_BOOTSTRAP"))
+  (cfg/config-value-fn :bootstrap-password "CMR_BOOTSTRAP"))
 
 (defn db-spec
   "Returns a db spec populated with config information that can be used to connect to oracle"

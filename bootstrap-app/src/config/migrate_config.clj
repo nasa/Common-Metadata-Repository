@@ -5,7 +5,8 @@
             [cmr.oracle.connection :as oracle]
             [cmr.common.lifecycle :as lifecycle]
             [cmr.oracle.config :as oracle-config]
-            [cmr.bootstrap.config :as bootstrap-config]))
+            [cmr.bootstrap.config :as bootstrap-config])
+  (import java.sql.SQLException))
 
 (def bootstrap-db-atom (atom nil))
 
@@ -14,7 +15,7 @@
   []
   (when-not @bootstrap-db-atom
     (reset! bootstrap-db-atom (lifecycle/start
-                      (oracle/create-db (bootstrap-config/db-spec "bootstrap-migrations")) nil)))
+                                (oracle/create-db (bootstrap-config/db-spec "bootstrap-migrations")) nil)))
   @bootstrap-db-atom)
 
 (defn- maybe-create-schema-table
@@ -23,7 +24,10 @@
   ;; wrap in a try-catch since there is not easy way to check for the existence of the DB
   (try
     (j/db-do-commands (db) "CREATE TABLE CMR_BOOTSTRAP.schema_version (version INTEGER NOT NULL, created_at TIMESTAMP(9) WITH TIME ZONE DEFAULT sysdate NOT NULL)")
-    (catch Exception e)))
+    (catch SQLException e
+      ;; 17081 is the error code we get if the table exists
+      (when-not (= 17081 (.getErrorCode e))
+        (throw e)))))
 
 (defn current-db-version []
   (int (or (:version (first (j/query (db) ["select version from CMR_BOOTSTRAP.schema_version order by created_at desc"]))) 0)))

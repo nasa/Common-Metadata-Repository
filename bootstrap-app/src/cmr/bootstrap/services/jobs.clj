@@ -14,4 +14,4 @@
 
 (def jobs
   [{:job-type DbSynchronizeJob
-   :daily-at-hour-and-minute [15 50]}])
+   :daily-at-hour-and-minute [23 59]}])
