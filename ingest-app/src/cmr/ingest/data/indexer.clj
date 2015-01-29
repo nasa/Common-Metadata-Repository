@@ -40,7 +40,7 @@
   "Put an index operation on the message queue"
   [context msg]
   (let [queue-broker (get-in context [:system :queue-broker])
-        queue-name (config/index-queue-name)]
+        queue-name (iconfig/index-queue-name)]
     (when-not (queue/publish queue-broker queue-name msg)
       (errors/internal-error!
         (str "Index queue broker refused queue message " msg)))))
