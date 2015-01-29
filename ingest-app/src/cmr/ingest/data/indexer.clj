@@ -3,6 +3,7 @@
   (:require [clj-http.client :as client]
             [cheshire.core :as json]
             [cmr.ingest.config :as config]
+            [cmr.indexer.config :as iconfig]
             [cmr.common.config :as cfg]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.services.errors :as errors]
@@ -38,7 +39,6 @@
 (defn- put-message-on-queue
   "Put an index operation on the message queue"
   [context msg]
-  (debug "CONTEXT:" context)
   (let [queue-broker (get-in context [:system :queue-broker])
         queue-name (config/index-queue-name)]
     (when-not (queue/publish queue-broker queue-name msg)
@@ -105,15 +105,14 @@
 (deftracefn index-concept
   "Forward newly created concept for indexer app consumption."
   [context concept-id revision-id]
-  (debug "USE-QUEUE?:" (config/use-index-queue?))
-  (if (config/use-index-queue?)
+  (if (iconfig/use-index-queue?)
     (index-concept-via-queue context concept-id revision-id)
     (index-concept-via-http context concept-id revision-id)))
 
 (deftracefn delete-concept-from-index
   "Delete a concept with given revision-id from index."
   [context concept-id revision-id]
-  (if (config/use-index-queue?)
+  (if (iconfig/use-index-queue?)
     (delete-concept-from-index-via-queue context concept-id revision-id)
     (delete-from-index-via-http context (format "%s/%s" concept-id revision-id))))
 
