@@ -1,7 +1,5 @@
 (ns cmr.ingest.services.ingest
-  (:require [clj-time.core :as t]
-            [cmr.common.time-keeper :as tk]
-            [cmr.oracle.connection :as conn]
+  (:require [cmr.oracle.connection :as conn]
             [cmr.transmit.metadata-db :as mdb]
             [cmr.transmit.echo.rest :as rest]
             [cmr.ingest.data.indexer :as indexer]
@@ -11,7 +9,6 @@
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.services.errors :as serv-errors]
             [cmr.common.services.messages :as cmsg]
-            [cmr.common.date-time-parser :as p]
             [cmr.common.util :as util]
             [cmr.common.config :as cfg]
             [cmr.umm.core :as umm]
@@ -101,26 +98,15 @@
         _ (when (ingest-validation-enabled?)
             (v/validate-umm-record (:format concept) umm-record))
 
-        concept (add-extra-fields context concept umm-record)
+        concept (add-extra-fields context concept umm-record)]
 
+    ;; 6. Ingest Validation
+    (v/validate-business-rules context concept)
 
-        ;; TODO Move this to UMM validation
-        time-to-compare (t/plus (tk/now) (t/minutes 1))
-        delete-time (get-in concept [:extra-fields :delete-time])
-        delete-time (if delete-time (p/parse-datetime delete-time) nil)]
-    (if (and delete-time (t/after? time-to-compare delete-time))
-      (serv-errors/throw-service-error
-        :bad-request
-        (format "DeleteTime %s is before the current time." (str delete-time)))
-
-      ;; 6. Ingest Validation
-        ;; TODO
-
-
-      ;; 7. Save concept
-      (let [{:keys [concept-id revision-id]} (mdb/save-concept context concept)]
-        (indexer/index-concept context concept-id revision-id)
-        {:concept-id concept-id, :revision-id revision-id}))))
+    ;; 7. Save concept
+    (let [{:keys [concept-id revision-id]} (mdb/save-concept context concept)]
+      (indexer/index-concept context concept-id revision-id)
+      {:concept-id concept-id, :revision-id revision-id})))
 
 (deftracefn delete-concept
   "Delete a concept from mdb and indexer."

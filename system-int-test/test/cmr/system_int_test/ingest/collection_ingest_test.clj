@@ -33,12 +33,28 @@
 ;; Verify a new concept with concept-id is ingested successfully.
 (deftest collection-w-concept-id-ingest-test
   (testing "ingest of a new concept with concept-id present"
-    (let [concept (dc/collection-for-ingest {:concept-id "C1000-PROV1"})
-          supplied-concept-id (:concept-id concept)
+    (let [supplied-concept-id "C1000-PROV1"
+          concept (dc/collection-for-ingest {:concept-id supplied-concept-id})
           {:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
       (is (ingest/concept-exists-in-mdb? concept-id revision-id))
-      (is (= supplied-concept-id concept-id))
-      (is (= 1 revision-id)))))
+      (is (= [supplied-concept-id 1] [concept-id revision-id]))
+      ;; update the concept
+      (let [{:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
+        (is (= [supplied-concept-id 2] [concept-id revision-id])))
+      ;; update the concept without the concept-id
+      (let [{:keys [concept-id revision-id]} (ingest/ingest-concept (dissoc concept :concept-id))]
+        (is (= [supplied-concept-id 3] [concept-id revision-id]))))))
+
+;; Verify update concept with a different concept-id is invalid.
+(deftest collection-w-invalid-concept-id-test
+  (testing "ingest of a concept with a different concept-id is invalid"
+    (let [concept (dc/collection-for-ingest {:concept-id "C1000-PROV1"
+                                             :native-id "Atlantic-1"})
+          _ (ingest/ingest-concept concept)
+          ;; update collection with a different concept-id
+          {:keys [status errors]} (ingest/ingest-concept (assoc concept :concept-id "C1111-PROV1"))]
+      (is (= [400 ["Concept-id [C1111-PROV1] does not match the existing concept-id [C1000-PROV1] for native-id [Atlantic-1]"]]
+             [status errors])))))
 
 ;; Ingest same concept N times and verify same concept-id is returned and
 ;; revision id is 1 greater on each subsequent ingest

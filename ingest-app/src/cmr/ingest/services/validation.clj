@@ -1,11 +1,15 @@
 (ns cmr.ingest.services.validation
   "Provides functions to validate concept"
-  (:require [cmr.common.services.errors :as err]
-            [clojure.string :as s]
+  (:require [clojure.string :as s]
+            [clj-time.core :as t]
+            [cmr.common.time-keeper :as tk]
+            [cmr.common.date-time-parser :as p]
+            [cmr.common.services.errors :as err]
             [cmr.umm.mime-types :as umm-mime-types]
             [cmr.common.mime-types :as mt]
             [cmr.umm.core :as umm]
-            [cmr.umm.validation.core :as umm-validation]))
+            [cmr.umm.validation.core :as umm-validation]
+            [cmr.transmit.metadata-db :as mdb]))
 
 (defn- format-validation
   "Validates the format of the concept."
@@ -49,3 +53,31 @@
   [metadata-format umm]
   (if-errors-throw (umm-validation/validate (mt/mime-type->format metadata-format) umm)))
 
+(defn- validate-delete-time
+  "Validates the concept delete-time is before the current time, otherwise throws exception."
+  [concept]
+  (let [time-to-compare (t/plus (tk/now) (t/minutes 1))
+        delete-time (get-in concept [:extra-fields :delete-time])
+        delete-time (when delete-time (p/parse-datetime delete-time))]
+    (when (and delete-time (t/after? time-to-compare delete-time))
+      (err/throw-service-error
+        :bad-request
+        (format "DeleteTime %s is before the current time." (str delete-time))))))
+
+(defn- validate-concept-id
+  "Validates the concept-id if provided matches the metadata-db concept-id for the concept native-id"
+  [context concept]
+  (let [{:keys [concept-type provider-id native-id concept-id]} concept]
+    (when concept-id
+      (let [mdb-concept-id (mdb/get-concept-id context concept-type provider-id native-id false)]
+        (when (and mdb-concept-id (not (= concept-id mdb-concept-id)))
+          (err/throw-service-error
+            :bad-request
+            (format "Concept-id [%s] does not match the existing concept-id [%s] for native-id [%s]"
+                    concept-id mdb-concept-id native-id)))))))
+
+(defn validate-business-rules
+  "Validates the concept against CMR ingest rules. Short circuit on first error by throwing exception."
+  [context concept]
+  (validate-delete-time concept)
+  (validate-concept-id context concept))
