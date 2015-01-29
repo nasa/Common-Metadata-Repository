@@ -20,7 +20,3 @@
     (oracle-config/db-ons-config)
     (db-username)
     (db-password)))
-
-(def index-queue-name
-  "Queue used for requesting indexing of concepts"
-  (cfg/config-value-fn :index-queue-name "cmr_index.queue"))
