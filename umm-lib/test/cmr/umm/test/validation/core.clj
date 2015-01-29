@@ -4,7 +4,8 @@
             [cmr.umm.validation.core :as v]
             [cmr.umm.collection :as c]
             [cmr.spatial.mbr :as m]
-            [cmr.spatial.point :as p]))
+            [cmr.spatial.point :as p]
+            [cmr.common.date-time-parser :as dtp]))
 
 
 (defn assert-valid
@@ -95,13 +96,17 @@
         i1 (c/map->Instrument {:short-name "I1"
                                :sensors [s1 s2]})
         i2 (c/map->Instrument {:short-name "I2"
-                               :sensors [s1 s2]})]
+                               :sensors [s1 s2]})
+        c1 (c/map->Characteristic {:name "C1"})
+        c2 (c/map->Characteristic {:name "C2"})]
     (testing "valid platforms"
       (assert-valid (c/map->UmmCollection
                       {:platforms [(c/map->Platform {:short-name "P1"
-                                                     :instruments [i1 i2]})
+                                                     :instruments [i1 i2]
+                                                     :characteristics [c1 c2]})
                                    (c/map->Platform {:short-name "P2"
-                                                     :instruments [i1 i2]})]})))
+                                                     :instruments [i1 i2]
+                                                     :characteristics [c1 c2]})]})))
 
     (testing "invalid platforms"
       (testing "duplicate platform short names"
@@ -111,6 +116,13 @@
           (assert-invalid
             coll :echo10
             ["Platforms must be unique. This contains duplicates named [P1]."])))
+      (testing "duplicate platform characteristics names"
+        (let [coll (c/map->UmmCollection
+                     {:platforms [(c/map->Platform {:short-name "P1"
+                                                    :characteristics [c1 c1]})]})]
+          (assert-invalid
+            coll :echo10
+            ["Platform characteristics must be unique. This contains duplicates named [C1]."])))
       (testing "duplicate instrument short names"
         (let [coll (c/map->UmmCollection
                      {:platforms [(c/map->Platform {:short-name "P1"
@@ -118,6 +130,16 @@
           (assert-invalid
             coll :echo10
             ["Instruments must be unique. This contains duplicates named [I1]."])))
+      (testing "duplicate instrument characteristics names"
+        (let [coll (c/map->UmmCollection
+                     {:platforms [(c/map->Platform
+                                    {:short-name "P1"
+                                     :instruments [(c/map->Instrument
+                                                     {:short-name "I1"
+                                                      :characteristics [c1 c1]})]})]})]
+          (assert-invalid
+            coll :echo10
+            ["Instrument characteristics must be unique. This contains duplicates named [C1]."])))
       (testing "duplicate sensor short names"
         (let [coll (c/map->UmmCollection
                      {:platforms [(c/map->Platform
@@ -127,6 +149,18 @@
           (assert-invalid
             coll :echo10
             ["Sensors must be unique. This contains duplicates named [S1]."])))
+      (testing "duplicate sensor characteristics names"
+        (let [coll (c/map->UmmCollection
+                     {:platforms [(c/map->Platform
+                                    {:short-name "P1"
+                                     :instruments [(c/map->Instrument
+                                                     {:short-name "I1"
+                                                      :sensors [(c/map->Sensor
+                                                                  {:short-name "S1"
+                                                                   :characteristics [c2 c2]})]})]})]})]
+          (assert-invalid
+            coll :echo10
+            ["Sensor characteristics must be unique. This contains duplicates named [C2]."])))
       (testing "multiple errors"
         (let [coll (c/map->UmmCollection
                      {:platforms [(c/map->Platform
@@ -148,10 +182,81 @@
   (testing "valid associated difs"
     (assert-valid (c/map->UmmCollection {:associated-difs ["d1" "d2" "d3"]})))
 
-  (testing "invalid projects"
+  (testing "invalid associated difs"
     (testing "duplicate names"
       (let [coll (c/map->UmmCollection {:associated-difs ["d1" "d2" "d1"]})]
         (assert-invalid
           coll :echo10
           ["AssociatedDIFs must be unique. This contains duplicates named [d1]."])))))
+
+(defn- range-date-time
+  [begin-date-time end-date-time]
+  (let [begin-date-time (when begin-date-time (dtp/parse-datetime begin-date-time))
+        end-date-time (when end-date-time (dtp/parse-datetime end-date-time))]
+    (c/map->RangeDateTime
+      {:beginning-date-time begin-date-time
+       :ending-date-time end-date-time})))
+
+(defn coll-with-range-date-times
+  [range-date-times]
+  (c/map->UmmCollection
+    {:temporal (c/map->Temporal {:range-date-times range-date-times})}))
+
+(deftest collection-temporal-validation
+  (testing "valid temporal"
+    (let [r1 (range-date-time "1999-12-30T19:00:00Z" "1999-12-30T19:00:01Z")
+          r2 (range-date-time "1999-12-30T19:00:00Z" nil)
+          r3 (range-date-time "1999-12-30T19:00:00Z" "1999-12-30T19:00:00Z")]
+      (assert-valid (coll-with-range-date-times [r1]))
+      (assert-valid (coll-with-range-date-times [r2]))
+      (assert-valid (coll-with-range-date-times [r3]))
+      (assert-valid (coll-with-range-date-times [r1 r2 r3]))))
+
+  (testing "invalid temporal"
+    (testing "single error"
+      (let [r1 (range-date-time "1999-12-30T19:00:02Z" "1999-12-30T19:00:01Z")
+            coll (coll-with-range-date-times [r1])]
+        (assert-invalid
+          coll :echo10
+          ["BeginningDateTime [1999-12-30T19:00:02.000Z] must be no later than EndingDateTime [1999-12-30T19:00:01.000Z]"])))
+
+    (testing "multiple errors"
+      (let [r1 (range-date-time "1999-12-30T19:00:02Z" "1999-12-30T19:00:01Z")
+            r2 (range-date-time "2000-12-30T19:00:02Z" "2000-12-30T19:00:01Z")
+            coll (coll-with-range-date-times [r1 r2])]
+        (assert-invalid
+          coll :echo10
+          ["BeginningDateTime [1999-12-30T19:00:02.000Z] must be no later than EndingDateTime [1999-12-30T19:00:01.000Z]"
+           "BeginningDateTime [2000-12-30T19:00:02.000Z] must be no later than EndingDateTime [2000-12-30T19:00:01.000Z]"])))))
+
+(deftest collection-online-access-urls-validation
+  (let [url "http://example.com/url2"
+        r1 (c/map->RelatedURL {:type "GET DATA"
+                               :url "http://example.com/url1"})
+        r2 (c/map->RelatedURL {:type "GET DATA"
+                               :url url})
+        r3 (c/map->RelatedURL {:type "GET RELATED VISUALIZATION"
+                               :url url})]
+    (testing "valid online access urls"
+      (assert-valid (c/map->UmmCollection {:related-urls [r1 r2 r3]})))
+
+    (testing "invalid online access urls"
+      (testing "duplicate names"
+        (let [coll (c/map->UmmCollection {:related-urls [r1 r2 r2]})]
+          (assert-invalid
+            coll :echo10
+            [(format "OnlineAccessURLs must be unique. This contains duplicates named [%s]." url)]))))))
+
+(deftest collection-two-d-coordinate-systems-validation
+  (let [t1 (c/map->TwoDCoordinateSystem {:name "T1"})
+        t2 (c/map->TwoDCoordinateSystem {:name "T2"})]
+    (testing "valid two-d-coordinate-systems"
+      (assert-valid (c/map->UmmCollection {:two-d-coordinate-systems [t1 t2]})))
+
+    (testing "invalid two-d-coordinate-systems"
+      (testing "duplicate names"
+        (let [coll (c/map->UmmCollection {:two-d-coordinate-systems [t1 t1]})]
+          (assert-invalid
+            coll :echo10
+            ["TwoDCoordinateSystems must be unique. This contains duplicates named [T1]."]))))))
 

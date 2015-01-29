@@ -77,6 +77,7 @@
    short-name
    long-name
    technique
+   characteristics
    ])
 
 (defrecord Instrument
@@ -85,6 +86,7 @@
    long-name
    technique
    sensors
+   characteristics
    ])
 
 (defrecord Characteristic

@@ -37,7 +37,8 @@
   "Returns the expected parsed platforms for the given platforms."
   [platforms]
   (let [{:keys [instruments]} (first platforms)
-        instruments (seq (map #(assoc % :technique nil :sensors nil) instruments))]
+        instruments (seq (map #(assoc % :technique nil :sensors nil :characteristics nil)
+                              instruments))]
     (seq (map (partial platform->expected-parsed instruments) platforms))))
 
 (defn- filter-center-type
@@ -233,18 +234,4 @@
                  "\"http://www.isotc211.org/2005/gmd\":hierarchyLevelName, "
                  "\"http://www.isotc211.org/2005/gmd\":contact}' is expected.")]
            (c/validate-xml (s/replace sample-collection-xml "fileIdentifier" "XXXX"))))))
-
-(comment
-
-  (let [coll (c/parse-collection sample-collection-xml)
-        xml (iso/umm->iso-smap-xml coll)
-        parsed-iso (c/parse-collection xml)]
-    (println "------xml: " xml)
-    (println "------parsed-iso platform: " (:platforms parsed-iso))
-    (println "------equal?: " (= (:platforms coll) (:platforms parsed-iso)))
-    ))
-
-
-
-
 
