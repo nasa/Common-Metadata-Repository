@@ -48,13 +48,13 @@
 (def summary
   (ext-gen/string-alpha-numeric 1 10))
 
-(def characterstic-values
+(def characteristic-values
   (ext-gen/string-ascii 1 10))
 
-(def characterstic-units
+(def characteristic-units
   (ext-gen/string-ascii 1 10))
 
-(def characterstic-datatypes
+(def characteristic-datatypes
   (ext-gen/string-ascii 1 10))
 
 (def characteric-descriptions
@@ -63,12 +63,12 @@
 (def characteric-names
   (ext-gen/string-ascii 1 10))
 
-(def characterstics
+(def characteristics
   (ext-gen/model-gen c/->Characteristic characteric-names
                      characteric-descriptions
-                     characterstic-datatypes
-                     characterstic-units
-                     characterstic-values))
+                     characteristic-datatypes
+                     characteristic-units
+                     characteristic-values))
 
 (def sensor-techniques
   (ext-gen/string-ascii 1 10))
@@ -83,7 +83,7 @@
   (ext-gen/model-gen c/->Sensor sensor-short-names
                      (ext-gen/optional sensor-long-names)
                      (ext-gen/optional sensor-techniques)
-                     (ext-gen/nil-if-empty (gen/vector characterstics 0 4))))
+                     (ext-gen/nil-if-empty (gen/vector characteristics 0 4))))
 
 (def instrument-techniques
   (ext-gen/string-ascii 1 10))
@@ -100,7 +100,7 @@
                      (ext-gen/optional instrument-long-names)
                      (ext-gen/optional instrument-techniques)
                      (ext-gen/nil-if-empty (gen/vector sensors 0 4))
-                     (ext-gen/nil-if-empty (gen/vector characterstics 0 4))))
+                     (ext-gen/nil-if-empty (gen/vector characteristics 0 4))))
 
 (def platform-short-names
   (ext-gen/string-alpha-numeric 1 10))
@@ -117,7 +117,7 @@
                      platform-long-names
                      platform-types
                      (ext-gen/nil-if-empty (gen/vector instruments 0 4))
-                     (ext-gen/nil-if-empty (gen/vector characterstics 0 4))))
+                     (ext-gen/nil-if-empty (gen/vector characteristics 0 4))))
 
 (def campaign-short-names
   (ext-gen/string-ascii 1 10))

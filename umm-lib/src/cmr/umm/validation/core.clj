@@ -29,19 +29,19 @@
 
 (def sensor-validations
   "Defines the sensor validations for collections"
-  {:characteristics [(vu/unique-by-name-validator :name)]})
+  {:characteristics (vu/unique-by-name-validator :name)})
 
 (def instrument-validations
   "Defines the instrument validations for collections"
   {:sensors [(v/every sensor-validations)
              (vu/unique-by-name-validator :short-name)]
-   :characteristics [(vu/unique-by-name-validator :name)]})
+   :characteristics (vu/unique-by-name-validator :name)})
 
 (def platform-validations
   "Defines the platform validations for collections"
   {:instruments [(v/every instrument-validations)
                  (vu/unique-by-name-validator :short-name)]
-   :characteristics [(vu/unique-by-name-validator :name)]})
+   :characteristics (vu/unique-by-name-validator :name)})
 
 (defn- range-date-time-validation
   "Defines range-date-time validation"
@@ -55,19 +55,19 @@
   "Defines online access urls validation for collections."
   (v/pre-validation
     ruh/downloadable-urls
-    [(vu/unique-by-name-validator :url)]))
+    (vu/unique-by-name-validator :url)))
 
 (def collection-validations
   "Defines validations for collections"
-  {:product-specific-attributes [(vu/unique-by-name-validator :name)]
-   :projects [(vu/unique-by-name-validator :short-name)]
+  {:product-specific-attributes (vu/unique-by-name-validator :name)
+   :projects (vu/unique-by-name-validator :short-name)
    :spatial-coverage spatial-coverage-validations
    :platforms [(v/every platform-validations)
                (vu/unique-by-name-validator :short-name)]
-   :associated-difs [(vu/unique-by-name-validator identity)]
-   :temporal {:range-date-times [(v/every range-date-time-validation)]}
+   :associated-difs (vu/unique-by-name-validator identity)
+   :temporal {:range-date-times (v/every range-date-time-validation)}
    :related-urls online-access-urls-validation
-   :two-d-coordinate-systems [(vu/unique-by-name-validator :name)]})
+   :two-d-coordinate-systems (vu/unique-by-name-validator :name)})
 
 (def granule-validations
   "Defines validations for granules"

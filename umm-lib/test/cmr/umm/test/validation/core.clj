@@ -205,10 +205,12 @@
 (deftest collection-temporal-validation
   (testing "valid temporal"
     (let [r1 (range-date-time "1999-12-30T19:00:00Z" "1999-12-30T19:00:01Z")
-          r2 (range-date-time "1999-12-30T19:00:00Z" nil)]
+          r2 (range-date-time "1999-12-30T19:00:00Z" nil)
+          r3 (range-date-time "1999-12-30T19:00:00Z" "1999-12-30T19:00:00Z")]
       (assert-valid (coll-with-range-date-times [r1]))
       (assert-valid (coll-with-range-date-times [r2]))
-      (assert-valid (coll-with-range-date-times [r1 r2]))))
+      (assert-valid (coll-with-range-date-times [r3]))
+      (assert-valid (coll-with-range-date-times [r1 r2 r3]))))
 
   (testing "invalid temporal"
     (testing "single error"
