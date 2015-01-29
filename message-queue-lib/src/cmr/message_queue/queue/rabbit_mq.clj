@@ -43,7 +43,7 @@
 (defn- wait-queue-ttl
   "Returns the Time-To-Live (TTL) in milliseconds for the nth (1 based) wait queue"
   [n]
-  (nth (config/rabbit-mq-ttls) (dec n)))
+  (* 1000 (nth (config/rabbit-mq-ttls) (dec n))))
 
 (def ^{:const true}
   default-exchange-name "")
