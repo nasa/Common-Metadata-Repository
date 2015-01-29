@@ -12,8 +12,6 @@
             [clj-time.core :as t]
             [cmr.system-int-test.utils.test-environment :as test-env]))
 
-
-
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
 ;; This test runs bulk index with some concepts in mdb that are good, and some that are
@@ -21,51 +19,44 @@
 (deftest bulk-index-with-some-deleted
   (test-env/only-with-real-database
     (let [;; saved but not indexed
-          coll1 {:short-name "coll1" :entry-title "coll1"}
-          umm1 (dc/collection coll1)
+          umm1 (dc/collection {:short-name "coll1" :entry-title "coll1"})
           xml1 (echo10/umm->echo10-xml umm1)
-          coll1-map {:concept-type :collection
-                     :format "application/echo10+xml"
-                     :metadata xml1
-                     :extra-fields {:short-name "coll1"
-                                    :entry-title "coll1"
-                                    :version-id "v1"}
-                     :provider-id "PROV1"
-                     :native-id "coll1"
-                     :short-name "coll1"}
-          coll1 (ingest/save-concept coll1-map)
+          coll1 (ingest/save-concept {:concept-type :collection
+                                      :format "application/echo10+xml"
+                                      :metadata xml1
+                                      :extra-fields {:short-name "coll1"
+                                                     :entry-title "coll1"
+                                                     :version-id "v1"}
+                                      :provider-id "PROV1"
+                                      :native-id "coll1"
+                                      :short-name "coll1"})
           umm1 (merge umm1 (select-keys coll1 [:concept-id :revision-id]))
           ;; saved and indexed by ingest
-          coll2 {:short-name "coll2" :entry-title "coll2"}
-          coll2 (d/ingest "PROV1" (dc/collection coll2))
+          coll2 (d/ingest "PROV1" (dc/collection {:short-name "coll2" :entry-title "coll2"}))
           coll2-tombstone {:concept-id (:concept-id coll2)
                            :revision-id (inc (:revision-id coll2))}
           ;; saved (with old delete-time), but not indexed
-          coll3 {:short-name "coll3" :entry-title "coll3" :delete-time "2000-01-01T12:00:00Z"}
-          umm3 (dc/collection coll3)
+          umm3 (dc/collection {:short-name "coll3" :entry-title "coll3" :delete-time "2000-01-01T12:00:00Z"})
           xml3 (echo10/umm->echo10-xml umm3)
-          coll3-map {:concept-type :collection
-                     :format "application/echo10+xml"
-                     :metadata xml3
-                     :extra-fields {:short-name "coll3"
-                                    :entry-title "coll3"
-                                    :version-id "v1"
-                                    :delete-time "2000-01-01T12:00:00Z"}
-                     :provider-id "PROV1"
-                     :native-id "coll3"
-                     :short-name "coll3"}
-          coll3 (ingest/save-concept coll3-map)
+          coll3 (ingest/save-concept {:concept-type :collection
+                                      :format "application/echo10+xml"
+                                      :metadata xml3
+                                      :extra-fields {:short-name "coll3"
+                                                     :entry-title "coll3"
+                                                     :version-id "v1"
+                                                     :delete-time "2000-01-01T12:00:00Z"}
+                                      :provider-id "PROV1"
+                                      :native-id "coll3"
+                                      :short-name "coll3"})
           ;; a granule saved with a nil delete time but an expired delete time in the xml
-          gran1 {:granule-ur "gran1" :delete-time "2000-01-01T12:00:00Z"}
-          ummg1 (dg/granule coll1 gran1)
+          ummg1 (dg/granule coll1 {:granule-ur "gran1" :delete-time "2000-01-01T12:00:00Z"})
           xmlg1 (echo10/umm->echo10-xml ummg1)
-          gran1-map {:concept-type :granule
-                     :provider-id "PROV1"
-                     :native-id "gran1"
-                     :format "application/echo10+xml"
-                     :metadata xmlg1
-                     :extra-fields {:parent-collection-id (:concept-id umm1)}}
-          gran1 (ingest/save-concept gran1-map)]
+          gran1 (ingest/save-concept {:concept-type :granule
+                                      :provider-id "PROV1"
+                                      :native-id "gran1"
+                                      :format "application/echo10+xml"
+                                      :metadata xmlg1
+                                      :extra-fields {:parent-collection-id (:concept-id umm1)}})]
       (ingest/tombstone-concept coll2-tombstone)
 
       (bootstrap/bulk-index-provider "PROV1")
@@ -80,8 +71,6 @@
                     {:concept-id (:concept-id coll3)} :collection []
                     {:concept-id (:concept-id umm1)} :granule [])))))
 
-
-
 ;; This test verifies that the bulk indexer can run concurrently with ingest and indexing of items.
 ;; This test performs the following steps:
 ;; 1. Saves ten collections in metadata db.
@@ -95,9 +84,8 @@
 (deftest bulk-index-after-ingest
   (test-env/only-with-real-database
     (let [collections (for [x (range 1 11)]
-                        (let [cmap {:short-name (str "short-name" x)
-                                    :entry-title (str "title" x)}
-                              umm (dc/collection cmap)
+                        (let [umm (dc/collection {:short-name (str "short-name" x)
+                                                  :entry-title (str "title" x)})
                               xml (echo10/umm->echo10-xml umm)
                               concept-map {:concept-type :collection
                                            :format "application/echo10+xml"
@@ -160,3 +148,58 @@
                 response (search/find-refs :granule {:concept-id concept-id})
                 es-revision-id (:revision-id (first (:refs response)))]
             (is (= 5 es-revision-id))))))))
+
+(deftest invalid-provider-bulk-index-validation-test
+  (test-env/only-with-real-database
+    (testing "Validation of a provider supplied in a bulk-index request."
+      (let [{:keys [status errors]} (bootstrap/bulk-index-provider "NCD4580")]
+        (is (= [400 ["Provider: [NCD4580] does not exist in the system"]]
+               [status errors]))))))
+
+(deftest collection-bulk-index-validation-test
+  (test-env/only-with-real-database
+    (let [umm1 (dc/collection {:short-name "coll1" :entry-title "coll1"})
+          xml1 (echo10/umm->echo10-xml umm1)
+          coll1 (ingest/save-concept {:concept-type :collection
+                                      :format "application/echo10+xml"
+                                      :metadata xml1
+                                      :extra-fields {:short-name "coll1"
+                                                     :entry-title "coll1"
+                                                     :version-id "v1"}
+                                      :provider-id "PROV1"
+                                      :native-id "coll1"
+                                      :short-name "coll1"})
+          umm1 (merge umm1 (select-keys coll1 [:concept-id :revision-id]))
+          ummg1 (dg/granule coll1 {:granule-ur "gran1"})
+          xmlg1 (echo10/umm->echo10-xml ummg1)
+          gran1 (ingest/save-concept {:concept-type :granule
+                                      :provider-id "PROV1"
+                                      :native-id "gran1"
+                                      :format "application/echo10+xml"
+                                      :metadata xmlg1
+                                      :extra-fields {:parent-collection-id (:concept-id umm1)}})
+          valid-prov-id "PROV1"
+          valid-coll-id (:concept-id umm1)
+          invalid-prov-id "NCD4580"
+          invalid-coll-id "C12-PROV1"
+          err-msg1 (format "Provider: [%s] does not exist in the system" invalid-prov-id)
+          err-msg2 (format "Collection [%s] does not exist." invalid-coll-id)
+          {:keys [status errors] :as succ-stat} (bootstrap/bulk-index-collection
+                                                  valid-prov-id valid-coll-id)
+          ;; invalid provider and collection
+          {:keys [status errors] :as fail-stat1} (bootstrap/bulk-index-collection
+                                                   invalid-prov-id invalid-coll-id)
+          ;; valid provider and invalid collection
+          {:keys [status errors] :as fail-stat2} (bootstrap/bulk-index-collection
+                                                   valid-prov-id invalid-coll-id)
+          ;; invalid provider and valid collection
+          {:keys [status errors] :as fail-stat3} (bootstrap/bulk-index-collection
+                                                   invalid-prov-id valid-coll-id)]
+
+      (testing "Validation of a collection supplied in a bulk-index request."
+        (are [expected actual] (= expected actual)
+             [202 nil] [(:status succ-stat) (:errors succ-stat)]
+             [400 [err-msg1]] [(:status fail-stat1) (:errors fail-stat1)]
+             [400 [err-msg2]] [(:status fail-stat2) (:errors fail-stat2)]
+             [400 [err-msg1]] [(:status fail-stat3) (:errors fail-stat3)])))))
+

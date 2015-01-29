@@ -133,6 +133,10 @@
   []
   (format "http://localhost:%s/bulk_index/providers" (transmit-config/bootstrap-port)))
 
+(defn bulk-index-collection-url
+  []
+  (format "http://localhost:%s/bulk_index/collections" (transmit-config/bootstrap-port)))
+
 (defn bulk-migrate-provider-url
   []
   (format "http://localhost:%s/bulk_migration/providers" (transmit-config/bootstrap-port)))
