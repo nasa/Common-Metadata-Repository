@@ -24,25 +24,25 @@
 
 (defn xml-elem->polygons-without-holes
   [entry-elem]
-  (map #(poly/polygon [(umm-s/ring-str->ring %)])
+  (map #(poly/polygon [(umm-s/lat-lon-point-str->ring %)])
        (cx/strings-at-path entry-elem [:polygon])))
 
 (defn xml-elem->polygons-with-holes
   [entry-elem]
   (map (fn [elem]
-         (let [boundary (umm-s/ring-str->ring (cx/string-at-path elem [:exterior :LinearRing :posList]))
-               holes (map umm-s/ring-str->ring
+         (let [boundary (umm-s/lat-lon-point-str->ring (cx/string-at-path elem [:exterior :LinearRing :posList]))
+               holes (map umm-s/lat-lon-point-str->ring
                           (cx/strings-at-path elem [:interior :LinearRing :posList]))]
            (poly/polygon (cons boundary holes))))
        (cx/elements-at-path entry-elem [:where :Polygon])))
 
 (defn xml-elem->points
   [entry-elem]
-  (map (comp first umm-s/point-str->points) (cx/strings-at-path entry-elem [:point])))
+  (map (comp first umm-s/lat-lon-point-str->points) (cx/strings-at-path entry-elem [:point])))
 
 (defn xml-elem->lines
   [entry-elem]
-  (map (comp l/line-string umm-s/point-str->points) (cx/strings-at-path entry-elem [:line])))
+  (map (comp l/line-string umm-s/lat-lon-point-str->points) (cx/strings-at-path entry-elem [:line])))
 
 (defn xml-elem->bounding-rectangles
   [entry-elem]

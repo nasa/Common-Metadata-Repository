@@ -15,15 +15,15 @@
 
 (defn json-polygons->polygons
   [polygons]
-  (map #(poly/polygon (map umm-s/ring-str->ring %)) polygons))
+  (map #(poly/polygon (map umm-s/lat-lon-point-str->ring %)) polygons))
 
 (defn json-points->points
   [points]
-  (map (comp first umm-s/point-str->points) points))
+  (map (comp first umm-s/lat-lon-point-str->points) points))
 
 (defn json-lines->lines
   [lines]
-  (map (comp l/line-string umm-s/point-str->points) lines))
+  (map (comp l/line-string umm-s/lat-lon-point-str->points) lines))
 
 (defn json-boxes->bounding-rectangles
   [boxes]
