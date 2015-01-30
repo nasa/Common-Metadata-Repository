@@ -53,31 +53,32 @@
   [metadata-format umm]
   (if-errors-throw (umm-validation/validate (mt/mime-type->format metadata-format) umm)))
 
-(defn- validate-delete-time
+(defn- delete-time-validation
   "Validates the concept delete-time is before the current time, otherwise throws exception."
-  [concept]
+  [_ concept]
   (let [time-to-compare (t/plus (tk/now) (t/minutes 1))
-        delete-time (get-in concept [:extra-fields :delete-time])
-        delete-time (when delete-time (p/parse-datetime delete-time))]
-    (when (and delete-time (t/after? time-to-compare delete-time))
-      (err/throw-service-error
-        :bad-request
-        (format "DeleteTime %s is before the current time." (str delete-time))))))
+        delete-time (get-in concept [:extra-fields :delete-time])]
+    (when (some-> delete-time
+                  p/parse-datetime
+                  (t/before? time-to-compare))
+      [(format "DeleteTime %s is before the current time." delete-time)])))
 
-(defn- validate-concept-id
+(defn- concept-id-validation
   "Validates the concept-id if provided matches the metadata-db concept-id for the concept native-id"
   [context concept]
   (let [{:keys [concept-type provider-id native-id concept-id]} concept]
     (when concept-id
       (let [mdb-concept-id (mdb/get-concept-id context concept-type provider-id native-id false)]
-        (when (and mdb-concept-id (not (= concept-id mdb-concept-id)))
-          (err/throw-service-error
-            :bad-request
-            (format "Concept-id [%s] does not match the existing concept-id [%s] for native-id [%s]"
-                    concept-id mdb-concept-id native-id)))))))
+        (when (and mdb-concept-id (not= concept-id mdb-concept-id))
+          [(format "Concept-id [%s] does not match the existing concept-id [%s] for native-id [%s]"
+                   concept-id mdb-concept-id native-id)])))))
+
+(def business-rule-validations
+  "A list of the functions that validates concept ingest business rules."
+  [delete-time-validation
+   concept-id-validation])
 
 (defn validate-business-rules
   "Validates the concept against CMR ingest rules. Short circuit on first error by throwing exception."
   [context concept]
-  (validate-delete-time concept)
-  (validate-concept-id context concept))
+  (if-errors-throw (mapcat #(% context concept) business-rule-validations)))

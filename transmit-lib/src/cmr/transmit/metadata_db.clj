@@ -47,7 +47,9 @@
            (str "Failed to retrieve concept " concept-id " from metadata-db: " (:body response))))))))
 
 (defn get-concept-id
-  "Return a distinct identifier for the given arguments."
+  "Return the concept-id for the concept matches the given arguments.
+  By default, throw-service-error? is true and a 404 error is thrown if the concept is not found in
+  metadata-db. It returns nil if the concept is not found and throw-service-error? is false."
   ([context concept-type provider-id native-id]
    (get-concept-id context concept-type provider-id native-id true))
   ([context concept-type provider-id native-id throw-service-error?]
