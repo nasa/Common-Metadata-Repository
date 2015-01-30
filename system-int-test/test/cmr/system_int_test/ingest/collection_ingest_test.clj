@@ -30,15 +30,28 @@
       (is (ingest/concept-exists-in-mdb? concept-id revision-id))
       (is (= 1 revision-id)))))
 
-;; Verify a new concept with concept-id is ingested successfully.
+;; Collection with concept-id ingest and update scenarios.
 (deftest collection-w-concept-id-ingest-test
-  (testing "ingest of a new concept with concept-id present"
-    (let [concept (dc/collection-for-ingest {:concept-id "C1000-PROV1"})
-          supplied-concept-id (:concept-id concept)
-          {:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
-      (is (ingest/concept-exists-in-mdb? concept-id revision-id))
-      (is (= supplied-concept-id concept-id))
-      (is (= 1 revision-id)))))
+  (let [supplied-concept-id "C1000-PROV1"
+        concept (dc/collection-for-ingest {:concept-id supplied-concept-id
+                                           :native-id "Atlantic-1"})]
+    (testing "ingest of a new concept with concept-id present"
+      (let [{:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
+        (is (ingest/concept-exists-in-mdb? concept-id revision-id))
+        (is (= [supplied-concept-id 1] [concept-id revision-id]))))
+
+    (testing "Update the concept with the concept-id"
+      (let [{:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
+        (is (= [supplied-concept-id 2] [concept-id revision-id]))))
+
+    (testing "update the concept without the concept-id"
+      (let [{:keys [concept-id revision-id]} (ingest/ingest-concept (dissoc concept :concept-id))]
+        (is (= [supplied-concept-id 3] [concept-id revision-id]))))
+
+    (testing "update concept with a different concept-id is invalid"
+      (let [{:keys [status errors]} (ingest/ingest-concept (assoc concept :concept-id "C1111-PROV1"))]
+        (is (= [400 ["Concept-id [C1111-PROV1] does not match the existing concept-id [C1000-PROV1] for native-id [Atlantic-1]"]]
+               [status errors]))))))
 
 ;; Ingest same concept N times and verify same concept-id is returned and
 ;; revision id is 1 greater on each subsequent ingest

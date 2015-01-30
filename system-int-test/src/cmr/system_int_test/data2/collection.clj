@@ -213,8 +213,12 @@
   ([attribs]
    (collection-for-ingest attribs :echo10))
   ([attribs concept-format]
-   (let [provider-id (or (:provider-id attribs) "PROV1")]
-     (-> attribs
-         collection
-         (d/item->concept concept-format)
-         (assoc :provider-id provider-id)))))
+   (let [{:keys [provider-id native-id]} attribs
+         provider-id (or provider-id "PROV1")
+         concept (-> attribs
+                     collection
+                     (d/item->concept concept-format)
+                     (assoc :provider-id provider-id))]
+     (if native-id
+       (assoc concept :native-id native-id)
+       concept))))

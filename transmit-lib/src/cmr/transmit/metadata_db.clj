@@ -47,29 +47,36 @@
            (str "Failed to retrieve concept " concept-id " from metadata-db: " (:body response))))))))
 
 (defn get-concept-id
-  "Return a distinct identifier for the given arguments."
-  [context concept-type provider-id native-id]
-  (let [conn (config/context->app-connection context :metadata-db)
-        request-url (str (conn/root-url conn) "/concept-id/" (name concept-type) "/" provider-id "/"
-                         (codec/url-encode native-id))
-        response (client/get request-url {:accept :json
-                                          :headers (ch/context->http-headers context)
-                                          :throw-exceptions false
-                                          :connection-manager (conn/conn-mgr conn)})
-        status (:status response)
-        body (cheshire/decode (:body response))]
-    (case status
-      404
-      (let [err-msg (format "concept-type: %s provider-id: %s native-id: %s does not exist" concept-type provider-id native-id)]
-        (errors/throw-service-error :not-found err-msg))
+  "Return the concept-id for the concept matches the given arguments.
+  By default, throw-service-error? is true and a 404 error is thrown if the concept is not found in
+  metadata-db. It returns nil if the concept is not found and throw-service-error? is false."
+  ([context concept-type provider-id native-id]
+   (get-concept-id context concept-type provider-id native-id true))
+  ([context concept-type provider-id native-id throw-service-error?]
+   (let [conn (config/context->app-connection context :metadata-db)
+         request-url (str (conn/root-url conn) "/concept-id/" (name concept-type) "/" provider-id "/"
+                          (codec/url-encode native-id))
+         response (client/get request-url {:accept :json
+                                           :headers (ch/context->http-headers context)
+                                           :throw-exceptions false
+                                           :connection-manager (conn/conn-mgr conn)})
+         status (:status response)
+         body (cheshire/decode (:body response))]
+     (case status
+       404
+       (when throw-service-error?
+         (errors/throw-service-error
+           :not-found
+           (format "concept-type: %s provider-id: %s native-id: %s does not exist"
+                   concept-type provider-id native-id)))
 
-      200
-      (get body "concept-id")
+       200
+       (get body "concept-id")
 
-      ;; default
-      (let [errors-str (cheshire/generate-string (flatten (get body "errors")))
-            err-msg (str "Concept id fetch failed. MetadataDb app response status code: "  status)]
-        (errors/internal-error! (str err-msg  " " errors-str))))))
+       ;; default
+       (let [errors-str (cheshire/generate-string (flatten (get body "errors")))
+             err-msg (str "Concept id fetch failed. MetadataDb app response status code: "  status)]
+         (errors/internal-error! (str err-msg  " " errors-str)))))))
 
 (defn get-concept-revisions
   "Search metadata db and return the concepts given by the concept-id, revision-id tuples."
