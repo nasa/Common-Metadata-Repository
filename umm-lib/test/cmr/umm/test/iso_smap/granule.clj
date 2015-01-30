@@ -127,7 +127,7 @@
                     (umm-g/map->SpatialCoverage
                       {:geometries
                        [(mbr/mbr 0.4701165 0.322525 0.4704968 0.3221629)
-                        (poly/polygon [(spatial/ords->ring 0.0 0.0 5.0 2.0 5.0 6.0 0.0 4.0 0.0 0.0)])]})
+                        (poly/polygon [(spatial/ords->ring 0 0, 0 4, 5 6, 5 2, 0 0)])]})
                     :related-urls [(umm-c/map->RelatedURL
                                      {:type "GET DATA"
                                       :url "http://example.com/test1.hdf"
