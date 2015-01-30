@@ -16,8 +16,8 @@
 
 (def system nil)
 
-(def system-type :in-memory)
-;(def system-type :external-dbs)
+;(def system-type :in-memory)
+(def system-type :external-dbs)
 
 
 (defn start
@@ -26,7 +26,7 @@
   (config/reset-config-values)
 
   ;; Set the default job start delay to avoid jobs kicking off with tests etc.
-  (config/set-config-value! :default-job-start-delay (str (* 3 3600)))
+  (config/set-config-value! :default-job-start-delay (str (* 3 1)))
 
   (let [s (system/create-system system-type)]
     (alter-var-root #'system

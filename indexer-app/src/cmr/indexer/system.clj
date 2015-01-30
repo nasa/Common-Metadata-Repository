@@ -46,6 +46,7 @@
                       acl/token-imp-cache-key (acl/create-token-imp-cache)}
              :scheduler (jobs/create-scheduler
                           `system-holder
+                          :db
                           [(ac/refresh-acl-cache-job "indexer-acl-cache-refresh")])}]
     (transmit-config/system-with-connections sys [:metadata-db :index-set :echo-rest])))
 

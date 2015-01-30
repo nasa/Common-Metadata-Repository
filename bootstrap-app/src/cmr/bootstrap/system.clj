@@ -72,7 +72,7 @@
              :jobs-db (oracle/create-db (bootstrap-config/db-spec "db-sync-pool"))
              :db (oracle/create-db (mdb-config/db-spec "bootstrap-pool"))
              :web (web/create-web-server (transmit-config/bootstrap-port) routes/make-api)
-             :scheduler (jobs/create-clustered-scheduler `system-holder bootstrap-jobs/jobs)
+             :scheduler (jobs/create-clustered-scheduler `system-holder :jobs-db bootstrap-jobs/jobs)
              :zipkin (context/zipkin-config "bootstrap" false)
              :relative-root-url (transmit-config/bootstrap-relative-root-url)}]
     (transmit-config/system-with-connections sys [:metadata-db])))

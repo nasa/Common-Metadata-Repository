@@ -158,6 +158,9 @@
    ;; to be a separate var per system as a way for jobs to access it at run time.
    system-holder-var
 
+   ;; The key used to store the jobs db in the system
+   db-system-key
+
    ;; A list of maps containing job-type, interval, and optionally start-delay
    jobs
    ;; True or false to indicate it should run in clustered mode.
@@ -174,7 +177,7 @@
       (errors/internal-error! "Job scheduler already running"))
     (if-let [jobs (:jobs this)]
       (do
-        (let [db (or (:jobs-db system) (:db system))
+        (let [db (get system db-system-key)
               system-holder-var (:system-holder-var this)
               system-holder (-> system-holder-var find-var var-get)
               system-holder-var-name (str (namespace system-holder-var) "/"
@@ -207,14 +210,14 @@
   a :job-type (a class), :interval keys and optionally :start-delay and :job-key. The job-key can be
   set to override the default in cases where you want multiple instances of a job to run with the
   same type."
-  [system-holder-var jobs]
-  (->JobScheduler system-holder-var jobs false false))
+  [system-holder-var db-system-key jobs]
+  (->JobScheduler system-holder-var db-system-key jobs false false))
 
 (defn create-clustered-scheduler
   "Starts the quartz job processing in clustered mode. The system should contain :jobs as described
   in start."
-  [system-holder-var jobs]
-  (->JobScheduler system-holder-var jobs true false))
+  [system-holder-var db-system-key jobs]
+  (->JobScheduler system-holder-var db-system-key jobs true false))
 
 (defn pause-jobs
   "Pause all jobs"

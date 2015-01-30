@@ -20,11 +20,3 @@
     (oracle-config/db-ons-config)
     (db-username)
     (db-password)))
-
-(def parallel-chunk-size
-  "Gets the number of concepts that should be processed in each thread of get-concepts."
-  (cfg/config-value-fn :parallel-n "200" #(Integer/parseInt ^String %)))
-
-(def result-set-fetch-size
-  "Gets the setting for query fetch-size (number of rows to fetch at once)"
-  (cfg/config-value-fn :result-set-fetch-size "200" #(Integer/parseInt ^String %)))
