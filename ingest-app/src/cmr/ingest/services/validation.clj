@@ -54,13 +54,13 @@
   (if-errors-throw (umm-validation/validate (mt/mime-type->format metadata-format) umm)))
 
 (defn- delete-time-validation
-  "Validates the concept delete-time is before the current time, otherwise throws exception."
+  "Validates the concept delete-time.
+  Returns error if the delete time exists and is before one minute from the current time."
   [_ concept]
-  (let [time-to-compare (t/plus (tk/now) (t/minutes 1))
-        delete-time (get-in concept [:extra-fields :delete-time])]
+  (let [delete-time (get-in concept [:extra-fields :delete-time])]
     (when (some-> delete-time
                   p/parse-datetime
-                  (t/before? time-to-compare))
+                  (t/before? (t/plus (tk/now) (t/minutes 1))))
       [(format "DeleteTime %s is before the current time." delete-time)])))
 
 (defn- concept-id-validation
@@ -79,6 +79,6 @@
    concept-id-validation])
 
 (defn validate-business-rules
-  "Validates the concept against CMR ingest rules. Short circuit on first error by throwing exception."
+  "Validates the concept against CMR ingest rules."
   [context concept]
   (if-errors-throw (mapcat #(% context concept) business-rule-validations)))
