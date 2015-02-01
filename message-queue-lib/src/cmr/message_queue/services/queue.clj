@@ -1,6 +1,6 @@
 (ns cmr.message-queue.services.queue
   "Declares a protocol for creating and interacting with queues and a record that defines
-  a queue listner"
+  a queue listener"
   (:require [cmr.common.lifecycle :as lifecycle]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.services.errors :as errors]))
@@ -18,11 +18,11 @@
 
   (subscribe
     [this queue-name handler params]
-    "Subscribes to the given queue using the given handler with optonal params.
+    "Subscribes to the given queue using the given handler with optional params.
     The handler must attempt to process the message and respond with one of the following:
       :ok    - message was processed successfully
-      :retry - message could not be processed and should be requeued
-      :fail  - the message cannot be processed and should not be requeued")
+      :retry - message could not be processed and should be re-queued
+      :fail  - the message cannot be processed and should not be re-queued")
 
   (message-count
     [this queue-name]

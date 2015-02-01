@@ -9,6 +9,8 @@
             [cmr.message-queue.services.queue :as queue])
   (:import java.util.concurrent.LinkedBlockingQueue))
 
+(def MEMORY_QUEUE_MESSAGE_CAPACITY 1000)
+
 (defn- push-message
   "Pushes a message on the queue whether it is running or not."
   [mem-queue queue-name msg]
@@ -166,6 +168,6 @@
 
 (defn create-queue-broker
   "Creates a simple in-memory queue broker"
-  [capacity required-queues]
-  (->MemoryQueueBroker capacity (atom nil) required-queues (atom false)))
+  [required-queues]
+  (->MemoryQueueBroker MEMORY_QUEUE_MESSAGE_CAPACITY (atom nil) required-queues (atom false)))
 

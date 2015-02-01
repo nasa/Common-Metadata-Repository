@@ -25,9 +25,9 @@
   :parent-collection-cache)
 
 (defn unrecognized-gsr-msg
-  "The granule spatial representaiton (gsr) is not of a known type."
+  "The granule spatial representation (gsr) is not of a known type."
   [gsr]
-  (str "Unrecognized granule spatial represention [" gsr "]"))
+  (str "Unrecognized granule spatial representation [" gsr "]"))
 
 (defn- fetch-parent-collection
   "Retrieve the parent collection umm from the db"
@@ -86,7 +86,7 @@
       (errors/throw-service-error :invalid-data (unrecognized-gsr-msg gsr)))))
 
 (def ocsd-fields
-  "The fields for orbit calculated spatil domains, in the order that they are stored in the json
+  "The fields for orbit calculated spatial domains, in the order that they are stored in the json
   string in the index."
   [:equator-crossing-date-time
    :equator-crossing-longitude

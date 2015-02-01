@@ -23,8 +23,8 @@
   Example:
 
   (with-channel
-    [chan conn]
-    (lq/status chan \"my-queue\"))"
+  [chan conn]
+  (lq/status chan \"my-queue\"))"
   [bindings & body]
   (when (not= 2 (count bindings))
     (throw (Exception. "Expected a single pair of bindings of a channel symbol and a connection")))
@@ -52,7 +52,7 @@
   "Retry a message if it has not already exceeded the allowable retries"
   [queue-broker ch queue-name routing-key msg delivery-tag resp]
   (let [repeat-count (get msg :repeat-count 0)]
-    (if (> (inc repeat-count) (config/rabbit-mq-ttls))
+    (if (> (inc repeat-count) (count (config/rabbit-mq-ttls)))
       (do
         ;; give up
         (warn "Max retries exceeded for processing message:" (pr-str msg))
@@ -86,7 +86,7 @@
   where status is one of (:ok, :retry, :fail) and message is optional.
 
   'params' is a map containing queue implementation specific settings, if necessary. Currently the
-  only supported setting for RabbitMQ is :prefetch, which corresponsd to the number of messages
+  only supported setting for RabbitMQ is :prefetch, which corresponds to the number of messages
   a consumer should pull off the queue at one time."
   [queue-broker queue-name client-handler params]
   (let [{:keys [prefetch]} params
@@ -153,8 +153,11 @@
    ;; Connection to the message queue
    conn
 
+   ;; Long-lived channel for publications
+   pub-ch
+
    ;; Queues that should be created on startup
-   required-queues
+   persistent-queues
 
    ;; true or false to indicate it's running
    running?
@@ -170,7 +173,10 @@
       (errors/internal-error! "Already connected"))
     (let [{:keys [host port username password]} this
           conn (rmq/connect {:host host :port port :username username :password password})
-          this (assoc this :conn conn :running? true)]
+          pub-ch (lch/open conn)
+          ;; put channel into confirmation mode
+          _ (lcf/select pub-ch)
+          this (assoc this :conn conn :pub-ch pub-ch :running? true)]
       (info "RabbitMQ connection opened")
       (doseq [queue-name (:required-queues this)]
         (queue/create-queue this queue-name))
@@ -188,36 +194,31 @@
 
   (create-queue
     [this queue-name]
-    (let [ch (lch/open conn)]
-      ;; create the queue
-      (safe-create-queue ch queue-name {:exclusive false :auto-delete false :durable true})
-      ;; create wait queues to use with the primary queue
-      (info "Creating wait queues")
-      (doseq [wait-queue-num (range 1 (inc (count (config/rabbit-mq-ttls))))
-              :let [ttl (wait-queue-ttl wait-queue-num)
-                    wq (wait-queue-name queue-name wait-queue-num)]]
-        (safe-create-queue ch
-                           wq
-                           {:exclusive false
-                            :auto-delete false
-                            :durable true
-                            :arguments {"x-dead-letter-exchange" default-exchange-name
-                                        "x-dead-letter-routing-key" queue-name
-                                        "x-message-ttl" ttl}}))
-      (rmq/close ch)))
+    ;; create the queue
+    (safe-create-queue pub-ch queue-name {:exclusive false :auto-delete false :durable true})
+    ;; create wait queues to use with the primary queue
+    (info "Creating wait queues")
+    (doseq [wait-queue-num (range 1 (inc (count (config/rabbit-mq-ttls))))
+            :let [ttl (wait-queue-ttl wait-queue-num)
+                  wq (wait-queue-name queue-name wait-queue-num)]]
+      (safe-create-queue pub-ch
+                         wq
+                         {:exclusive false
+                          :auto-delete false
+                          :durable true
+                          :arguments {"x-dead-letter-exchange" default-exchange-name
+                                      "x-dead-letter-routing-key" queue-name
+                                      "x-message-ttl" ttl}})))
 
   (publish
     [this queue-name msg]
     (debug "publishing msg:" (pr-str msg) " to queue:" queue-name)
-    (let [ch (lch/open conn)
-          payload (json/generate-string msg)
+    (let [payload (json/generate-string msg)
           metadata {:content-type "application/json" :persistent true}]
-      ;; put channel into confirmation mode
-      (lcf/select ch)
       ;; publish the message
-      (lb/publish ch default-exchange-name queue-name payload metadata)
+      (lb/publish pub-ch default-exchange-name queue-name payload metadata)
       ;; block until the confirm arrives or return false if queue nacks the message
-      (lcf/wait-for-confirms ch)))
+      (lcf/wait-for-confirms pub-ch)))
 
   (subscribe
     [this queue-name handler params]
@@ -225,77 +226,76 @@
 
   (message-count
     [this queue-name]
-    (let [ch (lch/open conn)]
-      (debug "Getting message count for queue" queue-name " on channel" ch)
-      (lq/message-count ch queue-name)))
+    (debug "Getting message count for queue" queue-name " on channel" pub-ch)
+    (lq/message-count pub-ch queue-name))
 
   (purge-queue
     [this queue-name]
-    (let [ch (lch/open conn)]
-      (info "Purging all messages from queue" queue-name)
-      (lq/purge ch queue-name)
-      (doseq [wait-queue-num (range 1 (inc (config/rabbit-mq-ttls)))
-              :let [ttl (wait-queue-ttl wait-queue-num)
-                    wq (wait-queue-name queue-name wait-queue-num)]]
-        (debug "Purging messages from wait queue" wq)
-        (lq/purge ch wq))))
+    (info "Purging all messages from queue" queue-name)
+    (lq/purge pub-ch queue-name)
+    (doseq [wait-queue-num (range 1 (inc (count (config/rabbit-mq-ttls))))
+            :let [ttl (wait-queue-ttl wait-queue-num)
+                  wq (wait-queue-name queue-name wait-queue-num)]]
+      (debug "Purging messages from wait queue" wq)
+      (lq/purge pub-ch wq)))
 
   (delete-queue
     [this queue-name]
-    (let [ch (lch/open conn)]
-      (lq/delete ch queue-name)
-      (doseq [wait-queue-num (range 1 (inc (config/rabbit-mq-ttls)))
-              :let [ttl (wait-queue-ttl wait-queue-num)
-                    wq (wait-queue-name queue-name wait-queue-num)]]
-        (lq/delete ch wq)))))
+    (lq/delete pub-ch queue-name)
+    (doseq [wait-queue-num (range 1 (inc (count (config/rabbit-mq-ttls))))
+            :let [ttl (wait-queue-ttl wait-queue-num)
+                  wq (wait-queue-name queue-name wait-queue-num)]]
+      (lq/delete pub-ch wq)))
+)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn create-queue-broker
-  "Create a RabbitMQBroker"
-  [params]
-  (let [{:keys [host port username password required-queues]} params]
-    (->RabbitMQBroker host port username password nil required-queues false)))
+  (defn create-queue-broker
+    "Create a RabbitMQBroker"
+    [params]
+    (let [{:keys [host port username password queues]} params]
+      (->RabbitMQBroker host port username password nil nil queues false)))
 
 
-(comment
+  (comment
 
-  (do
-    (def q (let [q (create-queue-broker {:host (config/rabbit-mq-host)
-                                         :port (config/rabbit-mq-port)
-                                         :username (config/rabbit-mq-username)
-                                         :password (config/rabbit-mq-password)
-                                         :required-queues ["test.simple"]})]
-             (lifecycle/start q {})))
+    (do
+      (def q (let [q (create-queue-broker {:host (config/rabbit-mq-host)
+                                           :port (config/rabbit-mq-port)
+                                           :username (config/rabbit-mq-username)
+                                           :password (config/rabbit-mq-password)
+                                           :queues ["test.simple"]})]
+               (lifecycle/start q {})))
 
-    (defn test-message-handler
-      [msg]
-      (info "Test handler")
-      (let [val (rand)
-            rval (cond
-                   (> 0.5 val) {:status :ok}
-                   (> 0.97 val) {:status :retry :message "service down"}
-                   :else {:status :fail :message "bad data"})]
+      (defn test-message-handler
+        [msg]
+        (info "Test handler")
+        (let [val (rand)
+              rval (cond
+                     (> 0.5 val) {:status :ok}
+                     (> 0.97 val) {:status :retry :message "service down"}
+                     :else {:status :fail :message "bad data"})]
 
-        rval))
+          rval))
 
-    (queue/subscribe q "test.simple" test-message-handler {})
+      (queue/subscribe q "test.simple" test-message-handler {})
 
-    (doseq [n (range 0 1000)
-            :let [concept-id (str "C" n "-PROV1")
-                  msg {:action :index-concept
-                       :concept-id concept-id
-                       :revision-id 1}]]
-      (queue/publish q "test.simple" msg))
+      (doseq [n (range 0 1000)
+              :let [concept-id (str "C" n "-PROV1")
+                    msg {:action :index-concept
+                         :concept-id concept-id
+                         :revision-id 1}]]
+        (queue/publish q "test.simple" msg))
+
+      )
+
+    (queue/purge-queue q "test.simple")
+
+    (queue/message-count q "test.simple")
+
+    (queue/purge-queue q "cmr_index.queue")
+
+    (lifecycle/stop q {})
 
     )
-
-  (queue/purge-queue q "test.simple")
-
-  (queue/message-count q "test.simple")
-
-  (lifecycle/stop q {})
-
-  )
 
 

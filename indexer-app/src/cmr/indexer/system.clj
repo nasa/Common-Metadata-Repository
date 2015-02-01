@@ -57,7 +57,7 @@
                                                      :port (rmq-conf/rabbit-mq-port)
                                                      :username (rmq-conf/rabbit-mq-username)
                                                      :password (rmq-conf/rabbit-mq-password)
-                                                     :required-queues [(config/index-queue-name)]}))
+                                                     :queues [(config/index-queue-name)]}))
              :queue-listener (when (config/use-index-queue?)
                                (queue/create-queue-listener {:num-workers 5
                                                          :start-function ql/start-queue-message-handler}))}]

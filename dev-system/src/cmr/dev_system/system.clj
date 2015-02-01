@@ -16,11 +16,9 @@
             [cmr.spatial.dev.viz-helper :as viz-helper]
             [cmr.elastic-utils.embedded-elastic-server :as elastic-server]
             [cmr.common.config :as config]
-            [cmr.message-queue.queue.memory-queue :as queue]
+            [cmr.message-queue.queue.memory-queue :as memory-queue]
             [cmr.dev-system.control :as control]
             [cmr.common.api.web-server :as web]))
-
-(def MEMORY_QUEUE_MESSAGE_CAPACITY 1000)
 
 (def app-control-functions
   "A map of application name to the start function"
@@ -80,8 +78,7 @@
   ;; The same in-memory queue is sued for indexer and ingest for the same reason
   (let [in-memory-db (memory/create-db)
         memory-queue-broker (when (iconfig/use-index-queue?)
-                              (queue/create-queue-broker MEMORY_QUEUE_MESSAGE_CAPACITY
-                                                         [(iconfig/index-queue-name)]))
+                              (memory-queue/create-queue-broker [(iconfig/index-queue-name)]))
         control-server (web/create-web-server 2999 control/make-api use-compression? use-access-log?)]
     {:apps {:mock-echo (mock-echo-system/create-system)
             :metadata-db (-> (mdb-system/create-system)
