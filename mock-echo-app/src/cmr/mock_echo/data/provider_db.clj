@@ -23,6 +23,7 @@
     (swap! provider-db update-in [:providers] merge provider-map)))
 
 (defn get-providers
+  "Returns a list of providers in the format [{:provider {:id prov1guid :provider_id prov1}]"
   [context]
   (-> context
       context->provider-db

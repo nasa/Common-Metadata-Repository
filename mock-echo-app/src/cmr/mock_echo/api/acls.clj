@@ -31,11 +31,9 @@
   (let [acl-key (object-identity-type->acl-key (:object_identity_type params))
         provider-id (:provider_id params)]
     (if provider-id
-      (let [provider-guid (p-db/provider-id->provider-guid context provider-id)]
-        (if provider-guid
-          (filter #(= (get-in % [:acl acl-key :provider_guid]) provider-guid)
-                  (acl-db/get-acls context))
-          nil))
+      (when-let [provider-guid (p-db/provider-id->provider-guid context provider-id)]
+        (filter #(= (get-in % [:acl acl-key :provider_guid]) provider-guid)
+                (acl-db/get-acls context)))
       (filter #(get-in % [:acl acl-key]) (acl-db/get-acls context)))))
 
 (defn delete-acl

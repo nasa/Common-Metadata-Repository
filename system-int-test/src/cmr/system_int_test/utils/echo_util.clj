@@ -5,7 +5,8 @@
             [cmr.transmit.config :as config]
             [cmr.system-int-test.system :as s]
             [cmr.system-int-test.utils.url-helper :as url]
-            [clj-http.client :as client]))
+            [clj-http.client :as client]
+            [cmr.common.util :as util]))
 
 (defn- context
   "Returns a context to pass to the mock transmit api"
@@ -105,11 +106,8 @@
   ([aces catalog-item-identity object-identity-type acl-type provider-guid]
    (let [acl {:aces aces
               :catalog-item-identity catalog-item-identity
-              object-identity-type (if (or acl-type provider-guid)
-                                     (merge {}
-                                            (when provider-guid {:provider-guid provider-guid})
-                                            (when acl-type {:target acl-type}))
-                                     nil)}]
+              object-identity-type (util/remove-nil-keys {:provider-guid provider-guid
+                                                          :target acl-type})}]
      (mock/create-acl (context) acl))))
 
 (defn ungrant
@@ -209,9 +207,7 @@
          status (:status response)]
 
      ;; Make sure the status returned is success or 401
-     (when (or (and (>= status 300)
-                    (not= status 401))
-               (< status 200))
+     (when-not (some #{status} [200 201 204 401])
        (throw (Exception. (str "Unexpected status " status " response:" (:body response)))))
      (not= status 401))))
 

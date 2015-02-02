@@ -2,19 +2,17 @@
   "Contains functions for retrieving ACLs from the echo-rest api."
   (:require [cmr.transmit.echo.rest :as r]
             [cmr.transmit.echo.conversion :as c]
-            [cmr.transmit.echo.providers :as echo-providers]))
+            [cmr.transmit.echo.providers :as echo-providers]
+            [cmr.common.util :as util]))
 
-(defn- convert-provider-guid-key-to-provider-id-key
-  "Change all provider-guid references to provider-id."
-  [provider-guid-id-map identity-type]
-  (some-> identity-type
-          (assoc :provider-id (provider-guid-id-map (:provider-guid identity-type)))
-          (dissoc :provider-guid)))
-
-(defn- set-acl-provider-id
-  "Sets the provider-id in the acl to replace the provider guid."
+(defn- convert-provider-guid-to-id-in-acl
+  "Change all provider-guid references to provider-id for the given ACL. This simplifies working
+  with ACLs since provider ids are commonly used throughout the code."
   [provider-guid-id-map acl]
-  (let [converter (partial convert-provider-guid-key-to-provider-id-key provider-guid-id-map)]
+  (let [converter (fn [identity-map]
+                    (some-> identity-map
+                            (assoc :provider-id (provider-guid-id-map (:provider-guid identity-map)))
+                            (dissoc :provider-guid)))]
     (-> acl
         (update-in [:catalog-item-identity] converter)
         (update-in [:provider-object-identity] converter))))
@@ -34,7 +32,8 @@
                                        :reference false}
                                       (when provider-id {:provider_id provider-id}))})]
      (case status
-       200 (mapv (comp (partial set-acl-provider-id provider-guid-id-map)
-                       c/echo-acl->cmr-acl)
-                 acls)
+       200 (util/remove-nil-keys-nested
+             (mapv (comp (partial convert-provider-guid-to-id-in-acl provider-guid-id-map)
+                         c/echo-acl->cmr-acl)
+                   acls))
        (r/unexpected-status-error! status body)))))

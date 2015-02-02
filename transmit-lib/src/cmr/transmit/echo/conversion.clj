@@ -101,7 +101,8 @@
 
 
 (defn echo-acl->cmr-acl
-  "Cleans up the acl data structure to be easier to work with. See the in code comment in this namespace for an example."
+  "Cleans up the acl data structure to be easier to work with. See the in code comment in this
+  namespace for an example."
   [acl]
   (-> acl
       :acl

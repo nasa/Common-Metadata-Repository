@@ -4,7 +4,8 @@
             [cmr.common.services.errors :as errors]
             [camel-snake-kebab :as csk]
             [clojure.set :as set]
-            [clojure.string :as str])
+            [clojure.string :as str]
+            [clojure.walk :as w])
   (:import java.text.DecimalFormat))
 
 (defn trunc
@@ -91,6 +92,13 @@
   From http://stackoverflow.com/questions/3937661/remove-nil-values-from-a-map"
   [m]
   (apply dissoc m (for [[k v] m :when (nil? v)] k)))
+
+(defn remove-nil-keys-nested
+  "Removes keys mapping to nil values in a map.  This will work on a nested map.
+  From http://stackoverflow.com/questions/3937661/remove-nil-values-from-a-map"
+  [m]
+  (let [f (fn [[k v]] (when v [k v]))]
+    (w/postwalk (fn [x] (if (map? x) (into {} (map f x)) x)) m)))
 
 (defn map-keys [f m]
   "Maps f over the keys in map m and updates all keys with the result of f.

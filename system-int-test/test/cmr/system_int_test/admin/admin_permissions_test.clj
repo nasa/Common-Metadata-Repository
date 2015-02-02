@@ -10,22 +10,19 @@
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"} false))
 
 (deftest ingest-management-permission-test
-  (do
-    ;; Grant admin-group-guid admin permission
-    (e/grant-group-admin "admin-read-group-guid" :read)
-    (e/grant-group-admin "admin-update-group-guid" :update)
-    (e/grant-group-admin "admin-read-update-group-guid" :read :update))
-    ;; Grant provider admin permission, but not system permission
-    (e/grant-group-provider-admin "prov-admin-group-guid" "provguid1" :read :update :delete)
-
+  ;; Grant admin-group-guid admin permission
+  (e/grant-group-admin "admin-read-group-guid" :read)
+  (e/grant-group-admin "admin-update-group-guid" :update)
+  (e/grant-group-admin "admin-read-update-group-guid" :read :update)
+  ;; Grant provider admin permission, but not system permission
+  (e/grant-group-provider-admin "prov-admin-group-guid" "provguid1" :read :update :delete)
 
   (let [guest-token (e/login-guest)
         user-token (e/login "user1" ["group-guid2" "group-guid3"])
         admin-read-token (e/login "admin" ["admin-read-group-guid" "group-guid3"])
         admin-update-token (e/login "admin" ["admin-update-group-guid" "group-guid3"])
         admin-read-update-token (e/login "admin" ["admin-read-update-group-guid" "group-guid3"])
-        prov-admin-token (e/login "prov-admin" ["prov-admin-group-guid" "group-guid3"])
-]
+        prov-admin-token (e/login "prov-admin" ["prov-admin-group-guid" "group-guid3"])]
 
     (are [url]
          (and

@@ -13,7 +13,8 @@
             [cmr.transmit.config :as transmit-config]
             [cmr.system-int-test.utils.url-helper :as url]
             [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.utils.echo-util :as echo-util]))
+            [cmr.system-int-test.utils.echo-util :as echo-util]
+            [cmr.common.util :as util]))
 
 (defn- create-provider-through-url
   "Create the provider by http POST on the given url"
@@ -86,28 +87,25 @@
    (ingest-concept concept nil))
   ([{:keys [metadata format concept-type concept-id revision-id provider-id native-id] :as concept}
     token]
-  (let [headers (merge {}
-                       (when concept-id {"concept-id" concept-id})
-                       (when revision-id {"revision-id" revision-id})
-                       (when token {"Echo-Token" token}))
-        response (client/request
-                   {:method :put
-                    :url (url/ingest-url provider-id concept-type native-id)
-                    :body  metadata
-                    :content-type format
-                    :headers headers
-                    :accept :json
-                    :throw-exceptions false
-                    :connection-manager (url/conn-mgr)})
-        body (json/decode (:body response) true)]
-    (assoc body :status (:status response)))))
+   (let [headers (util/remove-nil-keys {"concept-id" concept-id
+                                        "revision-id" revision-id
+                                        "Echo-Token" token})
+         response (client/request
+                    {:method :put
+                     :url (url/ingest-url provider-id concept-type native-id)
+                     :body  metadata
+                     :content-type format
+                     :headers headers
+                     :accept :json
+                     :throw-exceptions false
+                     :connection-manager (url/conn-mgr)})
+         body (json/decode (:body response) true)]
+     (assoc body :status (:status response)))))
 
 (defn validate-concept
   "Validate a concept and return a map with status and error messages if applicable"
   [{:keys [metadata format concept-type concept-id revision-id provider-id native-id] :as concept}]
-  (let [headers (merge {}
-                       (when concept-id {"concept-id" concept-id})
-                       (when revision-id {"revision-id" revision-id}))
+  (let [headers (util/remove-nil-keys {"concept-id" concept-id "revision-id" revision-id})
         response (client/request
                    {:method :post
                     :url (url/validate-url provider-id concept-type native-id)
@@ -164,15 +162,18 @@
 
 (defn delete-concept
   "Delete a given concept."
-  [{:keys [provider-id concept-type native-id] :as concept}]
-  (let [response (client/request
-                   {:method :delete
-                    :url (url/ingest-url provider-id concept-type native-id)
-                    :accept :json
-                    :throw-exceptions false
-                    :connection-manager (url/conn-mgr)})
-        body (json/decode (:body response) true)]
-    (assoc body :status (:status response))))
+  ([concept]
+   (delete-concept concept nil))
+  ([{:keys [provider-id concept-type native-id] :as concept} token]
+   (let [response (client/request
+                    {:method :delete
+                     :url (url/ingest-url provider-id concept-type native-id)
+                     :headers (merge {} (when token {"Echo-Token" token}))
+                     :accept :json
+                     :throw-exceptions false
+                     :connection-manager (url/conn-mgr)})
+         body (json/decode (:body response) true)]
+     (assoc body :status (:status response)))))
 
 
 (defn ingest-concepts
@@ -238,12 +239,12 @@
 
    (when grant-all?
      (echo-util/grant [echo-util/guest-ace
-               echo-util/registered-user-ace]
-              (assoc (echo-util/catalog-item-id provider-guid)
-                     :collection-applicable true
-                     :granule-applicable true)
-              :system-object-identity
-              nil)
+                       echo-util/registered-user-ace]
+                      (assoc (echo-util/catalog-item-id provider-guid)
+                             :collection-applicable true
+                             :granule-applicable true)
+                      :system-object-identity
+                      nil)
      (echo-util/grant-all-ingest provider-guid))))
 
 (defn reset-fixture

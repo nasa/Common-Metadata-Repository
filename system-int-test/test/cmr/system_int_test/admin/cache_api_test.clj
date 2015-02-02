@@ -173,38 +173,29 @@
       (are [url cache cache-key value]
            (let [response (get-cache-value url cache cache-key admin-read-token)]
              (is (= (set value) (set response))))
-           (url/indexer-read-caches-url) "acls" "acls" [{:provider-object-identity nil,
-                                                         :aces
+           (url/indexer-read-caches-url) "acls" "acls" [{:aces
                                                          [{:permissions ["read"], :user-type "guest"}
                                                           {:permissions ["read"], :user-type "registered"}],
                                                          :catalog-item-identity
                                                          {:provider-id "PROV3",
                                                           :granule-applicable true,
-                                                          :collection-applicable true,
-                                                          :collection-identifier nil,
-                                                          :granule-identifier nil},
-                                                         :system-object-identity nil}
-                                                        {:provider-object-identity nil,
-                                                         :aces
+                                                          :collection-applicable true},
+                                                         :system-object-identity {}}
+                                                        {:aces
                                                          [{:permissions ["read"], :user-type "guest"}
                                                           {:permissions ["read"], :user-type "registered"}],
                                                          :catalog-item-identity
                                                          {:provider-id "PROV2",
                                                           :granule-applicable true,
-                                                          :collection-applicable true,
-                                                          :collection-identifier nil,
-                                                          :granule-identifier nil},
-                                                         :system-object-identity nil}
-                                                        {:provider-object-identity nil,
-                                                         :aces
+                                                          :collection-applicable true},
+                                                         :system-object-identity {}}
+                                                        {:aces
                                                          [{:permissions ["read"], :user-type "guest"}
                                                           {:permissions ["read"], :user-type "registered"}],
                                                          :catalog-item-identity
                                                          {:provider-id "PROV1",
                                                           :granule-applicable true,
-                                                          :collection-applicable true,
-                                                          :collection-identifier nil,
-                                                          :granule-identifier nil},
-                                                         :system-object-identity nil}]
+                                                          :collection-applicable true},
+                                                         :system-object-identity {}}]
            (url/indexer-read-caches-url) "general" "concept-mapping-types" {:collection "collection"
                                                                             :granule "granule"}))))

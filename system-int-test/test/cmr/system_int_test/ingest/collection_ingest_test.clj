@@ -98,16 +98,6 @@
     (is (= status 400))
     (is (re-find #"DeleteTime 2000-01-01T12:00:00.000Z is before the current time." (first errors)))))
 
-;; Verify non-existent concept deletion results in not found / 404 error.
-;; TODO commented out this test because it causes other tests to fail.  This test is currently
-;; returning a 401 because there is no ACL given ingest permission for a non-existent provider.
-#_(deftest delete-non-existent-collection-test
-  (let [concept (dc/collection-for-ingest {})
-        fake-provider-id (str (:provider-id concept) (:native-id concept))
-        non-existent-concept (assoc concept :provider-id fake-provider-id)
-        {:keys [status]} (ingest/delete-concept non-existent-concept)]
-    (is (= status 404))))
-
 ;; Verify existing concept can be deleted and operation results in revision id 1 greater than
 ;; max revision id of the concept prior to the delete
 (deftest delete-collection-test-old
