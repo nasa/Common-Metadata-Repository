@@ -91,24 +91,28 @@
   [cid]
   (some-> cid
           (update-in [:collection-identifier] echo-coll-id->cmr-coll-id)
-          (update-in [:granule-identifier] echo-gran-id->cmr-gran-id)))
+          (update-in [:granule-identifier] echo-gran-id->cmr-gran-id)
+          util/remove-nil-keys))
 
 (defn cmr-catalog-item-identity->cmr-catalog-item-identity
   [cid]
   (some-> cid
           (update-in [:collection-identifier] cmr-coll-id->echo-coll-id)
-          (update-in [:granule-identifier] cmr-gran-id->echo-gran-id)))
+          (update-in [:granule-identifier] cmr-gran-id->echo-gran-id)
+          util/remove-nil-keys))
 
 
 (defn echo-acl->cmr-acl
-  "Cleans up the acl data structure to be easier to work with. See the in code comment in this namespace for an example."
+  "Cleans up the acl data structure to be easier to work with. See the in code comment in this
+  namespace for an example."
   [acl]
   (-> acl
       :acl
       util/map-keys->kebab-case
       (set/rename-keys {:id :guid :access-control-entries :aces})
       (update-in [:aces] (partial mapv echo-ace->cmr-ace))
-      (update-in [:catalog-item-identity] echo-catalog-item-identity->cmr-catalog-item-identity)))
+      (update-in [:catalog-item-identity] echo-catalog-item-identity->cmr-catalog-item-identity)
+      util/remove-nil-keys))
 
 (defn cmr-acl->echo-acl
   "Converts a cmr style acl back to the echo style. Converting echo->cmr->echo is lossy due to
@@ -119,6 +123,7 @@
       (update-in [:aces] (partial mapv cmr-ace->echo-ace))
       (update-in [:catalog-item-identity] cmr-catalog-item-identity->cmr-catalog-item-identity)
       (set/rename-keys {:guid :id :aces :access-control-entries})
+      util/remove-nil-keys
       util/map-keys->snake_case
       (#(hash-map :acl %))))
 

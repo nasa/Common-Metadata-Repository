@@ -58,10 +58,12 @@
 (defn ingest
   "Ingests the catalog item. Returns it with concept-id, revision-id, and provider-id set on it."
   ([provider-id item]
-   (ingest provider-id item :echo10))
+   (ingest provider-id item :echo10 nil))
   ([provider-id item format-key]
+   (ingest provider-id item format-key nil))
+  ([provider-id item format-key token]
    (let [response (ingest/ingest-concept
-                    (item->concept (assoc item :provider-id provider-id) format-key))]
+                    (item->concept (assoc item :provider-id provider-id) format-key) token)]
      (if (= 200 (:status response))
        (assoc item
               :status (:status response)

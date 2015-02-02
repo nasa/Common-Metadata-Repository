@@ -87,15 +87,6 @@
     (is (= 400 status))
     (is (re-find #"XML content is too short." (first errors)))))
 
-;; Verify non-existent granule deletion results in not found / 404 error.
-(deftest delete-non-existent-granule-test
-  (let [collection (d/ingest "PROV1" (dc/collection {}))
-        granule (dg/umm-granule->granule-concept (dg/granule collection))
-        fake-provider-id (str (:provider-id granule) (:native-id granule))
-        non-existent-granule (assoc granule :provider-id fake-provider-id)
-        {:keys [status]} (ingest/delete-concept non-existent-granule)]
-    (is (= 404 status))))
-
 ;; Verify existing granule can be deleted and operation results in revision id 1 greater than
 ;; max revision id of the granule prior to the delete
 (deftest delete-granule-test

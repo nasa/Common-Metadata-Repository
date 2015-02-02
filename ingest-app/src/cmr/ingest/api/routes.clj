@@ -65,19 +65,25 @@
                                                    headers)))))
 
         (context ["/collections/:native-id" :native-id #".*$"] [native-id]
-          (PUT "/" {:keys [body content-type headers request-context]}
-            (r/response (ingest/save-concept request-context
-                                             (body->concept
-                                               :collection
-                                               provider-id
-                                               native-id
-                                               body
-                                               content-type
-                                               headers))))
-          (DELETE "/" {:keys [request-context]}
+          (PUT "/" {:keys [body content-type headers request-context params]}
+            (let [context (acl/add-authentication-to-context request-context params headers)]
+              (acl/verify-ingest-management-permission
+                context :update "PROVIDER_OBJECT" provider-id)
+              (r/response (ingest/save-concept request-context
+                                               (body->concept
+                                                 :collection
+                                                 provider-id
+                                                 native-id
+                                                 body
+                                                 content-type
+                                                 headers)))))
+          (DELETE "/" {:keys [request-context params headers]}
             (let [concept-attribs {:provider-id provider-id
                                    :native-id native-id
-                                   :concept-type :collection}]
+                                   :concept-type :collection}
+                  context (acl/add-authentication-to-context request-context params headers)]
+              (acl/verify-ingest-management-permission
+                context :delete "PROVIDER_OBJECT" provider-id)
               (r/response (ingest/delete-concept request-context concept-attribs)))))
 
         (context ["/validate/granule/:native-id" :native-id #".*$"] [native-id]
@@ -92,19 +98,25 @@
                                                    headers)))))
 
         (context ["/granules/:native-id" :native-id #".*$"] [native-id]
-          (PUT "/" {:keys [body content-type headers request-context]}
-            (r/response (ingest/save-concept request-context
-                                             (body->concept
-                                               :granule
-                                               provider-id
-                                               native-id
-                                               body
-                                               content-type
-                                               headers))))
-          (DELETE "/" {:keys [request-context]}
+          (PUT "/" {:keys [body content-type headers request-context params]}
+            (let [context (acl/add-authentication-to-context request-context params headers)]
+              (acl/verify-ingest-management-permission
+                context :update "PROVIDER_OBJECT" provider-id)
+              (r/response (ingest/save-concept request-context
+                                               (body->concept
+                                                 :granule
+                                                 provider-id
+                                                 native-id
+                                                 body
+                                                 content-type
+                                                 headers)))))
+          (DELETE "/" {:keys [request-context params headers]}
             (let [concept-attribs {:provider-id provider-id
                                    :native-id native-id
-                                   :concept-type :granule}]
+                                   :concept-type :granule}
+                  context (acl/add-authentication-to-context request-context params headers)]
+              (acl/verify-ingest-management-permission
+                context :delete "PROVIDER_OBJECT" provider-id)
               (r/response (ingest/delete-concept request-context concept-attribs))))))
 
       (context "/jobs" []

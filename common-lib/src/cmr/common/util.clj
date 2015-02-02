@@ -4,7 +4,8 @@
             [cmr.common.services.errors :as errors]
             [camel-snake-kebab :as csk]
             [clojure.set :as set]
-            [clojure.string :as str])
+            [clojure.string :as str]
+            [clojure.walk :as w])
   (:import java.text.DecimalFormat))
 
 (defn trunc

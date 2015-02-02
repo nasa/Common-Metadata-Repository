@@ -1,4 +1,4 @@
-(ns ^{:doc "CMR Ingest integration tests"}
+(ns ^{:doc "CMR collection ingest integration tests"}
   cmr.system-int-test.ingest.collection-ingest-test
   (:require [clojure.test :refer :all]
             [cmr.system-int-test.utils.ingest-util :as ingest]
@@ -97,14 +97,6 @@
                                   (d/item->concept (assoc coll :provider-id "PROV1") :echo10))]
     (is (= status 400))
     (is (re-find #"DeleteTime 2000-01-01T12:00:00.000Z is before the current time." (first errors)))))
-
-;; Verify non-existent concept deletion results in not found / 404 error.
-(deftest delete-non-existent-collection-test
-  (let [concept (dc/collection-for-ingest {})
-        fake-provider-id (str (:provider-id concept) (:native-id concept))
-        non-existent-concept (assoc concept :provider-id fake-provider-id)
-        {:keys [status]} (ingest/delete-concept non-existent-concept)]
-    (is (= status 404))))
 
 ;; Verify existing concept can be deleted and operation results in revision id 1 greater than
 ;; max revision id of the concept prior to the delete
