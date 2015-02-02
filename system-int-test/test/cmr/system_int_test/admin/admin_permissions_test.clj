@@ -5,9 +5,25 @@
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.utils.echo-util :as e]
-            [cmr.system-int-test.utils.url-helper :as url]))
+            [cmr.system-int-test.utils.url-helper :as url]
+            [clj-http.client :as client]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"} false))
+
+(defn has-action-permission?
+  "Attempts to perform the given action using the url and method with the token. Returns true
+  if the action was successful."
+  [url method token]
+   (let [response (client/request {:url url
+                                   :method method
+                                   :query-params {:token token}
+                                   :connection-manager (url/conn-mgr)
+                                   :throw-exceptions false})
+         status (:status response)]
+
+     ;; Make sure the status returned is success or 401
+     (is (some #{status} [200 201 204 401]))
+     (not= status 401)))
 
 (deftest ingest-management-permission-test
   ;; Grant admin-group-guid admin permission
@@ -26,12 +42,12 @@
 
     (are [url]
          (and
-           (not (e/has-action-permission? url :post prov-admin-token))
-           (not (e/has-action-permission? url :post guest-token))
-           (not (e/has-action-permission? url :post user-token))
-           (not (e/has-action-permission? url :post admin-read-token))
-           (e/has-action-permission? url :post admin-update-token)
-           (e/has-action-permission? url :post admin-read-update-token))
+           (not (has-action-permission? url :post prov-admin-token))
+           (not (has-action-permission? url :post guest-token))
+           (not (has-action-permission? url :post user-token))
+           (not (has-action-permission? url :post admin-read-token))
+           (has-action-permission? url :post admin-update-token)
+           (has-action-permission? url :post admin-read-update-token))
 
          (url/search-clear-cache-url)
          (url/search-reset-url)

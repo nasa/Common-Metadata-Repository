@@ -15,7 +15,8 @@
                             (dissoc :provider-guid)))]
     (-> acl
         (update-in [:catalog-item-identity] converter)
-        (update-in [:provider-object-identity] converter))))
+        (update-in [:provider-object-identity] converter)
+        util/remove-nil-keys)))
 
 (defn get-acls-by-type
   "Fetches ACLs from ECHO by object identity type. Valid values are PROVIDER_OBJECT, SYSTEM_OBJECT,
@@ -32,8 +33,7 @@
                                        :reference false}
                                       (when provider-id {:provider_id provider-id}))})]
      (case status
-       200 (util/remove-nil-keys-nested
-             (mapv (comp (partial convert-provider-guid-to-id-in-acl provider-guid-id-map)
-                         c/echo-acl->cmr-acl)
-                   acls))
+       200 (mapv (comp (partial convert-provider-guid-to-id-in-acl provider-guid-id-map)
+                       c/echo-acl->cmr-acl)
+                 acls)
        (r/unexpected-status-error! status body)))))

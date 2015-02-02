@@ -13,8 +13,7 @@
   "Returns true if the provided token has permission to perform the given function."
   [response]
   (let [status (:status response)]
-    (when-not (some #{status} [200 201 204 401])
-      (throw (Exception. (str "Unexpected status " status " response:" (:body response)))))
+    (is (some #{status} [200 201 204 401]))
     (not= status 401)))
 
 (deftest ingest-provider-management-permissions-test
@@ -63,7 +62,7 @@
            provider-admin-read-token))
 
     (testing "ingest granule delete permissions"
-      (ingest-succeeded? (ingest/delete-concept granule provider-admin-update-delete-token))
+      (is (ingest-succeeded? (ingest/delete-concept granule provider-admin-update-delete-token)))
       (are [token]
            (not (ingest-succeeded? (ingest/delete-concept granule token)))
            guest-token
@@ -89,7 +88,8 @@
            provider-admin-read-token))
 
     (testing "ingest collection delete permissions"
-      (ingest-succeeded? (ingest/delete-concept ingested-concept provider-admin-update-delete-token))
+      (is (ingest-succeeded?
+            (ingest/delete-concept ingested-concept provider-admin-update-delete-token)))
       (are [token]
            (not (ingest-succeeded? (ingest/delete-concept ingested-concept token)))
            guest-token

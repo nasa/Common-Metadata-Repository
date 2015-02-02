@@ -189,26 +189,4 @@
          ingest-management-acl
          provider-guid))
 
-(defn has-action-permission?
-  "Attempts to perform the given action using the url and method with the token. Returns true
-  if the action was successful."
-  ([url method token]
-   (has-action-permission? url method token nil nil))
-  ([url method token headers]
-   (has-action-permission? url method token headers nil))
-  ([url method token headers body]
-   (let [response (client/request {:url url
-                                   :method method
-                                   :query-params {:token token}
-                                   :headers headers
-                                   :body body
-                                   :connection-manager (url/conn-mgr)
-                                   :throw-exceptions false})
-         status (:status response)]
-
-     ;; Make sure the status returned is success or 401
-     (when-not (some #{status} [200 201 204 401])
-       (throw (Exception. (str "Unexpected status " status " response:" (:body response)))))
-     (not= status 401))))
-
 
