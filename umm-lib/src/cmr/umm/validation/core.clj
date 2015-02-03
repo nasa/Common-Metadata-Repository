@@ -81,8 +81,8 @@
 (defn validate
   "Validates the umm record returning a list of error messages appropriate for the given metadata
   format and concept type. Returns an empty sequence if it is valid."
-  [metadata-format umm]
-  (vu/perform-validation metadata-format umm (umm-validations (type umm))))
+  [umm]
+  (vu/perform-validation umm (umm-validations (type umm))))
 
 
 (comment

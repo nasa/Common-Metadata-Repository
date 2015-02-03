@@ -100,12 +100,12 @@
 ;; Thorough tests of UMM validations should go in cmr.umm.test.validation.core and related
 ;; namespaces.
 (deftest collection-umm-validation-test
-  (testing "additional attribute validation"
+  (testing "Product specific attribute validation"
     (assert-invalid
       {:product-specific-attributes
        [(dc/psa "bool" :boolean true)
         (dc/psa "bool" :boolean true)]}
-      ["AdditionalAttributes must be unique. This contains duplicates named [bool]."]))
+      ["Product Specific Attributes must be unique. This contains duplicates named [bool]."]))
   (testing "Spatial validation"
     (testing "geodetic polygon"
       (assert-invalid-spatial

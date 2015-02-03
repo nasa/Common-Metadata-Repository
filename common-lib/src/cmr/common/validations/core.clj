@@ -41,7 +41,7 @@
       (reduce (fn [field-errors validator]
                 (let [errors (validator field-path value)]
                   (if (seq errors)
-                    (merge field-errors errors)
+                    (merge-with concat field-errors errors)
                     field-errors)))
               {}
               validators))))
@@ -49,7 +49,6 @@
 (defn auto-validation-convert
   "Handles converting basic clojure data structures into a validation function."
   [validation]
-  ;; TODO consider using protocols or other dispatch method
   (cond
     (map? validation) (record-validation validation)
     (sequential? validation) (seq-of-validations validation)
@@ -58,14 +57,19 @@
 (defn- humanize-field
   "Converts a keyword to a humanized field name"
   [field]
-  (when field (str/replace (str/capitalize (name field)) #"-" " ")))
+  (when field
+    (->> (str/split (name field) #"-")
+         (map str/capitalize)
+         (str/join " "))))
 
 (defn create-error-messages
-  "TODO"
+  "Creates error messages with the response from validate."
   [field-errors]
   (for [[field-path errors] field-errors
         :when (seq errors)
-        :let [field (last field-path)]
+        ;; Get the last field path value that's not a number. The every migration will use a number
+        ;; to indicate the index into the list.
+        :let [field (last (filter (complement number?) field-path))]
         error errors]
     (format error (humanize-field field))))
 
@@ -114,14 +118,14 @@
   "Validates the value is a number"
   [field-path value]
   (when (and value (not (number? value)))
-    {field-path [(format "%%s must be a number but was [%s]" value)]}))
+    {field-path [(format "%%s must be a number but was [%s]." value)]}))
 
 (defn within-range
   "Creates a validator within a specified range"
   [minv maxv]
   (fn [field-path value]
     (when (and value (or (< (compare value minv) 0) (> (compare value maxv) 0)))
-      {field-path [(format "%%s must be within [%s] and [%s] but was [%s]"
+      {field-path [(format "%%s must be within [%s] and [%s] but was [%s]."
                            minv maxv value)]})))
 
 

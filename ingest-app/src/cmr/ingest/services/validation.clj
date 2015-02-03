@@ -50,8 +50,8 @@
   (if-errors-throw (umm/validate-concept-xml concept)))
 
 (defn validate-umm-record
-  [metadata-format umm]
-  (if-errors-throw (umm-validation/validate (mt/mime-type->format metadata-format) umm)))
+  [umm]
+  (if-errors-throw (umm-validation/validate umm)))
 
 (defn- delete-time-validation
   "Validates the concept delete-time.

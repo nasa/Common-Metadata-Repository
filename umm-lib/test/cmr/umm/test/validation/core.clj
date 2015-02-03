@@ -11,13 +11,13 @@
 (defn assert-valid
   "Asserts that the given umm model is valid."
   [umm]
-  (is (empty? (v/validate :echo10 umm))))
+  (is (empty? (v/validate umm))))
 
 (defn assert-invalid
   "Asserts that the given umm model is invalid and has the expected error messages."
-  [umm metadata-format expected-errors]
+  [umm expected-errors]
   (is (= (set expected-errors)
-         (set (v/validate metadata-format umm)))))
+         (set (v/validate umm)))))
 
 (defn coll-with-psas
   [psas]
@@ -37,21 +37,13 @@
     (testing "Valid spatial areas"
       (assert-valid (coll-with-geometries [valid-point]))
       (assert-valid (coll-with-geometries [valid-point valid-mbr])))
-    (testing "Invalid other formats"
-      (doseq [metadata-format [:dif :iso-smap :iso19115]]
-        (assert-invalid
-          (coll-with-geometries [invalid-point])
-          metadata-format
-          ["Spatial validation error: Point longitude [-181] must be within -180.0 and 180.0"])))
     (testing "Invalid single geometry"
       (assert-invalid
         (coll-with-geometries [invalid-point])
-        :echo10
         ["Spatial validation error: Point longitude [-181] must be within -180.0 and 180.0"]))
     (testing "Invalid multiple geometry"
       (assert-invalid
         (coll-with-geometries [valid-point invalid-point invalid-mbr])
-        :echo10
         ["Spatial validation error: The bounding rectangle north value [45] was less than the south value [46]"
          "Spatial validation error: Point longitude [-181] must be within -180.0 and 180.0"]))))
 
@@ -64,11 +56,8 @@
       (let [coll (coll-with-psas [{:name "foo"} {:name "foo"} {:name "bar"} {:name "bar"}
                                   {:name "charlie"}])]
         (assert-invalid
-          coll :echo10
-          ["AdditionalAttributes must be unique. This contains duplicates named [foo, bar]."])
-        (assert-invalid
-          coll :dif
-          ["AdditionalAttributes must be unique. This contains duplicates named [foo, bar]."])))))
+          coll
+          ["Product Specific Attributes must be unique. This contains duplicates named [foo, bar]."])))))
 
 (deftest collection-projects-validation
   (let [c1 (c/map->Project {:short-name "C1"})
@@ -81,14 +70,8 @@
       (testing "duplicate names"
         (let [coll (c/map->UmmCollection {:projects [c1 c1 c2 c2 c3]})]
           (assert-invalid
-            coll :echo10
-            ["Campaigns must be unique. This contains duplicates named [C1, C2]."])
-          (assert-invalid
-            coll :dif
-            ["Project must be unique. This contains duplicates named [C1, C2]."])
-          (assert-invalid
-            coll :iso19115
-            ["MI_Metadata/acquisitionInformation/MI_AcquisitionInformation/operation/MI_Operation must be unique. This contains duplicates named [C1, C2]."]))))))
+            coll
+            ["Projects must be unique. This contains duplicates named [C1, C2]."]))))))
 
 (deftest collection-platforms-validation
   (let [s1 (c/map->Sensor {:short-name "S1"})
@@ -114,21 +97,21 @@
                      {:platforms [(c/map->Platform {:short-name "P1"})
                                   (c/map->Platform {:short-name "P1"})]})]
           (assert-invalid
-            coll :echo10
+            coll
             ["Platforms must be unique. This contains duplicates named [P1]."])))
       (testing "duplicate platform characteristics names"
         (let [coll (c/map->UmmCollection
                      {:platforms [(c/map->Platform {:short-name "P1"
                                                     :characteristics [c1 c1]})]})]
           (assert-invalid
-            coll :echo10
-            ["Platform characteristics must be unique. This contains duplicates named [C1]."])))
+            coll
+            ["Characteristics must be unique. This contains duplicates named [C1]."])))
       (testing "duplicate instrument short names"
         (let [coll (c/map->UmmCollection
                      {:platforms [(c/map->Platform {:short-name "P1"
                                                     :instruments [i1 i1]})]})]
           (assert-invalid
-            coll :echo10
+            coll
             ["Instruments must be unique. This contains duplicates named [I1]."])))
       (testing "duplicate instrument characteristics names"
         (let [coll (c/map->UmmCollection
@@ -138,8 +121,8 @@
                                                      {:short-name "I1"
                                                       :characteristics [c1 c1]})]})]})]
           (assert-invalid
-            coll :echo10
-            ["Instrument characteristics must be unique. This contains duplicates named [C1]."])))
+            coll
+            ["Characteristics must be unique. This contains duplicates named [C1]."])))
       (testing "duplicate sensor short names"
         (let [coll (c/map->UmmCollection
                      {:platforms [(c/map->Platform
@@ -147,7 +130,7 @@
                                      :instruments [(c/map->Instrument {:short-name "I1"
                                                                        :sensors [s1 s1]})]})]})]
           (assert-invalid
-            coll :echo10
+            coll
             ["Sensors must be unique. This contains duplicates named [S1]."])))
       (testing "duplicate sensor characteristics names"
         (let [coll (c/map->UmmCollection
@@ -159,8 +142,8 @@
                                                                   {:short-name "S1"
                                                                    :characteristics [c2 c2]})]})]})]})]
           (assert-invalid
-            coll :echo10
-            ["Sensor characteristics must be unique. This contains duplicates named [C2]."])))
+            coll
+            ["Characteristics must be unique. This contains duplicates named [C2]."])))
       (testing "multiple errors"
         (let [coll (c/map->UmmCollection
                      {:platforms [(c/map->Platform
@@ -172,7 +155,7 @@
                                                    (c/map->Instrument {:short-name "I1"
                                                                        :sensors [s1 s2 s2]})]})]})]
           (assert-invalid
-            coll :echo10
+            coll
             ["Sensors must be unique. This contains duplicates named [S1]."
              "Sensors must be unique. This contains duplicates named [S2]."
              "Instruments must be unique. This contains duplicates named [I1]."
@@ -186,8 +169,8 @@
     (testing "duplicate names"
       (let [coll (c/map->UmmCollection {:associated-difs ["d1" "d2" "d1"]})]
         (assert-invalid
-          coll :echo10
-          ["AssociatedDIFs must be unique. This contains duplicates named [d1]."])))))
+          coll
+          ["Associated Difs must be unique. This contains duplicates named [d1]."])))))
 
 (defn- range-date-time
   [begin-date-time end-date-time]
@@ -217,7 +200,7 @@
       (let [r1 (range-date-time "1999-12-30T19:00:02Z" "1999-12-30T19:00:01Z")
             coll (coll-with-range-date-times [r1])]
         (assert-invalid
-          coll :echo10
+          coll
           ["BeginningDateTime [1999-12-30T19:00:02.000Z] must be no later than EndingDateTime [1999-12-30T19:00:01.000Z]"])))
 
     (testing "multiple errors"
@@ -225,7 +208,7 @@
             r2 (range-date-time "2000-12-30T19:00:02Z" "2000-12-30T19:00:01Z")
             coll (coll-with-range-date-times [r1 r2])]
         (assert-invalid
-          coll :echo10
+          coll
           ["BeginningDateTime [1999-12-30T19:00:02.000Z] must be no later than EndingDateTime [1999-12-30T19:00:01.000Z]"
            "BeginningDateTime [2000-12-30T19:00:02.000Z] must be no later than EndingDateTime [2000-12-30T19:00:01.000Z]"])))))
 
@@ -244,8 +227,8 @@
       (testing "duplicate names"
         (let [coll (c/map->UmmCollection {:related-urls [r1 r2 r2]})]
           (assert-invalid
-            coll :echo10
-            [(format "OnlineAccessURLs must be unique. This contains duplicates named [%s]." url)]))))))
+            coll
+            [(format "Related Urls must be unique. This contains duplicates named [%s]." url)]))))))
 
 (deftest collection-two-d-coordinate-systems-validation
   (let [t1 (c/map->TwoDCoordinateSystem {:name "T1"})
@@ -257,6 +240,6 @@
       (testing "duplicate names"
         (let [coll (c/map->UmmCollection {:two-d-coordinate-systems [t1 t1]})]
           (assert-invalid
-            coll :echo10
-            ["TwoDCoordinateSystems must be unique. This contains duplicates named [T1]."]))))))
+            coll
+            ["Two D Coordinate Systems must be unique. This contains duplicates named [T1]."]))))))
 
