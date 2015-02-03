@@ -445,4 +445,4 @@
     (testing "Mixed arity param results in 400 error"
       (is (= {:status 400
               :errors [(smsg/mixed-arity-parameter-msg :concept-id)]}
-             (search/make-raw-search-query :granule "?concept_id=G&concept_id[pattern]=true"))))))
+             (search/make-raw-search-query :granule ".json?concept_id=G&concept_id[pattern]=true"))))))

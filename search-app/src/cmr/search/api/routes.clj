@@ -14,6 +14,7 @@
             [cmr.common.cache :as cache]
             [cmr.common.services.errors :as svc-errors]
             [cmr.common.mime-types :as mt]
+            [cmr.common.services.mime-types-helper :as mth]
             [cmr.common.xml :as cx]
             [cmr.search.services.query-service :as query-svc]
             [cmr.system-trace.http :as http-trace]
@@ -57,20 +58,6 @@
 (def CORS_MAX_AGE_HEADER
   "This CORS header is to define how long in seconds the response of the preflight request can be cached"
   "Access-Control-Max-Age")
-
-(def extension->mime-type
-  "A map of URL file extensions to the mime type they represent."
-  {"json" "application/json"
-   "xml" "application/xml"
-   "echo10" "application/echo10+xml"
-   "iso" "application/iso19115+xml"
-   "iso19115" "application/iso19115+xml"
-   "iso_smap" "application/iso:smap+xml"
-   "dif" "application/dif+xml"
-   "csv" "text/csv"
-   "atom" "application/atom+xml"
-   "kml" "application/vnd.google-earth.kml+xml"
-   "opendata" "application/opendata+json"})
 
 (def search-result-supported-mime-types
   "The mime types supported by search."
@@ -163,7 +150,7 @@
   was passed."
   [search-path-w-extension]
   (when-let [extension (second (re-matches #"[^.]+(?:\.(.+))$" search-path-w-extension))]
-    (or (extension->mime-type extension)
+    (or (mt/format->mime-type (keyword extension))
         (svc-errors/throw-service-error
           :bad-request (format "The URL extension [%s] is not supported." extension)))))
 
@@ -185,7 +172,7 @@
      ;; This validate check retained here to fail early if search accept headers are
      ;; not in search-result-supported-mime-types.
      ;; Concept specific format validation done during query validation.
-     (mt/validate-request-mime-type mime-type valid-mime-types)
+     (mth/validate-request-mime-type mime-type valid-mime-types)
      ;; set the default format to xml
      (mt/mime-type->format mime-type default-mime-type))))
 

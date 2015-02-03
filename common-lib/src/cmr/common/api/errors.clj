@@ -1,6 +1,8 @@
 (ns cmr.common.api.errors
   (:require [cmr.common.log :refer [error]]
-            [clojure.data.xml :as x]))
+            [clojure.data.xml :as x]
+            [cmr.common.mime-types :as mt]
+            [cmr.common.config :as cfg]))
 
 (def type->http-status-code
   {:not-found 404
@@ -39,8 +41,23 @@
       (catch clojure.lang.ExceptionInfo e
         (let [data (ex-data e)]
           (if (:type data)
-            (let [accept-format (get-in request [:headers "accept"])
-                  xml-format? (when accept-format (re-find #"xml" accept-format))
+            (let [results-format (mt/get-results-format
+                                   (:uri request)
+                                   (:headers request)
+                                   ;; For the search application most routes default to XML format.
+                                   ;; All other applications default to json format.  Note that
+                                   ;; this approach to determining the correct default for a given
+                                   ;; route is brittle and could be difficult to maintain.
+                                   (if (and (=
+                                              (cfg/config-value
+                                                :search-port
+                                                3003
+                                                (fn [s] (Long. s)))
+                                              (:server-port request))
+                                            (not (re-find #"caches" (:uri request))))
+                                     "application/xml"
+                                     "application/json"))
+                  xml-format? (when results-format (re-find #"xml" results-format))
                   {:keys [type errors]} data
                   status-code (type->http-status-code type)
                   [content-type response-body] (response-type-body errors xml-format?)]

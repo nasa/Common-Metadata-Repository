@@ -83,7 +83,7 @@
       (testing "as extension"
         (is (= {:errors ["The mime type [application/iso:smap+xml] is not supported."],
                 :status 400}
-               (search/get-search-failure-data
+               (search/get-search-failure-xml-data
                  (search/find-concepts-in-format
                    nil :granule {} {:url-extension "iso_smap"}))))))
 
@@ -95,7 +95,7 @@
       (testing "as extension"
         (is (= {:errors ["The mime type [application/dif+xml] is not supported for granules."],
                 :status 400}
-               (search/get-search-failure-data
+               (search/get-search-failure-xml-data
                  (search/find-concepts-in-format
                    nil :granule {} {:url-extension "dif"}))))))
 
@@ -135,7 +135,7 @@
     (testing "invalid extension"
       (is (= {:errors ["The URL extension [echo11] is not supported."],
               :status 400}
-             (search/get-search-failure-data
+             (search/get-search-failure-xml-data
                (client/get (str (url/search-url :granule) ".echo11")
                            {:connection-manager (url/conn-mgr)})))))
 
