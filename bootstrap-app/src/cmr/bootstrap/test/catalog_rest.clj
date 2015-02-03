@@ -195,6 +195,7 @@
      :format "application/echo10+xml"
      :extra-fields {:short-name "short"
                     :version-id "V1"
+                    :entry-id "short_V1"
                     :entry-title "Entry 1"
                     :delete-time "2014-05-05T00:00:00Z"}})
 

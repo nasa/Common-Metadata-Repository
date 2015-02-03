@@ -152,13 +152,23 @@
                                           :connection-manager (conn/conn-mgr conn)})
         {:keys [status body]} response]
     (case status
-      404 (errors/throw-service-error
-            :not-found (str "Unable to find collections for search params: " (pr-str params)))
       200 (cheshire/decode body true)
       ;; default
       (errors/internal-error!
         (format "Collection search failed. status: %s body: %s"
                 status body)))))
+
+(defn find-visible-collections
+  "Returns the non-deleted collections with the highest revision-id
+  that matches the given parameters in metadata db."
+  [context params]
+  (let [coll-concepts (find-collections context params)]
+    ;; Find the latest version of the concepts that aren't deleted. There should be only one
+    (->> coll-concepts
+         (group-by :concept-id)
+         (map (fn [[concept-id concepts]]
+                (->> concepts (sort-by :revision-id) reverse first)))
+         (filter (complement :deleted)))))
 
 (defn get-expired-collection-concept-ids
   "Searches metadata db for collections in a provider that have expired and returns their concept ids."

@@ -42,6 +42,7 @@
                                  deleted INTEGER DEFAULT 0 NOT NULL,
                                  short_name VARCHAR(85) NOT NULL,
                                  version_id VARCHAR(80),
+                                 entry_id VARCHAR(255) NOT NULL,
                                  entry_title VARCHAR(1030) NOT NULL,
                                  delete_time TIMESTAMP WITH TIME ZONE,
                                  CONSTRAINT %s_pk PRIMARY KEY (id),

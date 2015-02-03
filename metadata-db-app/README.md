@@ -17,6 +17,7 @@
       "extra-fields": {
         "short-name": "short",
         "version-id": "V01",
+        "entry-id": "short_V01"
         "entry-title": "Dataset V01"
       }
     }
@@ -48,6 +49,7 @@
       "extra-fields": {
         "short-name": "short",
         "version-id": "V01",
+        "entry-id": "short_V01"
         "entry-title": "Dataset V01"
       }
      }
@@ -144,7 +146,7 @@ params: [concept] - revision-id optionally in concept
 returns: revision-id.  revision-id begins at 0.
 throws error if revision-id does not match what it will be when saved
 
-    curl -v -XPOST -H "Content-Type: application/json" -d '{"concept-type": "collection", "native-id": "native-id", "concept-id": "C1-PROV1", "provider-id": "PROV1", "metadata": "<Collection><ShortName>MINIMAL</ShortName></Collection>", "format": "application/echo10+xml", "extra-fields": {"short-name": "MINIMAL", "version-id": "V01", "entry-title": "native-id"}}' http://localhost:3001/concepts/
+    curl -v -XPOST -H "Content-Type: application/json" -d '{"concept-type": "collection", "native-id": "native-id", "concept-id": "C1-PROV1", "provider-id": "PROV1", "metadata": "<Collection><ShortName>MINIMAL</ShortName></Collection>", "format": "application/echo10+xml", "extra-fields": {"short-name": "MINIMAL", "version-id": "V01", "entry-id": "MINIMAL_V01", "entry-title": "native-id"}}' http://localhost:3001/concepts/
 
 ### GET /concepts/#concept-id
 

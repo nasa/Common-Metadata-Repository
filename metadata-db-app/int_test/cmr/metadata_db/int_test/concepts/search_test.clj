@@ -19,7 +19,7 @@
     (util/save-provider "PROV1")
     (util/save-provider "PROV2"))
 
-)
+  )
 
 (defn concepts-for-comparison
   "Removes revision-date from concepts so they can be compared."
@@ -114,6 +114,7 @@
         colls [coll1 coll2 coll3]
         [short1 short2 short3] (map #(get-in % [:extra-fields :short-name]) colls)
         [vid1 vid2 vid3] (map #(get-in % [:extra-fields :version-id]) colls)
+        [eid1 eid2 eid3] (map #(get-in % [:extra-fields :entry-id]) colls)
         [et1 et2 et3] (map #(get-in % [:extra-fields :entry-title]) colls)]
     (testing "find by provider-id, short-name, version id"
       (testing "find one"
@@ -133,6 +134,22 @@
              "PROV2" short1 vid1
              ;; Searching with an unknown provider id should just find nothing
              "PROVNONE" short1 vid1)))
+    (testing "find by provider-id, entry-id"
+      (testing "find one"
+        (is (= [coll2]
+               (-> (util/find-concepts :collection {:provider-id "PROV1"
+                                                    :entry-id eid2})
+                   :concepts
+                   concepts-for-comparison))))
+      (testing "find none"
+        (are [provider-id eid] (= {:status 200 :concepts []}
+                                  (util/find-concepts
+                                    :collection
+                                    {:provider-id provider-id :entry-id eid}))
+             "PROV1" "none"
+             "PROV2" eid1
+             ;; Searching with an unknown provider id should just find nothing
+             "PROVNONE" eid1)))
     (testing "find by provider-id, entry-title"
       (testing "find one"
         (is (= [coll2]

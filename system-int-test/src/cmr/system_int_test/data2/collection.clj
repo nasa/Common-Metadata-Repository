@@ -208,17 +208,22 @@
          attribs (merge required-extra-dif-fields attribs)]
      (collection attribs))))
 
+(defn- add-native-id
+  "Add native-id to concept if applicable, returns the concept"
+  [concept native-id]
+  (if native-id
+    (assoc concept :native-id native-id)
+    concept))
+
 (defn collection-for-ingest
   "Returns the collection for ingest with the given attributes"
   ([attribs]
    (collection-for-ingest attribs :echo10))
   ([attribs concept-format]
-   (let [{:keys [provider-id native-id]} attribs
-         provider-id (or provider-id "PROV1")
-         concept (-> attribs
-                     collection
-                     (d/item->concept concept-format)
-                     (assoc :provider-id provider-id))]
-     (if native-id
-       (assoc concept :native-id native-id)
-       concept))))
+   (let [{:keys [provider-id native-id entry-id]} attribs
+         provider-id (or provider-id "PROV1")]
+     (-> attribs
+         collection
+         (d/item->concept concept-format)
+         (assoc :provider-id provider-id)
+         (add-native-id native-id)))))

@@ -148,6 +148,13 @@
             (for [concept-id (set/difference (set concept-ids) (set (map first tuples)))]
               [concept-id 0]))))
 
+(defn- get-entry-id
+  "Returns the collection entry-id based on the given fields of a collection"
+  [mdb-format short-name version-id]
+  (if (= "application/dif+xml" mdb-format)
+    short-name
+    (str short-name "_" version-id)))
+
 (defmulti get-concept-from-catalog-rest
   "Retrieves a concept from the Catalog REST. Provider id and concept type are redundant given that
   the concept id is provided. They're included because they're available and would avoid having to
@@ -180,6 +187,7 @@
            :extra-fields {:short-name short_name
                           :entry-title dataset_id
                           :version-id version_id
+                          :entry-id (get-entry-id mdb-format short_name version_id)
                           :delete-time (when delete_time
                                          (mdb-concepts/oracle-timestamp->str-time conn delete_time))}
            :provider-id provider-id
@@ -187,7 +195,7 @@
           (warn (format "Skipping Catalog REST Item %s with unsupported xml_mime_type of %s"
                         concept-id xml_mime_type)))
         (warn (format "Skipping Catalog REST Item %s with delete time %s in the past"
-                        concept-id delete-time))))))
+                      concept-id delete-time))))))
 
 (defmethod get-concept-from-catalog-rest :granule
   [system provider-id concept-type concept-id revision-id]
@@ -262,15 +270,15 @@
       (debug "map-missing-items-to-concepts starting")
       (try
         (while-let [items (<! item-batch-chan)]
-          (debug "map-missing-items-to-concepts: Received" (count items) "items")
-          (doseq [[concept-id revision-id] (get-latest-concept-id-revision-ids
-                                             system provider-id concept-type (map first items))]
-            (debug "map-missing-items-to-concepts: Processing" concept-id "-" revision-id)
-            ;; get-concept-from-catalog-rest can return nil if the item is an unsupported XML mime
-            ;; type or we should skip it for other reasons
-            (when-let [concept (get-concept-from-catalog-rest
-                                 system provider-id concept-type concept-id (inc revision-id))]
-              (>! concepts-chan concept))))
+                   (debug "map-missing-items-to-concepts: Received" (count items) "items")
+                   (doseq [[concept-id revision-id] (get-latest-concept-id-revision-ids
+                                                      system provider-id concept-type (map first items))]
+                     (debug "map-missing-items-to-concepts: Processing" concept-id "-" revision-id)
+                     ;; get-concept-from-catalog-rest can return nil if the item is an unsupported XML mime
+                     ;; type or we should skip it for other reasons
+                     (when-let [concept (get-concept-from-catalog-rest
+                                          system provider-id concept-type concept-id (inc revision-id))]
+                       (>! concepts-chan concept))))
         (finally
           (async/close! concepts-chan)
           (async/close! item-batch-chan)
@@ -312,8 +320,8 @@
                          (log "starting")
                          (try
                            (while-let [concept (<!! concepts-chan)]
-                             (log "Inserting" (:concept-id concept) (:revision-id concept))
-                             (save-and-index-concept system concept))
+                                      (log "Inserting" (:concept-id concept) (:revision-id concept))
+                                      (save-and-index-concept system concept))
                            (finally
                              (async/close! concepts-chan)
                              (log "completed")))))]
@@ -353,8 +361,8 @@
   ;; updates idempotent.
   [(format "insert into sync_work (id, concept_id) select ROWNUM, concept_id from
            (select %s concept_id from %s where %s not in (select distinct concept_id from %s) union
-            select %s concept_id from %s where %s in
-             (select distinct concept_id from %s where deleted = 1))"
+           select %s concept_id from %s where %s in
+           (select distinct concept_id from %s where deleted = 1))"
            ;; First select
            (mu/concept-type->catalog-rest-id-field concept-type)
            (mu/catalog-rest-table system provider-id concept-type)
@@ -370,21 +378,21 @@
   [system provider-id concept-type {:keys [entry-title]}]
   (let [concept-clause (concept-matches-dataset-id-clause system provider-id concept-type)]
     [(format "insert into sync_work (id, concept_id) select ROWNUM, concept_id from
-           (select %s concept_id from %s where %s and %s not in (select distinct concept_id from %s ) union
-            select %s concept_id from %s where %s and %s in
+             (select %s concept_id from %s where %s and %s not in (select distinct concept_id from %s ) union
+             select %s concept_id from %s where %s and %s in
              (select distinct concept_id from %s where deleted = 1))"
-           ;; First select
-           (mu/concept-type->catalog-rest-id-field concept-type)
-           (mu/catalog-rest-table system provider-id concept-type)
-           concept-clause
-           (mu/concept-type->catalog-rest-id-field concept-type)
-           (tables/get-table-name provider-id concept-type)
-           ;; Second select
-           (mu/concept-type->catalog-rest-id-field concept-type)
-           (mu/catalog-rest-table system provider-id concept-type)
-           concept-clause
-           (mu/concept-type->catalog-rest-id-field concept-type)
-           (tables/get-table-name provider-id concept-type))
+             ;; First select
+             (mu/concept-type->catalog-rest-id-field concept-type)
+             (mu/catalog-rest-table system provider-id concept-type)
+             concept-clause
+             (mu/concept-type->catalog-rest-id-field concept-type)
+             (tables/get-table-name provider-id concept-type)
+             ;; Second select
+             (mu/concept-type->catalog-rest-id-field concept-type)
+             (mu/catalog-rest-table system provider-id concept-type)
+             concept-clause
+             (mu/concept-type->catalog-rest-id-field concept-type)
+             (tables/get-table-name provider-id concept-type))
      entry-title entry-title]))
 
 (defn- add-missing-to-work-table
@@ -517,9 +525,9 @@
       (debug "map-extra-items-batches-to-deletes starting")
       (try
         (while-let [items (<! item-batch-chan)]
-          (debug "map-extra-items-batches-to-deletes: Received" (count items) "items")
-          (doseq [[concept-id revision-id] items]
-            (>! tuples-chan [concept-id (inc revision-id)])))
+                   (debug "map-extra-items-batches-to-deletes: Received" (count items) "items")
+                   (doseq [[concept-id revision-id] items]
+                     (>! tuples-chan [concept-id (inc revision-id)])))
         (finally
           (async/close! tuples-chan)
           (async/close! item-batch-chan)
@@ -556,8 +564,8 @@
                          (log "starting")
                          (try
                            (while-let [[concept-id revision-id] (<!! tuples-chan)]
-                             (log "Deleting" concept-id "-" revision-id)
-                             (create-tombstone-and-unindex-concept system concept-id revision-id))
+                                      (log "Deleting" concept-id "-" revision-id)
+                                      (create-tombstone-and-unindex-concept system concept-id revision-id))
                            (finally
                              (async/close! tuples-chan)
                              (log "completed")))))]
