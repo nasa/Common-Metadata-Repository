@@ -198,6 +198,11 @@
        :concepts (parse-concepts response)}
       (assoc (parse-errors response) :status status))))
 
+(defn find-latest-concepts
+  "Make a get to retrieve the latest revision of concepts by parameters for a specific concept type"
+  [concept-type params]
+  (find-concepts concept-type (assoc params :latest true)))
+
 (defn get-expired-collection-concept-ids
   "Make a get to retrieve expired collection concept ids."
   [provider-id]

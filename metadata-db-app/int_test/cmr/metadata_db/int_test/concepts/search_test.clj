@@ -165,7 +165,21 @@
              "PROV1" "none"
              "PROV2" et1
              ;; Searching with an unknown provider id should just find nothing
-             "PROVNONE" et1)))))
+             "PROVNONE" et1))))
+
+  (let [coll4 (util/create-and-save-collection "PROV1" 4 3)
+        eid4 (get-in coll4 [:extra-fields :entry-id])]
+    (testing "find all revisions"
+      (is (= 3
+             (count (-> (util/find-concepts :collection {:provider-id "PROV1"
+                                                         :entry-id eid4})
+                        :concepts)))))
+    (testing "find the latest revision"
+      (is (= [coll4]
+             (-> (util/find-latest-concepts :collection {:provider-id "PROV1"
+                                                         :entry-id eid4})
+                 :concepts
+                 concepts-for-comparison))))))
 
 (deftest get-expired-collections-concept-ids
   (let [time-now (tk/now)

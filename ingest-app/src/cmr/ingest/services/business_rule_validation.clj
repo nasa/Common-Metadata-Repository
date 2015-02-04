@@ -4,7 +4,8 @@
             [cmr.common.time-keeper :as tk]
             [cmr.common.date-time-parser :as p]
             [cmr.common.services.errors :as err]
-            [cmr.transmit.metadata-db :as mdb]))
+            [cmr.transmit.metadata-db :as mdb]
+            [cmr.ingest.services.helper :as h]))
 
 (defn- delete-time-validation
   "Validates the concept delete-time.
@@ -38,7 +39,7 @@
          native-id :native-id} concept
         params {:provider-id provider-id
                 :entry-id entry-id}
-        mdb-concepts (mdb/find-visible-collections context params)]
+        mdb-concepts (h/find-visible-collections context params)]
     (when (> (count mdb-concepts) 1)
       (err/internal-error!
         (format "Found multiple collections on entry-id search with params: %s. Collections found: %s"

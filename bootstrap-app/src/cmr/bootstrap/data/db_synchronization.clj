@@ -151,7 +151,7 @@
 (defn- get-entry-id
   "Returns the collection entry-id based on the given fields of a collection"
   [mdb-format short-name version-id]
-  (if (= "application/dif+xml" mdb-format)
+  (if (or (= "application/dif+xml" mdb-format) (empty? version-id))
     short-name
     (str short-name "_" version-id)))
 

@@ -37,6 +37,10 @@
     [db params]
     "Finds concepts by the given parameters")
 
+  (find-latest-concepts
+    [db params]
+    "Finds the latest revision of concepts by the given parameters")
+
   (find-concepts-in-batches
     [db params batch-size]
     [db params batch-size start-index]

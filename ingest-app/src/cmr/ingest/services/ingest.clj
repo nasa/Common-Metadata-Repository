@@ -6,6 +6,7 @@
             [cmr.ingest.data.provider-acl-hash :as pah]
             [cmr.ingest.services.messages :as msg]
             [cmr.ingest.services.validation :as v]
+            [cmr.ingest.services.helper :as h]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.services.errors :as serv-errors]
             [cmr.common.services.messages :as cmsg]
@@ -43,7 +44,7 @@
   [context provider-id collection-ref]
   (let [params (util/remove-nil-keys (merge {:provider-id provider-id}
                                             collection-ref))
-        matching-concepts (mdb/find-visible-collections context params)]
+        matching-concepts (h/find-visible-collections context params)]
     (when (> (count matching-concepts) 1)
       (serv-errors/internal-error!
         (format (str "Found multiple possible parent collections for a granule in provider %s"

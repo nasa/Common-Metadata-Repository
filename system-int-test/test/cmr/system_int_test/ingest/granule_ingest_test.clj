@@ -22,14 +22,14 @@
 ;; See CMR-1104
 (deftest granule-referencing-collection-with-changing-concept-id-test
   (let [common-fields {:entry-title "coll1" :short-name "short1" :version-id "V1"}
-        orig-coll (dc/collection-for-ingest (merge common-fields {:native-id "native1"}))
+        orig-coll (dc/collection-concept (assoc common-fields :native-id "native1"))
         _ (ingest/ingest-concept orig-coll)
 
         ;; delete the collection
         deleted-response (ingest/delete-concept orig-coll)
 
         ;; Create collection again with same details but a different native id
-        new-coll (d/ingest "PROV1" (dc/collection (merge common-fields {:native-id "native2"})))
+        new-coll (d/ingest "PROV1" (dc/collection (assoc common-fields :native-id "native2")))
 
         ;; Create granules associated with the collection fields.
         gran1 (d/ingest "PROV1" (update-in (dg/granule new-coll) [:collection-ref]

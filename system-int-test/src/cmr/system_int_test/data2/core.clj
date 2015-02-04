@@ -42,11 +42,11 @@
   :granule)
 
 (defn item->concept
-  "Converts an UMM item to a concept map. Expects provider-id to be in the item"
+  "Converts an UMM item to a concept map. Default provider-id to PROV1 if not present."
   [item format-key]
   (let [format (mime-types/format->mime-type format-key)]
     (merge {:concept-type (item->concept-type item)
-            :provider-id (:provider-id item)
+            :provider-id (or (:provider-id item) "PROV1")
             :native-id (or (:native-id item) (item->native-id item))
             :metadata (umm/umm->xml item format-key)
             :format format}
