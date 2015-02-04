@@ -2,19 +2,6 @@
   "Provides functions for handling mime types."
   (:require [clojure.string :as str]))
 
-(def all-supported-mime-types
-  "A superset of all mime types supported by any CMR applications."
-  #{"application/xml"
-    "application/json"
-    "application/echo10+xml"
-    "application/dif+xml"
-    "application/atom+xml"
-    "application/iso19115+xml"
-    "application/iso:smap+xml"
-    "application/opendata+json"
-    "text/csv"
-    "application/vnd.google-earth.kml+xml"})
-
 (def base-mime-type-to-format
   "A map of base mime types to the format symbols supported"
   {"application/json" :json
@@ -43,6 +30,10 @@
    :kml "application/vnd.google-earth.kml+xml"
    :opendata "application/opendata+json"})
 
+(def all-supported-mime-types
+  "A superset of all mime types supported by any CMR applications."
+  (keys base-mime-type-to-format))
+
 (defn mime-type->format
   "Converts a mime-type into the format requested."
   ([mime-type]
@@ -67,8 +58,7 @@
         ;; Split mime-type string on commas
         mime-types (when mime-type-str (str/split (str/lower-case mime-type-str), #"[,]"))
         first-potential-mime-type (some (set mime-types) potential-mime-types)
-        accept-mime-type (if (= "*/*" orig-mime-type-str)
-                           nil
+        accept-mime-type (when-not (= "*/*" orig-mime-type-str)
                            (or first-potential-mime-type orig-mime-type-str))
         content-type-mime-type (when-not accept-mime-type (get headers "content-type"))]
     (or accept-mime-type content-type-mime-type)))

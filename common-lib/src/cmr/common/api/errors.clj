@@ -35,7 +35,7 @@
 (defn exception-handler
   "A ring exception handler that will handle errors thrown by the cmr.common.services.errors
   functions."
-  [f]
+  [f default-format-fn]
   (fn [request]
     (try (f request)
       (catch clojure.lang.ExceptionInfo e
@@ -44,19 +44,7 @@
             (let [results-format (mt/get-results-format
                                    (:uri request)
                                    (:headers request)
-                                   ;; For the search application most routes default to XML format.
-                                   ;; All other applications default to json format.  Note that
-                                   ;; this approach to determining the correct default for a given
-                                   ;; route is brittle and could be difficult to maintain.
-                                   (if (and (=
-                                              (cfg/config-value
-                                                :search-port
-                                                3003
-                                                (fn [s] (Long. s)))
-                                              (:server-port request))
-                                            (not (re-find #"caches" (:uri request))))
-                                     "application/xml"
-                                     "application/json"))
+                                   (default-format-fn (:uri request)))
                   xml-format? (when results-format (re-find #"xml" results-format))
                   {:keys [type errors]} data
                   status-code (type->http-status-code type)

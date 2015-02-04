@@ -90,7 +90,7 @@
 
 (defn make-api [system]
   (-> (build-routes system)
-      errors/exception-handler
+      (errors/exception-handler (fn [_] "application/json"))
       handler/site
       ring-json/wrap-json-response))
 

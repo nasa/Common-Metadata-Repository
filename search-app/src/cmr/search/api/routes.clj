@@ -411,11 +411,18 @@
         [(msg/mixed-arity-parameter-msg mixed-param)]))
     (f request)))
 
+(defn default-format-fn
+  "Determine the format that results should be returned in based on the URI."
+  [uri]
+  (if (re-find #"caches" uri)
+    "application/json"
+    "application/xml"))
+
 (defn make-api [system]
   (-> (build-routes system)
       (http-trace/build-request-context-handler system)
       handler/site
       mixed-arity-param-handler
       copy-of-body-handler
-      errors/exception-handler
+      (errors/exception-handler default-format-fn)
       ring-json/wrap-json-response))

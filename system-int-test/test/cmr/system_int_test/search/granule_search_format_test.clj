@@ -139,6 +139,29 @@
                (client/get (str (url/search-url :granule) ".echo11")
                            {:connection-manager (url/conn-mgr)})))))
 
+    (testing "invalid param defaults to XML error response"
+      (is (= {:errors ["Parameter [foo] was not recognized."],
+              :status 400}
+             (search/get-search-failure-xml-data
+               (client/get (str (url/search-url :granule) "?foo=bar")
+                           {:connection-manager (url/conn-mgr)})))))
+
+    (testing "invalid param with JSON accept header returns JSON error response"
+      (is (= {:errors ["Parameter [foo] was not recognized."],
+              :status 400}
+             (search/get-search-failure-data
+               (client/get (str (url/search-url :granule) "?foo=bar")
+                           {:accept :application/json
+                            :connection-manager (url/conn-mgr)})))))
+
+    (testing "format extension takes precedence over accept header"
+      (is (= {:errors ["Parameter [foo] was not recognized."],
+              :status 400}
+             (search/get-search-failure-data
+               (client/get (str (url/search-url :granule) ".json?foo=bar")
+                           {:accept :application/xml
+                            :connection-manager (url/conn-mgr)})))))
+
     (testing "reference XML"
       (let [refs (search/find-refs :granule {:granule-ur "g1"})
             location (:location (first (:refs refs)))]
