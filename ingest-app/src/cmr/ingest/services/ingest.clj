@@ -16,6 +16,7 @@
             [cmr.common.config :as cfg]
             [cmr.umm.core :as umm]
             [clojure.string :as string]
+            [cmr.message-queue.services.queue :as queue]
             [cmr.system-trace.core :refer [deftracefn]]))
 
 (def ingest-validation-enabled?
@@ -130,6 +131,12 @@
         revision-id (mdb/delete-concept context concept-id)]
     (indexer/delete-concept-from-index context concept-id revision-id)
     {:concept-id concept-id, :revision-id revision-id}))
+
+(deftracefn reset
+  "Resets the queue broker"
+  [context]
+  (let [queue-broker (get-in context [:system :queue-broker])]
+    (queue/reset queue-broker)))
 
 (deftracefn health
   "Returns the health state of the app."

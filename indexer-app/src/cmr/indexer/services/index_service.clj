@@ -130,24 +130,8 @@
         {:term {:provider-id provider-id}}))))
 
 (deftracefn reset
-  "Delegates reset elastic indices operation to index-set app as well as resetting caches and
-  restarting queue listener."
+  "Delegates reset elastic indices operation to index-set app as well as resetting caches"
   [context]
-  ; TODO figure out how to restart the queue listener to remove pending operations
-  ;; and to purge the queue
-
-  ; (let [s (:system context)
-  ;       queue-broker (get-in context [:system :queue-broker])
-  ;       queue-listener (get-in context [:system :queue-listener])
-  ;       queue-name (config/index-queue-name)
-  ;       queue-listener (lifecycle/stop queue-listener s)
-  ;       queue-broker (lifecycle/stop queue-broker s)
-  ;       queue-broker (lifecycle/start queue-broker s)]
-  ;   ;; purge the queue
-  ;   (queue/purge-queue queue-broker queue-name)
-  ;   ;; restart the queue-listener
-  ;   (lifecycle/start queue-listener s))
-
   (cache/reset-caches context)
   (es/reset-es-store context)
   (cache/reset-caches context))

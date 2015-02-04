@@ -16,6 +16,7 @@
             [cmr.metadata-db.services.concept-service :as mdb-service]
             [cmr.index-set.services.index-service :as index-set-service]
             [cmr.indexer.services.index-service :as indexer-service]
+            [cmr.ingest.services.ingest :as ingest-service]
             [cmr.search.services.query-service :as search-service]
             [cmr.mock-echo.api.routes :as mock-echo-api]
             [cmr.common.cache :as cache]))
@@ -49,6 +50,7 @@
   {:metadata-db mdb-service/reset
    ;; The index set app is not reset as part of this because the indexer will handle it.
    :indexer indexer-service/reset
+   :ingest ingest-service/reset
    :search cache/reset-caches
    :mock-echo mock-echo-api/reset})
 
