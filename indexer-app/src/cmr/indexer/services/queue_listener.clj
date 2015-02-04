@@ -30,8 +30,8 @@
 
 (defn start-queue-message-handler
   "Subscribe to messages on the indexing queue."
-  [context]
+  [context message-handler]
   (let [queue-broker (get-in context [:system :queue-broker])
         queue-name (config/index-queue-name)]
 
-    (queue/subscribe queue-broker queue-name #(handle-index-action context %) {})))
+    (queue/subscribe queue-broker queue-name #(message-handler context %) {})))

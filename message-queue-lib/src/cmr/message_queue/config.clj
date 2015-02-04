@@ -18,4 +18,6 @@
 
 (def rabbit-mq-ttls
   "The Time-To-Live (TTL) for each retry queue (in seconds)."
-  (cfg/config-value-fn :rabbit-mq-ttls "[5,50, 500, 5000, 50000]" #(json/decode ^String %)))
+  ;(cfg/config-value-fn :rabbit-mq-ttls "[5,50, 500, 5000, 50000]" #(json/decode ^String %)))
+  (cfg/config-value-fn :rabbit-mq-ttls "[1,1, 1, 1, 1]" #(json/decode ^String %)))
+

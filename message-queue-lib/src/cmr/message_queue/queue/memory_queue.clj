@@ -72,6 +72,24 @@
   (let [queue-map @(:queue-map-atom queue-broker)]
     (get queue-map queue-name)))
 
+(defn purge-queue
+  "Remove all the messages on the queue"
+    [broker queue-name]
+    (let [[queue _](named-queue broker queue-name)]
+      (.clear queue)))
+
+(defn delete-queue
+  "Remove a queue and all its messages"
+    [broker queue-name]
+    ;; get a reference to the queue so we can access it even after we remove it from the map
+    (let [queue-map-atom (:queue-map-atom broker)
+          [queue num-listeners] (named-queue broker queue-name)]
+      ;; remove it from the map so no new consumers will start listening to it
+      (swap! queue-map-atom (fn [queue-map] (dissoc queue-map queue-name)))
+      ;; now close all the listeners - TODO fix race condition of consumer getting added
+      ;; after we read num-listeners above
+      (doseq [n (range 0 num-listeners)]
+        (.put queue {:action :quit}))))
 
 (defrecord MemoryQueueBroker
   [
@@ -109,7 +127,7 @@
     (when @(:running-atom this)
       (info "Stopping memory queue and removing all queues")
       (doseq [queue-name (keys @(:queue-map-atom this))]
-        (queue/delete-queue this queue-name))
+        (delete-queue this queue-name))
       (swap! (:running-atom this) (fn [_] false))
       this))
 
@@ -145,26 +163,9 @@
     (let [[queue _] (named-queue this queue-name)]
       (.size queue)))
 
-  (purge-queue
-    [this queue-name]
-    (let [[queue _](named-queue this queue-name)]
-      (.clear queue)))
-
-  (delete-queue
-    [this queue-name]
-    ;; get a reference to the queue so we can access it even after we remove it from the map
-    (let [queue-map-atom (:queue-map-atom this)
-          [queue num-listeners] (named-queue this queue-name)]
-      ;; remove it from the map so no new consumers will start listening to it
-      (swap! queue-map-atom (fn [queue-map] (dissoc queue-map queue-name)))
-      ;; now close all the listeners - TODO fix race condition of consumer getting added
-      ;; after we read num-listeners above
-      (doseq [n (range 0 num-listeners)]
-        (.put queue {:action :quit}))))
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 
 (defn create-queue-broker
   "Creates a simple in-memory queue broker"

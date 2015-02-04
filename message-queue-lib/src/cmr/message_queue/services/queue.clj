@@ -5,6 +5,13 @@
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.services.errors :as errors]))
 
+(defn retry-limit-met?
+  "Determine whether or not the given message has met (or exceeded)
+   the number of allowed retries"
+  [msg retry-limit]
+  (when-let [retry-count (:retry-count msg)]
+    (>= retry-count retry-limit)))
+
 (defprotocol Queue
   "Functions for adding messages to a message queue"
 
@@ -28,13 +35,9 @@
     [this queue-name]
     "Returns the number of messages on the given queue")
 
-  (purge-queue
-    [this queue-name]
-    "Removes all the messages on a queue")
-
-  (delete-queue
-    [this queue-name]
-    "Deletes the queue with the given name"))
+  (reset
+    [this]
+    "Reset the broker, deleting any queues and any queued messages"))
 
 (defrecord QueueListener
   [

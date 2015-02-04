@@ -22,6 +22,11 @@
   []
   (:conn-mgr (s/system)))
 
+(defn wait-for-indexing-url
+  "The wait-for-indexing url on the dev system control api."
+  []
+  (format "http://localhost:%s/wait-for-indexing" dev-system-port))
+
 (defn dev-system-reset-url
   "The reset url on the dev system control api."
   []

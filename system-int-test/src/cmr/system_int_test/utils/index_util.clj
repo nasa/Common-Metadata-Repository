@@ -16,7 +16,7 @@
   []
   (when (and (te/real-database?)
              (config/use-index-queue?))
-    (queue/wait-for-index-queue))
+    (client/post (url/wait-for-indexing-url) {:connection-manager (url/conn-mgr)}))
   (refresh-elastic-index))
 
 

@@ -39,7 +39,7 @@
   (let [metadata-db (-> (mdb-system/create-system "metadata-db-in-bootstrap-pool")
                         (dissoc :log :web :scheduler))
         indexer (-> (idx-system/create-system)
-                    (dissoc :log :web)
+                    (dissoc :log :web :queue-broker :queue-listener)
                     ;; Setting the parent-collection-cache to cache parent collection umm
                     ;; of granules during bulk indexing.
                     (assoc-in [:caches g/parent-collection-cache-key]

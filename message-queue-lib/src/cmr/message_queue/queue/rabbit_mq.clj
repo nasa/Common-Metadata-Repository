@@ -52,7 +52,7 @@
   "Retry a message if it has not already exceeded the allowable retries"
   [queue-broker ch queue-name routing-key msg delivery-tag resp]
   (let [repeat-count (get msg :repeat-count 0)]
-    (if (> (inc repeat-count) (count (config/rabbit-mq-ttls)))
+    (if (queue/retry-limit-met? msg (count (config/rabbit-mq-ttls)))
       (do
         ;; give up
         (warn "Max retries exceeded for processing message:" (pr-str msg))
@@ -108,11 +108,11 @@
                                   ;; bad data - nack it
                                   (warn "Rejecting bad data:" (pr-str (:message resp)))
                                   (lb/nack ch delivery-tag false false))))
-                      (catch Exception e
+                      (catch Throwable e
                         (error "Message processing failed for message" (pr-str msg) "with error:"
-                               (.gettMessage e))
+                               (.getMessage e))
                         (attempt-retry queue-broker ch queue-name routing-key msg delivery-tag
-                                       {:message (.gettMessage e)})))))]
+                                       {:message (.getMessage e)})))))]
     ;; By default, RabbitMQ uses a round-robin approach to send messages to listeners. This can
     ;; lead to stalls as workers wait for other workers to complete. Setting QoS (prefetch) to 1
     ;; prevents this.
@@ -127,14 +127,7 @@
   'opts' - Langhor configuration parameters for the queue
   (see http://reference.clojurerabbitmq.info/langohr.queue.html)"
   [ch queue-name opts]
-  ;; There is no built in check for a queue's existence, so we use status to determine if the queue
-  ;; already exists - this throws an IOException if not.
-  (try
-    (lq/status ch queue-name)
-    (info "Queue" queue-name "already exists")
-    (catch IOException e
-      (lq/declare ch queue-name opts)
-      (info "Created queue" queue-name))))
+  (lq/declare ch queue-name opts))
 
 (defrecord RabbitMQBroker
   [
@@ -178,7 +171,7 @@
           _ (lcf/select pub-ch)
           this (assoc this :conn conn :pub-ch pub-ch :running? true)]
       (info "RabbitMQ connection opened")
-      (doseq [queue-name (:required-queues this)]
+      (doseq [queue-name (:persistent-queues this)]
         (queue/create-queue this queue-name))
       this))
 
@@ -229,25 +222,32 @@
     (debug "Getting message count for queue" queue-name " on channel" pub-ch)
     (lq/message-count pub-ch queue-name))
 
-  (purge-queue
-    [this queue-name]
+  (reset
+    [this]
+    (debug "Resetting RabbitMQ")
+    ;; TODO reset RabbitMQ
+    )
+)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+  (defn purge-queue
+    "Remove all messages from a queue and the associated wait queues"
+    [broker queue-name]
     (info "Purging all messages from queue" queue-name)
-    (lq/purge pub-ch queue-name)
+    (lq/purge (:pub-ch broker) queue-name)
     (doseq [wait-queue-num (range 1 (inc (count (config/rabbit-mq-ttls))))
             :let [ttl (wait-queue-ttl wait-queue-num)
                   wq (wait-queue-name queue-name wait-queue-num)]]
       (debug "Purging messages from wait queue" wq)
-      (lq/purge pub-ch wq)))
+      (lq/purge (:pub-ch broker) wq)))
 
-  (delete-queue
-    [this queue-name]
-    (lq/delete pub-ch queue-name)
+  (defn delete-queue
+    [broker queue-name]
+    (lq/delete (:pub-ch broker) queue-name)
     (doseq [wait-queue-num (range 1 (inc (count (config/rabbit-mq-ttls))))
             :let [ttl (wait-queue-ttl wait-queue-num)
                   wq (wait-queue-name queue-name wait-queue-num)]]
-      (lq/delete pub-ch wq)))
-)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+      (lq/delete (:pub-ch broker) wq)))
 
   (defn create-queue-broker
     "Create a RabbitMQBroker"
@@ -263,7 +263,8 @@
                                            :port (config/rabbit-mq-port)
                                            :username (config/rabbit-mq-username)
                                            :password (config/rabbit-mq-password)
-                                           :queues ["test.simple"]})]
+                                           ;:queues ["test.simple"]})]
+                                           })]
                (lifecycle/start q {})))
 
       (defn test-message-handler
@@ -288,9 +289,13 @@
 
       )
 
+    (queue/create-queue q "cmr_index.queue")
+
     (queue/purge-queue q "test.simple")
 
     (queue/message-count q "test.simple")
+
+    (queue/delete-queue q "cmr_index.queue")
 
     (queue/purge-queue q "cmr_index.queue")
 

@@ -14,7 +14,6 @@
                                {:basic-auth ["cmr" "cmr"]})
                    :body
                    (json/decode true))]
-    (debug status)
     (reduce (fn [total, queue-status]
               (let [{:keys [name messages]} queue-status]
                 (if (re-find #"cmr_index*" name)
@@ -26,6 +25,7 @@
 (defn- wait-for-queue
   "Repeatedly checks to see if the given queue is empty, sleeping in between checks"
   [queue-broker queue-name]
+  (Thread/sleep 2000)
   (loop [msg-count (queue-message-count "cmr_index")]
     (when (> msg-count 0)
       (do (debug "Queue has" msg-count " messages")

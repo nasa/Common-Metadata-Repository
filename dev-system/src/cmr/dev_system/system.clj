@@ -16,8 +16,14 @@
             [cmr.spatial.dev.viz-helper :as viz-helper]
             [cmr.elastic-utils.embedded-elastic-server :as elastic-server]
             [cmr.common.config :as config]
+            [cmr.indexer.config :as iconfig]
+            [cmr.indexer.services.queue-listener :as ql]
+            [cmr.message-queue.config :as rmq-conf]
             [cmr.message-queue.queue.memory-queue :as memory-queue]
+            [cmr.message-queue.queue.rabbit-mq :as rmq]
+            [cmr.dev-system.queue-broker-wrapper :as wrapper]
             [cmr.dev-system.control :as control]
+            [cmr.message-queue.services.queue :as queue]
             [cmr.common.api.web-server :as web]))
 
 (def app-control-functions
@@ -104,15 +110,29 @@
 
 (defmethod create-system :external-dbs
   [type]
-  (let [control-server (web/create-web-server 2999 control/make-api use-compression? use-access-log?)]
+  (let [control-server (web/create-web-server 2999 control/make-api use-compression? use-access-log?)
+        queue-broker (rmq/create-queue-broker {:host (rmq-conf/rabbit-mq-host)
+                                                     :port (rmq-conf/rabbit-mq-port)
+                                                     :username (rmq-conf/rabbit-mq-username)
+                                                     :password (rmq-conf/rabbit-mq-password)
+                                                     :queues [(iconfig/index-queue-name)]})
+        broker-wrapper (wrapper/create-queue-broker-wrapper queue-broker)
+        listener-start-fn #(ql/start-queue-message-handler
+                             %
+                             (wrapper/handler-wrapper broker-wrapper ql/handle-index-action))
+        queue-listener (queue/create-queue-listener
+                        {:num-workers 5
+                         :start-function listener-start-fn})]
     {:apps {:mock-echo (mock-echo-system/create-system)
             :metadata-db (mdb-system/create-system)
             :bootstrap (bootstrap-system/create-system)
-            :indexer (indexer-system/create-system)
+            :indexer (assoc (indexer-system/create-system)
+                            :queue-broker broker-wrapper
+                            :queue-listener queue-listener)
             :index-set (index-set-system/create-system)
-            :ingest (ingest-system/create-system)
+            :ingest (assoc (ingest-system/create-system) :queue-broker broker-wrapper)
             :search (search-system/create-system)}
-     :pre-components {}
+     :pre-components {:broker-wrapper broker-wrapper}
      :post-components {
                        ; :vdd-server (viz-helper/create-viz-server)
                        :control-server control-server
@@ -141,6 +161,7 @@
                        #(try
                           (lifecycle/start % system)
                           (catch Exception e
+                            (error e "Failure during startup")
                             (stop-components (stop-apps system) :pre-components)
                             (stop-components (stop-apps system) :post-components)
                             (throw e)))))
@@ -157,6 +178,7 @@
                               (when %
                                 (start-fn %))
                               (catch Exception e
+                                (error e "Failure during startup")
                                 (stop-components (stop-apps system) :pre-components)
                                 (stop-components (stop-apps system) :post-components)
                                 (throw e))))))

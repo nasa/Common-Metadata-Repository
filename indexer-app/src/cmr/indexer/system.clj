@@ -60,7 +60,9 @@
                                                      :queues [(config/index-queue-name)]}))
              :queue-listener (when (config/use-index-queue?)
                                (queue/create-queue-listener {:num-workers 5
-                                                         :start-function ql/start-queue-message-handler}))}]
+                                                         :start-function #(ql/start-queue-message-handler
+                                                                            %
+                                                                            ql/handle-index-action)}))}]
     (transmit-config/system-with-connections sys [:metadata-db :index-set :echo-rest])))
 
 (defn start

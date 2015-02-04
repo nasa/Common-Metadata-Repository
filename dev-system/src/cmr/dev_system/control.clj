@@ -10,6 +10,7 @@
             [cmr.common.api.errors :as errors]
             [cmr.transmit.echo.acls :as echo-acls]
             [cmr.search.data.elastic-search-index :as es]
+            [cmr.dev-system.queue-broker-wrapper :as wrapper]
 
             ;; Services for reseting
             [cmr.metadata-db.services.concept-service :as mdb-service]
@@ -73,6 +74,13 @@
       (doseq [[service-name reset-fn] service-reset-fns]
         (reset-fn (app-context system service-name)))
       (debug "dev system /reset complete")
+      {:status 200})
+
+    (POST "/wait-for-indexing" []
+      (debug "dev system /wait-for-indexing")
+      (let [broker-wrapper (get-in system [:pre-components :broker-wrapper])]
+        (wrapper/wait-for-indexing broker-wrapper))
+      (debug "indexing complete")
       {:status 200})
 
     (POST "/clear-cache" []
