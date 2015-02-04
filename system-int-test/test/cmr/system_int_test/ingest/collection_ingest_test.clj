@@ -82,8 +82,7 @@
 
     (testing "ingest collection with entry-id used by a different collection within the same provider is invalid"
       (let [{:keys [status errors]} (ingest/ingest-concept (assoc coll1 :native-id "Atlantic-2"))]
-        (is (= [400 [(str "Failed entry-id validation: collection with native-id [Atlantic-1] already "
-                          "exists for {:provider-id \"PROV1\", :entry-id \"OceanTemperature_1\"}")]]
+        (is (= [400 ["The EntryId was not unique. The collection with native id [Atlantic-2] in provider [PROV1] had the same EntryId [OceanTemperature_1]."]]
                [status errors]))))
 
     (testing "ingest collection with entry-id used by a collection in a different provider is OK"
@@ -95,7 +94,7 @@
             _ (ingest/ingest-concept coll3)
             {:keys [status errors]} (ingest/ingest-concept coll4)]
         (is (= [400 ["Concept-id [C1111-PROV1] does not match the existing concept-id [C1000-PROV1] for native-id [Atlantic-1]"
-                     "Failed entry-id validation: collection with native-id [Atlantic-3] already exists for {:provider-id \"PROV1\", :entry-id \"OceanTemperature_3\"}"]]
+                     "The EntryId was not unique. The collection with native id [Atlantic-1] in provider [PROV1] had the same EntryId [OceanTemperature_3]."]]
                [status errors]))))))
 
 ;; Ingest same concept N times and verify same concept-id is returned and
