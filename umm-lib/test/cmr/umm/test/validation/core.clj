@@ -5,7 +5,8 @@
             [cmr.umm.collection :as c]
             [cmr.spatial.mbr :as m]
             [cmr.spatial.point :as p]
-            [cmr.common.date-time-parser :as dtp]))
+            [cmr.common.date-time-parser :as dtp]
+            [cmr.common.services.errors :as e]))
 
 
 (defn assert-valid
@@ -14,9 +15,19 @@
   (is (empty? (v/validate umm))))
 
 (defn assert-invalid
-  "Asserts that the given umm model is invalid and has the expected error messages."
+  "Asserts that the given umm model is invalid and has the expected error messages.
+  field-path is the path within the metadata to the error. expected-errors is a list of string error
+  messages."
+  [umm field-path expected-errors]
+  (is (= [(e/map->PathErrors {:path field-path
+                              :errors expected-errors})]
+         (v/validate umm))))
+
+(defn assert-multiple-invalid
+  "Asserts there are multiple errors at different paths invalid with the UMM. Expected errors
+  should be a list of maps with path and errors."
   [umm expected-errors]
-  (is (= (set expected-errors)
+  (is (= (set (map e/map->PathErrors expected-errors))
          (set (v/validate umm)))))
 
 (defn coll-with-psas
@@ -40,12 +51,15 @@
     (testing "Invalid single geometry"
       (assert-invalid
         (coll-with-geometries [invalid-point])
+        [:spatial-coverage :geometries 0]
         ["Spatial validation error: Point longitude [-181] must be within -180.0 and 180.0"]))
     (testing "Invalid multiple geometry"
-      (assert-invalid
-        (coll-with-geometries [valid-point invalid-point invalid-mbr])
-        ["Spatial validation error: The bounding rectangle north value [45] was less than the south value [46]"
-         "Spatial validation error: Point longitude [-181] must be within -180.0 and 180.0"]))))
+      (let [expected-errors [{:path [:spatial-coverage :geometries 1]
+                              :errors ["Spatial validation error: Point longitude [-181] must be within -180.0 and 180.0"]}
+                             {:path [:spatial-coverage :geometries 2]
+                              :errors ["Spatial validation error: The bounding rectangle north value [45] was less than the south value [46]"]}]]
+        (assert-multiple-invalid (coll-with-geometries [valid-point invalid-point invalid-mbr])
+                                 expected-errors)))))
 
 (deftest collection-product-specific-attributes-validation
   (testing "valid product specific attributes"
@@ -57,6 +71,7 @@
                                   {:name "charlie"}])]
         (assert-invalid
           coll
+          [:product-specific-attributes]
           ["Product Specific Attributes must be unique. This contains duplicates named [foo, bar]."])))))
 
 (deftest collection-projects-validation
@@ -71,7 +86,9 @@
         (let [coll (c/map->UmmCollection {:projects [c1 c1 c2 c2 c3]})]
           (assert-invalid
             coll
+            [:projects]
             ["Projects must be unique. This contains duplicates named [C1, C2]."]))))))
+
 
 (deftest collection-platforms-validation
   (let [s1 (c/map->Sensor {:short-name "S1"})
@@ -98,6 +115,7 @@
                                   (c/map->Platform {:short-name "P1"})]})]
           (assert-invalid
             coll
+            [:platforms]
             ["Platforms must be unique. This contains duplicates named [P1]."])))
       (testing "duplicate platform characteristics names"
         (let [coll (c/map->UmmCollection
@@ -105,6 +123,7 @@
                                                     :characteristics [c1 c1]})]})]
           (assert-invalid
             coll
+            [:platforms 0 :characteristics]
             ["Characteristics must be unique. This contains duplicates named [C1]."])))
       (testing "duplicate instrument short names"
         (let [coll (c/map->UmmCollection
@@ -112,6 +131,7 @@
                                                     :instruments [i1 i1]})]})]
           (assert-invalid
             coll
+            [:platforms 0 :instruments]
             ["Instruments must be unique. This contains duplicates named [I1]."])))
       (testing "duplicate instrument characteristics names"
         (let [coll (c/map->UmmCollection
@@ -122,6 +142,7 @@
                                                       :characteristics [c1 c1]})]})]})]
           (assert-invalid
             coll
+            [:platforms 0 :instruments 0 :characteristics]
             ["Characteristics must be unique. This contains duplicates named [C1]."])))
       (testing "duplicate sensor short names"
         (let [coll (c/map->UmmCollection
@@ -131,6 +152,7 @@
                                                                        :sensors [s1 s1]})]})]})]
           (assert-invalid
             coll
+            [:platforms 0 :instruments 0 :sensors]
             ["Sensors must be unique. This contains duplicates named [S1]."])))
       (testing "duplicate sensor characteristics names"
         (let [coll (c/map->UmmCollection
@@ -143,6 +165,7 @@
                                                                    :characteristics [c2 c2]})]})]})]})]
           (assert-invalid
             coll
+            [:platforms 0 :instruments 0 :sensors 0 :characteristics]
             ["Characteristics must be unique. This contains duplicates named [C2]."])))
       (testing "multiple errors"
         (let [coll (c/map->UmmCollection
@@ -153,13 +176,16 @@
                                      :instruments [(c/map->Instrument {:short-name "I1"
                                                                        :sensors [s1 s1]})
                                                    (c/map->Instrument {:short-name "I1"
-                                                                       :sensors [s1 s2 s2]})]})]})]
-          (assert-invalid
-            coll
-            ["Sensors must be unique. This contains duplicates named [S1]."
-             "Sensors must be unique. This contains duplicates named [S2]."
-             "Instruments must be unique. This contains duplicates named [I1]."
-             "Platforms must be unique. This contains duplicates named [P1]."]))))))
+                                                                       :sensors [s1 s2 s2]})]})]})
+              expected-errors [{:path [:platforms 1 :instruments 0 :sensors]
+                                :errors ["Sensors must be unique. This contains duplicates named [S1]."]}
+                               {:path [:platforms 1 :instruments 1 :sensors]
+                                :errors ["Sensors must be unique. This contains duplicates named [S2]."]}
+                               {:path [:platforms 1 :instruments]
+                                :errors ["Instruments must be unique. This contains duplicates named [I1]."]}
+                               {:path [:platforms]
+                                :errors ["Platforms must be unique. This contains duplicates named [P1]."]}]]
+          (assert-multiple-invalid coll expected-errors))))))
 
 (deftest collection-associated-difs-validation
   (testing "valid associated difs"
@@ -170,6 +196,7 @@
       (let [coll (c/map->UmmCollection {:associated-difs ["d1" "d2" "d1"]})]
         (assert-invalid
           coll
+          [:associated-difs]
           ["Associated Difs must be unique. This contains duplicates named [d1]."])))))
 
 (defn- range-date-time
@@ -201,16 +228,21 @@
             coll (coll-with-range-date-times [r1])]
         (assert-invalid
           coll
+          [:temporal :range-date-times 0]
           ["BeginningDateTime [1999-12-30T19:00:02.000Z] must be no later than EndingDateTime [1999-12-30T19:00:01.000Z]"])))
 
     (testing "multiple errors"
       (let [r1 (range-date-time "1999-12-30T19:00:02Z" "1999-12-30T19:00:01Z")
             r2 (range-date-time "2000-12-30T19:00:02Z" "2000-12-30T19:00:01Z")
             coll (coll-with-range-date-times [r1 r2])]
-        (assert-invalid
+        (assert-multiple-invalid
           coll
-          ["BeginningDateTime [1999-12-30T19:00:02.000Z] must be no later than EndingDateTime [1999-12-30T19:00:01.000Z]"
-           "BeginningDateTime [2000-12-30T19:00:02.000Z] must be no later than EndingDateTime [2000-12-30T19:00:01.000Z]"])))))
+          [{:path [:temporal :range-date-times 0],
+            :errors
+            ["BeginningDateTime [1999-12-30T19:00:02.000Z] must be no later than EndingDateTime [1999-12-30T19:00:01.000Z]"]}
+           {:path [:temporal :range-date-times 1],
+            :errors
+            ["BeginningDateTime [2000-12-30T19:00:02.000Z] must be no later than EndingDateTime [2000-12-30T19:00:01.000Z]"]}])))))
 
 (deftest collection-online-access-urls-validation
   (let [url "http://example.com/url2"
@@ -228,6 +260,7 @@
         (let [coll (c/map->UmmCollection {:related-urls [r1 r2 r2]})]
           (assert-invalid
             coll
+            [:related-urls]
             [(format "Related Urls must be unique. This contains duplicates named [%s]." url)]))))))
 
 (deftest collection-two-d-coordinate-systems-validation
@@ -241,5 +274,6 @@
         (let [coll (c/map->UmmCollection {:two-d-coordinate-systems [t1 t1]})]
           (assert-invalid
             coll
+            [:two-d-coordinate-systems]
             ["Two D Coordinate Systems must be unique. This contains duplicates named [T1]."]))))))
 

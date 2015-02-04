@@ -18,6 +18,10 @@
     (ingest/reset)
     (ingest/create-provider "provguid1" "PROV1"))
 
+  (d/ingest "PROV1" (dc/collection {:product-specific-attributes
+                                    [(dc/psa "bool" :boolean true)
+                                     (dc/psa "bool" :boolean true)]}) :echo10)
+
   )
 
 (deftest validation-endpoint-test
@@ -65,12 +69,13 @@
                                                 :geometries shapes})}))))
 
 (defn assert-invalid
-  ([coll-attributes errors]
-   (assert-invalid coll-attributes errors :echo10))
-  ([coll-attributes errors metadata-format]
+  ([coll-attributes field-path errors]
+   (assert-invalid coll-attributes field-path errors :echo10))
+  ([coll-attributes field-path errors metadata-format]
    (let [response (d/ingest "PROV1" (dc/collection coll-attributes) metadata-format)]
      (is (= {:status 400
-             :errors errors}
+             :errors [{:path field-path
+                       :errors errors}]}
             (select-keys response [:status :errors]))))))
 
 (defn assert-valid
@@ -86,6 +91,7 @@
      (assert-invalid {:spatial-coverage (dc/spatial {:gsr coord-sys
                                                      :sr coord-sys
                                                      :geometries shapes})}
+                     ["SpatialCoverage" "Geometries" "0"]
                      errors
                      metadata-format))))
 
@@ -105,9 +111,11 @@
       {:product-specific-attributes
        [(dc/psa "bool" :boolean true)
         (dc/psa "bool" :boolean true)]}
+      ["ProductSpecificAttributes"]
       ["Product Specific Attributes must be unique. This contains duplicates named [bool]."]))
   (testing "Spatial validation"
     (testing "geodetic polygon"
+      ;; Invalid points are caught in the schema validation
       (assert-invalid-spatial
         :geodetic
         [(polygon 180 90, -180 90, -180 -90, 180 -90, 180 90)]
@@ -146,13 +154,6 @@
         [(m/mbr -180 45 180 46)]
         ["Spatial validation error: The bounding rectangle north value [45] was less than the south value [46]"]))
 
-    (testing "point"
-      (assert-invalid-spatial
-        :geodetic
-        [(p/point 185, 90)]
-        ;; Invalid points are caught in the schema validation
-        ["Line 1 - cvc-maxInclusive-valid: Value '185' is not facet-valid with respect to maxInclusive '180.0' for type 'Longitude'."
-         "Line 1 - cvc-type.3.1.3: The value '185' of element 'PointLongitude' is not valid."]))
 
     ;; TODO Add tests for validation of points with all formats.
     ;; Add tests for validation of another spatial type with all formats.

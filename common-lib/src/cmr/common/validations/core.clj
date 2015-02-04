@@ -54,7 +54,7 @@
     (sequential? validation) (seq-of-validations validation)
     :else validation))
 
-(defn- humanize-field
+(defn humanize-field
   "Converts a keyword to a humanized field name"
   [field]
   (when field
@@ -62,16 +62,20 @@
          (map str/capitalize)
          (str/join " "))))
 
+(defn create-error-message
+  "Formats a single error message using the field path and the error format."
+  [field-path error]
+        ;; Get the last field path value that's not a number. The every migration will use a number
+        ;; to indicate the index into the list.
+  (let [field (last (filter (complement number?) field-path))]
+    (format error (humanize-field field))))
+
 (defn create-error-messages
   "Creates error messages with the response from validate."
   [field-errors]
   (for [[field-path errors] field-errors
-        :when (seq errors)
-        ;; Get the last field path value that's not a number. The every migration will use a number
-        ;; to indicate the index into the list.
-        :let [field (last (filter (complement number?) field-path))]
         error errors]
-    (format error (humanize-field field))))
+    (create-error-message field-path error)))
 
 (defn validate
   "Validates the given value with the validation. Returns a map of fields to error formats."
