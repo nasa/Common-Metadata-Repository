@@ -13,6 +13,7 @@
             [cmr.system-int-test.data2.core :as d]
             [clj-time.core :as t]
             [cmr.common.mime-types :as mt]
+            [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.system-int-test.utils.search-util :as search]))
 
 
@@ -24,18 +25,22 @@
 
 ;; Verify a new concept is ingested successfully.
 (deftest collection-ingest-test
+  (println "collection-ingest-test")
   (testing "ingest of a new concept"
     (let [concept (dc/collection-for-ingest {})
           {:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
+      (index/wait-until-indexed)
       (is (ingest/concept-exists-in-mdb? concept-id revision-id))
       (is (= 1 revision-id)))))
 
 ;; Verify a new concept with concept-id is ingested successfully.
 (deftest collection-w-concept-id-ingest-test
+  (println "collection-w-concept-id-ingest-test")
   (testing "ingest of a new concept with concept-id present"
     (let [concept (dc/collection-for-ingest {:concept-id "C1000-PROV1"})
           supplied-concept-id (:concept-id concept)
           {:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
+      (index/wait-until-indexed)
       (is (ingest/concept-exists-in-mdb? concept-id revision-id))
       (is (= supplied-concept-id concept-id))
       (is (= 1 revision-id)))))
@@ -43,14 +48,17 @@
 ;; Ingest same concept N times and verify same concept-id is returned and
 ;; revision id is 1 greater on each subsequent ingest
 (deftest repeat-same-collection-ingest-test
+  (println "repeat-same-collection-ingest-test")
   (testing "ingest same concept n times ..."
     (let [n 4
           concept (dc/collection-for-ingest {})
-          created-concepts (take n (repeatedly n #(ingest/ingest-concept concept)))]
+          created-concepts (doall (take n (repeatedly n #(ingest/ingest-concept concept))))]
+      (index/wait-until-indexed)
       (is (apply = (map :concept-id created-concepts)))
       (is (= (range 1 (inc n)) (map :revision-id created-concepts))))))
 
 (deftest update-collection-with-different-formats-test
+  (println "update-collection-with-different-formats-test")
   (testing "update collection in different formats ..."
     (doseq [[expected-rev coll-format] (map-indexed #(vector (inc %1) %2) [:echo10 :dif :iso19115 :iso-smap])]
       (let [coll (d/ingest "PROV1"
@@ -72,35 +80,43 @@
 
 ;; Verify ingest behaves properly if empty body is presented in the request.
 (deftest empty-collection-ingest-test
+  (println "empty-collection-ingest-test")
   (let [concept-with-empty-body  (assoc (dc/collection-for-ingest {}) :metadata "")
         {:keys [status errors]} (ingest/ingest-concept concept-with-empty-body)]
+    (index/wait-until-indexed)
     (is (= status 400))
     (is (re-find #"XML content is too short." (first errors)))))
 
 ;; Verify old DeleteTime concept results in 400 error.
 (deftest old-delete-time-collection-ingest-test
+  (println "old-delete-time-collection-ingest-test")
   (let [coll (dc/collection {:delete-time "2000-01-01T12:00:00Z"})
         {:keys [status errors]} (ingest/ingest-concept
                                   (d/item->concept (assoc coll :provider-id "PROV1") :echo10))]
+    (index/wait-until-indexed)
     (is (= status 400))
     (is (re-find #"DeleteTime 2000-01-01T12:00:00.000Z is before the current time." (first errors)))))
 
 ;; Verify non-existent concept deletion results in not found / 404 error.
 (deftest delete-non-existent-collection-test
+  (println "delete-non-existent-collection-test")
   (let [concept (dc/collection-for-ingest {})
         fake-provider-id (str (:provider-id concept) (:native-id concept))
         non-existent-concept (assoc concept :provider-id fake-provider-id)
         {:keys [status]} (ingest/delete-concept non-existent-concept)]
+    (index/wait-until-indexed)
     (is (= status 404))))
 
 ;; Verify existing concept can be deleted and operation results in revision id 1 greater than
 ;; max revision id of the concept prior to the delete
 (deftest delete-collection-test-old
+  (println "delete-collection-test-old")
   (let [concept (dc/collection-for-ingest {})
         ingest-result (ingest/ingest-concept concept)
         delete-result (ingest/delete-concept concept)
         ingest-revision-id (:revision-id ingest-result)
         delete-revision-id (:revision-id delete-result)]
+    (index/wait-until-indexed)
     (is (= 1 (- delete-revision-id ingest-revision-id)))))
 
 (comment
@@ -113,6 +129,7 @@
   )
 
 (deftest delete-collection-test
+  (println "delete-collection-test")
   (let [coll1 (d/ingest "PROV1" (dc/collection))
         gran1 (d/ingest "PROV1" (dg/granule coll1))
         gran2 (d/ingest "PROV1" (dg/granule coll1))
@@ -148,41 +165,51 @@
 
 ;; Verify ingest is successful for request with content type that has parameters
 (deftest content-type-with-parameter-ingest-test
+  (println "content-type-with-parameter-ingest-test")
   (let [concept  (assoc (dc/collection-for-ingest {})
                         :format "application/echo10+xml; charset=utf-8")
         {:keys [status]} (ingest/ingest-concept concept)]
+    (index/wait-until-indexed)
     (is (= status 200))))
 
 ;; Verify ingest behaves properly if request is missing content type.
 (deftest missing-content-type-ingest-test
+  (println "missing-content-type-ingest-test")
   (let [concept-with-no-content-type  (assoc (dc/collection-for-ingest {}) :format "")
         {:keys [status errors]} (ingest/ingest-concept concept-with-no-content-type)]
+    (index/wait-until-indexed)
     (is (= status 400))
     (is (re-find #"Invalid content-type" (first errors)))))
 
 ;; Verify ingest behaves properly if request contains invalid  content type.
 (deftest invalid-content-type-ingest-test
+  (println "invalid-content-type-ingest-test")
   (let [concept (assoc (dc/collection-for-ingest {}) :format "blah")
         {:keys [status errors]} (ingest/ingest-concept concept)]
+    (index/wait-until-indexed)
     (is (= status 400))
     (is (re-find #"Invalid content-type" (first errors)))))
 
 ;; Verify deleting same concept twice is not an error if ignore conflict is true.
 (deftest delete-same-collection-twice-test
+  (println "delete-same-collection-twice-test")
   (let [concept (dc/collection-for-ingest {})
         ingest-result (ingest/ingest-concept concept)
         delete1-result (ingest/delete-concept concept)
         delete2-result (ingest/delete-concept concept)]
+    (index/wait-until-indexed)
     (is (= 200 (:status ingest-result)))
     (is (= 200 (:status delete1-result)))
     (is (= 200 (:status delete2-result)))))
 
 ;; Verify that collections with embedded / (%2F) in the native-id are handled correctly
 (deftest ingest-collection-with-slash-in-native-id-test
+  (println "ingest-collection-with-slash-in-native-id-test")
   (let [crazy-id "`1234567890-=qwertyuiop[]\\asdfghjkl;'zxcvbnm,./ ~!@#$%^&*()_+QWERTYUIOP{}ASDFGHJKL:\"ZXCVBNM<>?"
         collection (dc/collection-for-ingest {:entry-title crazy-id})
         {:keys [concept-id revision-id] :as response} (ingest/ingest-concept collection)
         ingested-concept (ingest/get-concept concept-id)]
+    (index/wait-until-indexed)
     (is (= 200 (:status response)))
     (is (ingest/concept-exists-in-mdb? concept-id revision-id))
     (is (= 1 revision-id))
@@ -193,6 +220,7 @@
         (is (= 200 (:status delete-result)))))))
 
 (deftest schema-validation-test
+  (println "schema-validation-test")
   (are [concept-format validation-errors]
        (let [concept (dc/collection-for-ingest
                        {:beginning-date-time "2010-12-12T12:00:00Z"} concept-format)
@@ -207,6 +235,7 @@
                                     (string/replace "fileIdentifier" "XXXX")
                                     ;; this is to cause validation error for iso-smap format
                                     (string/replace "gmd:DS_Series" "XXXX"))))]
+         (index/wait-until-indexed)
          (= [400 validation-errors] [status errors]))
 
        :echo10 ["Line 1 - cvc-datatype-valid.1.2.1: 'A.000Z' is not a valid value for 'dateTime'."

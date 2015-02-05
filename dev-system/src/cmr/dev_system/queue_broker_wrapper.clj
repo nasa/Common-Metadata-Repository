@@ -8,7 +8,7 @@
 (defn- set-message-state
   "Set the state of a message on the queue"
   [broker-wrapper msg state]
-  (let [bare-msg (-> (dissoc msg :repeat-count) (update-in [:action] keyword))
+  (let [bare-msg (-> (dissoc msg :retry-count) (update-in [:action] keyword))
         messages-atom (:messages-atom broker-wrapper)
         messages @messages-atom
         updated-msg (assoc bare-msg :state state)]
@@ -21,13 +21,14 @@
     (if (-> broker-wrapper :resetting?-atom deref)
       (do
         (set-message-state broker-wrapper msg :failed)
-        {:state :fail :message "Forced failure on reset"})
+        {:status :fail :message "Forced failure on reset"})
       (let [resp (handler context msg)]
         (case (:status resp)
           :ok (set-message-state broker-wrapper msg :processed)
 
           :retry (when (queue/retry-limit-met? msg (count (iconfig/rabbit-mq-ttls)))
-                   (set-message-state broker-wrapper msg :fail))
+                   (debug "Setting wrapper state to :failed for message" msg)
+                   (set-message-state broker-wrapper msg :failed))
 
           ;; treat nacks as acks for counting purposes
           :fail (set-message-state broker-wrapper msg :failed)
@@ -49,6 +50,7 @@
       (when (some #(nil? (:state %)) messages)
         (debug "SLEEPING.....")
         (Thread/sleep 100)
+        (debug (pr-str messages))
         (recur @(:messages-atom broker-wrapper))))))
 
 (defrecord BrokerWrapper
@@ -126,7 +128,9 @@
 (defn wait-for-indexing
   "Wait for all messages to be marked as processed"
   [broker-wrapper]
-  (wait-for-states broker-wrapper [:processed]))
+  (debug "Waiting for all indexing messages to be processed")
+  (wait-for-states broker-wrapper [:processed])
+  (debug "All messages processed"))
 
 (defn create-queue-broker-wrapper
   "Create a BrokerWrapper"

@@ -14,10 +14,12 @@
 (defn wait-until-indexed
   "Wait until ingested concepts have been indexed"
   []
+  (debug "Waiting for indexing")
   (when (and (te/real-database?)
              (config/use-index-queue?))
     (client/post (url/wait-for-indexing-url) {:connection-manager (url/conn-mgr)}))
-  (refresh-elastic-index))
+  (refresh-elastic-index)
+  (debug "Indexing completed"))
 
 
 
