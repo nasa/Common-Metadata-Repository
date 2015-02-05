@@ -18,8 +18,8 @@
   (format "%s_%s" (string/lower-case provider-id) (inf/plural (name concept-type))))
 
 (defn create-concept-table-id-sequence
-   "Create a sequence to populate the ids for a concept table."
-   [db provider-id concept-type]
+  "Create a sequence to populate the ids for a concept table."
+  [db provider-id concept-type]
   (let [sequence-name (str (get-table-name provider-id concept-type) "_seq")]
     (info "Creating sequence [" sequence-name "]")
     (j/db-do-commands db (format "CREATE SEQUENCE %s" sequence-name))))
@@ -42,6 +42,7 @@
                                  deleted INTEGER DEFAULT 0 NOT NULL,
                                  short_name VARCHAR(85) NOT NULL,
                                  version_id VARCHAR(80),
+                                 entry_id VARCHAR(255) NOT NULL,
                                  entry_title VARCHAR(1030) NOT NULL,
                                  delete_time TIMESTAMP WITH TIME ZONE,
                                  CONSTRAINT %s_pk PRIMARY KEY (id),
@@ -65,6 +66,9 @@
                                  table-name
                                  table-name))
     (j/db-do-commands db (format "CREATE INDEX %s_snv_i ON %s(short_name, version_id)"
+                                 table-name
+                                 table-name))
+    (j/db-do-commands db (format "CREATE INDEX %s_eid_i ON %s(entry_id)"
                                  table-name
                                  table-name))
     (j/db-do-commands db (format "CREATE INDEX %s_et_i ON %s(entry_title)"

@@ -302,10 +302,14 @@
 (deftracefn find-concepts
   "Find concepts with for a concept type with specific parameters"
   [context params]
-  (cv/validate-find-params params)
-  (let [db (util/context->db context)]
+  (let [db (util/context->db context)
+        latest-only? (= "true" (:latest params))
+        params (dissoc params :latest)]
+    (cv/validate-find-params params)
     (if (contains? (set (provider-db/get-providers db)) (:provider-id params))
-      (c/find-concepts db params)
+      (if latest-only?
+        (c/find-latest-concepts db params)
+        (c/find-concepts db params))
       ;; the provider doesn't exist
       [])))
 

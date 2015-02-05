@@ -70,9 +70,12 @@
   [xml-struct]
   (let [id-elem (cx/element-at-path xml-struct [:identificationInfo :MD_DataIdentification])
         product (xml-elem->Product id-elem)
-        data-provider-timestamps (xml-elem->DataProviderTimestamps id-elem) ]
+        {:keys [short-name version-id]} product
+        data-provider-timestamps (xml-elem->DataProviderTimestamps id-elem)]
     (c/map->UmmCollection
-      {:entry-id (str (:short-name product) "_" (:version-id product))
+      {:entry-id (if (empty? version-id)
+                   short-name
+                   (str short-name "_" version-id))
        :entry-title (cx/string-at-path xml-struct [:fileIdentifier :CharacterString])
        :summary (cx/string-at-path id-elem [:abstract :CharacterString])
        :product product

@@ -6,6 +6,7 @@
             [cmr.ingest.data.provider-acl-hash :as pah]
             [cmr.ingest.services.messages :as msg]
             [cmr.ingest.services.validation :as v]
+            [cmr.ingest.services.helper :as h]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.services.errors :as serv-errors]
             [cmr.common.services.messages :as cmsg]
@@ -28,8 +29,10 @@
   [context concept collection]
   (let [{{:keys [short-name version-id]} :product
          {:keys [delete-time]} :data-provider-timestamps
-         entry-title :entry-title} collection]
+         entry-title :entry-title
+         entry-id :entry-id} collection]
     (assoc concept :extra-fields {:entry-title entry-title
+                                  :entry-id entry-id
                                   :short-name short-name
                                   :version-id version-id
                                   :delete-time (when delete-time (str delete-time))})))
@@ -41,13 +44,7 @@
   [context provider-id collection-ref]
   (let [params (util/remove-nil-keys (merge {:provider-id provider-id}
                                             collection-ref))
-        coll-concepts (mdb/find-collections context params)
-        ;; Find the latest version of the concepts that aren't deleted. There should be only one
-        matching-concepts (->> coll-concepts
-                               (group-by :concept-id)
-                               (map (fn [[concept-id concepts]]
-                                      (->> concepts (sort-by :revision-id) reverse first)))
-                               (filter (complement :deleted)))]
+        matching-concepts (h/find-visible-collections context params)]
     (when (> (count matching-concepts) 1)
       (serv-errors/internal-error!
         (format (str "Found multiple possible parent collections for a granule in provider %s"

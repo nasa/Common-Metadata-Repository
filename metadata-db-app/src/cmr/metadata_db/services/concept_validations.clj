@@ -23,7 +23,7 @@
 
 (def concept-type->required-extra-fields
   "A map of concept type to the required extra fields"
-  {:collection #{:short-name :version-id :entry-title}
+  {:collection #{:short-name :version-id :entry-id :entry-title}
    :granule #{:parent-collection-id}})
 
 (defn extra-fields-missing-validation
@@ -103,6 +103,7 @@
 
 (def supported-parameter-combinations
   #{#{:short-name :provider-id :version-id}
+    #{:entry-id :provider-id}
     #{:entry-title :provider-id}
     #{:entry-title :short-name :provider-id :version-id}
     ;; Metadata db needs to support retrieving all collections in a provider for reindexing.

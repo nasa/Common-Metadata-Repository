@@ -27,11 +27,11 @@
 (deftest validation-endpoint-test
   (testing "colleciton validation"
     (testing "successful validation of collection"
-      (let [concept (dc/collection-for-ingest {})
+      (let [concept (dc/collection-concept {})
             {:keys [status errors]} (ingest/validate-concept concept)]
         (is (= [200 nil] [status errors]))))
     (testing "invalid collection xml fails validation with appropriate message"
-      (let [concept (dc/collection-for-ingest {})
+      (let [concept (dc/collection-concept {})
             {:keys [status errors]}
             (ingest/validate-concept (assoc concept :metadata "<Collection>invalid xml</Collection>"))]
         (is (= [400 ["Line 1 - cvc-complex-type.2.3: Element 'Collection' cannot have character [children], because the type's content type is element-only."
