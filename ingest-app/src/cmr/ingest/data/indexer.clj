@@ -67,7 +67,8 @@
     (when-not (some #{200, 204} [status])
       (errors/internal-error!
         (format "Delete %s operation failed. Indexer app response status code: %s %s"
-                delete-url status response)))))
+                delete-url status response)))
+    response))
 
 (defn- delete-concept-from-index-via-queue
   "Put a delete concept request on the queue to be consumed by the indexer app"
