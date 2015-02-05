@@ -89,9 +89,10 @@
    (let [dataset-table (mu/catalog-rest-table system provider-id :collection)
          collection-table (mu/metadata-db-concept-table system provider-id :collection)
          stmt (format (str "INSERT INTO %s (id, concept_id, native_id, metadata, format, short_name, "
-                           "version_id, entry_title, delete_time, revision_date) SELECT %s_seq.NEXTVAL,"
+                           "version_id, entry_title, delete_time, revision_date, entry_id) SELECT %s_seq.NEXTVAL,"
                            "echo_collection_id, dataset_id, compressed_xml, xml_mime_type, short_name,"
-                           "version_id, dataset_id, delete_time, ingest_updated_at "
+                           "version_id, dataset_id, delete_time, ingest_updated_at,
+                           (short_name || '_' || version_id)"
                            "FROM %s where %s")
                       collection-table
                       collection-table

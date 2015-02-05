@@ -26,6 +26,7 @@
                                       :metadata xml1
                                       :extra-fields {:short-name "coll1"
                                                      :entry-title "coll1"
+                                                     :entry-id "coll1"
                                                      :version-id "v1"}
                                       :provider-id "PROV1"
                                       :native-id "coll1"
@@ -43,6 +44,7 @@
                                       :metadata xml3
                                       :extra-fields {:short-name "coll3"
                                                      :entry-title "coll3"
+                                                     :entry-id "coll1"
                                                      :version-id "v1"
                                                      :delete-time "2000-01-01T12:00:00Z"}
                                       :provider-id "PROV1"
@@ -165,6 +167,7 @@
                                       :metadata xml1
                                       :extra-fields {:short-name "coll1"
                                                      :entry-title "coll1"
+                                                     :entry-id "coll1"
                                                      :version-id "v1"}
                                       :provider-id "PROV1"
                                       :native-id "coll1"
