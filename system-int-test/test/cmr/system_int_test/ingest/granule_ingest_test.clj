@@ -36,7 +36,7 @@
                                            dissoc :short-name :version-id))
         gran2 (d/ingest "PROV1" (update-in (dg/granule new-coll) [:collection-ref]
                                            dissoc :entry-title))]
-
+    (index/wait-until-indexed)
     ;; Make sure the granules reference the correct collection
     (is (= (:concept-id new-coll)
            (get-in (ingest/get-concept (:concept-id gran1) (:revision-id gran1))
@@ -52,6 +52,7 @@
     (let [collection (d/ingest "PROV1" (dc/collection {}))
           granule (dg/umm-granule->granule-concept (dg/granule collection))
           {:keys [concept-id revision-id]} (ingest/ingest-concept granule)]
+      (index/wait-until-indexed)
       (is (ingest/concept-exists-in-mdb? concept-id revision-id))
       (is (= 1 revision-id)))))
 
@@ -63,6 +64,7 @@
           granule (dg/umm-granule->granule-concept
                     (dg/granule collection {:concept-id supplied-concept-id}))
           {:keys [concept-id revision-id]} (ingest/ingest-concept granule)]
+      (index/wait-until-indexed)
       (is (ingest/concept-exists-in-mdb? concept-id revision-id))
       (is (= supplied-concept-id concept-id))
       (is (= 1 revision-id)))))
@@ -74,7 +76,8 @@
     (let [collection (d/ingest "PROV1" (dc/collection {}))
           n 4
           granule (dg/umm-granule->granule-concept (dg/granule collection {:concept-id "G1-PROV1"}))
-          created-granules (take n (repeatedly n #(ingest/ingest-concept granule)))]
+          created-granules (doall (take n (repeatedly n #(ingest/ingest-concept granule))))]
+      (index/wait-until-indexed)
       (is (apply = (map :concept-id created-granules)))
       (is (= (range 1 (inc n)) (map :revision-id created-granules))))))
 
@@ -84,6 +87,7 @@
         granule (dg/umm-granule->granule-concept (dg/granule collection))
         granule-with-empty-body  (assoc granule :metadata "")
         {:keys [status errors]} (ingest/ingest-concept granule-with-empty-body)]
+    (index/wait-until-indexed)
     (is (= 400 status))
     (is (re-find #"XML content is too short." (first errors)))))
 
@@ -94,6 +98,7 @@
         fake-provider-id (str (:provider-id granule) (:native-id granule))
         non-existent-granule (assoc granule :provider-id fake-provider-id)
         {:keys [status]} (ingest/delete-concept non-existent-granule)]
+    (index/wait-until-indexed)
     (is (= 404 status))))
 
 ;; Verify existing granule can be deleted and operation results in revision id 1 greater than
@@ -105,6 +110,7 @@
         delete-result (ingest/delete-concept granule)
         ingest-revision-id (:revision-id ingest-result)
         delete-revision-id (:revision-id delete-result)]
+    (index/wait-until-indexed)
     (is (= 1 (- delete-revision-id ingest-revision-id)))))
 
 ;; Verify ingest is successful for request with content type that has parameters
@@ -114,6 +120,7 @@
                   (assoc (dg/granule collection)
                          :format "application/echo10+xml; charset=utf-8"))
         {:keys [status errors]} (ingest/ingest-concept granule)]
+    (index/wait-until-indexed)
     (is (= 200 status))))
 
 ;; Verify ingest behaves properly if request is missing content type.
@@ -121,6 +128,7 @@
   (let [collection (d/ingest "PROV1" (dc/collection {}))
         granule (dg/umm-granule->granule-concept (dg/granule collection))
         {:keys [status errors]} (ingest/ingest-concept (assoc granule :format ""))]
+    (index/wait-until-indexed)
     (is (= 400 status))
     (is (re-find #"Invalid content-type" (first errors)))))
 
@@ -129,6 +137,7 @@
   (let [collection (d/ingest "PROV1" (dc/collection {}))
         granule (dg/umm-granule->granule-concept (dg/granule collection))
         {:keys [status errors]} (ingest/ingest-concept (assoc granule :format "blah"))]
+    (index/wait-until-indexed)
     (is (= 400 status))
     (is (re-find #"Invalid content-type" (first errors)))))
 
@@ -140,6 +149,7 @@
         ingest-result (ingest/ingest-concept granule)
         delete1-result (ingest/delete-concept granule)
         delete2-result (ingest/delete-concept granule)]
+    (index/wait-until-indexed)
     (is (= 200 (:status ingest-result)))
     (is (= 200 (:status delete1-result)))
     (is (= 200 (:status delete2-result)))))
@@ -161,6 +171,7 @@
         granule (dg/umm-granule->granule-concept umm-granule)
         {:keys [concept-id revision-id] :as response} (ingest/ingest-concept granule)
         ingested-concept (ingest/get-concept concept-id)]
+    (index/wait-until-indexed)
     (is (= 200 (:status response)))
     (is (ingest/concept-exists-in-mdb? concept-id revision-id))
     (is (= 1 revision-id))
@@ -182,6 +193,7 @@
                                     (string/replace "2010-12-12T12:00:00" "A")
                                     ;; this is to cause validation error for iso-smap format
                                     (string/replace "gmd:DS_Series" "XXXX"))))]
+         (index/wait-until-indexed)
          (= [400 validation-errors] [status errors]))
 
        :echo10 ["Line 1 - cvc-datatype-valid.1.2.1: 'A.000Z' is not a valid value for 'dateTime'."
