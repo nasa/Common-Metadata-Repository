@@ -31,9 +31,10 @@
   (do
     (ingest/reset)
     (ingest/create-provider "provguid1" "PROV1")
-    (ingest/create-provider "provguid2" "PROV2")  )
-
-  )
+    (ingest/create-provider "provguid2" "PROV2")
+    (d/ingest "PROV1" (dc/collection {:short-name "S1"
+                                      :version-id "V1"
+                                      :entry-title "ET1"}))))
 
 ;; Tests that we can ingest and find items in different formats
 (deftest multi-format-search-test
@@ -122,7 +123,7 @@
       (testing "as extension"
         (is (= {:errors ["The mime type [application/iso:smap+xml] is not supported."],
                 :status 400}
-               (search/get-search-failure-data
+               (search/get-search-failure-xml-data
                  (search/find-concepts-in-format
                    nil :collection {} {:url-extension "iso_smap"}))))))
 
