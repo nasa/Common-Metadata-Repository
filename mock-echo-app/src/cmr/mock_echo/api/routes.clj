@@ -40,6 +40,6 @@
 (defn make-api [system]
   (-> (build-routes system)
       (http-trace/build-request-context-handler system)
-      (errors/exception-handler (fn [_] "application/json"))
+      errors/exception-handler
       handler/site
       ring-json/wrap-json-response))
