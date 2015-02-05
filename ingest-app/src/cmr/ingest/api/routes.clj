@@ -16,7 +16,8 @@
             [cmr.ingest.services.ingest :as ingest]
             [cmr.system-trace.http :as http-trace]
             [cmr.ingest.services.jobs :as jobs]
-            [cmr.ingest.api.provider :as provider-api]))
+            [cmr.ingest.api.provider :as provider-api]
+            [cmr.acl.routes :as common-routes]))
 
 (defn- set-concept-id
   "Set concept-id in concept if it is passed in the header"
@@ -131,6 +132,9 @@
           (let [context (acl/add-authentication-to-context request-context params headers)]
             (acl/verify-ingest-management-permission context :update)
             (common-jobs/resume-jobs))))
+
+      ;; add routes for accessing caches
+      common-routes/cache-api-routes
 
       (GET "/health" {request-context :request-context params :params}
         (let [{pretty? :pretty} params

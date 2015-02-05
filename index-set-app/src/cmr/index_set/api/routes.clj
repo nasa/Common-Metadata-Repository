@@ -13,49 +13,8 @@
             [cheshire.core :as json]
             [cmr.index-set.services.index-service :as index-svc]
             [cmr.system-trace.http :as http-trace]
-            [cmr.acl.core :as acl]))
-
-(def cache-api-routes
-  "Create routes for the cache querying/management api"
-  (context "/caches" []
-    ;; Get the list of caches
-    (GET "/" {:keys [params request-context headers]}
-      (let [context (acl/add-authentication-to-context request-context params headers)]
-        (acl/verify-ingest-management-permission context :read)
-        (let [caches (map name (keys (get-in context [:system :caches])))]
-          (acl/verify-ingest-management-permission context :read)
-          {:status 200
-           :body (json/generate-string caches)})))
-    ;; Get the keys for the given cache
-    (GET "/:cache-name" {{:keys [cache-name] :as params} :params
-                         request-context :request-context
-                         headers :headers}
-      (let [context (acl/add-authentication-to-context request-context params headers)]
-        (acl/verify-ingest-management-permission context :read)
-        (let [cache (cache/context->cache context (keyword cache-name))]
-          (when cache
-            (let [result (cache/cache-keys cache)]
-              {:status 200
-               :body (json/generate-string result)})))))
-
-    ;; Get the value for the given key for the given cache
-    (GET "/:cache-name/:cache-key" {{:keys [cache-name cache-key] :as params} :params
-                                    request-context :request-context
-                                    headers :headers}
-      (let [context (acl/add-authentication-to-context request-context params headers)]
-        (acl/verify-ingest-management-permission context :read)
-        (let [cache-key (keyword cache-key)
-              cache (cache/context->cache context (keyword cache-name))
-              result (cache/cache-lookup cache cache-key)]
-          (when result
-            {:status 200
-             :body (json/generate-string result)}))))
-
-    (POST "/clear-cache" {:keys [request-context params headers]}
-      (let [context (acl/add-authentication-to-context request-context params headers)]
-        (acl/verify-ingest-management-permission context :update)
-        (cache/reset-caches context))
-      {:status 200})))
+            [cmr.acl.core :as acl]
+            [cmr.acl.routes :as common-routes]))
 
 (defn- build-routes [system]
   (routes
@@ -93,7 +52,7 @@
               {:status 204}))))
 
       ;; add routes for accessing caches
-      cache-api-routes
+      common-routes/cache-api-routes
 
       ;; delete all of the indices associated with index-sets and index-set docs in elastic
       (POST "/reset" {request-context :request-context params :params headers :headers}
