@@ -60,8 +60,7 @@
 (defn create-error-message
   "Formats a single error message using the field path and the error format."
   [field-path error]
-  ;; Get the last field path value that's not a number. The every migration will use a number
-  ;; to indicate the index into the list.
+  ;; Get the last field path value that's not a number.
   (let [field (last (filter (complement number?) field-path))]
     (format error (humanize-field field))))
 

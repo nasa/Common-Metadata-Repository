@@ -1,6 +1,6 @@
 (ns cmr.common.services.errors
   "Contains functions that will throw errors that when caught in the API will return the
-  correct error code. Errors can be a list of strings a list of path errors. A path error is an error
+  correct error code. Errors can be a list of strings or a list of path errors. A path error is an error
   within a structured piece of data that has a path. A path would consist of a set of clojure keywords
   and numbers (as indexes within a list) to the item that had the error.
 
