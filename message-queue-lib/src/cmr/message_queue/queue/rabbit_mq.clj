@@ -36,9 +36,9 @@
            (lch/close ~channel-name))))))
 
 (defn wait-queue-name
-  "Returns the name of the wait queue associated with the given queue name and repeat-count"
-  [queue-name repeat-count]
-  (str queue-name "_wait_" repeat-count))
+  "Returns the name of the wait queue associated with the given queue name and retry-count"
+  [queue-name retry-count]
+  (str queue-name "_wait_" retry-count))
 
 (defn- wait-queue-ttl
   "Returns the Time-To-Live (TTL) in milliseconds for the nth (1 based) wait queue"
@@ -51,18 +51,18 @@
 (defn- attempt-retry
   "Retry a message if it has not already exceeded the allowable retries"
   [queue-broker ch queue-name routing-key msg delivery-tag resp]
-  (let [repeat-count (get msg :repeat-count 0)]
+  (let [retry-count (get msg :retry-count 0)]
     (if (queue/retry-limit-met? msg (count (config/rabbit-mq-ttls)))
       (do
         ;; give up
         (warn "Max retries exceeded for processing message:" (pr-str msg))
         (lb/nack ch delivery-tag false false))
-      (let [msg (assoc msg :repeat-count (inc repeat-count))
-            wait-q (wait-queue-name routing-key (inc repeat-count))
-            ttl (wait-queue-ttl (inc repeat-count))]
+      (let [msg (assoc msg :retry-count (inc retry-count))
+            wait-q (wait-queue-name routing-key (inc retry-count))
+            ttl (wait-queue-ttl (inc retry-count))]
         (debug "Message" (pr-str msg) "re-queued with response:" (pr-str (:message resp)))
-        (debug "Retrying with repeat-count ="
-               (inc repeat-count)
+        (debug "Retrying with retry-count ="
+               (inc retry-count)
                " on queue"
                wait-q
                "with ttl = "

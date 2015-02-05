@@ -77,14 +77,6 @@
              :revision-id revision-id}]
     (put-message-on-queue context msg)))
 
-
-(defn- delete-provider-from-index-via-queue
-  "Put a delete provider request on the queue to be consumed by the indexer app"
-  [context provider-id]
-  (let [msg {:action :delete-provider
-             :provider-id provider-id}]
-    (put-message-on-queue context msg)))
-
 (deftracefn reindex-provider-collections
   "Re-indexes all the collections in the provider"
   [context provider-ids]
