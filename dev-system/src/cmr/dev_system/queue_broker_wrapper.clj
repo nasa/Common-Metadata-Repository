@@ -27,7 +27,6 @@
           :ok (set-message-state broker-wrapper msg :processed)
 
           :retry (when (queue/retry-limit-met? msg (count (iconfig/rabbit-mq-ttls)))
-                   (debug "Setting wrapper state to :failed for message" msg)
                    (set-message-state broker-wrapper msg :failed))
 
           ;; treat nacks as acks for counting purposes
@@ -48,9 +47,7 @@
                   messages)
         (throw (Exception. (str "Unexpected final message state"))))
       (when (some #(nil? (:state %)) messages)
-        (debug "SLEEPING.....")
         (Thread/sleep 100)
-        (debug (pr-str messages))
         (recur @(:messages-atom broker-wrapper))))))
 
 (defrecord BrokerWrapper
@@ -116,21 +113,10 @@
       (finally
         (reset! (:resetting?-atom this) false)))))
 
-(defn internal-message-counts
-  "Get the counts of messages that have been published"
-  [wrapper]
-  (let [messages-atom (:messages-atom wrapper)
-        processed-count (count (filter #(= :processed (:state %)) @messages-atom))
-        unprocessed-count (- (count @messages-atom) processed-count)]
-    {:processed processed-count :unprocessed unprocessed-count}))
-
-
 (defn wait-for-indexing
   "Wait for all messages to be marked as processed"
   [broker-wrapper]
-  (debug "Waiting for all indexing messages to be processed")
-  (wait-for-states broker-wrapper [:processed])
-  (debug "All messages processed"))
+  (wait-for-states broker-wrapper [:processed]))
 
 (defn create-queue-broker-wrapper
   "Create a BrokerWrapper"

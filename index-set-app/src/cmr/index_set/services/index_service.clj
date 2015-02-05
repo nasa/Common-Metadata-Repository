@@ -206,7 +206,6 @@
 (deftracefn reset
   "Put elastic in a clean state after deleting indices associated with index-sets and index-set docs."
   [context]
-  (debug "DELETING INDICES")
   (let [{:keys [index-name mapping]} es-config/idx-cfg-for-index-sets
         idx-mapping-type (first (keys mapping))
         index-set-ids (map #(first %) (es/get-index-set-ids (context->es-store context) index-name idx-mapping-type))]

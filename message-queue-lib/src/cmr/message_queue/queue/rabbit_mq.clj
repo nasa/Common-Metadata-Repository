@@ -94,13 +94,11 @@
         sub-ch (lch/open conn)
         handler (fn [ch {:keys [delivery-tag type routing-key] :as meta} ^bytes payload]
                   (let [msg (json/parse-string (String. payload) true)]
-                    (debug "Received message:" (pr-str msg))
                     (try
                       (let [resp (client-handler msg)]
                         (case (:status resp)
                           :ok (do
                                 ;; processed successfully
-                                (debug "Message" (pr-str msg) "processed successfully")
                                 (lb/ack ch delivery-tag))
                           :retry (attempt-retry queue-broker ch queue-name
                                                 routing-key msg delivery-tag resp)
@@ -205,7 +203,6 @@
 
   (publish
     [this queue-name msg]
-    (debug "publishing msg:" (pr-str msg) " to queue:" queue-name)
     (let [payload (json/generate-string msg)
           metadata {:content-type "application/json" :persistent true}]
       ;; publish the message
@@ -219,7 +216,6 @@
 
   (message-count
     [this queue-name]
-    (debug "Getting message count for queue" queue-name " on channel" pub-ch)
     (lq/message-count pub-ch queue-name))
 
   (reset
