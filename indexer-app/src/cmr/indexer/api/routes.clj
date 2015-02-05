@@ -20,7 +20,7 @@
 
             [cmr.indexer.services.index-service :as index-svc]
             [cmr.system-trace.http :as http-trace]
-            [cmr.common.api.routes :as common-routes]))
+            [cmr.acl.routes :as common-routes]))
 
 (defn- ignore-conflict?
   "Return false if ignore_conflict parameter is set to false; otherwise return true"

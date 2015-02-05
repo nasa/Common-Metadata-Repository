@@ -14,7 +14,7 @@
             [cmr.index-set.services.index-service :as index-svc]
             [cmr.system-trace.http :as http-trace]
             [cmr.acl.core :as acl]
-            [cmr.common.api.routes :as common-routes]))
+            [cmr.acl.routes :as common-routes]))
 
 (defn- build-routes [system]
   (routes

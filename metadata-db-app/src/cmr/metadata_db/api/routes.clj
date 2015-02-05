@@ -16,7 +16,7 @@
             [cmr.acl.core :as acl]
             [cmr.metadata-db.api.provider :as provider-api]
             [cmr.metadata-db.api.concepts :as concepts-api]
-            [cmr.common.api.routes :as common-routes]))
+            [cmr.acl.routes :as common-routes]))
 
 (def admin-api-routes
   "The administrative control routes for metadata db."

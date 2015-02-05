@@ -22,7 +22,7 @@
             [cmr.search.services.messages.common-messages :as msg]
             [cmr.search.services.health-service :as hs]
             [cmr.acl.core :as acl]
-            [cmr.common.api.routes :as common-routes]
+            [cmr.acl.routes :as common-routes]
 
             ;; Result handlers
             ;; required here to avoid circular dependency in query service
