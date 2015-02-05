@@ -24,17 +24,13 @@
 
 (defn xml-elem->RelatedURLs
   [collection-element]
-  (let [related-urls (mapcat xml-elem->RelatedURL
-                             (cx/elements-at-path
-                               collection-element
-                               [:Related_URL]))]
-    (when-not (empty? related-urls)
-      related-urls)))
+  (seq (mapcat xml-elem->RelatedURL
+               (cx/elements-at-path collection-element [:Related_URL]))))
 
 
 (defn generate-related-urls
   [related-urls]
-  (when (and related-urls (not (empty? related-urls)))
+  (when (seq related-urls)
     (for [related-url related-urls]
       (let [{:keys [url type sub-type description]} related-url]
         (x/element :Related_URL {}

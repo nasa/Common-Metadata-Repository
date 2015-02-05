@@ -120,6 +120,8 @@
         (dissoc :projects)
         ;; SMAP ISO does not support AdditionalAttributes
         (dissoc :product-specific-attributes)
+        ;; SMAP ISO does not support CollectionAssociations
+        (dissoc :collection-associations)
         ;; SMAP ISO does not support RelatedURLs
         (dissoc :related-urls)
         ;; SMAP ISO does not support two-d-coordinate-systems
