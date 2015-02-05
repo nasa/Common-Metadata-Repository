@@ -119,6 +119,15 @@
                      (ext-gen/nil-if-empty (gen/vector instruments 0 4))
                      (ext-gen/nil-if-empty (gen/vector characteristics 0 4))))
 
+(def ca-short-names
+  (ext-gen/string-ascii 1 10))
+
+(def ca-version-ids
+  (ext-gen/string-ascii 1 10))
+
+(def collection-associations
+  (ext-gen/model-gen c/->CollectionAssociation ca-short-names ca-version-ids))
+
 (def campaign-short-names
   (ext-gen/string-ascii 1 10))
 
@@ -226,6 +235,7 @@
                 :science-keywords (gen/vector sk/science-keywords 1 3)
                 :platforms (ext-gen/nil-if-empty (gen/vector platforms 0 4))
                 :product-specific-attributes (ext-gen/nil-if-empty (gen/vector psa/product-specific-attributes 0 10))
+                :collection-associations (ext-gen/nil-if-empty (gen/vector collection-associations 0 4))
                 :projects (ext-gen/nil-if-empty (gen/vector campaigns 0 4))
                 :two-d-coordinate-systems (ext-gen/nil-if-empty (gen/vector two-d-coordinate-systems 0 3))
                 :related-urls (ext-gen/nil-if-empty (gen/vector related-url 0 5))

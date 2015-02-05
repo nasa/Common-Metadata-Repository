@@ -107,6 +107,12 @@
    characteristics
    ])
 
+(defrecord CollectionAssociation
+  [
+   short-name
+   version-id
+   ])
+
 (defrecord Project
   [
    ;; maps to Echo10 Collection/Campaigns/Campaign/ShortName
@@ -246,6 +252,8 @@
    platforms
 
    product-specific-attributes
+
+   collection-associations
 
    ;; Records campaigns of ECHO10
    projects

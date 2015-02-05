@@ -237,6 +237,26 @@
         <Type>Spacecraft-2</Type>
       </Platform>
     </Platforms>
+    <CollectionAssociations>
+      <CollectionAssociation>
+        <ShortName>COLLOTHER-237</ShortName>
+        <VersionId>1</VersionId>
+        <CollectionType>Input Collection</CollectionType>
+        <CollectionUse>Extra data</CollectionUse>
+      </CollectionAssociation>
+      <CollectionAssociation>
+        <ShortName>COLLOTHER-238</ShortName>
+        <VersionId>1</VersionId>
+        <CollectionType>Input Collection</CollectionType>
+        <CollectionUse>Extra data</CollectionUse>
+      </CollectionAssociation>
+      <CollectionAssociation>
+        <ShortName>COLLOTHER-239</ShortName>
+        <VersionId>1</VersionId>
+        <CollectionType>Input Collection</CollectionType>
+        <CollectionUse>Extra data</CollectionUse>
+      </CollectionAssociation>
+    </CollectionAssociations>
     <Campaigns>
       <Campaign>
         <ShortName>ESI</ShortName>
@@ -411,6 +431,15 @@
                         :long-name "RADARSAT-LONG-2"
                         :type "Spacecraft-2"
                         :instruments nil})]
+                    :collection-associations [(umm-c/map->CollectionAssociation
+                                                {:short-name "COLLOTHER-237"
+                                                 :version-id "1"})
+                                              (umm-c/map->CollectionAssociation
+                                                {:short-name "COLLOTHER-238"
+                                                 :version-id "1"})
+                                              (umm-c/map->CollectionAssociation
+                                                {:short-name "COLLOTHER-239"
+                                                 :version-id "1"})]
                     :projects
                     [(umm-c/map->Project
                        {:short-name "ESI"

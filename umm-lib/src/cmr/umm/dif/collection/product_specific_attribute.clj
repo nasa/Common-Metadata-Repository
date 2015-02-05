@@ -28,6 +28,6 @@
 
 (defn generate-product-specific-attributes
   [psas]
-  (when (and psas (not (empty? psas)))
+  (when (seq psas)
     (em/generate-extended-metadatas psas true)))
 

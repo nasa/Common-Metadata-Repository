@@ -18,19 +18,15 @@
 
 (defn xml-elem->Campaigns
   [collection-element]
-  (let [campaigns (map xml-elem->Campaign
-                       (cx/elements-at-path
-                         collection-element
-                         [:Campaigns :Campaign]))]
-    (when (not (empty? campaigns))
-      campaigns)))
+  (seq (map xml-elem->Campaign
+            (cx/elements-at-path collection-element [:Campaigns :Campaign]))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Generators
 
 (defn generate-campaigns
   [projects]
-  (when (and projects (not (empty? projects)))
+  (when (seq projects)
     (x/element
       :Campaigns {}
       (for [proj projects]

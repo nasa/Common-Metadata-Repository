@@ -221,6 +221,15 @@
                         :long-name "RADARSAT-LONG-2"
                         :type "Spacecraft-2"
                         :instruments nil})]
+                    :collection-associations [(umm-c/map->CollectionAssociation
+                                                {:short-name "COLLOTHER-237"
+                                                 :version-id "1"})
+                                              (umm-c/map->CollectionAssociation
+                                                {:short-name "COLLOTHER-238"
+                                                 :version-id "1"})
+                                              (umm-c/map->CollectionAssociation
+                                                {:short-name "COLLOTHER-239"
+                                                 :version-id "1"})]
                     :projects
                     [(umm-c/map->Project
                        {:short-name "ESI"
@@ -283,3 +292,4 @@
                  "\"http://www.isotc211.org/2005/gmd\":hierarchyLevelName, "
                  "\"http://www.isotc211.org/2005/gmd\":contact}' is expected.")]
            (c/validate-xml (s/replace valid-collection-xml "fileIdentifier" "XXXX"))))))
+
