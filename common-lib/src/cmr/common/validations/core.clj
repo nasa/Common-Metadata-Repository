@@ -2,15 +2,9 @@
   "Validation framework created from scratch. Both bouncer and validateur are Clojure Validation
   frameworks but they have bugs and limitations that made them inappropriate for use.
 
-  TODO complete documentation not written yet. I will first make sure that we have something that
-  will work for our needs before writing the documentation.
-
-  Quick documentation notes:
-  A validation is a function.
-  It takes 2 arguments a field path vector and a value. It returns either nil or a map of field
-  paths to a list of errors.
-
-  "
+  A validation is a function. It takes 2 arguments a field path vector and a value. It returns either
+  nil or a map of field paths to a list of errors. Maps and lists will automatically be converted
+  into record-validation or seq-of-validations."
   (:require [clojure.string :as str]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -19,7 +13,8 @@
 (declare auto-validation-convert)
 
 (defn record-validation
-  "Converts a map into a record validator"
+  "Converts a map into a record validator. Each field of the map passed in corresponds to a field
+  in a record being validated."
   [field-map]
   (fn [field-path value]
     (when value
@@ -65,8 +60,8 @@
 (defn create-error-message
   "Formats a single error message using the field path and the error format."
   [field-path error]
-        ;; Get the last field path value that's not a number. The every migration will use a number
-        ;; to indicate the index into the list.
+  ;; Get the last field path value that's not a number. The every migration will use a number
+  ;; to indicate the index into the list.
   (let [field (last (filter (complement number?) field-path))]
     (format error (humanize-field field))))
 
