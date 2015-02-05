@@ -233,18 +233,21 @@
 (defn create-provider
   ([provider-guid provider-id]
    (create-provider provider-guid provider-id true))
-  ([provider-guid provider-id grant-all?]
+  ([provider-guid provider-id grant-all-search?]
+   (create-provider provider-guid provider-id grant-all-search? true))
+  ([provider-guid provider-id grant-all-search? grant-all-ingest?]
    (create-mdb-provider provider-id)
    (echo-util/create-providers {provider-guid provider-id})
 
-   (when grant-all?
+   (when grant-all-search?
      (echo-util/grant [echo-util/guest-ace
                        echo-util/registered-user-ace]
                       (assoc (echo-util/catalog-item-id provider-guid)
                              :collection-applicable true
                              :granule-applicable true)
                       :system-object-identity
-                      nil)
+                      nil))
+   (when grant-all-ingest?
      (echo-util/grant-all-ingest provider-guid))))
 
 (defn reset-fixture
@@ -253,12 +256,14 @@
    (reset-fixture {}))
   ([provider-guid-id-map]
    (reset-fixture provider-guid-id-map true))
-  ([provider-guid-id-map grant-all?]
+  ([provider-guid-id-map grant-all-search?]
+   (reset-fixture provider-guid-id-map grant-all-search? true))
+  ([provider-guid-id-map grant-all-search? grant-all-ingest?]
    (fn [f]
      (try
        (reset)
        (doseq [[provider-guid provider-id] provider-guid-id-map]
-         (create-provider provider-guid provider-id grant-all?))
+         (create-provider provider-guid provider-id grant-all-search? grant-all-ingest?))
        (f)
        (finally
          (reset))))))
