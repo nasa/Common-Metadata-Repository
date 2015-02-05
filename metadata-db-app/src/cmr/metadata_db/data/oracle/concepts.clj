@@ -354,14 +354,6 @@
         (doall (map (partial db-result->concept-map concept-type conn provider-id)
                     (sql-utils/query conn stmt))))))
 
-  (find-latest-concepts
-    [db params]
-    (let [revision-concepts (c/find-concepts db params)]
-      (->> revision-concepts
-           (group-by :concept-id)
-           (map (fn [[concept-id concepts]]
-                  (->> concepts (sort-by :revision-id) reverse first))))))
-
   (find-concepts-in-batches
     ([db params batch-size]
      (c/find-concepts-in-batches db params batch-size 0))

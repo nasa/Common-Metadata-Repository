@@ -134,14 +134,6 @@
                      (= extra-field-params (select-keys extra-fields (keys extra-field-params)))))
               @concepts-atom)))
 
-  (find-latest-concepts
-    [db params]
-    (let [revision-concepts (concepts/find-concepts db params)]
-      (->> revision-concepts
-           (group-by :concept-id)
-           (map (fn [[concept-id concepts]]
-                  (->> concepts (sort-by :revision-id) reverse first))))))
-
   (save-concept
     [this concept]
     {:pre [(:revision-id concept)]}
