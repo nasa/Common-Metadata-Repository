@@ -69,6 +69,11 @@ cmr.common.dev.capture-reveal/reveal
                    ;; Create a sequence of var symbols to the var values.
                    ~@(mapcat (fn [v] [`'~v v]) vars)))
 
+(defmacro capture-all
+  "A helper macro for capturing every local variable in scope."
+  []
+  `(capture ~@(keys &env)))
+
 (defn reveal-value
   "Gets the captured value of the given symbol in the namespace."
   [the-ns var-sym]
@@ -88,8 +93,35 @@ cmr.common.dev.capture-reveal/reveal
   [var-sym]
   `(reveal-value ~(str *ns*) '~var-sym))
 
+(defmacro defreveal
+  "Defs the symbols with values captured from those same symbols. Multiple can be passed in at the
+  same time. You would use multiple if you had captured multiple.
+
+  example:
+  ;; This is a function being tested. A few arguments are captured
+  (defn function-under-test
+    [context another-var]
+    (cmr.common.dev.capture-reveal/capture context another-var)
+    ;; Some code here
+    )
+
+  ;; defreveal can be used to create def'd versions of the captured values
+  ;; Then those arguments will be in scope and easily used.
+  (comment
+    (cmr.common.dev.capture-reveal/defreveal context another))"
+  [& symbols]
+  (cons 'do (for [s symbols] `(def ~s (reveal ~s)))))
+
 (defmacro reveal-all
   "Returns all the captured values for the current namespace."
   []
   `(reveal-all-values ~(str *ns*)))
+
+(defmacro defreveal-all
+  "Similar to defreveal except that it creates a def for all of the captured values in the current
+  namespace."
+  []
+  `(doseq [[s# v#] (reveal-all)]
+     (eval (list 'defreveal s#))))
+
 

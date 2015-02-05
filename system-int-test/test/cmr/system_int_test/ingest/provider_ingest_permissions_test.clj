@@ -49,12 +49,12 @@
 
     (testing "ingest granule update permissions"
       (are [token]
-           (ingest-succeeded? (ingest/ingest-concept granule token))
+           (ingest-succeeded? (ingest/ingest-concept granule {:token token}))
            provider-admin-update-token
            provider-admin-read-update-token
            provider-admin-update-delete-token)
       (are [token]
-           (not (ingest-succeeded? (ingest/ingest-concept granule token)))
+           (not (ingest-succeeded? (ingest/ingest-concept granule {:token token})))
            guest-token
            user-token
            super-admin-token

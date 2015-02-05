@@ -73,7 +73,7 @@
   (v/validate-concept-request concept)
   (v/validate-concept-xml concept)
   (let [umm-record (umm/parse-concept concept)]
-    (v/validate-umm-record (:format concept) umm-record)))
+    (v/validate-umm-record umm-record)))
 
 (deftracefn save-concept
   "Store a concept in mdb and indexer and return concept-id and revision-id."
@@ -93,7 +93,7 @@
 
         ;; 5. Umm record validation
         _ (when (ingest-validation-enabled?)
-            (v/validate-umm-record (:format concept) umm-record))
+            (v/validate-umm-record umm-record))
 
         concept (add-extra-fields context concept umm-record)]
 

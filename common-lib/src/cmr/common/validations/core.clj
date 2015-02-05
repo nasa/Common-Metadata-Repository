@@ -2,15 +2,9 @@
   "Validation framework created from scratch. Both bouncer and validateur are Clojure Validation
   frameworks but they have bugs and limitations that made them inappropriate for use.
 
-  TODO complete documentation not written yet. I will first make sure that we have something that
-  will work for our needs before writing the documentation.
-
-  Quick documentation notes:
-  A validation is a function.
-  It takes 2 arguments a field path vector and a value. It returns either nil or a map of field
-  paths to a list of errors.
-
-  "
+  A validation is a function. It takes 2 arguments a field path vector and a value. It returns either
+  nil or a map of field paths to a list of errors. Maps and lists will automatically be converted
+  into record-validation or seq-of-validations."
   (:require [clojure.string :as str]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -19,7 +13,8 @@
 (declare auto-validation-convert)
 
 (defn record-validation
-  "Converts a map into a record validator"
+  "Converts a map into a record validator. Each field of the map passed in corresponds to a field
+  in a record being validated."
   [field-map]
   (fn [field-path value]
     (when value
@@ -41,7 +36,7 @@
       (reduce (fn [field-errors validator]
                 (let [errors (validator field-path value)]
                   (if (seq errors)
-                    (merge field-errors errors)
+                    (merge-with concat field-errors errors)
                     field-errors)))
               {}
               validators))))
@@ -49,25 +44,32 @@
 (defn auto-validation-convert
   "Handles converting basic clojure data structures into a validation function."
   [validation]
-  ;; TODO consider using protocols or other dispatch method
   (cond
     (map? validation) (record-validation validation)
     (sequential? validation) (seq-of-validations validation)
     :else validation))
 
-(defn- humanize-field
+(defn humanize-field
   "Converts a keyword to a humanized field name"
   [field]
-  (when field (str/replace (str/capitalize (name field)) #"-" " ")))
+  (when field
+    (->> (str/split (name field) #"-")
+         (map str/capitalize)
+         (str/join " "))))
+
+(defn create-error-message
+  "Formats a single error message using the field path and the error format."
+  [field-path error]
+  ;; Get the last field path value that's not a number.
+  (let [field (last (filter (complement number?) field-path))]
+    (format error (humanize-field field))))
 
 (defn create-error-messages
-  "TODO"
+  "Creates error messages with the response from validate."
   [field-errors]
   (for [[field-path errors] field-errors
-        :when (seq errors)
-        :let [field (last field-path)]
         error errors]
-    (format error (humanize-field field))))
+    (create-error-message field-path error)))
 
 (defn validate
   "Validates the given value with the validation. Returns a map of fields to error formats."
@@ -114,14 +116,14 @@
   "Validates the value is a number"
   [field-path value]
   (when (and value (not (number? value)))
-    {field-path [(format "%%s must be a number but was [%s]" value)]}))
+    {field-path [(format "%%s must be a number but was [%s]." value)]}))
 
 (defn within-range
   "Creates a validator within a specified range"
   [minv maxv]
   (fn [field-path value]
     (when (and value (or (< (compare value minv) 0) (> (compare value maxv) 0)))
-      {field-path [(format "%%s must be within [%s] and [%s] but was [%s]"
+      {field-path [(format "%%s must be within [%s] and [%s] but was [%s]."
                            minv maxv value)]})))
 
 

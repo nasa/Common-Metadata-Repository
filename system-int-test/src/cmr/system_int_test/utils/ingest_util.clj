@@ -84,10 +84,12 @@
 (defn ingest-concept
   "Ingest a concept and return a map with status, concept-id, and revision-id"
   ([concept]
-   (ingest-concept concept nil))
-  ([{:keys [metadata format concept-type concept-id revision-id provider-id native-id] :as concept}
-    token]
-   (let [headers (util/remove-nil-keys {"concept-id" concept-id
+   (ingest-concept concept {}))
+  ([concept options]
+   (let [{:keys [metadata format concept-type concept-id revision-id provider-id native-id]} concept
+         token (:token options)
+         accept-format (get options :accept :json)
+         headers (util/remove-nil-keys {"concept-id" concept-id
                                         "revision-id" revision-id
                                         "Echo-Token" token})
          response (client/request
@@ -96,7 +98,7 @@
                      :body  metadata
                      :content-type format
                      :headers headers
-                     :accept :json
+                     :accept accept-format
                      :throw-exceptions false
                      :connection-manager (url/conn-mgr)})
          body (json/decode (:body response) true)]

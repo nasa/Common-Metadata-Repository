@@ -63,7 +63,8 @@
    (ingest provider-id item format-key nil))
   ([provider-id item format-key token]
    (let [response (ingest/ingest-concept
-                    (item->concept (assoc item :provider-id provider-id) format-key) token)]
+                    (item->concept (assoc item :provider-id provider-id) format-key)
+                    {:token token})]
      (if (= 200 (:status response))
        (assoc item
               :status (:status response)
