@@ -152,8 +152,6 @@
                                           :connection-manager (conn/conn-mgr conn)})
         {:keys [status body]} response]
     (case status
-      404 (errors/throw-service-error
-            :not-found (str "Unable to find collections for search params: " (pr-str params)))
       200 (cheshire/decode body true)
       ;; default
       (errors/internal-error!

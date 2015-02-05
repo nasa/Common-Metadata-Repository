@@ -66,6 +66,7 @@
                           :deleted 0
                           :short_name "short"
                           :version_id "v1"
+                          :entry_id "short_v1"
                           :entry_title "entry"
                           :delete_time oracle-timestamp}]
               (is (= {:concept-type :collection
@@ -79,6 +80,7 @@
                       :deleted false
                       :extra-fields {:short-name "short"
                                      :version-id "v1"
+                                     :entry-id "short_v1"
                                      :entry-title "entry"
                                      :delete-time "1986-10-14T04:03:27.456Z"}}
                      (c/db-result->concept-map :collection db "PROV1" result)))))
@@ -122,11 +124,12 @@
                    :deleted false
                    :extra-fields {:short-name "short"
                                   :version-id "v1"
+                                  :entry-id "short_v1"
                                   :entry-title "entry"
                                   :delete-time "1986-10-14T04:03:27.456Z"}}]
       (is (= [["native_id" "concept_id" "metadata" "format" "revision_id" "deleted"
-               "short_name" "version_id" "entry_title" "delete_time"]
-              ["foo" "C5-PROV1" "<foo>" "ECHO10" 2 false "short" "v1" "entry" sql-timestamp]]
+               "short_name" "version_id" "entry_id" "entry_title" "delete_time"]
+              ["foo" "C5-PROV1" "<foo>" "ECHO10" 2 false "short" "v1" "short_v1" "entry" sql-timestamp]]
              (fix-result (c/concept->insert-args concept))))))
   (testing "granule insert-args"
     (let [revision-time (t/date-time 1986 10 14 4 3 27 456)

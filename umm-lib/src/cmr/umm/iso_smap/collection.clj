@@ -70,10 +70,13 @@
                                :citation :CI_Citation :otherCitationDetails :CharacterString])
         product-elem (xml-elem-with-id-tag id-elems "The ECS Short Name")
         product (xml-elem->Product product-elem version-description)
+        {:keys [short-name version-id]} product
         data-provider-timestamps (xml-elem->DataProviderTimestamps id-elems)
         dataset-id-elem (h/xml-elem-with-title-tag id-elems "DataSetId")]
     (c/map->UmmCollection
-      {:entry-id (str (:short-name product) "_" (:version-id product))
+      {:entry-id (if (empty? version-id)
+                   short-name
+                   (str short-name "_" version-id))
        :entry-title (cx/string-at-path
                       dataset-id-elem
                       [:aggregationInfo :MD_AggregateInformation :aggregateDataSetIdentifier
