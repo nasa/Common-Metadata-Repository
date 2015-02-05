@@ -1,5 +1,5 @@
-(ns ^{:doc "CMR Ingest validation integration tests"}
-  cmr.system-int-test.ingest.validation-test
+(ns cmr.system-int-test.ingest.validation-test
+  "CMR Ingest validation integration tests"
   (:require [clojure.test :refer :all]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.data2.collection :as dc]
@@ -113,6 +113,11 @@
         (dc/psa "bool" :boolean true)]}
       ["ProductSpecificAttributes"]
       ["Product Specific Attributes must be unique. This contains duplicates named [bool]."]))
+  (testing "Nested Path Validation"
+    (assert-invalid
+      {:platforms [(dc/platform "P1" "none" nil (dc/instrument "I1") (dc/instrument "I1"))]}
+      ["Platforms" "0" "Instruments"]
+      ["Instruments must be unique. This contains duplicates named [I1]."]))
   (testing "Spatial validation"
     (testing "geodetic polygon"
       ;; Invalid points are caught in the schema validation
