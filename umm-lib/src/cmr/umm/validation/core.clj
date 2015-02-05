@@ -57,6 +57,11 @@
     ruh/downloadable-urls
     (vu/unique-by-name-validator :url)))
 
+(defn- collection-association-name
+  "Returns the unique name of collection association for reporting purpose"
+  [ca]
+  (format "(ShortName [%s] & VersionId [%s])" (:short-name ca) (:version-id ca)))
+
 (def collection-validations
   "Defines validations for collections"
   {:product-specific-attributes (vu/unique-by-name-validator :name)
@@ -67,7 +72,8 @@
    :associated-difs (vu/unique-by-name-validator identity)
    :temporal {:range-date-times (v/every range-date-time-validation)}
    :related-urls online-access-urls-validation
-   :two-d-coordinate-systems (vu/unique-by-name-validator :name)})
+   :two-d-coordinate-systems (vu/unique-by-name-validator :name)
+   :collection-associations (vu/unique-by-name-validator collection-association-name)})
 
 (def granule-validations
   "Defines validations for granules"

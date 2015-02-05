@@ -277,3 +277,29 @@
             [:two-d-coordinate-systems]
             ["Two D Coordinate Systems must be unique. This contains duplicates named [T1]."]))))))
 
+(deftest collection-associations-validation
+  (testing "valid collection associations"
+    (assert-valid (c/map->UmmCollection
+                    {:collection-associations
+                     [(c/map->CollectionAssociation {:short-name "S1"
+                                                 :version-id "V1"})
+                      (c/map->CollectionAssociation {:short-name "S2"
+                                                 :version-id "V1"})
+                      (c/map->CollectionAssociation {:short-name "S1"
+                                                 :version-id "V2"})]})))
+
+  (testing "invalid collection associations"
+    (testing "duplicate names"
+      (let [coll (c/map->UmmCollection
+                   {:collection-associations
+                     [(c/map->CollectionAssociation {:short-name "S1"
+                                                 :version-id "V1"})
+                      (c/map->CollectionAssociation {:short-name "S2"
+                                                 :version-id "V1"})
+                      (c/map->CollectionAssociation {:short-name "S1"
+                                                 :version-id "V1"})]})]
+        (assert-invalid
+          coll
+          [:collection-associations]
+          ["Collection Associations must be unique. This contains duplicates named [(ShortName [S1] & VersionId [V1])]."])))))
+
