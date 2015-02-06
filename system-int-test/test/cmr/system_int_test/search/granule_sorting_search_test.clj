@@ -57,7 +57,9 @@
            "-readable_granule_name" (reverse [g1 g5 g4 g3 g2])))))
 
 (deftest granule-campaign-sorting-test
-  (let [coll (d/ingest "PROV1" (dc/collection {}))
+  (let [coll (d/ingest "PROV1"
+                       (dc/collection
+                         {:projects (dc/projects "c10" "c20" "c30" "c40" "c50" "c41" "c51")}))
         make-gran (fn [& campaigns]
                     (d/ingest "PROV1" (dg/granule coll {:project-refs campaigns})))
         g1 (make-gran "c10" "c41")
