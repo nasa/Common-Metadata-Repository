@@ -143,8 +143,7 @@
         granule (dg/umm-granule->granule-concept umm-granule)
         _ (ingest/delete-concept (d/item->concept collection :echo10))
         {:keys [status errors]} (ingest/ingest-concept granule)]
-    (is (= [400 [(str "Parent collection for granule [Gran1] does not exist. "
-                      "Collection reference: {:entry-title \"Coll1\"}")]]
+    (is (= [400 ["Collection with EntryTitle [Coll1] referenced in granule does not exist."]]
            [status errors]))
     (is (not (ingest/concept-exists-in-mdb? "G1-PROV1" 0)))))
 
