@@ -4,7 +4,7 @@
             [cmr.common.validations.core :as v]
             [cmr.umm.validation.collection :as vc]
             [cmr.umm.validation.granule :as vg]
-            [cmr.umm.validation.parent-threading :as pt]
+            [cmr.umm.validation.parent-weaver :as pw]
             [cmr.umm.validation.utils :as vu]
             [cmr.common.services.errors :as e]))
 
@@ -28,7 +28,7 @@
   UMM model and a list of errors at that path. Returns an empty sequence if it is valid."
   [collection granule]
   (validation-errors->path-errors
-    (v/validate vg/granule-validations (pt/set-parent granule collection))))
+    (v/validate vg/granule-validations (pw/set-parent granule collection))))
 
 
 

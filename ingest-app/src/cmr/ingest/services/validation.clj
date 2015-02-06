@@ -46,11 +46,11 @@
   [concept]
   (if-errors-throw (umm/validate-concept-xml concept)))
 
-(defn validate-collection
+(defn validate-collection-umm
   [collection]
   (if-errors-throw (umm-validation/validate-collection collection)))
 
-(defn validate-granule
+(defn validate-granule-umm
   [collection granule]
   (if-errors-throw (umm-validation/validate-granule collection granule)))
 

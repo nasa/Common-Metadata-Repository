@@ -25,7 +25,7 @@
   )
 
 (deftest validation-endpoint-test
-  (testing "colleciton validation"
+  (testing "collection validation"
     (testing "successful validation of collection"
       (let [concept (dc/collection-concept {})
             {:keys [status errors]} (ingest/validate-concept concept)]

@@ -2,10 +2,8 @@
   "Defines validations for UMM granules"
   (:require [clj-time.core :as t]
             [cmr.common.validations.core :as v]
-            [cmr.umm.validation.utils :as vu]
             [cmr.umm.spatial :as umm-s]
-            [cmr.spatial.validation :as sv]
-            [cmr.umm.related-url-helper :as ruh]))
+            [cmr.spatial.validation :as sv]))
 
 
 (defn set-geometries-spatial-representation

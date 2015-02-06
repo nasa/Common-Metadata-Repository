@@ -56,15 +56,17 @@
                                   :delete-time (when delete-time (str delete-time))})))
 
 (defmulti prepare-concept-for-save
-  "Prepares a concept for saving. This includes validation and adding extra fields."
+  "Prepares a concept for saving. This includes UMM validation and adding extra fields."
   (fn [context concept]
     (:concept-type concept)))
 
 (defmethod prepare-concept-for-save :collection
   [context concept]
   (let [collection (umm/parse-concept concept)]
+    ;; UMM Validation
     (when (ingest-validation-enabled?)
-      (v/validate-collection collection))
+      (v/validate-collection-umm collection))
+    ;; Add extra fields for the collection
     (add-extra-fields-for-collection context concept collection)))
 
 (defmethod prepare-concept-for-save :granule
@@ -80,9 +82,12 @@
                        (:granule-ur granule)
                        (:collection-ref granule)))
 
+    ;; UMM Validation
     (when (ingest-validation-enabled?)
       (let [parent-collection (umm/parse-concept parent-collection-concept)]
-        (v/validate-granule parent-collection granule)))
+        (v/validate-granule-umm parent-collection granule)))
+
+    ;; Add extra fields for the granule
     (add-extra-fields-for-granule context concept granule parent-collection-concept)))
 
 (deftracefn validate-concept
@@ -91,26 +96,14 @@
   [context concept]
   (v/validate-concept-request concept)
   (v/validate-concept-xml concept)
-  (prepare-concept-for-save context concept)
-  nil)
+  (let [concept (prepare-concept-for-save context concept)]
+    (v/validate-business-rules context concept)
+    concept))
 
 (deftracefn save-concept
   "Store a concept in mdb and indexer and return concept-id and revision-id."
   [context concept]
-
-  ;; 1. Validate request
-  (v/validate-concept-request concept)
-
-  ;;2. Validate XML
-  (v/validate-concept-xml concept)
-
-  ;; 3. Parse concept
-  (let [concept (prepare-concept-for-save context concept)]
-
-    ;; 6. Ingest Validation
-    (v/validate-business-rules context concept)
-
-    ;; 7. Save concept
+  (let [concept (validate-concept context concept)]
     (let [{:keys [concept-id revision-id]} (mdb/save-concept context concept)]
       (indexer/index-concept context concept-id revision-id)
       {:concept-id concept-id, :revision-id revision-id})))

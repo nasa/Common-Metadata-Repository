@@ -52,7 +52,6 @@
    (assert-invalid-spatial coord-sys shapes errors :echo10))
   ([coord-sys shapes errors metadata-format]
    (let [shapes (map (partial umm-s/set-coordinate-system coord-sys) shapes)]
-     (cmr.common.dev.capture-reveal/capture shapes)
      (assert-invalid {:spatial-coverage (dc/spatial {:gsr coord-sys})}
                      {:spatial-coverage (apply dg/spatial shapes)}
                      ["SpatialCoverage" "Geometries" 0]

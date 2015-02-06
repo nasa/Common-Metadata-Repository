@@ -1,24 +1,13 @@
-(ns cmr.umm.validation.parent-threading
+(ns cmr.umm.validation.parent-weaver
   "Provides functions to thread together a granule and collection parent objects for validation.
   It weaves together the objects so matching items within the granule and collection are combined"
   (:require [cmr.umm.collection :as c]
             [cmr.umm.granule :as g]
             [cmr.common.util :as u])
   (:import [cmr.umm.granule
-            CollectionRef
-            DataGranule
-            GranuleTemporal
-            OrbitCalculatedSpatialDomain
-            Orbit
-            ProductSpecificAttributeRef
-            SensorRef
-            InstrumentRef
-            PlatformRef
-            SpatialCoverage
-            TwoDCoordinateSystem
             UmmGranule]))
 
-(defprotocol ParentThreader
+(defprotocol ParentWeaver
   (set-parent [obj parent] "Sets the parent attribute on this object with the given parent"))
 
 (comment
@@ -36,7 +25,7 @@
   )
 
 (extend-protocol
-  ParentThreader
+  ParentWeaver
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   UmmGranule
