@@ -7,6 +7,7 @@
             [cmr.ingest.services.messages :as msg]
             [cmr.ingest.services.validation :as v]
             [cmr.ingest.services.helper :as h]
+            [cmr.ingest.config :as config]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.services.errors :as serv-errors]
             [cmr.common.services.messages :as cmsg]
@@ -119,9 +120,10 @@
 (deftracefn reset
   "Resets the queue broker"
   [context]
-  (let [queue-broker (get-in context [:system :queue-broker])]
-    (queue/reset queue-broker)
-    (cache/reset-caches context)))
+  (when (config/use-index-queue?)
+    (let [queue-broker (get-in context [:system :queue-broker])]
+      (queue/reset queue-broker)))
+  (cache/reset-caches context))
 
 (deftracefn health
   "Returns the health state of the app."

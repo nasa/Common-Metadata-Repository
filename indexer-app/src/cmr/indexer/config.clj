@@ -7,5 +7,5 @@
 
 (def use-index-queue?
   "Boolean flag indicating whether or not to use the message queue for indexing"
-  (cfg/config-value-fn :use-index-queue? "true" #(boolean (Boolean. ^String %))))
+  (cfg/config-value-fn :use-index-queue? "false" #(boolean (Boolean. ^String %))))
 

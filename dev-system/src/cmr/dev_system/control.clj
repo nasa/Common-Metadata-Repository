@@ -11,6 +11,7 @@
             [cmr.transmit.echo.acls :as echo-acls]
             [cmr.search.data.elastic-search-index :as es]
             [cmr.dev-system.queue-broker-wrapper :as wrapper]
+            [cmr.ingest.config :as iconfig]
 
             ;; Services for reseting
             [cmr.metadata-db.services.concept-service :as mdb-service]
@@ -81,8 +82,9 @@
 
     (POST "/wait-for-indexing" []
       (debug "dev system /wait-for-indexing")
-      (let [broker-wrapper (get-in system [:pre-components :broker-wrapper])]
-        (wrapper/wait-for-indexing broker-wrapper))
+      (when (iconfig/use-index-queue?)
+        (let [broker-wrapper (get-in system [:pre-components :broker-wrapper])]
+          (wrapper/wait-for-indexing broker-wrapper)))
       (debug "indexing complete")
       {:status 200})
 
