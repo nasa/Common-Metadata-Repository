@@ -135,14 +135,17 @@
     (is (= 200 (:status delete1-result)))
     (is (= 200 (:status delete2-result)))))
 
-;; Verify that attempts to ingest a granule whose parent does not exist result in a 404
+;; Verify that attempts to ingest a granule whose parent does not exist result in a 400 error
 (deftest ingest-orphan-granule-test
-  (let [collection (d/ingest "PROV1" (dc/collection {}))
-        umm-granule (dg/granule collection {:concept-id "G1-PROV1"})
+  (let [collection (d/ingest "PROV1" (dc/collection {:entry-title "Coll1"}))
+        umm-granule (dg/granule collection {:concept-id "G1-PROV1"
+                                            :granule-ur "Gran1"})
         granule (dg/umm-granule->granule-concept umm-granule)
         _ (ingest/delete-concept (d/item->concept collection :echo10))
-        {:keys [status]} (ingest/ingest-concept granule)]
-    (is (= 404 status))
+        {:keys [status errors]} (ingest/ingest-concept granule)]
+    (is (= [400 [(str "Parent collection for granule [Gran1] does not exist. "
+                      "Collection reference: {:entry-title \"Coll1\"}")]]
+           [status errors]))
     (is (not (ingest/concept-exists-in-mdb? "G1-PROV1" 0)))))
 
 ;; Verify that granules with embedded / (%2F) in the native-id are handled correctly

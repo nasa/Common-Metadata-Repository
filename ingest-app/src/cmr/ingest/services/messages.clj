@@ -1,10 +1,9 @@
 (ns cmr.ingest.services.messages
-  (:require [clojure.string :as str]
-            [cmr.common.services.errors :as errors]))
+  (:require [cmr.common.util :as util]))
 
 (defn parent-collection-does-not-exist
   [granule-ur collection-ref]
   (format
-    "Parent collection for granule [%s] does not exist. Collection reference: [%s]"
+    "Parent collection for granule [%s] does not exist. Collection reference: %s"
     granule-ur
-    (pr-str collection-ref)))
+    (pr-str (util/remove-nil-keys (into {} collection-ref)))))
