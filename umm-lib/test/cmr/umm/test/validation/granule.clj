@@ -61,3 +61,24 @@
           (gran-with-geometries [valid-point invalid-point invalid-mbr])
           expected-errors)))))
 
+(deftest granule-project-refs
+  (let [c1 (c/map->Project {:short-name "C1"})
+        c2 (c/map->Project {:short-name "C2"})
+        c3 (c/map->Project {:short-name "C3"})
+        collection (c/map->UmmCollection {:projects [c1 c2 c3]})]
+    (testing "Valid project-refs"
+      (assert-valid-gran collection (g/map->UmmGranule {}))
+      (assert-valid-gran collection (g/map->UmmGranule {:project-refs ["C1"]}))
+      (assert-valid-gran collection (g/map->UmmGranule {:project-refs ["C1" "C2" "C3"]})))
+    (testing "Invalid project-refs"
+      (assert-invalid-gran
+        collection
+        (g/map->UmmGranule {:project-refs ["C4"]})
+        [:projects]
+        ["Projects has [C4] which do not reference any projects in parent collection."])
+      (assert-invalid-gran
+        collection
+        (g/map->UmmGranule {:project-refs ["C1" "C2" "C3" "C4" "C5"]})
+        [:projects]
+        ["Projects has [C5, C4] which do not reference any projects in parent collection."]))))
+
