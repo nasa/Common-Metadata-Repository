@@ -46,9 +46,13 @@
   [concept]
   (if-errors-throw (umm/validate-concept-xml concept)))
 
-(defn validate-umm-record
-  [umm]
-  (if-errors-throw (umm-validation/validate umm)))
+(defn validate-collection-umm
+  [collection]
+  (if-errors-throw (umm-validation/validate-collection collection)))
+
+(defn validate-granule-umm
+  [collection granule]
+  (if-errors-throw (umm-validation/validate-granule collection granule)))
 
 (defn validate-business-rules
   "Validates the concept against CMR ingest rules."

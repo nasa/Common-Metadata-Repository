@@ -107,6 +107,12 @@
                     [(f k) (handle-value v)])]
       (into {} (map mapper m)))))
 
+(defn map-values
+  "Maps f over all the values in m returning a new map with the updated values"
+  [f m]
+  (into {} (for [[k v] m] [k (f v)])))
+
+
 (defn map-keys->snake_case
   "Converts map keys to snake_case."
   [m]

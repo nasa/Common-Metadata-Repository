@@ -56,28 +56,20 @@
       (context "/providers/:provider-id" [provider-id]
         (context ["/validate/collection/:native-id" :native-id #".*$"] [native-id]
           (POST "/" {:keys [body content-type headers request-context]}
-            (r/response (ingest/validate-concept request-context
-                                                 (body->concept
-                                                   :collection
-                                                   provider-id
-                                                   native-id
-                                                   body
-                                                   content-type
-                                                   headers)))))
+            (ingest/validate-concept
+              request-context
+              (body->concept :collection provider-id native-id body content-type headers))
+            {:status 200}))
 
         (context ["/collections/:native-id" :native-id #".*$"] [native-id]
           (PUT "/" {:keys [body content-type headers request-context params]}
             (let [context (acl/add-authentication-to-context request-context params headers)]
               (acl/verify-ingest-management-permission
                 context :update "PROVIDER_OBJECT" provider-id)
-              (r/response (ingest/save-concept request-context
-                                               (body->concept
-                                                 :collection
-                                                 provider-id
-                                                 native-id
-                                                 body
-                                                 content-type
-                                                 headers)))))
+              (r/response
+                (ingest/save-concept
+                  request-context
+                  (body->concept :collection provider-id native-id body content-type headers)))))
           (DELETE "/" {:keys [request-context params headers]}
             (let [concept-attribs {:provider-id provider-id
                                    :native-id native-id
@@ -89,28 +81,20 @@
 
         (context ["/validate/granule/:native-id" :native-id #".*$"] [native-id]
           (POST "/" {:keys [body content-type headers request-context]}
-            (r/response (ingest/validate-concept request-context
-                                                 (body->concept
-                                                   :granule
-                                                   provider-id
-                                                   native-id
-                                                   body
-                                                   content-type
-                                                   headers)))))
+            (ingest/validate-concept
+              request-context
+              (body->concept :granule provider-id native-id body content-type headers))
+            {:status 200}))
 
         (context ["/granules/:native-id" :native-id #".*$"] [native-id]
           (PUT "/" {:keys [body content-type headers request-context params]}
             (let [context (acl/add-authentication-to-context request-context params headers)]
               (acl/verify-ingest-management-permission
                 context :update "PROVIDER_OBJECT" provider-id)
-              (r/response (ingest/save-concept request-context
-                                               (body->concept
-                                                 :granule
-                                                 provider-id
-                                                 native-id
-                                                 body
-                                                 content-type
-                                                 headers)))))
+              (r/response
+                (ingest/save-concept
+                  request-context
+                  (body->concept :granule provider-id native-id body content-type headers)))))
           (DELETE "/" {:keys [request-context params headers]}
             (let [concept-attribs {:provider-id provider-id
                                    :native-id native-id

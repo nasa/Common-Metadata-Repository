@@ -96,8 +96,8 @@
       (is (= 2 (count (second swath))))
     ))
   (testing "returns entries along the orbit"
-    ; TODO: If the backtracking algorithm ever becomes available to this project, backtracking each point on a variety of orbits
-    ;       would serve as an additional check
+    ;; If the backtracking algorithm ever becomes available to this project, backtracking each point on a variety of orbits
+    ;; would serve as an additional check
     (let [swath (first (to-swaths (make-orbit-parameters)
                                   default-ascending-crossing
                                   [(make-calculated-spatial-domain)]

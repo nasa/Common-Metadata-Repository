@@ -30,7 +30,7 @@
   [field-path]
   (map (fn [path-item]
          (if (number? path-item)
-           (str path-item)
+           path-item
            (csk/->CamelCaseString path-item)))
        field-path))
 

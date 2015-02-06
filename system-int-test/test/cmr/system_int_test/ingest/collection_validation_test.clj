@@ -1,4 +1,4 @@
-(ns cmr.system-int-test.ingest.validation-test
+(ns cmr.system-int-test.ingest.collection-validation-test
   "CMR Ingest validation integration tests"
   (:require [clojure.test :refer :all]
             [cmr.system-int-test.utils.ingest-util :as ingest]
@@ -25,7 +25,7 @@
   )
 
 (deftest validation-endpoint-test
-  (testing "colleciton validation"
+  (testing "collection validation"
     (testing "successful validation of collection"
       (let [concept (dc/collection-concept {})
             {:keys [status errors]} (ingest/validate-concept concept)]
@@ -52,21 +52,10 @@
                      "Line 1 - cvc-complex-type.2.4.b: The content of element 'Granule' is not complete. One of '{GranuleUR}' is expected."]]
                [status errors]))))))
 
-
 (defn polygon
   "Creates a single ring polygon with the given ordinates. Points must be in counter clockwise order."
   [& ords]
   (poly/polygon [(apply umm-s/ords->ring ords)]))
-
-
-(defn ingest-spatial-coll
-  [coord-sys & shapes]
-  (let [shapes (map (partial umm-s/set-coordinate-system coord-sys) shapes)]
-    (d/ingest "PROV1"
-              (dc/collection
-                {:spatial-coverage (dc/spatial {:gsr coord-sys
-                                                :sr coord-sys
-                                                :geometries shapes})}))))
 
 (defn assert-invalid
   ([coll-attributes field-path errors]
@@ -91,7 +80,7 @@
      (assert-invalid {:spatial-coverage (dc/spatial {:gsr coord-sys
                                                      :sr coord-sys
                                                      :geometries shapes})}
-                     ["SpatialCoverage" "Geometries" "0"]
+                     ["SpatialCoverage" "Geometries" 0]
                      errors
                      metadata-format))))
 
@@ -116,7 +105,7 @@
   (testing "Nested Path Validation"
     (assert-invalid
       {:platforms [(dc/platform "P1" "none" nil (dc/instrument "I1") (dc/instrument "I1"))]}
-      ["Platforms" "0" "Instruments"]
+      ["Platforms" 0 "Instruments"]
       ["Instruments must be unique. This contains duplicates named [I1]."]))
   (testing "Spatial validation"
     (testing "geodetic polygon"
@@ -160,9 +149,6 @@
         ["Spatial validation error: The bounding rectangle north value [45] was less than the south value [46]"]))
 
 
-    ;; TODO Add tests for validation of points with all formats.
-    ;; Add tests for validation of another spatial type with all formats.
-    ;; Points and another shape should both be done since schema validation catches it with ECHO10.
 
 
     ))

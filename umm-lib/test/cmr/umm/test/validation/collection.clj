@@ -1,4 +1,4 @@
-(ns cmr.umm.test.validation.core
+(ns cmr.umm.test.validation.collection
   "This has tests for UMM validations."
   (:require [clojure.test :refer :all]
             [cmr.umm.validation.core :as v]
@@ -10,25 +10,25 @@
 
 
 (defn assert-valid
-  "Asserts that the given umm model is valid."
-  [umm]
-  (is (empty? (v/validate umm))))
+  "Asserts that the given collection is valid."
+  [collection]
+  (is (empty? (v/validate-collection collection))))
 
 (defn assert-invalid
   "Asserts that the given umm model is invalid and has the expected error messages.
   field-path is the path within the metadata to the error. expected-errors is a list of string error
   messages."
-  [umm field-path expected-errors]
+  [collection field-path expected-errors]
   (is (= [(e/map->PathErrors {:path field-path
                               :errors expected-errors})]
-         (v/validate umm))))
+         (v/validate-collection collection))))
 
 (defn assert-multiple-invalid
   "Asserts there are multiple errors at different paths invalid with the UMM. Expected errors
   should be a list of maps with path and errors."
-  [umm expected-errors]
+  [collection expected-errors]
   (is (= (set (map e/map->PathErrors expected-errors))
-         (set (v/validate umm)))))
+         (set (v/validate-collection collection)))))
 
 (defn coll-with-psas
   [psas]
@@ -335,4 +335,3 @@
           coll
           [:collection-associations]
           ["Collection Associations must be unique. This contains duplicates named [(ShortName [S1] & VersionId [V1])]."])))))
-
