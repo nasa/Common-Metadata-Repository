@@ -13,8 +13,8 @@
             [cmr.transmit.config :as transmit-config]
             [cmr.system-int-test.utils.url-helper :as url]
             [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.utils.echo-util :as echo-util]))
-
+            [cmr.system-int-test.utils.echo-util :as echo-util]
+            [cmr.common.util :as util]))
 
 (defn- create-provider-through-url
   "Create the provider by http POST on the given url"
@@ -83,28 +83,31 @@
 
 (defn ingest-concept
   "Ingest a concept and return a map with status, concept-id, and revision-id"
-  [{:keys [metadata format concept-type concept-id revision-id provider-id native-id] :as concept}]
-  (let [headers (merge {}
-                       (when concept-id {"concept-id" concept-id})
-                       (when revision-id {"revision-id" revision-id}))
-        response (client/request
-                   {:method :put
-                    :url (url/ingest-url provider-id concept-type native-id)
-                    :body  metadata
-                    :content-type format
-                    :headers headers
-                    :accept :json
-                    :throw-exceptions false
-                    :connection-manager (url/conn-mgr)})
-        body (json/decode (:body response) true)]
-    (assoc body :status (:status response))))
+  ([concept]
+   (ingest-concept concept {}))
+  ([concept options]
+   (let [{:keys [metadata format concept-type concept-id revision-id provider-id native-id]} concept
+         token (:token options)
+         accept-format (get options :accept :json)
+         headers (util/remove-nil-keys {"concept-id" concept-id
+                                        "revision-id" revision-id
+                                        "Echo-Token" token})
+         response (client/request
+                    {:method :put
+                     :url (url/ingest-url provider-id concept-type native-id)
+                     :body  metadata
+                     :content-type format
+                     :headers headers
+                     :accept accept-format
+                     :throw-exceptions false
+                     :connection-manager (url/conn-mgr)})
+         body (json/decode (:body response) true)]
+     (assoc body :status (:status response)))))
 
 (defn validate-concept
   "Validate a concept and return a map with status and error messages if applicable"
   [{:keys [metadata format concept-type concept-id revision-id provider-id native-id] :as concept}]
-  (let [headers (merge {}
-                       (when concept-id {"concept-id" concept-id})
-                       (when revision-id {"revision-id" revision-id}))
+  (let [headers (util/remove-nil-keys {"concept-id" concept-id "revision-id" revision-id})
         response (client/request
                    {:method :post
                     :url (url/validate-url provider-id concept-type native-id)
@@ -161,15 +164,18 @@
 
 (defn delete-concept
   "Delete a given concept."
-  [{:keys [provider-id concept-type native-id] :as concept}]
-  (let [response (client/request
-                   {:method :delete
-                    :url (url/ingest-url provider-id concept-type native-id)
-                    :accept :json
-                    :throw-exceptions false
-                    :connection-manager (url/conn-mgr)})
-        body (json/decode (:body response) true)]
-    (assoc body :status (:status response))))
+  ([concept]
+   (delete-concept concept nil))
+  ([{:keys [provider-id concept-type native-id] :as concept} token]
+   (let [response (client/request
+                    {:method :delete
+                     :url (url/ingest-url provider-id concept-type native-id)
+                     :headers (merge {} (when token {"Echo-Token" token}))
+                     :accept :json
+                     :throw-exceptions false
+                     :connection-manager (url/conn-mgr)})
+         body (json/decode (:body response) true)]
+     (assoc body :status (:status response)))))
 
 
 (defn ingest-concepts
@@ -229,17 +235,22 @@
 (defn create-provider
   ([provider-guid provider-id]
    (create-provider provider-guid provider-id true))
-  ([provider-guid provider-id grant-all?]
+  ([provider-guid provider-id grant-all-search?]
+   (create-provider provider-guid provider-id grant-all-search? true))
+  ([provider-guid provider-id grant-all-search? grant-all-ingest?]
    (create-mdb-provider provider-id)
    (echo-util/create-providers {provider-guid provider-id})
 
-   (when grant-all?
+   (when grant-all-search?
      (echo-util/grant [echo-util/guest-ace
                        echo-util/registered-user-ace]
                       (assoc (echo-util/catalog-item-id provider-guid)
                              :collection-applicable true
                              :granule-applicable true)
-                      nil))))
+                      :system-object-identity
+                      nil))
+   (when grant-all-ingest?
+     (echo-util/grant-all-ingest provider-guid))))
 
 (defn reset-fixture
   "Creates the given providers in ECHO and the CMR then clears out all data at the end."
@@ -247,12 +258,14 @@
    (reset-fixture {}))
   ([provider-guid-id-map]
    (reset-fixture provider-guid-id-map true))
-  ([provider-guid-id-map grant-all?]
+  ([provider-guid-id-map grant-all-search?]
+   (reset-fixture provider-guid-id-map grant-all-search? true))
+  ([provider-guid-id-map grant-all-search? grant-all-ingest?]
    (fn [f]
      (try
        (reset)
        (doseq [[provider-guid provider-id] provider-guid-id-map]
-         (create-provider provider-guid provider-id grant-all?))
+         (create-provider provider-guid provider-id grant-all-search? grant-all-ingest?))
        (f)
        (finally
          (reset))))))

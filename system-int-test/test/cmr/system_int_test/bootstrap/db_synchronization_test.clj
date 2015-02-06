@@ -69,6 +69,7 @@
       :revision-id 1
       :deleted false
       :extra-fields {:short-name (get-in coll [:product :short-name])
+                     :entry-id (or (:entry-id coll) (get-in coll [:product :short-name]))
                      :entry-title entry-title
                      :version-id (get-in coll [:product :version-id])
                      :delete-time nil}
@@ -90,6 +91,7 @@
      :revision-id 1
      :deleted false
      :extra-fields {:short-name (get-in coll [:product :short-name])
+                    :entry-id (or (:entry-id coll) (get-in coll [:product :short-name]))
                     :entry-title entry-title
                     :version-id (get-in coll [:product :version-id])
                     :delete-time "2000-01-01T12:00:00Z"}

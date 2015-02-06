@@ -20,16 +20,13 @@
 
 (defn xml-elem->ProductSpecificAttributes
   [collection-element]
-  (let [psas (map xml-elem->ProductSpecificAttribute
-                  (cx/elements-at-path
-                    collection-element
-                    [:AdditionalAttributes :AdditionalAttribute]))]
-    (when (not (empty? psas))
-      psas)))
+  (seq (map xml-elem->ProductSpecificAttribute
+            (cx/elements-at-path collection-element
+                                 [:AdditionalAttributes :AdditionalAttribute]))))
 
 (defn generate-product-specific-attributes
   [psas]
-  (when (and psas (not (empty? psas)))
+  (when (seq psas)
     (x/element
       :AdditionalAttributes {}
       (for [psa psas]

@@ -208,13 +208,13 @@
          attribs (merge required-extra-dif-fields attribs)]
      (collection attribs))))
 
-(defn collection-for-ingest
+(defn collection-concept
   "Returns the collection for ingest with the given attributes"
   ([attribs]
-   (collection-for-ingest attribs :echo10))
+   (collection-concept attribs :echo10))
   ([attribs concept-format]
-   (let [provider-id (or (:provider-id attribs) "PROV1")]
+   (let [{:keys [provider-id native-id]} attribs]
      (-> attribs
          collection
-         (d/item->concept concept-format)
-         (assoc :provider-id provider-id)))))
+         (assoc :provider-id provider-id :native-id native-id)
+         (d/item->concept concept-format)))))

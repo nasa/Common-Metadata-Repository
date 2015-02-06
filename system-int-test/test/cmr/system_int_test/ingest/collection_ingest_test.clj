@@ -1,4 +1,4 @@
-(ns ^{:doc "CMR Ingest integration tests"}
+(ns ^{:doc "CMR collection ingest integration tests"}
   cmr.system-int-test.ingest.collection-ingest-test
   (:require [clojure.test :refer :all]
             [cmr.system-int-test.utils.ingest-util :as ingest]
@@ -17,7 +17,7 @@
             [cmr.system-int-test.utils.search-util :as search]))
 
 
-(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
 ;; tests
 ;; ensure metadata, indexer and ingest apps are accessable on ports 3001, 3004 and 3002 resp;
@@ -25,34 +25,91 @@
 
 ;; Verify a new concept is ingested successfully.
 (deftest collection-ingest-test
-  (println "collection-ingest-test")
   (testing "ingest of a new concept"
-    (let [concept (dc/collection-for-ingest {})
+    (let [concept (dc/collection-concept {})
           {:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
       (index/wait-until-indexed)
       (is (ingest/concept-exists-in-mdb? concept-id revision-id))
       (is (= 1 revision-id)))))
 
-;; Verify a new concept with concept-id is ingested successfully.
+;; Collection with concept-id ingest and update scenarios.
 (deftest collection-w-concept-id-ingest-test
-  (println "collection-w-concept-id-ingest-test")
-  (testing "ingest of a new concept with concept-id present"
-    (let [concept (dc/collection-for-ingest {:concept-id "C1000-PROV1"})
-          supplied-concept-id (:concept-id concept)
-          {:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
-      (index/wait-until-indexed)
-      (is (ingest/concept-exists-in-mdb? concept-id revision-id))
-      (is (= supplied-concept-id concept-id))
-      (is (= 1 revision-id)))))
+  (let [supplied-concept-id "C1000-PROV1"
+        concept (dc/collection-concept {:concept-id supplied-concept-id
+                                        :native-id "Atlantic-1"})]
+    (testing "ingest of a new concept with concept-id present"
+      (let [{:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
+        (index/wait-until-indexed)
+        (is (ingest/concept-exists-in-mdb? concept-id revision-id))
+        (is (= [supplied-concept-id 1] [concept-id revision-id]))))
+
+    (testing "Update the concept with the concept-id"
+      (let [{:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
+        (index/wait-until-indexed)
+        (is (= [supplied-concept-id 2] [concept-id revision-id]))))
+
+    (testing "update the concept without the concept-id"
+      (let [{:keys [concept-id revision-id]} (ingest/ingest-concept (dissoc concept :concept-id))]
+        (index/wait-until-indexed)
+        (is (= [supplied-concept-id 3] [concept-id revision-id]))))
+
+    (testing "update concept with a different concept-id is invalid"
+      (let [{:keys [status errors]} (ingest/ingest-concept (assoc concept :concept-id "C1111-PROV1"))]
+        (index/wait-until-indexed)
+        (is (= [400 ["Concept-id [C1111-PROV1] does not match the existing concept-id [C1000-PROV1] for native-id [Atlantic-1]"]]
+               [status errors]))))))
+
+(deftest collection-w-entry-id-validation-test
+  (let [supplied-concept-id "C1000-PROV1"
+        coll1 (dc/collection-concept {:concept-id supplied-concept-id
+                                      :short-name "OceanTemperature"
+                                      :version-id "1"
+                                      :native-id "Atlantic-1"})
+        coll2 (dc/collection-concept {:concept-id supplied-concept-id
+                                      :short-name "OceanTemperature"
+                                      :version-id "2"
+                                      :native-id "Atlantic-1"})
+        coll3 (dc/collection-concept {:short-name "OceanTemperature"
+                                      :version-id "3"
+                                      :native-id "Atlantic-3"})
+        coll4 (dc/collection-concept {:concept-id "C1111-PROV1"
+                                      :short-name "OceanTemperature"
+                                      :version-id "3"
+                                      :native-id "Atlantic-1"})
+        coll5 (dc/collection-concept {:short-name "OceanTemperature"
+                                      :version-id "1"
+                                      :native-id "Atlantic-2"
+                                      :provider-id "PROV2"})]
+    (ingest/ingest-concept coll1)
+
+    (testing "update the collection with a different entry-id is OK"
+      (let [{:keys [concept-id revision-id]} (ingest/ingest-concept coll2)]
+        (is (= [supplied-concept-id 2] [concept-id revision-id]))))
+
+    (testing "ingest collection with entry-id used by a different collection within the same provider is invalid"
+      (let [{:keys [status errors]} (ingest/ingest-concept (assoc coll1 :native-id "Atlantic-2"))]
+        (is (= [400 ["The EntryId was not unique. The collection with native id [Atlantic-2] in provider [PROV1] had the same EntryId [OceanTemperature_1]."]]
+               [status errors]))))
+
+    (testing "ingest collection with entry-id used by a collection in a different provider is OK"
+      (let [{:keys [status]} (ingest/ingest-concept coll5)]
+        (is (= 200 status))))
+
+    (testing "multiple validation errors"
+      (let [;; ingest coll3 to set up entry-id collision condition
+            _ (ingest/ingest-concept coll3)
+            {:keys [status errors]} (ingest/ingest-concept coll4)]
+        (is (= [400 ["Concept-id [C1111-PROV1] does not match the existing concept-id [C1000-PROV1] for native-id [Atlantic-1]"
+                     "The EntryId was not unique. The collection with native id [Atlantic-1] in provider [PROV1] had the same EntryId [OceanTemperature_3]."]]
+               [status errors]))))))
 
 ;; Ingest same concept N times and verify same concept-id is returned and
 ;; revision id is 1 greater on each subsequent ingest
 (deftest repeat-same-collection-ingest-test
-  (println "repeat-same-collection-ingest-test")
   (testing "ingest same concept n times ..."
     (let [n 4
-          concept (dc/collection-for-ingest {})
-          created-concepts (doall (take n (repeatedly n #(ingest/ingest-concept concept))))]
+          concept (dc/collection-concept {})
+          created-concepts (take n (repeatedly n #(ingest/ingest-concept concept)))]
       (index/wait-until-indexed)
       (is (apply = (map :concept-id created-concepts)))
       (is (= (range 1 (inc n)) (map :revision-id created-concepts))))))
@@ -80,8 +137,7 @@
 
 ;; Verify ingest behaves properly if empty body is presented in the request.
 (deftest empty-collection-ingest-test
-  (println "empty-collection-ingest-test")
-  (let [concept-with-empty-body  (assoc (dc/collection-for-ingest {}) :metadata "")
+  (let [concept-with-empty-body  (assoc (dc/collection-concept {}) :metadata "")
         {:keys [status errors]} (ingest/ingest-concept concept-with-empty-body)]
     (index/wait-until-indexed)
     (is (= status 400))
@@ -97,21 +153,10 @@
     (is (= status 400))
     (is (re-find #"DeleteTime 2000-01-01T12:00:00.000Z is before the current time." (first errors)))))
 
-;; Verify non-existent concept deletion results in not found / 404 error.
-(deftest delete-non-existent-collection-test
-  (println "delete-non-existent-collection-test")
-  (let [concept (dc/collection-for-ingest {})
-        fake-provider-id (str (:provider-id concept) (:native-id concept))
-        non-existent-concept (assoc concept :provider-id fake-provider-id)
-        {:keys [status]} (ingest/delete-concept non-existent-concept)]
-    (index/wait-until-indexed)
-    (is (= status 404))))
-
 ;; Verify existing concept can be deleted and operation results in revision id 1 greater than
 ;; max revision id of the concept prior to the delete
 (deftest delete-collection-test-old
-  (println "delete-collection-test-old")
-  (let [concept (dc/collection-for-ingest {})
+  (let [concept (dc/collection-concept {})
         ingest-result (ingest/ingest-concept concept)
         delete-result (ingest/delete-concept concept)
         ingest-revision-id (:revision-id ingest-result)
@@ -129,7 +174,6 @@
   )
 
 (deftest delete-collection-test
-  (println "delete-collection-test")
   (let [coll1 (d/ingest "PROV1" (dc/collection))
         gran1 (d/ingest "PROV1" (dg/granule coll1))
         gran2 (d/ingest "PROV1" (dg/granule coll1))
@@ -165,8 +209,7 @@
 
 ;; Verify ingest is successful for request with content type that has parameters
 (deftest content-type-with-parameter-ingest-test
-  (println "content-type-with-parameter-ingest-test")
-  (let [concept  (assoc (dc/collection-for-ingest {})
+  (let [concept  (assoc (dc/collection-concept {})
                         :format "application/echo10+xml; charset=utf-8")
         {:keys [status]} (ingest/ingest-concept concept)]
     (index/wait-until-indexed)
@@ -174,8 +217,7 @@
 
 ;; Verify ingest behaves properly if request is missing content type.
 (deftest missing-content-type-ingest-test
-  (println "missing-content-type-ingest-test")
-  (let [concept-with-no-content-type  (assoc (dc/collection-for-ingest {}) :format "")
+  (let [concept-with-no-content-type  (assoc (dc/collection-concept {}) :format "")
         {:keys [status errors]} (ingest/ingest-concept concept-with-no-content-type)]
     (index/wait-until-indexed)
     (is (= status 400))
@@ -183,8 +225,7 @@
 
 ;; Verify ingest behaves properly if request contains invalid  content type.
 (deftest invalid-content-type-ingest-test
-  (println "invalid-content-type-ingest-test")
-  (let [concept (assoc (dc/collection-for-ingest {}) :format "blah")
+  (let [concept (assoc (dc/collection-concept {}) :format "blah")
         {:keys [status errors]} (ingest/ingest-concept concept)]
     (index/wait-until-indexed)
     (is (= status 400))
@@ -192,8 +233,7 @@
 
 ;; Verify deleting same concept twice is not an error if ignore conflict is true.
 (deftest delete-same-collection-twice-test
-  (println "delete-same-collection-twice-test")
-  (let [concept (dc/collection-for-ingest {})
+  (let [concept (dc/collection-concept {})
         ingest-result (ingest/ingest-concept concept)
         delete1-result (ingest/delete-concept concept)
         delete2-result (ingest/delete-concept concept)]
@@ -206,7 +246,7 @@
 (deftest ingest-collection-with-slash-in-native-id-test
   (println "ingest-collection-with-slash-in-native-id-test")
   (let [crazy-id "`1234567890-=qwertyuiop[]\\asdfghjkl;'zxcvbnm,./ ~!@#$%^&*()_+QWERTYUIOP{}ASDFGHJKL:\"ZXCVBNM<>?"
-        collection (dc/collection-for-ingest {:entry-title crazy-id})
+        collection (dc/collection-concept {:entry-title crazy-id})
         {:keys [concept-id revision-id] :as response} (ingest/ingest-concept collection)
         ingested-concept (ingest/get-concept concept-id)]
     (index/wait-until-indexed)
@@ -222,7 +262,7 @@
 (deftest schema-validation-test
   (println "schema-validation-test")
   (are [concept-format validation-errors]
-       (let [concept (dc/collection-for-ingest
+       (let [concept (dc/collection-concept
                        {:beginning-date-time "2010-12-12T12:00:00Z"} concept-format)
              {:keys [status errors]}
              (ingest/ingest-concept

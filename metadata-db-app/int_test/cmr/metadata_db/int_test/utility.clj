@@ -49,17 +49,20 @@
   ([provider-id uniq-num]
    (collection-concept provider-id uniq-num {}))
   ([provider-id uniq-num extra-fields]
-   {:concept-type :collection
-    :native-id (str "native-id " uniq-num)
-    :provider-id provider-id
-    :metadata (str "xml here " uniq-num)
-    :format "application/echo10+xml"
-    :deleted false
-    :extra-fields (merge {:short-name (str "short" uniq-num)
-                          :version-id (str "V" uniq-num)
-                          :entry-title (str "dataset" uniq-num)
-                          :delete-time nil}
-                         extra-fields)}))
+   (let [short-name (str "short" uniq-num)
+         version-id (str "V" uniq-num)]
+     {:concept-type :collection
+      :native-id (str "native-id " uniq-num)
+      :provider-id provider-id
+      :metadata (str "xml here " uniq-num)
+      :format "application/echo10+xml"
+      :deleted false
+      :extra-fields (merge {:short-name short-name
+                            :version-id version-id
+                            :entry-id (str short-name "_" version-id)
+                            :entry-title (str "dataset" uniq-num)
+                            :delete-time nil}
+                           extra-fields)})))
 
 (defn granule-concept
   "Creates a granule concept"
@@ -194,6 +197,11 @@
       {:status status
        :concepts (parse-concepts response)}
       (assoc (parse-errors response) :status status))))
+
+(defn find-latest-concepts
+  "Make a get to retrieve the latest revision of concepts by parameters for a specific concept type"
+  [concept-type params]
+  (find-concepts concept-type (assoc params :latest true)))
 
 (defn get-expired-collection-concept-ids
   "Make a get to retrieve expired collection concept ids."

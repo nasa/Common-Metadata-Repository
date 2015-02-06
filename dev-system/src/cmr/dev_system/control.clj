@@ -59,7 +59,8 @@
   {:indexer cache/reset-caches
    :index-set cache/reset-caches
    :metadata-db cache/reset-caches
-   :search cache/reset-caches})
+   :search cache/reset-caches
+   :ingest cache/reset-caches})
 
 
 (defn- build-routes [system]

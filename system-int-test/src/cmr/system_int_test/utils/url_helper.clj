@@ -93,6 +93,16 @@
   []
   (format "http://localhost:%s/jobs/" (transmit-config/ingest-port)))
 
+(defn ingest-read-caches-url
+  "URL to read the ingest caches."
+  []
+  (format "http://localhost:%s/caches" (transmit-config/ingest-port)))
+
+(defn ingest-clear-cache-url
+  "Clear cache in ingest app."
+  []
+  (format "http://localhost:%s/caches/clear-cache" (transmit-config/ingest-port)))
+
 (defn search-url
   [type]
   (format "http://localhost:%s/%ss" (transmit-config/search-port) (name type)))
@@ -137,6 +147,10 @@
 (defn bulk-index-provider-url
   []
   (format "http://localhost:%s/bulk_index/providers" (transmit-config/bootstrap-port)))
+
+(defn bulk-index-collection-url
+  []
+  (format "http://localhost:%s/bulk_index/collections" (transmit-config/bootstrap-port)))
 
 (defn bulk-migrate-provider-url
   []

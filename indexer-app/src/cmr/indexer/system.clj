@@ -51,6 +51,7 @@
                       acl/token-imp-cache-key (acl/create-token-imp-cache)}
              :scheduler (jobs/create-scheduler
                           `system-holder
+                          :db
                           [(ac/refresh-acl-cache-job "indexer-acl-cache-refresh")])
              :queue-broker (when (config/use-index-queue?)
                              (rmq/create-queue-broker {:host (rmq-conf/rabbit-mq-host)
@@ -63,6 +64,7 @@
                                                          :start-function #(ql/start-queue-message-handler
                                                                             %
                                                                             ql/handle-index-action)}))}]
+
     (transmit-config/system-with-connections sys [:metadata-db :index-set :echo-rest])))
 
 (defn start

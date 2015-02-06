@@ -77,6 +77,7 @@
    short-name
    long-name
    technique
+   characteristics
    ])
 
 (defrecord Instrument
@@ -85,6 +86,7 @@
    long-name
    technique
    sensors
+   characteristics
    ])
 
 (defrecord Characteristic
@@ -103,6 +105,12 @@
    type
    instruments
    characteristics
+   ])
+
+(defrecord CollectionAssociation
+  [
+   short-name
+   version-id
    ])
 
 (defrecord Project
@@ -244,6 +252,8 @@
    platforms
 
    product-specific-attributes
+
+   collection-associations
 
    ;; Records campaigns of ECHO10
    projects

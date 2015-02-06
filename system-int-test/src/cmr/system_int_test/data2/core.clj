@@ -42,11 +42,11 @@
   :granule)
 
 (defn item->concept
-  "Converts an UMM item to a concept map. Expects provider-id to be in the item"
+  "Converts an UMM item to a concept map. Default provider-id to PROV1 if not present."
   [item format-key]
   (let [format (mime-types/format->mime-type format-key)]
     (merge {:concept-type (item->concept-type item)
-            :provider-id (:provider-id item)
+            :provider-id (or (:provider-id item) "PROV1")
             :native-id (or (:native-id item) (item->native-id item))
             :metadata (umm/umm->xml item format-key)
             :format format}
@@ -58,10 +58,13 @@
 (defn ingest
   "Ingests the catalog item. Returns it with concept-id, revision-id, and provider-id set on it."
   ([provider-id item]
-   (ingest provider-id item :echo10))
+   (ingest provider-id item :echo10 nil))
   ([provider-id item format-key]
+   (ingest provider-id item format-key nil))
+  ([provider-id item format-key token]
    (let [response (ingest/ingest-concept
-                    (item->concept (assoc item :provider-id provider-id) format-key))]
+                    (item->concept (assoc item :provider-id provider-id) format-key)
+                    {:token token})]
      (if (= 200 (:status response))
        (assoc item
               :status (:status response)

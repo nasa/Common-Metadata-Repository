@@ -94,13 +94,19 @@
   []
   (cache/create-cache :ttl {} {:ttl TOKEN_IMP_CACHE_TIME}))
 
+(def object-identity-type->acl-key
+  {"CATALOG_ITEM" :catalog-item-identity
+   "SYSTEM_OBJECT" :system-object-identity
+   "PROVIDER_OBJECT" :provider-object-identity})
+
 (defn- has-ingest-management-permission?
   "Returns true if the user identified by the token in the cache has been granted
   INGEST_MANAGEMENT_PERMISSION in ECHO ACLS for the given permission type."
-  [context permission-type]
-  (->> (echo-acls/get-acls-by-type context "SYSTEM_OBJECT")
+  [context permission-type object-identity-type provider-id]
+  (->> (echo-acls/get-acls-by-type context object-identity-type provider-id)
        ;; Find acls on INGEST_MANAGEMENT
-       (filter (comp (partial = "INGEST_MANAGEMENT_ACL") :target :system-object-identity))
+       (filter (comp (partial = "INGEST_MANAGEMENT_ACL")
+                     :target (object-identity-type->acl-key object-identity-type)))
        ;; Find acls for this user and permission type
        (filter (partial acl-matches-sids-and-permission?
                         (context->sids context)
@@ -110,15 +116,22 @@
 (defn verify-ingest-management-permission
   "Verifies the current user has been granted INGEST_MANAGEMENT_PERMISSION in ECHO ACLs"
   ([context]
-   (verify-ingest-management-permission context :update))
+   (verify-ingest-management-permission context :update "SYSTEM_OBJECT" nil))
   ([context permission-type]
+   (verify-ingest-management-permission context permission-type "SYSTEM_OBJECT" nil))
+  ([context permission-type object-identity-type provider-id]
    (let [cache-key [(:token context) permission-type]
-         has-permission? (cache/cache-lookup (cache/context->cache context token-imp-cache-key)
-                                             cache-key
-                                             #(has-ingest-management-permission? context permission-type))]
+         has-permission? (cache/cache-lookup
+                           (cache/context->cache context token-imp-cache-key)
+                           cache-key
+                           #(has-ingest-management-permission? context
+                                                               permission-type
+                                                               object-identity-type
+                                                               provider-id))]
      (when-not has-permission?
        (errors/throw-service-error
          :unauthorized
          "You do not have permission to perform that action.")))))
 
-
+(comment
+  (def context {:system (get-in user/system [:apps :ingest])}))

@@ -13,6 +13,7 @@
             [cmr.umm.dif.collection.org :as org]
             [cmr.umm.dif.collection.temporal :as t]
             [cmr.umm.dif.collection.product-specific-attribute :as psa]
+            [cmr.umm.dif.collection.collection-association :as ca]
             [cmr.umm.dif.collection.platform :as platform]
             [cmr.umm.dif.collection.spatial-coverage :as sc]
             [cmr.umm.dif.collection.extended-metadata :as em]
@@ -68,6 +69,7 @@
      :product-specific-attributes (psa/xml-elem->ProductSpecificAttributes xml-struct)
      :projects (pj/xml-elem->Projects xml-struct)
      :related-urls (ru/xml-elem->RelatedURLs xml-struct)
+     :collection-associations (ca/xml-elem->CollectionAssociations xml-struct)
      :spatial-coverage (sc/xml-elem->SpatialCoverage xml-struct)
      :organizations (org/xml-elem->Organizations xml-struct)
      :personnel (personnel/xml-elem->personnel xml-struct)}))
@@ -94,7 +96,7 @@
             {:keys [insert-time update-time]} :data-provider-timestamps
             :keys [entry-id entry-title summary temporal organizations science-keywords platforms
                    product-specific-attributes projects related-urls spatial-coverage
-                   temporal-keywords personnel]} collection
+                   temporal-keywords personnel collection-associations]} collection
            ;; DIF only has range-date-times, so we ignore the temporal field if it is not of range-date-times
            temporal (when (seq (:range-date-times temporal)) temporal)
            emit-fn (if indent? x/indent-str x/emit-str)]
@@ -110,15 +112,13 @@
                     (platform/generate-platforms platforms)
                     (t/generate-temporal temporal)
                     (sc/generate-spatial-coverage spatial-coverage)
-                    (when (seq temporal-keywords)
-                      (for [tk temporal-keywords]
-                        (x/element :Data_Resolution {} (x/element :Temporal_Resolution {} tk))))
-                    (when-not (empty? projects)
-                      (pj/generate-projects projects))
+                    (for [tk temporal-keywords]
+                      (x/element :Data_Resolution {} (x/element :Temporal_Resolution {} tk)))
+                    (pj/generate-projects projects)
                     (org/generate-data-center organizations)
                     (x/element :Summary {} (x/element :Abstract {} summary))
-                    (when-not (empty? related-urls)
-                      (ru/generate-related-urls related-urls))
+                    (ru/generate-related-urls related-urls)
+                    (ca/generate-collection-associations collection-associations)
                     (x/element :Metadata_Name {} "CEOS IDN DIF")
                     (x/element :Metadata_Version {} "VERSION 9.9.3")
                     (when insert-time

@@ -14,6 +14,7 @@
             [cmr.common.cache :as cache]
             [cmr.common.services.errors :as svc-errors]
             [cmr.common.mime-types :as mt]
+            [cmr.common.services.mime-types-helper :as mth]
             [cmr.common.xml :as cx]
             [cmr.search.services.query-service :as query-svc]
             [cmr.system-trace.http :as http-trace]
@@ -21,6 +22,7 @@
             [cmr.search.services.messages.common-messages :as msg]
             [cmr.search.services.health-service :as hs]
             [cmr.acl.core :as acl]
+            [cmr.acl.routes :as common-routes]
 
             ;; Result handlers
             ;; required here to avoid circular dependency in query service
@@ -58,20 +60,6 @@
   "This CORS header is to define how long in seconds the response of the preflight request can be cached"
   "Access-Control-Max-Age")
 
-(def extension->mime-type
-  "A map of URL file extensions to the mime type they represent."
-  {"json" "application/json"
-   "xml" "application/xml"
-   "echo10" "application/echo10+xml"
-   "iso" "application/iso19115+xml"
-   "iso19115" "application/iso19115+xml"
-   "iso_smap" "application/iso:smap+xml"
-   "dif" "application/dif+xml"
-   "csv" "text/csv"
-   "atom" "application/atom+xml"
-   "kml" "application/vnd.google-earth.kml+xml"
-   "opendata" "application/opendata+json"})
-
 (def search-result-supported-mime-types
   "The mime types supported by search."
   #{"*/*"
@@ -99,49 +87,6 @@
     "application/iso:smap+xml"
     "application/dif+xml"})
 
-(def cache-api-routes
-  "Create routes for the cache querying/management api"
-  (context "/caches" []
-    ;; Get the list of caches
-    (GET "/" {:keys [params request-context headers]}
-      (let [context (acl/add-authentication-to-context request-context params headers)]
-        (acl/verify-ingest-management-permission context :read)
-        (let [caches (map name (keys (get-in context [:system :caches])))]
-          (acl/verify-ingest-management-permission context :read)
-          {:status 200
-           :body (json/generate-string caches)})))
-    ;; Get the keys for the given cache
-    (GET "/:cache-name" {{:keys [cache-name] :as params} :params
-                         request-context :request-context
-                         headers :headers}
-      (let [context (acl/add-authentication-to-context request-context params headers)]
-        (acl/verify-ingest-management-permission context :read)
-        (let [cache (cache/context->cache context (keyword cache-name))]
-          (when cache
-            (let [result (cache/cache-keys cache)]
-              {:status 200
-               :body (json/generate-string result)})))))
-
-    ;; Get the value for the given key for the given cache
-    (GET "/:cache-name/:cache-key" {{:keys [cache-name cache-key] :as params} :params
-                                    request-context :request-context
-                                    headers :headers}
-      (let [context (acl/add-authentication-to-context request-context params headers)]
-        (acl/verify-ingest-management-permission context :read)
-        (let [cache-key (keyword cache-key)
-              cache (cache/context->cache context (keyword cache-name))
-              result (cache/cache-lookup cache cache-key)]
-          (when result
-            {:status 200
-             :body (json/generate-string result)}))))
-
-    (POST "/clear-cache" {:keys [request-context params headers]}
-      (let [context (acl/add-authentication-to-context request-context params headers)]
-        (acl/verify-ingest-management-permission context :update)
-        (cache/reset-caches context))
-      {:status 200})))
-
-
 (defn- search-response-headers
   "Generate headers for search response."
   [content-type results]
@@ -163,7 +108,7 @@
   was passed."
   [search-path-w-extension]
   (when-let [extension (second (re-matches #"[^.]+(?:\.(.+))$" search-path-w-extension))]
-    (or (extension->mime-type extension)
+    (or (mt/format->mime-type (keyword extension))
         (svc-errors/throw-service-error
           :bad-request (format "The URL extension [%s] is not supported." extension)))))
 
@@ -185,7 +130,7 @@
      ;; This validate check retained here to fail early if search accept headers are
      ;; not in search-result-supported-mime-types.
      ;; Concept specific format validation done during query validation.
-     (mt/validate-request-mime-type mime-type valid-mime-types)
+     (mth/validate-request-mime-type mime-type valid-mime-types)
      ;; set the default format to xml
      (mt/mime-type->format mime-type default-mime-type))))
 
@@ -377,7 +322,7 @@
         {:status 204})
 
       ;; add routes for accessing caches
-      cache-api-routes
+      common-routes/cache-api-routes
 
       (GET "/health" {request-context :request-context params :params}
         (let [{pretty? :pretty} params
@@ -424,11 +369,18 @@
         [(msg/mixed-arity-parameter-msg mixed-param)]))
     (f request)))
 
+(defn default-format-fn
+  "Determine the format that results should be returned in based on the request URI."
+  [{:keys [uri]}]
+  (if (re-find #"caches" uri)
+    "application/json"
+    "application/xml"))
+
 (defn make-api [system]
   (-> (build-routes system)
       (http-trace/build-request-context-handler system)
       handler/site
       mixed-arity-param-handler
       copy-of-body-handler
-      errors/exception-handler
+      (errors/exception-handler default-format-fn)
       ring-json/wrap-json-response))

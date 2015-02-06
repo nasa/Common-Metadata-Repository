@@ -10,6 +10,7 @@
    :concept-type :collection
    :extra-fields {:short-name "short"
                   :version-id "v1"
+                  :entry-id "short_v1"
                   :entry-title "entry"}})
 
 (def valid-granule
@@ -73,6 +74,7 @@
                     (v/concept-validation (update-in valid-collection [:extra-fields] dissoc field)))
          :short-name
          :version-id
+         :entry-id
          :entry-title)))
 
 (deftest granule-validation-test

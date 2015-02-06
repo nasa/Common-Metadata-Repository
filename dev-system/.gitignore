@@ -11,5 +11,5 @@ pom.xml.asc
 /log
 /.nrepl-port
 /es_data
-*holdings.json
 /results_compare
+/scratch

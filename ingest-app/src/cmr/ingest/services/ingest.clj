@@ -1,22 +1,21 @@
 (ns cmr.ingest.services.ingest
-  (:require [clj-time.core :as t]
-            [cmr.common.time-keeper :as tk]
-            [cmr.oracle.connection :as conn]
+  (:require [cmr.oracle.connection :as conn]
             [cmr.transmit.metadata-db :as mdb]
             [cmr.transmit.echo.rest :as rest]
             [cmr.ingest.data.indexer :as indexer]
             [cmr.ingest.data.provider-acl-hash :as pah]
             [cmr.ingest.services.messages :as msg]
             [cmr.ingest.services.validation :as v]
+            [cmr.ingest.services.helper :as h]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.services.errors :as serv-errors]
             [cmr.common.services.messages :as cmsg]
-            [cmr.common.date-time-parser :as p]
             [cmr.common.util :as util]
             [cmr.common.config :as cfg]
             [cmr.umm.core :as umm]
             [clojure.string :as string]
             [cmr.message-queue.services.queue :as queue]
+            [cmr.common.cache :as cache]
             [cmr.system-trace.core :refer [deftracefn]]))
 
 (def ingest-validation-enabled?
@@ -32,8 +31,10 @@
   [context concept collection]
   (let [{{:keys [short-name version-id]} :product
          {:keys [delete-time]} :data-provider-timestamps
-         entry-title :entry-title} collection]
+         entry-title :entry-title
+         entry-id :entry-id} collection]
     (assoc concept :extra-fields {:entry-title entry-title
+                                  :entry-id entry-id
                                   :short-name short-name
                                   :version-id version-id
                                   :delete-time (when delete-time (str delete-time))})))
@@ -45,13 +46,7 @@
   [context provider-id collection-ref]
   (let [params (util/remove-nil-keys (merge {:provider-id provider-id}
                                             collection-ref))
-        coll-concepts (mdb/find-collections context params)
-        ;; Find the latest version of the concepts that aren't deleted. There should be only one
-        matching-concepts (->> coll-concepts
-                               (group-by :concept-id)
-                               (map (fn [[concept-id concepts]]
-                                      (->> concepts (sort-by :revision-id) reverse first)))
-                               (filter (complement :deleted)))]
+        matching-concepts (h/find-visible-collections context params)]
     (when (> (count matching-concepts) 1)
       (serv-errors/internal-error!
         (format (str "Found multiple possible parent collections for a granule in provider %s"
@@ -80,7 +75,7 @@
   (v/validate-concept-request concept)
   (v/validate-concept-xml concept)
   (let [umm-record (umm/parse-concept concept)]
-    (v/validate-umm-record (:format concept) umm-record)))
+    (v/validate-umm-record umm-record)))
 
 (deftracefn save-concept
   "Store a concept in mdb and indexer and return concept-id and revision-id."
@@ -100,28 +95,17 @@
 
         ;; 5. Umm record validation
         _ (when (ingest-validation-enabled?)
-            (v/validate-umm-record (:format concept) umm-record))
+            (v/validate-umm-record umm-record))
 
-        concept (add-extra-fields context concept umm-record)
+        concept (add-extra-fields context concept umm-record)]
 
+    ;; 6. Ingest Validation
+    (v/validate-business-rules context concept)
 
-        ;; TODO Move this to UMM validation
-        time-to-compare (t/plus (tk/now) (t/minutes 1))
-        delete-time (get-in concept [:extra-fields :delete-time])
-        delete-time (if delete-time (p/parse-datetime delete-time) nil)]
-    (if (and delete-time (t/after? time-to-compare delete-time))
-      (serv-errors/throw-service-error
-        :bad-request
-        (format "DeleteTime %s is before the current time." (str delete-time)))
-
-      ;; 6. Ingest Validation
-        ;; TODO
-
-
-      ;; 7. Save concept
-      (let [{:keys [concept-id revision-id]} (mdb/save-concept context concept)]
-        (indexer/index-concept context concept-id revision-id)
-        {:concept-id concept-id, :revision-id revision-id}))))
+    ;; 7. Save concept
+    (let [{:keys [concept-id revision-id]} (mdb/save-concept context concept)]
+      (indexer/index-concept context concept-id revision-id)
+      {:concept-id concept-id, :revision-id revision-id})))
 
 (deftracefn delete-concept
   "Delete a concept from mdb and indexer."
@@ -136,7 +120,8 @@
   "Resets the queue broker"
   [context]
   (let [queue-broker (get-in context [:system :queue-broker])]
-    (queue/reset queue-broker)))
+    (queue/reset queue-broker)
+    (cache/reset-caches context)))
 
 (deftracefn health
   "Returns the health state of the app."

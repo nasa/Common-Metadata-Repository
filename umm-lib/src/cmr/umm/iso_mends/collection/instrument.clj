@@ -15,7 +15,9 @@
         long-name (cx/string-at-path instrument-elem
                                      [:identifier :MD_Identifier :description :CharacterString])
         sensors (sensor/xml-elem->Sensors instrument-elem)]
-    (c/->Instrument short-name long-name nil sensors)))
+    (c/map->Instrument {:short-name short-name
+                        :long-name long-name
+                        :sensors sensors})))
 
 (defn- xml-elem->Instrument-mapping
   [instrument-elem]

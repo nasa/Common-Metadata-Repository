@@ -26,13 +26,13 @@
 (defn- sensors->expected-parsed
   "Return the expected parsed sensors for the given sensors."
   [sensors]
-  (seq (map #(assoc % :technique nil) sensors)))
+  (seq (map #(assoc % :technique nil :characteristics nil) sensors)))
 
 (defn- instrument->expected-parsed
   "Return the expected parsed instrument for the given instrument."
   [instrument]
   (-> instrument
-      (assoc :technique nil)
+      (assoc :technique nil :characteristics nil)
       (update-in [:sensors] sensors->expected-parsed)))
 
 (defn- instruments->expected-parsed
@@ -209,18 +209,27 @@
                        {:short-name "RADARSAT-1"
                         :long-name "RADARSAT-LONG-1"
                         :type "Spacecraft"
-                        :instruments [(umm-c/->Instrument
-                                        "SAR"
-                                        "SAR long name"
-                                        nil
-                                        [(umm-c/->Sensor "SNA" "SNA long name" nil)
-                                         (umm-c/->Sensor "SNB" nil nil)])
-                                      (umm-c/->Instrument "MAR" nil nil nil)]})
+                        :instruments [(umm-c/map->Instrument
+                                        {:short-name "SAR"
+                                         :long-name "SAR long name"
+                                         :sensors [(umm-c/map->Sensor {:short-name "SNA"
+                                                                       :long-name "SNA long name"})
+                                                   (umm-c/map->Sensor {:short-name "SNB"})]})
+                                      (umm-c/map->Instrument {:short-name "MAR"})]})
                      (umm-c/map->Platform
                        {:short-name "RADARSAT-2"
                         :long-name "RADARSAT-LONG-2"
                         :type "Spacecraft-2"
                         :instruments nil})]
+                    :collection-associations [(umm-c/map->CollectionAssociation
+                                                {:short-name "COLLOTHER-237"
+                                                 :version-id "1"})
+                                              (umm-c/map->CollectionAssociation
+                                                {:short-name "COLLOTHER-238"
+                                                 :version-id "1"})
+                                              (umm-c/map->CollectionAssociation
+                                                {:short-name "COLLOTHER-239"
+                                                 :version-id "1"})]
                     :projects
                     [(umm-c/map->Project
                        {:short-name "ESI"
@@ -283,3 +292,4 @@
                  "\"http://www.isotc211.org/2005/gmd\":hierarchyLevelName, "
                  "\"http://www.isotc211.org/2005/gmd\":contact}' is expected.")]
            (c/validate-xml (s/replace valid-collection-xml "fileIdentifier" "XXXX"))))))
+

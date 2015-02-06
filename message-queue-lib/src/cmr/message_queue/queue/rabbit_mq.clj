@@ -127,6 +127,17 @@
   [ch queue-name opts]
   (lq/declare ch queue-name opts))
 
+(defn purge-queue
+    "Remove all messages from a queue and the associated wait queues"
+    [broker queue-name]
+    (info "Purging all messages from queue" queue-name)
+    (lq/purge (:pub-ch broker) queue-name)
+    (doseq [wait-queue-num (range 1 (inc (count (config/rabbit-mq-ttls))))
+            :let [ttl (wait-queue-ttl wait-queue-num)
+                  wq (wait-queue-name queue-name wait-queue-num)]]
+      (debug "Purging messages from wait queue" wq)
+      (lq/purge (:pub-ch broker) wq)))
+
 (defrecord RabbitMQBroker
   [
    ;; RabbitMQ server host
@@ -221,21 +232,12 @@
   (reset
     [this]
     (debug "Resetting RabbitMQ")
-    ;; TODO reset RabbitMQ
+    (doseq [queue-name persistent-queues]
+        (purge-queue this queue-name))
     )
 )
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-  (defn purge-queue
-    "Remove all messages from a queue and the associated wait queues"
-    [broker queue-name]
-    (info "Purging all messages from queue" queue-name)
-    (lq/purge (:pub-ch broker) queue-name)
-    (doseq [wait-queue-num (range 1 (inc (count (config/rabbit-mq-ttls))))
-            :let [ttl (wait-queue-ttl wait-queue-num)
-                  wq (wait-queue-name queue-name wait-queue-num)]]
-      (debug "Purging messages from wait queue" wq)
-      (lq/purge (:pub-ch broker) wq)))
 
   (defn delete-queue
     [broker queue-name]

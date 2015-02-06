@@ -67,7 +67,7 @@
   [coordinate-system {:keys [points]}]
   (rr/ring coordinate-system points))
 
-(defn point-str->points
+(defn lat-lon-point-str->points
   "Converts a string of lat lon pairs separated by spaces into a list of points"
   [s]
   (->> (str/split s #" ")
@@ -76,12 +76,34 @@
        (map (fn [[lat lon]]
               (p/point lon lat)))))
 
-(defn ring-str->ring
-  "Parses a string to a ring"
-  [s]
-  (ring (point-str->points s)))
+(defmulti lat-lon-point-str->ring
+  "Parses a string of lat lon pairs separated by spaces to a ring."
+  (fn
+    ([s]
+     :counter-clockwise)
+    ([s point-order]
+     point-order)))
 
-(defn ring->ring-str
-  "Returns the string representation of the ring"
-  [r]
+(defmethod lat-lon-point-str->ring :counter-clockwise
+  [s & args]
+  (ring (lat-lon-point-str->points s)))
+
+(defmethod lat-lon-point-str->ring :clockwise
+  [s & args]
+  (ring (reverse (lat-lon-point-str->points s))))
+
+(defmulti ring->lat-lon-point-str
+  "Returns the ring represented by a string of lat lon pairs separated by spaces."
+  (fn
+    ([s]
+     :counter-clockwise)
+    ([s point-order]
+     point-order)))
+
+(defmethod ring->lat-lon-point-str :counter-clockwise
+  [r & args]
   (str/join " " (mapcat (fn [p] [(:lat p) (:lon p)]) (:points r))))
+
+(defmethod ring->lat-lon-point-str :clockwise
+  [r & args]
+  (str/join " " (mapcat (fn [p] [(:lat p) (:lon p)]) (reverse (:points r)))))

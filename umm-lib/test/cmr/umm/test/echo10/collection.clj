@@ -237,6 +237,26 @@
         <Type>Spacecraft-2</Type>
       </Platform>
     </Platforms>
+    <CollectionAssociations>
+      <CollectionAssociation>
+        <ShortName>COLLOTHER-237</ShortName>
+        <VersionId>1</VersionId>
+        <CollectionType>Input Collection</CollectionType>
+        <CollectionUse>Extra data</CollectionUse>
+      </CollectionAssociation>
+      <CollectionAssociation>
+        <ShortName>COLLOTHER-238</ShortName>
+        <VersionId>1</VersionId>
+        <CollectionType>Input Collection</CollectionType>
+        <CollectionUse>Extra data</CollectionUse>
+      </CollectionAssociation>
+      <CollectionAssociation>
+        <ShortName>COLLOTHER-239</ShortName>
+        <VersionId>1</VersionId>
+        <CollectionType>Input Collection</CollectionType>
+        <CollectionUse>Extra data</CollectionUse>
+      </CollectionAssociation>
+    </CollectionAssociations>
     <Campaigns>
       <Campaign>
         <ShortName>ESI</ShortName>
@@ -397,18 +417,29 @@
                        {:short-name "RADARSAT-1"
                         :long-name "RADARSAT-LONG-1"
                         :type "Spacecraft"
-                        :instruments [(umm-c/->Instrument
-                                        "SAR"
-                                        "SAR long name"
-                                        "itechnique"
-                                        [(umm-c/->Sensor "SNA" "SNA long name" "technique")
-                                         (umm-c/->Sensor "SNB" nil nil)])
-                                      (umm-c/->Instrument "MAR" nil nil nil)]})
+                        :instruments [(umm-c/map->Instrument
+                                        {:short-name "SAR"
+                                         :long-name "SAR long name"
+                                         :technique "itechnique"
+                                         :sensors [(umm-c/map->Sensor {:short-name "SNA"
+                                                                       :long-name "SNA long name"
+                                                                       :technique "technique"})
+                                                   (umm-c/map->Sensor {:short-name "SNB"})]})
+                                      (umm-c/map->Instrument {:short-name "MAR"})]})
                      (umm-c/map->Platform
                        {:short-name "RADARSAT-2"
                         :long-name "RADARSAT-LONG-2"
                         :type "Spacecraft-2"
                         :instruments nil})]
+                    :collection-associations [(umm-c/map->CollectionAssociation
+                                                {:short-name "COLLOTHER-237"
+                                                 :version-id "1"})
+                                              (umm-c/map->CollectionAssociation
+                                                {:short-name "COLLOTHER-238"
+                                                 :version-id "1"})
+                                              (umm-c/map->CollectionAssociation
+                                                {:short-name "COLLOTHER-239"
+                                                 :version-id "1"})]
                     :projects
                     [(umm-c/map->Project
                        {:short-name "ESI"

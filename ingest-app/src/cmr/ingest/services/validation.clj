@@ -1,11 +1,12 @@
 (ns cmr.ingest.services.validation
   "Provides functions to validate concept"
-  (:require [cmr.common.services.errors :as err]
-            [clojure.string :as s]
+  (:require [clojure.string :as s]
+            [cmr.common.services.errors :as err]
             [cmr.umm.mime-types :as umm-mime-types]
             [cmr.common.mime-types :as mt]
             [cmr.umm.core :as umm]
-            [cmr.umm.validation.core :as umm-validation]))
+            [cmr.umm.validation.core :as umm-validation]
+            [cmr.ingest.services.business-rule-validation :as bv]))
 
 (defn- format-validation
   "Validates the format of the concept."
@@ -46,6 +47,13 @@
   (if-errors-throw (umm/validate-concept-xml concept)))
 
 (defn validate-umm-record
-  [metadata-format umm]
-  (if-errors-throw (umm-validation/validate (mt/mime-type->format metadata-format) umm)))
+  [umm]
+  (if-errors-throw (umm-validation/validate umm)))
+
+(defn validate-business-rules
+  "Validates the concept against CMR ingest rules."
+  [context concept]
+  (if-errors-throw (mapcat #(% context concept)
+                           (bv/business-rule-validations (:concept-type concept)))))
+
 
