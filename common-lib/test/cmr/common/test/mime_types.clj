@@ -63,7 +63,8 @@
       (or ((disj supported-mime-types "*/*") mime-type)
           (= mime-type-str mime-type)
           (and (nil? mime-type)
-               (empty? mime-type-str))))))
+               (or (empty? mime-type-str)
+                   (= "*/*" mime-type-str)))))))
 
 (deftest convert-format-extension-to-mime-type
   (testing "valid extensions"
