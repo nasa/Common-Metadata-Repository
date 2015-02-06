@@ -25,7 +25,10 @@
   "Queue used for requesting indexing of concepts"
   (cfg/config-value-fn :index-queue-name "cmr_index.queue"))
 
+(def indexing-communication-method
+  "Either \"http\" or \"queue\""
+  (cfg/config-value-fn :indexing-communication-method "http"))
+
 (def use-index-queue?
   "Boolean flag indicating whether or not to use the message queue for indexing"
-  (cfg/config-value-fn :use-index-queue? "false" #(boolean (Boolean. ^String %))))
-
+  #(= "queue" (indexing-communication-method)))

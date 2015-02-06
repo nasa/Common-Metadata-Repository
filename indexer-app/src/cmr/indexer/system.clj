@@ -60,7 +60,7 @@
                                                      :password (rmq-conf/rabbit-mq-password)
                                                      :queues [(config/index-queue-name)]}))
              :queue-listener (when (config/use-index-queue?)
-                               (queue/create-queue-listener {:num-workers 5
+                               (queue/create-queue-listener {:num-workers (config/queue-listener-count)
                                                          :start-function #(ql/start-queue-message-handler
                                                                             %
                                                                             ql/handle-index-action)}))}]

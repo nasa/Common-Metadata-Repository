@@ -1,9 +1,13 @@
 (ns cmr.indexer.services.queue-listener
-  "Queue subscriber methods"
+  "Provides functions related to subscribing to the indexing queue. Creates
+  separate subscriber threads to listen on the indexing queue for index requests
+  with start-queue-message-handler and provides a multi-method, handle-index-action,
+  to actually process the messages."
   (:require [cmr.common.lifecycle :as lifecycle]
             [cmr.indexer.config :as config]
             [cmr.indexer.services.index-service :as indexer]
-            [cmr.message-queue.services.queue :as queue]))
+            [cmr.message-queue.services.queue :as queue]
+            [cmr.common.log :refer (debug info warn error)]))
 
 (defmulti handle-index-action
   "Handle the various actions that can be requested via the indexing queue"
@@ -17,6 +21,7 @@
       (indexer/index-concept context concept-id revision-id true)
       {:status :ok}
       (catch Exception e
+        (error e (.getMessage e))
         {:status :retry :message (.getMessage e)}))))
 
 (defmethod handle-index-action :delete-concept
@@ -26,6 +31,7 @@
       (indexer/delete-concept context concept-id revision-id true)
       {:status :ok}
       (catch Exception e
+        (error e (.getMessage e))
         {:status :retry :message (.getMessage e)}))))
 
 (defn start-queue-message-handler

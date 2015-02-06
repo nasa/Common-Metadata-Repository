@@ -138,6 +138,15 @@ Example un-healthy response body:
 
 By default, version conflict returned from elasticsearch will be ignored. User can override the default by passing in query parameter "ignore_conflict=false" to the request.
 
+### Environment Variables
+
+The following environment variables control the use of the indexing queue
+__indexing-communication-method__ - Can be either "http" (no queue) or "queue".
+  Defaults to "http"
+__queue-listener-count__ - The number of workers (threads) to use for the index queue consumer
+  Defaults to 5.
+__index-queue-name__ - The name to use for the index queue. Defaults to "cmr_index.queue".
+
 ## License
 
-Copyright © 2014 NASA
+Copyright © 2014-2015 NASA
