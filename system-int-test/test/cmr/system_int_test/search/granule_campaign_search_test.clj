@@ -11,11 +11,11 @@
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
 (deftest search-by-campaign
-  (let [coll1 (d/ingest "PROV1" (dc/collection {}))
+  (let [coll1 (d/ingest "PROV1" (dc/collection {:projects (dc/projects "ABC" "XYZ" "PDQ" "RST")}))
         gran1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule1"
-                                                       :project-refs ["ABC"]}))
+                                                   :project-refs ["ABC"]}))
         gran2 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule2"
-                                                       :project-refs ["ABC" "XYZ"]}))
+                                                   :project-refs ["ABC" "XYZ"]}))
         gran3 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule3"
                                                        :project-refs ["PDQ" "RST"]}))]
     (index/wait-until-indexed)

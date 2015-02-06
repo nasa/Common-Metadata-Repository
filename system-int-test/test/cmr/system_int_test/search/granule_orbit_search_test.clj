@@ -134,10 +134,10 @@
 
            ;; Line crossing prime meridian and equator
            [g1 g8] [-45,-45 45,45] nil
-           ;; Line crossing the antimeridian - TODO - This case gets different results from
-           ;; catalog-rest (returns g2 & g7) and will fail if uncommented. Need to determine if it
+           ;; Line crossing the antimeridian - This case gets different results from catalog-rest
+           ;; (returns g2 & g7) and will fail if uncommented. Need to determine if it
            ;; is supposed to return both granules or not.
-           ;[g2] [179,-45 -170, 30] nil
+           ; [g2] [179,-45 -170, 30] nil
            ))
 
     (testing "polygon searches"

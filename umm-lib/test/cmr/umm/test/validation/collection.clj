@@ -1,4 +1,4 @@
-(ns cmr.umm.test.validation.core
+(ns cmr.umm.test.validation.collection
   "This has tests for UMM validations."
   (:require [clojure.test :refer :all]
             [cmr.umm.validation.core :as v]
@@ -10,25 +10,25 @@
 
 
 (defn assert-valid
-  "Asserts that the given umm model is valid."
-  [umm]
-  (is (empty? (v/validate umm))))
+  "Asserts that the given collection is valid."
+  [collection]
+  (is (empty? (v/validate-collection collection))))
 
 (defn assert-invalid
   "Asserts that the given umm model is invalid and has the expected error messages.
   field-path is the path within the metadata to the error. expected-errors is a list of string error
   messages."
-  [umm field-path expected-errors]
+  [collection field-path expected-errors]
   (is (= [(e/map->PathErrors {:path field-path
                               :errors expected-errors})]
-         (v/validate umm))))
+         (v/validate-collection collection))))
 
 (defn assert-multiple-invalid
   "Asserts there are multiple errors at different paths invalid with the UMM. Expected errors
   should be a list of maps with path and errors."
-  [umm expected-errors]
+  [collection expected-errors]
   (is (= (set (map e/map->PathErrors expected-errors))
-         (set (v/validate umm)))))
+         (set (v/validate-collection collection)))))
 
 (defn coll-with-psas
   [psas]
@@ -264,8 +264,22 @@
             [(format "Related Urls must be unique. This contains duplicates named [%s]." url)]))))))
 
 (deftest collection-two-d-coordinate-systems-validation
-  (let [t1 (c/map->TwoDCoordinateSystem {:name "T1"})
-        t2 (c/map->TwoDCoordinateSystem {:name "T2"})]
+  (let [t1 (c/map->TwoDCoordinateSystem {:name "T1"
+                                         :coordinate-1 (c/map->Coordinate {:min-value 0.0
+                                                                           :max-value 6.0})
+                                         :coordinate-2 (c/map->Coordinate {:min-value 10.0
+                                                                           :max-value 10.0})})
+        t2 (c/map->TwoDCoordinateSystem {:name "T2"
+                                         :coordinate-1 (c/map->Coordinate {:min-value 0.0})
+                                         :coordinate-2 (c/map->Coordinate {:max-value 26.0})})
+        t3 (c/map->TwoDCoordinateSystem {:name "T3"
+                                         :coordinate-1 (c/map->Coordinate {:min-value 10.0
+                                                                           :max-value 6.0})})
+        t4 (c/map->TwoDCoordinateSystem {:name "T4"
+                                         :coordinate-1 (c/map->Coordinate {:min-value 0.0
+                                                                           :max-value 6.0})
+                                         :coordinate-2 (c/map->Coordinate {:min-value 50.0
+                                                                           :max-value 26.0})})]
     (testing "valid two-d-coordinate-systems"
       (assert-valid (c/map->UmmCollection {:two-d-coordinate-systems [t1 t2]})))
 
@@ -275,5 +289,49 @@
           (assert-invalid
             coll
             [:two-d-coordinate-systems]
-            ["Two D Coordinate Systems must be unique. This contains duplicates named [T1]."]))))))
+            ["Two D Coordinate Systems must be unique. This contains duplicates named [T1]."])))
+      (testing "invalid coordinate"
+        (let [coll (c/map->UmmCollection {:two-d-coordinate-systems [t3]})]
+          (assert-invalid
+            coll
+            [:two-d-coordinate-systems 0 :coordinate-1]
+            ["Coordinate 1 minimum [10.0] must be less than the maximum [6.0]."])))
+      (testing "multiple validation errors"
+        (let [coll (c/map->UmmCollection {:two-d-coordinate-systems [t1 t1 t3 t4]})]
+          (assert-multiple-invalid
+            coll
+            [{:path [:two-d-coordinate-systems],
+              :errors
+              ["Two D Coordinate Systems must be unique. This contains duplicates named [T1]."]}
+             {:path [:two-d-coordinate-systems 2 :coordinate-1],
+              :errors
+              ["Coordinate 1 minimum [10.0] must be less than the maximum [6.0]."]}
+             {:path [:two-d-coordinate-systems 3 :coordinate-2],
+              :errors
+              ["Coordinate 2 minimum [50.0] must be less than the maximum [26.0]."]}]))))))
 
+(deftest collection-associations-validation
+  (testing "valid collection associations"
+    (assert-valid (c/map->UmmCollection
+                    {:collection-associations
+                     [(c/map->CollectionAssociation {:short-name "S1"
+                                                     :version-id "V1"})
+                      (c/map->CollectionAssociation {:short-name "S2"
+                                                     :version-id "V1"})
+                      (c/map->CollectionAssociation {:short-name "S1"
+                                                     :version-id "V2"})]})))
+
+  (testing "invalid collection associations"
+    (testing "duplicate names"
+      (let [coll (c/map->UmmCollection
+                   {:collection-associations
+                    [(c/map->CollectionAssociation {:short-name "S1"
+                                                    :version-id "V1"})
+                     (c/map->CollectionAssociation {:short-name "S2"
+                                                    :version-id "V1"})
+                     (c/map->CollectionAssociation {:short-name "S1"
+                                                    :version-id "V1"})]})]
+        (assert-invalid
+          coll
+          [:collection-associations]
+          ["Collection Associations must be unique. This contains duplicates named [(ShortName [S1] & VersionId [V1])]."])))))

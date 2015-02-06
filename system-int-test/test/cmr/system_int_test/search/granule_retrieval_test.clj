@@ -12,7 +12,7 @@
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
 (deftest retrieve-granule-by-cmr-concept-id
-  (let [coll1 (d/ingest "PROV1" (dc/collection {}))
+  (let [coll1 (d/ingest "PROV1" (dc/collection {:projects (dc/projects "ABC" "KLM" "XYZ")}))
         gran1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule1"
                                                    :project-refs ["ABC"]}))
         gran1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule1"

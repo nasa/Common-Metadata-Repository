@@ -140,8 +140,15 @@
 (def two-d-names
   (ext-gen/string-ascii 1 10))
 
+(def coordinates
+  (let [coords-gen (gen/fmap sort (gen/vector (ext-gen/choose-double 0 1000) 0 2))]
+    (ext-gen/model-gen (fn [[min-value max-value]]
+                         (when (or min-value max-value)
+                           (c/->Coordinate min-value max-value)))
+                       coords-gen)))
+
 (def two-d-coordinate-systems
-  (ext-gen/model-gen c/->TwoDCoordinateSystem two-d-names))
+  (ext-gen/model-gen c/->TwoDCoordinateSystem two-d-names coordinates coordinates))
 
 (def org-names
   (ext-gen/string-ascii 1 10))

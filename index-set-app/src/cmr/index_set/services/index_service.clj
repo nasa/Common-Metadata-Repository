@@ -72,9 +72,8 @@
   (let [{:keys [index-name mapping]} es-config/idx-cfg-for-index-sets
         idx-mapping-type (first (keys mapping))
         index-sets (es/get-index-sets (context->es-store context) index-name idx-mapping-type)]
-    ;; TODO remove vec call
-    (vec (map #(select-keys (:index-set %) [:id :name :concepts])
-              index-sets))))
+    (map #(select-keys (:index-set %) [:id :name :concepts])
+         index-sets)))
 
 (deftracefn index-set-exists?
   "Check index-set existsence"
