@@ -290,8 +290,6 @@
           <MaximumValue>12</MaximumValue>
         </Coordinate1>
         <Coordinate2>
-          <MinimumValue>-1</MinimumValue>
-          <MaximumValue>101</MaximumValue>
         </Coordinate2>
       </TwoDCoordinateSystem>
     </TwoDCoordinateSystems>
@@ -451,8 +449,16 @@
                        {:short-name "EPI"
                         :long-name "Environmental Performance Index"})]
                     :two-d-coordinate-systems
-                    [(umm-c/map->TwoDCoordinateSystem {:name "name0"})
-                     (umm-c/map->TwoDCoordinateSystem {:name "name1"})]
+                    [(umm-c/map->TwoDCoordinateSystem
+                       {:name "name0"
+                        :coordinate-1 (umm-c/map->Coordinate {:min-value 0.0
+                                                              :max-value 11.0})
+                        :coordinate-2 (umm-c/map->Coordinate {:min-value 0.0
+                                                              :max-value 100.0})})
+                     (umm-c/map->TwoDCoordinateSystem
+                       {:name "name1"
+                        :coordinate-1 (umm-c/map->Coordinate {:min-value 1.0
+                                                              :max-value 12.0})})]
                     :related-urls
                     [(umm-c/map->RelatedURL
                        {:type "GET DATA"

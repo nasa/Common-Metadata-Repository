@@ -62,6 +62,19 @@
   [ca]
   (format "(ShortName [%s] & VersionId [%s])" (:short-name ca) (:version-id ca)))
 
+(defn- coordinate-validator
+  "Validates coordinate, minimum must be less than the maximum"
+  [field-path value]
+  (let [{:keys [min-value max-value]} value]
+    (when (and min-value max-value (> min-value max-value))
+      {field-path [(format "%%s minimum [%s] must be less than the maximum [%s]."
+                           (str min-value) (str max-value))]})))
+
+(def two-d-coord-validations
+  "Defines the two d coordinate system validations for collections"
+  {:coordinate-1 coordinate-validator
+   :coordinate-2 coordinate-validator})
+
 (def collection-validations
   "Defines validations for collections"
   {:product-specific-attributes (vu/unique-by-name-validator :name)
@@ -72,7 +85,8 @@
    :associated-difs (vu/unique-by-name-validator identity)
    :temporal {:range-date-times (v/every range-date-time-validation)}
    :related-urls online-access-urls-validation
-   :two-d-coordinate-systems (vu/unique-by-name-validator :name)
+   :two-d-coordinate-systems [(vu/unique-by-name-validator :name)
+                              (v/every two-d-coord-validations)]
    :collection-associations (vu/unique-by-name-validator collection-association-name)})
 
 (def granule-validations

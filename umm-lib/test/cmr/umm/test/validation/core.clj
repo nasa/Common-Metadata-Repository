@@ -264,8 +264,22 @@
             [(format "Related Urls must be unique. This contains duplicates named [%s]." url)]))))))
 
 (deftest collection-two-d-coordinate-systems-validation
-  (let [t1 (c/map->TwoDCoordinateSystem {:name "T1"})
-        t2 (c/map->TwoDCoordinateSystem {:name "T2"})]
+  (let [t1 (c/map->TwoDCoordinateSystem {:name "T1"
+                                         :coordinate-1 (c/map->Coordinate {:min-value 0.0
+                                                                           :max-value 6.0})
+                                         :coordinate-2 (c/map->Coordinate {:min-value 10.0
+                                                                           :max-value 10.0})})
+        t2 (c/map->TwoDCoordinateSystem {:name "T2"
+                                         :coordinate-1 (c/map->Coordinate {:min-value 0.0})
+                                         :coordinate-2 (c/map->Coordinate {:max-value 26.0})})
+        t3 (c/map->TwoDCoordinateSystem {:name "T3"
+                                         :coordinate-1 (c/map->Coordinate {:min-value 10.0
+                                                                           :max-value 6.0})})
+        t4 (c/map->TwoDCoordinateSystem {:name "T4"
+                                         :coordinate-1 (c/map->Coordinate {:min-value 0.0
+                                                                           :max-value 6.0})
+                                         :coordinate-2 (c/map->Coordinate {:min-value 50.0
+                                                                           :max-value 26.0})})]
     (testing "valid two-d-coordinate-systems"
       (assert-valid (c/map->UmmCollection {:two-d-coordinate-systems [t1 t2]})))
 
@@ -275,29 +289,48 @@
           (assert-invalid
             coll
             [:two-d-coordinate-systems]
-            ["Two D Coordinate Systems must be unique. This contains duplicates named [T1]."]))))))
+            ["Two D Coordinate Systems must be unique. This contains duplicates named [T1]."])))
+      (testing "invalid coordinate"
+        (let [coll (c/map->UmmCollection {:two-d-coordinate-systems [t3]})]
+          (assert-invalid
+            coll
+            [:two-d-coordinate-systems 0 :coordinate-1]
+            ["Coordinate 1 minimum [10.0] must be less than the maximum [6.0]."])))
+      (testing "multiple validation errors"
+        (let [coll (c/map->UmmCollection {:two-d-coordinate-systems [t1 t1 t3 t4]})]
+          (assert-multiple-invalid
+            coll
+            [{:path [:two-d-coordinate-systems],
+              :errors
+              ["Two D Coordinate Systems must be unique. This contains duplicates named [T1]."]}
+             {:path [:two-d-coordinate-systems 2 :coordinate-1],
+              :errors
+              ["Coordinate 1 minimum [10.0] must be less than the maximum [6.0]."]}
+             {:path [:two-d-coordinate-systems 3 :coordinate-2],
+              :errors
+              ["Coordinate 2 minimum [50.0] must be less than the maximum [26.0]."]}]))))))
 
 (deftest collection-associations-validation
   (testing "valid collection associations"
     (assert-valid (c/map->UmmCollection
                     {:collection-associations
                      [(c/map->CollectionAssociation {:short-name "S1"
-                                                 :version-id "V1"})
+                                                     :version-id "V1"})
                       (c/map->CollectionAssociation {:short-name "S2"
-                                                 :version-id "V1"})
+                                                     :version-id "V1"})
                       (c/map->CollectionAssociation {:short-name "S1"
-                                                 :version-id "V2"})]})))
+                                                     :version-id "V2"})]})))
 
   (testing "invalid collection associations"
     (testing "duplicate names"
       (let [coll (c/map->UmmCollection
                    {:collection-associations
-                     [(c/map->CollectionAssociation {:short-name "S1"
-                                                 :version-id "V1"})
-                      (c/map->CollectionAssociation {:short-name "S2"
-                                                 :version-id "V1"})
-                      (c/map->CollectionAssociation {:short-name "S1"
-                                                 :version-id "V1"})]})]
+                    [(c/map->CollectionAssociation {:short-name "S1"
+                                                    :version-id "V1"})
+                     (c/map->CollectionAssociation {:short-name "S2"
+                                                    :version-id "V1"})
+                     (c/map->CollectionAssociation {:short-name "S1"
+                                                    :version-id "V1"})]})]
         (assert-invalid
           coll
           [:collection-associations]
