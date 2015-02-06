@@ -20,12 +20,7 @@
   "A configuration feature switch that turns on CMR ingest validation."
   (cfg/config-value-fn :ingest-validation-enabled "true" #(= % "true")))
 
-(defmulti add-extra-fields
-  "Parse the metadata of concept, add the extra fields to it and return the concept."
-  (fn [context concept umm-record]
-    (:concept-type concept)))
-
-(defmethod add-extra-fields :collection
+(defn add-extra-fields-for-collection
   [context concept collection]
   (let [{{:keys [short-name version-id]} :product
          {:keys [delete-time]} :data-provider-timestamps
@@ -37,8 +32,8 @@
                                   :version-id version-id
                                   :delete-time (when delete-time (str delete-time))})))
 
-(defn- get-granule-parent-collection-id
-  "Find the parent collection id for a granule given its provider id and collection ref. This will
+(defn- get-granule-parent-collection-concept
+  "Find the parent collection for a granule given its provider id and collection ref. This will
   correctly handle situations where there might be multiple concept ids that used a short name and
   version id or entry title but were previously deleted."
   [context provider-id collection-ref]
@@ -50,21 +45,45 @@
         (format (str "Found multiple possible parent collections for a granule in provider %s"
                      " referencing with %s. matching-concepts: %s")
                 provider-id (pr-str collection-ref) (pr-str matching-concepts))))
-    (:concept-id (first matching-concepts))))
+    (first matching-concepts)))
 
-(defmethod add-extra-fields :granule
-  [context concept granule]
+(defn add-extra-fields-for-granule
+  [context concept granule collection-concept]
   (let [{:keys [collection-ref granule-ur]
          {:keys [delete-time]} :data-provider-timestamps} granule
-        parent-collection-id (get-granule-parent-collection-id
-                               context (:provider-id concept) collection-ref)]
-    (when-not parent-collection-id
-      (cmsg/data-error :not-found
-                       msg/parent-collection-does-not-exist
-                       granule-ur
-                       collection-ref))
+        parent-collection-id (:concept-id collection-concept)]
     (assoc concept :extra-fields {:parent-collection-id parent-collection-id
                                   :delete-time (when delete-time (str delete-time))})))
+
+(defmulti prepare-concept-for-save
+  "Prepares a concept for saving. This includes validation and adding extra fields."
+  (fn [context concept]
+    (:concept-type concept)))
+
+(defmethod prepare-concept-for-save :collection
+  [context concept]
+  (let [collection (umm/parse-concept concept)]
+    (when (ingest-validation-enabled?)
+      (v/validate-collection collection))
+    (add-extra-fields-for-collection context concept collection)))
+
+(defmethod prepare-concept-for-save :granule
+  [context concept]
+  (let [granule (umm/parse-concept concept)
+        parent-collection-concept (get-granule-parent-collection-concept
+                                    context
+                                    (:provider-id concept)
+                                    (:collection-ref granule))]
+    (when-not parent-collection-concept
+      (cmsg/data-error :not-found
+                       msg/parent-collection-does-not-exist
+                       (:granule-ur granule)
+                       (:collection-ref granule)))
+
+    (when (ingest-validation-enabled?)
+      (let [parent-collection (umm/parse-concept parent-collection-concept)]
+        (v/validate-granule parent-collection granule)))
+    (add-extra-fields-for-granule context concept granule parent-collection-concept)))
 
 (deftracefn validate-concept
   "Validate that a concept is valid for ingest without actually ingesting the concept.
@@ -72,8 +91,8 @@
   [context concept]
   (v/validate-concept-request concept)
   (v/validate-concept-xml concept)
-  (let [umm-record (umm/parse-concept concept)]
-    (v/validate-umm-record umm-record)))
+  (prepare-concept-for-save context concept)
+  nil)
 
 (deftracefn save-concept
   "Store a concept in mdb and indexer and return concept-id and revision-id."
@@ -86,16 +105,7 @@
   (v/validate-concept-xml concept)
 
   ;; 3. Parse concept
-  (let [umm-record (umm/parse-concept concept)
-
-        ;; 4. Lookup Parent
-        ;; TODO
-
-        ;; 5. Umm record validation
-        _ (when (ingest-validation-enabled?)
-            (v/validate-umm-record umm-record))
-
-        concept (add-extra-fields context concept umm-record)]
+  (let [concept (prepare-concept-for-save context concept)]
 
     ;; 6. Ingest Validation
     (v/validate-business-rules context concept)
