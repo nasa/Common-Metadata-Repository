@@ -155,7 +155,9 @@
     [line]
     ;; Certain validations can only be run if earlier validations passed. Validations are grouped
     ;; here so that subsequent validations won't run if earlier validations fail.
-    (when (= (:coordinate-system line) :geodetic)
+    (if (= (:coordinate-system line) :geodetic)
       (or (seq (pv/points-in-shape-validation line))
           (seq (concat (pv/duplicate-point-validation line)
-                       (pv/consecutive-antipodal-points-validation line)))))))
+                       (pv/consecutive-antipodal-points-validation line))))
+      (or (seq (pv/points-in-shape-validation line))
+          (seq (pv/duplicate-point-validation line))))))
