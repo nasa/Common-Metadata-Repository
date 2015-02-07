@@ -6,7 +6,7 @@
             [cmr.common.mime-types :as mt]
 
             ;; Must be required to be available.
-            [cmr.spatial.geodetic-ring-validations]))
+            [cmr.spatial.ring-validations]))
 
 (def concept-type->supported-result-formats
   "Supported search result formats by concept."

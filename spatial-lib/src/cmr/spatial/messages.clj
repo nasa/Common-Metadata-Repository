@@ -77,6 +77,10 @@
   []
   "The polygon boundary contains both the North and South Poles. A polygon can contain at most one pole.")
 
+(defn ring-points-out-of-order
+  []
+  "The polygon boundary points are out of order. Points must be listed in counter clockwise order.")
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Bounding rectangle validation messages
 

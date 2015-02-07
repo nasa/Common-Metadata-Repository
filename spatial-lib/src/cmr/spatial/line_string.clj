@@ -63,7 +63,14 @@
   ([points]
    (line-string nil points))
   ([coordinate-system points]
-   (->LineString coordinate-system points nil nil)))
+   (->LineString coordinate-system (mapv #(p/with-equality coordinate-system %) points) nil nil)))
+
+(defn set-coordinate-system
+  "Sets the coordinate system of the line string"
+  [line coordinate-system]
+  (-> line
+      (assoc :coordinate-system coordinate-system)
+      (update-in [:points] #(mapv (partial p/with-equality coordinate-system) %))))
 
 (defn ords->line-string
   "Takes all arguments as coordinates for points, lon1, lat1, lon2, lat2, and creates a line."

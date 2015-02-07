@@ -27,9 +27,9 @@
    arcs
 
    ;; This attribute contains the rotation direction for the ring. Rotation direction will be one of
-   ;; :clockwise, :counter_clockwise, or :none to indicate the point order direction.
+   ;; :clockwise, :counter-clockwise, or :none to indicate the point order direction.
    ;; * :clockwise indicates the points are listed in a clockwise order around a center point.
-   ;; * :counter_clockwise indicates the points are listed in a counter clockwise order around a center point.
+   ;; * :counter-clockwise indicates the points are listed in a counter clockwise order around a center point.
    ;; * :none indicates the point order is around the earth like a belt.
    ;; Depending on the order it could contain the south or north pole.
    course-rotation-direction
@@ -89,7 +89,7 @@
 
 (defn- arcs->course-rotation-direction
   "Calculates the rotation direction of the arcs of a ring. Will be one of :clockwise,
-  :counter_clockwise, or :none.
+  :counter-clockwise, or :none.
 
   It works by calculating the number of degrees of turning that the ring does. It gets the initial
   and ending course from each arc. It determines how many degrees each turn is. Turns to the left,

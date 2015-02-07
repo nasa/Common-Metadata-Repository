@@ -4,7 +4,7 @@
             [cmr.spatial.ring-relations :as rr]
             [cmr.spatial.point :as p]
             [cmr.spatial.polygon]
-            [cmr.spatial.line-string]
+            [cmr.spatial.line-string :as l]
             [cmr.spatial.geodetic-ring :as gr]
             [cmr.spatial.cartesian-ring :as cr]
             [cmr.common.services.errors :as errors]
@@ -53,7 +53,7 @@
 
 (defmethod set-coordinate-system LineString
   [coordinate-system line]
-  (assoc line :coordinate-system coordinate-system))
+  (l/set-coordinate-system line coordinate-system))
 
 (defmethod set-coordinate-system GeodeticRing
   [coordinate-system {:keys [points]}]

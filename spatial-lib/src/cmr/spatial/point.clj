@@ -28,6 +28,10 @@
   (let [lon-hash (+ PRIME (.hashCode (Double. 0.0)))]
     (int (+ (* PRIME lon-hash) (.hashCode (Double. -90.0))))))
 
+(def ^:const ^:private ^:int INITIAL_AM_HASH
+  "Precomputed hash seed for longitude portion of antimeridian points"
+  (* PRIME (+ PRIME ^int (.hashCode (Double. 180.0)))))
+
 ;; Point type definition
 ;; It is a Type and not a record because it has some special rules that don't follow normal
 ;; equality semantics.
@@ -37,38 +41,59 @@
 ;; when creating a new point with a different lon or lat in assoc.
 (deftype Point
   [
-    ^double lon
-    ^double lat
-    ^double lon-rad
-    ^double lat-rad
+   ^double lon
+   ^double lat
+   ^double lon-rad
+   ^double lat-rad
 
-    ;; This field is holding options when debugging points so they can be displayed in a visualization
-    ;; with labels etc. It will typically be set to null during normal operations. It is excluded
-    ;; from hashCode and equals.
-    ^clojure.lang.Associative options
-  ]
+   ;; This is a flag that changes how the point determines equality semantics. Geodetic spatial
+   ;; representation exists on a spherical earth. Cartesian is a flat plane limited to -180 to 180
+   ;; on the X axis and -90 to 90 on the Y axis. Points on a sphere are equal at the poles or on
+   ;; the antimeridian with values -180 or 180. Defaults to true.
+   geodetic-equality
+
+   ;; This field is holding options when debugging points so they can be displayed in a visualization
+   ;; with labels etc. It will typically be set to null during normal operations. It is excluded
+   ;; from hashCode and equals.
+   ^clojure.lang.Associative options
+   ]
   Object
   (hashCode
     [this]
-    (cond
-      (is-north-pole? this) NORTH_POLE_HASH
-      (is-south-pole? this) SOUTH_POLE_HASH
-      :else (let [result (+ PRIME (.hashCode (Double. lon)))
-                  result (int (+ (* PRIME result) (.hashCode (Double. lat))))]
-              result)))
+    (let [lon-hash (.hashCode (Double. lon))
+          lat-hash (.hashCode (Double. lat))
+          combined-hash (+ (* PRIME (+ PRIME lon-hash)) lat-hash)]
+      (if geodetic-equality
+        (cond
+          (is-north-pole? this) NORTH_POLE_HASH
+          (is-south-pole? this) SOUTH_POLE_HASH
+          (= (abs lon) 180.0) (+ INITIAL_AM_HASH lat-hash)
+          :else combined-hash)
+        combined-hash)))
   (equals
     [this other]
     (or (identical? this other)
         (and (not (nil? other))
              (= (class other) (class this))
-             (or
-               (and (is-north-pole? this) (is-north-pole? other))
-               (and (is-south-pole? this) (is-south-pole? other))
-               (and (on-antimeridian? this)
-                    (on-antimeridian? other)
-                    (= (:lat this) (:lat other)))
-               (and (= (:lon this) (:lon other))
-                    (= (:lat this) (:lat other)))))))
+             (let [^Point other other]
+               (and (= geodetic-equality (.geodetic_equality other))
+                    (or
+                      ;; Geodetic special cases
+                      (and geodetic-equality
+                           (or
+                             ;; Any longitude value at north pole is considered equivalent
+                             (and (is-north-pole? this) (is-north-pole? other))
+
+                             ;; Any longitude value at south pole is considered equivalent
+                             (and (is-south-pole? this) (is-south-pole? other))
+
+                             ;; -180 and 180 are considered equivalent longitudes
+                             (and (on-antimeridian? this)
+                                  (on-antimeridian? other)
+                                  (= lat (.lat other)))))
+                      ;; Normal geodetic and cartesian equality
+                      (and (= lon (.lon other))
+                           (= lat (.lat other)))))))))
   (toString
     [this]
     (pr-str this))
@@ -77,11 +102,12 @@
   (assoc
     [_ k v]
     (cond
-      (= k :lon) (Point. v lat (radians v) lat-rad options)
-      (= k :lon-rad) (Point. (degrees v) lat v lat-rad options)
-      (= k :lat) (Point. lon v lon-rad (radians v) options)
-      (= k :lat-rad) (Point. lon (degrees v) lon-rad v options)
-      (= k :options) (Point. lon lat lon-rad lat-rad v)
+      (= k :lon) (Point. v lat (radians v) lat-rad geodetic-equality options)
+      (= k :lon-rad) (Point. (degrees v) lat v lat-rad geodetic-equality options)
+      (= k :lat) (Point. lon v lon-rad (radians v) geodetic-equality options)
+      (= k :lat-rad) (Point. lon (degrees v) lon-rad v geodetic-equality options)
+      (= k :geodetic-equality) (Point. lon lat lon-rad lat-rad v options)
+      (= k :options) (Point. lon lat lon-rad lat-rad geodetic-equality v)
       :else (throw (Exception. (str "Unknown point key " k)))))
   (assocEx
     [this k v]
@@ -100,37 +126,40 @@
 
   clojure.lang.IPersistentCollection
   (equiv [this o]
-    (and (isa? (class o) Point)
-         (.equals this o)))
+         (and (isa? (class o) Point)
+              (.equals this o)))
 
   clojure.lang.Seqable
   (seq
     [_]
-    (seq {:lon lon :lat lat :lon-rad lon-rad :lat-rad lat-rad}))
+    (seq {:lon lon :lat lat :lon-rad lon-rad :lat-rad lat-rad :geodetic-equality geodetic-equality}))
 
   clojure.lang.ILookup
   (valAt
     [_ k]
-    (cond
-      (= k :lon) lon
-      (= k :lon-rad) lon-rad
-      (= k :lat) lat
-      (= k :lat-rad) lat-rad
-      (= k :options) options))
+    (case k
+      :lon lon
+      :lon-rad lon-rad
+      :lat lat
+      :lat-rad lat-rad
+      :options options
+      :geodetic-equality geodetic-equality
+      nil))
   (valAt [_ k not-found]
-    (cond
-      (= k :lon) lon
-      (= k :lon-rad) lon-rad
-      (= k :lat) lat
-      (= k :lat-rad) lat-rad
-      (= k :options) options
-      :else not-found)))
+         (case k
+           :lon lon
+           :lon-rad lon-rad
+           :lat lat
+           :lat-rad lat-rad
+           :options options
+           :geodetic-equality geodetic-equality
+           not-found)))
 
 (defn print-point
   "Prints the point in a way that it can be copy and pasted for testing"
   [^Point p ^java.io.Writer writer]
   (.write writer (str "#=" (apply list (into ['cmr.spatial.point/point]
-                                        [(.lon p) (.lat p)])))))
+                                             [(.lon p) (.lat p) (.geodetic_equality p)])))))
 
 ;; These define Clojure built in multimethods for point so it can be printed easily
 (defmethod print-method Point [p writer]
@@ -148,22 +177,48 @@
   "Creates a new point from longitude and latitude and optionally pre-computed radian values of lon
   and lat."
   (^Point [lon lat]
-   (point lon lat (radians lon) (radians lat)))
+          (point lon lat (radians lon) (radians lat)))
+  (^Point [lon lat geodetic-equality]
+          (point lon lat (radians lon) (radians lat) geodetic-equality))
   (^Point [lon lat lon-rad lat-rad]
-   (pj/assert (double-approx= (radians lon) lon-rad))
-   (pj/assert (double-approx= (radians lat) lat-rad))
+          (point lon lat (radians lon) (radians lat) true))
+  (^Point [lon lat lon-rad lat-rad geodetic-equality]
+          (pj/assert (double-approx= (radians lon) lon-rad))
+          (pj/assert (double-approx= (radians lat) lat-rad))
 
-   (Point. (double lon)
-           (double lat)
-           (double lon-rad)
-           (double lat-rad)
-           nil)))
+          (Point. (double lon)
+                  (double lat)
+                  (double lon-rad)
+                  (double lat-rad)
+                  geodetic-equality
+                  nil)))
 
 (def north-pole
   (point 0 90))
 
 (def south-pole
   (point 0 -90))
+
+(defn with-cartesian-equality
+  "Returns an equivalent point with cartesian equality"
+  [^Point p]
+  (if (.geodetic_equality p)
+    (assoc p :geodetic-equality false)
+    p))
+
+(defn with-geodetic-equality
+  "Returns an equivalent point with geodetic-equality equality"
+  [^Point p]
+  (if (.geodetic_equality p)
+    p
+    (assoc p :geodetic-equality true)))
+
+(defn with-equality
+  "Returns an equivalent point with the equality semantics of the given coordinate system."
+  [coordinate-system p]
+  (if (= coordinate-system :geodetic)
+    (with-geodetic-equality p)
+    (with-cartesian-equality p)))
 
 (defn order-longitudes
   "Orders the longitudes from west to east such that traveling east crosses at most 180 degrees."
@@ -198,10 +253,10 @@
 (defn round-point
   "Rounds the point the given number of decimal places"
   [num-places p]
-  (let [{:keys [lon lat]} p
+  (let [{:keys [lon lat geodetic-equality]} p
         lon (round num-places lon)
         lat (round num-places lat)]
-    (point lon lat)))
+    (point lon lat geodetic-equality)))
 
 (defn ords->points
   "Takes pairs of numbers and returns a sequence of points.
@@ -220,7 +275,8 @@
   "Returns the point antipodal to the point."
   [^Point p]
   (point (antipodal-lon (.lon p))
-         (* -1.0 (.lat p))))
+         (* -1.0 (.lat p))
+         (.geodetic_equality p)))
 
 (defn antipodal?
   "Returns true if the points are antipodal to one another."
