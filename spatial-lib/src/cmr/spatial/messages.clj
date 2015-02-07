@@ -83,6 +83,17 @@
        "Please see the API documentation for the correct order."))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Polygon validation messages
+
+(defn hole-not-covered-by-boundary
+  [hole-index]
+  (format "The polygon boundary does not completely cover hole number %d." (inc hole-index)))
+
+(defn hole-intersects-hole
+  [hole1-index hole2-index]
+  (format "The polygon hole number %d intersects hole number %d." (inc hole1-index) (inc hole2-index)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Bounding rectangle validation messages
 
 (defn br-north-less-than-south
