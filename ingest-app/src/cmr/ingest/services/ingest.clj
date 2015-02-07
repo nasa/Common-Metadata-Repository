@@ -77,7 +77,7 @@
                                     (:provider-id concept)
                                     (:collection-ref granule))]
     (when-not parent-collection-concept
-      (cmsg/data-error :not-found
+      (cmsg/data-error :bad-request
                        msg/parent-collection-does-not-exist
                        (:granule-ur granule)
                        (:collection-ref granule)))
