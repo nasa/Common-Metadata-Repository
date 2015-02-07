@@ -79,7 +79,8 @@
 
 (defn ring-points-out-of-order
   []
-  "The polygon boundary points are out of order. Points must be listed in counter clockwise order.")
+  (str "The polygon boundary points are listed in the wrong order (clockwise vs counter clockwise). "
+       "Please see the API documentation for the correct order."))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Bounding rectangle validation messages
