@@ -12,13 +12,13 @@
 
 (deftest search-by-platform-short-names
   (let [p0 (dc/platform "platform-Inherit")
-        p01 (dc/platform "platform-ONE")
         p1 (dc/platform "platform-Sn A")
         p2 (dc/platform "platform-Sn B")
         p3 (dc/platform "platform-SnA")
         p4 (dc/platform "platform-Snx")
-        p5 (dc/platform "platform-x")
-        p6 (dc/platform "PLATform_X")
+        p5 (dc/platform "platform-ONE")
+        p6 (dc/platform "platform-x")
+        p7 (dc/platform "PLATform-X")
         pr1 (dg/platform-ref "platform-Sn A")
         pr2 (dg/platform-ref "platform-Sn B")
         pr3 (dg/platform-ref "platform-SnA")
@@ -27,7 +27,7 @@
         pr6 (dg/platform-ref "platform-x")
         pr7 (dg/platform-ref "PLATform-X")
         coll1 (d/ingest "PROV1" (dc/collection {:platforms [p1 p2 p3 p4]}))
-        coll2 (d/ingest "PROV1" (dc/collection {:platforms [p0 p01]}))
+        coll2 (d/ingest "PROV1" (dc/collection {:platforms [p0 p5 p6 p7]}))
         gran1 (d/ingest "PROV1" (dg/granule coll1 {:platform-refs [pr1]}))
         gran2 (d/ingest "PROV1" (dg/granule coll1 {:platform-refs [pr1 pr2]}))
         gran3 (d/ingest "PROV1" (dg/granule coll1 {:platform-refs [pr2]}))
@@ -49,7 +49,7 @@
 
            [gran1 gran2] "platform-Sn A" {}
            [gran2 gran3] "platform-Sn B" {}
-           [gran8 gran9] "platform-x" {}
+           [gran6 gran8 gran9] "platform-x" {}
            [] "BLAH" {}
 
            ;; search by platform, multiple values"
@@ -57,9 +57,9 @@
            ;; search by platform, inheritance
            [gran6] ["platform-Inherit"] {}
            ;; search by platform, ignore case true
-           [gran8 gran9] ["platform-x"] {:ignore-case true}
+           [gran6 gran8 gran9] ["platform-x"] {:ignore-case true}
            ;; search by platform, ignore case false
-           [gran8] ["platform-x"] {:ignore-case false}
+           [gran6 gran8] ["platform-x"] {:ignore-case false}
            ;; search by platform, wildcards
            [gran1 gran2 gran3] ["platform-Sn *"] {:pattern true}
            [gran4 gran5] ["platform-Sn?"] {:pattern true}
@@ -76,7 +76,7 @@
 
            [gran1 gran2] "platform-Sn A" {}
            [gran2 gran3] "platform-Sn B" {}
-           [gran8] "platform-x" {}
+           [gran6 gran8] "platform-x" {}
            [] "BLAH" {}
 
            ;; search by platform, multiple values and single quotes
@@ -84,9 +84,9 @@
            ;; search by platform, inheritance
            [gran6] ["platform-Inherit"] {}
            ;; search by platform, ignore case true
-           [gran8 gran9] ["platform-x"] {:ignore-case true}
+           [gran6 gran8 gran9] ["platform-x"] {:ignore-case true}
            ;; search by platform, ignore case false
-           [gran8] ["platform-x"] {:ignore-case false}
+           [gran6 gran8] ["platform-x"] {:ignore-case false}
            ;; search by platform, wildcards
            [gran1 gran2 gran3] "platform-Sn %" {:pattern true}
            [gran4 gran5] "platform-Sn_" {:pattern true}
@@ -98,23 +98,38 @@
   (let [i0 (dc/instrument "instrument-Inherit")
         i01 (dc/instrument "instrument-ONE")
         p0 (dc/platform "collection_platform" "dummy" nil i0 i01)
-        i1 (dg/instrument-ref "instrument-Sn A")
-        i2 (dg/instrument-ref "instrument-Sn b")
-        i3 (dg/instrument-ref "instrument-SnA")
-        i4 (dg/instrument-ref "instrument-Snx")
-        i5 (dg/instrument-ref "instrument-ONE")
-        i6 (dg/instrument-ref "instrument-x")
-        i7 (dg/instrument-ref "InstruMENT-X")
-        pr1 (dg/platform-ref "platform-1" i1)
-        pr2 (dg/platform-ref "platform-2" i2)
-        pr3 (dg/platform-ref "platform-3" i3)
-        pr4 (dg/platform-ref "platform-4" i4)
-        pr5 (dg/platform-ref "platform-5" i1 i2)
-        pr6 (dg/platform-ref "platform-6" i5)
-        pr7 (dg/platform-ref "platform-7" i6)
-        pr8 (dg/platform-ref "platform-8" i7)
-        coll1 (d/ingest "PROV1" (dc/collection {:short-name "SHORT1"}))
-        coll2 (d/ingest "PROV1" (dc/collection {:platforms [p0]}))
+        i1 (dc/instrument "instrument-Sn A")
+        i2 (dc/instrument "instrument-Sn b")
+        i3 (dc/instrument "instrument-SnA")
+        i4 (dc/instrument "instrument-Snx")
+        i5 (dc/instrument "instrument-ONE")
+        i6 (dc/instrument "instrument-x")
+        i7 (dc/instrument "InstruMENT-X")
+        ir1 (dg/instrument-ref "instrument-Sn A")
+        ir2 (dg/instrument-ref "instrument-Sn b")
+        ir3 (dg/instrument-ref "instrument-SnA")
+        ir4 (dg/instrument-ref "instrument-Snx")
+        ir5 (dg/instrument-ref "instrument-ONE")
+        ir6 (dg/instrument-ref "instrument-x")
+        ir7 (dg/instrument-ref "InstruMENT-X")
+        p1 (dc/platform "platform-1" "dummy1" nil i1)
+        p2 (dc/platform "platform-2" "dummy2" nil i2)
+        p3 (dc/platform "platform-3" "dummy3" nil i3)
+        p4 (dc/platform "platform-4" "dummy4" nil i4)
+        p5 (dc/platform "platform-5" "dummy5" nil i1 i2)
+        p6 (dc/platform "platform-6" "dummy6" nil i5)
+        p7 (dc/platform "platform-7" "dummy7" nil i6)
+        p8 (dc/platform "platform-8" "dummy8" nil i7)
+        pr1 (dg/platform-ref "platform-1" ir1)
+        pr2 (dg/platform-ref "platform-2" ir2)
+        pr3 (dg/platform-ref "platform-3" ir3)
+        pr4 (dg/platform-ref "platform-4" ir4)
+        pr5 (dg/platform-ref "platform-5" ir1 ir2)
+        pr6 (dg/platform-ref "platform-6" ir5)
+        pr7 (dg/platform-ref "platform-7" ir6)
+        pr8 (dg/platform-ref "platform-8" ir7)
+        coll1 (d/ingest "PROV1" (dc/collection {:short-name "SHORT1" :platforms [p1 p2 p3 p4 p5]}))
+        coll2 (d/ingest "PROV1" (dc/collection {:platforms [p0 p6 p7 p8]}))
         gran1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "gran1" :platform-refs [pr1]}))
         gran2 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "gran2" :platform-refs [pr1 pr2]}))
         gran3 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "gran3" :platform-refs [pr2]}))
@@ -156,7 +171,7 @@
 
            [gran1 gran2 gran6] "instrument-Sn A" {}
            [gran4] "instrument-SnA" {}
-           [gran9 gran10] "instrument-x" {}
+           [gran7 gran9 gran10] "instrument-x" {}
            [] "BLAH" {}
 
            ;; search by instrument, multiple values
@@ -164,8 +179,8 @@
            ;; search by instrument, inheritance
            [gran7] ["instrument-Inherit"] {}
            ;; search by instrument, ignore case
-           [gran9 gran10] ["instrument-x"] {:ignore-case true}
-           [gran9] ["instrument-x"] {:ignore-case false}
+           [gran7 gran9 gran10] ["instrument-x"] {:ignore-case true}
+           [gran7 gran9] ["instrument-x"] {:ignore-case false}
            ;; search by instrument, wildcards
            [gran1 gran2 gran3 gran6] ["instrument-Sn *"] {:pattern true}
            [gran4 gran5] ["instrument-Sn?"] {:pattern true}
@@ -179,7 +194,7 @@
 
            [gran1 gran2 gran6] "instrument-Sn A" {}
            [gran4] "instrument-SnA" {}
-           [gran9] "instrument-x" {}
+           [gran7 gran9] "instrument-x" {}
            [] "BLAH" {}
 
            ;; search by instrument, multiple values
@@ -187,8 +202,8 @@
            ;; search by instrument, inheritance
            [gran7] ["instrument-Inherit"] {}
            ;; search by instrument, ignore case
-           [gran9 gran10] ["instrument-x"] {:ignore-case true}
-           [gran9] ["instrument-x"] {:ignore-case false}
+           [gran7 gran9 gran10] ["instrument-x"] {:ignore-case true}
+           [gran7 gran9] ["instrument-x"] {:ignore-case false}
            ;; search by instrument, wildcards
            [gran1 gran2 gran3 gran6] "instrument-Sn %" {:pattern true}
            [gran4 gran5] "instrument-Sn_" {:pattern true}
@@ -198,45 +213,69 @@
 (deftest search-by-sensor-short-names
   (let [s0 (dc/sensor "sensor-Inherit")
         s01 (dc/sensor "sensor-ONE")
-        i0 (dc/instrument "collection_instrument" nil nil s0 s01)
+        i0 (dc/instrument "collection_instrument" "dummy" nil s0 s01)
         p0 (dc/platform "collection_platform" "collection_platform" nil i0)
-        s1 (dg/sensor-ref "sensor-Sn A")
-        s2 (dg/sensor-ref "sensor-Sn b")
-        s3 (dg/sensor-ref "sensor-SnA")
-        s4 (dg/sensor-ref "sensor-Snx")
-        s5 (dg/sensor-ref "sensor-ONE")
-        s6 (dg/sensor-ref "sensor-x")
-        s7 (dg/sensor-ref "SEnsor-X")
-        i1 (dg/instrument-ref "instrument-1" s1)
-        i2 (dg/instrument-ref "instrument-2" s2)
-        i3 (dg/instrument-ref "instrument-3" s3)
-        i4 (dg/instrument-ref "instrument-4" s4)
-        i5 (dg/instrument-ref "instrument-5" s1 s2)
-        i6 (dg/instrument-ref "instrument-6" s5)
-        i7 (dg/instrument-ref "instrument-7" s6)
-        i8 (dg/instrument-ref "instrument-8" s7)
-        p1 (dg/platform-ref "platform-1" i1)
-        p2 (dg/platform-ref "platform-2" i2)
-        p3 (dg/platform-ref "platform-3" i3)
-        p4 (dg/platform-ref "platform-4" i4)
-        p5 (dg/platform-ref "platform-5" i5)
-        p6 (dg/platform-ref "platform-6" i1 i2)
-        p7 (dg/platform-ref "platform-7" i6)
-        p8 (dg/platform-ref "platform-8" i7)
-        p9 (dg/platform-ref "platform-9" i8)
-        coll1 (d/ingest "PROV1" (dc/collection {}))
-        coll2 (d/ingest "PROV1" (dc/collection {:platforms [p0]}))
-        gran1 (d/ingest "PROV1" (dg/granule coll1 {:platform-refs [p1]}))
-        gran2 (d/ingest "PROV1" (dg/granule coll1 {:platform-refs [p1 p2]}))
-        gran3 (d/ingest "PROV1" (dg/granule coll1 {:platform-refs [p2]}))
-        gran4 (d/ingest "PROV1" (dg/granule coll1 {:platform-refs [p3]}))
-        gran5 (d/ingest "PROV1" (dg/granule coll1 {:platform-refs [p4]}))
-        gran6 (d/ingest "PROV1" (dg/granule coll1 {:platform-refs [p5]}))
-        gran7 (d/ingest "PROV1" (dg/granule coll1 {:platform-refs [p6]}))
+        s1 (dc/sensor "sensor-Sn A")
+        s2 (dc/sensor "sensor-Sn b")
+        s3 (dc/sensor "sensor-SnA")
+        s4 (dc/sensor "sensor-Snx")
+        s5 (dc/sensor "sensor-ONE")
+        s6 (dc/sensor "sensor-x")
+        s7 (dc/sensor "SEnsor-X")
+        sr1 (dg/sensor-ref "sensor-Sn A")
+        sr2 (dg/sensor-ref "sensor-Sn b")
+        sr3 (dg/sensor-ref "sensor-SnA")
+        sr4 (dg/sensor-ref "sensor-Snx")
+        sr5 (dg/sensor-ref "sensor-ONE")
+        sr6 (dg/sensor-ref "sensor-x")
+        sr7 (dg/sensor-ref "SEnsor-X")
+        i1 (dc/instrument "instrument-1" "dummy" nil s1)
+        i2 (dc/instrument "instrument-2" "dummy" nil s2)
+        i3 (dc/instrument "instrument-3" "dummy" nil s3)
+        i4 (dc/instrument "instrument-4" "dummy" nil s4)
+        i5 (dc/instrument "instrument-5" "dummy" nil s1 s2)
+        i6 (dc/instrument "instrument-6" "dummy" nil s5)
+        i7 (dc/instrument "instrument-7" "dummy" nil s6)
+        i8 (dc/instrument "instrument-8" "dummy" nil s7)
+        ir1 (dg/instrument-ref "instrument-1" sr1)
+        ir2 (dg/instrument-ref "instrument-2" sr2)
+        ir3 (dg/instrument-ref "instrument-3" sr3)
+        ir4 (dg/instrument-ref "instrument-4" sr4)
+        ir5 (dg/instrument-ref "instrument-5" sr1 sr2)
+        ir6 (dg/instrument-ref "instrument-6" sr5)
+        ir7 (dg/instrument-ref "instrument-7" sr6)
+        ir8 (dg/instrument-ref "instrument-8" sr7)
+        p1 (dc/platform "platform-1" "dummy" nil i1)
+        p2 (dc/platform "platform-2" "dummy" nil i2)
+        p3 (dc/platform "platform-3" "dummy" nil i3)
+        p4 (dc/platform "platform-4" "dummy" nil i4)
+        p5 (dc/platform "platform-5" "dummy" nil i5)
+        p6 (dc/platform "platform-6" "dummy" nil i1 i2)
+        p7 (dc/platform "platform-7" "dummy" nil i6)
+        p8 (dc/platform "platform-8" "dummy" nil i7)
+        p9 (dc/platform "platform-9" "dummy" nil i8)
+        pr1 (dg/platform-ref "platform-1" ir1)
+        pr2 (dg/platform-ref "platform-2" ir2)
+        pr3 (dg/platform-ref "platform-3" ir3)
+        pr4 (dg/platform-ref "platform-4" ir4)
+        pr5 (dg/platform-ref "platform-5" ir5)
+        pr6 (dg/platform-ref "platform-6" ir1 ir2)
+        pr7 (dg/platform-ref "platform-7" ir6)
+        pr8 (dg/platform-ref "platform-8" ir7)
+        pr9 (dg/platform-ref "platform-9" ir8)
+        coll1 (d/ingest "PROV1" (dc/collection {:platforms [p1 p2 p3 p4 p5 p6]}))
+        coll2 (d/ingest "PROV1" (dc/collection {:platforms [p0 p7 p8 p9]}))
+        gran1 (d/ingest "PROV1" (dg/granule coll1 {:platform-refs [pr1]}))
+        gran2 (d/ingest "PROV1" (dg/granule coll1 {:platform-refs [pr1 pr2]}))
+        gran3 (d/ingest "PROV1" (dg/granule coll1 {:platform-refs [pr2]}))
+        gran4 (d/ingest "PROV1" (dg/granule coll1 {:platform-refs [pr3]}))
+        gran5 (d/ingest "PROV1" (dg/granule coll1 {:platform-refs [pr4]}))
+        gran6 (d/ingest "PROV1" (dg/granule coll1 {:platform-refs [pr5]}))
+        gran7 (d/ingest "PROV1" (dg/granule coll1 {:platform-refs [pr6]}))
         gran8 (d/ingest "PROV1" (dg/granule coll2 {}))
-        gran9 (d/ingest "PROV1" (dg/granule coll2 {:platform-refs [p7]}))
-        gran10 (d/ingest "PROV1" (dg/granule coll2 {:platform-refs [p8]}))
-        gran11 (d/ingest "PROV1" (dg/granule coll2 {:platform-refs [p9]}))]
+        gran9 (d/ingest "PROV1" (dg/granule coll2 {:platform-refs [pr7]}))
+        gran10 (d/ingest "PROV1" (dg/granule coll2 {:platform-refs [pr8]}))
+        gran11 (d/ingest "PROV1" (dg/granule coll2 {:platform-refs [pr9]}))]
 
     (index/refresh-elastic-index)
 
@@ -249,7 +288,7 @@
 
            [gran1 gran2 gran6 gran7] "sensor-Sn A" {}
            [gran4] "sensor-SnA" {}
-           [gran10 gran11] "sensor-x" {}
+           [gran8 gran10 gran11] "sensor-x" {}
            [] "BLAH" {}
 
            ;; search by sensor, multiple values
@@ -257,8 +296,8 @@
            ;; search by sensor, inheritance
            [gran8] ["sensor-Inherit"] {}
            ;; search by sensor, ignore case
-           [gran10 gran11] ["sensor-x"] {:ignore-case true}
-           [gran10] ["sensor-x"] {:ignore-case false}
+           [gran8 gran10 gran11] ["sensor-x"] {:ignore-case true}
+           [gran8 gran10] ["sensor-x"] {:ignore-case false}
            ;; search by sensor, wildcards
            [gran1 gran2 gran3 gran6 gran7] ["sensor-Sn *"] {:pattern true}
            [gran4 gran5] ["sensor-Sn?"] {:pattern true}
@@ -272,7 +311,7 @@
 
            [gran1 gran2 gran6 gran7] "sensor-Sn A" {}
            [gran4] "sensor-SnA" {}
-           [gran10] "sensor-x" {}
+           [gran8 gran10] "sensor-x" {}
            [] "BLAH" {}
 
            ;; search by sensor, multiple values
@@ -280,8 +319,8 @@
            ;; search by sensor, inheritance
            [gran8] ["sensor-Inherit"] {}
            ;; search by sensor, ignore case
-           [gran10 gran11] ["sensor-x"] {:ignore-case true}
-           [gran10] ["sensor-x"] {:ignore-case false}
+           [gran8 gran10 gran11] ["sensor-x"] {:ignore-case true}
+           [gran8 gran10] ["sensor-x"] {:ignore-case false}
            ;; search by sensor, wildcards
            [gran1 gran2 gran3 gran6 gran7] "sensor-Sn %" {:pattern true}
            [gran4 gran5] "sensor-Sn_" {:pattern true}

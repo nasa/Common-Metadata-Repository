@@ -5,7 +5,8 @@
             [clojure.string :as str]
             [cmr.common.validations.core :as v]
             [cmr.umm.spatial :as umm-s]
-            [cmr.spatial.validation :as sv]))
+            [cmr.spatial.validation :as sv]
+            [cmr.umm.validation.utils :as vu]))
 
 
 (defn set-geometries-spatial-representation
@@ -39,7 +40,9 @@
 
 (def granule-validations
   "Defines validations for granules"
-  [{:spatial-coverage spatial-coverage-validations}
+  [{:spatial-coverage spatial-coverage-validations
+    :platform-refs [(vu/unique-by-name-validator :short-name)
+                    (vu/has-parent-validator :granule :collection :short-name)]}
    projects-reference-collection])
 
 
