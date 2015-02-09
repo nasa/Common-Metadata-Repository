@@ -13,8 +13,21 @@
         {field-path [(format "%%s must be unique. This contains duplicates named [%s]."
                              (str/join ", " duplicate-names))]}))))
 
+(defn has-parent-validator
+  "Validates that the given list of items has the parent attribute set.  Takes the name of the
+  field to include in the error message.  For example :short-name or :name depending on the field
+  being validated.
 
-
-
-
-
+  Example: (has-parent-validator :short-name \"Platform short name\")
+  \"The following list of Platform short names did not exist in the referenced parent collection: [foo].\""
+  [parent-ref-field human-readable-field-name]
+  (fn [field-path values]
+    (let [missing-parent-list
+          (->> values
+               (filter (complement :parent))
+               (map parent-ref-field))]
+      (when (seq missing-parent-list)
+        {field-path
+         [(format "The following list of %ss did not exist in the referenced parent collection: [%s]."
+                  human-readable-field-name
+                  (str/join ", " missing-parent-list))]}))))

@@ -1,4 +1,4 @@
-(ns ^{:doc "CMR Ingest validation integration tests"}
+(ns ^{:doc "CMR Ingest granule validation integration tests"}
   cmr.system-int-test.ingest.granule-validation-test
   (:require [clojure.test :refer :all]
             [cmr.system-int-test.utils.ingest-util :as ingest]
