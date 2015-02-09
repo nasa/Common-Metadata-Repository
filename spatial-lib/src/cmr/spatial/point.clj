@@ -1,4 +1,5 @@
 (ns cmr.spatial.point
+  "This namespace defines a Point type along with functions for working with points."
   (:require [cmr.spatial.math :refer :all]
             [primitive-math]
             [clojure.pprint]
@@ -34,9 +35,7 @@
 
 ;; Point type definition
 ;; It is a Type and not a record because it has some special rules that don't follow normal
-;; equality semantics.
-;; - A point on a pole is equal to another point on the pole regardless of longitude
-;; - -180 and 180 degrees longitude are equivalent.
+;; equality semantics. This implements enough functions and protocols to simulate a record.
 ;; Also Point maintains cached versions of lon and lat in radians. It keeps those values consistent
 ;; when creating a new point with a different lon or lat in assoc.
 (deftype Point
@@ -97,6 +96,9 @@
   (toString
     [this]
     (pr-str this))
+
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Protocols implemented to simulate a clojure Record.
 
   clojure.lang.IPersistentMap
   (assoc
