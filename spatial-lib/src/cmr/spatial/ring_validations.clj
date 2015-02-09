@@ -1,4 +1,4 @@
-(ns cmr.spatial.geodetic-ring-validations
+(ns cmr.spatial.ring-validations
   (:require [cmr.spatial.point :as p]
             [cmr.spatial.math :refer :all]
             [cmr.common.util :as util]
@@ -8,6 +8,7 @@
             [cmr.spatial.arc :as a]
             [cmr.spatial.derived :as d]
             [cmr.spatial.geodetic-ring :as gr]
+            [cmr.spatial.cartesian-ring :as cr]
             [cmr.spatial.ring-relations :as rr]
             [cmr.spatial.validation :as v]
             [cmr.spatial.points-validation-helpers :as pv]
@@ -28,11 +29,17 @@
     [(msg/ring-self-intersections intersections)]))
 
 (defn- ring-pole-validation
-  "Validates that the ring does not contain both poles"
+  "Validates that a geodetic ring does not contain both poles"
   [ring]
   (let [ring (gr/ring->pole-containment ring)]
     (when (and (:contains-south-pole ring) (:contains-north-pole ring))
       [(msg/ring-contains-both-poles)])))
+
+(defn- ring-point-order-validation
+  "Validates that a cartesian rings points are in counter clockwise order"
+  [ring]
+  (when (not= (cr/ring->winding ring) :counter-clockwise)
+    [(msg/ring-points-out-of-order)]))
 
 (extend-protocol v/SpatialValidation
   cmr.spatial.geodetic_ring.GeodeticRing
@@ -49,4 +56,19 @@
             ;; Advanced ring validation
             (let [ring (assoc ring :arcs (gr/ring->arcs ring))]
               (or (seq (ring-self-intersection-validation ring))
-                  (seq (ring-pole-validation ring))))))))
+                  (seq (ring-pole-validation ring)))))))
+
+  cmr.spatial.cartesian_ring.CartesianRing
+  (validate
+    [ring]
+    ;; Certain validations can only be run if earlier validations passed. Validations are grouped
+    ;; here so that subsequent validations won't run if earlier validations fail.
+
+    (or (seq (pv/points-in-shape-validation ring))
+        ;; basic ring validation
+        (or (seq (concat (ring-closed-validation ring)
+                         (pv/duplicate-point-validation (update-in ring [:points] drop-last))))
+            ;; Advanced ring validation
+            (let [ring (assoc ring :line-segments (cr/ring->line-segments ring))]
+              (or (seq (ring-self-intersection-validation ring))
+                  (seq (ring-point-order-validation ring))))))))

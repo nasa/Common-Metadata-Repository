@@ -63,7 +63,14 @@
   ([points]
    (line-string nil points))
   ([coordinate-system points]
-   (->LineString coordinate-system points nil nil)))
+   (->LineString coordinate-system (mapv #(p/with-equality coordinate-system %) points) nil nil)))
+
+(defn set-coordinate-system
+  "Sets the coordinate system of the line string"
+  [line coordinate-system]
+  (-> line
+      (assoc :coordinate-system coordinate-system)
+      (update-in [:points] #(mapv (partial p/with-equality coordinate-system) %))))
 
 (defn ords->line-string
   "Takes all arguments as coordinates for points, lon1, lat1, lon2, lat2, and creates a line."
@@ -148,7 +155,9 @@
     [line]
     ;; Certain validations can only be run if earlier validations passed. Validations are grouped
     ;; here so that subsequent validations won't run if earlier validations fail.
-    (when (= (:coordinate-system line) :geodetic)
+    (if (= (:coordinate-system line) :geodetic)
       (or (seq (pv/points-in-shape-validation line))
           (seq (concat (pv/duplicate-point-validation line)
-                       (pv/consecutive-antipodal-points-validation line)))))))
+                       (pv/consecutive-antipodal-points-validation line))))
+      (or (seq (pv/points-in-shape-validation line))
+          (seq (pv/duplicate-point-validation line))))))

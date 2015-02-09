@@ -53,7 +53,8 @@
                      (m/mbr lon2 lat2 lon2 lat2)
                      ;; Resulting MBR should not cross the antimeridian as this isn't allowed for cartesian polygons
                      false)]
-    (->LineSegment p1 p2 m b mbr)))
+    (->LineSegment (p/with-cartesian-equality p1) (p/with-cartesian-equality p2)
+                   m b mbr)))
 
 (defn ords->line-segment
   "Takes all arguments as coordinates for points, lon1, lat1, lon2, lat2, and creates an line-segment."
@@ -190,7 +191,8 @@
            initial-lon lon1
            initial-lat lat1
            points (mapv #(p/point (+ initial-lon (* lon-diff (double %)))
-                                  (+ initial-lat (* lat-diff (double %))))
+                                  (+ initial-lat (* lat-diff (double %)))
+                                  false)
                         (range (inc num-points)))]
        (if (not= (last points) p2)
          (conj points p2)
@@ -244,13 +246,13 @@
     (when (= lon1 lon2)
       (cond
         (within-range? ls2-north ls1-south ls1-north)
-        (p/point lon1 ls2-north)
+        (p/point lon1 ls2-north false)
 
         (within-range? ls2-south ls1-south ls1-north)
-        (p/point lon1 ls2-south)
+        (p/point lon1 ls2-south false)
 
         (within-range? ls1-south ls2-south ls2-north)
-        (p/point lon1 ls1-south)
+        (p/point lon1 ls1-south false)
 
         :else
         ;; the latitude ranges don't intersect
@@ -264,7 +266,8 @@
         mbr (:mbr ls)
         vert-mbr (:mbr vert-ls)]
     (when-let [point (some->> (segment+lon->lat ls lon)
-                              (p/point lon))]
+                              (p/point lon)
+                              p/with-cartesian-equality)]
       (when (and (m/covers-point? :cartesian mbr point) (m/covers-point? :cartesian vert-mbr point))
         point))))
 
@@ -276,7 +279,13 @@
     ;; Find the common intersecting mbr to find a common longitude.
     (when-let [intersection-mbr (first (m/intersections (.mbr ls1) (.mbr ls2)))]
       ;; Use the longitude to find a point
-      (p/point (:west intersection-mbr) (segment+lon->lat ls1 (:west intersection-mbr))))))
+      (p/point (:west intersection-mbr) (segment+lon->lat ls1 (:west intersection-mbr)) false))))
+
+(def ^:const INTERSECTION_COVERS_TOLERANCE
+  "Tolerance used for the covers method during point intersections. Longitudes and latitudes
+  technically outside the bounding rectangle but within this tolerance will be considered covered by
+  the bounding rectangle"
+  0.0000001)
 
 (defn- intersection-normal
   "Returns the intersection of two normal line segments"
@@ -289,9 +298,9 @@
         mbr2 (.mbr ls2)
         lon (/ (- b2 b1) (- m1 m2))
         lat (+ (* m1 lon) b1)
-        point (p/point lon lat)]
-    (when (and (m/covers-point? :cartesian mbr1 point)
-               (m/covers-point? :cartesian mbr2 point))
+        point (p/point lon lat false)]
+    (when (and (m/covers-point? :cartesian mbr1 point INTERSECTION_COVERS_TOLERANCE)
+               (m/covers-point? :cartesian mbr2 point INTERSECTION_COVERS_TOLERANCE))
       point)))
 
 (defn intersection
@@ -316,11 +325,12 @@
   "Returns the points the line segment intersects the edges of the mbr"
   [ls mbr]
   (if (m/single-point? mbr)
-    (let [point (p/point (:west mbr) (:north mbr))]
+    (let [point (p/point (:west mbr) (:north mbr) false)]
       (when (point-on-segment? ls point)
         [point]))
     (let [edges (mbr->line-segments mbr)]
-      (filter identity (map (partial intersection ls) edges)))))
+      (map p/with-cartesian-equality (filter identity (map (partial intersection ls) edges))))))
+
 
 (defn keep-farthest-points
   "Takes a list of points and returns the two points that are farthest from each other."

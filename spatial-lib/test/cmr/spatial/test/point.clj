@@ -25,51 +25,79 @@
     (.equals p2 p1)
     (= (hash p1) (hash p2))))
 
+(defn- hash-code-equals-consistent?
+  "Ensures that the hash code and equals values are equivalent."
+  [p1 p2]
+  (let [h1 (hash p1)
+        h2 (hash p2)]
+    ;; If the points are equal the hash code should be equal
+    (or (and (= p1 p2) (= h1 h2))
+        ;;Otherwise the points should not be equal
+        (not= p1 p2))))
+
 (defspec point-hashCode-equals-consistency 1000
   (for-all [^Point p1 sgen/points
             ^Point p2 sgen/points]
     (and
+      (hash-code-equals-consistent? p1 p2)
       ;; Order of comparison is equivalent.
       (= (= p1 p2) (.equals p1 p2) (= p2 p1) (.equals p2 p1))
       (point-matches? p1 (p/point (:lon p1) (:lat p1)))
       (point-matches? p2 (p/point (:lon p2) (:lat p2))))))
 
 (deftest point-equality-hash
-  (testing "at poles longitude doesn't matter"
-    (let [north-poles (map #(p/point % 90) (range -180 181 10))
-          south-poles (map #(p/point % -90) (range -180 181 10))]
+  (testing "geodetic equality"
+    (testing "at poles"
+      (let [north-poles (map #(p/point % 90) (range -180 181 10))
+            south-poles (map #(p/point % -90) (range -180 181 10))]
+        (is (= 1 (count (set (map hash north-poles)))))
+        (is (= 1 (count (set (map hash south-poles)))))
+        (is (= 1 (count (set north-poles))))
+        (is (= 1 (count (set south-poles))))
+        (is (apply = north-poles))
+        (is (apply = south-poles))
 
-      (is (= 1 (count (set (map hash north-poles)))))
-      (is (= 1 (count (set (map hash south-poles)))))
-      (is (= 1 (count (set north-poles))))
-      (is (= 1 (count (set south-poles))))
-      (is (apply = north-poles))
-      (is (apply = south-poles))
+        ;; North poles don't equal south poles
+        (is (not (some #(= (p/point (:lon %) -90) %) north-poles)))
+        ;; North poles don't equal points near the north pole
+        (is (not (some #(= (p/point (:lon %) 89.999) %) north-poles)))
 
-      ;; North poles don't equal south poles
-      (is (not (some #(= (p/point (:lon %) -90) %) north-poles)))
-      ;; North poles don't equal points near the north pole
-      (is (not (some #(= (p/point (:lon %) 89.999) %) north-poles)))
+        ;; South poles don't equal points near the south pole
+        (is (not (some #(= (p/point (:lon %) -89.99) %) south-poles)))))
+    (testing "very close on pole"
+      (let [p1 (p/point 0.0 89.99999999999996)
+            p2 (p/point 0.0 90.0)]
+        (is (= p1 p2))
+        (is (= (hash p1) (hash p2)))))
+    (testing "antimeridian"
+      (is (= (p/point -180 0) (p/point 180 0)))
+      (is (= (p/point -180 10) (p/point 180 10)))
+      (is (= (p/point 180 10) (p/point -180 10)))
+      (is (= (hash (p/point -180 0)) (hash (p/point 180 0))))
+      (is (= (hash (p/point -180 10)) (hash (p/point 180 10))))
 
-      ;; South poles don't equal points near the south pole
-      (is (not (some #(= (p/point (:lon %) -89.99) %) south-poles)))))
-  (testing "very close on pole"
-    (let [p1 (p/point 0.0 89.99999999999996)
-          p2 (p/point 0.0 90.0)]
-      (is (= p1 p2))
-      (is (= (hash p1) (hash p2)))))
-  (testing "antimeridian"
-    (is (= (p/point -180 0) (p/point 180 0)))
-    (is (= (p/point -180 10) (p/point 180 10)))
-    (is (= (p/point 180 10) (p/point -180 10)))
+      (is (not= (p/point -180 -10) (p/point -180 10))))
+    (testing "nil and other classes"
+      (is (not= (p/point 0 1) nil))
+      (is (not (.equals ^Point (p/point 0 1) nil)))
+      (is (not= (p/point 0 1) {:lon 0 :lat 1}))
+      (is (not= (p/point 0 1) "foo"))
+      (is (not (.equals ^Point (p/point 0 1) "foo")))))
 
-    (is (not= (p/point -180 -10) (p/point -180 10))))
-  (testing "nil and other classes"
-    (is (not= (p/point 0 1) nil))
-    (is (not (.equals ^Point (p/point 0 1) nil)))
-    (is (not= (p/point 0 1) {:lon 0 :lat 1}))
-    (is (not= (p/point 0 1) "foo"))
-    (is (not (.equals ^Point (p/point 0 1) "foo")))))
+  (testing "cartesian equality"
+    (testing "poles"
+      (is (not= (p/point 0 90 false) (p/point 1 90 false)))
+      (is (not= (p/point 180 90 false) (p/point -180 90 false)))
+      (is (= (p/point 8 90 false) (p/point 8 90 false)))
+      (is (not= (p/point 0 -90 false) (p/point 1 -90 false)))
+      (is (not= (p/point 180 -90 false) (p/point -180 -90 false))))
+    (testing "antimeridian"
+      (is (not= (p/point 180 10 false) (p/point -180 10 false)))
+      (is (= (p/point 180 10 false) (p/point 180 10 false))))
+    (testing "normal"
+      (is (= (p/point 54 45 false) (p/point 54 45 false)))
+      (is (not= (p/point 54 45 false) (p/point 54 46 false)))
+      (is (not= (p/point 55 45 false) (p/point 54 45 false))))))
 
 (deftest point-validation
   (testing "valid point"
@@ -79,9 +107,9 @@
          (= [msg]
             (v/validate (p/point lon lat)))
          -181 0 (msg/point-lon-invalid -181)
-        181 0 (msg/point-lon-invalid 181)
-        0 90.1 (msg/point-lat-invalid 90.1)
-        0 -90.1 (msg/point-lat-invalid -90.1))))
+         181 0 (msg/point-lon-invalid 181)
+         0 90.1 (msg/point-lat-invalid 90.1)
+         0 -90.1 (msg/point-lat-invalid -90.1))))
 
 ;; Tests that when associating a new subvalue to a point it stays consistent.
 (defspec point-assoc 100
@@ -132,16 +160,16 @@
 
 ;; Commenting out this test as we don't want assertions enabled everywhere.
 #_(deftest point-assertions
-  (testing "longitude and latitude are validated"
-    (are [lon lat] (thrown? AssertionError (p/point lon lat))
-         -181 0
-         181 0
-         0 91
-         0 -91))
-  (testing "lon-rad and lat-rad are validated"
-    (are [lon lat lon-rad lat-rad] (thrown? AssertionError (p/point lon lat lon-rad lat-rad))
-         0 0 (radians 0.3) (radians 0)
-         0 0 (radians 0) (radians 1))))
+    (testing "longitude and latitude are validated"
+      (are [lon lat] (thrown? AssertionError (p/point lon lat))
+           -181 0
+           181 0
+           0 91
+           0 -91))
+    (testing "lon-rad and lat-rad are validated"
+      (are [lon lat lon-rad lat-rad] (thrown? AssertionError (p/point lon lat lon-rad lat-rad))
+           0 0 (radians 0.3) (radians 0)
+           0 0 (radians 0) (radians 1))))
 
 (deftest point-approx=
   (testing "on antimeridian"
