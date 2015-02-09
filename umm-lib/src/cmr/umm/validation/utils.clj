@@ -18,7 +18,8 @@
   field to include in the error message.  For example :short-name or :name depending on the field
   being validated.
 
-  Example: (has-parent-validator :short-name \"Platform short name\""
+  Example: (has-parent-validator :short-name \"Platform short name\")
+  \"The following list of Platform short names did not exist in the referenced parent collection: [foo].\""
   [parent-ref-field human-readable-field-name]
   (fn [field-path values]
     (let [missing-parent-list
