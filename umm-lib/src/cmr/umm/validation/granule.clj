@@ -42,7 +42,7 @@
   "Defines validations for granules"
   [{:spatial-coverage spatial-coverage-validations
     :platform-refs [(vu/unique-by-name-validator :short-name)
-                    (vu/has-parent-validator :granule :collection :short-name)]}
+                    (vu/has-parent-validator :short-name "Platform short name")]}
    projects-reference-collection])
 
 

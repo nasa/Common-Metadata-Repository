@@ -17,17 +17,14 @@
   "Validates that the given list of items has the parent attribute set.  Takes the name of the
   field to include in the error message.  For example :short-name or :name depending on the field
   being validated."
-  [child-type parent-type field-for-err-msg]
+  [parent-ref-field human-parent-ref-name]
   (fn [field-path values]
     (let [missing-parent-list
-          (->> (map #(when-not (:parent %) (field-for-err-msg %)) values)
-               (remove nil?)
-               (seq))]
-      (when missing-parent-list
+          (->> values
+               (filter (complement :parent))
+               (map parent-ref-field))]
+      (when (seq missing-parent-list)
         {field-path
-         [(format "%%s referenced in a %s must be present in the parent %s. The invalid %ss are [%s]."
-                  (name child-type) (name parent-type) (name field-for-err-msg)
+         [(format "The following list of %ss did not exist in the referenced parent collection: [%s]."
+                  human-parent-ref-name
                   (str/join ", " missing-parent-list))]}))))
-
-
-

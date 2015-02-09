@@ -104,25 +104,25 @@
         collection
         (g/map->UmmGranule {:platform-refs [pg4]})
         [:platform-refs]
-        ["Platform Refs referenced in a granule must be present in the parent collection. The invalid short-names are [p4]."])
+        ["The following list of Platform short names did not exist in the referenced parent collection: [p4]."])
       (assert-invalid-gran
         collection
         (g/map->UmmGranule {:platform-refs [pg1 pg2 pg3 pg4 pg5]})
         [:platform-refs]
-        ["Platform Refs referenced in a granule must be present in the parent collection. The invalid short-names are [p4, p5]."])
+        ["The following list of Platform short names did not exist in the referenced parent collection: [p4, p5]."])
       (assert-invalid-gran
         collection
         (g/map->UmmGranule {:platform-refs [pg1 pg1 pg2]})
         [:platform-refs]
-        ["Platform Refs must be unique. This contains duplicates named [p1]."])
+        ["Platform References must be unique. This contains duplicates named [p1]."])
       (assert-invalid-gran
         collection
         (g/map->UmmGranule {:platform-refs [pg1 pg1 pg2 pg2]})
         [:platform-refs]
-        ["Platform Refs must be unique. This contains duplicates named [p1, p2]."])
+        ["Platform References must be unique. This contains duplicates named [p1, p2]."])
       (assert-invalid-gran
         collection
         (g/map->UmmGranule {:platform-refs [pg1 pg1 pg3 pg4 pg5]})
         [:platform-refs]
-        ["Platform Refs must be unique. This contains duplicates named [p1]."
-         "Platform Refs referenced in a granule must be present in the parent collection. The invalid short-names are [p4, p5]."]))))
+        ["Platform References must be unique. This contains duplicates named [p1]."
+         "The following list of Platform short names did not exist in the referenced parent collection: [p4, p5]."]))))
