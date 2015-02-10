@@ -111,8 +111,6 @@
         (dissoc :spatial-keywords)
         ;; SMAP ISO does not support TemporalKeywords
         (dissoc :temporal-keywords)
-        ;; SMAP ISO does not support ScienceKeywords
-        (dissoc :science-keywords)
         ;; SMAP ISO platform does not have characteristics field
         ;; and instruments are the same for all platforms
         (update-in [:platforms] platforms->expected-parsed)
@@ -179,6 +177,24 @@
                        :single-date-times
                        []
                        :periodic-date-times []})
+                    :science-keywords [(umm-c/map->ScienceKeyword
+                                         {:category "EARTH SCIENCE"
+                                          :topic "SPECTRAL/ENGINEERING"
+                                          :term "MICROWAVE"
+                                          :variable-level-1 "BRIGHTNESS TEMPERATURE"})
+                                       (umm-c/map->ScienceKeyword
+                                         {:category "EARTH SCIENCE"
+                                          :topic "ATMOSPHERE"
+                                          :term "CLOUDS"
+                                          :variable-level-1 "TROPOSPHERIC/LOW LEVEL CLOUDS (OBSERVED/ANALYZED)"
+                                          :variable-level-2 "FOG"
+                                          :variable-level-3 "ICE FOG"})
+                                       (umm-c/map->ScienceKeyword
+                                         {:category "EARTH SCIENCE SERVICES"
+                                          :topic "BIOSPHERE"
+                                          :term "VEGETATION"
+                                          :variable-level-1 "PLANT CHARACTERISTICS"
+                                          :variable-level-2 "VEGETATION WATER CONTENT"})]
                     :platforms [(umm-c/map->Platform
                                   {:short-name "SMAP"
                                    :long-name "Soil Moisture Active and Passive Observatory"

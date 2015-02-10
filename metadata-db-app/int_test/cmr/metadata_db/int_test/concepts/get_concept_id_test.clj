@@ -55,8 +55,8 @@
       (are [concept-type provider-id native-id]
            (= {:status 404
                :concept-id nil
-               :errors ["Providers with provider-ids [PROV2] do not exist."]}
+               :errors ["Providers with provider-ids [PROV5] do not exist."]}
               (util/get-concept-id concept-type provider-id native-id))
-           "collection" "PROV2" (:native-id coll)
-           "granule" "PROV2" (:native-id gran)))))
+           "collection" "PROV5" (:native-id coll)
+           "granule" "PROV5" (:native-id gran)))))
 

@@ -5,7 +5,10 @@
             [cmr.umm.collection :as c]))
 
 (def categories
-  (ext-gen/string-alpha-numeric 1 10))
+  "SMAP ISO requires the category be one of 'EARTH SCIENCE' or 'EARTH SCIENCE SERVICES',
+  so we limit the category values here for ease of testing."
+  (gen/one-of [(gen/return "EARTH SCIENCE")
+               (gen/return "EARTH SCIENCE SERVICES")]))
 
 (def topics
   (ext-gen/string-alpha-numeric 1 10))
