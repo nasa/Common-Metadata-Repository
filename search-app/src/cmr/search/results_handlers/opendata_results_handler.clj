@@ -15,6 +15,10 @@
             [cmr.search.services.url-helper :as url]
             [cmr.umm.related-url-helper :as ru]))
 
+(def OPENDATA_SCHEMA
+  "Location of the the opendata schema to which the results conform"
+  "https://project-open-data.cio.gov/v1.1/schema")
+
 (def BUREAU_CODE
   "opendata bureauCode for NASA"
   "026:00")
@@ -25,7 +29,7 @@
 
 (def PUBLISHER
   "opendata publisher string for NASA"
-  "National Aeronautics and Space Administration")
+  {:name "National Aeronautics and Space Administration"})
 
 (def LANGUAGE_CODE
   "opendata language code for NASA data"
@@ -79,6 +83,12 @@
                              (:contacts personnel))))
       DEFAULT_CONTACT_EMAIL))
 
+(defn contact-point
+  "Creates the contactPoint field including the name and email address"
+  [personnel]
+  {:fn (personnel->contact-name personnel)
+   :hasEmail (str "mailto:" (personnel->contact-email personnel))})
+
 (defmethod elastic-results/elastic-result->query-result-item :opendata
   [_ _ elastic-result]
   (let [{concept-id :_id
@@ -91,7 +101,6 @@
           [access-value] :access-value
           science-keywords-flat :science-keywords-flat
           [opendata-format] :opendata-format
-          [access-url] :access-url
           related-urls :related-urls
           [entry-title] :entry-title
           ords-info :ords-info
@@ -136,17 +145,19 @@
   [spatial pretty?]
   (opendata-spatial/shapes->json spatial pretty?))
 
-
 (defn distribution
-  "Creates the distribution field for the collection with the given related-urls."
+  "Creates the distribution field for the collection with the given related-urls.  If a URL is
+  downloadable the URL will be marked as a :downloadURL otherwise it will be an :accessURL."
   [related-urls]
-  (let [online-access-urls (ru/downloadable-urls related-urls)]
-    (not-empty (map (fn [url]
-                      (let [mime-type (or (:mime-type url)
-                                          "application/octet-stream")]
-                        {:accessURL (:url url)
-                         :format mime-type}))
-                    online-access-urls))))
+  (not-empty (map (fn [url]
+                    (let [mime-type (or (:mime-type url)
+                                        "application/octet-stream")
+                          url-type (if (ru/downloadable-url? url)
+                                     :downloadURL
+                                     :accessURL)]
+                      {url-type (:url url)
+                       :mediaType mime-type}))
+                  related-urls)))
 
 (defn landing-page
   "Creates the landingPage field for the collection with the given related-urls."
@@ -157,41 +168,37 @@
               url)))
         related-urls))
 
-(defn result->opendata
+(defn- result->opendata
   "Converts a search result item to opendata."
   [context concept-type pretty? item]
   (let [{:keys [id summary short-name project-sn update-time insert-time provider-id access-value
                 keywords entry-title opendata-format start-date end-date
-                related-urls personnel shapes]} item
-        access-url (first (ru/downloadable-urls related-urls))
-        distribution (distribution related-urls)]
+                related-urls personnel shapes]} item]
     (util/remove-nil-keys {:title entry-title
                            :description (not-empty summary)
                            :keyword (not-empty keywords)
                            :modified (not-empty update-time)
                            :publisher PUBLISHER
-                           :contactPoint (personnel->contact-name personnel)
-                           :mbox (personnel->contact-email personnel)
+                           :contactPoint (contact-point personnel)
                            :identifier id
                            :accessLevel ACCESS_LEVEL
                            :bureauCode [BUREAU_CODE]
                            :programCode [PROGRAM_CODE]
-                           :accessURL (:accessURL (first distribution))
-                           :format (:format (first distribution))
                            :spatial (spatial shapes pretty?)
                            :temporal (temporal start-date end-date)
                            :theme (not-empty (str/join "," project-sn))
-                           :distribution distribution
+                           :distribution (distribution related-urls)
                            :landingPage (landing-page related-urls)
                            :language  [LANGUAGE_CODE]
                            :references (not-empty (map :url related-urls))
                            :issued (not-empty insert-time)})))
 
-(defn results->opendata
+(defn- results->opendata
   "Convert search results to opendata."
   [context concept-type pretty? results]
   (let [{:keys [items]} results]
-    (map (partial result->opendata context concept-type pretty?) items)))
+    {:conformsTo OPENDATA_SCHEMA
+     :dataset (map (partial result->opendata context concept-type pretty?) items)}))
 
 (defmethod qs/search-results->response :opendata
   [context query results]
