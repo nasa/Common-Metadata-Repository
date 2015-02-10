@@ -15,6 +15,7 @@
             [clojure.walk]
             [ring.util.codec :as codec]
             [clojure.data.xml :as x]
+            [cmr.system-int-test.utils.fast-xml :as fx]
             [cmr.common.xml :as cx]
             [cmr.umm.dif.collection]
             [cmr.umm.iso-mends.collection]
@@ -83,7 +84,7 @@
 (defn safe-parse-error-xml
   [xml]
   (try
-    (cx/strings-at-path (x/parse-str xml) [:error])
+    (cx/strings-at-path (fx/parse-str xml) [:error])
     (catch Exception e
       (.printStackTrace e)
       [xml])))
@@ -257,7 +258,7 @@
      (let [format-mime-type (mime-types/format->mime-type format-key)
            response (find-concepts-in-format format-mime-type concept-type params options)
            body (:body response)
-           parsed (x/parse-str body)
+           parsed (fx/parse-str body)
            metadatas (for [match (drop 1 (str/split body #"(?ms)<result "))]
                        (second (re-matches #"(?ms)[^>]*>(.*)</result>.*" match)))
            items (map (fn [result metadata]
@@ -285,7 +286,7 @@
 
 (defmethod parse-reference-response :default
   [_ response]
-  (let [parsed (-> response :body x/parse-str)
+  (let [parsed (-> response :body fx/parse-str)
         hits (cx/long-at-path parsed [:hits])
         took (cx/long-at-path parsed [:took])
         refs (map (fn [ref-elem]
@@ -308,7 +309,7 @@
 
 (defmethod parse-reference-response true
   [_ response]
-  (let [parsed (-> response :body x/parse-str)
+  (let [parsed (-> response :body fx/parse-str)
         references-type (get-in parsed [:attrs :type])
         refs (map (fn [ref-elem]
                     (util/remove-nil-keys
@@ -324,7 +325,7 @@
 (defn- parse-echo-facets-response
   "Returns the parsed facets by parsing the given facets according to catalog-rest facets format"
   [response]
-  (let [parsed (-> response :body x/parse-str)]
+  (let [parsed (-> response :body fx/parse-str)]
     (f/parse-echo-facets-xml parsed)))
 
 (defn- parse-refs-response
