@@ -17,7 +17,7 @@
   "Separator used to separator keyword into keyword fields"
   #">")
 
-(def PLATFORM_CATEGORIES
+(def platform-categories
   "Category keywords that identifies a descriptive keyword as a platform.
   We are doing this because GCMD currently is not setting the proper value in the type element
   of descriptiveKeywords to identify its type. We should use the type element to identify
@@ -34,6 +34,9 @@
     "Solar/Space Observation Satellites"
     "Space Stations/Manned Spacecraft"})
 
+(def science-keyword-categories
+  #{"EARTH SCIENCE" "EARTH SCIENCE SERVICES"})
+
 (defn- parse-keyword-str
   "Parse the keyword string into a vector of keyword fields"
   [keyword-str]
@@ -45,9 +48,9 @@
   [keyword-str]
   (let [category (first (parse-keyword-str keyword-str))]
     (cond
-      (some #{category} ["EARTH SCIENCE" "EARTH SCIENCE SERVICES"]) :science
+      (science-keyword-categories category) :science
       (re-matches #".* Instruments$" category) :instrument
-      (some PLATFORM_CATEGORIES [category]) :platform
+      (platform-categories category) :platform
       :else :other)))
 
 (defn xml-elem->keywords
