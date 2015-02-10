@@ -382,8 +382,7 @@
   Optionally accepts a list of provider-ids to create before the test"
   [& provider-ids]
   (fn [f]
-    (try
-      (doseq [pid provider-ids] (save-provider pid))
-      (f)
-      (finally (reset-database)))))
+    (reset-database)
+    (doseq [pid provider-ids] (save-provider pid))
+    (f)))
 
