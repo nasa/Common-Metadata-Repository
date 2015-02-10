@@ -74,13 +74,19 @@
       (assert-invalid-gran
         collection
         (g/map->UmmGranule {:project-refs ["C4"]})
-        [:projects]
-        ["Projects has [C4] which do not reference any projects in parent collection."])
+        [:project-refs]
+        ["Project References have [C4] which do not reference any projects in parent collection."])
       (assert-invalid-gran
         collection
         (g/map->UmmGranule {:project-refs ["C1" "C2" "C3" "C4" "C5"]})
-        [:projects]
-        ["Projects has [C5, C4] which do not reference any projects in parent collection."]))))
+        [:project-refs]
+        ["Project References have [C5, C4] which do not reference any projects in parent collection."]))
+    (testing "Invalid project-refs unique name"
+      (assert-invalid-gran
+        collection
+        (g/map->UmmGranule {:project-refs ["C1" "C2" "C3" "C1"]})
+        [:project-refs]
+        ["Project References must be unique. This contains duplicates named [C1]."]))))
 
 (deftest granule-platform-refs
   (let [p1 (c/map->Platform {:short-name "p1"})

@@ -34,15 +34,16 @@
         parent-project-names (->> granule :parent :projects (map :short-name) set)
         missing-project-refs (seq (set/difference project-ref-names parent-project-names))]
     (when missing-project-refs
-      {[:projects]
-       [(format "%%s has [%s] which do not reference any projects in parent collection."
+      {[:project-refs]
+       [(format "%%s have [%s] which do not reference any projects in parent collection."
                 (str/join ", " missing-project-refs))]})))
 
 (def granule-validations
   "Defines validations for granules"
   [{:spatial-coverage spatial-coverage-validations
     :platform-refs [(vu/unique-by-name-validator :short-name)
-                    (vu/has-parent-validator :short-name "Platform short name")]}
+                    (vu/has-parent-validator :short-name "Platform short name")]
+    :project-refs (vu/unique-by-name-validator identity)}
    projects-reference-collection])
 
 
