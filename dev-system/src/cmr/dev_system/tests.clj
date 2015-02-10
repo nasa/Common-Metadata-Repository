@@ -9,53 +9,41 @@
   (:require [clojure.test :as t]
             [cmr.common.util :as u]
             [cmr.system-int-test.utils.ingest-util :as ingest-util]
-            [cmr.common.dev.util :as du]))
+            [cmr.common.dev.util :as du]
+            [clojure.set :as set]))
 
-(def unit-test-names
-  "Lists the set of unit tests that will run. This will be combined with a suffix and prefix to
-  create a regular expression to match namespace names."
-  [:acl
-   :common
-   :index-set
-   :indexer
-   :metadata-db
-   :search
-   :spatial
-   :system-trace
-   :transmit
-   :umm])
+(defn system-integration-test?
+  [test-ns]
+  (re-find #"system-int-test" (str test-ns)))
 
-(def unit-test-ns-matchers
-  "Converted list of unit test names into namespace matching regular expressions"
-  (->> unit-test-names
-       (map name)
-       (map #(str "cmr." % ".test.*"))
-       (map re-pattern)))
+(defn integration-test-ns->compare-value
+  "The comparator function to use for sorting integration tests. We want system integration tests
+  to run last."
+  [test-ns]
+  (if (system-integration-test? test-ns)
+    10
+    1))
 
-(def integration-namespace-suffixes
-  "A set of suffixes matching integration test namespaces."
-  [:index-set.int-test
-   :metadata-db.int-test
-   :system-int-test])
+(def integration-test-namespaces
+  "The list of integration test namespaces. Anything that contains 'cmr.' and 'int-test' is
+  considered an integration test namespace."
+  (->> (all-ns)
+       (filter #(re-find #"cmr\..*int-test" (str %)))
+       (sort-by integration-test-ns->compare-value)))
 
-(def integration-test-ns-matchers
-  "Converted list of integration test names into namespace matching regular expressions"
-  (->> integration-namespace-suffixes
-       (map name)
-       (map #(str "cmr." % ".*"))
-       (map re-pattern)))
-
-(defn ns-matchers->namespaces
-  "Finds all the namespaces matching the set of regular expressions passed in."
-  [ns-matchers]
-  (for [ns-matcher ns-matchers
-        test-ns (filter #(re-matches ns-matcher (name (ns-name %))) (all-ns))]
-    test-ns))
+(def unit-test-namespaces
+  "This defines a list of unit test namespaaces. Anything namespace name that contains 'cmr.' and
+  'test' that is not an integration test namespace is considered a unit test namespace."
+  (set/difference
+    (->> (all-ns)
+         (filter #(re-find #"cmr\..*test" (str %)))
+         set)
+    (set integration-test-namespaces)))
 
 (defn run-tests
   "Runs all the tests matching the list of namespace regular expressions. The tests are run
   in parallel if parallel? is true. Returns a lazy sequence of test results maps."
-  [ns-matchers parallel?]
+  [namespaces parallel?]
   (let [map-fn (if parallel? pmap map)]
     (map-fn (fn [test-ns]
               (taoensso.timbre/set-level! :warn)
@@ -63,7 +51,7 @@
                 (assoc results
                        :took millis
                        :test-ns test-ns)))
-            (ns-matchers->namespaces ns-matchers))))
+            namespaces)))
 
 (defn analyze-results
   "Analyzes a list of tests results to compute totals, find slowest tests, etc. Returns a map of
@@ -142,8 +130,8 @@
   (println "RUNNING ALL TESTS")
   (let [{:keys [fail-fast?]} options
         test-results-handler (fail-fast?->test-results-handler fail-fast?)
-        unittest-results (run-tests unit-test-ns-matchers true)
-        inttest-results (run-tests integration-test-ns-matchers false)
+        unittest-results (run-tests unit-test-namespaces true)
+        inttest-results (run-tests integration-test-namespaces false)
         [took test-results] (u/time-execution
                               (test-results-handler
                                 (concat unittest-results inttest-results)))]
