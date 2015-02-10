@@ -20,6 +20,7 @@
             [cmr.spatial.codec :as codec]
             [cmr.umm.spatial :as umm-s]
             [clojure.data.xml :as x]
+            [cmr.system-int-test.utils.fast-xml :as fx]
             [cmr.common.xml :as cx]
             [cmr.system-int-test.data2.kml :as dk]
             [cmr.system-int-test.data2.opendata :as od]))
@@ -162,7 +163,7 @@
                               (:concept-id c1-echo)
                               {:accept mime-type})
                    err-msg (if xml?
-                             (cx/string-at-path (x/parse-str (:body response)) [:error])
+                             (cx/string-at-path (fx/parse-str (:body response)) [:error])
                              (first (:errors (json/decode (:body response) true))))]
                (and (= 400 (:status response))
                     (= (str "The mime type [" mime-type "] is not supported.") err-msg)))
