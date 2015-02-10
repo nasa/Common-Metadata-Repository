@@ -72,7 +72,8 @@
         product (xml-elem->Product product-elem version-description)
         {:keys [short-name version-id]} product
         data-provider-timestamps (xml-elem->DataProviderTimestamps id-elems)
-        dataset-id-elem (h/xml-elem-with-title-tag id-elems "DataSetId")]
+        dataset-id-elem (h/xml-elem-with-title-tag id-elems "DataSetId")
+        keywords (kw/xml-elem->keywords xml-struct)]
     (c/map->UmmCollection
       {:entry-id (if (empty? version-id)
                    short-name
@@ -85,7 +86,8 @@
        :product product
        :data-provider-timestamps data-provider-timestamps
        :temporal (t/xml-elem->Temporal xml-struct)
-       :platforms (kw/xml-elem->Platforms xml-struct)
+       :science-keywords (kw/keywords->ScienceKeywords keywords)
+       :platforms (kw/keywords->Platforms keywords)
        :spatial-coverage (spatial/xml-elem->SpatialCoverage xml-struct)
        :organizations (org/xml-elem->Organizations id-elems)
        :associated-difs (xml-elem->associated-difs id-elems)
@@ -178,7 +180,8 @@
      (let [{{:keys [short-name long-name version-id version-description]} :product
             dataset-id :entry-title
             {:keys [insert-time update-time]} :data-provider-timestamps
-            :keys [organizations temporal platforms spatial-coverage summary associated-difs]} collection
+            :keys [organizations temporal platforms spatial-coverage summary
+                   associated-difs science-keywords]} collection
            ;; UMM model has a nested relationship between instruments and platforms,
            ;; but there is no nested relationship between instruments and platforms in SMAP ISO xml.
            ;; To work around this problem, we list all instruments under each platform.
@@ -220,8 +223,9 @@
                    (h/iso-string-element :gmd:credit "National Aeronautics and Space Administration (NASA)")
                    iso-status-element
                    (org/generate-archive-center organizations)
-                   (kw/generate-instruments instruments)
-                   (kw/generate-platforms platforms)
+                   (kw/generate-keywords science-keywords)
+                   (kw/generate-keywords instruments)
+                   (kw/generate-keywords platforms)
                    (iso-aggregation-info-element dataset-id)
                    (h/iso-string-element :gmd:language "eng")
                    (x/element
