@@ -11,7 +11,7 @@
 
 (def indexing-communication-method
   "Either \"http\" or \"queue\""
-  (cfg/config-value-fn :indexing-communication-method "queue"))
+  (cfg/config-value-fn :indexing-communication-method "http"))
 
 (def use-index-queue?
   "Boolean flag indicating whether or not to use the message queue for indexing"
