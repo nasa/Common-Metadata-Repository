@@ -27,9 +27,19 @@
   "opendata programCode for NASA : Earth Science Research"
   "026:001")
 
-(def PUBLISHER
-  "opendata publisher string for NASA"
-  {:name "National Aeronautics and Space Administration"})
+(def NASA_PUBLISHER_HIERARCHY
+  "opendata publisher hierarchy for NASA providers"
+  {:name "National Aeronautics and Space Administration",
+   :subOrganizationOf {
+                       :name "U.S. Government"}})
+
+(def USGS_EROS_PUBLISHER_HIERARCHY
+  "opendata publisher hierarchy for the USGS_EROS provider"
+  {:name "U.S. Geological Survey",
+   :subOrganizationOf {
+                       :name "U.S. Department of the Interior",
+                       :subOrganizationOf {
+                                           :name "U.S. Government"}}})
 
 (def LANGUAGE_CODE
   "opendata language code for NASA data"
@@ -60,6 +70,7 @@
    "ords-info"
    "ords"
    "personnel"
+   "archive-center"
    ;; needed for acl enforcment
    "access-value"
    "provider-id"
@@ -107,7 +118,8 @@
           ords :ords
           [personnel] :personnel
           [start-date] :start-date
-          [end-date] :end-date} :fields} elastic-result
+          [end-date] :end-date
+          [archive-center] :archive-center} :fields} elastic-result
         personnel (json/decode personnel true)
         related-urls  (map #(json/decode % true) related-urls)
         start-date (when start-date (str/replace (str start-date) #"\+0000" "Z"))
@@ -128,7 +140,8 @@
      :provider-id provider-id
      :access-value access-value ;; needed for acl enforcment
      :keywords science-keywords-flat
-     :entry-title entry-title}))
+     :entry-title entry-title
+     :archive-center archive-center}))
 
 (defn temporal
   "Get the temporal field from the start-date and end-date"
@@ -168,17 +181,27 @@
               url)))
         related-urls))
 
+(defn publisher
+  "Creates the publisher field for the collection based on the archive-center.  Note for the
+  USGS_EROS provider the hierarchy is different than for the other providers."
+  [provider-id archive-center]
+  (let [hierarchy (if (= provider-id "USGS_EROS")
+                    USGS_EROS_PUBLISHER_HIERARCHY
+                    NASA_PUBLISHER_HIERARCHY)]
+  {:name archive-center
+   :subOrganizationOf hierarchy}))
+
 (defn- result->opendata
   "Converts a search result item to opendata."
   [context concept-type pretty? item]
-  (let [{:keys [id summary short-name project-sn update-time insert-time provider-id access-value
+  (let [{:keys [id summary short-name project-sn update-time insert-time provider-id
                 keywords entry-title opendata-format start-date end-date
-                related-urls personnel shapes]} item]
+                related-urls personnel shapes archive-center]} item]
     (util/remove-nil-keys {:title entry-title
                            :description (not-empty summary)
                            :keyword (not-empty keywords)
                            :modified (not-empty update-time)
-                           :publisher PUBLISHER
+                           :publisher (publisher provider-id archive-center)
                            :contactPoint (contact-point personnel)
                            :identifier id
                            :accessLevel ACCESS_LEVEL

@@ -45,8 +45,8 @@
 
 (defn collection->expected-opendata
   [collection]
-  (let [{:keys [short-name keywords projects summary entry-title
-                access-value concept-id related-urls personnel data-format]} collection
+  (let [{:keys [short-name keywords projects summary entry-title organizations
+                access-value concept-id related-urls personnel data-format provider-id]} collection
         spatial-representation (get-in collection [:spatial-coverage :spatial-representation])
         update-time (get-in collection [:data-provider-timestamps :update-time])
         insert-time (get-in collection [:data-provider-timestamps :insert-time])
@@ -60,12 +60,13 @@
         distribution (not-empty (odrh/distribution related-urls))
         project-sn (not-empty (map :short-name projects))
         personnel (c/person-with-email personnel)
-        contact-point (contact-point personnel)]
+        contact-point (contact-point personnel)
+        archive-center (:org-name (first (filter #(= :archive-center (:type %)) organizations)))]
     (util/remove-nil-keys {:title entry-title
                            :description summary
                            :keyword (not-empty (sk/flatten-science-keywords collection))
                            :modified (str update-time)
-                           :publisher odrh/PUBLISHER
+                           :publisher (odrh/publisher provider-id archive-center)
                            :contactPoint contact-point
                            :identifier concept-id
                            :accessLevel "public"
