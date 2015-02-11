@@ -15,7 +15,6 @@
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
 (deftest invalid-psa-searches
-  (println invalid-psa-searches)
   (are [v error]
        (= {:status 400 :errors [error]}
           (search/find-refs :granule {"attribute[]" v}))
@@ -56,7 +55,6 @@
 
 ;; These are for boolean, datetime_string, time_string, and date_string attribute types which are all indexed and searchable as strings.
 (deftest indexed-as-string-psas-search-test
-  (println indexed-as-string-psas-search-test)
   (let [psa1 (dc/psa "bool" :boolean)
         psa2 (dc/psa "dts" :datetime-string)
         psa3 (dc/psa "ts" :time-string)
@@ -97,7 +95,6 @@
            [gran7] [{:name "ds" :type :string :value "2012-01-01"}]))))
 
 (deftest string-psas-search-test
-  (println string-psas-search-test)
   (let [psa1 (dc/psa "alpha" :string)
         psa2 (dc/psa "bravo" :string)
         psa3 (dc/psa "charlie" :string "foo")
@@ -269,7 +266,6 @@
                     {:type :range :name "bravo" :value ["bc" nil]}] {:and true}))))
 
 (deftest float-psas-search-test
-  (println float-psas-search-test)
   (let [psa1 (dc/psa "alpha" :float)
         psa2 (dc/psa "bravo" :float)
         psa3 (dc/psa "charlie" :float 45)
@@ -358,7 +354,6 @@
            [gran3 gran4] [{:type :floatRange :name "charlie" :value [44 45.1]}]))))
 
 (deftest int-psas-search-test
-  (println int-psas-search-test)
   (let [psa1 (dc/psa "alpha" :int)
         psa2 (dc/psa "bravo" :int)
         psa3 (dc/psa "charlie" :int 45)
@@ -455,7 +450,6 @@
            [gran3 gran4] [{:type :intRange :name "charlie" :value [44 46]}]))))
 
 (deftest datetime-psas-search-test
-  (println datetime-psas-search-test)
   (let [psa1 (dc/psa "alpha" :datetime)
         psa2 (dc/psa "bravo" :datetime)
         psa3 (dc/psa "charlie" :datetime (d/make-datetime 45 false))
@@ -569,7 +563,6 @@
            [gran3 gran4] [{:type :dateRange :name "charlie" :value [44 45]}]))))
 
 (deftest time-psas-search-test
-  (println time-psas-search-test)
   (let [psa1 (dc/psa "alpha" :time)
         psa2 (dc/psa "bravo" :time)
         psa3 (dc/psa "charlie" :time (d/make-time 45 false))
@@ -683,7 +676,6 @@
            [gran3 gran4] [{:type :timeRange :name "charlie" :value [44 45]}]))))
 
 (deftest date-psas-search-test
-  (println date-psas-search-test)
   (let [psa1 (dc/psa "alpha" :date)
         psa2 (dc/psa "bravo" :date)
         psa3 (dc/psa "charlie" :date (d/make-date 45 false))

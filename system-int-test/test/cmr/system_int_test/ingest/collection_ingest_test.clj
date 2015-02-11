@@ -115,7 +115,6 @@
       (is (= (range 1 (inc n)) (map :revision-id created-concepts))))))
 
 (deftest update-collection-with-different-formats-test
-  (println "update-collection-with-different-formats-test")
   (testing "update collection in different formats ..."
     (doseq [[expected-rev coll-format] (map-indexed #(vector (inc %1) %2) [:echo10 :dif :iso19115 :iso-smap])]
       (let [coll (d/ingest "PROV1"
@@ -145,7 +144,6 @@
 
 ;; Verify old DeleteTime concept results in 400 error.
 (deftest old-delete-time-collection-ingest-test
-  (println "old-delete-time-collection-ingest-test")
   (let [coll (dc/collection {:delete-time "2000-01-01T12:00:00Z"})
         {:keys [status errors]} (ingest/ingest-concept
                                   (d/item->concept (assoc coll :provider-id "PROV1") :echo10))]
@@ -244,7 +242,6 @@
 
 ;; Verify that collections with embedded / (%2F) in the native-id are handled correctly
 (deftest ingest-collection-with-slash-in-native-id-test
-  (println "ingest-collection-with-slash-in-native-id-test")
   (let [crazy-id "`1234567890-=qwertyuiop[]\\asdfghjkl;'zxcvbnm,./ ~!@#$%^&*()_+QWERTYUIOP{}ASDFGHJKL:\"ZXCVBNM<>?"
         collection (dc/collection-concept {:entry-title crazy-id})
         {:keys [concept-id revision-id] :as response} (ingest/ingest-concept collection)
@@ -260,7 +257,6 @@
         (is (= 200 (:status delete-result)))))))
 
 (deftest schema-validation-test
-  (println "schema-validation-test")
   (are [concept-format validation-errors]
        (let [concept (dc/collection-concept
                        {:beginning-date-time "2010-12-12T12:00:00Z"} concept-format)
