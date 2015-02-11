@@ -282,13 +282,6 @@ Requires token with UPDATE ingest management permission.
 
     curl -v -XPOST -H "Echo-Token: mock-echo-system-token" http://localhost:3002/jobs/resume
 
-### Environment Variables
-
-The following environment variables control the use of the indexing queue
-__indexing-communication-method__ - Can be either "http" (no queue) or "queue".
-  Defaults to "http"
-__index-queue-name__ - The name to use for the index queue. Defaults to "cmr_index.queue".
-
 ## License
 
 Copyright © 2014-2015 NASA

@@ -3,16 +3,19 @@
   (:require [cmr.common.lifecycle :as lifecycle]
             [cmr.message-queue.services.queue :as queue]
             [cmr.message-queue.config :as iconfig]
-            [cmr.common.log :as log :refer (debug info warn error)]))
+            [cmr.common.log :as log :refer (debug info warn error)]
+            [clojure.set :as set]))
+
+(def namespace-name (ns-name *ns*))
+
+(def message-id-key (keyword (str namespace-name "-id")))
 
 (defn- set-message-state
   "Set the state of a message on the queue"
   [broker-wrapper msg state]
-  (let [bare-msg (-> (dissoc msg :retry-count) (update-in [:action] keyword))
-        messages-atom (:messages-atom broker-wrapper)
-        messages @messages-atom
-        updated-msg (assoc bare-msg :state state)]
-    (swap! messages-atom #(replace {bare-msg updated-msg} %))))
+  (let [message-state-atom (:message-state-atom broker-wrapper)
+        message-id (message-id-key msg)]
+    (swap! message-state-atom #(assoc % message-id state))))
 
 (defn handler-wrapper
   "Wraps handler function to count acks, retries, fails"
@@ -35,30 +38,44 @@
           (throw (Exception. (str "Invalid response: " (pr-str resp)))))
         resp))))
 
+
+(defn- current-message-states
+  "Return the set of all the unique states of the messages currently held by the wrapper."
+  [broker-wrapper]
+  (let [message-map @(:message-state-atom broker-wrapper)]
+    (-> message-map vals set)))
+
 (defn- wait-for-states
   "Wait until the messages that have been enqueued have all reached one of the given
   states."
   [broker-wrapper success-states]
   (let [succ-states-set (set success-states)]
-    (loop [messages @(:messages-atom broker-wrapper)]
-      (when (some (fn [msg]
-                    (when-let [state (:state msg)]
-                      (not (contains? succ-states-set state))))
-                  messages)
-        (throw (Exception. (str "Unexpected final message state"))))
-      (when (some #(nil? (:state %)) messages)
-        (Thread/sleep 100)
-        (recur @(:messages-atom broker-wrapper))))))
+    (loop [current-states (current-message-states broker-wrapper)]
+      (let [diff-states (set/difference current-states succ-states-set)]
+        ;; The current states should only consist of the success states and possibly nil;
+        ;; anything else indicates a failure.
+        (when-not (empty? diff-states)
+          (when-not (= #{nil} diff-states)
+            (throw (Exception. (str "Unexpected final message state(s): " diff-states))))
+          (Thread/sleep 100)
+          (recur (current-message-states broker-wrapper)))))))
 
 (defrecord BrokerWrapper
   [
-   ;; the broker that does the actual work
-  	queue-broker
+   ;; The broker that does the actual work
+   queue-broker
 
-   ;; atom holding the list of messages
-   messages-atom
+   ;; Atom holding the map of message ids to states
+   message-state-atom
 
-   ;; atom holding the resetting flag
+   ;; Sequence generator for internal message ids. These ids are used to uniquely identify every
+   ;; message that comes through the wrapper.
+   id-sequence-atom
+
+   ;; Atom holding the resetting boolean flag. This flag is set to true to indicate that the wrapper
+   ;; is in process of being reset, and any messages processed by the wrapper should result in
+   ;; a :fail response. This indirectly allows the wrapper to clear the queue and prevent retries.
+   ;; A value of false indicates normal operation.
    resetting?-atom
 
    ]
@@ -86,8 +103,11 @@
   (publish
     [this queue-name msg]
     ;; record the message
-    (swap! messages-atom #(conj % msg))
-    (queue/publish queue-broker queue-name msg))
+    (let [msg-id (swap! id-sequence-atom inc)
+          tagged-msg (assoc msg message-id-key msg-id)]
+      (swap! message-state-atom #(assoc % msg-id nil))
+      ;; delegate the request to the wrapped broker
+      (queue/publish queue-broker queue-name tagged-msg)))
 
   (subscribe
     [this queue-name handler params]
@@ -96,7 +116,7 @@
   (message-count
     [this queue-name]
     (let [qcount (queue/message-count queue-broker queue-name)
-          unprocessed-count (count (filter (complement :processed) @messages-atom))]
+          unprocessed-count (count (filter (complement :processed) @message-state-atom))]
       (when (not= qcount unprocessed-count)
         (warn (format "Message count [%d] for Rabbit MQ did not match internal count [%d]"
                       qcount
@@ -109,9 +129,10 @@
     (try
       (wait-for-states this [:processed :failed])
       (queue/reset queue-broker)
-      (reset! (:messages-atom this) [])
+      (reset! message-state-atom {})
+      (reset! id-sequence-atom 0)
       (finally
-        (reset! (:resetting?-atom this) false)))))
+        (reset! resetting?-atom false)))))
 
 (defn wait-for-indexing
   "Wait for all messages to be marked as processed"
@@ -121,4 +142,4 @@
 (defn create-queue-broker-wrapper
   "Create a BrokerWrapper"
   [broker]
-  (->BrokerWrapper broker (atom []) (atom false)))
+  (->BrokerWrapper broker (atom {}) (atom 0) (atom false)))
