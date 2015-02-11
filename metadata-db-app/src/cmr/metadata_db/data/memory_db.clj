@@ -31,10 +31,11 @@
   should be done within a save transaction to avoid race conditions where we might miss it.
   Returns nil if valid and an error response if invalid."
   [db concept]
-  (let [{:keys [concept-id native-id concept-type]} concept
+  (let [{:keys [concept-id native-id concept-type provider-id]} concept
         {existing-concept-id :concept-id
          existing-native-id :native-id} (->> (deref (:concepts-atom db))
                                              (filter #(= concept-type (:concept-type %)))
+                                             (filter #(= provider-id (:provider-id %)))
                                              (filter #(or (= concept-id (:concept-id %))
                                                           (= native-id (:native-id %))))
                                              first)]

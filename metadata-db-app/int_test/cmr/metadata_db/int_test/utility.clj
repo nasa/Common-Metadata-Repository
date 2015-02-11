@@ -272,6 +272,10 @@
         stored-concept (:concept (get-concept-by-id-and-revision concept-id revision-id))]
     (= concept (dissoc stored-concept :revision-date))))
 
+(defn- assert-no-errors
+  [save-result]
+  (is (nil? (:errors save-result))))
+
 (defn create-and-save-collection
   "Creates, saves, and returns a concept with its data from metadata-db. "
   ([provider-id uniq-num]
@@ -280,7 +284,8 @@
    (create-and-save-collection provider-id uniq-num num-revisions {}))
   ([provider-id uniq-num num-revisions extra-fields]
    (let [concept (collection-concept provider-id uniq-num extra-fields)
-         _ (dotimes [n (dec num-revisions)] (save-concept concept))
+         _ (dotimes [n (dec num-revisions)]
+             (assert-no-errors (save-concept concept)))
          {:keys [concept-id revision-id]} (save-concept concept)]
      (assoc concept :concept-id concept-id :revision-id revision-id))))
 
@@ -290,7 +295,8 @@
    (create-and-save-granule provider-id parent-collection-id uniq-num 1))
   ([provider-id parent-collection-id uniq-num num-revisions]
    (let [concept (granule-concept provider-id parent-collection-id uniq-num)
-         _ (dotimes [n (dec num-revisions)] (save-concept concept))
+         _ (dotimes [n (dec num-revisions)]
+             (assert-no-errors (save-concept concept)))
          {:keys [concept-id revision-id]} (save-concept concept)]
      (assoc concept :concept-id concept-id :revision-id revision-id))))
 

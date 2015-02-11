@@ -150,10 +150,10 @@
                          msg/concept-exists-with-different-id
                          existing-concept-id
                          existing-native-id
-                         concept-type
-                         provider-id
                          concept-id
-                         native-id))
+                         native-id
+                         concept-type
+                         provider-id))
 
       (errors/internal-error! (:error-message result) (:throwable result)))))
 

@@ -137,8 +137,8 @@
         (is (= {:status 409,
                 :errors [(msg/concept-exists-with-different-id
                            "G10-PROV1" (:native-id granule)
-                           :granule "PROV1"
-                           "G10-PROV1" "foo") ]}
+                           "G10-PROV1" "foo"
+                           :granule "PROV1") ]}
                (select-keys response [:status :errors])))))
 
     (testing "with incorrect concept id"
@@ -146,8 +146,8 @@
         (is (= {:status 409,
                 :errors [(msg/concept-exists-with-different-id
                            "G10-PROV1" (:native-id granule)
-                           :granule "PROV1"
-                           "G11-PROV1" (:native-id granule)) ]}
+                           "G11-PROV1" (:native-id granule)
+                           :granule "PROV1") ]}
                (select-keys response [:status :errors])))))
 
     (testing "with incorrect concept id matching another concept"
@@ -158,8 +158,8 @@
         (is (= {:status 409,
                 :errors [(msg/concept-exists-with-different-id
                            "G10-PROV1" (:native-id granule)
-                           :granule "PROV1"
-                           "G11-PROV1" (:native-id granule)) ]}
+                           "G11-PROV1" (:native-id granule)
+                           :granule "PROV1") ]}
                (select-keys response [:status :errors])))))))
 
 (deftest save-granule-with-nil-required-field
