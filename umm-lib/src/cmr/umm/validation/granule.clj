@@ -43,6 +43,7 @@
   [{:spatial-coverage spatial-coverage-validations
     :platform-refs [(vu/unique-by-name-validator :short-name)
                     (vu/has-parent-validator :short-name "Platform short name")]
+    :product-specific-attributes (vu/has-parent-validator :name "Product Specific Attribute")
     :project-refs (vu/unique-by-name-validator identity)}
    projects-reference-collection])
 
