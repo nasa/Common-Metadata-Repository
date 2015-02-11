@@ -163,9 +163,9 @@
         collection
         (g/map->UmmGranule {:product-specific-attributes [pg3]})
         [:product-specific-attributes]
-        ["The following list of AdditionalAttribute names did not exist in the referenced parent collection: [AA3]."])
+        ["The following list of Product Specific Attributes did not exist in the referenced parent collection: [AA3]."])
       (assert-invalid-gran
         collection
         (g/map->UmmGranule {:product-specific-attributes [pg1 pg2 pg3 pg4]})
         [:product-specific-attributes]
-        ["The following list of AdditionalAttribute names did not exist in the referenced parent collection: [AA3, AA4]."]))))
+        ["The following list of Product Specific Attributes did not exist in the referenced parent collection: [AA3, AA4]."]))))
