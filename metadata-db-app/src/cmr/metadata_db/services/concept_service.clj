@@ -144,12 +144,15 @@
                          revision-id-provided?))
 
       :concept-id-concept-conflict
-      (let [{:keys [concept-id concept-type provider-id native-id]} concept]
+      (let [{:keys [concept-id concept-type provider-id native-id]} concept
+            {:keys [existing-concept-id existing-native-id]} result]
         (cmsg/data-error :conflict
                          msg/concept-exists-with-different-id
-                         concept-id
+                         existing-concept-id
+                         existing-native-id
                          concept-type
                          provider-id
+                         concept-id
                          native-id))
 
       (errors/internal-error! (:error-message result) (:throwable result)))))

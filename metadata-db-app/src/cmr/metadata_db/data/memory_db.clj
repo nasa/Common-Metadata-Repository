@@ -26,10 +26,39 @@
   [concept]
   [(:concept-id concept) (:revision-id concept)])
 
+(defn validate-concept-id-native-id-not-changing
+  "Validates that the concept-id native-id pair for a concept being saved is not changing. This
+  should be done within a save transaction to avoid race conditions where we might miss it.
+  Returns nil if valid and an error response if invalid."
+  [db concept]
+  (let [{:keys [concept-id native-id concept-type]} concept
+        {existing-concept-id :concept-id
+         existing-native-id :native-id} (->> (deref (:concepts-atom db))
+                                             (filter #(= concept-type (:concept-type %)))
+                                             (filter #(or (= concept-id (:concept-id %))
+                                                          (= native-id (:native-id %))))
+                                             first)]
+    (when (and (and existing-concept-id existing-native-id)
+               (or (not= existing-concept-id concept-id)
+                   (not= existing-native-id native-id)))
+      {:error :concept-id-concept-conflict
+       :error-message (format (str "Concept id [%s] and native id [%s] to save do not match "
+                                   "existing concepts with concept id [%s] and native id [%s].")
+                              concept-id native-id existing-concept-id existing-native-id)
+       :existing-concept-id existing-concept-id
+       :existing-native-id existing-native-id})))
+
 (defrecord MemoryDB
-  [concepts-atom
+  [
+   ;; A sequence of concepts stored in metadata db
+   concepts-atom
+
+   ;; The next id to use for generating a concept id.
    next-id-atom
-   providers-atom]
+
+   ;; A set of provider ids that exist
+   providers-atom
+   ]
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   lifecycle/Lifecycle
@@ -138,17 +167,21 @@
     [this concept]
     {:pre [(:revision-id concept)]}
 
-    (let [{:keys [concept-type provider-id concept-id revision-id]} concept
-          concept (update-in concept [:revision-date] #(or % (f/unparse (f/formatters :date-time)
-                                                                        (tk/now))))]
-      (if (or (nil? revision-id)
-              (concepts/get-concept this concept-type provider-id concept-id revision-id))
-        {:error :revision-id-conflict}
-        (do
-          (swap! concepts-atom (fn [concepts]
-                                 (after-save (conj concepts concept)
-                                             concept)))
-          nil))))
+    (if-let [error (validate-concept-id-native-id-not-changing this concept)]
+      ;; There was a concept id, native id mismatch with earlier concepts
+      error
+      ;; Concept id native id pair was valid
+      (let [{:keys [concept-type provider-id concept-id revision-id]} concept
+            concept (update-in concept [:revision-date] #(or % (f/unparse (f/formatters :date-time)
+                                                                          (tk/now))))]
+        (if (or (nil? revision-id)
+                (concepts/get-concept this concept-type provider-id concept-id revision-id))
+          {:error :revision-id-conflict}
+          (do
+            (swap! concepts-atom (fn [concepts]
+                                   (after-save (conj concepts concept)
+                                               concept)))
+            nil)))))
 
   (force-delete
     [db concept-type provider-id concept-id revision-id]
