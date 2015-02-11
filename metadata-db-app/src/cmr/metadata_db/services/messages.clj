@@ -57,13 +57,17 @@
           provider-id
           concept-type))
 
-(defn concept-exists-with-different-id [concept-id concept-type provider-id native-id]
+(defn concept-exists-with-different-id
+  [existing-concept-id existing-native-id given-concept-id given-native-id  concept-type provider-id]
   (format
-    "A concept with a different concept-id from %s already exists for concept-type [%s] provider-id [%s] and native-id [%s]"
-    concept-id
+    (str "A concept with concept-id [%s] and native-id [%s] already exists for concept-type [%s] "
+         "provider-id [%s]. The given concept-id [%s] and native-id [%s] would conflict with that one.")
+    existing-concept-id
+    existing-native-id
     concept-type
     provider-id
-    native-id))
+    given-concept-id
+    given-native-id))
 
 (defn maximum-save-attempts-exceeded [error-msg]
   (str "Reached limit of attempts to save concept - giving up. Potential cause: " error-msg))
