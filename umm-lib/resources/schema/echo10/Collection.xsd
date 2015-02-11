@@ -218,7 +218,7 @@ xmlns:xs="http://www.w3.org/2001/XMLSchema">
         </xs:annotation>
         <xs:simpleType>
           <xs:restriction base="xs:string">
-            <xs:maxLength value="4000" />
+            <xs:maxLength value="12000" />
             <xs:minLength value="1"></xs:minLength>
           </xs:restriction>
         </xs:simpleType>
