@@ -11,8 +11,8 @@
             [clj-http.client :as client]
             [cheshire.core :as json]))
 
-(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2" "provguid3" "PROV3"}
-                                          true))
+(use-fixtures :each (ingest/reset-fixture
+                      {"provguid1" "PROV1" "provguid2" "PROV2" "provguid3" "PROV3"}))
 
 (defn- list-caches-for-app
   "Gets a list of the caches for the given url."
@@ -73,6 +73,7 @@
            (url/indexer-read-caches-url) ["acls" "general" "token-imp"]
            (url/index-set-read-caches-url) ["token-imp"]
            (url/mdb-read-caches-url) ["token-imp"]
+           (url/ingest-read-caches-url) ["token-imp"]
            (url/search-read-caches-url) ["acls"
                                          "collections-for-gran-acls"
                                          "has-granules-map"
@@ -94,6 +95,7 @@
            (url/indexer-read-caches-url)
            (url/index-set-read-caches-url)
            (url/mdb-read-caches-url)
+           (url/ingest-read-caches-url)
            (url/search-read-caches-url)))
 
     (testing "retrieval of keys for non-existent cache results in a 404"
@@ -118,6 +120,7 @@
            (str (url/indexer-read-caches-url) "/acls")
            (str (url/index-set-read-caches-url) "/acls")
            (str (url/mdb-read-caches-url) "/acls")
+           (str (url/ingest-read-caches-url) "/acls")
            (str (url/search-read-caches-url) "/acls")))
 
     (testing "list cache keys"
@@ -135,6 +138,9 @@
            (url/mdb-read-caches-url) "token-imp" [["mock-echo-system-token" "update"]
                                                   ["ABC-1" "read"]
                                                   ["ABC-2" "read"]]
+           (url/ingest-read-caches-url) "token-imp" [[nil "update"]
+                                                     ["ABC-1" "read"]
+                                                     ["ABC-2" "read"]]
            (url/search-read-caches-url) "acls" []
            (url/search-read-caches-url) "collections-for-gran-acls" []
            (url/search-read-caches-url) "has-granules-map" []
@@ -157,6 +163,7 @@
            (str (url/indexer-read-caches-url) "/acls/acls")
            (str (url/index-set-read-caches-url) "/acls/acls")
            (str (url/mdb-read-caches-url) "/acls/acls")
+           (str (url/ingest-read-caches-url) "/acls/acls")
            (str (url/search-read-caches-url) "/acls/acls")))
 
     (testing "retrieval of value for non-existent key results in a 404"
@@ -179,29 +186,23 @@
                                                          :catalog-item-identity
                                                          {:provider-id "PROV3",
                                                           :granule-applicable true,
-                                                          :collection-applicable true,
-                                                          :collection-identifier nil,
-                                                          :granule-identifier nil},
-                                                         :system-object-identity nil}
+                                                          :collection-applicable true},
+                                                         :system-object-identity {}}
                                                         {:aces
                                                          [{:permissions ["read"], :user-type "guest"}
                                                           {:permissions ["read"], :user-type "registered"}],
                                                          :catalog-item-identity
                                                          {:provider-id "PROV2",
                                                           :granule-applicable true,
-                                                          :collection-applicable true,
-                                                          :collection-identifier nil,
-                                                          :granule-identifier nil},
-                                                         :system-object-identity nil}
+                                                          :collection-applicable true},
+                                                         :system-object-identity {}}
                                                         {:aces
                                                          [{:permissions ["read"], :user-type "guest"}
                                                           {:permissions ["read"], :user-type "registered"}],
                                                          :catalog-item-identity
                                                          {:provider-id "PROV1",
                                                           :granule-applicable true,
-                                                          :collection-applicable true,
-                                                          :collection-identifier nil,
-                                                          :granule-identifier nil},
-                                                         :system-object-identity nil}]
+                                                          :collection-applicable true},
+                                                         :system-object-identity {}}]
            (url/indexer-read-caches-url) "general" "concept-mapping-types" {:collection "collection"
                                                                             :granule "granule"}))))

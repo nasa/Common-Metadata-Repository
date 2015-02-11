@@ -28,6 +28,19 @@
          :spatial-representation :geodetic
          :geometries bounding-boxes}))))
 
+(defn- platform->expected-parsed
+  "Returns the expected parsed platform for the given platform."
+  [instruments platform]
+  (assoc platform :type "Spacecraft" :instruments instruments :characteristics nil))
+
+(defn- platforms->expected-parsed
+  "Returns the expected parsed platforms for the given platforms."
+  [platforms]
+  (let [{:keys [instruments]} (first platforms)
+        instruments (seq (map #(assoc % :technique nil :sensors nil :characteristics nil)
+                              instruments))]
+    (seq (map (partial platform->expected-parsed instruments) platforms))))
+
 (defn- filter-center-type
   "Filters a list of organizations to the given type."
   [orgs org-type]
@@ -98,14 +111,15 @@
         (dissoc :spatial-keywords)
         ;; SMAP ISO does not support TemporalKeywords
         (dissoc :temporal-keywords)
-        ;; SMAP ISO does not support ScienceKeywords
-        (dissoc :science-keywords)
-        ;; SMAP ISO does not support Platforms
-        (dissoc :platforms)
+        ;; SMAP ISO platform does not have characteristics field
+        ;; and instruments are the same for all platforms
+        (update-in [:platforms] platforms->expected-parsed)
         ;; SMAP ISO does not support Projects
         (dissoc :projects)
         ;; SMAP ISO does not support AdditionalAttributes
         (dissoc :product-specific-attributes)
+        ;; SMAP ISO does not support CollectionAssociations
+        (dissoc :collection-associations)
         ;; SMAP ISO does not support RelatedURLs
         (dissoc :related-urls)
         ;; SMAP ISO does not support two-d-coordinate-systems
@@ -163,6 +177,34 @@
                        :single-date-times
                        []
                        :periodic-date-times []})
+                    :science-keywords [(umm-c/map->ScienceKeyword
+                                         {:category "EARTH SCIENCE"
+                                          :topic "SPECTRAL/ENGINEERING"
+                                          :term "MICROWAVE"
+                                          :variable-level-1 "BRIGHTNESS TEMPERATURE"})
+                                       (umm-c/map->ScienceKeyword
+                                         {:category "EARTH SCIENCE"
+                                          :topic "ATMOSPHERE"
+                                          :term "CLOUDS"
+                                          :variable-level-1 "TROPOSPHERIC/LOW LEVEL CLOUDS (OBSERVED/ANALYZED)"
+                                          :variable-level-2 "FOG"
+                                          :variable-level-3 "ICE FOG"})
+                                       (umm-c/map->ScienceKeyword
+                                         {:category "EARTH SCIENCE SERVICES"
+                                          :topic "BIOSPHERE"
+                                          :term "VEGETATION"
+                                          :variable-level-1 "PLANT CHARACTERISTICS"
+                                          :variable-level-2 "VEGETATION WATER CONTENT"})]
+                    :platforms [(umm-c/map->Platform
+                                  {:short-name "SMAP"
+                                   :long-name "Soil Moisture Active and Passive Observatory"
+                                   :type "Spacecraft"
+                                   :instruments [(umm-c/map->Instrument
+                                                   {:short-name "SMAP L-BAND RADAR"
+                                                    :long-name "SMAP L-Band Radar"})
+                                                 (umm-c/map->Instrument
+                                                   {:short-name "SMAP L-BAND RADIOMETER"
+                                                    :long-name "SMAP L-Band Radiometer"})]})]
                     :spatial-coverage (umm-c/map->SpatialCoverage
                                         {:granule-spatial-representation :geodetic
                                          :spatial-representation :geodetic

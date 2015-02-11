@@ -1,4 +1,4 @@
-(ns cmr.test.transmit.echo.conversion
+(ns cmr.transmit.test.echo.conversion
   (:require [clojure.test :refer :all]
             [cmr.transmit.echo.conversion :as c]))
 

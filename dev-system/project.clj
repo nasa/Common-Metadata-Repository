@@ -62,17 +62,17 @@
                  :timeout 120000}
 
 
-  :jvm-opts ["-XX:PermSize=256m" "-XX:MaxPermSize=256m" "-XX:-OmitStackTraceInFastThrow"]
+  :jvm-opts ["-XX:PermSize=256m" "-XX:MaxPermSize=1024m" "-XX:-OmitStackTraceInFastThrow"]
 
   ;; Uncomment this for performance testing or profiling
   ; :jvm-opts ^:replace ["-server"
   ;                      "-XX:PermSize=256m"
-  ;                      "-XX:MaxPermSize=256m"
+  ;                      "-XX:MaxPermSize=1024m"
   ;                      ;; Use the following to enable JMX profiling with visualvm
-  ;                      ; "-Dcom.sun.management.jmxremote"
-  ;                      ; "-Dcom.sun.management.jmxremote.ssl=false"
-  ;                      ; "-Dcom.sun.management.jmxremote.authenticate=false"
-  ;                      ; "-Dcom.sun.management.jmxremote.port=1098"
+  ;                      "-Dcom.sun.management.jmxremote"
+  ;                      "-Dcom.sun.management.jmxremote.ssl=false"
+  ;                      "-Dcom.sun.management.jmxremote.authenticate=false"
+  ;                      "-Dcom.sun.management.jmxremote.port=1098"
   ;                      ]
 
 

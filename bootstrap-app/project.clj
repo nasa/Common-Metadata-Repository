@@ -15,7 +15,9 @@
                  [sqlingvo "0.5.17"]
                  [org.clojure/core.async "0.1.338.0-5c5012-alpha"]
                  [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]]
-  :plugins [[lein-test-out "0.3.1"]]
+  :plugins [[lein-test-out "0.3.1"]
+            [drift "1.5.2"]
+            [lein-exec "0.3.2"]]
   :repl-options {:init-ns user}
   :jvm-opts ["-XX:PermSize=256m" "-XX:MaxPermSize=256m"]
   :profiles
@@ -23,6 +25,9 @@
                         [org.clojars.gjahad/debug-repl "0.3.3"]]
          :source-paths ["src" "dev" "test"]}
    :uberjar {:main cmr.bootstrap.runner
-             :aot :all}})
+             :aot :all}}
+  ;; Database migrations run by executing "lein migrate"
+  :aliases {"create-user" ["exec" "-p" "./support/create_user.clj"]
+            "drop-user" ["exec" "-p" "./support/drop_user.clj"]})
 
 

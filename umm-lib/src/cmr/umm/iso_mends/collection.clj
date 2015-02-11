@@ -17,6 +17,7 @@
             [cmr.umm.iso-mends.collection.keyword :as k]
             [cmr.umm.iso-mends.collection.project :as proj]
             [cmr.umm.iso-mends.collection.associated-difs :as dif]
+            [cmr.umm.iso-mends.collection.collection-association :as ca]
             [cmr.umm.iso-mends.collection.helper :as h])
   (:import cmr.umm.collection.UmmCollection))
 
@@ -70,9 +71,12 @@
   [xml-struct]
   (let [id-elem (cx/element-at-path xml-struct [:identificationInfo :MD_DataIdentification])
         product (xml-elem->Product id-elem)
-        data-provider-timestamps (xml-elem->DataProviderTimestamps id-elem) ]
+        {:keys [short-name version-id]} product
+        data-provider-timestamps (xml-elem->DataProviderTimestamps id-elem)]
     (c/map->UmmCollection
-      {:entry-id (str (:short-name product) "_" (:version-id product))
+      {:entry-id (if (empty? version-id)
+                   short-name
+                   (str short-name "_" version-id))
        :entry-title (cx/string-at-path xml-struct [:fileIdentifier :CharacterString])
        :summary (cx/string-at-path id-elem [:abstract :CharacterString])
        :product product
@@ -85,6 +89,7 @@
        :platforms (platform/xml-elem->Platforms xml-struct)
        ;; AdditionalAttributes is not fully supported as documented in CMR-692
        ; :product-specific-attributes (psa/xml-elem->ProductSpecificAttributes xml-struct)
+       :collection-associations (ca/xml-elem->CollectionAssociations id-elem)
        :projects (proj/xml-elem->Projects xml-struct)
        ;; TwoDCoordinateSystems is not fully supported as documented in CMR-693
        ; :two-d-coordinate-systems (two-d/xml-elem->TwoDCoordinateSystems xml-struct)
@@ -228,8 +233,9 @@
             restriction-flag :access-value
             {:keys [insert-time update-time]} :data-provider-timestamps
             :keys [organizations spatial-keywords temporal-keywords temporal science-keywords
-                   platforms product-specific-attributes projects two-d-coordinate-systems
-                   related-urls spatial-coverage summary associated-difs personnel]} collection
+                   platforms product-specific-attributes collection-associations projects
+                   two-d-coordinate-systems related-urls spatial-coverage summary associated-difs
+                   personnel]} collection
            archive-center (org/get-organization-name :archive-center organizations)
            platforms (platform/platforms-with-id platforms)
            emit-fn (if indent? x/indent-str x/emit-str)]
@@ -278,6 +284,7 @@
                         (platform/generate-platform-keywords platforms)
                         (platform/generate-instrument-keywords platforms)
                         (iso-resource-constraints-element restriction-flag)
+                        (ca/generate-collection-associations collection-associations)
                         (h/iso-string-element :gmd:language "eng")
                         (x/element :gmd:extent {}
                                    (x/element :gmd:EX_Extent {:id "boundingExtent"}

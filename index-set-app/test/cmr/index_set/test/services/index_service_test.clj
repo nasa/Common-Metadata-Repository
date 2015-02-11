@@ -1,4 +1,4 @@
-(ns cmr.index-set.services.index-service-test
+(ns cmr.index-set.test.services.index-service-test
   "unit tests for index-set app service functions"
   (:require [clojure.string :as s]
             [clojure.test :refer :all]

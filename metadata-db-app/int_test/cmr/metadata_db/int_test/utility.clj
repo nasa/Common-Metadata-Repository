@@ -49,17 +49,20 @@
   ([provider-id uniq-num]
    (collection-concept provider-id uniq-num {}))
   ([provider-id uniq-num extra-fields]
-   {:concept-type :collection
-    :native-id (str "native-id " uniq-num)
-    :provider-id provider-id
-    :metadata (str "xml here " uniq-num)
-    :format "application/echo10+xml"
-    :deleted false
-    :extra-fields (merge {:short-name (str "short" uniq-num)
-                          :version-id (str "V" uniq-num)
-                          :entry-title (str "dataset" uniq-num)
-                          :delete-time nil}
-                         extra-fields)}))
+   (let [short-name (str "short" uniq-num)
+         version-id (str "V" uniq-num)]
+     {:concept-type :collection
+      :native-id (str "native-id " uniq-num)
+      :provider-id provider-id
+      :metadata (str "xml here " uniq-num)
+      :format "application/echo10+xml"
+      :deleted false
+      :extra-fields (merge {:short-name short-name
+                            :version-id version-id
+                            :entry-id (str short-name "_" version-id)
+                            :entry-title (str "dataset" uniq-num)
+                            :delete-time nil}
+                           extra-fields)})))
 
 (defn granule-concept
   "Creates a granule concept"
@@ -195,6 +198,11 @@
        :concepts (parse-concepts response)}
       (assoc (parse-errors response) :status status))))
 
+(defn find-latest-concepts
+  "Make a get to retrieve the latest revision of concepts by parameters for a specific concept type"
+  [concept-type params]
+  (find-concepts concept-type (assoc params :latest true)))
+
 (defn get-expired-collection-concept-ids
   "Make a get to retrieve expired collection concept ids."
   [provider-id]
@@ -264,6 +272,10 @@
         stored-concept (:concept (get-concept-by-id-and-revision concept-id revision-id))]
     (= concept (dissoc stored-concept :revision-date))))
 
+(defn- assert-no-errors
+  [save-result]
+  (is (nil? (:errors save-result))))
+
 (defn create-and-save-collection
   "Creates, saves, and returns a concept with its data from metadata-db. "
   ([provider-id uniq-num]
@@ -272,7 +284,8 @@
    (create-and-save-collection provider-id uniq-num num-revisions {}))
   ([provider-id uniq-num num-revisions extra-fields]
    (let [concept (collection-concept provider-id uniq-num extra-fields)
-         _ (dotimes [n (dec num-revisions)] (save-concept concept))
+         _ (dotimes [n (dec num-revisions)]
+             (assert-no-errors (save-concept concept)))
          {:keys [concept-id revision-id]} (save-concept concept)]
      (assoc concept :concept-id concept-id :revision-id revision-id))))
 
@@ -282,7 +295,8 @@
    (create-and-save-granule provider-id parent-collection-id uniq-num 1))
   ([provider-id parent-collection-id uniq-num num-revisions]
    (let [concept (granule-concept provider-id parent-collection-id uniq-num)
-         _ (dotimes [n (dec num-revisions)] (save-concept concept))
+         _ (dotimes [n (dec num-revisions)]
+             (assert-no-errors (save-concept concept)))
          {:keys [concept-id revision-id]} (save-concept concept)]
      (assoc concept :concept-id concept-id :revision-id revision-id))))
 
@@ -374,8 +388,7 @@
   Optionally accepts a list of provider-ids to create before the test"
   [& provider-ids]
   (fn [f]
-    (try
-      (doseq [pid provider-ids] (save-provider pid))
-      (f)
-      (finally (reset-database)))))
+    (reset-database)
+    (doseq [pid provider-ids] (save-provider pid))
+    (f)))
 

@@ -16,7 +16,8 @@
             [cmr.ingest.services.ingest :as ingest]
             [cmr.system-trace.http :as http-trace]
             [cmr.ingest.services.jobs :as jobs]
-            [cmr.ingest.api.provider :as provider-api]))
+            [cmr.ingest.api.provider :as provider-api]
+            [cmr.acl.routes :as common-routes]))
 
 (defn- set-concept-id
   "Set concept-id in concept if it is passed in the header"
@@ -31,6 +32,17 @@
   [concept-type]
   (first (string/split concept-type #";")))
 
+(defn- body->concept
+  "Create a metadata concept from the given request body"
+  [concept-type provider-id native-id body content-type headers]
+  (let [metadata (string/trim (slurp body))
+        base-concept {:metadata metadata
+                      :format (sanitize-concept-type content-type)
+                      :provider-id provider-id
+                      :native-id native-id
+                      :concept-type concept-type}]
+    (set-concept-id base-concept headers)))
+
 (defn- build-routes [system]
   (routes
     (context (:relative-root-url system) []
@@ -42,35 +54,54 @@
         (jobs/cleanup-expired-collections request-context)
         {:status 200})
       (context "/providers/:provider-id" [provider-id]
+        (context ["/validate/collection/:native-id" :native-id #".*$"] [native-id]
+          (POST "/" {:keys [body content-type headers request-context]}
+            (ingest/validate-concept
+              request-context
+              (body->concept :collection provider-id native-id body content-type headers))
+            {:status 200}))
+
         (context ["/collections/:native-id" :native-id #".*$"] [native-id]
-          (PUT "/" {:keys [body content-type headers request-context]}
-            (let [metadata (string/trim (slurp body))
-                  base-concept {:metadata metadata
-                                :format (sanitize-concept-type content-type)
-                                :provider-id provider-id
-                                :native-id native-id
-                                :concept-type :collection}
-                  concept (set-concept-id base-concept headers)]
-              (r/response (ingest/save-concept request-context concept))))
-          (DELETE "/" {:keys [request-context]}
+          (PUT "/" {:keys [body content-type headers request-context params]}
+            (let [context (acl/add-authentication-to-context request-context params headers)]
+              (acl/verify-ingest-management-permission
+                context :update "PROVIDER_OBJECT" provider-id)
+              (r/response
+                (ingest/save-concept
+                  request-context
+                  (body->concept :collection provider-id native-id body content-type headers)))))
+          (DELETE "/" {:keys [request-context params headers]}
             (let [concept-attribs {:provider-id provider-id
                                    :native-id native-id
-                                   :concept-type :collection}]
+                                   :concept-type :collection}
+                  context (acl/add-authentication-to-context request-context params headers)]
+              (acl/verify-ingest-management-permission
+                context :delete "PROVIDER_OBJECT" provider-id)
               (r/response (ingest/delete-concept request-context concept-attribs)))))
+
+        (context ["/validate/granule/:native-id" :native-id #".*$"] [native-id]
+          (POST "/" {:keys [body content-type headers request-context]}
+            (ingest/validate-concept
+              request-context
+              (body->concept :granule provider-id native-id body content-type headers))
+            {:status 200}))
+
         (context ["/granules/:native-id" :native-id #".*$"] [native-id]
-          (PUT "/" {:keys [body content-type headers request-context]}
-            (let [metadata (string/trim (slurp body))
-                  base-concept {:metadata metadata
-                                :format (sanitize-concept-type content-type)
-                                :provider-id provider-id
-                                :native-id native-id
-                                :concept-type :granule}
-                  concept (set-concept-id base-concept headers)]
-              (r/response (ingest/save-concept request-context concept))))
-          (DELETE "/" {:keys [request-context]}
+          (PUT "/" {:keys [body content-type headers request-context params]}
+            (let [context (acl/add-authentication-to-context request-context params headers)]
+              (acl/verify-ingest-management-permission
+                context :update "PROVIDER_OBJECT" provider-id)
+              (r/response
+                (ingest/save-concept
+                  request-context
+                  (body->concept :granule provider-id native-id body content-type headers)))))
+          (DELETE "/" {:keys [request-context params headers]}
             (let [concept-attribs {:provider-id provider-id
                                    :native-id native-id
-                                   :concept-type :granule}]
+                                   :concept-type :granule}
+                  context (acl/add-authentication-to-context request-context params headers)]
+              (acl/verify-ingest-management-permission
+                context :delete "PROVIDER_OBJECT" provider-id)
               (r/response (ingest/delete-concept request-context concept-attribs))))))
 
       (context "/jobs" []
@@ -85,6 +116,9 @@
           (let [context (acl/add-authentication-to-context request-context params headers)]
             (acl/verify-ingest-management-permission context :update)
             (common-jobs/resume-jobs))))
+
+      ;; add routes for accessing caches
+      common-routes/cache-api-routes
 
       (GET "/health" {request-context :request-context params :params}
         (let [{pretty? :pretty} params

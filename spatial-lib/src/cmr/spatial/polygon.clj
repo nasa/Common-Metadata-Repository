@@ -11,7 +11,8 @@
             [cmr.spatial.derived :as d]
             [cmr.spatial.validation :as v]
             [cmr.spatial.messages :as msg]
-            [cmr.common.dev.record-pretty-printer :as record-pretty-printer]))
+            [cmr.common.dev.record-pretty-printer :as record-pretty-printer]
+            [clojure.math.combinatorics :as combo]))
 
 (primitive-math/use-primitive-operators)
 
@@ -103,14 +104,30 @@
             (update-in p [:rings] (partial mapv d/calculate-derived))
             (assoc p :mbr (-> p :rings first :mbr))))))
 
+(defn- holes-inside-boundary-validation
+  "Validates that all of the holes are completely covered by the boundary of the polygon."
+  [polygon]
+  (let [boundary (boundary polygon)
+        holes (holes polygon)]
+    (for [[i hole] (map-indexed vector holes)
+          :when (not (rr/covers-ring? boundary hole))]
+      (msg/hole-not-covered-by-boundary i))))
+
+(defn- holes-do-not-intersect-validation
+  "Validates that holes within a polygon do not intersect"
+  [polygon]
+  (for [[[hole-index1 hole1] [hole-index2 hole2]]
+        (combo/combinations (map-indexed vector (holes polygon)) 2)
+        :when (rr/intersects-ring? hole1 hole2)]
+    (msg/hole-intersects-hole hole-index1 hole-index2)))
+
 (extend-protocol v/SpatialValidation
   cmr.spatial.polygon.Polygon
   (validate
-    [{:keys [rings]}]
-    (if (> (count rings) 1)
-      ;; Hole validation is not supported yet. We only implemented validation of what was possible
-      ;; on the search API
-      (errors/internal-error! "Validation of polygons with holes is not yet supported")
-      (v/validate (first rings)))))
+    [polygon]
+    (or (seq (mapcat v/validate (:rings polygon)))
+        (let [polygon (d/calculate-derived polygon)]
+          (seq (concat (holes-inside-boundary-validation polygon)
+                       (holes-do-not-intersect-validation polygon)))))))
 
 

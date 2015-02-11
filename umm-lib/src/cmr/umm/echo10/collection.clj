@@ -10,6 +10,7 @@
             [cmr.umm.echo10.collection.product-specific-attribute :as psa]
             [cmr.umm.echo10.collection.platform :as platform]
             [cmr.umm.echo10.collection.campaign :as cmpgn]
+            [cmr.umm.echo10.collection.collection-association :as ca]
             [cmr.umm.echo10.collection.two-d-coordinate-system :as two-d]
             [cmr.umm.echo10.related-url :as ru]
             [cmr.umm.echo10.collection.org :as org]
@@ -117,6 +118,7 @@
        :science-keywords (sk/xml-elem->ScienceKeywords xml-struct)
        :platforms (platform/xml-elem->Platforms xml-struct)
        :product-specific-attributes (psa/xml-elem->ProductSpecificAttributes xml-struct)
+       :collection-associations (ca/xml-elem->CollectionAssociations xml-struct)
        :projects (cmpgn/xml-elem->Campaigns xml-struct)
        :two-d-coordinate-systems (two-d/xml-elem->TwoDCoordinateSystems xml-struct)
        :related-urls (ru/xml-elem->related-urls xml-struct)
@@ -142,8 +144,9 @@
             restriction-flag :access-value
             {:keys [insert-time update-time delete-time]} :data-provider-timestamps
             :keys [organizations spatial-keywords temporal-keywords temporal science-keywords
-                   platforms product-specific-attributes projects two-d-coordinate-systems
-                   related-urls spatial-coverage summary associated-difs personnel]} collection
+                   platforms product-specific-attributes collection-associations projects
+                   two-d-coordinate-systems related-urls spatial-coverage summary associated-difs
+                   personnel]} collection
            emit-fn (if indent? x/indent-str x/emit-str)]
        (emit-fn
          (x/element :Collection {}
@@ -182,6 +185,7 @@
                     (sk/generate-science-keywords science-keywords)
                     (platform/generate-platforms platforms)
                     (psa/generate-product-specific-attributes product-specific-attributes)
+                    (ca/generate-collection-associations collection-associations)
                     (cmpgn/generate-campaigns projects)
                     (two-d/generate-two-ds two-d-coordinate-systems)
                     (ru/generate-access-urls related-urls)

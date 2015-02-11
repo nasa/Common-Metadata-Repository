@@ -49,14 +49,16 @@
    ;; The index set app is not reset as part of this because the indexer will handle it.
    :indexer indexer-service/reset
    :search cache/reset-caches
-   :mock-echo mock-echo-api/reset})
+   :mock-echo mock-echo-api/reset
+   :ingest cache/reset-caches})
 
 (def service-clear-cache-fns
   "A map of services to reset functions."
   {:indexer cache/reset-caches
    :index-set cache/reset-caches
    :metadata-db cache/reset-caches
-   :search cache/reset-caches})
+   :search cache/reset-caches
+   :ingest cache/reset-caches})
 
 
 (defn- build-routes [system]

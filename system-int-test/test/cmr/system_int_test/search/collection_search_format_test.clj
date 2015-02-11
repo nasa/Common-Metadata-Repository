@@ -20,20 +20,23 @@
             [cmr.spatial.codec :as codec]
             [cmr.umm.spatial :as umm-s]
             [clojure.data.xml :as x]
+            [cmr.system-int-test.utils.fast-xml :as fx]
             [cmr.common.xml :as cx]
             [cmr.system-int-test.data2.kml :as dk]
             [cmr.system-int-test.data2.opendata :as od]))
 
-(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
+(use-fixtures :each (ingest/reset-fixture
+                      {"provguid1" "PROV1" "provguid2" "PROV2" "usgsguid" "USGS_EROS"}))
 
 (comment
 
   (do
     (ingest/reset)
     (ingest/create-provider "provguid1" "PROV1")
-    (ingest/create-provider "provguid2" "PROV2")  )
-
-  )
+    (ingest/create-provider "provguid2" "PROV2")
+    (d/ingest "PROV1" (dc/collection {:short-name "S1"
+                                      :version-id "V1"
+                                      :entry-title "ET1"}))))
 
 ;; Tests that we can ingest and find items in different formats
 (deftest multi-format-search-test
@@ -45,17 +48,17 @@
                                                   :version-id "V2"
                                                   :entry-title "ET2"})
                           :echo10)
-        c3-dif (d/ingest "PROV1" (dc/collection {:entry-id "S3"
-                                                 :short-name "S3"
-                                                 :version-id "V3"
-                                                 :entry-title "ET3"
-                                                 :long-name "ET3"})
+        c3-dif (d/ingest "PROV1" (dc/collection-dif {:entry-id "S3"
+                                                     :short-name "S3"
+                                                     :version-id "V3"
+                                                     :entry-title "ET3"
+                                                     :long-name "ET3"})
                          :dif)
-        c4-dif (d/ingest "PROV2" (dc/collection {:entry-id "S4"
-                                                 :short-name "S4"
-                                                 :version-id "V4"
-                                                 :entry-title "ET4"
-                                                 :long-name "ET4"})
+        c4-dif (d/ingest "PROV2" (dc/collection-dif {:entry-id "S4"
+                                                     :short-name "S4"
+                                                     :version-id "V4"
+                                                     :entry-title "ET4"
+                                                     :long-name "ET4"})
                          :dif)
         c5-iso (d/ingest "PROV1" (dc/collection {:short-name "S5"
                                                  :version-id "V5"})
@@ -122,7 +125,7 @@
       (testing "as extension"
         (is (= {:errors ["The mime type [application/iso:smap+xml] is not supported."],
                 :status 400}
-               (search/get-search-failure-data
+               (search/get-search-failure-xml-data
                  (search/find-concepts-in-format
                    nil :collection {} {:url-extension "iso_smap"}))))))
 
@@ -161,7 +164,7 @@
                               (:concept-id c1-echo)
                               {:accept mime-type})
                    err-msg (if xml?
-                             (cx/string-at-path (x/parse-str (:body response)) [:error])
+                             (cx/string-at-path (fx/parse-str (:body response)) [:error])
                              (first (:errors (json/decode (:body response) true))))]
                (and (= 400 (:status response))
                     (= (str "The mime type [" mime-type "] is not supported.") err-msg)))
@@ -199,21 +202,20 @@
 ; Tests that we can ingest and find difs with spatial and that granules in the dif can also be
 ; ingested and found
 (deftest dif-with-spatial
-  (let [c1 (d/ingest "PROV1" (dc/collection {:spatial-coverage nil}) :dif)
+  (let [c1 (d/ingest "PROV1" (dc/collection-dif {:spatial-coverage nil}) :dif)
         g1 (d/ingest "PROV1" (dg/granule c1))
 
         ;; A collection with a granule spatial representation
-        c2 (d/ingest "PROV1" (dc/collection {:spatial-coverage (dc/spatial {:gsr :geodetic})}) :dif)
+        c2 (d/ingest "PROV1" (dc/collection-dif {:spatial-coverage (dc/spatial {:gsr :geodetic})}) :dif)
         g2 (d/ingest "PROV1" (dg/granule c2 {:spatial-coverage (dg/spatial (m/mbr -160 45 -150 35))}))
 
 
         ;; A collections with a granule spatial representation and spatial data
         c3 (d/ingest "PROV1"
-                     (dc/collection
-                       {:spatial-coverage
-                        (dc/spatial {:gsr :geodetic
-                                     :sr :geodetic
-                                     :geometries [(m/mbr -10 9 0 -10)]})})
+                     (dc/collection-dif
+                       {:spatial-coverage (dc/spatial {:gsr :geodetic
+                                                       :sr :geodetic
+                                                       :geometries [(m/mbr -10 9 0 -10)]})})
                      :dif)
         g3 (d/ingest "PROV1" (dg/granule c3))]
     (index/refresh-elastic-index)
@@ -252,8 +254,8 @@
         pr1 (dc/projects "project-short-name1" "project-short-name2" "project-short-name3")
         p1 (dc/personnel "John" "Smith" "jsmith@nasa.gov")
         p2 (dc/personnel "Jane" "Doe" nil)
-        p3 (dc/personnel nil "Johnson" "johnson@nasa.gov")
-        p4 (dc/personnel "John" nil "john@nasa.gov")
+        p3 (dc/personnel "Dummy" "Johnson" "johnson@nasa.gov")
+        p4 (dc/personnel "John" "Dummy" "john@nasa.gov")
         op1 {:swath-width 1450.0
              :period 98.88
              :inclination-angle 98.15
@@ -329,7 +331,7 @@
         coll4 (d/ingest "PROV1"
                         (dc/collection {:entry-title "Dataset4"}) :iso-smap)
         coll5 (d/ingest "PROV1"
-                        (dc/collection {:entry-title "Dataset5"}) :dif)
+                        (dc/collection-dif {:entry-title "Dataset5"}) :dif)
         coll6 (d/ingest "PROV1"
                         (dc/collection {:entry-title "Dataset6"
                                         :short-name "ShortName#6"
@@ -359,12 +361,12 @@
                                                      :gsr :cartesian
                                                      :geometries [(l/ords->line-string nil 0 0, 0 1, 0 -90, 180 0)
                                                                   (l/ords->line-string nil 1 2, 3 4, 5 6, 7 8)]})}))
-        coll8 (d/ingest "PROV1"
+        coll8 (d/ingest "USGS_EROS"
                         (dc/collection {:entry-title "Dataset8"
                                         :short-name "ShortName#8"
                                         :version-id "Version8"
                                         :summary "Summary of coll8"
-                                        :organizations [(dc/org :archive-center "Larc")]
+                                        :organizations [(dc/org :archive-center "Landsat")]
                                         :beginning-date-time "2010-01-01T12:00:00Z"
                                         :ending-date-time "2010-01-11T12:00:00Z"
                                         :spatial-coverage

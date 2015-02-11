@@ -68,7 +68,7 @@
   "Creates a new ring with the given points. If the other fields of a ring are needed. The
   calculate-derived function should be used to populate it."
   [points]
-  (->CartesianRing points nil nil nil))
+  (->CartesianRing (mapv p/with-cartesian-equality points) nil nil nil))
 
 (defn ring->line-segments
   "Determines the line-segments from the points in the ring."
@@ -83,27 +83,19 @@
       (let [line-segments (ring->line-segments ring)]
         (->> line-segments (map :mbr) (reduce #(mbr/union %1 %2 false))))))
 
-(defn course-rotation-direction
-  "Calculates the rotation direction of the arcs of a ring. Will be one of :clockwise,
-  :counter_clockwise, or :none.
-
-  It works by calculating the number of degrees of turning that the ring does. It gets course from
-  each line segment. It determines how many degrees each turn is. Turns to the left,
-  counter clockwise, are positive. Turns to the right, clockwise, are negative. This adds all of the
-  differences together to get the net bearing change while traveling around the ring. A normal
-  counter clockwise ring will be approximately 360 degrees of turn. A clockwise ring will be -360.
-  A ring around a pole will be approximately 0 net degrees turn. If a ring crosses or has a point on
-  a single pole then the sum will be -180 or 180. If a ring crosses both poles then the sum will be
-  0."
+(defn ring->winding
+  "Determines the winding of the cartesian polygon returning :clockwise or :counter-clockwise.
+  Uses sum over the area under the edges solution as described here:
+  http://stackoverflow.com/questions/1165647/how-to-determine-if-a-list-of-polygon-points-are-in-clockwise-order"
   [ring]
-  (let [courses (loop [courses (transient []) segments (:line-segments ring)]
-                  (if (empty? segments)
-                    (persistent! courses)
-                    (let [ls (first segments)]
-                      (recur (conj! courses (s/course ls)) (rest segments)))))
-        ;; Add the first turn angle on again to complete the turn
-        courses (conj courses (first courses))]
-    (rotation-direction courses)))
+  (let [^double sum (->> (:line-segments ring)
+                         (map (fn [{{^double x1 :lon ^double y1 :lat} :point1
+                                    {^double x2 :lon ^double y2 :lat} :point2}]
+                                (* (- x2 x1) (+ y2 y1))))
+                         (apply clojure.core/+))]
+    (if (>= sum 0.0)
+      :clockwise
+      :counter-clockwise)))
 
 (extend-protocol d/DerivedCalculator
   cmr.spatial.cartesian_ring.CartesianRing

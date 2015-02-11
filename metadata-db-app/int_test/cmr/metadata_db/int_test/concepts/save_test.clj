@@ -7,7 +7,8 @@
             [clj-time.core :as t]
             [clj-time.format :as f]
             [clj-time.local :as l]
-            [cmr.metadata-db.int-test.utility :as util]))
+            [cmr.metadata-db.int-test.utility :as util]
+            [cmr.metadata-db.services.messages :as msg]))
 
 
 ;;; fixtures
@@ -129,7 +130,37 @@
         {:keys [status revision-id concept-id]} (util/save-concept granule)]
     (is (= 201 status))
     (is (= revision-id 1))
-    (is (util/verify-concept-was-saved (assoc granule :revision-id revision-id :concept-id concept-id)))))
+    (is (util/verify-concept-was-saved (assoc granule :revision-id revision-id :concept-id concept-id)))
+
+    (testing "with incorrect native id"
+      (let [response (util/save-concept (assoc granule :native-id "foo"))]
+        (is (= {:status 409,
+                :errors [(msg/concept-exists-with-different-id
+                           "G10-PROV1" (:native-id granule)
+                           "G10-PROV1" "foo"
+                           :granule "PROV1") ]}
+               (select-keys response [:status :errors])))))
+
+    (testing "with incorrect concept id"
+      (let [response (util/save-concept (assoc granule :concept-id "G11-PROV1"))]
+        (is (= {:status 409,
+                :errors [(msg/concept-exists-with-different-id
+                           "G10-PROV1" (:native-id granule)
+                           "G11-PROV1" (:native-id granule)
+                           :granule "PROV1") ]}
+               (select-keys response [:status :errors])))))
+
+    (testing "with incorrect concept id matching another concept"
+      (let [granule2 (assoc (util/granule-concept "PROV1" parent-collection-id 1 "G11-PROV1")
+                            :native-id "native2")
+            _ (is (= 201 (:status (util/save-concept granule2))))
+            response (util/save-concept (assoc granule :concept-id "G11-PROV1"))]
+        (is (= {:status 409,
+                :errors [(msg/concept-exists-with-different-id
+                           "G10-PROV1" (:native-id granule)
+                           "G11-PROV1" (:native-id granule)
+                           :granule "PROV1") ]}
+               (select-keys response [:status :errors])))))))
 
 (deftest save-granule-with-nil-required-field
   (testing "nil parent-collection-id"
@@ -138,18 +169,13 @@
       (is (= 422 status))
       (is (not (util/verify-concept-was-saved (assoc granule :revision-id revision-id :concept-id concept-id)))))))
 
-;;; This test is disabled because the middleware is currently returning a
-;;; 500 status code instead of a 400. This will be addressed as a separate
-;;; issue.
-#_(deftest save-concept-with-invalid-json-test
-    (let [response (client/post "http://localhost:3000/concepts"
-                                {:body "some non-json"
-                                 :body-encoding "UTF-8"
-                                 :content-type :json
-                                 :accept :json
-                                 :throw-exceptions false})
-          status (:status response)
-          body (cheshire/parse-string (:body response))
-          errors (get body "errors")]
-      (is (= 400 status))))
+(deftest save-concept-with-invalid-json-test
+  (let [response (client/post util/concepts-url
+                              {:body "some non-json"
+                               :body-encoding "UTF-8"
+                               :content-type :json
+                               :accept :json
+                               :throw-exceptions false})]
+    (is (= 400 (:status response)))
+    (is (= "Malformed JSON in request body." (:body response)))))
 

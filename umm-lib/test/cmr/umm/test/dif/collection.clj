@@ -41,10 +41,20 @@
                :geometries geometries
                :orbit-parameters nil)))))
 
+(defn- platforms->expected-parsed
+  "Returns the expected parsed platforms for the given platforms."
+  [platforms]
+  (seq (map #(assoc % :type "Not Specified" :instruments nil :characteristics nil) platforms)))
+
 (defn- related-urls->expected-parsed
   "Returns the expected parsed related-urls for the given related-urls."
   [related-urls]
   (seq (map #(assoc % :size nil :mime-type nil) related-urls)))
+
+(defn- collection-associations->expected-collection-associations
+  "Returns the expected parsed collection-associations for the given collection-associations."
+  [collection-associations]
+  (seq (map #(assoc % :version-id "dummy") collection-associations)))
 
 (defn- filter-contacts
   "Remove contacts from a Personnel record that are not emails."
@@ -93,10 +103,12 @@
         (update-in [:spatial-coverage] spatial-coverage->expected-parsed)
         ;; DIF does not support size or mime-type in RelatedURLs
         (update-in [:related-urls] related-urls->expected-parsed)
+        ;; DIF does not have version-id in collection associations and we hardcoded it to "dummy"
+        (update-in [:collection-associations] collection-associations->expected-collection-associations)
         ;; CMR-588: UMM doesn't have a good recommendation on how to handle spatial-keywords
         (dissoc :spatial-keywords)
-        ;; CMR-590: UMM doesn't have a good recommendation on how to handle platforms
-        (dissoc :platforms)
+        ;; DIF platform does not have type, instruments or characteristics fields
+        (update-in [:platforms] platforms->expected-parsed)
         ;; DIF does not have two-d-coordinate-systems
         (dissoc :two-d-coordinate-systems)
         ;; DIF does not have associated-difs
@@ -172,6 +184,10 @@
       <Short_Name>VEGETATION-1</Short_Name>
       <Long_Name>VEGETATION INSTRUMENT 1 (SPOT 4)</Long_Name>
     </Sensor_Name>
+    <Source_Name>
+      <Short_Name>SPOT-1</Short_Name>
+      <Long_Name>Systeme Probatoire Pour l'Observation de la Terre-1</Long_Name>
+    </Source_Name>
     <Source_Name>
       <Short_Name>SPOT-4</Short_Name>
       <Long_Name>Systeme Probatoire Pour l'Observation de la Terre-4</Long_Name>
@@ -267,6 +283,8 @@
       <URL>ftp://airsl2.gesdisc.eosdis.nasa.gov/ftp/data/s4pa/Aqua_AIRS_Level2/AIRH2CCF.006/</URL>
       <Description>Access the AIRS/Aqua FINAL AIRS Level 2 Cloud Clear Radiance Product (With HSB) data  by FTP.</Description>
     </Related_URL>
+    <Parent_DIF>CNDP-ESP_IPY_POL2006-11139-C02-01CGL_ESASSI</Parent_DIF>
+    <Parent_DIF>CNDP-ESP_2</Parent_DIF>
     <IDN_Node>
       <Short_Name>UNEP/GRID</Short_Name>
     </IDN_Node>
@@ -370,6 +388,14 @@
                                                 {:insert-time (p/parse-date "2013-02-21")
                                                  :update-time (p/parse-date "2013-10-22")})
                     ;:spatial-keywords ["Word-2" "Word-1" "Word-0"]
+                    :platforms [(umm-c/map->Platform
+                                  {:short-name "SPOT-1"
+                                   :long-name "Systeme Probatoire Pour l'Observation de la Terre-1"
+                                   :type "Not Specified"})
+                                (umm-c/map->Platform
+                                  {:short-name "SPOT-4"
+                                   :long-name "Systeme Probatoire Pour l'Observation de la Terre-4"
+                                   :type "Not Specified"})]
                     :temporal
                     (umm-c/map->Temporal
                       {:range-date-times
@@ -415,6 +441,12 @@
                       {:granule-spatial-representation :geodetic
                        :spatial-representation :cartesian
                        :geometries [(m/mbr -180 -60.5033 180 -90)]})
+                    :collection-associations [(umm-c/map->CollectionAssociation
+                                                {:short-name "CNDP-ESP_IPY_POL2006-11139-C02-01CGL_ESASSI"
+                                                 :version-id "dummy"})
+                                              (umm-c/map->CollectionAssociation
+                                                {:short-name "CNDP-ESP_2"
+                                                 :version-id "dummy"})]
                     :projects
                     [(umm-c/map->Project
                        {:short-name "ESI"

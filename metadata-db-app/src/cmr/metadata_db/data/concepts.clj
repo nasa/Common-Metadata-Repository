@@ -85,8 +85,14 @@
     "Returns concept-id and revision-id tuples for old (more than 'max-revisions'
     old) revisions of concepts, up to 'limit' concepts."))
 
-
-
+(defn find-latest-concepts
+  "Finds the latest revision of concepts by the given parameters"
+  [db params]
+  (let [revision-concepts (find-concepts db params)]
+    (->> revision-concepts
+         (group-by :concept-id)
+         (map (fn [[concept-id concepts]]
+                (->> concepts (sort-by :revision-id) reverse first))))))
 
 
 

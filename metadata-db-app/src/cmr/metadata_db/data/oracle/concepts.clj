@@ -248,6 +248,26 @@
         (debug (format "Retrieving latest revision-ids took [%d] ms" latest-time))
         concept-id-revision-id-tuples))))
 
+(defn validate-concept-id-native-id-not-changing
+  "Validates that the concept-id native-id pair for a concept being saved is not changing. This
+  should be done within a save transaction to avoid race conditions where we might miss it.
+  Returns nil if valid and an error response if invalid."
+  [db concept]
+  (let [{:keys [concept-type provider-id concept-id native-id]} concept
+        table (tables/get-table-name provider-id concept-type)
+        {:keys [concept_id native_id]} (su/find-one db (select [:concept-id :native-id]
+                                                         (from table)
+                                                         (where `(or (= :native-id ~native-id)
+                                                                     (= :concept-id ~concept-id)))))]
+    (when (and (and concept_id native_id)
+               (or (not= concept_id concept-id) (not= native_id native-id)))
+      {:error :concept-id-concept-conflict
+       :error-message (format (str "Concept id [%s] and native id [%s] to save do not match "
+                                   "existing concepts with concept id [%s] and native id [%s].")
+                              concept-id native-id concept_id native_id)
+       :existing-concept-id concept_id
+       :existing-native-id native_id})))
+
 (extend-protocol c/ConceptsStore
   OracleStore
 
@@ -399,26 +419,30 @@
     (try
       (j/with-db-transaction
         [conn db]
-        (let [{:keys [concept-type provider-id]} concept
-              table (tables/get-table-name provider-id concept-type)
-              seq-name (str table "_seq")
-              [cols values] (concept->insert-args concept)
-              stmt (format "INSERT INTO %s (id, %s) VALUES (%s.NEXTVAL,%s)"
-                           table
-                           (str/join "," cols)
-                           seq-name
-                           (str/join "," (repeat (count values) "?")))]
-          ;; Uncomment to debug what's inserted
-          ; (debug "Executing" stmt "with values" (pr-str values))
-          (j/db-do-prepared db stmt values)
-          (after-save conn concept)
+        (if-let [error (validate-concept-id-native-id-not-changing db concept)]
+          ;; There was a concept id, native id mismatch with earlier concepts
+          error
+          ;; Concept id native id pair was valid
+          (let [{:keys [concept-type provider-id]} concept
+                table (tables/get-table-name provider-id concept-type)
+                seq-name (str table "_seq")
+                [cols values] (concept->insert-args concept)
+                stmt (format "INSERT INTO %s (id, %s) VALUES (%s.NEXTVAL,%s)"
+                             table
+                             (str/join "," cols)
+                             seq-name
+                             (str/join "," (repeat (count values) "?")))]
+            ;; Uncomment to debug what's inserted
+            ; (debug "Executing" stmt "with values" (pr-str values))
+            (j/db-do-prepared db stmt values)
+            (after-save conn concept)
 
-          nil))
+            nil)))
       (catch Exception e
         (let [error-message (.getMessage e)
               error-code (cond
                            (re-find #"unique constraint.*_CID_REV" error-message)
-                           :concept-id-concept-conflict
+                           :revision-id-conflict
 
                            (re-find #"unique constraint.*_CON_REV" error-message)
                            :revision-id-conflict

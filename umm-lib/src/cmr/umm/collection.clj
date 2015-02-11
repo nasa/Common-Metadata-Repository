@@ -77,6 +77,7 @@
    short-name
    long-name
    technique
+   characteristics
    ])
 
 (defrecord Instrument
@@ -85,6 +86,7 @@
    long-name
    technique
    sensors
+   characteristics
    ])
 
 (defrecord Characteristic
@@ -105,6 +107,12 @@
    characteristics
    ])
 
+(defrecord CollectionAssociation
+  [
+   short-name
+   version-id
+   ])
+
 (defrecord Project
   [
    ;; maps to Echo10 Collection/Campaigns/Campaign/ShortName
@@ -114,11 +122,18 @@
    long-name
    ])
 
+(defrecord Coordinate
+  [
+   min-value
+   max-value
+   ])
 
 (defrecord TwoDCoordinateSystem
   [
    ;; maps to Echo10 Collection/TwoDCoordinateSystems/TwoDCoordinateSystem/TwoDCoordinateSystemName
    name
+   coordinate-1
+   coordinate-2
    ])
 
 (def organization-types [:archive-center :processing-center :distribution-center])
@@ -244,6 +259,8 @@
    platforms
 
    product-specific-attributes
+
+   collection-associations
 
    ;; Records campaigns of ECHO10
    projects

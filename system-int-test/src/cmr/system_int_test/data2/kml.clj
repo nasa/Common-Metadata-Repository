@@ -1,6 +1,7 @@
 (ns cmr.system-int-test.data2.kml
   "Contains functions for parsing kml results into spatial shapes."
   (:require [clojure.data.xml :as x]
+            [cmr.system-int-test.utils.fast-xml :as fx]
             [cmr.spatial.polygon :as poly]
             [cmr.spatial.point :as p]
             [cmr.spatial.mbr :as m]
@@ -77,7 +78,7 @@
 (defn parse-kml-results
   "Takes kml as a string and returns expected items which will contain a name and a list of shapes"
   [kml-string]
-  (map placemark-elem->item (cx/elements-at-path (x/parse-str kml-string) [:Document :Placemark])))
+  (map placemark-elem->item (cx/elements-at-path (fx/parse-str kml-string) [:Document :Placemark])))
 
 (defmulti shape->kml-representation
   "Converts a CMR spatial shape into the KML representation of that shape"
@@ -151,7 +152,7 @@
   (parse-kml-results sample-kml)
 
   (def placemarks
-    (cx/elements-at-path (x/parse-str sample-kml) [:Document :Placemark]))
+    (cx/elements-at-path (fx/parse-str sample-kml) [:Document :Placemark]))
 
   (first placemarks)
 

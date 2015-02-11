@@ -58,10 +58,12 @@
 (defn data-granule
   "Returns a data-granule with the given attributes"
   [attribs]
-  (let [{:keys [producer-gran-id day-night size]} attribs]
-    (when (or size producer-gran-id day-night)
+  (let [{:keys [producer-gran-id day-night size production-date-time]} attribs]
+    (when (or size producer-gran-id day-night production-date-time)
       (g/map->DataGranule {:producer-gran-id producer-gran-id
                            :day-night day-night
+                           :production-date-time (or production-date-time
+                                                     (p/parse-datetime "2010-01-01T12:00:00Z"))
                            :size size}))))
 
 (defn orbit
@@ -123,4 +125,11 @@
          data-granule {:data-granule (data-granule attribs)}
          temporal {:temporal (temporal attribs)}]
      (g/map->UmmGranule (merge minimal-gran timestamps data-granule temporal attribs)))))
+
+(defn umm-granule->granule-concept
+  "Returns the granule concept for ingest for the given umm granule"
+  ([gran]
+   (umm-granule->granule-concept gran :echo10))
+  ([gran concept-format]
+   (assoc (d/item->concept gran concept-format) :provider-id "PROV1")))
 

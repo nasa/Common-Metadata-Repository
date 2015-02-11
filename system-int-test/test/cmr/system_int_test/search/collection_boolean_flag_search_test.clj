@@ -12,7 +12,7 @@
 (deftest search-collection-by-downloadable
   (let [ru1 (dc/related-url "GET DATA")
         ru2 (dc/related-url "GET RELATED VISUALIZATION")
-        ru3 (dc/related-url nil)
+        ru3 (dc/related-url "VIEW RELATED INFORMATION")
         coll1 (d/ingest "PROV1" (dc/collection {:related-urls [ru1]}))
         coll2 (d/ingest "PROV1" (dc/collection {:related-urls [ru2]}))
         coll3 (d/ingest "PROV1" (dc/collection {:related-urls [ru3]}))

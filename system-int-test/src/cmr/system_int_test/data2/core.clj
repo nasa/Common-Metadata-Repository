@@ -2,6 +2,7 @@
   "Contains helper functions for data generation and ingest for example based testing in system
   integration tests."
   (:require [clojure.test :refer [is]]
+            [clojure.java.io :as io]
             [cmr.umm.core :as umm]
             [cmr.common.mime-types :as mime-types]
             [cmr.system-int-test.utils.ingest-util :as ingest]
@@ -41,11 +42,11 @@
   :granule)
 
 (defn item->concept
-  "Converts an UMM item to a concept map. Expects provider-id to be in the item"
+  "Converts an UMM item to a concept map. Default provider-id to PROV1 if not present."
   [item format-key]
   (let [format (mime-types/format->mime-type format-key)]
     (merge {:concept-type (item->concept-type item)
-            :provider-id (:provider-id item)
+            :provider-id (or (:provider-id item) "PROV1")
             :native-id (or (:native-id item) (item->native-id item))
             :metadata (umm/umm->xml item format-key)
             :format format}
@@ -57,17 +58,34 @@
 (defn ingest
   "Ingests the catalog item. Returns it with concept-id, revision-id, and provider-id set on it."
   ([provider-id item]
-   (ingest provider-id item :echo10))
+   (ingest provider-id item :echo10 nil))
   ([provider-id item format-key]
+   (ingest provider-id item format-key nil))
+  ([provider-id item format-key token]
    (let [response (ingest/ingest-concept
-                    (item->concept (assoc item :provider-id provider-id) format-key))]
-     (is (= 200 (:status response))
-         (pr-str response))
-     (assoc item
-            :provider-id provider-id
-            :concept-id (:concept-id response)
-            :revision-id (:revision-id response)
-            :format-key format-key))))
+                    (item->concept (assoc item :provider-id provider-id) format-key)
+                    {:token token})]
+     (if (= 200 (:status response))
+       (assoc item
+              :status (:status response)
+              :provider-id provider-id
+              :concept-id (:concept-id response)
+              :revision-id (:revision-id response)
+              :format-key format-key)
+       response))))
+
+(defn ingest-concept-with-metadata-file
+  "Ingest the given concept with the metadata file. The metadata file has to be located under
+  dev-system/resources/data/... and referenced as 'data/...'"
+  [provider-id concept-type format-key metadata-file]
+  (let [metadata (slurp (io/resource metadata-file))
+        concept {:concept-type concept-type
+                 :provider-id provider-id
+                 :native-id "native-id"
+                 :metadata metadata
+                 :format (mime-types/format->mime-type format-key)}
+        response (ingest/ingest-concept concept)]
+    (merge (umm/parse-concept concept) response)))
 
 (defn item->ref
   "Converts an item into the expected reference"

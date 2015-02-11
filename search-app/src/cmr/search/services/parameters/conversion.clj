@@ -31,6 +31,7 @@
                 :archive-center :string
                 :spatial-keyword :string
                 :two-d-coordinate-system-name :string
+                :two-d-coordinate-system :two-d-coordinate-system
                 :science-keywords :science-keywords
                 :dif-entry-id :dif-entry-id
                 :downloadable :boolean

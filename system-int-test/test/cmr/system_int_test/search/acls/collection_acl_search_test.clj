@@ -62,11 +62,12 @@
         coll6 (d/ingest "PROV2" (dc/collection {:entry-title "coll6"}))
         coll7 (d/ingest "PROV2" (dc/collection {:entry-title "coll7"}))
         ;; A dif collection
-        coll8 (d/ingest "PROV2" (dc/collection {:entry-title "coll8"
-                                                :entry-id "S8"
-                                                :short-name "S8"
-                                                :version-id "V8"
-                                                :long-name "coll8"}) :dif)
+        coll8 (d/ingest "PROV2" (dc/collection-dif
+                                  {:entry-title "coll8"
+                                   :entry-id "S8"
+                                   :short-name "S8"
+                                   :version-id "V8"
+                                   :long-name "coll8"}) :dif)
         ;; added for atom results
         coll8 (assoc coll8 :original-format "DIF")
 
@@ -163,16 +164,16 @@
     (testing "opendata ACL enforcement"
       (testing "all items"
         (let [coll-od (:results (od/collections->expected-opendata guest-permitted-collections))]
-          (is (= coll-od (set (:results (search/find-concepts-opendata :collection {:token guest-token
-                                                                                    :page-size 100})))))))
+          (is (= coll-od (:results (search/find-concepts-opendata :collection {:token guest-token
+                                                                                    :page-size 100}))))))
 
       (testing "by concept id"
         (let [concept-ids (map :concept-id all-colls)
               coll-od (:results (od/collections->expected-opendata guest-permitted-collections))]
-          (is (= coll-od (set (:results (search/find-concepts-opendata :collection
+          (is (= coll-od (:results (search/find-concepts-opendata :collection
                                                                        {:token guest-token
                                                                         :page-size 100
-                                                                        :concept-id concept-ids}))))))))))
+                                                                        :concept-id concept-ids})))))))))
 
 ;; This tests that when acls change after collections have been indexed that collections will be
 ;; reindexed when ingest detects the acl hash has change.

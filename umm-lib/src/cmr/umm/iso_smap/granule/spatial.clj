@@ -24,7 +24,7 @@
   [element]
   (let [coords (cx/string-at-path
                  element [:EX_BoundingPolygon :polygon :Polygon :exterior :LinearRing :posList])]
-    (poly/polygon [(spatial/ring-str->ring coords)])))
+    (poly/polygon [(spatial/lat-lon-point-str->ring coords :clockwise)])))
 
 (def geometry-tags
   "The list of geometry tags in the geometry element that are actual spatial area elements"
@@ -63,7 +63,7 @@
 
 (defmethod generate-geometry-element cmr.spatial.polygon.Polygon
   [geometry]
-  (let [ring-str (spatial/ring->ring-str (first (:rings geometry)))]
+  (let [ring-str (spatial/ring->lat-lon-point-str (first (:rings geometry)) :clockwise)]
     (x/element
       :gmd:geographicElement {}
       (x/element

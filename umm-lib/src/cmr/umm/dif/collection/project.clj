@@ -14,16 +14,12 @@
 
 (defn xml-elem->Projects
   [collection-element]
-  (let [projects (map xml-elem->Project
-                      (cx/elements-at-path
-                        collection-element
-                        [:Project]))]
-    (when-not (empty? projects)
-      projects)))
+  (seq (map xml-elem->Project
+            (cx/elements-at-path collection-element [:Project]))))
 
 (defn generate-projects
   [projects]
-  (when (and projects (not (empty? projects)))
+  (when (seq projects)
     (for [proj projects]
       (let [{:keys [short-name long-name]} proj]
         (x/element :Project {}

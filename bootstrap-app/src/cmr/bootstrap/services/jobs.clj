@@ -7,8 +7,7 @@
 
 (def-stateful-job DbSynchronizeJob
   [ctx system]
-  (warn "Boostrap db synchronize job is disabled for now via code until we're ready to enable it.")
-  #_(bootstrap-service/db-synchronize
+  (bootstrap-service/db-synchronize
     {:system system}
     true ;; synchronous
     {:sync-types [:missing :deletes]}))

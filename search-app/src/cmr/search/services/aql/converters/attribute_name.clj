@@ -20,17 +20,17 @@
 
 (defmethod attrib-name-element->condition :value
   [elem]
-  (attrib-name-condition (first (:content elem))))
+  (attrib-name-condition (a/element->string-content elem)))
 
 (defmethod attrib-name-element->condition :textPattern
   [elem]
-  (let [value (-> elem :content first a/aql-pattern->cmr-pattern)]
+  (let [value (-> elem a/element->string-content a/aql-pattern->cmr-pattern)]
     (attrib-name-condition value true)))
 
 (defmethod attrib-name-element->condition :list
   [elem]
   (let [values (cx/strings-at-path elem [:value])
-        conditions (map attrib-name-condition values)]
+        conditions (map (comp attrib-name-condition a/remove-outer-single-quotes) values)]
     (gc/or-conds conditions)))
 
 ;; Converts additionalAttributeNames element into query condition, returns the converted condition

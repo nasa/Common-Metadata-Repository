@@ -23,7 +23,11 @@
         coll5 (d/ingest "PROV2" (dc/collection {:platforms [p4]}))
         coll6 (d/ingest "PROV2" (dc/collection {:platforms [p5]}))
         coll7 (d/ingest "PROV2" (dc/collection {:platforms [p6]}))
-        coll8 (d/ingest "PROV2" (dc/collection {}))]
+        coll8 (d/ingest "PROV2" (dc/collection {}))
+        ;; Added to test SMAP ISO platform and instrument support
+        coll9 (d/ingest-concept-with-metadata-file
+                "PROV1" :collection :iso-smap
+                "data/iso_smap/sample_smap_iso_collection.xml")]
 
     (index/refresh-elastic-index)
 
@@ -37,6 +41,7 @@
            [coll1 coll2] "platform_Sn A" {}
            [coll6 coll7] "platform_x" {}
            [] "BLAH" {}
+           [coll9] "SMAP" {}
            [coll1 coll2 coll4] ["platform_SnA" "platform_Sn A"] {}
            [coll6 coll7] ["platform_x"] {:ignore-case true}
            [coll7] ["platform_x"] {:ignore-case false}
@@ -50,6 +55,7 @@
              (d/refs-match? items (search/find-refs-with-aql :collection [condition])))
 
            [coll1 coll2] "platform_Sn A" {}
+           [coll1 coll2] "'platform_Sn A'" {}
            [coll7] "platform_x" {}
            [] "BLAH" {}
            [coll1 coll2 coll4] ["platform_SnA" "platform_Sn A"] {}
@@ -66,13 +72,13 @@
         i4 (dc/instrument "instrument_Snx")
         i5 (dc/instrument "InstruMENT_X")
         i6 (dc/instrument "instrument_x")
-        p1 (dc/platform "platform_1" nil nil i1)
-        p2 (dc/platform "platform_2" nil nil i2)
-        p3 (dc/platform "platform_3" nil nil i3)
-        p4 (dc/platform "platform_4" nil nil i4)
-        p5 (dc/platform "platform_5" nil nil i1 i2)
-        p6 (dc/platform "platform_6" nil nil i5)
-        p7 (dc/platform "platform_7" nil nil i6)
+        p1 (dc/platform "platform_1" "dummy" nil i1)
+        p2 (dc/platform "platform_2" "dummy" nil i2)
+        p3 (dc/platform "platform_3" "dummy" nil i3)
+        p4 (dc/platform "platform_4" "dummy" nil i4)
+        p5 (dc/platform "platform_5" "dummy" nil i1 i2)
+        p6 (dc/platform "platform_6" "dummy" nil i5)
+        p7 (dc/platform "platform_7" "dummy" nil i6)
         coll1 (d/ingest "PROV1" (dc/collection {:platforms [p1]}))
         coll2 (d/ingest "PROV1" (dc/collection {:platforms [p1 p2]}))
         coll3 (d/ingest "PROV1" (dc/collection {:platforms [p2]}))
@@ -81,7 +87,11 @@
         coll6 (d/ingest "PROV2" (dc/collection {:platforms [p5]}))
         coll7 (d/ingest "PROV2" (dc/collection {:platforms [p6]}))
         coll8 (d/ingest "PROV2" (dc/collection {:platforms [p7]}))
-        coll9 (d/ingest "PROV2" (dc/collection {}))]
+        coll9 (d/ingest "PROV2" (dc/collection {}))
+        ;; Added to test SMAP ISO platform and instrument support
+        coll10 (d/ingest-concept-with-metadata-file
+                 "PROV1" :collection :iso-smap
+                 "data/iso_smap/sample_smap_iso_collection.xml")]
 
     (index/refresh-elastic-index)
 
@@ -95,6 +105,8 @@
            [coll1 coll2 coll6] "instrument_Sn A" {}
            [coll7 coll8] "instrument_x" {}
            [] "BLAH" {}
+           [coll10] "SMAP L-BAND RADAR" {}
+           [coll10] ["SMAP L-BAND RADAR" "SMAP L-BAND RADIOMETER"] {}
            [coll1 coll2 coll4 coll6] ["instrument_SnA" "instrument_Sn A"] {}
            [coll7 coll8] ["instrument_x"] {:ignore-case true}
            [coll8] ["instrument_x"] {:ignore-case false}
@@ -131,14 +143,14 @@
         i5 (dc/instrument "instrument_5" nil nil s1 s2)
         i6 (dc/instrument "instrument_6" nil nil s5)
         i7 (dc/instrument "instrument_7" nil nil s6)
-        p1 (dc/platform "platform_1" nil nil i1)
-        p2 (dc/platform "platform_2" nil nil i2)
-        p3 (dc/platform "platform_3" nil nil i3)
-        p4 (dc/platform "platform_4" nil nil i4)
-        p5 (dc/platform "platform_5" nil nil i5)
-        p6 (dc/platform "platform_6" nil nil i1 i2)
-        p7 (dc/platform "platform_7" nil nil i6)
-        p8 (dc/platform "platform_8" nil nil i7)
+        p1 (dc/platform "platform_1" "dummy" nil i1)
+        p2 (dc/platform "platform_2" "dummy" nil i2)
+        p3 (dc/platform "platform_3" "dummy" nil i3)
+        p4 (dc/platform "platform_4" "dummy" nil i4)
+        p5 (dc/platform "platform_5" "dummy" nil i5)
+        p6 (dc/platform "platform_6" "dummy" nil i1 i2)
+        p7 (dc/platform "platform_7" "dummy" nil i6)
+        p8 (dc/platform "platform_8" "dummy" nil i7)
         coll1 (d/ingest "PROV1" (dc/collection {:platforms [p1]}))
         coll2 (d/ingest "PROV1" (dc/collection {:platforms [p1 p2]}))
         coll3 (d/ingest "PROV1" (dc/collection {:platforms [p2]}))

@@ -93,6 +93,14 @@
          "\\_SHORT" [coll10]
          "\\\\SHORT" [coll11]
 
+         ;; AQL should support quotes around values
+         "'SHORT'" [coll1]
+         "'SHO?RT'" [coll2]
+         "'SHO*RT'" [coll3]
+
+         "''" []
+         "" []
+
          ;; Using patterns
          "%" all-colls
          "SHO_RT" [coll2 coll3 coll4 coll5 coll6]

@@ -2,23 +2,11 @@
 
 This is the ingest component of the CMR system. It is responsible for collaborating with metadata db and indexer components of the CMR system to maintain the lifecycle of concepts coming into the system.
 
-## Prerequisites
-
-You will need [Leiningen][1] 1.7.0 or above installed.
-
-[1]: https://github.com/technomancy/leiningen
-
-## Running
-
-To start a web server for the application, run:
-
-    lein ring server
-
 ## Setting up the database
 
 There are two ways database operations can be done. It can happen through leiningen commands for local development or using the built uberjar.
 
-### leiningen commands
+### Leiningen commands
 
 1. Create the user
 
@@ -42,7 +30,7 @@ completely.
 lein drop-user
 ```
 
-### java commands through uberjar
+### Java commands through uberjar
 
 1. Create the user
 
@@ -64,8 +52,7 @@ You can provider additional arguments to migrate the database to a given version
 CMR_DB_URL=thin:@localhost:1521:orcl CMR_INGEST_PASSWORD=****** java -cp target/cmr-ingest-app-0.1.0-SNAPSHOT-standalone.jar cmr.db drop-user
 ```
 
-## Curl statements
-- ensure Metadata db, ES, Indexer, Ingest are functioning
+## Ingest API
 
 ### Create provider
 
@@ -94,6 +81,115 @@ sample output:
 
 sample output:
 {"concept-id":"C12-CurlPROV009","revision-id":1}
+
+### Validate collection
+
+Validates collection metadata by performing schema validation, UMM validation, and inventory specific validations. Returns status code 200 on successful validation, status code 400 with a list of validation errors on failed validation.
+
+    curl -i -XPOST -H "Content-type: application/echo10+xml" http://localhost:3002/providers/PROV1/validate/collection/sampleNativeId15 -d \
+    "<Collection> \
+      <ShortName>ShortName_Larc</ShortName> \
+      <VersionId>Version01</VersionId> \
+      <InsertTime>1999-12-31T19:00:00-05:00</InsertTime> \
+      <LastUpdate>1999-12-31T19:00:00-05:00</LastUpdate> \
+      <DeleteTime>2015-05-23T22:30:59</DeleteTime> \
+      <LongName>LarcLongName</LongName> \
+      <DataSetId>LarcDatasetId</DataSetId> \
+      <Description>A minimal valid collection</Description> \
+      <Orderable>true</Orderable> \
+      <Visible>true</Visible> \
+      </Collection>"
+
+### Validate granule
+
+Validates granule metadata by performing schema validation, UMM validation, and inventory specific validations. Returns status code 200 on successful validation, status code 400 with a list of validation errors on failed validation.
+
+    curl -i -XPOST -H "Content-type: application/echo10+xml" http://localhost:3002/providers/PROV1/validate/granule/sampleGranuleNativeId33 -d \
+    "<Granule> \
+        <GranuleUR>SC:AE_5DSno.002:30500511</GranuleUR> \
+        <InsertTime>2009-05-11T20:09:16.340Z</InsertTime> \
+        <LastUpdate>2014-03-19T09:59:12.207Z</LastUpdate> \
+        <Collection> \
+        <DataSetId>AMSR-E/Aqua 5-Day L3 Global Snow Water Equivalent EASE-Grids V002</DataSetId> \
+        </Collection> \
+        <Orderable>true</Orderable> \
+    </Granule>"
+
+### Error Messages
+
+#### General Errors
+
+Ingest validation errors can take one of two shapes. General error messages will be returned as a list of error messages like the following:
+
+```
+<errors>
+   <error>Parent collection for granule [SC:AE_5DSno.002:30500511] does not exist.</error>
+</errors>
+```
+
+#### UMM Validation Errors
+
+UMM Validation errors will be returned with a path within the metadata to the failed item. For example the following errors would be returned if the first and second spatial areas were invalid. The path is a set of UMM fields in camel case separated by a `/`. Numeric indices are used to indicate the index of an item within a list that failed.
+
+```
+<errors>
+   <error>
+      <path>SpatialCoverage/Geometries/1</path>
+      <errors>
+         <error>Spatial validation error: The shape contained duplicate points. Points 2 [lon=180 lat=-90] and 3 [lon=180 lat=-90] were considered equivalent or very close.</error>
+      </errors>
+   </error>
+   <error>
+      <path>SpatialCoverage/Geometries/0</path>
+      <errors>
+         <error>Spatial validation error: The polygon boundary points are listed in the wrong order (clockwise vs counter clockwise). Please see the API documentation for the correct order.</error>
+      </errors>
+   </error>
+</errors>
+```
+
+#### JSON Error Messages
+
+Error messages can also be returned in JSON by setting the Accept header to application/json.
+
+```
+{
+  "errors" : [ {
+    "path" : [ "Platforms", 1, "Instruments", 1, "Sensors" ],
+    "errors" : [ "Sensors must be unique. This contains duplicates named [S2]." ]
+  }, {
+    "path" : [ "Platforms", 1, "Instruments", 0, "Sensors" ],
+    "errors" : [ "Sensors must be unique. This contains duplicates named [S1]." ]
+  }, {
+    "path" : [ "Platforms", 1, "Instruments" ],
+    "errors" : [ "Instruments must be unique. This contains duplicates named [I1]." ]
+  }, {
+    "path" : [ "Platforms" ],
+    "errors" : [ "Platforms must be unique. This contains duplicates named [P1]." ]
+  } ]
+}
+```
+
+## Administrative API
+
+### Clear the cache cache
+
+    curl -i -XPOST http://localhost:3002/clear-cache?token=XXXX
+
+### Querying caches
+
+Endpoints are provided for querying the contents of the various caches used by the application.
+The following curl will return the list of caches:
+
+    curl -i http://localhost:3002/caches
+
+The following curl will return the keys for a specific cache:
+
+    curl -i http://localhost:3002/caches/cache-name
+
+This curl will return the value for a specific key in the named cache:
+
+    curl -i http://localhost:3002/caches/cache-name/cache-key
 
 ### Check application health
 

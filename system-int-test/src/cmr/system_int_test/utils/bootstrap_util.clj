@@ -21,7 +21,22 @@
                    {:method :post
                     :query-params {:synchronous true}
                     :url (url/bulk-index-provider-url)
-                    :body (format "{\"provider_id\": \"%s\"}" provider-id)
+                    :body (json/generate-string {:provider_id provider-id})
+                    :content-type :json
+                    :accept :json
+                    :throw-exceptions false
+                    :connection-manager (url/conn-mgr)})
+        body (json/decode (:body response) true)]
+    (assoc body :status (:status response))))
+
+(defn bulk-index-collection
+  "Call the bootstrap app to bulk index a collection."
+  [provider-id collection-id]
+  (let [response (client/request
+                   {:method :post
+                    :query-params {:synchronous true}
+                    :url (url/bulk-index-collection-url)
+                    :body (json/generate-string {:provider_id provider-id :collection_id collection-id})
                     :content-type :json
                     :accept :json
                     :throw-exceptions false

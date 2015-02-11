@@ -8,41 +8,41 @@
             [cmr.system-int-test.utils.url-helper :as url]
             [clj-http.client :as client]))
 
-(use-fixtures :each (ingest/reset-fixture))
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"} false))
 
 (defn has-action-permission?
   "Attempts to perform the given action using the url and method with the token. Returns true
   if the action was successful."
   [url method token]
-  (let [response (client/request {:url url
-                                  :method method
-                                  :query-params {:token token}
-                                  :connection-manager (url/conn-mgr)
-                                  :throw-exceptions false})
-        status (:status response)]
+   (let [response (client/request {:url url
+                                   :method method
+                                   :query-params {:token token}
+                                   :connection-manager (url/conn-mgr)
+                                   :throw-exceptions false})
+         status (:status response)]
 
-    ;; Make sure the status returned is success or 401
-    (when (or (and (>= status 300)
-                   (not= status 401))
-              (< status 200))
-      (throw (Exception. (str "Unexpected status " status " response:" (:body response)))))
-    (not= status 401)))
+     ;; Make sure the status returned is success or 401
+     (is (some #{status} [200 201 204 401]))
+     (not= status 401)))
 
 (deftest ingest-management-permission-test
-  (do
-    ;; Grant admin-group-guid admin permission
-    (e/grant-group-admin "admin-read-group-guid" :read)
-    (e/grant-group-admin "admin-update-group-guid" :update)
-    (e/grant-group-admin "admin-read-update-group-guid" :read :update))
+  ;; Grant admin-group-guid admin permission
+  (e/grant-group-admin "admin-read-group-guid" :read)
+  (e/grant-group-admin "admin-update-group-guid" :update)
+  (e/grant-group-admin "admin-read-update-group-guid" :read :update)
+  ;; Grant provider admin permission, but not system permission
+  (e/grant-group-provider-admin "prov-admin-group-guid" "provguid1" :read :update :delete)
 
   (let [guest-token (e/login-guest)
         user-token (e/login "user1" ["group-guid2" "group-guid3"])
         admin-read-token (e/login "admin" ["admin-read-group-guid" "group-guid3"])
         admin-update-token (e/login "admin" ["admin-update-group-guid" "group-guid3"])
-        admin-read-update-token (e/login "admin" ["admin-read-update-group-guid" "group-guid3"])]
+        admin-read-update-token (e/login "admin" ["admin-read-update-group-guid" "group-guid3"])
+        prov-admin-token (e/login "prov-admin" ["prov-admin-group-guid" "group-guid3"])]
 
     (are [url]
          (and
+           (not (has-action-permission? url :post prov-admin-token))
            (not (has-action-permission? url :post guest-token))
            (not (has-action-permission? url :post user-token))
            (not (has-action-permission? url :post admin-read-token))
@@ -55,6 +55,3 @@
          (url/indexer-reset-url)
          (url/mdb-reset-url)
          (url/index-set-reset-url))))
-
-
-

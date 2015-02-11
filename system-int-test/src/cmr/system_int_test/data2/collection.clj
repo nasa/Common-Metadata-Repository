@@ -82,9 +82,12 @@
   ([sensor-sn]
    (sensor sensor-sn nil nil))
   ([sensor-sn long-name]
-   (c/->Sensor sensor-sn long-name nil))
+   (c/map->Sensor {:short-name sensor-sn
+                   :long-name long-name}))
   ([sensor-sn long-name technique]
-   (c/->Sensor sensor-sn long-name technique)))
+   (c/map->Sensor {:short-name sensor-sn
+                   :long-name long-name
+                   :technique technique})))
 
 (defn instrument
   "Return an instrument based on instrument attribs"
@@ -104,7 +107,10 @@
   ([name]
    (characteristic name nil))
   ([name description]
-   (c/map->Characteristic {:name name :description description})))
+   (c/map->Characteristic {:name name :description description
+                           :data-type "dummy"
+                           :unit "dummy"
+                           :value "dummy"})))
 
 (defn platform
   "Return a platform based on platform attribs"
@@ -120,7 +126,7 @@
       :long-name long-name
       :type (d/unique-str "Type")
       :characteristics characteristics
-      :instruments instruments})))
+      :instruments (if (= [nil] instruments) nil instruments)})))
 
 (defn projects
   "Return a sequence of projects with the given short names"
@@ -169,7 +175,8 @@
                                      :value email})])]
     (c/map->Personnel {:first-name first-name
                        :last-name last-name
-                       :contacts contacts})))
+                       :contacts contacts
+                       :roles ["dummy"]})))
 
 (defn collection
   "Creates a collection"
@@ -181,9 +188,33 @@
          temporal {:temporal (temporal attribs)}
          minimal-coll {:entry-id (str (:short-name product) "_" (:version-id product))
                        :entry-title (str (:long-name product) " " (:version-id product))
+                       :summary (:long-name product)
                        :product product
                        :data-provider-timestamps data-provider-timestamps}
          attribs (select-keys attribs (concat (util/record-fields UmmCollection) [:concept-id :revision-id]))
          attribs (merge minimal-coll temporal attribs)]
      (c/map->UmmCollection attribs))))
 
+(defn collection-dif
+  "Creates a dif collection"
+  ([]
+   (collection-dif {}))
+  ([attribs]
+   (let [;; The following fields are needed for DIF to pass xml validation
+         required-extra-dif-fields {:science-keywords [(science-keyword {:category "upcase"
+                                                                         :topic "Cool"
+                                                                         :term "Mild"})]
+                                    :organizations [(org :distribution-center "Larc")]}
+         attribs (merge required-extra-dif-fields attribs)]
+     (collection attribs))))
+
+(defn collection-concept
+  "Returns the collection for ingest with the given attributes"
+  ([attribs]
+   (collection-concept attribs :echo10))
+  ([attribs concept-format]
+   (let [{:keys [provider-id native-id]} attribs]
+     (-> attribs
+         collection
+         (assoc :provider-id provider-id :native-id native-id)
+         (d/item->concept concept-format)))))

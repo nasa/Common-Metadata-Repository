@@ -149,13 +149,16 @@
                          revision-id-provided?))
 
       :concept-id-concept-conflict
-      (let [{:keys [concept-id concept-type provider-id native-id]} concept]
+      (let [{:keys [concept-id concept-type provider-id native-id]} concept
+            {:keys [existing-concept-id existing-native-id]} result]
         (cmsg/data-error :conflict
                          msg/concept-exists-with-different-id
+                         existing-concept-id
+                         existing-native-id
                          concept-id
+                         native-id
                          concept-type
-                         provider-id
-                         native-id))
+                         provider-id))
 
       (errors/internal-error! (:error-message result) (:throwable result)))))
 
@@ -307,10 +310,14 @@
 (deftracefn find-concepts
   "Find concepts with for a concept type with specific parameters"
   [context params]
-  (cv/validate-find-params params)
-  (let [db (util/context->db context)]
+  (let [db (util/context->db context)
+        latest-only? (= "true" (:latest params))
+        params (dissoc params :latest)]
+    (cv/validate-find-params params)
     (if (contains? (set (provider-db/get-providers db)) (:provider-id params))
-      (c/find-concepts db params)
+      (if latest-only?
+        (c/find-latest-concepts db params)
+        (c/find-concepts db params))
       ;; the provider doesn't exist
       [])))
 

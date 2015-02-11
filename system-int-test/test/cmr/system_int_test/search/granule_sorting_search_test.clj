@@ -57,7 +57,9 @@
            "-readable_granule_name" (reverse [g1 g5 g4 g3 g2])))))
 
 (deftest granule-campaign-sorting-test
-  (let [coll (d/ingest "PROV1" (dc/collection {}))
+  (let [coll (d/ingest "PROV1"
+                       (dc/collection
+                         {:projects (dc/projects "c10" "c20" "c30" "c40" "c50" "c41" "c51")}))
         make-gran (fn [& campaigns]
                     (d/ingest "PROV1" (dg/granule coll {:project-refs campaigns})))
         g1 (make-gran "c10" "c41")
@@ -152,8 +154,7 @@
         g6 (make-gran c2 15 25)
         g7 (make-gran c2 20 29)
         g8 (make-gran c2 25 36)
-        g11 (make-gran c1 12 nil)
-        g12 (make-gran c2 nil 22)]
+        g11 (make-gran c1 12 nil)]
     (index/refresh-elastic-index)
 
     (testing "default sorting is by provider id and start date"
@@ -163,22 +164,25 @@
                 (d/refs-match-order? items
                                      (search/find-refs-with-aql :granule [] {}
                                                                 {:query-params {:page-size 20}})))
-           [g1 g11 g2 g3 g4 g5 g6 g7 g8 g12]))
+           [g1 g11 g2 g3 g4 g5 g6 g7 g8]))
 
     (testing "temporal start date"
       (are [sort-key items]
            (sort-order-correct? items sort-key)
-           "start_date" [g5 g1 g11 g2 g6 g3 g7 g4 g8 g12]
-           "-start_date" [g8 g4 g7 g3 g6 g2 g11 g1 g5 g12]))
+           "start_date" [g5 g1 g11 g2 g6 g3 g7 g4 g8]
+           "-start_date" [g8 g4 g7 g3 g6 g2 g11 g1 g5]))
 
     (testing "temporal end date"
       (are [sort-key items]
            (sort-order-correct? items sort-key)
-           "end_date" [g5 g1 g12 g2 g6 g7 g3 g4 g8 g11]
-           "-end_date" [g8 g4 g3 g7 g6 g2 g12 g1 g5 g11]))))
+           "end_date" [g5 g1 g2 g6 g7 g3 g4 g8 g11]
+           "-end_date" [g8 g4 g3 g7 g6 g2 g1 g5 g11]))))
 
 (deftest granule-platform-sorting-test
-  (let [coll (d/ingest "PROV1" (dc/collection {}))
+  (let [coll (d/ingest
+               "PROV1"
+               (dc/collection {:platforms
+                               (map dc/platform ["c10" "c41" "c20" "c51" "c30" "c40" "c50"])}))
         make-gran (fn [& platforms]
                     (d/ingest "PROV1"
                               (dg/granule coll
@@ -197,12 +201,20 @@
          "-platform" [g2 g5 g1 g4 g3])))
 
 (deftest granule-instrument-sorting-test
-  (let [coll (d/ingest "PROV1" (dc/collection {}))
+  (let [coll (d/ingest
+               "PROV1"
+               (dc/collection {:platforms
+                               [(apply dc/platform
+                                       "platform"
+                                       "dummy"
+                                       nil
+                                       (map dc/instrument
+                                            ["c10" "c41" "c20" "c51" "c30" "c40" "c50"]))]}))
         make-gran (fn [& instruments]
                     (d/ingest "PROV1"
                               (dg/granule
                                 coll
-                                {:platform-refs [(apply dg/platform-ref (d/unique-str "platform")
+                                {:platform-refs [(apply dg/platform-ref "platform"
                                                         (map dg/instrument-ref instruments))]})))
         g1 (make-gran "c10" "c41")
         g2 (make-gran "c20" "c51")
@@ -219,14 +231,21 @@
          "-instrument" [g2 g5 g1 g4 g3])))
 
 (deftest granule-sensor-sorting-test
-  (let [coll (d/ingest "PROV1" (dc/collection {}))
+  (let [coll (d/ingest
+               "PROV1"
+               (dc/collection
+                 {:platforms
+                  [(dc/platform
+                     "platform" "dummy" nil
+                     (apply dc/instrument "instrument" "dummy" nil
+                            (map dg/sensor-ref ["c10" "c41" "c20" "c51" "c30" "c40" "c50"])))]}))
         make-gran (fn [& sensors]
                     (d/ingest "PROV1"
                               (dg/granule
                                 coll
                                 {:platform-refs [(dg/platform-ref
-                                                   (d/unique-str "platform")
-                                                   (apply dg/instrument-ref (d/unique-str "instrument")
+                                                   "platform"
+                                                   (apply dg/instrument-ref "instrument"
                                                           (map dg/sensor-ref sensors)))]})))
         g1 (make-gran "c10" "c41")
         g2 (make-gran "c20" "c51")

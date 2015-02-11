@@ -41,7 +41,7 @@
               :zipkin (context/zipkin-config "Metadata DB" false)
               :parallel-chunk-size (config/parallel-chunk-size)
               :caches {acl/token-imp-cache-key (acl/create-token-imp-cache)}
-              :scheduler (jobs/create-clustered-scheduler `system-holder mdb-jobs/jobs)
+              :scheduler (jobs/create-clustered-scheduler `system-holder :db mdb-jobs/jobs)
               :relative-root-url (transmit-config/metadata-db-relative-root-url)}]
      (transmit-config/system-with-connections sys [:echo-rest]))))
 

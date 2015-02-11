@@ -32,6 +32,8 @@
   (test-map-type :collection "options" {:entry-title {:pattern "true"}})
   (test-map-type :collection "options[entry_title]" {:pattern "true"})
   (test-map-type :collection "options[platform]" {:pattern "true"})
+  (test-map-type :collection "options[instrument]" {:pattern "true"})
+  (test-map-type :collection "options[sensor]" {:pattern "true"})
   (test-map-type :collection "options[project]" {:and "true"})
   (test-map-type :collection "options[attribute]" {:exclude_collection "true"})
   (test-map-type :granule "exclude" {:echo_granule_id "G1234-PROV1"})
