@@ -445,6 +445,16 @@
               (try-to-save db tombstone revision-id)))
           (recur))))))
 
+(defn force-delete-with
+  "Continually force deletes concepts using the given function concept-id-revision-id-tuple-finder
+  to find concept id revision id tuples to delete. Stops once the function returns an empty set."
+  [db provider concept-type concept-id-revision-id-tuple-finder]
+  (cutil/while-let
+    [concept-id-revision-id-tuples (seq (concept-id-revision-id-tuple-finder))]
+    (info "Deleting" (count concept-id-revision-id-tuples)
+          "old concept revisions for provider" provider)
+    (c/force-delete-concepts db provider concept-type concept-id-revision-id-tuples)))
+
 (defn delete-old-revisions
   "Delete concepts to keep a fixed number of revisions around. It also deletes old tombstones that
   are older than a fixed number of days and any prior revisions of the deleted tombstone."
@@ -452,34 +462,27 @@
   (let [db (util/context->db context)
         concept-type-name (str (name concept-type) "s")
         tombstone-cut-off-date (t/minus (time-keeper/now) (t/days (days-to-keep-tombstone)))]
-    (info "Starting deletion of old" concept-type-name "for provider" provider)
-    (loop []
-      (let [old-concept-id-revision-id-tuples
-            (c/get-old-concept-revisions db
-                                         provider
-                                         concept-type
-                                         (get num-revisions-to-keep-per-concept-type
-                                              concept-type)
-                                         concept-truncation-batch-size)]
-        (when (seq old-concept-id-revision-id-tuples)
-          (info "Deleting" (count old-concept-id-revision-id-tuples)
-                "old concept revisions for provider" provider)
-          (c/force-delete-concepts db provider concept-type old-concept-id-revision-id-tuples)
-          (recur))))
+
+        (info "Starting deletion of old" concept-type-name "for provider" provider)
+    (force-delete-with
+      db provider concept-type
+      #(c/get-old-concept-revisions
+         db
+         provider
+         concept-type
+         (get num-revisions-to-keep-per-concept-type
+              concept-type)
+         concept-truncation-batch-size))
 
     (info "Starting deletion of tombstoned" concept-type-name "for provider" provider)
-    (loop []
-      (let [tombstoned-concept-id-revision-id-tuples
-            (c/get-tombstoned-concept-revisions db
-                                                provider
-                                                concept-type
-                                                tombstone-cut-off-date
-                                                concept-truncation-batch-size)]
-        (when (seq tombstoned-concept-id-revision-id-tuples)
-          (info "Deleting" (count tombstoned-concept-id-revision-id-tuples)
-                "tombstoned concept revisions for provider" provider)
-          (c/force-delete-concepts db provider concept-type tombstoned-concept-id-revision-id-tuples)
-          (recur))))))
+    (force-delete-with
+      db provider concept-type
+      #(c/get-tombstoned-concept-revisions
+         db
+         provider
+         concept-type
+         tombstone-cut-off-date
+         concept-truncation-batch-size))))
 
 
 

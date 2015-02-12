@@ -7,8 +7,7 @@
             [cmr.metadata-db.services.messages :as msg]
             [inflections.core :as inf]
             [cmr.metadata-db.services.concept-service :as concept-service]
-            [cmr.common.log :refer (debug info warn error)]
-            [cmr.common.date-time-parser :as p]))
+            [cmr.common.log :refer (debug info warn error)]))
 
 (defn as-int
   "Parses the string to return an integer"

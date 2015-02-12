@@ -197,7 +197,6 @@
 
   (force-delete-concepts
     [db provider-id concept-type concept-id-revision-id-tuples]
-    (cmr.common.dev.capture-reveal/capture db provider-id concept-type concept-id-revision-id-tuples)
     (doseq [[concept-id revision-id] concept-id-revision-id-tuples]
       (concepts/force-delete db concept-type provider-id concept-id revision-id)))
 

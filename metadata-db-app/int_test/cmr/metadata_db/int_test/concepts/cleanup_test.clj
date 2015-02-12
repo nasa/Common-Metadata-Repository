@@ -131,26 +131,48 @@
                                :deleted true)))
         days-to-keep-tombstone (concept-service/days-to-keep-tombstone)
 
+
+        ;; Granule 1
+        ;; Creates 3 revisions of granule 1. The last revision is a tombstone.
+        ;; All but the tombstone should be removed
         gran1 (-> (make-gran 1 0)
                   (update-gran 1)
                   (delete-gran 2))
+
+        ;; Granule 2
+        ;; Creates 2 revisions of granule 2.
+        ;; All but the last revision should be removed.
         gran2 (-> (make-gran 2 0)
                   (update-gran 1))
+
+        ;; Granule 3
+        ;; Creates 2 revisions of granule 3 with last revision a tombstone.
+        ;; The revisions are very old.
+        ;; Every revision should be removed.
         gran3 (-> (make-gran 3 (dec (dec (* -1 days-to-keep-tombstone))))
                   (delete-gran (dec (* -1 days-to-keep-tombstone))))
-        ;; granule 4 is way in the future
+
+        ;; Granule 4
+        ;; Creates 3 revisions of granule 4. The second is a tombstone.
+        ;; Granule 4 is farther in the future than granule 1 and 2.
+        ;; All but the last revision should be removed.
+
+        ;; Granule 4 - 1st revision
         gran4-1 (make-gran 4 days-to-keep-tombstone)
+        ;; Granule 4 - 2nd revision - tombstone
         _ (delete-gran gran4-1 (inc days-to-keep-tombstone))
+        ;; Granule 4 - 3rd revision
         gran4-3 (update-gran gran4-1 (inc (inc days-to-keep-tombstone)))
 
-        all-concept-tuples (concat (for [n (range 1 10)]
-                                     [(:concept-id gran1) n])
-                                   (for [n (range 1 10)]
-                                     [(:concept-id gran2) n])
-                                   (for [n (range 1 10)]
-                                     [(:concept-id gran3) n])
-                                   (for [n (range 1 10)]
-                                     [(:concept-id gran4-3) n]))
+        ;; Create a set of revision ids matching what was saved.
+        all-concept-tuples (for [gran [gran1 gran2 gran3 gran4-1]
+                                 :let [concept-id (:concept-id gran)]
+                                 ;; Using a number higher than the revision ids created.
+                                 ;; This is ok since unknown revision ids will be ignored
+                                 revision-id (range 1 5)]
+                             [concept-id revision-id])
+
+        ;; Get a list of all the concepts from Metadata DB we have saved
         all-concepts (:concepts (util/get-concepts all-concept-tuples true))]
 
     ;; Make sure we have the right number of concepts
