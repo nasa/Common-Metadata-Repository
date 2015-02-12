@@ -62,15 +62,17 @@
            provider-admin-read-token))
 
     (testing "ingest granule delete permissions"
-      (is (ingest-succeeded? (ingest/delete-concept granule provider-admin-update-delete-token)))
+      (are [token]
+           (ingest-succeeded? (ingest/delete-concept granule token))
+           provider-admin-update-token
+           provider-admin-read-update-token
+           provider-admin-update-delete-token)
       (are [token]
            (not (ingest-succeeded? (ingest/delete-concept granule token)))
            guest-token
            user-token
            super-admin-token
            another-prov-admin-token
-           provider-admin-update-token
-           provider-admin-read-update-token
            provider-admin-read-token))
 
     (testing "ingest collection update permissions"
@@ -88,14 +90,16 @@
            provider-admin-read-token))
 
     (testing "ingest collection delete permissions"
-      (is (ingest-succeeded?
-            (ingest/delete-concept ingested-concept provider-admin-update-delete-token)))
+      (are [token]
+           (ingest-succeeded? (ingest/delete-concept ingested-concept token))
+           provider-admin-update-token
+           provider-admin-read-update-token
+           provider-admin-update-delete-token)
       (are [token]
            (not (ingest-succeeded? (ingest/delete-concept ingested-concept token)))
            guest-token
            user-token
            super-admin-token
            another-prov-admin-token
-           provider-admin-update-token
-           provider-admin-read-update-token
            provider-admin-read-token))))
+
