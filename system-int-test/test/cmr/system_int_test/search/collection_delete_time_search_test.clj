@@ -10,7 +10,7 @@
             [cmr.system-int-test.data2.core :as d]
             [clj-time.core :as t]
             [cmr.common.time-keeper :as tk]
-            [cmr.common.test.test-environment :as test-env]))
+            [cmr.system-int-test.utils.test-environment :as test-env]))
 
 
 (use-fixtures :each (join-fixtures

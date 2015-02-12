@@ -223,9 +223,7 @@
   [concept]
   (let [concept (update-in concept [:revision-date]
                            ;; Convert date times to string but allow invalid strings to be passed through
-                           #(if (= (type %) org.joda.time.DateTime)
-                              (f/unparse (f/formatters :date-time) %)
-                              %))
+                           #(when % (str %)))
         response (client/post concepts-url
                               {:body (cheshire/generate-string concept)
                                :content-type :json
@@ -240,18 +238,24 @@
 (defn delete-concept
   "Make a DELETE request to mark a concept as deleted. Returns the status and revision id of the
   tombstone."
-  [concept-id & revision-id]
-  (let [revision-id (first revision-id)
-        url (if revision-id
-              (format "%s%s/%s" concepts-url concept-id revision-id)
-              (format "%s%s" concepts-url concept-id))
-        response (client/delete url
-                                {:throw-exceptions false
-                                 :connection-manager (conn-mgr)})
-        status (:status response)
-        body (cheshire/parse-string (:body response))
-        {:strs [revision-id errors]} body]
-    {:status status :revision-id revision-id :errors errors}))
+  ([concept-id]
+   (delete-concept concept-id nil nil))
+  ([concept-id revision-id]
+   (delete-concept concept-id revision-id nil))
+  ([concept-id revision-id revision-date]
+   (let [url (if revision-id
+               (format "%s%s/%s" concepts-url concept-id revision-id)
+               (format "%s%s" concepts-url concept-id))
+         query-params (when revision-date
+                        {:revision-date (str revision-date)})
+         response (client/delete url
+                                 {:throw-exceptions false
+                                  :query-params query-params
+                                  :connection-manager (conn-mgr)})
+         status (:status response)
+         body (cheshire/parse-string (:body response))
+         {:strs [revision-id errors]} body]
+     {:status status :revision-id revision-id :errors errors})))
 
 (defn force-delete-concept
   "Make a DELETE request to permanently remove a revison of a concept."
@@ -272,9 +276,10 @@
         stored-concept (:concept (get-concept-by-id-and-revision concept-id revision-id))]
     (= concept (dissoc stored-concept :revision-date))))
 
-(defn- assert-no-errors
+(defn assert-no-errors
   [save-result]
-  (is (nil? (:errors save-result))))
+  (is (nil? (:errors save-result)))
+  save-result)
 
 (defn create-and-save-collection
   "Creates, saves, and returns a concept with its data from metadata-db. "

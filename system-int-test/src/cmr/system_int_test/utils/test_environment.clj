@@ -1,4 +1,4 @@
-(ns cmr.common.test.test-environment
+(ns cmr.system-int-test.utils.test-environment
   "Contains helper functions related to the test environment")
 
 (defn runnable-env?

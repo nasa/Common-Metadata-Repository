@@ -7,10 +7,11 @@
             [cmr.metadata-db.int-test.utility :as util]
             [cmr.metadata-db.services.messages :as messages]
             [cmr.metadata-db.services.concept-service :as concept-service]
-            [cmr.metadata-db.int-test.db-helper :as db-helper]
-            [cmr.common.test.test-environment :as test-env]))
+            [cmr.common.time-keeper :as tk]))
 
-(use-fixtures :each (util/reset-database-fixture "PROV1" "PROV2"))
+(use-fixtures :each (join-fixtures
+                      [(util/reset-database-fixture "PROV1" "PROV2")
+                       (tk/freeze-resume-time-fixture)]))
 
 (comment
 
@@ -97,35 +98,80 @@
     (is (every? #(concept-revision-exists? % 3) granules))))
 
 (deftest old-tombstones-are-cleaned-up
-  (test-env/only-with-real-database
-    (let [time-before-tombstone-cutoff (t/minus (t/now)
-                                                (t/days (+ (concept-service/days-to-keep-tombstone) 1)))
-          time-after-tombstone-cutoff (t/minus (t/now)
-                                               (t/days (- (concept-service/days-to-keep-tombstone) 1)))
-          coll1 (util/create-and-save-collection "PROV1" 1)
-          gran1 (util/create-and-save-granule "PROV1" (:concept-id coll1) 1)
-          gran2 (util/create-and-save-granule "PROV1" (:concept-id coll1) 2)
-          coll2 (util/create-and-save-collection "PROV2" 2)
-          coll3 (util/create-and-save-collection "PROV2" 3)]
+  (let [coll1 (util/create-and-save-collection "PROV1" 1)
+        base-revision-date (tk/now)
+        offset->date #(t/plus base-revision-date (t/days %))
 
-      (util/delete-concept (:concept-id coll2))
-      (util/delete-concept (:concept-id coll3))
-      (util/delete-concept (:concept-id gran1))
-      (util/delete-concept (:concept-id gran2))
+        ;; Creates a granule based on the number with a revision date offset-days in the future
+        make-gran (fn [uniq-num offset-days]
+                    (let [gran (assoc (util/granule-concept "PROV1" (:concept-id coll1) uniq-num)
+                                      :revision-date (offset->date offset-days))
+                          {:keys [concept-id revision-id]} (util/assert-no-errors
+                                                             (util/save-concept gran))]
+                      (assoc gran :concept-id concept-id :revision-id revision-id)))
 
-      ;; Update revision-dates to test cleanup of tombstones
-      (db-helper/update-concept-revision-date
-        (assoc coll2 :revision-id 2) time-before-tombstone-cutoff)
-      (db-helper/update-concept-revision-date
-        (assoc coll3 :revision-id 2) time-after-tombstone-cutoff)
-      (db-helper/update-concept-revision-date
-        (assoc gran1 :revision-id 2) time-before-tombstone-cutoff)
-      (db-helper/update-concept-revision-date
-        (assoc gran2 :revision-id 2) time-after-tombstone-cutoff)
+        ;; Updates granule with a revision date offset-days in the future
+        update-gran (fn [gran offset-days]
+                      (let [gran (assoc gran
+                                        :revision-date (offset->date offset-days)
+                                        :revision-id nil)
+                            {:keys [revision-id]} (util/assert-no-errors (util/save-concept gran))]
+                        (assoc gran :revision-id revision-id)))
 
-      (is (= 204 (util/old-revision-concept-cleanup)))
-      (is (concept-exist? coll1))
-      (is (not (concept-exist? coll2)))
-      (is (concept-exist? coll3))
-      (is (not (concept-exist? gran1)))
-      (is (concept-exist? gran2)))))
+        ;; Deletes a granule with a tombstone having a revision date offset-days in the future
+        delete-gran (fn [gran offset-days]
+                      (let [revision-date (offset->date offset-days)
+                            {:keys [revision-id]} (util/assert-no-errors
+                                                    (util/delete-concept
+                                                      (:concept-id gran) nil revision-date))]
+                        (assoc gran
+                               :revision-id revision-id
+                               :revision-date revision-date
+                               :metadata ""
+                               :deleted true)))
+        days-to-keep-tombstone (concept-service/days-to-keep-tombstone)
+
+        gran1 (-> (make-gran 1 0)
+                  (update-gran 1)
+                  (delete-gran 2))
+        gran2 (-> (make-gran 2 0)
+                  (update-gran 1))
+        gran3 (-> (make-gran 3 (dec (dec (* -1 days-to-keep-tombstone))))
+                  (delete-gran (dec (* -1 days-to-keep-tombstone))))
+        ;; granule 4 is way in the future
+        gran4-1 (make-gran 4 days-to-keep-tombstone)
+        _ (delete-gran gran4-1 (inc days-to-keep-tombstone))
+        gran4-3 (update-gran gran4-1 (inc (inc days-to-keep-tombstone)))
+
+        all-concept-tuples (concat (for [n (range 1 10)]
+                                     [(:concept-id gran1) n])
+                                   (for [n (range 1 10)]
+                                     [(:concept-id gran2) n])
+                                   (for [n (range 1 10)]
+                                     [(:concept-id gran3) n])
+                                   (for [n (range 1 10)]
+                                     [(:concept-id gran4-3) n]))
+        all-concepts (:concepts (util/get-concepts all-concept-tuples true))]
+
+    ;; Make sure we have the right number of concepts
+    (is (= 10 (count all-concepts)))
+
+    ;; Do the cleanup
+    (is (= 204 (util/old-revision-concept-cleanup)))
+
+    (let [concepts-after-cleanup (:concepts (util/get-concepts all-concept-tuples true))]
+      (is (= #{gran1 gran2 gran4-3}
+             (set concepts-after-cleanup))))
+
+    ;; Back to the future!
+    ;; Advance one second past granule 1's tombstone cleanup time
+    (tk/advance-time! (+ 1 (* (+ 2 days-to-keep-tombstone) 24 3600)))
+
+    ;; Do the cleanup again
+    (is (= 204 (util/old-revision-concept-cleanup)))
+
+    (let [concepts-after-cleanup (:concepts (util/get-concepts all-concept-tuples true))]
+      (is (= #{gran2 gran4-3}
+             (set concepts-after-cleanup))))))
+
+

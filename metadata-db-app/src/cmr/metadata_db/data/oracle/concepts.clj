@@ -541,7 +541,7 @@
                     (sql-utils/query conn stmt))))))
 
   (get-tombstoned-concept-revisions
-    [this provider concept-type days-to-keep-tombstone limit]
+    [this provider concept-type tombstone-cut-off-date limit]
     (j/with-db-transaction
       [conn this]
       (let [table (tables/get-table-name provider concept-type)
@@ -550,13 +550,13 @@
             stmt [(format "select t1.concept_id, t1.revision_id from %s t1 inner join
                           (select * from
                           (select concept_id, revision_id from %s
-                          where DELETED = 1 and REVISION_DATE < SYSTIMESTAMP - %d)
+                          where DELETED = 1 and REVISION_DATE < ?)
                           where rownum < %d) t2
                           on t1.concept_id = t2.concept_id and t1.REVISION_ID <= t2.revision_id"
                           table
                           table
-                          days-to-keep-tombstone
-                          limit)]
+                          limit)
+                  (cr/to-sql-time tombstone-cut-off-date)]
             result (sql-utils/query conn stmt)]
         ;; create tuples of concept-id/revision-id to remove
         (map (fn [{:keys [concept_id revision_id]}]

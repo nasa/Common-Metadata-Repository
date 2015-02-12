@@ -7,7 +7,8 @@
             [cmr.metadata-db.services.messages :as msg]
             [inflections.core :as inf]
             [cmr.metadata-db.services.concept-service :as concept-service]
-            [cmr.common.log :refer (debug info warn error)]))
+            [cmr.common.log :refer (debug info warn error)]
+            [cmr.common.date-time-parser :as p]))
 
 (defn as-int
   "Parses the string to return an integer"
@@ -79,8 +80,12 @@
 (defn- delete-concept
   "Mark a concept as deleted (create a tombstone)."
   [context params concept-id revision-id]
+  ;; TODO use this or get rid of it.
+  ;; Use this as a side effect for validating the re
+  ; (some-> params :revision-date p/parse-datetime)
+
   (let [{:keys [revision-id]} (concept-service/delete-concept
-                                context concept-id (as-int revision-id))]
+                                context concept-id (as-int revision-id) (:revision-date params))]
     {:status 200
      :body (rh/to-json {:revision-id revision-id} params)
      :headers rh/json-header}))

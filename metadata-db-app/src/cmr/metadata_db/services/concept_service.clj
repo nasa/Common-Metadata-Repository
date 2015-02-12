@@ -22,7 +22,9 @@
             [cmr.common.log :refer (debug info warn error)]
             [cmr.system-trace.core :refer [deftracefn]]
             [clojure.set :as set]
-            [clojure.string]))
+            [clojure.string]
+            [clj-time.core :as t]
+            [cmr.common.time-keeper :as time-keeper]))
 
 
 (def num-revisions-to-keep-per-concept-type
@@ -32,7 +34,7 @@
    :granule 1})
 
 (def days-to-keep-tombstone
-  "Number of days before a tombstone is removed from the database."
+  "Number of days to keep a tombstone before is removed from the database."
   (cfg/config-value-fn :days-to-keep-tombstone 365 #(Integer. %)))
 
 (def concept-truncation-batch-size
@@ -344,7 +346,7 @@
 
 (deftracefn delete-concept
   "Add a tombstone record to mark a concept as deleted and return the revision-id of the tombstone."
-  [context concept-id revision-id]
+  [context concept-id revision-id revision-date]
   (let [db (util/context->db context)
         {:keys [concept-type provider-id]} (cu/parse-concept-id concept-id)
         _ (validate-providers-exist db [provider-id])
@@ -352,7 +354,9 @@
     (if previous-revision
       (if (util/is-tombstone? previous-revision)
         previous-revision
-        (let [tombstone (merge previous-revision {:revision-id revision-id :deleted true :metadata ""})]
+        (let [tombstone (merge previous-revision {:revision-id revision-id :deleted true :metadata ""
+                                                  :revision-date revision-date})]
+          (cv/validate-concept tombstone)
           (validate-concept-revision-id db tombstone previous-revision)
           (let [revisioned-tombstone (set-or-generate-revision-id db tombstone previous-revision)]
             (try-to-save db revisioned-tombstone revision-id))))
@@ -446,7 +450,8 @@
   are older than a fixed number of days and any prior revisions of the deleted tombstone."
   [context provider concept-type]
   (let [db (util/context->db context)
-        concept-type-name (str (name concept-type) "s")]
+        concept-type-name (str (name concept-type) "s")
+        tombstone-cut-off-date (t/minus (time-keeper/now) (t/days (days-to-keep-tombstone)))]
     (info "Starting deletion of old" concept-type-name "for provider" provider)
     (loop []
       (let [old-concept-id-revision-id-tuples
@@ -468,7 +473,7 @@
             (c/get-tombstoned-concept-revisions db
                                                 provider
                                                 concept-type
-                                                (days-to-keep-tombstone)
+                                                tombstone-cut-off-date
                                                 concept-truncation-batch-size)]
         (when (seq tombstoned-concept-id-revision-id-tuples)
           (info "Deleting" (count tombstoned-concept-id-revision-id-tuples)
