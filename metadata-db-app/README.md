@@ -203,14 +203,14 @@ returns: list of concept ids for collections that have a latest revision with an
 
 ### DELETE /concepts/#concept-id/#revision-id
 
-params: none
+params: revision-date - Optionally sets the revision date of the tombstone that is created. This is mainly for testing deletion of old tombstones.
 returns: the revision id of the tombstone generated for the concept
 
     curl -v -XDELETE localhost:3001/concepts/C1-PROV1/1
 
 ### DELETE /concepts/#concept-id
 
-params: none
+params: revision-date - Optionally sets the revision date of the tombstone that is created. This is mainly for testing deletion of old tombstones.
 returns: the revision id of the tombstone generated for the concept
 
     curl -v -XDELETE localhost:3001/concepts/C1-PROV1
