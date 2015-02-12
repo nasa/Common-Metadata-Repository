@@ -252,15 +252,6 @@
           (debug "process-items-from-work-table completed"))))
     item-batch-chan))
 
-(defmacro while-let
-  "A macro that's similar to when let. It will continually evaluate the bindings and execute the body
-  until the binding results in a nil value."
-  [bindings & body]
-  `(loop []
-     (when-let ~bindings
-       ~@body
-       (recur))))
-
 (defn map-missing-items-to-concepts
   "Starts a process that will map batches of items to individual concepts from Catalog REST that
   should be saved in the Metadata DB. Returns the channel that will contain the concepts to save."
@@ -269,16 +260,16 @@
     (go
       (debug "map-missing-items-to-concepts starting")
       (try
-        (while-let [items (<! item-batch-chan)]
-                   (debug "map-missing-items-to-concepts: Received" (count items) "items")
-                   (doseq [[concept-id revision-id] (get-latest-concept-id-revision-ids
-                                                      system provider-id concept-type (map first items))]
-                     (debug "map-missing-items-to-concepts: Processing" concept-id "-" revision-id)
-                     ;; get-concept-from-catalog-rest can return nil if the item is an unsupported XML mime
-                     ;; type or we should skip it for other reasons
-                     (when-let [concept (get-concept-from-catalog-rest
-                                          system provider-id concept-type concept-id (inc revision-id))]
-                       (>! concepts-chan concept))))
+        (util/while-let [items (<! item-batch-chan)]
+                        (debug "map-missing-items-to-concepts: Received" (count items) "items")
+                        (doseq [[concept-id revision-id] (get-latest-concept-id-revision-ids
+                                                           system provider-id concept-type (map first items))]
+                          (debug "map-missing-items-to-concepts: Processing" concept-id "-" revision-id)
+                          ;; get-concept-from-catalog-rest can return nil if the item is an unsupported XML mime
+                          ;; type or we should skip it for other reasons
+                          (when-let [concept (get-concept-from-catalog-rest
+                                               system provider-id concept-type concept-id (inc revision-id))]
+                            (>! concepts-chan concept))))
         (finally
           (async/close! concepts-chan)
           (async/close! item-batch-chan)
@@ -319,9 +310,9 @@
                        (async/thread
                          (log "starting")
                          (try
-                           (while-let [concept (<!! concepts-chan)]
-                                      (log "Inserting" (:concept-id concept) (:revision-id concept))
-                                      (save-and-index-concept system concept))
+                           (util/while-let [concept (<!! concepts-chan)]
+                                           (log "Inserting" (:concept-id concept) (:revision-id concept))
+                                           (save-and-index-concept system concept))
                            (finally
                              (async/close! concepts-chan)
                              (log "completed")))))]
@@ -524,10 +515,10 @@
     (go
       (debug "map-extra-items-batches-to-deletes starting")
       (try
-        (while-let [items (<! item-batch-chan)]
-                   (debug "map-extra-items-batches-to-deletes: Received" (count items) "items")
-                   (doseq [[concept-id revision-id] items]
-                     (>! tuples-chan [concept-id (inc revision-id)])))
+        (util/while-let [items (<! item-batch-chan)]
+                        (debug "map-extra-items-batches-to-deletes: Received" (count items) "items")
+                        (doseq [[concept-id revision-id] items]
+                          (>! tuples-chan [concept-id (inc revision-id)])))
         (finally
           (async/close! tuples-chan)
           (async/close! item-batch-chan)
@@ -540,7 +531,7 @@
   (try
     (let [mdb-context {:system (:metadata-db system)}
           indexer-context {:system (:indexer system)}]
-      (concept-service/delete-concept mdb-context concept-id revision-id)
+      (concept-service/delete-concept mdb-context concept-id revision-id nil)
       (index-service/delete-concept indexer-context concept-id revision-id true))
     (catch clojure.lang.ExceptionInfo e
       (let [data (ex-data e)]
@@ -563,9 +554,9 @@
                        (async/thread
                          (log "starting")
                          (try
-                           (while-let [[concept-id revision-id] (<!! tuples-chan)]
-                                      (log "Deleting" concept-id "-" revision-id)
-                                      (create-tombstone-and-unindex-concept system concept-id revision-id))
+                           (util/while-let [[concept-id revision-id] (<!! tuples-chan)]
+                                           (log "Deleting" concept-id "-" revision-id)
+                                           (create-tombstone-and-unindex-concept system concept-id revision-id))
                            (finally
                              (async/close! tuples-chan)
                              (log "completed")))))]

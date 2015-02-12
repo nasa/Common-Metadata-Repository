@@ -112,7 +112,6 @@
   [f m]
   (into {} (for [[k v] m] [k (f v)])))
 
-
 (defn map-keys->snake_case
   "Converts map keys to snake_case."
   [m]
@@ -169,6 +168,15 @@
                              (throw t)))))
         futures (map-n-all build-future n items)]
     (mapv deref futures)))
+
+(defmacro while-let
+  "A macro that's similar to when let. It will continually evaluate the bindings and execute the body
+  until the binding results in a nil value."
+  [bindings & body]
+  `(loop []
+     (when-let ~bindings
+       ~@body
+       (recur))))
 
 (defn double->string
   "Converts a double to string without using exponential notation or loss of accuracy."

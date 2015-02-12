@@ -227,9 +227,14 @@
       @concepts-atom))
 
   (get-tombstoned-concept-revisions
-    [db provider concept-type limit]
-    ;; NOTE - this is not needed for in-memory db
-    )
+    [db provider concept-type tombstone-cut-off-date limit]
+    (->> @concepts-atom
+         (filter #(= concept-type (:concept-type %)))
+         (filter #(= provider (:provider-id %)))
+         (filter :deleted)
+         (filter #(t/before? (p/parse-datetime (:revision-date %)) tombstone-cut-off-date))
+         (map #(vector (:concept-id %) (:revision-id %)))
+         (take limit)))
 
   (get-old-concept-revisions
     [db provider concept-type max-versions limit]
