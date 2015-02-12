@@ -80,10 +80,6 @@
 (defn- delete-concept
   "Mark a concept as deleted (create a tombstone)."
   [context params concept-id revision-id]
-  ;; TODO use this or get rid of it.
-  ;; Use this as a side effect for validating the re
-  ; (some-> params :revision-date p/parse-datetime)
-
   (let [{:keys [revision-id]} (concept-service/delete-concept
                                 context concept-id (as-int revision-id) (:revision-date params))]
     {:status 200
