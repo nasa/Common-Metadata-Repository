@@ -23,6 +23,12 @@
    :fcf-enabled fcf-enabled
    :ons-config ons-config})
 
+(defn- db-conn-info-safe-for-logging
+  "Returns the database connection info without password details"
+  [oracle-store]
+  (pr-str (-> oracle-store
+              :spec
+              (assoc :password "*****"))))
 
 (defn health-fn
   "Returns the health status of the database by executing some sql."
@@ -33,9 +39,7 @@
       {:ok? true}
       {:ok? false :problem "Could not select data from database."})
     (catch Exception e
-      (info "Database conn info" (pr-str (-> oracle-store
-                                             :spec
-                                             (assoc :password "*****"))))
+      (info "Database conn info" (db-conn-info-safe-for-logging oracle-store))
       {:ok? false :problem (.getMessage e)})))
 
 (defn health
@@ -48,6 +52,8 @@
   [oracle-store]
   (let [db-health (health oracle-store)]
     (when-not (:ok? db-health)
+      (error (str "Could not get successful health from oracle store: "
+                  (db-conn-info-safe-for-logging oracle-store)))
       (throw (Exception. (:problem db-health))))))
 
 (defn db->oracle-conn

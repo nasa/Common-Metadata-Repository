@@ -9,7 +9,7 @@
             [cmr.spatial.point :as p]
             [cmr.spatial.mbr :as m]
             [cmr.spatial.geodetic-ring :as gr]
-            [cmr.spatial.geodetic-ring-validations]
+            [cmr.spatial.ring-validations]
             [cmr.spatial.ring-relations :as rr]
             [cmr.spatial.derived :as d]
             [cmr.spatial.test.generators :as sgen]

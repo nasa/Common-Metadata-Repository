@@ -684,11 +684,11 @@ that is defined in cmr-search-app/resources/schema/IIMSAQLQueryLanguage.xsd
 
 ### Document Scoring For Keyword Search
 
-When a keyword search is requested, matched docuements receive relevancy scores as follows:
+When a keyword search is requested, matched documents receive relevancy scores as follows:
 
 A series of filters are executed against each document. Each of these  has an associated boost
 value. The boost values of all the filters that match a given document are multiplied together
-to get the final document score. Docuemnts that match none of the filters have a default
+to get the final document score. Documents that match none of the filters have a default
 score of 1.0.
 
 The filters are case insensitive, support wildcards * and ?, and are given below:

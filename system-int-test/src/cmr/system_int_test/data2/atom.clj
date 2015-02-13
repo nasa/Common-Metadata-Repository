@@ -8,6 +8,7 @@
             [cmr.spatial.mbr :as m]
             [cmr.system-int-test.utils.url-helper :as url]
             [clojure.data.xml :as x]
+            [cmr.system-int-test.utils.fast-xml :as fx]
             [cmr.common.xml :as cx]
             [clojure.string :as str]
             [clj-time.format :as f]
@@ -182,7 +183,7 @@
 (defn parse-atom-result
   "Returns an atom result in map from an atom xml"
   [concept-type xml]
-  (let [xml-struct (x/parse-str xml)]
+  (let [xml-struct (fx/parse-str xml)]
     (util/remove-nil-keys
       {:id (cx/string-at-path xml-struct [:id])
        :title (cx/string-at-path xml-struct [:title])

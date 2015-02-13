@@ -37,10 +37,16 @@
           (:value contact)))
       odrh/DEFAULT_CONTACT_EMAIL))
 
+(defn- contact-point
+  "Creates the contactPoint field including the name and email address"
+  [personnel]
+  {:fn (odrh/personnel->contact-name personnel)
+   :hasEmail (str "mailto:" (personnel->contact-email personnel))})
+
 (defn collection->expected-opendata
   [collection]
-  (let [{:keys [short-name keywords projects summary entry-title
-                access-value concept-id related-urls personnel data-format]} collection
+  (let [{:keys [short-name keywords projects summary entry-title organizations
+                access-value concept-id related-urls personnel data-format provider-id]} collection
         spatial-representation (get-in collection [:spatial-coverage :spatial-representation])
         update-time (get-in collection [:data-provider-timestamps :update-time])
         insert-time (get-in collection [:data-provider-timestamps :insert-time])
@@ -54,21 +60,18 @@
         distribution (not-empty (odrh/distribution related-urls))
         project-sn (not-empty (map :short-name projects))
         personnel (c/person-with-email personnel)
-        contact-name (odrh/personnel->contact-name personnel)
-        contact-email (personnel->contact-email personnel)]
+        contact-point (contact-point personnel)
+        archive-center (:org-name (first (filter #(= :archive-center (:type %)) organizations)))]
     (util/remove-nil-keys {:title entry-title
                            :description summary
                            :keyword (not-empty (sk/flatten-science-keywords collection))
                            :modified (str update-time)
-                           :publisher odrh/PUBLISHER
-                           :contactPoint contact-name
-                           :mbox contact-email
+                           :publisher (odrh/publisher provider-id archive-center)
+                           :contactPoint contact-point
                            :identifier concept-id
                            :accessLevel "public"
                            :bureauCode [odrh/BUREAU_CODE]
                            :programCode [odrh/PROGRAM_CODE]
-                           :accessURL (:accessURL (first distribution))
-                           :format (:format (first distribution))
                            :spatial (odrh/spatial shapes false)
                            :temporal (odrh/temporal start-date end-date)
                            :theme (not-empty (str/join "," project-sn))
@@ -81,10 +84,12 @@
 (defn collections->expected-opendata
   [collections]
   {:status 200
-   :results (set (map collection->expected-opendata collections))})
+   :results {:conformsTo odrh/OPENDATA_SCHEMA
+             :dataset (map collection->expected-opendata collections)}})
 
 (defn assert-collection-opendata-results-match
   "Returns true if the opendata results are for the expected items"
   [collections actual-result]
-  (clojure.test/is (= (collections->expected-opendata collections)
-                      (update-in actual-result [:results] set))))
+  (clojure.test/is (= (update-in (collections->expected-opendata collections)
+                                 [:results :dataset] set)
+                      (update-in actual-result [:results :dataset] set))))

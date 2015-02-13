@@ -16,7 +16,6 @@
 
 (def system nil)
 
-
 (def system-type :in-memory)
 ; (def system-type :external-dbs)
 

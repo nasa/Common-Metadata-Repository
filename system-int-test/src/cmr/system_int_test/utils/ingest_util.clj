@@ -262,10 +262,7 @@
    (reset-fixture provider-guid-id-map grant-all-search? true))
   ([provider-guid-id-map grant-all-search? grant-all-ingest?]
    (fn [f]
-     (try
-       (reset)
-       (doseq [[provider-guid provider-id] provider-guid-id-map]
-         (create-provider provider-guid provider-id grant-all-search? grant-all-ingest?))
-       (f)
-       (finally
-         (reset))))))
+     (reset)
+     (doseq [[provider-guid provider-id] provider-guid-id-map]
+       (create-provider provider-guid provider-id grant-all-search? grant-all-ingest?))
+     (f))))

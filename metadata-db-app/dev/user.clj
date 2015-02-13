@@ -6,19 +6,23 @@
             [cmr.metadata-db.system :as system]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.metadata-db.data.memory-db :as memory]
-            [cmr.common.dev.util :as d])
+            [cmr.common.dev.util :as d]
+            [cmr.mock-echo.system :as mock-echo])
   (:use [clojure.test :only [run-all-tests]]
         [clojure.repl]
         [alex-and-georges.debug-repl]))
 
-; See http://thinkrelevance.com/blog/2013/06/04/clojure-workflow-reloaded
-; for information on why this file is setup this way
-
 (def system nil)
+(def mock-echo nil)
 
 (defn start
   "Starts the current development system."
   []
+  (alter-var-root #'mock-echo
+                  (constantly
+                    (mock-echo/start (mock-echo/create-system))))
+
+
   (let [s (system/create-system)
         ;; uncomment to test the memory db
          ; s (-> s
@@ -34,6 +38,8 @@
 (defn stop
   "Shuts down and destroys the current development system."
   []
+  (alter-var-root #'mock-echo
+                  (fn [s] (when s (mock-echo/stop s))))
   (alter-var-root #'system
                   (fn [s] (when s (system/stop s)))))
 

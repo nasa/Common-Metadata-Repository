@@ -91,7 +91,7 @@
     (= shape (c/url-decode :bounding-box (c/url-encode shape)))))
 
 (defspec line-encode-decode-test 100
-  (for-all [shape (gen/fmap #(assoc % :coordinate-system :geodetic)
+  (for-all [shape (gen/fmap #(l/set-coordinate-system % :geodetic)
                             sgen/lines)]
     (= shape (c/url-decode :line (c/url-encode shape)))))
 

@@ -10,13 +10,14 @@
             [cmr.umm.collection :as c]
             [cmr.umm.iso-smap.helper :as h])
   (:import cmr.umm.collection.Platform
-           cmr.umm.collection.Instrument))
+           cmr.umm.collection.Instrument
+           cmr.umm.collection.ScienceKeyword))
 
 (def KEYWORD_SEPARATOR
   "Separator used to separator keyword into keyword fields"
   #">")
 
-(def PLATFORM_CATEGORIES
+(def platform-categories
   "Category keywords that identifies a descriptive keyword as a platform.
   We are doing this because GCMD currently is not setting the proper value in the type element
   of descriptiveKeywords to identify its type. We should use the type element to identify
@@ -33,22 +34,26 @@
     "Solar/Space Observation Satellites"
     "Space Stations/Manned Spacecraft"})
 
+(def science-keyword-categories
+  #{"EARTH SCIENCE" "EARTH SCIENCE SERVICES"})
+
 (defn- parse-keyword-str
   "Parse the keyword string into a vector of keyword fields"
   [keyword-str]
-  (map s/trim (s/split keyword-str KEYWORD_SEPARATOR)))
+  (map (comp #(if (empty? %) nil %) s/trim)
+       (s/split keyword-str KEYWORD_SEPARATOR)))
 
 (defn- keyword->keyword-type
   "Returns the keyword type for the given keyword string"
   [keyword-str]
   (let [category (first (parse-keyword-str keyword-str))]
     (cond
-      (= "EARTH SCIENCE" category) :science
+      (science-keyword-categories category) :science
       (re-matches #".* Instruments$" category) :instrument
-      (some PLATFORM_CATEGORIES [category]) :platform
+      (platform-categories category) :platform
       :else :other)))
 
-(defn- xml-elem->keywords
+(defn xml-elem->keywords
   "Returns the map of keywords (science, platfrom and intrument) from a parsed XML structure"
   [xml-struct]
   (let [keywords (cx/strings-at-path
@@ -63,7 +68,7 @@
   (let [[_ _ _ _ short-name long-name] (parse-keyword-str keyword-str)]
     (c/map->Instrument
       {:short-name short-name
-       :long-name (if (empty? long-name) nil long-name)})))
+       :long-name long-name})))
 
 (defn platform
   "Returns the platform with the given keyword string and instruments"
@@ -71,38 +76,65 @@
   (let [[_ _ short-name long-name] (parse-keyword-str keyword-str)]
     (c/map->Platform
       {:short-name short-name
-       :long-name (if (empty? long-name) nil long-name)
+       :long-name long-name
        :type "Spacecraft"
        :instruments instruments})))
 
-(defn xml-elem->Platforms
-  [xml-struct]
-  (let [{instruments :instrument platforms :platform} (xml-elem->keywords xml-struct)
+(defn keywords->Platforms
+  "Returns the UMM Platforms from the given keywords parsed from the xml"
+  [keywords]
+  (let [{instruments :instrument platforms :platform} keywords
         instruments (seq (map string->instrument instruments))]
     ;; There is no nested relationship between platform and instrument in SMAP ISO xml
     ;; So we put all instruments in each platform in the UMM
     (seq (map (partial platform instruments) platforms))))
+
+(defn- string->ScienceKeyword
+  "Converts the keyword string into a ScienceKeyword and returns it"
+  [keyword-str]
+  (let [[category topic term variable-level-1 variable-level-2
+         variable-level-3 detailed-variable] (parse-keyword-str keyword-str)]
+    (c/map->ScienceKeyword
+      {:category category
+       :topic topic
+       :term term
+       :variable-level-1 variable-level-1
+       :variable-level-2 variable-level-2
+       :variable-level-3 variable-level-3
+       :detailed-variable detailed-variable})))
+
+(defn keywords->ScienceKeywords
+  "Returns the UMM ScienceKeywords from the given keywords parsed from the xml"
+  [keywords]
+  (let [{science-keywords :science} keywords]
+    (seq (map string->ScienceKeyword science-keywords))))
 
 (defmulti generate-keyword
   "Generate the keyword element"
   (fn [kw]
     (type kw)))
 
+(defmethod generate-keyword ScienceKeyword
+  [science-keyword]
+  (let [{:keys [category topic term variable-level-1 variable-level-2
+                variable-level-3 detailed-variable]} science-keyword
+        keywords (map str [category topic term variable-level-1 variable-level-2 variable-level-3 detailed-variable])
+        science-keyword-str (apply (partial format "%s > %s > %s > %s > %s > %s > %s") keywords)]
+    (h/iso-string-element :gmd:keyword science-keyword-str)))
+
 (defmethod generate-keyword Platform
   [platform]
   (let [{:keys [short-name long-name]} platform
-        long-name (if long-name long-name "")
         ;; There is a disconnect between UMM platform type and the SMAP ISO platform keyword category
         ;; We will just hardcode it to be "Aircraft" for now.
-        platform-str (format "Aircraft > DUMMY > %s > %s" short-name long-name)]
+        platform-str (format "Aircraft > DUMMY > %s > %s" short-name (str long-name))]
     (h/iso-string-element :gmd:keyword platform-str)))
 
 (defmethod generate-keyword Instrument
   [instrument]
   (let [{:keys [short-name long-name]} instrument
-        long-name (if long-name long-name "")
         instrument-str (format "Dummy Instruments > DUMMY > DUMMY > DUMMY > %s > %s"
-                               short-name long-name)]
+                               short-name (str long-name))]
     (h/iso-string-element :gmd:keyword instrument-str)))
 
 (defn- generate-descriptive-keywords
@@ -127,12 +159,8 @@
                                                   "NASA/GCMD Earth Science Keywords"))
                             (x/element :gmd:date {:gco:nilReason "unknown"}))))))
 
-(defn generate-instruments
-  [instruments]
-  (when (seq instruments)
-    (generate-descriptive-keywords instruments)))
+(defn generate-keywords
+  [keywords]
+  (when (seq keywords)
+    (generate-descriptive-keywords keywords)))
 
-(defn generate-platforms
-  [platforms]
-  (when (seq platforms)
-    (generate-descriptive-keywords platforms)))

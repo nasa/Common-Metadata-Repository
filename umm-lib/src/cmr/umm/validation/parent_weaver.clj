@@ -10,19 +10,19 @@
 (defprotocol ParentWeaver
   (set-parent [obj parent] "Sets the parent attribute on this object with the given parent"))
 
-(comment
 
-  ;; This code will be useful in the future. I'm waiting until we actually need it.
-  (defn- set-parents-by-name
-    ([objs parent-objs]
-     (set-parents-by-name objs parent-objs :name))
-    ([objs parent-objs name-field]
-     ;; We'll assume there's only a single parent object with a given name
-     (let [parent-obj-by-name (u/map-values first (group-by name-field parent-objs))]
-       (for [child objs
-             :let [parent (parent-obj-by-name (name-field child))]]
-         (set-parent child parent)))))
-  )
+(defn- set-parents-by-name
+  "Takes a list of child objects and a list of parent objects for the same field.  A parent
+  object is matched to a child object by the field passed in as the name-field.  If a match is
+  found for the child object in the parent object then the :parent field is set to that match."
+  ([objs parent-objs]
+   (set-parents-by-name objs parent-objs :name))
+  ([objs parent-objs name-field]
+   ;; We'll assume there's only a single parent object with a given name
+   (let [parent-obj-by-name (u/map-values first (group-by name-field parent-objs))]
+     (for [child objs
+           :let [parent (parent-obj-by-name (name-field child))]]
+       (set-parent child parent)))))
 
 (extend-protocol
   ParentWeaver
@@ -34,7 +34,10 @@
 
     (-> granule
         (assoc :parent coll)
-        (update-in [:spatial-coverage] set-parent (:spatial-coverage coll))))
+        (update-in [:spatial-coverage] set-parent (:spatial-coverage coll))
+        (update-in [:platform-refs] set-parents-by-name (:platforms coll) :short-name)
+        (update-in [:product-specific-attributes]
+                   set-parents-by-name (:product-specific-attributes coll) :name)))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   clojure.lang.IRecord

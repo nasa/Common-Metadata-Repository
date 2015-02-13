@@ -67,7 +67,7 @@
     (cr/covers-point? ring point))
   (inside-out?
     [ring]
-    (not= :counter-clockwise (cr/course-rotation-direction ring)))
+    (not= :counter-clockwise (cr/ring->winding ring)))
   (invert
     [ring]
     (cr/ring (reverse (:points ring))))

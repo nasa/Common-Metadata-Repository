@@ -5,7 +5,8 @@
             [clj-http.client :as client]
             [cheshire.core :as cheshire]
             [cmr.metadata-db.int-test.utility :as util]
-            [cmr.metadata-db.services.messages :as messages]))
+            [cmr.metadata-db.services.messages :as messages]
+            [clj-time.core :as t]))
 
 ;;; fixtures
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -19,11 +20,21 @@
         coll2 (util/create-and-save-collection "PROV1" 2)
         gran3 (util/create-and-save-granule "PROV1" (:concept-id coll2) 1)
         {:keys [status revision-id]} (util/delete-concept (:concept-id coll1))
-        stored-coll1 (:concept (util/get-concept-by-id-and-revision (:concept-id coll1) revision-id))]
+        deleted-coll1 (:concept (util/get-concept-by-id-and-revision (:concept-id coll1) revision-id))
+        saved-coll1 (:concept (util/get-concept-by-id-and-revision (:concept-id coll1) (dec revision-id)))]
     (is (= status 200))
     (is (= revision-id 4))
-    (is (= true (:deleted stored-coll1)))
-    (is (= "" (:metadata stored-coll1)))
+
+    (is (= (dissoc (assoc saved-coll1
+                          :deleted true
+                          :metadata ""
+                          :revision-id revision-id)
+                   :revision-date)
+           (dissoc deleted-coll1 :revision-date)))
+
+    ;; Make sure that a deleted collection gets it's own unique revision date
+    (is (t/after? (:revision-date deleted-coll1) (:revision-date saved-coll1))
+        "The deleted collection revision date should be after the previous revisions revision date.")
 
     ;; Verify granule was deleted
     (is (= {:status 404} (util/get-concept-by-id-and-revision (:concept-id gran1) 1)))

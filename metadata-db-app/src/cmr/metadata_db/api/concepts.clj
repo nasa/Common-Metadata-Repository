@@ -80,7 +80,7 @@
   "Mark a concept as deleted (create a tombstone)."
   [context params concept-id revision-id]
   (let [{:keys [revision-id]} (concept-service/delete-concept
-                                context concept-id (as-int revision-id))]
+                                context concept-id (as-int revision-id) (:revision-date params))]
     {:status 200
      :body (rh/to-json {:revision-id revision-id} params)
      :headers rh/json-header}))

@@ -76,7 +76,7 @@
                                    :concept-type :collection}
                   context (acl/add-authentication-to-context request-context params headers)]
               (acl/verify-ingest-management-permission
-                context :delete "PROVIDER_OBJECT" provider-id)
+                context :update "PROVIDER_OBJECT" provider-id)
               (r/response (ingest/delete-concept request-context concept-attribs)))))
 
         (context ["/validate/granule/:native-id" :native-id #".*$"] [native-id]
@@ -101,7 +101,7 @@
                                    :concept-type :granule}
                   context (acl/add-authentication-to-context request-context params headers)]
               (acl/verify-ingest-management-permission
-                context :delete "PROVIDER_OBJECT" provider-id)
+                context :update "PROVIDER_OBJECT" provider-id)
               (r/response (ingest/delete-concept request-context concept-attribs))))))
 
       (context "/jobs" []

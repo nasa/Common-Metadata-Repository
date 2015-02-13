@@ -74,11 +74,98 @@
       (assert-invalid-gran
         collection
         (g/map->UmmGranule {:project-refs ["C4"]})
-        [:projects]
-        ["Projects has [C4] which do not reference any projects in parent collection."])
+        [:project-refs]
+        ["Project References have [C4] which do not reference any projects in parent collection."])
       (assert-invalid-gran
         collection
         (g/map->UmmGranule {:project-refs ["C1" "C2" "C3" "C4" "C5"]})
-        [:projects]
-        ["Projects has [C5, C4] which do not reference any projects in parent collection."]))))
+        [:project-refs]
+        ["Project References have [C5, C4] which do not reference any projects in parent collection."]))
+    (testing "Invalid project-refs unique name"
+      (assert-invalid-gran
+        collection
+        (g/map->UmmGranule {:project-refs ["C1" "C2" "C3" "C1"]})
+        [:project-refs]
+        ["Project References must be unique. This contains duplicates named [C1]."]))))
 
+(deftest granule-platform-refs
+  (let [p1 (c/map->Platform {:short-name "p1"})
+        p2 (c/map->Platform {:short-name "p2"})
+        p3 (c/map->Platform {:short-name "p3"})
+        p4 (c/map->Platform {:short-name "P3"})
+        pg1 (g/map->PlatformRef {:short-name "p1" :instrument-refs {}})
+        pg2 (g/map->PlatformRef {:short-name "p2" :instrument-refs {}})
+        pg3 (g/map->PlatformRef {:short-name "p3" :instrument-refs {}})
+        pg4 (g/map->PlatformRef {:short-name "p4" :instrument-refs {}})
+        pg5 (g/map->PlatformRef {:short-name "p5" :instrument-refs {}})
+        pg6 (g/map->PlatformRef {:short-name "P3" :instrument-refs {}})
+        collection (c/map->UmmCollection {:platforms [p1 p2 p3 p4]})]
+    (testing "Valid platform-refs"
+      (assert-valid-gran collection (g/map->UmmGranule {}))
+      (assert-valid-gran collection (g/map->UmmGranule {:platform-refs [pg1]}))
+      (assert-valid-gran collection (g/map->UmmGranule {:platform-refs [pg1 pg2 pg3]}))
+      (assert-valid-gran collection (g/map->UmmGranule {:platform-refs [pg3 pg6]})))
+    (testing "Invalid platform-refs"
+      (assert-invalid-gran
+        collection
+        (g/map->UmmGranule {:platform-refs [pg4]})
+        [:platform-refs]
+        ["The following list of Platform short names did not exist in the referenced parent collection: [p4]."])
+      (assert-invalid-gran
+        collection
+        (g/map->UmmGranule {:platform-refs [pg1 pg2 pg3 pg4 pg5]})
+        [:platform-refs]
+        ["The following list of Platform short names did not exist in the referenced parent collection: [p4, p5]."])
+      (assert-invalid-gran
+        collection
+        (g/map->UmmGranule {:platform-refs [pg1 pg1 pg2]})
+        [:platform-refs]
+        ["Platform References must be unique. This contains duplicates named [p1]."])
+      (assert-invalid-gran
+        collection
+        (g/map->UmmGranule {:platform-refs [pg1 pg1 pg2 pg2]})
+        [:platform-refs]
+        ["Platform References must be unique. This contains duplicates named [p1, p2]."])
+      (assert-invalid-gran
+        collection
+        (g/map->UmmGranule {:platform-refs [pg1 pg1 pg3 pg4 pg5]})
+        [:platform-refs]
+        ["Platform References must be unique. This contains duplicates named [p1]."
+         "The following list of Platform short names did not exist in the referenced parent collection: [p4, p5]."]))))
+
+(deftest granule-product-specific-attributes
+  (let [p1 (c/map->ProductSpecificAttribute {:name "AA1"
+                                             :description "something string"
+                                             :data-type :string
+                                             :parameter-range-begin "alpha"
+                                             :parameter-range-end "bravo"
+                                             :value "alpha1"})
+        p2 (c/map->ProductSpecificAttribute {:name "AA2"
+                                             :description "something float"
+                                             :data-type :float
+                                             :parameter-range-begin 0.1
+                                             :parameter-range-end 100.43})
+        pg1 (g/map->ProductSpecificAttributeRef {:name "AA1"
+                                                 :values ["alpha" "alpha1"]})
+        pg2 (g/map->ProductSpecificAttributeRef {:name "AA2"
+                                                 :values [12.3 15.0]})
+        pg3 (g/map->ProductSpecificAttributeRef {:name "AA3"
+                                                 :values ["alpha" "alpha1"]})
+        pg4 (g/map->ProductSpecificAttributeRef {:name "AA4"
+                                                 :values [1.0]})
+        collection (c/map->UmmCollection {:product-specific-attributes [p1 p2]})]
+    (testing "Valid product-specific-attributes"
+      (assert-valid-gran collection (g/map->UmmGranule {}))
+      (assert-valid-gran collection (g/map->UmmGranule {:product-specific-attributes [pg1]}))
+      (assert-valid-gran collection (g/map->UmmGranule {:product-specific-attributes [pg1 pg2]})))
+    (testing "Invalid product-specific-attributes"
+      (assert-invalid-gran
+        collection
+        (g/map->UmmGranule {:product-specific-attributes [pg3]})
+        [:product-specific-attributes]
+        ["The following list of Product Specific Attributes did not exist in the referenced parent collection: [AA3]."])
+      (assert-invalid-gran
+        collection
+        (g/map->UmmGranule {:product-specific-attributes [pg1 pg2 pg3 pg4]})
+        [:product-specific-attributes]
+        ["The following list of Product Specific Attributes did not exist in the referenced parent collection: [AA3, AA4]."]))))

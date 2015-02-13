@@ -43,7 +43,7 @@
                  (conj acc (msg/nil-field field))
                  acc))
              []
-             (dissoc concept :revision-date)))
+             (dissoc concept :revision-date :revision-id)))
 
 (defn datetime-validator
   [field-path]

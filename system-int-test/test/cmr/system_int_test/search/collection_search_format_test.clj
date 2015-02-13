@@ -20,11 +20,13 @@
             [cmr.spatial.codec :as codec]
             [cmr.umm.spatial :as umm-s]
             [clojure.data.xml :as x]
+            [cmr.system-int-test.utils.fast-xml :as fx]
             [cmr.common.xml :as cx]
             [cmr.system-int-test.data2.kml :as dk]
             [cmr.system-int-test.data2.opendata :as od]))
 
-(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
+(use-fixtures :each (ingest/reset-fixture
+                      {"provguid1" "PROV1" "provguid2" "PROV2" "usgsguid" "USGS_EROS"}))
 
 (comment
 
@@ -162,7 +164,7 @@
                               (:concept-id c1-echo)
                               {:accept mime-type})
                    err-msg (if xml?
-                             (cx/string-at-path (x/parse-str (:body response)) [:error])
+                             (cx/string-at-path (fx/parse-str (:body response)) [:error])
                              (first (:errors (json/decode (:body response) true))))]
                (and (= 400 (:status response))
                     (= (str "The mime type [" mime-type "] is not supported.") err-msg)))
@@ -359,12 +361,12 @@
                                                      :gsr :cartesian
                                                      :geometries [(l/ords->line-string nil 0 0, 0 1, 0 -90, 180 0)
                                                                   (l/ords->line-string nil 1 2, 3 4, 5 6, 7 8)]})}))
-        coll8 (d/ingest "PROV1"
+        coll8 (d/ingest "USGS_EROS"
                         (dc/collection {:entry-title "Dataset8"
                                         :short-name "ShortName#8"
                                         :version-id "Version8"
                                         :summary "Summary of coll8"
-                                        :organizations [(dc/org :archive-center "Larc")]
+                                        :organizations [(dc/org :archive-center "Landsat")]
                                         :beginning-date-time "2010-01-01T12:00:00Z"
                                         :ending-date-time "2010-01-11T12:00:00Z"
                                         :spatial-coverage
