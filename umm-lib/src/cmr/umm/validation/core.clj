@@ -6,6 +6,7 @@
             [cmr.umm.validation.granule :as vg]
             [cmr.umm.validation.parent-weaver :as pw]
             [cmr.umm.validation.utils :as vu]
+            [cmr.spatial.ring-validations]
             [cmr.common.services.errors :as e]
             [clojure.string :as str]))
 
