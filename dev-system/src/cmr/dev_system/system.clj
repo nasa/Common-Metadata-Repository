@@ -3,6 +3,7 @@
             [cmr.bootstrap.system :as bootstrap-system]
             [cmr.metadata-db.system :as mdb-system]
             [cmr.indexer.system :as indexer-system]
+            [cmr.indexer.config :as indexer-config]
             [cmr.search.system :as search-system]
             [cmr.ingest.system :as ingest-system]
             [cmr.ingest.data.provider-acl-hash :as ingest-data]
@@ -15,9 +16,13 @@
             [cmr.spatial.dev.viz-helper :as viz-helper]
             [cmr.elastic-utils.embedded-elastic-server :as elastic-server]
             [cmr.common.config :as config]
+            [cmr.indexer.services.queue-listener :as ql]
+            [cmr.message-queue.config :as rmq-conf]
+            [cmr.message-queue.queue.rabbit-mq :as rmq]
+            [cmr.dev-system.queue-broker-wrapper :as wrapper]
             [cmr.dev-system.control :as control]
+            [cmr.message-queue.services.queue :as queue]
             [cmr.common.api.web-server :as web]))
-
 
 (def app-control-functions
   "A map of application name to the start function"
@@ -71,11 +76,16 @@
 (defmethod create-system :in-memory
   [type]
 
-  ;; Sets a bit of global state for the application and system integration tests that will know how to talk to elastic
+  ;; Sets a bit of global state for the application and system integration tests that will know how
+  ;; to talk to elastic
   (config/set-config-value! :elastic-port in-memory-elastic-port-for-connection)
-  ;; The same in memory db is used for metadata db by itself and in search so they contain the same data
+  ;; Ingest and the indexer will not use a message queue for in-memory tests
+  (config/set-config-value! :indexing-communication-method "http")
+
+  ;; Use the same in memory db for metadata db by itself and in search so they contain the same data
   (let [in-memory-db (memory/create-db)
-        control-server (web/create-web-server 2999 control/make-api use-compression? use-access-log?)]
+        control-server
+        (web/create-web-server 2999 control/make-api use-compression? use-access-log?)]
     {:apps {:mock-echo (mock-echo-system/create-system)
             :metadata-db (-> (mdb-system/create-system)
                              (assoc :db in-memory-db)
@@ -99,15 +109,34 @@
 
 (defmethod create-system :external-dbs
   [type]
-  (let [control-server (web/create-web-server 2999 control/make-api use-compression? use-access-log?)]
+  (let [control-server
+        (web/create-web-server 2999 control/make-api use-compression? use-access-log?)
+        queue-broker (rmq/create-queue-broker (assoc (rmq-conf/default-config)
+                                                     :queues
+                                                     [(indexer-config/index-queue-name)]))
+        broker-wrapper (wrapper/create-queue-broker-wrapper queue-broker)
+        listener-start-fn #(ql/start-queue-message-handler
+                             %
+                             (wrapper/handler-wrapper broker-wrapper ql/handle-index-action))
+        queue-listener (queue/create-queue-listener
+                         {:num-workers (indexer-config/queue-listener-count)
+                          :start-function listener-start-fn})]
     {:apps {:mock-echo (mock-echo-system/create-system)
             :metadata-db (mdb-system/create-system)
             :bootstrap (bootstrap-system/create-system)
-            :indexer (indexer-system/create-system)
+            :indexer (let [indexer (indexer-system/create-system)]
+                       (if indexer-config/use-index-queue?
+                         (assoc indexer
+                                :queue-broker broker-wrapper
+                                :queue-listener queue-listener)
+                         indexer))
             :index-set (index-set-system/create-system)
-            :ingest (ingest-system/create-system)
+            :ingest (let [ingest (ingest-system/create-system)]
+                      (if indexer-config/use-index-queue?
+                        (assoc ingest :queue-broker broker-wrapper)
+                        ingest))
             :search (search-system/create-system)}
-     :pre-components {}
+     :pre-components {:broker-wrapper broker-wrapper}
      :post-components {
                        ; :vdd-server (viz-helper/create-viz-server)
                        :control-server control-server
@@ -136,6 +165,7 @@
                        #(try
                           (lifecycle/start % system)
                           (catch Exception e
+                            (error e "Failure during startup")
                             (stop-components (stop-apps system) :pre-components)
                             (stop-components (stop-apps system) :post-components)
                             (throw e)))))
@@ -152,6 +182,7 @@
                               (when %
                                 (start-fn %))
                               (catch Exception e
+                                (error e "Failure during startup")
                                 (stop-components (stop-apps system) :pre-components)
                                 (stop-components (stop-apps system) :post-components)
                                 (throw e))))))

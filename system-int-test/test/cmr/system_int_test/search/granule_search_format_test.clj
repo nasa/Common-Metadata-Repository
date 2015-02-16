@@ -45,7 +45,7 @@
         g2-smap (d/ingest "PROV2" (dg/granule c2-smap {:granule-ur "g4"
                                                        :producer-gran-id "p2"}) :iso-smap)
         all-granules [g1-echo g2-echo g1-smap g2-smap]]
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (testing "Finding refs ingested in different formats"
       (are [search expected]
@@ -221,7 +221,7 @@
                                                    :size 80
                                                    :cloud-cover 30}))]
 
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (let [response (search/find-grans-csv :granule {:granule-ur "Granule1"})]
       (is (= 200 (:status response)))
@@ -340,7 +340,7 @@
                                 :related-urls [ru3]
                                 :spatial-coverage (dg/spatial (dg/orbit 120.0 50.0 :asc 50.0 :asc))})]
 
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (testing "kml"
       (let [results (search/find-concepts-kml :granule {})]

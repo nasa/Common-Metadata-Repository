@@ -20,7 +20,7 @@
         coll5 (d/ingest "PROV1" (dc/collection {:related-urls [ru1 ru2]}))
         coll6 (d/ingest "PROV1" (dc/collection {}))]
 
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (testing "search by downloadable flag."
       (are [items value]

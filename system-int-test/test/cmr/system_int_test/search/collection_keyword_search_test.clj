@@ -71,7 +71,7 @@
         coll22 (d/ingest "PROV2" (dc/collection {:collection-data-type "NEAR_REAL_TIME"}))
         coll23 (d/ingest "PROV1" (dc/collection {:entry-title "coll23" :long-name "\"Quoted\" collection" }))]
 
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (testing "search by keywords."
       (are [keyword-str items]
@@ -353,7 +353,7 @@
                    ["coll50" "begin*end"]]
         colls (doall (for [[coll summary] coll-data]
                        (d/ingest "PROV3" (dc/collection {:entry-title coll :summary summary}))))]
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
     (are [keyword-str indexes]
          (let [refs (search/find-refs :collection {:keyword keyword-str :page_size 51})
                items (map (partial nth colls) indexes)

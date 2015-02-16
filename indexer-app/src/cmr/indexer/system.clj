@@ -7,6 +7,7 @@
             [cmr.system-trace.context :as context]
             [cmr.common.api.web-server :as web]
             [cmr.indexer.data.elasticsearch :as es]
+            [cmr.indexer.config :as config]
             [cmr.common.cache :as cache]
             [cmr.acl.acl-cache :as ac]
             [cmr.common.jobs :as jobs]
@@ -15,7 +16,11 @@
             [clojure.string :as str]
             [cmr.common.config :as cfg]
             [cmr.elastic-utils.config :as es-config]
-            [cmr.acl.core :as acl]))
+            [cmr.acl.core :as acl]
+            [cmr.message-queue.services.queue :as queue]
+            [cmr.message-queue.queue.rabbit-mq :as rmq]
+            [cmr.message-queue.config :as rmq-conf]
+            [cmr.indexer.services.queue-listener :as ql]))
 
 (def collections-with-separate-indexes
   "Configuration function that will return a list of collections with separate indexes for their
@@ -25,7 +30,7 @@
 (def
   ^{:doc "Defines the order to start the components."
     :private true}
-  component-order [:log :db :web :scheduler])
+  component-order [:log :db :web :scheduler :queue-broker :queue-listener])
 
 (def system-holder
   "Required for jobs"
@@ -47,7 +52,19 @@
              :scheduler (jobs/create-scheduler
                           `system-holder
                           :db
-                          [(ac/refresh-acl-cache-job "indexer-acl-cache-refresh")])}]
+                          [(ac/refresh-acl-cache-job "indexer-acl-cache-refresh")])
+             :queue-broker (when (config/use-index-queue?)
+                             (rmq/create-queue-broker {:host (rmq-conf/rabbit-mq-host)
+                                                     :port (rmq-conf/rabbit-mq-port)
+                                                     :username (rmq-conf/rabbit-mq-username)
+                                                     :password (rmq-conf/rabbit-mq-password)
+                                                     :queues [(config/index-queue-name)]}))
+             :queue-listener (when (config/use-index-queue?)
+                               (queue/create-queue-listener {:num-workers (config/queue-listener-count)
+                                                         :start-function #(ql/start-queue-message-handler
+                                                                            %
+                                                                            ql/handle-index-action)}))}]
+
     (transmit-config/system-with-connections sys [:metadata-db :index-set :echo-rest])))
 
 (defn start

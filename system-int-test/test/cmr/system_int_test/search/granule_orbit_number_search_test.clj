@@ -54,7 +54,7 @@
                                                                          :stop-orbit-number 10.0
                                                                          :equator-crossing-longitude 0
                                                                          :equator-crossing-date-time "2011-02-01T12:00:00Z"}]}))]
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (testing "search by exact orbit number"
       (are [items orbit-range]

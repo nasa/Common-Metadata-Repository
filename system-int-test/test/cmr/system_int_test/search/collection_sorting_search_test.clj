@@ -55,7 +55,7 @@
         c10 (make-coll "PROV2" "et85" nil nil)
         c11 (make-coll "PROV1" "et96" 12 nil)
         all-colls [c1 c2 c3 c4 c5 c6 c7 c8 c9 c10 c11]]
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
 
     (testing "Sort by entry title ascending"
@@ -92,7 +92,7 @@
         c3 (make-coll "PROV2" "et80" 19 30)
         c4 (make-coll "PROV1" "et80" 24 35)
         all-colls [c1 c2 c3 c4]]
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
     (let [sorted-colls (sort-by (juxt (comp str/lower-case :entry-title)
                                       (comp str/lower-case :provider-id)) all-colls)]
       (is (d/refs-match-order?
@@ -113,7 +113,7 @@
         c6 (make-coll "PROV2" "et20" 20 nil)
         c7 (make-coll "PROV2" "et30" 20 nil)
         c8 (make-coll "PROV2" "et40" 20 nil)]
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (are [sort-key items]
          (sort-order-correct? items sort-key)
@@ -137,7 +137,7 @@
         c3 (make-collection "c30")
         c4 (make-collection "c40")
         c5 (make-collection "c50")]
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
     (are [sort-key items]
          (sort-order-correct? items sort-key)
 
@@ -159,7 +159,7 @@
         c3 (make-collection "c30")
         c4 (make-collection "c40")
         c5 (make-collection "c50")]
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
     (are [sort-key items]
          (sort-order-correct? items sort-key)
 
@@ -185,7 +185,7 @@
         c3 (make-collection "c30")
         c4 (make-collection "c40")
         c5 (make-collection "c50")]
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
     (are [sort-key items]
          (sort-order-correct? items sort-key)
 

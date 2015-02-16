@@ -43,7 +43,7 @@
         g3 (make-gran "gur30" "pg40")
         g4 (make-gran "gur40" "pg30")
         g5 (make-gran "gur50" nil)]
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
     (testing "parameter search and aql search"
       (are [sort-key items]
            (sort-order-correct? items sort-key)
@@ -67,7 +67,7 @@
         g3 (make-gran "c30")
         g4 (make-gran "c40")
         g5 (make-gran "c50")]
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
     (testing "parameter search and aql search"
       (are [sort-key items]
            (sort-order-correct? items sort-key)
@@ -89,7 +89,7 @@
         g3 (make-gran 10)
         g4 (make-gran nil)
         g5 (make-gran 25)]
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (testing "parameter search and aql search"
       (are [sort-key items]
@@ -114,7 +114,7 @@
         g6 (make-gran "PROV2" "et25" "sn30" "v25")
         g7 (make-gran "PROV2" "et35" "sn20" "v35")
         g8 (make-gran "PROV2" "ET45" "sn10" "v45")]
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (testing "parameter search and aql search"
       (are [sort-key items]
@@ -155,7 +155,7 @@
         g7 (make-gran c2 20 29)
         g8 (make-gran c2 25 36)
         g11 (make-gran c1 12 nil)]
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (testing "default sorting is by provider id and start date"
       (are [items]
@@ -192,7 +192,7 @@
         g3 (make-gran "c30")
         g4 (make-gran "c40")
         g5 (make-gran "c50")]
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
     (are [sort-key items]
          (sort-order-correct? items sort-key)
          ;; Descending sorts by the min value of a multi value fields
@@ -221,7 +221,7 @@
         g3 (make-gran "c30")
         g4 (make-gran "c40")
         g5 (make-gran "c50")]
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
     (are [sort-key items]
          (sort-order-correct? items sort-key)
 
@@ -252,7 +252,7 @@
         g3 (make-gran "c30")
         g4 (make-gran "c40")
         g5 (make-gran "c50")]
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
     (are [sort-key items]
          (sort-order-correct? items sort-key)
 
@@ -267,7 +267,7 @@
         g2 (d/ingest "PROV1" (dg/granule coll {:day-night "NIGHT"}))
         g3 (d/ingest "PROV1" (dg/granule coll {:day-night "BOTH"}))
         g4 (d/ingest "PROV1" (dg/granule coll {:day-night "UNSPECIFIED"}))]
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
     (are [sort-key items]
          (sort-order-correct? items sort-key)
 
@@ -279,7 +279,7 @@
         coll (d/ingest "PROV1" (dc/collection {}))
         g1 (d/ingest "PROV1" (dg/granule coll {:related-urls [ru1]}))
         g2 (d/ingest "PROV1" (dg/granule coll {}))]
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
     (are [sort-key items]
          (sort-order-correct? items sort-key)
 
@@ -293,7 +293,7 @@
         coll (d/ingest "PROV1" (dc/collection {}))
         g1 (d/ingest "PROV1" (dg/granule coll {:related-urls [ru1]}))
         g2 (d/ingest "PROV1" (dg/granule coll {}))]
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
     (are [sort-key items]
          (sort-order-correct? items sort-key)
 

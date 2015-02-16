@@ -70,7 +70,7 @@
                                                   :version-id "V7"})
                           :iso-smap)
         all-colls [c1-echo c2-echo c3-dif c4-dif c5-iso c6-iso c7-smap]]
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (testing "Finding refs ingested in different formats"
       (are [search expected]
@@ -218,7 +218,7 @@
                                                        :geometries [(m/mbr -10 9 0 -10)]})})
                      :dif)
         g3 (d/ingest "PROV1" (dg/granule c3))]
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (testing "spatial search for dif collections"
       (are [wnes items]
@@ -375,7 +375,7 @@
                                                      :geometries [(m/mbr -180 90 180 -90)
                                                                   (m/mbr -10 20 30 -40)]})}))]
 
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (testing "kml"
       (let [results (search/find-concepts-kml :collection {})]
@@ -446,7 +446,7 @@
 
 (deftest formats-have-scores-test
   (let [coll1 (d/ingest "PROV1" (dc/collection {:long-name "ABC!XYZ" :entry-title "Foo"}))]
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
     (testing "XML references"
       (testing "XML has score for keyword search."
         (are [keyword-str scores]

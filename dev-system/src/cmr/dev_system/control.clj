@@ -10,11 +10,14 @@
             [cmr.common.api.errors :as errors]
             [cmr.transmit.echo.acls :as echo-acls]
             [cmr.search.data.elastic-search-index :as es]
+            [cmr.dev-system.queue-broker-wrapper :as wrapper]
+            [cmr.ingest.config :as iconfig]
 
             ;; Services for reseting
             [cmr.metadata-db.services.concept-service :as mdb-service]
             [cmr.index-set.services.index-service :as index-set-service]
             [cmr.indexer.services.index-service :as indexer-service]
+            [cmr.ingest.services.ingest :as ingest-service]
             [cmr.search.services.query-service :as search-service]
             [cmr.mock-echo.api.routes :as mock-echo-api]
             [cmr.common.cache :as cache]))
@@ -48,9 +51,9 @@
   {:metadata-db mdb-service/reset
    ;; The index set app is not reset as part of this because the indexer will handle it.
    :indexer indexer-service/reset
+   :ingest ingest-service/reset
    :search cache/reset-caches
-   :mock-echo mock-echo-api/reset
-   :ingest cache/reset-caches})
+   :mock-echo mock-echo-api/reset})
 
 (def service-clear-cache-fns
   "A map of services to reset functions."
@@ -75,6 +78,14 @@
       (doseq [[service-name reset-fn] service-reset-fns]
         (reset-fn (app-context system service-name)))
       (debug "dev system /reset complete")
+      {:status 200})
+
+    (POST "/wait-for-indexing" []
+      (debug "dev system /wait-for-indexing")
+      (when (iconfig/use-index-queue?)
+        (let [broker-wrapper (get-in system [:pre-components :broker-wrapper])]
+          (wrapper/wait-for-indexing broker-wrapper)))
+      (debug "indexing complete")
       {:status 200})
 
     (POST "/clear-cache" []

@@ -65,7 +65,7 @@
 
         all-colls [coll1 coll2]
         coll-ids (map :concept-id all-colls)]
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (testing "invalid cases"
       (let [interval-msg (str "Timeline interval is a required parameter for timeline search "

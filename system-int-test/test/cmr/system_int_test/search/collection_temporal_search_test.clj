@@ -48,7 +48,7 @@
                                                  :beginning-date-time "1965-12-12T12:00:00Z"
                                                  :ending-date-time "1966-01-03T12:00:00Z"
                                                  :ends-at-present? true}))]
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (testing "search by temporal_start."
       (let [references (search/find-refs :collection

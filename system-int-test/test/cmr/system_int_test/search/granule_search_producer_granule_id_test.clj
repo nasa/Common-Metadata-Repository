@@ -19,7 +19,7 @@
         gran4 (d/ingest "PROV2" (dg/granule coll2 {:producer-gran-id "SpecialOne"}))
         gran5 (d/ingest "PROV2" (dg/granule coll2 {:producer-gran-id "Granule15"}))]
 
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (testing "search by producer granule id."
       (are [items ids options]

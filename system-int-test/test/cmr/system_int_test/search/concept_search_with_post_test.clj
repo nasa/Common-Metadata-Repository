@@ -20,7 +20,7 @@
         gran2 (d/ingest "PROV1" (dg/granule coll2 {:granule-ur "Granule2"}))
         gran3 (d/ingest "PROV1" (dg/granule coll3 {:granule-ur "Granule 3"}))]
 
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (testing "search collection with post, single param."
       (are [param value items]
@@ -80,7 +80,7 @@
                                                                                      (dg/psa "bravo" ["cd" "bf"])]}))
         gran2 (d/ingest "PROV1" (dg/granule coll1 {:product-specific-attributes [(dg/psa "bravo" ["ab"])]}))]
 
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (testing "search granule with post, legacy style range parameters"
       (is (d/refs-match?

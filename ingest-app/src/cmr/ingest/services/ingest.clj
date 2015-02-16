@@ -7,6 +7,7 @@
             [cmr.ingest.services.messages :as msg]
             [cmr.ingest.services.validation :as v]
             [cmr.ingest.services.helper :as h]
+            [cmr.ingest.config :as config]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.services.errors :as serv-errors]
             [cmr.common.services.messages :as cmsg]
@@ -14,6 +15,8 @@
             [cmr.common.config :as cfg]
             [cmr.umm.core :as umm]
             [clojure.string :as string]
+            [cmr.message-queue.services.queue :as queue]
+            [cmr.common.cache :as cache]
             [cmr.system-trace.core :refer [deftracefn]]))
 
 (def ingest-validation-enabled?
@@ -116,6 +119,14 @@
         revision-id (mdb/delete-concept context concept-id)]
     (indexer/delete-concept-from-index context concept-id revision-id)
     {:concept-id concept-id, :revision-id revision-id}))
+
+(deftracefn reset
+  "Resets the queue broker"
+  [context]
+  (when (config/use-index-queue?)
+    (let [queue-broker (get-in context [:system :queue-broker])]
+      (queue/reset queue-broker)))
+  (cache/reset-caches context))
 
 (deftracefn health
   "Returns the health state of the app."

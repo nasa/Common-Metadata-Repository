@@ -71,7 +71,7 @@
 
         gran7 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes [(dg/psa "ds" ["2012-01-01"])]}))
         gran8 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes [(dg/psa "ds" ["2012-01-02"])]}))]
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (testing "granule psa search by string value"
       (are [v items]
@@ -111,7 +111,7 @@
 
         coll3 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa4]}))
         gran5 (d/ingest "PROV1" (dg/granule coll3 {:product-specific-attributes [(dg/psa "case" ["UP"])]}))]
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
     (testing "search by value"
       (are [items v options]
            (let [params (merge {"attribute[]" v} options)]
@@ -278,7 +278,7 @@
         gran3 (d/ingest "PROV1" (dg/granule coll2 {:product-specific-attributes [(dg/psa "alpha" [14])
                                                                                  (dg/psa "bravo" [13.7 123])]}))
         gran4 (d/ingest "PROV1" (dg/granule coll2 {:product-specific-attributes [(dg/psa "charlie" [14])]}))]
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (testing "search by value"
       (are [v items]
@@ -366,7 +366,7 @@
         gran3 (d/ingest "PROV1" (dg/granule coll2 {:product-specific-attributes [(dg/psa "alpha" [14])
                                                                                  (dg/psa "bravo" [13 123])]}))
         gran4 (d/ingest "PROV1" (dg/granule coll2 {:product-specific-attributes [(dg/psa "charlie" [14])]}))]
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (testing "search by value"
       (are [v items]
@@ -472,7 +472,7 @@
         gran4 (d/ingest "PROV1" (dg/granule coll2 {:product-specific-attributes
                                                    [(dg/psa "charlie"
                                                             [(d/make-datetime 14)])]}))]
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (testing "search by value"
       (are [v n items]
@@ -585,7 +585,7 @@
         gran4 (d/ingest "PROV1" (dg/granule coll2 {:product-specific-attributes
                                                    [(dg/psa "charlie"
                                                             [(d/make-time 14)])]}))]
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (testing "search by value"
       (are [v n items]
@@ -698,7 +698,7 @@
         gran4 (d/ingest "PROV1" (dg/granule coll2 {:product-specific-attributes
                                                    [(dg/psa "charlie"
                                                             [(d/make-date 14)])]}))]
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (testing "search by value"
       (are [v n items]

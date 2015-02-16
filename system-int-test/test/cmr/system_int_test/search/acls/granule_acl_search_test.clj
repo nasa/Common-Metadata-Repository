@@ -187,7 +187,7 @@
         guest-permitted-granule-colls [coll1 coll1 coll2 coll2 coll7 coll5 coll5]
         user-permitted-granules [gran6 gran7 gran52 gran53 gran54 gran56 gran57]]
 
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (testing "refs"
       (are [expected params]

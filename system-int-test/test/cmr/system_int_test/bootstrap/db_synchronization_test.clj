@@ -197,7 +197,7 @@
 (defn assert-concepts-indexed
   "Check that all of the concepts are indexed for searching with the indicated revisions."
   [concepts]
-  (index/refresh-elastic-index)
+  (index/wait-until-indexed)
   (doseq [[concept-type type-concepts] (group-by :concept-type concepts)
           concept-set (partition 1000 type-concepts)]
     (let [expected-tuples (map #(vector (:concept-id %) (:revision-id %)) concept-set)
@@ -209,7 +209,7 @@
 (defn assert-concepts-not-indexed
   "Checks that all the concepts given are not in the search index."
   [concepts]
-  (index/refresh-elastic-index)
+  (index/wait-until-indexed)
   (doseq [[concept-type type-concepts] (group-by :concept-type concepts)
           concept-set (partition 1000 type-concepts)]
     (let [expected-tuples (map #(vector (:concept-id %) (:revision-id %)) type-concepts)

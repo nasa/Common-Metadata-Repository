@@ -21,7 +21,7 @@
         coll4 (d/ingest "PROV1" (dc/collection {:two-d-coordinate-systems [two-d4]}))
         coll5 (d/ingest "PROV1" (dc/collection {:two-d-coordinate-systems [two-d2 two-d5]}))
         coll6 (d/ingest "PROV1" (dc/collection {}))]
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (testing "two d coordinate search by two_d_coordinate_system_name parameter"
       (are [items two-ds options]

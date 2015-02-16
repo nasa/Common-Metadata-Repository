@@ -19,7 +19,7 @@
         coll6 (d/ingest "PROV2" (dc/collection {:spatial-keywords ["LL"]}))
         coll7 (d/ingest "PROV2" (dc/collection {:spatial-keywords ["detroit"]}))]
 
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (testing "search by spatial keywords."
       (are [spatial-keyword items] (d/refs-match? items (search/find-refs :collection {:spatial-keyword spatial-keyword}))

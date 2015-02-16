@@ -165,7 +165,7 @@
                    polygon-with-holes north-pole south-pole normal-point am-point
                    very-wide-cart very-tall-cart wide-north-cart wide-south-cart
                    normal-poly-cart polygon-with-holes-cart normal-line normal-line-cart]]
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (testing "line searches"
       (are [ords items]

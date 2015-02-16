@@ -29,7 +29,7 @@
         all-prov1-colls [c1-p1 c2-p1 c3-p1 c4-p1]
         all-prov2-colls [c1-p2 c2-p2 c3-p2 c4-p2]
         all-colls (concat all-prov1-colls all-prov2-colls)]
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (testing "concept id"
       (are [items ids]
@@ -305,7 +305,7 @@
         [c1-p2 c2-p2 c3-p2 c4-p2] (for [n (range 1 5)]
                                     (d/ingest "PROV2" (dc/collection {:processing-level-id (str n "B")})))
         all-prov2-colls [c1-p2 c2-p2 c3-p2 c4-p2]]
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
     (testing "processing level search"
       (are [items id options]
            (let [params (merge {:processing-level-id id}
@@ -370,7 +370,7 @@
         all-prov1-colls [c1-p1 c2-p1 c3-p1 c4-p1]
         all-prov2-colls [c1-p2 c2-p2 c3-p2 c4-p2]
         all-colls (concat all-prov1-colls all-prov2-colls)]
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
     (testing "echo collection id search"
       (are [items cid options]
            (let [params (merge {:echo_collection_id cid}
@@ -428,7 +428,7 @@
         coll3 (d/ingest "PROV2" (dc/collection {:associated-difs ["S3"]}))
         coll4 (d/ingest "PROV2" (dc/collection {:associated-difs ["SL4" "DIF-1"]}))
         coll5 (d/ingest "PROV2" (dc/collection-dif {:entry-id "T2"}) :dif)]
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
     (testing "dif entry id search"
       (are [items id options]
            (d/refs-match? items (search/find-refs :collection {:dif-entry-id id
@@ -525,7 +525,7 @@
         coll4 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset/With/More/Slashes"}))
         coll5 (d/ingest "PROV1" (dc/collection {}))]
 
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (testing "search for dataset with slashes"
       (are [dataset-id items] (d/refs-match? items (search/find-refs :collection {:dataset-id dataset-id}))

@@ -29,7 +29,7 @@
                 "PROV1" :collection :iso-smap
                 "data/iso_smap/sample_smap_iso_collection.xml")]
 
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (testing "search collections by platform"
       (are [items platform-sn options]
@@ -93,7 +93,7 @@
                  "PROV1" :collection :iso-smap
                  "data/iso_smap/sample_smap_iso_collection.xml")]
 
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (testing "search collections by instrument"
       (are [items instrument-sn options]
@@ -162,7 +162,7 @@
         coll9 (d/ingest "PROV2" (dc/collection {:platforms [p8]}))
         coll10 (d/ingest "PROV2" (dc/collection {}))]
 
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (testing "search collections by sensor"
       (are [items sensor-sn options]

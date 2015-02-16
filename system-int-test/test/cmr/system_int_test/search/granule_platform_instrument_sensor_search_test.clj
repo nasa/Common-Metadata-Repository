@@ -38,7 +38,7 @@
         gran8 (d/ingest "PROV1" (dg/granule coll2 {:platform-refs [pr6]}))
         gran9 (d/ingest "PROV1" (dg/granule coll2 {:platform-refs [pr7]}))]
 
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (testing "search granules by platform"
       (are [items platform-sn options]
@@ -141,7 +141,7 @@
         gran9 (d/ingest "PROV1" (dg/granule coll2 {:granule-ur "gran9" :platform-refs [pr7]}))
         gran10 (d/ingest "PROV1" (dg/granule coll2 {:granule-ur "gran10" :platform-refs [pr8]}))]
 
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (testing "collection resolving query simplifications"
       ;; This is necessary to test some simplifications the collection query resolver is doing to pass collection ids found
@@ -277,7 +277,7 @@
         gran10 (d/ingest "PROV1" (dg/granule coll2 {:platform-refs [pr8]}))
         gran11 (d/ingest "PROV1" (dg/granule coll2 {:platform-refs [pr9]}))]
 
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (testing "search by sensor"
       (are [items sensor-sn options]

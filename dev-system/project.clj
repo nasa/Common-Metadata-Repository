@@ -17,7 +17,8 @@
    :cmr-elastic-utils-lib "0.1.0-SNAPSHOT"
    :cmr-system-int-test "0.1.0-SNAPSHOT"
    :cmr-oracle-lib "0.1.0-SNAPSHOT"
-   :cmr-mock-echo-app "0.1.0-SNAPSHOT"})
+   :cmr-mock-echo-app "0.1.0-SNAPSHOT"
+   :cmr-message-queue-lib "0.1.0-SNAPSHOT"})
 
 (def project-dependencies
   "A list of other projects as maven dependencies"
@@ -39,7 +40,7 @@
 (defproject nasa-cmr/cmr-dev-system "1.15.18"
   :description "Dev System combines together the separate microservices of the CMR into a single
                application to make it simpler to develop."
-  :url "***REMOVED***projects/CMR/repos/cmr-dev-system/browse"
+  :url "***REMOVED***projects/CMR/repos/cmr/browse/dev-system"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
 

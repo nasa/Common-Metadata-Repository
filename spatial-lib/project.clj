@@ -1,6 +1,6 @@
 (defproject nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"
   :description "A spatial library for the CMR."
-  :url "***REMOVED***projects/CMR/repos/cmr-spatial-lib/browse"
+  :url "***REMOVED***projects/CMR/repos/cmr/browse/spatial-lib"
 
   ;; Required to obtain the Jafama library which isn't in public maven repos
   :repositories [["releases" "http://devrepo1.dev.echo.nasa.gov/data/dist/projects/echo/mavenrepo/"]]

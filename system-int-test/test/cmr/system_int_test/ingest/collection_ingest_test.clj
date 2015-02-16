@@ -13,6 +13,7 @@
             [cmr.system-int-test.data2.core :as d]
             [clj-time.core :as t]
             [cmr.common.mime-types :as mt]
+            [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.system-int-test.utils.search-util :as search]))
 
 
@@ -27,6 +28,7 @@
   (testing "ingest of a new concept"
     (let [concept (dc/collection-concept {})
           {:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
+      (index/wait-until-indexed)
       (is (ingest/concept-exists-in-mdb? concept-id revision-id))
       (is (= 1 revision-id)))))
 
@@ -37,19 +39,23 @@
                                         :native-id "Atlantic-1"})]
     (testing "ingest of a new concept with concept-id present"
       (let [{:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
+        (index/wait-until-indexed)
         (is (ingest/concept-exists-in-mdb? concept-id revision-id))
         (is (= [supplied-concept-id 1] [concept-id revision-id]))))
 
     (testing "Update the concept with the concept-id"
       (let [{:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
+        (index/wait-until-indexed)
         (is (= [supplied-concept-id 2] [concept-id revision-id]))))
 
     (testing "update the concept without the concept-id"
       (let [{:keys [concept-id revision-id]} (ingest/ingest-concept (dissoc concept :concept-id))]
+        (index/wait-until-indexed)
         (is (= [supplied-concept-id 3] [concept-id revision-id]))))
 
     (testing "update concept with a different concept-id is invalid"
       (let [{:keys [status errors]} (ingest/ingest-concept (assoc concept :concept-id "C1111-PROV1"))]
+        (index/wait-until-indexed)
         (is (= [400 ["Concept-id [C1111-PROV1] does not match the existing concept-id [C1000-PROV1] for native-id [Atlantic-1]"]]
                [status errors]))))))
 
@@ -104,6 +110,7 @@
     (let [n 4
           concept (dc/collection-concept {})
           created-concepts (take n (repeatedly n #(ingest/ingest-concept concept)))]
+      (index/wait-until-indexed)
       (is (apply = (map :concept-id created-concepts)))
       (is (= (range 1 (inc n)) (map :revision-id created-concepts))))))
 
@@ -123,7 +130,7 @@
                                                                                    :term "Mild"})]
                                            :organizations [(dc/org :distribution-center "Larc")]})
                            coll-format)]
-        (index/refresh-elastic-index)
+        (index/wait-until-indexed)
         (is (= expected-rev (:revision-id coll)))
         (is (= 1 (:hits (search/find-refs :collection {:keyword (name coll-format)}))))))))
 
@@ -131,6 +138,7 @@
 (deftest empty-collection-ingest-test
   (let [concept-with-empty-body  (assoc (dc/collection-concept {}) :metadata "")
         {:keys [status errors]} (ingest/ingest-concept concept-with-empty-body)]
+    (index/wait-until-indexed)
     (is (= status 400))
     (is (re-find #"XML content is too short." (first errors)))))
 
@@ -139,6 +147,7 @@
   (let [coll (dc/collection {:delete-time "2000-01-01T12:00:00Z"})
         {:keys [status errors]} (ingest/ingest-concept
                                   (d/item->concept (assoc coll :provider-id "PROV1") :echo10))]
+    (index/wait-until-indexed)
     (is (= status 400))
     (is (re-find #"DeleteTime 2000-01-01T12:00:00.000Z is before the current time." (first errors)))))
 
@@ -150,6 +159,7 @@
         delete-result (ingest/delete-concept concept)
         ingest-revision-id (:revision-id ingest-result)
         delete-revision-id (:revision-id delete-result)]
+    (index/wait-until-indexed)
     (is (= 1 (- delete-revision-id ingest-revision-id)))))
 
 (comment
@@ -167,11 +177,11 @@
         gran2 (d/ingest "PROV1" (dg/granule coll1))
         coll2 (d/ingest "PROV1" (dc/collection))
         gran3 (d/ingest "PROV1" (dg/granule coll2))]
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     ;; delete collection
     (is (= 200 (:status (ingest/delete-concept (d/item->concept coll1 :echo10)))))
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (is (:deleted (ingest/get-concept (:concept-id coll1))) "The collection should be deleted")
     (is (not (ingest/concept-exists-in-mdb? (:concept-id gran1) (:revision-id gran1)))
@@ -200,12 +210,14 @@
   (let [concept  (assoc (dc/collection-concept {})
                         :format "application/echo10+xml; charset=utf-8")
         {:keys [status]} (ingest/ingest-concept concept)]
+    (index/wait-until-indexed)
     (is (= status 200))))
 
 ;; Verify ingest behaves properly if request is missing content type.
 (deftest missing-content-type-ingest-test
   (let [concept-with-no-content-type  (assoc (dc/collection-concept {}) :format "")
         {:keys [status errors]} (ingest/ingest-concept concept-with-no-content-type)]
+    (index/wait-until-indexed)
     (is (= status 400))
     (is (re-find #"Invalid content-type" (first errors)))))
 
@@ -213,6 +225,7 @@
 (deftest invalid-content-type-ingest-test
   (let [concept (assoc (dc/collection-concept {}) :format "blah")
         {:keys [status errors]} (ingest/ingest-concept concept)]
+    (index/wait-until-indexed)
     (is (= status 400))
     (is (re-find #"Invalid content-type" (first errors)))))
 
@@ -222,6 +235,7 @@
         ingest-result (ingest/ingest-concept concept)
         delete1-result (ingest/delete-concept concept)
         delete2-result (ingest/delete-concept concept)]
+    (index/wait-until-indexed)
     (is (= 200 (:status ingest-result)))
     (is (= 200 (:status delete1-result)))
     (is (= 200 (:status delete2-result)))))
@@ -232,6 +246,7 @@
         collection (dc/collection-concept {:entry-title crazy-id})
         {:keys [concept-id revision-id] :as response} (ingest/ingest-concept collection)
         ingested-concept (ingest/get-concept concept-id)]
+    (index/wait-until-indexed)
     (is (= 200 (:status response)))
     (is (ingest/concept-exists-in-mdb? concept-id revision-id))
     (is (= 1 revision-id))
@@ -256,6 +271,7 @@
                                     (string/replace "fileIdentifier" "XXXX")
                                     ;; this is to cause validation error for iso-smap format
                                     (string/replace "gmd:DS_Series" "XXXX"))))]
+         (index/wait-until-indexed)
          (= [400 validation-errors] [status errors]))
 
        :echo10 ["Line 1 - cvc-datatype-valid.1.2.1: 'A.000Z' is not a valid value for 'dateTime'."

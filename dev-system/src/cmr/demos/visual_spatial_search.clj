@@ -102,7 +102,7 @@
                      coll-cartesian
                      coll-geodetic)]
           (d/ingest "PROV1" (dg/granule coll {:spatial-coverage (dg/spatial shape)})))))
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     ;; Save the shapes for display
     (viz-helper/clear-geometries)

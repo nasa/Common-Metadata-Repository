@@ -39,7 +39,7 @@
         gran8 (d/ingest "PROV1"
                         (dg/granule coll1
                                     {:orbit-calculated-spatial-domains [{:equator-crossing-longitude -180}]}))]
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (testing "search by crossing range"
       (are [items crossing-range]

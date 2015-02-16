@@ -12,6 +12,9 @@ lein do clean, install, clean
 # Run as a separate step since it fails in CI but works locally. It's not necessary for CI.
 lein compile-coffeescript
 
+cd ../message-queue-lib
+lein do clean, install, clean
+
 cd ../spatial-lib
 lein do clean, install, clean
 

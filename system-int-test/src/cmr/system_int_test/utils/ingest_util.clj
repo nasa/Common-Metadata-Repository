@@ -220,10 +220,10 @@
    :query-params {:token "mock-echo-system-token"}})
 
 (defn reset
-  "Resets the database and the elastic indexes"
+  "Resets the database, queues, and the elastic indexes"
   []
   (client/post (url/dev-system-reset-url) (admin-connect-options))
-  (index/refresh-elastic-index))
+  (index/wait-until-indexed))
 
 (defn clear-caches
   []

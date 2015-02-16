@@ -52,7 +52,7 @@
 
         coll10 (d/ingest "PROV2" (dc/collection {}))]
 
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (testing "search by science keywords."
       (are [science-keyword value items]

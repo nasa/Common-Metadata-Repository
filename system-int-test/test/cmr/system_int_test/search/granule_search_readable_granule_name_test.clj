@@ -23,7 +23,7 @@
                                                        :producer-gran-id "SuperSpecial"}))
         gran5 (d/ingest "PROV1" (dg/granule coll2 {:granule-ur "SuperSpecial"
                                                        :producer-gran-id "Granule2"}))]
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
     (testing "search by non-existent readable granule name."
       (let [references (search/find-refs :granule {:readable-granule-name "NON_EXISTENT"})]
         (is (d/refs-match? [] references))))

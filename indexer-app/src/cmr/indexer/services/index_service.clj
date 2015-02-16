@@ -13,11 +13,15 @@
             [cmr.indexer.data.elasticsearch :as es]
             [cmr.elastic-utils.connect :as es-util]
             [cmr.umm.core :as umm]
+            [cmr.message-queue.services.queue :as queue]
             [cheshire.core :as cheshire]
             [cmr.indexer.data.index-set :as idx-set]
+            [cmr.indexer.config :as config]
             [cmr.acl.acl-cache :as acl-cache]
             [cmr.common.services.errors :as errors]
-            [cmr.system-trace.core :refer [deftracefn]]))
+            [cmr.system-trace.core :refer [deftracefn]]
+            [cmr.message-queue.config :as qcfg]
+            [cmr.common.lifecycle :as lifecycle]))
 
 (defn filter-expired-concepts
   "Remove concepts that have an expired delete-time."
@@ -126,7 +130,7 @@
         {:term {:provider-id provider-id}}))))
 
 (deftracefn reset
-  "Delegate reset elastic indices operation to index-set app"
+  "Delegates reset elastic indices operation to index-set app as well as resetting caches"
   [context]
   (cache/reset-caches context)
   (es/reset-es-store context)

@@ -108,7 +108,7 @@
     (make-gran coll6 nil (temporal-range 1 1))
     (make-gran coll6 nil (temporal-range 3 3))
     (make-gran coll6 nil (temporal-range 6 6))
-    (index/refresh-elastic-index)
+    (index/wait-until-indexed)
 
     (testing "granule counts"
       (testing "invalid include-granule-counts"
