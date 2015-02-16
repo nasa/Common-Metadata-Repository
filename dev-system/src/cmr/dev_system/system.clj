@@ -3,7 +3,7 @@
             [cmr.bootstrap.system :as bootstrap-system]
             [cmr.metadata-db.system :as mdb-system]
             [cmr.indexer.system :as indexer-system]
-            [cmr.indexer.config :as iconfig]
+            [cmr.indexer.config :as indexer-config]
             [cmr.search.system :as search-system]
             [cmr.ingest.system :as ingest-system]
             [cmr.ingest.data.provider-acl-hash :as ingest-data]
@@ -18,7 +18,6 @@
             [cmr.common.config :as config]
             [cmr.indexer.services.queue-listener :as ql]
             [cmr.message-queue.config :as rmq-conf]
-            [cmr.message-queue.queue.memory-queue :as memory-queue]
             [cmr.message-queue.queue.rabbit-mq :as rmq]
             [cmr.dev-system.queue-broker-wrapper :as wrapper]
             [cmr.dev-system.control :as control]
@@ -77,24 +76,25 @@
 (defmethod create-system :in-memory
   [type]
 
-  ;; Sets a bit of global state for the application and system integration tests that will know how to talk to elastic
+  ;; Sets a bit of global state for the application and system integration tests that will know how
+  ;; to talk to elastic
   (config/set-config-value! :elastic-port in-memory-elastic-port-for-connection)
-  ;; The same in memory db is used for metadata db by itself and in search so they contain the same data
-  ;; The same in-memory queue is sued for indexer and ingest for the same reason
+  ;; Ingest and the indexer will not use a message queue for in-memory tests
+  (config/set-config-value! :indexing-communication-method "http")
+
+  ;; Use the same in memory db for metadata db by itself and in search so they contain the same data
   (let [in-memory-db (memory/create-db)
-        memory-queue-broker (when (iconfig/use-index-queue?)
-                              (memory-queue/create-queue-broker [(iconfig/index-queue-name)]))
-        control-server (web/create-web-server 2999 control/make-api use-compression? use-access-log?)]
+        control-server
+        (web/create-web-server 2999 control/make-api use-compression? use-access-log?)]
     {:apps {:mock-echo (mock-echo-system/create-system)
             :metadata-db (-> (mdb-system/create-system)
                              (assoc :db in-memory-db)
                              (dissoc :scheduler))
             ;; Bootstrap is not enabled for in-memory dev system
-            :indexer (assoc (indexer-system/create-system) :queue-broker memory-queue-broker)
+            :indexer (indexer-system/create-system)
             :index-set (index-set-system/create-system)
             :ingest (-> (ingest-system/create-system)
                         (assoc :db (ingest-data/create-in-memory-acl-hash-store))
-                        (assoc :queue-broker memory-queue-broker)
                         (dissoc :scheduler))
             :search (assoc-in (search-system/create-system)
                               [:metadata-db :db]
@@ -109,29 +109,30 @@
 
 (defmethod create-system :external-dbs
   [type]
-  (let [control-server (web/create-web-server 2999 control/make-api use-compression? use-access-log?)
+  (let [control-server
+        (web/create-web-server 2999 control/make-api use-compression? use-access-log?)
         queue-broker (rmq/create-queue-broker (assoc (rmq-conf/default-config)
                                                      :queues
-                                                     [(iconfig/index-queue-name)]))
+                                                     [(indexer-config/index-queue-name)]))
         broker-wrapper (wrapper/create-queue-broker-wrapper queue-broker)
         listener-start-fn #(ql/start-queue-message-handler
                              %
                              (wrapper/handler-wrapper broker-wrapper ql/handle-index-action))
         queue-listener (queue/create-queue-listener
-                         {:num-workers (iconfig/queue-listener-count)
+                         {:num-workers (indexer-config/queue-listener-count)
                           :start-function listener-start-fn})]
     {:apps {:mock-echo (mock-echo-system/create-system)
             :metadata-db (mdb-system/create-system)
             :bootstrap (bootstrap-system/create-system)
             :indexer (let [indexer (indexer-system/create-system)]
-                       (if (iconfig/use-index-queue?)
+                       (if indexer-config/use-index-queue?
                          (assoc indexer
                                 :queue-broker broker-wrapper
                                 :queue-listener queue-listener)
                          indexer))
             :index-set (index-set-system/create-system)
             :ingest (let [ingest (ingest-system/create-system)]
-                      (if (iconfig/use-index-queue?)
+                      (if indexer-config/use-index-queue?
                         (assoc ingest :queue-broker broker-wrapper)
                         ingest))
             :search (search-system/create-system)}

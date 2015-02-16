@@ -1,7 +1,7 @@
 (defproject nasa-cmr/cmr-ingest-app "0.1.0-SNAPSHOT"
   :description "Ingest is an external facing CMR service facilitating providers to create and  update their concepts in CMR. Internally it delegates concept persistence operations to metadata db and indexer micro services."
 
-  :url "***REMOVED***projects/CMR/repos/cmr-ingest-app/browse"
+  :url "***REMOVED***projects/CMR/repos/cmr/browse/ingest-app"
 
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [nasa-cmr/cmr-system-trace-lib "0.1.0-SNAPSHOT"]

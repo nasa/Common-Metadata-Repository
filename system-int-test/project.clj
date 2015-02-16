@@ -1,6 +1,6 @@
 (defproject nasa-cmr/cmr-system-int-test "0.1.0-SNAPSHOT"
   :description "This project provides end to end integration testing for CMR components."
-  :url "***REMOVED***projects/CMR/repos/cmr-system-int-test/browse"
+  :url "***REMOVED***projects/CMR/repos/cmr/browse/system-int-test"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
 

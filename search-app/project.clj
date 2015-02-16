@@ -1,6 +1,6 @@
 (defproject nasa-cmr/cmr-search-app "0.1.0-SNAPSHOT"
   :description "Provides a public search API for concepts in the CMR."
-  :url "***REMOVED***projects/CMR/repos/cmr-search-app/browse"
+  :url "***REMOVED***projects/CMR/repos/cmr/browse/search-app"
   ;; Need the maven repo for the echo-orbits-java jar that isn't available in public maven repos.
   :repositories [["releases" "http://devrepo1.dev.echo.nasa.gov/data/dist/projects/echo/mavenrepo/"]]
   :dependencies [[org.clojure/clojure "1.6.0"]

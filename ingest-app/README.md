@@ -324,6 +324,14 @@ Requires token with UPDATE ingest management permission.
 
     curl -v -XPOST -H "Echo-Token: mock-echo-system-token" http://localhost:3002/jobs/resume
 
+### Message queues
+
+The ingest application will publish messages for the indexer application to consume.  The messages will be to index or delete concepts from elasticsearch.  Messaging is handled using the message-queue-lib which uses RabbitMQ.
+
+#### Ingest unable to queue a message
+
+This could happen because queueing the message times out, RabbitMQ has surpassed the configured limit for requests, or RabbitMQ is unavailable.  Ingest will treat this as an internal error and return the error to the provider. If this happens the data will still be left in Metadata DB, but won't be indexed. It's possible this newer version of a granule could be returned from CMR but it is unlikely to happen.
+
 ## License
 
 Copyright © 2014-2015 NASA

@@ -1,6 +1,6 @@
 (defproject nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"
   :description "Provides common utility code for CMR projects."
-  :url "***REMOVED***projects/CMR/repos/cmr-common-lib/browse"
+  :url "***REMOVED***projects/CMR/repos/cmr/browse/common-lib"
 
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [com.taoensso/timbre "3.3.1"]

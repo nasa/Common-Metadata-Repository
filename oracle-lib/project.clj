@@ -1,6 +1,6 @@
 (defproject nasa-cmr/cmr-oracle-lib "0.1.0-SNAPSHOT"
   :description "Contains utilities for connecting to and manipulating data in Oracle."
-  :url "***REMOVED***projects/CMR/repos/cmr-oracle-lib/browse"
+  :url "***REMOVED***projects/CMR/repos/cmr/browse/oracle-lib"
 
   ;; Need the maven repo for Oracle jars that aren't available in public maven repos.
   :repositories [["releases" "http://devrepo1.dev.echo.nasa.gov/data/dist/projects/echo/mavenrepo/"]]

@@ -1,14 +1,16 @@
 (ns cmr.dev-system.queue-broker-wrapper
-  "Functions to wrap the message queue while testing"
+  "Functions to wrap the message queue while testing. The wrapper is necessary because messages
+  are processed asynchronously, but for our tests we will often want to wait until messages are
+  processed before performing other steps or confirming results."
   (:require [cmr.common.lifecycle :as lifecycle]
             [cmr.message-queue.services.queue :as queue]
             [cmr.message-queue.config :as iconfig]
             [cmr.common.log :as log :refer (debug info warn error)]
             [clojure.set :as set]))
 
-(def namespace-name (ns-name *ns*))
-
-(def message-id-key (keyword (str namespace-name "-id")))
+(def message-id-key
+  "Key used to track messages within a message map. Each message will have a unique id."
+  (keyword (str (ns-name *ns*) "-id")))
 
 (defn- set-message-state
   "Set the state of a message on the queue"
@@ -37,7 +39,6 @@
 
           (throw (Exception. (str "Invalid response: " (pr-str resp)))))
         resp))))
-
 
 (defn- current-message-states
   "Return the set of all the unique states of the messages currently held by the wrapper."

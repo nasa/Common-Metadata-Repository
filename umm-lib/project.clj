@@ -2,7 +2,7 @@
   :description "The UMM (Unified Metadata Model) Library is responsible for defining the common domain
                model for Metadata Concepts in the CMR along with code to parse and generate the
                various dialects of each concept."
-  :url "***REMOVED***projects/CMR/repos/cmr-umm-lib/browse"
+  :url "***REMOVED***projects/CMR/repos/cmr/browse/umm-lib"
 
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]

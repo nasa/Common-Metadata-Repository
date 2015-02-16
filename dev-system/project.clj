@@ -40,7 +40,7 @@
 (defproject nasa-cmr/cmr-dev-system "1.15.18"
   :description "Dev System combines together the separate microservices of the CMR into a single
                application to make it simpler to develop."
-  :url "***REMOVED***projects/CMR/repos/cmr-dev-system/browse"
+  :url "***REMOVED***projects/CMR/repos/cmr/browse/dev-system"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
 

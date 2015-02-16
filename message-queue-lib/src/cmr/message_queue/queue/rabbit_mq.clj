@@ -12,10 +12,7 @@
             [langohr.consumers :as lc]
             [langohr.confirm :as lcf]
             [langohr.basic :as lb]
-            [langohr.exchange  :as le]
-            [langohr.http :as lhttp]
-            [cheshire.core :as json]
-            [clojure.math.numeric-tower :as math])
+            [cheshire.core :as json])
   (:import java.io.IOException))
 
 (defmacro with-channel
@@ -60,13 +57,11 @@
       (let [msg (assoc msg :retry-count (inc retry-count))
             wait-q (wait-queue-name routing-key (inc retry-count))
             ttl (wait-queue-ttl (inc retry-count))]
-        (debug "Message" (pr-str msg) "re-queued with response:" (pr-str (:message resp)))
-        (debug "Retrying with retry-count ="
-               (inc retry-count)
-               " on queue"
-               wait-q
-               "with ttl = "
-               ttl)
+        (info "Message" (pr-str msg) "re-queued with response:" (pr-str (:message resp)))
+        (info (format "Retrying with retry-count =%d on queue %s with ttl = %d"
+                       (inc retry-count)
+                       wait-q
+                       ttl))
         (queue/publish queue-broker wait-q msg)
         (lb/ack ch delivery-tag)))))
 
@@ -76,12 +71,11 @@
   'queue-broker' is a record that implements
   both the Queue and Lifecycle protocols for interacting with a message queue.
 
-  'queu-name' is the identifier of the queue to use to receive messages and should correpsond to the
-  identifier used to create the queue with the create-queue function.
+  'queue-name' is the identifier of the queue to use to receive messages and should correpsond to
+  the identifier used to create the queue with the create-queue function.
 
-  'client-handler' is a function that takes
-  a single parameter (the message) and attempts to process it. This function should respond with
-  a map of the of the follwing form:
+  'client-handler' is a function that takes a single parameter (the message) and attempts to
+  process it. This function should respond with a map of the of the follwing form:
   {:status status :message message}
   where status is one of (:ok, :retry, :fail) and message is optional.
 

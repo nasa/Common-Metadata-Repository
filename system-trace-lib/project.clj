@@ -1,7 +1,7 @@
 (defproject nasa-cmr/cmr-system-trace-lib "0.1.0-SNAPSHOT"
   :description "Provides library functions for tracing requests throughout the CMR system. Built on
                Twitter Zipkin and clj-zipkin."
-  :url "***REMOVED***projects/CMR/repos/cmr-system-trace-lib/browse"
+  :url "***REMOVED***projects/CMR/repos/cmr/browse/system-trace-lib"
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
 
