@@ -8,6 +8,7 @@
   "A request context to use for tracing related calls."
   (c/request-context
     {:zipkin (c/zipkin-config "Sys Int Tests" true)}
+    nil
     (c/trace-info)))
 
 (defmacro testing
