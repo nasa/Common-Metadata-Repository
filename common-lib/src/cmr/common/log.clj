@@ -8,7 +8,7 @@
 
 (def ^:dynamic *request-id*
   "Request id is a unique identifier to include in log messages. It's expected to be something like
-  a UUID so it's easy to search for. If request id is not set the thread id will be used."
+  a UUID so it's easy to search for. If request id is not set the thread name or id will be used."
   nil)
 
 (defn- setup-logging

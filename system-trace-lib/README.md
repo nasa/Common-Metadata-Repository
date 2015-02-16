@@ -2,6 +2,20 @@
 
 Provides library functions for tracing requests throughout the CMR system. Built on Twitter Zipkin and clj-zipkin.
 
+
+## Context
+
+It also defines the context object used in the CMR. It's expected that the context will be passed around applications functions as the first argument (where necessary). The context object is a map containing keywords and information about the current request. The following list of keys has been defined. Because the context is just a map different applications can put other information in it like the current user token or start time of a request.
+
+  * :system - the system map of the application currently in use
+  * :request - Information related to the current request.
+    * :request-id - Contains the request id. (See below)
+    * :trace-info - Contains the identifiers used by zipkin for traced operations. See cmr.system-trace.context documentation for more information.
+
+### Request Id
+
+The request id is a unique identifier for a request. It is generated on every request as a Java UUID and logged with any log messages. The request id is sent on requests to other services with the header "cmr-request-id". Any CMR service receiving this will parse it from the header, put it in the context, and use it in log messages. This will allow searching the logs across all services with a single id.
+
 ## Useful links to read
 
   * Zipkin
