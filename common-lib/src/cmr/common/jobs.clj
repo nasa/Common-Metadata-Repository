@@ -24,6 +24,7 @@
     `(~qtype-fn
        ~jtype
        [~job-context-sym]
+       (.setName (Thread/currentThread) ~job-name)
        (info ~(str job-name " starting."))
        (try
          (let [system-holder-var-name# (get (qc/from-job-data ~job-context-sym)

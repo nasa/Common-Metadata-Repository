@@ -6,6 +6,11 @@
             [clojure.string :as s]
             [clojure.java.io :as io]))
 
+(def ^:dynamic *request-id*
+  "Request id is a unique identifier to include in log messages. It's expected to be something like
+  a UUID so it's easy to search for. If request id is not set the thread name or id will be used."
+  nil)
+
 (defn- setup-logging
   "Configures logging using Timbre."
   [{:keys [level file stdout-enabled?]}]
@@ -29,11 +34,11 @@
                  (fn [{:keys [level throwable message timestamp hostname ns]}
                       ;; Any extra appender-specific opts:
                       & [{:keys [nofonts?] :as appender-fmt-output-opts}]]
-                   ;; <timestamp> <hostname> <thread id> <LEVEL> [<ns>] - <message> <throwable>
-                   (format "%s %s %s %s [%s] - %s%s"
+                   ;; <timestamp> <hostname> <request id> <LEVEL> [<ns>] - <message> <throwable>
+                   (format "%s %s [%s] %s [%s] - %s%s"
                            timestamp
                            hostname
-                           (.getId (Thread/currentThread))
+                           (or *request-id* (.getName (Thread/currentThread)) (.getId (Thread/currentThread)))
                            (-> level name s/upper-case)
                            ns
                            (or message "")
@@ -42,6 +47,13 @@
 
   ; Enable/disable stdout logs
   (t/set-config! [:appenders :standard-out :enabled?] stdout-enabled?))
+
+(defmacro with-request-id
+  "Sets the dynamic var *request-id* so that any log messages executed within this binding will
+  include the given request id"
+  [request-id & body]
+  `(binding [*request-id* ~request-id]
+     ~@body))
 
 ;; Macros for logging. Macros are used because the timbre calls are macros.
 ;; I think they're more efficient if they are macros when there is a lot of logging.

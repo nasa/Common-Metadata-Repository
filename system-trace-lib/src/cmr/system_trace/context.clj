@@ -23,17 +23,18 @@
 
 (defn request-context
   "Creates a new request context with the given system and trace-info"
-  [system trace-info]
+  [system request-id trace-info]
   {:system system
-   :request {:trace-info trace-info}})
+   :request {:request-id (or request-id (str (java.util.UUID/randomUUID)))
+             :trace-info trace-info}})
 
 (defn trace-info
   "Creates a new trace-info map which contains information about the operation being traced."
   ([]
    (trace-info nil nil))
   ([trace-id span-id]
-   ;; Numeric identifer of a trace
-   {:trace-id trace-id
+   {;; Numeric identifer of a trace
+    :trace-id trace-id
     ;; Numeric identifer of parent span
     :parent-span-id nil
     ;; The name of the current operation being traced.
@@ -63,6 +64,11 @@
   "Returns true if tracing is enabled in the given context"
   [context]
   (get-in context [:system :zipkin :enabled?]))
+
+(defn context->request-id
+  "Extracts request id from a request context."
+  [context]
+  (get-in context [:request :request-id]))
 
 (defn context->trace-info
   "Extracts trace-info from a request context."
