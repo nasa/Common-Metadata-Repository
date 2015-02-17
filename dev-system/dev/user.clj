@@ -23,7 +23,8 @@
    :elastic :in-memory
    ; :elastic :external
    :echo :in-memory
-   ;; Note external ECHO does not work with the automated tests - 400 error on creating provider.
+   ;; Note external ECHO does not work with the automated tests. The automated tests expect they
+   ;; can interact with the Mock ECHO to setup users, acls, and other ECHO objects.
    ; :echo :external
    :db :in-memory
    ; :db :external

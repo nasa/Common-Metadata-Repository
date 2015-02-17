@@ -57,8 +57,16 @@
 (def in-memory-echo-system-token "mock-echo-system-token")
 
 (def external-echo-system-token
-  "Returns the ECHO system token based on the ECHO_SYSTEM_TOKEN environment variable."
-  (System/getenv "ECHO_SYSTEM_TOKEN"))
+  "Returns the ECHO system token based on the value for ECHO_SYSTEM_READ_TOKEN in the ECHO
+  configuration file.  The WORKSPACE_HOME environment variable must be set in order to find the
+  file.  Returns nil if it cannot extract the value."
+  (try
+    (->> (slurp (str (System/getenv "WORKSPACE_HOME") "/deployment/primary/config.properties"))
+         (re-find #"\n@ECHO_SYSTEM_READ_TOKEN@=(.*)\n")
+         peek)
+    (catch Exception e
+      (warn "Unable to extract the ECHO system read token from configuration.")
+      nil)))
 
 (def use-compression?
   "Indicates whether the servers will use gzip compression. Disable this to make tcpmon usable"
@@ -81,7 +89,8 @@
 
 
 (defmulti create-elastic
-  "Returns an instance of the elastic component to use."
+  "Sets elastic configuration values and returns an instance of an Elasticsearch component to run
+  in memory if applicable."
   (fn [type]
     type))
 
@@ -112,7 +121,8 @@
   nil)
 
 (defmulti create-echo
-  "Returns an instance of the ECHO component to use."
+  "Sets ECHO configuration values and returns an instance of a mock ECHO component to run in
+  memory if applicable."
   (fn [type]
     type))
 
@@ -131,7 +141,8 @@
   nil)
 
 (defmulti create-queue-broker
-  "Returns an instance of the message queue broker component to use."
+  "Sets message queue configuration values and returns an instance of the message queue broker
+  if applicable."
   (fn [type]
     type))
 
@@ -143,14 +154,14 @@
 
 (defmethod create-queue-broker :external
   [type]
-  (->
-    (rmq/create-queue-broker (assoc (rmq-conf/default-config)
-                                    :queues
-                                    [(indexer-config/index-queue-name)]))
-    wrapper/create-queue-broker-wrapper))
+  (config/set-config-value! :indexing-communication-method "queue")
+  (-> (rmq/create-queue-broker (assoc (rmq-conf/default-config)
+                                      :queues
+                                      [(indexer-config/index-queue-name)]))
+      wrapper/create-queue-broker-wrapper))
 
 (defmulti create-queue-listener
-  "Returns an instance of the message queue listener component to use."
+  "Returns an instance of the message queue listener component to use if using a message queue."
   (fn [type queue-broker]
     type))
 

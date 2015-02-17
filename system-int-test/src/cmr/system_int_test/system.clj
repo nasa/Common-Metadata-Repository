@@ -9,8 +9,6 @@
             [clj-http.conn-mgr :as conn-mgr]
             [cmr.transmit.config :as transmit-config]))
 
-(def DEFAULT_PORT 3008)
-
 (def
   ^{:doc "Defines the order to start the components."
     :private true}
