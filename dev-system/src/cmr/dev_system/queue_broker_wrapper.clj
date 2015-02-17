@@ -1,7 +1,10 @@
 (ns cmr.dev-system.queue-broker-wrapper
   "Functions to wrap the message queue while testing. The wrapper is necessary because messages
   are processed asynchronously, but for our tests we will often want to wait until messages are
-  processed before performing other steps or confirming results."
+  processed before performing other steps or confirming results. It keeps track, in memory, of
+  every message sent to the message queue. It has the ability to wait until each one of these
+  messages has been processed. For this to work we have to use the same queue broker wrapper
+  instance on the sender and receiver. This means they both need to be in the same JVM instance."
   (:require [cmr.common.lifecycle :as lifecycle]
             [cmr.message-queue.services.queue :as queue]
             [cmr.message-queue.config :as iconfig]
