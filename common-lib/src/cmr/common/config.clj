@@ -164,7 +164,6 @@
     (when (and (nil? parser) config-type (nil? (type->parser config-type)))
       (throw (Exception. (str "Unrecognized defconfig type: " config-type))))
 
-
     (let [config-name (name config-name-symbol)
           config-name-key (keyword config-name)
           getter-name config-name-symbol
@@ -175,21 +174,21 @@
           parser-fn (or parser (type->parser config-type))]
 
       `(let [default-value# ~default
-             parser-value# ~parser
-             config-type-value# ~config-type]
+             doc-string-value# ~doc-string]
+
          ;; Check that the type of the default value matches the type specified
-         ;; This has to be done here so that we can check the value of type.
-         (when (and (nil? parser-value#)
-                    (not= (type default-value#) config-type-value#))
+         ;; This has to be done here to allow for the default value to be the result of calling a function
+         (when (and (nil? ~parser)
+                    (not= (type default-value#) ~config-type))
            (throw
              (Exception.
                (format "The type of the default value %s does not match the specified config type %s"
-                       (type default-value#) config-type-value#))))
+                       (type default-value#) ~config-type))))
 
          ;; Register the config
-         (register-config ~(str *ns*) ~config-name-key ~doc-string
+         (register-config ~(str *ns*) ~config-name-key doc-string-value#
                           ;; Assoc in type to show default of string in docs.
-                          (assoc ~options :type config-type-value#))
+                          ~(assoc options :type config-type))
 
          ;; Create the getter
          (defn ~getter-name
