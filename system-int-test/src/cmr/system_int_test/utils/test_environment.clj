@@ -2,26 +2,27 @@
   "Contains helper functions related to the test environment")
 
 (defn runnable-env?
-  [expected-env]
+  [key expected-value]
   (try
     (some-> 'user/system-type
             find-var
             var-get
-            (= expected-env))
+            (get key)
+            (= expected-value))
     (catch Exception e
       (.printStackTrace e)
-      (println "Exception indicates this is not is most likely an in memory database")
-      (= :in-memory expected-env))))
+      (println "Exception thrown - Default to in-memory implementation for " key)
+      (= :in-memory expected-value))))
 
 (defn real-database?
   "Returns true if running with a real database"
   []
-  (runnable-env? :external-dbs))
+  (runnable-env? :db :external))
 
 (defn in-memory-database?
   "Returns true if running with a in-memory database"
   []
-  (runnable-env? :in-memory))
+  (runnable-env? :db :in-memory))
 
 (defmacro only-with-real-database
   "Executes the body of the call if the test environment is running with the real Oracle DB."

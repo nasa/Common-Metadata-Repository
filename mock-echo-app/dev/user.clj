@@ -19,7 +19,7 @@
 (defn start
   "Starts the current development system."
   []
-  (let [web-server (web/create-web-server system/DEFAULT_PORT
+  (let [web-server (web/create-web-server (transmit-config/echo-rest-port)
                                           (repeat-last-request/wrap-api routes/make-api))
         s (-> (system/create-system)
               (assoc :web web-server)
