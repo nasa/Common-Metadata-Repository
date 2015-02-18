@@ -9,6 +9,9 @@
 (defn -main
   "Starts the App."
   [& args]
-  (let [system (system/create-system :in-memory)
+  (let [system (system/create-system {:elastic :in-memory
+                                      :echo :in-memory
+                                      :db :in-memory
+                                      :message-queue :in-memory})
         system (system/start system)]
     (info "Running...")))
