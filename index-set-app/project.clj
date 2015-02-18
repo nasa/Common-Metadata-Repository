@@ -22,6 +22,8 @@
    :integration-test {:test-paths ["int_test"]
                       :dependencies [[clj-http "1.0.0"]]}
    :uberjar {:main cmr.index-set.runner
-             :aot :all}})
+             :aot :all}}
+  :aliases {;; Prints out documentation on configuration environment variables.
+            "env-config-docs" ["exec" "-ep" "(do (use 'cmr.common.config) (print-all-configs-docs))"]})
 
 

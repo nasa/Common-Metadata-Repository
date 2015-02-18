@@ -21,6 +21,8 @@
                         [org.clojars.gjahad/debug-repl "0.3.3"]]
          :source-paths ["src" "dev" "test"]}
    :uberjar {:main cmr.indexer.runner
-             :aot :all}})
+             :aot :all}}
+  :aliases {;; Prints out documentation on configuration environment variables.
+            "env-config-docs" ["exec" "-ep" "(do (use 'cmr.common.config) (print-all-configs-docs))"]})
 
 

@@ -12,13 +12,13 @@
 (defn create-user
   []
   (let [db (oracle-config/sys-dba-db-spec)
-        bootstrap-db-user (bootstrap-config/db-username)]
-    (o/create-user db bootstrap-db-user (bootstrap-config/db-password))))
+        bootstrap-db-user (bootstrap-config/bootstrap-username)]
+    (o/create-user db bootstrap-db-user (bootstrap-config/bootstrap-password))))
 
 (defn drop-user
   []
   (let [db (oracle-config/sys-dba-db-spec)
-        bootstrap-db-user (bootstrap-config/db-username)]
+        bootstrap-db-user (bootstrap-config/bootstrap-username)]
     (o/drop-user db bootstrap-db-user)))
 
 (defn -main

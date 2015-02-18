@@ -36,5 +36,6 @@
    :uberjar {:main cmr.search.runner
              :aot :all}}
 
-  ;; Note this takes a while to run. We commit the files that are generated.
-  :aliases {"generate-docs" ["exec" "-p" "./support/generate_docs.clj"]})
+  :aliases {"generate-docs" ["exec" "-p" "./support/generate_docs.clj"]
+            ;; Prints out documentation on configuration environment variables.
+            "env-config-docs" ["exec" "-ep" "(do (use 'cmr.common.config) (print-all-configs-docs))"]})

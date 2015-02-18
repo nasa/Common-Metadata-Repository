@@ -11,12 +11,12 @@
 (defn create-user
   []
   (let [db (oracle-config/sys-dba-db-spec)]
-    (o/create-user db (bootstrap-config/db-username) (bootstrap-config/db-password))))
+    (o/create-user db (bootstrap-config/bootstrap-username) (bootstrap-config/bootstrap-password))))
 
 (defn drop-user
   []
   (let [db (oracle-config/sys-dba-db-spec)]
-    (o/drop-user db (bootstrap-config/db-username))))
+    (o/drop-user db (bootstrap-config/bootstrap-username))))
 
 (defn -main
   "Execute the given database operation specified by input arguments."
