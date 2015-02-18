@@ -5,6 +5,7 @@
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.dev.util :as d]
             [cmr.system-int-test.system :as sit-sys]
+            [cmr.common.jobs :as jobs]
             [cmr.common.config :as config]
             [earth.driver :as earth-viz]
             [common-viz.util :as common-viz]
@@ -38,7 +39,7 @@
   (config/reset-config-values)
 
   ;; Set the default job start delay to avoid jobs kicking off with tests etc.
-  (config/set-config-value! :default-job-start-delay (str (* 3 3600)))
+  (jobs/set-default-job-start-delay! (* 3 3600))
 
   (let [s (system/create-system system-type)]
     (alter-var-root #'system

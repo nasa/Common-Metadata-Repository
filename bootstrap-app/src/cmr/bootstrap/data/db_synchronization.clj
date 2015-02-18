@@ -12,7 +12,7 @@
             [cmr.common.util :as util]
             [cmr.common.concepts :as concepts]
             [cmr.common.services.errors :as errors]
-            [cmr.common.config :as config]
+            [cmr.common.config :as config :refer [defconfig]]
             [clj-time.coerce :as cr]
             [clj-time.core :as t]
             [cmr.metadata-db.data.oracle.concept-tables :as tables]
@@ -23,17 +23,17 @@
             [cmr.metadata-db.services.provider-service :as provider-service]
             [cmr.indexer.services.index-service :as index-service]))
 
-(def WORK_ITEMS_BATCH_SIZE
+(defconfig db-sync-work-items-batch-size
   "The number of work items to fetch at a time from the work items table during processing"
-  (config/config-value :db-sync-work-items-batch-size "1000" #(Long. ^String %)))
+  {:default 1000 :type Long})
 
-(def NUM_PROCESS_INSERT_THREADS
+(defconfig db-sync-num-insert-threads
   "The number of concurrent threads that should process items for insert."
-  (config/config-value :db-sync-num-insert-threads "5" #(Long. ^String %)))
+  {:default 5 :type Long})
 
-(def NUM_PROCESS_DELETE_THREADS
+(defconfig db-sync-num-delete-threads
   "The number of concurrent threads that should process deleting items"
-  (config/config-value :db-sync-num-delete-threads "5" #(Long. ^String %)))
+  {:default 5 :type Long})
 
 (defn- truncate-work-table
   "Removes everything from the sync work table."
@@ -243,7 +243,8 @@
       (debug "process-items-from-work-table starting")
       (try
         (loop [start-index 1]
-          (when-let [items (seq (get-work-items-batch system start-index WORK_ITEMS_BATCH_SIZE))]
+          (when-let [items (seq (get-work-items-batch system start-index
+                                                      (db-sync-work-items-batch-size)))]
             (debug "process-items-from-work-table: Found" (count items) "items")
             (>! item-batch-chan items)
             (recur (+ start-index (count items)))))
@@ -304,7 +305,7 @@
   "Starts a series of threads that read concepts one at a time off the channel, save, and index them.
   Returns when all concepts have been processed or an error has occured."
   [system concepts-chan]
-  (let [thread-chans (for [n (range 0 NUM_PROCESS_INSERT_THREADS)
+  (let [thread-chans (for [n (range 0 (db-sync-num-insert-threads))
                            :let [log (fn [& args]
                                        (debug "process-missing-concepts" n ":" (str/join " " args)))]]
                        (async/thread
@@ -548,7 +549,7 @@
   "Starts a series of threads that read items one at a time off the channel then creates a tombstone
   and unindexes them. Returns when all items have been processed or an error has occured."
   [system tuples-chan]
-  (let [thread-chans (for [n (range 0 NUM_PROCESS_DELETE_THREADS)
+  (let [thread-chans (for [n (range 0 (db-sync-num-delete-threads))
                            :let [log (fn [& args]
                                        (debug "process-deletes" n ":" (str/join " " args)))]]
                        (async/thread

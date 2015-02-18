@@ -1,14 +1,16 @@
 (ns cmr.bootstrap.config
   "Contains functions to retrieve metadata db specific configuration"
-  (:require [cmr.common.config :as cfg]
+  (:require [cmr.common.config :as cfg :refer [defconfig]]
             [cmr.oracle.config :as oracle-config]
             [cmr.oracle.connection :as conn]))
 
-(def db-username
-  (cfg/config-value-fn :bootstrap-username "CMR_BOOTSTRAP"))
+(defconfig bootstrap-username
+  "Defines the bootstrap database username."
+  {***REMOVED***})
 
-(def db-password
-  (cfg/config-value-fn :bootstrap-password "CMR_BOOTSTRAP"))
+(defconfig bootstrap-password
+  "Defines the bootstrap database password."
+  {***REMOVED***})
 
 (defn db-spec
   "Returns a db spec populated with config information that can be used to connect to oracle"
@@ -18,5 +20,5 @@
     (oracle-config/db-url)
     (oracle-config/db-fcf-enabled)
     (oracle-config/db-ons-config)
-    (db-username)
-    (db-password)))
+    (bootstrap-username)
+    (bootstrap-password)))

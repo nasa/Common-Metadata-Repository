@@ -2,11 +2,11 @@
   "This namespace provides function to timeout the execution of health check function
   and provides the timeout response when timeout occurs."
   (:require [clojail.core :as c]
-            [cmr.common.config :as config]))
+            [cmr.common.config :as config :refer [defconfig]]))
 
-(def health-check-timeout-seconds
-  "Timeout in seconds for health check operation, default to 10s."
-  (config/config-value-fn :health-check-timeout-seconds 10 #(Long. %)))
+(defconfig health-check-timeout-seconds
+  "Timeout in seconds for health check operation."
+  {:default 10 :type Long})
 
 (defn get-health
   "Execute the health check function with timeout handling."

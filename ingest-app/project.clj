@@ -35,8 +35,11 @@
    :uberjar {:main cmr.ingest.runner
              :aot :all}}
 
-  ;; Database migrations run by executing "lein migrate"
-  :aliases {"create-user" ["exec" "-p" "./support/create_user.clj"]
-            "drop-user" ["exec" "-p" "./support/drop_user.clj"]})
+
+  :aliases {;; Database migrations run by executing "lein migrate"
+            "create-user" ["exec" "-p" "./support/create_user.clj"]
+            "drop-user" ["exec" "-p" "./support/drop_user.clj"]
+            ;; Prints out documentation on configuration environment variables.
+            "env-config-docs" ["exec" "-ep" "(do (use 'cmr.common.config) (print-all-configs-docs))"]})
 
 

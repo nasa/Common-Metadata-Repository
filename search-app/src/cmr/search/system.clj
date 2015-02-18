@@ -12,7 +12,7 @@
             [cmr.search.services.acls.acl-helper :as ah]
             [cmr.system-trace.context :as context]
             [cmr.metadata-db.system :as mdb-system]
-            [cmr.common.config :as cfg]
+            [cmr.common.config :as cfg :refer [defconfig]]
             [cmr.transmit.config :as transmit-config]
             [cmr.elastic-utils.config :as es-config]
             [cmr.search.services.query-execution.has-granules-results-feature :as hgrf]
@@ -25,14 +25,23 @@
   "The number of milliseconds token information will be cached for."
   (* 5 60 1000))
 
-(def search-public-protocol (cfg/config-value :search-public-protocol "http"))
-(def search-public-host (cfg/config-value :search-public-host "localhost"))
-(def search-public-port (cfg/config-value :search-public-port 3003 transmit-config/parse-port))
+(defconfig search-public-protocol
+  "The protocol to use in links returned by the search application."
+  {:default "http"})
+
+(defconfig search-public-host
+  "The host name to use in links returned by the search application."
+  {:default "localhost"})
+
+(defconfig search-public-port
+  "The port to use in links returned by the search application."
+  {:default 3003
+   :type Long})
 
 (def search-public-conf
-  {:protocol search-public-protocol
-   :host search-public-host
-   :port search-public-port
+  {:protocol (search-public-protocol)
+   :host (search-public-host)
+   :port (search-public-port)
    :relative-root-url (transmit-config/search-relative-root-url)})
 
 (def
