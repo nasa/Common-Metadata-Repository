@@ -17,8 +17,21 @@
 
 (def system nil)
 
-(def system-type :in-memory)
-; (def system-type :external-dbs)
+(def system-type
+  "A map of whether the components use in-memory versions or external versions.
+  The components are elastic, db, message-queue, and echo."
+  {
+   :elastic :in-memory
+   ; :elastic :external
+   :echo :in-memory
+   ;; Note external ECHO does not work with the automated tests. The automated tests expect they
+   ;; can interact with the Mock ECHO to setup users, acls, and other ECHO objects.
+   ; :echo :external
+   :db :in-memory
+   ; :db :external
+   :message-queue :in-memory
+   ; :message-queue :external
+   })
 
 (defn start
   "Starts the current development system."

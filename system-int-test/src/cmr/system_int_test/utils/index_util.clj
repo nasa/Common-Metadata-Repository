@@ -14,8 +14,7 @@
 (defn wait-until-indexed
   "Wait until ingested concepts have been indexed"
   []
-  (when (and (te/real-database?)
-             (config/use-index-queue?))
+  (when (config/use-index-queue?)
     (client/post (url/wait-for-indexing-url) {:connection-manager (url/conn-mgr)}))
   (refresh-elastic-index))
 

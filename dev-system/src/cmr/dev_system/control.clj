@@ -63,7 +63,6 @@
    :search cache/reset-caches
    :ingest cache/reset-caches})
 
-
 (defn- build-routes [system]
   (routes
     ;; For debugging. Gets the state of the world in relations to ACLs and what's indexed
@@ -75,7 +74,9 @@
     ;; Calls reset on all other systems internally
     (POST "/reset" []
       (debug "dev system /reset")
-      (doseq [[service-name reset-fn] service-reset-fns]
+      (doseq [[service-name reset-fn] service-reset-fns
+              ;; Only call reset on applications which are deployed to the current system
+              :when (get-in system [:apps service-name])]
         (reset-fn (app-context system service-name)))
       (debug "dev system /reset complete")
       {:status 200})
