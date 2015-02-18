@@ -7,10 +7,10 @@
             [cmr.system-int-test.system :as s]
             [ring.util.codec :as codec]))
 
-(def search-public-protocol (config/config-value :search-public-protocol "http"))
-(def search-public-host (config/config-value :search-public-host "localhost"))
-(def search-public-port (config/config-value :search-public-port 3003 transmit-config/parse-port))
-(def search-relative-root-url (config/config-value :search-relative-root-url ""))
+(def search-public-protocol "http")
+(def search-public-host "localhost")
+(def search-public-port 3003)
+(def search-relative-root-url "")
 
 (def dev-system-port
   "The port number for the dev system control api"
