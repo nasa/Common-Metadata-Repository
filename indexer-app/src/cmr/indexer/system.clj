@@ -54,16 +54,13 @@
                           :db
                           [(ac/refresh-acl-cache-job "indexer-acl-cache-refresh")])
              :queue-broker (when (config/use-index-queue?)
-                             (rmq/create-queue-broker {:host (rmq-conf/rabbit-mq-host)
-                                                     :port (rmq-conf/rabbit-mq-port)
-                                                     :username (rmq-conf/rabbit-mq-username)
-                                                     :password (rmq-conf/rabbit-mq-password)
-                                                     :queues [(config/index-queue-name)]}))
+                             (rmq/create-queue-broker (assoc (rmq-conf/default-config)
+                                                             :queues [(config/index-queue-name)])))
              :queue-listener (when (config/use-index-queue?)
                                (queue/create-queue-listener {:num-workers (config/queue-listener-count)
-                                                         :start-function #(ql/start-queue-message-handler
-                                                                            %
-                                                                            ql/handle-index-action)}))}]
+                                                             :start-function #(ql/start-queue-message-handler
+                                                                                %
+                                                                                ql/handle-index-action)}))}]
 
     (transmit-config/system-with-connections sys [:metadata-db :index-set :echo-rest])))
 

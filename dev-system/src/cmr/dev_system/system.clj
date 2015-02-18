@@ -152,10 +152,19 @@
   (config/set-config-value! :indexing-communication-method "http")
   nil)
 
+(defn rmq-default-config
+  "The default config for connecting to RabbitMQ locally"
+  []
+  {:port (rmq-conf/rabbit-mq-port)
+   :host (rmq-conf/rabbit-mq-host)
+   :username (rmq-conf/rabbit-mq-user)
+   :password (rmq-conf/rabbit-mq-password)
+   :ttls [1 1 1 1 1]})
+
 (defmethod create-queue-broker :external
   [type]
   (config/set-config-value! :indexing-communication-method "queue")
-  (-> (rmq/create-queue-broker (assoc (rmq-conf/default-config)
+  (-> (rmq/create-queue-broker (assoc (rmq-default-config)
                                       :queues
                                       [(indexer-config/index-queue-name)]))
       wrapper/create-queue-broker-wrapper))

@@ -40,11 +40,8 @@
               :caches {acl/token-imp-cache-key (acl/create-token-imp-cache)}
               :relative-root-url (transmit-config/ingest-relative-root-url)
               :queue-broker (when (config/use-index-queue?)
-                              (rmq/create-queue-broker {:host (rmq-conf/rabbit-mq-host)
-                                                        :port (rmq-conf/rabbit-mq-port)
-                                                        :username (rmq-conf/rabbit-mq-username)
-                                                        :password (rmq-conf/rabbit-mq-password)
-                                                        :queues [(config/index-queue-name)]}))}]
+                              (rmq/create-queue-broker (assoc (rmq-conf/default-config)
+                                                              :queues [(config/index-queue-name)])))}]
      (transmit-config/system-with-connections sys [:metadata-db :indexer :echo-rest]))))
 
 (defn start

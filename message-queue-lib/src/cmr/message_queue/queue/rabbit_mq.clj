@@ -252,7 +252,7 @@
   (do
     (def q (let [q (create-queue-broker {:host (config/rabbit-mq-host)
                                          :port (config/rabbit-mq-port)
-                                         :username (config/rabbit-mq-username)
+                                         :username (config/rabbit-mq-user)
                                          :password (config/rabbit-mq-password)
                                          ;:queues ["test.simple"]})]
                                          })]
