@@ -132,25 +132,25 @@
 
   Options:
 
-    * :default - Sets the default value if none is provided. Required.
-    * :type - Sets the type of value the configuration parameter will have. The type will be used
+  * :default - Sets the default value if none is provided. Required.
+  * :type - Sets the type of value the configuration parameter will have. The type will be used
   to determine how to parse the environment variable value.
-    * :parser - A custom parser function to use to parse the environment variable value.
+  * :parser - A custom parser function to use to parse the environment variable value.
 
   If not type or parser is provided the type defaults to String.
 
   Example:
 
   (defconfig listen-port
-    \"The port the application should use for requests.\"
-    {:default 3000
-     :type Long})
+  \"The port the application should use for requests.\"
+  {:default 3000
+  :type Long})
 
   The value will be taken from an environment variable with the name CMR_LISTEN_PORT.
 
   Functions available after that config is used:
-    * (listen-port) - returns the currently configured value of the configuration value.
-    * (set-listen-port! new-value) - Sets an override value."
+  * (listen-port) - returns the currently configured value of the configuration value.
+  * (set-listen-port! new-value) - Sets an override value."
   [config-name-symbol doc-string options]
 
   (let [{default :default config-type :type parser :parser} options
@@ -163,13 +163,6 @@
       (throw (Exception. "defconfig default is required")))
     (when (and (nil? parser) config-type (nil? (type->parser config-type)))
       (throw (Exception. (str "Unrecognized defconfig type: " config-type))))
-    ;; Check that the type of the default value matches the type specified
-    (when (and (nil? parser)
-               (not= (type default) config-type))
-      (throw
-        (Exception.
-          (format "The type of the default value %s does not match the specified config type %s"
-                  (type default) config-type))))
 
 
     (let [config-name (name config-name-symbol)
@@ -181,17 +174,28 @@
                              config-name doc-string)
           parser-fn (or parser (type->parser config-type))]
 
-      `(do
+      `(let [default-value# ~default
+             parser-value# ~parser
+             config-type-value# ~config-type]
+         ;; Check that the type of the default value matches the type specified
+         ;; This has to be done here so that we can check the value of type.
+         (when (and (nil? parser-value#)
+                    (not= (type default-value#) config-type-value#))
+           (throw
+             (Exception.
+               (format "The type of the default value %s does not match the specified config type %s"
+                       (type default-value#) config-type-value#))))
+
          ;; Register the config
          (register-config ~(str *ns*) ~config-name-key ~doc-string
                           ;; Assoc in type to show default of string in docs.
-                          ~(assoc options :type config-type))
+                          (assoc ~options :type config-type-value#))
 
          ;; Create the getter
          (defn ~getter-name
            ~getter-doc
            []
-           (config-value* ~config-name-key ~default ~parser-fn))
+           (config-value* ~config-name-key default-value# ~parser-fn))
 
          ;; Create the setter
          (defn ~setter-name

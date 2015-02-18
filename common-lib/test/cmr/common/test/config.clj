@@ -37,6 +37,11 @@
   {:default {}
    :parser edn/read-string})
 
+(defconfig test-default-fn-call
+  "This is a test config that calls functions for setting the default and the type."
+  {:default (+ 1 2)
+   :type Long})
+
 (defmacro with-env-vars
   "Overrides the environment variables the config values will see within the block. Accepts a map
   of environment variables to values."
@@ -99,5 +104,8 @@
         (is (= [1 2 3] (test-custom-parser)))
         (testing "Overriding the value"
           (set-test-custom-parser! {:a 1})
-          (is (= {:a 1} (test-custom-parser))))))))
+          (is (= {:a 1} (test-custom-parser)))))))
+
+  (testing "default using a function call"
+    (is (= 3 (test-default-fn-call)))))
 
