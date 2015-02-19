@@ -49,6 +49,34 @@
           (arc-intersection-failure-msg (str arc-name1 " should not intersect " arc-name2 ".")
                                         arc-name1 arc-name2)))))
 
+(comment
+  ;; The following example code will find how close two arcs can get before they are considered equivalent
+
+  (defn degrees->meters
+    "Converts angular degrees to meters on the surface of the earth."
+    ^double [^double num-degs]
+    (let [earth-circumference (* TAU EARTH_RADIUS_METERS)
+          meters-per-degree (/ earth-circumference 360.0)]
+      (* meters-per-degree num-degs)))
+
+  (defn point-distance
+    [p1 p2]
+    (degrees->meters (degrees (p/angular-distance p1 p2))))
+
+
+  (let [a1 (a/ords->arc -45.19377 68.63509 -44.67717 68.63509)]
+    (loop [a2 (a/ords->arc -45.19377 68.63526 -44.67717 68.63526)]
+      (if-let [intersections (seq (a/intersections a1 a2))]
+        [(point-distance (:west-point a1) (:west-point a2)) a2]
+        (let [p1 (a/midpoint (a/arc (:west-point a1) (:west-point a2)))
+              p2 (a/midpoint (a/arc (:east-point a1) (:east-point a2)))]
+          (println "Non intersecting. Distance:" (point-distance (:west-point a1) (:west-point a2))
+                   "ords:" (pr-str (a/arc->ords a2)))
+          (recur (a/arc p1 p2))))))
+  )
+
+
+
 (defspec arc-intersection-spec 100
   (for-all [arc sgen/arcs]
     (and

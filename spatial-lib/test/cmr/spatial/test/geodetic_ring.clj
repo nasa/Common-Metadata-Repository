@@ -29,6 +29,15 @@
 (deftest ring-validation-test
   (testing "valid ring"
     (is (nil? (seq (v/validate (rr/ords->ring :geodetic 0 0, 1 0, 0 1, 0 0))))))
+  (testing "valid skinny ring"
+    ;; This ring is very long and skinny. The arcs are about 18 meters apart.
+    (is (nil? (seq (v/validate (rr/ords->ring :geodetic
+                                              -45.19377 68.63509
+                                              -44.67717 68.63509
+                                              -44.67717 68.63526
+                                              -45.19377 68.63526
+                                              -45.19377 68.63509))))))
+
   (testing "invalid rings"
     (are [ords msgs] (= (seq msgs) (seq (v/validate (apply rr/ords->ring :geodetic ords))))
 
