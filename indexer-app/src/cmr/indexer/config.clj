@@ -1,17 +1,19 @@
 (ns cmr.indexer.config
-  (:require [cmr.common.config :as cfg]))
+  (:require [cmr.common.config :as cfg :refer [defconfig]]))
 
-(def index-queue-name
+(defconfig index-queue-name
   "Queue used for requesting indexing of concepts"
-  (cfg/config-value-fn :index-queue-name "cmr_index.queue"))
+  {:default "cmr_index.queue"})
 
-(def queue-listener-count
+(defconfig queue-listener-count
   "Number of worker threads to use for the queue listener"
-  (cfg/config-value-fn :queue-listener-count "5" #(Integer. %)))
+  {:default 5
+   :type Long})
 
-(def indexing-communication-method
-  "Either \"http\" or \"queue\""
-  (cfg/config-value-fn :indexing-communication-method "http"))
+(defconfig indexing-communication-method
+  "Used to determine whether the indexer will expect index requests via http requests or
+  via a message queue.  Valid values are \"queue\" and \"http\""
+  {:default "http"})
 
 (def use-index-queue?
   "Boolean flag indicating whether or not to use the message queue for indexing"

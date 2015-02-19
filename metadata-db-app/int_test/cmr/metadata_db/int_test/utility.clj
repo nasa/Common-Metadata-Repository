@@ -23,19 +23,19 @@
   (when-not @conn-mgr-atom
     (reset! conn-mgr-atom  (conn-mgr/make-reusable-conn-manager {}))))
 
-(def concepts-url (str "http://localhost:" (config/app-port) "/concepts/"))
+(def concepts-url (str "http://localhost:" (config/metadata-db-port) "/concepts/"))
 
-(def concept-id-url (str "http://localhost:" (config/app-port) "/concept-id/"))
+(def concept-id-url (str "http://localhost:" (config/metadata-db-port) "/concept-id/"))
 
-(def reset-url (str "http://localhost:" (config/app-port) "/reset"))
+(def reset-url (str "http://localhost:" (config/metadata-db-port) "/reset"))
 
 (def old-revision-concept-cleanup-url
-  (str "http://localhost:" (config/app-port) "/jobs/old-revision-concept-cleanup"))
+  (str "http://localhost:" (config/metadata-db-port) "/jobs/old-revision-concept-cleanup"))
 
 (def expired-concept-cleanup-url
-  (str "http://localhost:" (config/app-port) "/jobs/expired-concept-cleanup"))
+  (str "http://localhost:" (config/metadata-db-port) "/jobs/expired-concept-cleanup"))
 
-(def providers-url (str "http://localhost:" (config/app-port) "/providers"))
+(def providers-url (str "http://localhost:" (config/metadata-db-port) "/providers"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; utility methods

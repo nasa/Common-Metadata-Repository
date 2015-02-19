@@ -20,10 +20,12 @@
             [cmr.indexer.system :as idx-system]
             [cmr.indexer.data.concepts.granule :as g]
             [cmr.common.cache :as cache]
-            [cmr.common.config :as cfg]
+            [cmr.common.config :as cfg :refer [defconfig]]
             [cmr.bootstrap.config :as bootstrap-config]))
 
-(def db-batch-size (cfg/config-value-fn :db-batch-size 100 #(Long. %)))
+(defconfig db-batch-size
+  "Batch size to use when batching database operations."
+  {:default 100 :type Long})
 
 (def
   ^{:doc "Defines the order to start the components."

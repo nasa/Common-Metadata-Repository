@@ -37,7 +37,7 @@
                          :result-set-fetch-size
                          (config/result-set-fetch-size))
               :log (log/create-logger)
-              :web (web/create-web-server (config/app-port) routes/make-api)
+              :web (web/create-web-server (config/metadata-db-port) routes/make-api)
               :zipkin (context/zipkin-config "Metadata DB" false)
               :parallel-chunk-size (config/parallel-chunk-size)
               :caches {acl/token-imp-cache-key (acl/create-token-imp-cache)}

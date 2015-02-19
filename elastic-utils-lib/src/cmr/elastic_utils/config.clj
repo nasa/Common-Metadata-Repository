@@ -1,18 +1,19 @@
 (ns cmr.elastic-utils.config
   "Contains configuration functions for communicating with elastic search"
-  (:require [cmr.common.config :as config]
+  (:require [cmr.common.config :as config :refer [defconfig]]
             [clojure.data.codec.base64 :as b64]))
 
-(def elastic-host
-  (config/config-value-fn :elastic-host "localhost"))
+(defconfig elastic-host
+  "Elastic host or VIP."
+  {:default "localhost"})
 
-(def elastic-port
-  (config/config-value-fn :elastic-port 9210 #(Long. %)))
+(defconfig elastic-port
+  "Port elastic is listening on."
+  {:default 9210 :type Long})
 
-(def elastic-admin-token
-  (config/config-value-fn :elastic-admin-token
-                          "echo-elasticsearch"
-                         #(str "Basic " (b64/encode (.getBytes %)))))
+(defconfig elastic-admin-token
+    "Token used for basic auth authentication with elastic."
+    {:default (str "Basic " (b64/encode (.getBytes "echo-elasticsearch")))})
 
 (defn elastic-config
   "Returns the elastic config as a map"

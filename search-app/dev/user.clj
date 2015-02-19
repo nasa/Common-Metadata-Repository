@@ -8,7 +8,7 @@
             [cmr.common.dev.repeat-last-request :as repeat-last-request :refer (repeat-last-request)]
             [cmr.common.dev.util :as d]
             [cmr.transmit.config :as transmit-config]
-            [cmr.common.config :as cfg])
+            [cmr.common.jobs :as jobs])
   (:use [clojure.test :only [run-all-tests]]
         [clojure.repl]
         [alex-and-georges.debug-repl]
@@ -20,7 +20,7 @@
 (defn create-system
   []
   ;; Set the default job start delay to avoid jobs kicking off with tests etc.
-  (cfg/set-config-value! :default-job-start-delay (str (* 3 3600)))
+  (jobs/set-default-job-start-delay! (*3 3600))
 
   ; (tunnel-system)
   (let [web-server (web/create-web-server (transmit-config/search-port)
