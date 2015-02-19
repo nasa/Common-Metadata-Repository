@@ -15,7 +15,6 @@
             [cmr.common.lifecycle :as lifecycle]
             [cmr.spatial.dev.viz-helper :as viz-helper]
             [cmr.elastic-utils.embedded-elastic-server :as elastic-server]
-            [cmr.common.config :as config]
             [cmr.indexer.services.queue-listener :as ql]
             [cmr.message-queue.config :as rmq-conf]
             [cmr.message-queue.queue.rabbit-mq :as rmq]
@@ -23,7 +22,9 @@
             [cmr.dev-system.control :as control]
             [cmr.message-queue.services.queue :as queue]
             [cmr.common.api.web-server :as web]
-            [cmr.common.util :as u]))
+            [cmr.common.util :as u]
+            [cmr.transmit.config :as transmit-config]
+            [cmr.elastic-utils.config :as elastic-config]))
 
 (def app-control-functions
   "A map of application name to the start function"
@@ -96,7 +97,7 @@
 
 (defmethod create-elastic :in-memory
   [type]
-  (config/set-config-value! :elastic-port in-memory-elastic-port)
+  (elastic-config/set-elastic-port! in-memory-elastic-port)
   (elastic-server/create-server
     in-memory-elastic-port
     (+ in-memory-elastic-port 10)
@@ -104,7 +105,7 @@
 
 (defmethod create-elastic :external
   [type]
-  (config/set-config-value! :elastic-port external-elastic-port)
+  (elastic-config/set-elastic-port! external-elastic-port)
   nil)
 
 (defmulti create-db
@@ -128,16 +129,19 @@
 
 (defmethod create-echo :in-memory
   [type]
-  (config/set-config-value! :echo-rest-port in-memory-echo-port)
-  (config/set-config-value! :echo-system-token in-memory-echo-system-token)
-  (config/set-config-value! :echo-rest-context "")
+
+  (transmit-config/set-echo-rest-port! in-memory-echo-port)
+  (transmit-config/set-echo-system-token! in-memory-echo-system-token)
+  (transmit-config/set-echo-rest-context! "")
+
   (mock-echo-system/create-system))
 
 (defmethod create-echo :external
   [type]
-  (config/set-config-value! :echo-rest-port external-echo-port)
-  (config/set-config-value! :echo-system-token external-echo-system-token)
-  (config/set-config-value! :echo-rest-context "/echo-rest")
+
+  (transmit-config/set-echo-rest-port! external-echo-port)
+  (transmit-config/set-echo-system-token! external-echo-system-token)
+  (transmit-config/set-echo-rest-context! "/echo-rest")
   nil)
 
 (defmulti create-queue-broker
@@ -149,7 +153,7 @@
 (defmethod create-queue-broker :in-memory
   [type]
   ;; Ingest and the indexer will not use a message queue for in-memory tests
-  (config/set-config-value! :indexing-communication-method "http")
+  (indexer-config/set-indexing-communication-method! "http")
   nil)
 
 (defn rmq-default-config
@@ -163,7 +167,7 @@
 
 (defmethod create-queue-broker :external
   [type]
-  (config/set-config-value! :indexing-communication-method "queue")
+  (indexer-config/set-indexing-communication-method! "queue")
   (-> (rmq/create-queue-broker (assoc (rmq-default-config)
                                       :queues
                                       [(indexer-config/index-queue-name)]))

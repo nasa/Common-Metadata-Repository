@@ -1,10 +1,12 @@
 (ns cmr.metadata-db.config
   "Contains functions to retrieve metadata db specific configuration"
-  (:require [cmr.common.config :as cfg]
+  (:require [cmr.common.config :as cfg :refer [defconfig]]
             [cmr.oracle.config :as oracle-config]
             [cmr.oracle.connection :as conn]))
 
-(def app-port (cfg/config-value-fn :metadata-db-port 3001 #(Long. %)))
+(defconfig metadata-db-port
+  "Port metadata-db application listens on."
+  {:default 3001 :type Long})
 
 (def db-username
   (cfg/config-value-fn :metadata-db-username "METADATA_DB"))

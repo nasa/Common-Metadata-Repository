@@ -18,7 +18,7 @@
 (defn start
   "Starts the current development system."
   []
-  (let [web-server (web/create-web-server (system/app-port)
+  (let [web-server (web/create-web-server (system/index-set-port)
                                           (repeat-last-request/wrap-api routes/make-api))
         s (assoc (system/create-system) :web web-server)]
     (alter-var-root #'system

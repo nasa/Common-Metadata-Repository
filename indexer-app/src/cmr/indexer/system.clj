@@ -14,7 +14,7 @@
             [cmr.indexer.api.routes :as routes]
             [cmr.transmit.config :as transmit-config]
             [clojure.string :as str]
-            [cmr.common.config :as cfg]
+            [cmr.common.config :as cfg :refer [defconfig]]
             [cmr.elastic-utils.config :as es-config]
             [cmr.acl.core :as acl]
             [cmr.message-queue.services.queue :as queue]
@@ -22,10 +22,10 @@
             [cmr.message-queue.config :as rmq-conf]
             [cmr.indexer.services.queue-listener :as ql]))
 
-(def collections-with-separate-indexes
-  "Configuration function that will return a list of collections with separate indexes for their
-  granule data."
-  (cfg/config-value-fn :colls-with-separate-indexes "" #(str/split % #",")))
+(defconfig colls-with-separate-indexes
+  "Configuration value that contains a list of collections with separate indexes for their
+  granule data.  The collections are comma separated."
+  {:default [] :parser #(str/split % #",")})
 
 (def
   ^{:doc "Defines the order to start the components."
@@ -42,7 +42,7 @@
   (let [sys {:log (log/create-logger)
              :db (es/create-elasticsearch-store (es-config/elastic-config))
              ;; This is set as a dynamic lookup to enable easy replacement of the value for testing.
-             :colls-with-separate-indexes-fn collections-with-separate-indexes
+             :colls-with-separate-indexes-fn colls-with-separate-indexes
              :web (web/create-web-server (transmit-config/indexer-port) routes/make-api)
              :zipkin (context/zipkin-config "Indexer" false)
              :relative-root-url (transmit-config/indexer-relative-root-url)
