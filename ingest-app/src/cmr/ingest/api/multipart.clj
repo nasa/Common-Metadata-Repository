@@ -1,8 +1,8 @@
 (ns cmr.ingest.api.multipart
   "A modified copy of ring.middleware.multipart-params.
   Specifies a ring middleware that can parse out multipart params along with a content type with
-  each string parameter. The original version did not allow extracting a content type with the a
-  normal multipart for field."
+  each string parameter. The original version did not allow extracting a content type unless the
+  parameter sent was a file type."
   (:require [ring.util.request :as req])
   (:use [ring.util.codec :only (assoc-conj)])
   (:import [org.apache.commons.fileupload.util Streams]
