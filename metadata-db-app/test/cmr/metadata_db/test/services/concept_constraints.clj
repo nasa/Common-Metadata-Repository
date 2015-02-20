@@ -1,8 +1,31 @@
 (ns cmr.metadata-db.test.services.concept-constraints
   "Unit tests to verify post-commit concept constraints are enforced."
   (:require [clojure.test :refer :all]
-            [cmr.metadata-db.services.concept-constraints :as cc]))
+            [cmr.metadata-db.services.concept-constraints :as cc]
+            [cmr.metadata-db.data.memory-db :as mem-db]
+            [cmr.metadata-db.data.concepts :as dc]
+            [cmr.metadata-db.services.messages :as msg]))
 
+(defn make-coll-concept
+  ([provider-id concept-id revision-id]
+   (make-coll-concept provider-id concept-id revision-id {}))
+  ([provider-id concept-id revision-id extra-fields]
+   {:provider-id provider-id
+    :concept-type :collection
+    :concept-id concept-id
+    :revision-id revision-id
+    :deleted false
+    :extra-fields extra-fields}))
+
+(defn make-coll-tombstone
+  ([provider-id concept-id revision-id]
+   (make-coll-tombstone provider-id concept-id revision-id {}))
+  ([provider-id concept-id revision-id extra-fields]
+   (assoc (make-coll-concept provider-id concept-id revision-id extra-fields)
+          :deleted true)))
+
+
+;; TODO these example concepts are wrong. The entry title is in extra-fields map
 (def invalid-concepts
   [{:provider-id "PROV1" :metadata "xml here" :format "echo10" :concept-type :collection
     :concept-id "C1" :revision-id 1 :entry-title "E1" :deleted false}
@@ -37,8 +60,86 @@
    ; :concept-id "C4" :revision-id 1 :entry-title "E2" :deleted 0}
    ])
 
+;; TODO change this test to check the specific list of concepts that comes back from keep-latest
 (deftest verify-keep-latest-non-deleted-concepts
   ;; Make sure that filtering out old revisions and tombstones works as expected.
   (testing "Verifying keep-latest-non-deleted-concepts returns the correct concepts"
     (is (= 3 (count (cc/keep-latest-non-deleted-concepts invalid-concepts))))
     (is (= 1 (count (cc/keep-latest-non-deleted-concepts valid-concepts))))))
+
+(defn run-constraint
+  "TODO"
+  [constraint saved-concept & existing-concepts]
+  (let [db (mem-db/create-db (cons saved-concept existing-concepts))]
+    (constraint db saved-concept)))
+
+(defn assert-invalid
+  "TODO"
+  [error-msg constraint saved-concept & existing-concepts]
+  (is (= error-msg
+         (apply run-constraint constraint saved-concept existing-concepts))))
+
+(defn assert-valid
+  "TODO"
+  [constraint saved-concept & existing-concepts]
+  (is (nil? (apply run-constraint constraint saved-concept existing-concepts))))
+
+
+(deftest entry-title-unique-constraint-test
+  ;;TODO TESTS
+  ;; other entry title that's deleted is ok
+  ;; other entry title used in another provider is ok
+  ;; other entry title reused not ok
+  ;; other entry title with same concept id and earlier revision id is ok
+  ;; no other entry titles is ok
+  ;; different entry titles is ok
+
+  (let [test-concept (make-coll-concept "PROV1" "C1-PROV1" 5 {:entry-title "ET1"})
+        is-valid (partial assert-valid cc/entry-title-unique-constraint test-concept)
+        not-valid #(apply assert-invalid %1 cc/entry-title-unique-constraint test-concept %2)]
+
+    (testing "valid cases"
+      (testing "with empty database"
+        (is-valid)))
+
+    (testing "invalid cases"
+      (testing "same entry title"
+        (let [other-concept (make-coll-concept "PROV1" "C2-PROV1" 1 {:entry-title "ET1"})]
+          (not-valid
+            (msg/duplicate-entry-titles [test-concept other-concept])
+            [other-concept]))))))
+
+
+(comment
+
+  (let [c1 (make-coll-concept "PROV1" "C1-PROV1" 1 {:entry-title "ET1"})
+        c2 (make-coll-concept "PROV1" "C2-PROV1" 1 {:entry-title "ET1"})
+        db (mem-db/create-db [c1 c2])]
+
+
+    (cc/entry-title-unique-constraint
+      db c1)
+    )
+
+
+
+  (dc/find-latest-concepts
+    (mem-db/create-db [(make-coll-concept "PROV1" "C1-PROV1" 1 {:entry-title "ET1"})
+                       (make-coll-concept "PROV1" "C2-PROV1" 1 {:entry-title "ET1"})])
+    {:entry-title "ET1"
+     :concept-type :collection
+     :provider-id "PROV1"})
+
+  )
+
+
+
+
+
+
+
+
+
+
+
+
