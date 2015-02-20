@@ -90,26 +90,20 @@
         body (errors->body-string response-format errors pretty?)]
     [content-type body]))
 
-(defn- handle-exception-info
+(defn- handle-service-error
   "Handles a Clojure ExceptionInfo instance that was caught."
-  [default-format-fn request e]
-  (let [data (ex-data e)]
-    (if (:type data)
-      (let [results-format (mt/get-results-format
-                             (:uri request)
-                             (:headers request)
-                             (default-format-fn request))
-            {:keys [type errors]} data
-            status-code (type->http-status-code type)
-            pretty? (= "true" (get-in request [:query-params "pretty"]))
-            [content-type response-body] (response-type-body errors results-format pretty?)]
-        {:status status-code
-         :headers {CONTENT_TYPE_HEADER content-type
-                   CORS_ORIGIN_HEADER "*"}
-         :body response-body})
-      (do
-        (error e)
-        internal-error-ring-response))))
+  [default-format-fn request type errors e]
+  (let [results-format (mt/get-results-format
+                         (:uri request)
+                         (:headers request)
+                         (default-format-fn request))
+        status-code (type->http-status-code type)
+        pretty? (= "true" (get-in request [:query-params "pretty"]))
+        [content-type response-body] (response-type-body errors results-format pretty?)]
+    {:status status-code
+     :headers {CONTENT_TYPE_HEADER content-type
+               CORS_ORIGIN_HEADER "*"}
+     :body response-body}))
 
 (defn exception-handler
   "A ring exception handler that will handle errors thrown by the cmr.common.services.errors
@@ -119,9 +113,10 @@
    (exception-handler f (constantly "application/json")))
   ([f default-format-fn]
    (fn [request]
-     (try (f request)
-       (catch clojure.lang.ExceptionInfo e
-         (handle-exception-info default-format-fn request e))
+     (try
+       (errors/handle-service-errors
+         (partial f request)
+         (partial handle-service-error default-format-fn request))
        (catch Throwable e
          (error e)
          internal-error-ring-response)))))

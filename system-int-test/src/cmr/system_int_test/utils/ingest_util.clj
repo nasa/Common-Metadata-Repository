@@ -104,8 +104,28 @@
          body (json/decode (:body response) true)]
      (assoc body :status (:status response)))))
 
+(defn multipart-param-request
+  "Submits a multipart parameter request to the given url with the multipart parameters indicated.
+  A multipart parameter is a map the keys :name, :content, and :content-type."
+  [url multipart-params]
+
+  ;; clj-http has a specific format for the multipart params.
+  (let [multipart-params (for [{:keys [name content content-type]} multipart-params]
+                           {:name name
+                            :content content
+                            :mime-type content-type
+                            :encoding "UTF-8"})
+        response (client/request {:method :post
+                                  :url url
+                                  :multipart multipart-params
+                                  :accept :json
+                                  :throw-exceptions false
+                                  :connection-manager (url/conn-mgr)})
+        body (json/decode (:body response) true)]
+    (assoc body :status (:status response))))
+
 (defn validate-concept
-  "Validate a concept and return a map with status and error messages if applicable"
+  "Validate a concept and return a map with status and error messages if applicable."
   [{:keys [metadata format concept-type concept-id revision-id provider-id native-id] :as concept}]
   (let [headers (util/remove-nil-keys {"concept-id" concept-id "revision-id" revision-id})
         response (client/request
@@ -119,6 +139,23 @@
                     :connection-manager (url/conn-mgr)})
         body (json/decode (:body response) true)]
     (assoc body :status (:status response))))
+
+(defn validate-granule
+  "Validates a granule concept by sending it and optionally it's parent collection to the validation
+  endpoint"
+  ([granule-concept]
+   ;; Use the regular validation endpoint in this case.
+   (validate-concept granule-concept))
+  ([granule-concept collection-concept]
+   (let [{:keys [provider-id native-id]} granule-concept]
+     (multipart-param-request
+       (url/validate-url provider-id :granule native-id)
+       [{:name "granule"
+         :content (:metadata granule-concept)
+         :content-type (:format granule-concept)}
+        {:name "collection"
+         :content (:metadata collection-concept)
+         :content-type (:format collection-concept)}]))))
 
 (defn save-concept
   "Save a concept to the metadata db and return a map with status, concept-id, and revision-id"

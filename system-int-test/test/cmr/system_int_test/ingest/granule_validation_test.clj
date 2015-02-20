@@ -9,7 +9,9 @@
             [cmr.spatial.polygon :as poly]
             [cmr.spatial.point :as p]
             [cmr.spatial.line-string :as l]
-            [cmr.spatial.mbr :as m]))
+            [cmr.spatial.mbr :as m]
+            [cmr.system-int-test.utils.url-helper :as url]
+            [cmr.ingest.services.messages :as msg]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
@@ -24,6 +26,93 @@
 
   )
 
+(defn assert-validation-errors
+  "Asserts that when the granule and optional collection concept are validated the expected errors
+  are returned. The collection concept can be passed as a third argument and it will be sent along
+  with the granule instead of using a previously ingested collection."
+  [expected-errors & gran-and-optional-coll-concept ]
+  (let [response (apply ingest/validate-granule gran-and-optional-coll-concept)]
+    (is (= {:status 400 :errors expected-errors}
+           (select-keys response [:status :errors])))))
+
+(defn assert-validation-success
+  "Asserts that when the granule and optional collection concept are valid. The collection concept
+  can be passed as a third argument and it will be sent along with the granule instead of using a
+  previously ingested collection."
+  [& gran-and-optional-coll-concept]
+  (let [response (apply ingest/validate-granule gran-and-optional-coll-concept)]
+    (is (= {:status 200} (select-keys response [:status :errors])))))
+
+
+
+(deftest validation-endpoint-test
+  (let [invalid-granule-xml "<Granule>invalid xml</Granule>"
+        expected-errors ["Line 1 - cvc-complex-type.2.3: Element 'Granule' cannot have character [children], because the type's content type is element-only."
+                         "Line 1 - cvc-complex-type.2.4.b: The content of element 'Granule' is not complete. One of '{GranuleUR}' is expected."]]
+
+    (testing "with collection as additional parameter"
+      (let [collection (dc/collection {})
+            coll-concept (d/item->concept collection :echo10)]
+        (testing "success"
+          (let [concept (d/item->concept (dg/granule collection))]
+            (assert-validation-success concept coll-concept)))
+        (testing "collection in different format than granule"
+          (let [concept (d/item->concept (dg/granule collection))
+                iso-coll-concept (d/item->concept collection :iso19115)]
+            (assert-validation-success concept iso-coll-concept)))
+
+        (testing "invalid collection xml"
+          (assert-validation-errors
+            [(msg/invalid-parent-collection-for-validation
+               "Line 1 - cvc-elt.1: Cannot find the declaration of element 'Granule'.")]
+            (d/item->concept (dg/granule collection))
+            (assoc coll-concept :metadata invalid-granule-xml)))
+
+        (testing "invalid granule xml"
+          (assert-validation-errors
+            expected-errors
+            (-> collection
+                dg/granule
+                d/item->concept
+                (assoc :metadata invalid-granule-xml))
+            coll-concept))
+
+        (testing "invalid multipart params"
+          (let [response (ingest/multipart-param-request
+                           (url/validate-url "PROV1" :granule "native-id")
+                           [{:name "foo"
+                             :content "foo content"
+                             :content-type "application/xml"}])]
+            (is (= {:status 400
+                    :errors [(msg/invalid-multipart-params #{"granule" "collection"} ["foo"])]}
+                   (select-keys response [:status :errors])))))
+
+        (testing "invalid granule metadata format"
+          (assert-validation-errors
+            ["Invalid content-type: application/xml. Valid content-types: application/echo10+xml, application/iso:smap+xml."]
+            (-> (d/item->concept (dg/granule collection))
+                (assoc :format "application/xml"))
+            coll-concept))
+
+        (testing "invalid collection metadata format"
+          (assert-validation-errors
+            [(msg/invalid-parent-collection-for-validation
+               (str "Invalid content-type: application/xml. Valid content-types: "
+                    "application/echo10+xml, application/iso:smap+xml, application/iso19115+xml, application/dif+xml."))]
+            (d/item->concept (dg/granule collection))
+            (assoc coll-concept :format "application/xml")))))
+
+    (testing "with ingested collection"
+      (let [collection (d/ingest "PROV1" (dc/collection {}))]
+        (testing "successful validation of granule"
+          (assert-validation-success (d/item->concept (dg/granule collection))))
+        (testing "invalid granule xml"
+          (assert-validation-errors
+            expected-errors
+            (-> collection
+                dg/granule
+                d/item->concept
+                (assoc :metadata invalid-granule-xml))))))))
 
 (defn polygon
   "Creates a single ring polygon with the given ordinates. Points must be in counter clockwise order."
@@ -34,18 +123,40 @@
   ([coll-attributes gran-attributes field-path errors]
    (assert-invalid coll-attributes gran-attributes field-path errors :echo10))
   ([coll-attributes gran-attributes field-path errors metadata-format]
-   (let [coll (d/ingest "PROV1" (dc/collection coll-attributes) metadata-format)
-         response (d/ingest "PROV1" (dg/granule coll gran-attributes) metadata-format)]
-     (is (= {:status 400
-             :errors [{:path field-path
-                       :errors errors}]}
-            (select-keys response [:status :errors]))))))
+   (testing "through validation api"
+     (let [coll (dc/collection coll-attributes)
+           coll-concept (d/item->concept coll metadata-format)
+           granule (dg/granule coll gran-attributes)
+           gran-concept (d/item->concept granule)
+           response (ingest/validate-granule gran-concept coll-concept)]
+       (is (= {:status 400
+               :errors [{:path field-path
+                         :errors errors}]}
+              (select-keys response [:status :errors])))))
+
+   (testing "through ingest API"
+     (let [coll (d/ingest "PROV1" (dc/collection coll-attributes) metadata-format)
+           response (d/ingest "PROV1" (dg/granule coll gran-attributes) metadata-format)]
+       (is (= {:status 400
+               :errors [{:path field-path
+                         :errors errors}]}
+              (select-keys response [:status :errors])))))))
 
 (defn assert-valid
   [coll-attributes gran-attributes]
-  (let [coll (d/ingest "PROV1" (dc/collection coll-attributes))
-        response (d/ingest "PROV1" (dg/granule coll gran-attributes))]
-    (is (= {:status 200} (select-keys response [:status :errors])))))
+  (testing "through validation api"
+    (let [coll (dc/collection coll-attributes)
+          coll-concept (d/item->concept coll)
+          granule (dg/granule coll gran-attributes)
+          gran-concept (d/item->concept granule)
+          response (ingest/validate-granule gran-concept coll-concept)]
+      (is (= {:status 200}
+             (select-keys response [:status :errors])))))
+
+  (testing "through ingest API"
+    (let [coll (d/ingest "PROV1" (dc/collection coll-attributes))
+          response (d/ingest "PROV1" (dg/granule coll gran-attributes))]
+      (is (= {:status 200} (select-keys response [:status :errors]))))))
 
 (defn assert-invalid-spatial
   ([coord-sys shapes errors]

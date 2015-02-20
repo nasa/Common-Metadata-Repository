@@ -23,7 +23,8 @@
   "A configuration feature switch that turns on CMR ingest validation."
   (cfg/config-value-fn :ingest-validation-enabled "true" #(= % "true")))
 
-(defn add-extra-fields-for-collection
+(defn- add-extra-fields-for-collection
+  "Adds the extra fields for a collection concept."
   [context concept collection]
   (let [{{:keys [short-name version-id]} :product
          {:keys [delete-time]} :data-provider-timestamps
@@ -35,22 +36,38 @@
                                   :version-id version-id
                                   :delete-time (when delete-time (str delete-time))})))
 
+(defn validate-collection
+  "Validate the collection. Returns an appropriate error message indicating any validation failures."
+  [context concept]
+  (v/validate-concept-request concept)
+  (v/validate-concept-xml concept)
+
+  (let [collection (umm/parse-concept concept)
+        ;; UMM Validation
+        _ (when (ingest-validation-enabled?)
+            (v/validate-collection-umm collection))
+        ;; Add extra fields for the collection
+        coll-concept (add-extra-fields-for-collection context concept collection)]
+    (v/validate-business-rules context coll-concept)
+    coll-concept))
+
 (defn- get-granule-parent-collection-concept
   "Find the parent collection for a granule given its provider id and collection ref. This will
   correctly handle situations where there might be multiple concept ids that used a short name and
   version id or entry title but were previously deleted."
-  [context provider-id collection-ref]
-  (let [params (util/remove-nil-keys (merge {:provider-id provider-id}
-                                            collection-ref))
-        matching-concepts (h/find-visible-collections context params)]
-    (when (> (count matching-concepts) 1)
-      (serv-errors/internal-error!
-        (format (str "Found multiple possible parent collections for a granule in provider %s"
-                     " referencing with %s. matching-concepts: %s")
-                provider-id (pr-str collection-ref) (pr-str matching-concepts))))
-    (first matching-concepts)))
+  [context concept granule]
+  (let [provider-id (:provider-id concept)
+        collection-ref (:collection-ref granule)
+        params (util/remove-nil-keys (merge {:provider-id provider-id}
+                                            collection-ref))]
+    (or (first (h/find-visible-collections context params))
+        (cmsg/data-error :bad-request
+                         msg/parent-collection-does-not-exist
+                         (:granule-ur granule)
+                         (:collection-ref granule)))))
 
-(defn add-extra-fields-for-granule
+(defn- add-extra-fields-for-granule
+  "Adds the extra fields for a granule concept."
   [context concept granule collection-concept]
   (let [{:keys [collection-ref granule-ur]
          {:keys [delete-time]} :data-provider-timestamps} granule
@@ -58,50 +75,46 @@
     (assoc concept :extra-fields {:parent-collection-id parent-collection-id
                                   :delete-time (when delete-time (str delete-time))})))
 
-(defmulti prepare-concept-for-save
-  "Prepares a concept for saving. This includes UMM validation and adding extra fields."
+(defn validate-granule
+  "Validate a granule concept actually ingesting it. Return an appropriate error message indicating
+  any validation failures.
+
+  Accepts an optional function for looking up the parent collection concept. This can be used to
+  provide the collection through an alternative means like the API."
+  ([context concept]
+   (validate-granule
+     context concept get-granule-parent-collection-concept))
+  ([context concept fetch-parent-collection-concept-fn]
+   (v/validate-concept-request concept)
+   (v/validate-concept-xml concept)
+
+   (let [granule (umm/parse-concept concept)
+         parent-collection-concept (fetch-parent-collection-concept-fn
+                                     context concept granule)]
+     ;; UMM Validation
+     (when (ingest-validation-enabled?)
+       (let [parent-collection (umm/parse-concept parent-collection-concept)]
+         (v/validate-granule-umm parent-collection granule)))
+
+     ;; Add extra fields for the granule
+     (let [gran-concept (add-extra-fields-for-granule
+                          context concept granule parent-collection-concept)]
+       (v/validate-business-rules context gran-concept)
+       gran-concept))))
+
+(defmulti validate-concept
+  "Validate that a concept is valid for ingest without actually ingesting the concept.
+  Return an appropriate error message indicating any validation failures."
   (fn [context concept]
     (:concept-type concept)))
 
-(defmethod prepare-concept-for-save :collection
+(defmethod validate-concept :collection
   [context concept]
-  (let [collection (umm/parse-concept concept)]
-    ;; UMM Validation
-    (when (ingest-validation-enabled?)
-      (v/validate-collection-umm collection))
-    ;; Add extra fields for the collection
-    (add-extra-fields-for-collection context concept collection)))
+  (validate-collection context concept))
 
-(defmethod prepare-concept-for-save :granule
+(defmethod validate-concept :granule
   [context concept]
-  (let [granule (umm/parse-concept concept)
-        parent-collection-concept (get-granule-parent-collection-concept
-                                    context
-                                    (:provider-id concept)
-                                    (:collection-ref granule))]
-    (when-not parent-collection-concept
-      (cmsg/data-error :bad-request
-                       msg/parent-collection-does-not-exist
-                       (:granule-ur granule)
-                       (:collection-ref granule)))
-
-    ;; UMM Validation
-    (when (ingest-validation-enabled?)
-      (let [parent-collection (umm/parse-concept parent-collection-concept)]
-        (v/validate-granule-umm parent-collection granule)))
-
-    ;; Add extra fields for the granule
-    (add-extra-fields-for-granule context concept granule parent-collection-concept)))
-
-(deftracefn validate-concept
-  "Validate that a concept is valid for ingest without actually ingesting the concept.
-  Return an appropriate error message indicating any validation failures."
-  [context concept]
-  (v/validate-concept-request concept)
-  (v/validate-concept-xml concept)
-  (let [concept (prepare-concept-for-save context concept)]
-    (v/validate-business-rules context concept)
-    concept))
+  (validate-granule context concept))
 
 (deftracefn save-concept
   "Store a concept in mdb and indexer and return concept-id and revision-id."
