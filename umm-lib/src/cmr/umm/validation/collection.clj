@@ -5,7 +5,7 @@
             [cmr.umm.validation.utils :as vu]
             [cmr.umm.spatial :as umm-s]
             [cmr.spatial.validation :as sv]
-            [cmr.umm.related-url-helper :as ruh]))
+            [cmr.umm.validation.validation-helper :as h]))
 
 (defn set-geometries-spatial-representation
   "Sets the spatial represention from the spatial coverage on the geometries"
@@ -47,12 +47,6 @@
       {field-path [(format "BeginningDateTime [%s] must be no later than EndingDateTime [%s]"
                            (str beginning-date-time) (str ending-date-time))]})))
 
-(def online-access-urls-validation
-  "Defines online access urls validation for collections."
-  (v/pre-validation
-    ruh/downloadable-urls
-    (vu/unique-by-name-validator :url)))
-
 (defn- collection-association-name
   "Returns the unique name of collection association for reporting purpose"
   [ca]
@@ -80,7 +74,7 @@
                (vu/unique-by-name-validator :short-name)]
    :associated-difs (vu/unique-by-name-validator identity)
    :temporal {:range-date-times (v/every range-date-time-validation)}
-   :related-urls online-access-urls-validation
+   :related-urls h/online-access-urls-validation
    :two-d-coordinate-systems [(vu/unique-by-name-validator :name)
                               (v/every two-d-coord-validations)]
    :collection-associations (vu/unique-by-name-validator collection-association-name)})

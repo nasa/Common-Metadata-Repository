@@ -169,3 +169,22 @@
         (g/map->UmmGranule {:product-specific-attributes [pg1 pg2 pg3 pg4]})
         [:product-specific-attributes]
         ["The following list of Product Specific Attributes did not exist in the referenced parent collection: [AA3, AA4]."]))))
+
+(deftest granule-online-access-urls-validation
+  (let [url "http://example.com/url2"
+        r1 (c/map->RelatedURL {:type "GET DATA"
+                               :url "http://example.com/url1"})
+        r2 (c/map->RelatedURL {:type "GET DATA"
+                               :url url})
+        r3 (c/map->RelatedURL {:type "GET RELATED VISUALIZATION"
+                               :url url})
+        collection (c/map->UmmCollection {})]
+    (testing "valid online access urls"
+      (assert-valid-gran collection (g/map->UmmGranule {:related-urls [r1 r2 r3]})))
+
+    (testing "invalid online access urls with duplicate names"
+      (assert-invalid-gran
+        collection
+        (g/map->UmmGranule {:related-urls [r1 r2 r2]})
+        [:related-urls]
+        [(format "Related Urls must be unique. This contains duplicates named [%s]." url)]))))
