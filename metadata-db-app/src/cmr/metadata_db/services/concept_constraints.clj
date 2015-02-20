@@ -52,7 +52,6 @@
 
                    (filter (complement :deleted)))
         num-concepts (count concepts)]
-    (cmr.common.dev.capture-reveal/capture-all)
     (cond
       (zero? num-concepts)
       (errors/internal-error!
