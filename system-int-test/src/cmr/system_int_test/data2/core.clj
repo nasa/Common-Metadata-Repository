@@ -43,17 +43,19 @@
 
 (defn item->concept
   "Converts an UMM item to a concept map. Default provider-id to PROV1 if not present."
-  [item format-key]
-  (let [format (mime-types/format->mime-type format-key)]
-    (merge {:concept-type (item->concept-type item)
-            :provider-id (or (:provider-id item) "PROV1")
-            :native-id (or (:native-id item) (item->native-id item))
-            :metadata (umm/umm->xml item format-key)
-            :format format}
-           (when (:concept-id item)
-             {:concept-id (:concept-id item)})
-           (when (:revision-id item)
-             {:revision-id (:revision-id item)}))))
+  ([item]
+   (item->concept item :echo10))
+  ([item format-key]
+   (let [format (mime-types/format->mime-type format-key)]
+     (merge {:concept-type (item->concept-type item)
+             :provider-id (or (:provider-id item) "PROV1")
+             :native-id (or (:native-id item) (item->native-id item))
+             :metadata (umm/umm->xml item format-key)
+             :format format}
+            (when (:concept-id item)
+              {:concept-id (:concept-id item)})
+            (when (:revision-id item)
+              {:revision-id (:revision-id item)})))))
 
 (defn ingest
   "Ingests the catalog item. Returns it with concept-id, revision-id, and provider-id set on it."

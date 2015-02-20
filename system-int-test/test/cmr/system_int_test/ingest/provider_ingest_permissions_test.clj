@@ -45,7 +45,7 @@
         collection (d/ingest "PROV1" (dc/collection {}) :echo10 provider-admin-update-token)
         ingested-concept (ingest/get-concept (:concept-id collection))
 
-        granule (dg/umm-granule->granule-concept (dg/granule collection))]
+        granule (d/item->concept (dg/granule collection))]
 
     (testing "ingest granule update permissions"
       (are [token]
