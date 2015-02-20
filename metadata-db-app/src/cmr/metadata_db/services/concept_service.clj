@@ -170,7 +170,11 @@
   (loop [concept concept tries-left 3]
     (let [result (c/save-concept db concept)]
       (if (nil? (:error result))
+        ;; TODO
+        ;; (if (concept-constraints/valid-after-commit? db concept)
         concept
+        ;; (force-delete db concept))
+
         ;; depending on the error we will either throw an exception or try again (recur)
         (do
           (handle-save-errors concept result tries-left revision-id-provided?)
