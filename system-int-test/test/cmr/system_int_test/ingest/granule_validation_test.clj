@@ -6,6 +6,7 @@
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.core :as d]
             [cmr.umm.spatial :as umm-s]
+            [cmr.umm.granule :as umm-g]
             [cmr.spatial.polygon :as poly]
             [cmr.spatial.point :as p]
             [cmr.spatial.line-string :as l]
@@ -100,10 +101,41 @@
                (str "Invalid content-type: application/xml. Valid content-types: "
                     "application/echo10+xml, application/iso:smap+xml, application/iso19115+xml, application/dif+xml."))]
             (d/item->concept (dg/granule collection))
-            (assoc coll-concept :format "application/xml")))))
+            (assoc coll-concept :format "application/xml")))
 
-    ;; TODO Add test to verify that collection passed into granule validation endpoint must match
-    ;; the dataset ID or shortname and version ID of the collection in the granule XML.
+        (testing "granule collection ref does not match collection"
+          (testing "entry-title"
+            (let [collection (dc/collection {:entry-title "correct"})
+                  coll-concept (d/item->concept collection :echo10)
+                  granule (assoc (dg/granule collection)
+                                 :collection-ref
+                                 (umm-g/map->CollectionRef {:entry-title "wrong"}))]
+              (assert-validation-errors
+                [{:path ["CollectionRef"],
+                  :errors ["Collection Ref Entry Title [wrong] does not match the entry title of the parent collection [correct]"]}]
+                (d/item->concept granule)
+                coll-concept)))
+
+          (let [collection (dc/collection {:short-name "S1" :version-id "V1"})
+                coll-concept (d/item->concept collection :echo10)]
+            (testing "shortname"
+              (assert-validation-errors
+                [{:path ["CollectionRef"],
+                  :errors ["Collection Ref Short Name [S1] and Version ID [V2] do not match the Short Name [S1] and Version ID [V1] of the parent collection."]}]
+                (d/item->concept (assoc (dg/granule collection)
+                                        :collection-ref
+                                        (umm-g/map->CollectionRef {:short-name "S1"
+                                                                   :version-id "V2"})))
+                coll-concept))
+            (testing "version id"
+              (assert-validation-errors
+                [{:path ["CollectionRef"],
+                  :errors ["Collection Ref Short Name [S2] and Version ID [V1] do not match the Short Name [S1] and Version ID [V1] of the parent collection."]}]
+                (d/item->concept (assoc (dg/granule collection)
+                                        :collection-ref
+                                        (umm-g/map->CollectionRef {:short-name "S2"
+                                                                   :version-id "V1"})))
+                coll-concept))))))
 
     (testing "with ingested collection"
       (let [collection (d/ingest "PROV1" (dc/collection {}))]

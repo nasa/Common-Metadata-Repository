@@ -7,7 +7,8 @@
             [cmr.umm.spatial :as umm-s]
             [cmr.spatial.validation :as sv]
             [cmr.umm.validation.utils :as vu]
-            [cmr.umm.validation.validation-helper :as h]))
+            [cmr.umm.validation.validation-helper :as h]
+            [cmr.common.services.errors :as errors]))
 
 
 (defn set-geometries-spatial-representation
@@ -39,9 +40,33 @@
        [(format "%%s have [%s] which do not reference any projects in parent collection."
                 (str/join ", " missing-project-refs))]})))
 
+(defn collection-ref-validation
+  "Validates the granules collection ref matches the parent collection."
+  [_ granule]
+  (let [{{:keys [short-name version-id entry-title]} :collection-ref} granule]
+    (cond
+      entry-title
+      (let [coll-entry-title (get-in granule [:parent :entry-title])]
+        (when-not (= coll-entry-title entry-title)
+          {[:collection-ref]
+           [(format "%%s Entry Title [%s] does not match the entry title of the parent collection [%s]"
+                    entry-title coll-entry-title)]}))
+
+      (and short-name version-id)
+      (let [{coll-short-name :short-name
+             coll-version-id :version-id} (get-in granule [:parent :product])]
+        (when-not (and (= coll-short-name short-name) (= coll-version-id version-id))
+          {[:collection-ref]
+           [(format (str "%%s Short Name [%s] and Version ID [%s] do not match the Short Name [%s] "
+                         "and Version ID [%s] of the parent collection.")
+                    short-name version-id coll-short-name coll-version-id)]}))
+      :else
+      (errors/internal-error! (str "Unexpected collection ref in granule: " (pr-str granule))))))
+
 (def granule-validations
   "Defines validations for granules"
-  [{:spatial-coverage spatial-coverage-validations
+  [collection-ref-validation
+   {:spatial-coverage spatial-coverage-validations
     :platform-refs [(vu/unique-by-name-validator :short-name)
                     (vu/has-parent-validator :short-name "Platform short name")]
     :product-specific-attributes (vu/has-parent-validator :name "Product Specific Attribute")
