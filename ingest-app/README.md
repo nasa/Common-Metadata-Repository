@@ -82,7 +82,7 @@ sample output:
 sample output:
 {"concept-id":"C12-CurlPROV009","revision-id":1}
 
-### Validate collection
+### Validate Collection
 
 Validates collection metadata by performing schema validation, UMM validation, and inventory specific validations. Returns status code 200 on successful validation, status code 400 with a list of validation errors on failed validation.
 
@@ -100,7 +100,7 @@ Validates collection metadata by performing schema validation, UMM validation, a
       <Visible>true</Visible> \
       </Collection>"
 
-### Validate granule
+### Validate Granule
 
 Validates granule metadata by performing schema validation, UMM validation, and inventory specific validations. Returns status code 200 on successful validation, status code 400 with a list of validation errors on failed validation.
 
@@ -114,6 +114,17 @@ Validates granule metadata by performing schema validation, UMM validation, and 
         </Collection> \
         <Orderable>true</Orderable> \
     </Granule>"
+
+#### Validate Granule With Parent Collection
+
+Granule validation also allows the parent collection to be sent along with the granule as well. This allows validation of a granule that may not have a parent collection ingested. The granule and collection XML are sent over HTTP using form multipart parameters. The collection and granule XML are specified with the parameter names "collection" and "granule".
+
+Here's an example of validating a granule along with the parent collection using curl. The granule is in the granule.xml file and collection is in collection.xml.
+
+    curl -i -XPOST \
+    -F "granule=<granule.xml;type=application/echo10+xml" \
+    -F "collection=<collection.xml;type=application/echo10+xml" \
+    "http://localhost:3002/providers/PROV1/validate/granule/ur4"
 
 ### Error Messages
 

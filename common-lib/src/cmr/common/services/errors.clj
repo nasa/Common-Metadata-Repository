@@ -61,3 +61,16 @@
    (if cause
      (throw (Exception. msg cause))
      (throw (Exception. msg)))))
+
+(defn handle-service-errors
+  "A helper for catching and handling service errors. Takes one function that may generate a service
+  error. The other function handles the service error. It will be passed three arguments: the error
+  type, the list of errors, and the actual exception."
+  [f error-handler]
+  (try
+    (f)
+    (catch clojure.lang.ExceptionInfo e
+      (let [{:keys [type errors]} (ex-data e)]
+        (if (and type errors)
+          (error-handler type errors e)
+          (throw e))))))

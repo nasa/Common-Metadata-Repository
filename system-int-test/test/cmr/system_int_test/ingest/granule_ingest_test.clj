@@ -50,7 +50,7 @@
 (deftest granule-ingest-test
   (testing "ingest of a new granule"
     (let [collection (d/ingest "PROV1" (dc/collection {}))
-          granule (dg/umm-granule->granule-concept (dg/granule collection))
+          granule (d/item->concept (dg/granule collection))
           {:keys [concept-id revision-id]} (ingest/ingest-concept granule)]
       (index/wait-until-indexed)
       (is (ingest/concept-exists-in-mdb? concept-id revision-id))
@@ -61,7 +61,7 @@
   (testing "ingest of a new granule with concept-id present"
     (let [collection (d/ingest "PROV1" (dc/collection {}))
           supplied-concept-id "G1-PROV1"
-          granule (dg/umm-granule->granule-concept
+          granule (d/item->concept
                     (dg/granule collection {:concept-id supplied-concept-id}))
           {:keys [concept-id revision-id]} (ingest/ingest-concept granule)]
       (index/wait-until-indexed)
@@ -75,7 +75,7 @@
   (testing "ingest same granule n times ..."
     (let [collection (d/ingest "PROV1" (dc/collection {}))
           n 4
-          granule (dg/umm-granule->granule-concept (dg/granule collection {:concept-id "G1-PROV1"}))
+          granule (d/item->concept (dg/granule collection {:concept-id "G1-PROV1"}))
           created-granules (doall (take n (repeatedly n #(ingest/ingest-concept granule))))]
       (index/wait-until-indexed)
       (is (apply = (map :concept-id created-granules)))
@@ -84,7 +84,7 @@
 ;; Verify ingest behaves properly if empty body is presented in the request.
 (deftest empty-granule-ingest-test
   (let [collection (d/ingest "PROV1" (dc/collection {}))
-        granule (dg/umm-granule->granule-concept (dg/granule collection))
+        granule (d/item->concept (dg/granule collection))
         granule-with-empty-body  (assoc granule :metadata "")
         {:keys [status errors]} (ingest/ingest-concept granule-with-empty-body)]
     (index/wait-until-indexed)
@@ -95,7 +95,7 @@
 ;; max revision id of the granule prior to the delete
 (deftest delete-granule-test
   (let [collection (d/ingest "PROV1" (dc/collection {}))
-        granule (dg/umm-granule->granule-concept (dg/granule collection {:concept-id "G1-PROV1"}))
+        granule (d/item->concept (dg/granule collection {:concept-id "G1-PROV1"}))
         ingest-result (ingest/ingest-concept granule)
         delete-result (ingest/delete-concept granule)
         ingest-revision-id (:revision-id ingest-result)
@@ -106,7 +106,7 @@
 ;; Verify ingest is successful for request with content type that has parameters
 (deftest content-type-with-parameter-ingest-test
   (let [collection (d/ingest "PROV1" (dc/collection {}))
-        granule (dg/umm-granule->granule-concept
+        granule (d/item->concept
                   (assoc (dg/granule collection)
                          :format "application/echo10+xml; charset=utf-8"))
         {:keys [status errors]} (ingest/ingest-concept granule)]
@@ -116,7 +116,7 @@
 ;; Verify ingest behaves properly if request is missing content type.
 (deftest missing-content-type-ingest-test
   (let [collection (d/ingest "PROV1" (dc/collection {}))
-        granule (dg/umm-granule->granule-concept (dg/granule collection))
+        granule (d/item->concept (dg/granule collection))
         {:keys [status errors]} (ingest/ingest-concept (assoc granule :format ""))]
     (index/wait-until-indexed)
     (is (= 400 status))
@@ -125,7 +125,7 @@
 ;; Verify ingest behaves properly if request contains invalid  content type.
 (deftest invalid-content-type-ingest-test
   (let [collection (d/ingest "PROV1" (dc/collection {}))
-        granule (dg/umm-granule->granule-concept (dg/granule collection))
+        granule (d/item->concept (dg/granule collection))
         {:keys [status errors]} (ingest/ingest-concept (assoc granule :format "blah"))]
     (index/wait-until-indexed)
     (is (= 400 status))
@@ -134,7 +134,7 @@
 ;; Verify deleting same granule twice is not an error if ignore conflict is true.
 (deftest delete-same-granule-twice-test
   (let [collection (d/ingest "PROV1" (dc/collection {}))
-        granule (dg/umm-granule->granule-concept
+        granule (d/item->concept
                   (dg/granule collection {:concept-id "G1-PROV1"}))
         ingest-result (ingest/ingest-concept granule)
         delete1-result (ingest/delete-concept granule)
@@ -149,7 +149,7 @@
   (let [collection (d/ingest "PROV1" (dc/collection {:entry-title "Coll1"}))
         umm-granule (dg/granule collection {:concept-id "G1-PROV1"
                                             :granule-ur "Gran1"})
-        granule (dg/umm-granule->granule-concept umm-granule)
+        granule (d/item->concept umm-granule)
         _ (ingest/delete-concept (d/item->concept collection :echo10))
         {:keys [status errors]} (ingest/ingest-concept granule)]
     (is (= [400 ["Collection with EntryTitle [Coll1] referenced in granule does not exist."]]
@@ -160,7 +160,7 @@
 (deftest ingest-granule-with-slash-in-native-id-test
   (let [collection (d/ingest "PROV1" (dc/collection {}))
         umm-granule (dg/granule collection {:native-id "Name/With/Slashes"})
-        granule (dg/umm-granule->granule-concept umm-granule)
+        granule (d/item->concept umm-granule)
         {:keys [concept-id revision-id] :as response} (ingest/ingest-concept granule)
         ingested-concept (ingest/get-concept concept-id)]
     (index/wait-until-indexed)
@@ -173,7 +173,7 @@
   (are [concept-format validation-errors]
        (let [collection (d/ingest "PROV1" (dc/collection {}))
              umm-granule (dg/granule collection {:native-id "Name/With/Slashes"})
-             concept (dg/umm-granule->granule-concept
+             concept (d/item->concept
                        (dg/granule collection {:beginning-date-time "2010-12-12T12:00:00Z"})
                        concept-format)
              {:keys [status errors]}
