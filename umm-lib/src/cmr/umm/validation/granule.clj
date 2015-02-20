@@ -6,7 +6,8 @@
             [cmr.common.validations.core :as v]
             [cmr.umm.spatial :as umm-s]
             [cmr.spatial.validation :as sv]
-            [cmr.umm.validation.utils :as vu]))
+            [cmr.umm.validation.utils :as vu]
+            [cmr.umm.validation.validation-helper :as h]))
 
 
 (defn set-geometries-spatial-representation
@@ -44,7 +45,8 @@
     :platform-refs [(vu/unique-by-name-validator :short-name)
                     (vu/has-parent-validator :short-name "Platform short name")]
     :product-specific-attributes (vu/has-parent-validator :name "Product Specific Attribute")
-    :project-refs (vu/unique-by-name-validator identity)}
+    :project-refs (vu/unique-by-name-validator identity)
+    :related-urls h/online-access-urls-validation}
    projects-reference-collection])
 
 
