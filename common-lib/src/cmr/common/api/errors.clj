@@ -91,7 +91,7 @@
     [content-type body]))
 
 (defn- handle-service-error
-  "Handles a Clojure ExceptionInfo instance that was caught."
+  "Handles service errors thrown during a request and returns the appropriate ring response."
   [default-format-fn request type errors e]
   (let [results-format (mt/get-results-format
                          (:uri request)

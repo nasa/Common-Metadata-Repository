@@ -102,6 +102,9 @@
             (d/item->concept (dg/granule collection))
             (assoc coll-concept :format "application/xml")))))
 
+    ;; TODO Add test to verify that collection passed into granule validation endpoint must match
+    ;; the dataset ID or shortname and version ID of the collection in the granule XML.
+
     (testing "with ingested collection"
       (let [collection (d/ingest "PROV1" (dc/collection {}))]
         (testing "successful validation of granule"

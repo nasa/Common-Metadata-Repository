@@ -135,7 +135,6 @@
 
         (context ["/validate/granule/:native-id" :native-id #".*$"] [native-id]
           (POST "/" request
-            ;; TODO document multipart params in README
             (validate-granule provider-id native-id request)
             {:status 200}))
 

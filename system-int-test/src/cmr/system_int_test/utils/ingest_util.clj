@@ -141,7 +141,7 @@
     (assoc body :status (:status response))))
 
 (defn validate-granule
-  "Validates a granule concept by sending it and optionally it's parent collection to the validation
+  "Validates a granule concept by sending it and optionally its parent collection to the validation
   endpoint"
   ([granule-concept]
    ;; Use the regular validation endpoint in this case.

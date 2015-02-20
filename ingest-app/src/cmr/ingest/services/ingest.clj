@@ -37,7 +37,7 @@
                                   :delete-time (when delete-time (str delete-time))})))
 
 (defn validate-collection
-  "Validate the collection. Returns an appropriate error message indicating any validation failures."
+  "Validate the collection. Throws a service error if any validation issues are found."
   [context concept]
   (v/validate-concept-request concept)
   (v/validate-concept-xml concept)
@@ -76,8 +76,7 @@
                                   :delete-time (when delete-time (str delete-time))})))
 
 (defn validate-granule
-  "Validate a granule concept actually ingesting it. Return an appropriate error message indicating
-  any validation failures.
+  "Validate a granule concept. Throws a service error if any validation issues are found.
 
   Accepts an optional function for looking up the parent collection concept. This can be used to
   provide the collection through an alternative means like the API."
@@ -103,8 +102,8 @@
        gran-concept))))
 
 (defmulti validate-concept
-  "Validate that a concept is valid for ingest without actually ingesting the concept.
-  Return an appropriate error message indicating any validation failures."
+  "Validates a concept with UMM validation rules and Ingest rules. Throws a service error if any
+  validation issues are found."
   (fn [context concept]
     (:concept-type concept)))
 
