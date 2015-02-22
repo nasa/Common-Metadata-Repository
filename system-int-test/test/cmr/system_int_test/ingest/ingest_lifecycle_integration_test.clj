@@ -17,6 +17,7 @@
   ([granules]
    (assert-granules-found granules {}))
   ([granules params]
+   (index/wait-until-indexed)
    (is (d/refs-match? granules (search/find-refs :granule params))
        (str "Could not find granules with " (pr-str params)))))
 
@@ -24,6 +25,7 @@
   ([collections]
    (assert-collections-found collections {}))
   ([collections params]
+   (index/wait-until-indexed)
    (is (d/refs-match? collections (search/find-refs :collection params)))))
 
 (defn assert-collections-and-granules-found
@@ -96,11 +98,14 @@
   ;; Nothing should be found yet.
   (assert-collections-and-granules-found [] [])
 
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Inserts
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
   ;; Insert collections
   (let [coll1 (make-coll 1)
         coll2 (make-coll 2)
         coll3 (make-coll 3)]
-    (index/wait-until-indexed)
     ;; The collections can be found
     (assert-collections-and-granules-found [coll1 coll2 coll3] [])
 
@@ -109,42 +114,41 @@
           gr2 (make-gran coll1 2)
           gr3 (make-gran coll2 3)
           gr4 (make-gran coll2 4)]
-      (index/wait-until-indexed)
-      ;; The granule can be found
-      (assert-granules-found [gr1 gr2 gr3 gr4])
+      (assert-collections-and-granules-found [coll1 coll2 coll3] [gr1 gr2 gr3 gr4])
+
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+      ;; Updates
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
       (let [;; Update a collection
             coll2 (update-coll coll2 {:projects (dc/projects "ESI")})
             ;; Update a granule
             gr1 (update-gran coll1 gr1 {:data-granule (dg/data-granule {:day-night "DAY"})})]
-        (index/wait-until-indexed)
         ;; All items can still be found
         (assert-collections-and-granules-found [coll1 coll2 coll3] [gr1 gr2 gr3 gr4])
 
-        ;; Updated collections are found
+        ;; Updated collections and granule are found with specific parameters
         (assert-collections-found [coll2] {:project "ESI"})
-
-        ;; Updated granules are found
         (assert-granules-found [gr1] {:day-night-flag "DAY"})
+
+        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+        ;; Deletion and Recreation
+        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
         ;; Delete a granule
         (ingest/delete-concept (d/item->concept gr3))
-        (index/wait-until-indexed)
         (assert-collections-and-granules-found [coll1 coll2 coll3] [gr1 gr2 gr4])
 
         ;; Reingest the granule
         (let [gr3 (ingest-gran coll2 gr3)]
-          (index/wait-until-indexed)
           (assert-collections-and-granules-found [coll1 coll2 coll3] [gr1 gr2 gr3 gr4])
 
           ;; Delete a collection
           (ingest/delete-concept (d/item->concept coll1))
-          (index/wait-until-indexed)
           ;; Verify collection delete results in collection and child collections not found
           (assert-collections-and-granules-found [coll2 coll3] [gr3 gr4])
 
           ;; Reingest the collection
           (let [coll1 (ingest-coll coll1)]
-            (index/wait-until-indexed)
             (assert-collections-and-granules-found [coll1 coll2 coll3] [gr3 gr4])))))))
 
