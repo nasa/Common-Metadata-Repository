@@ -14,7 +14,6 @@
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.api.errors :as api-errors]
             [cmr.common.services.errors :as srvc-errors]
-
             [cmr.common.jobs :as common-jobs]
             [cmr.acl.core :as acl]
             [cmr.ingest.services.ingest :as ingest]
@@ -88,14 +87,7 @@
                        provider-id native-id :collection (get multipart-params "collection"))
         gran-concept (multipart-param->concept
                        provider-id native-id :granule (get multipart-params "granule"))]
-    ;; Make sure the collection is valid before validating the granule
-    (srvc-errors/handle-service-errors
-      #(ingest/validate-collection request-context coll-concept)
-      (fn [type errors ex]
-        (srvc-errors/throw-service-errors
-          type (map msg/invalid-parent-collection-for-validation errors)) ex))
-
-    (ingest/validate-granule request-context gran-concept (constantly coll-concept))))
+    (ingest/validate-granule-with-parent-collection request-context gran-concept coll-concept)))
 
 (defn- build-routes [system]
   (routes
