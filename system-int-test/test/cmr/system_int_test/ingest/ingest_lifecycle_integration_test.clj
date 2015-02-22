@@ -79,6 +79,19 @@
   [coll gran attribs]
   (ingest-gran coll (merge gran attribs)))
 
+
+;; Tests that over the lifecycle of a collection and granule the right data will be found.
+;; Test Outline
+;; - Ingest collections
+;; - Ingest granules
+;; - update collection
+;; - update granule
+;; - delete granule
+;; - re-ingest granule
+;; - delete collection
+;; - re-ingest collection
+;; At each step the data that is indexed is checked. It also verifies validation works at every step
+;; as well
 (deftest ingest-lifecycle-test
   ;; Nothing should be found yet.
   (assert-collections-and-granules-found [] [])
