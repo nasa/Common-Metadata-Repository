@@ -13,6 +13,7 @@
                  [com.novemberain/pantomime "2.3.0"]
                  [clojurewerkz/quartzite "1.3.0"]
                  [clj-time "0.8.0"]
+                 [cheshire "5.3.1"]
 
                  ;; Needed for GzipHandler
                  [org.eclipse.jetty/jetty-servlets "7.6.8.v20121106"]

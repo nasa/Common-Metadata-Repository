@@ -187,8 +187,11 @@
 
          ;; Register the config
          (register-config ~(str *ns*) ~config-name-key doc-string-value#
-                          ;; Assoc in type to show default of string in docs.
-                          ~(assoc options :type config-type))
+                          ~(assoc options
+                                  ;; Assoc in type to show default of string in docs.
+                                  :type config-type
+                                  ;; Assoc in parser so that the parser will be used when printing values.
+                                  :parser parser-fn))
 
          ;; Create the getter
          (defn ~getter-name

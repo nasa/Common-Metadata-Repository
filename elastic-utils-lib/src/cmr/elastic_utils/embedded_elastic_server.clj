@@ -74,6 +74,7 @@
 
   (start
     [this system]
+    (debug "Starting elastic server on port" http-port)
     (let [node-settings (create-settings this)
           _ (setup-logging node-settings)
           this (assoc this :node (build-node node-settings))]

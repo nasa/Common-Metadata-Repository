@@ -22,9 +22,10 @@
             [cmr.dev-system.control :as control]
             [cmr.message-queue.services.queue :as queue]
             [cmr.common.api.web-server :as web]
-            [cmr.common.util :as u]
-            [cmr.transmit.config :as transmit-config]
-            [cmr.elastic-utils.config :as elastic-config]))
+            [cmr.elastic-utils.config :as elastic-config]
+            [cmr.common.util :as u]))
+
+(def in-memory-elastic-port 9206)
 
 (def app-control-functions
   "A map of application name to the start function"
@@ -46,28 +47,6 @@
 (def app-startup-order
   "Defines the order in which applications should be started"
   [:mock-echo :metadata-db :index-set :indexer :ingest :search :bootstrap])
-
-(def in-memory-elastic-port 9206)
-
-(def external-elastic-port 9210)
-
-(def in-memory-echo-port 3008)
-
-(def external-echo-port 10000)
-
-(def in-memory-echo-system-token "mock-echo-system-token")
-
-(def external-echo-system-token
-  "Returns the ECHO system token based on the value for ECHO_SYSTEM_READ_TOKEN in the ECHO
-  configuration file.  The WORKSPACE_HOME environment variable must be set in order to find the
-  file.  Returns nil if it cannot extract the value."
-  (try
-    (->> (slurp (str (System/getenv "WORKSPACE_HOME") "/deployment/primary/config.properties"))
-         (re-find #"\n@ECHO_SYSTEM_READ_TOKEN@=(.*)\n")
-         peek)
-    (catch Exception e
-      (warn "Unable to extract the ECHO system read token from configuration.")
-      nil)))
 
 (def use-compression?
   "Indicates whether the servers will use gzip compression. Disable this to make tcpmon usable"
@@ -97,7 +76,10 @@
 
 (defmethod create-elastic :in-memory
   [type]
+
+  ;; DUPLICATION. FIX ME LATER
   (elastic-config/set-elastic-port! in-memory-elastic-port)
+
   (elastic-server/create-server
     in-memory-elastic-port
     (+ in-memory-elastic-port 10)
@@ -105,7 +87,6 @@
 
 (defmethod create-elastic :external
   [type]
-  (elastic-config/set-elastic-port! external-elastic-port)
   nil)
 
 (defmulti create-db
@@ -129,19 +110,10 @@
 
 (defmethod create-echo :in-memory
   [type]
-
-  (transmit-config/set-echo-rest-port! in-memory-echo-port)
-  (transmit-config/set-echo-system-token! in-memory-echo-system-token)
-  (transmit-config/set-echo-rest-context! "")
-
   (mock-echo-system/create-system))
 
 (defmethod create-echo :external
   [type]
-
-  (transmit-config/set-echo-rest-port! external-echo-port)
-  (transmit-config/set-echo-system-token! external-echo-system-token)
-  (transmit-config/set-echo-rest-context! "/echo-rest")
   nil)
 
 (defmulti create-queue-broker
@@ -152,26 +124,18 @@
 
 (defmethod create-queue-broker :in-memory
   [type]
-  ;; Ingest and the indexer will not use a message queue for in-memory tests
-  (indexer-config/set-indexing-communication-method! "http")
   nil)
-
-(defn rmq-default-config
-  "The default config for connecting to RabbitMQ locally"
-  []
-  {:port (rmq-conf/rabbit-mq-port)
-   :host (rmq-conf/rabbit-mq-host)
-   :username (rmq-conf/rabbit-mq-user)
-   :password (rmq-conf/rabbit-mq-password)
-   :ttls [1 1 1 1 1]})
 
 (defmethod create-queue-broker :external
   [type]
-  (indexer-config/set-indexing-communication-method! "queue")
-  (-> (rmq/create-queue-broker (assoc (rmq-default-config)
-                                      :queues
-                                      [(indexer-config/index-queue-name)]))
-      wrapper/create-queue-broker-wrapper))
+  (let [rmq-config {:port (rmq-conf/rabbit-mq-port)
+                    :host (rmq-conf/rabbit-mq-host)
+                    :username (rmq-conf/rabbit-mq-user)
+                    :password (rmq-conf/rabbit-mq-password)
+                    :ttls [1 1 1 1 1]
+                    :queues [(indexer-config/index-queue-name)]}]
+    (-> (rmq/create-queue-broker rmq-config)
+        wrapper/create-queue-broker-wrapper)))
 
 (defmulti create-queue-listener
   "Returns an instance of the message queue listener component to use if using a message queue."
@@ -182,7 +146,6 @@
   [type queue-broker]
   nil)
 
-(indexer-config/queue-listener-count)
 (defmethod create-queue-listener :external
   [type queue-broker]
   (let [listener-start-fn #(ql/start-queue-message-handler
@@ -226,7 +189,6 @@
   [db-type queue-broker]
   (-> (ingest-system/create-system)
       (assoc :queue-broker queue-broker)))
-
 
 (defn create-search-app
   "Create an instance of the search application."
