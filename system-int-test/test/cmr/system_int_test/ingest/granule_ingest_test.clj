@@ -1,11 +1,8 @@
-(ns ^{:doc "CMR granule ingest integration tests"}
-  cmr.system-int-test.ingest.granule-ingest-test
+(ns cmr.system-int-test.ingest.granule-ingest-test
+  "CMR granule ingest integration tests"
   (:require [clojure.test :refer :all]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.index-util :as index]
-            [ring.util.io :as io]
-            [clj-http.client :as client]
-            [cheshire.core :as cheshire]
             [clojure.string :as string]
             [cmr.common.mime-types :as mt]
             [cmr.system-int-test.utils.ingest-util :as ingest]
