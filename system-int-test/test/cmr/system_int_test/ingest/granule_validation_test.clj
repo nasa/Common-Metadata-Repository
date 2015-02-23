@@ -1,5 +1,5 @@
-(ns ^{:doc "CMR Ingest granule validation integration tests"}
-  cmr.system-int-test.ingest.granule-validation-test
+(ns cmr.system-int-test.ingest.granule-validation-test
+  "CMR Ingest granule validation integration tests"
   (:require [clojure.test :refer :all]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.data2.collection :as dc]
@@ -44,23 +44,21 @@
   (let [response (apply ingest/validate-granule gran-and-optional-coll-concept)]
     (is (= {:status 200} (select-keys response [:status :errors])))))
 
-
-
 (deftest validation-endpoint-test
   (let [invalid-granule-xml "<Granule>invalid xml</Granule>"
         expected-errors ["Line 1 - cvc-complex-type.2.3: Element 'Granule' cannot have character [children], because the type's content type is element-only."
                          "Line 1 - cvc-complex-type.2.4.b: The content of element 'Granule' is not complete. One of '{GranuleUR}' is expected."]]
 
     (testing "with collection as additional parameter"
-      (let [collection (dc/collection {})
+      (let [collection (dc/collection-dif {})
             coll-concept (d/item->concept collection :echo10)]
         (testing "success"
           (let [concept (d/item->concept (dg/granule collection))]
             (assert-validation-success concept coll-concept)))
         (testing "collection in different format than granule"
-          (let [concept (d/item->concept (dg/granule collection))
-                iso-coll-concept (d/item->concept collection :iso19115)]
-            (assert-validation-success concept iso-coll-concept)))
+          (let [concept (d/item->concept (dg/granule collection))]
+            (assert-validation-success concept (d/item->concept collection :iso19115))
+            (assert-validation-success concept (d/item->concept collection :dif))))
 
         (testing "invalid collection xml"
           (assert-validation-errors
@@ -140,7 +138,11 @@
     (testing "with ingested collection"
       (let [collection (d/ingest "PROV1" (dc/collection {}))]
         (testing "successful validation of granule"
-          (assert-validation-success (d/item->concept (dg/granule collection))))
+          (let [granule-concept (d/item->concept (dg/granule collection))]
+          (assert-validation-success granule-concept)
+
+          (testing "with ingested parent collection"
+            (assert-validation-success granule-concept (d/item->concept collection)))))
         (testing "invalid granule xml"
           (assert-validation-errors
             expected-errors

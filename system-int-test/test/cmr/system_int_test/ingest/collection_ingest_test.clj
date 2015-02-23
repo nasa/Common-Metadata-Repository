@@ -1,5 +1,5 @@
-(ns ^{:doc "CMR collection ingest integration tests"}
-  cmr.system-int-test.ingest.collection-ingest-test
+(ns cmr.system-int-test.ingest.collection-ingest-test
+  "CMR collection ingest integration tests"
   (:require [clojure.test :refer :all]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.index-util :as index]

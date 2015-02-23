@@ -63,12 +63,22 @@
       :else
       (errors/internal-error! (str "Unexpected collection ref in granule: " (pr-str granule))))))
 
+(def instrument-ref-validations
+  "Defines the instrument validations for granules"
+  {:sensor-refs (vu/unique-by-name-validator :short-name)})
+
+(def platform-ref-validations
+  "Defines the platform validations for granules"
+  {:instrument-refs [(v/every instrument-ref-validations)
+                     (vu/unique-by-name-validator :short-name)]})
+
 (def granule-validations
   "Defines validations for granules"
   [collection-ref-validation
    {:spatial-coverage spatial-coverage-validations
     :platform-refs [(vu/unique-by-name-validator :short-name)
-                    (vu/has-parent-validator :short-name "Platform short name")]
+                    (vu/has-parent-validator :short-name "Platform short name")
+                    (v/every platform-ref-validations)]
     :product-specific-attributes (vu/has-parent-validator :name "Product Specific Attribute")
     :project-refs (vu/unique-by-name-validator identity)
     :related-urls h/online-access-urls-validation}
