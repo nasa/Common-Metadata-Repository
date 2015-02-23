@@ -41,7 +41,7 @@
   [attribs]
   (merge
     (g/map->UmmGranule {:collection-ref (g/map->CollectionRef {:entry-title "et"})})
-     attribs))
+    attribs))
 
 (defn gran-with-geometries
   [geometries]
@@ -135,7 +135,7 @@
       (assert-valid-gran collection (make-granule {:platform-refs [pg1 pg2 pg3]}))
       (assert-valid-gran collection (make-granule {:platform-refs [pg3 pg6]})))
     (testing "Invalid platform-refs"
-       (assert-invalid-gran
+      (assert-invalid-gran
         collection
         (make-granule {:platform-refs [pg4]})
         [:platform-refs]
@@ -160,61 +160,61 @@
         (make-granule {:platform-refs [pg1 pg1 pg3 pg4 pg5]})
         [:platform-refs]
         ["Platform References must be unique. This contains duplicates named [p1]."
+         "The following list of Platform short names did not exist in the referenced parent collection: [p4, p5]."]))
+    (testing "granule platform references parent"
+      (assert-invalid-gran
+        collection
+        (make-granule {:platform-refs [pg4]})
+        [:platform-refs]
+        ["The following list of Platform short names did not exist in the referenced parent collection: [p4]."])
+      (assert-invalid-gran
+        collection
+        (make-granule {:platform-refs [pg1 pg2 pg3 pg4 pg5]})
+        [:platform-refs]
+        ["The following list of Platform short names did not exist in the referenced parent collection: [p4, p5]."]))
+    (testing "granule unique platform short-names"
+      (assert-invalid-gran
+        collection
+        (make-granule {:platform-refs [pg1 pg1 pg2]})
+        [:platform-refs]
+        ["Platform References must be unique. This contains duplicates named [p1]."])
+      (assert-invalid-gran
+        collection
+        (make-granule {:platform-refs [pg1 pg1 pg2 pg2]})
+        [:platform-refs]
+        ["Platform References must be unique. This contains duplicates named [p1, p2]."]))
+    (testing "granule unique instrument short-names"
+      (assert-invalid-gran
+        collection
+        (make-granule
+          {:platform-refs [(g/map->PlatformRef {:short-name "p2" :instrument-refs [ig1 ig2 ig1]})]})
+        [:platform-refs 0 :instrument-refs]
+        ["Instrument References must be unique. This contains duplicates named [I1]."])
+      (assert-invalid-gran
+        collection
+        (make-granule
+          {:platform-refs
+           [pg1 (g/map->PlatformRef {:short-name "p2" :instrument-refs [ig1 ig1 ig2 ig2]})]})
+        [:platform-refs 1 :instrument-refs]
+        ["Instrument References must be unique. This contains duplicates named [I1, I2]."]))
+    (testing "granule unique sensor short-names"
+      (assert-invalid-gran
+        collection
+        (make-granule {:platform-refs [pg7]})
+        [:platform-refs 0 :instrument-refs 0 :sensor-refs]
+        ["Sensor References must be unique. This contains duplicates named [S1]."])
+      (assert-invalid-gran
+        collection
+        (make-granule {:platform-refs [pg1 pg8]})
+        [:platform-refs 1 :instrument-refs 1 :sensor-refs]
+        ["Sensor References must be unique. This contains duplicates named [S1, S2]."]))
+    (testing "multiple granule platform validation errors"
+      (assert-invalid-gran
+        collection
+        (make-granule {:platform-refs [pg1 pg1 pg3 pg4 pg5]})
+        [:platform-refs]
+        ["Platform References must be unique. This contains duplicates named [p1]."
          "The following list of Platform short names did not exist in the referenced parent collection: [p4, p5]."]))))
-      (testing "granule platform references parent"
-        (assert-invalid-gran
-          collection
-          (g/map->UmmGranule {:platform-refs [pg4]})
-          [:platform-refs]
-          ["The following list of Platform short names did not exist in the referenced parent collection: [p4]."])
-        (assert-invalid-gran
-          collection
-          (g/map->UmmGranule {:platform-refs [pg1 pg2 pg3 pg4 pg5]})
-          [:platform-refs]
-          ["The following list of Platform short names did not exist in the referenced parent collection: [p4, p5]."]))
-      (testing "granule unique platform short-names"
-        (assert-invalid-gran
-          collection
-          (g/map->UmmGranule {:platform-refs [pg1 pg1 pg2]})
-          [:platform-refs]
-          ["Platform References must be unique. This contains duplicates named [p1]."])
-        (assert-invalid-gran
-          collection
-          (g/map->UmmGranule {:platform-refs [pg1 pg1 pg2 pg2]})
-          [:platform-refs]
-          ["Platform References must be unique. This contains duplicates named [p1, p2]."]))
-      (testing "granule unique instrument short-names"
-        (assert-invalid-gran
-          collection
-          (g/map->UmmGranule
-            {:platform-refs [(g/map->PlatformRef {:short-name "p2" :instrument-refs [ig1 ig2 ig1]})]})
-          [:platform-refs 0 :instrument-refs]
-          ["Instrument References must be unique. This contains duplicates named [I1]."])
-        (assert-invalid-gran
-          collection
-          (g/map->UmmGranule
-            {:platform-refs
-             [pg1 (g/map->PlatformRef {:short-name "p2" :instrument-refs [ig1 ig1 ig2 ig2]})]})
-          [:platform-refs 1 :instrument-refs]
-          ["Instrument References must be unique. This contains duplicates named [I1, I2]."]))
-      (testing "granule unique sensor short-names"
-        (assert-invalid-gran
-          collection
-          (g/map->UmmGranule {:platform-refs [pg7]})
-          [:platform-refs 0 :instrument-refs 0 :sensor-refs]
-          ["Sensor References must be unique. This contains duplicates named [S1]."])
-        (assert-invalid-gran
-          collection
-          (g/map->UmmGranule {:platform-refs [pg1 pg8]})
-          [:platform-refs 1 :instrument-refs 1 :sensor-refs]
-          ["Sensor References must be unique. This contains duplicates named [S1, S2]."]))
-      (testing "multiple granule platform validation errors"
-        (assert-invalid-gran
-          collection
-          (g/map->UmmGranule {:platform-refs [pg1 pg1 pg3 pg4 pg5]})
-          [:platform-refs]
-          ["Platform References must be unique. This contains duplicates named [p1]."
-           "The following list of Platform short names did not exist in the referenced parent collection: [p4, p5]."])))))
 
 (deftest granule-product-specific-attributes
   (let [p1 (c/map->ProductSpecificAttribute {:name "AA1"
