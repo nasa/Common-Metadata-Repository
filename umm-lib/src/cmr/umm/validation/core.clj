@@ -25,7 +25,8 @@
   [field-path-item]
   (-> field-path-item
       name
-      (str/replace #"-refs" "-references")
+      (str/replace #"-refs$" "-references")
+      (str/replace #"-ref$" "-reference")
       keyword))
 
 (defn- validation-errors->path-errors

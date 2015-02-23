@@ -110,7 +110,7 @@
                                  (umm-g/map->CollectionRef {:entry-title "wrong"}))]
               (assert-validation-errors
                 [{:path ["CollectionRef"],
-                  :errors ["Collection Ref Entry Title [wrong] does not match the entry title of the parent collection [correct]"]}]
+                  :errors ["Collection Reference Entry Title [wrong] does not match the entry title of the parent collection [correct]"]}]
                 (d/item->concept granule)
                 coll-concept)))
 
@@ -119,7 +119,7 @@
             (testing "shortname"
               (assert-validation-errors
                 [{:path ["CollectionRef"],
-                  :errors ["Collection Ref Short Name [S1] and Version ID [V2] do not match the Short Name [S1] and Version ID [V1] of the parent collection."]}]
+                  :errors ["Collection Reference Short Name [S1] and Version ID [V2] do not match the Short Name [S1] and Version ID [V1] of the parent collection."]}]
                 (d/item->concept (assoc (dg/granule collection)
                                         :collection-ref
                                         (umm-g/map->CollectionRef {:short-name "S1"
@@ -128,7 +128,7 @@
             (testing "version id"
               (assert-validation-errors
                 [{:path ["CollectionRef"],
-                  :errors ["Collection Ref Short Name [S2] and Version ID [V1] do not match the Short Name [S1] and Version ID [V1] of the parent collection."]}]
+                  :errors ["Collection Reference Short Name [S2] and Version ID [V1] do not match the Short Name [S1] and Version ID [V1] of the parent collection."]}]
                 (d/item->concept (assoc (dg/granule collection)
                                         :collection-ref
                                         (umm-g/map->CollectionRef {:short-name "S2"
