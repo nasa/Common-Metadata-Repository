@@ -7,7 +7,6 @@
             [clj-http.client :as client]
             [clojure.string :as string]
             [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.old-ingest-util :as old-ingest]
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.core :as d]

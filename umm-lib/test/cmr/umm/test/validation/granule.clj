@@ -30,14 +30,27 @@
   (is (= (set (map e/map->PathErrors expected-errors))
          (set (v/validate-granule collection granule)))))
 
+(defn make-collection
+  "Creates a valid collection with the given attributes"
+  [attribs]
+  (merge (c/map->UmmCollection {:entry-title "et"})
+         attribs))
+
+(defn make-granule
+  "Creates a valid granule with the given attributes"
+  [attribs]
+  (merge
+    (g/map->UmmGranule {:collection-ref (g/map->CollectionRef {:entry-title "et"})})
+    attribs))
+
 (defn gran-with-geometries
   [geometries]
-  (g/map->UmmGranule {:spatial-coverage (c/map->SpatialCoverage {:geometries geometries})}))
+  (make-granule {:spatial-coverage (c/map->SpatialCoverage {:geometries geometries})}))
 
 ;; This is built on top of the existing spatial validation. It just ensures that the spatial
 ;; validation is being called
 (deftest granule-spatial-coverage
-  (let [collection (c/map->UmmCollection {:spatial-coverage {:granule-spatial-representation :geodetic}})
+  (let [collection (make-collection {:spatial-coverage {:granule-spatial-representation :geodetic}})
         valid-point p/north-pole
         valid-mbr (m/mbr 0 0 0 0)
         invalid-point (p/point -181 0)
@@ -65,26 +78,26 @@
   (let [c1 (c/map->Project {:short-name "C1"})
         c2 (c/map->Project {:short-name "C2"})
         c3 (c/map->Project {:short-name "C3"})
-        collection (c/map->UmmCollection {:projects [c1 c2 c3]})]
+        collection (make-collection {:projects [c1 c2 c3]})]
     (testing "Valid project-refs"
-      (assert-valid-gran collection (g/map->UmmGranule {}))
-      (assert-valid-gran collection (g/map->UmmGranule {:project-refs ["C1"]}))
-      (assert-valid-gran collection (g/map->UmmGranule {:project-refs ["C1" "C2" "C3"]})))
+      (assert-valid-gran collection (make-granule {}))
+      (assert-valid-gran collection (make-granule {:project-refs ["C1"]}))
+      (assert-valid-gran collection (make-granule {:project-refs ["C1" "C2" "C3"]})))
     (testing "Invalid project-refs"
       (assert-invalid-gran
         collection
-        (g/map->UmmGranule {:project-refs ["C4"]})
+        (make-granule {:project-refs ["C4"]})
         [:project-refs]
         ["Project References have [C4] which do not reference any projects in parent collection."])
       (assert-invalid-gran
         collection
-        (g/map->UmmGranule {:project-refs ["C1" "C2" "C3" "C4" "C5"]})
+        (make-granule {:project-refs ["C1" "C2" "C3" "C4" "C5"]})
         [:project-refs]
         ["Project References have [C5, C4] which do not reference any projects in parent collection."]))
     (testing "Invalid project-refs unique name"
       (assert-invalid-gran
         collection
-        (g/map->UmmGranule {:project-refs ["C1" "C2" "C3" "C1"]})
+        (make-granule {:project-refs ["C1" "C2" "C3" "C1"]})
         [:project-refs]
         ["Project References must be unique. This contains duplicates named [C1]."]))))
 
@@ -115,67 +128,93 @@
         pg6 (g/map->PlatformRef {:short-name "P3" :instrument-refs []})
         pg7 (g/map->PlatformRef {:short-name "p2" :instrument-refs [ig3]})
         pg8 (g/map->PlatformRef {:short-name "p2" :instrument-refs [ig1 ig4]})
-        collection (c/map->UmmCollection {:platforms [p1 p2 p3 p4]})]
+        collection (make-collection {:platforms [p1 p2 p3 p4]})]
     (testing "Valid platform-refs"
-      (assert-valid-gran collection (g/map->UmmGranule {}))
-      (assert-valid-gran collection (g/map->UmmGranule {:platform-refs [pg1]}))
-      (assert-valid-gran collection (g/map->UmmGranule {:platform-refs [pg1 pg2 pg3]}))
-      (assert-valid-gran collection (g/map->UmmGranule {:platform-refs [pg3 pg6]})))
+      (assert-valid-gran collection (make-granule {}))
+      (assert-valid-gran collection (make-granule {:platform-refs [pg1]}))
+      (assert-valid-gran collection (make-granule {:platform-refs [pg1 pg2 pg3]}))
+      (assert-valid-gran collection (make-granule {:platform-refs [pg3 pg6]})))
     (testing "Invalid platform-refs"
-      (testing "granule platform references parent"
-        (assert-invalid-gran
-          collection
-          (g/map->UmmGranule {:platform-refs [pg4]})
-          [:platform-refs]
-          ["The following list of Platform short names did not exist in the referenced parent collection: [p4]."])
-        (assert-invalid-gran
-          collection
-          (g/map->UmmGranule {:platform-refs [pg1 pg2 pg3 pg4 pg5]})
-          [:platform-refs]
-          ["The following list of Platform short names did not exist in the referenced parent collection: [p4, p5]."]))
-      (testing "granule unique platform short-names"
-        (assert-invalid-gran
-          collection
-          (g/map->UmmGranule {:platform-refs [pg1 pg1 pg2]})
-          [:platform-refs]
-          ["Platform References must be unique. This contains duplicates named [p1]."])
-        (assert-invalid-gran
-          collection
-          (g/map->UmmGranule {:platform-refs [pg1 pg1 pg2 pg2]})
-          [:platform-refs]
-          ["Platform References must be unique. This contains duplicates named [p1, p2]."]))
-      (testing "granule unique instrument short-names"
-        (assert-invalid-gran
-          collection
-          (g/map->UmmGranule
-            {:platform-refs [(g/map->PlatformRef {:short-name "p2" :instrument-refs [ig1 ig2 ig1]})]})
-          [:platform-refs 0 :instrument-refs]
-          ["Instrument References must be unique. This contains duplicates named [I1]."])
-        (assert-invalid-gran
-          collection
-          (g/map->UmmGranule
-            {:platform-refs
-             [pg1 (g/map->PlatformRef {:short-name "p2" :instrument-refs [ig1 ig1 ig2 ig2]})]})
-          [:platform-refs 1 :instrument-refs]
-          ["Instrument References must be unique. This contains duplicates named [I1, I2]."]))
-      (testing "granule unique sensor short-names"
-        (assert-invalid-gran
-          collection
-          (g/map->UmmGranule {:platform-refs [pg7]})
-          [:platform-refs 0 :instrument-refs 0 :sensor-refs]
-          ["Sensor References must be unique. This contains duplicates named [S1]."])
-        (assert-invalid-gran
-          collection
-          (g/map->UmmGranule {:platform-refs [pg1 pg8]})
-          [:platform-refs 1 :instrument-refs 1 :sensor-refs]
-          ["Sensor References must be unique. This contains duplicates named [S1, S2]."]))
-      (testing "multiple granule platform validation errors"
-        (assert-invalid-gran
-          collection
-          (g/map->UmmGranule {:platform-refs [pg1 pg1 pg3 pg4 pg5]})
-          [:platform-refs]
-          ["Platform References must be unique. This contains duplicates named [p1]."
-           "The following list of Platform short names did not exist in the referenced parent collection: [p4, p5]."])))))
+      (assert-invalid-gran
+        collection
+        (make-granule {:platform-refs [pg4]})
+        [:platform-refs]
+        ["The following list of Platform short names did not exist in the referenced parent collection: [p4]."])
+      (assert-invalid-gran
+        collection
+        (make-granule {:platform-refs [pg1 pg2 pg3 pg4 pg5]})
+        [:platform-refs]
+        ["The following list of Platform short names did not exist in the referenced parent collection: [p4, p5]."])
+      (assert-invalid-gran
+        collection
+        (make-granule {:platform-refs [pg1 pg1 pg2]})
+        [:platform-refs]
+        ["Platform References must be unique. This contains duplicates named [p1]."])
+      (assert-invalid-gran
+        collection
+        (make-granule {:platform-refs [pg1 pg1 pg2 pg2]})
+        [:platform-refs]
+        ["Platform References must be unique. This contains duplicates named [p1, p2]."])
+      (assert-invalid-gran
+        collection
+        (make-granule {:platform-refs [pg1 pg1 pg3 pg4 pg5]})
+        [:platform-refs]
+        ["Platform References must be unique. This contains duplicates named [p1]."
+         "The following list of Platform short names did not exist in the referenced parent collection: [p4, p5]."]))
+    (testing "granule platform references parent"
+      (assert-invalid-gran
+        collection
+        (make-granule {:platform-refs [pg4]})
+        [:platform-refs]
+        ["The following list of Platform short names did not exist in the referenced parent collection: [p4]."])
+      (assert-invalid-gran
+        collection
+        (make-granule {:platform-refs [pg1 pg2 pg3 pg4 pg5]})
+        [:platform-refs]
+        ["The following list of Platform short names did not exist in the referenced parent collection: [p4, p5]."]))
+    (testing "granule unique platform short-names"
+      (assert-invalid-gran
+        collection
+        (make-granule {:platform-refs [pg1 pg1 pg2]})
+        [:platform-refs]
+        ["Platform References must be unique. This contains duplicates named [p1]."])
+      (assert-invalid-gran
+        collection
+        (make-granule {:platform-refs [pg1 pg1 pg2 pg2]})
+        [:platform-refs]
+        ["Platform References must be unique. This contains duplicates named [p1, p2]."]))
+    (testing "granule unique instrument short-names"
+      (assert-invalid-gran
+        collection
+        (make-granule
+          {:platform-refs [(g/map->PlatformRef {:short-name "p2" :instrument-refs [ig1 ig2 ig1]})]})
+        [:platform-refs 0 :instrument-refs]
+        ["Instrument References must be unique. This contains duplicates named [I1]."])
+      (assert-invalid-gran
+        collection
+        (make-granule
+          {:platform-refs
+           [pg1 (g/map->PlatformRef {:short-name "p2" :instrument-refs [ig1 ig1 ig2 ig2]})]})
+        [:platform-refs 1 :instrument-refs]
+        ["Instrument References must be unique. This contains duplicates named [I1, I2]."]))
+    (testing "granule unique sensor short-names"
+      (assert-invalid-gran
+        collection
+        (make-granule {:platform-refs [pg7]})
+        [:platform-refs 0 :instrument-refs 0 :sensor-refs]
+        ["Sensor References must be unique. This contains duplicates named [S1]."])
+      (assert-invalid-gran
+        collection
+        (make-granule {:platform-refs [pg1 pg8]})
+        [:platform-refs 1 :instrument-refs 1 :sensor-refs]
+        ["Sensor References must be unique. This contains duplicates named [S1, S2]."]))
+    (testing "multiple granule platform validation errors"
+      (assert-invalid-gran
+        collection
+        (make-granule {:platform-refs [pg1 pg1 pg3 pg4 pg5]})
+        [:platform-refs]
+        ["Platform References must be unique. This contains duplicates named [p1]."
+         "The following list of Platform short names did not exist in the referenced parent collection: [p4, p5]."]))))
 
 (deftest granule-product-specific-attributes
   (let [p1 (c/map->ProductSpecificAttribute {:name "AA1"
@@ -197,20 +236,20 @@
                                                  :values ["alpha" "alpha1"]})
         pg4 (g/map->ProductSpecificAttributeRef {:name "AA4"
                                                  :values [1.0]})
-        collection (c/map->UmmCollection {:product-specific-attributes [p1 p2]})]
+        collection (make-collection {:product-specific-attributes [p1 p2]})]
     (testing "Valid product-specific-attributes"
-      (assert-valid-gran collection (g/map->UmmGranule {}))
-      (assert-valid-gran collection (g/map->UmmGranule {:product-specific-attributes [pg1]}))
-      (assert-valid-gran collection (g/map->UmmGranule {:product-specific-attributes [pg1 pg2]})))
+      (assert-valid-gran collection (make-granule {}))
+      (assert-valid-gran collection (make-granule {:product-specific-attributes [pg1]}))
+      (assert-valid-gran collection (make-granule {:product-specific-attributes [pg1 pg2]})))
     (testing "Invalid product-specific-attributes"
       (assert-invalid-gran
         collection
-        (g/map->UmmGranule {:product-specific-attributes [pg3]})
+        (make-granule {:product-specific-attributes [pg3]})
         [:product-specific-attributes]
         ["The following list of Product Specific Attributes did not exist in the referenced parent collection: [AA3]."])
       (assert-invalid-gran
         collection
-        (g/map->UmmGranule {:product-specific-attributes [pg1 pg2 pg3 pg4]})
+        (make-granule {:product-specific-attributes [pg1 pg2 pg3 pg4]})
         [:product-specific-attributes]
         ["The following list of Product Specific Attributes did not exist in the referenced parent collection: [AA3, AA4]."]))))
 
@@ -222,13 +261,13 @@
                                :url url})
         r3 (c/map->RelatedURL {:type "GET RELATED VISUALIZATION"
                                :url url})
-        collection (c/map->UmmCollection {})]
+        collection (make-collection {})]
     (testing "valid online access urls"
-      (assert-valid-gran collection (g/map->UmmGranule {:related-urls [r1 r2 r3]})))
+      (assert-valid-gran collection (make-granule {:related-urls [r1 r2 r3]})))
 
     (testing "invalid online access urls with duplicate names"
       (assert-invalid-gran
         collection
-        (g/map->UmmGranule {:related-urls [r1 r2 r2]})
+        (make-granule {:related-urls [r1 r2 r2]})
         [:related-urls]
         [(format "Related Urls must be unique. This contains duplicates named [%s]." url)]))))
