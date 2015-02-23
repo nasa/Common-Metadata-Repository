@@ -5,6 +5,7 @@
             [compojure.core :refer :all]
             [ring.middleware.json :as ring-json]
             [cheshire.core :as json]
+            [cmr.common.api :as api]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.api.errors :as errors]
             [cmr.common.util :as util]
@@ -134,8 +135,8 @@
         (POST "/collections" {:keys [request-context body params]}
           (bulk-index-collection request-context body params)))
 
-      (GET "/health" {request-context :request-context params :params}
-        (let [{pretty? :pretty} params
+      (GET "/health" {request-context :request-context :as request}
+        (let [pretty? (api/pretty-request? request)
               {:keys [ok? dependencies]} (hs/health request-context)]
           {:status (if ok? 200 503)
            :headers {"Content-Type" "application/json; charset=utf-8"}

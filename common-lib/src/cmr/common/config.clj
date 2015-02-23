@@ -89,12 +89,14 @@
       "Configuration Documentation\n"
       (str/join
         "\n"
-        (for [[config-namespace sub-map] @configs-atom]
+        ;; Print out the documentation in namespace order
+        (for [[config-namespace sub-map] (sort-by first @configs-atom)]
           (str
             "\n-- " config-namespace " --\n"
             (str/join
               "\n"
-              (for [[config-key {:keys [default doc-string parser] config-type :type}] sub-map
+              ;; Within a namespace print it out in config key order
+              (for [[config-key {:keys [default doc-string parser] config-type :type}] (sort-by first sub-map)
                     :let [env-name (config-name->env-name config-key)
                           current (config-value* config-key default parser)]]
                 (str "\n" env-name "\n" doc-string

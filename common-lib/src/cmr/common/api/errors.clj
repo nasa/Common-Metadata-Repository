@@ -1,5 +1,6 @@
 (ns cmr.common.api.errors
   (:require [cmr.common.log :refer [error]]
+            [cmr.common.api :as api]
             [cmr.common.services.errors :as errors]
             [clojure.data.xml :as x]
             [clojure.string :as str]
@@ -98,8 +99,8 @@
                          (:headers request)
                          (default-format-fn request))
         status-code (type->http-status-code type)
-        pretty? (= "true" (get-in request [:query-params "pretty"]))
-        [content-type response-body] (response-type-body errors results-format pretty?)]
+        [content-type response-body] (response-type-body errors results-format
+                                                         (api/pretty-request? request))]
     {:status status-code
      :headers {CONTENT_TYPE_HEADER content-type
                CORS_ORIGIN_HEADER "*"}

@@ -4,6 +4,7 @@
             [compojure.core :refer :all]
             [clojure.string :as str]
             [clojure.java.io :as io]
+            [cmr.common.api :as api]
             [ring.util.response :as r]
             [ring.util.request :as request]
             [ring.util.codec :as codec]
@@ -217,7 +218,7 @@
         _ (info (format "Search for concept with cmr-concept-id [%s]" concept-id))
         concept (query-svc/find-concept-by-id context result-format concept-id)
         {:keys [metadata]} concept
-        body (if (= "true" (:pretty params))
+        body (if (api/pretty-request? params headers)
                (cx/pretty-print-xml metadata)
                metadata)]
     {:status 200
@@ -324,8 +325,8 @@
       ;; add routes for accessing caches
       common-routes/cache-api-routes
 
-      (GET "/health" {request-context :request-context params :params}
-        (let [{pretty? :pretty} params
+      (GET "/health" {request-context :request-context :as request}
+        (let [pretty? (api/pretty-request? request)
               {:keys [ok? dependencies]} (hs/health request-context)]
           {:status (if ok? 200 503)
            :headers {CONTENT_TYPE_HEADER "application/json; charset=utf-8"}
