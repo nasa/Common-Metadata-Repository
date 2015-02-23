@@ -86,21 +86,25 @@
 
 
 (deftest entry-title-unique-constraint-test
-  ;;TODO TESTS
-  ;; other entry title that's deleted is ok
-  ;; other entry title used in another provider is ok
-  ;; other entry title reused not ok
-  ;; other entry title with same concept id and earlier revision id is ok
-  ;; no other entry titles is ok
-  ;; different entry titles is ok
-
   (let [test-concept (make-coll-concept "PROV1" "C1-PROV1" 5 {:entry-title "ET1"})
         is-valid (partial assert-valid cc/entry-title-unique-constraint test-concept)
         not-valid #(apply assert-invalid %1 cc/entry-title-unique-constraint test-concept %2)]
 
     (testing "valid cases"
       (testing "with empty database"
-        (is-valid)))
+        (is-valid))
+      (testing "another collection with entry title that is deleted is valid"
+        (let [other-tombstone (make-coll-tombstone "PROV1" "C2-PROV1" 2 {:entry-title "ET1"})]
+          (is-valid other-tombstone)))
+      (testing "another provider with the same entry title is valid "
+        (let [other-concept (make-coll-concept "PROV2" "C1-PROV1" 5 {:entry-title "ET1"})]
+          (is-valid other-concept)))
+      (testing "same concept id but earlier revision id is valid"
+        (let [other-concept (make-coll-concept "PROV1" "C1-PROV1" 4 {:entry-title "ET1"})]
+          (is-valid other-concept)))
+      (testing "different entry titles are valid"
+        (let [other-concept (make-coll-concept "PROV1" "C1-PROV1" 5 {:entry-title "ET2"})]
+          (is-valid other-concept))))
 
     (testing "invalid cases"
       (testing "same entry title"
