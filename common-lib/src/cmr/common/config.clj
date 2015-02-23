@@ -41,11 +41,11 @@
   [config-name default-value parser-fn]
   (let [parser-fn (or parser-fn identity)]
     (let [override-value (get @runtime-config-values config-name)
-          parsed-value (some-> (env-var-value (config-name->env-name config-name))
+          parsed-env-value (some-> (env-var-value (config-name->env-name config-name))
                                parser-fn)]
       (cond
+        (some? parsed-env-value) parsed-env-value
         (some? override-value) override-value
-        (some? parsed-value) parsed-value
         :else default-value))))
 
 (defn ^:deprecated config-value-fn

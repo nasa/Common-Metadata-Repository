@@ -10,7 +10,7 @@
   (with-redefs [c/runtime-config-values (atom {})]
     (f)))
 
- (use-fixtures :each redefined-override-config-values-fixture)
+(use-fixtures :each redefined-override-config-values-fixture)
 
 (defconfig test-string
   "This is a test string configuration parameter"
@@ -54,57 +54,61 @@
   (testing "String configs"
     (testing "default value"
       (is (= "abc" (test-string))))
-    (testing "env variable value"
-      (with-env-vars
-        {"CMR_TEST_STRING" "foo"}
-        (is (= "foo" (test-string)))
-        (testing "Overriding the value"
-          (set-test-string! "bar")
-          (is (= "bar" (test-string)))))))
+    (testing "Overriding the value"
+      (set-test-string! "bar")
+      (is (= "bar" (test-string)))
+      (testing "env variable value"
+        (with-env-vars
+          {"CMR_TEST_STRING" "foo"}
+          (is (= "foo" (test-string)))))))
 
   (testing "Long configs"
     (testing "default value"
       (is (= 5 (test-long))))
-    (testing "env variable value"
-      (with-env-vars
-        {"CMR_TEST_LONG" "12"}
-        (is (= 12 (test-long)))
-        (testing "Overriding the value"
-          (set-test-long! 45)
-          (is (= 45 (test-long)))))))
+
+    (testing "Overriding the value"
+      (set-test-long! 45)
+      (is (= 45 (test-long)))
+      (testing "env variable value"
+        (with-env-vars
+          {"CMR_TEST_LONG" "12"}
+          (is (= 12 (test-long)))))))
 
   (testing "Double configs"
     (testing "default value"
       (is (= 0.75 (test-double))))
-    (testing "env variable value"
-      (with-env-vars
-        {"CMR_TEST_DOUBLE" "12.2"}
-        (is (= 12.2 (test-double)))
-        (testing "Overriding the value"
-          (set-test-double! 47.89)
-          (is (= 47.89 (test-double)))))))
+
+    (testing "Overriding the value"
+      (set-test-double! 47.89)
+      (is (= 47.89 (test-double)))
+      (testing "env variable value"
+        (with-env-vars
+          {"CMR_TEST_DOUBLE" "12.2"}
+          (is (= 12.2 (test-double)))))))
 
   (testing "Boolean configs"
     (testing "default value"
       (is (= true (test-bool))))
-    (testing "env variable value"
-      (with-env-vars
-        {"CMR_TEST_BOOL" "false"}
-        (is (= false (test-bool)))
-        (testing "Overriding the value"
-          (set-test-bool! true)
-          (is (= true (test-bool)))))))
+
+    (testing "Overriding the value"
+      (set-test-bool! true)
+      (is (= true (test-bool)))
+      (testing "env variable value"
+        (with-env-vars
+          {"CMR_TEST_BOOL" "false"}
+          (is (= false (test-bool)))))))
 
   (testing "Custom parser configs"
     (testing "default value"
       (is (= {} (test-custom-parser))))
-    (testing "env variable value"
-      (with-env-vars
-        {"CMR_TEST_CUSTOM_PARSER" "[1 2 3]"}
-        (is (= [1 2 3] (test-custom-parser)))
-        (testing "Overriding the value"
-          (set-test-custom-parser! {:a 1})
-          (is (= {:a 1} (test-custom-parser)))))))
+
+    (testing "Overriding the value"
+      (set-test-custom-parser! {:a 1})
+      (is (= {:a 1} (test-custom-parser)))
+      (testing "env variable value"
+        (with-env-vars
+          {"CMR_TEST_CUSTOM_PARSER" "[1 2 3]"}
+          (is (= [1 2 3] (test-custom-parser)))))))
 
   (testing "default using a function call"
     (is (= 3 (test-default-fn-call)))))

@@ -3,7 +3,6 @@
             [cmr.bootstrap.system :as bootstrap-system]
             [cmr.metadata-db.system :as mdb-system]
             [cmr.indexer.system :as indexer-system]
-            [cmr.indexer.config :as indexer-config]
             [cmr.search.system :as search-system]
             [cmr.ingest.system :as ingest-system]
             [cmr.ingest.data.provider-acl-hash :as ingest-data]
@@ -22,10 +21,30 @@
             [cmr.dev-system.control :as control]
             [cmr.message-queue.services.queue :as queue]
             [cmr.common.api.web-server :as web]
+            [cmr.common.config :as config :refer [defconfig]]
+            [cmr.indexer.config :as indexer-config]
+            [cmr.transmit.config :as transmit-config]
             [cmr.elastic-utils.config :as elastic-config]
             [cmr.common.util :as u]))
 
 (def in-memory-elastic-port 9206)
+
+(def external-elastic-port 9210)
+
+(def external-echo-port 10000)
+
+(defn external-echo-system-token
+  "Returns the ECHO system token based on the value for ECHO_SYSTEM_READ_TOKEN in the ECHO
+  configuration file.  The WORKSPACE_HOME environment variable must be set in order to find the
+  file.  Returns nil if it cannot extract the value."
+  []
+  (try
+    (->> (slurp (str (System/getenv "WORKSPACE_HOME") "/deployment/primary/config.properties"))
+         (re-find #"\n@ECHO_SYSTEM_READ_TOKEN@=(.*)\n")
+         peek)
+    (catch Exception e
+      (warn "Unable to extract the ECHO system read token from configuration.")
+      nil)))
 
 (def app-control-functions
   "A map of application name to the start function"
@@ -76,10 +95,7 @@
 
 (defmethod create-elastic :in-memory
   [type]
-
-  ;; DUPLICATION. FIX ME LATER
   (elastic-config/set-elastic-port! in-memory-elastic-port)
-
   (elastic-server/create-server
     in-memory-elastic-port
     (+ in-memory-elastic-port 10)
@@ -87,6 +103,7 @@
 
 (defmethod create-elastic :external
   [type]
+  (elastic-config/set-elastic-port! external-elastic-port)
   nil)
 
 (defmulti create-db
@@ -114,6 +131,9 @@
 
 (defmethod create-echo :external
   [type]
+  (transmit-config/set-echo-rest-port! external-echo-port)
+  (transmit-config/set-echo-system-token! (external-echo-system-token))
+  (transmit-config/set-echo-rest-context! "/echo-rest")
   nil)
 
 (defmulti create-queue-broker
@@ -124,10 +144,12 @@
 
 (defmethod create-queue-broker :in-memory
   [type]
+  (indexer-config/set-indexing-communication-method! "http")
   nil)
 
 (defmethod create-queue-broker :external
   [type]
+  (indexer-config/set-indexing-communication-method! "queue")
   (let [rmq-config {:port (rmq-conf/rabbit-mq-port)
                     :host (rmq-conf/rabbit-mq-host)
                     :username (rmq-conf/rabbit-mq-user)
@@ -199,14 +221,44 @@
               db-component)
     (search-system/create-system)))
 
+(defn parse-dev-system-component-type
+  [value]
+  (when-not (#{"in-memory" "external"} value)
+    (throw (Exception. (str "Unexpected component type value:" value))))
+  (keyword value))
+
+(defconfig dev-system-echo-type
+  "Specifies whether dev system should run an in-memory mock ECHO or use an external ECHO."
+  {:default :in-memory
+   :parser parse-dev-system-component-type})
+
+(defconfig dev-system-db-type
+  "Specifies whether dev system should run an in-memory database or use an external database."
+  {:default :in-memory
+   :parser parse-dev-system-component-type})
+
+(defconfig dev-system-message-queue-type
+  "Specifies whether dev system should skip the use of a message queue or use an external message queue"
+  {:default :in-memory
+   :parser parse-dev-system-component-type})
+
+(defconfig dev-system-elastic-type
+  "Specifies whether dev system should run an in-memory elasticsearch or use an external instance."
+  {:default :in-memory
+   :parser parse-dev-system-component-type})
+
+(defn component-type-map
+  "Returns a map of dev system components options to run in memory or externally."
+  []
+  {:elastic (dev-system-elastic-type)
+   :echo (dev-system-echo-type)
+   :db (dev-system-db-type)
+   :message-queue (dev-system-message-queue-type)})
+
 (defn create-system
-  "Returns a new instance of the whole application. Takes a map:
-  {:elastic :in-memory
-  :echo :in-memory
-  :db :external
-  :message-queue :external}"
-  [component-type-map]
-  (let [{:keys [elastic echo db message-queue]} component-type-map
+  "Returns a new instance of the whole application."
+  []
+  (let [{:keys [elastic echo db message-queue]} (component-type-map)
         db-component (create-db db)
         echo-component (create-echo echo)
         queue-broker (create-queue-broker message-queue)
