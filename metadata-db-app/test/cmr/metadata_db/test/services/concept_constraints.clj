@@ -87,24 +87,31 @@
 
 (deftest entry-title-unique-constraint-test
   (let [test-concept (make-coll-concept "PROV1" "C1-PROV1" 5 {:entry-title "ET1"})
-        is-valid (partial assert-valid cc/entry-title-unique-constraint test-concept)
+        is-valid (partial assert-valid cc/entry-title-unique-constraint)
         not-valid #(apply assert-invalid %1 cc/entry-title-unique-constraint test-concept %2)]
 
     (testing "valid cases"
       (testing "with empty database"
-        (is-valid))
+        (is-valid test-concept))
       (testing "another collection with entry title that is deleted is valid"
         (let [other-tombstone (make-coll-tombstone "PROV1" "C2-PROV1" 2 {:entry-title "ET1"})]
-          (is-valid other-tombstone)))
+          (is-valid test-concept other-tombstone)))
       (testing "another provider with the same entry title is valid "
         (let [other-concept (make-coll-concept "PROV2" "C1-PROV1" 5 {:entry-title "ET1"})]
-          (is-valid other-concept)))
+          (is-valid test-concept other-concept)))
       (testing "same concept id but earlier revision id is valid"
         (let [other-concept (make-coll-concept "PROV1" "C1-PROV1" 4 {:entry-title "ET1"})]
-          (is-valid other-concept)))
+          (is-valid test-concept other-concept)))
       (testing "different entry titles are valid"
         (let [other-concept (make-coll-concept "PROV1" "C1-PROV1" 5 {:entry-title "ET2"})]
-          (is-valid other-concept))))
+          (is-valid test-concept other-concept)))
+      (testing "multiple valid concepts are still valid"
+        (is-valid test-concept
+                  (make-coll-concept "PROV1" "C2-PROV1" 1 {:entry-title "ET1"})
+                  (make-coll-tombstone "PROV1" "C2-PROV1" 2 {:entry-title "ET1"})
+                  (make-coll-concept "PROV2" "C1-PROV1" 5 {:entry-title "ET1"})
+                  (make-coll-concept "PROV1" "C1-PROV1" 4 {:entry-title "ET1"})
+                  (make-coll-concept "PROV1" "C1-PROV1" 5 {:entry-title "ET2"}))))
 
     (testing "invalid cases"
       (testing "same entry title"
