@@ -179,3 +179,24 @@
     (is (= 400 (:status response)))
     (is (= "Malformed JSON in request body." (:body response)))))
 
+(deftest save-collection-post-commit-constraint-violations
+    (testing "duplicate entry titles"
+      (let [existing-collection (util/collection-concept "PROV1" 1 {:entry-title "ET-1"})
+            test-collection (util/collection-concept "PROV1" 2 {:entry-title "ET-1"})
+            existing-collection-response (util/save-concept existing-collection)
+            test-collection-response (util/save-concept test-collection)]
+
+        (is (= {:status 409,
+                :errors [(msg/duplicate-entry-titles
+                           [(assoc existing-collection :concept-id
+                                   (:concept-id existing-collection-response))
+                            (assoc test-collection :concept-id "C1200000001-PROV1")])]}
+               (select-keys test-collection-response [:status :errors])))
+
+        (let [found-concepts (util/find-concepts :collection
+                                                 {:entry-title "ET-1" :provider-id "PROV1"})]
+          (is (= [(assoc existing-collection
+                         :concept-id (:concept-id existing-collection-response)
+                         :revision-id (:revision-id existing-collection-response))]
+                 (map #(dissoc % :revision-date) (:concepts found-concepts))))))))
+

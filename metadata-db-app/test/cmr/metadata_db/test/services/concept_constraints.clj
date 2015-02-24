@@ -46,7 +46,6 @@
   [constraint test-concept & existing-concepts]
   (is (nil? (apply run-constraint constraint test-concept existing-concepts))))
 
-
 (deftest entry-title-unique-constraint-test
   (let [test-concept (make-coll-concept "PROV1" "C1-PROV1" 5 {:entry-title "ET1"})
         is-valid (partial assert-valid cc/entry-title-unique-constraint)
@@ -55,6 +54,11 @@
     (testing "valid cases"
       (testing "with empty database"
         (is-valid test-concept))
+      (testing "no entry-title included"
+        (is-valid (make-coll-concept "PROV1" "C1-PROV1" 10)
+                  (make-coll-concept "PROV1" "C2-PROV1" 3)
+                  (make-coll-concept "PROV1" "C3-PROV1" 2)
+                  (make-coll-concept "PROV1" "C4-PROV1" 12)))
       (testing "another collection with entry title that is deleted is valid"
         (let [other-tombstone (make-coll-tombstone "PROV1" "C2-PROV1" 2 {:entry-title "ET1"})]
           (is-valid test-concept other-tombstone)))
@@ -80,4 +84,10 @@
         (let [other-concept (make-coll-concept "PROV1" "C2-PROV1" 1 {:entry-title "ET1"})]
           (not-valid
             (msg/duplicate-entry-titles [test-concept other-concept])
-            [other-concept]))))))
+            [other-concept])))
+      (testing "cannot find saved concept returns internal error"
+        (let [db (mem-db/create-db)]
+          (is (thrown-with-msg?
+                java.lang.Exception
+                #"Unable to find saved concept by entry-title \[ET1\]"
+                (cc/entry-title-unique-constraint db test-concept))))))))

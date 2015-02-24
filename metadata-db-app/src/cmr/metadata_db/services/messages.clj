@@ -78,7 +78,7 @@
 (defn duplicate-entry-titles
   [concepts]
   (format
-    "The Entry Title [%s] must be unique. The following concepts with the same entry title were found: %s"
+    "The Entry Title [%s] must be unique. The following concepts with the same entry title were found: [%s]"
     (-> concepts first :extra-fields :entry-title)
     (str/join ", " (map :concept-id concepts))))
 
