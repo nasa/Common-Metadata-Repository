@@ -69,8 +69,9 @@
 
 (def platform-ref-validations
   "Defines the platform validations for granules"
-  {:instrument-refs [(v/every instrument-ref-validations)
-                     (vu/unique-by-name-validator :short-name)]})
+  {:instrument-refs [(vu/unique-by-name-validator :short-name)
+                     (vu/has-parent-validator :short-name "Instrument short name")
+                     (v/every instrument-ref-validations)]})
 
 (def granule-validations
   "Defines validations for granules"

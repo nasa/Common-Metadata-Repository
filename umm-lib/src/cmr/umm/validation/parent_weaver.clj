@@ -24,6 +24,22 @@
            :let [parent (parent-obj-by-name (name-field child))]]
        (set-parent child parent)))))
 
+(defn- set-sub-fields-parent
+  "Takes a list of objects, sub-field (symbol) in object, parent-sub-field and sub-name-field
+  which is the field within the sub-field object to pair with a parent. For each sub-field object,
+  a parent-sub-field object is matched on the sub-name-field and set as the :parent field."
+  [objs sub-field parent-sub-field sub-name-field]
+  (for [p objs]
+    (update-in p [sub-field] set-parents-by-name (parent-sub-field (:parent p)) sub-name-field)))
+
+(defn- set-platform-refs-parent
+  "Takes a list of platform-refs and platforms, match the platforms to the platform-refs on
+  short-name and set the match as the parent of the platform-refs."
+  [platform-refs platforms]
+  (-> platform-refs
+      (set-parents-by-name platforms :short-name)
+      (set-sub-fields-parent :instrument-refs :instruments :short-name)))
+
 (extend-protocol
   ParentWeaver
 
@@ -35,7 +51,7 @@
     (-> granule
         (assoc :parent coll)
         (update-in [:spatial-coverage] set-parent (:spatial-coverage coll))
-        (update-in [:platform-refs] set-parents-by-name (:platforms coll) :short-name)
+        (update-in [:platform-refs] set-platform-refs-parent (:platforms coll))
         (update-in [:product-specific-attributes]
                    set-parents-by-name (:product-specific-attributes coll) :name)))
 
