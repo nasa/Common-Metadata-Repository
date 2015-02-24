@@ -61,12 +61,17 @@
 
 (defn build-validator
   "Creates a function that will call f with it's arguments. If f returns any errors then it will
-  throw a service error of the type given."
-  [error-type f]
+  throw a service error of the type given. If an error-handling-function is provided it will be
+  called prior to throwing any errors."
+  ([error-type f]
+   (build-validator error-type f nil))
+  ([error-type f error-handling-function]
   (fn [& args]
     (when-let [errors (apply f args)]
       (when (> (count errors) 0)
-        (errors/throw-service-errors error-type errors)))))
+        (when error-handling-function
+          (error-handling-function))
+        (errors/throw-service-errors error-type errors))))))
 
 (defn compose-validations
   "Creates a function that will compose together a list of validation functions into a

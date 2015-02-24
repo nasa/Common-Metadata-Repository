@@ -21,7 +21,8 @@
    :provider-id "PROV1"
    :metadata "xml here"
    :format "echo10"
-   :revision-id 1})
+   :revision-id 1
+   :extra-fields {:entry-title "ET-1"}})
 
 (deftest split-concept-id-revision-id-tuples-test
   (testing "one pair"

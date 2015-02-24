@@ -186,6 +186,7 @@
             existing-collection-response (util/save-concept existing-collection)
             test-collection-response (util/save-concept test-collection)]
 
+        ;; The collection should be rejected due to another collection having the same entry-title
         (is (= {:status 409,
                 :errors [(msg/duplicate-entry-titles
                            [(assoc existing-collection :concept-id
@@ -193,6 +194,9 @@
                             (assoc test-collection :concept-id "C1200000001-PROV1")])]}
                (select-keys test-collection-response [:status :errors])))
 
+        ;; We need to verify that the collection which was inserted and failed the post commit
+        ;; constraint checks is cleaned up from the database. We do this by verifying that
+        ;; the db only contains the original collection.
         (let [found-concepts (util/find-concepts :collection
                                                  {:entry-title "ET-1" :provider-id "PROV1"})]
           (is (= [(assoc existing-collection

@@ -172,19 +172,18 @@
     (let [result (c/save-concept db concept)]
       (if (nil? (:error result))
         ;; Perform post commit constraint checks - don't perform check if deleting concepts
-        (if-not (:deleted concept)
-          (if-let [constraint-violations (cc/entry-title-unique-constraint db concept)]
-            (do
-              ;; When there are constraint violoations we delete the concept that had just been
-              ;; saved and throw an error.
-              ;; TODO - We do not retry these errors internally 3 times like below. Should we?
-              (c/force-delete db
-                              (:concept-type concept)
-                              (:provider-id concept)
-                              (:concept-id concept)
-                              (:revision-id concept))
-              (errors/throw-service-errors :conflict [constraint-violations]))
-            concept)
+        (do
+          (when-not (:deleted concept)
+            ;; When there are constraint violations we delete the concept that had just been
+            ;; saved and throw an error.
+            ((cc/perform-post-commit-constraint-checks
+               concept
+               #(c/force-delete db
+                                (:concept-type concept)
+                                (:provider-id concept)
+                                (:concept-id concept)
+                                (:revision-id concept)))
+             db concept))
           concept)
         ;; depending on the error we will either throw an exception or try again (recur)
         (do

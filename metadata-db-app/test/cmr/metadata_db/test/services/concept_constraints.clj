@@ -37,7 +37,7 @@
   "Runs the given constraint function against a concept with a list of existing concepts in the
   database and verifies that the expected error is returned."
   [error-msg constraint test-concept & existing-concepts]
-  (is (= error-msg
+  (is (= [error-msg]
          (apply run-constraint constraint test-concept existing-concepts))))
 
 (defn- assert-valid
@@ -54,11 +54,6 @@
     (testing "valid cases"
       (testing "with empty database"
         (is-valid test-concept))
-      (testing "no entry-title included"
-        (is-valid (make-coll-concept "PROV1" "C1-PROV1" 10)
-                  (make-coll-concept "PROV1" "C2-PROV1" 3)
-                  (make-coll-concept "PROV1" "C3-PROV1" 2)
-                  (make-coll-concept "PROV1" "C4-PROV1" 12)))
       (testing "another collection with entry title that is deleted is valid"
         (let [other-tombstone (make-coll-tombstone "PROV1" "C2-PROV1" 2 {:entry-title "ET1"})]
           (is-valid test-concept other-tombstone)))
