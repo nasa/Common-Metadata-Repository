@@ -5,7 +5,10 @@
             [cmr.umm.granule :as g]
             [cmr.common.util :as u])
   (:import [cmr.umm.granule
-            UmmGranule]))
+            UmmGranule
+            PlatformRef
+            InstrumentRef
+            SensorRef]))
 
 (defprotocol ParentWeaver
   (set-parent [obj parent] "Sets the parent attribute on this object with the given parent"))
@@ -24,22 +27,6 @@
            :let [parent (parent-obj-by-name (name-field child))]]
        (set-parent child parent)))))
 
-(defn- set-sub-fields-parent
-  "Takes a list of objects, sub-field (symbol) in object, parent-sub-field and sub-name-field
-  which is the field within the sub-field object to pair with a parent. For each sub-field object,
-  a parent-sub-field object is matched on the sub-name-field and set as the :parent field."
-  [objs sub-field parent-sub-field sub-name-field]
-  (for [p objs]
-    (update-in p [sub-field] set-parents-by-name (parent-sub-field (:parent p)) sub-name-field)))
-
-(defn- set-platform-refs-parent
-  "Takes a list of platform-refs and platforms, match the platforms to the platform-refs on
-  short-name and set the match as the parent of the platform-refs."
-  [platform-refs platforms]
-  (-> platform-refs
-      (set-parents-by-name platforms :short-name)
-      (set-sub-fields-parent :instrument-refs :instruments :short-name)))
-
 (extend-protocol
   ParentWeaver
 
@@ -47,11 +34,10 @@
   UmmGranule
   (set-parent
     [granule coll]
-
     (-> granule
         (assoc :parent coll)
         (update-in [:spatial-coverage] set-parent (:spatial-coverage coll))
-        (update-in [:platform-refs] set-platform-refs-parent (:platforms coll))
+        (update-in [:platform-refs] set-parent (:platforms coll))
         (update-in [:product-specific-attributes]
                    set-parents-by-name (:product-specific-attributes coll) :name)))
 
@@ -62,6 +48,29 @@
     [obj parent]
     (assoc obj :parent parent))
 
+
+  java.util.List
+  (set-parent
+    [obj parent]
+    (map #(set-parent % parent) obj))
+
+  PlatformRef
+  (set-parent
+    [platform-ref platforms]
+    (let [{:keys [short-name]} platform-ref
+          platform (first (filter #(= short-name (:short-name %)) platforms))]
+      (-> platform-ref
+          (assoc :parent platform)
+          (update-in [:instrument-refs] set-parent (:instruments platform)))))
+
+  InstrumentRef
+  (set-parent
+    [instrument-ref instruments]
+    (let [{:keys [short-name]} instrument-ref
+          instrument (first (filter #(= short-name (:short-name %)) instruments))]
+      (-> instrument-ref
+          (assoc :parent instrument)
+          (update-in [:sensor-refs] set-parents-by-name (:sensors instrument) :short-name))))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; The protocol is extended to nil so we can attempt to set the parent on items which do not have

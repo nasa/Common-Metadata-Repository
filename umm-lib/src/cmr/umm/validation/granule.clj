@@ -65,7 +65,8 @@
 
 (def instrument-ref-validations
   "Defines the instrument validations for granules"
-  {:sensor-refs (vu/unique-by-name-validator :short-name)})
+  {:sensor-refs [(vu/unique-by-name-validator :short-name)
+                 (vu/has-parent-validator :short-name "Sensor short name")]})
 
 (def platform-ref-validations
   "Defines the platform validations for granules"
