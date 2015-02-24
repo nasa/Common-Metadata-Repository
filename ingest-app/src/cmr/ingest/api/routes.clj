@@ -12,6 +12,7 @@
             [clojure.stacktrace :refer [print-stack-trace]]
             [cheshire.core :as cheshire]
             [cmr.common.log :refer (debug info warn error)]
+            [cmr.common.api :as api]
             [cmr.common.api.errors :as api-errors]
             [cmr.common.services.errors :as srvc-errors]
             [cmr.common.jobs :as common-jobs]
@@ -164,8 +165,8 @@
       ;; add routes for accessing caches
       common-routes/cache-api-routes
 
-      (GET "/health" {request-context :request-context params :params}
-        (let [{pretty? :pretty} params
+      (GET "/health" {request-context :request-context :as request}
+        (let [pretty? (api/pretty-request? request)
               {:keys [ok? dependencies]} (ingest/health request-context)]
           {:status (if ok? 200 503)
            :headers {"Content-Type" "application/json; charset=utf-8"}

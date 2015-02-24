@@ -6,6 +6,7 @@
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.core :as d]
             [cmr.umm.spatial :as umm-s]
+            [cmr.umm.granule :as umm-g]
             [cmr.spatial.polygon :as poly]
             [cmr.spatial.point :as p]
             [cmr.spatial.line-string :as l]
@@ -43,23 +44,21 @@
   (let [response (apply ingest/validate-granule gran-and-optional-coll-concept)]
     (is (= {:status 200} (select-keys response [:status :errors])))))
 
-
-
 (deftest validation-endpoint-test
   (let [invalid-granule-xml "<Granule>invalid xml</Granule>"
         expected-errors ["Line 1 - cvc-complex-type.2.3: Element 'Granule' cannot have character [children], because the type's content type is element-only."
                          "Line 1 - cvc-complex-type.2.4.b: The content of element 'Granule' is not complete. One of '{GranuleUR}' is expected."]]
 
     (testing "with collection as additional parameter"
-      (let [collection (dc/collection {})
+      (let [collection (dc/collection-dif {})
             coll-concept (d/item->concept collection :echo10)]
         (testing "success"
           (let [concept (d/item->concept (dg/granule collection))]
             (assert-validation-success concept coll-concept)))
         (testing "collection in different format than granule"
-          (let [concept (d/item->concept (dg/granule collection))
-                iso-coll-concept (d/item->concept collection :iso19115)]
-            (assert-validation-success concept iso-coll-concept)))
+          (let [concept (d/item->concept (dg/granule collection))]
+            (assert-validation-success concept (d/item->concept collection :iso19115))
+            (assert-validation-success concept (d/item->concept collection :dif))))
 
         (testing "invalid collection xml"
           (assert-validation-errors
@@ -100,7 +99,41 @@
                (str "Invalid content-type: application/xml. Valid content-types: "
                     "application/echo10+xml, application/iso:smap+xml, application/iso19115+xml, application/dif+xml."))]
             (d/item->concept (dg/granule collection))
-            (assoc coll-concept :format "application/xml")))))
+            (assoc coll-concept :format "application/xml")))
+
+        (testing "granule collection ref does not match collection"
+          (testing "entry-title"
+            (let [collection (dc/collection {:entry-title "correct"})
+                  coll-concept (d/item->concept collection :echo10)
+                  granule (assoc (dg/granule collection)
+                                 :collection-ref
+                                 (umm-g/map->CollectionRef {:entry-title "wrong"}))]
+              (assert-validation-errors
+                [{:path ["CollectionRef"],
+                  :errors ["Collection Reference Entry Title [wrong] does not match the entry title of the parent collection [correct]"]}]
+                (d/item->concept granule)
+                coll-concept)))
+
+          (let [collection (dc/collection {:short-name "S1" :version-id "V1"})
+                coll-concept (d/item->concept collection :echo10)]
+            (testing "shortname"
+              (assert-validation-errors
+                [{:path ["CollectionRef"],
+                  :errors ["Collection Reference Short Name [S1] and Version ID [V2] do not match the Short Name [S1] and Version ID [V1] of the parent collection."]}]
+                (d/item->concept (assoc (dg/granule collection)
+                                        :collection-ref
+                                        (umm-g/map->CollectionRef {:short-name "S1"
+                                                                   :version-id "V2"})))
+                coll-concept))
+            (testing "version id"
+              (assert-validation-errors
+                [{:path ["CollectionRef"],
+                  :errors ["Collection Reference Short Name [S2] and Version ID [V1] do not match the Short Name [S1] and Version ID [V1] of the parent collection."]}]
+                (d/item->concept (assoc (dg/granule collection)
+                                        :collection-ref
+                                        (umm-g/map->CollectionRef {:short-name "S2"
+                                                                   :version-id "V1"})))
+                coll-concept))))))
 
     (testing "with ingested collection"
       (let [collection (d/ingest "PROV1" (dc/collection {}))]

@@ -7,6 +7,7 @@
             [cheshire.core :as json]
             [ring.util.response :as r]
             [cmr.common.log :refer (debug info warn error)]
+            [cmr.common.api :as api]
             [cmr.common.api.errors :as errors]
             [cmr.common.cache :as cache]
             [clojure.walk :as walk]
@@ -62,8 +63,8 @@
           (index-svc/reset request-context)
           {:status 204}))
 
-      (GET "/health" {request-context :request-context params :params}
-        (let [{pretty? :pretty} params
+      (GET "/health" {request-context :request-context :as request}
+        (let [pretty? (api/pretty-request? request)
               {:keys [ok? dependencies]} (index-svc/health request-context)]
           {:status (if ok? 200 503)
            :headers {"Content-Type" "application/json; charset=utf-8"}

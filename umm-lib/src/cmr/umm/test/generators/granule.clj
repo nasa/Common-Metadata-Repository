@@ -98,11 +98,3 @@
       :spatial-coverage (ext-gen/optional spatial-coverages)
       :product-specific-attributes (ext-gen/nil-if-empty
                                      (gen/vector product-specific-attribute-refs 0 5)))))
-
-;; Generator that only returns collection ref with entry-title
-;; DEPRECATED - this will go away in the future. Don't use it.
-(def granules-entry-title
-  (gen/fmap (fn [[granule-ur coll-ref]]
-              (g/map->UmmGranule {:granule-ur granule-ur
-                                  :collection-ref coll-ref}))
-            (gen/tuple granule-urs coll-refs-w-entry-title)))

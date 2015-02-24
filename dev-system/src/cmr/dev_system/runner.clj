@@ -11,9 +11,5 @@
   "Starts the App."
   [& args]
   (config/print-all-configs-docs)
-  (let [system (system/create-system {:elastic :in-memory
-                                      :echo :in-memory
-                                      :db :in-memory
-                                      :message-queue :in-memory})
-        system (system/start system)]
+  (let [system (system/start (system/create-system))]
     (info "Running...")))

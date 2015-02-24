@@ -7,6 +7,7 @@
             [cheshire.core :as json]
             [cmr.common.jobs :as jobs]
             [cmr.common.log :refer (debug info warn error)]
+            [cmr.common.api :as api]
             [cmr.common.api.errors :as errors]
             [cmr.common.cache :as cache]
             [cmr.system-trace.http :as http-trace]
@@ -55,8 +56,8 @@
           (mdb-jobs/expired-concept-cleanup context)
           {:status 204})))
 
-    (GET "/health" {request-context :request-context params :params}
-      (let [{pretty? :pretty} params
+    (GET "/health" {request-context :request-context :as request}
+      (let [pretty? (api/pretty-request? request)
             {:keys [ok? dependencies]} (hs/health request-context)]
         {:status (if ok? 200 503)
          :headers {"Content-Type" "application/json; charset=utf-8"}
