@@ -95,10 +95,7 @@
 
 (defmethod create-elastic :in-memory
   [type]
-
-  ;; DUPLICATION. FIX ME LATER
   (elastic-config/set-elastic-port! in-memory-elastic-port)
-
   (elastic-server/create-server
     in-memory-elastic-port
     (+ in-memory-elastic-port 10)
@@ -106,6 +103,7 @@
 
 (defmethod create-elastic :external
   [type]
+  (elastic-config/set-elastic-port! external-elastic-port)
   nil)
 
 (defmulti create-db
