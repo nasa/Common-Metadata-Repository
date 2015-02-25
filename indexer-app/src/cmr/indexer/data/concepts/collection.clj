@@ -3,7 +3,7 @@
   (:require [clojure.string :as str]
             [clj-time.format :as f]
             [cheshire.core :as json]
-            [camel-snake-kebab :as csk]
+            [camel-snake-kebab.core :as csk]
             [cmr.indexer.services.index-service :as idx]
             [cmr.indexer.data.elasticsearch :as es]
             [cmr.common.mime-types :as mt]
@@ -133,7 +133,8 @@
             :insert-time insert-time
             :associated-difs associated-difs
             :associated-difs.lowercase (map str/lower-case associated-difs)
-            :coordinate-system (when spatial-representation (csk/->SNAKE_CASE_STRING spatial-representation))
+            :coordinate-system (when spatial-representation
+                                 (csk/->SCREAMING_SNAKE_CASE_STRING spatial-representation))
             ;; fields added to support keyword searches
             :keyword (k/create-keywords-field concept-id collection)
             :long-name.lowercase (when long-name (str/lower-case long-name))

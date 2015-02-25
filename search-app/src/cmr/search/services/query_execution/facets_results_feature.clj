@@ -2,7 +2,7 @@
   "This is enables returning facets with collection search results"
   (:require [cmr.search.services.query-execution :as query-execution]
             [cmr.search.models.results :as r]
-            [camel-snake-kebab :as csk]
+            [camel-snake-kebab.core :as csk]
             [clojure.data.xml :as x]))
 
 (defn terms-facet

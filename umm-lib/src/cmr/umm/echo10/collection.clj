@@ -17,7 +17,7 @@
             [cmr.umm.echo10.collection.science-keyword :as sk]
             [cmr.umm.echo10.spatial :as s]
             [cmr.umm.echo10.core]
-            [camel-snake-kebab :as csk])
+            [camel-snake-kebab.core :as csk])
   (:import cmr.umm.collection.UmmCollection))
 
 (defn- xml-elem->Product
@@ -86,8 +86,8 @@
                   spatial-representation
                   geometries
                   orbit-parameters]} spatial-coverage
-          gsr (csk/->SNAKE_CASE_STRING granule-spatial-representation)
-          sr (some-> spatial-representation csk/->SNAKE_CASE_STRING)]
+          gsr (csk/->SCREAMING_SNAKE_CASE_STRING granule-spatial-representation)
+          sr (some-> spatial-representation csk/->SCREAMING_SNAKE_CASE_STRING)]
       (if sr
         (x/element :Spatial {}
                    (x/element :HorizontalSpatialDomain {}

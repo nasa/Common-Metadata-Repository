@@ -140,7 +140,7 @@
 
 (defn- schedule-job
   "Schedules a quartzite job (stopping existing job first)."
-  [system-holder-var-name job]
+  [scheduler system-holder-var-name job]
   (let [{:keys [^Class job-type job-key]} job
         job-key (or job-key (str (.getSimpleName job-type) ".job"))
         quartz-job (qj/build
@@ -150,9 +150,9 @@
         trigger (create-trigger job-key job)]
     (when trigger
       ;; We delete existing jobs and recreate them
-      (when (qs/get-job job-key)
-        (qs/delete-job (qj/key job-key)))
-      (qs/schedule quartz-job trigger))))
+      (when (qs/get-job scheduler job-key)
+        (qs/delete-job scheduler (qj/key job-key)))
+      (qs/schedule scheduler quartz-job trigger))))
 
 (defrecord JobScheduler
   [
@@ -170,6 +170,9 @@
    clustered?
    ;; true or false to indicate it's running
    running?
+
+   ;; Instance of a quartzite scheduler
+   qz-scheduler
    ]
 
   l/Lifecycle
@@ -191,21 +194,22 @@
             (configure-quartz-clustering-system-properties db))
 
           ;; Start quartz
-          (qs/initialize)
-          (qs/start)
+          (let [scheduler (qs/start (qs/initialize))]
 
-          ;; schedule all the jobs
-          (doseq [job jobs] (schedule-job system-holder-var-name job)))
+            ;; schedule all the jobs
+            (doseq [job jobs] (schedule-job scheduler system-holder-var-name job))
 
-        (assoc this :running? true))
+            (assoc this
+                   :running? true
+                   :qz-scheduler scheduler))))
       (errors/internal-error! "No jobs to schedule.")))
 
   (stop
     [this system]
     (when (:running? this)
       ;; Shutdown and wait for jobs to complete
-      (qs/shutdown true)
-      (assoc this :running? false))))
+      (qs/shutdown qz-scheduler true)
+      (assoc this :running? false :qz-scheduler nil))))
 
 
 (defn create-scheduler
@@ -214,13 +218,13 @@
   set to override the default in cases where you want multiple instances of a job to run with the
   same type."
   [system-holder-var db-system-key jobs]
-  (->JobScheduler system-holder-var db-system-key jobs false false))
+  (->JobScheduler system-holder-var db-system-key jobs false false nil))
 
 (defn create-clustered-scheduler
   "Starts the quartz job processing in clustered mode. The system should contain :jobs as described
   in start."
   [system-holder-var db-system-key jobs]
-  (->JobScheduler system-holder-var db-system-key jobs true false))
+  (->JobScheduler system-holder-var db-system-key jobs true false nil))
 
 (defn pause-jobs
   "Pause all jobs"

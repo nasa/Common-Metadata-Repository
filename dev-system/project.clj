@@ -78,7 +78,7 @@
 
 
   :profiles
-  {:dev {:dependencies [[org.clojure/tools.namespace "0.2.5"]
+  {:dev {:dependencies [[org.clojure/tools.namespace "0.2.9"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]
                         [pjstadig/humane-test-output "0.6.0"]
                         [ring-mock "0.1.5"]

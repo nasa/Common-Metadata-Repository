@@ -18,14 +18,13 @@
                  [nasa-cmr/cmr-bootstrap-app "0.1.0-SNAPSHOT"]
 
                  ; include ring-core to support encoding of params
-                 [ring/ring-core "1.3.1" :exclusions [clj-time]]
-                 [cheshire "5.3.1"]]
+                 [ring/ring-core "1.3.1" :exclusions [clj-time]]]
   :plugins [[lein-test-out "0.3.1"]]
 
   :jvm-opts ["-XX:PermSize=256m" "-XX:MaxPermSize=256m" "-XX:-OmitStackTraceInFastThrow"]
 
   :profiles
-  {:dev {:dependencies [[org.clojure/tools.namespace "0.2.5"]
+  {:dev {:dependencies [[org.clojure/tools.namespace "0.2.9"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]
                         [nasa-cmr/cmr-vdd-spatial-viz "0.1.0-SNAPSHOT"]]
          :source-paths ["src" "dev"]}})

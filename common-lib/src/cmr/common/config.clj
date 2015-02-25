@@ -2,7 +2,7 @@
   "A namespace that allows for global configuration. Configuration can be provided at runtime or
   through an environment variable. Configuration items should be added using the defconfig macro."
   (:require [clojure.string :as str]
-            [camel-snake-kebab :as csk]
+            [camel-snake-kebab.core :as csk]
             [clojure.set :as set]
             [cmr.common.log :as log :refer (debug info warn error)]))
 
@@ -26,7 +26,7 @@
 (defn config-name->env-name
   "Converts a config name into the environment variable name"
   [config-name]
-  (str "CMR_" (csk/->SNAKE_CASE_STRING config-name)))
+  (str "CMR_" (csk/->SCREAMING_SNAKE_CASE_STRING config-name)))
 
 (defn- env-var-value
   "Returns the value of the environment variable. Here specifically to enable testing of this

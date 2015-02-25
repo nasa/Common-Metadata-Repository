@@ -24,10 +24,9 @@
   :repl-options {:init-ns user}
 
   :profiles
-  {:dev {:dependencies [[org.clojure/tools.namespace "0.2.5"]
+  {:dev {:dependencies [[org.clojure/tools.namespace "0.2.9"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]
                         [pjstadig/humane-test-output "0.6.0"]
-                        [cheshire "5.3.1"]
                         [clj-http "1.0.0"]
                         [nasa-cmr/cmr-mock-echo-app "0.1.0-SNAPSHOT"]]
          :source-paths ["src" "dev" "test" "int_test"]

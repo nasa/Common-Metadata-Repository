@@ -5,7 +5,7 @@
             [cmr.index-set.data.elasticsearch :as es]
             [cmr.elastic-utils.connect :as es-util]
             [cheshire.core :as json]
-            [camel-snake-kebab :as csk]
+            [camel-snake-kebab.core :as csk]
             [cmr.acl.core :as acl]
             [cmr.common.services.errors :as errors]
             [cmr.transmit.echo.rest :as rest]

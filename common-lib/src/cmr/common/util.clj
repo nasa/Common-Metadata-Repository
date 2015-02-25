@@ -2,7 +2,7 @@
   "Utility functions that might be useful throughout the CMR."
   (:require [cmr.common.log :refer (debug info warn error)]
             [cmr.common.services.errors :as errors]
-            [camel-snake-kebab :as csk]
+            [camel-snake-kebab.core :as csk]
             [clojure.set :as set]
             [clojure.string :as str]
             [clojure.walk :as w])

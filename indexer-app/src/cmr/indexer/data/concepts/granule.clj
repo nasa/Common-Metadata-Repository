@@ -3,7 +3,7 @@
   (:require [clojure.string :as s]
             [clj-time.format :as f]
             [cheshire.core :as json]
-            [camel-snake-kebab :as csk]
+            [camel-snake-kebab.core :as csk]
             [cmr.indexer.data.elasticsearch :as es]
             [cmr.umm.core :as umm]
             [cmr.umm.related-url-helper :as ru]
@@ -141,7 +141,8 @@
             :entry-title (:entry-title parent-collection)
             :metadata-format (name (mt/base-mime-type-to-format format))
             :update-time update-time
-            :coordinate-system (when granule-spatial-representation (csk/->SNAKE_CASE_STRING granule-spatial-representation))
+            :coordinate-system (when granule-spatial-representation
+                                 (csk/->SCREAMING_SNAKE_CASE_STRING granule-spatial-representation))
 
             :entry-title.lowercase (s/lower-case (:entry-title parent-collection))
             :short-name.lowercase (when short-name (s/lower-case short-name))

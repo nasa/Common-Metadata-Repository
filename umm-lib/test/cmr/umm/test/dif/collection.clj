@@ -122,9 +122,10 @@
         (> (count xml) 0)
         (= 0 (count (c/validate-xml xml)))))))
 
+
 (defspec generate-and-parse-collection-test 100
   (for-all [collection coll-gen/collections]
-    ;(cmr.common.dev.capture-reveal/capture collection)
+    ; (cmr.common.dev.capture-reveal/capture collection)
 
     (let [xml (dif/umm->dif-xml collection)
           parsed (c/parse-collection xml)

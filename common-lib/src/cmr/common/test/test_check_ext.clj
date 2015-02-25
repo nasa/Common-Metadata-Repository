@@ -88,26 +88,6 @@
   [constructor & args]
   (gen/fmap (partial apply constructor) (apply gen/tuple args)))
 
-(defn counter
-  "Creates a generator that returns numbers in sequence from 0 to infinity."
-  []
-  (let [a (atom -1)]
-    (gen/make-gen (fn [rnd size]
-                    (swap! a inc)))))
-
-(defn return-then
-  "Creates a generator that returns each of the values in constants then uses then-gen
-  for subsequent values. This is useful when there are certain values that you want
-  always generated during testing.
-
-  user=>(gen/sample (return-then [:a :b :c] (gen/symbol)))
-  (\"a\" \"b\" \"c\" \"N\" \"_nN\" \"dVH3\" \"t@\" \"k+\" \"?Oq->h\" \"X82-<6bVp\")"
-  [constants then-gen]
-  (gen/gen-bind (counter)
-                (fn [i]
-                  (if (< i (count constants))
-                    (gen/return (nth constants i))
-                    then-gen))))
 (defn choose-double
   "Creates a generator that returns values between lower and upper inclusive. Min and max values must
   integers and the must be separated by more than 2."

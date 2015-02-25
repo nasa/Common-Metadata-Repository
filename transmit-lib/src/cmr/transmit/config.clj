@@ -2,7 +2,7 @@
   "Contains functions for retrieving application connection information from environment variables"
   (:require [cmr.common.config :as cfg :refer [defconfig]]
             [cmr.transmit.connection :as conn]
-            [camel-snake-kebab :as csk]))
+            [camel-snake-kebab.core :as csk]))
 
 
 (defmacro def-app-conn-config

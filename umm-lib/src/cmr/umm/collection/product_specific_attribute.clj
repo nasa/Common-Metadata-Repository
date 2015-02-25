@@ -1,7 +1,7 @@
 (ns cmr.umm.collection.product-specific-attribute
   (:require [clojure.string :as str]
             [clj-time.format :as f]
-            [camel-snake-kebab :as csk]
+            [camel-snake-kebab.core :as csk]
             [cmr.common.services.errors :as errors]))
 
 (defn parse-data-type
@@ -12,7 +12,7 @@
 (defn gen-data-type
   "Generates the string data type for XML from the keyword data type."
   [data-type]
-  (csk/->SNAKE_CASE (name data-type)))
+  (csk/->SCREAMING_SNAKE_CASE_STRING (name data-type)))
 
 (defmulti parse-value
   "Parses a value based on the data type given"

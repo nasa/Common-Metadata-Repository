@@ -10,7 +10,7 @@
             [cmr.common.mime-types :as mime-types]
             [cmr.system-int-test.utils.url-helper :as url]
             [cmr.common.util :as util]
-            [camel-snake-kebab :as csk]
+            [camel-snake-kebab.core :as csk]
             [clojure.set :as set]
             [clojure.walk]
             [ring.util.codec :as codec]

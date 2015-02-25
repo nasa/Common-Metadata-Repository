@@ -21,7 +21,7 @@
   :repl-options {:init-ns user}
   :jvm-opts ["-XX:PermSize=256m" "-XX:MaxPermSize=256m"]
   :profiles
-  {:dev {:dependencies [[org.clojure/tools.namespace "0.2.5"]
+  {:dev {:dependencies [[org.clojure/tools.namespace "0.2.9"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]]
          :source-paths ["src" "dev" "test"]}
    :uberjar {:main cmr.bootstrap.runner

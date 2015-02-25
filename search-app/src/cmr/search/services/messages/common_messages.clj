@@ -1,7 +1,7 @@
 (ns cmr.search.services.messages.common-messages
   "Contains messages for reporting responses to the user"
   (require [clojure.string :as str]
-           [camel-snake-kebab :as csk]))
+           [camel-snake-kebab.core :as csk]))
 
 (defn invalid-aql
   [msg]

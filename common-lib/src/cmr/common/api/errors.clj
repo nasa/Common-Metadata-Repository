@@ -4,7 +4,7 @@
             [cmr.common.services.errors :as errors]
             [clojure.data.xml :as x]
             [clojure.string :as str]
-            [camel-snake-kebab :as csk]
+            [camel-snake-kebab.core :as csk]
             [cheshire.core :as json]
             [cmr.common.mime-types :as mt]
             [cmr.common.config :as cfg]))
@@ -32,7 +32,7 @@
   (map (fn [path-item]
          (if (number? path-item)
            path-item
-           (csk/->CamelCaseString path-item)))
+           (csk/->PascalCaseString path-item)))
        field-path))
 
 (defmulti errors->body-string

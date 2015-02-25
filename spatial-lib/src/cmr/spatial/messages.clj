@@ -1,6 +1,6 @@
 (ns cmr.spatial.messages
   "Contains error messages for spatial validation."
-  (:require [camel-snake-kebab :as csk]
+  (:require [camel-snake-kebab.core :as csk]
             [cmr.common.util :as u]
             [pjstadig.assertions :as pj]
             [clojure.string :as str]))

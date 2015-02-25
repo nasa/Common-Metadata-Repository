@@ -16,7 +16,7 @@
             [cmr.search.services.messages.common-messages :as msg]
             [cmr.search.data.messages :as d-msg]
             [cmr.common.config :as cfg]
-            [camel-snake-kebab :as csk]
+            [camel-snake-kebab.core :as csk]
             [cmr.spatial.codec :as spatial-codec]
             [clojure.core.incubator :as incubator]
             [clj-time.core :as t])

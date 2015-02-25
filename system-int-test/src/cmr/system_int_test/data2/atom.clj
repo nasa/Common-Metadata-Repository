@@ -12,7 +12,7 @@
             [cmr.common.xml :as cx]
             [clojure.string :as str]
             [clj-time.format :as f]
-            [camel-snake-kebab :as csk]
+            [camel-snake-kebab.core :as csk]
             [cmr.umm.spatial :as umm-s]
             [cmr.umm.echo10.spatial :as echo-s]
             [cmr.common.util :as util]
@@ -241,7 +241,8 @@
                 related-urls beginning-date-time ending-date-time associated-difs organizations]} collection
         update-time (get-in collection [:data-provider-timestamps :update-time])
         spatial-representation (get-in collection [:spatial-coverage :spatial-representation])
-        coordinate-system (when spatial-representation (csk/->SNAKE_CASE_STRING spatial-representation))
+        coordinate-system (when spatial-representation
+                            (csk/->SCREAMING_SNAKE_CASE_STRING spatial-representation))
         orbit-parameters (get-in collection [:spatial-coverage :orbit-parameters])
         archive-org (first (filter #(= :archive-center (:type %)) organizations))
         archive-center (when archive-org (:org-name archive-org))
@@ -305,7 +306,7 @@
         update-time (get-in granule [:data-provider-timestamps :update-time])
         granule-spatial-representation (get-in coll [:spatial-coverage :granule-spatial-representation])
         coordinate-system (when granule-spatial-representation
-                            (csk/->SNAKE_CASE_STRING granule-spatial-representation))
+                            (csk/->SCREAMING_SNAKE_CASE_STRING granule-spatial-representation))
         orbit (get-in granule [:spatial-coverage :orbit])
         granule-shapes (map (partial umm-s/set-coordinate-system granule-spatial-representation)
                             (get-in granule [:spatial-coverage :geometries]))

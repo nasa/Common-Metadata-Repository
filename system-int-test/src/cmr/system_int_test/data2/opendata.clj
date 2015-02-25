@@ -8,7 +8,7 @@
             [cmr.spatial.line-string :as l]
             [clojure.string :as str]
             [cmr.spatial.relations :as r]
-            [camel-snake-kebab :as csk]
+            [camel-snake-kebab.core :as csk]
             [cmr.umm.spatial :as umm-s]
             [cmr.umm.echo10.spatial :as echo-s]
             [clojure.test]

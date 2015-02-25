@@ -3,7 +3,7 @@
   (:require [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
             [cmr.umm.collection :as c]
-            [camel-snake-kebab :as csk]))
+            [camel-snake-kebab.core :as csk]))
 
 (defn xml-elem->Organizations
   "Return organizations or []"
@@ -26,7 +26,7 @@
         :when (= center-type (:type org))]
     (let [elem-name (-> center-type
                         name
-                        csk/->CamelCase
+                        csk/->PascalCase
                         keyword)]
       (x/element elem-name {} (:org-name org)))))
 

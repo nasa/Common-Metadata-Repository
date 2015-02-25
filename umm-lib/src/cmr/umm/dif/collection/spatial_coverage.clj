@@ -5,7 +5,7 @@
             [cmr.spatial.mbr :as m]
             [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
-            [camel-snake-kebab :as csk])
+            [camel-snake-kebab.core :as csk])
   (:import cmr.spatial.mbr.Mbr))
 
 (def SPATIAL_COVERAGE_EXTERNAL_META_NAME
@@ -42,7 +42,7 @@
   [spatial-coverage]
   (when spatial-coverage
     (let [extended-metadata {:name SPATIAL_COVERAGE_EXTERNAL_META_NAME
-                             :value (csk/->SNAKE_CASE_STRING (:granule-spatial-representation spatial-coverage))}]
+                             :value (csk/->SCREAMING_SNAKE_CASE_STRING (:granule-spatial-representation spatial-coverage))}]
       (em/generate-extended-metadatas [extended-metadata] false))))
 
 (defn generate-spatial-coverage
