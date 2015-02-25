@@ -32,7 +32,7 @@
   "Return the expected parsed instrument for the given instrument."
   [instrument]
   (-> instrument
-      (assoc :technique nil :characteristics nil)
+      (assoc :technique nil :characteristics nil :operation-modes nil)
       (update-in [:sensors] sensors->expected-parsed)))
 
 (defn- instruments->expected-parsed

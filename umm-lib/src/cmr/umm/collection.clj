@@ -87,6 +87,7 @@
    technique
    sensors
    characteristics
+   operation-modes
    ])
 
 (defrecord Characteristic

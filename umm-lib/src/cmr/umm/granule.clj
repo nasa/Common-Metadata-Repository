@@ -72,6 +72,7 @@
   [
    short-name
    sensor-refs
+   operation-modes
   ])
 
 (defrecord PlatformRef

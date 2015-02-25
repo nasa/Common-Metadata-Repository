@@ -94,13 +94,17 @@
 (def instrument-short-names
   (ext-gen/string-alpha-numeric 1 10))
 
+(def operation-modes
+  (ext-gen/string-ascii 1 10))
+
 (def instruments
   (ext-gen/model-gen c/->Instrument
                      instrument-short-names
                      (ext-gen/optional instrument-long-names)
                      (ext-gen/optional instrument-techniques)
                      (ext-gen/nil-if-empty (gen/vector sensors 0 4))
-                     (ext-gen/nil-if-empty (gen/vector characteristics 0 4))))
+                     (ext-gen/nil-if-empty (gen/vector characteristics 0 4))
+                     (ext-gen/nil-if-empty (gen/vector operation-modes 0 4))))
 
 (def platform-short-names
   (ext-gen/string-alpha-numeric 1 10))

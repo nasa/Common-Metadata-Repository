@@ -37,7 +37,7 @@
   "Returns the expected parsed platforms for the given platforms."
   [platforms]
   (let [{:keys [instruments]} (first platforms)
-        instruments (seq (map #(assoc % :technique nil :sensors nil :characteristics nil)
+        instruments (seq (map #(assoc % :technique nil :sensors nil :characteristics nil :operation-modes nil)
                               instruments))]
     (seq (map (partial platform->expected-parsed instruments) platforms))))
 
