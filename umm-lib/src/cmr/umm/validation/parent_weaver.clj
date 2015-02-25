@@ -37,7 +37,7 @@
     (-> granule
         (assoc :parent coll)
         (update-in [:spatial-coverage] set-parent (:spatial-coverage coll))
-        (update-in [:platform-refs] set-parent (:platforms coll))
+        (update-in [:platform-refs] set-parents-by-name (:platforms coll) :short-name)
         (update-in [:product-specific-attributes]
                    set-parents-by-name (:product-specific-attributes coll) :name)))
 
@@ -48,7 +48,6 @@
     [obj parent]
     (assoc obj :parent parent))
 
-
   java.util.List
   (set-parent
     [obj parent]
@@ -56,21 +55,17 @@
 
   PlatformRef
   (set-parent
-    [platform-ref platforms]
-    (let [{:keys [short-name]} platform-ref
-          platform (first (filter #(= short-name (:short-name %)) platforms))]
-      (-> platform-ref
-          (assoc :parent platform)
-          (update-in [:instrument-refs] set-parent (:instruments platform)))))
+    [platform-ref platform]
+    (-> platform-ref
+        (assoc :parent platform)
+        (update-in [:instrument-refs] set-parents-by-name (:instruments platform) :short-name)))
 
   InstrumentRef
   (set-parent
-    [instrument-ref instruments]
-    (let [{:keys [short-name]} instrument-ref
-          instrument (first (filter #(= short-name (:short-name %)) instruments))]
-      (-> instrument-ref
-          (assoc :parent instrument)
-          (update-in [:sensor-refs] set-parents-by-name (:sensors instrument) :short-name))))
+    [instrument-ref instrument]
+    (-> instrument-ref
+        (assoc :parent instrument)
+        (update-in [:sensor-refs] set-parents-by-name (:sensors instrument) :short-name)))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; The protocol is extended to nil so we can attempt to set the parent on items which do not have
