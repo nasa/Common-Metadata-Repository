@@ -68,17 +68,21 @@
       (when (seq errors)
         (errors/throw-service-errors error-type errors)))))
 
+(defn apply-validations
+  "Applies the arguments to each validation concatenating all errors and returning them"
+  [validations & args]
+  (reduce (fn [errors validation]
+            (if-let [new-errors (apply validation args)]
+              (concat errors new-errors)
+              errors))
+          []
+          validations))
+
 (defn compose-validations
   "Creates a function that will compose together a list of validation functions into a
   single function that will perform all validations together"
   [validation-fns]
-  (fn [& args]
-    (reduce (fn [errors validation]
-              (if-let [new-errors (apply validation args)]
-                (concat errors new-errors)
-                errors))
-            []
-            validation-fns)))
+  (partial apply-validations validation-fns))
 
 (defmacro record-fields
   "Returns the set of fields in a record type as keywords. The record type passed in must be a java

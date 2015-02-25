@@ -24,26 +24,17 @@
         (> num-concepts 1)
         [(msg/duplicate-entry-titles concepts)]))))
 
-(defmulti post-commit-constraint-checks
-  "Perform the post commit constraint checks. Return a list of constraint violations if any."
-  (fn [concept]
-    (:concept-type concept)))
-
-(defmethod post-commit-constraint-checks :collection
-  [concept]
-  (util/compose-validations [entry-title-unique-constraint]))
-
-(defmethod post-commit-constraint-checks :granule
-  [concept]
-  (util/compose-validations []))
+(def concept-type->constraints
+  "Maps concept type to a function that will validate the constraints."
+  {:collection [entry-title-unique-constraint]})
 
 (defn perform-post-commit-constraint-checks
   "Perform the post commit constraint checks. Return a list of constraint violations if any.
   Performs any necessary database cleanup using the provided rollback-function"
-  [concept rollback-function]
-  (util/build-validator
-    :conflict
-    (fn [& args]
-      (when-let [errors (seq (apply (post-commit-constraint-checks concept) args))]
-        (rollback-function)
-        errors))))
+  [db concept rollback-function]
+  (let [constraints (concept-type->constraints (:concept-type concept))]
+    (when-let [errors (seq (util/apply-validations constraints db concept))]
+      (rollback-function)
+      (errors/throw-service-errors :conflict errors))))
+
+

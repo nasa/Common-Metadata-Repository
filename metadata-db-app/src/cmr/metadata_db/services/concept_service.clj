@@ -174,16 +174,16 @@
         (do
           ;; Perform post commit constraint checks - don't perform check if deleting concepts
           (when-not (:deleted concept)
-            ((cc/perform-post-commit-constraint-checks
-               concept
-               ;; When there are constraint violations we send in a rollback function to delete the
-               ;; concept that had just been saved and then throw an error.
-               #(c/force-delete db
-                                (:concept-type concept)
-                                (:provider-id concept)
-                                (:concept-id concept)
-                                (:revision-id concept)))
-             db concept))
+            (cc/perform-post-commit-constraint-checks
+              db
+              concept
+              ;; When there are constraint violations we send in a rollback function to delete the
+              ;; concept that had just been saved and then throw an error.
+              #(c/force-delete db
+                               (:concept-type concept)
+                               (:provider-id concept)
+                               (:concept-id concept)
+                               (:revision-id concept))))
           concept)
         ;; depending on the error we will either throw an exception or try again (recur)
         (do
