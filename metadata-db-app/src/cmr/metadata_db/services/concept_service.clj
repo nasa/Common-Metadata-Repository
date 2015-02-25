@@ -24,7 +24,8 @@
             [clojure.set :as set]
             [clojure.string]
             [clj-time.core :as t]
-            [cmr.common.time-keeper :as time-keeper]))
+            [cmr.common.time-keeper :as time-keeper]
+            [cmr.metadata-db.services.concept-constraints :as cc]))
 
 
 (def num-revisions-to-keep-per-concept-type
@@ -170,7 +171,20 @@
   (loop [concept concept tries-left 3]
     (let [result (c/save-concept db concept)]
       (if (nil? (:error result))
-        concept
+        (do
+          ;; Perform post commit constraint checks - don't perform check if deleting concepts
+          (when-not (:deleted concept)
+            (cc/perform-post-commit-constraint-checks
+              db
+              concept
+              ;; When there are constraint violations we send in a rollback function to delete the
+              ;; concept that had just been saved and then throw an error.
+              #(c/force-delete db
+                               (:concept-type concept)
+                               (:provider-id concept)
+                               (:concept-id concept)
+                               (:revision-id concept))))
+          concept)
         ;; depending on the error we will either throw an exception or try again (recur)
         (do
           (handle-save-errors concept result tries-left revision-id-provided?)
@@ -463,7 +477,7 @@
         concept-type-name (str (name concept-type) "s")
         tombstone-cut-off-date (t/minus (time-keeper/now) (t/days (days-to-keep-tombstone)))]
 
-        (info "Starting deletion of old" concept-type-name "for provider" provider)
+    (info "Starting deletion of old" concept-type-name "for provider" provider)
     (force-delete-with
       db provider concept-type
       #(c/get-old-concept-revisions

@@ -72,6 +72,20 @@
 (defn maximum-save-attempts-exceeded [error-msg]
   (str "Reached limit of attempts to save concept - giving up. Potential cause: " error-msg))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Concept Constraint Messages
+
+(defn duplicate-entry-titles
+  [concepts]
+  (format
+    "The Entry Title [%s] must be unique. The following concepts with the same entry title were found: [%s]"
+    (-> concepts first :extra-fields :entry-title)
+    (str/join ", " (map :concept-id concepts))))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Provider Messages
+
 (defn provider-id-parameter-required []
   "A provider parameter was required but was not provided.")
 
