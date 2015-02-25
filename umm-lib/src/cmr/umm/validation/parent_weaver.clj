@@ -48,11 +48,6 @@
     [obj parent]
     (assoc obj :parent parent))
 
-  java.util.List
-  (set-parent
-    [obj parent]
-    (map #(set-parent % parent) obj))
-
   PlatformRef
   (set-parent
     [platform-ref platform]
