@@ -5,7 +5,10 @@
             [cmr.umm.granule :as g]
             [cmr.common.util :as u])
   (:import [cmr.umm.granule
-            UmmGranule]))
+            UmmGranule
+            PlatformRef
+            InstrumentRef
+            SensorRef]))
 
 (defprotocol ParentWeaver
   (set-parent [obj parent] "Sets the parent attribute on this object with the given parent"))
@@ -31,7 +34,6 @@
   UmmGranule
   (set-parent
     [granule coll]
-
     (-> granule
         (assoc :parent coll)
         (update-in [:spatial-coverage] set-parent (:spatial-coverage coll))
@@ -46,6 +48,24 @@
     [obj parent]
     (assoc obj :parent parent))
 
+  java.util.List
+  (set-parent
+    [obj parent]
+    (map #(set-parent % parent) obj))
+
+  PlatformRef
+  (set-parent
+    [platform-ref platform]
+    (-> platform-ref
+        (assoc :parent platform)
+        (update-in [:instrument-refs] set-parents-by-name (:instruments platform) :short-name)))
+
+  InstrumentRef
+  (set-parent
+    [instrument-ref instrument]
+    (-> instrument-ref
+        (assoc :parent instrument)
+        (update-in [:sensor-refs] set-parents-by-name (:sensors instrument) :short-name)))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; The protocol is extended to nil so we can attempt to set the parent on items which do not have
