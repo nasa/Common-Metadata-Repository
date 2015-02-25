@@ -180,27 +180,26 @@
     (is (= "Malformed JSON in request body." (:body response)))))
 
 (deftest save-collection-post-commit-constraint-violations
-    (testing "duplicate entry titles"
-      (let [existing-collection (util/collection-concept "PROV1" 1 {:entry-title "ET-1"})
-            test-collection (util/collection-concept "PROV1" 2 {:entry-title "ET-1"})
-            existing-collection-response (util/save-concept existing-collection)
-            test-collection-response (util/save-concept test-collection)]
+  (testing "duplicate entry titles"
+    (let [existing-collection (assoc (util/collection-concept "PROV1" 1 {:entry-title "ET-1"})
+                                     :concept-id "C1-PROV1"
+                                     :revision-id 1)
+          test-collection (assoc (util/collection-concept "PROV1" 2 {:entry-title "ET-1"})
+                                 :concept-id "C2-PROV1"
+                                 :revision-id 1)
+          _ (util/save-concept existing-collection)
+          test-collection-response (util/save-concept test-collection)]
 
-        ;; The collection should be rejected due to another collection having the same entry-title
-        (is (= {:status 409,
-                :errors [(msg/duplicate-entry-titles
-                           [(assoc existing-collection :concept-id
-                                   (:concept-id existing-collection-response))
-                            (assoc test-collection :concept-id "C1200000001-PROV1")])]}
-               (select-keys test-collection-response [:status :errors])))
+      ;; The collection should be rejected due to another collection having the same entry-title
+      (is (= {:status 409,
+              :errors [(msg/duplicate-entry-titles [existing-collection test-collection])]}
+             (select-keys test-collection-response [:status :errors])))
 
-        ;; We need to verify that the collection which was inserted and failed the post commit
-        ;; constraint checks is cleaned up from the database. We do this by verifying that
-        ;; the db only contains the original collection.
-        (let [found-concepts (util/find-concepts :collection
-                                                 {:entry-title "ET-1" :provider-id "PROV1"})]
-          (is (= [(assoc existing-collection
-                         :concept-id (:concept-id existing-collection-response)
-                         :revision-id (:revision-id existing-collection-response))]
-                 (map #(dissoc % :revision-date) (:concepts found-concepts))))))))
+      ;; We need to verify that the collection which was inserted and failed the post commit
+      ;; constraint checks is cleaned up from the database. We do this by verifying that
+      ;; the db only contains the original collection.
+      (let [found-concepts (util/find-concepts :collection
+                                               {:entry-title "ET-1" :provider-id "PROV1"})]
+        (is (= [existing-collection]
+               (map #(dissoc % :revision-date) (:concepts found-concepts))))))))
 

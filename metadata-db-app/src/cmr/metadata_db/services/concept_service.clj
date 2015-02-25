@@ -171,13 +171,13 @@
   (loop [concept concept tries-left 3]
     (let [result (c/save-concept db concept)]
       (if (nil? (:error result))
-        ;; Perform post commit constraint checks - don't perform check if deleting concepts
         (do
+          ;; Perform post commit constraint checks - don't perform check if deleting concepts
           (when-not (:deleted concept)
-            ;; When there are constraint violations we delete the concept that had just been
-            ;; saved and throw an error.
             ((cc/perform-post-commit-constraint-checks
                concept
+               ;; When there are constraint violations we send in a rollback function to delete the
+               ;; concept that had just been saved and then throw an error.
                #(c/force-delete db
                                 (:concept-type concept)
                                 (:provider-id concept)

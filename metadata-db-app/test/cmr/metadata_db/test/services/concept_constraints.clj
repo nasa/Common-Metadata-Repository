@@ -80,9 +80,9 @@
           (not-valid
             (msg/duplicate-entry-titles [test-concept other-concept])
             [other-concept])))
-      (testing "cannot find saved concept returns internal error"
+      (testing "cannot find saved concept throws internal error"
         (let [db (mem-db/create-db)]
           (is (thrown-with-msg?
                 java.lang.Exception
-                #"Unable to find saved concept by entry-title \[ET1\]"
+                #"Unable to find saved concept for provider \[PROV1\] and entry-title \[ET1\]"
                 (cc/entry-title-unique-constraint db test-concept))))))))
