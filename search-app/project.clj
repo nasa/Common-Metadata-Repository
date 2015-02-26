@@ -9,10 +9,10 @@
                  [nasa-cmr/cmr-umm-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"]
                  [nasa-echo/echo-orbits-java "0.1.5"]
-                 [compojure "1.1.9"]
-                 [ring/ring-core "1.3.1" :exclusions [clj-time]]
+                 [compojure "1.3.2"]
+                 [ring/ring-core "1.3.2" :exclusions [clj-time]]
                  [ring/ring-json "0.3.1"]
-                 [org.clojure/tools.reader "0.8.8"]
+                 [org.clojure/tools.reader "0.8.15"]
                  [org.clojure/tools.cli "0.3.1"]
                  [nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]
                  [org.clojure/data.csv "0.1.2"]
@@ -22,10 +22,10 @@
   :repl-options {:init-ns user}
   :jvm-opts ["-XX:PermSize=256m" "-XX:MaxPermSize=256m"]
   :profiles
-  {:dev {:dependencies [[org.clojure/tools.namespace "0.2.9"]
+  {:dev {:dependencies [[org.clojure/tools.namespace "0.2.10"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]
                         [criterium "0.4.3"]
-                        [pjstadig/humane-test-output "0.6.0"]
+                        [pjstadig/humane-test-output "0.7.0"]
                         [ring-mock "0.1.5"]
                         ;; Must be listed here as metadata db depends on it.
                         [drift "1.5.2"]

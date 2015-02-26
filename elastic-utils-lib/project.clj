@@ -9,12 +9,12 @@
                  ;; Log4j needed to configure logging in elasticsearch.
                  ;; Version set to match elastic search numbers. Look in elasticsearch pom.xml
                  [log4j/log4j "1.2.17"]
-                 [clj-http "1.0.0"]]
+                 [clj-http "1.0.1"]]
 
   :plugins [[lein-test-out "0.3.1"]]
 
   :profiles
-  {:dev {:dependencies [[org.clojure/tools.namespace "0.2.9"]
+  {:dev {:dependencies [[org.clojure/tools.namespace "0.2.10"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]]
 
          :source-paths ["src" "dev" "test"]}})

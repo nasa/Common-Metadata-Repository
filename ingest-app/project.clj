@@ -9,11 +9,11 @@
                  [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-message-queue-lib "0.1.0-SNAPSHOT"]
-                 [compojure "1.1.9"]
-                 [ring/ring-core "1.3.1" :exclusions [clj-time]]
+                 [compojure "1.3.2"]
+                 [ring/ring-core "1.3.2" :exclusions [clj-time]]
                  [ring/ring-json "0.3.1"]
-                 [clj-http "1.0.0"]
-                 [org.clojure/tools.reader "0.8.8"]
+                 [clj-http "1.0.1"]
+                 [org.clojure/tools.reader "0.8.15"]
                  [org.clojure/tools.cli "0.3.1"]
                  [drift "1.5.2"]
 
@@ -29,7 +29,7 @@
   :repl-options {:init-ns user}
   :profiles
   {:dev {:dependencies [[ring-mock "0.1.5"]
-                        [org.clojure/tools.namespace "0.2.9"]
+                        [org.clojure/tools.namespace "0.2.10"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]]
          :source-paths ["src" "dev" "test"]}
    :uberjar {:main cmr.ingest.runner
