@@ -225,6 +225,10 @@
                 <ShortName>SNB</ShortName>
               </Sensor>
             </Sensors>
+            <OperationModes>
+              <OperationMode>Antarctic</OperationMode>
+              <OperationMode>Arctic</OperationMode>
+            </OperationModes>
           </Instrument>
           <Instrument>
             <ShortName>MAR</ShortName>
@@ -422,7 +426,8 @@
                                          :sensors [(umm-c/map->Sensor {:short-name "SNA"
                                                                        :long-name "SNA long name"
                                                                        :technique "technique"})
-                                                   (umm-c/map->Sensor {:short-name "SNB"})]})
+                                                   (umm-c/map->Sensor {:short-name "SNB"})]
+                                         :operation-modes ["Antarctic" "Arctic"]})
                                       (umm-c/map->Instrument {:short-name "MAR"})]})
                      (umm-c/map->Platform
                        {:short-name "RADARSAT-2"

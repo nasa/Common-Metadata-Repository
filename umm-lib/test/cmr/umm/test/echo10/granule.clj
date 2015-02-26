@@ -75,6 +75,10 @@
                 <ShortName>SNB</ShortName>
               </Sensor>
             </Sensors>
+            <OperationModes>
+              <OperationMode>Antarctic</OperationMode>
+              <OperationMode>Arctic</OperationMode>
+            </OperationModes>
           </Instrument>
           <Instrument>
             <ShortName>MAR</ShortName>
@@ -178,11 +182,12 @@
                     :platform-refs
                     [(umm-g/map->PlatformRef
                        {:short-name "RADARSAT-1"
-                        :instrument-refs [(umm-g/->InstrumentRef
-                                        "SAR"
-                                        [(umm-g/->SensorRef "SNA")
-                                         (umm-g/->SensorRef "SNB")])
-                                      (umm-g/->InstrumentRef "MAR" nil)]})
+                        :instrument-refs [(umm-g/map->InstrumentRef
+                                            {:short-name "SAR"
+                                             :sensor-refs [(umm-g/->SensorRef "SNA")
+                                                           (umm-g/->SensorRef "SNB")]
+                                             :operation-modes ["Antarctic" "Arctic"]})
+                                          (umm-g/map->InstrumentRef {:short-name "MAR"})]})
                      (umm-g/map->PlatformRef
                        {:short-name "RADARSAT-2"
                         :instrument-refs nil})]

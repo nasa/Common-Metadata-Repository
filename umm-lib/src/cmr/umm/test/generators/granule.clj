@@ -44,10 +44,14 @@
 (def instrument-ref-short-names
   (ext-gen/string-ascii 1 10))
 
+(def operation-modes
+  (ext-gen/string-ascii 1 10))
+
 (def instrument-refs
   (ext-gen/model-gen g/->InstrumentRef
                      instrument-ref-short-names
-                     (ext-gen/nil-if-empty (gen/vector sensor-refs 0 4))))
+                     (ext-gen/nil-if-empty (gen/vector sensor-refs 0 4))
+                     (ext-gen/nil-if-empty (gen/vector operation-modes 0 4))))
 
 (def platform-ref-short-names
   (ext-gen/string-ascii 1 10))

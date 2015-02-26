@@ -32,7 +32,8 @@
   "Return the expected parsed instrument for the given instrument."
   [instrument]
   (-> instrument
-      (assoc :technique nil :characteristics nil)
+      ;; ISO does not support instrument technique, characteristics or operation modes
+      (assoc :technique nil :characteristics nil :operation-modes nil)
       (update-in [:sensors] sensors->expected-parsed)))
 
 (defn- instruments->expected-parsed

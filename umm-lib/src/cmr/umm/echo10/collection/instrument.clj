@@ -11,12 +11,14 @@
         long-name (cx/string-at-path instrument-elem [:LongName])
         technique (cx/string-at-path instrument-elem [:Technique])
         sensors (sensor/xml-elem->Sensors instrument-elem)
-        characteristics (ch/xml-elem->Characteristics instrument-elem)]
+        characteristics (ch/xml-elem->Characteristics instrument-elem)
+        operation-modes (seq (cx/strings-at-path instrument-elem [:OperationModes :OperationMode]))]
     (c/map->Instrument {:short-name short-name
                         :long-name long-name
                         :technique technique
                         :sensors sensors
-                        :characteristics characteristics})))
+                        :characteristics characteristics
+                        :operation-modes operation-modes})))
 
 (defn xml-elem->Instruments
   [platform-element]
@@ -25,16 +27,24 @@
               platform-element
               [:Instruments :Instrument]))))
 
+(defn generate-operation-modes
+  [operation-modes]
+  (when (seq operation-modes)
+    (x/element :OperationModes {}
+               (for [operation-mode operation-modes]
+                 (x/element :OperationMode {} operation-mode)))))
+
 (defn generate-instruments
   [instruments]
-  (when-not (empty? instruments)
+  (when (seq instruments)
     (x/element
       :Instruments {}
       (for [instrument instruments]
-        (let [{:keys [long-name short-name technique sensors characteristics]} instrument]
+        (let [{:keys [long-name short-name technique sensors characteristics operation-modes]} instrument]
           (x/element :Instrument {}
                      (x/element :ShortName {} short-name)
                      (when long-name (x/element :LongName {} long-name))
                      (when technique (x/element :Technique {} technique))
                      (ch/generate-characteristics characteristics)
-                     (sensor/generate-sensors sensors)))))))
+                     (sensor/generate-sensors sensors)
+                     (generate-operation-modes operation-modes)))))))
