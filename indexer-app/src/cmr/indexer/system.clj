@@ -30,7 +30,7 @@
 (def
   ^{:doc "Defines the order to start the components."
     :private true}
-  component-order [:log :db :web :scheduler :queue-broker :queue-listener])
+  component-order [:log :db :scheduler :queue-broker :queue-listener :web])
 
 (def system-holder
   "Required for jobs"

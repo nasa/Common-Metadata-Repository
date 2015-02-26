@@ -34,7 +34,6 @@
       ;; pause all jobs
       (POST "/pause" {:keys [request-context params headers]}
         (let [context (acl/add-authentication-to-context request-context params headers)]
-          (cmr.common.dev.capture-reveal/capture-all)
           (acl/verify-ingest-management-permission context :update)
           (jobs/pause-jobs (get-in context [:system :scheduler]))
           {:status 204}))
