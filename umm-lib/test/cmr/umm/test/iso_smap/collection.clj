@@ -37,6 +37,7 @@
   "Returns the expected parsed platforms for the given platforms."
   [platforms]
   (let [{:keys [instruments]} (first platforms)
+        ;; SMAP ISO does not support instrument technique, sensors, characteristics or operation modes
         instruments (seq (map #(assoc % :technique nil :sensors nil :characteristics nil :operation-modes nil)
                               instruments))]
     (seq (map (partial platform->expected-parsed instruments) platforms))))
