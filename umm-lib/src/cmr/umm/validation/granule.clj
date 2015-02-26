@@ -63,10 +63,22 @@
       :else
       (errors/internal-error! (str "Unexpected collection ref in granule: " (pr-str granule))))))
 
+(defn- operation-modes-reference-collection
+  "Validate operation modes in granule instrument ref must reference those in the parent collection"
+  [field-path instrument-ref]
+  (let [operation-modes (set (:operation-modes instrument-ref))
+        parent-operation-modes (-> instrument-ref :parent :operation-modes set)
+        missing-operation-modes (seq (set/difference operation-modes parent-operation-modes))]
+    (when missing-operation-modes
+      {field-path
+       [(format "The following list of Instrument operation modes did not exist in the referenced parent collection: [%s]."
+                (str/join ", " missing-operation-modes))]})))
+
 (def instrument-ref-validations
   "Defines the instrument validations for granules"
-  {:sensor-refs [(vu/unique-by-name-validator :short-name)
-                 (vu/has-parent-validator :short-name "Sensor short name")]})
+  [{:sensor-refs [(vu/unique-by-name-validator :short-name)
+                 (vu/has-parent-validator :short-name "Sensor short name")]}
+   operation-modes-reference-collection])
 
 (def platform-ref-validations
   "Defines the platform validations for granules"

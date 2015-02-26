@@ -106,9 +106,11 @@
         s2 (c/map->Sensor {:short-name "S2"})
         s3 (c/map->Sensor {:short-name "S3"})
         i1 (c/map->Instrument {:short-name "I1"
-                               :sensors [s1 s2]})
+                               :sensors [s1 s2]
+                               :operation-modes ["OM1" "OM2"]})
         i2 (c/map->Instrument {:short-name "I2"
-                               :sensors [s1 s2]})
+                               :sensors [s1 s2]
+                               :operation-modes ["OM3" "OM4"]})
         i3 (c/map->Instrument {:short-name "I3"
                                :sensors [s2 s3]})
         i4 (c/map->Instrument {:short-name "I3"})
@@ -122,11 +124,16 @@
         sg1 (g/map->SensorRef {:short-name "S1"})
         sg2 (g/map->SensorRef {:short-name "S2"})
         sg3 (g/map->SensorRef {:short-name "S3"})
-        ig1 (g/map->InstrumentRef {:short-name "I1" :sensor-refs [sg1 sg2]})
-        ig2 (g/map->InstrumentRef {:short-name "I2" :sensor-refs [sg1 sg2]})
+        ig1 (g/map->InstrumentRef {:short-name "I1"
+                                   :sensor-refs [sg1 sg2]
+                                   :operation-modes ["OM1" "OM2"]})
+        ig2 (g/map->InstrumentRef {:short-name "I2"
+                                   :sensor-refs [sg1 sg2]
+                                   :operation-modes ["OM3" "OM4"]})
         ig3 (g/map->InstrumentRef {:short-name "I3" :sensor-refs [sg2 sg3]})
         ig4 (g/map->InstrumentRef {:short-name "I4"})
-        ig5 (g/map->InstrumentRef {:short-name "I1" :sensor-refs [sg1 sg1 sg2]})
+        ig5 (g/map->InstrumentRef {:short-name "I1"
+                                   :sensor-refs [sg1 sg1 sg2]})
         ig6 (g/map->InstrumentRef {:short-name "I3" :sensor-refs [sg2 sg2 sg3 sg3]})
         pg1 (g/map->PlatformRef {:short-name "p1" :instrument-refs [ig1 ig2]})
         pg2 (g/map->PlatformRef {:short-name "p2" :instrument-refs [ig1 ig3]})
@@ -210,6 +217,17 @@
           {:platform-refs [(g/map->PlatformRef {:short-name "p2" :instrument-refs [ig1 ig4]})]})
         [:platform-refs 0 :instrument-refs]
         ["The following list of Instrument short names did not exist in the referenced parent collection: [I4]."]))
+    (testing "granule instrument operation modes reference parent"
+      (assert-invalid-gran
+        collection
+        (make-granule
+          {:platform-refs [(g/map->PlatformRef
+                             {:short-name "p1"
+                              :instrument-refs [ig2 (g/map->InstrumentRef
+                                                      {:short-name "I1"
+                                                       :operation-modes ["OM1" "OM3" "OM4"]})]})]})
+        [:platform-refs 0 :instrument-refs 1]
+        ["The following list of Instrument operation modes did not exist in the referenced parent collection: [OM3, OM4]."]))
     (testing "granule sensor reference parent"
       (let [iref (g/map->InstrumentRef {:short-name "I1" :sensor-refs [sg1 sg3]})]
         (assert-invalid-gran
