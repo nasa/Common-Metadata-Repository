@@ -258,6 +258,10 @@
       201
       {:concept-id concept-id :revision-id revision-id}
 
+      409
+      ;; Post commit constraint violation occurred
+      (errors/throw-service-errors :conflict (get body "errors"))
+
       ;; default
       (errors/internal-error! (str "Save concept failed. MetadataDb app response status code: "
                                    status

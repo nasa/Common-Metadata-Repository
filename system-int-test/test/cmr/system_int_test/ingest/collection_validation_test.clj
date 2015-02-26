@@ -13,12 +13,6 @@
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
-(comment
-  (do
-    (ingest/reset)
-    (ingest/create-provider "provguid1" "PROV1"))
-  )
-
 (deftest validation-endpoint-test
   (testing "successful validation of collection"
     (let [concept (dc/collection-concept {})
@@ -39,18 +33,21 @@
   (poly/polygon [(apply umm-s/ords->ring ords)]))
 
 (defn assert-invalid
-  ([coll-attributes field-path errors]
-   (assert-invalid coll-attributes field-path errors :echo10))
-  ([coll-attributes field-path errors metadata-format]
-   (let [response (d/ingest "PROV1" (dc/collection coll-attributes) metadata-format)]
-     (is (= {:status 400
-             :errors [{:path field-path
-                       :errors errors}]}
+  ([status-code coll-attributes field-path errors]
+   (assert-invalid status-code coll-attributes field-path errors :echo10))
+  ([status-code coll-attributes field-path errors metadata-format]
+   (let [collection (assoc (dc/collection coll-attributes) :native-id (:native-id coll-attributes))
+         response (d/ingest "PROV1" collection metadata-format)]
+     (is (= {:status status-code
+             :errors (if field-path
+                       [{:path field-path :errors errors}]
+                       errors)}
             (select-keys response [:status :errors]))))))
 
 (defn assert-valid
   [coll-attributes]
-  (let [response (d/ingest "PROV1" (dc/collection coll-attributes))]
+  (let [collection (assoc (dc/collection coll-attributes) :native-id (:native-id coll-attributes))
+        response (d/ingest "PROV1" collection)]
     (is (= {:status 200} (select-keys response [:status :errors])))))
 
 (defn assert-invalid-spatial
@@ -58,9 +55,9 @@
    (assert-invalid-spatial coord-sys shapes errors :echo10))
   ([coord-sys shapes errors metadata-format]
    (let [shapes (map (partial umm-s/set-coordinate-system coord-sys) shapes)]
-     (assert-invalid {:spatial-coverage (dc/spatial {:gsr coord-sys
-                                                     :sr coord-sys
-                                                     :geometries shapes})}
+     (assert-invalid 400 {:spatial-coverage (dc/spatial {:gsr coord-sys
+                                                         :sr coord-sys
+                                                         :geometries shapes})}
                      ["SpatialCoverage" "Geometries" 0]
                      errors
                      metadata-format))))
@@ -78,6 +75,7 @@
 (deftest collection-umm-validation-test
   (testing "Product specific attribute validation"
     (assert-invalid
+      400
       {:product-specific-attributes
        [(dc/psa "bool" :boolean true)
         (dc/psa "bool" :boolean true)]}
@@ -85,6 +83,7 @@
       ["Product Specific Attributes must be unique. This contains duplicates named [bool]."]))
   (testing "Nested Path Validation"
     (assert-invalid
+      400
       {:platforms [(dc/platform "P1" "none" nil (dc/instrument "I1") (dc/instrument "I1"))]}
       ["Platforms" 0 "Instruments"]
       ["Instruments must be unique. This contains duplicates named [I1]."]))
@@ -127,9 +126,14 @@
       (assert-invalid-spatial
         :geodetic
         [(m/mbr -180 45 180 46)]
-        ["Spatial validation error: The bounding rectangle north value [45] was less than the south value [46]"]))
+        ["Spatial validation error: The bounding rectangle north value [45] was less than the south value [46]"]))))
 
-
-
-
-    ))
+(deftest post-commit-constraint-errors
+  (testing "entry-title validation"
+    (assert-valid
+      {:entry-title "ET-1" :concept-id "C1-PROV1" :native-id "Native1"})
+    (assert-invalid
+      409
+      {:entry-title "ET-1" :concept-id "C2-PROV1" :native-id "Native2"}
+      nil
+      ["The Entry Title [ET-1] must be unique. The following concepts with the same entry title were found: [C1-PROV1, C2-PROV1]"])))
