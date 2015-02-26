@@ -122,11 +122,13 @@
       (context "/jobs" []
         ;; pause all jobs
         (POST "/pause" {:keys [request-context params headers]}
-          (jobs/pause-jobs))
+          (jobs/pause-jobs (get-in request-context [:system :scheduler]))
+          {:status 204})
 
         ;; resume all jobs
         (POST "/resume" {:keys [request-context params headers]}
-          (jobs/resume-jobs)))
+          (jobs/resume-jobs (get-in request-context [:system :scheduler]))
+          {:status 204}))
 
       (context "/bulk_index" []
         (POST "/providers" {:keys [request-context body params]}

@@ -154,6 +154,15 @@
         (qs/delete-job scheduler (qj/key job-key)))
       (qs/schedule scheduler quartz-job trigger))))
 
+(defprotocol JobRunner
+  "Defines functions for pausing and resuming jobs"
+  (pause-jobs
+    [scheduler]
+    "Pauses running of all jobs.")
+  (resume-jobs
+    [scheduler]
+    "Resumes running of all jobs"))
+
 (defrecord JobScheduler
   [
    ;; A var that will point to an atom to use to contain the system.
@@ -209,7 +218,45 @@
     (when (:running? this)
       ;; Shutdown and wait for jobs to complete
       (qs/shutdown qz-scheduler true)
-      (assoc this :running? false :qz-scheduler nil))))
+      (assoc this :running? false :qz-scheduler nil)))
+
+  JobRunner
+
+  (pause-jobs
+    [scheduler]
+    (qs/pause-all! qz-scheduler)
+    (info "Paused all scheduled jobs."))
+
+  (resume-jobs
+    [scheduler]
+    (qs/resume-all! qz-scheduler)
+    (info "Paused all scheduled jobs.")))
+
+;; A scheduler that does not track or run jobs
+(defrecord NonRunningJobScheduler
+  [
+   ;; no fields
+   ]
+
+  l/Lifecycle
+
+  (start
+    [this system]
+    this)
+
+  (stop
+    [this system]
+    this)
+
+  JobRunner
+
+  (pause-jobs
+    [scheduler]
+    (info "Ignoring request to pause jobs on non running scheduler"))
+
+  (resume-jobs
+    [scheduler]
+    (info "Ignoring request to resume jobs on non running scheduler")))
 
 
 (defn create-scheduler
@@ -226,17 +273,8 @@
   [system-holder-var db-system-key jobs]
   (->JobScheduler system-holder-var db-system-key jobs true false nil))
 
-(defn pause-jobs
-  "Pause all jobs"
+(defn create-non-running-scheduler
+  "Creates an instance of a scheduler that does not run jobs at all. This is useful in situations
+  where an application will need a scheduler instance but we do not want jobs to run."
   []
-  (qs/pause-all!)
-  (info "Paused all scheduled jobs.")
-  {:status 204})
-
-(defn resume-jobs
-  "Resume all jobs"
-  []
-  (qs/resume-all!)
-  (info "Resumed all scheduled jobs.")
-  {:status 204})
-
+  (->NonRunningJobScheduler))

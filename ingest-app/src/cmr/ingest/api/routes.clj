@@ -159,13 +159,15 @@
         (POST "/pause" {:keys [request-context params headers]}
           (let [context (acl/add-authentication-to-context request-context params headers)]
             (acl/verify-ingest-management-permission context :update)
-            (common-jobs/pause-jobs)))
+            (common-jobs/pause-jobs (get-in context [:system :scheduler]))
+            {:status 204}))
 
         ;; resume all jobs
         (POST "/resume" {:keys [request-context params headers]}
           (let [context (acl/add-authentication-to-context request-context params headers)]
             (acl/verify-ingest-management-permission context :update)
-            (common-jobs/resume-jobs))))
+            (common-jobs/resume-jobs (get-in context [:system :scheduler]))
+            {:status 204})))
 
       ;; add routes for accessing caches
       common-routes/cache-api-routes

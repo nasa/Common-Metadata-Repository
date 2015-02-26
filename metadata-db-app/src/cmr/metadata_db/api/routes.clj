@@ -34,14 +34,17 @@
       ;; pause all jobs
       (POST "/pause" {:keys [request-context params headers]}
         (let [context (acl/add-authentication-to-context request-context params headers)]
+          (cmr.common.dev.capture-reveal/capture-all)
           (acl/verify-ingest-management-permission context :update)
-          (jobs/pause-jobs)))
+          (jobs/pause-jobs (get-in context [:system :scheduler]))
+          {:status 204}))
 
       ;; resume all jobs
       (POST "/resume" {:keys [request-context params headers]}
         (let [context (acl/add-authentication-to-context request-context params headers)]
           (acl/verify-ingest-management-permission context :update)
-          (jobs/resume-jobs)))
+          (jobs/resume-jobs (get-in context [:system :scheduler]))
+          {:status 204}))
 
       ;; Trigger the old revision concept cleanup
       (POST "/old-revision-concept-cleanup" {:keys [request-context params headers]}

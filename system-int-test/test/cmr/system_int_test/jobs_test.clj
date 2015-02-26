@@ -20,7 +20,6 @@
     (are [action]
          (= 401
             (perform-action-on-jobs "WRONG-TOKEN" action (url/mdb-jobs-url)))
-
          :pause
          :resume))
 
@@ -28,7 +27,6 @@
     (are [action]
          (= 204
             (perform-action-on-jobs (transmit-config/echo-system-token) action (url/mdb-jobs-url)))
-
          :pause
          :resume)))
 
@@ -37,7 +35,6 @@
     (are [action]
          (= 401
             (perform-action-on-jobs "WRONG-TOKEN" action (url/ingest-jobs-url)))
-
          :pause
          :resume))
 
@@ -45,6 +42,5 @@
     (are [action]
          (= 204
             (perform-action-on-jobs (transmit-config/echo-system-token) action (url/ingest-jobs-url)))
-
          :pause
          :resume)))

@@ -1,31 +1,44 @@
 (ns cmr.dev-system.system
   (:require [cmr.common.log :refer (debug info warn error)]
-            [cmr.bootstrap.system :as bootstrap-system]
-            [cmr.metadata-db.system :as mdb-system]
-            [cmr.indexer.system :as indexer-system]
-            [cmr.search.system :as search-system]
-            [cmr.ingest.system :as ingest-system]
-            [cmr.ingest.data.provider-acl-hash :as ingest-data]
-            [cmr.index-set.system :as index-set-system]
-            [cmr.mock-echo.system :as mock-echo-system]
-            [cmr.metadata-db.data.memory-db :as memory]
-            [cmr.index-set.data.elasticsearch :as es-index]
-            [cmr.search.data.elastic-search-index :as es-search]
             [cmr.common.lifecycle :as lifecycle]
-            [cmr.spatial.dev.viz-helper :as viz-helper]
-            [cmr.elastic-utils.embedded-elastic-server :as elastic-server]
-            [cmr.indexer.services.queue-listener :as ql]
-            [cmr.message-queue.config :as rmq-conf]
-            [cmr.message-queue.queue.rabbit-mq :as rmq]
-            [cmr.dev-system.queue-broker-wrapper :as wrapper]
-            [cmr.dev-system.control :as control]
-            [cmr.message-queue.services.queue :as queue]
             [cmr.common.api.web-server :as web]
             [cmr.common.config :as config :refer [defconfig]]
+            [cmr.common.util :as u]
+            [cmr.common.jobs :as jobs]
+
+            [cmr.bootstrap.system :as bootstrap-system]
+
+            [cmr.metadata-db.system :as mdb-system]
+            [cmr.metadata-db.data.memory-db :as memory]
+
+            [cmr.indexer.system :as indexer-system]
             [cmr.indexer.config :as indexer-config]
-            [cmr.transmit.config :as transmit-config]
+            [cmr.indexer.services.queue-listener :as ql]
+
+            [cmr.ingest.system :as ingest-system]
+            [cmr.ingest.data.provider-acl-hash :as ingest-data]
+
+            [cmr.index-set.system :as index-set-system]
+            [cmr.index-set.data.elasticsearch :as es-index]
+
+            [cmr.mock-echo.system :as mock-echo-system]
+
+            [cmr.search.data.elastic-search-index :as es-search]
+            [cmr.search.system :as search-system]
+
+            [cmr.spatial.dev.viz-helper :as viz-helper]
+
+            [cmr.elastic-utils.embedded-elastic-server :as elastic-server]
             [cmr.elastic-utils.config :as elastic-config]
-            [cmr.common.util :as u]))
+
+            [cmr.message-queue.config :as rmq-conf]
+            [cmr.message-queue.queue.rabbit-mq :as rmq]
+            [cmr.message-queue.services.queue :as queue]
+
+            [cmr.dev-system.queue-broker-wrapper :as wrapper]
+            [cmr.dev-system.control :as control]
+
+            [cmr.transmit.config :as transmit-config]))
 
 (def in-memory-elastic-port 9206)
 
@@ -182,8 +195,8 @@
   [db-component]
   (if db-component
     (-> (mdb-system/create-system)
-        (assoc :db db-component)
-        (dissoc :scheduler))
+        (assoc :db db-component
+               :scheduler (jobs/create-non-running-scheduler)))
     (mdb-system/create-system)))
 
 (defn create-indexer-app
@@ -204,8 +217,8 @@
   [db-type queue-broker]
   (-> (ingest-system/create-system)
       (assoc :db (ingest-data/create-in-memory-acl-hash-store)
-             :queue-broker queue-broker)
-      (dissoc :scheduler)))
+             :queue-broker queue-broker
+             :scheduler (jobs/create-non-running-scheduler))))
 
 (defmethod create-ingest-app :external
   [db-type queue-broker]
