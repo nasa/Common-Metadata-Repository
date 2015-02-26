@@ -122,17 +122,6 @@
       (approx= lon (:lon (assoc p :lon-rad (radians lon))))
       (approx= lat (:lat (assoc p :lat-rad (radians lat)))))))
 
-;; Tests that when associating a new subvalue to a point it stays consistent.
-(defspec point-assoc 100
-  (for-all [p sgen/points
-            lon sgen/lons
-            lat sgen/lats]
-    (and
-      (approx= (radians lon) (:lon-rad (assoc p :lon lon)))
-      (approx= (radians lat) (:lat-rad (assoc p :lat lat)))
-      (approx= lon (:lon (assoc p :lon-rad (radians lon))))
-      (approx= lat (:lat (assoc p :lat-rad (radians lat)))))))
-
 (deftest pole-detection
   (testing "is-north-pole?"
     (is (p/is-north-pole? (p/point 0 90)))
