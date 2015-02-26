@@ -13,12 +13,6 @@
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
-(comment
-  (do
-    (ingest/reset)
-    (ingest/create-provider "provguid1" "PROV1"))
-  )
-
 (deftest validation-endpoint-test
   (testing "successful validation of collection"
     (let [concept (dc/collection-concept {})
@@ -50,7 +44,8 @@
 
 (defn assert-valid
   [coll-attributes]
-  (let [response (d/ingest "PROV1" (dc/collection coll-attributes))]
+  (let [collection (assoc (dc/collection coll-attributes) :native-id (:native-id coll-attributes))
+        response (d/ingest "PROV1" collection)]
     (is (= {:status 200} (select-keys response [:status :errors])))))
 
 (defn assert-invalid-spatial
@@ -71,6 +66,14 @@
     (assert-valid {:spatial-coverage (dc/spatial {:gsr coord-sys
                                                   :sr coord-sys
                                                   :geometries shapes})})))
+
+(defn assert-conflict
+  [coll-attributes errors]
+  (let [collection (assoc (dc/collection coll-attributes) :native-id (:native-id coll-attributes))
+        response (d/ingest "PROV1" collection :echo10)]
+    (is (= {:status 409
+            :errors errors}
+           (select-keys response [:status :errors])))))
 
 ;; This tests that UMM type validations are applied during collection ingest.
 ;; Thorough tests of UMM validations should go in cmr.umm.test.validation.core and related
@@ -127,9 +130,12 @@
       (assert-invalid-spatial
         :geodetic
         [(m/mbr -180 45 180 46)]
-        ["Spatial validation error: The bounding rectangle north value [45] was less than the south value [46]"]))
+        ["Spatial validation error: The bounding rectangle north value [45] was less than the south value [46]"]))))
 
-
-
-
-    ))
+(deftest duplicate-id-test
+  (testing "entry-title validation"
+    (assert-valid
+      {:entry-title "ET-1" :concept-id "C1-PROV1" :native-id "Native1"})
+    (assert-conflict
+      {:entry-title "ET-1" :concept-id "C2-PROV1" :native-id "Native2"}
+      ["The Entry Title [ET-1] must be unique. The following concepts with the same entry title were found: [C1-PROV1, C2-PROV1]"])))
