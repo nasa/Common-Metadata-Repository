@@ -16,7 +16,7 @@
                  [org.clojure/tools.cli "0.3.1"]
                  [nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]
                  [org.clojure/data.csv "0.1.2"]
-                 [net.sf.saxon/Saxon-HE "9.5.1-6"]]
+                 [net.sf.saxon/Saxon-HE "9.6.0-4"]]
   :plugins [[lein-test-out "0.3.1"]
             [lein-exec "0.3.4"]]
   :repl-options {:init-ns user}
@@ -29,7 +29,7 @@
                         [ring-mock "0.1.5"]
                         ;; Must be listed here as metadata db depends on it.
                         [drift "1.5.2"]
-                        [markdown-clj "0.9.47"]]
+                        [markdown-clj "0.9.63"]]
          :source-paths ["src" "dev" "test"]
          :injections [(require 'pjstadig.humane-test-output)
                       (pjstadig.humane-test-output/activate!)]}
