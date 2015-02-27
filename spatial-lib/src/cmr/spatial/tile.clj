@@ -1,38 +1,41 @@
 (ns cmr.spatial.tile
   (:require [cmr.spatial.geodetic-ring :as gr]
-            [cmr.spatial.ring-relations :as rel]
+            [cmr.spatial.ring-relations :as rr]
             [clojure.java.io :as io]
             [cmr.spatial.derived :as d]
-            [cmr.spatial.ring-relations :as rr]))
+            [cmr.spatial.relations :as rel]))
   			
-     
-(defprotocol TileOperations
-  "Operations on tiles"
-  (intersects? [this geom] "returns true if geometry of the tile intersects with geom")
-  (coordinates [this] "returns the tile coordinates as list" ))
+;;Modis Sinusoidal Tile
+(defrecord ModisSinTile
+  [
+   ;; Tile coordinate along east-west(0-35)
+   h 
+   ;; Tile coordinate along north-south(0-17)
+   v 
+   ;; Tile geometry as geodetic ring
+   geometry])
 
+(defn intersects?
+  "Returns true if geometry of the tile intersects with the given geometry. geometry could
+   be of any geometric type including point, line, polygon, mbr and ring"
+  [tile geometry]
+  (rel/intersects-ring? geometry (:geometry tile)))
 
-(defrecord ModisTile[h v geometry]
-  TileOperations
-  (intersects? [this geom]
-               (rel/intersects-ring? geom (:geometry this)))
-  (coordinates [this] [h v]))
+(defn coordinates
+  "Returns the tile coordinates as a vector"
+  [tile]
+  (vector (:h tile) (:v tile)))
 
-(defn- read-modis-tiles 
-  "Read Modis tiles from a text file"
-  []
-  (let [tiles (read-string(slurp (clojure.java.io/resource "cmr/spatial/modis_tiles.edn")))]
-    (for [{:keys [h v coordinates]} tiles] 
-      (->ModisTile h v (d/calculate-derived (apply rr/ords->ring :geodetic coordinates))))))
+(def modis-sin-tiles 
+  "A vector of ModisTile records read from an edn file"
+  (vec (let [tiles (read-string (slurp (clojure.java.io/resource "cmr/spatial/modis_tiles.edn")))]
+            (for [{:keys [h v coordinates]} tiles] 
+                (->ModisSinTile h v (d/calculate-derived 
+                                 (apply rr/ords->ring :geodetic coordinates)))))))
 
-(def modis-tiles (vec (read-modis-tiles)))
-
-(defn tiles-from-geometry
-  "Get all modis tiles which intersect the given geometry"
-  [geom]
-  (filter #(not(nil? %))  
-    (map #(if (intersects? % geom) (coordinates %) nil) modis-tiles))
-)
-
-
-
+(defn geometry->tiles
+  "Gets tiles which intersect the given geometry as a sequence of tuples, each tuple being a vector 
+   holding two entries in the format [h v]. geometry could be of any geometric type including 
+   point, line, polygon, mbr and ring"
+  [geometry]
+  (keep  #(when (intersects? % geometry) (coordinates %)) modis-sin-tiles))
