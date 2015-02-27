@@ -75,15 +75,20 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Concept Constraint Messages
 
-(defn duplicate-entry-titles
-  [concepts]
+(defmulti duplicate-field-msg
+  "Returns an error message to use for concepts which violate the given unique field constraint."
+  (fn [field concepts]
+    field))
+
+(defmethod duplicate-field-msg :entry-title
+  [field concepts]
   (format
     "The Entry Title [%s] must be unique. The following concepts with the same entry title were found: [%s]."
     (-> concepts first :extra-fields :entry-title)
     (str/join ", " (map :concept-id concepts))))
 
-(defn duplicate-entry-ids
-  [concepts]
+(defmethod duplicate-field-msg :entry-id
+  [field concepts]
   (format
     "The Entry Id [%s] must be unique. The following concepts with the same entry id were found: [%s]."
     (-> concepts first :extra-fields :entry-id)

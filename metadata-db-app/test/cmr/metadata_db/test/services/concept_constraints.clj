@@ -49,8 +49,8 @@
 
 (deftest entry-title-unique-constraint-test
   (let [test-concept (make-coll-concept "PROV1" "C1-PROV1" 5 {:entry-title "ET1"})
-        is-valid (partial assert-valid cc/entry-title-unique-constraint)
-        not-valid #(apply assert-invalid %1 cc/entry-title-unique-constraint test-concept %2)]
+        is-valid (partial assert-valid (cc/unique-field-constraint :entry-title))
+        not-valid #(apply assert-invalid %1 (cc/unique-field-constraint :entry-title) test-concept %2)]
 
     (testing "valid cases"
       (testing "with empty database"
@@ -79,19 +79,19 @@
       (testing "same entry title"
         (let [other-concept (make-coll-concept "PROV1" "C2-PROV1" 1 {:entry-title "ET1"})]
           (not-valid
-            (msg/duplicate-entry-titles [test-concept other-concept])
+            (msg/duplicate-field-msg :entry-title [test-concept other-concept])
             [other-concept])))
       (testing "cannot find saved concept throws internal error"
         (let [db (mem-db/create-db)]
           (is (thrown-with-msg?
                 java.lang.Exception
                 #"Unable to find saved concept for provider \[PROV1\] and entry-title \[ET1\]"
-                (cc/entry-title-unique-constraint db test-concept))))))))
+                ((cc/unique-field-constraint :entry-title) db test-concept))))))))
 
 (deftest entry-id-unique-constraint-test
   (let [test-concept (make-coll-concept "PROV1" "C1-PROV1" 5 {:entry-id "EID-1"})
-        is-valid (partial assert-valid cc/entry-id-unique-constraint)
-        not-valid #(apply assert-invalid %1 cc/entry-id-unique-constraint test-concept %2)]
+        is-valid (partial assert-valid (cc/unique-field-constraint :entry-id))
+        not-valid #(apply assert-invalid %1 (cc/unique-field-constraint :entry-id) test-concept %2)]
 
     (testing "valid cases"
       (testing "with empty database"
@@ -120,14 +120,14 @@
       (testing "same entry id"
         (let [other-concept (make-coll-concept "PROV1" "C2-PROV1" 1 {:entry-id "EID-1"})]
           (not-valid
-            (msg/duplicate-entry-ids [test-concept other-concept])
+            (msg/duplicate-field-msg :entry-id [test-concept other-concept])
             [other-concept])))
       (testing "cannot find saved concept throws internal error"
         (let [db (mem-db/create-db)]
           (is (thrown-with-msg?
                 java.lang.Exception
                 #"Unable to find saved concept for provider \[PROV1\] and entry-id \[EID-1\]"
-                (cc/entry-id-unique-constraint db test-concept))))))))
+                ((cc/unique-field-constraint :entry-id) db test-concept))))))))
 
 
 (comment
