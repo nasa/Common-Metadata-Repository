@@ -14,7 +14,7 @@
 
 (defn system-integration-test?
   [test-ns]
-  (re-find #"system-int-test" (str test-ns)))
+  (re-find #"system-int-test" test-ns))
 
 (defn integration-test-ns->compare-value
   "The comparator function to use for sorting integration tests. We want system integration tests
@@ -28,7 +28,8 @@
   "The list of integration test namespaces. Anything that contains 'cmr.' and 'int-test' is
   considered an integration test namespace."
   (->> (all-ns)
-       (filter #(re-find #"cmr\..*int-test" (str %)))
+       (map str)
+       (filter #(re-find #"cmr\..*int-test" %))
        (sort-by integration-test-ns->compare-value)))
 
 (def unit-test-namespaces
@@ -36,7 +37,8 @@
   'test' that is not an integration test namespace is considered a unit test namespace."
   (set/difference
     (->> (all-ns)
-         (filter #(re-find #"cmr\..*test" (str %)))
+         (map str)
+         (filter #(re-find #"cmr\..*test" %))
          set)
     (set integration-test-namespaces)))
 
@@ -47,7 +49,7 @@
   (let [map-fn (if parallel? pmap map)]
     (map-fn (fn [test-ns]
               (taoensso.timbre/set-level! :warn)
-              (let [[millis results] (u/time-execution (t/run-tests test-ns))]
+              (let [[millis results] (u/time-execution (t/run-tests (find-ns (symbol test-ns))))]
                 (assoc results
                        :took millis
                        :test-ns test-ns)))
@@ -145,6 +147,7 @@
   (run-tests unit-test-ns-matchers)
 
   (t/run-all-tests #"cmr.system-int-test.*")
+
 
     (def all-tests-future (future (run-all-tests {:fail-fast? true :speak? true})))
 
