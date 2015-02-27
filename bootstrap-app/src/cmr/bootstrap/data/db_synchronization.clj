@@ -6,8 +6,7 @@
             [clojure.java.jdbc :as j]
             [clojure.string :as str]
             [clojure.set :as set]
-            [sqlingvo.core :as sql :refer [sql select insert from where with order-by desc delete as]]
-            [cmr.metadata-db.data.oracle.sql-utils :as su]
+            [cmr.metadata-db.data.oracle.sql-utils :as su :refer [select]]
             [cmr.bootstrap.data.migration-utils :as mu]
             [cmr.common.util :as util]
             [cmr.common.concepts :as concepts]
@@ -16,7 +15,6 @@
             [clj-time.coerce :as cr]
             [clj-time.core :as t]
             [cmr.metadata-db.data.oracle.concept-tables :as tables]
-            [cmr.metadata-db.data.oracle.sql-utils :as sql-utils]
             [cmr.metadata-db.data.oracle.concepts :as mdb-concepts]
             [cmr.oracle.connection :as oracle]
             [cmr.metadata-db.services.concept-service :as concept-service]
@@ -46,7 +44,7 @@
   [conn stmt]
   (mapv (fn [{:keys [concept_id revision_id]}]
           [concept_id (when revision_id (long revision_id))])
-        (sql-utils/query conn stmt)))
+        (su/query conn stmt)))
 
 (defmulti concept-matches-dataset-id-clause
   "Returns a sql clause to find items in the given concept type table by dataset id in a Catalog REST
@@ -172,7 +170,7 @@
                       (mu/catalog-rest-table system provider-id concept-type))
           stmt [sql concept-id]
           [{:keys [dataset_id compressed_xml short_name version_id xml_mime_type
-                   delete_time ingest_updated_at]}] (sql-utils/query conn stmt)
+                   delete_time ingest_updated_at]}] (su/query conn stmt)
           delete-time (when delete_time
                         (oracle/oracle-timestamp->clj-time conn delete_time))]
       (if (or (nil? delete-time) (t/after? delete-time (t/now)))
@@ -206,7 +204,7 @@
                       (mu/catalog-rest-table system provider-id concept-type))
           stmt [sql concept-id]
           [{:keys [granule_ur compressed_xml dataset_record_id xml_mime_type
-                   delete_time ingest_updated_at]}] (sql-utils/query conn stmt)
+                   delete_time ingest_updated_at]}] (su/query conn stmt)
 
           delete-time (when delete_time
                         (oracle/oracle-timestamp->clj-time conn delete_time))]

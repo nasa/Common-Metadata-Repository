@@ -6,9 +6,6 @@
             [cmr.common.date-time-parser :as p]
             [clj-time.coerce :as cr]
             [cmr.oracle.connection :as oracle]
-            [clojure.java.jdbc :as j]
-            [sqlingvo.core :refer [select from where with order-by desc delete as]]
-            [cmr.metadata-db.data.oracle.sql-utils :as su]
             [cmr.metadata-db.data.concepts :as concepts]))
 
 (defmethod c/db-result->concept-map :collection

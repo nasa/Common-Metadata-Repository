@@ -4,11 +4,7 @@
             [cmr.metadata-db.data.oracle.concept-tables :as tables]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.date-time-parser :as p]
-            [clj-time.coerce :as cr]
-            [cmr.oracle.connection :as oracle]
-            [clojure.java.jdbc :as j]
-            [sqlingvo.core :refer [select from where with order-by desc delete as]]
-            [cmr.metadata-db.data.oracle.sql-utils :as su]))
+            [clj-time.coerce :as cr]))
 
 (defmethod c/db-result->concept-map :granule
   [concept-type db provider-id result]

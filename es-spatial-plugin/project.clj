@@ -17,7 +17,7 @@
   :description "A Elastic Search plugin that enables spatial search entirely within elastic."
   :url "***REMOVED***projects/CMR/repos/cmr/browse/es-spatial-plugin"
   :dependencies [[org.clojure/clojure "1.6.0"]
-                 [org.clojure/tools.logging "0.3.0"]
+                 [org.clojure/tools.logging "0.3.1"]
                  [org.elasticsearch/elasticsearch "1.4.0"]
 
                  ;; Version set to match elastic search numbers. Look in elasticsearch pom.xml
@@ -36,7 +36,7 @@
 
   :profiles
   {:dev {:dependencies [[nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]
-                        [org.clojure/tools.namespace "0.2.9"]
+                        [org.clojure/tools.namespace "0.2.10"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]]
 
          :global-vars {*warn-on-reflection* true

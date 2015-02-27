@@ -17,16 +17,17 @@
                  [jafama/jafama "2.1"]
 
                  ;; Matrix multiplication
-                 [net.mikera/core.matrix "0.30.0"]
+                 [net.mikera/core.matrix "0.33.2"]
                  ;; Fast vectors
-                 [net.mikera/vectorz-clj "0.25.0"]
+                 ;; core.matrix "0.33.2" has a dependency on vectorz-clj "0.26.2"
+                 [net.mikera/vectorz-clj "0.26.2"]
 
                  ;; allows enable and disable when assertions run by jvm flags.
                  ;; Can skip assertions for better performance
                  [pjstadig/assertions "0.1.0"]
 
                  ;; Helps prevent auto boxing when performing math in Clojure
-                 [primitive-math "0.1.3"]
+                 [primitive-math "0.1.4"]
 
                  ;; visualize spatial areas
                  [nasa-cmr/cmr-vdd-spatial-viz "0.1.0-SNAPSHOT"]
@@ -54,7 +55,7 @@
 
 
   :profiles
-  {:dev {:dependencies [[org.clojure/tools.namespace "0.2.9"]
+  {:dev {:dependencies [[org.clojure/tools.namespace "0.2.10"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]
                         [criterium "0.4.3"]]
 

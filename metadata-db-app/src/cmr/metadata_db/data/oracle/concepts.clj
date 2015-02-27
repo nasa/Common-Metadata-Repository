@@ -8,8 +8,6 @@
             [clojure.java.io :as io]
             [clojure.string :as str]
             [clojure.set :as set]
-            [sqlingvo.core :as s :refer [insert values select from where with order-by desc delete as]]
-            [cmr.metadata-db.data.oracle.sql-utils :as su]
             [cmr.metadata-db.services.util :as util]
             [cmr.metadata-db.services.provider-service :as provider-service]
             [cmr.common.date-time-parser :as p]
@@ -18,7 +16,7 @@
             [clj-time.core :as t]
             [cmr.common.concepts :as cc]
             [cmr.oracle.connection :as oracle]
-            [cmr.metadata-db.data.oracle.sql-utils :as sql-utils])
+            [cmr.metadata-db.data.oracle.sql-utils :as su :refer [insert values select from where with order-by desc delete as]])
   (:import cmr.oracle.connection.OracleStore
            java.util.zip.GZIPInputStream
            java.util.zip.GZIPOutputStream
@@ -238,7 +236,7 @@
                              (from (as (keyword table) :c)
                                    (as :get-concepts-work-area :t))
                              (where `(and (= :c.concept-id :t.concept-id)))))
-            cid-rid-maps (sql-utils/query conn stmt)
+            cid-rid-maps (su/query conn stmt)
             concept-id-to-rev-id-maps (map #(hash-map (:concept_id %) (long (:revision_id %)))
                                            cid-rid-maps)
             latest (apply merge-with safe-max {}
@@ -274,7 +272,7 @@
   (generate-concept-id
     [db concept]
     (let [{:keys [concept-type provider-id]} concept
-          seq-num (:nextval (first (sql-utils/query db ["SELECT concept_id_seq.NEXTVAL FROM DUAL"])))]
+          seq-num (:nextval (first (su/query db ["SELECT concept_id_seq.NEXTVAL FROM DUAL"])))]
       (cc/build-concept-id {:concept-type concept-type
                             :provider-id provider-id
                             :sequence-number (biginteger seq-num)})))
@@ -347,7 +345,7 @@
                                               (= :c.revision-id :t.revision-id)))))
 
                 result (doall (map (partial db-result->concept-map concept-type conn provider-id)
-                                   (sql-utils/query conn stmt)))
+                                   (su/query conn stmt)))
                 millis (- (System/currentTimeMillis) start)]
             (debug (format "Getting [%d] concepts took [%d] ms" (count result) millis))
             result)))
@@ -371,7 +369,7 @@
                              (when-not (empty? params)
                                (where (find-params->sql-clause params)))))]
         (doall (map (partial db-result->concept-map concept-type conn provider-id)
-                    (sql-utils/query conn stmt))))))
+                    (su/query conn stmt))))))
 
   (find-concepts-in-batches
     ([db params batch-size]
@@ -394,7 +392,7 @@
                        stmt (su/build (select [:*]
                                         (from table)
                                         (where (cons `and conditions))))
-                       batch-result (sql-utils/query db stmt)]
+                       batch-result (su/query db stmt)]
                    (mapv (partial db-result->concept-map concept-type conn provider-id)
                          batch-result))))
              (lazy-find
@@ -495,7 +493,7 @@
                         and    a.revision_id = b.revision_id
                         group by a.parent_collection_id"
                         table table)]
-          result (sql-utils/query db stmt)]
+          result (su/query db stmt)]
       (reduce (fn [count-map {:keys [parent_collection_id concept_count]}]
                 (assoc count-map parent_collection_id (long concept_count)))
               {}
@@ -538,7 +536,7 @@
                           and   outer.revision_id = inner.revision_id"
                           table table table EXPIRED_CONCEPTS_BATCH_SIZE)]]
         (doall (map (partial db-result->concept-map concept-type conn provider)
-                    (sql-utils/query conn stmt))))))
+                    (su/query conn stmt))))))
 
   (get-tombstoned-concept-revisions
     [this provider concept-type tombstone-cut-off-date limit]
@@ -557,7 +555,7 @@
                           table
                           limit)
                   (cr/to-sql-time tombstone-cut-off-date)]
-            result (sql-utils/query conn stmt)]
+            result (su/query conn stmt)]
         ;; create tuples of concept-id/revision-id to remove
         (map (fn [{:keys [concept_id revision_id]}]
                [concept_id revision_id])
@@ -579,7 +577,7 @@
                           table
                           max-revisions
                           limit)]
-            result (sql-utils/query conn stmt)
+            result (su/query conn stmt)
             ;; create a map of concept-ids to sequences of all returned revisions
             concept-id-rev-ids-map (reduce (fn [memo concept-map]
                                              (let [{:keys [concept_id revision_id]} concept-map]

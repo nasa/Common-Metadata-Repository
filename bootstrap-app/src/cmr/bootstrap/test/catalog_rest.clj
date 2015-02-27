@@ -3,8 +3,6 @@
   REST schema"
   (:require [cmr.common.log :refer (debug info warn error)]
             [clojure.java.jdbc :as j]
-            [sqlingvo.core :as sql :refer [sql select insert from where with order-by desc delete as]]
-            [cmr.metadata-db.data.oracle.sql-utils :as su]
             [cmr.bootstrap.data.migration-utils :as mu]
             [cmr.common.concepts :as concepts]
             [cmr.common.date-time-parser :as p]
