@@ -27,7 +27,7 @@
           [(format "Concept-id [%s] does not match the existing concept-id [%s] for native-id [%s]"
                    concept-id mdb-concept-id native-id)])))))
 
-(defn- entry-id-unique-validation
+#_(defn- entry-id-unique-validation
   "Validates the native-id of existing concept for the entry-id must match the one of updated concept.
   Entry-id is only inate to DIF format which has its entry-id also as its short-name;
   For all the other formats, entry-id is a combination of short-name and version-id.
@@ -53,8 +53,8 @@
 (def business-rule-validations
   "A map of concept-type to the list of the functions that validates concept ingest business rules."
   {:collection [delete-time-validation
-                concept-id-validation
-                entry-id-unique-validation]
+                concept-id-validation]
+                ; entry-id-unique-validation]
    :granule []})
 
 

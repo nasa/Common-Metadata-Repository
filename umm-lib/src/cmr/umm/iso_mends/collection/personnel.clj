@@ -30,7 +30,7 @@
 (defn xml-elem->personnel
   "Returns the personnel field of a UMM Collection from a parsed XML structure"
   [xml-struct]
-  (let [contact-elements (filter (complement nil?)
+  (let [contact-elements (remove nil?
                                  (flatten
                                    (vector
                                      (cx/elements-at-path
@@ -59,5 +59,5 @@
                                         :MD_Distributor
                                         :distributorContact
                                         :CI_ResponsibleParty]))))]
-    (not-empty (filter (complement nil?)
+    (not-empty (remove nil?
                        (map xml-elem->PersonnelRecord contact-elements)))))

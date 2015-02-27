@@ -61,7 +61,7 @@
   "Formats a single error message using the field path and the error format."
   [field-path error]
   ;; Get the last field path value that's not a number.
-  (let [field (last (filter (complement number?) field-path))]
+  (let [field (last (remove number? field-path))]
     (format error (humanize-field field))))
 
 (defn create-error-messages

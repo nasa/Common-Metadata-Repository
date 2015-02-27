@@ -120,7 +120,7 @@
   (message-count
     [this queue-name]
     (let [qcount (queue/message-count queue-broker queue-name)
-          unprocessed-count (count (filter (complement :processed) @message-state-atom))]
+          unprocessed-count (count (remove :processed @message-state-atom))]
       (when (not= qcount unprocessed-count)
         (warn (format "Message count [%d] for Rabbit MQ did not match internal count [%d]"
                       qcount

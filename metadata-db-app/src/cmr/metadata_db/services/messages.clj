@@ -78,10 +78,16 @@
 (defn duplicate-entry-titles
   [concepts]
   (format
-    "The Entry Title [%s] must be unique. The following concepts with the same entry title were found: [%s]"
+    "The Entry Title [%s] must be unique. The following concepts with the same entry title were found: [%s]."
     (-> concepts first :extra-fields :entry-title)
     (str/join ", " (map :concept-id concepts))))
 
+(defn duplicate-entry-ids
+  [concepts]
+  (format
+    "The Entry Id [%s] must be unique. The following concepts with the same entry id were found: [%s]."
+    (-> concepts first :extra-fields :entry-id)
+    (str/join ", " (map :concept-id concepts))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Provider Messages

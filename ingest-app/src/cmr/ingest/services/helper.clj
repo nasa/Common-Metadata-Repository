@@ -7,4 +7,4 @@
   [context params]
   (let [coll-concepts (mdb/find-collections context (assoc params :latest true))]
     ;; Find the latest version of the concepts that aren't deleted. There should be only one
-    (filter (complement :deleted) coll-concepts)))
+    (remove :deleted coll-concepts)))

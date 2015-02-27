@@ -799,8 +799,7 @@
                 ;; No change needed
                 holdings)))
           new-holdings
-          (filter (complement :deleted)
-                  (holdings->latest-concepts new-holdings))))
+          (remove :deleted (holdings->latest-concepts new-holdings))))
 
 
 (defmulti insert-concepts
@@ -831,7 +830,7 @@
                                     (gran-concept concept-counter coll
                                                   (str "gran" (inc (+ num-existing n)))))
                                   (range num-inserts)
-                                  (cycle (filter (complement :deleted)
+                                  (cycle (remove :deleted
                                                  (first-n-holdings holdings provider-id :collection))))]
                 (cat-rest/insert-concepts system concepts)
                 (when modify-mdb? (ingest/ingest-concepts concepts))
@@ -860,7 +859,7 @@
   (let [system (bootstrap/system)]
     (reduce (fn [holdings provider-id]
               (let [tombstones (map deleted-concept
-                                    (filter (complement :deleted)
+                                    (remove :deleted
                                             (last-n-holdings
                                               holdings provider-id concept-type num-deletes)))]
                 (cat-rest/delete-concepts system tombstones)

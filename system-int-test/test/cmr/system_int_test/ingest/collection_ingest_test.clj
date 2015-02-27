@@ -57,50 +57,44 @@
         (index/wait-until-indexed)
         (is (= [400 ["Concept-id [C1111-PROV1] does not match the existing concept-id [C1000-PROV1] for native-id [Atlantic-1]"]]
                [status errors]))))))
+(comment
+  (cmr.metadata-db.int-test.utility/find-concepts :collection
+                                                  {:provider-id "PROV1"}))
 
+;; Note entry-id only exists in the DIF format.  For other formats we set the entry ID to be a
+;; a concatenation of short name and version ID.
 (deftest collection-w-entry-id-validation-test
-  (let [supplied-concept-id "C1000-PROV1"
-        coll1 (dc/collection-concept {:concept-id supplied-concept-id
-                                      :short-name "OceanTemperature"
-                                      :version-id "1"
-                                      :native-id "Atlantic-1"})
-        coll2 (dc/collection-concept {:concept-id supplied-concept-id
-                                      :short-name "OceanTemperature"
-                                      :version-id "2"
-                                      :native-id "Atlantic-1"})
-        coll3 (dc/collection-concept {:short-name "OceanTemperature"
-                                      :version-id "3"
-                                      :native-id "Atlantic-3"})
-        coll4 (dc/collection-concept {:concept-id "C1111-PROV1"
-                                      :short-name "OceanTemperature"
-                                      :version-id "3"
-                                      :native-id "Atlantic-1"})
-        coll5 (dc/collection-concept {:short-name "OceanTemperature"
-                                      :version-id "1"
-                                      :native-id "Atlantic-2"
-                                      :provider-id "PROV2"})]
-    (ingest/ingest-concept coll1)
+  (let [collection (dc/collection-dif {:concept-id "C1-PROV1"
+                                       :entry-id "EID-1"
+                                       :entry-title "ET-1"
+                                       :native-id "NID-1"})]
+
+    (d/ingest "PROV1" collection :dif)
 
     (testing "update the collection with a different entry-id is OK"
-      (let [{:keys [concept-id revision-id]} (ingest/ingest-concept coll2)]
-        (is (= [supplied-concept-id 2] [concept-id revision-id]))))
+      (let [{:keys [status concept-id revision-id errors]}
+            (d/ingest "PROV1" (assoc collection :entry-id "EID-2") :dif)]
+        (is (= ["C1-PROV1" 2 200 nil] [concept-id revision-id status errors]))))
 
     (testing "ingest collection with entry-id used by a different collection within the same provider is invalid"
-      (let [{:keys [status errors]} (ingest/ingest-concept (assoc coll1 :native-id "Atlantic-2"))]
-        (is (= [400 ["The EntryId was not unique. The collection with native id [Atlantic-2] in provider [PROV1] had the same EntryId [OceanTemperature_1]."]]
+      (let [{:keys [status errors]} (d/ingest "PROV1" (assoc collection
+                                                             :concept-id "C2-PROV1"
+                                                             :native-id "NID-2"
+                                                             :entry-title "EID-2") :dif)]
+        (is (= [409 ["The Entry Id [EID-1] must be unique. The following concepts with the same entry id were found: [C1-PROV1, C2-PROV1]."]]
+               [status errors]))))
+
+    (testing "entry-id and entry-title constraint violations return multiple errors"
+      (let [{:keys [status errors]} (d/ingest "PROV1" (assoc collection
+                                                             :concept-id "C2-PROV1"
+                                                             :native-id "NID-2") :dif)]
+        (is (= [409 ["The Entry Title [ET-1] must be unique. The following concepts with the same entry title were found: [C2-PROV1, C1-PROV1]."
+                     "The Entry Id [EID-1] must be unique. The following concepts with the same entry id were found: [C2-PROV1, C1-PROV1]."]]
                [status errors]))))
 
     (testing "ingest collection with entry-id used by a collection in a different provider is OK"
-      (let [{:keys [status]} (ingest/ingest-concept coll5)]
-        (is (= 200 status))))
-
-    (testing "multiple validation errors"
-      (let [;; ingest coll3 to set up entry-id collision condition
-            _ (ingest/ingest-concept coll3)
-            {:keys [status errors]} (ingest/ingest-concept coll4)]
-        (is (= [400 ["Concept-id [C1111-PROV1] does not match the existing concept-id [C1000-PROV1] for native-id [Atlantic-1]"
-                     "The EntryId was not unique. The collection with native id [Atlantic-1] in provider [PROV1] had the same EntryId [OceanTemperature_3]."]]
-               [status errors]))))))
+      (let [{:keys [status]} (d/ingest "PROV2" (assoc collection :concept-id "C1-PROV2") :dif)]
+        (is (= 200 status))))))
 
 ;; Ingest same concept N times and verify same concept-id is returned and
 ;; revision id is 1 greater on each subsequent ingest
@@ -206,8 +200,8 @@
 
 ;; Verify ingest is successful for request with content type that has parameters
 (deftest content-type-with-parameter-ingest-test
-  (let [concept  (assoc (dc/collection-concept {})
-                        :format "application/echo10+xml; charset=utf-8")
+  (let [concept (assoc (dc/collection-concept {})
+                       :format "application/echo10+xml; charset=utf-8")
         {:keys [status]} (ingest/ingest-concept concept)]
     (index/wait-until-indexed)
     (is (= status 200))))
