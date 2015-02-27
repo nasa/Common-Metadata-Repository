@@ -10,21 +10,19 @@
 
 (deftest modis-tile-coordinates
   (testing "creation and retrieval of modis tile coordinates"
-    (let [tile (t/->ModisSinTile 7 0 nil)]
-      	 (is (= 7 (:h tile)))
-         (is (= 0 (:v tile)))
-         (is (= [7 0] (t/coordinates tile))))))
+    (let [tile (t/->ModisSinTile [7 0] nil)]
+         (is (= [7 0] (:coordinates tile))))))
 
 (deftest modis-tile-geometry-intersection
   (testing "testing bouding box intersection with a modis tile"
-    (let [tile (t/->ModisSinTile 7 0 (d/calculate-derived 
+    (let [tile (t/->ModisSinTile [7 0] (d/calculate-derived 
                                     (apply rr/ords->ring :geodetic [0,0,10,0,10,10,0,10,0,0])))
           geom (d/calculate-derived (rr/ords->ring :geodetic 5 5,15 5,15 15,5 15,5 5))]
          (is (t/intersects? tile geom)))))
 
 (deftest modis-search-overalapping-tiles
   (testing "find all the tiles which intersect the given geometry"
-    (are [geom tiles] (= tiles (t/geometry->tiles geom))
+    (are [geom tiles] (= (set tiles) (set (t/geometry->tiles geom)))
          
          ;; A large bounding box near the equator
          (d/calculate-derived (m/mbr -20 20 20 -20))
@@ -50,15 +48,18 @@
          [[17 7][17 8][18 7][18 8]]
          
          ;; North Pole
-         (p/point 0 90)
+         p/north-pole
          [[17 0] [18 0]]
          
          ;;South Pole
-         (p/point 0 -90)
+         p/south-pole
          [[17 17][18 17]]
          
          ;;Bounding box crossing anti-meridian
          (m/mbr 178.16 1.32 -176.79 -4.19)
          [[0 8][0 9][35 8][35 9]]
-             
+         
+         ;;whole world
+         (m/mbr -180 90 180 -90)
+         (map :coordinates t/modis-sin-tiles)
     )))
