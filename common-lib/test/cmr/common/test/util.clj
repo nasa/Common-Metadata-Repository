@@ -49,7 +49,7 @@
   (testing "without comments"
     (is (thrown-with-msg?
           IllegalArgumentException
-          #"The number of args doesn't match are2's argv or comments may be missing"
+          #"The number of args doesn't match are2's argv or testing doc string may be missing"
           (eval '(cmr.common.util/are2
                   [x y] (= x y)
                   2 (+ 1 1)
