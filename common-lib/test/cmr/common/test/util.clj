@@ -38,6 +38,25 @@
       (is (= 4 (f)))
       (is (= 5 (f))))))
 
+
+(deftest are2-test
+  (testing "Normal use"
+    (util/are2
+      [x y] (= x y)
+      "The most basic case with 1"
+      2 (+ 1 1)
+      "A more complicated test"
+      4 (* 2 2)))
+
+  (testing "without comments"
+    (is (thrown-with-msg?
+          IllegalArgumentException
+          #"The number of args doesn't match are2's argv or comments may be missing"
+          (eval '(util/are2
+                  [x y] (= x y)
+                  2 (+ 1 1)
+                  4 (* 2 2)))))))
+
 (deftest build-validator-test
   (let [error-type :not-found
         errors ["error 1" "error 2"]

@@ -5,8 +5,44 @@
             [camel-snake-kebab.core :as csk]
             [clojure.set :as set]
             [clojure.string :as str]
-            [clojure.walk :as w])
+            [clojure.walk :as w]
+            [clojure.template :as template]
+            [clojure.test :as test])
   (:import java.text.DecimalFormat))
+
+(defmacro are2
+  "Based on the are macro from clojure.test. Checks multiple assertions with a template expression.
+  Wraps exach tested expression in a testing block to identify what's being tested.
+  See clojure.template/do-template for an explanation of
+  templates.
+
+  Example: (are2 [x y] (= x y)
+                \"The most basic case with 1\"
+                2 (+ 1 1)
+                \"A more complicated test\"
+                4 (* 2 2))
+  Expands to:
+           (do
+              (testing \"The most basic case with 1\"
+                (is (= 2 (+ 1 1))))
+              (testing \"A more complicated test\"
+                (is (= 4 (* 2 2)))))
+
+  Note: This breaks some reporting features, such as line numbers."
+  {:added "1.1"}
+  [argv expr & args]
+  (if (or
+        ;; (are2 [] true) is meaningless but ok
+        (and (empty? argv) (empty? args))
+        ;; Catch wrong number of args
+        (and (pos? (count argv))
+             (pos? (count args))
+             (zero? (mod (count args) (inc (count argv))))))
+    (let [testing-var (gensym "testing-msg")
+          argv (vec (cons testing-var argv))]
+      `(template/do-template ~argv (test/testing ~testing-var (test/is ~expr)) ~@args))
+    (throw (IllegalArgumentException.
+             "The number of args doesn't match are2's argv or comments may be missing."))))
 
 (defn trunc
   "Returns the given string truncated to n characters."
