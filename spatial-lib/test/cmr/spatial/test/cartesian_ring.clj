@@ -15,7 +15,8 @@
             [cmr.spatial.test.generators :as sgen]
             [cmr.spatial.validation :as v]
             [cmr.spatial.messages :as msg]
-            [cmr.spatial.dev.viz-helper :as viz-helper]))
+            [cmr.spatial.dev.viz-helper :as viz-helper]
+            [cmr.common.util :as u]))
 
 (deftest ring-winding-test
   (testing "clockwise"
@@ -34,49 +35,50 @@
     (testing "whole world"
       (is (nil? (seq (v/validate (rr/ords->ring :cartesian -180 90, -180 -90, 180 -90, 180 90, -180 90)))))))
   (testing "invalid rings"
-    (are [ords msgs] (= (seq msgs) (seq (v/validate (apply rr/ords->ring :cartesian ords))))
+    (u/are2
+      [ords msgs] (= (seq msgs) (seq (v/validate (apply rr/ords->ring :cartesian ords))))
 
-         ;; invalid point
-         [0 0, 181 0, 0 1, 0 0]
-         [(msg/shape-point-invalid 1 (msg/point-lon-invalid 181))]
+      "invalid point"
+      [0 0, 181 0, 0 1, 0 0]
+      [(msg/shape-point-invalid 1 (msg/point-lon-invalid 181))]
 
-         ;; multiple invalid points and point parts
-         [0 0, 181 91, 0 92, 0 0]
-         [(msg/shape-point-invalid 1 (msg/point-lon-invalid 181))
-          (msg/shape-point-invalid 1 (msg/point-lat-invalid 91))
-          (msg/shape-point-invalid 2 (msg/point-lat-invalid 92))]
+      "multiple invalid points and point parts"
+      [0 0, 181 91, 0 92, 0 0]
+      [(msg/shape-point-invalid 1 (msg/point-lon-invalid 181))
+       (msg/shape-point-invalid 1 (msg/point-lat-invalid 91))
+       (msg/shape-point-invalid 2 (msg/point-lat-invalid 92))]
 
-         ;; Ring not closed
-         [0 0, 1 0, 0 1]
-         [(msg/ring-not-closed)]
+      "Ring not closed"
+      [0 0, 1 0, 0 1]
+      [(msg/ring-not-closed)]
 
-         ;; Duplicate points
-         [0 0, 1 0, 1 0, 0 1, 0 0]
-         [(msg/duplicate-points [[1 (p/point 1 0)] [2 (p/point 1 0)]])]
+      "Duplicate points"
+      [0 0, 1 0, 1 0, 0 1, 0 0]
+      [(msg/duplicate-points [[1 (p/point 1 0)] [2 (p/point 1 0)]])]
 
-         ;; duplicate non consecutive points
-         [0 0, 1 0, 4 5, 1 0, 0 1, 0 0]
-         [(msg/duplicate-points [[1 (p/point 1 0)] [3 (p/point 1 0)]])]
+      "duplicate non consecutive points"
+      [0 0, 1 0, 4 5, 1 0, 0 1, 0 0]
+      [(msg/duplicate-points [[1 (p/point 1 0)] [3 (p/point 1 0)]])]
 
-         ;; Multiple duplicate points
-         [0 0, 1 0, 4 5, 1 0, 0 0, 4 5 0 1, 0 0]
-         [(msg/duplicate-points [[2 (p/point 4 5)] [5 (p/point 4 5)]])
-          (msg/duplicate-points [[1 (p/point 1 0)] [3 (p/point 1 0)]])
-          (msg/duplicate-points [[0 (p/point 0 0)] [4 (p/point 0 0)]])]
+      "Multiple duplicate points"
+      [0 0, 1 0, 4 5, 1 0, 0 0, 4 5 0 1, 0 0]
+      [(msg/duplicate-points [[2 (p/point 4 5)] [5 (p/point 4 5)]])
+       (msg/duplicate-points [[1 (p/point 1 0)] [3 (p/point 1 0)]])
+       (msg/duplicate-points [[0 (p/point 0 0)] [4 (p/point 0 0)]])]
 
-         ;; very very close points
-         [0 0, 1 1, 1 1.000000001, 0 1, 0 0]
-         [(msg/duplicate-points [[1 (p/point 1 1)] [2 (p/point 1 1.000000001)]])]
+      "very very close points"
+      [0 0, 1 1, 1 1.000000001, 0 1, 0 0]
+      [(msg/duplicate-points [[1 (p/point 1 1)] [2 (p/point 1 1.000000001)]])]
 
-         ;; Not too close
-         [0 0, 1 1, 1 1.0000001, 0 1, 0 0]
-         []
+      "Not too close"
+      [0 0, 1 1, 1 1.0000001, 0 1, 0 0]
+      []
 
-         ;; Self intersection
-         [4 3, 9 9, 4 9, 9 3, 4 3]
-         [(msg/ring-self-intersections [(p/point 6.500000000000001 6.000000000000001)])]
+      "Self intersection"
+      [4 3, 9 9, 4 9, 9 3, 4 3]
+      [(msg/ring-self-intersections [(p/point 6.500000000000001 6.000000000000001)])]
 
-         ;; Points in the wrong order
-         [4 3, 4 9, 9 9, 9 3, 4 3]
-         [(msg/ring-points-out-of-order)])))
+      "Points in the wrong order"
+      [4 3, 4 9, 9 9, 9 3, 4 3]
+      [(msg/ring-points-out-of-order)])))
 
