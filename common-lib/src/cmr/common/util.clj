@@ -12,9 +12,8 @@
 
 (defmacro are2
   "Based on the are macro from clojure.test. Checks multiple assertions with a template expression.
-  Wraps exach tested expression in a testing block to identify what's being tested.
-  See clojure.template/do-template for an explanation of
-  templates.
+  Wraps each tested expression in a testing block to identify what's being tested.
+  See clojure.template/do-template for an explanation of templates.
 
   Example: (are2 [x y] (= x y)
                 \"The most basic case with 1\"
@@ -29,7 +28,6 @@
                 (is (= 4 (* 2 2)))))
 
   Note: This breaks some reporting features, such as line numbers."
-  {:added "1.1"}
   [argv expr & args]
   (if (or
         ;; (are2 [] true) is meaningless but ok
@@ -42,7 +40,7 @@
           argv (vec (cons testing-var argv))]
       `(template/do-template ~argv (test/testing ~testing-var (test/is ~expr)) ~@args))
     (throw (IllegalArgumentException.
-             "The number of args doesn't match are2's argv or comments may be missing."))))
+             "The number of args doesn't match are2's argv or testing doc string may be missing."))))
 
 (defn trunc
   "Returns the given string truncated to n characters."
