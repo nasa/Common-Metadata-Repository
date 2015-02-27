@@ -2,27 +2,51 @@
   (:require [cmr.common.log :refer (debug info warn error)]
             [cmr.metadata-db.config :as config]
             [clojure.java.jdbc :as j]
-            [sqlingvo.core :as s :refer [select from where with order-by desc delete as]]
-            [sqlingvo.vendor :as sv]
+            [sqlingvo.core :as s]
+            [sqlingvo.db :as sdb]
             [sqlingvo.compiler :as sc]
             [sqlingvo.util :as su]))
 
-(sv/defvendor CmrSqlStyle
-              "A defined style for generating sql with sqlingvo that we would use with oracle."
-              :name su/sql-name-underscore
-              :keyword su/sql-keyword-hyphenize
-              :quote identity)
+(def db-vendor (sdb/oracle))
 
-;; Replaces the existing compile-sql function to generate table alias's in the Oracle style which doesn't use the AS word.
-;; See https://github.com/r0man/sqlingvo/issues/4
-(defmethod sc/compile-sql :table [db {:keys [as schema name]}]
-  [(str (clojure.string/join "." (map #(s/sql-quote db %1) (remove nil? [schema name])))
-        (when as (str " " (s/sql-quote db as))))])
+;; Wrap sqlingvo core functions for uniform access
+(def select
+  (partial s/select db-vendor))
+
+(def with
+  (partial s/with db-vendor))
+
+(def insert
+  (partial s/insert db-vendor))
+
+(def delete
+  (partial s/delete db-vendor))
+
+(def update
+  (partial s/update db-vendor))
+
+(def from
+  s/from)
+
+(def where
+  s/where)
+
+(def values
+  s/values)
+
+(def order-by
+  s/order-by)
+
+(def desc
+  s/desc)
+
+(def as
+  s/as)
 
 (defn build
   "Creates a sql statement vector for clojure.java.jdbc."
   [stmt]
-  (s/sql (->CmrSqlStyle) stmt))
+  (s/sql stmt))
 
 (defn query
   "Execute a query and log how long it took."
