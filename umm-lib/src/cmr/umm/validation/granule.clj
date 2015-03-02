@@ -74,10 +74,16 @@
        [(format "The following list of Instrument operation modes did not exist in the referenced parent collection: [%s]."
                 (str/join ", " missing-operation-modes))]})))
 
+(def sensor-ref-validations
+  "Defines the sensor validations for granules"
+  {:characteristic-refs (vu/unique-by-name-validator :name)})
+
 (def instrument-ref-validations
   "Defines the instrument validations for granules"
-  [{:sensor-refs [(vu/unique-by-name-validator :short-name)
-                 (vu/has-parent-validator :short-name "Sensor short name")]}
+  [{:characteristic-refs (vu/unique-by-name-validator :name)
+    :sensor-refs [(vu/unique-by-name-validator :short-name)
+                  (vu/has-parent-validator :short-name "Sensor short name")
+                  (v/every sensor-ref-validations)]}
    operation-modes-reference-collection])
 
 (def platform-ref-validations

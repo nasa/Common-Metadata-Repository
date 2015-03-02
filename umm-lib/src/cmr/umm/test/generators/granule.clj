@@ -35,11 +35,22 @@
 (def cloud-cover-values
   (gen/fmap double gen/ratio))
 
+(def characteristic-ref-names
+  (ext-gen/string-ascii 1 10))
+
+(def characteristic-ref-values
+  (ext-gen/string-ascii 1 10))
+
+(def characteristic-refs
+  (ext-gen/model-gen g/->CharacteristicRef characteristic-ref-names characteristic-ref-values))
+
 (def sensor-ref-short-names
   (ext-gen/string-ascii 1 10))
 
 (def sensor-refs
-  (ext-gen/model-gen g/->SensorRef sensor-ref-short-names))
+  (ext-gen/model-gen g/->SensorRef
+                     sensor-ref-short-names
+                     (ext-gen/nil-if-empty (gen/vector characteristic-refs 0 4))))
 
 (def instrument-ref-short-names
   (ext-gen/string-ascii 1 10))
@@ -50,6 +61,7 @@
 (def instrument-refs
   (ext-gen/model-gen g/->InstrumentRef
                      instrument-ref-short-names
+                     (ext-gen/nil-if-empty (gen/vector characteristic-refs 0 4))
                      (ext-gen/nil-if-empty (gen/vector sensor-refs 0 4))
                      (ext-gen/nil-if-empty (gen/vector operation-modes 0 4))))
 

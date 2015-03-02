@@ -67,9 +67,29 @@
         <Instruments>
           <Instrument>
             <ShortName>SAR</ShortName>
+            <Characteristics>
+              <Characteristic>
+                <Name>Characteristic #1</Name>
+                <Value>Characteristic I</Value>
+              </Characteristic>
+              <Characteristic>
+                <Name>Characteristic #2</Name>
+                <Value>Characteristic II</Value>
+              </Characteristic>
+            </Characteristics>
             <Sensors>
               <Sensor>
                 <ShortName>SNA</ShortName>
+                <Characteristics>
+                  <Characteristic>
+                    <Name>Characteristic #3</Name>
+                    <Value>Characteristic III</Value>
+                  </Characteristic>
+                  <Characteristic>
+                    <Name>Characteristic #4</Name>
+                    <Value>Characteristic IV</Value>
+                  </Characteristic>
+                </Characteristics>
               </Sensor>
               <Sensor>
                 <ShortName>SNB</ShortName>
@@ -182,12 +202,26 @@
                     :platform-refs
                     [(umm-g/map->PlatformRef
                        {:short-name "RADARSAT-1"
-                        :instrument-refs [(umm-g/map->InstrumentRef
-                                            {:short-name "SAR"
-                                             :sensor-refs [(umm-g/->SensorRef "SNA")
-                                                           (umm-g/->SensorRef "SNB")]
-                                             :operation-modes ["Antarctic" "Arctic"]})
-                                          (umm-g/map->InstrumentRef {:short-name "MAR"})]})
+                        :instrument-refs
+                        [(umm-g/map->InstrumentRef
+                           {:short-name "SAR"
+                            :characteristic-refs [(umm-g/map->CharacteristicRef
+                                                    {:name "Characteristic #1"
+                                                     :value "Characteristic I"})
+                                                  (umm-g/map->CharacteristicRef
+                                                    {:name "Characteristic #2"
+                                                     :value "Characteristic II"})]
+                            :sensor-refs [(umm-g/map->SensorRef
+                                            {:short-name "SNA"
+                                             :characteristic-refs [(umm-g/map->CharacteristicRef
+                                                                     {:name "Characteristic #3"
+                                                                      :value "Characteristic III"})
+                                                                   (umm-g/map->CharacteristicRef
+                                                                     {:name "Characteristic #4"
+                                                                      :value "Characteristic IV"})]})
+                                          (umm-g/map->SensorRef {:short-name "SNB"})]
+                            :operation-modes ["Antarctic" "Arctic"]})
+                         (umm-g/map->InstrumentRef {:short-name "MAR"})]})
                      (umm-g/map->PlatformRef
                        {:short-name "RADARSAT-2"
                         :instrument-refs nil})]

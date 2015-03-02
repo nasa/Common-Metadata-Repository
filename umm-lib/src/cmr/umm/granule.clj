@@ -63,14 +63,22 @@
    values
   ])
 
+(defrecord CharacteristicRef
+  [
+   name
+   value
+  ])
+
 (defrecord SensorRef
   [
    short-name
+   characteristic-refs
   ])
 
 (defrecord InstrumentRef
   [
    short-name
+   characteristic-refs
    sensor-refs
    operation-modes
   ])
