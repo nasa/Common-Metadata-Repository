@@ -33,7 +33,7 @@
 (defn sensor-ref
   "Return a sensor-ref based on sensor short-name"
   [sensor-sn]
-  (g/->SensorRef sensor-sn))
+  (g/map->SensorRef {:short-name sensor-sn}))
 
 (defn instrument-ref
   "Return an instrument-ref based on instrument attribs"
