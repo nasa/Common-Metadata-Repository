@@ -20,8 +20,10 @@
         (cond
           (zero? num-concepts)
           (errors/internal-error!
-            (str "Unable to find saved concept for provider [" (:provider-id concept)
-                 "] and " (name field) " [" field-value "]"))
+            (format "Unable to find saved concept for provider [%s] and %s [%s]"
+                 (:provider-id concept)
+                 (name field)
+                 field-value))
           (> num-concepts 1)
           [(msg/duplicate-field-msg field concepts)])))))
 

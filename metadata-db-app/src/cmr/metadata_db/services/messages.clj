@@ -1,5 +1,6 @@
 (ns cmr.metadata-db.services.messages
-  (:require [clojure.string :as str]))
+  (:require [clojure.string :as str]
+            [camel-snake-kebab.core :as csk]))
 
 (defn missing-concept-id [concept-type provider-id native-id]
   (format
@@ -75,23 +76,15 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Concept Constraint Messages
 
-(defmulti duplicate-field-msg
-  "Returns an error message to use for concepts which violate the given unique field constraint."
-  (fn [field concepts]
-    field))
-
-(defmethod duplicate-field-msg :entry-title
+(defn duplicate-field-msg
+  "Returns an error message to use for concepts which violate the given unique field constraint.
+  Note that the field must be a key within :extra-fields for a concept."
   [field concepts]
   (format
-    "The Entry Title [%s] must be unique. The following concepts with the same entry title were found: [%s]."
-    (-> concepts first :extra-fields :entry-title)
-    (str/join ", " (map :concept-id concepts))))
-
-(defmethod duplicate-field-msg :entry-id
-  [field concepts]
-  (format
-    "The Entry Id [%s] must be unique. The following concepts with the same entry id were found: [%s]."
-    (-> concepts first :extra-fields :entry-id)
+    "The %s [%s] must be unique. The following concepts with the same %s were found: [%s]."
+    (str/replace (csk/->Camel_Snake_Case_String field) #"_" " ")
+    (-> concepts first :extra-fields field)
+    (str/replace (csk/->snake_case_string field) #"_" " ")
     (str/join ", " (map :concept-id concepts))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

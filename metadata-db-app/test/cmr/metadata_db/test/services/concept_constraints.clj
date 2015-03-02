@@ -127,7 +127,14 @@
           (is (thrown-with-msg?
                 java.lang.Exception
                 #"Unable to find saved concept for provider \[PROV1\] and entry-id \[EID-1\]"
-                ((cc/unique-field-constraint :entry-id) db test-concept))))))))
+                ((cc/unique-field-constraint :entry-id) db test-concept)))))
+
+      (testing "invalid field throws internal error"
+        (let [db (mem-db/create-db)]
+          (is (thrown-with-msg?
+                java.lang.Exception
+                #"Unable to find saved concept for provider \[PROV1\] and invalid-field \[null\]"
+                ((cc/unique-field-constraint :invalid-field) db test-concept))))))))
 
 
 (comment
