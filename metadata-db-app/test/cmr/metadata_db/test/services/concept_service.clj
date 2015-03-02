@@ -22,7 +22,8 @@
    :metadata "xml here"
    :format "echo10"
    :revision-id 1
-   :extra-fields {:entry-title "ET-1"}})
+   :extra-fields {:entry-title "ET-1"
+                  :entry-id "EID-1"}})
 
 (deftest split-concept-id-revision-id-tuples-test
   (testing "one pair"

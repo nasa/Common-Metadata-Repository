@@ -24,7 +24,7 @@
   (fn [field-path values]
     (let [missing-parent-list
           (->> values
-               (filter (complement :parent))
+               (remove :parent)
                (map parent-ref-field))]
       (when (seq missing-parent-list)
         {field-path

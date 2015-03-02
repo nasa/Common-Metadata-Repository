@@ -138,4 +138,4 @@
       {:entry-title "ET-1" :concept-id "C1-PROV1" :native-id "Native1"})
     (assert-conflict
       {:entry-title "ET-1" :concept-id "C2-PROV1" :native-id "Native2"}
-      ["The Entry Title [ET-1] must be unique. The following concepts with the same entry title were found: [C1-PROV1, C2-PROV1]"])))
+      ["The Entry Title [ET-1] must be unique. The following concepts with the same entry title were found: [C1-PROV1, C2-PROV1]."])))

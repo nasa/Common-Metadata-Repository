@@ -48,8 +48,8 @@
 
 (deftest entry-title-unique-constraint-test
   (let [test-concept (make-coll-concept "PROV1" "C1-PROV1" 5 {:entry-title "ET1"})
-        is-valid (partial assert-valid cc/entry-title-unique-constraint)
-        not-valid #(apply assert-invalid %1 cc/entry-title-unique-constraint test-concept %2)]
+        is-valid (partial assert-valid (cc/unique-field-constraint :entry-title))
+        not-valid #(apply assert-invalid %1 (cc/unique-field-constraint :entry-title) test-concept %2)]
 
     (testing "valid cases"
       (testing "with empty database"
@@ -78,11 +78,64 @@
       (testing "same entry title"
         (let [other-concept (make-coll-concept "PROV1" "C2-PROV1" 1 {:entry-title "ET1"})]
           (not-valid
-            (msg/duplicate-entry-titles [test-concept other-concept])
+            (msg/duplicate-field-msg :entry-title [test-concept other-concept])
             [other-concept])))
       (testing "cannot find saved concept throws internal error"
         (let [db (mem-db/create-db)]
           (is (thrown-with-msg?
                 java.lang.Exception
                 #"Unable to find saved concept for provider \[PROV1\] and entry-title \[ET1\]"
-                (cc/entry-title-unique-constraint db test-concept))))))))
+                ((cc/unique-field-constraint :entry-title) db test-concept))))))))
+
+(deftest entry-id-unique-constraint-test
+  (let [test-concept (make-coll-concept "PROV1" "C1-PROV1" 5 {:entry-id "EID-1"})
+        is-valid (partial assert-valid (cc/unique-field-constraint :entry-id))
+        not-valid #(apply assert-invalid %1 (cc/unique-field-constraint :entry-id) test-concept %2)]
+
+    (testing "valid cases"
+      (testing "with empty database"
+        (is-valid test-concept))
+      (testing "another collection with entry id that is deleted is valid"
+        (let [other-tombstone (make-coll-tombstone "PROV1" "C2-PROV1" 2 {:entry-id "EID-1"})]
+          (is-valid test-concept other-tombstone)))
+      (testing "another provider with the same entry id is valid "
+        (let [other-concept (make-coll-concept "PROV2" "C1-PROV1" 5 {:entry-id "EID-1"})]
+          (is-valid test-concept other-concept)))
+      (testing "same concept id but earlier revision id is valid"
+        (let [other-concept (make-coll-concept "PROV1" "C1-PROV1" 4 {:entry-id "EID-1"})]
+          (is-valid test-concept other-concept)))
+      (testing "different entry ids are valid"
+        (let [other-concept (make-coll-concept "PROV1" "C1-PROV1" 5 {:entry-id "EID-2"})]
+          (is-valid test-concept other-concept)))
+      (testing "multiple valid concepts are still valid"
+        (is-valid test-concept
+                  (make-coll-concept "PROV1" "C2-PROV1" 1 {:entry-id "EID-1"})
+                  (make-coll-tombstone "PROV1" "C2-PROV1" 2 {:entry-id "EID-1"})
+                  (make-coll-concept "PROV2" "C1-PROV1" 5 {:entry-id "EID-1"})
+                  (make-coll-concept "PROV1" "C1-PROV1" 4 {:entry-id "EID-1"})
+                  (make-coll-concept "PROV1" "C1-PROV1" 5 {:entry-id "EID-2"}))))
+
+    (testing "invalid cases"
+      (testing "same entry id"
+        (let [other-concept (make-coll-concept "PROV1" "C2-PROV1" 1 {:entry-id "EID-1"})]
+          (not-valid
+            (msg/duplicate-field-msg :entry-id [test-concept other-concept])
+            [other-concept])))
+      (testing "cannot find saved concept throws internal error"
+        (let [db (mem-db/create-db)]
+          (is (thrown-with-msg?
+                java.lang.Exception
+                #"Unable to find saved concept for provider \[PROV1\] and entry-id \[EID-1\]"
+                ((cc/unique-field-constraint :entry-id) db test-concept)))))
+
+      (testing "invalid field throws internal error"
+        (let [db (mem-db/create-db)]
+          (is (thrown-with-msg?
+                java.lang.Exception
+                #"Unable to find saved concept for provider \[PROV1\] and invalid-field \[null\]"
+                ((cc/unique-field-constraint :invalid-field) db test-concept))))))))
+
+
+(comment
+  (cmr.metadata-db.int-test.utility/find-concepts :collection
+                                                  {:entry-id "EID-1" :provider-id "PROV1"}))
