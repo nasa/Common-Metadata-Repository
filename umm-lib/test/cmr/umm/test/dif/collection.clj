@@ -125,8 +125,6 @@
 
 (defspec generate-and-parse-collection-test 100
   (for-all [collection coll-gen/collections]
-    ; (cmr.common.dev.capture-reveal/capture collection)
-
     (let [xml (dif/umm->dif-xml collection)
           parsed (c/parse-collection xml)
           expected-parsed (umm->expected-parsed-dif collection)]

@@ -31,7 +31,6 @@
   function against the concept that is passed in."
   [constraint test-concept & existing-concepts]
   (let [db (mem-db/create-db (cons test-concept existing-concepts))]
-    ; (cmr.common.dev.capture-reveal/capture db)
     (constraint db test-concept)))
 
 (defn- assert-invalid
