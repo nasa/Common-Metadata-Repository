@@ -11,10 +11,10 @@
                                :value value})))
 
 (defn xml-elem->CharacteristicRefs
-  [instrument-element]
+  [parent-element]
   (seq (map xml-elem->CharacteristicRef
             (cx/elements-at-path
-              instrument-element
+              parent-element
               [:Characteristics :Characteristic]))))
 
 (defn generate-characteristic-refs
