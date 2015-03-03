@@ -76,11 +76,13 @@
 
 (def sensor-ref-validations
   "Defines the sensor validations for granules"
-  {:characteristic-refs (vu/unique-by-name-validator :name)})
+  {:characteristic-refs [(vu/unique-by-name-validator :name)
+                         (vu/has-parent-validator :name "Characteristic Reference name")]})
 
 (def instrument-ref-validations
   "Defines the instrument validations for granules"
-  [{:characteristic-refs (vu/unique-by-name-validator :name)
+  [{:characteristic-refs [(vu/unique-by-name-validator :name)
+                          (vu/has-parent-validator :name "Characteristic Reference name")]
     :sensor-refs [(vu/unique-by-name-validator :short-name)
                   (vu/has-parent-validator :short-name "Sensor short name")
                   (v/every sensor-ref-validations)]}

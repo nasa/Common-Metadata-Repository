@@ -60,7 +60,15 @@
     [instrument-ref instrument]
     (-> instrument-ref
         (assoc :parent instrument)
-        (update-in [:sensor-refs] set-parents-by-name (:sensors instrument) :short-name)))
+        (update-in [:sensor-refs] set-parents-by-name (:sensors instrument) :short-name)
+        (update-in [:characteristic-refs] set-parents-by-name (:characteristics instrument) :name)))
+
+  SensorRef
+  (set-parent
+    [sensor-ref sensor]
+    (-> sensor-ref
+        (assoc :parent sensor)
+        (update-in [:characteristic-refs] set-parents-by-name (:characteristics sensor) :name)))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; The protocol is extended to nil so we can attempt to set the parent on items which do not have

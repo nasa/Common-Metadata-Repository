@@ -103,17 +103,19 @@
 
 (deftest granule-platform-refs
   (let [s1 (c/map->Sensor {:short-name "S1"
-                           :characteristic-refs [(g/map->CharacteristicRef
-                                                   {:name "C3" :value "V3"})
-                                                 (g/map->CharacteristicRef
-                                                   {:name "C4" :value "V4"})]})
-        s2 (c/map->Sensor {:short-name "S2"})
+                           :characteristics [(c/map->Characteristic
+                                               {:name "C3"})
+                                             (c/map->Characteristic
+                                               {:name "C4"})]})
+        s2 (c/map->Sensor {:short-name "S2"
+                           :characteristics [(c/map->Characteristic
+                                               {:name "C5"})]})
         s3 (c/map->Sensor {:short-name "S3"})
         i1 (c/map->Instrument {:short-name "I1"
-                               :characteristic-refs [(g/map->CharacteristicRef
-                                                       {:name "C1" :value "V1"})
-                                                     (g/map->CharacteristicRef
-                                                       {:name "C2" :value "V2"})]
+                               :characteristics [(c/map->Characteristic
+                                                   {:name "C1"})
+                                                 (c/map->Characteristic
+                                                   {:name "C2"})]
                                :sensors [s1 s2]
                                :operation-modes ["OM1" "OM2"]})
         i2 (c/map->Instrument {:short-name "I2"
@@ -129,10 +131,14 @@
         p3 (c/map->Platform {:short-name "p3"
                              :instruments [i1]})
         p4 (c/map->Platform {:short-name "P3"})
-        sg1 (g/map->SensorRef {:short-name "S1"})
+        sg1 (g/map->SensorRef {:short-name "S1"
+                               :characteristic-refs [(g/map->CharacteristicRef {:name "C3"})
+                                                     (g/map->CharacteristicRef {:name "C4"})]})
         sg2 (g/map->SensorRef {:short-name "S2"})
         sg3 (g/map->SensorRef {:short-name "S3"})
         ig1 (g/map->InstrumentRef {:short-name "I1"
+                                   :characteristic-refs [(g/map->CharacteristicRef {:name "C1"})
+                                                         (g/map->CharacteristicRef {:name "C2"})]
                                    :sensor-refs [sg1 sg2]
                                    :operation-modes ["OM1" "OM2"]})
         ig2 (g/map->InstrumentRef {:short-name "I2"
@@ -225,6 +231,20 @@
           {:platform-refs [(g/map->PlatformRef {:short-name "p2" :instrument-refs [ig1 ig4]})]})
         [:platform-refs 0 :instrument-refs]
         ["The following list of Instrument short names did not exist in the referenced parent collection: [I4]."]))
+    (testing "granule instrument characteristic-refs reference parent"
+      (assert-invalid-gran
+        collection
+        (make-granule
+          {:platform-refs [(g/map->PlatformRef
+                             {:short-name "p2"
+                              :instrument-refs [(g/map->InstrumentRef
+                                                  {:short-name "I1"
+                                                   :characteristic-refs [(g/map->CharacteristicRef
+                                                                           {:name "C3"})
+                                                                         (g/map->CharacteristicRef
+                                                                           {:name "C4"})]})]})]})
+        [:platform-refs 0 :instrument-refs 0 :characteristic-refs]
+        ["The following list of Characteristic Reference names did not exist in the referenced parent collection: [C3, C4]."]))
     (testing "granule instrument characteristic-refs unique name"
       (assert-invalid-gran
         collection
@@ -232,12 +252,12 @@
           {:platform-refs
            [(g/map->PlatformRef
               {:short-name "p1"
-               :instrument-refs [ig1 (g/map->InstrumentRef
-                                       {:short-name "I2"
+               :instrument-refs [ig2 (g/map->InstrumentRef
+                                       {:short-name "I1"
                                         :characteristic-refs [(g/map->CharacteristicRef
-                                                                {:name "C1" :value "V1"})
+                                                                {:name "C1"})
                                                               (g/map->CharacteristicRef
-                                                                {:name "C1" :value "V2"})]})]})]})
+                                                                {:name "C1"})]})]})]})
         [:platform-refs 0 :instrument-refs 1 :characteristic-refs]
         ["Characteristic References must be unique. This contains duplicates named [C1]."]))
     (testing "granule instrument operation modes reference parent"
@@ -273,18 +293,33 @@
     (testing "granule sensor characteristic-refs unique name"
       (let [iref (g/map->InstrumentRef
                    {:short-name "I1"
-                    :sensor-refs [sg1 (c/map->Sensor
+                    :sensor-refs [sg1 (g/map->SensorRef
                                         {:short-name "S2"
                                          :characteristic-refs [(g/map->CharacteristicRef
-                                                                 {:name "C1" :value "V1"})
+                                                                 {:name "C5" :value "V1"})
                                                                (g/map->CharacteristicRef
-                                                                 {:name "C1" :value "V2"})]})]})]
+                                                                 {:name "C5" :value "V2"})]})]})]
         (assert-invalid-gran
           collection
           (make-granule
             {:platform-refs [(g/map->PlatformRef {:short-name "p1" :instrument-refs [ig2 iref]})]})
           [:platform-refs 0 :instrument-refs 1 :sensor-refs 1 :characteristic-refs]
-          ["Characteristic References must be unique. This contains duplicates named [C1]."])))
+          ["Characteristic References must be unique. This contains duplicates named [C5]."])))
+    (testing "granule sensor characteristic-refs reference parent"
+      (let [iref (g/map->InstrumentRef
+                   {:short-name "I1"
+                    :sensor-refs [(g/map->SensorRef
+                                    {:short-name "S1"
+                                     :characteristic-refs [(g/map->CharacteristicRef
+                                                             {:name "C1" :value "V1"})
+                                                           (g/map->CharacteristicRef
+                                                             {:name "C2" :value "V2"})]})]})]
+        (assert-invalid-gran
+          collection
+          (make-granule
+            {:platform-refs [(g/map->PlatformRef {:short-name "p1" :instrument-refs [ig2 iref]})]})
+          [:platform-refs 0 :instrument-refs 1 :sensor-refs 0 :characteristic-refs]
+          ["The following list of Characteristic Reference names did not exist in the referenced parent collection: [C1, C2]."])))
     (testing "multiple granule platform validation errors"
       (assert-invalid-gran
         collection
