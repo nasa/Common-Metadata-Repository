@@ -65,6 +65,30 @@
         (queue/publish queue-broker wait-q msg)
         (lb/ack ch delivery-tag)))))
 
+(defn- message-handler
+  "TODO"
+  [queue-broker queue-name client-handler ch metadata ^bytes payload]
+  ;; TODO cleanup the bindings defined here
+  (let [{:keys [delivery-tag type routing-key]} metadata
+        msg (json/parse-string (String. payload) true)]
+    (try
+      (let [resp (client-handler msg)]
+        (case (:status resp)
+          :ok (do
+                ;; processed successfully
+                (lb/ack ch delivery-tag))
+          :retry (attempt-retry queue-broker ch queue-name
+                                routing-key msg delivery-tag resp)
+          :fail (do
+                  ;; bad data - nack it
+                  (warn "Rejecting bad data:" (pr-str (:message resp)))
+                  (lb/nack ch delivery-tag false false))))
+      (catch Throwable e
+        (error "Message processing failed for message" (pr-str msg) "with error:"
+               (.getMessage e))
+        (attempt-retry queue-broker ch queue-name routing-key msg delivery-tag
+                       {:message (.getMessage e)})))))
+
 (defn- start-consumer
   "Starts a message consumer in a separate thread.
 
@@ -87,25 +111,7 @@
         conn (:conn queue-broker)
         ;; don't want this channel to close automatically, so no with-channel here
         sub-ch (lch/open conn)
-        handler (fn [ch {:keys [delivery-tag type routing-key] :as meta} ^bytes payload]
-                  (let [msg (json/parse-string (String. payload) true)]
-                    (try
-                      (let [resp (client-handler msg)]
-                        (case (:status resp)
-                          :ok (do
-                                ;; processed successfully
-                                (lb/ack ch delivery-tag))
-                          :retry (attempt-retry queue-broker ch queue-name
-                                                routing-key msg delivery-tag resp)
-                          :fail (do
-                                  ;; bad data - nack it
-                                  (warn "Rejecting bad data:" (pr-str (:message resp)))
-                                  (lb/nack ch delivery-tag false false))))
-                      (catch Throwable e
-                        (error "Message processing failed for message" (pr-str msg) "with error:"
-                               (.getMessage e))
-                        (attempt-retry queue-broker ch queue-name routing-key msg delivery-tag
-                                       {:message (.getMessage e)})))))]
+        handler (partial message-handler queue-broker queue-name client-handler)]
     ;; By default, RabbitMQ uses a round-robin approach to send messages to listeners. This can
     ;; lead to stalls as workers wait for other workers to complete. Setting QoS (prefetch) to 1
     ;; prevents this.

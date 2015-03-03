@@ -81,11 +81,32 @@
       (debug "dev system /reset complete")
       {:status 200})
 
+
+    ;; TODO - Refactor to allow wait for retrying and wait for indexing finished
+    ;; Also all of these endpoints should be under /message-queue
     (POST "/wait-for-indexing" []
       (debug "dev system /wait-for-indexing")
       (when (iconfig/use-index-queue?)
         (let [broker-wrapper (get-in system [:pre-components :broker-wrapper])]
           (wrapper/wait-for-indexing broker-wrapper)))
+      (debug "indexing complete")
+      {:status 200})
+
+    ;; All messages return failures
+    #_(POST "/message-queue/failure-mode" []
+      (debug "dev system setting message queue to failure mode.")
+      (when (iconfig/use-index-queue?)
+        (let [broker-wrapper (get-in system [:pre-components :broker-wrapper])]
+          (wrapper/set-message-mode :failure)))
+      (debug "indexing complete")
+      {:status 200})
+
+    ;; Messages are processed normally
+    #_(POST "/message-queue/normal-mode" []
+      (debug "dev system returning message queue to normal mode.")
+      (when (iconfig/use-index-queue?)
+        (let [broker-wrapper (get-in system [:pre-components :broker-wrapper])]
+          (wrapper/set-message-mode :normal)))
       (debug "indexing complete")
       {:status 200})
 

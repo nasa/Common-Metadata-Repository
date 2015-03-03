@@ -15,9 +15,20 @@
   "Key used to track messages within a message map. Each message will have a unique id."
   (keyword (str (ns-name *ns*) "-id")))
 
+;; nil - The inital state of any message.
+;; :processed - a message has been successfully processed
+;; :failed - a message has failed processing.
+(def valid-message-states
+  "TODO"
+  #{:initial
+    :failed
+    :processed})
+
 (defn- set-message-state
   "Set the state of a message on the queue"
   [broker-wrapper msg state]
+  (when-not (valid-message-states state)
+    (throw (Exception. (str "Unknown state: " state))))
   (let [message-state-atom (:message-state-atom broker-wrapper)
         message-id (message-id-key msg)]
     (swap! message-state-atom #(assoc % message-id state))))
@@ -30,14 +41,18 @@
       (do
         (set-message-state broker-wrapper msg :failed)
         {:status :fail :message "Forced failure on reset"})
+      ;; TODO - check whether the queue is in :normal or :failure mode
+      ;; if in :normal mode do the same thing as before
+      ;; if in :failure mode return
+      ;; {:status :retry :message "Queue is in failure mode"}
       (let [resp (handler context msg)]
+        (debug "Processing message")
         (case (:status resp)
           :ok (set-message-state broker-wrapper msg :processed)
 
           :retry (when (queue/retry-limit-met? msg (count (iconfig/rabbit-mq-ttls)))
                    (set-message-state broker-wrapper msg :failed))
 
-          ;; treat nacks as acks for counting purposes
           :fail (set-message-state broker-wrapper msg :failed)
 
           (throw (Exception. (str "Invalid response: " (pr-str resp)))))
@@ -51,18 +66,26 @@
 
 (defn- wait-for-states
   "Wait until the messages that have been enqueued have all reached one of the given
-  states."
-  [broker-wrapper success-states]
-  (let [succ-states-set (set success-states)]
-    (loop [current-states (current-message-states broker-wrapper)]
-      (let [diff-states (set/difference current-states succ-states-set)]
-        ;; The current states should only consist of the success states and possibly nil;
-        ;; anything else indicates a failure.
-        (when-not (empty? diff-states)
-          (when-not (= #{nil} diff-states)
-            (throw (Exception. (str "Unexpected final message state(s): " diff-states))))
-          (Thread/sleep 100)
-          (recur (current-message-states broker-wrapper)))))))
+  states.
+
+  TODO document failure states - means immediately fail if you reach any of these states"
+  ([broker-wrapper success-states]
+   (wait-for-states broker-wrapper success-states
+                    (set/difference (disj valid-message-states :initial)
+                                    success-states)))
+  ([broker-wrapper success-states failure-states]
+   (let [succ-states-set (set success-states)]
+     (loop [current-states (current-message-states broker-wrapper)]
+       (let [non-success-states (set/difference current-states succ-states-set)]
+         ;; The current states should only consist of the success states and possibly nil;
+         ;; anything else indicates a failure.
+         (when (seq non-success-states)
+
+           ;;If we've reached any other state besides a success state
+           (when (seq (set/intersection non-success-states failure-states))
+             (throw (Exception. (str "Unexpected final message state(s): " non-success-states))))
+           (Thread/sleep 100)
+           (recur (current-message-states broker-wrapper))))))))
 
 (defrecord BrokerWrapper
   [
@@ -70,6 +93,7 @@
    queue-broker
 
    ;; Atom holding the map of message ids to states
+   ;; Message states
    message-state-atom
 
    ;; Sequence generator for internal message ids. These ids are used to uniquely identify every
@@ -109,7 +133,10 @@
     ;; record the message
     (let [msg-id (swap! id-sequence-atom inc)
           tagged-msg (assoc msg message-id-key msg-id)]
-      (swap! message-state-atom #(assoc % msg-id nil))
+
+      ;; Set the initial state of the message to :initial
+      (set-message-state this tagged-msg :initial)
+
       ;; delegate the request to the wrapped broker
       (queue/publish queue-broker queue-name tagged-msg)))
 
@@ -142,6 +169,25 @@
   "Wait for all messages to be marked as processed"
   [broker-wrapper]
   (wait-for-states broker-wrapper [:processed]))
+
+;; TODO
+#_(def valid-message-modes
+  "A list of the modes in which the message queue broker can operate.
+  :normal - message functions are called and processed as they normally would.
+  :retry - all messages return a retry when they are processed."
+  #{:normal :retry})
+
+;; TODO
+#_(defn set-message-mode
+  "Used to toggle message queue between normal mode and failure mode. In normal mode messages are
+  processed normally. In failure mode all messages return failures. The failure mode is useful for
+  automated tests verifying specific behaviors on failure."
+  [mode]
+  (if (valid-message-modes mode)
+    ;; Use an atom to set state?
+    "TODO"
+    (throw (Exception. (str "Invalid message queue mode: " mode)))))
+
 
 (defn create-queue-broker-wrapper
   "Create a BrokerWrapper"
