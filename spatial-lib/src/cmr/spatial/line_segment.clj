@@ -114,7 +114,7 @@
     (errors/internal-error! "Can not determine latitude of points at a given longitude in a vertical line"))
 
   (let [{:keys [^double m ^double b mbr]} ls]
-    (when (m/covers-lon? mbr lon)
+    (when (m/covers-lon? :cartesian mbr lon)
       (+ (* m lon) b))))
 
 (defn segment+lat->lon
@@ -320,6 +320,7 @@
 
       :else
       (intersection-normal ls1 ls2))))
+
 
 (defn mbr-intersections
   "Returns the points the line segment intersects the edges of the mbr"

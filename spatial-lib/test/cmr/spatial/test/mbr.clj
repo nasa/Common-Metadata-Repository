@@ -350,7 +350,7 @@
           true)
 
         ;; should cover all parts
-        (every? #(m/covers-lon? unioned %)
+        (every? #(m/covers-lon? :geodetic unioned %)
                 (mapcat #(map (fn [k] (k %)) [:west :east]) [mbr1 mbr2]))
 
         (every? #(m/covers-lat? unioned %)
@@ -366,7 +366,7 @@
         (= unioned (m/union mbr2 mbr1 false))
 
         ;; should cover all parts
-        (every? #(m/covers-lon? unioned %)
+        (every? #(m/covers-lon? :geodetic unioned %)
                 (mapcat #(map (fn [k] (k %)) [:west :east]) [mbr1 mbr2]))
 
         (every? #(m/covers-lat? unioned %)

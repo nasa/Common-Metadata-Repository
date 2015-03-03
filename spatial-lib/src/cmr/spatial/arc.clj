@@ -158,10 +158,10 @@
 
         (cond
           ;; Use the great circle northernmost and southernmost points to expand the bounding rectangle if necessary
-          (mbr/covers-lon? br (.lon northernmost))
+          (mbr/covers-lon? :geodetic br (.lon northernmost))
           [(assoc br :north (.lat northernmost))]
 
-          (mbr/covers-lon? br (.lon southernmost))
+          (mbr/covers-lon? :geodetic br (.lon southernmost))
           [(assoc br :south (.lat southernmost))]
 
           :else [br]))))
@@ -230,7 +230,7 @@
   Based on http://williams.best.vwh.net/avform.htm#Int"
   [^Arc arc lon]
   (pj/assert (not (vertical? arc)))
-  (when (or (some #(mbr/covers-lon? % lon) (mbrs arc))
+  (when (or (some #(mbr/covers-lon? :geodetic % lon) (mbrs arc))
             (crosses-south-pole? arc)
             (crosses-north-pole? arc))
     (let [{:keys [^Point west-point ^Point east-point]} arc

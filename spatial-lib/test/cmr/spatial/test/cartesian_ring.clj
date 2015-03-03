@@ -33,7 +33,9 @@
     (testing "normal ring"
       (is (nil? (seq (v/validate (rr/ords->ring :cartesian 0 0, 1 0, 0 1, 0 0))))))
     (testing "whole world"
-      (is (nil? (seq (v/validate (rr/ords->ring :cartesian -180 90, -180 -90, 180 -90, 180 90, -180 90)))))))
+      (is (nil? (seq (v/validate (rr/ords->ring :cartesian -180 90, -180 -90, 180 -90, 180 90, -180 90))))))
+    (testing "points on opposite sides of the antimeridian"
+      (is (nil? (seq (v/validate (rr/ords->ring :cartesian 0 -70, -180.0 -70, 180.0 -90.0, 180.0 -70, 0.0 -70)))))))
   (testing "invalid rings"
     (u/are2
       [ords msgs] (= (seq msgs) (seq (v/validate (apply rr/ords->ring :cartesian ords))))
