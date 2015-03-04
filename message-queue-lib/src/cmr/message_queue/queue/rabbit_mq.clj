@@ -66,10 +66,11 @@
         (lb/ack ch delivery-tag)))))
 
 (defn- message-handler
-  "TODO"
+  "Processes a given message and determines what to do based on the response code returned. Send an
+  ack if the message completed successfully. Put the message on a wait queue if the response
+  indicates it needs to be retried. Nack the message if the repsonse is marked as failed."
   [queue-broker queue-name client-handler ch metadata ^bytes payload]
-  ;; TODO cleanup the bindings defined here
-  (let [{:keys [delivery-tag type routing-key]} metadata
+  (let [{:keys [delivery-tag routing-key]} metadata
         msg (json/parse-string (String. payload) true)]
     (try
       (let [resp (client-handler msg)]

@@ -81,34 +81,36 @@
       (debug "dev system /reset complete")
       {:status 200})
 
+    (context "/message-queue" []
+      (POST "/wait-for-indexing" []
+        (debug "dev system /wait-for-indexing")
+        (when (iconfig/use-index-queue?)
+          (wrapper/wait-for-indexing))
+        (debug "indexing complete")
+        {:status 200})
 
-    ;; TODO - Refactor to allow wait for retrying and wait for indexing finished
-    ;; Also all of these endpoints should be under /message-queue
-    (POST "/wait-for-indexing" []
-      (debug "dev system /wait-for-indexing")
-      (when (iconfig/use-index-queue?)
-        (let [broker-wrapper (get-in system [:pre-components :broker-wrapper])]
-          (wrapper/wait-for-indexing broker-wrapper)))
-      (debug "indexing complete")
-      {:status 200})
+      (GET "/history" []
+        {:status 200
+         :body (wrapper/get-message-queue-history)
+         :headers {"Accept" "application/json"
+                   "Content-Type" "application/json"}})
 
-    ;; All messages return failures
-    #_(POST "/message-queue/failure-mode" []
-      (debug "dev system setting message queue to failure mode.")
-      (when (iconfig/use-index-queue?)
-        (let [broker-wrapper (get-in system [:pre-components :broker-wrapper])]
-          (wrapper/set-message-mode :failure)))
-      (debug "indexing complete")
-      {:status 200})
+      ;; TODO
+      ;; All messages return failures
+      #_(POST "/failure-mode" []
+          (debug "dev system setting message queue to failure mode.")
+          (when (iconfig/use-index-queue?)
+            (let [broker-wrapper (get-in system [:pre-components :broker-wrapper])]
+              (wrapper/set-message-mode :failure)))
+          {:status 200})
 
-    ;; Messages are processed normally
-    #_(POST "/message-queue/normal-mode" []
-      (debug "dev system returning message queue to normal mode.")
-      (when (iconfig/use-index-queue?)
-        (let [broker-wrapper (get-in system [:pre-components :broker-wrapper])]
-          (wrapper/set-message-mode :normal)))
-      (debug "indexing complete")
-      {:status 200})
+      ;; Messages are processed normally
+      #_(POST "/normal-mode" []
+          (debug "dev system returning message queue to normal mode.")
+          (when (iconfig/use-index-queue?)
+            (let [broker-wrapper (get-in system [:pre-components :broker-wrapper])]
+              (wrapper/set-message-mode :normal)))
+          {:status 200}))
 
     (POST "/clear-cache" []
       (debug "dev system /clear-cache")
