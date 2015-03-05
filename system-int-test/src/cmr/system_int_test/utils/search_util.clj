@@ -431,3 +431,21 @@
         :headers headers
         :results (ph/parse-provider-holdings format-key echo-compatible? body)}
        response))))
+
+(comment 
+   (cmr.common.dev.capture-reveal/reveal response)
+   (find-tiles {:bounding_box "-180,-90,180,90"})
+)
+
+(defn find-tiles
+  "Returns the tiles that are found by searching with the input params"
+  [params]
+   (let [url (str (url/search-tile-url))
+         response (client/get url {
+                                   :query-params params
+                                   :connection-manager (url/conn-mgr)
+                                   :throw-exceptions false})]
+       (if (= 200 (:status response))
+          {:status (:status response)
+           :results (vec (json/decode (:body response)))}
+          response)))

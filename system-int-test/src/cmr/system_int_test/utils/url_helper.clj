@@ -135,6 +135,10 @@
   []
   (format "http://localhost:%s/health" (transmit-config/search-port)))
 
+(defn search-tile-url
+  []
+  (format "http://localhost:%s/tile-search" (transmit-config/search-port)))
+
 (defn provider-holdings-url
   "Returns the URL for retrieving provider holdings."
   []

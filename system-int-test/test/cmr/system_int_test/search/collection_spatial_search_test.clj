@@ -20,7 +20,8 @@
             [cmr.spatial.lr-binary-search :as lbs]
             [cmr.umm.spatial :as umm-s]
             [cmr.umm.collection :as c]
-            [cmr.umm.echo10.collection :as ec]))
+            [cmr.umm.echo10.collection :as ec]
+            [cmr.common.util :as u]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
@@ -341,5 +342,77 @@
            [whole-world polygon-with-holes polygon-with-holes-cart normal-line-cart normal-line
             normal-poly-cart]))))
 
+(comment
+  (codec/url-encode (apply m/mbr [-180 90 180 -90]))
+  (cmr.common.dev.capture-reveal/defreveal found)
+  (:results found)
+  (cmr.common.dev.capture-reveal/defreveal all_tiles)  
+  (= (set all_tiles) (set (:results found)))
+  (cmr.common.dev.capture-reveal/defreveal matches?)
+  (def ords [7,35, -3.5,22.5, -7,12, -5,1.5, 14.5,-9.0, 38,5, 37,22 7,35])
+  (apply search-poly ords)
+)
 
+(deftest tile-search-test
+  (let [;; All tiles
+        all_tiles (read-string (slurp (clojure.java.io/resource 
+                                        "cmr/system_int_test/search/modis_tile_coordinates.edn")))]
+    (testing "bounding box searche"
+      (u/are2 [wnes tiles]
+              (let [found (search/find-tiles {:bounding-box (codec/url-encode (apply m/mbr wnes))})
+                    matches? (= (set tiles) (set (:results found)))]
+                (when-not matches?
+                  (println "Expected: " tiles)
+                  (println "Actual: " (:results found)))
+                matches?)
+              
+              "whole world"
+              [-180 90 180 -90] all_tiles 
+              
+              "north america"
+              [42.35,-11.75, 51.5,-26.04] [[21 10][21 11] [22 10] [22 11] [23 10]]))
+    
+    (testing "polygon search"
+      (u/are2 [ords tiles]
+              (let [found (search/find-tiles 
+                            {:polygon (apply search-poly ords)})
+                    matches? (= (set tiles) (set (:results found)))]
+                (when-not matches?
+                  (println "Expected: " tiles)
+                  (println "Actual: " (:results found)))
+                matches?)
+              
+              "A large polygon"
+              [7,35, -3.5,22.5, -7,12, -5,1.5, 14.5,-9.0, 38,5, 37,22 7,35]  
+              [[17 6] [17 7] [17 8] [17 9] [18 5] [18 6] [18 7] [18 8] [18 9] [19 5] [19 6] [19 7] 
+               [19 8] [19 9] [20 6] [20 7] [20 8] [20 9] [21 6] [21 7] [21 8]]))
+    
+    (testing "line search"
+      (u/are2 [ords tiles]
+              (let [found (search/find-tiles 
+                            {:line (codec/url-encode (apply l/ords->line-string :geodetic ords))})
+                    matches? (= (set tiles) (set (:results found)))]
+                (when-not matches?
+                  (println "Expected: " tiles)
+                  (println "Actual: " (:results found)))
+                matches?)
+              
+              "A simple line"
+              [-62.0, -27.0, -76.5, 5.0] [[10 8][10 9][11 9][11 10][11 11][12 11]]
+              
+              "A line which crosses over anti-meridian"
+              [168, 22.5, -158, -4.5] [[0 7] [0 8] [1 8] [1 9] [2 9] [33 6] [34 6] [34 7] [35 7]]))
+    
+    (testing "point search"
+      (u/are2 [ords tiles]
+              (let [found (search/find-tiles 
+                            {:point (codec/url-encode (apply p/point ords))})
+                    matches? (= (set tiles) (set (:results found)))]
+                (when-not matches?
+                  (println "Expected: " tiles)
+                  (println "Actual: " (:results found)))
+                matches?)
+              
+              "A point"
+              [-83.0, 40.01] [[11 4]]))))
 

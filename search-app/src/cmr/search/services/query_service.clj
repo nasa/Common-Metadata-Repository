@@ -75,6 +75,7 @@
             [camel-snake-kebab.core :as csk]
             [cheshire.core :as json]
             [clojure.string :as s]
+            [cmr.spatial.tile :as tile]
             [cmr.common.log :refer (debug info warn error)]))
 
 (deftracefn validate-query
@@ -233,3 +234,18 @@
      (ph/provider-holdings->string
        (:result-format params) provider-holdings {:pretty? (= "true" pretty)
                                                   :echo-compatible? (= "true" echo-compatible)})]))
+
+(comment   
+  (cmr.common.dev.capture-reveal/defreveal query)
+  (tile/geometry->tiles (get-in query [:condition :shape]))
+)
+
+(deftracefn find-tiles-by-geometry
+  "Gets all the tiles for a given geometry"
+  [context params]
+  (let [query (->>  params
+                    sanitize-params
+                    (pv/validate-parameters :tile)
+                    (p/parameters->query :tile))]
+    (tile/geometry->tiles (get-in query [:condition :shape]))))
+    

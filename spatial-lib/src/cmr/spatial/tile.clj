@@ -35,4 +35,5 @@
    holding two entries in the format [h v]. geometry could be of any geometric type including 
    point, line, polygon, mbr and ring"
   [geometry]
-  (keep  #(when (intersects? % geometry) (:coordinates %)) modis-sin-tiles))
+  (let [geometry (d/calculate-derived geometry)]
+    (keep  #(when (intersects? % geometry) (:coordinates %)) modis-sin-tiles)))
