@@ -4,6 +4,7 @@
             [cmr.umm.validation.core :as v]
             [cmr.umm.collection :as c]
             [cmr.umm.granule :as g]
+            [cmr.umm.test.validation.helpers :refer :all]
             [cmr.spatial.mbr :as m]
             [cmr.spatial.point :as p]
             [cmr.common.date-time-parser :as dtp]
@@ -73,6 +74,18 @@
           collection
           (gran-with-geometries [valid-point invalid-point invalid-mbr])
           expected-errors)))))
+
+(deftest granule-temporal-coverage
+  (let [r1 (range-date-time "2015-01-01T00:00:00Z" "2015-01-02T00:00:00Z") ; All of Jan 1
+        r2 (range-date-time "2015-01-01T00:01:00Z" "2015-01-01T00:02:00Z") ; Within Jan 1
+        r3 (range-date-time "2015-01-01T00:01:00Z" "2015-01-03T00:02:00Z") ; Outside Jan 1
+        c (coll-with-range-date-times [r1])
+        c (merge c {:entry-title "et"})]
+    (assert-valid-gran c (make-granule {:temporal (g/map->GranuleTemporal {:range-date-time r2})}))
+    (assert-invalid-gran c
+                         (make-granule {:temporal (g/map->GranuleTemporal {:range-date-time r3})})
+                         [:temporal]
+                         ["Granule's temporal coverage is outside the bounds of its parent collection."])))
 
 (deftest granule-project-refs
   (let [c1 (c/map->Project {:short-name "C1"})

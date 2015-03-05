@@ -3,11 +3,10 @@
   (:require [clojure.test :refer :all]
             [cmr.umm.validation.core :as v]
             [cmr.umm.collection :as c]
+            [cmr.umm.test.validation.helpers :refer :all]
             [cmr.spatial.mbr :as m]
             [cmr.spatial.point :as p]
-            [cmr.common.date-time-parser :as dtp]
             [cmr.common.services.errors :as e]))
-
 
 (defn assert-valid
   "Asserts that the given collection is valid."
@@ -198,19 +197,6 @@
           coll
           [:associated-difs]
           ["Associated Difs must be unique. This contains duplicates named [d1]."])))))
-
-(defn- range-date-time
-  [begin-date-time end-date-time]
-  (let [begin-date-time (when begin-date-time (dtp/parse-datetime begin-date-time))
-        end-date-time (when end-date-time (dtp/parse-datetime end-date-time))]
-    (c/map->RangeDateTime
-      {:beginning-date-time begin-date-time
-       :ending-date-time end-date-time})))
-
-(defn coll-with-range-date-times
-  [range-date-times]
-  (c/map->UmmCollection
-    {:temporal (c/map->Temporal {:range-date-times range-date-times})}))
 
 (deftest collection-temporal-validation
   (testing "valid temporal"
