@@ -75,10 +75,9 @@
     (t/after? gran-end coll-end)  "Granule end date is later than collection end date."))
 
 (defn temporal-validation
-  "Checks the granule's temporal range against its parent collection."
-  [_ granule]
-  (let [temporal (:temporal granule)
-        coll-temporal (:temporal (:parent granule))]
+  "Checks the granule's temporal extent against the parent collection's."
+  [_ temporal]
+  (let [coll-temporal (:parent temporal)]
     (when (and temporal coll-temporal)
       (when-let [msg (temporal-error-message (sed/start-date :granule temporal)
                                              (sed/end-date :granule temporal)
@@ -120,8 +119,8 @@
 (def granule-validations
   "Defines validations for granules"
   [collection-ref-validation
-   temporal-validation
    {:spatial-coverage spatial-coverage-validations
+    :temporal temporal-validation
     :platform-refs [(vu/unique-by-name-validator :short-name)
                     (vu/has-parent-validator :short-name "Platform short name")
                     (v/every platform-ref-validations)]
