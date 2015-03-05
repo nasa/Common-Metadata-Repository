@@ -71,6 +71,7 @@
     (vdd/data->viz {:cmd :reload})))
 
 (defn run-all-tests-future
+  "Runs all tests asynchronously, with :fail-fast? and :speak? enabled."
   []
   (future
     (tests/run-all-tests {:fail-fast? true :speak? true})))
