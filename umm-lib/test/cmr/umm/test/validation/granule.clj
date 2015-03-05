@@ -86,6 +86,7 @@
         coll (merge (coll-with-range-date-times [coll-range]) {:entry-title "et"})
         assert-valid #(assert-valid-gran coll %)
         assert-invalid #(assert-invalid-gran coll %1 [:temporal] [%2])]
+
     (testing "Granule with no temporal coverage values is valid"
       (assert-valid (make-granule {})))
 
