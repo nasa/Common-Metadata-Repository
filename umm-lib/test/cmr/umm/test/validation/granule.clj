@@ -75,17 +75,34 @@
           (gran-with-geometries [valid-point invalid-point invalid-mbr])
           expected-errors)))))
 
+(defn granule-with-temporal
+  [a b]
+  (make-granule {:temporal (g/map->GranuleTemporal {:range-date-time (range-date-time a b)})}))
+
 (deftest granule-temporal-coverage
-  (let [r1 (range-date-time "2015-01-01T00:00:00Z" "2015-01-02T00:00:00Z") ; All of Jan 1
-        r2 (range-date-time "2015-01-01T00:01:00Z" "2015-01-01T00:02:00Z") ; Within Jan 1
-        r3 (range-date-time "2015-01-01T00:01:00Z" "2015-01-03T00:02:00Z") ; Outside Jan 1
-        c (coll-with-range-date-times [r1])
-        c (merge c {:entry-title "et"})]
-    (assert-valid-gran c (make-granule {:temporal (g/map->GranuleTemporal {:range-date-time r2})}))
-    (assert-invalid-gran c
-                         (make-granule {:temporal (g/map->GranuleTemporal {:range-date-time r3})})
-                         [:temporal]
-                         ["Granule's temporal coverage is outside the bounds of its parent collection."])))
+  (let [coll-start "2015-01-01T00:00:00Z"
+        coll-end   "2015-01-02T00:00:00Z"
+        coll-range (range-date-time coll-start coll-end)
+        coll (merge (coll-with-range-date-times [coll-range]) {:entry-title "et"})
+        assert-valid #(assert-valid-gran coll %)
+        assert-invalid #(assert-invalid-gran coll %1 [:temporal] [%2])]
+    (testing "Granule with no temporal coverage values is valid"
+      (assert-valid (make-granule {})))
+
+    (testing "Granule with range equal to collection range is valid"
+      (assert-valid (granule-with-temporal coll-start coll-end)))
+
+    (testing "Granule with range inside of collection range is valid"
+      (assert-valid (granule-with-temporal "2015-01-01T01:00:00Z" "2015-01-01T02:00:00Z")))
+
+    (assert-invalid (granule-with-temporal "2015-01-01T02:00:00Z" "2015-01-01T01:00:00Z")
+                    "Granule start date is later than granule end date.")
+
+    (assert-invalid (granule-with-temporal "2014-01-01T00:00:00Z" "2015-01-02T01:00:00Z")
+                    "Granule start date is earlier than collection start date.")
+
+    (assert-invalid (granule-with-temporal "2015-01-01T00:00:00Z" "2015-01-02T01:00:00Z")
+                    "Granule end date is later than collection end date.")))
 
 (deftest granule-project-refs
   (let [c1 (c/map->Project {:short-name "C1"})

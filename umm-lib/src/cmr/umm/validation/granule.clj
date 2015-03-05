@@ -64,22 +64,27 @@
       :else
       (errors/internal-error! (str "Unexpected collection ref in granule: " (pr-str granule))))))
 
+(defn- temporal-error-message
+  "Returns an error message for given pairs of granule and collection start and end dates."
+  [g1 g2 c1 c2]
+  ;; Anything other than this should result in an error:
+  ;; timeline: ---c1---g1---g2---c2--->
+  (cond
+    (t/after? g1 g2)  "Granule start date is later than granule end date."
+    (t/before? g1 c1) "Granule start date is earlier than collection start date."
+    (t/after? g2 c2)  "Granule end date is later than collection end date."))
+
 (defn temporal-validation
   "Checks the granule's temporal range against its parent collection."
   [_ granule]
   (let [temporal (:temporal granule)
         coll-temporal (:temporal (:parent granule))]
     (when (and temporal coll-temporal)
-      (let [g1 (start-date :granule temporal)
-            g2 (end-date :granule temporal)
-            c1 (start-date :collection coll-temporal)
-            c2 (end-date :collection coll-temporal)
-            err (fn [msg] {[:temporal] msg})]
-        ;; Anything other than this should result in an error:
-        ;; timeline: ---c1---g1---g2---c2--->
-        (when-not (and (or (= g1 c1) (t/after? g1 c1))
-                       (or (= g2 c2) (t/before? g2 c2)))
-          {[:temporal] ["Granule's temporal coverage is outside the bounds of its parent collection."]})))))
+      (when-let [msg (temporal-error-message (start-date :granule temporal)
+                                             (end-date :granule temporal)
+                                             (start-date :collection coll-temporal)
+                                             (end-date :collection coll-temporal))]
+        {[:temporal] [msg]}))))
 
 (defn- operation-modes-reference-collection
   "Validate operation modes in granule instrument ref must reference those in the parent collection"
