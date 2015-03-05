@@ -2,6 +2,7 @@
   (:require [clojure.pprint :refer (pprint pp)]
             [clojure.tools.namespace.repl :refer (refresh refresh-all)]
             [cmr.dev-system.system :as system]
+            [cmr.dev-system.tests :as tests]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.dev.util :as d]
             [cmr.system-int-test.system :as sit-sys]
@@ -68,5 +69,10 @@
     (println "Compiling coffeescript")
     (println (common-viz/compile-coffeescript (get-in system [:components :vdd-server :config])))
     (vdd/data->viz {:cmd :reload})))
+
+(defn run-all-tests-future
+  []
+  (future
+    (tests/run-all-tests {:fail-fast? true :speak? true})))
 
 (info "Custom dev-system user.clj loaded.")
