@@ -5,7 +5,7 @@
             [clojure.string :as str]
             [cmr.common.validations.core :as v]
             [cmr.umm.spatial :as umm-s]
-            [cmr.umm.start-end-date :refer [start-date end-date]]
+            [cmr.umm.start-end-date :as sed]
             [cmr.spatial.validation :as sv]
             [cmr.umm.validation.utils :as vu]
             [cmr.umm.validation.validation-helper :as h]
@@ -80,10 +80,10 @@
   (let [temporal (:temporal granule)
         coll-temporal (:temporal (:parent granule))]
     (when (and temporal coll-temporal)
-      (when-let [msg (temporal-error-message (start-date :granule temporal)
-                                             (end-date :granule temporal)
-                                             (start-date :collection coll-temporal)
-                                             (end-date :collection coll-temporal))]
+      (when-let [msg (temporal-error-message (sed/start-date :granule temporal)
+                                             (sed/end-date :granule temporal)
+                                             (sed/start-date :collection coll-temporal)
+                                             (sed/end-date :collection coll-temporal))]
         {[:temporal] [msg]}))))
 
 (defn- operation-modes-reference-collection
