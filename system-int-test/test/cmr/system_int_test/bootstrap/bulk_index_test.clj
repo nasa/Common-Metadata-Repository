@@ -9,15 +9,15 @@
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.core :as d]
-            [clj-time.core :as t]
-            [cmr.system-int-test.utils.test-environment :as test-env]))
+            [cmr.system-int-test.system :as s]
+            [clj-time.core :as t]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
 ;; This test runs bulk index with some concepts in mdb that are good, and some that are
 ;; deleted, and some that have not yet been deleted, but have an expired deletion date.
 (deftest bulk-index-with-some-deleted
-  (test-env/only-with-real-database
+  (s/only-with-real-database
     (let [;; saved but not indexed
           umm1 (dc/collection {:short-name "coll1" :entry-title "coll1"})
           xml1 (echo10/umm->echo10-xml umm1)
@@ -84,7 +84,7 @@
 ;; 7. Verifies that the concepts returned by search have the expected revision ids.
 
 (deftest bulk-index-after-ingest
-  (test-env/only-with-real-database
+  (s/only-with-real-database
     (let [collections (for [x (range 1 11)]
                         (let [umm (dc/collection {:short-name (str "short-name" x)
                                                   :entry-title (str "title" x)})
@@ -152,14 +152,14 @@
             (is (= 5 es-revision-id))))))))
 
 (deftest invalid-provider-bulk-index-validation-test
-  (test-env/only-with-real-database
+  (s/only-with-real-database
     (testing "Validation of a provider supplied in a bulk-index request."
       (let [{:keys [status errors]} (bootstrap/bulk-index-provider "NCD4580")]
         (is (= [400 ["Provider: [NCD4580] does not exist in the system"]]
                [status errors]))))))
 
 (deftest collection-bulk-index-validation-test
-  (test-env/only-with-real-database
+  (s/only-with-real-database
     (let [umm1 (dc/collection {:short-name "coll1" :entry-title "coll1"})
           xml1 (echo10/umm->echo10-xml umm1)
           coll1 (ingest/save-concept {:concept-type :collection

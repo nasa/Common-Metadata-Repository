@@ -4,7 +4,7 @@
             [clj-http.client :as client]
             [cheshire.core :as json]
             [cmr.system-int-test.utils.url-helper :as url]
-            [cmr.system-int-test.utils.test-environment :as test-env]))
+            [cmr.system-int-test.system :as s]))
 
 (defn- get-app-health
   "Returns the status code and health detail of the app with the given health endpoint url"
@@ -12,7 +12,7 @@
   (let [response (client/get app-health-url
                              {:accept :json
                               :throw-exceptions false
-                              :connection-manager (url/conn-mgr)})
+                              :connection-manager (s/conn-mgr)})
         status-code (:status response)
         health-detail (json/decode (:body response) true)]
     [status-code health-detail]))
@@ -32,13 +32,13 @@
 
 (deftest metadata-db-health-test
   (testing "metadata db good health"
-    (test-env/only-with-real-database
+    (s/only-with-real-database
       (is (= [200 {:oracle {:ok? true} :echo {:ok? true}}]
              (get-app-health (url/mdb-health-url)))))))
 
 (deftest indexer-health-test
   (testing "indexer good health"
-    (test-env/only-with-real-database
+    (s/only-with-real-database
       (is (= [200 {:elastic_search {:ok? true}
                    :echo {:ok? true}
                    :metadata-db good-metadata-db-health
@@ -47,7 +47,7 @@
 
 (deftest ingest-health-test
   (testing "ingest good health"
-    (test-env/only-with-real-database
+    (s/only-with-real-database
       (is (= [200 {:oracle {:ok? true}
                    :echo {:ok? true}
                    :metadata-db good-metadata-db-health
@@ -60,7 +60,7 @@
 
 (deftest search-health-test
   (testing "search good health"
-    (test-env/only-with-real-database
+    (s/only-with-real-database
       (is (= [200 {:echo {:ok? true}
                    :internal-metadata-db good-metadata-db-health
                    :index-set good-index-set-db-health}]
@@ -68,7 +68,7 @@
 
 (deftest bootstrap-health-test
   (testing "bootstrap good health"
-    (test-env/only-with-real-database
+    (s/only-with-real-database
       (is (= [200 {:metadata-db good-metadata-db-health
                    :internal-metadata-db good-metadata-db-health
                    :indexer {:ok? true

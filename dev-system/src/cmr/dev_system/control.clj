@@ -11,6 +11,7 @@
             [cmr.transmit.echo.acls :as echo-acls]
             [cmr.search.data.elastic-search-index :as es]
             [cmr.dev-system.queue-broker-wrapper :as wrapper]
+            ;; [cmr.dev-system.system :as dev-system]
             [cmr.ingest.config :as iconfig]
 
             ;; Services for reseting
@@ -81,19 +82,38 @@
       (debug "dev system /reset complete")
       {:status 200})
 
+    (GET "/component-types" []
+      (debug "Retrieving component types")
+      {:status 200
+       :body (json/generate-string (var-get (find-var 'cmr.dev-system.system/component-type-map)))
+       :headers {"Content-Type" "application/json"}})
+
+    (POST "/clear-cache" []
+      (debug "dev system /clear-cache")
+      (doseq [[service-name clear-cache-fn] service-clear-cache-fns]
+        (clear-cache-fn (app-context system service-name)))
+      (debug "dev system /clear-cache complete")
+      {:status 200})
+
+    (POST "/stop" []
+      (debug "dev system /stop")
+      ((var-get (find-var 'cmr.dev-system.system/stop)) system)
+      (System/exit 0))
+
     (context "/message-queue" []
       (POST "/wait-for-indexing" []
-        (debug "dev system /wait-for-indexing")
-        (when (iconfig/use-index-queue?)
-          (wrapper/wait-for-indexing))
-        (debug "indexing complete")
-        {:status 200})
+        (let [broker-wrapper (get-in system [:pre-components :broker-wrapper])]
+          (debug "dev system /wait-for-indexing")
+          (when (iconfig/use-index-queue?)
+            (wrapper/wait-for-indexing broker-wrapper))
+          (debug "indexing complete")
+          {:status 200}))
 
       (GET "/history" []
-        {:status 200
-         :body (wrapper/get-message-queue-history)
-         :headers {"Accept" "application/json"
-                   "Content-Type" "application/json"}})
+        (let [broker-wrapper (get-in system [:pre-components :broker-wrapper])]
+          {:status 200
+           :body (wrapper/get-message-queue-history broker-wrapper)
+           :headers {"Content-Type" "application/json"}}))
 
       ;; TODO
       ;; All messages return failures
@@ -112,17 +132,6 @@
               (wrapper/set-message-mode :normal)))
           {:status 200}))
 
-    (POST "/clear-cache" []
-      (debug "dev system /clear-cache")
-      (doseq [[service-name clear-cache-fn] service-clear-cache-fns]
-        (clear-cache-fn (app-context system service-name)))
-      (debug "dev system /clear-cache complete")
-      {:status 200})
-
-    (POST "/stop" []
-      (debug "dev system /stop")
-      ((var-get (find-var 'cmr.dev-system.system/stop)) system)
-      (System/exit 0))
     (route/not-found "Not Found")))
 
 (defn make-api [system]

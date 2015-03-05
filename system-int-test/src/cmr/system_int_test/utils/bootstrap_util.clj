@@ -25,7 +25,7 @@
                     :content-type :json
                     :accept :json
                     :throw-exceptions false
-                    :connection-manager (url/conn-mgr)})
+                    :connection-manager (s/conn-mgr)})
         body (json/decode (:body response) true)]
     (assoc body :status (:status response))))
 
@@ -40,7 +40,7 @@
                     :content-type :json
                     :accept :json
                     :throw-exceptions false
-                    :connection-manager (url/conn-mgr)})
+                    :connection-manager (s/conn-mgr)})
         body (json/decode (:body response) true)]
     (assoc body :status (:status response))))
 
@@ -55,7 +55,7 @@
                     :content-type :json
                     :accept :json
                     :throw-exceptions false
-                    :connection-manager (url/conn-mgr)})
+                    :connection-manager (s/conn-mgr)})
         body (json/decode (:body response) true)]
     (assoc body :status (:status response))))
 
@@ -92,7 +92,7 @@
                                    :query-params query-params
                                    :accept :json
                                    :throw-exceptions false
-                                   :connection-manager (url/conn-mgr)})
+                                   :connection-manager (s/conn-mgr)})
          body (json/decode (:body response) true)]
      (assoc body :status (:status response)))))
 
@@ -104,7 +104,7 @@
 
 (defn db-fixture-setup
   [& provider-ids]
-  (test-env/only-with-real-database
+  (s/only-with-real-database
     (let [system (system)]
       (ingest/reset)
       (doseq [provider-id provider-ids :let [guid (str provider-id "-guid")]]
@@ -113,7 +113,7 @@
 
 (defn db-fixture-tear-down
   [& provider-ids]
-  (test-env/only-with-real-database
+  (s/only-with-real-database
     (let [system (system)]
       (ingest/reset)
       ;; Delete catalog rest providers

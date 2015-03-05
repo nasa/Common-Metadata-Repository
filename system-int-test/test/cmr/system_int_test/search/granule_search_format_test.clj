@@ -1,7 +1,6 @@
 (ns cmr.system-int-test.search.granule-search-format-test
   "Integration tests for searching granules in csv format"
   (:require [clojure.test :refer :all]
-            [clojure.string :as s]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.index-util :as index]
@@ -12,6 +11,7 @@
             [cmr.system-int-test.data2.core :as d]
             [cmr.system-int-test.data2.kml :as dk]
             [cmr.system-int-test.utils.url-helper :as url]
+            [cmr.system-int-test.system :as s]
             [cmr.spatial.polygon :as poly]
             [cmr.spatial.point :as p]
             [cmr.spatial.mbr :as m]
@@ -137,14 +137,14 @@
               :status 400}
              (search/get-search-failure-xml-data
                (client/get (str (url/search-url :granule) ".echo11")
-                           {:connection-manager (url/conn-mgr)})))))
+                           {:connection-manager (s/conn-mgr)})))))
 
     (testing "invalid param defaults to XML error response"
       (is (= {:errors ["Parameter [foo] was not recognized."],
               :status 400}
              (search/get-search-failure-xml-data
                (client/get (str (url/search-url :granule) "?foo=bar")
-                           {:connection-manager (url/conn-mgr)})))))
+                           {:connection-manager (s/conn-mgr)})))))
 
     (testing "invalid param with JSON accept header returns JSON error response"
       (is (= {:errors ["Parameter [foo] was not recognized."],
@@ -152,7 +152,7 @@
              (search/get-search-failure-data
                (client/get (str (url/search-url :granule) "?foo=bar")
                            {:accept :application/json
-                            :connection-manager (url/conn-mgr)})))))
+                            :connection-manager (s/conn-mgr)})))))
 
     (testing "format extension takes precedence over accept header"
       (is (= {:errors ["Parameter [foo] was not recognized."],
@@ -160,7 +160,7 @@
              (search/get-search-failure-data
                (client/get (str (url/search-url :granule) ".json?foo=bar")
                            {:accept :application/xml
-                            :connection-manager (url/conn-mgr)})))))
+                            :connection-manager (s/conn-mgr)})))))
 
     (testing "reference XML"
       (let [refs (search/find-refs :granule {:granule-ur "g1"})
@@ -170,7 +170,7 @@
         (testing "Location allows granule native format retrieval"
           (let [response (client/get location
                                      {:accept :application/echo10+xml
-                                      :connection-manager (url/conn-mgr)})]
+                                      :connection-manager (s/conn-mgr)})]
             (is (= (umm/umm->xml g1-echo :echo10) (:body response))))))
 
       (testing "as extension"

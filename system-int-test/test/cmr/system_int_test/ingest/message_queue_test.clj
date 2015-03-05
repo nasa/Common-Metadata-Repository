@@ -5,12 +5,12 @@
             [cmr.system-int-test.utils.index-util :as index-util]
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.core :as d]
-            [cmr.system-int-test.utils.test-environment :as test-env]))
+            [cmr.system-int-test.system :as s]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
 (deftest message-queue-concept-history-test
-  (test-env/only-with-real-message-queue
+  (s/only-with-real-message-queue
     (let [coll1 (dc/collection-concept {:native-id "C1" :concept-id "C1-PROV1" :revision-id 1})
           coll2 (dc/collection-concept {:native-id "C2" :concept-id "C2-PROV1" :revision-id 1})
           coll3 (dc/collection-concept {:native-id "C3" :concept-id "C3-PROV1" :revision-id 1})

@@ -3,27 +3,27 @@
   (:require [clj-http.client :as client]
             [cmr.system-int-test.utils.url-helper :as url]
             [cmr.indexer.config :as config]
-            [cmr.system-int-test.utils.test-environment :as te]
             [cmr.system-int-test.utils.queue :as queue]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cheshire.core :as json]
-            [clojure.walk :as walk]))
+            [clojure.walk :as walk]
+            [cmr.system-int-test.system :as s]))
 
 (defn refresh-elastic-index
   []
-  (client/post (url/elastic-refresh-url) {:connection-manager (url/conn-mgr)}))
+  (client/post (url/elastic-refresh-url) {:connection-manager (s/conn-mgr)}))
 
 (defn wait-until-indexed
   "Wait until ingested concepts have been indexed"
   []
   (when (config/use-index-queue?)
-    (client/post (url/wait-for-indexing-url) {:connection-manager (url/conn-mgr)}))
+    (client/post (url/dev-system-wait-for-indexing-url) {:connection-manager (s/conn-mgr)}))
   (refresh-elastic-index))
 
 (defn get-message-queue-history
   "Returns the message queue history."
   []
-  (-> (client/get (url/get-message-queue-history-url) {:connection-manager (url/conn-mgr)})
+  (-> (client/get (url/dev-system-get-message-queue-history-url) {:connection-manager (s/conn-mgr)})
       :body
       json/decode
       walk/keywordize-keys))

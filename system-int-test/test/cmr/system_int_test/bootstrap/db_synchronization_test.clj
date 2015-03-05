@@ -8,9 +8,9 @@
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.granule :as dg]
+            [cmr.system-int-test.system :as s]
             [cmr.umm.core :as umm]
             [cmr.system-int-test.data2.core :as d]
-            [cmr.system-int-test.utils.test-environment :as test-env]
             [cmr.bootstrap.test.catalog-rest :as cat-rest]
             [cmr.common.concepts :as concepts]
             [cmr.oracle.connection :as oracle]
@@ -217,7 +217,7 @@
       (is (= 0 (:hits results)) (str "Expected 0 found " (pr-str results))))))
 
 (deftest db-synchronize-collection-updates-test
-  (test-env/only-with-real-database
+  (s/only-with-real-database
     (let [concept-counter (atom 1)
           coll1-1 (coll-concept concept-counter "CPROV1" "coll1" :iso-smap)
           coll1-2 (updated-concept coll1-1)
@@ -269,7 +269,7 @@
       (assert-concepts-not-indexed [coll6-1]))))
 
 (deftest db-synchronize-collection-updates-between-dates-test
-  (test-env/only-with-real-database
+  (s/only-with-real-database
     (let [concept-counter (atom 1)
           ;; Original in sync concepts
           coll1-1 (coll-concept concept-counter "CPROV1" "coll1")
@@ -322,7 +322,7 @@
       (assert-concepts-not-indexed [coll4-1 coll7-1]))))
 
 (deftest db-synchronize-collection-missing-items-test
-  (test-env/only-with-real-database
+  (s/only-with-real-database
     (let [concept-counter (atom 1)
           ;; Coll1 will exist in both
           coll1-1 (coll-concept concept-counter "CPROV1" "coll1" :iso-smap)
@@ -368,7 +368,7 @@
       (assert-concepts-indexed updated-colls))))
 
 (deftest db-synchronize-collection-missing-with-specific-collection-test
-  (test-env/only-with-real-database
+  (s/only-with-real-database
     (let [concept-counter (atom 1)
           coll1-1 (coll-concept concept-counter "CPROV1" "coll1")
           ;;Collections 2 - 4 will be missing
@@ -392,7 +392,7 @@
 
 
 (deftest db-synchronize-collection-deletes-test
-  (test-env/only-with-real-database
+  (s/only-with-real-database
     (let [concept-counter (atom 1)
           coll1-1 (coll-concept concept-counter "CPROV1" "coll1" :iso-smap)
           coll2-1 (coll-concept concept-counter "CPROV1" "coll2")
@@ -435,7 +435,7 @@
       (assert-concepts-not-indexed deleted-colls))))
 
 (deftest db-synchronize-collection-deletes-specific-collection-test
-  (test-env/only-with-real-database
+  (s/only-with-real-database
     (let [concept-counter (atom 1)
           coll1-1 (coll-concept concept-counter "CPROV1" "coll1")
           coll2-1 (coll-concept concept-counter "CPROV1" "coll2")
@@ -469,7 +469,7 @@
       (assert-concepts-not-indexed [coll2-1]))))
 
 (deftest db-synchronize-collections-with-defaults-test
-  (test-env/only-with-real-database
+  (s/only-with-real-database
     (let [concept-counter (atom 0)
           coll1-1 (coll-concept concept-counter "CPROV1" "coll1")
           coll1-2 (updated-concept coll1-1)
@@ -534,7 +534,7 @@
       (assert-concepts-not-indexed deleted-colls))))
 
 (deftest db-synchronize-granules-missing-test
-  (test-env/only-with-real-database
+  (s/only-with-real-database
     (let [concept-counter (atom 1)
           coll1 (coll-concept concept-counter "CPROV1" "coll1")
           coll2 (coll-concept concept-counter "CPROV2" "coll2")
@@ -591,7 +591,7 @@
       (assert-concepts-not-indexed [gran6-1]))))
 
 (deftest db-synchronize-granules-missing-specific-collection-test
-  (test-env/only-with-real-database
+  (s/only-with-real-database
     (let [concept-counter (atom 1)
           coll1 (coll-concept concept-counter "CPROV1" "coll1")
           coll2 (coll-concept concept-counter "CPROV2" "coll2")
@@ -633,7 +633,7 @@
       (assert-concepts-not-indexed [gran2-1]))))
 
 (deftest db-synchronize-granules-defaults-test
-  (test-env/only-with-real-database
+  (s/only-with-real-database
     (let [concept-counter (atom 0)
           coll1-1 (coll-concept concept-counter "CPROV1" "coll1")
           coll2-1 (coll-concept concept-counter "CPROV1" "coll2")
@@ -933,13 +933,13 @@
 
 
 (deftest db-synchronize-many-items
-  (test-env/only-with-real-database
+  (s/only-with-real-database
     (let [updated-holdings (setup-holdings)]
       (bootstrap/synchronize-databases)
       (verify-holdings updated-holdings))))
 
 (deftest db-synchronize-by-collection
-  (test-env/only-with-real-database
+  (s/only-with-real-database
     (let [updated-holdings (setup-holdings)]
       (doseq [[provider-id concept-type-map] updated-holdings
               [concept-id concepts] (:collection concept-type-map)]
@@ -949,7 +949,7 @@
       (verify-holdings updated-holdings))))
 
 (deftest db-synchronize-by-provider-id
-  (test-env/only-with-real-database
+  (s/only-with-real-database
     (let [updated-holdings (setup-holdings)]
       (doseq [provider-id (keys updated-holdings)]
         (bootstrap/synchronize-databases {:provider-id provider-id}))

@@ -8,7 +8,8 @@
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.core :as d]
             [cmr.system-int-test.utils.url-helper :as url]
-            [cmr.system-int-test.utils.search-util :as search]))
+            [cmr.system-int-test.utils.search-util :as search]
+            [cmr.system-int-test.system :as s]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
@@ -72,6 +73,6 @@
 (deftest delete-provider-without-permission-test
   (let [response (client/delete (url/ingest-delete-provider-url "PROV1")
                                 {:throw-exceptions false
-                                 :connection-manager (url/conn-mgr)
+                                 :connection-manager (s/conn-mgr)
                                  :query-params {:token "dummy-token"}})]
     (is (= 401 (:status response)))))

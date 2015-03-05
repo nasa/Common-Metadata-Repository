@@ -3,7 +3,6 @@
   system integration tests."
   (:require [cmr.common.lifecycle :as lifecycle]
             [cmr.common.log :as log :refer (debug info warn error)]
-            [cmr.system-int-test.utils.test-environment :as test-env]
             [cmr.metadata-db.config :as mdb-config]
             [cmr.oracle.connection :as oracle]
             [clj-http.conn-mgr :as conn-mgr]
@@ -14,11 +13,19 @@
     :private true}
   component-order [:log :bootstrap-db])
 
+;; TODO remove this when create-system takes a map
+(defn real-database?
+  "Returns true if running with a real database"
+  []
+  false)
+; (= (:db (get-component-type-map)) :external))
+
 (defn create-system
-  "Returns a new instance of the whole application."
+  "Returns a new instance of the whole application.
+  TODO Should take the component-map as an argument."
   []
   (let [sys {:log (log/create-logger)
-             :bootstrap-db (when (test-env/real-database?)
+             :bootstrap-db (when (real-database?)
                              (oracle/create-db (mdb-config/db-spec "bootstrap-test-pool")))
              ;; the HTTP connection manager to use. This allows system integration tests to use persistent
              ;; HTTP connections
@@ -66,3 +73,61 @@
   (if-let [system @saved-system]
     system
     (start)))
+
+;;;;;;;;;;;;;;;;;;;; Came from url-helper namespace
+(defn conn-mgr
+  "Returns the HTTP connection manager to use. This allows system integration tests to use persistent
+  HTTP connections"
+  []
+  (:conn-mgr (system)))
+
+;;;;;;;;;;;;;;;;;;;;; Came from test-env namespace
+
+; (defn- get-component-type-map
+;   "Returns the message queue history."
+;   []
+;   (let [component-map (-> (client/get (url/dev-system-get-component-types-url)
+;                                       {:connection-manager (conn-mgr)})
+;                           :body
+;                           json/decode)]
+;     (into {}
+;           (for [[k v] component-map]
+;             [(keyword k) (keyword v)]))))
+
+
+
+(defn in-memory-database?
+  "Returns true if running with a in-memory database"
+  []
+  true)
+; (= (:db (get-component-type-map)) :in-memory))
+
+
+(defn real-message-queue?
+  "Returns true if running with a real message-queue"
+  []
+  true)
+; (= (:message-queue (get-component-type-map)) :external))
+
+
+(defmacro only-with-real-database
+  "Executes the body of the call if the test environment is running with the real Oracle DB."
+  [& body]
+  `(when (real-database?)
+     ~@body))
+
+(defmacro only-with-in-memory-database
+  "Executes the body of the call if the test environment is running with the in memory database"
+  [& body]
+  `(when (in-memory-database?)
+     ~@body))
+
+(defmacro only-with-real-message-queue
+  "Executes the body of the call if the test environment is running with the real RabbitMQ."
+  [& body]
+  `(when (real-message-queue?)
+     ~@body))
+
+(comment
+  (real-database?)
+  (real-message-queue?))

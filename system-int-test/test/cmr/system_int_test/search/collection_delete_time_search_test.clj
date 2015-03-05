@@ -8,9 +8,9 @@
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.core :as d]
+            [cmr.system-int-test.system :as s]
             [clj-time.core :as t]
-            [cmr.common.time-keeper :as tk]
-            [cmr.system-int-test.utils.test-environment :as test-env]))
+            [cmr.common.time-keeper :as tk]))
 
 
 (use-fixtures :each (join-fixtures
@@ -31,7 +31,7 @@
 
 
 (deftest collection-delete-time-test
-  (test-env/only-with-in-memory-database
+  (s/only-with-in-memory-database
     (let [time-now (tk/now)
           make-coll (fn [prov entry-title num-secs-to-live]
                       (let [delete-time (when num-secs-to-live

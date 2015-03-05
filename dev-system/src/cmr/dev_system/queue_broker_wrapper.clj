@@ -12,43 +12,38 @@
             [clojure.set :as set]
             [cmr.common.util :as util]))
 
-(def message-queue-history
-  "A vector of message queue maps. A new message queue map is added every time an action takes
-  place on the message queue. A message queue map contains an action and a list of
-  messages."
-  (atom []))
-
 (def valid-action-types
   "A set of the valid action types for a message queue:
-  :reset - Clear out all of the current messages. This is currently not used and may be removed.
+  :reset - Clear out all of the messages. TODO: This is currently not used and may be removed.
   :enqueue - Message has been added to the queue.
   :process - Message has been processed."
   #{:reset
     :enqueue
     :process})
 
-(defn create-message-queue-history-entry
-  "Create a message queue history map. Takes an action, the data associated with that action
-  and the result of that action.
+(defn append-to-message-queue-history
+  "Create a message queue history map and append it to the message queue history atom. Takes an
+  action, the data associated with that action and the result of that action.
 
   Parameters:
+  message-queue-history-value - initial value of the message-queue-history-atom
   action-type - One of the valid action types :reset :enqueue or :process
   data - Map with :id, :action (either \"index-concept\" or \"delete-concept\"), :concept-id, and
   :revision-id. data will be nil for messages unrelated to a concept.
   resulting-state - One of the valid message states
 
-  Note that creating a new entry requires looking at the prior
-  messages. As a result this function cannot be called within swap! Instead it should be called
-  from compare-and-set! and retried if it fails."
-  [action-type data resulting-state]
-  (when-not (valid-action-types action-type)
-    (throw (Exception. (str "Unknown action-type: " action-type))))
+  Example message-queue-history-map:
+  {:action {:action-type :enqueue
+  :data {:id 1 :concept-id \"C1-PROV1\" :revision-id 1 :state :initial}}
+  :messages [{:id 1 :concept-id \"C1-PROV1\" :revision-id 1 :state :initial}]}"
+  [message-queue-history-value action-type data resulting-state]
+  {:pre [(valid-action-types action-type)]}
   (let [data-with-state (when (seq data) (assoc data :state resulting-state))
         messages (case action-type
                    :reset []
                    (:enqueue :process)
                    (when (seq data)
-                     (-> (peek @message-queue-history)
+                     (-> (last message-queue-history-value)
                          :messages
                          ;; Messages are unique based on id - if the action is to change the state
                          ;; of a message we already know about, we replace the original message
@@ -57,31 +52,21 @@
                          (conj data-with-state))))
         new-action (util/remove-nil-keys {:action-type action-type
                                           :data data-with-state})]
-    {:action new-action
-     :messages messages}))
-
+    (conj message-queue-history-value {:action new-action :messages messages})))
 
 (defn update-message-queue-history
   "Called when an event occurs on the message queue in order to add a new entry to the message
-  queue history. See create-message-queue-history-entry for a description of the parameters."
-  [action-type data resulting-state]
-  (loop []
-    (let [updated-history?
-          (compare-and-set!
-            message-queue-history
-            @message-queue-history
-            (conj @message-queue-history (create-message-queue-history-entry action-type data
-                                                                             resulting-state)))]
-      (when-not updated-history?
-        (recur)))))
-
+  queue history. See append-to-message-queue-history for a description of the parameters."
+  [broker-wrapper action-type data resulting-state]
+  (swap! (-> broker-wrapper :message-queue-history-atom)
+         append-to-message-queue-history action-type data resulting-state))
 
 (comment
-  (update-message-queue-history :enqueue {:concept-id "C1-PROV1" :revision-id 1 :id 1} :initial)
+  (update-message-queue-history (create-queue-broker-wrapper nil) :enqueue {:concept-id "C1-PROV1" :revision-id 1 :id 1} :initial)
 
-  (update-message-queue-history :reset {} nil)
+  (update-message-queue-history (create-queue-broker-wrapper nil) :reset {} nil)
 
-  (:messages (peek @message-queue-history))
+  (:messages (peek @message-queue-history-atom))
   )
 
 (def valid-message-states
@@ -107,7 +92,7 @@
   (fn [context msg]
     (if (-> broker-wrapper :resetting?-atom deref)
       (do
-        (update-message-queue-history :process msg :failed)
+        (update-message-queue-history broker-wrapper :process msg :failed)
         {:status :fail :message "Forced failure on reset"})
       (let [resp (handler context msg)
             message-state (case (:status resp)
@@ -117,38 +102,45 @@
                                      :retry)
                             :fail :failed
                             (throw (Exception. (str "Invalid response: " (pr-str resp)))))]
-        (update-message-queue-history :process msg message-state)
+        (update-message-queue-history broker-wrapper :process msg message-state)
         resp))))
 
 (defn current-message-states
   "Return a sequence of message states for all messages currently held by the wrapper."
-  []
-  (->> @message-queue-history
-       peek
+  [broker-wrapper]
+  (->> broker-wrapper
+       :message-queue-history-atom
+       deref
+       last
        :messages
        (map :state)))
 
 (defn- wait-for-states
   "Wait until the messages that have been enqueued have all reached one of the given expected
   terminal states. If it takes longer than 5 seconds, log a warning and stop waiting."
-  [expected-terminal-states]
-  (let [failure-states (set/difference terminal-states (set expected-terminal-states))]
-    (loop [current-states (set (current-message-states))
-           retry-count 50]
-      (let [in-work-states (set/difference current-states (set expected-terminal-states))]
-        ;; The current states should consist of non-terminal (currently processing) states and
-        ;; expected terminal states. Any terminal state which is not expected will cause an error.
-        ;; If the current states are non-terminal states we will check again after sleeping. After
-        ;; 5 seconds we give up.
-        (when (seq in-work-states)
-          (debug "Still in work:" in-work-states)
-          ;; If we've reached any terminal state that we did not expect
-          (when (seq (set/intersection in-work-states failure-states))
-            (throw (Exception. (str "Unexpected final message state(s): " in-work-states))))
-          (Thread/sleep 100)
-          (if (> retry-count 0)
-            (recur (set (current-message-states)) (dec retry-count))
-            (warn "Waited 5 seconds for messages to complete, but they did not complete.")))))))
+  ([broker-wrapper expected-terminal-states]
+   (wait-for-states broker-wrapper expected-terminal-states 5000))
+  ([broker-wrapper expected-terminal-states initial-ms-to-wait]
+   {:pre [(nil? (seq (set/difference (set expected-terminal-states) terminal-states)))]}
+   (let [expected-terminal-states-set (set expected-terminal-states)
+         failure-states (set/difference terminal-states (set expected-terminal-states))
+         start-time (System/currentTimeMillis)]
+     (loop [current-states (set (current-message-states broker-wrapper))]
+       (let [in-work-states (set/difference current-states expected-terminal-states-set)]
+         ;; The current states should consist of non-terminal (currently processing) states and
+         ;; expected terminal states. Any terminal state which is not expected will cause an error.
+         ;; If the current states are non-terminal states we will check again after sleeping. After
+         ;; initial-ms-to-wait have passed we give up.
+         (when (seq in-work-states)
+           (debug "Still in work:" in-work-states)
+           ;; If we've reached any terminal state that we did not expect
+           (when (seq (set/intersection in-work-states failure-states))
+             (throw (Exception. (str "Unexpected final message state(s): " in-work-states))))
+           (Thread/sleep 10)
+           (if (< (- (System/currentTimeMillis) start-time) initial-ms-to-wait)
+             (recur (set (current-message-states broker-wrapper)))
+             (warn (format "Waited %d ms for messages to complete, but they did not complete."
+                           initial-ms-to-wait)))))))))
 
 (defrecord BrokerWrapper
   [
@@ -164,6 +156,11 @@
    ;; a :fail response. This indirectly allows the wrapper to clear the queue and prevent retries.
    ;; A value of false indicates normal operation.
    resetting?-atom
+
+   ;; A vector of message queue maps. A new message queue map is added every time an action takes
+   ;; place on the message queue. A message queue map contains an action and a list of
+   ;; messages."
+   message-queue-history-atom
    ]
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -193,7 +190,7 @@
           tagged-msg (assoc msg :id msg-id)]
 
       ;; Set the initial state of the message to :initial
-      (update-message-queue-history :enqueue tagged-msg :initial)
+      (update-message-queue-history this :enqueue tagged-msg :initial)
 
       ;; delegate the request to the wrapped broker
       (queue/publish queue-broker queue-name tagged-msg)))
@@ -216,22 +213,22 @@
     [this]
     (reset! (:resetting?-atom this) true)
     (try
-      (wait-for-states [:processed :failed])
+      (wait-for-states this [:processed :failed])
       (queue/reset queue-broker)
       (reset! id-sequence-atom 0)
-      (reset! message-queue-history [])
+      (reset! message-queue-history-atom [])
       (finally
         (reset! resetting?-atom false)))))
 
 (defn wait-for-indexing
   "Wait for all messages to be marked as processed."
-  []
-  (wait-for-states [:processed]))
+  [broker-wrapper]
+  (wait-for-states broker-wrapper [:processed]))
 
 (defn get-message-queue-history
   "Returns the message-queue-history."
-  []
-  @message-queue-history)
+  [broker-wrapper]
+  (-> broker-wrapper :message-queue-history-atom deref))
 
 ;; TODO
 #_(def valid-message-modes
@@ -256,4 +253,7 @@
 (defn create-queue-broker-wrapper
   "Create a BrokerWrapper"
   [broker]
-  (->BrokerWrapper broker (atom 0) (atom false)))
+  (->BrokerWrapper broker (atom 0) (atom false) (atom [])))
+
+(comment
+  (type #{1 2 3}))

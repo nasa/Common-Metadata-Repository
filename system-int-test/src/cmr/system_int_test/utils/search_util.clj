@@ -9,6 +9,7 @@
             [cmr.common.concepts :as cs]
             [cmr.common.mime-types :as mime-types]
             [cmr.system-int-test.utils.url-helper :as url]
+            [cmr.system-int-test.system :as s]
             [cmr.common.util :as util]
             [camel-snake-kebab.core :as csk]
             [clojure.set :as set]
@@ -106,7 +107,7 @@
   (let [url (url/search-url concept-type)]
     (get-search-failure-data
 
-      (client/get (str url query) {:connection-manager (url/conn-mgr)}))))
+      (client/get (str url query) {:connection-manager (s/conn-mgr)}))))
 
 (defn find-concepts-in-format
   "Returns the concepts in the format given."
@@ -126,7 +127,7 @@
          response (client/get url {:accept accept
                                    :headers headers
                                    :query-params params
-                                   :connection-manager (url/conn-mgr)})]
+                                   :connection-manager (s/conn-mgr)})]
      (is (= 200 (:status response)))
      response)))
 
@@ -167,13 +168,13 @@
                       (client/get url {:accept accept
                                        :headers headers
                                        :query-params params
-                                       :connection-manager (url/conn-mgr)})
+                                       :connection-manager (s/conn-mgr)})
                       (client/post url
                                    {:accept accept
                                     :headers headers
                                     :content-type "application/x-www-form-urlencoded"
                                     :body (codec/form-encode params)
-                                    :connection-manager (url/conn-mgr)})))]
+                                    :connection-manager (s/conn-mgr)})))]
      (if (= 200 (:status response))
        {:status (:status response)
         :results (parse-timeline-response (:body response))}
@@ -357,7 +358,7 @@
                                  :content-type "application/x-www-form-urlencoded"
                                  :body (codec/form-encode params)
                                  :throw-exceptions false
-                                 :connection-manager (url/conn-mgr)})]
+                                 :connection-manager (s/conn-mgr)})]
       (parse-reference-response (:echo-compatible params) response))))
 
 (defn find-refs-with-aql-string
@@ -372,7 +373,7 @@
                                          :content-type content-type
                                          :body aql
                                          :query-params {:page-size 100}
-                                         :connection-manager (url/conn-mgr)}
+                                         :connection-manager (s/conn-mgr)}
                                         options))]
        (parse-reference-response (get-in options [:query-params :echo_compatible]) response)))))
 
@@ -405,7 +406,7 @@
                url)]
      (client/get url (merge {:accept (when-not url-extension format-mime-type)
                              :throw-exceptions false
-                             :connection-manager (url/conn-mgr)}
+                             :connection-manager (s/conn-mgr)}
                             options)))))
 
 (defn provider-holdings-in-format
@@ -424,7 +425,7 @@
                         [(url/provider-holdings-url) format-mime-type])
          response (client/get url {:accept accept
                                    :query-params params
-                                   :connection-manager (url/conn-mgr)})
+                                   :connection-manager (s/conn-mgr)})
          {:keys [status body headers]} response]
      (if (= status 200)
        {:status status
