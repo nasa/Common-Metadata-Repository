@@ -3,7 +3,7 @@
   (:require [clojure.test :refer :all]
             [cmr.umm.validation.core :as v]
             [cmr.umm.collection :as c]
-            [cmr.umm.test.validation.helpers :refer :all]
+            [cmr.umm.test.validation.helpers :as helpers]
             [cmr.spatial.mbr :as m]
             [cmr.spatial.point :as p]
             [cmr.common.services.errors :as e]))
@@ -200,27 +200,27 @@
 
 (deftest collection-temporal-validation
   (testing "valid temporal"
-    (let [r1 (range-date-time "1999-12-30T19:00:00Z" "1999-12-30T19:00:01Z")
-          r2 (range-date-time "1999-12-30T19:00:00Z" nil)
-          r3 (range-date-time "1999-12-30T19:00:00Z" "1999-12-30T19:00:00Z")]
-      (assert-valid (coll-with-range-date-times [r1]))
-      (assert-valid (coll-with-range-date-times [r2]))
-      (assert-valid (coll-with-range-date-times [r3]))
-      (assert-valid (coll-with-range-date-times [r1 r2 r3]))))
+    (let [r1 (helpers/range-date-time "1999-12-30T19:00:00Z" "1999-12-30T19:00:01Z")
+          r2 (helpers/range-date-time "1999-12-30T19:00:00Z" nil)
+          r3 (helpers/range-date-time "1999-12-30T19:00:00Z" "1999-12-30T19:00:00Z")]
+      (assert-valid (helpers/coll-with-range-date-times [r1]))
+      (assert-valid (helpers/coll-with-range-date-times [r2]))
+      (assert-valid (helpers/coll-with-range-date-times [r3]))
+      (assert-valid (helpers/coll-with-range-date-times [r1 r2 r3]))))
 
   (testing "invalid temporal"
     (testing "single error"
-      (let [r1 (range-date-time "1999-12-30T19:00:02Z" "1999-12-30T19:00:01Z")
-            coll (coll-with-range-date-times [r1])]
+      (let [r1 (helpers/range-date-time "1999-12-30T19:00:02Z" "1999-12-30T19:00:01Z")
+            coll (helpers/coll-with-range-date-times [r1])]
         (assert-invalid
           coll
           [:temporal :range-date-times 0]
           ["BeginningDateTime [1999-12-30T19:00:02.000Z] must be no later than EndingDateTime [1999-12-30T19:00:01.000Z]"])))
 
     (testing "multiple errors"
-      (let [r1 (range-date-time "1999-12-30T19:00:02Z" "1999-12-30T19:00:01Z")
-            r2 (range-date-time "2000-12-30T19:00:02Z" "2000-12-30T19:00:01Z")
-            coll (coll-with-range-date-times [r1 r2])]
+      (let [r1 (helpers/range-date-time "1999-12-30T19:00:02Z" "1999-12-30T19:00:01Z")
+            r2 (helpers/range-date-time "2000-12-30T19:00:02Z" "2000-12-30T19:00:01Z")
+            coll (helpers/coll-with-range-date-times [r1 r2])]
         (assert-multiple-invalid
           coll
           [{:path [:temporal :range-date-times 0],

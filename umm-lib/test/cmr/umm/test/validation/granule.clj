@@ -4,7 +4,7 @@
             [cmr.umm.validation.core :as v]
             [cmr.umm.collection :as c]
             [cmr.umm.granule :as g]
-            [cmr.umm.test.validation.helpers :refer :all]
+            [cmr.umm.test.validation.helpers :as helpers]
             [cmr.spatial.mbr :as m]
             [cmr.spatial.point :as p]
             [cmr.common.date-time-parser :as dtp]
@@ -77,13 +77,13 @@
 
 (defn granule-with-temporal
   [a b]
-  (make-granule {:temporal (g/map->GranuleTemporal {:range-date-time (range-date-time a b)})}))
+  (make-granule {:temporal (g/map->GranuleTemporal {:range-date-time (helpers/range-date-time a b)})}))
 
 (deftest granule-temporal-coverage
   (let [coll-start "2015-01-01T00:00:00Z"
         coll-end   "2015-01-02T00:00:00Z"
-        coll-range (range-date-time coll-start coll-end)
-        coll (coll-with-range-date-times [coll-range])
+        coll-range (helpers/range-date-time coll-start coll-end)
+        coll (helpers/coll-with-range-date-times [coll-range])
         assert-valid #(assert-valid-gran coll %)
         assert-invalid #(assert-invalid-gran coll %1 [:temporal] [%2])]
 
