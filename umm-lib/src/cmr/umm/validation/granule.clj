@@ -66,13 +66,13 @@
 
 (defn- temporal-error-message
   "Returns an error message for given pairs of granule and collection start and end dates."
-  [g1 g2 c1 c2]
+  [gran-start gran-end coll-start coll-end]
   ;; Anything other than this should result in an error:
-  ;; timeline: ---c1---g1---g2---c2--->
+  ;; timeline: ---coll-start---gran-start---gran-end---coll-end--->
   (cond
-    (t/after? g1 g2)  "Granule start date is later than granule end date."
-    (t/before? g1 c1) "Granule start date is earlier than collection start date."
-    (t/after? g2 c2)  "Granule end date is later than collection end date."))
+    (t/after? gran-start gran-end)  "Granule start date is later than granule end date."
+    (t/before? gran-start coll-start) "Granule start date is earlier than collection start date."
+    (t/after? gran-end coll-end)  "Granule end date is later than collection end date."))
 
 (defn temporal-validation
   "Checks the granule's temporal range against its parent collection."

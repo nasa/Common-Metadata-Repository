@@ -83,7 +83,7 @@
   (let [coll-start "2015-01-01T00:00:00Z"
         coll-end   "2015-01-02T00:00:00Z"
         coll-range (range-date-time coll-start coll-end)
-        coll (merge (coll-with-range-date-times [coll-range]) {:entry-title "et"})
+        coll (coll-with-range-date-times [coll-range])
         assert-valid #(assert-valid-gran coll %)
         assert-invalid #(assert-invalid-gran coll %1 [:temporal] [%2])]
 
