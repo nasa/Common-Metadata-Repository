@@ -88,9 +88,14 @@
       (let [{:keys [status errors]} (d/ingest "PROV1" (assoc collection
                                                              :concept-id "C2-PROV1"
                                                              :native-id "NID-2") :dif)]
-        (is (= [409 ["The Entry Title [ET-1] must be unique. The following concepts with the same entry title were found: [C2-PROV1, C1-PROV1]."
-                     "The Entry Id [EID-1] must be unique. The following concepts with the same entry id were found: [C2-PROV1, C1-PROV1]."]]
-               [status errors]))))
+
+        (is (= 409 status))
+        ;; The error message returns the concepts "C1-PROV1" and "C2-PROV1" in different orders when
+        ;; using in-memory db vs. external.  As a result we use pattern matching here.
+        (is (re-find #"The Entry Title \[ET-1\] must be unique. The following concepts with the same entry title were found: \[C[12]-PROV1, C[12]-PROV1\]."
+                     (first errors)))
+        (is (re-find #"The Entry Id \[EID-1\] must be unique. The following concepts with the same entry id were found: \[C[12]-PROV1, C[12]-PROV1\]."
+                     (last errors)))))
 
     (testing "ingest collection with entry-id used by a collection in a different provider is OK"
       (let [{:keys [status]} (d/ingest "PROV2" (assoc collection :concept-id "C1-PROV2") :dif)]

@@ -22,7 +22,6 @@
 (defconfig rabbit-mq-ttls
   "The Time-To-Live (TTL) for each retry queue (in seconds)."
   {:default [5,50, 500, 5000, 50000]
-  ; {:default [1,2,3,4,5]
    :parser #(json/decode ^String %)})
 
 (defn default-config

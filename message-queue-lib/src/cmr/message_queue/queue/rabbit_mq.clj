@@ -68,16 +68,14 @@
 (defn- message-handler
   "Processes a given message and determines what to do based on the response code returned. Send an
   ack if the message completed successfully. Put the message on a wait queue if the response
-  indicates it needs to be retried. Nack the message if the repsonse is marked as failed."
+  indicates it needs to be retried. Nack the message if the response is marked as failed."
   [queue-broker queue-name client-handler ch metadata ^bytes payload]
   (let [{:keys [delivery-tag routing-key]} metadata
         msg (json/parse-string (String. payload) true)]
     (try
       (let [resp (client-handler msg)]
         (case (:status resp)
-          :ok (do
-                ;; processed successfully
-                (lb/ack ch delivery-tag))
+          :ok (lb/ack ch delivery-tag)
           :retry (attempt-retry queue-broker ch queue-name
                                 routing-key msg delivery-tag resp)
           :fail (do

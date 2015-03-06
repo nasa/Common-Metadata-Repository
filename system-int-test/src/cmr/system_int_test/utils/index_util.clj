@@ -6,7 +6,6 @@
             [cmr.system-int-test.utils.queue :as queue]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cheshire.core :as json]
-            [clojure.walk :as walk]
             [cmr.system-int-test.system :as s]))
 
 (defn refresh-elastic-index
@@ -25,16 +24,15 @@
   []
   (-> (client/get (url/dev-system-get-message-queue-history-url) {:connection-manager (s/conn-mgr)})
       :body
-      json/decode
-      walk/keywordize-keys))
+      (json/decode true)))
 
 (defn- messages+id->message
   "Returns the first message for a given message id."
   [messages id]
   (first (filter #(= id (:id %)) messages)))
 
-(defn concept-history
-  "Returns a map of concept id revision id tuples to the sequence of states for each one"
+(defn- concept-history
+  "Returns a map of concept id revision id tuples to the sequence of states for each one."
   [messages]
   (let [int-states (for [mq messages
                          :when (not= (get-in mq [:action :action-type]) :reset)
@@ -44,3 +42,8 @@
                      {[concept-id revision-id] [{:action action-type :result result-state}]})]
     (apply merge-with concat int-states)))
 
+(defn get-concept-message-queue-history
+  "Gets the message queue history and then returns a map of concept-id revision-id tuples to the
+  sequence of states for each one."
+  []
+  (concept-history (get-message-queue-history)))

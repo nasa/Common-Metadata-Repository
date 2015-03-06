@@ -11,7 +11,6 @@
             [cmr.transmit.echo.acls :as echo-acls]
             [cmr.search.data.elastic-search-index :as es]
             [cmr.dev-system.queue-broker-wrapper :as wrapper]
-            ;; [cmr.dev-system.system :as dev-system]
             [cmr.ingest.config :as iconfig]
 
             ;; Services for reseting
@@ -26,6 +25,16 @@
 (defn app-context
   [system app]
   {:system (get-in system [:apps app])})
+
+(defn exec-dev-system-function
+  "Executes a function from the cmr.dev-system.system namespace. Takes a string containing the name
+  of the function to run. Need to look up at run-time due to a circular dependency.
+
+  Example: (exec-dev-system-function \"stop\" system ) calls (cmr.dev-system.system/stop system)"
+  ([function-str]
+   ((var-get (find-var (symbol (str "cmr.dev-system.system/" function-str))))))
+  ([function-str & args]
+   ((var-get (find-var (symbol (str "cmr.dev-system.system/" function-str)))) args)))
 
 (defn get-acl-state
   [system]
@@ -85,7 +94,7 @@
     (GET "/component-types" []
       (debug "Retrieving component types")
       {:status 200
-       :body (json/generate-string (var-get (find-var 'cmr.dev-system.system/component-type-map)))
+       :body (json/generate-string (exec-dev-system-function "component-type-map"))
        :headers {"Content-Type" "application/json"}})
 
     (POST "/clear-cache" []
@@ -97,7 +106,7 @@
 
     (POST "/stop" []
       (debug "dev system /stop")
-      ((var-get (find-var 'cmr.dev-system.system/stop)) system)
+      (exec-dev-system-function "stop" system)
       (System/exit 0))
 
     (context "/message-queue" []

@@ -18,20 +18,24 @@
                                      (assoc coll2 :revision-id 2)
                                      (assoc coll2 :revision-id 3)])
           _ (index-util/wait-until-indexed)
-          messages (index-util/get-message-queue-history)
-          concept-history (index-util/concept-history messages)]
+          concept-history (index-util/get-concept-message-queue-history)]
       (testing "successfully processed concepts"
-        (are [concept-id revision-id states] (= states (get concept-history [concept-id revision-id]))
-             "C1-PROV1" 1 [{:action "enqueue" :result "initial"}
-                           {:action "process" :result "processed"}]
-             "C2-PROV1" 1 [{:action "enqueue" :result "initial"}
-                           {:action "process" :result "processed"}]
-             "C2-PROV1" 2 [{:action "enqueue" :result "initial"}
-                           {:action "process" :result "processed"}]
-             "C2-PROV1" 3 [{:action "enqueue" :result "initial"}
-                           {:action "process" :result "processed"}]
-             "C3-PROV1" 1 [{:action "enqueue" :result "initial"}
-                           {:action "process" :result "processed"}])))))
+        (is (= {["C2-PROV1" 3]
+                [{:action "enqueue", :result "initial"}
+                 {:action "process", :result "processed"}],
+                ["C2-PROV1" 2]
+                [{:action "enqueue", :result "initial"}
+                 {:action "process", :result "processed"}],
+                ["C3-PROV1" 1]
+                [{:action "enqueue", :result "initial"}
+                 {:action "process", :result "processed"}],
+                ["C2-PROV1" 1]
+                [{:action "enqueue", :result "initial"}
+                 {:action "process", :result "processed"}],
+                ["C1-PROV1" 1]
+                [{:action "enqueue", :result "initial"}
+                 {:action "process", :result "processed"}]} concept-history))))))
+
 
 ;; Setup provider
 ;; Test 1 - Initial index fails and retries once, completes successfully on retry
