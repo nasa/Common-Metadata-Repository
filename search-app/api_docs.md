@@ -815,19 +815,23 @@ Facets in JSON search response formats will be formatted like the following exam
 ```
 
 ### Search for Tiles
-Tiles are geographic regions formed by splitting the world into rectangular regions in a projected coordinate system such as Sinusoidal Projection based off an Authalic Sphere. CMR supports searching of tiles which fall within a geographic region defined by a given input geometry. Currently, only tiles in MODIS Integerized Sinusoidal Grid can be searched. The input geometry could be either a minimum bounding rectangle or one of point, line or polygon in spherical coordinates. The input coordinates are to be supplied in the same way as in granule and collection spatial searches (See under "Find granules by Spatial"). 
+Tiles are geographic regions formed by splitting the world into rectangular regions in a projected coordinate system such as Sinusoidal Projection based off an Authalic Sphere. CMR supports searching of tiles which fall within a geographic region defined by a given input geometry. Currently, only tiles in MODIS Integerized Sinusoidal Grid(click [here](https://lpdaac.usgs.gov/products/modis_products_table/modis_overview) for more details on the grid) can be searched. The input geometry could be either a minimum bounding rectangle or one of point, line or polygon in spherical coordinates. The input coordinates are to be supplied in the same way as in granule and collection spatial searches (See under "Find granules by Spatial"). 
 
 Here are some examples:
 Find the tiles which intersect a polygon.
+
     curl -i "%CMR-ENDPOINT%/tiles?polygon=10,10,30,10,30,20,10,20,10,10"
 
 Find the tiles which intersect a bounding rectangle.
+
     curl -i "%CMR-ENDPOINT%/tiles?bounding_box=-10,-5,10,5"
 
 Find the tile which contains a point.
+
     curl -i "%CMR-ENDPOINT%/tiles?point=-84.2625,36.013"
 
 Find all the tiles which a line intersects.
+
     curl -i "%CMR-ENDPOINT%/tiles?line=1,1,10,5,15,9"
 
 The output of these requests is a list of tuples containing tile coordinates, e.g: [[16,8],[16,9],[17,8],[17,9]], in the json format. The first value in each tuple is the horizontal grid coordinate(h), i.e. along east-west and the second value is the vertical grid coordinate(v), i.e. along north-south. 
