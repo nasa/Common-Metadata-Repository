@@ -244,7 +244,7 @@
                CORS_ORIGIN_HEADER "*"}
      :body provider-holdings-formatted}))
 
-(defn- get-tiles
+(defn- find-tiles
   "Retrieves all the tiles which intersect the input geometry"
   [context params]
   (let [results (query-svc/find-tiles-by-geometry context params)]
@@ -340,8 +340,8 @@
            :headers {CONTENT_TYPE_HEADER "application/json; charset=utf-8"}
            :body (json/generate-string dependencies {:pretty pretty?})}))
       
-      (GET "/tile-search" {params :params context :request-context}
-           (get-tiles context params)))
+      (GET "/tiles" {params :params context :request-context}
+           (find-tiles context params)))
 
     (route/not-found "Not Found")))
 

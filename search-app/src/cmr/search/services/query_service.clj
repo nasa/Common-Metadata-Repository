@@ -235,10 +235,6 @@
        (:result-format params) provider-holdings {:pretty? (= "true" pretty)
                                                   :echo-compatible? (= "true" echo-compatible)})]))
 
-(comment   
-  (cmr.common.dev.capture-reveal/defreveal query)
-  (tile/geometry->tiles (get-in query [:condition :shape]))
-)
 
 (deftracefn find-tiles-by-geometry
   "Gets all the tiles for a given geometry"
@@ -247,5 +243,7 @@
                     sanitize-params
                     (pv/validate-parameters :tile)
                     (p/parameters->query :tile))]
+    ;;TODO: Handle the cases where a user might enter multiple shapes or no shape as input or passes
+    ;;a shape parameter as an array e.g. bounding_box[].
     (tile/geometry->tiles (get-in query [:condition :shape]))))
     

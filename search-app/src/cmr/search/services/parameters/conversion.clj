@@ -344,4 +344,3 @@
            ;; the query and add aggregations and make other changes.
            :result-features [:timeline]
            :result-format :timeline)))
-

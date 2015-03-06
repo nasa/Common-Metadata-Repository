@@ -440,12 +440,10 @@
 (defn find-tiles
   "Returns the tiles that are found by searching with the input params"
   [params]
-   (let [url (str (url/search-tile-url))
-         response (client/get url {
-                                   :query-params params
-                                   :connection-manager (url/conn-mgr)
-                                   :throw-exceptions false})]
-       (if (= 200 (:status response))
-          {:status (:status response)
-           :results (vec (json/decode (:body response)))}
-          response)))
+  (let [response (client/get (url/search-tile-url) {:query-params params
+                                                    :connection-manager (url/conn-mgr)
+                                                    :throw-exceptions false})]
+    (if (= 200 (:status response))
+      {:status (:status response)
+       :results (json/decode (:body response))}
+      response)))

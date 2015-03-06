@@ -136,8 +136,9 @@
   (format "http://localhost:%s/health" (transmit-config/search-port)))
 
 (defn search-tile-url
+  "URL to search for 2D grid tiles using input shapes"
   []
-  (format "http://localhost:%s/tile-search" (transmit-config/search-port)))
+  (format "http://localhost:%s/tiles" (transmit-config/search-port)))
 
 (defn provider-holdings-url
   "Returns the URL for retrieving provider holdings."
