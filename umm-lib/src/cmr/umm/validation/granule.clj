@@ -77,13 +77,12 @@
 (defn temporal-validation
   "Checks the granule's temporal extent against the parent collection's."
   [_ temporal]
-  (let [coll-temporal (:parent temporal)]
-    (when (and temporal coll-temporal)
-      (when-let [msg (temporal-error-message (sed/start-date :granule temporal)
-                                             (sed/end-date :granule temporal)
-                                             (sed/start-date :collection coll-temporal)
-                                             (sed/end-date :collection coll-temporal))]
-        {[:temporal] [msg]}))))
+  (when-let [coll-temporal (:parent temporal)]
+    (when-let [msg (temporal-error-message (sed/start-date :granule temporal)
+                                           (sed/end-date :granule temporal)
+                                           (sed/start-date :collection coll-temporal)
+                                           (sed/end-date :collection coll-temporal))]
+      {[:temporal] [msg]})))
 
 (defn- operation-modes-reference-collection
   "Validate operation modes in granule instrument ref must reference those in the parent collection"
