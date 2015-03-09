@@ -244,6 +244,14 @@
                CORS_ORIGIN_HEADER "*"}
      :body provider-holdings-formatted}))
 
+(defn- find-tiles
+  "Retrieves all the tiles which intersect the input geometry"
+  [context params]
+  (let [results (query-svc/find-tiles-by-geometry context params)]
+    {:status 200
+     :headers {CONTENT_TYPE_HEADER "application/json; charset=utf-8"}
+     :body results}))
+
 (defmacro force-trailing-slash
   "Given a ring request, if the request was made against a resource path with a trailing
   slash, performs the body form (presumably returning a valid ring response).  Otherwise,
@@ -330,7 +338,10 @@
               {:keys [ok? dependencies]} (hs/health request-context)]
           {:status (if ok? 200 503)
            :headers {CONTENT_TYPE_HEADER "application/json; charset=utf-8"}
-           :body (json/generate-string dependencies {:pretty pretty?})})))
+           :body (json/generate-string dependencies {:pretty pretty?})}))
+      
+      (GET "/tiles" {params :params context :request-context}
+           (find-tiles context params)))
 
     (route/not-found "Not Found")))
 
