@@ -5,6 +5,7 @@
             [clojure.string :as str]
             [cmr.common.validations.core :as v]
             [cmr.umm.spatial :as umm-s]
+            [cmr.umm.start-end-date :as sed]
             [cmr.spatial.validation :as sv]
             [cmr.umm.validation.utils :as vu]
             [cmr.umm.validation.validation-helper :as h]
@@ -63,6 +64,29 @@
       :else
       (errors/internal-error! (str "Unexpected collection ref in granule: " (pr-str granule))))))
 
+(defn- temporal-error-message
+  "Returns an error message for given pairs of granule and collection start and end dates."
+  [gran-start gran-end coll-start coll-end]
+  ;; Anything other than this should result in an error:
+  ;; timeline: ---coll-start---gran-start---gran-end---coll-end--->
+  (cond
+    (t/after? gran-start gran-end)    (format "Granule start date [%s] is later than granule end date [%s]."
+                                              gran-start gran-end)
+    (t/before? gran-start coll-start) (format "Granule start date [%s] is earlier than collection start date [%s]."
+                                              gran-start coll-start)
+    (t/after? gran-end coll-end)      (format "Granule end date [%s] is later than collection end date [%s]."
+                                              gran-end coll-end)))
+
+(defn temporal-validation
+  "Checks the granule's temporal extent against the parent collection's."
+  [_ temporal]
+  (when-let [coll-temporal (:parent temporal)]
+    (when-let [msg (temporal-error-message (sed/start-date :granule temporal)
+                                           (sed/end-date :granule temporal)
+                                           (sed/start-date :collection coll-temporal)
+                                           (sed/end-date :collection coll-temporal))]
+      {[:temporal] [msg]})))
+
 (defn- operation-modes-reference-collection
   "Validate operation modes in granule instrument ref must reference those in the parent collection"
   [field-path instrument-ref]
@@ -98,6 +122,7 @@
   "Defines validations for granules"
   [collection-ref-validation
    {:spatial-coverage spatial-coverage-validations
+    :temporal temporal-validation
     :platform-refs [(vu/unique-by-name-validator :short-name)
                     (vu/has-parent-validator :short-name "Platform short name")
                     (v/every platform-ref-validations)]

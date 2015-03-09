@@ -192,7 +192,7 @@
 
       ;; The collection should be rejected due to another collection having the same entry-title
       (is (= {:status 409,
-              :errors [(msg/duplicate-field-msg :entry-title [existing-collection test-collection])]}
+              :errors [(msg/duplicate-field-msg :entry-title [existing-collection])]}
              (select-keys test-collection-response [:status :errors])))
 
       ;; We need to verify that the collection which was inserted and failed the post commit

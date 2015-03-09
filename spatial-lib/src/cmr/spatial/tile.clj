@@ -25,14 +25,15 @@
 
 (def modis-sin-tiles 
   "A vector of ModisSinTile records read from an edn file"
-  (vec (let [tiles (read-string (slurp (clojure.java.io/resource "cmr/spatial/modis_tiles.edn")))]
+  (delay (vec (let [tiles (read-string (slurp (clojure.java.io/resource "cmr/spatial/modis_tiles.edn")))]
          (for [{:keys [h v coordinates]} tiles] 
            (->ModisSinTile (vector h v) 
-                           (d/calculate-derived (apply rr/ords->ring :geodetic coordinates)))))))
+                           (d/calculate-derived (apply rr/ords->ring :geodetic coordinates))))))))
 
 (defn geometry->tiles
   "Gets tiles which intersect the given geometry as a sequence of tuples, each tuple being a vector 
    holding two entries in the format [h v]. geometry could be of any geometric type including 
    point, line, polygon, mbr and ring"
   [geometry]
-  (keep  #(when (intersects? % geometry) (:coordinates %)) modis-sin-tiles))
+  (let [geometry (d/calculate-derived geometry)]
+    (keep  #(when (intersects? % geometry) (:coordinates %)) @modis-sin-tiles)))

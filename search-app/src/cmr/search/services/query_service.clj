@@ -75,6 +75,7 @@
             [camel-snake-kebab.core :as csk]
             [cheshire.core :as json]
             [clojure.string :as s]
+            [cmr.spatial.tile :as tile]
             [cmr.common.log :refer (debug info warn error)]))
 
 (deftracefn validate-query
@@ -233,3 +234,16 @@
      (ph/provider-holdings->string
        (:result-format params) provider-holdings {:pretty? (= "true" pretty)
                                                   :echo-compatible? (= "true" echo-compatible)})]))
+
+
+(deftracefn find-tiles-by-geometry
+  "Gets all the tiles for a given geometry"
+  [context params]
+  (let [query (->>  params
+                    sanitize-params
+                    (pv/validate-parameters :tile)
+                    (p/parameters->query :tile))]
+    ;;TODO: Handle the cases where a user might enter multiple shapes or no shape as input or passes
+    ;;a shape parameter as an array e.g. bounding_box[].
+    (tile/geometry->tiles (get-in query [:condition :shape]))))
+    

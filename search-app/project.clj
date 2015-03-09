@@ -33,8 +33,11 @@
          :source-paths ["src" "dev" "test"]
          :injections [(require 'pjstadig.humane-test-output)
                       (pjstadig.humane-test-output/activate!)]}
-   :uberjar {:main cmr.search.runner
-             :aot :all}}
+   :uberjar {:aot :all}}
+  ;; Skip AOT to prevent double-compilation during uberjar phase,
+  ;; avoiding errors when loading code that uses protocol functions at
+  ;; load time.
+  :main ^:skip-aot cmr.search.runner
 
   :aliases {"generate-docs" ["exec" "-p" "./support/generate_docs.clj"]
             ;; Prints out documentation on configuration environment variables.
