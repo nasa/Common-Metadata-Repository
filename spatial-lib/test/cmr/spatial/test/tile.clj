@@ -62,5 +62,5 @@
          
          "Whole world"
          (m/mbr -180 90 180 -90)
-         (map :coordinates t/modis-sin-tiles)
+         (map :coordinates @t/modis-sin-tiles)
     )))
