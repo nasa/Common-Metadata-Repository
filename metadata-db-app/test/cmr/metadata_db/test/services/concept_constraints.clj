@@ -78,7 +78,7 @@
       (testing "same entry title"
         (let [other-concept (make-coll-concept "PROV1" "C2-PROV1" 1 {:entry-title "ET1"})]
           (not-valid
-            (msg/duplicate-field-msg :entry-title [test-concept other-concept])
+            (msg/duplicate-field-msg :entry-title [other-concept])
             [other-concept])))
       (testing "cannot find saved concept throws internal error"
         (let [db (mem-db/create-db)]
@@ -119,7 +119,7 @@
       (testing "same entry id"
         (let [other-concept (make-coll-concept "PROV1" "C2-PROV1" 1 {:entry-id "EID-1"})]
           (not-valid
-            (msg/duplicate-field-msg :entry-id [test-concept other-concept])
+            (msg/duplicate-field-msg :entry-id [other-concept])
             [other-concept])))
       (testing "cannot find saved concept throws internal error"
         (let [db (mem-db/create-db)]
