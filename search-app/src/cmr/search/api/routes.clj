@@ -345,23 +345,26 @@
                 :body-copy body
                 :body (java.io.ByteArrayInputStream. (.getBytes body)))))))
 
-(defn- find-query-str-mixed-arity-param
-  "Return the first parameter that has mixed arity, i.e., appears both single and multivalued in
-  the query string."
-  [query]
-  ;; Look for params appear as both singular and multivaluded, e.g., foo=1&foo[bar]=2, in any order.
-  (when query
-    (last (some #(re-find % query)
-                [#"(^|&)(.*?)=.*?\2%5B"
-                 #"(^|&)(.*?)%5B.*?\2="
-                 #"(^|&)(.*?)=.*?\2\["
-                 #"(^|&)(.*?)\[.*?\2="]))))
+(defn find-query-str-mixed-arity-param
+  "Return the first parameter that has mixed arity, i.e., appears with both single and multivalued in
+  the query string. e.g. foo=1&foo[bar]=2 is mixed arity, so is foo[]=1&foo[bar]=2. foo=1&foo[]=2 is
+  not. Parameter with mixed arity will be flagged as invalid later."
+  [query-str]
+  (when query-str
+    (let [query-str (-> query-str
+                        (str/replace #"%5B" "[")
+                        (str/replace #"%5D" "]")
+                        (str/replace #"\[\]" ""))]
+      (last (some #(re-find % query-str)
+                  [#"(^|&)(.*?)=.*?\2\["
+                   #"(^|&)(.*?)\[.*?\2="])))))
 
-;; Ring parameter handling is causing crashes when single value params are mixed with multivalue.
-;; The specific case of this is for improperly expressed options, e.g.,
-;; granule_ur=*&granules_ur[pattern]=true, but it is a problem for mixed single/multivalue
-;; parameters. This middleware returns a 400 early to avoid 500 errors from Ring.
 (defn mixed-arity-param-handler
+  "Detect query string with mixed arity and throws a 400 error. Mixed arity param is when a single
+  value param is mixed with multivalue. One specific case of this is for improperly expressed options
+  in the query string, e.g., granule_ur=*&granule_ur[pattern]=true. Ring parameter handling throws
+  500 error when it happens. This middleware handler returns a 400 error early to avoid the 500 error
+  from Ring."
   [f]
   (fn [request]
     (when-let [mixed-param (find-query-str-mixed-arity-param (:query-string request))]
