@@ -4,6 +4,7 @@
             [cmr.umm.validation.core :as v]
             [cmr.umm.collection :as c]
             [cmr.umm.granule :as g]
+            [cmr.umm.test.validation.helpers :as helpers]
             [cmr.spatial.mbr :as m]
             [cmr.spatial.point :as p]
             [cmr.common.date-time-parser :as dtp]
@@ -73,6 +74,36 @@
           collection
           (gran-with-geometries [valid-point invalid-point invalid-mbr])
           expected-errors)))))
+
+(defn granule-with-temporal
+  [a b]
+  (make-granule {:temporal (g/map->GranuleTemporal {:range-date-time (helpers/range-date-time a b)})}))
+
+(deftest granule-temporal-coverage
+  (let [coll-start "2015-01-01T00:00:00Z"
+        coll-end   "2015-01-02T00:00:00Z"
+        coll-range (helpers/range-date-time coll-start coll-end)
+        coll (helpers/coll-with-range-date-times [coll-range])
+        assert-valid #(assert-valid-gran coll %)
+        assert-invalid #(assert-invalid-gran coll %1 [:temporal] [%2])]
+
+    (testing "Granule with no temporal coverage values is valid"
+      (assert-valid (make-granule {})))
+
+    (testing "Granule with range equal to collection range is valid"
+      (assert-valid (granule-with-temporal coll-start coll-end)))
+
+    (testing "Granule with range inside of collection range is valid"
+      (assert-valid (granule-with-temporal "2015-01-01T01:00:00Z" "2015-01-01T02:00:00Z")))
+
+    (assert-invalid (granule-with-temporal "2015-01-01T02:00:00Z" "2015-01-01T01:00:00Z")
+                    "Granule start date [2015-01-01T02:00:00.000Z] is later than granule end date [2015-01-01T01:00:00.000Z].")
+
+    (assert-invalid (granule-with-temporal "2014-01-01T00:00:00Z" "2015-01-02T01:00:00Z")
+                    "Granule start date [2014-01-01T00:00:00.000Z] is earlier than collection start date [2015-01-01T00:00:00.000Z].")
+
+    (assert-invalid (granule-with-temporal "2015-01-01T00:00:00Z" "2015-01-02T01:00:00Z")
+                    "Granule end date [2015-01-02T01:00:00.000Z] is later than collection end date [2015-01-02T00:00:00.000Z].")))
 
 (deftest granule-project-refs
   (let [c1 (c/map->Project {:short-name "C1"})
