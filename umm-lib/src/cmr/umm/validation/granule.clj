@@ -69,13 +69,23 @@
   [gran-start gran-end coll-start coll-end]
   ;; Anything other than this should result in an error:
   ;; timeline: ---coll-start---gran-start---gran-end---coll-end--->
+  ;; with no granule end date: ---coll-start---gran-start---coll-end--->
   (cond
-    (t/after? gran-start gran-end)    (format "Granule start date [%s] is later than granule end date [%s]."
-                                              gran-start gran-end)
-    (t/before? gran-start coll-start) (format "Granule start date [%s] is earlier than collection start date [%s]."
-                                              gran-start coll-start)
-    (t/after? gran-end coll-end)      (format "Granule end date [%s] is later than collection end date [%s]."
-                                              gran-end coll-end)))
+    (t/before? gran-start coll-start)
+    (format "Granule start date [%s] is earlier than collection start date [%s]."
+            gran-start coll-start)
+
+    (t/after? gran-start coll-end)
+    (format "Granule start date [%s] is later than collection end date [%s]."
+            gran-start coll-end)
+
+    (and gran-end (t/after? gran-end coll-end))
+    (format "Granule end date [%s] is later than collection end date [%s]."
+            gran-end coll-end)
+
+    (t/after? gran-start gran-end)
+    (format "Granule start date [%s] is later than granule end date [%s]."
+            gran-start gran-end)))
 
 (defn temporal-validation
   "Checks the granule's temporal extent against the parent collection's."
