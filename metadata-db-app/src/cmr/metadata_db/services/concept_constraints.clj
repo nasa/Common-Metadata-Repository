@@ -21,11 +21,13 @@
           (zero? num-concepts)
           (errors/internal-error!
             (format "Unable to find saved concept for provider [%s] and %s [%s]"
-                 (:provider-id concept)
-                 (name field)
-                 field-value))
+                    (:provider-id concept)
+                    (name field)
+                    field-value))
           (> num-concepts 1)
-          [(msg/duplicate-field-msg field concepts)])))))
+          [(msg/duplicate-field-msg
+             field
+             (remove #(= (:concept-id concept) (get % :concept-id)) concepts))])))))
 
 
 (def concept-type->constraints
