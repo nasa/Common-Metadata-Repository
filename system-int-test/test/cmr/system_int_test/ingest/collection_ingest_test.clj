@@ -81,15 +81,15 @@
                                                              :concept-id "C2-PROV1"
                                                              :native-id "NID-2"
                                                              :entry-title "EID-2") :dif)]
-        (is (= [409 ["The Entry Id [EID-1] must be unique. The following concepts with the same entry id were found: [C1-PROV1, C2-PROV1]."]]
+        (is (= [409 ["The Entry Id [EID-1] must be unique. The following concepts with the same entry id were found: [C1-PROV1]."]]
                [status errors]))))
 
     (testing "entry-id and entry-title constraint violations return multiple errors"
       (let [{:keys [status errors]} (d/ingest "PROV1" (assoc collection
                                                              :concept-id "C2-PROV1"
                                                              :native-id "NID-2") :dif)]
-        (is (= [409 ["The Entry Title [ET-1] must be unique. The following concepts with the same entry title were found: [C2-PROV1, C1-PROV1]."
-                     "The Entry Id [EID-1] must be unique. The following concepts with the same entry id were found: [C2-PROV1, C1-PROV1]."]]
+        (is (= [409 ["The Entry Title [ET-1] must be unique. The following concepts with the same entry title were found: [C1-PROV1]."
+                     "The Entry Id [EID-1] must be unique. The following concepts with the same entry id were found: [C1-PROV1]."]]
                [status errors]))))
 
     (testing "ingest collection with entry-id used by a collection in a different provider is OK"
