@@ -22,53 +22,47 @@
     :process})
 
 (defn append-to-message-queue-history
-  "Create a message queue history map and append it to the message queue history atom. Takes an
-  action, the data associated with that action and the result of that action.
+  "Create a message queue history map and append it to the current message queue history.
 
   Parameters:
-  message-queue-history-value - initial value of the message-queue-history-atom
-  action-type - One of the valid action types :reset :enqueue or :process
-  data - Map with :id, :action (either \"index-concept\" or \"delete-concept\"), :concept-id, and
-  :revision-id. data will be nil for messages unrelated to a concept.
+  message-queue-history-value - current value of the message-queue-history-atom
+  action-type - A keyword representing the action taken on the message queue.
+  message - Map with :id, :action (either \"index-concept\" or \"delete-concept\"), :concept-id, and
+  :revision-id. message can be nil for messages unrelated to a concept.
   resulting-state - One of the valid message states
 
   Example message-queue-history-map:
   {:action {:action-type :enqueue
-  :data {:id 1 :concept-id \"C1-PROV1\" :revision-id 1 :state :initial}}
+  :message {:id 1 :concept-id \"C1-PROV1\" :revision-id 1 :state :initial}}
   :messages [{:id 1 :concept-id \"C1-PROV1\" :revision-id 1 :state :initial}]}"
-  [message-queue-history-value action-type data resulting-state]
+  [message-queue-history-value action-type message resulting-state]
   {:pre [(valid-action-types action-type)]}
-  (let [data-with-state (when (seq data) (assoc data :state resulting-state))
+  (let [message-with-state (when (seq message) (assoc message :state resulting-state))
         messages (case action-type
                    :reset []
                    (:enqueue :process)
-                   (when (seq data)
-                     (-> (last message-queue-history-value)
-                         :messages
-                         ;; Messages are unique based on id - if the action is to change the state
-                         ;; of a message we already know about, we replace the original message
-                         ;; with the new one in our list of messages.
-                         (->> (remove #(= (:id data) (:id %))))
-                         (conj data-with-state))))
+                   (when (seq message)
+                     (conj
+                       ;; Messages are unique based on id - if the action is to change the state
+                       ;; of a message we already know about, we replace the original message
+                       ;; with the new one in our list of messages.
+                       (remove #(= (:id message) (:id %))
+                               (:messages (last message-queue-history-value)))
+                       message-with-state)))
         new-action (util/remove-nil-keys {:action-type action-type
-                                          :data data-with-state})]
+                                          :message message-with-state})]
     (conj message-queue-history-value {:action new-action :messages messages})))
 
 (defn update-message-queue-history
   "Called when an event occurs on the message queue in order to add a new entry to the message
   queue history. See append-to-message-queue-history for a description of the parameters."
   [broker-wrapper action-type data resulting-state]
-  (swap! (-> broker-wrapper :message-queue-history-atom)
+  (swap! (:message-queue-history-atom broker-wrapper)
          append-to-message-queue-history action-type data resulting-state))
 
 (comment
-  (update-message-queue-history (create-queue-broker-wrapper nil) :enqueue {:concept-id "C1-PROV1" :revision-id 1 :id 1} :initial)
-
-  (update-message-queue-history (create-queue-broker-wrapper nil) :reset {} nil)
-
-  (:messages (peek @message-queue-history-atom))
-  )
-
+  (update-message-queue-history (create-queue-broker-wrapper nil)
+                                :enqueue {:concept-id "C1-PROV1" :revision-id 1 :id 1} :initial))
 (def valid-message-states
   "Set of valid message states:
   :initial - message first created
@@ -101,6 +95,7 @@
                                      :failed
                                      :retry)
                             :fail :failed
+                            ;;else
                             (throw (Exception. (str "Invalid response: " (pr-str resp)))))]
         (update-message-queue-history broker-wrapper :process msg message-state)
         resp))))
@@ -120,7 +115,7 @@
   terminal states. If it takes longer than 5 seconds, log a warning and stop waiting."
   ([broker-wrapper expected-terminal-states]
    (wait-for-states broker-wrapper expected-terminal-states 5000))
-  ([broker-wrapper expected-terminal-states initial-ms-to-wait]
+  ([broker-wrapper expected-terminal-states ms-to-wait]
    {:pre [(nil? (seq (set/difference (set expected-terminal-states) terminal-states)))]}
    (let [expected-terminal-states-set (set expected-terminal-states)
          failure-states (set/difference terminal-states (set expected-terminal-states))
@@ -130,17 +125,17 @@
          ;; The current states should consist of non-terminal (currently processing) states and
          ;; expected terminal states. Any terminal state which is not expected will cause an error.
          ;; If the current states are non-terminal states we will check again after sleeping. After
-         ;; initial-ms-to-wait have passed we give up.
+         ;; ms-to-wait have passed we give up.
          (when (seq in-work-states)
            (debug "Still in work:" in-work-states)
            ;; If we've reached any terminal state that we did not expect
            (when (seq (set/intersection in-work-states failure-states))
              (throw (Exception. (str "Unexpected final message state(s): " in-work-states))))
            (Thread/sleep 10)
-           (if (< (- (System/currentTimeMillis) start-time) initial-ms-to-wait)
+           (if (< (- (System/currentTimeMillis) start-time) ms-to-wait)
              (recur (set (current-message-states broker-wrapper)))
              (warn (format "Waited %d ms for messages to complete, but they did not complete."
-                           initial-ms-to-wait)))))))))
+                           ms-to-wait)))))))))
 
 (defrecord BrokerWrapper
   [
@@ -157,9 +152,9 @@
    ;; A value of false indicates normal operation.
    resetting?-atom
 
-   ;; A vector of message queue maps. A new message queue map is added every time an action takes
-   ;; place on the message queue. A message queue map contains an action and a list of
-   ;; messages."
+   ;; Contains a history of the message queue represented as a vector of message queue state maps.
+   ;; Each message queue state map contains an :action map indicating the action that caused the
+   ;; message queue to change state and a :messages sequence of the messages in the queue."
    message-queue-history-atom
    ]
 
@@ -254,6 +249,3 @@
   "Create a BrokerWrapper"
   [broker]
   (->BrokerWrapper broker (atom 0) (atom false) (atom [])))
-
-(comment
-  (type #{1 2 3}))

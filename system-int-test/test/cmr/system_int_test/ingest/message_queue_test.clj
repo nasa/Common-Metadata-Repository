@@ -34,8 +34,8 @@
                  {:action "process", :result "processed"}],
                 ["C1-PROV1" 1]
                 [{:action "enqueue", :result "initial"}
-                 {:action "process", :result "processed"}]} concept-history))))))
-
+                 {:action "process", :result "processed"}]}
+               concept-history))))))
 
 ;; Setup provider
 ;; Test 1 - Initial index fails and retries once, completes successfully on retry

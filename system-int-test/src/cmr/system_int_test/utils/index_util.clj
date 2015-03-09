@@ -33,11 +33,11 @@
 
 (defn- concept-history
   "Returns a map of concept id revision id tuples to the sequence of states for each one."
-  [messages]
-  (let [int-states (for [mq messages
+  [message-states]
+  (let [int-states (for [mq message-states
                          :when (not= (get-in mq [:action :action-type]) :reset)
                          :let [{{:keys [action-type]
-                                 {:keys [concept-id revision-id id]} :data} :action} mq
+                                 {:keys [concept-id revision-id id]} :message} :action} mq
                                result-state (:state (messages+id->message (:messages mq) id))]]
                      {[concept-id revision-id] [{:action action-type :result result-state}]})]
     (apply merge-with concat int-states)))
