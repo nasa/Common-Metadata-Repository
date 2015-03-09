@@ -359,11 +359,12 @@
                   [#"(^|&)(.*?)=.*?\2\["
                    #"(^|&)(.*?)\[.*?\2="])))))
 
-;; Ring parameter handling is causing crashes when single value params are mixed with multivalue.
-;; One specific case of this is for improperly expressed options in the query string, e.g.,
-;; granule_ur=*&granule_ur[pattern]=true.
-;; This middleware handler returns a 400 error early to avoid the 500 error from Ring.
 (defn mixed-arity-param-handler
+  "Detect query string with mixed arity and throws a 400 error. Mixed arity param is when a single
+  value param is mixed with multivalue. One specific case of this is for improperly expressed options
+  in the query string, e.g., granule_ur=*&granule_ur[pattern]=true. Ring parameter handling throws
+  500 error when it happens. This middleware handler returns a 400 error early to avoid the 500 error
+  from Ring."
   [f]
   (fn [request]
     (when-let [mixed-param (find-query-str-mixed-arity-param (:query-string request))]
