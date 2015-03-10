@@ -44,25 +44,26 @@
 (defn collection-ref-validation
   "Validates the granules collection ref matches the parent collection."
   [_ granule]
-  (let [{{:keys [short-name version-id entry-title]} :collection-ref} granule]
-    (cond
-      entry-title
-      (let [coll-entry-title (get-in granule [:parent :entry-title])]
-        (when-not (= coll-entry-title entry-title)
-          {[:collection-ref]
-           [(format "%%s Entry Title [%s] does not match the entry title of the parent collection [%s]"
-                    entry-title coll-entry-title)]}))
+  (let [{{:keys [short-name version-id entry-title]} :collection-ref} granule
+        entry-title-err (when entry-title
+                          (let [coll-entry-title (get-in granule [:parent :entry-title])]
+                            (when-not (= coll-entry-title entry-title)
+                              {[:collection-ref]
+                               [(format "%%s Entry Title [%s] does not match the entry title of the parent collection [%s]"
+                                        entry-title coll-entry-title)]})))
+        short-name-version-err (when (and short-name version-id)
+                                 (let [{coll-short-name :short-name
+                                        coll-version-id :version-id} (get-in granule [:parent :product])]
+                                   (when-not (and (= coll-short-name short-name) (= coll-version-id version-id))
+                                     {[:collection-ref]
+                                      [(format (str "%%s Short Name [%s] and Version ID [%s] do not match the Short Name [%s] "
+                                                    "and Version ID [%s] of the parent collection.")
+                                               short-name version-id coll-short-name coll-version-id)]})))]
 
-      (and short-name version-id)
-      (let [{coll-short-name :short-name
-             coll-version-id :version-id} (get-in granule [:parent :product])]
-        (when-not (and (= coll-short-name short-name) (= coll-version-id version-id))
-          {[:collection-ref]
-           [(format (str "%%s Short Name [%s] and Version ID [%s] do not match the Short Name [%s] "
-                         "and Version ID [%s] of the parent collection.")
-                    short-name version-id coll-short-name coll-version-id)]}))
-      :else
-      (errors/internal-error! (str "Unexpected collection ref in granule: " (pr-str granule))))))
+    (when-not (or entry-title (and short-name version-id))
+      (errors/internal-error! (str "Unexpected collection ref in granule: " (pr-str granule))))
+
+    (merge-with concat entry-title-err short-name-version-err)))
 
 (defn- temporal-error-message
   "Returns an error message for given pairs of granule and collection start and end dates."
