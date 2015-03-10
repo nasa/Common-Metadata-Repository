@@ -34,7 +34,7 @@
   ([function-str]
    ((var-get (find-var (symbol (str "cmr.dev-system.system/" function-str))))))
   ([function-str & args]
-   ((var-get (find-var (symbol (str "cmr.dev-system.system/" function-str)))) args)))
+   (apply (var-get (find-var (symbol (str "cmr.dev-system.system/" function-str)))) args)))
 
 (defn get-acl-state
   [system]
