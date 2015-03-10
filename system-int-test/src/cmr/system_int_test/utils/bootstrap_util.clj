@@ -5,7 +5,6 @@
             [clj-http.client :as client]
             [cmr.system-int-test.utils.url-helper :as url]
             [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.test-environment :as test-env]
             [cmr.metadata-db.config :as mdb-config]
             [cmr.bootstrap.test.catalog-rest :as cat-rest]
             [cmr.common.lifecycle :as lifecycle]
