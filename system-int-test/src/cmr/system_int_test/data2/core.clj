@@ -143,7 +143,7 @@
     (and (= (set expected-ids) (set found-ids))
          (every?
            (partial re-find
-                    #"<gco:CharacterString>Translated from ECHO using ECHOToISO.xsl Version: 1.23")
+                    #"<gco:CharacterString>Translated from ECHO using ECHOToISO.xsl Version: 1.31")
            (map :metadata search-items)))))
 
 (defn- iso-mends-metadata-results-match?
