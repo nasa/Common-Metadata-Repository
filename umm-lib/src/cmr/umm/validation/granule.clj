@@ -74,8 +74,9 @@
                                               gran-start gran-end)
     (t/before? gran-start coll-start) (format "Granule start date [%s] is earlier than collection start date [%s]."
                                               gran-start coll-start)
-    (t/after? gran-end coll-end)      (format "Granule end date [%s] is later than collection end date [%s]."
-                                              gran-end coll-end)))
+    (and gran-end coll-end (t/after? gran-end coll-end))
+    (format "Granule end date [%s] is later than collection end date [%s]."
+            gran-end coll-end)))
 
 (defn temporal-validation
   "Checks the granule's temporal extent against the parent collection's."
