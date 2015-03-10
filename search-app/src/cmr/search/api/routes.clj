@@ -339,22 +339,37 @@
           {:status (if ok? 200 503)
            :headers {CONTENT_TYPE_HEADER "application/json; charset=utf-8"}
            :body (json/generate-string dependencies {:pretty pretty?})}))
-      
+
       (GET "/tiles" {params :params context :request-context}
-           (find-tiles context params)))
+        (find-tiles context params)))
 
     (route/not-found "Not Found")))
 
-;; Copies the body into a new attribute called :body-copy so that after a post of form content type
-;; the original body can still be read. The default ring params reads the body and parses it and we
-;; don't have access to it.
 (defn copy-of-body-handler
+  "Copies the body into a new attribute called :body-copy so that after a post of form content type
+  the original body can still be read. The default ring params reads the body and parses it and we
+  don't have access to it."
   [f]
   (fn [request]
     (let [^String body (slurp (:body request))]
       (f (assoc request
                 :body-copy body
                 :body (java.io.ByteArrayInputStream. (.getBytes body)))))))
+
+(defn invalid-url-encoding-handler
+  "Detect invalid encoding in the url and throws a 400 error. Ring default handling simply converts
+  the invalid encoded parameter value to nil and causes 500 error later during search (see CMR-1192).
+  This middleware handler returns a 400 error early to avoid the 500 error."
+  [f]
+  (fn [request]
+    (try
+      (when-let [query-string (:query-string request)]
+        (java.net.URLDecoder/decode query-string))
+      (catch Exception e
+        (svc-errors/throw-service-error
+          :bad-request
+          (.getMessage e))))
+    (f request)))
 
 (defn find-query-str-mixed-arity-param
   "Return the first parameter that has mixed arity, i.e., appears with both single and multivalued in
@@ -395,6 +410,7 @@
   (-> (build-routes system)
       (http-trace/build-request-context-handler system)
       handler/site
+      invalid-url-encoding-handler
       mixed-arity-param-handler
       copy-of-body-handler
       (errors/exception-handler default-format-fn)

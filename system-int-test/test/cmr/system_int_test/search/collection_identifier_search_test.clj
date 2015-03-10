@@ -2,8 +2,10 @@
   "Tests searching for collections using basic collection identifiers"
   (:require [clojure.test :refer :all]
             [clojure.string :as s]
+            [clojure.java.shell :as shell]
             [cmr.common.services.messages :as msg]
             [cmr.search.services.messages.common-messages :as smsg]
+            [cmr.system-int-test.utils.url-helper :as url]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.index-util :as index]
@@ -531,3 +533,9 @@
       (are [dataset-id items] (d/refs-match? items (search/find-refs :collection {:dataset-id dataset-id}))
            "Dataset/With/Slashes" [coll2]
            "BLAH" []))))
+
+(deftest search-with-invalid-escaped-param
+  (testing "CMR-1192: Searching with invalid escaped character returns internal error"
+    (let [{:keys [out]} (shell/sh "curl" "--silent" "-i"
+                                  (str (url/search-url :collection) "?entry-title\\[\\]=%"))]
+      (is (re-find #"(?s)400 Bad Request.*URLDecoder: Incomplete trailing escape \(%\) pattern.*" out)))))
