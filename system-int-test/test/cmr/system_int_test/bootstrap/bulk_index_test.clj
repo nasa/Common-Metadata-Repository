@@ -44,7 +44,7 @@
                                       :metadata xml3
                                       :extra-fields {:short-name "coll3"
                                                      :entry-title "coll3"
-                                                     :entry-id "coll1"
+                                                     :entry-id "coll3"
                                                      :version-id "v1"
                                                      :delete-time "2000-01-01T12:00:00Z"}
                                       :provider-id "PROV1"
@@ -61,6 +61,11 @@
                                       :extra-fields {:parent-collection-id (:concept-id umm1)}})]
       (ingest/tombstone-concept coll2-tombstone)
 
+      ;; Verify that all of the ingest requests completed successfully
+      (doseq [concept [coll1 coll3 gran1]] (is (= 201 (:status concept))))
+      ;; tombstone should return 200
+      (is (= 200 (:status coll2)))
+
       (bootstrap/bulk-index-provider "PROV1")
       (index/wait-until-indexed)
 
@@ -70,7 +75,7 @@
                     (d/refs-match? expected (search/find-refs concept-type search))
                     {:concept-id (:concept-id coll1)} :collection [umm1]
                     {:concept-id (:concept-id coll2)} :collection []
-                    {:concept-id (:concept-id umm1)} :granule [])))))
+                    {:concept-id (:concept-id ummg1)} :granule [])))))
 
 ;; This test verifies that the bulk indexer can run concurrently with ingest and indexing of items.
 ;; This test performs the following steps:
