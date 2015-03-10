@@ -75,6 +75,7 @@
                     (d/refs-match? expected (search/find-refs concept-type search))
                     {:concept-id (:concept-id coll1)} :collection [umm1]
                     {:concept-id (:concept-id coll2)} :collection []
+                    {:concept-id (:concept-id coll3)} :collection []
                     {:concept-id (:concept-id ummg1)} :granule [])))))
 
 ;; This test verifies that the bulk indexer can run concurrently with ingest and indexing of items.
