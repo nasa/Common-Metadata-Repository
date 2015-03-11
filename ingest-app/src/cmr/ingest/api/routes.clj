@@ -111,8 +111,7 @@
         (context ["/collections/:native-id" :native-id #".*$"] [native-id]
           (PUT "/" {:keys [body content-type headers request-context params]}
             (let [context (acl/add-authentication-to-context request-context params headers)]
-              ;; Commented out due to CMR-1240
-              #_(acl/verify-ingest-management-permission
+              (acl/verify-ingest-management-permission
                 context :update "PROVIDER_OBJECT" provider-id)
               (r/response
                 (ingest/save-concept
@@ -123,8 +122,7 @@
                                    :native-id native-id
                                    :concept-type :collection}
                   context (acl/add-authentication-to-context request-context params headers)]
-              ;; Commented out due to CMR-1240
-              #_(acl/verify-ingest-management-permission
+              (acl/verify-ingest-management-permission
                 context :update "PROVIDER_OBJECT" provider-id)
 
               (r/response (ingest/delete-concept request-context concept-attribs)))))
@@ -137,8 +135,7 @@
         (context ["/granules/:native-id" :native-id #".*$"] [native-id]
           (PUT "/" {:keys [body content-type headers request-context params]}
             (let [context (acl/add-authentication-to-context request-context params headers)]
-              ;; Commented out due to CMR-1240
-              #_(acl/verify-ingest-management-permission
+              (acl/verify-ingest-management-permission
                 context :update "PROVIDER_OBJECT" provider-id)
               (r/response
                 (ingest/save-concept
@@ -149,8 +146,7 @@
                                    :native-id native-id
                                    :concept-type :granule}
                   context (acl/add-authentication-to-context request-context params headers)]
-              ;; Commented out due to CMR-1240
-              #_(acl/verify-ingest-management-permission
+              (acl/verify-ingest-management-permission
                 context :update "PROVIDER_OBJECT" provider-id)
               (r/response (ingest/delete-concept request-context concept-attribs))))))
 
